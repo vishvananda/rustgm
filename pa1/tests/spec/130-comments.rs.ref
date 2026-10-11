@@ -1,0 +1,5 @@
+line-comment 0 7 "// line"
+whitespace 7 8 "\n"
+block-comment 8 35 "/* outer /* inner */ end */"
+whitespace 35 36 "\n"
+eof 36

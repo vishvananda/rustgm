@@ -1,0 +1,9 @@
+lifetime 0 2 "'a"
+whitespace 2 3 " "
+lifetime 3 7 "'foo"
+whitespace 7 8 " "
+lifetime 8 20 "'foo_bar_baz"
+whitespace 20 21 " "
+lifetime 21 23 "'_"
+whitespace 23 24 "\n"
+eof 24

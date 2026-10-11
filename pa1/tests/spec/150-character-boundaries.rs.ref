@@ -1,0 +1,13 @@
+character 0 3 "'a'"
+whitespace 3 4 " "
+character 4 8 "'ab'"
+whitespace 8 9 " "
+character 9 12 "'9'"
+whitespace 12 13 " "
+lifetime 13 18 "'9abc"
+whitespace 18 19 " "
+character 19 23 "'\\''"
+whitespace 23 24 " "
+character 24 28 "'\\\\'"
+whitespace 28 29 "\n"
+eof 29

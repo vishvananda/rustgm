@@ -1,0 +1,11 @@
+string 0 6 "\"hi\\n\""
+whitespace 6 7 " "
+string 7 19 "\"multi\nline\""
+whitespace 19 20 " "
+byte-string 20 28 "b\"ascii\""
+whitespace 28 29 " "
+c-string 29 37 "c\"hello\""
+whitespace 37 38 " "
+string 38 52 "\"suffix\"custom"
+whitespace 52 53 "\n"
+eof 53

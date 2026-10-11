@@ -1,0 +1,8 @@
+/obj/
+/dev/target/
+__pycache__/
+*.pyc
+.test_failed
+*.my
+*.my.*
+/backend.local.json

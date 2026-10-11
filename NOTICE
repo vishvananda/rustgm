@@ -1,0 +1,16 @@
+RustGM
+
+Copyright 2026 The RustGM Authors.
+
+The course structure and compile-time-first architecture are adapted from
+cppgm-extended. Its original NOTICE is retained in shared/CPPGM-NOTICE.
+docs/cppgm-spec.md and shared/lowir.md are unchanged baseline documents.
+scripts/rust_audit.py is adapted from the cppgm-ralph v5rust scaffold.
+
+Selected fixtures are Copyright The Rust Project Contributors and
+rust-analyzer contributors, under MIT OR Apache-2.0 as documented by their
+retained license files. third_party/sources.json records exact source revisions,
+paths and checksums. Original fixture bytes and notices are preserved.
+
+The RustGM implementation and newly authored documents use MIT OR Apache-2.0.
+Upstream material retains its own terms and attribution.

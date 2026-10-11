@@ -1,0 +1,9 @@
+raw-string 0 5 "r\"hi\""
+whitespace 5 6 " "
+raw-string 6 24 "r#\"quote\" inside\"#"
+whitespace 24 25 " "
+raw-byte-string 25 38 "br##\"bytes\"##"
+whitespace 38 39 " "
+raw-c-string 39 50 "cr###\"c\"###"
+whitespace 50 51 "\n"
+eof 51

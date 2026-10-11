@@ -1,0 +1,10 @@
+identifier 3 5 "fn"
+whitespace 5 6 " "
+identifier 6 7 "x"
+punctuation 7 8 "("
+punctuation 8 9 ")"
+whitespace 9 10 " "
+punctuation 10 11 "{"
+punctuation 11 12 "}"
+whitespace 12 13 "\n"
+eof 13

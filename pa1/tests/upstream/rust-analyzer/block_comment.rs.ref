@@ -1,0 +1,7 @@
+block-comment 0 5 "/* */"
+whitespace 5 6 "\n"
+block-comment 6 10 "/**/"
+whitespace 10 11 "\n"
+block-comment 11 22 "/* /* */ */"
+whitespace 22 23 "\n"
+eof 23

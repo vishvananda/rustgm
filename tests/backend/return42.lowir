@@ -1,0 +1,5 @@
+function @main() -> i64 [role=entry] {
+  block ^entry:
+    %answer = binary add i64 19, 23
+    return i64 %answer
+}

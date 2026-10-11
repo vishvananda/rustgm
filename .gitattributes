@@ -1,0 +1,5 @@
+# Fixture bytes, line endings and intentional whitespace are compiler inputs.
+pa*/tests/**/*.rs -text -whitespace
+*.ref text eol=lf
+*.ref.stderr text eol=lf
+*.ref.exit_status text eol=lf

@@ -1,0 +1,381 @@
+{
+  "schema": 1,
+  "mode": "--emit-tokens",
+  "cases": [
+    {
+      "path": "tests/spec/100-empty.rs",
+      "exit_status": 0,
+      "features": [
+        "pa1.lexical-boundaries"
+      ]
+    },
+    {
+      "path": "tests/spec/100-no-final-newline.rs",
+      "exit_status": 0,
+      "features": [
+        "pa1.lexical-boundaries"
+      ]
+    },
+    {
+      "path": "tests/spec/100-bom.rs",
+      "exit_status": 0,
+      "features": [
+        "pa1.lexical-boundaries"
+      ]
+    },
+    {
+      "path": "tests/spec/110-crlf.rs",
+      "exit_status": 0,
+      "features": [
+        "pa1.lexical-boundaries"
+      ]
+    },
+    {
+      "path": "tests/spec/110-crcrlflf.rs",
+      "exit_status": 0,
+      "features": [
+        "pa1.lexical-boundaries"
+      ]
+    },
+    {
+      "path": "tests/spec/110-whitespace.rs",
+      "exit_status": 0,
+      "features": [
+        "pa1.lexical-boundaries"
+      ]
+    },
+    {
+      "path": "tests/spec/120-shebang.rs",
+      "exit_status": 0,
+      "features": [
+        "pa1.lexical-boundaries"
+      ]
+    },
+    {
+      "path": "tests/spec/120-inner-attribute.rs",
+      "exit_status": 0,
+      "features": [
+        "pa1.lexical-boundaries"
+      ]
+    },
+    {
+      "path": "tests/spec/130-comments.rs",
+      "exit_status": 0,
+      "features": [
+        "pa1.lexical-boundaries"
+      ]
+    },
+    {
+      "path": "tests/spec/130-doc-comments.rs",
+      "exit_status": 0,
+      "features": [
+        "pa1.lexical-boundaries"
+      ]
+    },
+    {
+      "path": "tests/spec/140-identifiers.rs",
+      "exit_status": 0,
+      "features": [
+        "pa1.lexical-boundaries"
+      ]
+    },
+    {
+      "path": "tests/spec/140-normalization.rs",
+      "exit_status": 0,
+      "features": [
+        "pa1.lexical-boundaries"
+      ]
+    },
+    {
+      "path": "tests/spec/150-lifetimes.rs",
+      "exit_status": 0,
+      "features": [
+        "pa1.lexical-boundaries"
+      ]
+    },
+    {
+      "path": "tests/spec/150-character-boundaries.rs",
+      "exit_status": 0,
+      "features": [
+        "pa1.lexical-boundaries"
+      ]
+    },
+    {
+      "path": "tests/spec/160-integers.rs",
+      "exit_status": 0,
+      "features": [
+        "pa1.lexical-boundaries"
+      ]
+    },
+    {
+      "path": "tests/spec/160-floats.rs",
+      "exit_status": 0,
+      "features": [
+        "pa1.lexical-boundaries"
+      ]
+    },
+    {
+      "path": "tests/spec/170-strings.rs",
+      "exit_status": 0,
+      "features": [
+        "pa1.lexical-boundaries"
+      ]
+    },
+    {
+      "path": "tests/spec/170-raw-strings.rs",
+      "exit_status": 0,
+      "features": [
+        "pa1.lexical-boundaries"
+      ]
+    },
+    {
+      "path": "tests/spec/170-raw-delimiter-prefix.rs",
+      "exit_status": 0,
+      "features": [
+        "pa1.lexical-boundaries"
+      ]
+    },
+    {
+      "path": "tests/spec/180-punctuation.rs",
+      "exit_status": 0,
+      "features": [
+        "pa1.lexical-boundaries"
+      ]
+    },
+    {
+      "path": "tests/spec/190-macro-tokens.rs",
+      "exit_status": 0,
+      "features": [
+        "pa1.lexical-boundaries"
+      ]
+    },
+    {
+      "path": "tests/spec/190-unknown-prefix.rs",
+      "exit_status": 0,
+      "features": [
+        "pa1.lexical-boundaries"
+      ]
+    },
+    {
+      "path": "tests/spec/300-open-comment.rs",
+      "exit_status": 1,
+      "features": [
+        "pa1.lexical-boundaries"
+      ]
+    },
+    {
+      "path": "tests/spec/300-open-string.rs",
+      "exit_status": 1,
+      "features": [
+        "pa1.lexical-boundaries"
+      ]
+    },
+    {
+      "path": "tests/spec/300-open-raw.rs",
+      "exit_status": 1,
+      "features": [
+        "pa1.lexical-boundaries"
+      ]
+    },
+    {
+      "path": "tests/spec/300-open-character.rs",
+      "exit_status": 1,
+      "features": [
+        "pa1.lexical-boundaries"
+      ]
+    },
+    {
+      "path": "tests/spec/300-open-byte-string.rs",
+      "exit_status": 1,
+      "features": [
+        "pa1.lexical-boundaries"
+      ]
+    },
+    {
+      "path": "tests/spec/300-unknown-start.rs",
+      "exit_status": 1,
+      "features": [
+        "pa1.lexical-boundaries"
+      ]
+    },
+    {
+      "path": "tests/spec/300-emoji-identifier.rs",
+      "exit_status": 1,
+      "features": [
+        "pa1.lexical-boundaries"
+      ]
+    },
+    {
+      "path": "tests/spec/300-too-many-hashes.rs",
+      "exit_status": 1,
+      "features": [
+        "pa1.lexical-boundaries"
+      ]
+    },
+    {
+      "path": "tests/spec/300-open-raw-byte.rs",
+      "exit_status": 1,
+      "features": [
+        "pa1.lexical-boundaries"
+      ]
+    },
+    {
+      "path": "tests/spec/300-open-c-string.rs",
+      "exit_status": 1,
+      "features": [
+        "pa1.lexical-boundaries"
+      ]
+    },
+    {
+      "path": "tests/spec/300-invalid-utf8.rs",
+      "exit_status": 1,
+      "features": [
+        "pa1.source-encoding"
+      ]
+    },
+    {
+      "path": "tests/upstream/rust/floating-point-0e10-issue-40408.rs",
+      "exit_status": 0,
+      "features": [
+        "pa1.lexical-boundaries"
+      ],
+      "upstream": "https://raw.githubusercontent.com/rust-lang/rust/88d9e12ae178fab0fb5cc050a94da85685d449ea/tests/ui/lexer/floating-point-0e10-issue-40408.rs"
+    },
+    {
+      "path": "tests/upstream/rust/ident_normalization.rs",
+      "exit_status": 0,
+      "features": [
+        "pa1.lexical-boundaries"
+      ],
+      "upstream": "https://raw.githubusercontent.com/rust-lang/rust/88d9e12ae178fab0fb5cc050a94da85685d449ea/tests/ui/lexer/ident_normalization.rs"
+    },
+    {
+      "path": "tests/upstream/rust/unicode-pattern-white-space.rs",
+      "exit_status": 0,
+      "features": [
+        "pa1.lexical-boundaries"
+      ],
+      "upstream": "https://raw.githubusercontent.com/rust-lang/rust/88d9e12ae178fab0fb5cc050a94da85685d449ea/tests/ui/lexer/unicode-pattern-white-space.rs"
+    },
+    {
+      "path": "tests/upstream/rust/unterminated-nested-comment.rs",
+      "exit_status": 1,
+      "features": [
+        "pa1.lexical-boundaries"
+      ],
+      "upstream": "https://raw.githubusercontent.com/rust-lang/rust/88d9e12ae178fab0fb5cc050a94da85685d449ea/tests/ui/lexer/unterminated-nested-comment.rs"
+    },
+    {
+      "path": "tests/upstream/rust/unterminated-comment.rs",
+      "exit_status": 1,
+      "features": [
+        "pa1.lexical-boundaries"
+      ],
+      "upstream": "https://raw.githubusercontent.com/rust-lang/rust/88d9e12ae178fab0fb5cc050a94da85685d449ea/tests/ui/lexer/unterminated-comment.rs"
+    },
+    {
+      "path": "tests/upstream/rust-analyzer/numbers.rs",
+      "exit_status": 0,
+      "features": [
+        "pa1.lexical-boundaries"
+      ],
+      "upstream": "https://raw.githubusercontent.com/rust-lang/rust-analyzer/2ad81e72b7e978cb800dffe1bcce5c9f98032acf/crates/parser/test_data/lexer/ok/numbers.rs"
+    },
+    {
+      "path": "tests/upstream/rust-analyzer/lifetimes.rs",
+      "exit_status": 0,
+      "features": [
+        "pa1.lexical-boundaries"
+      ],
+      "upstream": "https://raw.githubusercontent.com/rust-lang/rust-analyzer/2ad81e72b7e978cb800dffe1bcce5c9f98032acf/crates/parser/test_data/lexer/ok/lifetimes.rs"
+    },
+    {
+      "path": "tests/upstream/rust-analyzer/raw_strings.rs",
+      "exit_status": 0,
+      "features": [
+        "pa1.lexical-boundaries"
+      ],
+      "upstream": "https://raw.githubusercontent.com/rust-lang/rust-analyzer/2ad81e72b7e978cb800dffe1bcce5c9f98032acf/crates/parser/test_data/lexer/ok/raw_strings.rs"
+    },
+    {
+      "path": "tests/upstream/rust-analyzer/symbols.rs",
+      "exit_status": 0,
+      "features": [
+        "pa1.lexical-boundaries"
+      ],
+      "upstream": "https://raw.githubusercontent.com/rust-lang/rust-analyzer/2ad81e72b7e978cb800dffe1bcce5c9f98032acf/crates/parser/test_data/lexer/ok/symbols.rs"
+    },
+    {
+      "path": "tests/upstream/rust-analyzer/hello.rs",
+      "exit_status": 0,
+      "features": [
+        "pa1.lexical-boundaries"
+      ],
+      "upstream": "https://raw.githubusercontent.com/rust-lang/rust-analyzer/2ad81e72b7e978cb800dffe1bcce5c9f98032acf/crates/parser/test_data/lexer/ok/hello.rs"
+    },
+    {
+      "path": "tests/upstream/rust-analyzer/block_comment.rs",
+      "exit_status": 0,
+      "features": [
+        "pa1.lexical-boundaries"
+      ],
+      "upstream": "https://raw.githubusercontent.com/rust-lang/rust-analyzer/2ad81e72b7e978cb800dffe1bcce5c9f98032acf/crates/parser/test_data/lexer/ok/block_comment.rs"
+    },
+    {
+      "path": "tests/upstream/rust-analyzer/byte_strings.rs",
+      "exit_status": 0,
+      "features": [
+        "pa1.lexical-boundaries"
+      ],
+      "upstream": "https://raw.githubusercontent.com/rust-lang/rust-analyzer/2ad81e72b7e978cb800dffe1bcce5c9f98032acf/crates/parser/test_data/lexer/ok/byte_strings.rs"
+    },
+    {
+      "path": "tests/upstream/rust-analyzer/raw_ident.rs",
+      "exit_status": 0,
+      "features": [
+        "pa1.lexical-boundaries"
+      ],
+      "upstream": "https://raw.githubusercontent.com/rust-lang/rust-analyzer/2ad81e72b7e978cb800dffe1bcce5c9f98032acf/crates/parser/test_data/lexer/ok/raw_ident.rs"
+    },
+    {
+      "path": "tests/upstream/rust-analyzer/single_line_comments.rs",
+      "exit_status": 0,
+      "features": [
+        "pa1.lexical-boundaries"
+      ],
+      "upstream": "https://raw.githubusercontent.com/rust-lang/rust-analyzer/2ad81e72b7e978cb800dffe1bcce5c9f98032acf/crates/parser/test_data/lexer/ok/single_line_comments.rs"
+    },
+    {
+      "path": "tests/upstream/rust-analyzer/whitespace.rs",
+      "exit_status": 0,
+      "features": [
+        "pa1.lexical-boundaries"
+      ],
+      "upstream": "https://raw.githubusercontent.com/rust-lang/rust-analyzer/2ad81e72b7e978cb800dffe1bcce5c9f98032acf/crates/parser/test_data/lexer/ok/whitespace.rs"
+    },
+    {
+      "path": "tests/upstream/rust-analyzer/unclosed_block_comment_at_eof.rs",
+      "exit_status": 1,
+      "features": [
+        "pa1.lexical-boundaries"
+      ],
+      "upstream": "https://raw.githubusercontent.com/rust-lang/rust-analyzer/2ad81e72b7e978cb800dffe1bcce5c9f98032acf/crates/parser/test_data/lexer/err/unclosed_block_comment_at_eof.rs"
+    },
+    {
+      "path": "tests/upstream/rust-analyzer/unclosed_raw_string_at_eof.rs",
+      "exit_status": 1,
+      "features": [
+        "pa1.lexical-boundaries"
+      ],
+      "upstream": "https://raw.githubusercontent.com/rust-lang/rust-analyzer/2ad81e72b7e978cb800dffe1bcce5c9f98032acf/crates/parser/test_data/lexer/err/unclosed_raw_string_at_eof.rs"
+    },
+    {
+      "path": "tests/upstream/rust-analyzer/unclosed_byte_string_at_eof.rs",
+      "exit_status": 1,
+      "features": [
+        "pa1.lexical-boundaries"
+      ],
+      "upstream": "https://raw.githubusercontent.com/rust-lang/rust-analyzer/2ad81e72b7e978cb800dffe1bcce5c9f98032acf/crates/parser/test_data/lexer/err/unclosed_byte_string_at_eof.rs"
+    }
+  ]
+}

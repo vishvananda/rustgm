@@ -1,0 +1,6 @@
+#!/bin/sh
+set -eu
+root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+# Maintainer references deliberately run this repository's implementation.
+# Student export will replace this with a pinned reference-bundle wrapper.
+exec "$root/obj/rust/release/rustgm" "$@"

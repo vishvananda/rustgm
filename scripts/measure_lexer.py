@@ -1,0 +1,92 @@
+#!/usr/bin/env python3
+"""Retain raw scaling evidence; optionally compare immutable A/B binaries."""
+import argparse
+import hashlib
+import json
+from pathlib import Path
+import statistics
+import subprocess
+import time
+
+ROOT = Path(__file__).resolve().parents[1]
+LINE = b'fn measured(value: u64) -> u64 { value + 17 }\n'
+
+
+def sample(binary, source, destination):
+    started = time.perf_counter_ns()
+    result = subprocess.run(["/usr/bin/time", "-f", "%M", "-o", str(destination),
+                             str(binary), "--count-tokens", str(source)],
+                            capture_output=True, timeout=120)
+    elapsed = time.perf_counter_ns() - started
+    if result.returncode or result.stderr:
+        raise ValueError(f"measurement failed: {result.stderr!r}")
+    return {"elapsed_ns": elapsed, "peak_rss_kb": int(destination.read_text()),
+            "output": result.stdout.decode(), "output_sha256": hashlib.sha256(result.stdout).hexdigest()}
+
+
+def full_output_hash(binary, source, directory):
+    path = directory / "token-output.tmp"
+    with path.open("wb") as stream:
+        result = subprocess.run([str(binary), "--emit-tokens", str(source)],
+                                stdout=stream, stderr=subprocess.PIPE, timeout=120)
+    if result.returncode or result.stderr:
+        raise ValueError("full token rendering failed during equivalence validation")
+    digest = hashlib.sha256()
+    with path.open("rb") as stream:
+        for block in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(block)
+    path.unlink()
+    return digest.hexdigest()
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--baseline", type=Path)
+    parser.add_argument("--candidate", type=Path, default=ROOT / "obj/rust/release/rustgm")
+    args = parser.parse_args()
+    directory = ROOT / "obj/perf" / str(time.time_ns())
+    directory.mkdir(parents=True)
+    candidate = args.candidate.resolve()
+    baseline = args.baseline.resolve() if args.baseline else candidate
+    # Snapshot binaries before measurement so a concurrent build cannot change A/B.
+    binaries = {}
+    for name, binary in [("A", baseline), ("B", candidate)]:
+        target = directory / name
+        target.write_bytes(binary.read_bytes())
+        target.chmod(0o755)
+        binaries[name] = target
+    receipt = {"kind": "ABBA" if args.baseline else "A/A scaling calibration",
+               "binary_sha256": {name: hashlib.sha256(p.read_bytes()).hexdigest() for name, p in binaries.items()},
+               "samples": [], "full_output_sha256": {}}
+    for lines in (16000, 64000, 256000):
+        source = directory / f"input-{lines}.rs"
+        source.write_bytes(LINE * lines)
+        full_outputs = {name: full_output_hash(binary, source, directory) for name, binary in binaries.items()}
+        if full_outputs["A"] != full_outputs["B"]:
+            raise ValueError("full token output differs between immutable binaries")
+        receipt["full_output_sha256"][str(lines)] = full_outputs
+        expected = None
+        # Warm both snapshots, calibrate A/A, then retain three ABBA blocks.
+        order = "ABAAAA" + "ABBA" * 3
+        for index, name in enumerate(order):
+            value = sample(binaries[name], source, directory / "rss.txt")
+            expected = expected or value["output"]
+            if expected != value["output"]:
+                raise ValueError("count/output mismatch between immutable binaries")
+            observation = {"lines": lines, "bytes": source.stat().st_size,
+                                       "input_sha256": hashlib.sha256(source.read_bytes()).hexdigest(),
+                                       "binary": name, "phase": "warmup" if index < 2 else "calibration" if index < 6 else "paired",
+                                       **value}
+            receipt["samples"].append(observation)
+            with (directory / "observations.jsonl").open("a") as stream:
+                stream.write(json.dumps(observation) + "\n")
+        data = [s for s in receipt["samples"] if s["lines"] == lines and s["phase"] == "paired" and s["binary"] == "B"]
+        print(f"{source.stat().st_size} bytes: median {statistics.median(s['elapsed_ns'] for s in data)/1e6:.2f} ms; "
+              f"peak RSS {max(s['peak_rss_kb'] for s in data)} KiB")
+        (directory / "samples.json").write_text(json.dumps(receipt, indent=2) + "\n")
+    print(f"Raw observations: {directory / 'samples.json'}")
+    print("No regression claim is made from calibration/scaling alone.")
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,13 @@
+identifier 0 1 "a"
+whitespace 1 2 " "
+identifier 2 3 "b"
+whitespace 3 5 "  "
+identifier 5 6 "c"
+whitespace 6 7 "\n"
+identifier 7 8 "d"
+whitespace 8 10 "\n\n"
+identifier 10 11 "e"
+whitespace 11 12 "\t"
+identifier 12 13 "f"
+whitespace 13 14 "\n"
+eof 14

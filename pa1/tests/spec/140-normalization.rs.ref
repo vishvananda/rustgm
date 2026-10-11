@@ -1,0 +1,9 @@
+identifier 0 1 "K"
+whitespace 1 2 " "
+identifier 2 5 "\xe2\x84\xaa"
+whitespace 5 6 " "
+identifier 6 11 "caf\xc3\xa9"
+whitespace 11 12 " "
+identifier 12 18 "cafe\xcc\x81"
+whitespace 18 19 "\n"
+eof 19

@@ -1,0 +1,3 @@
+raw-string 0 36 "r###\"this is a r##\"raw\"## string\"###"
+whitespace 36 37 "\n"
+eof 37

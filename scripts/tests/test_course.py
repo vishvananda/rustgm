@@ -1,0 +1,98 @@
+import contextlib
+import io
+import json
+from pathlib import Path
+import sys
+import tempfile
+import unittest
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from course import compare, execute, load_cases, run_stage
+
+
+class HarnessTests(unittest.TestCase):
+    def test_signals_stub_and_other_exits_are_failures(self):
+        for code in (2, 86, 101, -9):
+            command = "import os,signal; os.kill(os.getpid(),signal.SIGKILL)" if code < 0 else f"raise SystemExit({code})"
+            with self.subTest(code=code), self.assertRaises(ValueError):
+                execute([sys.executable, "-c", command], b"", 2)
+
+    def test_timeout_is_never_rejection(self):
+        with self.assertRaises(ValueError):
+            execute([sys.executable, "-c", "import time; time.sleep(5)"], b"", .03)
+
+    def test_text_stderr_and_status_are_all_exact(self):
+        with tempfile.TemporaryDirectory() as name:
+            fixture = Path(name) / "x.rs"
+            actual = (b"out\n", b"err\n", b"1\n")
+            for suffix, value in zip((".ref", ".ref.stderr", ".ref.exit_status"), actual):
+                Path(str(fixture) + suffix).write_bytes(value)
+            self.assertEqual(compare(fixture, actual), [])
+            for position in range(3):
+                changed = list(actual)
+                changed[position] += b" "
+                self.assertTrue(compare(fixture, changed))
+
+    def fixture_root(self, name, cases):
+        root = Path(name)
+        tests = root / "pa1/tests"
+        tests.mkdir(parents=True)
+        (tests / "manifest.json").write_text(json.dumps({"mode": "--emit-tokens", "cases": cases}))
+        (root / "dev").mkdir()
+        return root, tests
+
+    def test_empty_and_planned_suites_fail(self):
+        with tempfile.TemporaryDirectory() as name:
+            root, _ = self.fixture_root(name, [])
+            with self.assertRaises(ValueError):
+                load_cases(root, "pa1")
+            with self.assertRaises(ValueError):
+                load_cases(root, "pa2")
+
+    def test_orphan_fixture_fails_discovery(self):
+        with tempfile.TemporaryDirectory() as name:
+            case = {"path": "tests/x.rs", "exit_status": 0}
+            root, tests = self.fixture_root(name, [case])
+            (tests / "x.rs").write_text("x")
+            (tests / "orphan.rs").write_text("y")
+            with self.assertRaises(ValueError):
+                load_cases(root, "pa1")
+
+    def test_duplicate_cases_fail(self):
+        with tempfile.TemporaryDirectory() as name:
+            case = {"path": "tests/x.rs", "exit_status": 0}
+            root, _ = self.fixture_root(name, [case, case])
+            with self.assertRaises(ValueError):
+                load_cases(root, "pa1")
+
+    def test_failed_bless_leaves_references_unchanged(self):
+        with tempfile.TemporaryDirectory() as name:
+            cases = [{"path": "tests/x.rs", "exit_status": 0}, {"path": "tests/y.rs", "exit_status": 1}]
+            root, tests = self.fixture_root(name, cases)
+            for case in cases:
+                p = root / "pa1" / case["path"]
+                p.write_text("input")
+                Path(str(p) + ".ref").write_bytes(b"original")
+            app = [sys.executable, "-c", "print('new'); raise SystemExit(0)"]
+            with contextlib.redirect_stdout(io.StringIO()):
+                self.assertFalse(run_stage(root, "pa1", app, bless=True))
+            self.assertEqual((tests / "x.rs.ref").read_bytes(), b"original")
+            self.assertEqual((tests / "y.rs.ref").read_bytes(), b"original")
+
+    def test_missing_oracles_fail(self):
+        with tempfile.TemporaryDirectory() as name:
+            self.assertEqual(len(compare(Path(name) / "x.rs", (b"", b"", b"0\n"))), 3)
+
+    def test_bless_then_test_and_changed_output_fail(self):
+        with tempfile.TemporaryDirectory() as name:
+            root, tests = self.fixture_root(name, [{"path": "tests/x.rs", "exit_status": 0}])
+            (tests / "x.rs").write_text("input")
+            app = [sys.executable, "-c", "print('gold')"]
+            with contextlib.redirect_stdout(io.StringIO()):
+                self.assertTrue(run_stage(root, "pa1", app, bless=True))
+                self.assertTrue(run_stage(root, "pa1", app))
+                self.assertFalse(run_stage(root, "pa1", [sys.executable, "-c", "print('changed')"]))
+
+
+if __name__ == "__main__":
+    unittest.main()

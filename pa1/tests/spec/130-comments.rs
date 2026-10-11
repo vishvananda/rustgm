@@ -1,0 +1,2 @@
+// line
+/* outer /* inner */ end */

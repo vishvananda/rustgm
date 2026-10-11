@@ -1,0 +1,556 @@
+{
+  "schema": 1,
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "stages": [
+    {
+      "number": 1,
+      "path": "pa1",
+      "title": "Source and tokens",
+      "mode": "--emit-tokens",
+      "status": "implemented-draft",
+      "scope": "UTF-8, BOM/CRLF/shebang handling, comments, token boundaries, spans",
+      "test_families": [
+        "invalid encodings",
+        "nested comments",
+        "lifetime/character ambiguity",
+        "raw delimiters"
+      ]
+    },
+    {
+      "number": 2,
+      "path": "pa2",
+      "title": "Literals",
+      "mode": "--emit-literals",
+      "status": "planned",
+      "scope": "Literal values, escapes, numeric suffixes and target arithmetic",
+      "test_families": [
+        "integer boundaries",
+        "floating rounding",
+        "string escapes",
+        "invalid suffixes"
+      ]
+    },
+    {
+      "number": 3,
+      "path": "pa3",
+      "title": "Token trees and attributes",
+      "mode": "--emit-token-trees",
+      "status": "planned",
+      "scope": "Delimiter trees, attributes, documentation desugaring and cfg",
+      "test_families": [
+        "nested groups",
+        "mismatched delimiters",
+        "cfg/cfg_attr",
+        "disabled items"
+      ]
+    },
+    {
+      "number": 4,
+      "path": "pa4",
+      "title": "Expressions and statements",
+      "mode": "--emit-ast",
+      "status": "planned",
+      "scope": "Expression and statement grammar with bounded lookahead",
+      "test_families": [
+        "precedence",
+        "blocks",
+        "labels",
+        "loops",
+        "calls",
+        "malformed expressions"
+      ]
+    },
+    {
+      "number": 5,
+      "path": "pa5",
+      "title": "Items types and patterns",
+      "mode": "--emit-ast",
+      "status": "planned",
+      "scope": "Item/type/pattern grammar and macro invocation placeholders",
+      "test_families": [
+        "functions",
+        "ADTs",
+        "traits",
+        "impls",
+        "generic syntax",
+        "pattern forms"
+      ]
+    },
+    {
+      "number": 6,
+      "path": "pa6",
+      "title": "Modules and names",
+      "mode": "--emit-names",
+      "status": "planned",
+      "scope": "Crate/module scopes, visibility, namespaces, imports and interning",
+      "test_families": [
+        "shadowing",
+        "globs",
+        "privacy",
+        "module files",
+        "Unicode NFC identity"
+      ]
+    },
+    {
+      "number": 7,
+      "path": "pa7",
+      "title": "Macro matching",
+      "mode": "--emit-expanded",
+      "status": "planned",
+      "scope": "macro_rules matchers, fragment parser callbacks and transcription",
+      "test_families": [
+        "repetitions",
+        "separators",
+        "ordered rules",
+        "ambiguity",
+        "follow sets"
+      ]
+    },
+    {
+      "number": 8,
+      "path": "pa8",
+      "title": "Expansion and hygiene",
+      "mode": "--emit-expanded",
+      "status": "planned",
+      "scope": "Expansion contexts, mixed-site hygiene, macro resolution and builtins",
+      "test_families": [
+        "dollar-crate",
+        "generated imports/items",
+        "recursion",
+        "definition/call-site spans"
+      ]
+    },
+    {
+      "number": 9,
+      "path": "pa9",
+      "title": "Types and inference",
+      "mode": "--emit-types",
+      "status": "planned",
+      "scope": "Canonical types, inference variables, unification and scalar coercions",
+      "test_families": [
+        "type identity",
+        "numeric fallback",
+        "unresolved variables",
+        "occurs check"
+      ]
+    },
+    {
+      "number": 10,
+      "path": "pa10",
+      "title": "Typed bodies",
+      "mode": "--emit-body-ir",
+      "status": "planned",
+      "scope": "Typed control-flow bodies, places, values and evaluation order",
+      "test_families": [
+        "control-flow joins",
+        "short circuit",
+        "calls",
+        "return paths",
+        "side effects"
+      ]
+    },
+    {
+      "number": 11,
+      "path": "pa11",
+      "title": "Procedural LowIR",
+      "mode": "--emit-lowir",
+      "status": "planned",
+      "scope": "Scalar procedures lowered from typed facts into shared LowIR",
+      "test_families": [
+        "run-pass scalar programs",
+        "checked arithmetic",
+        "branches",
+        "calls",
+        "entry shim"
+      ]
+    },
+    {
+      "number": 12,
+      "path": "pa12",
+      "title": "Aggregates and layout",
+      "mode": "--emit-lowir",
+      "status": "planned",
+      "scope": "Tuples arrays structs enums discriminants and zero-sized values",
+      "test_families": [
+        "offsets",
+        "sizes",
+        "alignment",
+        "array indexing",
+        "enum variants",
+        "ZSTs"
+      ]
+    },
+    {
+      "number": 13,
+      "path": "pa13",
+      "title": "Pattern semantics",
+      "mode": "--emit-lowir",
+      "status": "planned",
+      "scope": "Binding modes, match lowering and exhaustiveness/usefulness",
+      "test_families": [
+        "guards",
+        "or-patterns",
+        "slices",
+        "unreachable arms",
+        "missing constructors"
+      ]
+    },
+    {
+      "number": 14,
+      "path": "pa14",
+      "title": "Moves and initialization",
+      "mode": "--emit-ownership",
+      "status": "planned",
+      "scope": "Move paths, Copy rules and definite/maybe initialization",
+      "test_families": [
+        "partial moves",
+        "disjoint fields",
+        "reinitialization",
+        "branch/loop joins"
+      ]
+    },
+    {
+      "number": 15,
+      "path": "pa15",
+      "title": "Lifetime contracts",
+      "mode": "--emit-ownership",
+      "status": "planned",
+      "scope": "Region parameters, elision, outlives constraints and reference returns",
+      "test_families": [
+        "valid/invalid returns",
+        "nested references",
+        "caller/callee constraints"
+      ]
+    },
+    {
+      "number": 16,
+      "path": "pa16",
+      "title": "Borrow checking",
+      "mode": "--emit-ownership",
+      "status": "planned",
+      "scope": "Non-lexical lifetimes, reborrows, loans and two-phase borrowing",
+      "test_families": [
+        "last use",
+        "alias conflicts",
+        "reborrows",
+        "field disjointness",
+        "loop loans"
+      ]
+    },
+    {
+      "number": 17,
+      "path": "pa17",
+      "title": "Destruction",
+      "mode": "--emit-lowir",
+      "status": "planned",
+      "scope": "Drop scopes, conditional drop flags and cleanup elaboration",
+      "test_families": [
+        "drop order",
+        "moved fields",
+        "partial initialization",
+        "replacement",
+        "early exits"
+      ]
+    },
+    {
+      "number": 18,
+      "path": "pa18",
+      "title": "Generics",
+      "mode": "--emit-lowir",
+      "status": "planned",
+      "scope": "Type/const substitution, generic bodies and demanded monomorphization",
+      "test_families": [
+        "instance identity",
+        "recursive demand",
+        "const arguments",
+        "repeated instantiations"
+      ]
+    },
+    {
+      "number": 19,
+      "path": "pa19",
+      "title": "Traits and methods",
+      "mode": "--emit-semantics",
+      "status": "planned",
+      "scope": "Trait and inherent impls, method lookup, bounds, receiver adjustments",
+      "test_families": [
+        "autoderef/autoref",
+        "qualified calls",
+        "bounds",
+        "ambiguous methods"
+      ]
+    },
+    {
+      "number": 20,
+      "path": "pa20",
+      "title": "Trait solving",
+      "mode": "--emit-semantics",
+      "status": "planned",
+      "scope": "Obligations, associated items, normalization and coherence",
+      "test_families": [
+        "projections",
+        "orphan/overlap checks",
+        "recursive goals",
+        "solver caching"
+      ]
+    },
+    {
+      "number": 21,
+      "path": "pa21",
+      "title": "Advanced generic relationships",
+      "mode": "--emit-semantics",
+      "status": "planned",
+      "scope": "Variance, higher-ranked bounds, GATs, opaque types and generic drop checking",
+      "test_families": [
+        "binder universes",
+        "lifetime capture",
+        "associated families",
+        "dropck"
+      ]
+    },
+    {
+      "number": 22,
+      "path": "pa22",
+      "title": "Unsized types",
+      "mode": "--emit-lowir",
+      "status": "planned",
+      "scope": "Slices str metadata, fat pointers, unsizing and coercion sites",
+      "test_families": [
+        "array-to-slice",
+        "metadata",
+        "size/alignment",
+        "sizedness rejection"
+      ]
+    },
+    {
+      "number": 23,
+      "path": "pa23",
+      "title": "Trait objects",
+      "mode": "--emit-lowir",
+      "status": "planned",
+      "scope": "Dyn compatibility, vtable construction, dispatch and supported upcasting",
+      "test_families": [
+        "object lifetime",
+        "dispatch",
+        "drop shim",
+        "incompatible traits"
+      ]
+    },
+    {
+      "number": 24,
+      "path": "pa24",
+      "title": "Closures",
+      "mode": "--emit-lowir",
+      "status": "planned",
+      "scope": "Capture analysis, environment layout, move capture and call-trait shims",
+      "test_families": [
+        "capture precision",
+        "Fn/FnMut/FnOnce",
+        "moved captures",
+        "closure coercions"
+      ]
+    },
+    {
+      "number": 25,
+      "path": "pa25",
+      "title": "Constant evaluation",
+      "mode": "--emit-constants",
+      "status": "planned",
+      "scope": "Const functions, statics, promotions and symbolic allocation provenance",
+      "test_families": [
+        "const restrictions",
+        "pointers",
+        "recursive calls",
+        "limits",
+        "const generics"
+      ]
+    },
+    {
+      "number": 26,
+      "path": "pa26",
+      "title": "Language and library hooks",
+      "mode": "--emit-lowir",
+      "status": "planned",
+      "scope": "Operators, indexing, iteration, question-mark, built-in derives and formatting",
+      "test_families": [
+        "desugaring",
+        "trait selection",
+        "early return",
+        "derive bounds",
+        "formatting"
+      ]
+    },
+    {
+      "number": 27,
+      "path": "pa27",
+      "title": "Unsafe language",
+      "mode": "--emit-lowir",
+      "status": "planned",
+      "scope": "Unsafe operations, raw pointers, unions, packed access and validity",
+      "test_families": [
+        "required unsafe contexts",
+        "alignment",
+        "raw borrows",
+        "union reads"
+      ]
+    },
+    {
+      "number": 28,
+      "path": "pa28",
+      "title": "Intrinsics and atomics",
+      "mode": "--emit-lowir",
+      "status": "planned",
+      "scope": "Memory and numeric intrinsics, atomics and volatile operations",
+      "test_families": [
+        "orderings",
+        "compare-exchange",
+        "casts",
+        "u128",
+        "memory overlap"
+      ]
+    },
+    {
+      "number": 29,
+      "path": "pa29",
+      "title": "Crates and metadata",
+      "mode": "--emit-lowir",
+      "status": "planned",
+      "scope": "Separate compilation, crate identities, metadata and generic body exports",
+      "test_families": [
+        "multi-crate dependencies",
+        "symbol identity",
+        "visibility",
+        "deterministic exports"
+      ]
+    },
+    {
+      "number": 30,
+      "path": "pa30",
+      "title": "Foreign interfaces",
+      "mode": "--emit-lowir",
+      "status": "planned",
+      "scope": "C ABI, repr attributes, linkage and imported/exported declarations",
+      "test_families": [
+        "repr(C)",
+        "aggregate ABI",
+        "callbacks",
+        "exported globals",
+        "C interoperability"
+      ]
+    },
+    {
+      "number": 31,
+      "path": "pa31",
+      "title": "Panic and unwinding",
+      "mode": "--emit-lowir",
+      "status": "planned",
+      "scope": "Panic abort/unwind modes and cleanup/runtime boundaries",
+      "test_families": [
+        "cleanup after panic",
+        "double panic",
+        "C-unwind",
+        "abort boundaries"
+      ]
+    },
+    {
+      "number": 32,
+      "path": "pa32",
+      "title": "Async lowering",
+      "mode": "--emit-lowir",
+      "status": "planned",
+      "scope": "Async functions/blocks, suspension liveness and future state machines",
+      "test_families": [
+        "poll transitions",
+        "stored locals",
+        "readiness",
+        "suspension state"
+      ]
+    },
+    {
+      "number": 33,
+      "path": "pa33",
+      "title": "Async ownership",
+      "mode": "--emit-lowir",
+      "status": "planned",
+      "scope": "Borrowing across suspension, pinning, cancellation and advanced async forms",
+      "test_families": [
+        "cancel at each state",
+        "drop order",
+        "self references",
+        "async closures/traits"
+      ]
+    },
+    {
+      "number": 34,
+      "path": "pa34",
+      "title": "Procedural macro host",
+      "mode": "--emit-expanded",
+      "status": "planned",
+      "scope": "Macro crates, host execution and token/span protocol",
+      "test_families": [
+        "host/target split",
+        "token transport",
+        "isolation",
+        "expansion failures"
+      ]
+    },
+    {
+      "number": 35,
+      "path": "pa35",
+      "title": "Derive and attribute macros",
+      "mode": "--emit-expanded",
+      "status": "planned",
+      "scope": "Item replacement, helper attributes, nested expansion and token conversion",
+      "test_families": [
+        "derive output",
+        "attribute order",
+        "punctuation jointness",
+        "delimiter-none groups"
+      ]
+    },
+    {
+      "number": 36,
+      "path": "pa36",
+      "title": "Edition and attribute closure",
+      "mode": "--emit-lowir",
+      "status": "planned",
+      "scope": "Pinned edition differences and remaining mandatory attribute semantics",
+      "test_families": [
+        "2015/2018/2021/2024 differences",
+        "capture",
+        "drop scope",
+        "fragment editions"
+      ]
+    },
+    {
+      "number": 37,
+      "path": "pa37",
+      "title": "Target-specific closure",
+      "mode": "--emit-lowir",
+      "status": "planned",
+      "scope": "Target attributes and assembly contracts against explicit backend capabilities",
+      "test_families": [
+        "asm constraints",
+        "target features",
+        "unsupported capability rejection"
+      ]
+    },
+    {
+      "number": 38,
+      "path": "pa38",
+      "title": "Frontend acceptance",
+      "mode": "--emit-lowir",
+      "status": "planned",
+      "scope": "Complete feature census, cross-feature corpus, debug locations and scaling",
+      "test_families": [
+        "all previous stages",
+        "round trips",
+        "no stubs",
+        "deterministic output",
+        "performance"
+      ]
+    }
+  ]
+}

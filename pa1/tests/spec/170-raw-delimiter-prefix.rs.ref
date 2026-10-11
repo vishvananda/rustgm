@@ -1,0 +1,3 @@
+raw-string 0 19 "r###\"one\"## two\"###"
+whitespace 19 20 "\n"
+eof 20

@@ -1,0 +1,180 @@
+{
+  "schema": 1,
+  "repositories": {
+    "rust": {
+      "github": "rust-lang/rust",
+      "commit": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+      "release": "1.98.0",
+      "license": "MIT OR Apache-2.0"
+    },
+    "rust-analyzer": {
+      "github": "rust-lang/rust-analyzer",
+      "commit": "2ad81e72b7e978cb800dffe1bcce5c9f98032acf",
+      "license": "MIT OR Apache-2.0"
+    }
+  },
+  "files": [
+    {
+      "repository": "rust",
+      "path": "tests/ui/lexer/floating-point-0e10-issue-40408.rs",
+      "destination": "pa1/tests/upstream/rust/floating-point-0e10-issue-40408.rs",
+      "sha256": "a348f0f48a28ff7c2f9e2a3caea513bff605df3e5c808a0b89f09a906132af90",
+      "adaptation": "none; original bytes retained",
+      "oracle": "check-pass",
+      "owning_assignment": "pa1"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/lexer/ident_normalization.rs",
+      "destination": "pa1/tests/upstream/rust/ident_normalization.rs",
+      "sha256": "5542ace1ed207fd2a3c56f5f8ecc47c9af791c9a3c9d4ff3f882d7147a70fdf6",
+      "adaptation": "none; original bytes retained",
+      "oracle": "check-pass",
+      "owning_assignment": "pa1"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/lexer/unicode-pattern-white-space.rs",
+      "destination": "pa1/tests/upstream/rust/unicode-pattern-white-space.rs",
+      "sha256": "ca16c50732c00d89078181a3875d94e6d8475792e6b44370acabf47675fbf580",
+      "adaptation": "none; original bytes retained",
+      "oracle": "check-pass",
+      "owning_assignment": "pa1"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/lexer/unterminated-nested-comment.rs",
+      "destination": "pa1/tests/upstream/rust/unterminated-nested-comment.rs",
+      "sha256": "952cee3d6d25162db44f6e20d3c705ec08ea742a0792a9fe86eadbcb5c42feb6",
+      "adaptation": "none; original bytes retained",
+      "oracle": "compile-fail",
+      "owning_assignment": "pa1"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/lexer/unterminated-comment.rs",
+      "destination": "pa1/tests/upstream/rust/unterminated-comment.rs",
+      "sha256": "dd68c8ac2cd23e6e29211f3c69213f110f1dfcf67a20629b559fb06030ac90e0",
+      "adaptation": "none; original bytes retained",
+      "oracle": "compile-fail",
+      "owning_assignment": "pa1"
+    },
+    {
+      "repository": "rust-analyzer",
+      "path": "crates/parser/test_data/lexer/ok/numbers.rs",
+      "destination": "pa1/tests/upstream/rust-analyzer/numbers.rs",
+      "sha256": "190d02db16f0f4ade15eb5e3270e0cebb04de091b6598dccbfede6be4a2486f7",
+      "adaptation": "none; original bytes retained",
+      "oracle": "lexical-fragment",
+      "owning_assignment": "pa1"
+    },
+    {
+      "repository": "rust-analyzer",
+      "path": "crates/parser/test_data/lexer/ok/lifetimes.rs",
+      "destination": "pa1/tests/upstream/rust-analyzer/lifetimes.rs",
+      "sha256": "2d534ad9ee8634dd1fa6eda9b1d7dc6d3ad578e1d677a27b10961a53e9abb9c1",
+      "adaptation": "none; original bytes retained",
+      "oracle": "lexical-fragment",
+      "owning_assignment": "pa1"
+    },
+    {
+      "repository": "rust-analyzer",
+      "path": "crates/parser/test_data/lexer/ok/raw_strings.rs",
+      "destination": "pa1/tests/upstream/rust-analyzer/raw_strings.rs",
+      "sha256": "1512c9588427dcabb74a58aa42922ce373d5f4df212d98a05d91a9d58aef7c1b",
+      "adaptation": "none; original bytes retained",
+      "oracle": "lexical-fragment",
+      "owning_assignment": "pa1"
+    },
+    {
+      "repository": "rust-analyzer",
+      "path": "crates/parser/test_data/lexer/ok/symbols.rs",
+      "destination": "pa1/tests/upstream/rust-analyzer/symbols.rs",
+      "sha256": "bfaa164a4dbf26b42457e1e72dd4b12ac427f37d14c628ad77055f90d5e82479",
+      "adaptation": "none; original bytes retained",
+      "oracle": "lexical-fragment",
+      "owning_assignment": "pa1"
+    },
+    {
+      "repository": "rust-analyzer",
+      "path": "crates/parser/test_data/lexer/ok/hello.rs",
+      "destination": "pa1/tests/upstream/rust-analyzer/hello.rs",
+      "sha256": "b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9",
+      "adaptation": "none; original bytes retained",
+      "oracle": "lexical-fragment",
+      "owning_assignment": "pa1"
+    },
+    {
+      "repository": "rust-analyzer",
+      "path": "crates/parser/test_data/lexer/ok/block_comment.rs",
+      "destination": "pa1/tests/upstream/rust-analyzer/block_comment.rs",
+      "sha256": "43a2466ca6b959abacbecd60da20df4d259a2e2f60e5a5a308d2e0aae17b72cd",
+      "adaptation": "none; original bytes retained",
+      "oracle": "lexical-fragment",
+      "owning_assignment": "pa1"
+    },
+    {
+      "repository": "rust-analyzer",
+      "path": "crates/parser/test_data/lexer/ok/byte_strings.rs",
+      "destination": "pa1/tests/upstream/rust-analyzer/byte_strings.rs",
+      "sha256": "0095f1dfe55a2d6efcb9a223d9563cb8a3b56c3e269a22df8ac0a5b678e6bf62",
+      "adaptation": "none; original bytes retained",
+      "oracle": "lexical-fragment",
+      "owning_assignment": "pa1"
+    },
+    {
+      "repository": "rust-analyzer",
+      "path": "crates/parser/test_data/lexer/ok/raw_ident.rs",
+      "destination": "pa1/tests/upstream/rust-analyzer/raw_ident.rs",
+      "sha256": "e903014ced9599d8e74afd49dbacdeaad9fa398f3917a1d5fa8c592c0b68d6ff",
+      "adaptation": "none; original bytes retained",
+      "oracle": "lexical-fragment",
+      "owning_assignment": "pa1"
+    },
+    {
+      "repository": "rust-analyzer",
+      "path": "crates/parser/test_data/lexer/ok/single_line_comments.rs",
+      "destination": "pa1/tests/upstream/rust-analyzer/single_line_comments.rs",
+      "sha256": "fcc011c59b4b69fa74c5ebef310ac08559293b1dc9cbff0d80a0df5d6f86669b",
+      "adaptation": "none; original bytes retained",
+      "oracle": "lexical-fragment",
+      "owning_assignment": "pa1"
+    },
+    {
+      "repository": "rust-analyzer",
+      "path": "crates/parser/test_data/lexer/ok/whitespace.rs",
+      "destination": "pa1/tests/upstream/rust-analyzer/whitespace.rs",
+      "sha256": "2111e2b8bdd8494c7bbef95522907675310c98e4dc0b2385b8bc031ad56b51b1",
+      "adaptation": "none; original bytes retained",
+      "oracle": "lexical-fragment",
+      "owning_assignment": "pa1"
+    },
+    {
+      "repository": "rust-analyzer",
+      "path": "crates/parser/test_data/lexer/err/unclosed_block_comment_at_eof.rs",
+      "destination": "pa1/tests/upstream/rust-analyzer/unclosed_block_comment_at_eof.rs",
+      "sha256": "766e0153d3f7ec95c97e755b1ea7b1681566923b9299365fdc8399443ca20c1d",
+      "adaptation": "none; original bytes retained",
+      "oracle": "lexical-fragment",
+      "owning_assignment": "pa1"
+    },
+    {
+      "repository": "rust-analyzer",
+      "path": "crates/parser/test_data/lexer/err/unclosed_raw_string_at_eof.rs",
+      "destination": "pa1/tests/upstream/rust-analyzer/unclosed_raw_string_at_eof.rs",
+      "sha256": "a99ef4261b23e0300d289e196636917a2db8bb1a0c2d06a46655d009f8fee462",
+      "adaptation": "none; original bytes retained",
+      "oracle": "lexical-fragment",
+      "owning_assignment": "pa1"
+    },
+    {
+      "repository": "rust-analyzer",
+      "path": "crates/parser/test_data/lexer/err/unclosed_byte_string_at_eof.rs",
+      "destination": "pa1/tests/upstream/rust-analyzer/unclosed_byte_string_at_eof.rs",
+      "sha256": "49380cc4776b23ebfd7fe37a90dc2657e7009ead4a08afb15b379d9f94046a22",
+      "adaptation": "none; original bytes retained",
+      "oracle": "lexical-fragment",
+      "owning_assignment": "pa1"
+    }
+  ]
+}

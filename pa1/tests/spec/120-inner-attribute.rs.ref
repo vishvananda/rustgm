@@ -1,0 +1,13 @@
+punctuation 0 1 "#"
+punctuation 1 2 "!"
+whitespace 2 3 " "
+block-comment 3 16 "/* comment */"
+whitespace 16 17 " "
+punctuation 17 18 "["
+identifier 18 23 "allow"
+punctuation 23 24 "("
+identifier 24 33 "dead_code"
+punctuation 33 34 ")"
+punctuation 34 35 "]"
+whitespace 35 36 "\n"
+eof 36

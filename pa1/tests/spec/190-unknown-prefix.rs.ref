@@ -1,0 +1,8 @@
+unknown-prefix 0 4 "name"
+string 4 9 "\"str\""
+whitespace 9 10 " "
+unknown-prefix 10 13 "foo"
+punctuation 13 14 "#"
+identifier 14 17 "bar"
+whitespace 17 18 "\n"
+eof 18
