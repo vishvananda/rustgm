@@ -14,3 +14,8 @@ paths and checksums. Original fixture bytes and notices are preserved.
 
 The RustGM implementation and newly authored documents use MIT OR Apache-2.0.
 Upstream material retains its own terms and attribution.
+
+doc/rust-reference/ contains unchanged Rust Reference sources, Copyright
+The Rust Project Developers, under MIT OR Apache-2.0. Its original license
+files are retained there; upstream.json pins the Rust 1.98.0 submodule revision
+and each file's checksum. See doc/README.md for provenance and scope.

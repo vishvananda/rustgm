@@ -21,6 +21,7 @@ repository with pinned reference tools. It has not been built yet.
 Read [ROADMAP.md](ROADMAP.md), [spec.md](spec.md),
 [TESTING_AND_REFERENCES.md](TESTING_AND_REFERENCES.md) and
 [the upstream test research](docs/upstream-tests.md).
+The [Rust 1.98.0 Reference](doc/README.md) is vendored for offline reading.
 
 ## Build and validate
 

@@ -17,6 +17,17 @@ def verify(root=ROOT):
         if not path.is_file() or hashlib.sha256(path.read_bytes()).hexdigest() != item["sha256"]:
             raise ValueError(f"upstream bytes changed or missing: {item['destination']}")
     print(f"Verified {len(manifest['files'])} pinned upstream fixtures")
+    reference = root / "doc/rust-reference"
+    documents = json.loads((reference / "upstream.json").read_text())
+    expected = {item["path"] for item in documents["files"]}
+    actual = {path.relative_to(reference).as_posix() for path in reference.rglob("*")
+              if path.is_file() and path.name != "upstream.json"}
+    if actual != expected:
+        raise ValueError("Rust Reference file inventory changed")
+    for item in documents["files"]:
+        if hashlib.sha256((reference / item["path"]).read_bytes()).hexdigest() != item["sha256"]:
+            raise ValueError(f"Rust Reference bytes changed: {item['path']}")
+    print(f"Verified {len(expected)} Rust {documents['rust_release']} Reference files")
 
 
 def fetch():
