@@ -16,3 +16,9 @@ compiler. Standard-library Python runs the course harness and backend adapter.
 Pin the compiler toolchain, Unicode property version and dependencies together
 when expanding the language profile. No rustc_lexer, syn, rust-analyzer parser
 or rustc frontend crate implements the maintainer solution's assigned phases.
+
+PA2 adds no dependency. Decimal floats use Rust's standard `f32::from_str` and
+`f64::from_str`, exactly the conversion operations named by the pinned Reference.
+Typed literal decoding, suffixes, checked u128 accumulation and escapes are
+authored here. The standard parsers are value conversions, not a delegated
+Rust language frontend. Only independent test tools invoke rustc.

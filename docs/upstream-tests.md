@@ -18,6 +18,13 @@ two unterminated-comment regressions. Three are whole check-pass programs;
 two are compile-fail programs. `make test-rustc` checks these independent
 outcomes with the pinned compiler, while our PA1 tests grade lexical output.
 
+PA2 additionally imports six unchanged lexer/UI inputs: CRLF in byte strings,
+invalid binary/octal/numeric forms and two character-literal failures. The
+manifest preserves CRLF bytes; do not reformat them. The CRLF case is checked
+for acceptance here, while original PA2 value vectors independently exercise
+normalization and continuation behavior at runtime. No upstream diagnostic
+sidecars are used as course output.
+
 Upstream directives are not decoration: editions, revisions, auxiliary crates,
 target restrictions, feature gates and flags affect applicability. Classify
 them before importing. Do not run arbitrary upstream directives through a
@@ -57,6 +64,10 @@ pair rejection with acceptance, and add interactions at the earliest assignment
 that owns all their features. Record rule IDs alongside fixtures as the handouts
 are made normative. Rustc and documentation disagreements need investigation,
 not automatic reference regeneration.
+
+The [offline Reference copy](../doc/README.md) contains the exact submodule
+revision selected by Rust 1.98.0. It retains the full Markdown chapter tree and
+licenses; `make test-upstream` verifies its inventory and hashes offline.
 
 ## Attribution and maintenance
 

@@ -10,12 +10,13 @@ import time
 
 ROOT = Path(__file__).resolve().parents[1]
 LINE = b'fn measured(value: u64) -> u64 { value + 17 }\n'
+LITERAL_LINE = br'''42u64 0.1f32 'x' '\u{1f980}' b'\xff' "plain" "escaped\n" br##"raw"## c"\xe6"''' + b"\n"
 
 
-def sample(binary, source, destination):
+def sample(binary, source, destination, stage):
     started = time.perf_counter_ns()
     result = subprocess.run(["/usr/bin/time", "-f", "%M", "-o", str(destination),
-                             str(binary), "--count-tokens", str(source)],
+                             str(binary), f"--count-{stage}", str(source)],
                             capture_output=True, timeout=120)
     elapsed = time.perf_counter_ns() - started
     if result.returncode or result.stderr:
@@ -24,13 +25,13 @@ def sample(binary, source, destination):
             "output": result.stdout.decode(), "output_sha256": hashlib.sha256(result.stdout).hexdigest()}
 
 
-def full_output_hash(binary, source, directory):
-    path = directory / "token-output.tmp"
+def full_output_hash(binary, source, directory, stage):
+    path = directory / "rendered-output.tmp"
     with path.open("wb") as stream:
-        result = subprocess.run([str(binary), "--emit-tokens", str(source)],
+        result = subprocess.run([str(binary), f"--emit-{stage}", str(source)],
                                 stdout=stream, stderr=subprocess.PIPE, timeout=120)
     if result.returncode or result.stderr:
-        raise ValueError("full token rendering failed during equivalence validation")
+        raise ValueError("full rendering failed during equivalence validation")
     digest = hashlib.sha256()
     with path.open("rb") as stream:
         for block in iter(lambda: stream.read(1024 * 1024), b""):
@@ -43,6 +44,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--baseline", type=Path)
     parser.add_argument("--candidate", type=Path, default=ROOT / "obj/rust/release/rustgm")
+    parser.add_argument("--stage", choices=("tokens", "literals"), default="tokens")
     args = parser.parse_args()
     directory = ROOT / "obj/perf" / str(time.time_ns())
     directory.mkdir(parents=True)
@@ -56,20 +58,21 @@ def main():
         target.chmod(0o755)
         binaries[name] = target
     receipt = {"kind": "ABBA" if args.baseline else "A/A scaling calibration",
+               "stage": args.stage,
                "binary_sha256": {name: hashlib.sha256(p.read_bytes()).hexdigest() for name, p in binaries.items()},
                "samples": [], "full_output_sha256": {}}
     for lines in (16000, 64000, 256000):
         source = directory / f"input-{lines}.rs"
-        source.write_bytes(LINE * lines)
-        full_outputs = {name: full_output_hash(binary, source, directory) for name, binary in binaries.items()}
+        source.write_bytes((LINE if args.stage == "tokens" else LITERAL_LINE) * lines)
+        full_outputs = {name: full_output_hash(binary, source, directory, args.stage) for name, binary in binaries.items()}
         if full_outputs["A"] != full_outputs["B"]:
-            raise ValueError("full token output differs between immutable binaries")
+            raise ValueError("full output differs between immutable binaries")
         receipt["full_output_sha256"][str(lines)] = full_outputs
         expected = None
         # Warm both snapshots, calibrate A/A, then retain three ABBA blocks.
         order = "ABAAAA" + "ABBA" * 3
         for index, name in enumerate(order):
-            value = sample(binaries[name], source, directory / "rss.txt")
+            value = sample(binaries[name], source, directory / "rss.txt", args.stage)
             expected = expected or value["output"]
             if expected != value["output"]:
                 raise ValueError("count/output mismatch between immutable binaries")

@@ -1,28 +1,12 @@
 //! The PA1 text view. The parser will consume Token values, never these lines.
 use super::{Lexer, token::LexError};
+use crate::support::quoted;
 use std::io::{self, Write};
 
 #[derive(Debug)]
 pub enum RenderError {
     Lex(LexError),
     Io(io::Error),
-}
-
-/// Write an ASCII, lossless spelling without an allocation per token.
-fn quoted(output: &mut impl Write, spelling: &str) -> io::Result<()> {
-    output.write_all(b"\"")?;
-    for byte in spelling.bytes() {
-        match byte {
-            b'"' => output.write_all(b"\\\"")?,
-            b'\\' => output.write_all(b"\\\\")?,
-            b'\n' => output.write_all(b"\\n")?,
-            b'\r' => output.write_all(b"\\r")?,
-            b'\t' => output.write_all(b"\\t")?,
-            32..=126 => output.write_all(&[byte])?,
-            _ => write!(output, "\\x{byte:02x}")?,
-        }
-    }
-    output.write_all(b"\"")
 }
 
 /// # Errors
@@ -38,7 +22,12 @@ pub fn tokens(text: &str, output: &mut impl Write) -> Result<(), RenderError> {
             token.end
         )
         .map_err(RenderError::Io)?;
-        quoted(output, &text[token.start as usize..token.end as usize]).map_err(RenderError::Io)?;
+        quoted::bytes(
+            output,
+            &text.as_bytes()[token.start as usize..token.end as usize],
+            false,
+        )
+        .map_err(RenderError::Io)?;
         output.write_all(b"\n").map_err(RenderError::Io)?;
     }
     writeln!(output, "eof {}", lexer.offset()).map_err(RenderError::Io)

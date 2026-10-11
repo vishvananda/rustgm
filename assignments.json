@@ -23,8 +23,8 @@
       "path": "pa2",
       "title": "Literals",
       "mode": "--emit-literals",
-      "status": "planned",
-      "scope": "Literal values, escapes, numeric suffixes and target arithmetic",
+      "status": "implemented-draft",
+      "scope": "Literal values, escapes, suffixes and typed target numeric conversion; contextual lints deferred",
       "test_families": [
         "integer boundaries",
         "floating rounding",

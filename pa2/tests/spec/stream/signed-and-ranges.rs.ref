@@ -1,0 +1,8 @@
+integer 1 6 i8 128
+float 8 14 f64 0x0000000000000000
+integer 15 19 infer 128
+integer 21 22 infer 1
+integer 23 24 infer 1
+integer 27 28 infer 2
+integer 29 30 infer 2
+eof 35

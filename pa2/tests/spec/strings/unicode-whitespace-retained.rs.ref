@@ -1,0 +1,2 @@
+string 0 10 4 "a\xc2\xa0b"
+eof 11

@@ -13,9 +13,10 @@ import tree_sitter_rust
 PARSER = Parser(Language(tree_sitter_rust.language()))
 FUNCTIONS = {"function_item", "closure_expression", "macro_definition"}
 COMMENTS = {"line_comment", "block_comment"}
-PHASES = {"lex", "preprocess", "expand", "resolve", "syntax", "types", "sema", "body", "borrow", "const_eval", "abi", "lower", "lowir", "opt", "native", "support"}
+PHASES = {"lex", "literal", "preprocess", "expand", "resolve", "syntax", "types", "sema", "body", "borrow", "const_eval", "abi", "lower", "lowir", "opt", "native", "support"}
 ALLOWED_DEPENDENCIES = {
     "support": set(), "types": {"support", "lex"},
+    "literal": {"support", "lex"},
     "expand": {"support", "lex", "syntax"},
     "resolve": {"support", "lex", "syntax", "expand"},
     "body": {"support", "types", "sema", "syntax"},

@@ -36,6 +36,12 @@ small token vectors and invariant tests; compare full supported programs with
 the pinned rustc for acceptance/runtime behavior. `make test-rustc` checks the
 imported full-program fixtures independently. Raw lexer/parser fragments are
 not automatically valid whole Rust programs and must not be classified that way.
+PA2 adds `scripts/check_literals.py`: rustc evaluates numeric bits and textual
+bytes and checks expression rejection independently of the decoder. Its output
+is compared with both the candidate and committed oracles. Overflow linting is
+explicitly allowed for this decoding stage; inference and contextual lints are
+later assignments. Stream fragments and upstream programs are classified in the
+manifest rather than silently treated as runnable value expressions.
 
 Rustc has no LowIR output. From PA11, maintainer-generated LowIR is the course
 text oracle, with independent run-pass checks through CPPGM versus rustc. Do
@@ -49,7 +55,8 @@ Every `.rs` fixture under an active assignment's tests directory must be in its
 manifest. The earliest assignment owning all required features owns the test.
 Use feature clusters in `tests/spec/`; unchanged upstream inputs live in
 `tests/upstream/PROJECT/`. Never reformat test inputs. `make test-harness` checks
-discovery and oracle presence; `make test-upstream` verifies original bytes.
+discovery and oracle presence; `make test-upstream` verifies original bytes,
+including the pinned Reference under `doc/rust-reference/`.
 
 `third_party/sources.json` pins repository, commit, source path, local path,
 checksum, adaptation and applicability. Its license files and notices ship
@@ -59,8 +66,8 @@ our oracle: their representation and diagnostic contracts belong to upstream.
 
 ## Release discipline
 
-PA1 is an implemented draft, not a claim of full Rust frontend conformance.
-Planned PA2–PA38 fail on invocation and are excluded from pass counts. Promote
+PA1 and PA2 are implemented drafts, not a claim of full Rust frontend conformance.
+Planned PA3–PA38 fail on invocation and are excluded from pass counts. Promote
 a stage only after handout/reference/fixtures are coherent, independent checks
 pass, the source-to-feature ledger is reviewed and all prior stages remain green.
 Keep maintainer measurements and logs in ignored `obj/`; keep student handout

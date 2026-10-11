@@ -1,0 +1,5 @@
+integer 0 2 infer 42
+float 3 9 f32 0x3dcccccd
+string 10 14 2 "\xc3\xa9"
+c-string 15 19 2 "x\x00"
+eof 20

@@ -13,7 +13,9 @@ repository with pinned reference tools. It has not been built yet.
 
 - PA1 has a working safe Rust lexer, its draft handout and an executed oracle
   suite with original and pinned upstream fixtures.
-- PA2–PA38 have buildout briefs and Makefiles. Their suites and implementation
+- PA2 has typed literal decoding, target numeric conversion, a draft handout
+  and text oracles independently checked against rustc values and rejections.
+- PA3–PA38 have buildout briefs and Makefiles. Their suites and implementation
   are not complete; invoking an unbuilt assignment fails explicitly.
 - The backend bridge has an executable LowIR smoke test. Rust source lowering
   begins at PA11; the smoke test is not evidence of Rust source compilation.
@@ -41,7 +43,8 @@ the same release, initially edition 2024, Linux x86-64. The only frontend
 dependency initially supplies Unicode XID property tables; it is not a lexer.
 See [dependency review](docs/dependencies.md).
 
-Run `dev/rustgm --emit-tokens source.rs`, or pass source on stdin. The reference
+Run `dev/rustgm --emit-tokens source.rs` or `dev/rustgm --emit-literals source.rs`,
+or pass source on stdin. The reference
 wrapper `dev/rustgm-ref` invokes the same maintained solution. Override
 `RUSTGM_TEST_APP=/absolute/path/to/candidate` to test another implementation
 against the committed oracles without regenerating them.
@@ -73,3 +76,5 @@ the assignment to the accepted report. Do not mistake a skeleton for a pass.
 `make perf` retains raw time/RSS samples and verifies deterministic token
 counts on scaled inputs. Performance changes require frozen A/B binaries and
 the paired measurement procedure in `spec.md`; a single timing is not a gate.
+`make perf-literals` measures the literal interpreter and suffixed float
+conversion with the same procedure, including full rendered-output checks.

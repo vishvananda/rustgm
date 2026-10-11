@@ -175,6 +175,60 @@
       "adaptation": "none; original bytes retained",
       "oracle": "lexical-fragment",
       "owning_assignment": "pa1"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/lexer/crlf-in-byte-string-literal.rs",
+      "destination": "pa2/tests/upstream/rust/crlf-in-byte-string-literal.rs",
+      "sha256": "eab527c26a70e0a80691f675b40f3beccc93420c9089ebcda8a977919687b947",
+      "adaptation": "none; original bytes retained",
+      "oracle": "check-pass",
+      "owning_assignment": "pa2"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/lexer/lex-bad-binary-literal.rs",
+      "destination": "pa2/tests/upstream/rust/lex-bad-binary-literal.rs",
+      "sha256": "ae1de2a139283ca6fd879d148cad2cd53a917a27c8d104bf0249f29e4f28cd8f",
+      "adaptation": "none; original bytes retained",
+      "oracle": "compile-fail",
+      "owning_assignment": "pa2"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/lexer/lex-bad-numeric-literals.rs",
+      "destination": "pa2/tests/upstream/rust/lex-bad-numeric-literals.rs",
+      "sha256": "df3510535c7ccc9e36286e296a763b40a89e6b3178db557f06cc506be8fce22a",
+      "adaptation": "none; original bytes retained",
+      "oracle": "compile-fail",
+      "owning_assignment": "pa2"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/lexer/lex-bad-octal-literal.rs",
+      "destination": "pa2/tests/upstream/rust/lex-bad-octal-literal.rs",
+      "sha256": "13b864563123887c80bbaa2fee29e9305de9245b2b6d6bbdc5c9b6e877c60499",
+      "adaptation": "none; original bytes retained",
+      "oracle": "compile-fail",
+      "owning_assignment": "pa2"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/lexer/lex-bad-char-literals-1.rs",
+      "destination": "pa2/tests/upstream/rust/lex-bad-char-literals-1.rs",
+      "sha256": "5f35c4a0bbf4a3931f6715418007ca43a8a0977d62aa4e6d349d6ee7c7c8d9a6",
+      "adaptation": "none; original bytes retained",
+      "oracle": "compile-fail",
+      "owning_assignment": "pa2"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/lexer/lex-bad-char-literals-2.rs",
+      "destination": "pa2/tests/upstream/rust/lex-bad-char-literals-2.rs",
+      "sha256": "e4299cd45cec0a5f410654c29bc64f85d7a85baf743fa1ead3c8129ac08a6915",
+      "adaptation": "none; original bytes retained",
+      "oracle": "compile-fail",
+      "owning_assignment": "pa2"
     }
   ]
 }

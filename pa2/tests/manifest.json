@@ -1,0 +1,1437 @@
+{
+  "schema": 1,
+  "mode": "--emit-literals",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "overflow_policy": "decode magnitude; contextual lint deferred",
+  "cases": [
+    {
+      "path": "tests/spec/integers/zero.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.integers"
+      ],
+      "rustc": {
+        "kind": "integer",
+        "type": "infer"
+      }
+    },
+    {
+      "path": "tests/spec/integers/decimal-separators.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.integers"
+      ],
+      "rustc": {
+        "kind": "integer",
+        "type": "infer"
+      }
+    },
+    {
+      "path": "tests/spec/integers/binary.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.integers"
+      ],
+      "rustc": {
+        "kind": "integer",
+        "type": "infer"
+      }
+    },
+    {
+      "path": "tests/spec/integers/octal.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.integers"
+      ],
+      "rustc": {
+        "kind": "integer",
+        "type": "infer"
+      }
+    },
+    {
+      "path": "tests/spec/integers/hexadecimal.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.integers"
+      ],
+      "rustc": {
+        "kind": "integer",
+        "type": "infer"
+      }
+    },
+    {
+      "path": "tests/spec/integers/hex-not-float.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.integers"
+      ],
+      "rustc": {
+        "kind": "integer",
+        "type": "infer"
+      }
+    },
+    {
+      "path": "tests/spec/integers/hex-not-exponent.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.integers"
+      ],
+      "rustc": {
+        "kind": "integer",
+        "type": "infer"
+      }
+    },
+    {
+      "path": "tests/spec/integers/u128-limit.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.integers"
+      ],
+      "rustc": {
+        "kind": "integer",
+        "type": "infer"
+      }
+    },
+    {
+      "path": "tests/spec/integers/u8-maximum.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.integers"
+      ],
+      "rustc": {
+        "kind": "integer",
+        "type": "u8"
+      }
+    },
+    {
+      "path": "tests/spec/integers/u16-maximum.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.integers"
+      ],
+      "rustc": {
+        "kind": "integer",
+        "type": "u16"
+      }
+    },
+    {
+      "path": "tests/spec/integers/u32-maximum.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.integers"
+      ],
+      "rustc": {
+        "kind": "integer",
+        "type": "u32"
+      }
+    },
+    {
+      "path": "tests/spec/integers/u64-maximum.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.integers"
+      ],
+      "rustc": {
+        "kind": "integer",
+        "type": "u64"
+      }
+    },
+    {
+      "path": "tests/spec/integers/u128-maximum.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.integers"
+      ],
+      "rustc": {
+        "kind": "integer",
+        "type": "u128"
+      }
+    },
+    {
+      "path": "tests/spec/integers/i8-maximum.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.integers"
+      ],
+      "rustc": {
+        "kind": "integer",
+        "type": "i8"
+      }
+    },
+    {
+      "path": "tests/spec/integers/i16-maximum.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.integers"
+      ],
+      "rustc": {
+        "kind": "integer",
+        "type": "i16"
+      }
+    },
+    {
+      "path": "tests/spec/integers/i32-maximum.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.integers"
+      ],
+      "rustc": {
+        "kind": "integer",
+        "type": "i32"
+      }
+    },
+    {
+      "path": "tests/spec/integers/i64-maximum.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.integers"
+      ],
+      "rustc": {
+        "kind": "integer",
+        "type": "i64"
+      }
+    },
+    {
+      "path": "tests/spec/integers/i128-maximum.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.integers"
+      ],
+      "rustc": {
+        "kind": "integer",
+        "type": "i128"
+      }
+    },
+    {
+      "path": "tests/spec/integers/usize-maximum.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.integers"
+      ],
+      "rustc": {
+        "kind": "integer",
+        "type": "usize"
+      }
+    },
+    {
+      "path": "tests/spec/integers/isize-maximum.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.integers"
+      ],
+      "rustc": {
+        "kind": "integer",
+        "type": "isize"
+      }
+    },
+    {
+      "path": "tests/spec/integers/signed-minimum-magnitude.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.integers"
+      ],
+      "rustc": {
+        "kind": "accept"
+      }
+    },
+    {
+      "path": "tests/spec/integers/narrow-overflow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.integers"
+      ],
+      "rustc": {
+        "kind": "accept"
+      }
+    },
+    {
+      "path": "tests/spec/integers/signed128-minimum-magnitude.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.integers"
+      ],
+      "rustc": {
+        "kind": "accept"
+      }
+    },
+    {
+      "path": "tests/spec/integers/overflow-decimal.rs",
+      "exit_status": 1,
+      "features": [
+        "pa2.integers"
+      ],
+      "rustc": {
+        "kind": "reject"
+      }
+    },
+    {
+      "path": "tests/spec/integers/overflow-hex.rs",
+      "exit_status": 1,
+      "features": [
+        "pa2.integers"
+      ],
+      "rustc": {
+        "kind": "reject"
+      }
+    },
+    {
+      "path": "tests/spec/integers/empty-hex.rs",
+      "exit_status": 1,
+      "features": [
+        "pa2.integers"
+      ],
+      "rustc": {
+        "kind": "reject"
+      }
+    },
+    {
+      "path": "tests/spec/integers/empty-bin.rs",
+      "exit_status": 1,
+      "features": [
+        "pa2.integers"
+      ],
+      "rustc": {
+        "kind": "reject"
+      }
+    },
+    {
+      "path": "tests/spec/integers/empty-octal.rs",
+      "exit_status": 1,
+      "features": [
+        "pa2.integers"
+      ],
+      "rustc": {
+        "kind": "reject"
+      }
+    },
+    {
+      "path": "tests/spec/integers/bad-bin-digit.rs",
+      "exit_status": 1,
+      "features": [
+        "pa2.integers"
+      ],
+      "rustc": {
+        "kind": "reject"
+      }
+    },
+    {
+      "path": "tests/spec/integers/bad-octal-digit.rs",
+      "exit_status": 1,
+      "features": [
+        "pa2.integers"
+      ],
+      "rustc": {
+        "kind": "reject"
+      }
+    },
+    {
+      "path": "tests/spec/integers/bad-suffix.rs",
+      "exit_status": 1,
+      "features": [
+        "pa2.integers"
+      ],
+      "rustc": {
+        "kind": "reject"
+      }
+    },
+    {
+      "path": "tests/spec/integers/unicode-suffix.rs",
+      "exit_status": 1,
+      "features": [
+        "pa2.integers"
+      ],
+      "rustc": {
+        "kind": "reject"
+      }
+    },
+    {
+      "path": "tests/spec/integers/nondecimal-float.rs",
+      "exit_status": 1,
+      "features": [
+        "pa2.integers"
+      ],
+      "rustc": {
+        "kind": "reject"
+      }
+    },
+    {
+      "path": "tests/spec/integers/reserved-hex-dot.rs",
+      "exit_status": 1,
+      "features": [
+        "pa2.integers"
+      ],
+      "rustc": {
+        "kind": "reject"
+      }
+    },
+    {
+      "path": "tests/spec/integers/reserved-octal-exponent.rs",
+      "exit_status": 1,
+      "features": [
+        "pa2.integers"
+      ],
+      "rustc": {
+        "kind": "reject"
+      }
+    },
+    {
+      "path": "tests/spec/floats/tenth32.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.floats"
+      ],
+      "rustc": {
+        "kind": "float",
+        "type": "f32"
+      }
+    },
+    {
+      "path": "tests/spec/floats/tenth64.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.floats"
+      ],
+      "rustc": {
+        "kind": "float",
+        "type": "f64"
+      }
+    },
+    {
+      "path": "tests/spec/floats/integer-syntax.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.floats"
+      ],
+      "rustc": {
+        "kind": "float",
+        "type": "f32"
+      }
+    },
+    {
+      "path": "tests/spec/floats/even-down32.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.floats"
+      ],
+      "rustc": {
+        "kind": "float",
+        "type": "f32"
+      }
+    },
+    {
+      "path": "tests/spec/floats/even-up32.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.floats"
+      ],
+      "rustc": {
+        "kind": "float",
+        "type": "f32"
+      }
+    },
+    {
+      "path": "tests/spec/floats/halfway32.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.floats"
+      ],
+      "rustc": {
+        "kind": "float",
+        "type": "f32"
+      }
+    },
+    {
+      "path": "tests/spec/floats/avoid-double-rounding.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.floats"
+      ],
+      "rustc": {
+        "kind": "float",
+        "type": "f32"
+      }
+    },
+    {
+      "path": "tests/spec/floats/tiny32.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.floats"
+      ],
+      "rustc": {
+        "kind": "float",
+        "type": "f32"
+      }
+    },
+    {
+      "path": "tests/spec/floats/tiny64.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.floats"
+      ],
+      "rustc": {
+        "kind": "float",
+        "type": "f64"
+      }
+    },
+    {
+      "path": "tests/spec/floats/underflow32.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.floats"
+      ],
+      "rustc": {
+        "kind": "float",
+        "type": "f32"
+      }
+    },
+    {
+      "path": "tests/spec/floats/underflow64.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.floats"
+      ],
+      "rustc": {
+        "kind": "float",
+        "type": "f64"
+      }
+    },
+    {
+      "path": "tests/spec/floats/overflow32.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.floats"
+      ],
+      "rustc": {
+        "kind": "float",
+        "type": "f32"
+      }
+    },
+    {
+      "path": "tests/spec/floats/overflow64.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.floats"
+      ],
+      "rustc": {
+        "kind": "float",
+        "type": "f64"
+      }
+    },
+    {
+      "path": "tests/spec/floats/even64.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.floats"
+      ],
+      "rustc": {
+        "kind": "float",
+        "type": "f64"
+      }
+    },
+    {
+      "path": "tests/spec/floats/separators.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.floats"
+      ],
+      "rustc": {
+        "kind": "float",
+        "type": "f64"
+      }
+    },
+    {
+      "path": "tests/spec/floats/exponent-leading-underscores.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.floats"
+      ],
+      "rustc": {
+        "kind": "float",
+        "type": "f32"
+      }
+    },
+    {
+      "path": "tests/spec/floats/large-integer-spelling.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.floats"
+      ],
+      "rustc": {
+        "kind": "float",
+        "type": "f64"
+      }
+    },
+    {
+      "path": "tests/spec/floats/unsuffixed.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.floats"
+      ],
+      "rustc": {
+        "kind": "accept"
+      }
+    },
+    {
+      "path": "tests/spec/floats/trailing-dot.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.floats"
+      ],
+      "rustc": {
+        "kind": "accept"
+      }
+    },
+    {
+      "path": "tests/spec/floats/unsuffixed-exponent.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.floats"
+      ],
+      "rustc": {
+        "kind": "accept"
+      }
+    },
+    {
+      "path": "tests/spec/floats/missing-exponent.rs",
+      "exit_status": 1,
+      "features": [
+        "pa2.floats"
+      ],
+      "rustc": {
+        "kind": "reject"
+      }
+    },
+    {
+      "path": "tests/spec/floats/missing-signed-exponent.rs",
+      "exit_status": 1,
+      "features": [
+        "pa2.floats"
+      ],
+      "rustc": {
+        "kind": "reject"
+      }
+    },
+    {
+      "path": "tests/spec/floats/wrong-suffix.rs",
+      "exit_status": 1,
+      "features": [
+        "pa2.floats"
+      ],
+      "rustc": {
+        "kind": "reject"
+      }
+    },
+    {
+      "path": "tests/spec/floats/bad-suffix.rs",
+      "exit_status": 1,
+      "features": [
+        "pa2.floats"
+      ],
+      "rustc": {
+        "kind": "reject"
+      }
+    },
+    {
+      "path": "tests/spec/characters/ascii.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.characters"
+      ],
+      "rustc": {
+        "kind": "character"
+      }
+    },
+    {
+      "path": "tests/spec/characters/unicode.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.characters"
+      ],
+      "rustc": {
+        "kind": "character"
+      }
+    },
+    {
+      "path": "tests/spec/characters/escaped-quote.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.characters"
+      ],
+      "rustc": {
+        "kind": "character"
+      }
+    },
+    {
+      "path": "tests/spec/characters/escape-null.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.characters"
+      ],
+      "rustc": {
+        "kind": "character"
+      }
+    },
+    {
+      "path": "tests/spec/characters/unicode-maximum.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.characters"
+      ],
+      "rustc": {
+        "kind": "character"
+      }
+    },
+    {
+      "path": "tests/spec/characters/unicode-underscores.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.characters"
+      ],
+      "rustc": {
+        "kind": "character"
+      }
+    },
+    {
+      "path": "tests/spec/characters/ascii-maximum.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.characters"
+      ],
+      "rustc": {
+        "kind": "character"
+      }
+    },
+    {
+      "path": "tests/spec/bytes/ascii.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.bytes"
+      ],
+      "rustc": {
+        "kind": "byte"
+      }
+    },
+    {
+      "path": "tests/spec/bytes/maximum.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.bytes"
+      ],
+      "rustc": {
+        "kind": "byte"
+      }
+    },
+    {
+      "path": "tests/spec/bytes/zero.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.bytes"
+      ],
+      "rustc": {
+        "kind": "byte"
+      }
+    },
+    {
+      "path": "tests/spec/strings/empty.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.strings"
+      ],
+      "rustc": {
+        "kind": "string"
+      }
+    },
+    {
+      "path": "tests/spec/strings/unicode.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.strings"
+      ],
+      "rustc": {
+        "kind": "string"
+      }
+    },
+    {
+      "path": "tests/spec/strings/escapes.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.strings"
+      ],
+      "rustc": {
+        "kind": "string"
+      }
+    },
+    {
+      "path": "tests/spec/strings/no-double-decoding.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.strings"
+      ],
+      "rustc": {
+        "kind": "string"
+      }
+    },
+    {
+      "path": "tests/spec/strings/multiline.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.strings"
+      ],
+      "rustc": {
+        "kind": "string"
+      }
+    },
+    {
+      "path": "tests/spec/strings/continuation.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.strings"
+      ],
+      "rustc": {
+        "kind": "string"
+      }
+    },
+    {
+      "path": "tests/spec/strings/unicode-whitespace-retained.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.strings"
+      ],
+      "rustc": {
+        "kind": "string"
+      }
+    },
+    {
+      "path": "tests/spec/strings/raw.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.strings"
+      ],
+      "rustc": {
+        "kind": "string"
+      }
+    },
+    {
+      "path": "tests/spec/strings/raw-delimiters.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.strings"
+      ],
+      "rustc": {
+        "kind": "string"
+      }
+    },
+    {
+      "path": "tests/spec/byte_strings/empty.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.byte_strings"
+      ],
+      "rustc": {
+        "kind": "byte-string"
+      }
+    },
+    {
+      "path": "tests/spec/byte_strings/arbitrary-bytes.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.byte_strings"
+      ],
+      "rustc": {
+        "kind": "byte-string"
+      }
+    },
+    {
+      "path": "tests/spec/byte_strings/raw.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.byte_strings"
+      ],
+      "rustc": {
+        "kind": "byte-string"
+      }
+    },
+    {
+      "path": "tests/spec/byte_strings/continuation.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.byte_strings"
+      ],
+      "rustc": {
+        "kind": "byte-string"
+      }
+    },
+    {
+      "path": "tests/spec/c_strings/empty.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.c_strings"
+      ],
+      "rustc": {
+        "kind": "c-string"
+      }
+    },
+    {
+      "path": "tests/spec/c_strings/unicode.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.c_strings"
+      ],
+      "rustc": {
+        "kind": "c-string"
+      }
+    },
+    {
+      "path": "tests/spec/c_strings/opaque-byte.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.c_strings"
+      ],
+      "rustc": {
+        "kind": "c-string"
+      }
+    },
+    {
+      "path": "tests/spec/c_strings/unicode-escape.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.c_strings"
+      ],
+      "rustc": {
+        "kind": "c-string"
+      }
+    },
+    {
+      "path": "tests/spec/c_strings/utf8-byte-escape.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.c_strings"
+      ],
+      "rustc": {
+        "kind": "c-string"
+      }
+    },
+    {
+      "path": "tests/spec/c_strings/raw.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.c_strings"
+      ],
+      "rustc": {
+        "kind": "c-string"
+      }
+    },
+    {
+      "path": "tests/spec/c_strings/continuation.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.c_strings"
+      ],
+      "rustc": {
+        "kind": "c-string"
+      }
+    },
+    {
+      "path": "tests/spec/booleans/true.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.booleans"
+      ],
+      "rustc": {
+        "kind": "boolean"
+      }
+    },
+    {
+      "path": "tests/spec/booleans/false.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.booleans"
+      ],
+      "rustc": {
+        "kind": "boolean"
+      }
+    },
+    {
+      "path": "tests/spec/characters/empty.rs",
+      "exit_status": 1,
+      "features": [
+        "pa2.characters"
+      ],
+      "rustc": {
+        "kind": "reject"
+      }
+    },
+    {
+      "path": "tests/spec/characters/multiple.rs",
+      "exit_status": 1,
+      "features": [
+        "pa2.characters"
+      ],
+      "rustc": {
+        "kind": "reject"
+      }
+    },
+    {
+      "path": "tests/spec/characters/combining.rs",
+      "exit_status": 1,
+      "features": [
+        "pa2.characters"
+      ],
+      "rustc": {
+        "kind": "reject"
+      }
+    },
+    {
+      "path": "tests/spec/characters/bare-tab.rs",
+      "exit_status": 1,
+      "features": [
+        "pa2.characters"
+      ],
+      "rustc": {
+        "kind": "reject"
+      }
+    },
+    {
+      "path": "tests/spec/characters/hex-nonascii.rs",
+      "exit_status": 1,
+      "features": [
+        "pa2.characters"
+      ],
+      "rustc": {
+        "kind": "reject"
+      }
+    },
+    {
+      "path": "tests/spec/characters/empty-unicode.rs",
+      "exit_status": 1,
+      "features": [
+        "pa2.characters"
+      ],
+      "rustc": {
+        "kind": "reject"
+      }
+    },
+    {
+      "path": "tests/spec/characters/leading-underscore.rs",
+      "exit_status": 1,
+      "features": [
+        "pa2.characters"
+      ],
+      "rustc": {
+        "kind": "reject"
+      }
+    },
+    {
+      "path": "tests/spec/characters/surrogate.rs",
+      "exit_status": 1,
+      "features": [
+        "pa2.characters"
+      ],
+      "rustc": {
+        "kind": "reject"
+      }
+    },
+    {
+      "path": "tests/spec/characters/too-large.rs",
+      "exit_status": 1,
+      "features": [
+        "pa2.characters"
+      ],
+      "rustc": {
+        "kind": "reject"
+      }
+    },
+    {
+      "path": "tests/spec/characters/too-many-digits.rs",
+      "exit_status": 1,
+      "features": [
+        "pa2.characters"
+      ],
+      "rustc": {
+        "kind": "reject"
+      }
+    },
+    {
+      "path": "tests/spec/characters/missing-braces.rs",
+      "exit_status": 1,
+      "features": [
+        "pa2.characters"
+      ],
+      "rustc": {
+        "kind": "reject"
+      }
+    },
+    {
+      "path": "tests/spec/characters/bad-digit.rs",
+      "exit_status": 1,
+      "features": [
+        "pa2.characters"
+      ],
+      "rustc": {
+        "kind": "reject"
+      }
+    },
+    {
+      "path": "tests/spec/characters/suffix.rs",
+      "exit_status": 1,
+      "features": [
+        "pa2.characters"
+      ],
+      "rustc": {
+        "kind": "reject"
+      }
+    },
+    {
+      "path": "tests/spec/bytes/multiple.rs",
+      "exit_status": 1,
+      "features": [
+        "pa2.bytes"
+      ],
+      "rustc": {
+        "kind": "reject"
+      }
+    },
+    {
+      "path": "tests/spec/bytes/nonascii.rs",
+      "exit_status": 1,
+      "features": [
+        "pa2.bytes"
+      ],
+      "rustc": {
+        "kind": "reject"
+      }
+    },
+    {
+      "path": "tests/spec/bytes/unicode-escape.rs",
+      "exit_status": 1,
+      "features": [
+        "pa2.bytes"
+      ],
+      "rustc": {
+        "kind": "reject"
+      }
+    },
+    {
+      "path": "tests/spec/bytes/suffix.rs",
+      "exit_status": 1,
+      "features": [
+        "pa2.bytes"
+      ],
+      "rustc": {
+        "kind": "reject"
+      }
+    },
+    {
+      "path": "tests/spec/strings/bad-escape.rs",
+      "exit_status": 1,
+      "features": [
+        "pa2.strings"
+      ],
+      "rustc": {
+        "kind": "reject"
+      }
+    },
+    {
+      "path": "tests/spec/strings/short-hex.rs",
+      "exit_status": 1,
+      "features": [
+        "pa2.strings"
+      ],
+      "rustc": {
+        "kind": "reject"
+      }
+    },
+    {
+      "path": "tests/spec/strings/hex-nonascii.rs",
+      "exit_status": 1,
+      "features": [
+        "pa2.strings"
+      ],
+      "rustc": {
+        "kind": "reject"
+      }
+    },
+    {
+      "path": "tests/spec/strings/bare-cr.rs",
+      "exit_status": 1,
+      "features": [
+        "pa2.strings"
+      ],
+      "rustc": {
+        "kind": "reject"
+      }
+    },
+    {
+      "path": "tests/spec/strings/raw-cr.rs",
+      "exit_status": 1,
+      "features": [
+        "pa2.strings"
+      ],
+      "rustc": {
+        "kind": "reject"
+      }
+    },
+    {
+      "path": "tests/spec/strings/suffix.rs",
+      "exit_status": 1,
+      "features": [
+        "pa2.strings"
+      ],
+      "rustc": {
+        "kind": "reject"
+      }
+    },
+    {
+      "path": "tests/spec/strings/raw-suffix.rs",
+      "exit_status": 1,
+      "features": [
+        "pa2.strings"
+      ],
+      "rustc": {
+        "kind": "reject"
+      }
+    },
+    {
+      "path": "tests/spec/byte_strings/nonascii.rs",
+      "exit_status": 1,
+      "features": [
+        "pa2.byte_strings"
+      ],
+      "rustc": {
+        "kind": "reject"
+      }
+    },
+    {
+      "path": "tests/spec/byte_strings/raw-nonascii.rs",
+      "exit_status": 1,
+      "features": [
+        "pa2.byte_strings"
+      ],
+      "rustc": {
+        "kind": "reject"
+      }
+    },
+    {
+      "path": "tests/spec/byte_strings/unicode-escape.rs",
+      "exit_status": 1,
+      "features": [
+        "pa2.byte_strings"
+      ],
+      "rustc": {
+        "kind": "reject"
+      }
+    },
+    {
+      "path": "tests/spec/byte_strings/suffix.rs",
+      "exit_status": 1,
+      "features": [
+        "pa2.byte_strings"
+      ],
+      "rustc": {
+        "kind": "reject"
+      }
+    },
+    {
+      "path": "tests/spec/byte_strings/raw-suffix.rs",
+      "exit_status": 1,
+      "features": [
+        "pa2.byte_strings"
+      ],
+      "rustc": {
+        "kind": "reject"
+      }
+    },
+    {
+      "path": "tests/spec/c_strings/escaped-null.rs",
+      "exit_status": 1,
+      "features": [
+        "pa2.c_strings"
+      ],
+      "rustc": {
+        "kind": "reject"
+      }
+    },
+    {
+      "path": "tests/spec/c_strings/hex-null.rs",
+      "exit_status": 1,
+      "features": [
+        "pa2.c_strings"
+      ],
+      "rustc": {
+        "kind": "reject"
+      }
+    },
+    {
+      "path": "tests/spec/c_strings/unicode-null.rs",
+      "exit_status": 1,
+      "features": [
+        "pa2.c_strings"
+      ],
+      "rustc": {
+        "kind": "reject"
+      }
+    },
+    {
+      "path": "tests/spec/c_strings/bare-null.rs",
+      "exit_status": 1,
+      "features": [
+        "pa2.c_strings"
+      ],
+      "rustc": {
+        "kind": "reject"
+      }
+    },
+    {
+      "path": "tests/spec/c_strings/raw-null.rs",
+      "exit_status": 1,
+      "features": [
+        "pa2.c_strings"
+      ],
+      "rustc": {
+        "kind": "reject"
+      }
+    },
+    {
+      "path": "tests/spec/c_strings/suffix.rs",
+      "exit_status": 1,
+      "features": [
+        "pa2.c_strings"
+      ],
+      "rustc": {
+        "kind": "reject"
+      }
+    },
+    {
+      "path": "tests/spec/c_strings/raw-suffix.rs",
+      "exit_status": 1,
+      "features": [
+        "pa2.c_strings"
+      ],
+      "rustc": {
+        "kind": "reject"
+      }
+    },
+    {
+      "path": "tests/spec/stream/empty.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.stream"
+      ],
+      "rustc": {
+        "kind": "fragment"
+      }
+    },
+    {
+      "path": "tests/spec/stream/no-literals.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.stream"
+      ],
+      "rustc": {
+        "kind": "fragment"
+      }
+    },
+    {
+      "path": "tests/spec/stream/signed-and-ranges.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.stream"
+      ],
+      "rustc": {
+        "kind": "fragment"
+      }
+    },
+    {
+      "path": "tests/spec/stream/complete-prefix.rs",
+      "exit_status": 1,
+      "features": [
+        "pa2.stream"
+      ],
+      "rustc": {
+        "kind": "fragment"
+      }
+    },
+    {
+      "path": "tests/spec/stream/bom-crlf.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.stream"
+      ],
+      "rustc": {
+        "kind": "fragment"
+      }
+    },
+    {
+      "path": "tests/spec/stream/all-values.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.stream"
+      ],
+      "rustc": {
+        "kind": "fragment"
+      }
+    },
+    {
+      "path": "tests/upstream/rust/crlf-in-byte-string-literal.rs",
+      "exit_status": 0,
+      "features": [
+        "pa2.escapes"
+      ],
+      "rustc": {
+        "kind": "upstream"
+      }
+    },
+    {
+      "path": "tests/upstream/rust/lex-bad-binary-literal.rs",
+      "exit_status": 1,
+      "features": [
+        "pa2.numbers"
+      ],
+      "rustc": {
+        "kind": "upstream"
+      }
+    },
+    {
+      "path": "tests/upstream/rust/lex-bad-numeric-literals.rs",
+      "exit_status": 1,
+      "features": [
+        "pa2.numbers"
+      ],
+      "rustc": {
+        "kind": "upstream"
+      }
+    },
+    {
+      "path": "tests/upstream/rust/lex-bad-octal-literal.rs",
+      "exit_status": 1,
+      "features": [
+        "pa2.numbers"
+      ],
+      "rustc": {
+        "kind": "upstream"
+      }
+    },
+    {
+      "path": "tests/upstream/rust/lex-bad-char-literals-1.rs",
+      "exit_status": 1,
+      "features": [
+        "pa2.escapes"
+      ],
+      "rustc": {
+        "kind": "upstream"
+      }
+    },
+    {
+      "path": "tests/upstream/rust/lex-bad-char-literals-2.rs",
+      "exit_status": 1,
+      "features": [
+        "pa2.escapes"
+      ],
+      "rustc": {
+        "kind": "upstream"
+      }
+    }
+  ]
+}

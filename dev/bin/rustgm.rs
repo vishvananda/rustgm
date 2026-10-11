@@ -3,6 +3,7 @@ use rustgm::{
         Lexer,
         render::{self, RenderError},
     },
+    literal,
     support::source::SourceFile,
 };
 use std::{
@@ -28,9 +29,16 @@ fn options() -> Result<Options, String> {
     let mut args = std::env::args().skip(1);
     while let Some(arg) = args.next() {
         match arg.as_str() {
-            "--emit-tokens" | "--emit-lowir" => options.mode = arg,
+            "--emit-tokens" | "--emit-literals" | "--emit-lowir" => {
+                options.mode = arg;
+                options.count = false;
+            }
             "--count-tokens" => {
                 options.mode = "--emit-tokens".into();
+                options.count = true;
+            }
+            "--count-literals" => {
+                options.mode = "--emit-literals".into();
                 options.count = true;
             }
             "--edition=2024" => {}
@@ -42,7 +50,7 @@ fn options() -> Result<Options, String> {
         }
     }
     if options.mode.is_empty() {
-        return Err("usage: rustgm --emit-tokens [-o OUTPUT] [SOURCE|-]".into());
+        return Err("usage: rustgm --emit-tokens|--emit-literals [-o OUTPUT] [SOURCE|-]".into());
     }
     Ok(options)
 }
@@ -65,7 +73,12 @@ fn compile(options: &Options) -> Result<(), String> {
         )),
         None => Box::new(io::BufWriter::new(stdout.lock())),
     };
-    let result = if options.count {
+    let result = if options.count && options.mode == "--emit-literals" {
+        let count = literal::render::count(source.text())
+            .map_err(|e| format!("{}: {}", e.offset, e.message))?;
+        writeln!(output, "literals {count} bytes {}", source.text().len())
+            .map_err(|e| e.to_string())
+    } else if options.count {
         let mut lexer = Lexer::new(source.text()).map_err(|e| e.message.to_owned())?;
         let mut count = 0_u64;
         while lexer
@@ -77,7 +90,12 @@ fn compile(options: &Options) -> Result<(), String> {
         }
         writeln!(output, "tokens {count} bytes {}", source.text().len()).map_err(|e| e.to_string())
     } else {
-        render::tokens(source.text(), &mut output).map_err(|error| match error {
+        let rendered = if options.mode == "--emit-literals" {
+            literal::render::literals(source.text(), &mut output)
+        } else {
+            render::tokens(source.text(), &mut output)
+        };
+        rendered.map_err(|error| match error {
             RenderError::Lex(error) => format!("{}: {}", error.offset, error.message),
             RenderError::Io(error) => error.to_string(),
         })
@@ -88,7 +106,7 @@ fn compile(options: &Options) -> Result<(), String> {
 
 fn main() -> ExitCode {
     match options() {
-        Ok(options) if options.mode != "--emit-tokens" => {
+        Ok(options) if options.mode == "--emit-lowir" => {
             let _ = writeln!(io::stderr().lock(), "NOT_IMPLEMENTED: {}", options.mode);
             ExitCode::from(86)
         }

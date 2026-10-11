@@ -1,3 +1,4 @@
 {
-  "dev/src/lex/token.rs": "interface"
+  "dev/src/lex/token.rs": "interface",
+  "dev/src/literal/value.rs": "interface"
 }

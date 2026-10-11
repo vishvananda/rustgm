@@ -1,0 +1,3 @@
+string 17 22 3 "x\ny"
+integer 23 24 infer 9
+eof 25
