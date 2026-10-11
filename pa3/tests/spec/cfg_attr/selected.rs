@@ -1,0 +1,1 @@
+#[cfg_attr(unix,inline,allow(unused))] fn f() {}

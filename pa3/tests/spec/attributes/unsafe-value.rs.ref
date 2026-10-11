@@ -1,0 +1,13 @@
+token 0 0 punctuation 0 1 "#"
+group 1 0 bracket 1 28 7
+token 2 1 identifier 2 8 "unsafe"
+group 3 1 paren 8 27 7
+token 4 2 identifier 9 20 "export_name"
+token 5 2 punctuation 21 22 "="
+token 6 2 string 23 26 "\"x\""
+token 7 0 identifier 29 31 "fn"
+token 8 0 identifier 32 33 "f"
+group 9 0 paren 33 35 10
+group 10 0 brace 36 38 11
+attribute 0 root outer 0 28 unsafe keep export_name value 6 7
+eof 38

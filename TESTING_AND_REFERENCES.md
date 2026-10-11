@@ -43,6 +43,12 @@ explicitly allowed for this decoding stage; inference and contextual lints are
 later assignments. Stream fragments and upstream programs are classified in the
 manifest rather than silently treated as runnable value expressions.
 
+PA3's `check_syntax.py pa3` checks complete programs and evaluates configuration
+predicates with the pinned target/profile. Cases may declare `args` as explicit
+`--cfg`/value pairs; the harness preserves argument boundaries and records them
+in evidence. Reference receipts hash the manifest as well as source fixtures,
+so changing configuration or expected outcomes requires an explicit review.
+
 Rustc has no LowIR output. From PA11, maintainer-generated LowIR is the course
 text oracle, with independent run-pass checks through CPPGM versus rustc. Do
 not grade LLVM IR or assume Rust's unspecified layout matches rustc. Test exact
@@ -66,8 +72,8 @@ our oracle: their representation and diagnostic contracts belong to upstream.
 
 ## Release discipline
 
-PA1 and PA2 are implemented drafts, not a claim of full Rust frontend conformance.
-Planned PA3–PA38 fail on invocation and are excluded from pass counts. Promote
+PA1–PA3 are implemented drafts, not a claim of full Rust frontend conformance.
+Planned PA4–PA38 fail on invocation and are excluded from pass counts. Promote
 a stage only after handout/reference/fixtures are coherent, independent checks
 pass, the source-to-feature ledger is reviewed and all prior stages remain green.
 Keep maintainer measurements and logs in ignored `obj/`; keep student handout

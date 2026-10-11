@@ -1,0 +1,1 @@
+#[cfg_attr(windows,cfg(not()))] fn f() {}

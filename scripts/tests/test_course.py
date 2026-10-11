@@ -7,10 +7,26 @@ import tempfile
 import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from course import compare, execute, load_cases, run_stage
+from course import compare, execute, load_cases, run_stage, run_case
 
 
 class HarnessTests(unittest.TestCase):
+    def test_cfg_arguments_are_preserved_without_shell_interpretation(self):
+        with tempfile.TemporaryDirectory() as name:
+            args = ["--cfg", 'feature="a b"', "--cfg", "custom"]
+            case = {"path": "tests/x.rs", "exit_status": 0, "args": args}
+            root, tests = self.fixture_root(name, [case])
+            (tests / "x.rs").write_text("input")
+            load_cases(root, "pa1")
+            app = [sys.executable, "-c", "import json,sys; print(json.dumps(sys.argv[1:]))"]
+            _, actual = run_case(root, "pa1", "--emit-tokens", case, app, 2)
+            self.assertEqual(json.loads(actual[0]), ["--emit-tokens", "--edition=2024", *args])
+            for invalid in (["--emit-literals"], ["--cfg"], ["-o", "x"], "--cfg x", ["--cfg", 1]):
+                case["args"] = invalid
+                (tests / "manifest.json").write_text(json.dumps({"mode": "--emit-tokens", "cases": [case]}))
+                with self.assertRaises(ValueError):
+                    load_cases(root, "pa1")
+
     def test_signals_stub_and_other_exits_are_failures(self):
         for code in (2, 86, 101, -9):
             command = "import os,signal; os.kill(os.getpid(),signal.SIGKILL)" if code < 0 else f"raise SystemExit({code})"

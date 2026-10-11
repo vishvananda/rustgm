@@ -1,0 +1,1 @@
+#[cfg_attr(unix,cfg_attr(not(windows),cfg(false),doc="x"))] fn f() {}

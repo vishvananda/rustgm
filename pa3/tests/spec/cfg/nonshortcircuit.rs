@@ -1,0 +1,1 @@
+#[cfg(any(true,not()))] fn f() {}

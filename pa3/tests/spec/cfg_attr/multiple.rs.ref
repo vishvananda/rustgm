@@ -1,0 +1,20 @@
+token 0 0 punctuation 0 1 "#"
+group 1 0 bracket 1 12 5
+token 2 1 identifier 2 5 "cfg"
+group 3 1 paren 5 11 5
+token 4 2 identifier 6 10 "unix"
+token 5 0 punctuation 13 14 "#"
+group 6 0 bracket 14 28 10
+token 7 1 identifier 15 18 "cfg"
+group 8 1 paren 18 27 10
+token 9 2 identifier 19 26 "windows"
+token 10 0 identifier 29 31 "fn"
+token 11 0 identifier 32 33 "f"
+group 12 0 paren 33 35 13
+group 13 0 brace 36 55 17
+token 14 1 identifier 38 50 "missing_name"
+group 15 1 paren 50 52 16
+token 16 1 punctuation 52 53 ";"
+attribute 0 root outer 0 12 safe cfg=true cfg group 3
+attribute 1 root outer 13 28 safe cfg=false cfg group 8
+eof 55

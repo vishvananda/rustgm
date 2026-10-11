@@ -1,0 +1,1 @@
+#[unsafe(export_name = "x")] fn f() {}

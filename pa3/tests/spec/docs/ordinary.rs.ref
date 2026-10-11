@@ -1,0 +1,5 @@
+token 0 0 identifier 25 27 "fn"
+token 1 0 identifier 28 29 "f"
+group 2 0 paren 29 31 3
+group 3 0 brace 32 34 4
+eof 34

@@ -1,0 +1,1 @@
+#[cfg(feature=b"x")] fn f() {}

@@ -1,0 +1,1 @@
+fn f() { #[cfg(broken(,,,))] x; }

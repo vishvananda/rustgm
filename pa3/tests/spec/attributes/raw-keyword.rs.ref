@@ -1,0 +1,9 @@
+token 0 0 punctuation 0 1 "#"
+group 1 0 bracket 1 9 3
+token 2 1 raw-identifier 2 8 "r#type"
+token 3 0 identifier 10 12 "fn"
+token 4 0 identifier 13 14 "f"
+group 5 0 paren 14 16 6
+group 6 0 brace 17 19 7
+attribute 0 root outer 0 9 safe keep type word
+eof 19

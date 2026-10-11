@@ -1,0 +1,27 @@
+token 0 0 punctuation 0 1 "#"
+group 1 0 bracket 1 77 21
+token 2 1 identifier 2 5 "cfg"
+group 3 1 paren 5 76 21
+token 4 2 identifier 6 9 "all"
+group 5 2 paren 9 75 21
+token 6 3 identifier 10 15 "panic"
+token 7 3 punctuation 15 16 "="
+token 8 3 string 16 23 "\"abort\""
+token 9 3 punctuation 23 24 ","
+token 10 3 identifier 25 28 "not"
+group 11 3 paren 28 46 13
+token 12 4 identifier 29 45 "debug_assertions"
+token 13 3 punctuation 46 47 ","
+token 14 3 identifier 48 51 "not"
+group 15 3 paren 51 57 17
+token 16 4 identifier 52 56 "test"
+token 17 3 punctuation 57 58 ","
+token 18 3 identifier 59 62 "not"
+group 19 3 paren 62 74 21
+token 20 4 identifier 63 73 "proc_macro"
+token 21 0 identifier 78 80 "fn"
+token 22 0 identifier 81 89 "selected"
+group 23 0 paren 89 91 24
+group 24 0 brace 92 94 25
+attribute 0 root outer 0 77 safe cfg=true cfg group 3
+eof 95

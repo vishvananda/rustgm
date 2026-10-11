@@ -3,8 +3,8 @@
 ## Current implemented slice
 
 The repository is initialized with the CPPGM layout and 38 assignment briefs.
-PA1's lexical-boundary implementation and PA2's literal interpretation have
-executable text contracts. PA3 onward remain visibly planned. No student export or Rust source
+PA1's lexer, PA2's literal interpretation and PA3's token trees/attributes have
+executable text contracts. PA4 onward remain visibly planned. No student export or Rust source
 to LowIR lowering exists yet. The external backend smoke exercises handwritten
 LowIR through the pinned CPPGM tools.
 
@@ -89,6 +89,34 @@ Raw receipts: `obj/perf/1791761626407207630/samples.json` (tokens) and
 `obj/perf/1791761639083291610/samples.json` (literals), with append-only
 `observations.jsonl`, executable hashes, input hashes, snapshots and inputs.
 
+## PA3 buildout
+
+PA3 adds flat preorder delimiter forests, typed doc desugaring, attribute input
+ranges and configuration facts. It deliberately leaves macro contents opaque
+and exposes a position-based attribute API for the ordinary syntax parser.
+Configuration settings are explicit and the target profile is fixed; no
+compiler phase reads environment variables or invokes another frontend.
+
+Evidence: 88 required oracles, 77 independent rustc program/predicate checks,
+nine additional Rust invariants (including 30,000 nested groups) and a new
+harness regression for custom argument forwarding. All earlier oracles remain
+unchanged. Manifest hashes now protect reference provenance against silent
+configuration/outcome changes. Debug/release tests, strict Clippy, file audits,
+provenance, full active reports and oracle reproducibility pass.
+
+Shared-host A/A tree scaling, including source reads and excluding rendering:
+
+| Source bytes | Median ms | Peak RSS KiB |
+| ---: | ---: | ---: |
+| 284,000 | 13.33 | 4,352 |
+| 1,136,000 | 44.44 | 11,376 |
+| 4,544,000 | 172.23 | 38,136 |
+
+All output hashes match between frozen snapshots. Warmups, calibration,
+three ABBA blocks, inputs and raw observations are in
+`obj/perf/1791763002707070858/`. These measure an intentionally retained
+diagnostic forest; the ordinary source parser must not retain a whole forest.
+
 ## Next implementation boundary
 
 First audit PA1 against the pinned grammar's malformed-token boundaries and
@@ -98,8 +126,10 @@ explicitly labels the current boundary as a draft.
 
 PA2 now freezes that initial value contract. Its decoder deliberately preserves
 integer magnitudes and unsuffixed decimal spelling until context is known.
-PA3 should build typed token trees and attribute syntax over PA1's tokens;
-literal decoding is demanded by syntax/expansion, never applied eagerly to all
+PA3 now exposes typed token trees, attributes and configuration. PA4 should
+parse expressions/statements using bounded token lookahead and typed arenas;
+PA5 adds item/type/pattern ownership and applies disabled-item decisions.
+Literal decoding is demanded by syntax/expansion, never applied eagerly to all
 macro input. Expand reserved-prefix and grammar-edge tests before claiming
 complete token conformance. PA9/PA10 must enforce inferred-type agreement and
 contextual overflow linting; PA25 owns general constant expression arithmetic.

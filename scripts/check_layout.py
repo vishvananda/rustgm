@@ -21,7 +21,10 @@ def check(root=ROOT):
                 raise ValueError(f"missing assignment document: {folder / name}")
         if stage["status"] != "planned":
             _, cases = load_cases(root, stage["path"])
-            recorded = json.loads((folder / "reference.json").read_text())["fixtures"]
+            receipt = json.loads((folder / "reference.json").read_text())
+            if receipt.get("manifest_sha256") != hashlib.sha256((folder / "tests/manifest.json").read_bytes()).hexdigest():
+                raise ValueError(f"manifest changed since reference generation: {folder}")
+            recorded = receipt["fixtures"]
             for case in cases:
                 fixture = folder / case["path"]
                 if recorded.get(case["path"]) != hashlib.sha256(fixture.read_bytes()).hexdigest():

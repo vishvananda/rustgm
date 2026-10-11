@@ -1,0 +1,28 @@
+token 0 0 punctuation 0 1 "#"
+group 1 0 bracket 1 59 19
+token 2 1 identifier 2 10 "cfg_attr"
+group 3 1 paren 10 58 19
+token 4 2 identifier 11 15 "unix"
+token 5 2 punctuation 15 16 ","
+token 6 2 identifier 16 24 "cfg_attr"
+group 7 2 paren 24 57 19
+token 8 3 identifier 25 28 "not"
+group 9 3 paren 28 37 11
+token 10 4 identifier 29 36 "windows"
+token 11 3 punctuation 37 38 ","
+token 12 3 identifier 38 41 "cfg"
+group 13 3 paren 41 48 15
+token 14 4 identifier 42 47 "false"
+token 15 3 punctuation 48 49 ","
+token 16 3 identifier 49 52 "doc"
+token 17 3 punctuation 52 53 "="
+token 18 3 string 53 56 "\"x\""
+token 19 0 identifier 60 62 "fn"
+token 20 0 identifier 63 64 "f"
+group 21 0 paren 64 66 22
+group 22 0 brace 67 69 23
+attribute 0 root outer 0 59 safe cfg_attr=true cfg_attr group 3
+attribute 1 0 outer 0 59 safe cfg_attr=true cfg_attr group 7
+attribute 2 1 outer 0 59 safe cfg=false cfg group 13
+attribute 3 1 outer 0 59 safe keep doc value 18 19
+eof 69

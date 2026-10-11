@@ -1,0 +1,16 @@
+token 0 0 punctuation 0 1 "#"
+group 1 0 bracket 1 26 10
+token 2 1 identifier 2 5 "doc"
+token 3 1 punctuation 6 7 "="
+token 4 1 identifier 8 14 "concat"
+token 5 1 punctuation 14 15 "!"
+group 6 1 paren 15 25 10
+token 7 2 string 16 19 "\"a\""
+token 8 2 punctuation 19 20 ","
+token 9 2 string 21 24 "\"b\""
+token 10 0 identifier 27 29 "fn"
+token 11 0 identifier 30 31 "f"
+group 12 0 paren 31 33 13
+group 13 0 brace 34 36 14
+attribute 0 root outer 0 26 safe keep doc value 4 10
+eof 36

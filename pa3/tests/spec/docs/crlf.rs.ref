@@ -1,0 +1,7 @@
+doc 0 0 outer 0 8 " docs"
+token 1 0 identifier 9 11 "fn"
+token 2 0 identifier 12 13 "f"
+group 3 0 paren 13 15 4
+group 4 0 brace 16 18 5
+attribute 0 root outer 0 8 safe keep doc value " docs"
+eof 18

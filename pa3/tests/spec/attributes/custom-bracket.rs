@@ -1,0 +1,1 @@
+#[custom[a, b]] fn f() {}

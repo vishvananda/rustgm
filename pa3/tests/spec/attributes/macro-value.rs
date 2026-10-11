@@ -1,0 +1,1 @@
+#[doc = concat!("a", "b")] fn f() {}

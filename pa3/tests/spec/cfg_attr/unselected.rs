@@ -1,0 +1,1 @@
+#[cfg_attr(windows,unknown_attribute)] fn f() {}

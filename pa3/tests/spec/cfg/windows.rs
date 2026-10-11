@@ -1,0 +1,1 @@
+#[cfg(windows)] fn selected() {}

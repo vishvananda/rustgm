@@ -32,6 +32,10 @@ def load_cases(root, stage):
             raise ValueError(f"{stage}: invalid fixture path {path}")
         if case["exit_status"] not in (0, 1):
             raise ValueError(f"{stage}: expected outcome must be success or diagnosed rejection")
+        args = case.get("args", [])
+        if (not isinstance(args, list) or any(not isinstance(arg, str) for arg in args)
+                or len(args) % 2 or any(args[i] != "--cfg" for i in range(0, len(args), 2))):
+            raise ValueError(f"{stage}: case args must be --cfg/value pairs")
     discovered = {p.relative_to(assignment).as_posix() for p in (assignment / "tests").rglob("*.rs")}
     if discovered != set(paths):
         raise ValueError(f"{stage}: undiscovered or missing fixtures: {sorted(discovered ^ set(paths))}")
@@ -52,7 +56,7 @@ def execute(command, data, timeout):
 
 def run_case(root, stage, mode, case, app, timeout):
     fixture = root / stage / case["path"]
-    actual = execute([*app, mode, "--edition=2024"], fixture.read_bytes(), timeout)
+    actual = execute([*app, mode, "--edition=2024", *case.get("args", [])], fixture.read_bytes(), timeout)
     return fixture, actual
 
 
@@ -95,7 +99,7 @@ def run_stage(root, stage, app, *, bless=False, jobs=4, timeout=10):
             for suffix, value in zip((".stdout", ".stderr", ".exit_status"), actual):
                 Path(str(destination) + suffix).write_bytes(value)
     (artifacts / "results.json").write_text(json.dumps({"stage": stage, "command": [*app, manifest["mode"], "--edition=2024"],
-        "bless": bless, "cases": [{"path": case["path"], "passed": not errors, "errors": errors}
+        "bless": bless, "cases": [{"path": case["path"], "args": case.get("args", []), "passed": not errors, "errors": errors}
                                    for case, _, _, errors in results]}, indent=2) + "\n")
     # Check every independent expected outcome before changing any reference.
     if bless and not any(errors for _, _, _, errors in results):
@@ -105,6 +109,7 @@ def run_stage(root, stage, app, *, bless=False, jobs=4, timeout=10):
         source_hashes = {str(p.relative_to(root)): hashlib.sha256(p.read_bytes()).hexdigest()
                          for p in sorted((root / "dev").rglob("*.rs"))}
         receipt = {"schema": 1, "mode": manifest["mode"], "compiler_source_sha256": source_hashes,
+                   "manifest_sha256": hashlib.sha256((root / stage / "tests/manifest.json").read_bytes()).hexdigest(),
                    "fixtures": {case["path"]: hashlib.sha256(fixture.read_bytes()).hexdigest()
                                 for case, fixture, _, _ in results}}
         (root / stage / "reference.json").write_text(json.dumps(receipt, indent=2) + "\n")

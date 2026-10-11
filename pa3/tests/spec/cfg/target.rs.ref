@@ -1,0 +1,35 @@
+token 0 0 punctuation 0 1 "#"
+group 1 0 bracket 1 132 29
+token 2 1 identifier 2 5 "cfg"
+group 3 1 paren 5 131 29
+token 4 2 identifier 6 9 "all"
+group 5 2 paren 9 130 29
+token 6 3 identifier 10 21 "target_arch"
+token 7 3 punctuation 21 22 "="
+token 8 3 string 22 30 "\"x86_64\""
+token 9 3 punctuation 30 31 ","
+token 10 3 identifier 31 41 "target_abi"
+token 11 3 punctuation 41 42 "="
+token 12 3 string 42 44 "\"\""
+token 13 3 punctuation 44 45 ","
+token 14 3 identifier 45 58 "target_endian"
+token 15 3 punctuation 58 59 "="
+token 16 3 string 59 67 "\"little\""
+token 17 3 punctuation 67 68 ","
+token 18 3 identifier 68 78 "target_env"
+token 19 3 punctuation 78 79 "="
+token 20 3 string 79 84 "\"gnu\""
+token 21 3 punctuation 84 85 ","
+token 22 3 identifier 85 98 "target_vendor"
+token 23 3 punctuation 98 99 "="
+token 24 3 string 99 108 "\"unknown\""
+token 25 3 punctuation 108 109 ","
+token 26 3 identifier 109 122 "target_family"
+token 27 3 punctuation 122 123 "="
+token 28 3 string 123 129 "\"unix\""
+token 29 0 identifier 133 135 "fn"
+token 30 0 identifier 136 144 "selected"
+group 31 0 paren 144 146 32
+group 32 0 brace 147 149 33
+attribute 0 root outer 0 132 safe cfg=true cfg group 3
+eof 150

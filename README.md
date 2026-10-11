@@ -15,7 +15,9 @@ repository with pinned reference tools. It has not been built yet.
   suite with original and pinned upstream fixtures.
 - PA2 has typed literal decoding, target numeric conversion, a draft handout
   and text oracles independently checked against rustc values and rejections.
-- PA3–PA38 have buildout briefs and Makefiles. Their suites and implementation
+- PA3 has flat token trees, doc/attribute syntax, typed configuration facts,
+  custom cfg options and independently checked text oracles.
+- PA4–PA38 have buildout briefs and Makefiles. Their suites and implementation
   are not complete; invoking an unbuilt assignment fails explicitly.
 - The backend bridge has an executable LowIR smoke test. Rust source lowering
   begins at PA11; the smoke test is not evidence of Rust source compilation.
@@ -43,7 +45,8 @@ the same release, initially edition 2024, Linux x86-64. The only frontend
 dependency initially supplies Unicode XID property tables; it is not a lexer.
 See [dependency review](docs/dependencies.md).
 
-Run `dev/rustgm --emit-tokens source.rs` or `dev/rustgm --emit-literals source.rs`,
+Run `dev/rustgm --emit-tokens source.rs`, `dev/rustgm --emit-literals source.rs`,
+or `dev/rustgm --emit-token-trees source.rs`,
 or pass source on stdin. The reference
 wrapper `dev/rustgm-ref` invokes the same maintained solution. Override
 `RUSTGM_TEST_APP=/absolute/path/to/candidate` to test another implementation

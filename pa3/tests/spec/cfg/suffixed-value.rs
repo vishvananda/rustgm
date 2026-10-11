@@ -1,0 +1,1 @@
+#[cfg(feature="x"wat)] fn f() {}

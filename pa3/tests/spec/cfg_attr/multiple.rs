@@ -1,0 +1,1 @@
+#[cfg(unix)] #[cfg(windows)] fn f() { missing_name(); }

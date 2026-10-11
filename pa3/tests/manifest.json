@@ -1,0 +1,1014 @@
+{
+  "schema": 1,
+  "mode": "--emit-token-trees",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "panic": "abort",
+  "debug_assertions": false,
+  "cases": [
+    {
+      "path": "tests/spec/trees/empty.rs",
+      "exit_status": 0,
+      "features": [
+        "pa3.trees"
+      ],
+      "rustc": {
+        "kind": "fragment"
+      }
+    },
+    {
+      "path": "tests/spec/trees/nested.rs",
+      "exit_status": 0,
+      "features": [
+        "pa3.trees"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/trees/adjacency.rs",
+      "exit_status": 0,
+      "features": [
+        "pa3.trees"
+      ],
+      "rustc": {
+        "kind": "fragment"
+      }
+    },
+    {
+      "path": "tests/spec/trees/comments.rs",
+      "exit_status": 0,
+      "features": [
+        "pa3.trees"
+      ],
+      "rustc": {
+        "kind": "fragment"
+      }
+    },
+    {
+      "path": "tests/spec/trees/opaque-literals.rs",
+      "exit_status": 0,
+      "features": [
+        "pa3.trees"
+      ],
+      "rustc": {
+        "kind": "fragment"
+      }
+    },
+    {
+      "path": "tests/spec/trees/macro-attributes.rs",
+      "exit_status": 0,
+      "features": [
+        "pa3.trees"
+      ],
+      "rustc": {
+        "kind": "fragment"
+      }
+    },
+    {
+      "path": "tests/spec/trees/nested-attrs-opaque.rs",
+      "exit_status": 0,
+      "features": [
+        "pa3.trees"
+      ],
+      "rustc": {
+        "kind": "fragment"
+      }
+    },
+    {
+      "path": "tests/spec/trees/mismatch.rs",
+      "exit_status": 1,
+      "features": [
+        "pa3.trees"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/trees/unclosed.rs",
+      "exit_status": 1,
+      "features": [
+        "pa3.trees"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/trees/stray-close.rs",
+      "exit_status": 1,
+      "features": [
+        "pa3.trees"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/trees/unclosed-after-disabled.rs",
+      "exit_status": 1,
+      "features": [
+        "pa3.trees"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/docs/line.rs",
+      "exit_status": 0,
+      "features": [
+        "pa3.docs"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/docs/inner.rs",
+      "exit_status": 0,
+      "features": [
+        "pa3.docs"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/docs/block.rs",
+      "exit_status": 0,
+      "features": [
+        "pa3.docs"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/docs/empty.rs",
+      "exit_status": 0,
+      "features": [
+        "pa3.docs"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/docs/ordinary.rs",
+      "exit_status": 0,
+      "features": [
+        "pa3.docs"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/docs/crlf.rs",
+      "exit_status": 0,
+      "features": [
+        "pa3.docs"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/docs/line-cr.rs",
+      "exit_status": 1,
+      "features": [
+        "pa3.docs"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/docs/block-cr.rs",
+      "exit_status": 1,
+      "features": [
+        "pa3.docs"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/attributes/word.rs",
+      "exit_status": 0,
+      "features": [
+        "pa3.attributes"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/attributes/path.rs",
+      "exit_status": 0,
+      "features": [
+        "pa3.attributes"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/attributes/absolute.rs",
+      "exit_status": 0,
+      "features": [
+        "pa3.attributes"
+      ],
+      "rustc": {
+        "kind": "fragment"
+      }
+    },
+    {
+      "path": "tests/spec/attributes/raw-keyword.rs",
+      "exit_status": 0,
+      "features": [
+        "pa3.attributes"
+      ],
+      "rustc": {
+        "kind": "fragment"
+      }
+    },
+    {
+      "path": "tests/spec/attributes/raw-unsafe.rs",
+      "exit_status": 0,
+      "features": [
+        "pa3.attributes"
+      ],
+      "rustc": {
+        "kind": "fragment"
+      }
+    },
+    {
+      "path": "tests/spec/attributes/value.rs",
+      "exit_status": 0,
+      "features": [
+        "pa3.attributes"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/attributes/macro-value.rs",
+      "exit_status": 0,
+      "features": [
+        "pa3.attributes"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/attributes/list.rs",
+      "exit_status": 0,
+      "features": [
+        "pa3.attributes"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/attributes/inner.rs",
+      "exit_status": 0,
+      "features": [
+        "pa3.attributes"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/attributes/unsafe.rs",
+      "exit_status": 0,
+      "features": [
+        "pa3.attributes"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/attributes/unsafe-value.rs",
+      "exit_status": 0,
+      "features": [
+        "pa3.attributes"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/attributes/custom-bracket.rs",
+      "exit_status": 0,
+      "features": [
+        "pa3.attributes"
+      ],
+      "rustc": {
+        "kind": "fragment"
+      }
+    },
+    {
+      "path": "tests/spec/attributes/custom-brace.rs",
+      "exit_status": 0,
+      "features": [
+        "pa3.attributes"
+      ],
+      "rustc": {
+        "kind": "fragment"
+      }
+    },
+    {
+      "path": "tests/spec/attributes/missing-bracket.rs",
+      "exit_status": 1,
+      "features": [
+        "pa3.attributes"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/attributes/empty.rs",
+      "exit_status": 1,
+      "features": [
+        "pa3.attributes"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/attributes/trailing-path.rs",
+      "exit_status": 1,
+      "features": [
+        "pa3.attributes"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/attributes/missing-value.rs",
+      "exit_status": 1,
+      "features": [
+        "pa3.attributes"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/attributes/extra-input.rs",
+      "exit_status": 1,
+      "features": [
+        "pa3.attributes"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/attributes/keyword.rs",
+      "exit_status": 1,
+      "features": [
+        "pa3.attributes"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/attributes/reserved.rs",
+      "exit_status": 1,
+      "features": [
+        "pa3.attributes"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/attributes/unsafe-missing.rs",
+      "exit_status": 1,
+      "features": [
+        "pa3.attributes"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/attributes/unsafe-empty.rs",
+      "exit_status": 1,
+      "features": [
+        "pa3.attributes"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/attributes/unsafe-many.rs",
+      "exit_status": 1,
+      "features": [
+        "pa3.attributes"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/attributes/unsafe-nested.rs",
+      "exit_status": 1,
+      "features": [
+        "pa3.attributes"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/cfg/true.rs",
+      "exit_status": 0,
+      "features": [
+        "pa3.cfg"
+      ],
+      "rustc": {
+        "kind": "predicate",
+        "predicate": "true",
+        "value": true
+      }
+    },
+    {
+      "path": "tests/spec/cfg/false.rs",
+      "exit_status": 0,
+      "features": [
+        "pa3.cfg"
+      ],
+      "rustc": {
+        "kind": "predicate",
+        "predicate": "false",
+        "value": false
+      }
+    },
+    {
+      "path": "tests/spec/cfg/unix.rs",
+      "exit_status": 0,
+      "features": [
+        "pa3.cfg"
+      ],
+      "rustc": {
+        "kind": "predicate",
+        "predicate": "unix",
+        "value": true
+      }
+    },
+    {
+      "path": "tests/spec/cfg/windows.rs",
+      "exit_status": 0,
+      "features": [
+        "pa3.cfg"
+      ],
+      "rustc": {
+        "kind": "predicate",
+        "predicate": "windows",
+        "value": false
+      }
+    },
+    {
+      "path": "tests/spec/cfg/all-empty.rs",
+      "exit_status": 0,
+      "features": [
+        "pa3.cfg"
+      ],
+      "rustc": {
+        "kind": "predicate",
+        "predicate": "all()",
+        "value": true
+      }
+    },
+    {
+      "path": "tests/spec/cfg/any-empty.rs",
+      "exit_status": 0,
+      "features": [
+        "pa3.cfg"
+      ],
+      "rustc": {
+        "kind": "predicate",
+        "predicate": "any()",
+        "value": false
+      }
+    },
+    {
+      "path": "tests/spec/cfg/not.rs",
+      "exit_status": 0,
+      "features": [
+        "pa3.cfg"
+      ],
+      "rustc": {
+        "kind": "predicate",
+        "predicate": "not(windows)",
+        "value": true
+      }
+    },
+    {
+      "path": "tests/spec/cfg/nested.rs",
+      "exit_status": 0,
+      "features": [
+        "pa3.cfg"
+      ],
+      "rustc": {
+        "kind": "predicate",
+        "predicate": "all(unix, any(windows, not(false)), target_pointer_width = \"64\",)",
+        "value": true
+      }
+    },
+    {
+      "path": "tests/spec/cfg/raw-string.rs",
+      "exit_status": 0,
+      "features": [
+        "pa3.cfg"
+      ],
+      "rustc": {
+        "kind": "predicate",
+        "predicate": "target_os = r#\"linux\"#",
+        "value": true
+      }
+    },
+    {
+      "path": "tests/spec/cfg/escaped-string.rs",
+      "exit_status": 0,
+      "features": [
+        "pa3.cfg"
+      ],
+      "rustc": {
+        "kind": "predicate",
+        "predicate": "target_os = \"lin\\u{75}x\"",
+        "value": true
+      }
+    },
+    {
+      "path": "tests/spec/cfg/feature-absent.rs",
+      "exit_status": 0,
+      "features": [
+        "pa3.cfg"
+      ],
+      "rustc": {
+        "kind": "predicate",
+        "predicate": "feature = \"a\"",
+        "value": false
+      }
+    },
+    {
+      "path": "tests/spec/cfg/feature-present.rs",
+      "exit_status": 0,
+      "features": [
+        "pa3.cfg"
+      ],
+      "rustc": {
+        "kind": "predicate",
+        "predicate": "feature=\"a\"",
+        "value": true
+      },
+      "args": [
+        "--cfg",
+        "feature=\"a\""
+      ]
+    },
+    {
+      "path": "tests/spec/cfg/feature-multiple.rs",
+      "exit_status": 0,
+      "features": [
+        "pa3.cfg"
+      ],
+      "rustc": {
+        "kind": "predicate",
+        "predicate": "all(feature=\"a\",feature=\"b\")",
+        "value": true
+      },
+      "args": [
+        "--cfg",
+        "feature=\"a\"",
+        "--cfg",
+        "feature=\"b\""
+      ]
+    },
+    {
+      "path": "tests/spec/cfg/custom-flag.rs",
+      "exit_status": 0,
+      "features": [
+        "pa3.cfg"
+      ],
+      "rustc": {
+        "kind": "predicate",
+        "predicate": "custom",
+        "value": true
+      },
+      "args": [
+        "--cfg",
+        "custom"
+      ]
+    },
+    {
+      "path": "tests/spec/cfg/custom-raw-flag.rs",
+      "exit_status": 0,
+      "features": [
+        "pa3.cfg"
+      ],
+      "rustc": {
+        "kind": "predicate",
+        "predicate": "r#gen",
+        "value": true
+      },
+      "args": [
+        "--cfg",
+        "r#gen"
+      ]
+    },
+    {
+      "path": "tests/spec/cfg/profile.rs",
+      "exit_status": 0,
+      "features": [
+        "pa3.cfg"
+      ],
+      "rustc": {
+        "kind": "predicate",
+        "predicate": "all(panic=\"abort\", not(debug_assertions), not(test), not(proc_macro))",
+        "value": true
+      }
+    },
+    {
+      "path": "tests/spec/cfg/target.rs",
+      "exit_status": 0,
+      "features": [
+        "pa3.cfg"
+      ],
+      "rustc": {
+        "kind": "predicate",
+        "predicate": "all(target_arch=\"x86_64\",target_abi=\"\",target_endian=\"little\",target_env=\"gnu\",target_vendor=\"unknown\",target_family=\"unix\")",
+        "value": true
+      }
+    },
+    {
+      "path": "tests/spec/cfg/atomic.rs",
+      "exit_status": 0,
+      "features": [
+        "pa3.cfg"
+      ],
+      "rustc": {
+        "kind": "predicate",
+        "predicate": "all(target_has_atomic=\"ptr\",target_has_atomic=\"64\",not(target_has_atomic=\"128\"))",
+        "value": true
+      }
+    },
+    {
+      "path": "tests/spec/cfg/target-features.rs",
+      "exit_status": 0,
+      "features": [
+        "pa3.cfg"
+      ],
+      "rustc": {
+        "kind": "predicate",
+        "predicate": "all(target_feature=\"sse\",target_feature=\"sse2\",target_feature=\"fxsr\",not(target_feature=\"avx\"))",
+        "value": true
+      }
+    },
+    {
+      "path": "tests/spec/cfg/not-trailing.rs",
+      "exit_status": 0,
+      "features": [
+        "pa3.cfg"
+      ],
+      "rustc": {
+        "kind": "predicate",
+        "predicate": "not(unix,)",
+        "value": false
+      }
+    },
+    {
+      "path": "tests/spec/cfg/cfg-trailing.rs",
+      "exit_status": 0,
+      "features": [
+        "pa3.cfg"
+      ],
+      "rustc": {
+        "kind": "predicate",
+        "predicate": "unix,",
+        "value": true
+      }
+    },
+    {
+      "path": "tests/spec/cfg/empty.rs",
+      "exit_status": 1,
+      "features": [
+        "pa3.cfg"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/cfg/many.rs",
+      "exit_status": 1,
+      "features": [
+        "pa3.cfg"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/cfg/missing-comma.rs",
+      "exit_status": 1,
+      "features": [
+        "pa3.cfg"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/cfg/empty-argument.rs",
+      "exit_status": 1,
+      "features": [
+        "pa3.cfg"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/cfg/unknown.rs",
+      "exit_status": 1,
+      "features": [
+        "pa3.cfg"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/cfg/not-empty.rs",
+      "exit_status": 1,
+      "features": [
+        "pa3.cfg"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/cfg/not-many.rs",
+      "exit_status": 1,
+      "features": [
+        "pa3.cfg"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/cfg/number-value.rs",
+      "exit_status": 1,
+      "features": [
+        "pa3.cfg"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/cfg/byte-value.rs",
+      "exit_status": 1,
+      "features": [
+        "pa3.cfg"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/cfg/suffixed-value.rs",
+      "exit_status": 1,
+      "features": [
+        "pa3.cfg"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/cfg/trailing-junk.rs",
+      "exit_status": 1,
+      "features": [
+        "pa3.cfg"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/cfg/nonshortcircuit.rs",
+      "exit_status": 1,
+      "features": [
+        "pa3.cfg"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/cfg/no-parens.rs",
+      "exit_status": 1,
+      "features": [
+        "pa3.cfg"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/cfg/wrong-delimiter.rs",
+      "exit_status": 1,
+      "features": [
+        "pa3.cfg"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/cfg/cfg-attr-missing-comma.rs",
+      "exit_status": 1,
+      "features": [
+        "pa3.cfg"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/cfg/cfg-attr-empty-attr.rs",
+      "exit_status": 1,
+      "features": [
+        "pa3.cfg"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/cfg/cfg-attr-forbidden.rs",
+      "exit_status": 1,
+      "features": [
+        "pa3.cfg"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/cfg_attr/selected.rs",
+      "exit_status": 0,
+      "features": [
+        "pa3.cfg_attr"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "enabled": true
+      }
+    },
+    {
+      "path": "tests/spec/cfg_attr/unselected.rs",
+      "exit_status": 0,
+      "features": [
+        "pa3.cfg_attr"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "enabled": true
+      }
+    },
+    {
+      "path": "tests/spec/cfg_attr/empty.rs",
+      "exit_status": 0,
+      "features": [
+        "pa3.cfg_attr"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "enabled": true
+      }
+    },
+    {
+      "path": "tests/spec/cfg_attr/nested.rs",
+      "exit_status": 0,
+      "features": [
+        "pa3.cfg_attr"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "enabled": false
+      }
+    },
+    {
+      "path": "tests/spec/cfg_attr/disabled.rs",
+      "exit_status": 0,
+      "features": [
+        "pa3.cfg_attr"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "enabled": false
+      }
+    },
+    {
+      "path": "tests/spec/cfg_attr/multiple.rs",
+      "exit_status": 0,
+      "features": [
+        "pa3.cfg_attr"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "enabled": false
+      }
+    },
+    {
+      "path": "tests/spec/cfg_attr/disabled-attr-not-evaluated.rs",
+      "exit_status": 0,
+      "features": [
+        "pa3.cfg_attr"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "enabled": true
+      }
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+token 0 0 punctuation 0 1 "#"
+group 1 0 bracket 1 88 19
+token 2 1 identifier 2 5 "cfg"
+group 3 1 paren 5 87 19
+token 4 2 identifier 6 9 "all"
+group 5 2 paren 9 86 19
+token 6 3 identifier 10 27 "target_has_atomic"
+token 7 3 punctuation 27 28 "="
+token 8 3 string 28 33 "\"ptr\""
+token 9 3 punctuation 33 34 ","
+token 10 3 identifier 34 51 "target_has_atomic"
+token 11 3 punctuation 51 52 "="
+token 12 3 string 52 56 "\"64\""
+token 13 3 punctuation 56 57 ","
+token 14 3 identifier 57 60 "not"
+group 15 3 paren 60 85 19
+token 16 4 identifier 61 78 "target_has_atomic"
+token 17 4 punctuation 78 79 "="
+token 18 4 string 79 84 "\"128\""
+token 19 0 identifier 89 91 "fn"
+token 20 0 identifier 92 100 "selected"
+group 21 0 paren 100 102 22
+group 22 0 brace 103 105 23
+attribute 0 root outer 0 88 safe cfg=true cfg group 3
+eof 106

@@ -1,0 +1,1 @@
+#[r#unsafe] fn f() {}

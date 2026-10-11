@@ -1,0 +1,1 @@
+#[unsafe(unsafe(no_mangle))] fn f() {}

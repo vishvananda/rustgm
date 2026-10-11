@@ -1,0 +1,7 @@
+doc 0 0 outer 0 21 " some \"docs\" \\path"
+token 1 0 identifier 22 24 "fn"
+token 2 0 identifier 25 26 "f"
+group 3 0 paren 26 28 4
+group 4 0 brace 29 31 5
+attribute 0 root outer 0 21 safe keep doc value " some \"docs\" \\path"
+eof 31

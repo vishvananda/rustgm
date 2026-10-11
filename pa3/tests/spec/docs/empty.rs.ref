@@ -1,0 +1,11 @@
+doc 0 0 inner 0 3 ""
+doc 1 0 inner 4 9 ""
+doc 2 0 outer 10 13 ""
+token 3 0 identifier 14 16 "fn"
+token 4 0 identifier 17 18 "f"
+group 5 0 paren 18 20 6
+group 6 0 brace 21 23 7
+attribute 0 root inner 0 3 safe keep doc value ""
+attribute 1 root inner 4 9 safe keep doc value ""
+attribute 2 root outer 10 13 safe keep doc value ""
+eof 23

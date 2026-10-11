@@ -1,0 +1,29 @@
+token 0 0 punctuation 0 1 "#"
+group 1 0 bracket 1 103 23
+token 2 1 identifier 2 5 "cfg"
+group 3 1 paren 5 102 23
+token 4 2 identifier 6 9 "all"
+group 5 2 paren 9 101 23
+token 6 3 identifier 10 24 "target_feature"
+token 7 3 punctuation 24 25 "="
+token 8 3 string 25 30 "\"sse\""
+token 9 3 punctuation 30 31 ","
+token 10 3 identifier 31 45 "target_feature"
+token 11 3 punctuation 45 46 "="
+token 12 3 string 46 52 "\"sse2\""
+token 13 3 punctuation 52 53 ","
+token 14 3 identifier 53 67 "target_feature"
+token 15 3 punctuation 67 68 "="
+token 16 3 string 68 74 "\"fxsr\""
+token 17 3 punctuation 74 75 ","
+token 18 3 identifier 75 78 "not"
+group 19 3 paren 78 100 23
+token 20 4 identifier 79 93 "target_feature"
+token 21 4 punctuation 93 94 "="
+token 22 4 string 94 99 "\"avx\""
+token 23 0 identifier 104 106 "fn"
+token 24 0 identifier 107 115 "selected"
+group 25 0 paren 115 117 26
+group 26 0 brace 118 120 27
+attribute 0 root outer 0 103 safe cfg=true cfg group 3
+eof 121

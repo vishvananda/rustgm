@@ -1,0 +1,15 @@
+token 0 0 identifier 0 1 "m"
+token 1 0 punctuation 1 2 "!"
+group 2 0 paren 2 27 13
+token 3 1 punctuation 3 4 "#"
+group 4 1 bracket 4 22 12
+token 5 2 identifier 5 8 "cfg"
+group 6 2 paren 8 21 12
+token 7 3 identifier 9 15 "broken"
+group 8 3 paren 15 20 12
+token 9 4 punctuation 16 17 ","
+token 10 4 punctuation 17 18 ","
+token 11 4 punctuation 18 19 ","
+token 12 1 identifier 23 26 "raw"
+token 13 0 punctuation 27 28 ";"
+eof 28

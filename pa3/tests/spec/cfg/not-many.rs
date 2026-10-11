@@ -1,0 +1,1 @@
+#[cfg(not(unix,windows))] fn f() {}

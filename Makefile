@@ -2,7 +2,7 @@ PYTHON ?= python3
 CARGO ?= cargo
 ROOT := $(CURDIR)
 export CARGO_TARGET_DIR := $(ROOT)/obj/rust
-ACTIVE_PAS := pa1 pa2
+ACTIVE_PAS := pa1 pa2 pa3
 RUSTGM_TEST_APP ?= $(ROOT)/dev/rustgm
 REF_TEST_APP ?= $(ROOT)/dev/rustgm-ref
 
@@ -14,7 +14,7 @@ test: all
 	@status=0; for stage in $(ACTIVE_PAS); do $(PYTHON) scripts/course.py $$stage --app "$(RUSTGM_TEST_APP)" || status=1; done; exit $$status
 test-report: all
 	@status=0; for stage in $(ACTIVE_PAS); do $(PYTHON) scripts/course.py $$stage --app "$(RUSTGM_TEST_APP)" || status=1; done; exit $$status
-	@echo 'PA3-PA38: planned, not included in acceptance totals'
+	@echo 'PA4-PA38: planned, not included in acceptance totals'
 test-pa%: all
 	$(PYTHON) scripts/course.py pa$* --app "$(RUSTGM_TEST_APP)"
 ref-test: all
@@ -39,6 +39,7 @@ test-upstream:
 test-rustc: all
 	$(PYTHON) scripts/check_rustc.py
 	$(PYTHON) scripts/check_literals.py --app "$(RUSTGM_TEST_APP)"
+	$(PYTHON) scripts/check_syntax.py pa3 --app "$(RUSTGM_TEST_APP)"
 perf: all
 	$(PYTHON) scripts/measure_lexer.py
 perf-literals: all

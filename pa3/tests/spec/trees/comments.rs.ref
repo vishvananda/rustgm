@@ -1,0 +1,4 @@
+token 0 0 identifier 18 19 "x"
+group 1 0 paren 26 37 3
+token 2 1 identifier 34 35 "y"
+eof 37

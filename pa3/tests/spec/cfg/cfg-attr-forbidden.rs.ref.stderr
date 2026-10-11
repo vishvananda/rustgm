@@ -1,0 +1,1 @@
+ERROR: 0: crate_name and crate_type are forbidden in cfg_attr

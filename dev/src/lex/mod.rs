@@ -1,4 +1,5 @@
 //! Pull lexer: spans borrow one source image; no token or spelling allocation.
+pub mod keyword;
 mod literals;
 mod punctuation;
 pub mod render;

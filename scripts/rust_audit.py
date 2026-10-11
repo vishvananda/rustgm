@@ -17,7 +17,7 @@ PHASES = {"lex", "literal", "preprocess", "expand", "resolve", "syntax", "types"
 ALLOWED_DEPENDENCIES = {
     "support": set(), "types": {"support", "lex"},
     "literal": {"support", "lex"},
-    "expand": {"support", "lex", "syntax"},
+    "expand": {"support", "lex", "literal", "syntax"},
     "resolve": {"support", "lex", "syntax", "expand"},
     "body": {"support", "types", "sema", "syntax"},
     "borrow": {"support", "types", "body"},

@@ -1,0 +1,1 @@
+#[cfg(all())] fn selected() {}

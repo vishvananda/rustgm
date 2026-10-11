@@ -1,0 +1,26 @@
+token 0 0 punctuation 0 1 "#"
+group 1 0 bracket 1 73 20
+token 2 1 identifier 2 5 "cfg"
+group 3 1 paren 5 72 20
+token 4 2 identifier 6 9 "all"
+group 5 2 paren 9 71 20
+token 6 3 identifier 10 14 "unix"
+token 7 3 punctuation 14 15 ","
+token 8 3 identifier 16 19 "any"
+group 9 3 paren 19 40 15
+token 10 4 identifier 20 27 "windows"
+token 11 4 punctuation 27 28 ","
+token 12 4 identifier 29 32 "not"
+group 13 4 paren 32 39 15
+token 14 5 identifier 33 38 "false"
+token 15 3 punctuation 40 41 ","
+token 16 3 identifier 42 62 "target_pointer_width"
+token 17 3 punctuation 63 64 "="
+token 18 3 string 65 69 "\"64\""
+token 19 3 punctuation 69 70 ","
+token 20 0 identifier 74 76 "fn"
+token 21 0 identifier 77 85 "selected"
+group 22 0 paren 85 87 23
+group 23 0 brace 88 90 24
+attribute 0 root outer 0 73 safe cfg=true cfg group 3
+eof 91

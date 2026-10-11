@@ -1,0 +1,12 @@
+token 0 0 punctuation 0 1 "#"
+group 1 0 bracket 1 13 6
+token 2 1 identifier 2 5 "cfg"
+group 3 1 paren 5 12 6
+token 4 2 identifier 6 9 "all"
+group 5 2 paren 9 11 6
+token 6 0 identifier 14 16 "fn"
+token 7 0 identifier 17 25 "selected"
+group 8 0 paren 25 27 9
+group 9 0 brace 28 30 10
+attribute 0 root outer 0 13 safe cfg=true cfg group 3
+eof 31

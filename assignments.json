@@ -37,8 +37,8 @@
       "path": "pa3",
       "title": "Token trees and attributes",
       "mode": "--emit-token-trees",
-      "status": "planned",
-      "scope": "Delimiter trees, attributes, documentation desugaring and cfg",
+      "status": "implemented-draft",
+      "scope": "Delimiter trees, attribute/doc syntax and cfg facts; syntax-owned attachment and elision follow in PA4/PA5",
       "test_families": [
         "nested groups",
         "mismatched delimiters",
