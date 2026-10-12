@@ -148,6 +148,13 @@ impl BodyFacts {
                 state.fill(path, initialized)?;
                 state.written(path.start, initialized);
             }
+            Action::StorageEnd { first, last } => {
+                for local in body.storage_range(first, last) {
+                    let path = &self.paths.entries[local?.0 as usize];
+                    state.fill(path, false)?;
+                    state.written(path.start, false);
+                }
+            }
             Action::Evaluate(id) => {
                 if self.uses[id.0 as usize] == Use::Move
                     && let Rvalue::Read(place) = body.values[id.0 as usize].kind

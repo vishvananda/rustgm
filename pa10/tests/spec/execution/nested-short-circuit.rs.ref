@@ -21,13 +21,13 @@ type 18 primitive f64
 type 19 function binders=0 parameters=[] result=14 unsafe=false
 type 20 function-item def=13 signature=19
 body 0 function def=13 signature=19 result=14 source=0:39
-  local l0 type=2 binding def=31 mutable=false source=5
-  local l1 type=2 binding def=32 mutable=false source=10
-  local l2 type=2 merge mutable=true source=33
-  local l3 type=2 merge mutable=true source=21
-  local l4 type=2 merge mutable=true source=19
-  local l5 type=2 merge mutable=true source=31
-  local l6 type=2 merge mutable=true source=29
+  local l0 type=2 binding def=31 mutable=false storage-parent=- source=5
+  local l1 type=2 binding def=32 mutable=false storage-parent=l0 source=10
+  local l2 type=2 merge mutable=true storage-parent=l1 source=33
+  local l3 type=2 merge mutable=true storage-parent=l2 source=21
+  local l4 type=2 merge mutable=true storage-parent=l3 source=19
+  local l5 type=2 merge mutable=true storage-parent=l2 source=31
+  local l6 type=2 merge mutable=true storage-parent=l5 source=29
   block b0:
     v0 type=2 = bool false source=6
     live l0 source=5
@@ -51,9 +51,7 @@ body 0 function def=13 signature=19 result=14 source=0:39
   block b3:
     v14 type=2 = read l2 source=33
     v15 type=14 = cast BoolToInteger v14 source=38
-    dead l2 source=39
-    dead l1 source=39
-    dead l0 source=39
+    end-storage first=l0 last=l2 source=39
     return v15 source=39
   block b4:
     live l4 source=19
@@ -103,4 +101,4 @@ body 0 function def=13 signature=19 result=14 source=0:39
     dead l6 source=31
     jump b12 source=31
 end-body
-eof bodies=1 locals=7 values=16 statements=42 blocks=16
+eof bodies=1 locals=7 values=16 statements=40 blocks=16

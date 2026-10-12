@@ -28,7 +28,7 @@ body 0 function def=13 signature=19 result=14 source=0:10
     return v1 source=10
 end-body
 body 1 function def=14 signature=19 result=14 source=0:23
-  local l0 type=14 merge mutable=true source=22
+  local l0 type=14 merge mutable=true storage-parent=- source=22
   block b0:
     live l0 source=22
     jump b1 source=22

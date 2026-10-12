@@ -77,6 +77,13 @@ lifetimes, initialization and abstract drop obligations. It is an executable
 body representation, not a second copy of the complete syntax tree. Do not call
 it MIR without qualification: CPPGM already uses MIR for machine IR.
 
+Share live storage tails persistently. An exit records the suffix it ends,
+without copying the surrounding live-local list or repeating every storage-end
+statement at every failure branch. Preserve reverse lifetime order and skip
+already-closed nested scopes. Storage compaction is distinct from ownership
+proof complexity: charge the paths/words actually visited and retain explicit
+dataflow memory and work budgets.
+
 Borrow checking runs before references and moves lose their source semantics
 in LowIR. Region/dataflow analysis uses typed worklists and bounded lattices,
 with per-body storage and complete dependency edges. Pattern usefulness and

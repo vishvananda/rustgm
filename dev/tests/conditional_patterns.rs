@@ -387,9 +387,9 @@ fn conditional_rejections_agree_with_rustc() -> Result<(), Box<dyn std::error::E
 }
 
 #[test]
-fn conditional_control_blocks_grow_linearly() -> Result<(), Box<dyn std::error::Error>> {
+fn conditional_body_storage_grows_linearly() -> Result<(), Box<dyn std::error::Error>> {
     let dir = folder("conditional-structure")?;
-    for width in [16, 64, 256] {
+    for width in [16, 64, 256, 1024] {
         let chain = (0..width)
             .map(|i| {
                 if i == 0 {
@@ -432,6 +432,15 @@ fn conditional_control_blocks_grow_linearly() -> Result<(), Box<dyn std::error::
                 .trim()
                 .parse()?;
             assert!(blocks < 8 * width + 10, "{name}/{width}: {blocks}");
+            let statements: usize = text
+                .split("statements=")
+                .nth(1)
+                .ok_or("missing statements")?
+                .split_whitespace()
+                .next()
+                .ok_or("missing statement count")?
+                .parse()?;
+            assert!(statements < 20 * width + 20, "{name}/{width}: {statements}");
             std::fs::write(file.with_extension("counts"), output.stdout)?;
         }
     }

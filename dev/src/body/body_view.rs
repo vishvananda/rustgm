@@ -75,7 +75,13 @@ fn contents(body: &Body, out: &mut impl Write) -> io::Result<()> {
         if let Some(definition) = local.definition {
             write!(out, " def={}", definition.0)?;
         }
-        writeln!(out, " mutable={} source={}", local.mutable, local.source.0)?;
+        write!(out, " mutable={} storage-parent=", local.mutable)?;
+        if let Some(parent) = local.storage_parent {
+            write!(out, "l{}", parent.0)?;
+        } else {
+            write!(out, "-")?;
+        }
+        writeln!(out, " source={}", local.source.0)?;
     }
     for (id, projection) in body.projections.iter().enumerate() {
         write!(out, "  projection p{id} type={} base=", projection.ty.0)?;
@@ -98,6 +104,9 @@ fn contents(body: &Body, out: &mut impl Write) -> io::Result<()> {
                 Action::Project(id) => write!(out, "project p{}", id.0)?,
                 Action::StorageLive(local) => write!(out, "live l{}", local.0)?,
                 Action::StorageDead(local) => write!(out, "dead l{}", local.0)?,
+                Action::StorageEnd { first, last } => {
+                    write!(out, "end-storage first=l{} last=l{}", first.0, last.0)?;
+                }
                 Action::Store {
                     place: target,
                     value,

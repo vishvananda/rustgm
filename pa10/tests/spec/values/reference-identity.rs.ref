@@ -22,8 +22,8 @@ type 19 reference mutable=false region=bound:0:0 referent=11
 type 20 function binders=1 parameters=[19] result=19 unsafe=false
 type 21 function-item def=13 signature=20
 body 0 function def=13 signature=20 result=19 source=0:23
-  local l0 type=19 parameter=0 def=32 mutable=false source=3
-  local l1 type=19 binding def=33 mutable=false source=17
+  local l0 type=19 parameter=0 def=32 mutable=false storage-parent=- source=3
+  local l1 type=19 binding def=33 mutable=false storage-parent=l0 source=17
   block b0:
     live l0 source=3
     v0 type=19 = read l0 source=19

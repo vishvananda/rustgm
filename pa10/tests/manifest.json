@@ -773,6 +773,23 @@
         "result": 42,
         "type": "u64"
       }
+    },
+    {
+      "path": "tests/spec/execution/storage-ancestry.rs",
+      "exit_status": 0,
+      "features": [
+        "pa10.typed-bodies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "runtime": {
+        "entry": "entry",
+        "result": 153,
+        "type": "u64"
+      }
     }
   ]
 }

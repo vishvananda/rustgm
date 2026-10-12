@@ -58,6 +58,8 @@ pub enum LocalKind {
     Merge,
 }
 pub struct Local {
+    /// Persistent predecessor in the live storage stack at this local's creation.
+    pub storage_parent: Option<LocalId>,
     pub ty: TypeId,
     pub kind: LocalKind,
     pub definition: Option<DefId>,
@@ -118,11 +120,26 @@ pub enum Action {
     Project(ProjectionId),
     StorageLive(LocalId),
     StorageDead(LocalId),
+    /// End a persistent live-stack suffix, inclusively from last back through first.
+    StorageEnd {
+        first: LocalId,
+        last: LocalId,
+    },
     Evaluate(ValueId),
     Store {
         place: Place,
         value: ValueId,
     },
+}
+impl Action {
+    #[must_use]
+    pub const fn end_storage(first: LocalId, last: LocalId) -> Self {
+        if first.0 == last.0 {
+            Self::StorageDead(first)
+        } else {
+            Self::StorageEnd { first, last }
+        }
+    }
 }
 pub struct Statement {
     pub source: NodeId,
@@ -181,6 +198,45 @@ impl Body {
     #[must_use]
     pub fn arguments(&self, list: ValueList) -> &[ValueId] {
         &self.arguments[list.start as usize..list.end as usize]
+    }
+}
+/// Allocation-free reverse traversal of a persistent live-storage suffix.
+pub struct StorageRange<'a> {
+    locals: &'a [Local],
+    first: LocalId,
+    next: Option<LocalId>,
+}
+impl Body {
+    #[must_use]
+    pub fn storage_range(&self, first: LocalId, last: LocalId) -> StorageRange<'_> {
+        StorageRange {
+            locals: &self.locals,
+            first,
+            next: Some(last),
+        }
+    }
+}
+impl Iterator for StorageRange<'_> {
+    type Item = Result<LocalId, &'static str>;
+    fn next(&mut self) -> Option<Self::Item> {
+        let id = self.next.take()?;
+        let Some(local) = self
+            .locals
+            .get(id.0 as usize)
+            .filter(|_| id.0 >= self.first.0)
+        else {
+            return Some(Err("invalid storage range endpoint"));
+        };
+        if id != self.first {
+            let Some(parent) = local
+                .storage_parent
+                .filter(|p| p.0 < id.0 && p.0 >= self.first.0)
+            else {
+                return Some(Err("storage range does not follow live ancestry"));
+            };
+            self.next = Some(parent);
+        }
+        Some(Ok(id))
     }
 }
 pub struct Program {

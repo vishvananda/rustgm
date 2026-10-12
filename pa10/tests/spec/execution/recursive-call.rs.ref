@@ -23,8 +23,8 @@ type 20 function-item def=13 signature=19
 type 21 function binders=0 parameters=[] result=14 unsafe=false
 type 22 function-item def=14 signature=21
 body 0 function def=13 signature=19 result=14 source=0:28
-  local l0 type=14 parameter=0 def=32 mutable=false source=2
-  local l1 type=14 merge mutable=true source=27
+  local l0 type=14 parameter=0 def=32 mutable=false storage-parent=- source=2
+  local l1 type=14 merge mutable=true storage-parent=l0 source=27
   block b0:
     live l0 source=2
     live l1 source=27

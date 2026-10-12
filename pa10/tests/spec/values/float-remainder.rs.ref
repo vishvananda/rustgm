@@ -21,16 +21,15 @@ type 18 primitive f64
 type 19 function binders=0 parameters=[18,18] result=18 unsafe=false
 type 20 function-item def=13 signature=19
 body 0 function def=13 signature=19 result=18 source=0:22
-  local l0 type=18 parameter=0 def=31 mutable=false source=2
-  local l1 type=18 parameter=1 def=32 mutable=false source=9
+  local l0 type=18 parameter=0 def=31 mutable=false storage-parent=- source=2
+  local l1 type=18 parameter=1 def=32 mutable=false storage-parent=l0 source=9
   block b0:
     live l0 source=2
     live l1 source=9
     v0 type=18 = read l0 source=18
     v1 type=18 = read l1 source=20
     v2 type=18 = binary Percent v0 v1 source=21
-    dead l1 source=22
-    dead l0 source=22
+    end-storage first=l0 last=l1 source=22
     return v2 source=22
 end-body
-eof bodies=1 locals=2 values=3 statements=7 blocks=1
+eof bodies=1 locals=2 values=3 statements=6 blocks=1

@@ -27,7 +27,7 @@ body 0 function def=14 signature=19 result=14 source=1:4
     return v0 source=4
 end-body
 body 1 function def=15 signature=19 result=14 source=0:26
-  local l0 type=14 binding def=33 mutable=true source=6
+  local l0 type=14 binding def=33 mutable=true storage-parent=- source=6
   block b0:
     v0 type=20 = function def=14 source=9
     v1 type=14 = call signature=19 v0 [] source=10

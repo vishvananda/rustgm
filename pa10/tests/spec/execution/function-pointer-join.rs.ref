@@ -33,8 +33,8 @@ body 1 function def=14 signature=19 result=14 source=0:10
     return v0 source=10
 end-body
 body 2 function def=15 signature=19 result=14 source=0:40
-  local l0 type=19 merge mutable=true source=35
-  local l1 type=19 binding def=33 mutable=false source=17
+  local l0 type=19 merge mutable=true storage-parent=- source=35
+  local l1 type=19 binding def=33 mutable=false storage-parent=l0 source=17
   block b0:
     live l0 source=35
     jump b1 source=35
@@ -48,8 +48,7 @@ body 2 function def=15 signature=19 result=14 source=0:40
     v8 type=1 = unit source=36
     v9 type=19 = read l1 source=38
     v10 type=14 = call signature=19 v9 [] source=39
-    dead l1 source=40
-    dead l0 source=40
+    end-storage first=l0 last=l1 source=40
     return v10 source=40
   block b3:
     v1 type=20 = function def=13 source=24
@@ -66,4 +65,4 @@ body 2 function def=15 signature=19 result=14 source=0:40
     store l0 v6 source=32
     jump b2 source=32
 end-body
-eof bodies=3 locals=2 values=13 statements=20 blocks=8
+eof bodies=3 locals=2 values=13 statements=19 blocks=8

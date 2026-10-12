@@ -55,6 +55,14 @@ its first store/read. Normal exits end storage in reverse creation order;
 transfers end storage they leave. Conditional/condition temporaries end on their
 actual paths. `dead` is a storage boundary, not a destructor or initialization
 proof. Retain definition identity, declared mutability and local role.
+Each local retains its predecessor in the active storage stack when it is
+created. Those persistent links skip locals whose nested scopes have already
+closed. A multi-local exit is one `end-storage` action, following those links
+from `last` back through `first`, inclusively and in reverse live order. It
+shares the storage chain without copying a prefix or materializing one `dead`
+statement per exited local at every branch. Single-local exits retain `dead`.
+Ownership checking and later storage consumers visit the same ended locals;
+this compaction does not erase initialization checks or introduce destructors.
 Statement-macro expansions add statements to their enclosing scope. The
 expansion container does not end binding storage; explicit blocks inside the
 expansion retain their ordinary scope boundaries.
@@ -109,10 +117,11 @@ does not imply execution order. Records have LF, decimal IDs and no trailing
 spaces. Local/block lines use two spaces; statements/terminators four:
 
 ```text
-  local lN type=TYPE parameter=INDEX|binding|merge [def=DEFINITION] mutable=BOOL source=NODE
+  local lN type=TYPE parameter=INDEX|binding|merge [def=DEFINITION] mutable=BOOL storage-parent=lN|- source=NODE
   block bN:
     live lN source=NODE
     dead lN source=NODE
+    end-storage first=lFIRST last=lLAST source=NODE
     store PLACE vN source=NODE
     vN type=TYPE = RVALUE source=NODE
     jump bN source=NODE

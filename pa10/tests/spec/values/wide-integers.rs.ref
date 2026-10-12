@@ -23,7 +23,7 @@ type 20 function-item def=13 signature=19
 type 21 function binders=0 parameters=[9] result=9 unsafe=false
 type 22 function-item def=14 signature=21
 body 0 function def=13 signature=19 result=15 source=0:14
-  local l0 type=15 parameter=0 def=32 mutable=false source=2
+  local l0 type=15 parameter=0 def=32 mutable=false storage-parent=- source=2
   block b0:
     live l0 source=2
     v0 type=15 = read l0 source=11
@@ -33,7 +33,7 @@ body 0 function def=13 signature=19 result=15 source=0:14
     return v2 source=14
 end-body
 body 1 function def=14 signature=21 result=9 source=0:29
-  local l0 type=9 parameter=0 def=33 mutable=false source=18
+  local l0 type=9 parameter=0 def=33 mutable=false storage-parent=- source=18
   block b0:
     live l0 source=18
     v0 type=9 = read l0 source=27

@@ -372,6 +372,7 @@ impl<'a> Builder<'a> {
     ) -> Result<LocalId, Error> {
         let local = LocalId(self.index(node, self.body.locals.len())?);
         self.body.locals.push(Local {
+            storage_parent: self.scratch.live.last().copied(),
             ty,
             kind,
             definition: binding,
@@ -394,10 +395,10 @@ impl<'a> Builder<'a> {
         self.local(node, ty, LocalKind::Merge, None, true).map(Some)
     }
     fn cleanup(&mut self, node: NodeId, base: usize) -> Result<(), Error> {
-        if self.current.is_some() {
-            for index in (base..self.scratch.live.len()).rev() {
-                self.statement(node, Action::StorageDead(self.scratch.live[index]))?;
-            }
+        if self.current.is_some() && base < self.scratch.live.len() {
+            let first = self.scratch.live[base];
+            let last = self.scratch.live[self.scratch.live.len() - 1];
+            self.statement(node, Action::end_storage(first, last))?;
         }
         Ok(())
     }

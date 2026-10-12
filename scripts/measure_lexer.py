@@ -58,9 +58,10 @@ def main():
     workloads.add_argument("--constructor-pattern-input", action="store_true", help="exercise shared enum/product/array coverage at 1000/4000/16000 procedures")
     workloads.add_argument("--constructor-match-input", action="store_true", help="exercise constructor tests and delayed alternative captures at 1000/4000/16000 procedures")
     workloads.add_argument("--conditional-pattern-input", action="store_true", help="exercise let-else, conditional chains and while-let at 1000/4000/16000 procedures")
+    workloads.add_argument("--storage-width-input", choices=("chain", "let-else"), help="exercise persistent cleanup at 128/512/2048 bindings in one procedure")
     parser.add_argument("--stage", choices=("tokens", "literals", "token-trees", "ast", "crate-ast", "names", "expanded", "expanded-crate", "types", "patterns", "layouts", "body-ir", "ownership", "lowir"), default="tokens")
     args = parser.parse_args()
-    if (args.aggregate_input or args.discriminant_input or args.product_input or args.array_pattern_input or args.scalar_match_input or args.constructor_match_input or args.conditional_pattern_input) and args.stage != "lowir":
+    if (args.aggregate_input or args.discriminant_input or args.product_input or args.array_pattern_input or args.scalar_match_input or args.constructor_match_input or args.conditional_pattern_input or args.storage_width_input) and args.stage != "lowir":
         parser.error("aggregate, discriminant and owned-pattern workloads require --stage lowir")
     if args.pattern_input and args.stage != "names":
         parser.error("pattern identity workloads require --stage names")
@@ -89,15 +90,25 @@ def main():
                "constructor_pattern_input": args.constructor_pattern_input,
                "constructor_match_input": args.constructor_match_input,
                "conditional_pattern_input": args.conditional_pattern_input,
+               "storage_width_input": args.storage_width_input,
                "binary_sha256": {name: hashlib.sha256(p.read_bytes()).hexdigest() for name, p in binaries.items()},
                "samples": [], "full_output_sha256": {}}
     scales = (4000, 16000, 64000) if args.stage in ("token-trees", "ast", "crate-ast", "names", "expanded", "expanded-crate", "types", "body-ir", "ownership", "lowir") else (16000, 64000, 256000)
     if args.aggregate_input or args.discriminant_input or args.pattern_input or args.product_input or args.array_pattern_input or args.borrowed_pattern_input or args.scalar_match_input or args.constructor_pattern_input or args.constructor_match_input or args.conditional_pattern_input or args.stage == "layouts":
         scales = (1000, 4000, 16000)
+    if args.storage_width_input:
+        scales = (128, 512, 2048)
     line = {"tokens": LINE, "literals": LITERAL_LINE, "token-trees": TREE_LINE, "ast": AST_LINE, "crate-ast": CRATE_LINE, "names": b"", "expanded": b"", "expanded-crate": b"", "types": b"", "patterns": b"", "layouts": b"", "body-ir": b"", "ownership": b"", "lowir": b""}[args.stage]
     for lines in scales:
         source = directory / f"input-{lines}.rs"
-        if args.conditional_pattern_input:
+        if args.storage_width_input:
+            patterns = [f"n{i}@0..=9=" + ("x" if i == 0 else f"n{i-1}") for i in range(lines)]
+            if args.storage_width_input == "chain":
+                body = "if " + "&&".join("let " + p for p in patterns) + f"{{n{lines-1}}}else{{99}}"
+            else:
+                body = "".join("let " + p + " else{return 99;};" for p in patterns) + f"n{lines-1}"
+            source.write_text("fn measured(x:u8)->u8{" + body + "}fn main(){measured(7);}")
+        elif args.conditional_pattern_input:
             source.write_text("enum E{A(u64),B}\n" + "".join(
                 f"fn measured_{i}(x:E,mut count:u8)->u64{{let E::A(n)=x else{{return 99;}};"
                 "let mut sum=0u64;while let k@1..=9=count&&k>0{sum+=k as u64;count-=1;}"

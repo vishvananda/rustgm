@@ -42,6 +42,11 @@ fn analyze(source: &str) -> Result<(Report, Declarations, Program), String> {
 }
 const CASES: &[(&str, &str, u128)] = &[
     (
+        "storage-ancestry",
+        "fn entry()->u64{let mut out=0;let a=5;{let a=100;out+=a;}let b=7;'outer:loop{let c=11;{let gone=13;out+=gone;}let d=17;out+=a+b+c+d;break 'outer;}out}",
+        153,
+    ),
+    (
         "macro-binding-scope",
         "macro_rules! bind{($v:ident,$e:expr)=>{let $v=$e;}}fn entry()->u64{bind!(x,40);{bind!(x,7);let _=x;}bind!(y,2);x+y}",
         42,
@@ -552,5 +557,51 @@ fn conditional_storage_balances_success_failure_and_reentry() -> Result<(), Stri
         assert!(ran.status.success() && ran.stderr.is_empty());
         assert_eq!(ran.stdout, expected.to_string().as_bytes());
     }
+    Ok(())
+}
+
+#[test]
+fn storage_ranges_follow_live_ancestry_and_reject_invalid_links() -> Result<(), String> {
+    use body::ir::{Action, LocalId};
+    let source = std::fs::read_to_string(
+        Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../pa10/tests/spec/execution/storage-ancestry.rs"),
+    )
+    .map_err(|e| e.to_string())?;
+    let (_, _, mut program) = analyze(&source)?;
+    let body = &mut program.bodies[0];
+    let mut skipped_closed_local = false;
+    let mut selected = None;
+    for statement in &body.statements {
+        if let Action::StorageEnd { first, last } = statement.action {
+            let locals: Vec<_> = body.storage_range(first, last).collect::<Result<_, _>>()?;
+            assert_eq!(locals.first(), Some(&last));
+            assert_eq!(locals.last(), Some(&first));
+            skipped_closed_local |= locals.windows(2).any(|pair| pair[0].0 > pair[1].0 + 1);
+            selected = Some((first, last));
+        }
+    }
+    assert!(skipped_closed_local);
+    let (first, last) = selected.ok_or("missing compact cleanup")?;
+    body.locals[last.0 as usize].storage_parent = Some(last);
+    assert!(
+        body.storage_range(first, last)
+            .next()
+            .ok_or("empty range")?
+            .is_err()
+    );
+    body.locals[last.0 as usize].storage_parent = None;
+    assert!(
+        body.storage_range(first, last)
+            .next()
+            .ok_or("empty range")?
+            .is_err()
+    );
+    assert!(
+        body.storage_range(first, LocalId(u32::MAX))
+            .next()
+            .ok_or("empty range")?
+            .is_err()
+    );
     Ok(())
 }

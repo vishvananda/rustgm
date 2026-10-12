@@ -24,7 +24,7 @@ type 21 function-item def=14 signature=19
 type 22 function binders=0 parameters=[] result=14 unsafe=false
 type 23 function-item def=15 signature=22
 body 0 function def=13 signature=19 result=14 source=0:14
-  local l0 type=14 parameter=0 def=33 mutable=false source=2
+  local l0 type=14 parameter=0 def=33 mutable=false storage-parent=- source=2
   block b0:
     live l0 source=2
     v0 type=14 = read l0 source=11
@@ -34,7 +34,7 @@ body 0 function def=13 signature=19 result=14 source=0:14
     return v2 source=14
 end-body
 body 1 function def=14 signature=19 result=14 source=0:30
-  local l0 type=14 parameter=0 def=34 mutable=false source=18
+  local l0 type=14 parameter=0 def=34 mutable=false storage-parent=- source=18
   block b0:
     live l0 source=18
     v0 type=14 = read l0 source=27
@@ -44,7 +44,7 @@ body 1 function def=14 signature=19 result=14 source=0:30
     return v2 source=30
 end-body
 body 2 function def=15 signature=22 result=14 source=0:60
-  local l0 type=19 binding def=35 mutable=true source=37
+  local l0 type=19 binding def=35 mutable=true storage-parent=- source=37
   block b0:
     v0 type=20 = function def=13 source=47
     v1 type=19 = reify v0 source=47

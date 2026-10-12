@@ -13,7 +13,7 @@ pub(super) fn constructors(
     facts: &crate::sema::model::Declarations,
     program: &mut super::Program,
 ) -> Result<(), Error> {
-    use super::{Block, Local, LocalId, LocalKind, Owner, Statement, Terminator, Value};
+    use super::{Local, LocalId, LocalKind, Owner, Statement, Value};
     for (index, ty) in facts.definitions.iter().enumerate() {
         let Some(Type::FunctionItem { item, signature }) = ty.and_then(|ty| facts.types.kind(ty))
         else {
@@ -58,6 +58,7 @@ pub(super) fn constructors(
                 u32::try_from(ordinal).map_err(|_| error("too many constructor fields"))?;
             let local = LocalId(ordinal);
             body.locals.push(Local {
+                storage_parent: ordinal.checked_sub(1).map(LocalId),
                 ty: field.ty,
                 kind: LocalKind::Parameter(ordinal),
                 definition: None,
@@ -79,39 +80,48 @@ pub(super) fn constructors(
                 action: Action::Evaluate(value),
             });
         }
-        let count = u32::try_from(body.arguments.len())
-            .map_err(|_| error("too many constructor arguments"))?;
-        let value = ValueId(count);
-        body.values.push(Value {
-            ty: result,
-            kind: Rvalue::Aggregate {
-                variant: Some(variant_id),
-                fields: ValueList {
-                    start: 0,
-                    end: count,
-                },
-            },
-        });
-        body.statements.push(Statement {
-            source: variant.node.node,
-            action: Action::Evaluate(value),
-        });
-        for local in (0..count).rev() {
-            body.statements.push(Statement {
-                source: variant.node.node,
-                action: Action::StorageDead(LocalId(local)),
-            });
-        }
-        let end = u32::try_from(body.statements.len())
-            .map_err(|_| error("too many constructor statements"))?;
-        body.blocks.push(Block {
-            start: 0,
-            end,
-            source: variant.node.node,
-            terminator: Terminator::Return(value),
-        });
+        finish_constructor(&mut body, variant_id).map_err(error)?;
         program.bodies.push(body);
     }
+    Ok(())
+}
+
+fn finish_constructor(
+    body: &mut super::Body,
+    variant_id: crate::sema::members::VariantId,
+) -> Result<(), &'static str> {
+    use super::{Block, LocalId, Statement, Terminator, Value};
+    let count =
+        u32::try_from(body.arguments.len()).map_err(|_| "too many constructor arguments")?;
+    let value = ValueId(count);
+    body.values.push(Value {
+        ty: body.result,
+        kind: Rvalue::Aggregate {
+            variant: Some(variant_id),
+            fields: ValueList {
+                start: 0,
+                end: count,
+            },
+        },
+    });
+    body.statements.push(Statement {
+        source: body.source.node,
+        action: Action::Evaluate(value),
+    });
+    if let Some(last) = count.checked_sub(1).map(LocalId) {
+        body.statements.push(Statement {
+            source: body.source.node,
+            action: Action::end_storage(LocalId(0), last),
+        });
+    }
+    let end =
+        u32::try_from(body.statements.len()).map_err(|_| "too many constructor statements")?;
+    body.blocks.push(Block {
+        start: 0,
+        end,
+        source: body.source.node,
+        terminator: Terminator::Return(value),
+    });
     Ok(())
 }
 

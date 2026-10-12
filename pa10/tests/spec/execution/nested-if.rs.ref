@@ -21,8 +21,8 @@ type 18 primitive f64
 type 19 function binders=0 parameters=[] result=14 unsafe=false
 type 20 function-item def=13 signature=19
 body 0 function def=13 signature=19 result=14 source=0:14
-  local l0 type=14 merge mutable=true source=13
-  local l1 type=14 merge mutable=true source=9
+  local l0 type=14 merge mutable=true storage-parent=- source=13
+  local l1 type=14 merge mutable=true storage-parent=l0 source=9
   block b0:
     live l0 source=13
     v0 type=2 = bool true source=3

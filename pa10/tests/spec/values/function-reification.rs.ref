@@ -28,8 +28,8 @@ body 0 function def=13 signature=19 result=11 source=0:4
     return v0 source=4
 end-body
 body 1 function def=14 signature=21 result=19 source=0:26
-  local l0 type=2 parameter=0 def=32 mutable=false source=8
-  local l1 type=20 merge mutable=true source=25
+  local l0 type=2 parameter=0 def=32 mutable=false storage-parent=- source=8
+  local l1 type=20 merge mutable=true storage-parent=l0 source=25
   block b0:
     live l0 source=8
     live l1 source=25

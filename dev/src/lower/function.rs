@@ -121,7 +121,8 @@ impl Lower<'_, '_> {
                 self.source = statement.source;
                 match statement.action {
                     Action::Project(id) => self.project(id)?,
-                    Action::StorageLive(_) | Action::StorageDead(_) => {}
+                    Action::StorageLive(_) | Action::StorageDead(_) | Action::StorageEnd { .. } => {
+                    }
                     Action::Evaluate(value) => {
                         let result = self.evaluate(value)?;
                         self.values[value.0 as usize] = Some(result);

@@ -21,7 +21,7 @@ type 18 primitive f64
 type 19 function binders=0 parameters=[] result=14 unsafe=false
 type 20 function-item def=13 signature=19
 body 0 function def=13 signature=19 result=14 source=0:25
-  local l0 type=5 binding def=31 mutable=false source=5
+  local l0 type=5 binding def=31 mutable=false storage-parent=- source=5
   block b0:
     v0 type=5 = integer bits=0x00000000000000000000000000000008 source=9
     v1 type=5 = unary negate v0 literal=true source=10

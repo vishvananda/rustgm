@@ -876,3 +876,98 @@ complete compilation with fixed pattern width, and does not close the separate
 long-prefix storage-cleanup issue described above.
 
 Conditional A/A candidate medians at 1k/4k/16k functions are 124.27/513.18/2156.58 ms; paired peak RSS is 31796/117024/456000 KiB.
+
+## Compact storage exits
+
+The long-prefix body-size issue above is now fixed. Each local retains the
+predecessor that was live when the local was created. These persistent links
+skip locals from already-closed nested scopes; they are not contiguous local-ID
+ranges. `Action::StorageEnd { first, last }` records a reverse live-stack suffix
+in one action, with inclusive endpoints. A single-local exit keeps
+`StorageDead`. Ordinary bodies and synthesized constructors use the same action
+selection. Cleanup emission neither walks nor copies the suffix.
+
+The body adapter prints `storage-parent=lN|-` on local records and
+`end-storage first=lN last=lN source=NODE` at multi-local exits. The PA10 handout
+owns this vocabulary, and `spec.md` now requires shared storage tails. The
+allocation-free range iterator follows decreasing ancestors and rejects invalid
+endpoints, missing links and cycles rather than silently dropping cleanup.
+Ownership transfer clears the same initialization/write state as before;
+executable lowering still consumes storage actions as no-ops. The scalar test
+executor checks each ended local was live and charges its execution budget.
+This storage operation remains distinct from destructor execution.
+
+The new PA10 `storage-ancestry` fixture closes nested scopes before creating
+later siblings and exercises a labeled-loop exit. Its declared result 153
+matches the storage interpreter, rustc and CPPGM execution. PA10 now has fifty
+fixtures, including 35 interpreted/rustc execution vectors. A model invariant
+also covers gaps in local IDs and rejects corrupted ancestry. Conditional body
+size tests cover 16/64/256/1024 bindings and bound both blocks and statements.
+At 256 bindings, chain statements fall from 35,209 to 2,569 and sequential
+let-else statements from 35,971 to 3,076. At 1024, they are 10,249 and 12,292.
+This is linear body representation; ownership's bounded block-by-path-word
+fixed point still has its separate cost and is not claimed to be linear.
+
+Validation uses `obj/pa13-work/cleanup-candidate`, SHA-256
+`25642b3763652a428d9535cb54a3daee40f2f3d458934eca066a10c1f09b9ac4`.
+All 286 Rust tests pass in debug and release. All 1,673 active assignment cases,
+strict Clippy/rustfmt, the 185-file audit, harness and upstream checks pass.
+Independent rustc and twelve layout controls pass. PA11/PA12 retain 194/97
+LowIR checks and 180/48 executable comparisons; backend qualification passes.
+Another 150 development programs pass native/rustc execution, including the
+new scope regression, for 378 native comparisons in total. Frozen source,
+command and compiler/backend evidence is
+`obj/pa13-work/cleanup-native-1791843798881826270/evidence.json`.
+
+Oracle changes were independently reviewed before acceptance. Expanding compact
+storage into individual reverse-order ends, removing only the new parent
+metadata, and restoring the expanded statement count reproduces the published
+compiler's output across every one of the 1,673 cases. Receipt and raw A/B
+streams are in
+`obj/pa13-work/cleanup-equivalence-1791843831769614566/evidence.json`.
+All forty changed pre-existing oracles are PA10 body views and independently
+expand to the exact previously committed bytes; existing stderr and status
+sidecars are unchanged. The new PA10 fixture was declared before explicit
+`make ref-test` generation. All twelve source receipts match current sources.
+The initial temporary comparison completed its checks but could not serialize
+Path metadata; the corrected receipt run passed and is the evidence cited here.
+
+The 150 development programs additionally have expanded body equivalence and
+byte-identical complete LowIR against the frozen conditional-pattern compiler.
+That separate evidence is
+`obj/pa13-work/cleanup-dev-equivalence-1791843961195698651/evidence.json`.
+Logs for this checkpoint are `obj/pa13-work/cleanup-*.log`.
+
+PA13 remains planned. Guard execution is next, following the retry/protected
+capture requirements above; refutable dynamic slices, named/non-integral
+constants and borrowed execution also remain. PA14/PA15 remain in the active
+objective. Compact storage does not establish any new loan or lifetime proof.
+
+Eight frozen performance runs retain all 432 observations: CPU 10, A/A
+calibration and three ABBA blocks per size, with no concurrent build/test from
+this task. Every full LowIR output and count comparison is byte-identical.
+The baseline is the published conditional-pattern compiler.
+
+| Workload | Run | Largest baseline/candidate median ms | Largest baseline/candidate peak KiB |
+| --- | --- | ---: | ---: |
+| ordinary | 1791843994230819748 | 3498.33 / 3478.93 | 701100 / 703232 |
+| product | 1791844086584813014 | 1572.74 / 1615.51 | 320544 / 321760 |
+| array | 1791844129251485345 | 1691.47 / 1691.82 | 382584 / 383396 |
+| scalar | 1791844174588790566 | 982.52 / 1001.81 | 234800 / 235016 |
+| constructor | 1791844201680519812 | 2961.51 / 3027.27 | 539092 / 540680 |
+| conditional | 1791844283049324888 | 2184.60 / 2132.19 | 455976 / 456692 |
+| chain-width | 1791844343131777136 | 140.10 / 63.03 | 45212 / 12124 |
+| else-width | 1791844345949063946 | 139.82 / 64.24 | 48028 / 14908 |
+
+The first six workloads scale function count with fixed pattern width; ordinary
+uses 4k/16k/64k functions and the others 1k/4k/16k. They show small mixed timing
+changes and a small memory cost from the retained predecessor links; these
+observations do not establish a general speedup or a regression-free claim.
+The two new `--storage-width-input chain|let-else` workloads instead hold one
+demanded function and scale to 128/512/2048 bindings. They expose the cleanup
+problem directly: at the largest width, compact bodies reduce both elapsed
+time and peak memory substantially while preserving complete LowIR bytes.
+
+For chain-width at 2048 bindings, candidate/baseline elapsed ratio is 0.450 and peak-RSS ratio is 0.268.
+
+For else-width at 2048 bindings, candidate/baseline elapsed ratio is 0.459 and peak-RSS ratio is 0.310.

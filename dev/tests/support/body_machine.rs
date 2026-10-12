@@ -71,13 +71,13 @@ impl Machine<'_> {
                                 None
                             };
                     }
-                    Action::StorageDead(local) => {
-                        let local = local.0 as usize;
-                        if !frame.live[local] {
-                            return Err(format!("local {local} was not live"));
+                    Action::StorageDead(local) => frame.end_storage(local.0 as usize)?,
+                    Action::StorageEnd { first, last } => {
+                        for local in body.storage_range(first, last) {
+                            self.fuel =
+                                self.fuel.checked_sub(1).ok_or("test execution exhausted")?;
+                            frame.end_storage(local?.0 as usize)?;
                         }
-                        frame.live[local] = false;
-                        frame.locals[local] = None;
                     }
                     Action::Store {
                         place: Place::Local(local),
@@ -228,6 +228,15 @@ struct Frame<'a> {
     live: Vec<bool>,
 }
 impl Frame<'_> {
+    fn end_storage(&mut self, local: usize) -> Result<(), String> {
+        if !self.live[local] {
+            return Err(format!("local {local} was not live"));
+        }
+        self.live[local] = false;
+        self.locals[local] = None;
+        Ok(())
+    }
+
     fn value(&self, id: ValueId) -> Result<Data, String> {
         self.values[id.0 as usize].ok_or_else(|| format!("v{} was not evaluated", id.0))
     }
