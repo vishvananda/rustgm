@@ -93,6 +93,9 @@ impl Lower<'_, '_> {
             for statement in &self.body.statements[block.start as usize..block.end as usize] {
                 self.source = statement.source;
                 match statement.action {
+                    Action::Project(_) => {
+                        return Err("aggregate places require checked aggregate lowering");
+                    }
                     Action::StorageLive(_) | Action::StorageDead(_) => {}
                     Action::Evaluate(value) => {
                         let result = self.evaluate(value)?;
@@ -161,6 +164,9 @@ impl Lower<'_, '_> {
     }
     fn place(&self, place: Place) -> Result<Option<SlotId>, &'static str> {
         match place {
+            Place::Temporary(_) | Place::Projection(_) => {
+                Err("aggregate places require checked aggregate lowering")
+            }
             Place::Local(id) => self
                 .locals
                 .get(id.0 as usize)
@@ -201,6 +207,9 @@ impl Lower<'_, '_> {
         let ty = representation(self.context.types, value.ty)?;
         let runtime = match value.kind {
             Rvalue::Unit => return Ok(Selected::Unit),
+            Rvalue::Aggregate { .. } | Rvalue::Repeat { .. } => {
+                return Err("aggregate values require checked aggregate lowering");
+            }
             Rvalue::Function(definition) => return Ok(Selected::Item(definition)),
             Rvalue::Scalar(scalar) => match self.body.scalars[scalar.0 as usize] {
                 Scalar::Integer(bits) => self.builder.integer(ty, bits)?,

@@ -1,4 +1,5 @@
 //! Scalar body constraints consume resolved identities; fallback occurs once per body.
+mod aggregates;
 use super::{
     declarations,
     model::{Adjustment, AdjustmentKind, Declarations, Function, Operation, RegionEquality},
@@ -10,7 +11,7 @@ use crate::{
     resolve::{
         expansion::Report,
         model::{DefId, DefKind, Target},
-        package::Error,
+        package::{Error, ModuleId},
         unit::{FileId, NodeKey},
     },
     syntax::ast::{BlockFlavor, Kind, List, NodeId, TypeFlavor, Unary},
@@ -36,6 +37,8 @@ pub fn analyze(report: &Report, mut facts: Declarations) -> Result<Declarations,
         locals: vec![None; facts.definitions.len()],
         facts: &mut facts,
         file: FileId(0),
+        module: ModuleId(0),
+        field_seen: Vec::new(),
         result: TypeId::UNIT,
         in_function: true,
         infer: Context::default(),
@@ -63,6 +66,8 @@ pub fn analyze(report: &Report, mut facts: Declarations) -> Result<Declarations,
     for index in 0..checker.facts.initializers.len() {
         let initializer = checker.facts.initializers[index];
         checker.file = initializer.value.file;
+        let scope = report.resolution.definitions[initializer.definition.0 as usize].scope;
+        checker.module = report.resolution.scopes[scope.0 as usize].module;
         checker.result = initializer.ty;
         checker.in_function = false;
         checker
@@ -103,6 +108,8 @@ struct Checker<'a> {
     report: &'a Report,
     facts: &'a mut Declarations,
     file: FileId,
+    module: ModuleId,
+    field_seen: Vec<bool>,
     result: TypeId,
     in_function: bool,
     infer: Context,
@@ -120,7 +127,7 @@ struct Checker<'a> {
     type_children: Vec<TermId>,
     frames: Vec<Frame>,
     pending_label: Option<(NodeId, DefId)>,
-    assignments: Vec<(NodeId, DefId, Option<Op>)>,
+    assignments: Vec<(NodeId, Option<DefId>, Option<Op>)>,
     breaks: Vec<BreakSite>,
 }
 impl Checker<'_> {
@@ -183,6 +190,8 @@ impl Checker<'_> {
             ));
         };
         self.file = body.file;
+        let scope = self.report.resolution.definitions[function.definition.0 as usize].scope;
+        self.module = self.report.resolution.scopes[scope.0 as usize].module;
         let Some(Type::Function { result, .. }) = self.facts.types.kind(function.signature) else {
             return Err(self.error(body.node, "missing function signature"));
         };
@@ -519,6 +528,10 @@ impl Checker<'_> {
             .construct(constructor, &self.type_children)
             .map_err(|e| self.error(node, e))
     }
+    #[expect(
+        clippy::too_many_lines,
+        reason = "syntax dispatch schedules context-sensitive child constraints without recursive traversal"
+    )]
     fn enter(&mut self, node: NodeId, expected: Option<TermId>) -> Result<(), Error> {
         if let Some(frame) = self.frames.last_mut()
             && frame.kind == FrameKind::While
@@ -530,6 +543,15 @@ impl Checker<'_> {
         self.work.push(Work::Exit(node));
         self.children.clear();
         match self.kind(node) {
+            Kind::Tuple(elements) | Kind::Array(elements) => {
+                return self.enter_elements(node, elements, expected);
+            }
+            Kind::Repeat { value, count } => {
+                return self.enter_repeat(node, value, count, expected);
+            }
+            Kind::Struct { path, fields, base } => {
+                return self.enter_struct(node, path, fields, base, expected);
+            }
             Kind::Path { .. } | Kind::Name(_) | Kind::Item(_) => {}
             Kind::Let {
                 pattern,
@@ -554,7 +576,10 @@ impl Checker<'_> {
                 self.annotation(ty)?;
                 self.children.push(value);
             }
-            Kind::Group(value) | Kind::Attributed { value, .. } | Kind::Label { value, .. } => {
+            Kind::FieldInit { value, .. }
+            | Kind::Group(value)
+            | Kind::Attributed { value, .. }
+            | Kind::Label { value, .. } => {
                 self.work.push(Work::Enter(value, expected));
                 return Ok(());
             }
@@ -640,12 +665,17 @@ impl Checker<'_> {
                 let definition = &self.report.resolution.definitions[id.0 as usize];
                 if !matches!(
                     definition.kind,
-                    DefKind::Function | DefKind::Const | DefKind::Static
+                    DefKind::Function
+                        | DefKind::Const
+                        | DefKind::Static
+                        | DefKind::Constructor
+                        | DefKind::Variant
                 ) {
                     return Err(self.error(node, "unsupported value declaration"));
                 }
                 let ty = self.facts.definitions[id.0 as usize]
                     .ok_or_else(|| self.error(node, "missing value type"))?;
+                self.select_unit_constructor(node, id)?;
                 self.known(node, ty)
             }
             Kind::Group(value) | Kind::Attributed { value, .. } | Kind::Label { value, .. } => {
@@ -680,9 +710,12 @@ impl Checker<'_> {
                     },
                 )
             }
-            Kind::Tuple(elements) if elements.start == elements.end => {
-                self.known(node, TypeId::UNIT)
-            }
+            Kind::Tuple(elements) | Kind::Array(elements) => self.finish_elements(node, elements),
+            Kind::Repeat { value, .. } => self.finish_repeat(node, value),
+            Kind::Struct { base, .. } => self.finish_struct(node, base),
+            Kind::FieldInit { value, .. } => self.finish_field_init(node, value),
+            Kind::Field { value, name } => self.field(node, value, name),
+            Kind::Index { value, index } => self.array_index(node, value, index),
             Kind::EmptyStatement | Kind::Item(_) => self.known(node, TypeId::UNIT),
             Kind::Statement(value) => {
                 let term = self.term(value)?;
@@ -1167,17 +1200,7 @@ impl Checker<'_> {
         while let Kind::Group(inner) | Kind::Attributed { value: inner, .. } = self.kind(left) {
             left = inner;
         }
-        let Some(Target::Definition(target)) =
-            self.facts.node(self.key(left)).and_then(|f| f.reference)
-        else {
-            return Err(self.error(node, "assignment requires a place"));
-        };
-        if !matches!(
-            self.report.resolution.definitions[target.0 as usize].kind,
-            DefKind::Local | DefKind::Parameter
-        ) {
-            return Err(self.error(node, "assignment requires a local place"));
-        }
+        let target = self.assignment_target(node, left)?;
         let operator = scalar::compound_operator(op);
         if matches!(operator, Some(Op::ShiftLeft | Op::ShiftRight)) {
             let integer = self.variable(node, Domain::Integer)?;
@@ -1201,11 +1224,19 @@ impl Checker<'_> {
             {
                 return Err(self.error(*node, "compound assignment is not defined for these types"));
             }
-            let operation = Operation::Assign {
-                target: *target,
-                operator: *operator,
-                left: self.ty(left)?,
-                right: self.ty(right)?,
+            let operation = if let Some(target) = target {
+                Operation::Assign {
+                    target: *target,
+                    operator: *operator,
+                    left: self.ty(left)?,
+                    right: self.ty(right)?,
+                }
+            } else {
+                Operation::AssignPlace {
+                    operator: *operator,
+                    left: self.ty(left)?,
+                    right: self.ty(right)?,
+                }
             };
             let key = self.key(*node);
             self.facts

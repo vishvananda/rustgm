@@ -248,6 +248,19 @@ pub fn scalar(value: Scalar, out: &mut impl Write) -> io::Result<()> {
 }
 fn operation(value: Operation, out: &mut impl Write) -> io::Result<()> {
     match value {
+        Operation::Construct { variant } => write!(out, "construct variant={}", variant.0),
+        Operation::FieldInit { field } => write!(out, "field-init field={}", field.0),
+        Operation::Field { field } => write!(out, "field {field:?}"),
+        Operation::Index { length } => write!(out, "index length={length}"),
+        Operation::AssignPlace {
+            operator,
+            left,
+            right,
+        } => write!(
+            out,
+            "assign-place operator={operator:?} left={} right={}",
+            left.0, right.0
+        ),
         Operation::Transfer { .. } => Err(io::Error::other("transfer belongs on node record")),
         Operation::Unary {
             operator,

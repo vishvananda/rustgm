@@ -197,6 +197,163 @@ fn region_conversions_remain_explicit_obligations() -> Result<(), String> {
     assert_eq!(conversion.ty, body.result);
     Ok(())
 }
+
+#[test]
+fn aggregate_places_preserve_evaluation_order_and_partial_update_reads() -> Result<(), String> {
+    use body::ir::{Action, Place, ProjectionKind, Rvalue};
+    use rustgm::sema::members::{FieldId, Selection};
+    let (report, _, program) = analyze(
+        "struct S{a:u8,b:u16} fn rhs()->u8{7} fn index()->usize{1} fn make()->[u8;2]{[3,4]} fn f(mut a:[u8;2],s:S)->(u8,S){a[index()]+=rhs();let n=make()[index()];let t=S{a:rhs(),..s};let _=a[index()];(n,t)}",
+    )?;
+    let body = program.bodies.last().ok_or("missing aggregate body")?;
+    let mut calls = Vec::new();
+    let mut index_projections = 0;
+    let mut projected_reads = 0;
+    for statement in &body.statements {
+        match statement.action {
+            Action::Project(id) => {
+                if let ProjectionKind::Index { length, .. } = body.projections[id.0 as usize].kind {
+                    assert_eq!(length, 2);
+                    index_projections += 1;
+                }
+            }
+            Action::Evaluate(id) => match body.values[id.0 as usize].kind {
+                Rvalue::Call { callee, .. } => {
+                    let Rvalue::Function(definition) = body.values[callee.0 as usize].kind else {
+                        return Err("missing direct call selection".into());
+                    };
+                    calls.push(
+                        report
+                            .package
+                            .names
+                            .get(report.resolution.definitions[definition.0 as usize].name),
+                    );
+                }
+                Rvalue::Read(Place::Projection(_)) => projected_reads += 1,
+                Rvalue::Read(Place::Local(id)) => assert!(
+                    id.0 >= 2,
+                    "aggregate parameters must be projected without a whole-value read"
+                ),
+                _ => {}
+            },
+            _ => {}
+        }
+    }
+    assert_eq!(calls, ["rhs", "index", "make", "index", "rhs", "index"]);
+    assert_eq!(index_projections, 3);
+    assert_eq!(projected_reads, 3); // compound LHS, indexed temporary, missing update field
+    let fields: Vec<_> = body
+        .projections
+        .iter()
+        .filter_map(|p| {
+            if let ProjectionKind::Field(field) = p.kind {
+                Some(field)
+            } else {
+                None
+            }
+        })
+        .collect();
+    assert_eq!(fields, [Selection::Nominal(FieldId(1))]);
+    assert!(body::scalar_check::check(&program).is_err());
+    Ok(())
+}
+
+#[test]
+fn aggregate_place_stacks_balance_across_divergence_and_nested_cfgs() -> Result<(), String> {
+    for source in [
+        "fn f(){let mut a=[1,2];a[0]=return;}",
+        "fn f(){let mut a=[1,2];a[return]=1;}",
+        "fn f(b:bool)->i32{let a=[1,2];a[if b{return 3}else{0}]}",
+        "fn f(b:bool){let mut a=[1,2];a[if b{return}else{0}]=3;}",
+        "fn f(){let a=[1,2];let _=a[return];}",
+        "struct S{a:i32} fn f(s:S){let t=S{a:return,..s};}",
+        "struct S{a:i32} fn f(s:S){let t=S{a:1,..{return;s}};}",
+        "fn f()->i32{let a=([1,2],);a.0[0]}",
+        "fn f(){let a:(u8,u8);let _=a.0;}",
+        "struct S{a:u8} fn f(){let a:S;let _=a.a;}",
+    ] {
+        analyze(source).map_err(|e| format!("{source}: {e}"))?;
+    }
+    Ok(())
+}
+
+#[test]
+fn tuple_constructors_are_typed_bodies_and_repetition_stays_compact() -> Result<(), String> {
+    use body::ir::{Action, Rvalue};
+    let (report, facts, program) = analyze(
+        "struct S(u8,u16);enum E{V(u8),Empty()}fn f()->S{let ctor=S;ctor(1,2)}fn huge(){let a=[();18446744073709551615usize];}",
+    )?;
+    let constructors: Vec<_> = program.bodies.iter().filter(|body| matches!(body.owner,Owner::Function{definition,..} if matches!(report.resolution.definitions[definition.0 as usize].kind,rustgm::resolve::model::DefKind::Constructor|rustgm::resolve::model::DefKind::Variant))).collect();
+    assert_eq!(constructors.len(), 3);
+    for body in constructors {
+        let result = body.values.last().ok_or("missing constructor result")?;
+        let Rvalue::Aggregate {
+            variant: Some(_),
+            fields,
+        } = result.kind
+        else {
+            return Err("missing typed constructor aggregate".into());
+        };
+        assert_eq!(body.arguments(fields).len(), body.locals.len());
+        assert_eq!(
+            body.statements
+                .iter()
+                .filter(|s| matches!(s.action, Action::StorageLive(_)))
+                .count(),
+            body.locals.len()
+        );
+    }
+    let repeated: Vec<_> = program
+        .bodies
+        .iter()
+        .flat_map(|b| &b.values)
+        .filter_map(|v| {
+            if let Rvalue::Repeat { .. } = v.kind
+                && let Some(rustgm::types::Kind::Array { length, .. }) = facts.types.kind(v.ty)
+            {
+                Some(length)
+            } else {
+                None
+            }
+        })
+        .collect();
+    assert_eq!(repeated, [u64::MAX]);
+    assert!(std::mem::size_of::<body::ir::Value>() <= 24);
+    assert!(program.bodies.iter().all(|b| b.values.len() < 20));
+    Ok(())
+}
+
+#[test]
+fn deep_field_projection_is_iterative_and_reads_only_the_selected_leaf() -> Result<(), String> {
+    use body::ir::{Place, Rvalue};
+    use std::fmt::Write as _;
+    let mut source = String::from("type T0=u8;");
+    for n in 1..=10_000 {
+        write!(source, "type T{n}=(T{},);", n - 1).map_err(|e| e.to_string())?;
+    }
+    source.push_str("fn f(x:T10000)->u8{x");
+    for _ in 0..10_000 {
+        source.push_str(".0");
+    }
+    source.push('}');
+    let (_, _, program) = analyze(&source)?;
+    let body = program.bodies.first().ok_or("missing projected body")?;
+    assert_eq!(body.projections.len(), 10_000);
+    assert_eq!(
+        body.values
+            .iter()
+            .filter(|v| matches!(v.kind, Rvalue::Read(Place::Projection(_))))
+            .count(),
+        1
+    );
+    assert!(
+        !body
+            .values
+            .iter()
+            .any(|v| matches!(v.kind, Rvalue::Read(Place::Local(_))))
+    );
+    Ok(())
+}
 #[test]
 fn deep_bodies_are_iterative_and_views_are_deterministic() -> Result<(), String> {
     let source = format!("fn entry()->u64{{0{}}}", "+1".repeat(10_000));

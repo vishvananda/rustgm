@@ -266,6 +266,133 @@ fn check_cases(name: &str, cases: &[(&str, bool)]) -> Result<(), String> {
 }
 
 #[test]
+fn aggregate_expression_types_match_pinned_rustc() -> Result<(), String> {
+    check_cases(
+        "aggregates",
+        &[
+            ("fn f()->(u8,bool){(1,true)}", true),
+            ("fn f()->u8{let a=(1,false);a.0}", true),
+            ("fn f()->u8{let a:((u8,),bool)=((1,),false);a.0.0}", true),
+            ("fn f(){let a=(1,false);let _=a.2;}", false),
+            ("fn f(){let a=(1,false);let _=a.no;}", false),
+            ("fn f(){let a=(1,false);let _=a.00;}", false),
+            ("fn f()->(u8,bool){(1,2)}", false),
+            ("fn f()->[u8;3]{[1,2,3]}", true),
+            ("fn f()->[u8;3]{[1,2]}", false),
+            ("fn f()->[u8;0]{[]}", true),
+            ("fn f(){let a=[];}", false),
+            ("fn f()->u8{let a=[1,2,3];a[1]}", true),
+            ("fn f(x:usize)->u8{let a=[4;3usize];a[x]}", true),
+            ("fn f(x:u8)->u8{let a=[4;3];a[x]}", false),
+            ("fn f()->[u8;2]{[1,true]}", false),
+            ("fn f()->[(u8,bool);2]{[(1,true),(2,false)]}", true),
+            ("fn f(){let a:[_;2]=[1u8,2];let b:u8=a[0];}", true),
+            ("fn f(){let mut a=(1u8,false);a.0=2;a.1=true;}", true),
+            ("fn f(){let mut a=[1u8,2];a[0]=3;a[1]+=4;}", true),
+            ("fn f(){let mut a=[1u8,2];a[0]=false;}", false),
+            ("fn g()->u8{1} fn f()->(fn()->u8,){(g,)}", true),
+            (
+                "fn g()->u8{1} fn h()->u8{2} fn f()->u8{let a=[g,h];a[0]()}",
+                true,
+            ),
+            ("fn g()->u8{1} fn f()->[fn()->u8;2]{[g,g]}", true),
+            ("fn g()->u8{1} fn f()->[fn()->u8;2]{[g;2]}", true),
+            ("struct S{a:u8,b:bool} fn f()->S{S{b:true,a:1}}", true),
+            ("struct S{a:u8,b:bool} fn f()->S{S{a:1}}", false),
+            ("struct S{a:u8} fn f()->S{S{a:1,a:2}}", false),
+            ("struct S{a:u8} fn f()->S{S{a:1,b:2}}", false),
+            ("struct S{a:u8} fn f()->S{S{a:false}}", false),
+            ("struct S{a:u8} type A=S; fn f()->S{A{a:1}}", true),
+            ("struct S{a:u8} fn f()->u8{let s=S{a:1};s.a}", true),
+            ("struct S{a:u8} fn f(){let mut s=S{a:1};s.a+=2;}", true),
+            ("struct S{a:u8,b:bool} fn f(s:S)->S{S{a:2,..s}}", true),
+            ("struct S{a:u8} struct T{a:u8} fn f(s:T)->S{S{..s}}", false),
+            (
+                "struct S{a:u8} fn f(s:S)->S{S{#[cfg(any())] missing:false,..s}}",
+                true,
+            ),
+            ("struct S; fn f()->S{S}", true),
+            ("struct S; fn f()->S{S{}}", true),
+            ("struct S(); fn f()->S{S()}", true),
+            ("struct S(u8,bool); fn f()->S{S(1,true)}", true),
+            ("struct S(u8,bool); fn f()->S{S{1:true,0:1}}", true),
+            ("struct S(u8,bool); fn f(s:S)->u8{s.0}", true),
+            (
+                "struct S(u8); fn f()->S{let ctor:fn(u8)->S=S;ctor(3)}",
+                true,
+            ),
+            ("struct S(u8); fn f()->S{S(false)}", false),
+            ("enum E{A,B(u8),C{a:u8}} fn f()->E{E::A}", true),
+            ("enum E{A,B(u8),C{a:u8}} fn f()->E{E::B(1)}", true),
+            ("enum E{A,B(u8),C{a:u8}} fn f()->E{E::C{a:1}}", true),
+            ("enum E{A,B(u8),C{a:u8}} fn f()->E{E::B{0:1}}", true),
+            ("enum E{A,B(u8),C{a:u8}} fn f(e:E)->u8{e.0}", false),
+            ("enum E{A,B{a:u8}} fn f(e:E)->E{E::B{a:1,..e}}", false),
+            (
+                "mod m{pub struct S{pub x:u8,hidden:bool}} fn f(s:m::S)->u8{s.x}",
+                true,
+            ),
+            (
+                "mod m{pub struct S{pub x:u8,hidden:bool}} fn f(s:m::S)->bool{s.hidden}",
+                false,
+            ),
+            (
+                "mod m{pub struct S{pub x:u8,hidden:bool}} fn f(s:m::S)->m::S{m::S{x:1,..s}}",
+                false,
+            ),
+            (
+                "mod m{pub struct S(pub u8,pub(crate) bool);} fn f()->m::S{m::S(1,true)}",
+                true,
+            ),
+            (
+                "mod m{pub struct S(pub u8,bool);} fn f(s:m::S)->bool{s.1}",
+                false,
+            ),
+            ("struct S{é:u8} fn f()->u8{let s=S{e\u{301}:1};s.é}", true),
+            (
+                "macro_rules! make{()=>{struct S{v:u8}}} make!(); fn f()->u8{S{v:1}.v}",
+                true,
+            ),
+        ],
+    )
+}
+
+#[test]
+fn aggregate_selections_keep_nominal_field_ids_and_array_bounds() -> Result<(), String> {
+    use rustgm::sema::members::Selection;
+    let (_, facts) = analyze(
+        "struct S{a:u8,b:[u16;2]} fn f()->u16{let mut s=S{b:[4,5],a:1};s.b[1]=6;s.b[0]+s.b[1]}",
+    )?;
+    let mut initializers = Vec::new();
+    let mut fields = Vec::new();
+    let mut indices = 0;
+    let mut writes = 0;
+    for fact in facts.nodes.iter().flatten() {
+        match fact.operation {
+            Some(Operation::FieldInit { field }) => initializers.push(field.0),
+            Some(Operation::Field {
+                field: Selection::Nominal(field),
+            }) => fields.push(field.0),
+            Some(Operation::Index { length }) => {
+                assert_eq!(length, 2);
+                indices += 1;
+            }
+            Some(Operation::AssignPlace { left, right, .. }) => {
+                assert_eq!(left, right);
+                assert_eq!(left, TypeId::primitive(Primitive::U16));
+                writes += 1;
+            }
+            _ => {}
+        }
+    }
+    assert_eq!(initializers, [1, 0]);
+    assert_eq!(fields, [1, 1, 1]);
+    assert_eq!((indices, writes), (3, 1));
+    assert_eq!(std::mem::size_of::<rustgm::sema::model::NodeFacts>(), 80);
+    Ok(())
+}
+
+#[test]
 fn control_flow_and_assignment_types_match_pinned_rustc() -> Result<(), String> {
     check_cases(
         "control",

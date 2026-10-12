@@ -1,0 +1,387 @@
+//! Aggregate constraints publish member selections once for bodies and ownership.
+use super::{
+    Checker, Constructor, DefId, DefKind, Domain, Error, Kind, List, NodeId, Operation, Primitive,
+    Target, TermId, Type, TypeId, Work, declarations,
+};
+use crate::{
+    resolve::model::Access,
+    sema::members::{FieldId, Name, Selection, VariantId},
+    syntax::{item::Shape, token_tree::Span},
+    types::aggregate,
+};
+
+impl Checker<'_> {
+    fn selected(&mut self, node: NodeId, operation: Operation) -> Result<(), Error> {
+        let key = self.key(node);
+        self.facts
+            .node_mut(key)
+            .ok_or_else(|| {
+                super::Declarations::error(self.report, key, "missing aggregate expression fact")
+            })?
+            .operation = Some(operation);
+        Ok(())
+    }
+    fn shape(
+        &mut self,
+        node: NodeId,
+        constructor: Constructor,
+        expected: Option<TermId>,
+    ) -> Result<TermId, Error> {
+        let term = self
+            .infer
+            .construct(constructor, &self.type_children)
+            .map_err(|e| self.error(node, e))?;
+        if let Some(expected) = expected {
+            self.equate(node, term, expected)?;
+        }
+        self.save(node, term);
+        Ok(term)
+    }
+    pub(super) fn enter_elements(
+        &mut self,
+        node: NodeId,
+        elements: List,
+        expected: Option<TermId>,
+    ) -> Result<(), Error> {
+        let tuple = matches!(self.kind(node), Kind::Tuple(_));
+        let unit = self.report.package.unit(self.file);
+        let count = unit
+            .configured
+            .ast
+            .list(elements)
+            .iter()
+            .filter(|n| self.active(**n))
+            .count();
+        self.type_children.clear();
+        for _ in 0..if tuple { count } else { 1 } {
+            let child = self.variable(node, Domain::Any)?;
+            self.type_children.push(child);
+        }
+        let constructor = if tuple {
+            Constructor::Tuple
+        } else {
+            Constructor::Array(
+                u64::try_from(count).map_err(|_| self.error(node, "too many array elements"))?,
+            )
+        };
+        let term = self.shape(node, constructor, expected)?;
+        let mut ordinal = count;
+        for child in unit.configured.ast.list(elements).iter().rev().copied() {
+            if !self.active(child) {
+                continue;
+            }
+            ordinal -= 1;
+            let expected = self.child(node, term, if tuple { ordinal } else { 0 })?;
+            self.work.push(Work::Enter(child, Some(expected)));
+        }
+        Ok(())
+    }
+    pub(super) fn finish_elements(
+        &mut self,
+        node: NodeId,
+        elements: List,
+    ) -> Result<TermId, Error> {
+        let term = self.term(node)?;
+        let tuple = matches!(self.kind(node), Kind::Tuple(_));
+        let unit = self.report.package.unit(self.file);
+        if !tuple {
+            let element = self.child(node, term, 0)?;
+            if self.head(node, element)?.is_none() {
+                let mut common = None;
+                for child in unit.configured.ast.list(elements) {
+                    if !self.active(*child) {
+                        continue;
+                    }
+                    let current = self.term(*child)?;
+                    common = Some(if let Some(prior) = common {
+                        self.join_types(node, prior, current)?
+                    } else {
+                        current
+                    });
+                }
+                if let Some(common) = common {
+                    self.equate(node, element, common)?;
+                }
+            }
+        }
+        let mut ordinal = 0;
+        for child in unit.configured.ast.list(elements) {
+            if !self.active(*child) {
+                continue;
+            }
+            let expected = self.child(node, term, if tuple { ordinal } else { 0 })?;
+            self.coerce(*child, expected)?;
+            ordinal += 1;
+        }
+        Ok(term)
+    }
+    pub(super) fn enter_repeat(
+        &mut self,
+        node: NodeId,
+        value: NodeId,
+        count: NodeId,
+        expected: Option<TermId>,
+    ) -> Result<(), Error> {
+        let length = declarations::array_length(self.report, self.key(count))?;
+        let element = self.variable(node, Domain::Any)?;
+        self.type_children.clear();
+        self.type_children.push(element);
+        let term = self.shape(node, Constructor::Array(length), expected)?;
+        let expected = self.child(node, term, 0)?;
+        self.work.push(Work::Enter(value, Some(expected)));
+        Ok(())
+    }
+    pub(super) fn finish_repeat(&mut self, node: NodeId, value: NodeId) -> Result<TermId, Error> {
+        let term = self.term(node)?;
+        let element = self.child(node, term, 0)?;
+        self.coerce(value, element)?;
+        Ok(term)
+    }
+    pub(super) fn select_unit_constructor(
+        &mut self,
+        node: NodeId,
+        definition: DefId,
+    ) -> Result<(), Error> {
+        let Some(variant) = self.facts.members.constructors.get(&definition).copied() else {
+            return Ok(());
+        };
+        if self.facts.members.variants[variant.0 as usize].shape == Shape::Unit {
+            self.selected(node, Operation::Construct { variant })?;
+        }
+        Ok(())
+    }
+    fn constructor(&self, node: NodeId) -> Result<VariantId, Error> {
+        let Some(Target::Definition(definition)) =
+            self.facts.node(self.key(node)).and_then(|f| f.reference)
+        else {
+            return Err(self.error(node, "aggregate path requires a resolved constructor"));
+        };
+        if let Some(variant) = self.facts.members.constructors.get(&definition) {
+            return Ok(*variant);
+        }
+        if let Some(Type::Adt(item)) =
+            self.facts.definitions[definition.0 as usize].and_then(|ty| self.facts.types.kind(ty))
+        {
+            return self.struct_variant(node, item);
+        }
+        Err(self.error(node, "path does not name a struct or enum variant"))
+    }
+    fn struct_variant(&self, node: NodeId, item: crate::types::ItemId) -> Result<VariantId, Error> {
+        let definition = &self.report.resolution.definitions[item.0 as usize];
+        if definition.kind != DefKind::Struct {
+            return Err(self.error(node, "enum fields require a selected variant"));
+        }
+        definition
+            .node
+            .and_then(|key| self.facts.members.at_node(key))
+            .ok_or_else(|| self.error(node, "missing struct member facts"))
+    }
+    fn member_name(&mut self, node: NodeId, span: Span) -> Result<Name, Error> {
+        let spelling = self
+            .report
+            .package
+            .unit(self.file)
+            .spelling(span)
+            .map_err(|e| self.error(node, e.message))?;
+        if spelling.as_bytes().first().is_some_and(u8::is_ascii_digit) {
+            if !spelling.bytes().all(|b| b.is_ascii_digit())
+                || (spelling.len() > 1 && spelling.starts_with('0'))
+            {
+                return Err(self.error(node, "tuple field must be an unsuffixed decimal index"));
+            }
+            return spelling
+                .parse::<u32>()
+                .map(Name::Index)
+                .map_err(|_| self.error(node, "tuple field index overflows"));
+        }
+        self.facts
+            .members
+            .names
+            .intern(spelling)
+            .map(Name::Named)
+            .map_err(|e| self.error(node, e))
+    }
+    fn accessible(&self, node: NodeId, field: FieldId) -> Result<(), Error> {
+        let access = self.facts.members.fields[field.0 as usize].access;
+        if let Access::Within(module) = access
+            && !self.report.package.is_descendant(self.module, module)
+        {
+            return Err(self.error(node, "aggregate field is private"));
+        }
+        Ok(())
+    }
+    pub(super) fn enter_struct(
+        &mut self,
+        node: NodeId,
+        path: NodeId,
+        fields: List,
+        base: Option<NodeId>,
+        expected: Option<TermId>,
+    ) -> Result<(), Error> {
+        let variant_id = self.constructor(path)?;
+        let variant = self.facts.members.variants[variant_id.0 as usize];
+        let ty = self.facts.definitions[variant.owner.0 as usize]
+            .ok_or_else(|| self.error(node, "missing aggregate result type"))?;
+        let term = self.known(node, ty)?;
+        if let Some(expected) = expected {
+            self.equate(node, term, expected)?;
+        }
+        self.save(node, term);
+        self.selected(
+            node,
+            Operation::Construct {
+                variant: variant_id,
+            },
+        )?;
+        self.field_seen.clear();
+        self.field_seen
+            .resize((variant.end - variant.start) as usize, false);
+        if let Some(base) = base {
+            let definition = self
+                .facts
+                .aggregates
+                .get(variant.owner)
+                .ok_or_else(|| self.error(node, "missing aggregate shape"))?;
+            if definition.kind != aggregate::Kind::Struct {
+                return Err(self.error(node, "functional update requires a struct"));
+            }
+            for index in variant.start..variant.end {
+                self.accessible(node, FieldId(index))?;
+            }
+            self.work.push(Work::Enter(base, Some(term)));
+        }
+        let unit = self.report.package.unit(self.file);
+        for wrapper in unit.configured.ast.list(fields).iter().rev().copied() {
+            if !self.active(wrapper) {
+                continue;
+            }
+            let mut field_node = wrapper;
+            while let Kind::Attributed { value, .. } = self.kind(field_node) {
+                field_node = value;
+            }
+            let Kind::FieldInit { name, .. } = self.kind(field_node) else {
+                return Err(self.error(field_node, "invalid field initializer"));
+            };
+            let name = self.member_name(field_node, name)?;
+            let field = self
+                .facts
+                .members
+                .field(variant_id, name)
+                .ok_or_else(|| self.error(field_node, "unknown aggregate field"))?;
+            self.accessible(field_node, field)?;
+            if std::mem::replace(
+                &mut self.field_seen[(field.0 - variant.start) as usize],
+                true,
+            ) {
+                return Err(self.error(field_node, "duplicate field initializer"));
+            }
+            self.selected(field_node, Operation::FieldInit { field })?;
+            let ty = self.facts.members.fields[field.0 as usize].ty;
+            let expected = self.known(field_node, ty)?;
+            self.work.push(Work::Enter(wrapper, Some(expected)));
+        }
+        if base.is_none() && self.field_seen.contains(&false) {
+            return Err(self.error(node, "missing aggregate field initializer"));
+        }
+        Ok(())
+    }
+    pub(super) fn finish_struct(
+        &mut self,
+        node: NodeId,
+        base: Option<NodeId>,
+    ) -> Result<TermId, Error> {
+        let term = self.term(node)?;
+        if let Some(base) = base {
+            self.coerce(base, term)?;
+        }
+        Ok(term)
+    }
+    pub(super) fn finish_field_init(
+        &mut self,
+        node: NodeId,
+        value: NodeId,
+    ) -> Result<TermId, Error> {
+        let Some(Operation::FieldInit { field }) =
+            self.facts.node(self.key(node)).and_then(|f| f.operation)
+        else {
+            return Err(self.error(node, "missing selected initializer field"));
+        };
+        let ty = self.facts.members.fields[field.0 as usize].ty;
+        let expected = self.known(node, ty)?;
+        self.coerce(value, expected)?;
+        Ok(expected)
+    }
+    pub(super) fn field(
+        &mut self,
+        node: NodeId,
+        value: NodeId,
+        name: Span,
+    ) -> Result<TermId, Error> {
+        let name = self.member_name(node, name)?;
+        let receiver = self.term(value)?;
+        let (selection, ty) = match self.head(node, receiver)? {
+            Some(Constructor::Tuple) => {
+                let Name::Index(index) = name else {
+                    return Err(self.error(node, "tuple field requires a numeric index"));
+                };
+                let ty = self.child(node, receiver, index as usize)?;
+                (Selection::Tuple(index), ty)
+            }
+            Some(Constructor::Adt(item)) => {
+                let variant = self.struct_variant(node, item)?;
+                let field = self
+                    .facts
+                    .members
+                    .field(variant, name)
+                    .ok_or_else(|| self.error(node, "unknown aggregate field"))?;
+                self.accessible(node, field)?;
+                let ty = self.known(node, self.facts.members.fields[field.0 as usize].ty)?;
+                (Selection::Nominal(field), ty)
+            }
+            _ => return Err(self.error(node, "field access requires a known tuple or struct type")),
+        };
+        self.selected(node, Operation::Field { field: selection })?;
+        Ok(ty)
+    }
+    pub(super) fn array_index(
+        &mut self,
+        node: NodeId,
+        value: NodeId,
+        index: NodeId,
+    ) -> Result<TermId, Error> {
+        let array = self.term(value)?;
+        let Some(Constructor::Array(length)) = self.head(node, array)? else {
+            return Err(self.error(node, "indexing requires a known array type"));
+        };
+        let usize = self.known(node, TypeId::primitive(Primitive::Usize))?;
+        self.coerce(index, usize)?;
+        self.selected(node, Operation::Index { length })?;
+        self.child(node, array, 0)
+    }
+    pub(super) fn assignment_target(
+        &self,
+        node: NodeId,
+        left: NodeId,
+    ) -> Result<Option<DefId>, Error> {
+        if self.facts.node(self.key(left)).is_some_and(|f| {
+            matches!(
+                f.operation,
+                Some(Operation::Field { .. } | Operation::Index { .. })
+            )
+        }) {
+            return Ok(None);
+        }
+        let Some(Target::Definition(target)) =
+            self.facts.node(self.key(left)).and_then(|f| f.reference)
+        else {
+            return Err(self.error(node, "assignment requires a place"));
+        };
+        if !matches!(
+            self.report.resolution.definitions[target.0 as usize].kind,
+            DefKind::Local | DefKind::Parameter
+        ) {
+            return Err(self.error(node, "assignment requires a local place"));
+        }
+        Ok(Some(target))
+    }
+}

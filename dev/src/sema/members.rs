@@ -14,6 +14,11 @@ use std::collections::HashMap;
 pub struct VariantId(pub u32);
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct FieldId(pub u32);
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Selection {
+    Tuple(u32),
+    Nominal(FieldId),
+}
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum Name {
     /// Identity in `Members::names`, independently interned from lexical bindings.

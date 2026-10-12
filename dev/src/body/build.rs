@@ -1,4 +1,5 @@
 //! Iterative construction visits executable syntax once and consumes PA9 selections.
+mod aggregates;
 use super::ir::{
     Action, Block, BlockId, Body, Local, LocalId, LocalKind, Owner, Place, Program, Rvalue,
     ScalarId, Statement, Terminator, Value, ValueId, ValueList,
@@ -31,6 +32,8 @@ pub fn build(report: &Report, facts: &Declarations) -> Result<Program, Error> {
         live: Vec::new(),
         controls: HashMap::new(),
         reach: Vec::new(),
+        places: Vec::new(),
+        field_values: Vec::new(),
     };
     let mut program = Program {
         bodies: Vec::new(),
@@ -72,11 +75,13 @@ pub fn build(report: &Report, facts: &Declarations) -> Result<Program, Error> {
             .bodies
             .push(builder.run(None).map_err(|e| report.diagnostic(e))?);
     }
+    aggregates::constructors(report, facts, &mut program)?;
     Ok(program)
 }
 impl Body {
     fn new(owner: Owner, source: NodeKey, result: TypeId) -> Self {
         Self {
+            projections: Vec::new(),
             owner,
             source,
             result,
@@ -103,6 +108,11 @@ struct Reach {
 }
 #[derive(Clone, Copy)]
 enum Work {
+    Place(NodeId),
+    FinishPlace(NodeId),
+    TemporaryPlace(NodeId),
+    ReadPlace(NodeId),
+    DiscardPlace(NodeId),
     Enter(NodeId),
     Finish(NodeId),
     EndBlock {
@@ -137,6 +147,8 @@ enum Work {
     },
 }
 struct Scratch {
+    places: Vec<Option<Place>>,
+    field_values: Vec<Option<ValueId>>,
     values: Vec<Vec<Option<ValueId>>>,
     definitions: Vec<Option<LocalId>>,
     touched: Vec<NodeId>,
@@ -352,6 +364,8 @@ impl<'a> Builder<'a> {
         let ty = match place {
             Place::Local(id) => Some(self.body.locals[id.0 as usize].ty),
             Place::Static(id) => self.facts.definitions[id.0 as usize],
+            Place::Temporary(id) => Some(self.body.values[id.0 as usize].ty),
+            Place::Projection(id) => Some(self.body.projections[id.0 as usize].ty),
         };
         if ty != Some(self.body.values[value.0 as usize].ty) {
             return Err(self.error(node, "store disagrees with solved type"));
@@ -437,13 +451,31 @@ impl<'a> Builder<'a> {
         self.scratch.live.clear();
         self.scratch.controls.clear();
         self.scratch.reach.clear();
+        if !self.scratch.places.is_empty() {
+            return Err(self.error(root, "unbalanced place construction stack"));
+        }
         Ok(self.body)
     }
     fn step(&mut self, work: Work) -> Result<(), Error> {
         match work {
+            Work::Place(node) => self.enter_place(node)?,
+            Work::FinishPlace(node) => self.finish_place(node)?,
+            Work::TemporaryPlace(node) => {
+                let place = if self.current.is_some() {
+                    Some(Place::Temporary(self.value(node)?))
+                } else {
+                    None
+                };
+                self.scratch.places.push(place);
+            }
+            Work::ReadPlace(node) => self.read_place(node)?,
+            Work::DiscardPlace(node) => {
+                self.pop_place(node)?;
+            }
             Work::Enter(node) if self.current.is_some() && self.active(node) => self.enter(node)?,
             Work::Finish(node) if self.current.is_some() => self.finish(node)?,
-            Work::Enter(_) | Work::Finish(_) => {}
+            Work::Finish(node) => self.discard_unreachable_place(node)?,
+            Work::Enter(_) => {}
             Work::EndBlock { node, tail, base } => {
                 if self.current.is_some() {
                     let value = if let Some(tail) = tail {
@@ -606,13 +638,23 @@ impl<'a> Builder<'a> {
                 self.scratch.work.push(Work::Enter(value));
             }
             kind => {
+                if matches!(kind, Kind::Field { .. } | Kind::Index { .. }) {
+                    self.scratch.work.push(Work::ReadPlace(node));
+                    self.scratch.work.push(Work::Place(node));
+                    return Ok(());
+                }
                 self.scratch.work.push(Work::Finish(node));
                 match kind {
                     Kind::Let {
                         pattern,
                         value: Some(value),
                         ..
-                    } if self.discarded_local(pattern, value)? => {}
+                    } if self.discarded_local(pattern, value)? => {
+                        if self.projected_syntax(value) {
+                            self.scratch.work.push(Work::DiscardPlace(value));
+                            self.scratch.work.push(Work::Place(value));
+                        }
+                    }
                     Kind::Let { value, .. } | Kind::Return(value) | Kind::Break { value, .. } => {
                         if let Some(value) = value {
                             self.scratch.work.push(Work::Enter(value));
@@ -627,6 +669,14 @@ impl<'a> Builder<'a> {
                         self.scratch.work.push(Work::Enter(operand));
                     }
                     Kind::Binary { left, right, .. } => {
+                        if matches!(
+                            self.fact(node)?.operation,
+                            Some(Operation::AssignPlace { .. })
+                        ) {
+                            self.scratch.work.push(Work::Place(left));
+                            self.scratch.work.push(Work::Enter(right));
+                            return Ok(());
+                        }
                         self.scratch.work.push(Work::Enter(right));
                         if !matches!(self.fact(node)?.operation, Some(Operation::Assign { .. })) {
                             self.scratch.work.push(Work::Enter(left));
@@ -635,6 +685,16 @@ impl<'a> Builder<'a> {
                     Kind::Call { callee, arguments } => {
                         self.children(arguments);
                         self.scratch.work.push(Work::Enter(callee));
+                    }
+                    Kind::Tuple(elements) | Kind::Array(elements) => self.children(elements),
+                    Kind::Repeat { value, .. } | Kind::FieldInit { value, .. } => {
+                        self.scratch.work.push(Work::Enter(value));
+                    }
+                    Kind::Struct { fields, base, .. } => {
+                        if let Some(base) = base {
+                            self.scratch.work.push(Work::Place(base));
+                        }
+                        self.children(fields);
                     }
                     _ => {}
                 }
@@ -651,6 +711,9 @@ impl<'a> Builder<'a> {
         }
         while let Kind::Group(inner) | Kind::Attributed { value: inner, .. } = self.kind(value) {
             value = inner;
+        }
+        if self.projected_syntax(value) {
+            return Ok(true);
         }
         if !matches!(self.kind(value), Kind::Path { .. } | Kind::Name(_)) {
             return Ok(false);
@@ -757,6 +820,13 @@ impl<'a> Builder<'a> {
             .ok_or_else(|| self.error(node, "missing local place"))
     }
     fn path(&mut self, node: NodeId) -> Result<Rvalue, Error> {
+        if let Some(Operation::Construct { variant }) = self.fact(node)?.operation {
+            let start = self.index(node, self.body.arguments.len())?;
+            return Ok(Rvalue::Aggregate {
+                variant: Some(variant),
+                fields: ValueList { start, end: start },
+            });
+        }
         let Some(Target::Definition(definition)) = self.fact(node)?.reference else {
             return Err(self.error(node, "missing resolved value identity"));
         };
@@ -765,7 +835,9 @@ impl<'a> Builder<'a> {
                 DefKind::Local | DefKind::Parameter => {
                     Rvalue::Read(self.local_place(node, definition)?)
                 }
-                DefKind::Function => Rvalue::Function(definition),
+                DefKind::Function | DefKind::Constructor | DefKind::Variant => {
+                    Rvalue::Function(definition)
+                }
                 DefKind::Const => Rvalue::Constant(definition),
                 DefKind::Static => Rvalue::Read(Place::Static(definition)),
                 _ => return Err(self.error(node, "unsupported resolved body value")),
@@ -775,6 +847,13 @@ impl<'a> Builder<'a> {
     fn finish(&mut self, node: NodeId) -> Result<(), Error> {
         let ty = self.ty(node)?;
         let value = match self.kind(node) {
+            Kind::Tuple(elements) if elements.start != elements.end => {
+                self.aggregate_elements(node, elements)?
+            }
+            Kind::Array(elements) => self.aggregate_elements(node, elements)?,
+            Kind::Repeat { value, .. } => self.repeat(node, value)?,
+            Kind::Struct { fields, base, .. } => self.construct(node, fields, base)?,
+            Kind::FieldInit { value, .. } => self.value(value)?,
             Kind::Group(value) | Kind::Attributed { value, .. } | Kind::Label { value, .. } => {
                 self.value(value)?
             }
@@ -868,6 +947,29 @@ impl<'a> Builder<'a> {
     fn binary(&mut self, node: NodeId, left: NodeId, right: NodeId) -> Result<ValueId, Error> {
         let right = self.value(right)?;
         match self.fact(node)?.operation {
+            Some(Operation::AssignPlace {
+                operator, left: ty, ..
+            }) => {
+                let place = self
+                    .pop_place(node)?
+                    .ok_or_else(|| self.error(node, "missing assignment place"))?;
+                let value = if let Some(operator) = operator {
+                    let left = self.evaluate(node, ty, Rvalue::Read(place))?;
+                    self.evaluate(
+                        node,
+                        ty,
+                        Rvalue::Binary {
+                            operator,
+                            left,
+                            right,
+                        },
+                    )?
+                } else {
+                    right
+                };
+                self.store(node, place, value)?;
+                self.unit(node)
+            }
             Some(Operation::Binary { operator, .. }) => self.evaluate(
                 node,
                 self.ty(node)?,

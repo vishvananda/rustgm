@@ -31,6 +31,23 @@ pub enum Cast {
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Operation {
+    Construct {
+        variant: super::members::VariantId,
+    },
+    FieldInit {
+        field: super::members::FieldId,
+    },
+    Field {
+        field: super::members::Selection,
+    },
+    Index {
+        length: u64,
+    },
+    AssignPlace {
+        operator: Option<Punctuation>,
+        left: TypeId,
+        right: TypeId,
+    },
     /// A break or continue target is in the same source unit as the transfer.
     Transfer {
         target: NodeId,

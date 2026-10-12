@@ -1,5 +1,7 @@
 //! The CFG text adapter observes typed records; the executable path never parses it.
-use super::ir::{Action, Body, LocalKind, Owner, Place, Program, Rvalue, Terminator};
+use super::ir::{
+    Action, Body, LocalKind, Owner, Place, Program, ProjectionKind, Rvalue, Terminator,
+};
 use crate::{
     sema::{model::InitializerKind, type_view},
     types::Store,
@@ -75,11 +77,23 @@ fn contents(body: &Body, out: &mut impl Write) -> io::Result<()> {
         }
         writeln!(out, " mutable={} source={}", local.mutable, local.source.0)?;
     }
+    for (id, projection) in body.projections.iter().enumerate() {
+        write!(out, "  projection p{id} type={} base=", projection.ty.0)?;
+        place(projection.base, out)?;
+        match projection.kind {
+            ProjectionKind::Field(field) => write!(out, " field={field:?}")?,
+            ProjectionKind::Index { index, length } => {
+                write!(out, " index=v{} length={length}", index.0)?;
+            }
+        }
+        writeln!(out)?;
+    }
     for (id, block) in body.blocks.iter().enumerate() {
         writeln!(out, "  block b{id}:")?;
         for statement in body.statements(block) {
             write!(out, "    ")?;
             match statement.action {
+                Action::Project(id) => write!(out, "project p{}", id.0)?,
                 Action::StorageLive(local) => write!(out, "live l{}", local.0)?,
                 Action::StorageDead(local) => write!(out, "dead l{}", local.0)?,
                 Action::Store {
@@ -115,10 +129,27 @@ fn place(value: Place, out: &mut impl Write) -> io::Result<()> {
     match value {
         Place::Local(id) => write!(out, "l{}", id.0),
         Place::Static(id) => write!(out, "static:{}", id.0),
+        Place::Temporary(id) => write!(out, "temporary:v{}", id.0),
+        Place::Projection(id) => write!(out, "p{}", id.0),
     }
 }
 fn rvalue(body: &Body, value: Rvalue, out: &mut impl Write) -> io::Result<()> {
     match value {
+        Rvalue::Aggregate { variant, fields } => {
+            write!(out, "aggregate")?;
+            if let Some(variant) = variant {
+                write!(out, " variant={}", variant.0)?;
+            }
+            write!(out, " [")?;
+            for (index, value) in body.arguments(fields).iter().enumerate() {
+                if index != 0 {
+                    write!(out, ",")?;
+                }
+                write!(out, "v{}", value.0)?;
+            }
+            write!(out, "]")
+        }
+        Rvalue::Repeat { value } => write!(out, "repeat v{}", value.0),
         Rvalue::Unit => write!(out, "unit"),
         Rvalue::Scalar(id) => type_view::scalar(body.scalars[id.0 as usize], out),
         Rvalue::Read(value) => {

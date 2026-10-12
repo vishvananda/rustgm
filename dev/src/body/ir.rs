@@ -15,6 +15,8 @@ pub struct ValueId(pub u32);
 pub struct ScalarId(pub u32);
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct BlockId(pub u32);
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct ProjectionId(pub u32);
 #[derive(Clone, Copy, Debug)]
 pub struct ValueList {
     pub start: u32,
@@ -24,6 +26,18 @@ pub struct ValueList {
 pub enum Place {
     Local(LocalId),
     Static(DefId),
+    Temporary(ValueId),
+    Projection(ProjectionId),
+}
+#[derive(Clone, Copy, Debug)]
+pub enum ProjectionKind {
+    Field(crate::sema::members::Selection),
+    Index { index: ValueId, length: u64 },
+}
+pub struct Projection {
+    pub base: Place,
+    pub kind: ProjectionKind,
+    pub ty: TypeId,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum LocalKind {
@@ -41,6 +55,13 @@ pub struct Local {
 #[derive(Clone, Copy, Debug)]
 pub enum Rvalue {
     Unit,
+    Aggregate {
+        variant: Option<crate::sema::members::VariantId>,
+        fields: ValueList,
+    },
+    Repeat {
+        value: ValueId,
+    },
     Scalar(ScalarId),
     /// A by-value use; ownership and Copy selection are checked by later stages.
     Read(Place),
@@ -74,10 +95,15 @@ pub struct Value {
 }
 #[derive(Clone, Copy, Debug)]
 pub enum Action {
+    /// Form a place once; indexing checks bounds even when its value is discarded.
+    Project(ProjectionId),
     StorageLive(LocalId),
     StorageDead(LocalId),
     Evaluate(ValueId),
-    Store { place: Place, value: ValueId },
+    Store {
+        place: Place,
+        value: ValueId,
+    },
 }
 pub struct Statement {
     pub source: NodeId,
@@ -112,6 +138,7 @@ pub enum Owner {
     },
 }
 pub struct Body {
+    pub projections: Vec<Projection>,
     pub owner: Owner,
     pub source: NodeKey,
     pub result: TypeId,

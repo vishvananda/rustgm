@@ -66,6 +66,14 @@ fn verify(body: &Body) -> Result<(), Error> {
         node: body.source,
         message,
     };
+    if !body.projections.is_empty()
+        || body
+            .values
+            .iter()
+            .any(|v| matches!(v.kind, Rvalue::Aggregate { .. } | Rvalue::Repeat { .. }))
+    {
+        return Err(error("aggregate ownership checking is not implemented"));
+    }
     if body.blocks.is_empty() {
         return Err(error("body has no initialization entry"));
     }

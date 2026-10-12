@@ -92,6 +92,11 @@ impl Machine<'_> {
                     Action::Store { .. } => {
                         return Err("test executor has no mutable globals".into());
                     }
+                    Action::Project(_) => {
+                        return Err(
+                            "scalar test executor does not implement aggregate places".into()
+                        );
+                    }
                     Action::Evaluate(value) => {
                         frame.values[value.0 as usize] = Some(self.evaluate(&frame, value, depth)?);
                     }
@@ -125,6 +130,11 @@ impl Machine<'_> {
     ) -> Result<Data, String> {
         let value = &frame.body.values[value.0 as usize];
         let data = match value.kind {
+            Rvalue::Aggregate { .. }
+            | Rvalue::Repeat { .. }
+            | Rvalue::Read(Place::Temporary(_) | Place::Projection(_)) => {
+                return Err("scalar test executor does not implement aggregates".into());
+            }
             Rvalue::Unit => Data::Unit,
             Rvalue::Scalar(id) => match frame.body.scalars[id.0 as usize] {
                 Scalar::Integer(bits) => Data::Bits(bits),
