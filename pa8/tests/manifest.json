@@ -1090,6 +1090,17 @@
       },
       "input": "file",
       "auxiliary": []
+    },
+    {
+      "path": "tests/spec/expansion/enum-discriminant-shadow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa8.expansion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
     }
   ]
 }

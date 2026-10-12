@@ -6,6 +6,22 @@ use std::{
 const CHECK: &str = "fn check(ok:bool){if !ok{let _=failure(0);}} fn failure(x:i32)->i32{1/x}\n";
 const CASES: &[(&str, &str)] = &[
     (
+        "tag-constant",
+        "const N:u8=BASE+1;const BASE:u8=4;#[repr(u8)]enum E{A=N*2,B}fn main(){check(E::A as u8==10 && E::B as u8==11);}",
+    ),
+    (
+        "tag-cross-constant",
+        "#[repr(i16)]enum A{X=-2}const N:A=A::X;#[repr(u128)]enum E{A=N as u128,B}fn main(){check(E::A as u128==340282366920938463463374607431768211454 && E::B as u128==340282366920938463463374607431768211455);}",
+    ),
+    (
+        "tag-lazy-constant",
+        "#[repr(i16)]enum E{A=if true{300.0f32 as i16}else{1/0},B=(0.0f64/0.0) as i16,C=(-1.0f32/0.0) as i16}fn main(){check(E::A as i16==300 && E::B as i16==0 && E::C as i16 == -32768);}",
+    ),
+    (
+        "tag-forward-constant",
+        "enum E{A=E::C as isize+1,B=E::A as isize+1,C=4}fn main(){check(E::A as u8==5 && E::B as u8==6 && E::C as u8==4);}",
+    ),
+    (
         "zst-effects",
         "#[derive(Clone,Copy)]struct Z;fn main(){let mut n=0;let a=[{n+=1;Z};0];let b=[{n+=1;Z};1];let c=[{n+=1;Z};18446744073709551615];check(n==3);let _=(a,b,c);}",
     ),

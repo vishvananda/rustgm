@@ -87,6 +87,24 @@ impl Definitions {
     pub fn variants(&self, definition: &Definition) -> &[Variant] {
         &self.variants[definition.start as usize..definition.end as usize]
     }
+    /// Finish discriminants before a layout cache observes these definitions.
+    ///
+    /// # Errors
+    /// Rejects an unknown owner or variant ordinal.
+    pub fn set_discriminant(
+        &mut self,
+        item: ItemId,
+        ordinal: u32,
+        bits: u128,
+    ) -> Result<(), &'static str> {
+        let definition = self.get(item).ok_or("unknown discriminant owner")?;
+        if ordinal >= definition.end - definition.start {
+            return Err("invalid discriminant variant");
+        }
+        let index = definition.start + ordinal;
+        self.variants[index as usize].discriminant = bits;
+        Ok(())
+    }
     pub fn iter(&self) -> std::slice::Iter<'_, Definition> {
         self.entries.iter()
     }

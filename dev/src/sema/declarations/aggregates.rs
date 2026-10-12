@@ -1,7 +1,6 @@
 //! Complete nominal declarations after reserving their recursive identities.
 use super::{Checker, DefId, DefKind, Error, ItemId, ItemKind, Kind, List, NodeKey, Type, regions};
 use crate::{
-    literal::Value,
     resolve::{
         model::{Access, Namespace},
         unit::FileId,
@@ -10,16 +9,12 @@ use crate::{
         members::{Field, Name},
         representation,
     },
-    syntax::{
-        ast::{NodeId, Unary},
-        item::Shape,
-    },
+    syntax::{ast::NodeId, item::Shape},
     types::{
         Primitive, TypeId,
         aggregate::{self, Repr},
     },
 };
-use std::collections::HashSet;
 
 struct Group {
     key: NodeKey,
@@ -86,33 +81,11 @@ impl Checker<'_> {
             let repr = attributes.repr;
             let (kind, groups) = self.groups(key)?;
             let tag = repr.tag.unwrap_or(Primitive::Isize);
-            let mut next = Some(0);
-            let mut used = HashSet::new();
+            let mut previous = None;
             let mut variants = Vec::with_capacity(groups.len());
             for (ordinal, group) in groups.iter().enumerate() {
                 self.field_annotations(group, steps, limit)?;
                 let fields = self.fields(group, kind == aggregate::Kind::Enum)?;
-                let discr = if let Some(node) = group.discriminant {
-                    discriminant(
-                        self.report,
-                        NodeKey {
-                            file: key.file,
-                            node,
-                        },
-                        tag,
-                    )?
-                } else {
-                    next.ok_or_else(|| {
-                        self.error(
-                            group.key,
-                            "implicit enum discriminant overflows its representation",
-                        )
-                    })?
-                };
-                if !used.insert(discr) {
-                    return Err(self.error(group.key, "duplicate enum discriminant"));
-                }
-                next = successor(tag, discr);
                 self.children.clear();
                 self.children.extend(fields.iter().map(|field| field.ty));
                 let list = self
@@ -122,14 +95,25 @@ impl Checker<'_> {
                     .map_err(|e| self.error(group.key, e))?;
                 variants.push(aggregate::Variant {
                     fields: list,
-                    discriminant: discr,
+                    discriminant: 0,
                 });
                 let ordinal = u32::try_from(ordinal)
                     .map_err(|_| self.error(group.key, "too many variants"))?;
-                self.facts
+                let variant = self
+                    .facts
                     .members
                     .insert(item, ordinal, group.key, group.shape, &fields)
                     .map_err(|e| self.error(group.key, e))?;
+                if kind == aggregate::Kind::Enum {
+                    self.discriminants
+                        .push(super::super::constants::Discriminant {
+                            variant,
+                            value: group.discriminant.map(|node| NodeKey { node, ..group.key }),
+                            tag,
+                            previous,
+                        });
+                    previous = Some(variant);
+                }
             }
             self.check_discriminant_forms(key, repr, &groups)?;
             if kind == aggregate::Kind::Enum
@@ -150,7 +134,11 @@ impl Checker<'_> {
                 .insert(item, kind, repr, &variants)
                 .map_err(|e| self.error(key, e))?;
         }
-        // Every declared aggregate is checked, including unreachable declarations.
+        self.copy_obligations()?;
+        self.constructors()
+    }
+    pub(super) fn complete_layouts(&mut self) -> Result<(), Error> {
+        // Values are final before any layout is cached. Every declaration is checked.
         for definition in &self.facts.aggregates {
             let ty = self.facts.definitions[definition.item.0 as usize]
                 .ok_or_else(|| Error::at(FileId(0), 0, "missing aggregate type"))?;
@@ -165,8 +153,7 @@ impl Checker<'_> {
                     )
                 })?;
         }
-        self.copy_obligations()?;
-        self.constructors()
+        Ok(())
     }
     fn copy_obligations(&mut self) -> Result<(), Error> {
         for definition in &self.facts.aggregates {
@@ -393,71 +380,4 @@ impl Checker<'_> {
         }
         Ok(())
     }
-}
-
-fn discriminant(
-    report: &crate::resolve::expansion::Report,
-    mut key: NodeKey,
-    tag: Primitive,
-) -> Result<u128, Error> {
-    let error = |message| super::Declarations::error(report, key, message);
-    let (signed, width) = tag
-        .integer()
-        .ok_or_else(|| error("invalid discriminant type"))?;
-    let mut negative = false;
-    loop {
-        match super::Declarations::kind(report, key) {
-            Kind::Group(node) => key.node = node,
-            Kind::Unary {
-                op: Unary::Negate,
-                operand,
-            } if !negative => {
-                negative = true;
-                key.node = operand;
-            }
-            _ => break,
-        }
-    }
-    let error = |message| super::Declarations::error(report, key, message);
-    let Kind::Literal(index) = super::Declarations::kind(report, key) else {
-        return Err(error(
-            "nonliteral discriminants require constant expression evaluation",
-        ));
-    };
-    let Value::Integer(value) = report
-        .package
-        .unit(key.file)
-        .literal(index)
-        .map_err(|e| error(e.message))?
-    else {
-        return Err(error("enum discriminant must be an integer"));
-    };
-    if value.suffix.is_some_and(|s| s.name() != tag.name()) {
-        return Err(error("discriminant literal has the wrong integer type"));
-    }
-    let maximum = if signed {
-        (1_u128 << (width - 1)) - u128::from(!negative)
-    } else {
-        mask(width)
-    };
-    if (negative && !signed) || value.magnitude > maximum {
-        return Err(error("enum discriminant overflows its representation"));
-    }
-    Ok(if negative {
-        value.magnitude.wrapping_neg() & mask(width)
-    } else {
-        value.magnitude
-    })
-}
-fn mask(width: u16) -> u128 {
-    u128::MAX >> (128 - width)
-}
-fn successor(tag: Primitive, bits: u128) -> Option<u128> {
-    let (signed, width) = tag.integer()?;
-    let maximum = if signed {
-        (1_u128 << (width - 1)) - 1
-    } else {
-        mask(width)
-    };
-    (bits != maximum).then(|| bits.wrapping_add(1) & mask(width))
 }

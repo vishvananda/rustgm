@@ -10,8 +10,9 @@ pass. The active objective includes all four assignments.
 live in `types::aggregate`, separately from canonical identity, so resolving
 `*const Node` does not demand `Node`'s complete storage. Declaration checking
 reserves identities, elaborates field annotations through the existing alias
-worklist, publishes shapes and then checks every aggregate's layout. Direct,
-indirect and zero-length-array by-value cycles are rejected.
+worklist, publishes shapes and constructor identities, solves discriminants,
+and then checks every aggregate's layout. Direct, indirect and zero-length-array
+by-value cycles are rejected.
 
 `sema::members` retains flat variant/field arenas, source provenance, canonical
 field types, constructor identities and resolved field access. Member names use
@@ -27,8 +28,12 @@ Representation hints consume configured attribute token trees, including
 selected `cfg_attr` and macro-generated declarations. Supported hints include
 C, Rust, transparent, integer enum tags, packed and align. The initial nominal
 profile requires concrete sized fields. Explicit discriminants currently accept
-integer literals and unary-negative literals, with suffix/range, duplicate and
-implicit-successor checks. General constant expressions are still pending.
+typed scalar constant expressions, including checked integer arithmetic,
+floating arithmetic, casts, booleans, characters, lazy operators, conditional
+expressions, expression-only blocks, named constants, immutable Copy statics
+and casts of field-less variants. Duplicate and implicit-successor checks use
+their evaluated target-width values. General constant functions, statements,
+loops and allocations remain PA25 work.
 
 `abi::layout` is an iterative, cached x86-64 query. It retains source-order
 fields for unspecified Rust layout, honors guaranteed C/transparent/packed/tag
@@ -137,10 +142,39 @@ integer conversion rules. Layouts also retain a by-value `contains_reference`
 fact. A nested reference cannot evade the pending ownership/region boundary by
 being copied as aggregate bytes, including inside a zero-sized array.
 
+## Typed discriminants
+
+The discriminant query engine reuses the ordinary body type checker. Constants
+already checked for a query retain that fact and are not inferred again during
+body analysis. Expression scratch is allocated lazily per source file and reused
+across queries. Constant eligibility validates both conditional branches, while
+evaluation visits only the selected branch. The explicit work stack and sparse
+query cache include constant/variant cycle detection and an input-scaled work
+budget. Implicit-only enums do not allocate a constant expression checker.
+Nominal shapes and constructors precede evaluation; layouts cannot cache
+placeholder discriminants. No source is reparsed and scalar operations consume
+the existing selected types/casts/literal bits.
+
+The scalar discriminant matrix includes independently executed rustc values,
+invalid cycles and arithmetic, 10,000 chained constants and 5,000 implicit
+variants. Four additional source programs execute through both rustc and the
+pinned backend, covering folded tags, cross-enum signed casts, lazy branches,
+floating saturation and forward references. Evidence is retained in
+`obj/pa12-work/discriminant-vectors/` and `discriminant-native/`.
+
+Those tests exposed a resolution defect: enum member bindings were incorrectly
+considered lexical bindings inside discriminants, shadowing outer constants and
+types. Ordinary and hygienic lookup now share the rule that direct variant
+members require qualification; explicit imports remain lexical. Four declared
+PA6 fixtures and one PA8 expansion fixture own the regression. Their independent
+checks pass (170 PA6, 88 PA8); the existing documented PA6 phase difference is
+unchanged. No previous fixture sidecar changed.
+
 ## Evidence at this checkpoint
 
-- All 1,547 PA1–PA11 fixture outputs are unchanged.
-- Debug and release suites each pass 238 Rust tests. The declaration acceptance
+- All 1,547 pre-existing PA1–PA11 fixture outputs are unchanged. Five new
+  PA6/PA8 name-resolution regressions raise the active total to 1,552.
+- Debug and release suites each pass 240 Rust tests. The declaration acceptance
   matrix checks the pinned rustc with default lints, including representation
   conflicts, duplicate fields, recursive storage and discriminant failures.
 - Guaranteed layout vectors compare sizes, alignments and field/payload offsets
@@ -158,13 +192,13 @@ being copied as aggregate bytes, including inside a zero-sized array.
   `obj/pa12-work/ownership-differential/`. Structural tests cover 20,000 nested
   Copy queries, cached failures, 10,000 projections, 40,000 independent locals,
   repeated projections and an array of `u64::MAX` zero-sized elements.
-- Strict Clippy/rustfmt pass. The file/phase audit checks 157 Rust files with
+- Strict Clippy/rustfmt pass. The file/phase audit checks 160 Rust files with
   zero findings; two audit tests and 19 harness tests pass.
 - The typed object-memory probe in `dev/tests/lowir_lowering.rs` writes
   `obj/pa12-work/memory.lowir`. The pinned bridge validates it and its executable
   returns exactly 42 with empty streams. The existing backend smoke check also
   passes. A separate address probe verifies actual 64-byte object-slot alignment.
-- Twenty Rust aggregate programs independently compile and execute through
+- Twenty-four Rust aggregate programs independently compile and execute through
   rustc and the pinned C++ backend with matching clean exit zero. They exercise
   snapshot order, direct/indirect calls, packed and over-aligned objects, nested
   arrays, struct updates, scalar field access, repeats, zero-sized operand
@@ -254,10 +288,33 @@ including both baselines and calibration, remain in
 `obj/perf/1791821983967599492/samples.json`. This measures the entire frontend
 through LowIR, not just the ownership solver or object transfers.
 
+The typed-discriminant checkpoint is frozen as
+`d1fc49196f692158451a9480f946995f79638031080a3e5aefe2976ff9ca8748`.
+Against the aggregate-lowering checkpoint, scalar LowIR baseline/candidate
+medians are 206.79/208.00, 840.29/843.34 and 3491.34/3498.57 ms at 4,000,
+16,000 and 64,000 procedures. Largest-scale peak RSS is 698,332/698,368 KiB;
+the elapsed medians differ by about 0.2%. Counts and complete outputs agree.
+All 54 observations, A/A calibration and frozen input hashes remain in
+`obj/perf/1791823200682952616/samples.json`.
+
+The new scalar-discriminant workload uses 1,000, 4,000 and 16,000 enums,
+with named constants, selected arithmetic, casts and cross-variant dependencies;
+`--discriminant-input` selects it in the measurement script. End-to-end LowIR
+A/A medians are 44.02, 187.30 and 860.61 ms, with peak RSS 12,824, 40,876
+and 146,212 KiB. All 54 observations and full-output checks remain in
+`obj/perf/1791823294852868003/samples.json`. The preceding compiler did not
+support these inputs, so this is scaling evidence, not an A/B regression claim.
+
+The PA6 name-resolution A/B run also preserves counts and complete output
+bytes. At 4,000, 16,000 and 64,000 functions, baseline/candidate medians are
+51.70/52.38, 206.98/207.00 and 881.43/893.34 ms; largest-scale peak RSS is
+138,272/138,316 KiB. All 54 observations and calibration remain in
+`obj/perf/1791823353138107656/samples.json`.
+
 ## Required continuation
 
-1. PA12: implement enum discriminant constant expressions; source expressions,
-   layouts, owned-value checking and executable aggregate lowering are connected.
+1. PA12: source expressions, typed scalar discriminant queries, layouts,
+   owned-value checking and executable aggregate lowering are connected.
    Add the declared source fixtures and text oracles, extend the independent
    native runner beyond PA11, and freeze a deterministic layout inspection
    contract before activating the assignment. Native aggregate probes exist,
@@ -274,13 +331,10 @@ through LowIR, not just the ownership solver or object transfers.
    outlives constraints and caller/callee relationships, including nested
    reference returns. Full loan checking remains PA16's responsibility.
 
-For discriminant expressions, reuse the existing expression type checker and
-its selected scalar facts. Complete nominal shapes and constructor identities
-before solving explicit/implicit discriminant dependencies; freeze the layout
-cache only after their values are final. Retain variant/constant identities in
-an iterative query graph, including cycle errors, instead of adding a second
-source parser or a separate ad hoc expression type inference path. Preserve
-the existing scalar-only declaration/body behavior when no such queries occur.
+Before publishing PA12, review the exact bounded constant-expression profile,
+including `Self` in nominal declarations and array lengths, rather than silently
+claiming PA25's full constant evaluator. Freeze those boundaries in the handout
+and declared negative controls alongside the new layout view and native suite.
 
 Keep ordinary indexing separate from PA13's pattern projections, which
 will need constant-index/downcast path identities. Reference adjustments and

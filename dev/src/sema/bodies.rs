@@ -22,41 +22,12 @@ use crate::{
 };
 use std::collections::HashSet;
 
-/// Check scalar function bodies using the already elaborated item signatures.
+/// Check function bodies and remaining initializers using completed declaration facts.
 ///
 /// # Errors
 /// Reports type mismatches, unresolved variables and explicitly unsupported body semantics.
 pub fn analyze(report: &Report, mut facts: Declarations) -> Result<Declarations, Error> {
-    let mut checker = Checker {
-        report,
-        terms: facts
-            .nodes
-            .iter()
-            .map(|nodes| vec![None; nodes.len()])
-            .collect(),
-        locals: vec![None; facts.definitions.len()],
-        facts: &mut facts,
-        file: FileId(0),
-        module: ModuleId(0),
-        field_seen: Vec::new(),
-        result: TypeId::UNIT,
-        in_function: true,
-        infer: Context::default(),
-        touched: Vec::new(),
-        bindings: Vec::new(),
-        work: Vec::new(),
-        children: Vec::new(),
-        checks: Vec::new(),
-        negated: HashSet::new(),
-        adjustments: Vec::new(),
-        calls: Vec::new(),
-        annotation_work: Vec::new(),
-        type_children: Vec::new(),
-        frames: Vec::new(),
-        pending_label: None,
-        assignments: Vec::new(),
-        breaks: Vec::new(),
-    };
+    let mut checker = Checker::new(report, &mut facts);
     for index in 0..checker.facts.functions.len() {
         let function = checker.facts.functions[index];
         checker
@@ -64,15 +35,11 @@ pub fn analyze(report: &Report, mut facts: Declarations) -> Result<Declarations,
             .map_err(|error| report.diagnostic(error))?;
     }
     for index in 0..checker.facts.initializers.len() {
-        let initializer = checker.facts.initializers[index];
-        checker.file = initializer.value.file;
-        let scope = report.resolution.definitions[initializer.definition.0 as usize].scope;
-        checker.module = report.resolution.scopes[scope.0 as usize].module;
-        checker.result = initializer.ty;
-        checker.in_function = false;
-        checker
-            .body(initializer.value.node)
-            .map_err(|e| report.diagnostic(e))?;
+        if !checker.facts.initializers[index].type_checked {
+            checker
+                .initializer(index)
+                .map_err(|e| report.diagnostic(e))?;
+        }
     }
     Ok(facts)
 }
@@ -104,9 +71,9 @@ enum Work {
     CallArguments(NodeId),
     AssignmentValue(NodeId),
 }
-struct Checker<'a> {
+pub(super) struct Checker<'a> {
     report: &'a Report,
-    facts: &'a mut Declarations,
+    pub(super) facts: &'a mut Declarations,
     file: FileId,
     module: ModuleId,
     field_seen: Vec<bool>,
@@ -130,7 +97,55 @@ struct Checker<'a> {
     assignments: Vec<(NodeId, Option<DefId>, Option<Op>)>,
     breaks: Vec<BreakSite>,
 }
+impl<'a> Checker<'a> {
+    pub(super) fn new(report: &'a Report, facts: &'a mut Declarations) -> Self {
+        Self {
+            report,
+            terms: facts.nodes.iter().map(|_| Vec::new()).collect(),
+            locals: vec![None; facts.definitions.len()],
+            facts,
+            file: FileId(0),
+            module: ModuleId(0),
+            field_seen: Vec::new(),
+            result: TypeId::UNIT,
+            in_function: true,
+            infer: Context::default(),
+            touched: Vec::new(),
+            bindings: Vec::new(),
+            work: Vec::new(),
+            children: Vec::new(),
+            checks: Vec::new(),
+            negated: HashSet::new(),
+            adjustments: Vec::new(),
+            calls: Vec::new(),
+            annotation_work: Vec::new(),
+            type_children: Vec::new(),
+            frames: Vec::new(),
+            pending_label: None,
+            assignments: Vec::new(),
+            breaks: Vec::new(),
+        }
+    }
+    pub(super) fn constant(&mut self, key: NodeKey, ty: TypeId, owner: DefId) -> Result<(), Error> {
+        self.prepare_file(key.file);
+        let scope = self.report.resolution.definitions[owner.0 as usize].scope;
+        self.module = self.report.resolution.scopes[scope.0 as usize].module;
+        self.result = ty;
+        self.in_function = false;
+        self.body(key.node)
+    }
+    pub(super) fn initializer(&mut self, index: usize) -> Result<(), Error> {
+        let initializer = self.facts.initializers[index];
+        self.constant(initializer.value, initializer.ty, initializer.definition)?;
+        self.facts.initializers[index].type_checked = true;
+        Ok(())
+    }
+}
 impl Checker<'_> {
+    fn prepare_file(&mut self, file: FileId) {
+        self.file = file;
+        self.terms[file.0 as usize].resize(self.facts.nodes[file.0 as usize].len(), None);
+    }
     fn key(&self, node: NodeId) -> NodeKey {
         NodeKey {
             file: self.file,
@@ -182,6 +197,7 @@ impl Checker<'_> {
         self.report.package.unit(self.file).configured.active[node.0 as usize]
     }
     fn function(&mut self, function: Function) -> Result<(), Error> {
+        self.in_function = true;
         let Some(body) = function.body else {
             return Err(Declarations::error(
                 self.report,
@@ -189,7 +205,7 @@ impl Checker<'_> {
                 "function body is required",
             ));
         };
-        self.file = body.file;
+        self.prepare_file(body.file);
         let scope = self.report.resolution.definitions[function.definition.0 as usize].scope;
         self.module = self.report.resolution.scopes[scope.0 as usize].module;
         let Some(Type::Function { result, .. }) = self.facts.types.kind(function.signature) else {

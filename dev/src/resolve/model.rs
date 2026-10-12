@@ -117,6 +117,14 @@ pub struct Binding {
     pub origin: Origin,
     pub ambiguous: bool,
 }
+impl Binding {
+    /// Variant members are available through a qualified path or import, not
+    /// implicitly in the lexical scope of their enum's discriminants.
+    pub(crate) fn is_lexical(self, definitions: &[Definition]) -> bool {
+        self.origin != Origin::Direct
+            || definitions[self.target.0 as usize].kind != DefKind::Variant
+    }
+}
 pub struct Scope {
     pub parent: Option<ScopeId>,
     pub module: ModuleId,

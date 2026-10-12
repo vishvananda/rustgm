@@ -128,6 +128,7 @@ impl Resolver<'_> {
         while let Some(scope) = current {
             let frame = &self.facts.scopes[scope.0 as usize];
             if let Some(binding) = frame.bindings.get(&(name, namespace))
+                && binding.is_lexical(&self.facts.definitions)
                 && (barriers == 0
                     || !self.facts.definitions[binding.target.0 as usize]
                         .kind

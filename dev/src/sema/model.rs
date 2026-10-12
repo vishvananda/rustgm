@@ -115,6 +115,7 @@ pub enum InitializerKind {
 }
 #[derive(Clone, Copy)]
 pub struct Initializer {
+    pub(super) type_checked: bool,
     pub definition: DefId,
     pub node: NodeKey,
     pub value: NodeKey,

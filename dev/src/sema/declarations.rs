@@ -50,8 +50,9 @@ struct Checker<'a> {
     work: Vec<Work>,
     children: Vec<TypeId>,
     regions: Regions,
+    discriminants: Vec<super::constants::Discriminant>,
 }
-/// Resolve declaration types without checking bodies or reparsing source.
+/// Resolve declaration types and shape-affecting constants without reparsing source.
 ///
 /// # Errors
 /// Rejects recursive aliases, invalid signatures and unsupported annotation semantics.
@@ -70,6 +71,7 @@ pub fn analyze(report: &Report) -> Result<Declarations, Error> {
         work: Vec::new(),
         children: Vec::new(),
         regions: Regions::default(),
+        discriminants: Vec::new(),
     };
     checker.run().map_err(|error| report.diagnostic(error))?;
     Ok(checker.facts)
@@ -111,7 +113,9 @@ impl Checker<'_> {
         }
         self.complete_nominals(&mut steps, work_limit)?;
         self.validate_signatures()?;
-        self.local_annotations(&mut steps, work_limit)
+        self.local_annotations(&mut steps, work_limit)?;
+        super::constants::discriminants(self.report, &mut self.facts, &self.discriminants)?;
+        self.complete_layouts()
     }
     fn drain(&mut self, steps: &mut usize, limit: usize) -> Result<(), Error> {
         while let Some(work) = self.work.pop() {
@@ -341,6 +345,7 @@ impl Checker<'_> {
         let value =
             value.ok_or_else(|| self.error(key, "constant or static requires an initializer"))?;
         self.facts.initializers.push(Initializer {
+            type_checked: false,
             definition: id,
             node: key,
             value: NodeKey {
