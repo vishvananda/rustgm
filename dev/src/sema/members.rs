@@ -48,6 +48,7 @@ pub struct Members {
     pub variants: Vec<Variant>,
     pub fields: Vec<Field>,
     field_ordinals: Vec<u32>,
+    field_variants: Vec<VariantId>,
     by_node: HashMap<NodeKey, VariantId>,
     by_owner: HashMap<ItemId, Vec<VariantId>>,
     by_name: HashMap<(VariantId, Name), FieldId>,
@@ -85,6 +86,8 @@ impl Members {
         }
         self.fields.extend_from_slice(fields);
         self.field_ordinals.extend(0..end - start);
+        self.field_variants
+            .extend(std::iter::repeat_n(id, fields.len()));
         self.variants.push(Variant {
             owner,
             ordinal,
@@ -108,6 +111,10 @@ impl Members {
     #[must_use]
     pub fn ordinal(&self, field: FieldId) -> Option<u32> {
         self.field_ordinals.get(field.0 as usize).copied()
+    }
+    #[must_use]
+    pub fn variant(&self, field: FieldId) -> Option<VariantId> {
+        self.field_variants.get(field.0 as usize).copied()
     }
     #[must_use]
     pub fn field(&self, variant: VariantId, name: Name) -> Option<FieldId> {

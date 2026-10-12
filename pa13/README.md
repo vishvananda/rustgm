@@ -26,12 +26,11 @@ The in-progress implementation also accepts `--emit-patterns` and
 grading contract or a lifetime/loan validity claim. Simple standalone value
 bindings and wildcards use the earlier direct path and have no selected root.
 The view covers irrefutable owned products/arrays, explicit reference patterns,
-edition-2024 binding modes, irrefutable borrowed slice rests, and scalar match
+edition-2024 binding modes, irrefutable borrowed slice rests, and owned match
 decisions. Boolean, integer and character intervals compose with tuple, record,
 enum, fixed-array and reference patterns for exhaustiveness and whole-arm
-usefulness. Dynamic slices currently support only irrefutable rests. Unguarded
-scalar matches can execute; constructor decisions, guarded execution, named
-constants and conditional bindings remain unfinished.
+usefulness. Dynamic slices currently support only irrefutable rests. Unguarded owned matches and irrefutable constructor bindings can execute.
+Guards, named constants, let conditions/chains and let-else remain unfinished.
 
 The current vocabulary is `selected-patterns 1`, the canonical type table,
 `root FILE:NODE pattern=ID`, and arena-ordered `pattern ID source=FILE:NODE
@@ -69,9 +68,13 @@ domains additionally distinguish valid values from possibly invalid referents.
 `uninhabited` is a contextual coverage fact, not a physical layout property or
 proof that a place was initialized. Private fields cannot expose an empty-type
 proof to an unrelated module, and references to empty types remain possible
-coverage inputs. Constructor execution is gated until typed decisions enforce
-the required reads and initialization checks. An empty match on an uninitialized
-empty-type local may pass pattern inspection but must not publish executable IR.
+coverage inputs. Constructor decisions retain non-moving `is-variant VARIANT PLACE` body values
+and selected field identities.
+Variant tests require an initialized owned input, including its tracked fields;
+a surviving physical tag does not permit testing a partially moved enum.
+Single-variant wildcard patterns need no tag read. An empty match retains a
+`validate PLACE` operation in body IR; an uninitialized empty-type local may pass
+pattern/body inspection but fails ownership checking before executable IR.
 
 Composite coverage uses reduced binary decisions over normalized scalar and
 constructor ranks at sparse typed places.
@@ -83,12 +86,20 @@ and `[N]` selects an array element. Unconstrained inputs render `_`; these are
 diagnostic constraints, not Rust source to reparse. Whole-arm usefulness still
 ignores guard outcomes and does not diagnose individual redundant alternatives.
 
-Scalar decisions retain ordered alternatives, read the scrutinee only when the
+Decisions retain ordered alternatives, read the scrutinee only when the
 decision or capture requires it, and capture values after a successful decision.
+Composite or-patterns save selected alternative identities in body locals;
+subsequent capture branches preserve the selected places without duplicating
+products of alternatives. Capture projections are formed in their own branches,
+so they do not depend on values defined only along an earlier decision path.
+The ordinary let/parameter path uses these decisions when an irrefutable pattern
+combines refutable alternatives. A declaration without an initializer only
+declares its bindings. Field identity retains its owning variant for layout;
+constructor tests compare the stored discriminant with the selected layout value.
 A full-domain interval requires no value test. Guarded execution is rejected
 before publishing body IR: inspection has not proved protected guard accesses,
-delayed moves or failed-guard retries. Irrefutable binding coverage can combine
-constructors and scalar intervals, but conditional let/parameter execution is
+delayed moves or failed-guard retries. Irrefutable binding coverage and execution can combine
+constructors and scalar intervals; conditional let/let-else execution is
 not yet available.
 
 `region-var region:N body=FILE:NODE source=FILE:NODE origin=pattern-borrow|pattern-input

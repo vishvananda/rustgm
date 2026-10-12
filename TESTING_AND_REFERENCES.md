@@ -114,8 +114,8 @@ not grade LLVM IR or assume Rust's unspecified layout matches rustc. Test exact
 layouts where guaranteed or where the course contract deliberately specifies
 them. Keep runtime evidence separate from the raw LowIR text comparison.
 
-PA12 has 110 fixtures: 40 clean native executions, eight expected bounds panics,
-12 layout cases and 50 rejection or explicit stage-boundary cases. The manifest
+PA12 has 109 fixtures: 40 clean native executions, eight expected bounds panics,
+12 layout cases and 49 rejection or explicit stage-boundary cases. The manifest
 declares `--emit-layouts` as a supplementary mode; a case's mode must be one of
 the assignment's declared modes. `make test-layouts` checks declared size,
 alignment and field-offset vectors against candidate/committed text and rustc

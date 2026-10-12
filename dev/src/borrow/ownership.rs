@@ -183,6 +183,16 @@ impl BodyFacts {
     fn inspect(&self, body: &Body, state: &mut State, action: Action) -> Result<(), &'static str> {
         match action {
             Action::Evaluate(id) => {
+                if let Rvalue::IsVariant { place, .. } | Rvalue::Validate(place) =
+                    body.values[id.0 as usize].kind
+                {
+                    let info = self.paths.place(place)?;
+                    if let Some(path) = info.path
+                        && !state.initialized(&self.paths.entries[path.0 as usize])?
+                    {
+                        return Err("pattern input may be uninitialized or moved");
+                    }
+                }
                 if let Rvalue::Read(place) = body.values[id.0 as usize].kind {
                     let info = self.paths.place(place)?;
                     if !info.empty

@@ -131,6 +131,8 @@ impl Machine<'_> {
         let value = &frame.body.values[value.0 as usize];
         let data = match value.kind {
             Rvalue::Aggregate { .. }
+            | Rvalue::IsVariant { .. }
+            | Rvalue::Validate(_)
             | Rvalue::Repeat { .. }
             | Rvalue::Read(Place::Temporary(_) | Place::Projection(_)) => {
                 return Err("scalar test executor does not implement aggregates".into());

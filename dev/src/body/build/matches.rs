@@ -18,6 +18,7 @@ pub(super) struct Frame {
     join: BlockId,
     entry: Option<BlockId>,
     base: usize,
+    scalar: bool,
 }
 impl Builder<'_> {
     pub(super) fn start_match(&mut self, node: NodeId) -> Result<(), Error> {
@@ -41,14 +42,8 @@ impl Builder<'_> {
             .node(decision.scrutinee)
             .and_then(|f| f.ty)
             .ok_or_else(|| self.error(node, "missing match input type"))?;
-        if input != TypeId::NEVER
-            && !matches!(self.facts.types.kind(input), Some(Type::Primitive(p)) if Domain::new(p).is_some())
-        {
-            return Err(self.error(
-                node,
-                "constructor match execution requires typed decisions and place validity",
-            ));
-        }
+        let scalar = input == TypeId::NEVER
+            || matches!(self.facts.types.kind(input), Some(Type::Primitive(p)) if Domain::new(p).is_some());
         let (start, end) = (decision.start, decision.end);
         if self.facts.patterns.arms[start as usize..end as usize]
             .iter()
@@ -58,6 +53,9 @@ impl Builder<'_> {
                 node,
                 "guard execution requires protected captures and retry decisions",
             ));
+        }
+        if start == end && input != TypeId::NEVER {
+            self.evaluate(node, TypeId::UNIT, Rvalue::Validate(place))?;
         }
         let merge = self.merge(node)?;
         let join = self.new_block(node)?;
@@ -71,6 +69,7 @@ impl Builder<'_> {
             join,
             entry: None,
             base: self.scratch.live.len(),
+            scalar,
         });
         self.scratch.work.push(Work::Join {
             node,
@@ -99,9 +98,19 @@ impl Builder<'_> {
             .ok_or_else(|| self.error(frame.node, "missing arm binding selection"))?;
         let yes = self.new_block(arm.source.node)?;
         let no = self.new_block(arm.source.node)?;
-        self.scalar_decision(pattern, frame.place, yes, no)?;
+        let (plan, next) = if frame.scalar {
+            self.scalar_decision(pattern, frame.place, yes, no)?;
+            (None, no)
+        } else {
+            let plan = self.constructor_decision(pattern, frame.place, yes, no)?;
+            self.switch(arm.source.node, no)?;
+            self.cleanup(arm.source.node, frame.base)?;
+            let next = self.new_block(arm.source.node)?;
+            self.terminate(arm.source.node, Terminator::Jump(next));
+            (Some(plan), next)
+        };
         self.scratch.match_frames[index].next += 1;
-        self.scratch.match_frames[index].entry = Some(no);
+        self.scratch.match_frames[index].entry = Some(next);
         self.scratch.work.push(Work::MatchNext(index));
         self.scratch.work.push(Work::Arm {
             node: Some(arm.value.node),
@@ -113,7 +122,11 @@ impl Builder<'_> {
         self.scratch.work.push(Work::Enter(arm.value.node));
         self.switch(arm.source.node, yes)?;
         if self.current.is_some() {
-            self.scalar_captures(pattern, frame.place)?;
+            if let Some(plan) = plan {
+                self.constructor_captures(&plan, pattern, frame.place)?;
+            } else {
+                self.scalar_captures(pattern, frame.place)?;
+            }
         }
         Ok(())
     }
@@ -186,7 +199,7 @@ impl Builder<'_> {
         self.scratch.match_patterns.clear();
         Ok(())
     }
-    fn interval_test(
+    pub(super) fn interval_test(
         &mut self,
         node: NodeId,
         ty: TypeId,

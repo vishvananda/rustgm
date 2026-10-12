@@ -625,3 +625,114 @@ RustGM currently rejects those dereference expressions before coverage, so these
 are explicit future controls, not acceptance-equivalence claims. Do not open
 that expression boundary while treating every root as a validated owned value;
 root validity and nested-reference validity need separate qualification.
+
+## Owned constructor execution
+
+Unguarded matches now lower tuples, records, enum payloads, fixed arrays and
+nested or-patterns. The body builder consumes the selected pattern arena with
+iterative decision and capture worklists. Tests keep source order and do not
+move payloads. An or-pattern with captures records its successful alternative
+in a local; capture branches then read that alternative's selected places.
+Nested products share continuations instead of expanding combinations. These
+locals are initialized before decisions, including choices conditionally skipped
+by an enclosing alternative, and cleaned up on both arm success and failure.
+Capture projections are reconstructed from typed selections in capture branches;
+they never reuse an SSA address defined only in an earlier decision branch.
+
+`Rvalue::IsVariant` retains the selected variant and a non-moving place test.
+Lowering loads the actual layout tag and compares its stored discriminant,
+including signed/extreme explicit tags. Nominal field identity now has a direct
+owning-variant index, so payload offsets come from the selected variant rather
+than always using the first layout group. No source or rendered IR is reparsed.
+
+Pinned controls in
+`obj/pa13-work/constructor-read-probes-1791839143746083099/evidence.json`
+show that a multi-variant tag test rejects an uninitialized or partially moved
+owned enum. A surviving physical tag is insufficient: the ownership proof checks
+the whole tracked input, not only its shallow bit. A single-variant wildcard
+pattern and a wildcard product can avoid a read. Empty matches emit a non-moving
+`Validate` obligation before `Unreachable`; body inspection shows that obligation,
+while ownership/LowIR modes reject an uninitialized input. References and source
+dereferences retain their existing gates and are not authorized by this proof.
+
+Irrefutable ordinary lets and parameters use the same decisions when their
+patterns contain refutable alternatives or ranges. Declarations without an
+initializer only create bindings; the controls in
+`obj/pa13-work/uninitialized-pattern-declarations-1791839645553166297/evidence.json`
+independently establish that behavior. Existing irrefutable product bindings and
+scalar matches retain their simpler construction paths.
+
+`dev/tests/constructor_matches.rs` adds 34 complete executable programs, twelve
+invalid-place/move controls, and CFG-size bounds at 8/32/128 columns of independent
+or-patterns. It covers variant-specific offsets, explicit tag representations,
+alternative capture places, nested matches, loop transfers, delayed moves,
+partial products, arrays/rests, uninitialized declarations and sparse huge ZST
+arrays. The exact former PA12 match boundary source is retained here as a positive
+case. PA12 now has 109 fixtures: that supported program is no longer graded as a
+rejection. All remaining existing text oracles are unchanged.
+
+Guards, let conditions/chains, let-else, dynamic slice decisions, named and
+non-integral constants, and borrowed execution remain unfinished. In particular,
+the current first-success or-pattern decisions must not be used for guards:
+failed guards can require another matching alternative, with protected accesses
+and delayed moves. PA13 stays planned; PA14/PA15 remain in the active objective.
+
+Final local validation for this checkpoint uses frozen
+`obj/pa13-work/constructor-final-candidate`, SHA-256
+`0e2e255988065a05246f6bf270171f854bc7d232e9ce74e737590e913485f28d`.
+Debug and release each pass 279 Rust tests. Strict Clippy/rustfmt and the
+181-file audit pass. Explicit `make ref-test` regenerates provenance receipts;
+review confirms unchanged bytes for every retained oracle and fixture. Only the
+graduated PA12 boundary disappears. All 1,670 active assignment cases, the
+24-test harness, 24 pinned upstream inputs, 126 Reference files, independent
+rustc checks and 12 layout controls pass. PA11 passes 194 native checks with
+180 executions; PA12 passes 97 native checks with 48 executions. Logs are
+`obj/pa13-work/constructor-final-{debug,release,quality,refs,independent}.log`;
+the initial quality invocation's manifest-receipt check required the subsequent
+explicit reference regeneration, after which the full harness passed.
+
+Another 108 full programs (34 new constructors plus the earlier 74 scalar,
+product and array vectors) execute successfully through both compilers, with
+source assertions and clean exit/streams. Their immutable sources, commands,
+compiler/backend hashes and individual streams are retained in
+`obj/pa13-work/constructor-final-native-1791839787686553778/evidence.json`.
+Unreachable functions with initialized empty-type parameters also compile with
+both frontends; that separate acceptance control is retained in
+`obj/pa13-work/valid-empty-input-1791839883993677045/evidence.json`, and is not
+counted as an execution of an impossible input.
+
+A final capture-reachability review independently checked four moved-field
+programs. Pinned rustc rejects all four with E0382, including alternatives it
+also warns are unreachable. The existing capture CFG preserves those ownership
+checks; pruning such captures from coverage alone would change acceptance.
+The sources/streams are retained in
+`obj/pa13-work/capture-reachability-1791840231766031208/evidence.json` and all four
+are now permanent rejection vectors. The expanded constructor suite passes in
+both configurations; this last change only adds test inputs and leaves the
+frozen compiler bytes unchanged. Its lint/audit, explicit reference regeneration
+and harness rerun are in `constructor-reach-{debug,release,quality}.log` under
+`obj/pa13-work/`.
+
+Five performance runs retain 270 observations, with CPU 10, frozen inputs,
+immutable binaries, A/A calibration and three ABBA blocks per size. No test or
+build from this task ran concurrently. Existing workloads compare with
+`coverage-final-candidate`; the new constructor workload uses identical candidate
+binaries because the baseline cannot execute it. All twelve existing-workload
+full LowIR comparisons are byte-identical.
+
+| Workload | Run | Largest baseline/candidate median ms | Largest baseline/candidate peak KiB |
+| --- | --- | ---: | ---: |
+| Ordinary LowIR, 4k/16k/64k | 1791839945077253082 | 3397.50 / 3557.01 | 701384 / 701468 |
+| Product LowIR, 1k/4k/16k | 1791840037182370576 | 1575.72 / 1626.80 | 322424 / 322620 |
+| Array LowIR, 1k/4k/16k | 1791840078418830933 | 1660.53 / 1644.64 | 382868 / 382604 |
+| Scalar-match LowIR, 1k/4k/16k | 1791840123286000490 | 957.10 / 922.05 | 234768 / 234856 |
+| Constructor-match A/A, 1k/4k/16k | 1791840149731643163 | 2838.13 / 2830.23 | 539072 / 539076 |
+
+Memory remains close for existing workloads. Largest ordinary paired-block
+candidate/baseline ratios are 1.058, 1.016 and 0.999; product ratios are 1.014,
+1.044 and 1.002. The aggregate medians show a small slowdown for those two
+workloads, with drift between blocks; do not claim zero regression or a precise
+speedup. New constructor candidate medians are 154.91/671.91/2830.23 ms and peak
+RSS is 37228/137976/539076 KiB. The independent CFG-size assertions establish
+that tested nested alternatives stay linear in pattern columns; these timings
+cover complete compilation at increasing function counts.

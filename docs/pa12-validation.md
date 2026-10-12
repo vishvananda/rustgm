@@ -40,7 +40,12 @@ in aggregate bytes, including zero-length arrays, to evade the pending proofs.
 
 ## Declared tests and independent checks
 
-The 110 PA12 fixtures declare outcomes before reference generation:
+The 109 current PA12 fixtures declare outcomes before reference generation:
+
+PA13 constructor execution graduated the former `tests/spec/boundary/match.rs`
+case into `dev/tests/constructor_matches.rs` with its exact source retained.
+PA12 no longer advertises that supported program as a stage rejection. The
+original PA12 release records below refer to the then-current 110 cases.
 
 - 40 successful native programs cover aggregate construction, snapshots,
   direct/indirect calls and results, field/update evaluation order, checked
@@ -53,13 +58,13 @@ The 110 PA12 fixtures declare outcomes before reference generation:
   probes check guarantees for C, packed, aligned, transparent, arrays and enum
   representations. Course Rust source order and transparent ancillary ZST
   offsets are explicit exceptions; they are not rustc layout-equivalence claims.
-- 43 invalid-source cases and seven explicit later-stage boundaries cover
+- 43 invalid-source cases and six explicit later-stage boundaries cover
   fields, constructors, visibility, types, storage cycles, representation
   conflicts, discriminants and unsupported obligations. Rustc acceptance is
   recorded separately from the course boundary outcome.
 
 Every accepted LowIR case must declare a runtime outcome. The native runner
-checks all 98 LowIR outcomes and executes all 48 accepted programs using both
+checks all 97 LowIR outcomes and executes all 48 accepted programs using both
 rustc and the pinned CPPGM backend. Clean execution requires exit zero and empty
 streams. Expected panic requires CPPGM exit 134 with empty streams and rustc
 SIGABRT with a panic diagnostic. Layout inspection never substitutes for native

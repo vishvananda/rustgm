@@ -158,6 +158,17 @@ fn rvalue(body: &Body, value: Rvalue, out: &mut impl Write) -> io::Result<()> {
             write!(out, "read ")?;
             place(value, out)
         }
+        Rvalue::IsVariant {
+            place: value,
+            variant,
+        } => {
+            write!(out, "is-variant {} ", variant.0)?;
+            place(value, out)
+        }
+        Rvalue::Validate(value) => {
+            write!(out, "validate ")?;
+            place(value, out)
+        }
         Rvalue::Function(id) => write!(out, "function def={}", id.0),
         Rvalue::Constant(id) => write!(out, "constant def={}", id.0),
         Rvalue::Reify(value) => write!(out, "reify v{}", value.0),

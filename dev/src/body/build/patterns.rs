@@ -14,6 +14,18 @@ impl Builder<'_> {
         root: PatternId,
         place: Option<Place>,
     ) -> Result<(), Error> {
+        if let Some(place) = place
+            && self.binding_requires_decision(root)
+        {
+            let node = self.facts.patterns.nodes[root.0 as usize].source.node;
+            let yes = self.new_block(node)?;
+            let no = self.new_block(node)?;
+            let plan = self.constructor_decision(root, place, yes, no)?;
+            self.switch(node, no)?;
+            self.terminate(node, super::Terminator::Unreachable);
+            self.switch(node, yes)?;
+            return self.constructor_captures(&plan, root, place);
+        }
         self.scratch
             .pattern_work
             .push(Work::Enter(root, place, None));
@@ -25,6 +37,41 @@ impl Builder<'_> {
         }
         Ok(())
     }
+    fn binding_requires_decision(&mut self, root: PatternId) -> bool {
+        self.scratch.match_patterns.clear();
+        self.scratch.match_patterns.push(root);
+        while let Some(id) = self.scratch.match_patterns.pop() {
+            match self.facts.patterns.nodes[id.0 as usize].kind {
+                Kind::Range(_) => {
+                    self.scratch.match_patterns.clear();
+                    return true;
+                }
+                Kind::Product { variant, fields } => {
+                    if let Some(variant) = variant
+                        && self
+                            .facts
+                            .members
+                            .variants(self.facts.members.variants[variant.0 as usize].owner)
+                            .len()
+                            > 1
+                    {
+                        self.scratch.match_patterns.clear();
+                        return true;
+                    }
+                    self.scratch
+                        .match_patterns
+                        .extend(self.facts.patterns.fields(fields).iter().map(|f| f.pattern));
+                }
+                Kind::Or(alternatives) => self
+                    .scratch
+                    .match_patterns
+                    .extend(self.facts.patterns.alternatives(alternatives)),
+                Kind::Binding { subpattern, .. } => self.scratch.match_patterns.extend(subpattern),
+                _ => {}
+            }
+        }
+        false
+    }
     fn pattern_step(
         &mut self,
         id: PatternId,
@@ -33,27 +80,14 @@ impl Builder<'_> {
     ) -> Result<(), Error> {
         let pattern = &self.facts.patterns.nodes[id.0 as usize];
         let node = pattern.source.node;
-        let ty = pattern
-            .ty
-            .ok_or_else(|| self.error(node, "unsolved pattern type"))?;
-        let place = if let (Some(base), Some(selection)) = (base, selection) {
-            let projection = match selection {
-                Projection::Field(field) => ProjectionKind::Field(field),
-                Projection::Index(index) => ProjectionKind::ConstantIndex(index),
-                Projection::Subarray { start, end } => ProjectionKind::Subarray { start, end },
-                Projection::Subslice { .. } => {
-                    return Err(self.error(
-                        node,
-                        "slice pattern execution requires region and loan proofs",
-                    ));
-                }
-            };
-            Some(self.project(node, ty, base, projection)?)
+        let kind = pattern.kind;
+        let place = if let Some(base) = base {
+            Some(self.selected_place(id, base, selection)?)
         } else {
             base
         };
-        match pattern.kind {
-            Kind::Range(_) => {
+        match kind {
+            Kind::Range(_) if place.is_some() => {
                 return Err(self.error(
                     node,
                     "conditional binding execution requires pattern decisions",
@@ -69,7 +103,7 @@ impl Builder<'_> {
                     "reference pattern execution requires region and loan proofs",
                 ));
             }
-            Kind::Wildcard => {}
+            Kind::Wildcard | Kind::Range(_) => {}
             Kind::Binding { subpattern, .. } => {
                 self.scratch.pattern_work.push(Work::Capture(id, place));
                 // Copies from subpatterns happen before the containing move.
@@ -90,8 +124,8 @@ impl Builder<'_> {
                 }
             }
             Kind::Or(alternatives) => {
-                // This irrefutable-product profile has no refutable alternatives.
-                // Conditional patterns will need a decision CFG before binding.
+                // With an input, refutable alternatives took the decision path.
+                // Without one, every alternative declares the same bindings.
                 let first = self
                     .facts
                     .patterns
@@ -106,6 +140,33 @@ impl Builder<'_> {
             Kind::Pending => return Err(self.error(node, "incomplete pattern selection")),
         }
         Ok(())
+    }
+    pub(super) fn selected_place(
+        &mut self,
+        id: PatternId,
+        base: Place,
+        selection: Option<Projection>,
+    ) -> Result<Place, Error> {
+        let Some(selection) = selection else {
+            return Ok(base);
+        };
+        let pattern = &self.facts.patterns.nodes[id.0 as usize];
+        let node = pattern.source.node;
+        let ty = pattern
+            .ty
+            .ok_or_else(|| self.error(node, "unsolved pattern type"))?;
+        let projection = match selection {
+            Projection::Field(field) => ProjectionKind::Field(field),
+            Projection::Index(index) => ProjectionKind::ConstantIndex(index),
+            Projection::Subarray { start, end } => ProjectionKind::Subarray { start, end },
+            Projection::Subslice { .. } => {
+                return Err(self.error(
+                    node,
+                    "slice pattern execution requires region and loan proofs",
+                ));
+            }
+        };
+        self.project(node, ty, base, projection)
     }
     pub(super) fn pattern_capture(
         &mut self,

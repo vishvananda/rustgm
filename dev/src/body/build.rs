@@ -1,5 +1,6 @@
 //! Iterative construction visits executable syntax once and consumes PA9 selections.
 mod aggregates;
+mod decisions;
 mod matches;
 mod patterns;
 use super::ir::{

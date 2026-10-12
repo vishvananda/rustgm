@@ -77,6 +77,13 @@ pub enum Rvalue {
     Scalar(ScalarId),
     /// A by-value use; ownership and Copy selection are checked by later stages.
     Read(Place),
+    /// Non-moving constructor test; the owned input must be fully initialized.
+    IsVariant {
+        place: Place,
+        variant: crate::sema::members::VariantId,
+    },
+    /// Prove an impossible match's input is initialized before ending its CFG.
+    Validate(Place),
     Function(DefId),
     Constant(DefId),
     Reify(ValueId),

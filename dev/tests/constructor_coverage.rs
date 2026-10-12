@@ -298,11 +298,14 @@ fn empty_domain_proofs_do_not_bypass_place_initialization() -> Result<(), Box<dy
     std::fs::write(&file, "enum Void{}fn main(){let x:Void;match x{}}")?;
     assert!(candidate(&file, "--emit-patterns")?.status.success());
     assert_eq!(rustc(&file)?.status.code(), Some(1));
-    for mode in ["--emit-body-ir", "--emit-lowir", "--count-lowir"] {
+    let body = candidate(&file, "--emit-body-ir")?;
+    assert!(body.status.success() && body.stderr.is_empty());
+    assert!(String::from_utf8_lossy(&body.stdout).contains("validate l"));
+    for mode in ["--emit-ownership", "--emit-lowir", "--count-lowir"] {
         let result = candidate(&file, mode)?;
         assert_eq!(result.status.code(), Some(1));
         assert!(result.stdout.is_empty());
-        assert!(String::from_utf8_lossy(&result.stderr).contains("place validity"));
+        assert!(String::from_utf8_lossy(&result.stderr).contains("uninitialized or moved"));
     }
     Ok(())
 }

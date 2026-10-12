@@ -12,6 +12,40 @@ use crate::{
 };
 
 impl Lower<'_, '_> {
+    pub(super) fn is_variant(
+        &mut self,
+        place: Place,
+        variant: VariantId,
+    ) -> Result<Selected, &'static str> {
+        let layout = self.context.layout(self.place_type(place)?)?;
+        let selected = self
+            .context
+            .members
+            .variants
+            .get(variant.0 as usize)
+            .ok_or("missing tested variant")?;
+        let discriminant = self
+            .context
+            .layouts
+            .variants(&layout)
+            .get(selected.ordinal as usize)
+            .ok_or("missing tested variant layout")?
+            .discriminant;
+        let Shape::Aggregate { tag: Some(tag), .. } = layout.shape else {
+            return Err("constructor decision has no physical tag");
+        };
+        let base = self
+            .place(place)?
+            .ok_or("constructor test has no storage")?;
+        let address = self.offset(base, tag.offset)?;
+        let ty =
+            super::super::context::representation(self.context.types, TypeId::primitive(tag.ty))?;
+        let input = self.builder.load(ty, address.operand)?;
+        let expected = self.builder.integer(ty, discriminant)?;
+        self.builder
+            .compare(Predicate::Eq, input, expected)
+            .map(Selected::Runtime)
+    }
     pub(super) fn enum_cast(
         &mut self,
         operand: ValueId,
@@ -139,6 +173,17 @@ impl Lower<'_, '_> {
         let leaf = self.context.layout(projection.ty)?;
         let address = match projection.kind {
             ProjectionKind::Field(field) => {
+                let variant_ordinal = match field {
+                    Selection::Tuple(_) => 0,
+                    Selection::Nominal(id) => {
+                        self.context
+                            .members
+                            .variant(id)
+                            .and_then(|v| self.context.members.variants.get(v.0 as usize))
+                            .ok_or("missing selected field variant")?
+                            .ordinal
+                    }
+                };
                 let ordinal = match field {
                     Selection::Tuple(index) => index,
                     Selection::Nominal(id) => self
@@ -151,7 +196,7 @@ impl Lower<'_, '_> {
                     .context
                     .layouts
                     .variants(&layout)
-                    .first()
+                    .get(variant_ordinal as usize)
                     .ok_or("field base has no field group")?;
                 let offset = *self
                     .context

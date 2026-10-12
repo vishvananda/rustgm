@@ -240,7 +240,7 @@ impl Lower<'_, '_> {
         let representation = self.context.representation(value.ty)?;
         let ty = representation.result();
         let runtime = match value.kind {
-            Rvalue::Unit => return Ok(Selected::Unit),
+            Rvalue::Unit | Rvalue::Validate(_) => return Ok(Selected::Unit),
             Rvalue::Aggregate { variant, fields } => {
                 return self.aggregate(value.ty, variant, fields);
             }
@@ -259,6 +259,7 @@ impl Lower<'_, '_> {
                     self.builder.literal(ty, Literal::F64(bits))?
                 }
             },
+            Rvalue::IsVariant { place, variant } => return self.is_variant(place, variant),
             Rvalue::Read(place) => {
                 if let Place::Temporary(id) = place
                     && let Selected::Runtime(snapshot) = self.value(id)?

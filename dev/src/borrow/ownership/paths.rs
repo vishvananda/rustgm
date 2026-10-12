@@ -102,7 +102,13 @@ impl Paths {
             paths.projections.push(info);
         }
         for value in &body.values {
-            if let Rvalue::Read(Place::Temporary(id)) = value.kind {
+            if let Rvalue::Read(Place::Temporary(id))
+            | Rvalue::Validate(Place::Temporary(id))
+            | Rvalue::IsVariant {
+                place: Place::Temporary(id),
+                ..
+            } = value.kind
+            {
                 paths.temporary(body, id)?;
             }
         }
