@@ -1,0 +1,1 @@
+fn f(){let mut x=1;x+=false;}

@@ -169,7 +169,13 @@ struct List {
 }
 /// Child lists occupy one shared arena. Hash collisions compare their typed slices.
 /// Type/list IDs are valid only in the store that produced them.
+#[derive(Clone, Copy)]
+struct Properties {
+    sized: bool,
+    well_formed: bool,
+}
 pub struct Store {
+    properties: Vec<Properties>,
     kinds: Vec<Kind>,
     index: HashMap<Kind, TypeId>,
     edges: Vec<TypeId>,
@@ -191,7 +197,15 @@ impl Default for Store {
             .zip(0_u32..)
             .map(|(kind, id)| (kind, TypeId(id)))
             .collect();
+        let properties = kinds
+            .iter()
+            .map(|kind| Properties {
+                sized: *kind != Kind::Primitive(Primitive::Str),
+                well_formed: true,
+            })
+            .collect();
         Self {
+            properties,
             kinds,
             index,
             edges: Vec::new(),
@@ -208,6 +222,17 @@ impl Store {
     #[must_use]
     pub fn kind(&self, id: TypeId) -> Option<Kind> {
         self.kinds.get(id.0 as usize).copied()
+    }
+    /// Structural sizedness for the closed, nongeneric type vocabulary.
+    #[must_use]
+    pub fn is_sized(&self, id: TypeId) -> Option<bool> {
+        self.properties.get(id.0 as usize).map(|p| p.sized)
+    }
+    /// Canonical shapes may exist before a use demands their well-formedness.
+    /// This does not discharge region, trait or generic-environment obligations.
+    #[must_use]
+    pub fn is_well_formed(&self, id: TypeId) -> Option<bool> {
+        self.properties.get(id.0 as usize).map(|p| p.well_formed)
     }
     #[must_use]
     pub fn list(&self, id: ListId) -> Option<&[TypeId]> {
@@ -284,8 +309,58 @@ impl Store {
             return Err("invalid canonical type child or signature");
         }
         let id = TypeId(u32::try_from(self.kinds.len()).map_err(|_| "too many canonical types")?);
+        let properties = self.properties(kind)?;
         self.kinds.push(kind);
+        self.properties.push(properties);
         self.index.insert(kind, id);
         Ok(id)
+    }
+    fn properties(&self, kind: Kind) -> Result<Properties, &'static str> {
+        let child = |ty: TypeId| {
+            self.properties
+                .get(ty.0 as usize)
+                .copied()
+                .ok_or("invalid structural type child")
+        };
+        let mut result = Properties {
+            sized: true,
+            well_formed: true,
+        };
+        match kind {
+            Kind::Never => {}
+            Kind::Primitive(p) => result.sized = p != Primitive::Str,
+            Kind::Array { element, .. } | Kind::Slice(element) => {
+                let element = child(element)?;
+                result.well_formed = element.well_formed && element.sized;
+                result.sized = matches!(kind, Kind::Array { .. }) && element.sized;
+            }
+            Kind::Tuple(list) => {
+                let elements = self.list(list).ok_or("invalid structural tuple list")?;
+                for (i, ty) in elements.iter().enumerate() {
+                    let p = child(*ty)?;
+                    result.well_formed &= p.well_formed && (p.sized || i + 1 == elements.len());
+                    result.sized &= p.sized;
+                }
+            }
+            Kind::Reference { referent: ty, .. }
+            | Kind::Pointer { pointee: ty, .. }
+            | Kind::FunctionItem { signature: ty, .. } => {
+                result.well_formed = child(ty)?.well_formed;
+            }
+            Kind::Function {
+                parameters,
+                result: ty,
+                ..
+            } => {
+                result.well_formed = child(ty)?.well_formed;
+                for ty in self
+                    .list(parameters)
+                    .ok_or("invalid structural parameter list")?
+                {
+                    result.well_formed &= child(*ty)?.well_formed;
+                }
+            }
+        }
+        Ok(result)
     }
 }

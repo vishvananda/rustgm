@@ -1,0 +1,2406 @@
+{
+  "schema": 1,
+  "mode": "--emit-types",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "panic": "abort",
+  "debug_assertions": false,
+  "cases": [
+    {
+      "path": "tests/spec/inference/case-001.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/inference/case-002.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/inference/case-003.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/inference/case-004.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/inference/case-005.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/inference/case-006.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/inference/case-007.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/inference/case-008.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/inference/case-009.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/inference/case-010.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/inference/case-011.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/inference/case-012.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/inference/case-013.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/inference/case-014.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/inference/case-015.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/inference/case-016.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/inference/case-017.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/inference/case-018.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/inference/case-019.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/inference/case-020.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/inference/case-021.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/inference/case-022.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/inference/case-023.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/inference/case-024.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/inference/case-025.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/inference/case-026.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/inference/case-027.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/inference/case-028.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/inference/case-029.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/inference/case-030.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/inference/case-031.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/inference/case-032.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/inference/case-033.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/inference/case-034.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/inference/case-035.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/inference/case-036.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/inference/case-037.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/inference/case-038.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/inference/case-039.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/inference/case-040.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/inference/case-041.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/inference/case-042.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/inference/case-043.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/inference/case-044.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/inference/case-045.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/inference/case-046.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/inference/case-047.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/inference/case-048.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/inference/case-049.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/inference/case-050.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/inference/case-051.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/inference/case-052.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/inference/case-053.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/inference/case-054.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/inference/case-055.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/inference/case-056.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/inference/case-057.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/inference/case-058.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/inference/case-059.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/inference/case-060.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/inference/case-061.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/inference/case-062.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/inference/case-063.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/inference/case-064.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/inference/case-065.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/inference/case-066.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/inference/case-067.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/inference/case-068.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/inference/case-069.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/inference/case-070.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/inference/case-071.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/inference/case-072.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/inference/case-073.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/inference/case-074.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/inference/case-075.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/inference/case-076.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/inference/case-077.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/inference/case-078.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/control/case-001.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.control"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/control/case-002.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.control"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/control/case-003.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.control"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/control/case-004.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.control"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/control/case-005.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.control"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/control/case-006.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.control"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/control/case-007.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.control"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/control/case-008.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.control"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/control/case-009.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.control"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/control/case-010.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.control"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/control/case-011.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.control"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/control/case-012.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.control"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/control/case-013.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.control"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/control/case-014.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.control"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/control/case-015.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.control"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/control/case-016.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.control"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/control/case-017.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.control"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/control/case-018.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.control"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/control/case-019.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.control"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/control/case-020.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.control"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/control/case-021.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.control"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/control/case-022.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.control"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/control/case-023.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.control"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/control/case-024.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.control"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/control/case-025.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.control"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/control/case-026.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.control"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/control/case-027.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.control"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/control/case-028.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.control"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/control/case-029.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.control"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/control/case-030.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.control"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/control/case-031.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.control"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/control/case-032.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.control"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/control/case-033.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.control"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/control/case-034.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.control"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/control/case-035.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.control"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/control/case-036.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.control"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/control/case-037.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.control"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/control/case-038.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.control"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/control/case-039.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.control"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/control/case-040.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.control"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/control/case-041.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.control"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/control/case-042.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.control"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/control/case-043.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.control"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/control/case-044.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.control"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/control/case-045.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.control"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/control/case-046.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.control"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/control/case-047.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.control"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/control/case-048.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.control"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/control/case-049.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.control"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/control/case-050.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.control"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/control/case-051.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.control"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/control/case-052.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.control"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/well-formed/case-001.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.well-formed"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/well-formed/case-002.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.well-formed"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/well-formed/case-003.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.well-formed"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/well-formed/case-004.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.well-formed"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/well-formed/case-005.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.well-formed"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/well-formed/case-006.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.well-formed"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/well-formed/case-007.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.well-formed"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/well-formed/case-008.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.well-formed"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/well-formed/case-009.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.well-formed"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/well-formed/case-010.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.well-formed"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/well-formed/case-011.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.well-formed"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/well-formed/case-012.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.well-formed"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/well-formed/case-013.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.well-formed"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/well-formed/case-014.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.well-formed"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/well-formed/case-015.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.well-formed"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/well-formed/case-016.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.well-formed"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/well-formed/case-017.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.well-formed"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/well-formed/case-018.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.well-formed"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/well-formed/case-019.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.well-formed"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/well-formed/case-020.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.well-formed"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/well-formed/case-021.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.well-formed"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/well-formed/case-022.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.well-formed"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/well-formed/case-023.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.well-formed"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/well-formed/case-024.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.well-formed"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/well-formed/case-025.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.well-formed"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/well-formed/case-026.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.well-formed"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/well-formed/case-027.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.well-formed"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/well-formed/case-028.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.well-formed"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/well-formed/case-029.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.well-formed"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/well-formed/case-030.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.well-formed"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/well-formed/case-031.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.well-formed"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/elision/case-001.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.elision"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/elision/case-002.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.elision"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/elision/case-003.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.elision"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/elision/case-004.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.elision"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/elision/case-005.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.elision"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/elision/case-006.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.elision"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/elision/case-007.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.elision"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/elision/case-008.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.elision"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/elision/case-009.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.elision"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/elision/case-010.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.elision"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/elision/case-011.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.elision"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/elision/case-012.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.elision"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/elision/case-013.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.elision"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/elision/case-014.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.elision"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/elision/case-015.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.elision"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/elision/case-016.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.elision"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/elision/case-017.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.elision"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/elision/case-018.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.elision"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/elision/case-019.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.elision"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/elision/case-020.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.elision"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/elision/case-021.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.elision"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/elision/case-022.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.elision"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/aliases/forward.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.aliases"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/aliases/direct-cycle.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.aliases"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/aliases/indirect-cycle.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.aliases"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/aliases/signature-hole.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.aliases"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/aliases/alias-hole.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.aliases"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/aliases/imported.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.aliases"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/aliases/generated.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.aliases"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/constraints/occurs.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.constraints"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/boundary/initialization.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.boundary"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true,
+        "reason": "PA14 owns definite initialization; PA9 publishes the resolved scalar type."
+      }
+    },
+    {
+      "path": "tests/spec/boundary/immutable-write.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.boundary"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true,
+        "reason": "PA14 owns binding write permissions; PA9 checks assignment place identity and types."
+      }
+    },
+    {
+      "path": "tests/spec/boundary/constant-call.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.boundary"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true,
+        "reason": "PA25 owns constant-expression validity; PA9 checks the initializer type."
+      }
+    },
+    {
+      "path": "tests/spec/boundary/return-region.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.boundary"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true,
+        "reason": "PA15 and PA16 own lifetime contracts and region proofs; PA9 retains region equalities."
+      }
+    },
+    {
+      "path": "tests/spec/packages/modules/lib.rs",
+      "input": "file",
+      "auxiliary": [
+        "tests/spec/packages/modules/number.rs"
+      ],
+      "exit_status": 0,
+      "features": [
+        "pa9.types",
+        "pa8.expansion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/packages/included/lib.rs",
+      "input": "file",
+      "auxiliary": [
+        "tests/spec/packages/included/items.rs"
+      ],
+      "exit_status": 0,
+      "features": [
+        "pa9.types",
+        "pa8.expansion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/packages/include-error/lib.rs",
+      "input": "file",
+      "auxiliary": [
+        "tests/spec/packages/include-error/items.rs"
+      ],
+      "exit_status": 1,
+      "features": [
+        "pa9.types",
+        "pa8.expansion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    }
+  ]
+}

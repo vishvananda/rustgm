@@ -1,0 +1,2 @@
+ERROR: file 1: 11: incompatible types
+  in macro include at file 0: 0; builtin

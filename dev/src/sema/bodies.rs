@@ -1,6 +1,7 @@
 //! Scalar body constraints consume resolved identities; fallback occurs once per body.
 use super::{
-    model::{Adjustment, AdjustmentKind, Declarations, Function, Operation},
+    declarations,
+    model::{Adjustment, AdjustmentKind, Declarations, Function, Operation, RegionEquality},
     scalar,
 };
 use crate::{
@@ -36,6 +37,7 @@ pub fn analyze(report: &Report, mut facts: Declarations) -> Result<Declarations,
         facts: &mut facts,
         file: FileId(0),
         result: TypeId::UNIT,
+        in_function: true,
         infer: Context::default(),
         touched: Vec::new(),
         bindings: Vec::new(),
@@ -45,6 +47,12 @@ pub fn analyze(report: &Report, mut facts: Declarations) -> Result<Declarations,
         negated: HashSet::new(),
         adjustments: Vec::new(),
         calls: Vec::new(),
+        annotation_work: Vec::new(),
+        type_children: Vec::new(),
+        frames: Vec::new(),
+        pending_label: None,
+        assignments: Vec::new(),
+        breaks: Vec::new(),
     };
     for index in 0..checker.facts.functions.len() {
         let function = checker.facts.functions[index];
@@ -52,24 +60,68 @@ pub fn analyze(report: &Report, mut facts: Declarations) -> Result<Declarations,
             .function(function)
             .map_err(|error| report.diagnostic(error))?;
     }
+    for index in 0..checker.facts.initializers.len() {
+        let initializer = checker.facts.initializers[index];
+        checker.file = initializer.value.file;
+        checker.result = initializer.ty;
+        checker.in_function = false;
+        checker
+            .body(initializer.value.node)
+            .map_err(|e| report.diagnostic(e))?;
+    }
     Ok(facts)
+}
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum FrameKind {
+    Loop,
+    While,
+    Block,
+}
+#[derive(Clone, Copy)]
+struct Frame {
+    node: NodeId,
+    body: NodeId,
+    kind: FrameKind,
+    label: Option<DefId>,
+    result: TermId,
+    breaks: Option<usize>,
+    expected: Option<TermId>,
+    in_condition: bool,
+}
+struct BreakSite {
+    node: NodeId,
+    value: Option<NodeId>,
+    next: Option<usize>,
+}
+enum Work {
+    Enter(NodeId, Option<TermId>),
+    Exit(NodeId),
+    CallArguments(NodeId),
+    AssignmentValue(NodeId),
 }
 struct Checker<'a> {
     report: &'a Report,
     facts: &'a mut Declarations,
     file: FileId,
     result: TypeId,
+    in_function: bool,
     infer: Context,
     terms: Vec<Vec<Option<TermId>>>,
     locals: Vec<Option<TermId>>,
     touched: Vec<NodeId>,
     bindings: Vec<DefId>,
-    work: Vec<(NodeId, bool)>,
+    work: Vec<Work>,
     children: Vec<NodeId>,
     checks: Vec<NodeId>,
     negated: HashSet<NodeId>,
     adjustments: Vec<(NodeId, TermId, AdjustmentKind)>,
     calls: Vec<(NodeId, TermId)>,
+    annotation_work: Vec<(NodeId, bool)>,
+    type_children: Vec<TermId>,
+    frames: Vec<Frame>,
+    pending_label: Option<(NodeId, DefId)>,
+    assignments: Vec<(NodeId, DefId, Option<Op>)>,
+    breaks: Vec<BreakSite>,
 }
 impl Checker<'_> {
     fn key(&self, node: NodeId) -> NodeKey {
@@ -165,26 +217,49 @@ impl Checker<'_> {
             self.binding(pattern, term)?;
             self.save(node, term);
         }
-        self.work.push((body.node, false));
+        self.body(body.node)
+    }
+    fn body(&mut self, body: NodeId) -> Result<(), Error> {
+        let expected = self.known(body, self.result)?;
+        self.work.push(Work::Enter(body, Some(expected)));
         let mut steps = 0_usize;
-        while let Some((node, finish)) = self.work.pop() {
+        while let Some(work) = self.work.pop() {
             steps += 1;
             if steps > 1_000_000 {
-                return Err(self.error(node, "body type work budget exceeded"));
+                return Err(self.error(body, "body type work budget exceeded"));
             }
-            if !self.active(node) {
-                continue;
-            }
-            if finish {
-                let term = self.expression(node)?;
-                self.save(node, term);
-            } else {
-                self.enter(node)?;
+            match work {
+                Work::Enter(node, expected) if self.active(node) => self.enter(node, expected)?,
+                Work::Enter(..) => {}
+                Work::CallArguments(node) => self.call_arguments(node)?,
+                Work::AssignmentValue(node) => {
+                    let Kind::Binary { left, right, .. } = self.kind(node) else {
+                        return Err(self.error(node, "invalid assignment work"));
+                    };
+                    let expected = self.term(left)?;
+                    self.work.push(Work::Enter(right, Some(expected)));
+                }
+                Work::Exit(node) => {
+                    let term = self.expression(node)?;
+                    self.save(node, term);
+                    if self
+                        .frames
+                        .last()
+                        .is_some_and(|f| f.node == node && f.kind == FrameKind::Block)
+                    {
+                        let frame = self
+                            .frames
+                            .pop()
+                            .ok_or_else(|| self.error(node, "missing block control frame"))?;
+                        let result = self.finish_frame(frame, Some(term))?;
+                        self.save(node, result);
+                    }
+                }
             }
         }
-        let expected = self.known(body.node, self.result)?;
-        self.coerce(body.node, expected)?;
-        self.finish(body.node)
+        let expected = self.known(body, self.result)?;
+        self.coerce(body, expected)?;
+        self.finish(body)
     }
     fn finish(&mut self, body: NodeId) -> Result<(), Error> {
         for (_, term, kind) in &self.adjustments {
@@ -197,24 +272,38 @@ impl Checker<'_> {
         let solved = std::mem::take(&mut self.infer)
             .finish(&mut self.facts.types)
             .map_err(|e| self.error(body, e))?;
-        // Region obligations must remain attached when reference body operations are added.
-        if !solved.region_equalities.is_empty() {
-            return Err(self.error(
-                body,
-                "reference body constraints require lifetime contracts",
-            ));
-        }
+        let body_key = self.key(body);
+        self.facts
+            .region_equalities
+            .extend(
+                solved
+                    .region_equalities
+                    .iter()
+                    .map(|(left, right)| RegionEquality {
+                        body: body_key,
+                        left: *left,
+                        right: *right,
+                    }),
+            );
         for node in &self.touched {
             let term = self.term(*node)?;
             let key = self.key(*node);
+            let ty = solved.types[term.0 as usize];
+            if self.facts.types.is_well_formed(ty) != Some(true) {
+                return Err(self.error(*node, "body uses an ill-formed type"));
+            }
             self.facts
                 .node_mut(key)
                 .ok_or_else(|| Declarations::error(self.report, key, "invalid body node"))?
-                .ty = Some(solved.types[term.0 as usize]);
+                .ty = Some(ty);
         }
         for id in &self.bindings {
             if let Some(term) = self.locals[id.0 as usize].take() {
-                self.facts.definitions[id.0 as usize] = Some(solved.types[term.0 as usize]);
+                let ty = solved.types[term.0 as usize];
+                if self.facts.types.is_sized(ty) != Some(true) {
+                    return Err(self.error(body, "local bindings must be sized"));
+                }
+                self.facts.definitions[id.0 as usize] = Some(ty);
             }
         }
         for (node, term, kind) in &self.adjustments {
@@ -237,6 +326,7 @@ impl Checker<'_> {
             });
         }
         self.validate_operations()?;
+        self.validate_assignments()?;
         self.validate_literals()?;
         for node in self.touched.drain(..) {
             self.terms[self.file.0 as usize][node.0 as usize] = None;
@@ -246,6 +336,8 @@ impl Checker<'_> {
         self.negated.clear();
         self.adjustments.clear();
         self.calls.clear();
+        self.assignments.clear();
+        self.breaks.clear();
         Ok(())
     }
     fn binding(&mut self, mut node: NodeId, term: TermId) -> Result<(), Error> {
@@ -272,30 +364,75 @@ impl Checker<'_> {
         self.save(node, term);
         Ok(())
     }
-    fn annotation(&mut self, mut node: NodeId) -> Result<TermId, Error> {
-        let origin = node;
-        loop {
-            match self.kind(node) {
-                Kind::Group(value) | Kind::Attributed { value, .. } => node = value,
-                Kind::Type {
-                    flavor: TypeFlavor::Path,
-                    elements,
-                } => {
-                    node = *self
-                        .report
-                        .package
-                        .unit(self.file)
-                        .configured
-                        .ast
-                        .list(elements)
-                        .first()
-                        .ok_or_else(|| self.error(node, "missing annotation path"))?;
+    fn annotation(&mut self, root: NodeId) -> Result<TermId, Error> {
+        self.annotation_work.push((root, false));
+        while let Some((node, finish)) = self.annotation_work.pop() {
+            if self.terms[self.file.0 as usize][node.0 as usize].is_some() {
+                continue;
+            }
+            if let Some(ty) = self.facts.node(self.key(node)).and_then(|f| f.ty) {
+                let term = self.known(node, ty)?;
+                self.save(node, term);
+                continue;
+            }
+            if finish {
+                let term = self.annotation_finish(node)?;
+                self.save(node, term);
+            } else {
+                self.annotation_work.push((node, true));
+                let unit = self.report.package.unit(self.file);
+                match self.kind(node) {
+                    Kind::Group(value) | Kind::Attributed { value, .. } => {
+                        self.annotation_work.push((value, false));
+                    }
+                    Kind::Type { flavor, elements } => {
+                        if matches!(flavor, TypeFlavor::Ref | TypeFlavor::RefMut) {
+                            return Err(self.error(
+                                node,
+                                "inferred reference annotations require lifetime contracts",
+                            ));
+                        }
+                        let elements = unit.configured.ast.list(elements);
+                        let count = elements
+                            .len()
+                            .saturating_sub(usize::from(flavor == TypeFlavor::Array));
+                        self.annotation_work
+                            .extend(elements[..count].iter().rev().map(|n| (*n, false)));
+                    }
+                    Kind::FunctionType(index) => {
+                        let function = unit.configured.ast.function_types[index as usize];
+                        if function.abi.is_some() || function.binders.start != function.binders.end
+                        {
+                            return Err(self.error(
+                                node,
+                                "inferred foreign or bound signatures require later semantics",
+                            ));
+                        }
+                        self.annotation_work
+                            .extend(function.result.map(|n| (n, false)));
+                        for parameter in unit.configured.ast.list(function.parameters).iter().rev()
+                        {
+                            if self.active(*parameter) {
+                                let ty = declarations::parameter_type(
+                                    self.report,
+                                    self.key(*parameter),
+                                )?;
+                                self.annotation_work.push((ty, false));
+                            }
+                        }
+                    }
+                    Kind::InferType | Kind::NeverType | Kind::Path { .. } | Kind::Name(_) => {}
+                    _ => return Err(self.error(node, "unsupported local type annotation")),
                 }
-                _ => break,
             }
         }
-        let term = match self.kind(node) {
-            Kind::InferType => self.variable(node, Domain::Any)?,
+        self.term(root)
+    }
+    fn annotation_finish(&mut self, node: NodeId) -> Result<TermId, Error> {
+        let constructor = match self.kind(node) {
+            Kind::InferType => return self.variable(node, Domain::Any),
+            Kind::NeverType => return self.known(node, TypeId::NEVER),
+            Kind::Group(value) | Kind::Attributed { value, .. } => return self.term(value),
             Kind::Path { .. } | Kind::Name(_) => {
                 let Some(Target::Definition(id)) =
                     self.facts.node(self.key(node)).and_then(|f| f.reference)
@@ -303,24 +440,88 @@ impl Checker<'_> {
                     return Err(self.error(node, "missing annotation resolution"));
                 };
                 let ty = self.facts.definitions[id.0 as usize]
-                    .ok_or_else(|| self.error(node, "unsupported annotation declaration"))?;
-                self.known(node, ty)?
+                    .ok_or_else(|| self.error(node, "missing resolved annotation type"))?;
+                return self.known(node, ty);
             }
-            Kind::Type {
-                flavor: TypeFlavor::Tuple,
-                elements,
-            } if elements.start == elements.end => self.known(node, TypeId::UNIT)?,
-            _ => {
-                return Err(
-                    self.error(node, "structural local annotations are not implemented yet")
-                );
+            Kind::Type { flavor, elements } => {
+                self.type_children.clear();
+                let children = self
+                    .report
+                    .package
+                    .unit(self.file)
+                    .configured
+                    .ast
+                    .list(elements);
+                for child in children.iter().take(
+                    children
+                        .len()
+                        .saturating_sub(usize::from(flavor == TypeFlavor::Array)),
+                ) {
+                    self.type_children.push(self.term(*child)?);
+                }
+                match flavor {
+                    TypeFlavor::Path => {
+                        return self
+                            .type_children
+                            .first()
+                            .copied()
+                            .ok_or_else(|| self.error(node, "missing type path"));
+                    }
+                    TypeFlavor::Tuple => Constructor::Tuple,
+                    TypeFlavor::Slice => Constructor::Slice,
+                    TypeFlavor::Array => Constructor::Array(declarations::array_length(
+                        self.report,
+                        self.key(
+                            *children
+                                .get(1)
+                                .ok_or_else(|| self.error(node, "missing array length"))?,
+                        ),
+                    )?),
+                    TypeFlavor::PointerConst | TypeFlavor::PointerMut => Constructor::Pointer {
+                        mutable: flavor == TypeFlavor::PointerMut,
+                    },
+                    _ => return Err(self.error(node, "unsupported inferred reference type")),
+                }
             }
+            Kind::FunctionType(index) => {
+                self.type_children.clear();
+                let unit = self.report.package.unit(self.file);
+                let function = unit.configured.ast.function_types[index as usize];
+                for parameter in unit.configured.ast.list(function.parameters) {
+                    if self.active(*parameter) {
+                        let ty = declarations::parameter_type(self.report, self.key(*parameter))?;
+                        self.type_children.push(self.term(ty)?);
+                    }
+                }
+                let parameters = u32::try_from(self.type_children.len())
+                    .map_err(|_| self.error(node, "too many function parameters"))?;
+                let result = if let Some(result) = function.result {
+                    self.term(result)?
+                } else {
+                    self.known(node, TypeId::UNIT)?
+                };
+                self.type_children.push(result);
+                Constructor::Function {
+                    bound_regions: 0,
+                    parameters,
+                    unsafe_: function.unsafe_,
+                }
+            }
+            _ => return Err(self.error(node, "invalid local annotation work")),
         };
-        self.save(origin, term);
-        Ok(term)
+        self.infer
+            .construct(constructor, &self.type_children)
+            .map_err(|e| self.error(node, e))
     }
-    fn enter(&mut self, node: NodeId) -> Result<(), Error> {
-        self.work.push((node, true));
+    fn enter(&mut self, node: NodeId, expected: Option<TermId>) -> Result<(), Error> {
+        if let Some(frame) = self.frames.last_mut()
+            && frame.kind == FrameKind::While
+            && frame.body == node
+        {
+            frame.in_condition = false;
+        }
+        self.enter_control(node, expected)?;
+        self.work.push(Work::Exit(node));
         self.children.clear();
         match self.kind(node) {
             Kind::Path { .. } | Kind::Name(_) | Kind::Item(_) => {}
@@ -336,7 +537,9 @@ impl Checker<'_> {
                     self.variable(node, Domain::Any)?
                 };
                 self.binding(pattern, term)?;
-                self.children.extend(value);
+                self.work
+                    .extend(value.map(|value| Work::Enter(value, Some(term))));
+                return Ok(());
             }
             Kind::Let {
                 otherwise: Some(_), ..
@@ -344,6 +547,61 @@ impl Checker<'_> {
             Kind::Cast { value, ty } => {
                 self.annotation(ty)?;
                 self.children.push(value);
+            }
+            Kind::Group(value) | Kind::Attributed { value, .. } | Kind::Label { value, .. } => {
+                self.work.push(Work::Enter(value, expected));
+                return Ok(());
+            }
+            Kind::Block {
+                statements, tail, ..
+            }
+            | Kind::Expansion {
+                children: statements,
+                tail,
+            } => {
+                self.work
+                    .extend(tail.map(|value| Work::Enter(value, expected)));
+                let unit = self.report.package.unit(self.file);
+                self.work.extend(
+                    unit.configured
+                        .ast
+                        .list(statements)
+                        .iter()
+                        .rev()
+                        .map(|n| Work::Enter(*n, None)),
+                );
+                return Ok(());
+            }
+            Kind::If {
+                condition,
+                then,
+                otherwise,
+            } => {
+                self.work
+                    .extend(otherwise.map(|n| Work::Enter(n, expected)));
+                self.work.push(Work::Enter(then, expected));
+                self.work.push(Work::Enter(condition, None));
+                return Ok(());
+            }
+            Kind::Return(value) => {
+                let result = self.known(node, self.result)?;
+                self.work
+                    .extend(value.map(|n| Work::Enter(n, Some(result))));
+                return Ok(());
+            }
+            Kind::Binary {
+                op: Op::Equal,
+                left,
+                ..
+            } => {
+                self.work.push(Work::AssignmentValue(node));
+                self.work.push(Work::Enter(left, None));
+                return Ok(());
+            }
+            Kind::Call { callee, .. } => {
+                self.work.push(Work::CallArguments(node));
+                self.work.push(Work::Enter(callee, None));
+                return Ok(());
             }
             _ => self
                 .report
@@ -354,7 +612,7 @@ impl Checker<'_> {
                 .push_children(node, &mut self.children),
         }
         self.work
-            .extend(self.children.iter().rev().map(|n| (*n, false)));
+            .extend(self.children.iter().rev().map(|n| Work::Enter(*n, None)));
         Ok(())
     }
     #[expect(
@@ -384,7 +642,9 @@ impl Checker<'_> {
                     .ok_or_else(|| self.error(node, "missing value type"))?;
                 self.known(node, ty)
             }
-            Kind::Group(value) | Kind::Attributed { value, .. } => self.term(value),
+            Kind::Group(value) | Kind::Attributed { value, .. } | Kind::Label { value, .. } => {
+                self.term(value)
+            }
             Kind::Block {
                 flavor: BlockFlavor::Plain,
                 statements,
@@ -424,10 +684,20 @@ impl Checker<'_> {
                 self.known(node, if never { TypeId::NEVER } else { TypeId::UNIT })
             }
             Kind::Let { pattern, value, .. } => {
+                let mut diverges = false;
                 if let Some(value) = value {
+                    let term = self.term(value)?;
+                    diverges = self.head(node, term)? == Some(Constructor::Never);
                     self.coerce(value, self.term(pattern)?)?;
                 }
-                self.known(node, TypeId::UNIT)
+                self.known(
+                    node,
+                    if diverges {
+                        TypeId::NEVER
+                    } else {
+                        TypeId::UNIT
+                    },
+                )
             }
             Kind::Unary {
                 op: Unary::Negate | Unary::Not,
@@ -448,7 +718,14 @@ impl Checker<'_> {
             }
             Kind::Binary { op, left, right } => self.binary(node, op, left, right),
             Kind::Call { callee, arguments } => self.call(node, callee, arguments),
+            Kind::Loop { body } => self.finish_loop(node, body, None),
+            Kind::While { condition, body } => self.finish_loop(node, body, Some(condition)),
+            Kind::Break { label, value } => self.transfer(node, label.is_some(), value, false),
+            Kind::Continue(label) => self.transfer(node, label.is_some(), None, true),
             Kind::Return(value) => {
+                if !self.in_function {
+                    return Err(self.error(node, "return is outside a function"));
+                }
                 let expected = self.known(node, self.result)?;
                 if let Some(value) = value {
                     self.coerce(value, expected)?;
@@ -466,15 +743,7 @@ impl Checker<'_> {
                 let boolean = self.known(node, TypeId::primitive(Primitive::Bool))?;
                 self.coerce(condition, boolean)?;
                 let result = if let Some(otherwise) = otherwise {
-                    let a = self.term(then)?;
-                    let b = self.term(otherwise)?;
-                    if self.head(node, a)? == Some(Constructor::Never) {
-                        self.coerce(then, b)?;
-                        b
-                    } else {
-                        self.coerce(otherwise, a)?;
-                        a
-                    }
+                    self.join(node, then, otherwise)?
                 } else {
                     let unit = self.known(node, TypeId::UNIT)?;
                     self.coerce(then, unit)?;
@@ -482,9 +751,17 @@ impl Checker<'_> {
                 };
                 Ok(result)
             }
-            Kind::Cast { ty, .. } => {
+            Kind::Cast { value, ty } => {
+                let source = self.term(value)?;
+                let target = self.term(ty)?;
+                if matches!(self.head(node, source)?, Some(Constructor::FunctionItem(_)))
+                    && matches!(self.head(node, target)?, Some(Constructor::Function { .. }))
+                {
+                    let signature = self.child(node, source, 0)?;
+                    self.equate(node, signature, target)?;
+                }
                 self.checks.push(node);
-                self.term(ty)
+                Ok(target)
             }
             _ => Err(self.error(
                 node,
@@ -542,6 +819,35 @@ impl Checker<'_> {
         }
         self.equate(source, actual, expected)
     }
+    fn join(&mut self, node: NodeId, left: NodeId, right: NodeId) -> Result<TermId, Error> {
+        let common = self.join_types(node, self.term(left)?, self.term(right)?)?;
+        self.coerce(left, common)?;
+        self.coerce(right, common)?;
+        Ok(common)
+    }
+    fn join_types(&mut self, node: NodeId, a: TermId, b: TermId) -> Result<TermId, Error> {
+        let ah = self.head(node, a)?;
+        let bh = self.head(node, b)?;
+        if ah == Some(Constructor::Never) {
+            return Ok(b);
+        }
+        if bh == Some(Constructor::Never) {
+            return Ok(a);
+        }
+        let a_item = matches!(ah, Some(Constructor::FunctionItem(_)));
+        let b_item = matches!(bh, Some(Constructor::FunctionItem(_)));
+        if (a_item && b_item && ah != bh)
+            || (a_item && matches!(bh, Some(Constructor::Function { .. })))
+            || (b_item && matches!(ah, Some(Constructor::Function { .. })))
+        {
+            let left = if a_item { self.child(node, a, 0)? } else { a };
+            let right = if b_item { self.child(node, b, 0)? } else { b };
+            self.equate(node, left, right)?;
+            return Ok(left);
+        }
+        self.equate(node, a, b)?;
+        Ok(a)
+    }
     fn binary(
         &mut self,
         node: NodeId,
@@ -549,6 +855,9 @@ impl Checker<'_> {
         left: NodeId,
         right: NodeId,
     ) -> Result<TermId, Error> {
+        if op == Op::Equal || scalar::compound_operator(op).is_some() {
+            return self.assignment(node, op, left, right);
+        }
         let a = self.term(left)?;
         let b = self.term(right)?;
         self.checks.push(node);
@@ -628,6 +937,275 @@ impl Checker<'_> {
         self.calls.push((node, term));
         self.child(node, term, count)
     }
+    fn enter_control(&mut self, node: NodeId, expected: Option<TermId>) -> Result<(), Error> {
+        let label = if self.pending_label.is_some_and(|(target, _)| target == node) {
+            self.pending_label.take().map(|(_, label)| label)
+        } else {
+            None
+        };
+        let (kind, body) = match self.kind(node) {
+            Kind::Loop { body } => (FrameKind::Loop, body),
+            Kind::While { body, .. } => (FrameKind::While, body),
+            Kind::Block { .. } if label.is_some() => (FrameKind::Block, node),
+            Kind::Label { value, .. } => {
+                let label = self
+                    .facts
+                    .node(self.key(node))
+                    .and_then(|f| f.binding)
+                    .ok_or_else(|| self.error(node, "missing label definition"))?;
+                self.pending_label = Some((value, label));
+                return Ok(());
+            }
+            _ => return Ok(()),
+        };
+        let result = if kind == FrameKind::While {
+            self.known(node, TypeId::UNIT)?
+        } else {
+            self.variable(node, Domain::Any)?
+        };
+        self.frames.push(Frame {
+            node,
+            body,
+            kind,
+            label,
+            result,
+            breaks: None,
+            expected: if kind == FrameKind::While {
+                None
+            } else {
+                expected
+            },
+            in_condition: kind == FrameKind::While,
+        });
+        Ok(())
+    }
+    fn finish_loop(
+        &mut self,
+        node: NodeId,
+        body: NodeId,
+        condition: Option<NodeId>,
+    ) -> Result<TermId, Error> {
+        let frame = self
+            .frames
+            .pop()
+            .ok_or_else(|| self.error(node, "missing loop control frame"))?;
+        if frame.node != node {
+            return Err(self.error(node, "mismatched loop control frame"));
+        }
+        let unit = self.known(node, TypeId::UNIT)?;
+        self.coerce(body, unit)?;
+        if let Some(condition) = condition {
+            let boolean = self.known(node, TypeId::primitive(Primitive::Bool))?;
+            self.coerce(condition, boolean)?;
+        }
+        self.finish_frame(
+            frame,
+            if condition.is_some() {
+                Some(unit)
+            } else {
+                None
+            },
+        )
+    }
+    fn finish_frame(&mut self, frame: Frame, base: Option<TermId>) -> Result<TermId, Error> {
+        let expected = self.frame_expected(frame)?;
+        let mut common = if frame.breaks.is_some() {
+            expected.or(base)
+        } else {
+            base
+        };
+        let mut site = frame.breaks;
+        while let Some(index) = site {
+            let value = self.breaks[index].value;
+            let node = self.breaks[index].node;
+            let term = if let Some(value) = value {
+                self.term(value)?
+            } else {
+                self.known(node, TypeId::UNIT)?
+            };
+            common = Some(if let Some(previous) = common {
+                self.join_types(node, previous, term)?
+            } else {
+                term
+            });
+            site = self.breaks[index].next;
+        }
+        let common = if let Some(common) = common {
+            common
+        } else {
+            self.known(frame.node, TypeId::NEVER)?
+        };
+        self.equate(frame.node, frame.result, common)?;
+        if frame.kind == FrameKind::Block {
+            self.coerce(frame.node, common)?;
+        }
+        let mut site = frame.breaks;
+        while let Some(index) = site {
+            if let Some(value) = self.breaks[index].value {
+                self.coerce(value, common)?;
+            }
+            site = self.breaks[index].next;
+        }
+        Ok(frame.result)
+    }
+    fn frame_expected(&mut self, frame: Frame) -> Result<Option<TermId>, Error> {
+        if let Some(expected) = frame.expected
+            && self.head(frame.node, expected)?.is_some()
+        {
+            return Ok(Some(expected));
+        }
+        Ok(None)
+    }
+    fn call_arguments(&mut self, node: NodeId) -> Result<(), Error> {
+        let Kind::Call { callee, arguments } = self.kind(node) else {
+            return Err(self.error(node, "invalid call work"));
+        };
+        let mut term = self.term(callee)?;
+        if matches!(self.head(node, term)?, Some(Constructor::FunctionItem(_))) {
+            term = self.child(node, term, 0)?;
+        }
+        let Some(Constructor::Function { parameters, .. }) = self.head(node, term)? else {
+            return Err(self.error(node, "call requires a known function type"));
+        };
+        let unit = self.report.package.unit(self.file);
+        let count = unit
+            .configured
+            .ast
+            .list(arguments)
+            .iter()
+            .filter(|n| self.active(**n))
+            .count();
+        if count != parameters as usize {
+            return Err(self.error(node, "call argument count mismatch"));
+        }
+        let mut index = count;
+        for argument in unit.configured.ast.list(arguments).iter().rev() {
+            if self.active(*argument) {
+                index -= 1;
+                let expected = self.child(node, term, index)?;
+                self.work.push(Work::Enter(*argument, Some(expected)));
+            }
+        }
+        Ok(())
+    }
+    fn transfer(
+        &mut self,
+        node: NodeId,
+        labeled: bool,
+        value: Option<NodeId>,
+        continuing: bool,
+    ) -> Result<TermId, Error> {
+        let index = if labeled {
+            let Some(Target::Definition(label)) =
+                self.facts.node(self.key(node)).and_then(|f| f.reference)
+            else {
+                return Err(self.error(node, "missing control label resolution"));
+            };
+            self.frames.iter().rposition(|f| f.label == Some(label))
+        } else {
+            self.frames.len().checked_sub(1)
+        }
+        .ok_or_else(|| self.error(node, "break or continue is outside a loop"))?;
+        let frame = self.frames[index];
+        if !labeled && (frame.kind == FrameKind::Block || frame.in_condition) {
+            return Err(self.error(
+                node,
+                "control transfer here requires an explicit loop label",
+            ));
+        }
+        if continuing {
+            if frame.kind == FrameKind::Block {
+                return Err(self.error(node, "cannot continue a labeled block"));
+            }
+        } else {
+            if value.is_some() && frame.kind == FrameKind::While {
+                return Err(self.error(node, "while loops cannot break with a value"));
+            }
+            let expected = self.frame_expected(frame)?.unwrap_or(frame.result);
+            if let Some(value) = value {
+                self.coerce(value, expected)?;
+            } else {
+                let unit = self.known(node, TypeId::UNIT)?;
+                self.equate(node, unit, expected)?;
+            }
+            let site = self.breaks.len();
+            self.breaks.push(BreakSite {
+                node,
+                value,
+                next: frame.breaks,
+            });
+            self.frames[index].breaks = Some(site);
+        }
+        let key = self.key(node);
+        self.facts
+            .node_mut(key)
+            .ok_or_else(|| Declarations::error(self.report, key, "invalid control node"))?
+            .operation = Some(Operation::Transfer {
+            target: frame.node,
+            continuing,
+        });
+        self.known(node, TypeId::NEVER)
+    }
+    fn assignment(
+        &mut self,
+        node: NodeId,
+        op: Op,
+        mut left: NodeId,
+        right: NodeId,
+    ) -> Result<TermId, Error> {
+        let a = self.term(left)?;
+        let b = self.term(right)?;
+        while let Kind::Group(inner) | Kind::Attributed { value: inner, .. } = self.kind(left) {
+            left = inner;
+        }
+        let Some(Target::Definition(target)) =
+            self.facts.node(self.key(left)).and_then(|f| f.reference)
+        else {
+            return Err(self.error(node, "assignment requires a place"));
+        };
+        if !matches!(
+            self.report.resolution.definitions[target.0 as usize].kind,
+            DefKind::Local | DefKind::Parameter
+        ) {
+            return Err(self.error(node, "assignment requires a local place"));
+        }
+        let operator = scalar::compound_operator(op);
+        if matches!(operator, Some(Op::ShiftLeft | Op::ShiftRight)) {
+            let integer = self.variable(node, Domain::Integer)?;
+            self.equate(node, b, integer)?;
+        } else if operator.is_some() {
+            self.equate(node, a, b)?;
+        } else {
+            self.coerce(right, a)?;
+        }
+        self.assignments.push((node, target, operator));
+        let never = self.head(node, b)? == Some(Constructor::Never);
+        self.known(node, if never { TypeId::NEVER } else { TypeId::UNIT })
+    }
+    fn validate_assignments(&mut self) -> Result<(), Error> {
+        for (node, target, operator) in &self.assignments {
+            let Kind::Binary { left, right, .. } = self.kind(*node) else {
+                return Err(self.error(*node, "invalid assignment syntax"));
+            };
+            if let Some(operator) = operator
+                && !scalar::binary(*operator, self.primitive(left)?, self.primitive(right)?)
+            {
+                return Err(self.error(*node, "compound assignment is not defined for these types"));
+            }
+            let operation = Operation::Assign {
+                target: *target,
+                operator: *operator,
+                left: self.ty(left)?,
+                right: self.ty(right)?,
+            };
+            let key = self.key(*node);
+            self.facts
+                .node_mut(key)
+                .ok_or_else(|| Declarations::error(self.report, key, "invalid assignment node"))?
+                .operation = Some(operation);
+        }
+        Ok(())
+    }
     fn ty(&self, node: NodeId) -> Result<TypeId, Error> {
         self.facts
             .node(self.key(node))
@@ -679,8 +1257,18 @@ impl Checker<'_> {
                     }
                 }
                 Kind::Cast { value, ty } => {
-                    let kind = scalar::cast(self.primitive(value)?, self.primitive(ty)?)
-                        .ok_or_else(|| self.error(*node, "invalid scalar cast"))?;
+                    let kind = if matches!(
+                        self.facts.types.kind(self.ty(value)?),
+                        Some(Type::FunctionItem { .. })
+                    ) && matches!(
+                        self.facts.types.kind(self.ty(ty)?),
+                        Some(Type::Function { .. })
+                    ) {
+                        super::model::Cast::FunctionPointer
+                    } else {
+                        scalar::cast(self.primitive(value)?, self.primitive(ty)?)
+                            .ok_or_else(|| self.error(*node, "invalid scalar cast"))?
+                    };
                     Operation::Cast {
                         kind,
                         source: self.ty(value)?,

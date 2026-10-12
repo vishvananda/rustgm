@@ -47,6 +47,7 @@ impl Sources for Files {
 pub enum Mode {
     Names,
     Expanded,
+    Types,
 }
 pub fn run(
     source: SourceFile,
@@ -66,11 +67,22 @@ pub fn run(
         path: path.filter(|p| *p != "-").unwrap_or("<anon>").into(),
         source,
     };
-    if matches!(mode, Mode::Expanded) {
+    if matches!(mode, Mode::Expanded | Mode::Types) {
         let report =
             resolve::expansion::analyze_with_crate_name(root, &mut Files, config, crate_name)
                 .and_then(resolve::analyze_expanded)
                 .map_err(|e| e.to_string())?;
+        if matches!(mode, Mode::Types) {
+            let facts = rustgm::sema::declarations::analyze(&report)
+                .and_then(|facts| rustgm::sema::bodies::analyze(&report, facts))
+                .map_err(|e| e.to_string())?;
+            return if count {
+                rustgm::sema::type_view::count(&facts, out)
+            } else {
+                rustgm::sema::type_view::write(&report, &facts, out)
+            }
+            .map_err(|e| e.to_string());
+        }
         return if count {
             resolve::render::count_expanded(&report, out)
         } else {

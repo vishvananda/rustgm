@@ -1,4 +1,9 @@
-# PA9 implementation checkpoint
+# Historical PA9 implementation checkpoint
+
+PA9 is now an implemented draft; see [the released handout](../pa9/README.md)
+and [current validation](pa9-validation.md). The remainder records the earlier
+`a66678f` checkpoint, before course activation, including its then-outstanding
+work and raw measurements.
 
 PA9 remains **planned**. These library interfaces are under construction; the
 course CLI still rejects `--emit-types` and there is no PA9 grading suite yet.

@@ -4,3 +4,4 @@ pub mod declarations;
 pub mod model;
 mod regions;
 mod scalar;
+pub mod type_view;

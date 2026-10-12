@@ -44,9 +44,14 @@ fn options() -> Result<Options, String> {
             | "--emit-names"
             | "--emit-expanded"
             | "--emit-expanded-crate"
+            | "--emit-types"
             | "--emit-lowir" => {
                 options.mode = arg;
                 options.count = false;
+            }
+            "--count-types" => {
+                options.mode = "--emit-types".into();
+                options.count = true;
             }
             "--count-names" => {
                 options.mode = "--emit-names".into();
@@ -124,7 +129,7 @@ fn compile(options: &Options) -> Result<(), String> {
     };
     let result = if matches!(
         options.mode.as_str(),
-        "--emit-names" | "--emit-expanded-crate"
+        "--emit-names" | "--emit-expanded-crate" | "--emit-types"
     ) {
         modules::run(
             source,
@@ -134,6 +139,8 @@ fn compile(options: &Options) -> Result<(), String> {
             options.count,
             if options.mode == "--emit-names" {
                 modules::Mode::Names
+            } else if options.mode == "--emit-types" {
+                modules::Mode::Types
             } else {
                 modules::Mode::Expanded
             },

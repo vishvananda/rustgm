@@ -117,22 +117,30 @@ fn casts_function_reification_and_minimum_literals_publish_lowering_facts() -> R
     Ok(())
 }
 #[test]
-#[expect(
-    clippy::too_many_lines,
-    reason = "independent scalar acceptance matrix and pinned oracle invocation are reviewed together"
-)]
 fn scalar_body_acceptance_matches_pinned_rustc() -> Result<(), String> {
-    let version = Command::new("rustc")
-        .arg("--version")
-        .output()
-        .map_err(|e| e.to_string())?;
-    assert!(String::from_utf8_lossy(&version.stdout).starts_with("rustc 1.98.0 "));
-    let directory = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../obj/pa9-work/body-rustc")
-        .join(std::process::id().to_string());
-    std::fs::create_dir_all(&directory).map_err(|e| e.to_string())?;
     let cases = [
         ("fn f()->u8{1+2}", true),
+        ("fn f()->u8{let _:()=();1}", true),
+        ("fn f()->u8{let g=a as fn()->u8;g()} fn a()->u8{1}", true),
+        ("fn f(){let g=a as fn()->u16;} fn a()->u8{1}", false),
+        (
+            "fn f()->u8{let f:fn(u8)->u8=g;f(1)} fn g(x:u8)->u8{x}",
+            true,
+        ),
+        ("fn f()->u8{let f:fn(_)->_=g;f(1)} fn g(x:u8)->u8{x}", true),
+        ("fn f(){let f:fn(_)->_;}", false),
+        ("fn f(){let f:fn(u8)->u8;}", true),
+        ("fn f(){let _:for<'a> fn(&'a i32)->&'a i32;}", true),
+        ("fn f(){let _:(u8,bool);}", true),
+        ("fn f(){let _:(u8,_);}", false),
+        ("fn f(){let _:[u8;4];}", true),
+        ("fn f(){let _:[_;4];}", false),
+        ("fn f(){let _:[u8;4u8];}", false),
+        ("fn f(){let _:*const u8;}", true),
+        ("fn f(){#[cfg(any())] let _:Missing;}", true),
+        ("fn f()->u8{let _=return 2;}", true),
+        ("fn f()->u8{let x=return 2;}", true),
+        ("fn f()->u8{if true{return 1}else{let _=return 2;}}", true),
         ("fn f()->f32{1e100}", false),
         ("fn f()->f64{1e100}", true),
         ("fn f()->f64{1e1000}", false),
@@ -199,6 +207,20 @@ fn scalar_body_acceptance_matches_pinned_rustc() -> Result<(), String> {
         ("fn f()->u8{#[cfg(any())] let x=missing;2}", true),
         ("macro_rules! m{()=>{1+2}} fn f()->u8{m!()}", true),
     ];
+    check_cases("scalar", &cases)
+}
+
+fn check_cases(name: &str, cases: &[(&str, bool)]) -> Result<(), String> {
+    let version = Command::new("rustc")
+        .arg("--version")
+        .output()
+        .map_err(|e| e.to_string())?;
+    assert!(String::from_utf8_lossy(&version.stdout).starts_with("rustc 1.98.0 "));
+    let directory = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../obj/pa9-work/body-rustc")
+        .join(std::process::id().to_string())
+        .join(name);
+    std::fs::create_dir_all(&directory).map_err(|e| e.to_string())?;
     for (index, (source, expected)) in cases.iter().enumerate() {
         let prefix = directory.join(index.to_string());
         std::fs::write(prefix.with_extension("rs"), source).map_err(|e| e.to_string())?;
@@ -240,5 +262,184 @@ fn scalar_body_acceptance_matches_pinned_rustc() -> Result<(), String> {
             ours.err()
         );
     }
+    Ok(())
+}
+
+#[test]
+fn control_flow_and_assignment_types_match_pinned_rustc() -> Result<(), String> {
+    check_cases(
+        "control",
+        &[
+            ("fn f()->u8{loop{}}", true),
+            ("fn f()->u8{loop{break 1}}", true),
+            ("fn f()->u8{loop{break}}", false),
+            ("fn f(){loop{1}}", false),
+            ("fn f(){loop{continue}}", true),
+            ("fn f(){while false{}}", true),
+            ("fn f()->u8{while false{}}", false),
+            ("fn f(){while 1{}}", false),
+            ("fn f(){while false{1}}", false),
+            ("fn f(){while true{break;}}", true),
+            ("fn f(){while true{break ();}}", false),
+            ("fn f(){while true{continue;}}", true),
+            ("fn f()->u8{loop{if true{break 1}else{break 2}}}", true),
+            ("fn f(){loop{if true{break 1}else{break false}}}", false),
+            ("fn f()->u8{'a:loop{while true{break 'a 2;}}}", true),
+            ("fn f(){'a:loop{while true{continue 'a;}}}", true),
+            ("fn f()->u8{'a:{break 'a 2;}}", true),
+            ("fn f()->u8{'a:{if true{break 'a 2;}3}}", true),
+            ("fn f(){'a:{continue 'a;}}", false),
+            ("fn f(){loop{'b:{break;}}}", false),
+            ("fn f(){loop{'b:{continue;}}}", false),
+            ("fn f(){while {break;true}{}}", false),
+            ("fn f(){while {continue;true}{}}", false),
+            ("fn f(){'a:while {break 'a;true}{}}", true),
+            ("fn f(){'a:while {continue 'a;true}{}}", true),
+            ("fn f(){break;}", false),
+            ("fn f(){continue;}", false),
+            ("fn f()->u8{let mut x=1;x=2;x}", true),
+            ("fn f()->u8{let mut x=1;x+=2;x}", true),
+            ("fn f(){let mut x:u8=1;x+=2u16;}", false),
+            ("fn f()->u8{let mut x=1;x<<=2u16;x}", true),
+            ("fn f(){let mut x=1;x+=false;}", false),
+            ("fn f(){let mut x=true;x&=false;}", true),
+            ("fn f(){let mut x=1.0;x&=2.0;}", false),
+            ("fn f(){1=2;}", false),
+            ("fn f(){f=f;}", false),
+            ("fn f()->u8{let mut x=0; x=return 2;}", true),
+            ("fn f()->u8{let mut x=0; x+=return 2;}", false),
+            ("fn f()->u8{let mut x=0; x<<=return 2;}", false),
+            ("fn f()->u8{1+(return 2)}", false),
+            (
+                "fn f()->u8{let f=if true{a}else{b};f()} fn a()->u8{1} fn b()->u8{2}",
+                true,
+            ),
+            (
+                "fn f()->u8{let f=if true{a}else{b};f()} fn a()->u8{1} fn b()->u16{2}",
+                false,
+            ),
+            ("fn f()->u8{let x; x=2; x}", true),
+            ("fn f()->u8{let mut x=0;while x<10{x+=1;}x}", true),
+            (
+                "fn f()->u8{let f=loop{if true{break a;}break b;};f()} fn a()->u8{1} fn b()->u8{2}",
+                false,
+            ),
+            (
+                "fn f()->u8{let f='b:{if true{break 'b a;}b};f()} fn a()->u8{1} fn b()->u8{2}",
+                false,
+            ),
+            ("fn f()->u8{loop{break return 2}}", true),
+            (
+                "fn f()->u8{let f:fn()->u8='b:{if true{break 'b a;}b};f()} fn a()->u8{1} fn b()->u8{2}",
+                true,
+            ),
+            (
+                "fn f()->u8{let mut f:fn()->u8=a; f=loop{if true{break a;}break b;};f()} fn a()->u8{1} fn b()->u8{2}",
+                true,
+            ),
+            (
+                "fn f()->u8{let f:fn()->u8=loop{if true{break a;}break b;};f()} fn a()->u8{1} fn b()->u8{2}",
+                true,
+            ),
+            (
+                "fn f()->fn()->u8{loop{if true{break a;}break b;}} fn a()->u8{1} fn b()->u8{2}",
+                true,
+            ),
+            (
+                "fn f()->u8{take(loop{if true{break a;}break b;})} fn take(f:fn()->u8)->u8{f()} fn a()->u8{1} fn b()->u8{2}",
+                true,
+            ),
+        ],
+    )
+}
+
+#[test]
+fn demanded_shapes_and_initializers_match_pinned_rustc() -> Result<(), String> {
+    check_cases(
+        "wellformed",
+        &[
+            ("type A=str;", true),
+            ("type A=[str];", true),
+            ("type A=[str;0];", true),
+            ("type A=(str,u8);", true),
+            ("type A=fn(str);", true),
+            ("fn f(x:str){}", false),
+            ("fn f()->str{loop{}}", false),
+            ("fn f(x:&str){}", true),
+            ("fn f(x:&[str]){}", false),
+            ("fn f(x:&[str;0]){}", false),
+            ("fn f(x:&(str,u8)){}", false),
+            ("fn f(x:&(u8,str)){}", true),
+            ("fn f(x:fn(str)){}", true),
+            ("fn f(x:fn()->str){}", true),
+            ("fn f(x:fn([str])){}", false),
+            ("fn f(){let x:str;}", false),
+            ("fn f(){let _:str;}", true),
+            ("fn f(){let _:[str];}", false),
+            ("const A:u8=17; fn f()->u8{A}", true),
+            ("const A:u8=false;", false),
+            ("const A:u8=256;", false),
+            ("const A:u8={return 2;};", false),
+            ("const A:u8;", false),
+            ("const A:u8=B; const B:u8=2;", true),
+            (r#"const A:str="abc";"#, false),
+            ("static A:u8=17; fn f()->u8{A}", true),
+            ("static A:u8=false;", false),
+            ("static A:u8=256;", false),
+            ("static A:u8;", false),
+            ("fn f()->u8{const A:u8=2;A}", true),
+            ("fn f(){const A:u8=false;}", false),
+        ],
+    )
+}
+#[test]
+fn control_and_initializer_facts_keep_lowering_targets() -> Result<(), String> {
+    let (report, facts) = analyze(
+        "const N:u8=2; fn f()->u8{'outer:loop{let mut n=0;n+=1;while n<N{break 'outer n;}}}",
+    )?;
+    assert_eq!(facts.initializers.len(), 1);
+    assert_eq!(facts.initializers[0].ty, TypeId::primitive(Primitive::U8));
+    let mut transfers = 0;
+    let mut assignments = 0;
+    for (file, nodes) in facts.nodes.iter().enumerate() {
+        for node in nodes {
+            if let Some(Operation::Transfer { target, continuing }) = node.operation {
+                assert!(!continuing);
+                let target = rustgm::resolve::unit::NodeKey {
+                    file: rustgm::resolve::unit::FileId(
+                        u32::try_from(file).map_err(|e| e.to_string())?,
+                    ),
+                    node: target,
+                };
+                transfers += 1;
+                assert!(matches!(
+                    report
+                        .package
+                        .unit(target.file)
+                        .configured
+                        .ast
+                        .node(target.node)
+                        .kind,
+                    rustgm::syntax::ast::Kind::Loop { .. }
+                ));
+                assert_eq!(
+                    facts.node(target).and_then(|n| n.ty),
+                    Some(TypeId::primitive(Primitive::U8))
+                );
+            }
+            if let Some(Operation::Assign { target, .. }) = node.operation {
+                assignments += 1;
+                assert_eq!(
+                    report
+                        .package
+                        .names
+                        .get(report.resolution.definitions[target.0 as usize].name),
+                    "n"
+                );
+            }
+        }
+    }
+    assert_eq!(transfers, 1);
+    assert_eq!(assignments, 1);
     Ok(())
 }

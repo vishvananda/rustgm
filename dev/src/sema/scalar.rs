@@ -106,3 +106,19 @@ pub(super) fn literal(
         _ => Err("invalid scalar literal type"),
     }
 }
+
+pub(super) fn compound_operator(op: Op) -> Option<Op> {
+    Some(match op {
+        Op::PlusEqual => Op::Plus,
+        Op::MinusEqual => Op::Minus,
+        Op::StarEqual => Op::Star,
+        Op::SlashEqual => Op::Slash,
+        Op::PercentEqual => Op::Percent,
+        Op::AndEqual => Op::And,
+        Op::OrEqual => Op::Or,
+        Op::CaretEqual => Op::Caret,
+        Op::ShiftLeftEqual => Op::ShiftLeft,
+        Op::ShiftRightEqual => Op::ShiftRight,
+        _ => return None,
+    })
+}

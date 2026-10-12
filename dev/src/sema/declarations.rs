@@ -1,10 +1,9 @@
 //! Demand aliases and function signatures through an iterative dependency graph.
 use super::{
-    model::{Declarations, Function},
+    model::{Declarations, Function, Initializer, InitializerKind},
     regions::{self, BinderId, Position, Regions},
 };
 use crate::{
-    literal::Value,
     resolve::{
         expansion::Report,
         model::{DefId, DefKind, Target},
@@ -106,28 +105,137 @@ impl Checker<'_> {
                 continue;
             }
             self.work.push(Work::Definition(id, false));
-            while let Some(work) = self.work.pop() {
-                steps += 1;
-                if steps > work_limit {
-                    return Err(Error::at(
-                        FileId(0),
-                        0,
-                        "declaration type work budget exceeded",
+            self.drain(&mut steps, work_limit)?;
+        }
+        self.validate_signatures()?;
+        self.local_annotations(&mut steps, work_limit)
+    }
+    fn drain(&mut self, steps: &mut usize, limit: usize) -> Result<(), Error> {
+        while let Some(work) = self.work.pop() {
+            *steps += 1;
+            if *steps > limit {
+                return Err(Error::at(
+                    FileId(0),
+                    0,
+                    "declaration type work budget exceeded",
+                ));
+            }
+            match work {
+                Work::Definition(id, finish) => self.definition(id, finish)?,
+                Work::Node(key, finish, context) => self.annotation(key, finish, context)?,
+                Work::Reference(key, region) => self.reference_type(key, region)?,
+                Work::Parameter(id, finish) => {
+                    if finish {
+                        self.regions.end_parameter(id);
+                    } else {
+                        self.regions.begin_parameter(id);
+                    }
+                }
+                Work::Signature(key, owner, phase) => self.signature(key, owner, phase)?,
+            }
+        }
+        Ok(())
+    }
+    fn local_annotations(&mut self, steps: &mut usize, limit: usize) -> Result<(), Error> {
+        let mut scan = Vec::new();
+        let mut nodes = Vec::new();
+        for (index, unit) in self.report.package.units.iter().enumerate() {
+            if unit.include_context.is_some() {
+                continue;
+            }
+            let file = FileId(
+                u32::try_from(index)
+                    .map_err(|_| Error::at(FileId(0), 0, "too many source files"))?,
+            );
+            let mut seen = vec![false; unit.configured.ast.nodes.len()];
+            nodes.push(unit.configured.ast.root);
+            while let Some(node) = nodes.pop() {
+                if !unit.configured.active[node.0 as usize]
+                    || std::mem::replace(&mut seen[node.0 as usize], true)
+                {
+                    continue;
+                }
+                *steps += 1;
+                if *steps > limit {
+                    return Err(self.error(
+                        NodeKey { file, node },
+                        "annotation traversal work budget exceeded",
                     ));
                 }
-                match work {
-                    Work::Definition(id, finish) => self.definition(id, finish)?,
-                    Work::Node(key, finish, context) => self.annotation(key, finish, context)?,
-                    Work::Reference(key, region) => self.reference_type(key, region)?,
-                    Work::Parameter(id, finish) => {
-                        if finish {
-                            self.regions.end_parameter(id);
-                        } else {
-                            self.regions.begin_parameter(id);
-                        }
+                let mark = nodes.len();
+                unit.configured.ast.push_children(node, &mut nodes);
+                nodes[mark..].reverse();
+                let (Kind::Let { ty: Some(ty), .. } | Kind::Cast { ty, .. }) =
+                    unit.configured.ast.node(node).kind
+                else {
+                    continue;
+                };
+                // Concrete annotations share the declaration elaborator. Shapes
+                // containing holes remain constraints owned by the body context.
+                scan.clear();
+                scan.push(ty);
+                let mut incomplete = false;
+                while let Some(child) = scan.pop() {
+                    *steps += 1;
+                    if *steps > limit {
+                        return Err(self.error(
+                            NodeKey { file, node: ty },
+                            "annotation work budget exceeded",
+                        ));
                     }
-                    Work::Signature(key, owner, phase) => self.signature(key, owner, phase)?,
+                    if matches!(unit.configured.ast.node(child).kind, Kind::InferType) {
+                        incomplete = true;
+                        break;
+                    }
+                    unit.configured.ast.push_children(child, &mut scan);
                 }
+                if !incomplete {
+                    self.node_work(file, ty, regions::Context::ALIAS);
+                    self.drain(steps, limit)?;
+                }
+            }
+        }
+        Ok(())
+    }
+    fn validate_signatures(&self) -> Result<(), Error> {
+        for function in &self.facts.functions {
+            let Some(Type::Function {
+                parameters, result, ..
+            }) = self.facts.types.kind(function.signature)
+            else {
+                return Err(self.error(function.node, "invalid function signature"));
+            };
+            for ty in self
+                .facts
+                .types
+                .list(parameters)
+                .ok_or_else(|| self.error(function.node, "invalid parameters"))?
+                .iter()
+                .copied()
+                .chain(std::iter::once(result))
+            {
+                if self.facts.types.is_well_formed(ty) != Some(true) {
+                    return Err(self.error(
+                        function.node,
+                        "function signature contains an ill-formed type",
+                    ));
+                }
+                if self.facts.types.is_sized(ty) != Some(true) {
+                    return Err(self.error(
+                        function.node,
+                        "function parameters and result must be sized",
+                    ));
+                }
+            }
+        }
+        for initializer in &self.facts.initializers {
+            if self.facts.types.is_well_formed(initializer.ty) != Some(true)
+                || self.facts.types.is_sized(initializer.ty) != Some(true)
+            {
+                return Err(self.error(
+                    initializer.node,
+                    "constant and static types must be well-formed and sized",
+                ));
             }
         }
         Ok(())
@@ -221,7 +329,25 @@ impl Checker<'_> {
             })?,
             _ => return Err(self.error(key, "invalid completed declaration")),
         };
-        self.complete(id, key, ty)
+        self.complete(id, key, ty)?;
+        let (value, kind) = match item.kind {
+            ItemKind::Const { value, .. } => (value, InitializerKind::Const),
+            ItemKind::Static { value, mutable, .. } => (value, InitializerKind::Static { mutable }),
+            _ => return Ok(()),
+        };
+        let value =
+            value.ok_or_else(|| self.error(key, "constant or static requires an initializer"))?;
+        self.facts.initializers.push(Initializer {
+            definition: id,
+            node: key,
+            value: NodeKey {
+                file: key.file,
+                node: value,
+            },
+            ty,
+            kind,
+        });
+        Ok(())
     }
     fn complete(&mut self, id: DefId, key: NodeKey, ty: TypeId) -> Result<(), Error> {
         self.facts.definitions[id.0 as usize] = Some(ty);
@@ -665,27 +791,15 @@ impl Checker<'_> {
                 let length = *elements
                     .get(1)
                     .ok_or_else(|| self.error(key, "missing array length"))?;
-                let Kind::Literal(index) = unit.configured.ast.node(length).kind else {
-                    return Err(
-                        self.error(key, "nonliteral array lengths require constant evaluation")
-                    );
-                };
-                let Value::Integer(value) = unit
-                    .literal(index)
-                    .map_err(|e| self.error(key, e.message))?
-                else {
-                    return Err(self.error(key, "array length must be usize"));
-                };
-                if value
-                    .suffix
-                    .is_some_and(|suffix| suffix != crate::literal::value::IntegerType::Usize)
-                {
-                    return Err(self.error(key, "array length must be usize"));
-                }
                 Type::Array {
                     element,
-                    length: u64::try_from(value.magnitude)
-                        .map_err(|_| self.error(key, "array length overflows usize"))?,
+                    length: array_length(
+                        self.report,
+                        NodeKey {
+                            file: key.file,
+                            node: length,
+                        },
+                    )?,
                 }
             }
             _ => return Err(self.error(key, "unsupported compound annotation")),
@@ -709,4 +823,26 @@ pub(super) fn parameter_type(report: &Report, mut key: NodeKey) -> Result<NodeId
             }
         }
     }
+}
+
+pub(super) fn array_length(report: &Report, key: NodeKey) -> Result<u64, Error> {
+    let error = |message| Declarations::error(report, key, message);
+    let unit = report.package.unit(key.file);
+    let Kind::Literal(index) = unit.configured.ast.node(key.node).kind else {
+        return Err(error(
+            "nonliteral array lengths require constant evaluation",
+        ));
+    };
+    let crate::literal::Value::Integer(value) =
+        unit.literal(index).map_err(|e| error(e.message))?
+    else {
+        return Err(error("array length must be usize"));
+    };
+    if value
+        .suffix
+        .is_some_and(|s| s != crate::literal::value::IntegerType::Usize)
+    {
+        return Err(error("array length must be usize"));
+    }
+    u64::try_from(value.magnitude).map_err(|_| error("array length overflows usize"))
 }

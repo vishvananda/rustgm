@@ -1,0 +1,1 @@
+fn f()->u8{let mut x=0;while x<10{x+=1;}x}

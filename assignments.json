@@ -130,8 +130,8 @@
       "path": "pa9",
       "title": "Types and inference",
       "mode": "--emit-types",
-      "status": "planned",
-      "scope": "Canonical types, inference variables, unification and scalar coercions",
+      "status": "implemented-draft",
+      "scope": "Canonical structural types, declaration/lifetime elaboration, scalar body constraints, coercions and retained typed facts; later validity obligations remain explicit",
       "test_families": [
         "type identity",
         "numeric fallback",

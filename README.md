@@ -27,7 +27,9 @@ repository with pinned reference tools. It has not been built yet.
   and independently checked repetition/follow-set/ambiguity oracles.
 - PA8 has worklist expansion, mixed-site hygiene, macro/name resolution, eager
   builtins, cached source inclusion and independently checked text oracles.
-- PA9–PA38 have buildout briefs and Makefiles. Their suites and implementation
+- PA9 has canonical types, signature elaboration, scalar inference/coercions,
+  selected operation/control facts and independently checked type-view oracles.
+- PA10–PA38 have buildout briefs and Makefiles. Their suites and implementation
   are not complete; invoking an unbuilt assignment fails explicitly.
 - The backend bridge has an executable LowIR smoke test. Rust source lowering
   begins at PA11; the smoke test is not evidence of Rust source compilation.
@@ -57,7 +59,7 @@ See [dependency review](docs/dependencies.md).
 
 Run `dev/rustgm --emit-tokens source.rs`, `dev/rustgm --emit-literals source.rs`,
 `dev/rustgm --emit-token-trees source.rs`, or `dev/rustgm --emit-ast expression.rs`, or `dev/rustgm --emit-crate-ast crate.rs`, or `dev/rustgm --emit-names crate.rs`,
-or pass source on stdin. The reference
+or `dev/rustgm --emit-types crate.rs`, or pass source on stdin. The reference
 wrapper `dev/rustgm-ref` invokes the same maintained solution. Override
 `RUSTGM_TEST_APP=/absolute/path/to/candidate` to test another implementation
 against the committed oracles without regenerating them.
@@ -100,3 +102,7 @@ same frozen-snapshot procedure.
 
 `make perf-names` measures source ownership, modules, interning and resolution,
 including glob propagation, with deterministic full-output checks.
+
+`make perf-types` measures the expanded/resolved scalar frontend through type
+checking with immutable binaries, full-output equality, A/A calibration and
+paired scaling runs. See [PA9 validation](docs/pa9-validation.md).

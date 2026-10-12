@@ -8,8 +8,8 @@ use crate::{
         package::Error,
         unit::NodeKey,
     },
-    syntax::ast::{Kind, List, Unary},
-    types::{Store, TypeId},
+    syntax::ast::{Kind, List, NodeId, Unary},
+    types::{RegionId, Store, TypeId},
 };
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Scalar {
@@ -20,6 +20,7 @@ pub enum Scalar {
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Cast {
+    FunctionPointer,
     IntegerToInteger,
     IntegerToFloat,
     FloatToInteger,
@@ -30,6 +31,11 @@ pub enum Cast {
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Operation {
+    /// A break or continue target is in the same source unit as the transfer.
+    Transfer {
+        target: NodeId,
+        continuing: bool,
+    },
     Unary {
         operator: Unary,
         operand: TypeId,
@@ -44,6 +50,12 @@ pub enum Operation {
         kind: Cast,
         source: TypeId,
         target: TypeId,
+    },
+    Assign {
+        target: DefId,
+        operator: Option<Punctuation>,
+        left: TypeId,
+        right: TypeId,
     },
     Call {
         signature: TypeId,
@@ -76,7 +88,28 @@ pub struct Function {
     pub parameters: List,
     pub body: Option<NodeKey>,
 }
+#[derive(Clone, Copy)]
+pub enum InitializerKind {
+    Const,
+    Static { mutable: bool },
+}
+#[derive(Clone, Copy)]
+pub struct Initializer {
+    pub definition: DefId,
+    pub node: NodeKey,
+    pub value: NodeKey,
+    pub ty: TypeId,
+    pub kind: InitializerKind,
+}
+#[derive(Clone, Copy)]
+pub struct RegionEquality {
+    pub body: NodeKey,
+    pub left: RegionId,
+    pub right: RegionId,
+}
 pub struct Declarations {
+    pub region_equalities: Vec<RegionEquality>,
+    pub initializers: Vec<Initializer>,
     pub types: Store,
     pub definitions: Vec<Option<TypeId>>,
     pub nodes: Vec<Vec<NodeFacts>>,
@@ -85,6 +118,8 @@ pub struct Declarations {
 impl Declarations {
     pub(super) fn new(report: &Report) -> Result<Self, Error> {
         let mut value = Self {
+            region_equalities: Vec::new(),
+            initializers: Vec::new(),
             types: Store::default(),
             definitions: vec![None; report.resolution.definitions.len()],
             nodes: report
@@ -117,8 +152,10 @@ impl Declarations {
             }
         }
         for (index, definition) in report.resolution.definitions.iter().enumerate() {
-            if (matches!(definition.kind, DefKind::Local | DefKind::Parameter)
-                || definition.namespace == Namespace::Lifetime)
+            if (matches!(
+                definition.kind,
+                DefKind::Local | DefKind::Parameter | DefKind::Label
+            ) || definition.namespace == Namespace::Lifetime)
                 && let Some(key) = definition.node
             {
                 let id = DefId(
