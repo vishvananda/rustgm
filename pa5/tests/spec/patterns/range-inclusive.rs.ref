@@ -1,0 +1,32 @@
+active [2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]
+node 0 5 6 name "x"
+node 1 5 6 path false [0]
+node 2 5 6 binding false false "x" -
+node 3 7 10 name "i32"
+node 4 7 10 path false [3]
+node 5 7 10 type Path [4]
+node 6 5 10 parameter 2 5
+node 7 13 16 name "i32"
+node 8 13 16 path false [7]
+node 9 13 16 type Path [8]
+node 10 23 24 name "x"
+node 11 23 24 path false [10]
+node 12 25 26 literal 0
+value 0 integer 25 26 infer 1
+node 13 29 30 literal 1
+value 1 integer 29 30 infer 3
+node 14 25 30 pattern-range 12 13 true
+node 15 32 33 literal 2
+value 2 integer 32 33 infer 1
+node 16 25 33 arm 14 - 15
+node 17 34 35 wildcard
+node 18 37 38 literal 3
+value 3 integer 37 38 infer 0
+node 19 34 38 arm 17 - 18
+node 20 17 39 match 11 [16,19]
+node 21 16 40 block Plain [] 20
+node 22 0 40 item 0
+item 0 "f" private [] [] function false false false false - [6] 9 21
+node 23 0 40 crate [22]
+root 23
+eof 41

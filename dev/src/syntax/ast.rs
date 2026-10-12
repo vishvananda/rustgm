@@ -1,5 +1,9 @@
 //! Dense syntax identities and child ranges. Nodes never recursively own nodes.
-use super::token_tree::{Forest, Span};
+use super::{
+    item::{AttributeCapture, AttributeRange, FunctionType, GenericParameter, Item},
+    item::{UseTree, Variant},
+    token_tree::{Forest, Span},
+};
 use crate::{lex::token::Punctuation, literal::Value};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -72,6 +76,76 @@ pub enum TypeFlavor {
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Kind {
+    Receiver {
+        lifetime: Span,
+        mutable: bool,
+    },
+    GenericMethodCall {
+        receiver: NodeId,
+        method: NodeId,
+        arguments: List,
+    },
+    DeferredLiteral(crate::lex::token::Token),
+    Variadic,
+    Item(u32),
+    Crate(List),
+    Attributed {
+        attributes: AttributeRange,
+        value: NodeId,
+    },
+    Applied {
+        base: NodeId,
+        arguments: List,
+        output: Option<NodeId>,
+    },
+    Qualified {
+        ty: NodeId,
+        trait_path: Option<NodeId>,
+        path: NodeId,
+    },
+    Constraint {
+        target: NodeId,
+        value: Option<NodeId>,
+        bounds: List,
+    },
+    Bound {
+        optional: bool,
+        binders: List,
+        value: NodeId,
+    },
+    Generic(u32),
+    Where {
+        binders: List,
+        ty: NodeId,
+        bounds: List,
+    },
+    FunctionType(u32),
+    TraitType {
+        opaque: bool,
+        bounds: List,
+    },
+    PreciseCapture(List),
+    FieldDefinition {
+        name: Option<Span>,
+        visibility: super::item::Visibility,
+        ty: NodeId,
+    },
+    Variant(u32),
+    UseTree(u32),
+    StructPattern {
+        path: NodeId,
+        fields: List,
+        rest: bool,
+    },
+    PatternField {
+        name: Span,
+        pattern: NodeId,
+    },
+    PatternRange {
+        start: Option<NodeId>,
+        end: Option<NodeId>,
+        inclusive: bool,
+    },
     Literal(u32),
     Name(Span),
     Path {
@@ -231,6 +305,12 @@ pub struct Node {
 #[derive(Debug)]
 pub struct Ast<'source> {
     pub nodes: Vec<Node>,
+    pub items: Vec<Item>,
+    pub variants: Vec<Variant>,
+    pub use_trees: Vec<UseTree>,
+    pub generics: Vec<GenericParameter>,
+    pub function_types: Vec<FunctionType>,
+    pub attributes: Vec<AttributeCapture>,
     pub edges: Vec<NodeId>,
     pub literals: Vec<Value<'source>>,
     pub captures: Vec<Forest>,

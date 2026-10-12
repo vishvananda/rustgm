@@ -6,6 +6,8 @@ use std::{
     io::{self, Write},
 };
 
+mod item;
+
 struct Optional(Option<NodeId>);
 impl fmt::Display for Optional {
     fn fmt(&self, output: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -87,6 +89,38 @@ fn operator(op: P) -> &'static str {
 )]
 fn record(source: &str, ast: &Ast<'_>, kind: Kind, output: &mut impl Write) -> io::Result<()> {
     match kind {
+        Kind::DeferredLiteral(token) => {
+            write!(output, "deferred-literal {} ", token.kind.name())?;
+            spelling(
+                source,
+                Span {
+                    start: token.start,
+                    end: token.end,
+                },
+                output,
+            )
+        }
+        Kind::Item(id) => write!(output, "item {id}"),
+        Kind::PreciseCapture(_)
+        | Kind::Receiver { .. }
+        | Kind::GenericMethodCall { .. }
+        | Kind::Variadic
+        | Kind::Crate(_)
+        | Kind::Attributed { .. }
+        | Kind::Applied { .. }
+        | Kind::Qualified { .. }
+        | Kind::Constraint { .. }
+        | Kind::Bound { .. }
+        | Kind::Generic(_)
+        | Kind::Where { .. }
+        | Kind::FunctionType(_)
+        | Kind::TraitType { .. }
+        | Kind::FieldDefinition { .. }
+        | Kind::Variant(_)
+        | Kind::UseTree(_)
+        | Kind::StructPattern { .. }
+        | Kind::PatternField { .. }
+        | Kind::PatternRange { .. } => item::node(source, ast, kind, output),
         Kind::Literal(id) => write!(output, "literal {id}"),
         Kind::Name(span) => {
             write!(output, "name ")?;
@@ -267,7 +301,11 @@ pub fn expression(source: &str, output: &mut impl Write) -> Result<(), RenderErr
     write_ast(source, &ast, output).map_err(RenderError::Io)
 }
 
-fn write_ast(source: &str, ast: &Ast<'_>, output: &mut impl Write) -> io::Result<()> {
+/// Render existing typed syntax without reparsing it.
+///
+/// # Errors
+/// Reports output failures.
+pub fn write_ast(source: &str, ast: &Ast<'_>, output: &mut impl Write) -> io::Result<()> {
     for (id, node) in ast.nodes.iter().enumerate() {
         write!(output, "node {id} {} {} ", node.span.start, node.span.end)?;
         record(source, ast, node.kind, output)?;
@@ -281,6 +319,23 @@ fn write_ast(source: &str, ast: &Ast<'_>, output: &mut impl Write) -> io::Result
                 node.span.end,
             )?;
         }
+        if let Kind::Item(index) = node.kind {
+            write!(output, "item {index} ")?;
+            item::item(source, ast, &ast.items[index as usize], output)?;
+            writeln!(output)?;
+        }
+    }
+    for (id, capture) in ast.attributes.iter().enumerate() {
+        let attribute = capture.attribute;
+        write!(
+            output,
+            "attribute-capture {id} {} {} {} ",
+            attribute.style.name(),
+            attribute.span.start,
+            attribute.span.end
+        )?;
+        spelling(source, attribute.span, output)?;
+        writeln!(output)?;
     }
     for (id, capture) in ast.captures.iter().enumerate() {
         if let Some(tree) = capture.tree(0) {

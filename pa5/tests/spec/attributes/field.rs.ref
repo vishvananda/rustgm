@@ -1,0 +1,18 @@
+configured 4 false
+attribute-effect 4 0 0 root cfg=false
+active [5,6,7,8,9,10]
+node 0 33 40 name "Unknown"
+node 1 33 40 path false [0]
+node 2 33 40 type Path [1]
+node 3 25 40 field-definition "missing" private 2
+node 4 11 40 attributed 0 1 3
+node 5 44 47 name "i32"
+node 6 44 47 path false [5]
+node 7 44 47 type Path [6]
+node 8 42 47 field-definition "x" private 7
+node 9 0 49 item 0
+item 0 "S" private [] [] struct Record [4,8]
+node 10 0 49 crate [9]
+attribute-capture 0 outer 11 24 "#[cfg(false)]"
+root 10
+eof 50

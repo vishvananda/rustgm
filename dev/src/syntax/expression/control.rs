@@ -7,10 +7,22 @@ use super::{
 impl Parser<'_> {
     pub(super) fn block(&mut self, flavor: BlockFlavor) -> Result<NodeId, LexError> {
         let start = self.expect(P::OpenBrace)?.start;
+        let inner = if self.extended {
+            self.attributes(true)?
+        } else {
+            crate::syntax::item::AttributeRange::default()
+        };
         let mark = self.scratch.len();
         let mut tail = None;
         while !self.eat(P::CloseBrace)? {
-            let statement = if self.cursor.at(P::Semicolon)? {
+            let attrs = if self.extended {
+                self.attributes(false)?
+            } else {
+                crate::syntax::item::AttributeRange::default()
+            };
+            let statement = if self.extended && self.starts_item()? {
+                self.item_in(super::items::Scope::Module)?
+            } else if self.cursor.at(P::Semicolon)? {
                 let token = self.required()?;
                 self.node(token.start, Kind::EmptyStatement)?
             } else if self.cursor.word("let")? {
@@ -26,7 +38,7 @@ impl Parser<'_> {
                 if self.eat(P::Semicolon)? {
                     self.node(self.ast.node(value).span.start, Kind::Statement(value))?
                 } else if self.eat(P::CloseBrace)? {
-                    tail = Some(value);
+                    tail = Some(self.attach(attrs, value)?);
                     break;
                 } else if self.with_block(value) {
                     self.node(self.ast.node(value).span.start, Kind::Statement(value))?
@@ -34,17 +46,19 @@ impl Parser<'_> {
                     return Err(self.error("expected semicolon or end of block")?);
                 }
             };
+            let statement = self.attach(attrs, statement)?;
             self.scratch.push(statement);
         }
         let statements = self.list(mark)?;
-        self.node(
+        let block = self.node(
             start,
             Kind::Block {
                 flavor,
                 statements,
                 tail,
             },
-        )
+        )?;
+        self.attach(inner, block)
     }
 
     fn let_statement(&mut self) -> Result<NodeId, LexError> {

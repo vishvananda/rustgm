@@ -1,0 +1,12 @@
+configured 2 true
+attribute-effect 2 0 0 root cfg_attr=true
+attribute-effect 2 1 0 0 keep
+active [0,1,2,3]
+node 0 39 41 block Plain [] -
+node 1 33 41 item 0
+item 0 "f" private [] [] function false false false false - [] - 0
+node 2 0 41 attributed 0 1 1
+node 3 0 41 crate [2]
+attribute-capture 0 outer 0 32 "#[cfg_attr(true,doc=\"selected\")]"
+root 3
+eof 42

@@ -23,6 +23,13 @@ def expression_source(data, metadata):
             + metadata.get("suffix", "; }\n").encode())
 
 
+def check_configured_owners(metadata, output):
+    if "configured" in metadata:
+        actual = [value == b"true" for value in re.findall(rb"^configured \d+ (true|false)$", output, re.M)]
+        if actual != metadata["configured"]:
+            raise ValueError(f"configured owner facts disagree: {actual}, wanted {metadata['configured']}")
+
+
 def check(stage, app):
     version = subprocess.check_output(["rustc", "--version"], text=True)
     if not version.startswith("rustc 1.98.0 "):
@@ -63,6 +70,7 @@ def check(stage, app):
         actual = execute([str(app), manifest["mode"], "--edition=2024", *case.get("args", [])], data, 10)
         if actual[2] != f"{case['exit_status']}\n".encode():
             raise ValueError(f"candidate outcome disagreement: {fixture}: {actual[1]!r}")
+        check_configured_owners(metadata, actual[0])
         if kind == "predicate":
             runtime = subprocess.run([str(binary)], capture_output=True, timeout=10)
             expected = b"true\n" if metadata["value"] else b"false\n"

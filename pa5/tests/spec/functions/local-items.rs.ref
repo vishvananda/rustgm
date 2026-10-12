@@ -1,0 +1,40 @@
+active [0,1,2,3,4,5,6,7,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31]
+node 0 8 11 name "i32"
+node 1 8 11 path false [0]
+node 2 8 11 type Path [1]
+node 3 22 25 name "i32"
+node 4 22 25 path false [3]
+node 5 22 25 type Path [4]
+node 6 26 27 literal 0
+value 0 integer 26 27 infer 3
+node 7 14 28 item 0
+item 0 "X" private [] [] const 5 6
+node 8 34 35 name "x"
+node 9 34 35 path false [8]
+node 10 34 35 binding false false "x" -
+node 11 36 39 name "i32"
+node 12 36 39 path false [11]
+node 13 36 39 type Path [12]
+node 14 34 39 parameter 10 13
+node 15 42 45 name "i32"
+node 16 42 45 path false [15]
+node 17 42 45 type Path [16]
+node 18 46 47 name "x"
+node 19 46 47 path false [18]
+node 20 48 49 literal 1
+value 1 integer 48 49 infer 1
+node 21 46 49 binary + 19 20
+node 22 45 50 block Plain [] 21
+node 23 29 50 item 1
+item 1 "g" private [] [] function false false false false - [14] 17 22
+node 24 51 52 name "g"
+node 25 51 52 path false [24]
+node 26 53 54 name "X"
+node 27 53 54 path false [26]
+node 28 51 55 call 25 [27]
+node 29 12 57 block Plain [7,23] 28
+node 30 0 57 item 2
+item 2 "f" private [] [] function false false false false - [] 2 29
+node 31 0 57 crate [30]
+root 31
+eof 58

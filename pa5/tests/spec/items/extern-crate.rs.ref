@@ -1,0 +1,6 @@
+active [0,1]
+node 0 0 23 item 0
+item 0 "core" private [] [] extern-crate "c"
+node 1 0 23 crate [0]
+root 1
+eof 24

@@ -1,0 +1,29 @@
+active [0,1,2,3,4,5,8,9,10,11,12,13,14,15,16,17,18,19,20]
+node 0 10 22 item 0
+item 0 "Output" private [] [] type-alias [] -
+node 1 31 36 name "usize"
+node 2 31 36 path false [1]
+node 3 31 36 type Path [2]
+node 4 37 38 literal 0
+value 0 integer 37 38 infer 1
+node 5 23 39 item 1
+item 1 "N" private [] [] const 3 4
+node 6 46 50 name "self"
+node 7 46 50 path false [6]
+node 8 46 50 binding false false "self" -
+node 9 45 50 reference-pattern false 8
+node 10 45 50 parameter 9 -
+node 11 53 58 name "usize"
+node 12 53 58 path false [11]
+node 13 53 58 type Path [12]
+node 14 59 63 name "Self"
+node 15 65 66 name "N"
+node 16 59 66 path false [14,15]
+node 17 58 67 block Plain [] 16
+node 18 40 67 item 2
+item 2 "f" private [] [] function false false false false - [10] 13 17
+node 19 0 69 item 3
+item 3 "A" private [] [] trait false [] [0,5,18]
+node 20 0 69 crate [19]
+root 20
+eof 70

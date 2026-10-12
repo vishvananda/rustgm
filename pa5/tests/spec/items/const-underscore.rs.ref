@@ -1,0 +1,8 @@
+active [0,1,2,3]
+node 0 8 10 type Tuple []
+node 1 11 13 tuple []
+node 2 0 14 item 0
+item 0 "_" private [] [] const 0 1
+node 3 0 14 crate [2]
+root 3
+eof 15

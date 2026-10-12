@@ -1,0 +1,23 @@
+active [0,1,2,3,6,7,8,9,10,11,12,13,14,15,16,17,18]
+node 0 7 12 name "Clone"
+node 1 7 12 path false [0]
+node 2 7 12 bound false [] 1
+node 3 5 13 generic Type "T" - [2] -
+node 4 15 16 name "x"
+node 5 15 16 path false [4]
+node 6 15 16 binding false false "x" -
+node 7 17 18 name "T"
+node 8 17 18 path false [7]
+node 9 17 18 type Path [8]
+node 10 15 18 parameter 6 9
+node 11 21 22 name "T"
+node 12 21 22 path false [11]
+node 13 21 22 type Path [12]
+node 14 23 24 name "x"
+node 15 23 24 path false [14]
+node 16 22 25 block Plain [] 15
+node 17 0 25 item 0
+item 0 "f" private [3] [] function false false false false - [10] 13 16
+node 18 0 25 crate [17]
+root 18
+eof 26

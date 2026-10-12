@@ -19,7 +19,9 @@ repository with pinned reference tools. It has not been built yet.
   custom cfg options and independently checked text oracles.
 - PA4 has a bounded expression/statement parser, dense typed syntax arenas,
   macro captures and independently checked text oracles.
-- PA5–PA38 have buildout briefs and Makefiles. Their suites and implementation
+- PA5 has crate/item/type/pattern syntax, attribute ownership and configuration
+  traversal that excludes disabled nodes before literal/semantic work.
+- PA6–PA38 have buildout briefs and Makefiles. Their suites and implementation
   are not complete; invoking an unbuilt assignment fails explicitly.
 - The backend bridge has an executable LowIR smoke test. Rust source lowering
   begins at PA11; the smoke test is not evidence of Rust source compilation.
@@ -48,7 +50,7 @@ dependency initially supplies Unicode XID property tables; it is not a lexer.
 See [dependency review](docs/dependencies.md).
 
 Run `dev/rustgm --emit-tokens source.rs`, `dev/rustgm --emit-literals source.rs`,
-`dev/rustgm --emit-token-trees source.rs`, or `dev/rustgm --emit-ast expression.rs`,
+`dev/rustgm --emit-token-trees source.rs`, or `dev/rustgm --emit-ast expression.rs`, or `dev/rustgm --emit-crate-ast crate.rs`,
 or pass source on stdin. The reference
 wrapper `dev/rustgm-ref` invokes the same maintained solution. Override
 `RUSTGM_TEST_APP=/absolute/path/to/candidate` to test another implementation
@@ -86,3 +88,6 @@ conversion with the same procedure, including full rendered-output checks.
 
 `make perf-ast` measures expression/statement parsing with frozen inputs, full
 output equality and the same paired scaling procedure.
+
+`make perf-crate-ast` measures complete crate syntax and configuration with the
+same frozen-snapshot procedure.

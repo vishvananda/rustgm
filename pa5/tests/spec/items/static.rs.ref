@@ -1,0 +1,18 @@
+active [0,1,2,3,4,5,6,7,8,9,10]
+node 0 9 12 name "i32"
+node 1 9 12 path false [0]
+node 2 9 12 type Path [1]
+node 3 13 15 literal 0
+value 0 integer 13 15 infer 42
+node 4 0 16 item 0
+item 0 "X" private [] [] static false 2 3
+node 5 30 33 name "i32"
+node 6 30 33 path false [5]
+node 7 30 33 type Path [6]
+node 8 34 35 literal 1
+value 1 integer 34 35 infer 0
+node 9 17 36 item 1
+item 1 "Y" private [] [] static true 7 8
+node 10 0 36 crate [4,9]
+root 10
+eof 37

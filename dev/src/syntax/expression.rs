@@ -13,8 +13,12 @@ use crate::{
 };
 
 mod control;
+mod items;
+pub use items::parse_crate;
+mod attributes;
 mod pattern;
 pub mod render;
+mod types;
 
 #[derive(Clone, Copy)]
 struct Context {
@@ -39,6 +43,8 @@ pub struct Parser<'source> {
     scratch: Vec<NodeId>,
     depth: u16,
     condition_work: Vec<(NodeId, bool)>,
+    extended: bool,
+    item_scope: items::Scope,
 }
 
 /// Parse one expression fragment, including a block of statements.
@@ -46,20 +52,7 @@ pub struct Parser<'source> {
 /// # Errors
 /// Rejects malformed syntax, invalid demanded literals and nesting beyond 256.
 pub fn parse(source: &str) -> Result<Ast<'_>, LexError> {
-    let mut parser = Parser {
-        cursor: Cursor::new(source)?,
-        ast: Ast {
-            nodes: Vec::new(),
-            edges: Vec::new(),
-            literals: Vec::new(),
-            captures: Vec::new(),
-            root: NodeId(0),
-            lookahead_high_water: 0,
-        },
-        scratch: Vec::new(),
-        depth: 0,
-        condition_work: Vec::new(),
-    };
+    let mut parser = Parser::new(source, false)?;
     let root = parser.expr(0, NORMAL)?;
     if parser.cursor.peek(0)?.is_some() {
         return Err(parser.error("unexpected token after expression")?);
@@ -69,7 +62,35 @@ pub fn parse(source: &str) -> Result<Ast<'_>, LexError> {
     Ok(parser.ast)
 }
 
-impl Parser<'_> {
+impl<'source> Parser<'source> {
+    fn new(source: &'source str, extended: bool) -> Result<Self, LexError> {
+        Ok(Self {
+            cursor: Cursor::new(source)?,
+            ast: Ast {
+                nodes: Vec::new(),
+                edges: Vec::new(),
+                literals: Vec::new(),
+                captures: Vec::new(),
+                root: NodeId(0),
+                items: Vec::new(),
+                variants: Vec::new(),
+                use_trees: Vec::new(),
+                generics: Vec::new(),
+                function_types: Vec::new(),
+                attributes: Vec::new(),
+                lookahead_high_water: 0,
+            },
+            scratch: Vec::new(),
+            depth: 0,
+            condition_work: Vec::new(),
+            extended,
+            item_scope: items::Scope::Module,
+        })
+    }
+    fn nesting_limit(&self) -> u16 {
+        if self.extended { 128 } else { 256 }
+    }
+
     fn error(&mut self, message: &'static str) -> Result<LexError, LexError> {
         Ok(error(
             self.cursor
@@ -126,11 +147,22 @@ impl Parser<'_> {
         Ok(List { start, end })
     }
     fn expr(&mut self, minimum: u8, context: Context) -> Result<NodeId, LexError> {
-        if self.depth >= 256 {
-            return Err(self.error("expression nesting exceeds 256")?);
+        if self.depth >= self.nesting_limit() {
+            return Err(self.error(if self.extended {
+                "crate syntax nesting exceeds 128"
+            } else {
+                "expression nesting exceeds 256"
+            })?);
         }
         self.depth += 1;
-        let result = self.binding_power(minimum, context);
+        let attrs = if self.extended {
+            self.attributes(false)?
+        } else {
+            super::item::AttributeRange::default()
+        };
+        let result = self
+            .binding_power(minimum, context)
+            .and_then(|value| self.attach(attrs, value));
         self.depth -= 1;
         result
     }
@@ -241,6 +273,10 @@ impl Parser<'_> {
             .cursor
             .peek(0)?
             .ok_or_else(|| error(self.cursor.end(), "expected expression"))?;
+        if self.extended && literal::is_token(self.cursor.source, token) {
+            self.required()?;
+            return self.node(token.start, Kind::DeferredLiteral(token));
+        }
         if let Some(value) = literal::interpret(self.cursor.source, token)? {
             self.cursor.take()?;
             let id = u32::try_from(self.ast.literals.len())
@@ -305,6 +341,9 @@ impl Parser<'_> {
                 }
                 _ => self.path_expression(context),
             },
+            TokenKind::Punctuation(P::Less | P::ShiftLeft) if self.extended => {
+                self.path_expression(context)
+            }
             TokenKind::RawIdentifier | TokenKind::Punctuation(P::ColonColon) => {
                 self.path_expression(context)
             }
@@ -351,6 +390,12 @@ impl Parser<'_> {
     }
 
     fn path(&mut self) -> Result<NodeId, LexError> {
+        if self.extended {
+            return self.rich_path(false);
+        }
+        self.simple_path()
+    }
+    fn simple_path(&mut self) -> Result<NodeId, LexError> {
         let start = self
             .cursor
             .peek(0)?
@@ -463,6 +508,12 @@ impl Parser<'_> {
         let values = self.list(mark)?;
         self.node(start, Kind::Array(values))
     }
+    fn call_arguments(&mut self) -> Result<List, LexError> {
+        let mark = self.scratch.len();
+        self.comma_expressions(P::CloseParen)?;
+        self.list(mark)
+    }
+
     fn postfix(&mut self, value: NodeId) -> Result<NodeId, LexError> {
         let start = self.ast.node(value).span.start;
         if self.eat(P::Question)? {
@@ -475,9 +526,7 @@ impl Parser<'_> {
             );
         }
         if self.eat(P::OpenParen)? {
-            let mark = self.scratch.len();
-            self.comma_expressions(P::CloseParen)?;
-            let arguments = self.list(mark)?;
+            let arguments = self.call_arguments()?;
             return self.node(
                 start,
                 Kind::Call {
@@ -508,10 +557,39 @@ impl Parser<'_> {
                 "expected field name or canonical tuple index",
             ));
         }
+        if self.extended && self.eat(P::ColonColon)? {
+            if name.kind == TokenKind::Integer {
+                return Err(error(name.start, "generic method requires an identifier"));
+            }
+            let method = self.node(
+                name.start,
+                Kind::Name(Span {
+                    start: name.start,
+                    end: name.end,
+                }),
+            )?;
+            let (arguments, output) = self.generic_arguments()?;
+            let method = self.node(
+                name.start,
+                Kind::Applied {
+                    base: method,
+                    arguments,
+                    output,
+                },
+            )?;
+            self.expect(P::OpenParen)?;
+            let arguments = self.call_arguments()?;
+            return self.node(
+                start,
+                Kind::GenericMethodCall {
+                    receiver: value,
+                    method,
+                    arguments,
+                },
+            );
+        }
         if name.kind != TokenKind::Integer && self.eat(P::OpenParen)? {
-            let mark = self.scratch.len();
-            self.comma_expressions(P::CloseParen)?;
-            let arguments = self.list(mark)?;
+            let arguments = self.call_arguments()?;
             return self.node(
                 start,
                 Kind::MethodCall {
@@ -541,6 +619,11 @@ impl Parser<'_> {
         let mark = self.scratch.len();
         let mut base = None;
         while !self.eat(P::CloseBrace)? {
+            let attrs = if self.extended {
+                self.attributes(false)?
+            } else {
+                super::item::AttributeRange::default()
+            };
             if self.eat(P::DotDot)? {
                 base = Some(self.expr(0, NORMAL)?);
                 self.eat(P::Comma)?;
@@ -563,6 +646,7 @@ impl Parser<'_> {
                 return Err(error(token.start, "numeric struct field requires a value"));
             };
             let field = self.node(token.start, Kind::FieldInit { name, value })?;
+            let field = self.attach(attrs, field)?;
             self.scratch.push(field);
             if self.eat(P::CloseBrace)? {
                 break;
@@ -607,7 +691,10 @@ impl Parser<'_> {
             _ => true,
         })
     }
-    fn with_block(&self, expression: NodeId) -> bool {
+    fn with_block(&self, mut expression: NodeId) -> bool {
+        while let Kind::Attributed { value, .. } = self.ast.node(expression).kind {
+            expression = value;
+        }
         match self.ast.node(expression).kind {
             Kind::Block {
                 flavor: BlockFlavor::Plain | BlockFlavor::Unsafe | BlockFlavor::Const,

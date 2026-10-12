@@ -1,0 +1,18 @@
+active [0,1,2,3,4,5,6,7,8,9,10,11,12,13]
+node 0 9 10 generic Type "T" - [] -
+node 1 12 13 name "T"
+node 2 12 13 path false [1]
+node 3 12 13 type Path [2]
+node 4 12 13 field-definition - private 3
+node 5 21 22 name "T"
+node 6 21 22 path false [5]
+node 7 21 22 type Path [6]
+node 8 23 28 name "Clone"
+node 9 23 28 path false [8]
+node 10 23 28 bound false [] 9
+node 11 21 28 where [] 7 [10]
+node 12 0 29 item 0
+item 0 "W" private [0] [11] struct Tuple [4]
+node 13 0 29 crate [12]
+root 13
+eof 30

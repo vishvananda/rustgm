@@ -1,0 +1,6 @@
+active [0,1]
+node 0 0 27 item 0
+item 0 "self" private [] [] extern-crate "alias"
+node 1 0 27 crate [0]
+root 1
+eof 28

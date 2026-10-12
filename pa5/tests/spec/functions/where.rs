@@ -1,0 +1,1 @@
+fn f<T>(x:T)->T where T: Clone, { x.clone() }

@@ -1,0 +1,20 @@
+active [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14]
+node 0 13 14 generic Type "T" - [] -
+node 1 23 28 name "usize"
+node 2 23 28 path false [1]
+node 3 23 28 type Path [2]
+node 4 29 30 literal 0
+value 0 integer 29 30 infer 4
+node 5 15 30 generic Const "N" 3 [] 4
+node 6 40 41 name "T"
+node 7 40 41 path false [6]
+node 8 40 41 type Path [7]
+node 9 42 43 name "N"
+node 10 42 43 path false [9]
+node 11 39 44 type Array [8,10]
+node 12 32 44 field-definition "values" private 11
+node 13 0 45 item 0
+item 0 "Array" private [0,5] [] struct Record [12]
+node 14 0 45 crate [13]
+root 14
+eof 46

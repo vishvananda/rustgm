@@ -1,0 +1,1 @@
+trait T{struct S;}

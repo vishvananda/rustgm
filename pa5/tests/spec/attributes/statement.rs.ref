@@ -1,0 +1,24 @@
+configured 7 false
+attribute-effect 7 0 0 root cfg=false
+active [10,11,12,13,14,15]
+node 0 25 26 name "x"
+node 1 25 26 path false [0]
+node 2 25 26 binding false false "x" -
+node 3 27 34 name "missing"
+node 4 27 34 path false [3]
+node 5 27 36 call 4 []
+node 6 21 37 let 2 - 5 -
+node 7 7 37 attributed 0 1 6
+node 8 42 43 name "y"
+node 9 42 43 path false [8]
+node 10 42 43 binding false false "y" -
+node 11 44 45 literal 0
+value 0 integer 44 45 infer 1
+node 12 38 46 let 10 - 11 -
+node 13 6 47 block Plain [7,12] -
+node 14 0 47 item 0
+item 0 "f" private [] [] function false false false false - [] - 13
+node 15 0 47 crate [14]
+attribute-capture 0 outer 7 20 "#[cfg(false)]"
+root 15
+eof 48

@@ -1,0 +1,14 @@
+active [0,1,2,3,4,5,6,7,8]
+node 0 13 17 name "Copy"
+node 1 13 17 path false [0]
+node 2 13 17 bound false [] 1
+node 3 18 23 precise-capture []
+node 4 8 23 trait-type true [2,3]
+node 5 24 27 literal 0
+value 0 integer 24 27 u8 1
+node 6 23 28 block Plain [] 5
+node 7 0 28 item 0
+item 0 "f" private [] [] function false false false false - [] 4 6
+node 8 0 28 crate [7]
+root 8
+eof 29

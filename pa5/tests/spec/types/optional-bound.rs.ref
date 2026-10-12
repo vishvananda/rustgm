@@ -1,0 +1,14 @@
+active [0,1,2,3,4,5,6,7,8,9]
+node 0 12 17 name "Sized"
+node 1 12 17 path false [0]
+node 2 11 17 bound true [] 1
+node 3 9 17 generic Type "T" - [2] -
+node 4 25 26 name "T"
+node 5 25 26 path false [4]
+node 6 25 26 type Path [5]
+node 7 19 26 field-definition "value" private 6
+node 8 0 27 item 0
+item 0 "S" private [3] [] struct Record [7]
+node 9 0 27 crate [8]
+root 9
+eof 28

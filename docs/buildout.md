@@ -4,8 +4,8 @@
 
 The repository is initialized with the CPPGM layout and 38 assignment briefs.
 PA1's lexer, PA2's literal interpretation, PA3's token trees/attributes and
-PA4's expression/statement parser have executable text contracts. PA5 onward
-remain visibly planned. No student export or Rust source
+PA4's expression/statement parser and PA5's crate/item/type/pattern parser have
+executable text contracts. PA6 onward remain visibly planned. No student export or Rust source
 to LowIR lowering exists yet. The external backend smoke exercises handwritten
 LowIR through the pinned CPPGM tools.
 
@@ -162,6 +162,64 @@ observation are retained in `obj/perf/1791764190532643755/` (initial regression)
 validation changes do not occur in the parser scaling input. Logs of all course,
 independent, audit and release checks are under `obj/pa4-work/`.
 
+## PA5 buildout
+
+PA5 adds crate, item, generic/qualified type and pattern syntax with the same
+body parser. Attributes attach at grammar-owned positions; expansion evaluates
+actual owners top-down. Disabled nodes stop later sibling cfg predicates and
+subtree traversal. Active literals decode exactly once through PA2. Dense
+configuration effects retain global parent IDs and their original capture ID,
+with reusable owner scratch. No new dependency or frontend fallback was added.
+
+There are 213 new course fixtures and independent rustc checks, with two explicit
+phase-boundary differences for external-module loading and unresolved types.
+Eleven new Rust invariants verify typed child ordering, source spans, global
+attribute provenance, deferred work, compound-token splits, compact nodes,
+large item lists and diagnosed recursion. The full total is 672 course fixtures,
+50 debug/release Rust invariants and 13 harness tests. All PA1–PA4 text sidecars
+remain unchanged. Full reports, independent checks, Clippy, file/architecture
+audits, provenance and reference generation pass; logs are in `obj/pa5-work/`.
+
+The initial crate parser exhausted the debug test-thread stack on adversarial
+nesting. A tested 128-call crate grammar budget now diagnoses these inputs; the
+PA4 fragment budget remains 256. Macro groups and long item lists stay iterative.
+
+The first enlarged syntax union raised large-expression peak RSS from
+approximately 49,400 KiB to 56,400 KiB.
+Generic parameters, function types, enum variants and use trees now live in
+separate dense payload arrays. Ordinary nodes are again 36 bytes, guarded by a
+layout invariant. A global configured-effect array also avoids one effect-vector
+allocation for every attribute owner.
+
+Final shared-host measurements, including startup/source reads and excluding
+rendering, use frozen A/B binaries, full-output equality, A/A calibration and
+three paired ABBA blocks at every scale:
+
+| Path / source bytes | Baseline median ms | Candidate median ms | Candidate peak KiB |
+| --- | ---: | ---: | ---: |
+| PA4 expressions / 140,004 | 14.49 | 14.99 | 5,056 |
+| PA4 expressions / 560,004 | 48.33 | 49.47 | 14,208 |
+| PA4 expressions / 2,240,004 | 179.39 | 182.70 | 49,408 |
+| PA3 trees / 284,000 | 14.39 | 14.85 | 4,352 |
+| PA3 trees / 1,136,000 | 44.48 | 41.45 | 11,392 |
+| PA3 trees / 4,544,000 | 153.06 | 150.40 | 38,144 |
+| PA5 crates / 316,000 | 31.47 | 29.70 | 7,872 |
+| PA5 crates / 1,264,000 | 112.90 | 108.78 | 24,768 |
+| PA5 crates / 5,056,000 | 439.55 | 426.18 | 93,760 |
+
+Expression/tree baselines are the committed PA4 release; crate baseline is the
+first PA5 implementation before compact payloads. These observations establish
+roughly linear scaling and the removal of the measured memory inflation, not
+portable speed guarantees. Expression medians remain slightly higher; the raw
+calibration and paired samples are retained rather than claiming a speedup.
+Final span/absolute-use-path corrections do not occur in these benchmark inputs.
+
+Raw receipts: `obj/perf/1791766314535848383/` (expressions),
+`obj/perf/1791766636998230853/` (trees), and
+`obj/perf/1791766643878982292/` (crates). Initial/intermediate observations remain
+in `1791765924773113448`, `1791765931748986569`, `1791766065753161891`,
+`1791766072771781373`, and `1791766321529900146` under `obj/perf/`.
+
 ## Next implementation boundary
 
 First audit PA1 against the pinned grammar's malformed-token boundaries and
@@ -171,11 +229,19 @@ explicitly labels the current boundary as a draft.
 
 PA2 now freezes that initial value contract. Its decoder deliberately preserves
 integer magnitudes and unsuffixed decimal spelling until context is known.
-PA3 now exposes typed token trees, attributes and configuration. PA4 parses
+PA3 exposes typed token trees, attributes and configuration. PA4 parses
 expression fragments with bounded lookahead and typed arenas. PA5 adds the
-`--emit-crate-ast` entry point, full item/type/pattern ownership and attribute
-attachment, and applies disabled-item decisions. PA4 fragment oracles remain
-under `--emit-ast`; crate parsing must reuse the same body parser.
+`--emit-crate-ast` entry point, item/type/pattern ownership and attribute
+attachment. Its active-node traversal skips disabled owners and their later
+cfg predicates, and defers literal interpretation until selection. PA4
+fragment oracles remain under `--emit-ast`.
+
+PA6 should consume the configured typed crate and its active map, introduce
+canonical NFC name IDs and explicit module/scope identities, and load external
+source modules at the driver boundary. Audit the normalization dependency/data
+before adding it. Resolution must not consult rendered AST records or reparse
+function bodies. Preserve unresolved macro placeholders for PA7/PA8's expansion
+worklist rather than pretending their names have already been resolved.
 Literal decoding is demanded by syntax/expansion, never applied eagerly to all
 macro input. Expand reserved-prefix and grammar-edge tests before claiming
 complete token conformance. PA9/PA10 must enforce inferred-type agreement and

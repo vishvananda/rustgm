@@ -1,0 +1,17 @@
+configured 6 true
+attribute-effect 6 0 0 root keep
+active [2,3,4,5,6,7,8]
+node 0 40 41 name "x"
+node 1 40 41 path false [0]
+node 2 40 41 binding false false "x" -
+node 3 42 43 literal 0
+value 0 integer 42 43 infer 1
+node 4 36 44 let 2 - 3 -
+node 5 6 46 block Plain [4] -
+node 6 6 46 attributed 0 1 5
+node 7 0 46 item 0
+item 0 "f" private [] [] function false false false false - [] - 6
+node 8 0 46 crate [7]
+attribute-capture 0 inner 8 35 "#![allow(unused_variables)]"
+root 8
+eof 47

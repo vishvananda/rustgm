@@ -1,0 +1,26 @@
+active [0,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18]
+node 0 0 24 item 0
+item 0 "p" private [] [] macro-rules 0
+node 1 30 31 name "x"
+node 2 30 31 path false [1]
+node 3 30 31 binding false false "x" -
+node 4 32 35 name "i32"
+node 5 32 35 path false [4]
+node 6 32 35 type Path [5]
+node 7 30 35 parameter 3 6
+node 8 43 44 name "x"
+node 9 43 44 path false [8]
+node 10 45 46 name "p"
+node 11 45 46 path false [10]
+node 12 45 49 macro 11 1
+node 13 51 53 tuple []
+node 14 45 53 arm 12 - 13
+node 15 37 54 match 9 [14]
+node 16 36 55 block Plain [] 15
+node 17 25 55 item 1
+item 1 "f" private [] [] function false false false false - [7] - 16
+node 18 0 55 crate [0,17]
+capture 0 15 24 5 "{()=>{_}}"
+capture 1 47 49 1 "()"
+root 18
+eof 56

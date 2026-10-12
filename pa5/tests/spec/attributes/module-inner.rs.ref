@@ -1,0 +1,13 @@
+configured 3 true
+attribute-effect 3 0 0 root keep
+active [0,1,2,3,4]
+node 0 35 37 block Plain [] -
+node 1 29 37 item 0
+item 0 "f" private [] [] function false false false false - [] - 0
+node 2 0 39 item 1
+item 1 "m" private [] [] module [1]
+node 3 0 39 attributed 0 1 2
+node 4 0 39 crate [3]
+attribute-capture 0 inner 8 28 "#![allow(dead_code)]"
+root 4
+eof 40

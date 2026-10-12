@@ -1,0 +1,16 @@
+active [0,1,2,3,4,5,6,7,8,9,10,11]
+node 0 11 12 wildcard
+node 1 13 17 name "core"
+node 2 19 22 name "mem"
+node 3 24 31 name "size_of"
+node 4 34 36 type Tuple []
+node 5 24 37 applied 3 [4] -
+node 6 13 37 path false [1,2,5]
+node 7 13 39 call 6 []
+node 8 7 40 let 0 - 7 -
+node 9 6 41 block Plain [8] -
+node 10 0 41 item 0
+item 0 "f" private [] [] function false false false false - [] - 9
+node 11 0 41 crate [10]
+root 11
+eof 42

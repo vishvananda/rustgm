@@ -1,0 +1,27 @@
+active [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18]
+node 0 0 9 item 0
+item 0 "S" private [] [] struct Unit []
+node 1 15 16 name "S"
+node 2 15 16 path false [1]
+node 3 15 16 type Path [2]
+node 4 27 32 name "usize"
+node 5 27 32 path false [4]
+node 6 27 32 type Path [5]
+node 7 33 34 literal 0
+value 0 integer 33 34 infer 1
+node 8 19 35 item 1
+item 1 "N" private [] [] const 6 7
+node 9 44 49 name "usize"
+node 10 44 49 path false [9]
+node 11 44 49 type Path [10]
+node 12 50 54 name "Self"
+node 13 56 57 name "N"
+node 14 50 57 path false [12,13]
+node 15 49 58 block Plain [] 14
+node 16 36 58 item 2
+item 2 "f" private [] [] function false false false false - [] 11 15
+node 17 10 60 item 3
+item 3 - private [] [] impl false false - 3 [8,16]
+node 18 0 60 crate [0,17]
+root 18
+eof 61

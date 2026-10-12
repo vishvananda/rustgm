@@ -1,0 +1,12 @@
+configured 2 false
+attribute-effect 2 0 0 root cfg_attr=true
+attribute-effect 2 1 0 0 cfg=false
+active [3]
+node 0 46 48 block Plain [] -
+node 1 40 48 item 0
+item 0 "f" private [] [] function false false false false - [] - 0
+node 2 0 48 attributed 0 1 1
+node 3 0 48 crate [2]
+attribute-capture 0 outer 0 39 "#[cfg_attr(true,cfg(false),cfg(bad()))]"
+root 3
+eof 49

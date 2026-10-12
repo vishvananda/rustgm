@@ -1,0 +1,19 @@
+configured 1 true
+attribute-effect 1 0 0 root keep
+active [0,1,2,3,4,5,6,7,8,9]
+node 0 8 28 block Plain [] -
+node 1 8 28 attributed 0 1 0
+node 2 8 28 statement 1
+node 3 30 31 literal 0
+value 0 integer 30 31 infer 1
+node 4 32 33 literal 1
+value 1 integer 32 33 infer 2
+node 5 29 34 array [3,4]
+node 6 29 35 statement 5
+node 7 6 37 block Plain [2,6] -
+node 8 0 37 item 0
+item 0 "f" private [] [] function false false false false - [] - 7
+node 9 0 37 crate [8]
+attribute-capture 0 inner 9 26 "#![allow(unused)]"
+root 9
+eof 38

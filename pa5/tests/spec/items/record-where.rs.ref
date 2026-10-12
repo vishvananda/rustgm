@@ -1,0 +1,18 @@
+active [0,1,2,3,4,5,6,7,8,9,10,11,12,13]
+node 0 9 10 generic Type "T" - [] -
+node 1 18 19 name "T"
+node 2 18 19 path false [1]
+node 3 18 19 type Path [2]
+node 4 20 25 name "Clone"
+node 5 20 25 path false [4]
+node 6 20 25 bound false [] 5
+node 7 18 25 where [] 3 [6]
+node 8 33 34 name "T"
+node 9 33 34 path false [8]
+node 10 33 34 type Path [9]
+node 11 27 34 field-definition "value" private 10
+node 12 0 35 item 0
+item 0 "W" private [0] [7] struct Record [11]
+node 13 0 35 crate [12]
+root 13
+eof 36

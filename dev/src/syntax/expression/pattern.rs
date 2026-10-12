@@ -7,8 +7,12 @@ use crate::{
 
 impl Parser<'_> {
     pub(super) fn pattern(&mut self, alternatives: bool) -> Result<NodeId, LexError> {
-        if self.depth >= 256 {
-            return Err(self.error("syntax nesting exceeds 256")?);
+        if self.depth >= self.nesting_limit() {
+            return Err(self.error(if self.extended {
+                "crate syntax nesting exceeds 128"
+            } else {
+                "syntax nesting exceeds 256"
+            })?);
         }
         self.depth += 1;
         let result = self.pattern_inner(alternatives);
@@ -18,14 +22,14 @@ impl Parser<'_> {
 
     fn pattern_inner(&mut self, alternatives: bool) -> Result<NodeId, LexError> {
         let leading = alternatives && self.eat(P::Or)?;
-        let first = self.pattern_atom()?;
+        let first = self.pattern_piece()?;
         if !alternatives || (!leading && !self.cursor.at(P::Or)?) {
             return Ok(first);
         }
         let mark = self.scratch.len();
         self.scratch.push(first);
         while self.eat(P::Or)? {
-            let item = self.pattern_atom()?;
+            let item = self.pattern_piece()?;
             self.scratch.push(item);
         }
         let elements = self.list(mark)?;
@@ -39,6 +43,10 @@ impl Parser<'_> {
         )
     }
 
+    #[expect(
+        clippy::too_many_lines,
+        reason = "cohesive pattern prefix dispatch retains modifier and path ownership within the audit limit"
+    )]
     fn pattern_atom(&mut self) -> Result<NodeId, LexError> {
         let token = self
             .cursor
@@ -88,15 +96,21 @@ impl Parser<'_> {
                 },
             );
         }
-        if self.cursor.at(P::Minus)? || literal::interpret(self.cursor.source, token)?.is_some() {
+        if self.cursor.at(P::Minus)? || literal::is_token(self.cursor.source, token) {
             return self.literal_pattern();
         }
         let by_ref = self.word("ref")?;
         let mutable = self.word("mut")?;
         let path = self.path()?;
-        let Kind::Path { absolute, segments } = self.ast.node(path).kind else {
-            return Err(error(start, "expected pattern path"));
-        };
+        if self.extended && self.eat(P::Bang)? {
+            return self.macro_capture(path);
+        }
+        if self.extended && self.cursor.at(P::OpenBrace)? {
+            if by_ref || mutable {
+                return Err(error(start, "binding modifier requires an identifier"));
+            }
+            return self.struct_pattern(path);
+        }
         if self.eat(P::OpenParen)? {
             if by_ref || mutable {
                 return Err(error(start, "binding modifier requires an identifier"));
@@ -111,13 +125,26 @@ impl Parser<'_> {
                 },
             );
         }
-        if absolute || self.ast.list(segments).len() != 1 {
+        let simple = match self.ast.node(path).kind {
+            Kind::Path {
+                absolute: false,
+                segments,
+            } if self.ast.list(segments).len() == 1 => {
+                let segment = self.ast.node(self.ast.list(segments)[0]);
+                if matches!(segment.kind, Kind::Name(_)) {
+                    Some(segment.span)
+                } else {
+                    None
+                }
+            }
+            _ => None,
+        };
+        let Some(name) = simple else {
             if by_ref || mutable {
                 return Err(error(start, "binding modifier requires an identifier"));
             }
             return Ok(path);
-        }
-        let name = self.ast.node(self.ast.list(segments)[0]).span;
+        };
         let subpattern = if self.eat(P::At)? {
             Some(self.pattern(false)?)
         } else {
@@ -131,6 +158,150 @@ impl Parser<'_> {
                 by_ref,
                 subpattern,
             },
+        )
+    }
+
+    fn pattern_piece(&mut self) -> Result<NodeId, LexError> {
+        if !self.extended {
+            return self.pattern_atom();
+        }
+        let token = self
+            .cursor
+            .peek(0)?
+            .ok_or_else(|| error(self.cursor.end(), "expected pattern"))?;
+        let start = if matches!(
+            token.kind,
+            TokenKind::Punctuation(P::DotDot | P::DotDotEqual)
+        ) {
+            None
+        } else {
+            Some(self.pattern_atom()?)
+        };
+        if self.cursor.at(P::DotDotDot)? {
+            return Err(self.error("obsolete range pattern is unavailable in edition 2024")?);
+        }
+        let inclusive = self.cursor.at(P::DotDotEqual)?;
+        if inclusive || self.cursor.at(P::DotDot)? {
+            self.required()?;
+            let end = if self.cursor.peek(0)?.is_some_and(|t| {
+                matches!(
+                    t.kind,
+                    TokenKind::Identifier
+                        | TokenKind::RawIdentifier
+                        | TokenKind::Integer
+                        | TokenKind::Float
+                        | TokenKind::Character
+                        | TokenKind::Byte
+                        | TokenKind::Punctuation(P::Minus | P::ColonColon | P::Less)
+                )
+            }) && !self.cursor.word("if")?
+            {
+                Some(self.pattern_atom()?)
+            } else {
+                None
+            };
+            if inclusive && end.is_none() {
+                return Err(error(
+                    token.start,
+                    "inclusive pattern range requires an end",
+                ));
+            }
+            for bound in [start, end].into_iter().flatten() {
+                if !matches!(
+                    self.ast.node(bound).kind,
+                    Kind::Literal(_)
+                        | Kind::DeferredLiteral(_)
+                        | Kind::Path { .. }
+                        | Kind::Qualified { .. }
+                        | Kind::Unary {
+                            op: super::Unary::Negate,
+                            ..
+                        }
+                        | Kind::Binding {
+                            mutable: false,
+                            by_ref: false,
+                            subpattern: None,
+                            ..
+                        }
+                ) {
+                    return Err(error(
+                        self.ast.node(bound).span.start,
+                        "invalid range pattern bound",
+                    ));
+                }
+            }
+            if start.is_none() && end.is_none() {
+                return self.node(token.start, Kind::RestPattern);
+            }
+            return self.node(
+                token.start,
+                Kind::PatternRange {
+                    start,
+                    end,
+                    inclusive,
+                },
+            );
+        }
+        start.ok_or_else(|| error(token.start, "expected pattern"))
+    }
+
+    fn struct_pattern(&mut self, path: NodeId) -> Result<NodeId, LexError> {
+        self.expect(P::OpenBrace)?;
+        let mark = self.scratch.len();
+        let mut rest = false;
+        while !self.eat(P::CloseBrace)? {
+            let attrs = self.attributes(false)?;
+            if self.eat(P::DotDot)? {
+                rest = true;
+                self.eat(P::Comma)?;
+                self.expect(P::CloseBrace)?;
+                break;
+            }
+            let start = self.cursor.peek(0)?.map_or(self.cursor.end(), |t| t.start);
+            let by_ref = self.word("ref")?;
+            let mutable = self.word("mut")?;
+            let token = self.required()?;
+            if !self.field_name(token) {
+                return Err(error(token.start, "expected pattern field"));
+            }
+            let name = Span {
+                start: token.start,
+                end: token.end,
+            };
+            let pattern = if self.eat(P::Colon)? {
+                if by_ref || mutable {
+                    return Err(error(start, "field binding modifiers require shorthand"));
+                }
+                self.pattern(true)?
+            } else {
+                if token.kind == TokenKind::Integer {
+                    return Err(error(
+                        token.start,
+                        "numeric pattern field requires a pattern",
+                    ));
+                }
+                self.node(
+                    start,
+                    Kind::Binding {
+                        name,
+                        by_ref,
+                        mutable,
+                        subpattern: None,
+                    },
+                )?
+            };
+            let field = self.node(start, Kind::PatternField { name, pattern })?;
+            let field = self.attach(attrs, field)?;
+            self.scratch.push(field);
+            if self.eat(P::CloseBrace)? {
+                break;
+            }
+            self.expect(P::Comma)?;
+        }
+        let fields = self.list(mark)?;
+        self.node(
+            self.ast.node(path).span.start,
+            Kind::StructPattern { path, fields, rest },
         )
     }
 
@@ -156,6 +327,23 @@ impl Parser<'_> {
         if negative && !matches!(token.kind, TokenKind::Integer | TokenKind::Float) {
             return Err(error(start, "negative pattern requires a numeric literal"));
         }
+        if self.extended {
+            if !literal::is_token(self.cursor.source, token) {
+                return Err(error(token.start, "expected literal pattern"));
+            }
+            let literal = self.node(token.start, Kind::DeferredLiteral(token))?;
+            return if negative {
+                self.node(
+                    start,
+                    Kind::Unary {
+                        op: super::Unary::Negate,
+                        operand: literal,
+                    },
+                )
+            } else {
+                Ok(literal)
+            };
+        }
         let value = literal::interpret(self.cursor.source, token)?
             .ok_or_else(|| error(token.start, "expected literal pattern"))?;
         let id = u32::try_from(self.ast.literals.len())
@@ -176,16 +364,24 @@ impl Parser<'_> {
     }
 
     pub(super) fn ty(&mut self) -> Result<NodeId, LexError> {
-        if self.depth >= 256 {
-            return Err(self.error("syntax nesting exceeds 256")?);
+        if self.depth >= self.nesting_limit() {
+            return Err(self.error(if self.extended {
+                "crate syntax nesting exceeds 128"
+            } else {
+                "syntax nesting exceeds 256"
+            })?);
         }
         self.depth += 1;
-        let result = self.type_inner();
+        let result = if self.extended {
+            self.rich_type()
+        } else {
+            self.type_inner()
+        };
         self.depth -= 1;
         result
     }
 
-    fn type_inner(&mut self) -> Result<NodeId, LexError> {
+    pub(super) fn type_inner(&mut self) -> Result<NodeId, LexError> {
         let token = self
             .cursor
             .peek(0)?

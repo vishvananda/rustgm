@@ -1,0 +1,11 @@
+configured 2 true
+attribute-effect 2 0 0 root keep
+active [0,1,2,3]
+node 0 19 21 block Plain [] -
+node 1 13 21 item 0
+item 0 "f" private [] [] function false false false false - [] - 0
+node 2 0 21 attributed 0 1 1
+node 3 0 21 crate [2]
+attribute-capture 0 outer 0 12 "/// function"
+root 3
+eof 22

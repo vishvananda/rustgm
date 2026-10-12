@@ -1,0 +1,19 @@
+active [0,1,2,3,4,5,6,7,8,9,10,11,12]
+node 0 17 20 name "i32"
+node 1 17 20 path false [0]
+node 2 17 20 type Path [1]
+node 3 9 20 generic Const "N" 2 [] -
+node 4 0 22 item 0
+item 0 "A" private [3] [] struct Unit []
+node 5 30 31 name "A"
+node 6 33 34 literal 0
+value 0 integer 33 34 infer 3
+node 7 32 34 unary negate 6
+node 8 30 35 applied 5 [7] -
+node 9 30 35 path false [8]
+node 10 30 35 type Path [9]
+node 11 23 36 item 1
+item 1 "T" private [] [] type-alias [] 10
+node 12 0 36 crate [4,11]
+root 12
+eof 37

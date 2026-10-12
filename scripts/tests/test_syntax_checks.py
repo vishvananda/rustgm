@@ -3,10 +3,18 @@ from pathlib import Path
 import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from check_syntax import check_classification, expression_source
+from check_syntax import check_classification, expression_source, check_configured_owners
 
 
 class IndependentSyntaxTests(unittest.TestCase):
+    def test_configured_owners_are_explicit_and_ordered(self):
+        output = b"configured 8 false\nconfigured 10 true\nactive [9,10]\n"
+        check_configured_owners({"configured": [False, True]}, output)
+        with self.assertRaises(ValueError):
+            check_configured_owners({"configured": [False]}, output)
+        with self.assertRaises(ValueError):
+            check_configured_owners({"configured": [True, False]}, output)
+
     def test_acceptance_differences_cannot_be_silent(self):
         case = {"path": "x.rs", "exit_status": 0, "rustc": {"kind": "expression", "status": 1}}
         with self.assertRaises(ValueError):

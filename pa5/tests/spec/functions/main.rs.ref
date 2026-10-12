@@ -1,0 +1,7 @@
+active [0,1,2]
+node 0 10 12 block Plain [] -
+node 1 0 12 item 0
+item 0 "main" private [] [] function false false false false - [] - 0
+node 2 0 12 crate [1]
+root 2
+eof 13

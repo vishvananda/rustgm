@@ -8,6 +8,28 @@ pub mod value;
 use crate::lex::token::{Kind, LexError, Token};
 pub use value::Value;
 
+/// Whether a token has literal syntax, without interpreting macro/disabled input.
+#[must_use]
+pub fn is_token(source: &str, token: Token) -> bool {
+    match token.kind {
+        Kind::Integer
+        | Kind::Float
+        | Kind::Character
+        | Kind::Byte
+        | Kind::String
+        | Kind::ByteString
+        | Kind::CString
+        | Kind::RawString
+        | Kind::RawByteString
+        | Kind::RawCString => true,
+        Kind::Identifier => matches!(
+            source.get(token.start as usize..token.end as usize),
+            Some("true" | "false")
+        ),
+        _ => false,
+    }
+}
+
 /// Interpret one lexer token without owning its source or consulting context.
 /// Non-literal tokens return `None`; punctuation (including unary minus) is
 /// deliberately left to the parser. Diagnostics point at the token's start.

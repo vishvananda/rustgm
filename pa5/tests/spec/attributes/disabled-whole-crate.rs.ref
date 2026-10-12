@@ -1,0 +1,15 @@
+configured 7 false
+attribute-effect 7 0 0 root cfg=false
+active []
+node 0 22 29 name "missing"
+node 1 22 29 path false [0]
+node 2 22 31 call 1 []
+node 3 22 32 statement 2
+node 4 21 33 block Plain [3] -
+node 5 15 33 item 0
+item 0 "f" private [] [] function false false false false - [] - 4
+node 6 0 33 crate [5]
+node 7 0 33 attributed 0 1 6
+attribute-capture 0 inner 0 14 "#![cfg(false)]"
+root 7
+eof 34

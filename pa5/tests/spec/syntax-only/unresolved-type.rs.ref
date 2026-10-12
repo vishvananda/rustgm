@@ -1,0 +1,10 @@
+active [0,1,2,3,4,5]
+node 0 15 22 name "Missing"
+node 1 15 22 path false [0]
+node 2 15 22 type Path [1]
+node 3 9 22 field-definition "value" private 2
+node 4 0 23 item 0
+item 0 "S" private [] [] struct Record [3]
+node 5 0 23 crate [4]
+root 5
+eof 24

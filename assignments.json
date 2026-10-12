@@ -67,8 +67,8 @@
       "path": "pa5",
       "title": "Items types and patterns",
       "mode": "--emit-crate-ast",
-      "status": "planned",
-      "scope": "Item/type/pattern grammar and macro invocation placeholders",
+      "status": "implemented-draft",
+      "scope": "Crate/item/type/pattern syntax, attribute ownership and configuration-aware typed traversal; module loading and names follow at PA6",
       "test_families": [
         "functions",
         "ADTs",

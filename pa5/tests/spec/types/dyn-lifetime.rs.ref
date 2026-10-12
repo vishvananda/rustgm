@@ -1,0 +1,18 @@
+active [0,1,2,3,4,5,6,7,8,9,10,11,12,13]
+node 0 7 9 generic Lifetime "'a" - [] -
+node 1 12 14 name "'a"
+node 2 20 24 name "core"
+node 3 26 29 name "fmt"
+node 4 31 36 name "Debug"
+node 5 20 36 path false [2,3,4]
+node 6 20 36 bound false [] 5
+node 7 37 39 name "'a"
+node 8 37 39 bound false [] 7
+node 9 16 39 trait-type false [6,8]
+node 10 15 40 group 9
+node 11 11 40 type Ref [1,10]
+node 12 0 41 item 0
+item 0 "T" private [0] [] type-alias [] 11
+node 13 0 41 crate [12]
+root 13
+eof 42

@@ -1,0 +1,16 @@
+active [0,1,2,3,4,5,6,7,8,9]
+node 0 0 17 item 0
+item 0 "A" private [] [] trait true [] []
+node 1 18 27 item 1
+item 1 "S" private [] [] struct Unit []
+node 2 40 41 name "A"
+node 3 40 41 path false [2]
+node 4 40 41 type Path [3]
+node 5 46 47 name "S"
+node 6 46 47 path false [5]
+node 7 46 47 type Path [6]
+node 8 28 50 item 2
+item 2 - private [] [] impl true false 4 7 []
+node 9 0 50 crate [0,1,8]
+root 9
+eof 51

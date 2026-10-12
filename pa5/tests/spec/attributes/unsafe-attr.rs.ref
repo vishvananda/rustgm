@@ -1,0 +1,13 @@
+configured 3 true
+attribute-effect 3 0 0 root keep
+active [0,1,2,3,4]
+node 0 32 35 literal 0
+value 0 string 32 35 1 "C"
+node 1 42 44 block Plain [] -
+node 2 21 44 item 0
+item 0 "f" public [] [] function false false false false 0 [] - 1
+node 3 0 44 attributed 0 1 2
+node 4 0 44 crate [3]
+attribute-capture 0 outer 0 20 "#[unsafe(no_mangle)]"
+root 4
+eof 45

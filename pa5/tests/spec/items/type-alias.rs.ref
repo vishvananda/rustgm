@@ -1,0 +1,14 @@
+active [0,1,2,3,4,5,6,7,8,9]
+node 0 10 11 generic Type "T" - [] -
+node 1 14 15 name "T"
+node 2 14 15 path false [1]
+node 3 14 15 type Path [2]
+node 4 16 17 name "T"
+node 5 16 17 path false [4]
+node 6 16 17 type Path [5]
+node 7 13 18 type Tuple [3,6]
+node 8 0 19 item 0
+item 0 "Pair" private [0] [] type-alias [] 7
+node 9 0 19 crate [8]
+root 9
+eof 20

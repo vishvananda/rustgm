@@ -1,0 +1,13 @@
+configured 4 false
+attribute-effect 4 0 0 root cfg=false
+active [5]
+node 0 21 31 deferred-literal integer "1arbitrary"
+node 1 21 32 statement 0
+node 2 20 33 block Plain [1] -
+node 3 14 33 item 0
+item 0 "f" private [] [] function false false false false - [] - 2
+node 4 0 33 attributed 0 1 3
+node 5 0 33 crate [4]
+attribute-capture 0 outer 0 13 "#[cfg(false)]"
+root 5
+eof 34

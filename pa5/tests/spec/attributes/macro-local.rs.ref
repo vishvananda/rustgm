@@ -1,0 +1,16 @@
+active [0,1,2,3,4,5,6,7,8]
+node 0 7 35 item 0
+item 0 "value" private [] [] macro-rules 0
+node 1 40 41 wildcard
+node 2 42 47 name "value"
+node 3 42 47 path false [2]
+node 4 42 50 macro 3 1
+node 5 36 51 let 1 - 4 -
+node 6 6 52 block Plain [0,5] -
+node 7 0 52 item 1
+item 1 "f" private [] [] function false false false false - [] - 6
+node 8 0 52 crate [7]
+capture 0 26 35 5 "{()=>{3}}"
+capture 1 48 50 1 "()"
+root 8
+eof 53

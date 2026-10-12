@@ -26,6 +26,14 @@ pub struct ConfiguredAttribute {
 #[derive(Default, Debug)]
 pub struct Attributes {
     pub entries: Vec<ConfiguredAttribute>,
+    disabled: bool,
+}
+
+#[derive(Clone, Copy)]
+struct Expansion {
+    parent: Option<u32>,
+    depth: u32,
+    owned: bool,
 }
 
 impl Attributes {
@@ -41,14 +49,56 @@ impl Attributes {
         attribute: Attribute,
         config: &Config,
     ) -> Result<(), LexError> {
-        self.expand(forest, source, attribute, config, None, 0)
+        self.expand(
+            forest,
+            source,
+            attribute,
+            config,
+            Expansion {
+                parent: None,
+                depth: 0,
+                owned: false,
+            },
+        )
+    }
+
+    /// Configure a real syntax owner. Once disabled, later cfg predicates are
+    /// not demanded; the diagnostic PA3 stream keeps its exhaustive behavior.
+    ///
+    /// # Errors
+    /// Returns demanded configuration failures.
+    pub fn push_owned(
+        &mut self,
+        forest: &Forest,
+        source: &str,
+        attribute: Attribute,
+        config: &Config,
+    ) -> Result<(), LexError> {
+        if self.disabled {
+            return Ok(());
+        }
+        self.expand(
+            forest,
+            source,
+            attribute,
+            config,
+            Expansion {
+                parent: None,
+                depth: 0,
+                owned: true,
+            },
+        )
+    }
+
+    /// Reuse owner scratch capacity without retaining prior configuration facts.
+    pub fn clear(&mut self) {
+        self.entries.clear();
+        self.disabled = false;
     }
 
     #[must_use]
     pub fn enabled(&self) -> bool {
-        self.entries
-            .iter()
-            .all(|entry| entry.effect != Effect::Cfg(false))
+        !self.disabled
     }
 
     fn expand(
@@ -57,10 +107,9 @@ impl Attributes {
         source: &str,
         attribute: Attribute,
         config: &Config,
-        parent: Option<u32>,
-        depth: u32,
+        expansion: Expansion,
     ) -> Result<(), LexError> {
-        if depth >= 128 {
+        if expansion.depth >= 128 {
             return Err(error(attribute.span.start, "cfg_attr nesting exceeds 128"));
         }
         let name = attribute.name(forest, source);
@@ -94,8 +143,9 @@ impl Attributes {
         self.entries.push(ConfiguredAttribute {
             attribute,
             effect,
-            parent,
+            parent: expansion.parent,
         });
+        self.disabled |= effect == Effect::Cfg(false);
         if let Effect::CfgAttr(selected) = effect {
             let range = arguments(forest, attribute)?;
             let (_, mut next) = config::comma_item(forest, range);
@@ -109,7 +159,7 @@ impl Attributes {
                 );
                 let nested =
                     attribute::parse(forest, source, item, attribute.style, attribute.span)?;
-                if selected {
+                if selected && !(expansion.owned && self.disabled) {
                     if matches!(
                         nested.name(forest, source),
                         Some("crate_name" | "crate_type")
@@ -119,7 +169,17 @@ impl Attributes {
                             "crate_name and crate_type are forbidden in cfg_attr",
                         ));
                     }
-                    self.expand(forest, source, nested, config, Some(index), depth + 1)?;
+                    self.expand(
+                        forest,
+                        source,
+                        nested,
+                        config,
+                        Expansion {
+                            parent: Some(index),
+                            depth: expansion.depth + 1,
+                            ..expansion
+                        },
+                    )?;
                 }
                 next = following;
             }

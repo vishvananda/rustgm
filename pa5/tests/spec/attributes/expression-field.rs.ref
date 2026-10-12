@@ -1,0 +1,29 @@
+configured 12 false
+attribute-effect 12 0 0 root cfg=false
+active [0,1,2,3,4,5,6,7,13,14,15,16,17,18,19]
+node 0 11 14 name "i32"
+node 1 11 14 path false [0]
+node 2 11 14 type Path [1]
+node 3 9 14 field-definition "x" private 2
+node 4 0 15 item 0
+item 0 "S" private [] [] struct Record [3]
+node 5 27 28 wildcard
+node 6 29 30 name "S"
+node 7 29 30 path false [6]
+node 8 53 60 name "unknown"
+node 9 53 60 path false [8]
+node 10 53 62 call 9 []
+node 11 45 62 field-init "missing" 10
+node 12 31 62 attributed 0 1 11
+node 13 65 66 literal 0
+value 0 integer 65 66 infer 1
+node 14 63 66 field-init "x" 13
+node 15 29 67 struct 7 [12,14] -
+node 16 23 68 let 5 - 15 -
+node 17 22 69 block Plain [16] -
+node 18 16 69 item 1
+item 1 "f" private [] [] function false false false false - [] - 17
+node 19 0 69 crate [4,18]
+attribute-capture 0 outer 31 44 "#[cfg(false)]"
+root 19
+eof 70

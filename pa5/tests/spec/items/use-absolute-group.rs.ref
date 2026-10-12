@@ -1,0 +1,13 @@
+active [0,1,2,3,4,5,6,7,8]
+node 0 4 6 path true []
+node 1 7 11 name "core"
+node 2 13 16 name "fmt"
+node 3 18 23 name "Debug"
+node 4 7 23 path false [1,2,3]
+node 5 7 23 use-tree 4 [] false -
+node 6 4 24 use-tree 0 [5] false -
+node 7 0 25 item 0
+item 0 - private [] [] use 6
+node 8 0 25 crate [7]
+root 8
+eof 26

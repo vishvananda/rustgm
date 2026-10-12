@@ -1,0 +1,18 @@
+active [0,3,4,5,6,7,8,9,10,11]
+node 0 14 17 literal 0
+value 0 string 14 17 1 "C"
+node 1 25 26 name "x"
+node 2 25 26 path false [1]
+node 3 25 26 binding false false "x" -
+node 4 27 30 name "i32"
+node 5 27 30 path false [4]
+node 6 27 30 type Path [5]
+node 7 25 30 parameter 3 6
+node 8 32 35 variadic
+node 9 20 37 item 0
+item 0 "f" private [] [] function false false false false - [7,8] - -
+node 10 0 39 item 1
+item 1 - private [] [] extern-block true 0 [9]
+node 11 0 39 crate [10]
+root 11
+eof 40

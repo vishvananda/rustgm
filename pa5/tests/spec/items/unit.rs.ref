@@ -1,0 +1,6 @@
+active [0,1]
+node 0 0 16 item 0
+item 0 "Unit" public [] [] struct Unit []
+node 1 0 16 crate [0]
+root 1
+eof 17

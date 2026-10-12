@@ -34,7 +34,7 @@ fn options() -> Result<Options, String> {
     while let Some(arg) = args.next() {
         match arg.as_str() {
             "--emit-tokens" | "--emit-literals" | "--emit-token-trees" | "--emit-ast"
-            | "--emit-lowir" => {
+            | "--emit-crate-ast" | "--emit-lowir" => {
                 options.mode = arg;
                 options.count = false;
             }
@@ -52,6 +52,10 @@ fn options() -> Result<Options, String> {
             }
             "--count-ast" => {
                 options.mode = "--emit-ast".into();
+                options.count = true;
+            }
+            "--count-crate-ast" => {
+                options.mode = "--emit-crate-ast".into();
                 options.count = true;
             }
             "--cfg" => {
@@ -93,7 +97,21 @@ fn compile(options: &Options) -> Result<(), String> {
         )),
         None => Box::new(io::BufWriter::new(stdout.lock())),
     };
-    let result = if options.count && options.mode == "--emit-ast" {
+    let result = if options.count && options.mode == "--emit-crate-ast" {
+        let report = expand::crate_syntax::analyze(source.text(), &options.config)
+            .map_err(|e| format!("{}: {}", e.offset, e.message))?;
+        writeln!(
+            output,
+            "nodes {} items {} active {} attributes {} lookahead {} bytes {}",
+            report.ast.nodes.len(),
+            report.ast.items.len(),
+            report.active.iter().filter(|active| **active).count(),
+            report.ast.attributes.len(),
+            report.ast.lookahead_high_water,
+            source.text().len()
+        )
+        .map_err(|e| e.to_string())
+    } else if options.count && options.mode == "--emit-ast" {
         let ast =
             expression::parse(source.text()).map_err(|e| format!("{}: {}", e.offset, e.message))?;
         writeln!(
@@ -134,7 +152,9 @@ fn compile(options: &Options) -> Result<(), String> {
         }
         writeln!(output, "tokens {count} bytes {}", source.text().len()).map_err(|e| e.to_string())
     } else {
-        let rendered = if options.mode == "--emit-ast" {
+        let rendered = if options.mode == "--emit-crate-ast" {
+            expand::crate_syntax::render(source.text(), &options.config, &mut output)
+        } else if options.mode == "--emit-ast" {
             expression::render::expression(source.text(), &mut output)
         } else if options.mode == "--emit-token-trees" {
             expand::render::token_trees(source.text(), &options.config, &mut output)

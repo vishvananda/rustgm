@@ -1,0 +1,30 @@
+active [2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25]
+node 0 11 12 name "a"
+node 1 11 12 path false [0]
+node 2 11 12 binding false false "a" -
+node 3 13 16 name "Vec"
+node 4 19 21 name "u8"
+node 5 19 21 path false [4]
+node 6 19 21 type Path [5]
+node 7 13 22 applied 3 [6] -
+node 8 24 27 name "new"
+node 9 13 27 path false [7,8]
+node 10 13 29 call 9 []
+node 11 7 30 let 2 - 10 -
+node 12 35 36 wildcard
+node 13 37 41 name "core"
+node 14 43 46 name "mem"
+node 15 48 55 name "size_of"
+node 16 58 61 name "u64"
+node 17 58 61 path false [16]
+node 18 58 61 type Path [17]
+node 19 48 62 applied 15 [18] -
+node 20 37 62 path false [13,14,19]
+node 21 37 64 call 20 []
+node 22 31 65 let 12 - 21 -
+node 23 6 66 block Plain [11,22] -
+node 24 0 66 item 0
+item 0 "f" private [] [] function false false false false - [] - 23
+node 25 0 66 crate [24]
+root 25
+eof 67

@@ -1,0 +1,20 @@
+configured 5 false
+attribute-effect 5 0 0 root cfg=false
+active [6,7,8,9,10,11,12]
+node 0 31 38 name "Unknown"
+node 1 31 38 path false [0]
+node 2 31 38 type Path [1]
+node 3 31 38 field-definition - private 2
+node 4 23 39 variant "Missing" Tuple [3] -
+node 5 9 39 attributed 0 1 4
+node 6 47 50 name "i32"
+node 7 47 50 path false [6]
+node 8 47 50 type Path [7]
+node 9 47 50 field-definition - private 8
+node 10 41 51 variant "Value" Tuple [9] -
+node 11 0 53 item 0
+item 0 "E" private [] [] enum [5,10]
+node 12 0 53 crate [11]
+attribute-capture 0 outer 9 22 "#[cfg(false)]"
+root 12
+eof 54
