@@ -86,12 +86,18 @@ The optional rustc `default_lints: true` metadata omits the usual lint cap for a
 case whose expected rejection depends on a default lint, such as incomplete
 `include!()` expressions. Such a case is not an acceptance-boundary exception.
 
-PA9 adds 198 full-program type-view fixtures. Its rustc checks retain default
+PA9 adds 199 full-program type-view fixtures. Its rustc checks retain default
 literal lints. Four manifest entries explicitly defer initialization/write
 permissions, lifetime proof or constant-call validity to the later owning
 assignment. The type view retains those facts without claiming those obligations
 are proved. CLI tests check deterministic output, count/full-view agreement and
 empty stdout on semantic failure. See `docs/pa9-validation.md`.
+
+PA10 adds 47 typed-body fixtures. Its integer CFG test executor verifies the
+32 execution cases against both declared results and rustc, including dynamic
+storage state and evaluation order. It is test-only and never implements a
+frontend phase. Pending region constraints remain explicit in body IR.
+See `docs/pa10-validation.md` for the feature handoff and measurements.
 
 Rustc has no LowIR output. From PA11, maintainer-generated LowIR is the course
 text oracle, with independent run-pass checks through CPPGM versus rustc. Do
@@ -116,8 +122,8 @@ our oracle: their representation and diagnostic contracts belong to upstream.
 
 ## Release discipline
 
-PA1–PA9 are implemented drafts, not a claim of full Rust frontend conformance.
-Planned PA10–PA38 fail on invocation and are excluded from pass counts. Promote
+PA1–PA10 are implemented drafts, not a claim of full Rust frontend conformance.
+Planned PA11–PA38 fail on invocation and are excluded from pass counts. Promote
 a stage only after handout/reference/fixtures are coherent, independent checks
 pass, the source-to-feature ledger is reviewed and all prior stages remain green.
 Keep maintainer measurements and logs in ignored `obj/`; keep student handout

@@ -308,12 +308,17 @@ impl Checker<'_> {
         }
         for (node, term, kind) in &self.adjustments {
             let key = self.key(*node);
-            self.facts
+            let target = solved.types[term.0 as usize];
+            let facts = self
+                .facts
                 .node_mut(key)
-                .ok_or_else(|| Declarations::error(self.report, key, "invalid adjustment node"))?
-                .adjustment = Some(Adjustment {
+                .ok_or_else(|| Declarations::error(self.report, key, "invalid adjustment node"))?;
+            if *kind == AdjustmentKind::Equality && facts.ty == Some(target) {
+                continue;
+            }
+            facts.adjustment = Some(Adjustment {
                 kind: *kind,
-                target: solved.types[term.0 as usize],
+                target,
             });
         }
         for (node, term) in &self.calls {
@@ -342,6 +347,7 @@ impl Checker<'_> {
     }
     fn binding(&mut self, mut node: NodeId, term: TermId) -> Result<(), Error> {
         while let Kind::Attributed { value, .. } | Kind::Group(value) = self.kind(node) {
+            self.save(node, term);
             node = value;
         }
         match self.kind(node) {
@@ -817,7 +823,10 @@ impl Checker<'_> {
                 .push((source, expected, AdjustmentKind::FunctionPointer));
             return Ok(());
         }
-        self.equate(source, actual, expected)
+        self.equate(source, actual, expected)?;
+        self.adjustments
+            .push((source, expected, AdjustmentKind::Equality));
+        Ok(())
     }
     fn join(&mut self, node: NodeId, left: NodeId, right: NodeId) -> Result<TermId, Error> {
         let common = self.join_types(node, self.term(left)?, self.term(right)?)?;

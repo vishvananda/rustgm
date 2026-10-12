@@ -151,7 +151,9 @@ Operations are `unary NAME operand=TYPE literal=BOOL`,
 `EqualEqual`, etc.); assignment uses the underlying operator or `=` for plain
 assignment. Cast kinds are `IntegerToInteger`, `IntegerToFloat`,
 `FloatToInteger`, `FloatToFloat`, `BoolToInteger`, `CharToInteger`, `U8ToChar`,
-and `FunctionPointer`. Adjustment kinds are `never` and `function-pointer`.
+and `FunctionPointer`. Adjustment kinds are `never`, `function-pointer` and
+`equality`. An `equality` adjustment records the destination type when equality
+depends on pending region obligations; it does not prove those obligations.
 The count mode emits just the footer fields, without the `eof ` prefix.
 
 ## Validation

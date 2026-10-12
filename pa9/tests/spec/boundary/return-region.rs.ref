@@ -59,5 +59,6 @@ node 0:23 type=11 span=36:38
 node 0:24 type=19 span=32:38
 node 0:26 type=20 span=39:40
 node 0:27 type=20 span=38:41
+adjustment 0:27 equality target=19
 node 0:28 type=22 span=0:41
 eof types=23 definitions=20 nodes=16 functions=1 initializers=0

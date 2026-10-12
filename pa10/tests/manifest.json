@@ -1,0 +1,744 @@
+{
+  "schema": 1,
+  "mode": "--emit-body-ir",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "panic": "abort",
+  "overflow_checks": true,
+  "debug_assertions": false,
+  "cases": [
+    {
+      "path": "tests/spec/execution/literal.rs",
+      "exit_status": 0,
+      "features": [
+        "pa10.typed-bodies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "runtime": {
+        "entry": "entry",
+        "result": 42,
+        "type": "u64"
+      }
+    },
+    {
+      "path": "tests/spec/execution/binary-snapshot.rs",
+      "exit_status": 0,
+      "features": [
+        "pa10.typed-bodies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "runtime": {
+        "entry": "entry",
+        "result": 3,
+        "type": "u64"
+      }
+    },
+    {
+      "path": "tests/spec/execution/argument-order.rs",
+      "exit_status": 0,
+      "features": [
+        "pa10.typed-bodies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "runtime": {
+        "entry": "entry",
+        "result": 19,
+        "type": "u64"
+      }
+    },
+    {
+      "path": "tests/spec/execution/callee-before-arguments.rs",
+      "exit_status": 0,
+      "features": [
+        "pa10.typed-bodies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "runtime": {
+        "entry": "entry",
+        "result": 2,
+        "type": "u64"
+      }
+    },
+    {
+      "path": "tests/spec/execution/compound-rhs-first.rs",
+      "exit_status": 0,
+      "features": [
+        "pa10.typed-bodies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "runtime": {
+        "entry": "entry",
+        "result": 13,
+        "type": "u64"
+      }
+    },
+    {
+      "path": "tests/spec/execution/assignment-rhs-first.rs",
+      "exit_status": 0,
+      "features": [
+        "pa10.typed-bodies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "runtime": {
+        "entry": "entry",
+        "result": 9,
+        "type": "u64"
+      }
+    },
+    {
+      "path": "tests/spec/execution/and-skips.rs",
+      "exit_status": 0,
+      "features": [
+        "pa10.typed-bodies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "runtime": {
+        "entry": "entry",
+        "result": 3,
+        "type": "u64"
+      }
+    },
+    {
+      "path": "tests/spec/execution/or-skips.rs",
+      "exit_status": 0,
+      "features": [
+        "pa10.typed-bodies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "runtime": {
+        "entry": "entry",
+        "result": 3,
+        "type": "u64"
+      }
+    },
+    {
+      "path": "tests/spec/execution/nested-side-effects.rs",
+      "exit_status": 0,
+      "features": [
+        "pa10.typed-bodies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "runtime": {
+        "entry": "entry",
+        "result": 3,
+        "type": "u64"
+      }
+    },
+    {
+      "path": "tests/spec/execution/nested-short-circuit.rs",
+      "exit_status": 0,
+      "features": [
+        "pa10.typed-bodies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "runtime": {
+        "entry": "entry",
+        "result": 1,
+        "type": "u64"
+      }
+    },
+    {
+      "path": "tests/spec/execution/nested-if.rs",
+      "exit_status": 0,
+      "features": [
+        "pa10.typed-bodies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "runtime": {
+        "entry": "entry",
+        "result": 2,
+        "type": "u64"
+      }
+    },
+    {
+      "path": "tests/spec/execution/else-if.rs",
+      "exit_status": 0,
+      "features": [
+        "pa10.typed-bodies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "runtime": {
+        "entry": "entry",
+        "result": 2,
+        "type": "u64"
+      }
+    },
+    {
+      "path": "tests/spec/execution/while.rs",
+      "exit_status": 0,
+      "features": [
+        "pa10.typed-bodies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "runtime": {
+        "entry": "entry",
+        "result": 5,
+        "type": "u64"
+      }
+    },
+    {
+      "path": "tests/spec/execution/loop-continue.rs",
+      "exit_status": 0,
+      "features": [
+        "pa10.typed-bodies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "runtime": {
+        "entry": "entry",
+        "result": 4,
+        "type": "u64"
+      }
+    },
+    {
+      "path": "tests/spec/execution/while-continue.rs",
+      "exit_status": 0,
+      "features": [
+        "pa10.typed-bodies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "runtime": {
+        "entry": "entry",
+        "result": 12,
+        "type": "u64"
+      }
+    },
+    {
+      "path": "tests/spec/execution/outer-break.rs",
+      "exit_status": 0,
+      "features": [
+        "pa10.typed-bodies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "runtime": {
+        "entry": "entry",
+        "result": 9,
+        "type": "u64"
+      }
+    },
+    {
+      "path": "tests/spec/execution/outer-continue.rs",
+      "exit_status": 0,
+      "features": [
+        "pa10.typed-bodies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "runtime": {
+        "entry": "entry",
+        "result": 3,
+        "type": "u64"
+      }
+    },
+    {
+      "path": "tests/spec/execution/labeled-block.rs",
+      "exit_status": 0,
+      "features": [
+        "pa10.typed-bodies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "runtime": {
+        "entry": "entry",
+        "result": 7,
+        "type": "u64"
+      }
+    },
+    {
+      "path": "tests/spec/execution/block-fallthrough.rs",
+      "exit_status": 0,
+      "features": [
+        "pa10.typed-bodies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "runtime": {
+        "entry": "entry",
+        "result": 8,
+        "type": "u64"
+      }
+    },
+    {
+      "path": "tests/spec/execution/early-return.rs",
+      "exit_status": 0,
+      "features": [
+        "pa10.typed-bodies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "runtime": {
+        "entry": "entry",
+        "result": 12,
+        "type": "u64"
+      }
+    },
+    {
+      "path": "tests/spec/execution/condition-effects.rs",
+      "exit_status": 0,
+      "features": [
+        "pa10.typed-bodies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "runtime": {
+        "entry": "entry",
+        "result": 4,
+        "type": "u64"
+      }
+    },
+    {
+      "path": "tests/spec/execution/condition-short-circuit.rs",
+      "exit_status": 0,
+      "features": [
+        "pa10.typed-bodies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "runtime": {
+        "entry": "entry",
+        "result": 2,
+        "type": "u64"
+      }
+    },
+    {
+      "path": "tests/spec/execution/labeled-condition-break.rs",
+      "exit_status": 0,
+      "features": [
+        "pa10.typed-bodies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "runtime": {
+        "entry": "entry",
+        "result": 3,
+        "type": "u64"
+      }
+    },
+    {
+      "path": "tests/spec/execution/branch-initialization.rs",
+      "exit_status": 0,
+      "features": [
+        "pa10.typed-bodies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "runtime": {
+        "entry": "entry",
+        "result": 5,
+        "type": "u64"
+      }
+    },
+    {
+      "path": "tests/spec/execution/unit-call.rs",
+      "exit_status": 0,
+      "features": [
+        "pa10.typed-bodies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "runtime": {
+        "entry": "entry",
+        "result": 42,
+        "type": "u64"
+      }
+    },
+    {
+      "path": "tests/spec/execution/recursive-call.rs",
+      "exit_status": 0,
+      "features": [
+        "pa10.typed-bodies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "runtime": {
+        "entry": "entry",
+        "result": 120,
+        "type": "u64"
+      }
+    },
+    {
+      "path": "tests/spec/execution/function-pointer-join.rs",
+      "exit_status": 0,
+      "features": [
+        "pa10.typed-bodies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "runtime": {
+        "entry": "entry",
+        "result": 7,
+        "type": "u64"
+      }
+    },
+    {
+      "path": "tests/spec/execution/grouped-binding.rs",
+      "exit_status": 0,
+      "features": [
+        "pa10.typed-bodies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "runtime": {
+        "entry": "entry",
+        "result": 4,
+        "type": "u64"
+      }
+    },
+    {
+      "path": "tests/spec/execution/shadowing.rs",
+      "exit_status": 0,
+      "features": [
+        "pa10.typed-bodies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "runtime": {
+        "entry": "entry",
+        "result": 1,
+        "type": "u64"
+      }
+    },
+    {
+      "path": "tests/spec/execution/signed-shift.rs",
+      "exit_status": 0,
+      "features": [
+        "pa10.typed-bodies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "runtime": {
+        "entry": "entry",
+        "result": 1,
+        "type": "u64"
+      }
+    },
+    {
+      "path": "tests/spec/execution/const-initializers.rs",
+      "exit_status": 0,
+      "features": [
+        "pa10.typed-bodies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "runtime": {
+        "entry": "entry",
+        "result": 9,
+        "type": "u64"
+      }
+    },
+    {
+      "path": "tests/spec/execution/static-initializer.rs",
+      "exit_status": 0,
+      "features": [
+        "pa10.typed-bodies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "runtime": {
+        "entry": "entry",
+        "result": 17,
+        "type": "u64"
+      }
+    },
+    {
+      "path": "tests/spec/values/scalar-casts.rs",
+      "exit_status": 0,
+      "features": [
+        "pa10.typed-bodies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/values/function-reification.rs",
+      "exit_status": 0,
+      "features": [
+        "pa10.typed-bodies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/values/reference-identity.rs",
+      "exit_status": 0,
+      "features": [
+        "pa10.typed-bodies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/values/float-remainder.rs",
+      "exit_status": 0,
+      "features": [
+        "pa10.typed-bodies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/values/wide-integers.rs",
+      "exit_status": 0,
+      "features": [
+        "pa10.typed-bodies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/divergence/infinite-loop.rs",
+      "exit_status": 0,
+      "features": [
+        "pa10.typed-bodies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/divergence/never-call.rs",
+      "exit_status": 0,
+      "features": [
+        "pa10.typed-bodies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/divergence/return-in-both-arms.rs",
+      "exit_status": 0,
+      "features": [
+        "pa10.typed-bodies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/divergence/return-in-condition.rs",
+      "exit_status": 0,
+      "features": [
+        "pa10.typed-bodies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/divergence/return-in-initializer.rs",
+      "exit_status": 0,
+      "features": [
+        "pa10.typed-bodies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/expansion/generated-loop.rs",
+      "exit_status": 0,
+      "features": [
+        "pa10.typed-bodies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/expansion/configured.rs",
+      "exit_status": 0,
+      "features": [
+        "pa10.typed-bodies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/reject/late-type-error.rs",
+      "exit_status": 1,
+      "features": [
+        "pa10.typed-bodies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/packages/modules/main.rs",
+      "exit_status": 0,
+      "features": [
+        "pa10.typed-bodies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "input": "file",
+      "auxiliary": [
+        "tests/spec/packages/modules/child.rs"
+      ]
+    },
+    {
+      "path": "tests/spec/packages/include/main.rs",
+      "exit_status": 0,
+      "features": [
+        "pa10.typed-bodies"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "input": "file",
+      "auxiliary": [
+        "tests/spec/packages/include/body.rs"
+      ]
+    }
+  ]
+}

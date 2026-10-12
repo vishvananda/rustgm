@@ -2401,6 +2401,18 @@
         "status": 1,
         "default_lints": true
       }
+    },
+    {
+      "path": "tests/spec/inference/grouped-pattern.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
     }
   ]
 }

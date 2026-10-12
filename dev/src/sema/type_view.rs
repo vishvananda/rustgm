@@ -1,5 +1,7 @@
 //! Deterministic type facts are an output view; later phases consume the model.
-use super::model::{AdjustmentKind, Declarations, InitializerKind, Operation, Scalar};
+use super::model::{
+    AdjustmentKind, Declarations, InitializerKind, Operation, RegionEquality, Scalar,
+};
 use crate::{
     literal::value::FloatBits,
     resolve::expansion::Report,
@@ -12,14 +14,7 @@ use std::io::{self, Write};
 /// Propagates output errors and inconsistent canonical identities.
 pub fn write(report: &Report, facts: &Declarations, out: &mut impl Write) -> io::Result<()> {
     writeln!(out, "typed-crate 1")?;
-    for ordinal in 0..facts.types.len() {
-        let id = TypeId(
-            u32::try_from(ordinal).map_err(|_| io::Error::other("too many canonical types"))?,
-        );
-        write!(out, "type {ordinal} ")?;
-        ty(&facts.types, id, out)?;
-        writeln!(out)?;
-    }
+    types(&facts.types, out)?;
     for (ordinal, ty) in facts.definitions.iter().enumerate() {
         let Some(ty) = ty else {
             continue;
@@ -66,7 +61,17 @@ pub fn write(report: &Report, facts: &Declarations, out: &mut impl Write) -> io:
             initializer.value.node.0
         )?;
     }
-    for equality in &facts.region_equalities {
+    regions(&facts.region_equalities, out)?;
+    nodes(report, facts, out)?;
+    write!(out, "eof ")?;
+    count(facts, out)
+}
+/// Write pending region constraints without claiming they have been proved.
+///
+/// # Errors
+/// Propagates output errors.
+pub fn regions(equalities: &[RegionEquality], out: &mut impl Write) -> io::Result<()> {
+    for equality in equalities {
         write!(
             out,
             "region-equal body={}:{} left=",
@@ -77,9 +82,7 @@ pub fn write(report: &Report, facts: &Declarations, out: &mut impl Write) -> io:
         region(equality.right, out)?;
         writeln!(out)?;
     }
-    nodes(report, facts, out)?;
-    write!(out, "eof ")?;
-    count(facts, out)
+    Ok(())
 }
 fn nodes(report: &Report, facts: &Declarations, out: &mut impl Write) -> io::Result<()> {
     for (file, nodes) in facts.nodes.iter().enumerate() {
@@ -116,6 +119,7 @@ fn nodes(report: &Report, facts: &Declarations, out: &mut impl Write) -> io::Res
                 let kind = match value.kind {
                     AdjustmentKind::Never => "never",
                     AdjustmentKind::FunctionPointer => "function-pointer",
+                    AdjustmentKind::Equality => "equality",
                 };
                 writeln!(
                     out,
@@ -213,7 +217,26 @@ fn ty(store: &Store, id: TypeId, out: &mut impl Write) -> io::Result<()> {
         ),
     }
 }
-fn scalar(value: Scalar, out: &mut impl Write) -> io::Result<()> {
+/// Write the common canonical type table for semantic and body views.
+///
+/// # Errors
+/// Propagates output errors and inconsistent canonical identities.
+pub fn types(store: &Store, out: &mut impl Write) -> io::Result<()> {
+    for ordinal in 0..store.len() {
+        let id = TypeId(
+            u32::try_from(ordinal).map_err(|_| io::Error::other("too many canonical types"))?,
+        );
+        write!(out, "type {ordinal} ")?;
+        ty(store, id, out)?;
+        writeln!(out)?;
+    }
+    Ok(())
+}
+/// Write target scalar bits in the shared fact-view vocabulary.
+///
+/// # Errors
+/// Propagates output errors.
+pub fn scalar(value: Scalar, out: &mut impl Write) -> io::Result<()> {
     match value {
         Scalar::Integer(bits) => write!(out, "integer bits=0x{bits:032x}"),
         Scalar::Float(FloatBits::F32(bits)) => write!(out, "f32 bits=0x{bits:08x}"),

@@ -144,8 +144,8 @@
       "path": "pa10",
       "title": "Typed bodies",
       "mode": "--emit-body-ir",
-      "status": "planned",
-      "scope": "Typed control-flow bodies, places, values and evaluation order",
+      "status": "implemented-draft",
+      "scope": "Typed function/initializer CFGs, snapshot values, places, storage boundaries, evaluation order and explicit pending region obligations",
       "test_families": [
         "control-flow joins",
         "short circuit",

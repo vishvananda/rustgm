@@ -48,6 +48,7 @@ pub enum Mode {
     Names,
     Expanded,
     Types,
+    Bodies,
 }
 pub fn run(
     source: SourceFile,
@@ -67,15 +68,24 @@ pub fn run(
         path: path.filter(|p| *p != "-").unwrap_or("<anon>").into(),
         source,
     };
-    if matches!(mode, Mode::Expanded | Mode::Types) {
+    if matches!(mode, Mode::Expanded | Mode::Types | Mode::Bodies) {
         let report =
             resolve::expansion::analyze_with_crate_name(root, &mut Files, config, crate_name)
                 .and_then(resolve::analyze_expanded)
                 .map_err(|e| e.to_string())?;
-        if matches!(mode, Mode::Types) {
+        if matches!(mode, Mode::Types | Mode::Bodies) {
             let facts = rustgm::sema::declarations::analyze(&report)
                 .and_then(|facts| rustgm::sema::bodies::analyze(&report, facts))
                 .map_err(|e| e.to_string())?;
+            if matches!(mode, Mode::Bodies) {
+                let program = rustgm::body::build(&report, &facts).map_err(|e| e.to_string())?;
+                return if count {
+                    rustgm::body::body_view::count(&program, out)
+                } else {
+                    rustgm::body::body_view::write(&program, &facts.types, out)
+                }
+                .map_err(|e| e.to_string());
+            }
             return if count {
                 rustgm::sema::type_view::count(&facts, out)
             } else {

@@ -29,7 +29,9 @@ repository with pinned reference tools. It has not been built yet.
   builtins, cached source inclusion and independently checked text oracles.
 - PA9 has canonical types, signature elaboration, scalar inference/coercions,
   selected operation/control facts and independently checked type-view oracles.
-- PA10–PA38 have buildout briefs and Makefiles. Their suites and implementation
+- PA10 has typed function/initializer CFGs, explicit storage and evaluation order,
+  text oracles and independent CFG execution checks against rustc.
+- PA11–PA38 have buildout briefs and Makefiles. Their suites and implementation
   are not complete; invoking an unbuilt assignment fails explicitly.
 - The backend bridge has an executable LowIR smoke test. Rust source lowering
   begins at PA11; the smoke test is not evidence of Rust source compilation.

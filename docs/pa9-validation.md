@@ -4,6 +4,12 @@ PA9 is an implemented draft of the scalar type-checking profile in
 [the handout](../pa9/README.md). It is not whole-language acceptance. The earlier
 [implementation checkpoint](pa9-progress.md) is historical.
 
+The measurements and 198-case/204-test totals below record the `675671b`
+release. PA10 subsequently added the grouped-binding regression (199 PA9 cases)
+and an explicit destination type for region-dependent equality adjustments;
+see [the body-handoff validation](pa10-validation.md). Earlier oracle bytes are
+unchanged except for the documented equality record in the region-boundary case.
+
 ## Contract and ownership
 
 `types::Store` canonicalizes typed shapes and computes structural sizedness and

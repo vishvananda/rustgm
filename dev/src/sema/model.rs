@@ -65,6 +65,8 @@ pub enum Operation {
 pub enum AdjustmentKind {
     Never,
     FunctionPointer,
+    /// Type equality was established modulo retained region obligations.
+    Equality,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Adjustment {

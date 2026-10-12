@@ -19,7 +19,7 @@ ALLOWED_DEPENDENCIES = {
     "literal": {"support", "lex"},
     "expand": {"support", "lex", "literal", "syntax"},
     "resolve": {"support", "lex", "literal", "syntax", "expand"},
-    "body": {"support", "types", "sema", "syntax"},
+    "body": {"support", "types", "sema", "syntax", "resolve", "lex"},
     "borrow": {"support", "types", "body"},
     "const_eval": {"support", "types", "body"},
     "lex": {"support", "types"}, "preprocess": {"support", "lex", "types"},
@@ -131,9 +131,10 @@ def inspect_file(path, root, roles):
             if phase and (re.search(r"std::(?:process|os)|libc::|Command::", compact) or
                           re.search(r"std::\s*\{[^;]*\b(?:process|os)\b", scoped)):
                 errors.append(f"line {node.start_point.row + 1}: process/platform access in a compiler phase")
-    # Scan literal paths too: fixture and reference lookup is not a compiler API.
+    # Production code cannot look up fixtures/oracles; integration tests must be
+    # able to read their course inputs. All other audits still cover test code.
     for node in walk(tree):
-        if node.type in {"string_literal", "raw_string_literal"}:
+        if parts[:2] != ("dev", "tests") and node.type in {"string_literal", "raw_string_literal"}:
             literal = node_text(node, data)
             if re.search(r"(?:pa\d+/tests|\.ref(?:\b|\.)|cppgm-extended/dev)", literal):
                 errors.append("compiler contains a fixture/reference dependency")
