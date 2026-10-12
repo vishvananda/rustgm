@@ -1,9 +1,11 @@
 //! Deterministic diagnostic view of typed name facts; never consumed by semantics.
 use super::{
+    expansion::{Body, Report},
     model::{Access, Resolution, Target},
     names::NameId,
     package::Package,
 };
+use crate::{expand::crate_syntax, literal, syntax::expression};
 use std::io::{self, Write};
 /// # Errors
 /// Propagates output failures.
@@ -110,4 +112,105 @@ fn access(out: &mut impl Write, value: Access) -> io::Result<()> {
         Access::Public => write!(out, "public"),
         Access::Within(module) => write!(out, "module:{}", module.0),
     }
+}
+
+/// # Errors
+/// Reports output failures without changing compiler facts.
+pub fn count_expanded(report: &Report, out: &mut impl Write) -> io::Result<()> {
+    writeln!(
+        out,
+        "files {} modules {} macros {} invocations {} captures {} definitions {} references {}",
+        report.package.units.len(),
+        report.package.modules.len(),
+        report.definitions.len(),
+        report.invocations.len(),
+        report.captures.len(),
+        report.resolution.definitions.len(),
+        report.resolution.references.len()
+    )
+}
+
+/// Draft PA8 diagnostic vocabulary. Earlier syntax and name views are reused
+/// directly; no output text is a compiler input or an intermediate representation.
+/// # Errors
+/// Reports invalid literal storage or output failures.
+pub fn expanded(report: &Report, out: &mut impl Write) -> io::Result<()> {
+    writeln!(out, "expanded-crate 1")?;
+    for (index, definition) in report.definitions.iter().enumerate() {
+        write!(
+            out,
+            "macro {index} name={} module={} context={} introduction={} source=",
+            definition.name.0, definition.module.0, definition.context.0, definition.introduction.0
+        )?;
+        if let Some(node) = definition.node {
+            write!(out, "{}:{}", node.file.0, node.node.0)?;
+        } else {
+            write!(out, "builtin")?;
+        }
+        match &definition.body {
+            Body::Declarative(compiled) => writeln!(
+                out,
+                " rules={} local-inner={}",
+                compiled.definition.rules.len(),
+                definition.local_inner_macros
+            )?,
+            Body::Builtin(builtin) => writeln!(out, " builtin={}", builtin.name())?,
+        }
+    }
+    for (index, invocation) in report.invocations.iter().enumerate() {
+        write!(
+            out,
+            "invocation {index} context={} parent={} macro={} source={}:{} original={}:{} generated={}:{} rule=",
+            invocation.context.0,
+            invocation.parent.0,
+            invocation.definition,
+            invocation.node.file.0,
+            invocation.node.node.0,
+            invocation.original.start,
+            invocation.original.end,
+            invocation.generated.start,
+            invocation.generated.end
+        )?;
+        if let Some(rule) = invocation.rule {
+            write!(out, "{rule}")?;
+        } else {
+            write!(out, "builtin")?;
+        }
+        writeln!(out, " parser-calls={}", invocation.parser_calls)?;
+    }
+    for (index, unit) in report.package.units.iter().enumerate() {
+        writeln!(out, "file {index}")?;
+        crate_syntax::write_configuration(&unit.configured, out)?;
+        expression::render::write_syntax(
+            unit.source.text(),
+            &unit.configured.ast,
+            out,
+            |index, span, out| {
+                let value = unit
+                    .literal(index)
+                    .map_err(|e| io::Error::other(e.message))?;
+                literal::render::value(out, &value, span.start, span.end)
+            },
+        )?;
+        for origin in &unit.origins {
+            write!(
+                out,
+                "origin {}:{} source={}:{}:{} context=",
+                origin.generated.start,
+                origin.generated.end,
+                origin.original.file.0,
+                origin.original.span.start,
+                origin.original.span.end
+            )?;
+            if let Some(context) = origin.context {
+                writeln!(out, "{}", context.0)?;
+            } else {
+                writeln!(out, "inherit")?;
+            }
+        }
+        writeln!(out, "end-file {index}")?;
+    }
+    write(&report.package, &report.resolution, out)?;
+    write!(out, "end-expanded-crate ")?;
+    count_expanded(report, out)
 }

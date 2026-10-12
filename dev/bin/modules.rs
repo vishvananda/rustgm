@@ -25,11 +25,17 @@ impl Sources for Files {
         }))
     }
 }
-pub fn names(
+#[derive(Clone, Copy)]
+pub enum Mode {
+    Names,
+    Expanded,
+}
+pub fn run(
     source: SourceFile,
     path: Option<&str>,
     config: &Config,
     count: bool,
+    mode: Mode,
     out: &mut impl Write,
 ) -> Result<(), String> {
     let identity = path.filter(|p| *p != "-").map_or_else(
@@ -37,6 +43,17 @@ pub fn names(
         |p| fs::canonicalize(p).map_err(|e| e.to_string()),
     )?;
     let root = InputFile { identity, source };
+    if matches!(mode, Mode::Expanded) {
+        let report = resolve::expansion::analyze(root, &mut Files, config)
+            .and_then(resolve::analyze_expanded)
+            .map_err(|e| diagnostic(&e))?;
+        return if count {
+            resolve::render::count_expanded(&report, out)
+        } else {
+            resolve::render::expanded(&report, out)
+        }
+        .map_err(|e| e.to_string());
+    }
     let mut package = resolve::load::load(root, &mut Files, config).map_err(|e| diagnostic(&e))?;
     let facts = resolve::analyze(&mut package).map_err(|e| diagnostic(&e))?;
     if count {

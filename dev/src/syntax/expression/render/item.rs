@@ -1,5 +1,5 @@
 //! Item/type/pattern spellings extend the PA4 expression vocabulary.
-use super::{Ast, Children, Kind, Optional, Write, io, label, spelling};
+use super::{Children, Kind, Optional, Syntax, Write, io, label, spelling};
 use crate::syntax::item::{Item, ItemKind, Visibility};
 
 fn visibility(visibility: Visibility, output: &mut impl Write) -> io::Result<()> {
@@ -14,9 +14,9 @@ fn visibility(visibility: Visibility, output: &mut impl Write) -> io::Result<()>
     clippy::too_many_lines,
     reason = "one exhaustive extension-vocabulary dispatch under the architecture audit limit"
 )]
-pub(super) fn node(
+pub(super) fn node<L>(
     source: &str,
-    ast: &Ast<'_>,
+    ast: &Syntax<L>,
     kind: Kind,
     output: &mut impl Write,
 ) -> io::Result<()> {
@@ -207,9 +207,9 @@ pub(super) fn node(
     }
 }
 
-pub(super) fn item(
+pub(super) fn item<L>(
     source: &str,
-    ast: &Ast<'_>,
+    ast: &Syntax<L>,
     item: &Item,
     output: &mut impl Write,
 ) -> io::Result<()> {

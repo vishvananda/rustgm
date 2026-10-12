@@ -1,5 +1,6 @@
 //! Stable flat syntax view. IDs and child ranges are the in-process interface.
 use super::{Ast, Kind, List, NodeId, P, Span, parse};
+use crate::syntax::ast::Syntax;
 use crate::{lex::render::RenderError, literal, support::quoted};
 use std::{
     fmt,
@@ -18,8 +19,8 @@ impl fmt::Display for Optional {
         }
     }
 }
-struct Children<'a, 's>(&'a Ast<'s>, List);
-impl fmt::Display for Children<'_, '_> {
+struct Children<'a, L>(&'a Syntax<L>, List);
+impl<L> fmt::Display for Children<'_, L> {
     fn fmt(&self, output: &mut fmt::Formatter<'_>) -> fmt::Result {
         output.write_str("[")?;
         for (index, id) in self.0.list(self.1).iter().enumerate() {
@@ -87,7 +88,7 @@ fn operator(op: P) -> &'static str {
     clippy::too_many_lines,
     reason = "one exhaustive syntax vocabulary dispatch, checked against the file audit dispatch limit"
 )]
-fn record(source: &str, ast: &Ast<'_>, kind: Kind, output: &mut impl Write) -> io::Result<()> {
+fn record<L>(source: &str, ast: &Syntax<L>, kind: Kind, output: &mut impl Write) -> io::Result<()> {
     match kind {
         Kind::Expansion { children, tail } => write!(
             output,
@@ -313,18 +314,28 @@ pub fn expression(source: &str, output: &mut impl Write) -> Result<(), RenderErr
 /// # Errors
 /// Reports output failures.
 pub fn write_ast(source: &str, ast: &Ast<'_>, output: &mut impl Write) -> io::Result<()> {
+    write_syntax(source, ast, output, |index, span, out| {
+        literal::render::value(out, &ast.literals[index as usize], span.start, span.end)
+    })
+}
+
+/// Render a borrowed syntax arena with caller-owned literal storage. The view
+/// never clones an arena or changes any retained semantic facts.
+/// # Errors
+/// Reports output failures and invalid literal storage supplied by the caller.
+pub fn write_syntax<L, W: Write>(
+    source: &str,
+    ast: &Syntax<L>,
+    output: &mut W,
+    mut value: impl FnMut(u32, Span, &mut W) -> io::Result<()>,
+) -> io::Result<()> {
     for (id, node) in ast.nodes.iter().enumerate() {
         write!(output, "node {id} {} {} ", node.span.start, node.span.end)?;
         record(source, ast, node.kind, output)?;
         writeln!(output)?;
         if let Kind::Literal(index) = node.kind {
             write!(output, "value {index} ")?;
-            literal::render::value(
-                output,
-                &ast.literals[index as usize],
-                node.span.start,
-                node.span.end,
-            )?;
+            value(index, node.span, output)?;
         }
         if let Kind::Item(index) = node.kind {
             write!(output, "item {index} ")?;

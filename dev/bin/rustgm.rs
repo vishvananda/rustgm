@@ -34,13 +34,24 @@ fn options() -> Result<Options, String> {
     let mut args = std::env::args().skip(1);
     while let Some(arg) = args.next() {
         match arg.as_str() {
-            "--emit-tokens" | "--emit-literals" | "--emit-token-trees" | "--emit-ast"
-            | "--emit-crate-ast" | "--emit-names" | "--emit-expanded" | "--emit-lowir" => {
+            "--emit-tokens"
+            | "--emit-literals"
+            | "--emit-token-trees"
+            | "--emit-ast"
+            | "--emit-crate-ast"
+            | "--emit-names"
+            | "--emit-expanded"
+            | "--emit-expanded-crate"
+            | "--emit-lowir" => {
                 options.mode = arg;
                 options.count = false;
             }
             "--count-names" => {
                 options.mode = "--emit-names".into();
+                options.count = true;
+            }
+            "--count-expanded-crate" => {
+                options.mode = "--emit-expanded-crate".into();
                 options.count = true;
             }
             "--count-expanded" => {
@@ -106,12 +117,20 @@ fn compile(options: &Options) -> Result<(), String> {
         )),
         None => Box::new(io::BufWriter::new(stdout.lock())),
     };
-    let result = if options.mode == "--emit-names" {
-        modules::names(
+    let result = if matches!(
+        options.mode.as_str(),
+        "--emit-names" | "--emit-expanded-crate"
+    ) {
+        modules::run(
             source,
             options.input.as_deref(),
             &options.config,
             options.count,
+            if options.mode == "--emit-names" {
+                modules::Mode::Names
+            } else {
+                modules::Mode::Expanded
+            },
             &mut output,
         )
     } else if options.count {

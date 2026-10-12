@@ -481,3 +481,43 @@ The final-code immutable comparison is
 medians at the three scales are 55.31/55.82, 228.31/226.36, 950.25/954.99 ms;
 largest A/A samples range 978.10–993.85 ms. These observations do not
 replace full PA8 expansion throughput measurements.
+
+## Expanded-crate driver and text view
+
+The maintainer driver now supports `--emit-expanded-crate` and
+`--count-expanded-crate`. Both expand the crate and finish ordinary-name
+resolution over the retained graph. The view reports macro definitions,
+invocations, parser callback counts, syntax contexts, introduction ancestry,
+per-file configured syntax, origin ranges and final name facts. Source failures
+produce no partial view. Builtins retain typed owned values and no invented
+matcher rule. PA8's handout documents this prototype vocabulary; the assignment
+remains planned until its remaining builtins, diagnostics and course suite are
+complete.
+
+The existing resolution renderer owns the composed view. PA5's syntax and
+configuration writers now borrow either source-backed or stored literal arenas;
+a caller-supplied literal writer reads the existing storage directly. No syntax
+arena is cloned or reparsed to render an expanded file. The earlier text
+contracts retain their existing entrypoints and byte vocabulary.
+
+Three CLI integration tests check repeated-run determinism, count/full-view
+agreement, opaque capture parser counts, owned builtin values, ordinary-name
+completion and atomic failure output. The full validation in
+`expanded-view-full-validation.log` passes 155 Rust tests, all 1,016 active
+fixtures, strict Clippy, the 103-file audit and 14 harness tests. The preceding
+item-registration commit `6d45e88` passed GitHub CI.
+
+The new `make perf-expanded-crate` workload freezes independent functions with
+a rejected first matcher rule and a duplicated opaque expression capture.
+The initial CPU-10 A/A baseline is
+`obj/perf/1791786417131657606/samples.json`; both frozen binaries and all full
+output hashes agree. At 4,000/16,000/64,000 expansions, paired medians were
+58.47/230.17/966.55 ms and peak RSS was 14,200/47,796/182,132 KiB. Largest-input
+A/A observations ranged 975.63–1065.51 ms. Each scale reports exactly one retained
+capture per invocation and one resolved return-type reference per generated
+function. This establishes a scaling baseline, not an A/B regression claim.
+
+`expanded-view-reference-validation.log` passes the independent rustc checks,
+reference regeneration and harness checks. Only compiler source fingerprints
+changed in PA1–PA7 receipts; all fixture and oracle bytes remain identical.
+`expanded-view-release-validation.log` passes all 155 Rust tests in release mode.

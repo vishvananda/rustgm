@@ -125,7 +125,13 @@ pub fn render(source: &str, config: &Config, output: &mut impl Write) -> Result<
     expression::render::write_ast(source, &report.ast, output).map_err(RenderError::Io)
 }
 
-fn write_configuration(report: &ConfiguredCrate<'_>, output: &mut impl Write) -> io::Result<()> {
+/// Render configuration facts without changing their literal storage.
+/// # Errors
+/// Reports output failures.
+pub fn write_configuration<L>(
+    report: &ConfiguredSyntax<L>,
+    output: &mut impl Write,
+) -> io::Result<()> {
     for owner in &report.owners {
         writeln!(output, "configured {} {}", owner.node.0, owner.enabled)?;
         for index in owner.attributes.clone() {
