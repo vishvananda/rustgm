@@ -214,7 +214,8 @@ measurements above were rebuilt. None of the draft observations were discarded.
 
 1. Extend the selected owned-product facts with binding modes and reference
    adjustments, including borrowed arrays and slices. Bindings in different
-   alternatives must agree on their solved type and effective binding mode.
+   alternatives must have consistent written qualifiers and solved binding
+   types; retain each occurrence's effective capture mode and adjustments.
    Retain region/loan obligations for PA15/PA16; an inspection result must not
    authorize unchecked reference erasure during execution. Do not infer those
    facts again during body construction.
@@ -293,3 +294,14 @@ covering both sides of the Unicode scalar gap are exhaustive. The guard-retry
 probe executes the same guard twice after both alternatives match and both
 guards fail. These are observed stable-toolchain controls for the implementation,
 not claims that the current RustGM pattern checker implements them yet.
+
+Additional binding-mode controls are retained in
+`obj/pa13-work/binding-mode-probes/evidence.json`. Rust 1.98 rejects
+`let ([x] | &[ref x]) = xs` for `xs: &[u8; 1]` with E0409, so the resolver's
+written-qualifier consistency check must stay. However,
+`let ((x, _) | (_, [x])) = xs` for `xs: (&u8, &[u8; 1])` is accepted: one
+occurrence binds a reference value and the other inherits a reference binding.
+Both bind `x: &u8`. The mutable-reference version is also accepted. Do not
+require identical effective capture operations across alternatives when their
+written qualifiers and binding types agree. The next typed pattern model must
+retain these distinct per-occurrence operations and their region obligations.
