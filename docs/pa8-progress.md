@@ -677,3 +677,58 @@ samples span 369.34–425.25 ms. Both snapshots are identical; complete output
 hashes, frozen inputs, affinity and every observation are retained. This is a
 scaling baseline, not a speedup claim. PA8 still needs eager builtins and its
 released course suite before activation.
+
+## Eager argument worklist, concat and compile_error
+
+Eager builtins now parse comma-separated arguments once into a detached typed
+arena in the existing source unit. The argument roots keep source offsets,
+configuration facts and literal storage. Nested calls use the existing macro
+worklist and notify their waiting parent through an explicit dependency count;
+generated definitions/imports wake those calls without reparsing arguments.
+A completed builtin installs its typed result and retires argument nodes.
+Ordinary expansion and eager argument retention share checked arena/literal
+append logic. Unresolved dependency diagnostics select a failing child before
+its waiting parent and retain the eager expansion ancestry.
+
+`concat!` consumes expanded literal facts, including negative numeric literals;
+`compile_error!` diagnoses one expanded string. Parentheses/blocks/constants
+are not silently evaluated. Shadowing and macros that discard their input keep
+their existing semantics. `concat_bytes!` was independently confirmed unstable
+in the pinned compiler and is outside the stable profile. Remaining PA8 source
+builtins include include/include_str/include_bytes and env; library-dependent
+builtins require the later language/library hooks.
+
+The independently declared 24-case acceptance/value matrix in
+`obj/pa8-work/concat-probes/matrix.py` matches rustc throughout. It covers
+numeric spellings, nested builtins, locations, late generated exports, opaque
+captures, discarded arguments and invalid expression forms. A separate
+cross-file program confirms an opaque capture retained in another source unit.
+Permanent tests additionally exercise two delayed definitions, exactly one
+argument parse per concat, retired temporary roots, capture reuse, recursive
+failure, diagnostics and atomic CLI output.
+
+`eager-full-validation.log` passes the then-current 170 Rust tests, all 1,019
+active fixtures, strict Clippy, the 106-file audit and 15 harness tests.
+Reference/release validation passes independent rustc checks, all receipt
+regeneration, upstream checks and release tests. The additional cross-file test
+brings the suite to 171; affected debug/release tests and final lint/audit/oracle
+checks pass in the extra/final validation logs. Only compiler fingerprints
+changed in PA1–PA7 receipts; fixture/oracle bytes remain unchanged. The preceding
+stringification commit `7b4d558` passed GitHub CI.
+
+The frozen CPU-10 full-expansion comparison is
+`obj/perf/1791791539115112474/samples.json`. Baseline `7b4d558` has only the two
+unused eager builtin names registered to preserve planned-view identities;
+`obj/pa8-work/eager-baseline-prelude.patch` records that compatibility change.
+Full output hashes agree. At 4,000/16,000/64,000 captures, A/B medians were
+57.16/56.80, 229.85/236.35 and 1085.95/988.41 ms; peak RSS was
+14,224/14,876, 48,616/49,448 and 185,440/188,940 KiB. Largest A/A samples span
+961.24–978.51 ms, below the paired baseline median; this is not evidence for a
+general speedup. The added worklist state costs about 3.5 MiB on that scale.
+
+The new nested concat workload establishes an A/A scaling baseline at
+`obj/perf/1791791569309680782/samples.json`. At 1,000/4,000/16,000 outer calls,
+A/B medians were 39.55/40.21, 152.88/155.30 and 693.20/695.61 ms. Largest
+A/A samples span 688.52–720.32 ms. Identical snapshots, full output hashes,
+frozen inputs, affinity and every observation are retained. PA8 remains planned
+until its remaining source builtins and nonempty released suite are ready.

@@ -63,8 +63,8 @@ invocation IDs follow creation/expansion order. Context 0 denotes physical sourc
 context N identifies invocation N−1. Introduction/parent contexts record expansion
 ancestry, while token origins retain syntax hygiene independently. Builtins have
 no invented source definition node or matcher rule. `parser-calls` counts ordinary
-fragment-parser callbacks from matching; a forwarded opaque fragment does not
-need another callback.
+fragment-parser callbacks from matching, or the single argument-list parse for
+an eager builtin. A forwarded opaque fragment does not need another callback.
 
 Per-file syntax IDs index retained arenas. The PA5 `active` record identifies the
 configured tree; inactive original nodes may remain as provenance. Offsets use
@@ -132,3 +132,21 @@ frames. These formatting decisions follow the pinned compiler's observable
 [token printer](https://github.com/rust-lang/rust/blob/88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_ast_pretty/src/pprust/state.rs)
 and are checked with independent runtime values. Rendered output remains a
 builtin value and diagnostic view, never a syntax transport.
+
+`concat!` and `compile_error!` use eager argument expansion. The ordinary parser
+reads the comma-separated argument list once. Nested invocations enter the same
+resolution worklist; an explicit dependency count resumes the builtin after
+those invocations finish. Delayed definitions and imports do not cause another
+argument parse. Temporary argument nodes retain their source spans and typed
+literal storage and are retired after the resulting value is installed.
+For an eager builtin, `parser-calls=1` records that argument-list parse.
+
+`concat!` accepts strings, characters, booleans and numeric literals, including
+unary-negative numeric literals. Integer spellings become decimal magnitudes;
+float spellings keep their decoded decimal text without suffixes or underscores.
+A trailing comma is allowed. Parenthesized literals, blocks, arbitrary constant
+expressions, bytes, byte strings and C strings are rejected. `compile_error!`
+requires one eagerly expanded string and diagnoses its contents. Both preserve
+ordinary macro shadowing. `concat_bytes!` remains unstable in Rust 1.98.0 and is
+outside this stable-language profile. Library-dependent builtin expansion is
+owned by the later language/library hooks rather than fabricated external names.

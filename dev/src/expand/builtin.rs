@@ -26,16 +26,24 @@ pub enum Builtin {
     File,
     ModulePath,
     Stringify,
+    Concat,
+    CompileError,
 }
 impl Builtin {
-    pub const ALL: [Self; 6] = [
+    pub const ALL: [Self; 8] = [
         Self::Cfg,
         Self::Line,
         Self::Column,
         Self::File,
         Self::ModulePath,
         Self::Stringify,
+        Self::Concat,
+        Self::CompileError,
     ];
+    #[must_use]
+    pub const fn eager(self) -> bool {
+        matches!(self, Self::Concat | Self::CompileError)
+    }
     #[must_use]
     pub const fn needs_position(self) -> bool {
         matches!(self, Self::Line | Self::Column)
@@ -49,6 +57,8 @@ impl Builtin {
             Self::File => "file",
             Self::ModulePath => "module_path",
             Self::Stringify => "stringify",
+            Self::Concat => "concat",
+            Self::CompileError => "compile_error",
         }
     }
 }
@@ -75,6 +85,9 @@ pub fn expand(
     environment: &Environment<'_>,
 ) -> Result<Expansion, LexError> {
     match builtin {
+        Builtin::Concat | Builtin::CompileError => {
+            Err(error(0, "builtin requires expanded argument facts"))
+        }
         Builtin::Cfg => cfg(
             source,
             input,
@@ -196,4 +209,111 @@ fn literal(
     // the owned value without deriving any semantic fact from its spelling.
     let syntax = crate_syntax::configure("", ast, config)?;
     Ok(Expansion { source, syntax })
+}
+
+/// Build concat's string directly from expanded literal facts.
+///
+/// # Errors
+/// Rejects nonliteral operands, byte/C strings and invalid output contexts.
+pub fn concat<'a, L>(
+    ast: &crate::syntax::ast::Syntax<L>,
+    root: NodeId,
+    mut value: impl FnMut(u32) -> Result<Value<'a>, LexError>,
+    grammar: MacroContext,
+    config: &Config,
+) -> Result<Expansion, LexError> {
+    use std::fmt::Write;
+    let Kind::Expansion {
+        children,
+        tail: None,
+    } = ast.node(root).kind
+    else {
+        return Err(error(0, "missing builtin argument container"));
+    };
+    let mut text = String::new();
+    for &argument in ast.list(children) {
+        let node = ast.node(argument);
+        let (kind, negative) = if let Kind::Unary {
+            op: crate::syntax::ast::Unary::Negate,
+            operand,
+        } = node.kind
+        {
+            (ast.node(operand).kind, true)
+        } else {
+            (node.kind, false)
+        };
+        let Kind::Literal(index) = kind else {
+            return Err(error(node.span.start, "concat requires literal arguments"));
+        };
+        let literal = value(index)?;
+        if negative && !matches!(literal, Value::Integer(_) | Value::Float(_)) {
+            return Err(error(
+                node.span.start,
+                "concat requires numeric literals after minus",
+            ));
+        }
+        if negative {
+            text.push('-');
+        }
+        match literal {
+            Value::String(bytes) => text.push_str(
+                std::str::from_utf8(&bytes)
+                    .map_err(|_| error(node.span.start, "invalid string literal UTF-8"))?,
+            ),
+            Value::Character(ch) => text.push(ch),
+            Value::Integer(integer) => write!(&mut text, "{}", integer.magnitude)
+                .map_err(|_| error(node.span.start, "cannot format integer literal"))?,
+            Value::Float(float) => text.push_str(&float.decimal),
+            Value::Boolean(boolean) => text.push_str(if boolean { "true" } else { "false" }),
+            Value::Byte(_) | Value::ByteString(_) | Value::CString(_) => {
+                return Err(error(
+                    node.span.start,
+                    "concat does not accept byte or C string literals",
+                ));
+            }
+        }
+    }
+    literal(
+        Value::String(text.as_bytes().to_vec().into()),
+        format!("{text:?}"),
+        grammar,
+        config,
+    )
+}
+
+/// Read one eagerly expanded string argument for diagnostic and source builtins.
+///
+/// # Errors
+/// Rejects arity, nonliteral arguments and invalid string storage.
+pub fn string_argument<'a, L>(
+    ast: &crate::syntax::ast::Syntax<L>,
+    root: NodeId,
+    mut value: impl FnMut(u32) -> Result<Value<'a>, LexError>,
+) -> Result<(Span, String), LexError> {
+    let container = ast.node(root);
+    let failure = || {
+        error(
+            container.span.start,
+            "builtin requires one string literal argument",
+        )
+    };
+    let Kind::Expansion {
+        children,
+        tail: None,
+    } = container.kind
+    else {
+        return Err(failure());
+    };
+    let [argument] = ast.list(children) else {
+        return Err(failure());
+    };
+    let node = ast.node(*argument);
+    let Kind::Literal(index) = node.kind else {
+        return Err(failure());
+    };
+    let Value::String(bytes) = value(index)? else {
+        return Err(failure());
+    };
+    let text = String::from_utf8(bytes.into_owned()).map_err(|_| failure())?;
+    Ok((node.span, text))
 }

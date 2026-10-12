@@ -33,6 +33,7 @@ use std::collections::VecDeque;
 mod attributes;
 mod bindings;
 mod diagnostics;
+mod eager;
 mod location;
 mod paths;
 
@@ -83,6 +84,7 @@ struct Visit {
     depth: usize,
     introduction: ContextId,
     path_scope: ScopeId,
+    eager: Option<usize>,
 }
 enum Work {
     Visit(Visit),
@@ -114,10 +116,14 @@ struct Call {
     selected: Option<usize>,
     error: Option<Error>,
     offset: u32,
+    eager: Option<eager::Arguments>,
+    notified: bool,
 }
 impl Call {
     fn diagnostic(&self, message: &str) -> Error {
-        Error::at(self.file, self.offset, message)
+        let mut error = Error::at(self.file, self.offset, message);
+        error.introduction = self.visit.introduction;
+        error
     }
 }
 struct Engine<'a, S> {
@@ -186,6 +192,7 @@ pub fn analyze_with_crate_name(
             depth: 0,
             introduction: ContextId(0),
             path_scope: ScopeId(0),
+            eager: None,
         })],
         children: Vec::new(),
         recursion_limit,
@@ -212,7 +219,17 @@ impl<S: Sources> Engine<'_, S> {
         if let Some(index) = self
             .calls
             .iter()
-            .position(|call| call.state != State::Complete)
+            .position(|call| call.error.is_some())
+            .or_else(|| {
+                self.calls
+                    .iter()
+                    .position(|call| call.state != State::Complete && call.eager.is_none())
+            })
+            .or_else(|| {
+                self.calls
+                    .iter()
+                    .position(|call| call.state != State::Complete)
+            })
         {
             if let Some(error) = self.calls[index].error.take() {
                 return Err(error);
@@ -323,6 +340,13 @@ impl<S: Sources> Engine<'_, S> {
             None
         };
         let index = self.calls.len();
+        if let Some(parent) = visit.eager {
+            self.calls[parent]
+                .eager
+                .as_mut()
+                .ok_or_else(|| Error::at(file, offset, "missing eager expansion parent"))?
+                .pending += 1;
+        }
         self.ready.push_back(index);
         self.calls.push(Call {
             visit,
@@ -338,6 +362,8 @@ impl<S: Sources> Engine<'_, S> {
             selected: None,
             error: None,
             offset,
+            eager: None,
+            notified: false,
         });
         Ok(())
     }
@@ -347,14 +373,23 @@ impl<S: Sources> Engine<'_, S> {
                 self.calls[index].error = None;
                 found
             }
-            Err(error) => {
+            Err(mut error) => {
+                if error.introduction.0 == 0 {
+                    error.introduction = self.calls[index].visit.introduction;
+                }
                 self.calls[index].error = Some(error);
                 None
             }
         };
         if let Some(previous) = self.calls[index].selected {
             if found == Some(previous) {
-                self.calls[index].state = State::Complete;
+                if let Some(arguments) = self.calls[index].eager.as_ref() {
+                    if arguments.pending == 0 {
+                        self.finish_eager(index, previous)?;
+                    }
+                } else {
+                    self.completed(index)?;
+                }
             } else {
                 self.calls[index].state = State::Failed;
                 if self.calls[index].error.is_none() {
@@ -369,6 +404,9 @@ impl<S: Sources> Engine<'_, S> {
             return Ok(());
         };
         self.calls[index].state = State::InProgress;
+        if matches!(self.definitions[definition].body, Body::Builtin(builtin) if builtin.eager()) {
+            return self.begin_eager(index, definition);
+        }
         let call = &self.calls[index];
         let (visit, file, capture, grammar, scope, output, parent) = (
             call.visit,
@@ -414,8 +452,7 @@ impl<S: Sources> Engine<'_, S> {
             ..visit
         }));
         self.scan()?;
-        self.calls[index].state = State::Complete;
-        Ok(())
+        self.completed(index)
     }
 
     #[expect(
@@ -743,10 +780,6 @@ impl<S: Sources> Engine<'_, S> {
             .ok_or_else(|| Error::at(file, 0, "macro invocation requires delimiters"))?;
         Input::from_forest(forest, range).map_err(|e| Error::at(file, e.offset, e.message))
     }
-    #[expect(
-        clippy::too_many_lines,
-        reason = "one builtin transaction derives its environment, installs typed syntax and commits provenance"
-    )]
     fn invoke_builtin(
         &mut self,
         visit: Visit,
@@ -828,23 +861,7 @@ impl<S: Sources> Engine<'_, S> {
                 e.message,
             )
         })?;
-        let span = Span {
-            start: 0,
-            end: u32::try_from(generated.source.len())
-                .map_err(|_| Error::at(file, original.start, "builtin output too large"))?,
-        };
-        let origins = [Origin {
-            generated: span,
-            original: Location {
-                file,
-                span: original,
-            },
-            context: Some(context),
-            joint: None,
-        }];
-        let generated = package.units[file.0 as usize]
-            .install_expansion(visit.node, &generated.source, generated.syntax, &origins)
-            .map_err(|e| Error::at(file, original.start, e.message))?;
+        let generated = self.install_builtin(file, visit.node, original, context, generated)?;
         self.paths.state.facts.introductions.parents.push(parent);
         self.invocations.push(Invocation {
             context,
@@ -860,6 +877,33 @@ impl<S: Sources> Engine<'_, S> {
             parent,
         });
         Ok(context)
+    }
+    fn install_builtin(
+        &mut self,
+        file: FileId,
+        target: NodeId,
+        original: Span,
+        context: ContextId,
+        generated: builtin::Expansion,
+    ) -> Result<Span, Error> {
+        let span = Span {
+            start: 0,
+            end: u32::try_from(generated.source.len())
+                .map_err(|_| Error::at(file, original.start, "builtin output too large"))?,
+        };
+        let origins = [Origin {
+            generated: span,
+            original: Location {
+                file,
+                span: original,
+            },
+            context: Some(context),
+            joint: None,
+        }];
+        let generated = self.loader.package.units[file.0 as usize]
+            .install_expansion(target, &generated.source, generated.syntax, &origins)
+            .map_err(|e| Error::at(file, original.start, e.message))?;
+        Ok(generated)
     }
     fn invoke(
         &mut self,

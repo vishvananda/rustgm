@@ -79,28 +79,13 @@ impl Unit {
             }
             previous_end = origin.generated.end;
         }
-        let literal_mark = self.literals.decoded_bytes();
-        let stored = generated.ast.map_literals(|value| {
-            self.literals
-                .store(source, value)
-                .and_then(|value| value.offset_source(base))
-                .map_err(|e| error(0, e))
-        });
-        let appended = stored.and_then(|ast| {
-            transfer::append(
-                &ast,
-                &mut self.configured.ast,
-                |span| shift(span, base, source.len()),
-                |value| Ok(*value),
-            )
-        });
-        let new_root = match appended {
-            Ok(root) => root,
-            Err(e) => {
-                self.literals.truncate(literal_mark);
-                return Err(e);
-            }
-        };
+        let new_root = append_syntax(
+            source,
+            base,
+            generated.ast,
+            &mut self.configured.ast,
+            &mut self.literals,
+        )?;
         // All ranges were validated above; this is the transaction's commit point.
         self.source.append(source).map_err(|e| error(0, e))?;
         let mut obsolete = vec![target];
@@ -207,5 +192,82 @@ impl Unit {
                     .ok_or_else(|| error(0, "too many configured owners"))
             })
             .collect::<Result<Vec<_>, _>>()
+    }
+}
+
+fn append_syntax(
+    source: &str,
+    base: u32,
+    ast: crate::syntax::ast::Ast<'_>,
+    destination: &mut crate::syntax::ast::Syntax<crate::literal::storage::StoredValue>,
+    literals: &mut crate::literal::storage::Storage,
+) -> Result<NodeId, LexError> {
+    let mark = literals.decoded_bytes();
+    let stored = ast.map_literals(|value| {
+        literals
+            .store(source, value)
+            .and_then(|value| value.offset_source(base))
+            .map_err(|e| error(0, e))
+    });
+    let result = stored.and_then(|ast| {
+        transfer::append(
+            &ast,
+            destination,
+            |span| shift(span, base, source.len()),
+            |value| Ok(*value),
+        )
+    });
+    if result.is_err() {
+        literals.truncate(mark);
+    }
+    result
+}
+
+impl Unit {
+    /// Demand builtin arguments in this unit's existing source image. Their
+    /// temporary root remains detached from the crate while its macros expand.
+    ///
+    /// # Errors
+    /// Reports argument grammar/configuration errors and arena overflow.
+    pub fn retain_arguments<'a>(
+        &mut self,
+        file: super::FileId,
+        tokens: &[crate::lex::token::Token],
+        registry: &crate::expand::registry::Registry,
+        other: impl Fn(super::FileId) -> Option<&'a str>,
+        config: &crate::expand::config::Config,
+    ) -> Result<NodeId, LexError> {
+        let source = self.source.text();
+        let inputs = registry.view(|id| if id == file { Some(source) } else { other(id) });
+        let ast = crate::syntax::expression::fragment::parse_arguments(source, tokens, &inputs)?;
+        let mut generated = crate::expand::crate_syntax::configure(source, ast, config)?;
+        let root = NodeId(
+            add(self.configured.ast.nodes.len(), generated.ast.nodes.len())? + generated.ast.root.0,
+        );
+        let indices = self.expansion_metadata(root, &mut generated, 0, source.len())?;
+        let root = append_syntax(
+            source,
+            0,
+            generated.ast,
+            &mut self.configured.ast,
+            &mut self.literals,
+        )?;
+        self.configured.active.extend(generated.active);
+        self.owner_indices
+            .resize(self.configured.ast.nodes.len(), None);
+        for (owner, index) in generated.owners.iter().zip(indices) {
+            self.owner_indices[owner.node.0 as usize] = Some(index);
+        }
+        self.configured.owners.extend(generated.owners);
+        self.configured.effects.extend(generated.effects);
+        Ok(root)
+    }
+
+    pub(crate) fn retire_arguments(&mut self, root: NodeId) {
+        let mut work = vec![root];
+        while let Some(node) = work.pop() {
+            self.configured.active[node.0 as usize] = false;
+            self.configured.ast.push_children(node, &mut work);
+        }
     }
 }

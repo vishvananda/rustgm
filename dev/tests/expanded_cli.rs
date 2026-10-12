@@ -64,6 +64,9 @@ fn expanded_cli_finishes_names_and_emits_no_partial_view_on_source_failure() -> 
         "macro_rules! m{()=>{missing}} fn f(){m!();}",
         "macro_rules! m{()=>{1 2}} fn f(){m!();}",
         "fn f(){unknown!();}",
+        "fn f(){let _=concat!(missing!());}",
+        "fn f(){let _=concat!((42));}",
+        "compile_error!(concat!(\"stop \", stringify!(now)));",
     ] {
         for mode in ["--emit-expanded-crate", "--count-expanded-crate"] {
             let output = run(mode, source)?;

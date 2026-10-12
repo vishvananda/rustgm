@@ -1397,7 +1397,9 @@ fn builtin_strings(report: &expansion::Report) -> Result<Vec<String>, String> {
     for call in &report.invocations {
         if !matches!(
             report.definitions[call.definition].body,
-            expansion::Body::Builtin(Builtin::File | Builtin::ModulePath | Builtin::Stringify)
+            expansion::Body::Builtin(
+                Builtin::File | Builtin::ModulePath | Builtin::Stringify | Builtin::Concat
+            )
         ) {
             continue;
         }
@@ -1682,5 +1684,161 @@ fn stringify_wraps_long_groups_with_bounded_iterative_layout() -> Result<(), Str
     for source in ["type T=stringify!(x);", "stringify!(x);"] {
         assert!(analyze(source, &mut Files::default()).is_err());
     }
+    Ok(())
+}
+
+#[test]
+fn eager_concat_consumes_typed_literals_and_rejects_other_expression_shapes() -> Result<(), String>
+{
+    for (arguments, expected) in [
+        ("", ""),
+        (
+            "\"a\",42u8,0xff,-0x10,1_2.30e+0_2f64,-0.0,true,'é',",
+            "a42255-1612.30e+02-0.0trueé",
+        ),
+        ("256u8, -256i8", "256-256"),
+        ("cfg!(unix)", "true"),
+        ("stringify!(x+y)", "x+y"),
+    ] {
+        let report = analyze(
+            &format!("fn f(){{let _=concat!({arguments});}}"),
+            &mut Files::default(),
+        )?;
+        assert_eq!(builtin_strings(&report)?[0], expected);
+        assert_eq!(report.invocations[0].parser_calls, 1);
+        rustgm::resolve::analyze_expanded(report).map_err(|e| e.to_string())?;
+    }
+    for arguments in [
+        "(\"a\")",
+        "{\"a\"}",
+        "1+2",
+        "-(12)",
+        "b\"a\"",
+        "c\"a\"",
+        "b'a'",
+        "\"a\" \"b\"",
+        "--1",
+        "-true",
+    ] {
+        assert!(
+            analyze(
+                &format!("fn f(){{let _=concat!({arguments});}}"),
+                &mut Files::default()
+            )
+            .is_err(),
+            "{arguments}"
+        );
+    }
+    Ok(())
+}
+
+#[test]
+fn eager_arguments_wait_for_generated_macros_without_reparsing_or_leaking_nodes()
+-> Result<(), String> {
+    let source = "macro_rules! make{()=>{#[macro_export] macro_rules! a{()=>{concat!(\"a\",\"b\")}} #[macro_export] macro_rules! b{()=>{\"c\"}}}} fn f()-> &'static str{concat!(crate::a!(),crate::b!(),stringify!(x+y))} make!();";
+    let report = analyze(source, &mut Files::default())?;
+    assert_eq!(builtin_strings(&report)?[0], "abcx+y");
+    let concats = report
+        .invocations
+        .iter()
+        .filter(|call| {
+            matches!(
+                report.definitions[call.definition].body,
+                expansion::Body::Builtin(rustgm::expand::builtin::Builtin::Concat)
+            )
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(concats.len(), 2);
+    assert!(concats.iter().all(|call| call.parser_calls == 1));
+    let report = rustgm::resolve::analyze_expanded(report).map_err(|e| e.to_string())?;
+    assert!(report.resolution.expansions.is_empty());
+    let active_containers = report
+        .package
+        .units
+        .iter()
+        .map(|unit| {
+            unit.configured
+                .ast
+                .nodes
+                .iter()
+                .zip(&unit.configured.active)
+                .filter(|(node, active)| {
+                    **active && matches!(node.kind, rustgm::syntax::ast::Kind::Expansion { .. })
+                })
+                .count()
+        })
+        .sum::<usize>();
+    // Only make!'s item-list expansion remains reachable; argument containers are retired.
+    assert_eq!(active_containers, 1);
+    Ok(())
+}
+
+#[test]
+fn eager_arguments_preserve_capture_identity_and_location_causes() -> Result<(), String> {
+    let source = "macro_rules! outer{($e:expr)=>{concat!($e,concat!(\"b\",\"c\"))}} fn f(){let _=outer!(\"a\");}";
+    let report = analyze(source, &mut Files::default())?;
+    assert_eq!(builtin_strings(&report)?, ["abc", "bc"]);
+    assert_eq!(report.captures.len(), 1);
+    assert_eq!(report.captures.token_count(), 1);
+    let source = "
+fn f()-> &'static str{concat!(line!(), \":\",
+ line!(), \":\", column!())}";
+    let report = analyze(source, &mut Files::default())?;
+    assert_eq!(builtin_strings(&report)?, ["2:3:16"]);
+    let source =
+        "macro_rules! drop{($($t:tt)*)=>{\"kept\"}} fn f(){let _=concat!(drop!(missing!()));}";
+    assert_eq!(
+        builtin_strings(&analyze(source, &mut Files::default())?)?,
+        ["kept"]
+    );
+    Ok(())
+}
+
+#[test]
+fn eager_errors_report_the_failing_dependency_and_expansion_chain() -> Result<(), String> {
+    let source = "fn f(){let _=concat!(missing!());}";
+    let error = expansion::analyze(
+        InputFile {
+            identity: "lib.rs".into(),
+            path: "lib.rs".into(),
+            source: SourceFile::new(source.as_bytes().to_vec())?,
+        },
+        &mut Files::default(),
+        &Config::default(),
+    )
+    .err()
+    .ok_or("expected failure")?;
+    assert_eq!(
+        error.span.start as usize,
+        source.find("missing").ok_or("missing source marker")?
+    );
+    assert_eq!(error.expansions[0].macro_name, "concat");
+    let source = "compile_error!(concat!(\"stop \",stringify!(now)));";
+    let error = analyze(source, &mut Files::default())
+        .err()
+        .ok_or("expected compile_error")?;
+    assert!(error.contains("stop now"), "{error}");
+    for source in [
+        "compile_error!();",
+        "compile_error!(42);",
+        "compile_error!(\"a\",\"b\");",
+        "#![recursion_limit=\"8\"] macro_rules! m{()=>{concat!(m!())}} fn f(){let _=m!();}",
+    ] {
+        assert!(analyze(source, &mut Files::default()).is_err(), "{source}");
+    }
+    Ok(())
+}
+
+#[test]
+fn eager_arguments_borrow_opaque_facts_from_another_source_unit() -> Result<(), String> {
+    let mut files = Files::default();
+    files.files.insert("/crate/defs.rs".into(), "macro_rules! make{($e:expr)=>{#[macro_export] macro_rules! invoke{()=>{concat!($e,\"!\")}}}} make!(\"cross\");".into());
+    let source = "mod defs; fn f()-> &'static str{crate::invoke!()}";
+    let report = analyze(source, &mut files)?;
+    assert_eq!(builtin_strings(&report)?, ["cross!"]);
+    assert_eq!(report.captures.len(), 1);
+    assert_eq!(report.captures.token_count(), 1);
+    assert_eq!(report.package.units[0].source.original(), source);
+    rustgm::resolve::analyze_expanded(report).map_err(|e| e.to_string())?;
     Ok(())
 }

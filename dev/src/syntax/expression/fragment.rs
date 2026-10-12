@@ -339,3 +339,36 @@ pub fn parse_expansion_with_inputs<'s>(
     parser.ast.lookahead_high_water = parser.cursor.high_water;
     Ok(parser.ast)
 }
+
+/// Parse a builtin's comma-separated expression arguments once over classified tokens.
+/// The expansion-shaped root is an argument container, not a source-level expression.
+///
+/// # Errors
+/// Rejects malformed expressions, missing separators and invalid opaque inputs.
+pub fn parse_arguments<'s>(
+    source: &'s str,
+    tokens: &'s [Token],
+    inputs: &dyn crate::syntax::interpolation::Inputs,
+) -> Result<Ast<'s>, LexError> {
+    let mut parser = Parser::with_cursor(Cursor::from_tokens(source, tokens), true);
+    parser.inputs = inputs;
+    parser.has_opaque = !inputs.is_empty();
+    while parser.cursor.peek(0)?.is_some() {
+        let argument = parser.expr(0, NORMAL)?;
+        parser.scratch.push(argument);
+        if !parser.eat(P::Comma)? && parser.cursor.peek(0)?.is_some() {
+            return Err(parser.error("expected comma between builtin arguments")?);
+        }
+    }
+    let children = parser.list(0)?;
+    let start = tokens.first().map_or(0, |token| token.start);
+    parser.ast.root = parser.node(
+        start,
+        Kind::Expansion {
+            children,
+            tail: None,
+        },
+    )?;
+    parser.ast.lookahead_high_water = parser.cursor.high_water;
+    Ok(parser.ast)
+}
