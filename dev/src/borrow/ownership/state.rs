@@ -21,6 +21,9 @@ impl State {
         Ok(())
     }
     pub(super) fn fill(&mut self, path: &Path, initialized: bool) -> Result<(), &'static str> {
+        if path.start == path.end {
+            return Ok(());
+        }
         self.charge(((path.end - 1) / 64 - path.start / 64 + 1) as usize)?;
         range(path, |index, mask| {
             if initialized {
@@ -32,6 +35,9 @@ impl State {
         Ok(())
     }
     pub(super) fn initialized(&mut self, path: &Path) -> Result<bool, &'static str> {
+        if path.start == path.end {
+            return Ok(true);
+        }
         self.charge(((path.end - 1) / 64 - path.start / 64 + 1) as usize)?;
         let mut result = true;
         range(path, |index, mask| {
@@ -72,7 +78,7 @@ pub(super) fn verify(body: &Body, facts: &mut BodyFacts) -> Result<(), Error> {
     if body.blocks.is_empty() {
         return Err(error("body has no ownership entry"));
     }
-    let words = facts.paths.entries.len().div_ceil(64);
+    let words = (facts.paths.bits as usize).div_ceil(64);
     let size = words
         .checked_mul(body.blocks.len())
         .filter(|n| *n <= 4_000_000)

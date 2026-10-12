@@ -55,6 +55,126 @@ fn compile(source: &str, mode: &str) -> Result<Output, Box<dyn std::error::Error
 const CHECK: &str = "fn check(ok:bool){if !ok{let _=failure(0);}}fn failure(x:i32)->i32{1/x}\n";
 const EXECUTABLE: &[(&str, &str)] = &[
     (
+        "array-elements",
+        "fn main(){let [a,b,c]=[2u64,3,5];check(a+b+c==10);}",
+    ),
+    (
+        "array-rest",
+        "fn main(){let [a,..,b]=[2u8,3,5,7];check(a==2&&b==7);}",
+    ),
+    (
+        "array-rest-binding",
+        "fn main(){let [a,middle@..,b]=[2u64,3,5,7];check(a==2&&middle[0]==3&&middle[1]==5&&b==7);}",
+    ),
+    (
+        "array-prefix",
+        "fn main(){let [prefix@..,z]=[2u8,3,5];check(prefix[0]==2&&prefix[1]==3&&z==5);}",
+    ),
+    (
+        "array-suffix",
+        "fn main(){let [a,tail@..]=[2u8,3,5];check(a==2&&tail[0]==3&&tail[1]==5);}",
+    ),
+    (
+        "array-parameter",
+        "fn f([a,tail@..]:[u64;3])->u64{a+tail[0]*2+tail[1]*3}fn main(){check(f([2,3,5])==23);}",
+    ),
+    (
+        "array-return-rest",
+        "fn f([_,tail@..]:[u64;3])->[u64;2]{tail}fn main(){let a=f([2,3,5]);check(a[0]==3&&a[1]==5);}",
+    ),
+    (
+        "array-uninitialized-bindings",
+        "fn main(){let [a,mut b]:[u8;2];a=3;b=7;b+=2;check(a==3&&b==9);}",
+    ),
+    (
+        "array-disjoint",
+        "struct N(u8);fn main(){let xs=[N(2),N(3)];let[a,_]=xs;let[_,b]=xs;check(a.0==2&&b.0==3);}",
+    ),
+    (
+        "array-disjoint-rest",
+        "struct N(u8);fn main(){let xs=[N(2),N(3),N(5)];let[a,..]=xs;let[_,tail@..]=xs;check(a.0==2&&tail[0].0==3&&tail[1].0==5);}",
+    ),
+    (
+        "array-disjoint-prefix",
+        "struct N(u8);fn main(){let xs=[N(2),N(3),N(5)];let[_,tail@..]=xs;let[a,..]=xs;check(a.0==2&&tail[0].0==3&&tail[1].0==5);}",
+    ),
+    (
+        "array-disjoint-middle",
+        "struct N(u8);fn main(){let xs=[N(2),N(3),N(5),N(7)];let[a,..,b]=xs;let[_,middle@..,_]=xs;check(a.0==2&&middle[0].0==3&&middle[1].0==5&&b.0==7);}",
+    ),
+    (
+        "array-move-rest-and-ends",
+        "struct N(u8);fn main(){let xs=[N(2),N(3),N(5),N(7)];let[a,middle@..,b]=xs;check(a.0==2&&middle[0].0==3&&middle[1].0==5&&b.0==7);}",
+    ),
+    (
+        "array-disjoint-subfields",
+        "struct N(u8);struct S{a:N,b:N}fn main(){let xs=[S{a:N(2),b:N(3)}];let[S{a,..}]=xs;let[S{b,..}]=xs;check(a.0==2&&b.0==3);}",
+    ),
+    (
+        "array-copy-subfields",
+        "struct N(u8);fn main(){let xs=[N(2),N(3)];let[N(a),_]=xs;let ys=xs;check(a==2&&ys[1].0==3);}",
+    ),
+    (
+        "array-at-copy-fields",
+        "struct N(u8);fn main(){let xs=[N(2),N(3)];let whole@[N(a),N(b)]=xs;check(a==2&&b==3&&whole[0].0==2);}",
+    ),
+    (
+        "array-wildcard-uninitialized",
+        "struct N(u8);fn main(){let a:[N;2];let[_,_]=a;let b:[N;3];let[..]=b;let z:[N;0];let[]=z;check(true);}",
+    ),
+    (
+        "array-empty-rest",
+        "struct N(u8);fn main(){let xs=[N(2)];let[_,a@..]=xs;let[_,b@..]=xs;let ys=xs;let _=(a,b);check(ys[0].0==2);}",
+    ),
+    (
+        "array-empty-rest-after-move",
+        "struct N(u8);fn main(){let xs=[N(2)];let[a]=xs;let[_,tail@..]=xs;let _=tail;check(a.0==2);}",
+    ),
+    (
+        "array-zero-rest",
+        "struct N(u8);fn main(){let xs:[N;0]=[];let[a@..]=xs;let[b@..]=xs;let _=(a,b);let ys=xs;let _=ys;check(true);}",
+    ),
+    (
+        "array-nested",
+        "fn main(){let [[a,..,b],rest@..]=[[1u64,2,3],[4,5,6],[7,8,9]];check(a==1&&b==3&&rest[0][2]==6&&rest[1][0]==7);}",
+    ),
+    (
+        "array-nested-moves",
+        "struct N(u8);fn main(){let xs=([N(2),N(3)],N(5));let([a,_],_)=xs;let([_,b],c)=xs;check(a.0==2&&b.0==3&&c.0==5);}",
+    ),
+    (
+        "array-alternatives",
+        "fn main(){let ([x,y]|[y,x])=[2u8,3];check(x==2&&y==3);}",
+    ),
+    (
+        "array-rest-alternatives",
+        "fn main(){let ([a@..,_]|[_,a@..])=[2u8,3];check(a[0]==2);}",
+    ),
+    (
+        "array-place-effects",
+        "fn main(){let xs=[[1u8,2]];let mut n=0;let[a,b]=xs[{n+=1;0}];check(a==1&&b==2&&n==1);}",
+    ),
+    (
+        "array-macro",
+        "macro_rules! take{($p:pat,$e:expr)=>{let $p=$e;}}fn main(){take!([a,tail@..],[2u8,3,5]);check(a==2&&tail[1]==5);}",
+    ),
+    (
+        "array-reinitialize",
+        "struct N(u8);fn main(){let mut xs=[N(2),N(3)];let[a,_]=xs;xs=[N(5),N(7)];let[b,c]=xs;check(a.0==2&&b.0==5&&c.0==7);}",
+    ),
+    (
+        "array-conditional-disjoint",
+        "struct N(u8);fn f(c:bool)->u8{let xs=[N(2),N(3),N(5)];if c{let[a,..]=xs;let _=a;}let[_,tail@..]=xs;tail[0].0+tail[1].0}fn main(){check(f(true)==8&&f(false)==8);}",
+    ),
+    (
+        "array-loop-storage",
+        "struct N(u8);fn main(){let mut n=0u8;let mut sum=0;while n<3{let xs=[N(n),N(5)];let[a,b]=xs;sum+=a.0+b.0;n+=1;}check(sum==18);}",
+    ),
+    (
+        "array-huge-zst",
+        "fn main(){let xs=[();18446744073709551615];let[a,tail@..,b]=xs;let _=(a,tail,b);check(true);}",
+    ),
+    (
         "tuple",
         "fn main(){let (x,y)=(10u64,7u8);check(x==10&&y==7);}",
     ),
@@ -128,6 +248,30 @@ const EXECUTABLE: &[(&str, &str)] = &[
     ),
 ];
 const REJECTED: &[&str] = &[
+    "fn main(){let[a@b@..]=[1u8,2];let _=(a,b);}",
+    "struct N(u8);fn main(){let xs:[N;0]=[];let[a@b@..]=xs;let _=(a,b);}",
+    "struct N(u8);fn main(){let xs:[[N;0];1]=[[]];let[a@..]=xs[0];let ys=xs;let _=(a,ys);}",
+    "fn main(){let[a,b]=[1u8];}",
+    "fn main(){let[a,..,b]=[1u8];}",
+    "fn main(){let[a]=1u8;}",
+    "fn main(){let[a@..,..]=[1u8,2];}",
+    "fn main(){let[a@..,b@..]=[1u8,2];}",
+    "fn main(){let(a@..,)=(1u8,);}",
+    "fn main(){let([a@..,_]|[_,_,a@..])=[1u8,2,3];}",
+    "struct N(u8);fn main(){let xs=[N(1),N(2)];let[a,_]=xs;let _=xs[1].0;}",
+    "struct N(u8);fn main(){let xs=[N(1),N(2)];let[a,_]=xs;let[b,_]=xs;}",
+    "struct N(u8);fn main(){let xs=[N(1),N(2),N(3)];let[_,tail@..]=xs;let[_,b,_]=xs;}",
+    "struct N(u8);fn main(){let xs=[N(1),N(2),N(3)];let[a,..]=xs;let[all@..]=xs;}",
+    "struct N(u8);struct S{a:N,b:N}fn main(){let xs=[S{a:N(1),b:N(2)}];let[S{a,..}]=xs;let[rest@..]=xs;}",
+    "struct N(u8);fn main(){let xs:[N;2];let[a,_]=xs;}",
+    "struct N(u8);fn main(){let xs:[N;2];let[a@..]=xs;}",
+    "struct N(u8);fn main(){let xs:[N;0]=[];let a@[..]=xs;let b=xs;}",
+    "struct N(u8);fn main(){let mut xs=[N(1),N(2)];let[a,_]=xs;xs[0]=N(3);}",
+    "struct N(u8);fn main(){let xs=[[N(1),N(2)]];let[a,b]=xs[0];}",
+    "struct N(u8);fn main(){let xs=[N(1),N(2)];let all@[a,_]=xs;}",
+    "struct N(u8);fn main(){let xs=[N(1),N(2)];let[_,a@..]=xs;let[b@..,_]=xs;let all=xs;}",
+    "struct N(u8);fn f(c:bool){let xs=[N(1),N(2)];if c{let[a,_]=xs;}let[b,_]=xs;}fn main(){}",
+    "struct N(u8);fn f(c:bool){let xs=[N(1),N(2)];while c{let[_,tail@..]=xs;}}fn main(){}",
     "fn main(){let (x,y)=(1u8,);}",
     "fn main(){let (x,)=1u8;}",
     "fn main(){let (x,..,..)=(1u8,2u8);}",
@@ -168,8 +312,14 @@ fn product_patterns_select_sparse_fields_and_complete_their_types() -> Result<()
     };
     let fields = facts.patterns.fields(fields);
     assert_eq!(fields.len(), 2);
-    assert_eq!(fields[0].selection, sema::members::Selection::Tuple(0));
-    assert_eq!(fields[1].selection, sema::members::Selection::Tuple(2));
+    assert_eq!(
+        fields[0].selection,
+        sema::patterns::Projection::Field(sema::members::Selection::Tuple(0))
+    );
+    assert_eq!(
+        fields[1].selection,
+        sema::patterns::Projection::Field(sema::members::Selection::Tuple(2))
+    );
     let program = body::build(&report, &facts).map_err(|e| e.to_string())?;
     assert_eq!(program.bodies[0].projections.len(), 4);
     Ok(())
@@ -198,7 +348,7 @@ fn tuple_rest_tracks_only_selected_fields_and_alternatives_keep_shared_bindings(
     assert_eq!(facts.patterns.fields.len(), 2);
     assert_eq!(
         facts.patterns.fields[1].selection,
-        sema::members::Selection::Tuple(15_999)
+        sema::patterns::Projection::Field(sema::members::Selection::Tuple(15_999))
     );
     let program = body::build(&report, &facts).map_err(|e| e.to_string())?;
     assert_eq!(program.bodies[0].projections.len(), 2);
@@ -219,6 +369,72 @@ fn tuple_rest_tracks_only_selected_fields_and_alternatives_keep_shared_bindings(
     assert_eq!(bindings[0], bindings[3]);
     assert_eq!(bindings[1], bindings[2]);
     assert_eq!(std::mem::size_of::<sema::model::NodeFacts>(), 80);
+    Ok(())
+}
+#[test]
+fn array_patterns_keep_huge_rest_storage_sparse() -> Result<(), String> {
+    let (report, mut facts) = analyze("fn f([a,..,b]:[();18446744073709551615]){let _=(a,b);}")?;
+    assert_eq!(facts.patterns.nodes.len(), 3);
+    assert_eq!(facts.patterns.fields.len(), 2);
+    assert_eq!(
+        facts.patterns.fields[1].selection,
+        sema::patterns::Projection::Index(u64::MAX - 1)
+    );
+    let program = body::build(&report, &facts).map_err(|e| e.to_string())?;
+    let checked = rustgm::borrow::ownership::check(
+        &facts.types,
+        &facts.aggregates,
+        &facts.derives,
+        &mut facts.copies,
+        &program,
+    )
+    .map_err(|e| e.message.to_owned())?;
+    let paths = &checked.bodies[0].paths;
+    assert_eq!(paths.entries.len(), 5);
+    assert_eq!(paths.bits, 6);
+    Ok(())
+}
+#[test]
+fn array_subarray_move_ranges_cover_nested_fields_and_empty_ranges_are_empty() -> Result<(), String>
+{
+    use rustgm::borrow::ownership::{self, Component};
+    let (report, mut facts) = analyze(
+        "struct N(u8);struct S{a:N,b:N}fn f(xs:[S;3]){let[S{a,..},..]=xs;let[_,tail@..]=xs;let[_,_,_,empty@..]=xs;let _=(a,tail,empty);}",
+    )?;
+    let program = body::build(&report, &facts).map_err(|e| e.to_string())?;
+    let checked = ownership::check(
+        &facts.types,
+        &facts.aggregates,
+        &facts.derives,
+        &mut facts.copies,
+        &program,
+    )
+    .map_err(|e| e.message.to_owned())?;
+    let paths = &checked.bodies[0].paths;
+    let element = paths
+        .entries
+        .iter()
+        .find(|p| p.component == Some(Component::Index(0)))
+        .ok_or("missing element move path")?;
+    let rest = paths
+        .entries
+        .iter()
+        .find(|p| p.component == Some(Component::Subarray { start: 1, end: 3 }))
+        .ok_or("missing rest move path")?;
+    let empty = paths
+        .entries
+        .iter()
+        .find(|p| p.component == Some(Component::Subarray { start: 3, end: 3 }))
+        .ok_or("missing empty rest move path")?;
+    assert!(element.end <= rest.start);
+    assert_eq!(empty.start, empty.end);
+    assert!(
+        paths
+            .entries
+            .iter()
+            .any(|p| p.parent.is_some() && p.start > element.start && p.end <= element.end)
+    );
+    assert!(paths.bits < 20);
     Ok(())
 }
 #[test]
@@ -273,6 +489,71 @@ fn owned_product_programs_emit_atomic_deterministic_lowir() -> Result<(), Box<dy
         );
         assert!(executed.stdout.is_empty() && executed.stderr.is_empty());
     }
+    Ok(())
+}
+
+fn range_pattern(length: usize, start: usize, end: usize, name: &str) -> String {
+    let mut parts = vec!["_".to_owned(); start];
+    parts.push(format!("{name}@.."));
+    parts.extend(std::iter::repeat_n("_".to_owned(), length - end));
+    format!("[{}]", parts.join(","))
+}
+#[test]
+fn every_pair_of_small_array_ranges_matches_rustc_move_rules()
+-> Result<(), Box<dyn std::error::Error>> {
+    let folder = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../obj/pa13-work/array-range-matrix")
+        .join(std::process::id().to_string());
+    std::fs::create_dir_all(&folder)?;
+    let mut count = 0;
+    for length in 0..=4 {
+        let ranges: Vec<_> = (0..=length)
+            .flat_map(|start| (start..=length).map(move |end| (start, end)))
+            .collect();
+        for (&(a, b), &(c, d)) in ranges
+            .iter()
+            .flat_map(|first| ranges.iter().map(move |second| (first, second)))
+        {
+            let allowed = a == b || c == d || b <= c || d <= a;
+            let source = format!(
+                "struct N(u8);fn f(xs:[N;{length}]){{let {}=xs;let {}=xs;}}fn main(){{}}",
+                range_pattern(length, a, b, "first"),
+                range_pattern(length, c, d, "second")
+            );
+            let (report, mut facts) = analyze(&source)?;
+            let program = body::build(&report, &facts).map_err(|e| e.to_string())?;
+            let actual = rustgm::borrow::ownership::check(
+                &facts.types,
+                &facts.aggregates,
+                &facts.derives,
+                &mut facts.copies,
+                &program,
+            );
+            assert_eq!(actual.is_ok(), allowed, "{source}");
+            let path = folder.join(format!("{length}-{a}-{b}-{c}-{d}.rs"));
+            std::fs::write(&path, &source)?;
+            let rustc = Command::new("rustc")
+                .args([
+                    "--edition=2024",
+                    "--crate-name",
+                    "array_ranges",
+                    "--emit=metadata",
+                ])
+                .arg(&path)
+                .arg("-o")
+                .arg(folder.join("metadata"))
+                .output()?;
+            std::fs::write(path.with_extension("stderr"), &rustc.stderr)?;
+            assert_eq!(
+                rustc.status.code(),
+                Some(i32::from(!allowed)),
+                "{source}: {}",
+                String::from_utf8_lossy(&rustc.stderr)
+            );
+            count += 1;
+        }
+    }
+    assert_eq!(count, 371);
     Ok(())
 }
 #[test]

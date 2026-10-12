@@ -85,6 +85,8 @@ fn contents(body: &Body, out: &mut impl Write) -> io::Result<()> {
             ProjectionKind::Index { index, length } => {
                 write!(out, " index=v{} length={length}", index.0)?;
             }
+            ProjectionKind::ConstantIndex(index) => write!(out, " constant-index={index}")?,
+            ProjectionKind::Subarray { start, end } => write!(out, " subarray={start}..{end}")?,
         }
         writeln!(out)?;
     }

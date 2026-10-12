@@ -196,9 +196,53 @@ impl Lower<'_, '_> {
                     )?)
                 }
             }
+            ProjectionKind::ConstantIndex(index) => {
+                self.pattern_offset(base, &layout, &leaf, index, None)?
+            }
+            ProjectionKind::Subarray { start, end } => {
+                self.pattern_offset(base, &layout, &leaf, start, Some(end))?
+            }
         };
         self.projections[id.0 as usize] = Projected::Ready(address);
         Ok(())
+    }
+    fn pattern_offset(
+        &mut self,
+        base: Option<Address>,
+        layout: &Layout,
+        leaf: &Layout,
+        start: u64,
+        end: Option<u64>,
+    ) -> Result<Option<Address>, &'static str> {
+        let Shape::Array { stride, length, .. } = layout.shape else {
+            return Err("pattern projection base has no array layout");
+        };
+        if let Some(end) = end {
+            if start > end || end > length {
+                return Err("pattern subarray exceeds its checked bound");
+            }
+            let Shape::Array {
+                length: actual,
+                stride: leaf_stride,
+                ..
+            } = leaf.shape
+            else {
+                return Err("pattern subarray has no array layout");
+            };
+            if actual != end - start || leaf_stride != stride {
+                return Err("pattern subarray layout differs from selection");
+            }
+        } else if start >= length {
+            return Err("pattern element exceeds its checked bound");
+        }
+        if leaf.size == 0 {
+            return Ok(None);
+        }
+        let offset = start
+            .checked_mul(stride)
+            .ok_or("pattern array offset overflow")?;
+        self.offset(base.ok_or("pattern array has no storage")?, offset)
+            .map(Some)
     }
     pub(super) fn aggregate(
         &mut self,

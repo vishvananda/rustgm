@@ -120,13 +120,103 @@ The 54 observations and full-output hashes are retained in
 capability; the previous compiler rejects that source, so it is not an A/B
 performance comparison. No RustGM build or test ran during either measurement.
 
-The remaining sequence is:
+## Fixed-array patterns
 
-1. Extend the selected owned-product facts to fixed-array patterns and retain
-   binding modes and reference adjustments. Bindings in different alternatives
-   must agree on their solved type and effective binding mode. Array moves need
-   typed constant-index/subarray projections with correct overlap facts, rather
-   than weakening PA12's ordinary indexed-place restrictions. Do not infer those
+Owned fixed-array patterns now use the same selected pattern arena. Their
+constant indices and half-open subarray ranges are distinct typed projections;
+rest bindings retain their solved fixed-array type. Array lengths and ordinary
+binding constraints are solved once during body checking. Both parameters and
+local bindings consume these facts, including nested arrays, irrefutable
+alternatives, macro fragments, `@`, declarations without an initializer and
+diverging source places. Bare rest and wildcard patterns do not read values.
+Only a direct `name @ ..` binding forms a rest element; nested `a @ b @ ..`
+bindings are rejected, as pinned rustc requires.
+Borrowed and dynamically sized slice patterns remain required work below.
+
+Owned-value checking partitions each affected array only at selected endpoints.
+It sorts and deduplicates those boundaries once, visits nested element/field
+paths iteratively and gives each unmentioned interval one state bit. Subarrays
+alias the resulting contiguous ranges of bits; they do not receive independent
+initialization state. This makes overlap checks include partially moved nested
+fields. Storage is proportional to selected paths and endpoints, with
+O(k log k) boundary preparation rather than storage proportional to array length.
+Preparation has an explicit one-million-boundary budget, and the existing
+word-charged ownership fixed point remains bounded. Bodies without these array
+projections keep their earlier numbering path. The numbering and partition
+scratch is discarded when each body's paths have been completed.
+
+Disjoint elements or ranges can move in either order. A whole-array read sees
+all tracked moves, while ordinary indexing still requires the containing array
+to be initialized and never permits moving a non-Copy value. Empty subarrays
+read no initialization bits and do not move their source. That does not make
+ordinary indexing or static storage eligible for a non-Copy move. A whole-array
+binding to `[N; 0]` also remains a move, unlike an empty rest projection. These
+distinctions follow pinned-rustc controls rather than physical storage size.
+
+LowIR consumes checked projections and completed layout strides, validates
+constant bounds and offsets, and preserves existing alignment/copy rules.
+The CPPGM backend and its pinned contract are unchanged. No new field lookup,
+source parsing or inference occurs during lowering.
+
+The maintainer tests now include 48 owned-pattern executable vectors (30 new
+array cases) and 39 independent rejection controls. All 48 execute correctly
+through CPPGM and rustc. An exhaustive matrix of the 371 pairs of subarray
+ranges for array lengths zero through four agrees with rustc on every move
+decision. Separate invariants check nested-field overlap and empty ranges.
+A pattern selecting two elements of `[(); 18446744073709551615]` retains three
+pattern nodes, two projections, five move paths and six move-state bits.
+
+All 1,669 active course cases, 255 Rust tests in debug and release, strict
+Clippy/rustfmt, the 167-file audit, harness and pinned-source checks pass.
+The 254-test full runs and the subsequent eight-test pattern runs together
+cover the final 255-test set, including the added range matrix. Existing text
+oracles are unchanged and source receipts are refreshed. PA11/PA12 native
+qualification, all independent rustc checks and layout probes also pass.
+The frozen candidate is `obj/pa13-work/array-candidate`, SHA-256
+`a487e66d40ba8ef40fd20270adcdcbad46d1d6cea05bbf89a9a6093ee303a469`.
+Logs are `obj/pa13-work/array-*.log`; complete native evidence is
+`obj/pa13-work/array-native-1791829953497318351/evidence.json`.
+PA13 still has no partial acceptance manifest and remains planned.
+
+The frozen A/B runs use CPU 10, A/A calibration and three ABBA blocks, retaining
+all 54 observations per workload and checking complete LowIR/count equality.
+Ordinary 4k/16k/64k-procedure baseline/candidate medians are
+219.57/210.92, 845.96/852.84 and 3382.64/3398.09 ms, with largest-scale RSS
+701,360/700,788 KiB. Records are
+`obj/perf/1791830101617636316/samples.json`.
+Existing owned-product 1k/4k/16k-procedure medians are
+82.14/83.98, 386.17/372.68 and 2113.76/2042.75 ms, with largest-scale RSS
+319,160/322,372 KiB. Records are
+`obj/perf/1791830194033344073/samples.json`. The largest product input uses
+approximately 1% additional peak memory. Elapsed observations are noisy and
+do not establish a speedup or a reliable compile-time regression.
+
+The new `--stage lowir --array-pattern-input` workload demands 1k/4k/16k
+procedures that move the ends and middle of non-Copy arrays separately, then
+destructure the moved middle. Candidate A/A medians are 152.87/422.55/1618.02 ms,
+with peak RSS 27,596/97,420/382,888 KiB. Its 54 observations and full-output
+hashes are retained in `obj/perf/1791830242563101701/samples.json`.
+The baseline cannot compile this capability, so this is a scaling measurement
+rather than an A/B comparison. Identical-binary block ratios vary from 0.646
+to 1.178 at the middle size: this run cannot support a precise elapsed scaling
+claim. The sparse-storage invariant is independently tested. No RustGM build
+or test ran during these three measurement runs.
+
+The earlier draft binary and all its observations are retained as
+`obj/pa13-work/array-draft-candidate` and
+`obj/perf/1791829512362309356/samples.json`,
+`obj/perf/1791829607539190640/samples.json`,
+`obj/perf/1791829650850704937/samples.json`. Final edge probes found the nested
+rest-binding rejection gap, after which the candidate, independent checks and
+measurements above were rebuilt. None of the draft observations were discarded.
+
+## Remaining implementation sequence
+
+1. Extend the selected owned-product facts with binding modes and reference
+   adjustments, including borrowed arrays and slices. Bindings in different
+   alternatives must agree on their solved type and effective binding mode.
+   Retain region/loan obligations for PA15/PA16; an inspection result must not
+   authorize unchecked reference erasure during execution. Do not infer those
    facts again during body construction.
 2. Type match scrutinees and arms, let conditions and let-else. Validate literal,
    range, constructor, rest, reference and slice patterns, including privacy,

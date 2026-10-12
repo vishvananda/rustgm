@@ -1,5 +1,5 @@
 //! Deterministic inspection of the owned-value proof, never semantic transport.
-use super::{Analysis, Root, Use};
+use super::{Analysis, Component, Root, Use};
 use crate::body::ir::Selection;
 use std::io::{self, Write};
 
@@ -23,9 +23,17 @@ pub fn write(checked: &Analysis<'_>, out: &mut impl Write) -> io::Result<()> {
             if let Some(parent) = path.parent {
                 write!(out, " parent=m{}", parent.0)?;
             }
-            match path.field {
-                Some(Selection::Tuple(index)) => write!(out, " tuple-field={index}")?,
-                Some(Selection::Nominal(id)) => write!(out, " nominal-field={}", id.0)?,
+            match path.component {
+                Some(Component::Field(Selection::Tuple(index))) => {
+                    write!(out, " tuple-field={index}")?;
+                }
+                Some(Component::Field(Selection::Nominal(id))) => {
+                    write!(out, " nominal-field={}", id.0)?;
+                }
+                Some(Component::Index(index)) => write!(out, " array-index={index}")?,
+                Some(Component::Subarray { start, end }) => {
+                    write!(out, " subarray={start}..{end}")?;
+                }
                 None => {}
             }
             writeln!(out, " subtree={}..{}", path.start, path.end)?;

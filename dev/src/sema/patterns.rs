@@ -20,8 +20,14 @@ pub struct Alternatives {
 }
 #[derive(Clone, Copy, Debug)]
 pub struct Field {
-    pub selection: Selection,
+    pub selection: Projection,
     pub pattern: PatternId,
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Projection {
+    Field(Selection),
+    Index(u64),
+    Subarray { start: u64, end: u64 },
 }
 #[derive(Clone, Copy, Debug)]
 pub enum Kind {

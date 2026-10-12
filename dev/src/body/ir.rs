@@ -34,7 +34,17 @@ pub enum Place {
 #[derive(Clone, Copy, Debug)]
 pub enum ProjectionKind {
     Field(crate::sema::members::Selection),
-    Index { index: ValueId, length: u64 },
+    Index {
+        index: ValueId,
+        length: u64,
+    },
+    /// Pattern selection with a statically checked bound; permits owned element moves.
+    ConstantIndex(u64),
+    /// A fixed-array pattern's half-open range, with independently tracked overlap.
+    Subarray {
+        start: u64,
+        end: u64,
+    },
 }
 pub struct Projection {
     pub base: Place,

@@ -1,11 +1,11 @@
 //! Pattern bindings read selected places; wildcard fields never load their source.
 use super::{Builder, Error, LocalKind, NodeId, Place, Rvalue};
 use crate::{
-    body::ir::{ProjectionKind, Selection},
-    sema::patterns::{Kind, PatternId},
+    body::ir::ProjectionKind,
+    sema::patterns::{Kind, PatternId, Projection},
 };
 pub(super) enum Work {
-    Enter(PatternId, Option<Place>, Option<Selection>),
+    Enter(PatternId, Option<Place>, Option<Projection>),
     Capture(PatternId, Option<Place>),
 }
 impl Builder<'_> {
@@ -29,7 +29,7 @@ impl Builder<'_> {
         &mut self,
         id: PatternId,
         base: Option<Place>,
-        selection: Option<Selection>,
+        selection: Option<Projection>,
     ) -> Result<(), Error> {
         let pattern = &self.facts.patterns.nodes[id.0 as usize];
         let node = pattern.source.node;
@@ -37,7 +37,12 @@ impl Builder<'_> {
             .ty
             .ok_or_else(|| self.error(node, "unsolved pattern type"))?;
         let place = if let (Some(base), Some(selection)) = (base, selection) {
-            Some(self.project(node, ty, base, ProjectionKind::Field(selection))?)
+            let projection = match selection {
+                Projection::Field(field) => ProjectionKind::Field(field),
+                Projection::Index(index) => ProjectionKind::ConstantIndex(index),
+                Projection::Subarray { start, end } => ProjectionKind::Subarray { start, end },
+            };
+            Some(self.project(node, ty, base, projection)?)
         } else {
             base
         };

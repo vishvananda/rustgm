@@ -3,7 +3,7 @@ use super::{Checker, Constructor, Domain, Error, Kind, List, NodeId, TermId};
 use crate::{
     sema::{
         members::{FieldId, Selection, VariantId},
-        patterns::{Alternatives, Field, Fields, Kind as PatternKind, PatternId},
+        patterns::{Alternatives, Field, Fields, Kind as PatternKind, PatternId, Projection},
     },
     syntax::{ast::PatternFlavor, item::Shape},
 };
@@ -26,7 +26,15 @@ impl Checker<'_> {
                 .node(self.key(node))
                 .is_some_and(|fact| fact.binding.is_some())
     }
-    fn reserve_pattern(&mut self, mut node: NodeId, term: TermId) -> Result<PatternId, Error> {
+    fn reserve_pattern(&mut self, node: NodeId, term: TermId) -> Result<PatternId, Error> {
+        self.schedule_pattern(node, term, false)
+    }
+    fn schedule_pattern(
+        &mut self,
+        mut node: NodeId,
+        term: TermId,
+        rest: bool,
+    ) -> Result<PatternId, Error> {
         while let Kind::Group(inner) | Kind::Attributed { value: inner, .. } = self.kind(node) {
             self.save(node, term);
             node = inner;
@@ -36,7 +44,7 @@ impl Checker<'_> {
             .patterns
             .reserve(self.key(node))
             .map_err(|e| self.error(node, e))?;
-        self.pattern_work.push((node, term, id));
+        self.pattern_work.push((node, term, id, rest));
         self.pattern_types.push((id, term));
         Ok(id)
     }
@@ -44,22 +52,28 @@ impl Checker<'_> {
         let id = self.reserve_pattern(root, term)?;
         self.facts.patterns.roots.insert(self.key(root), id);
         let mut steps = 0;
-        while let Some((node, term, id)) = self.pattern_work.pop() {
+        while let Some((node, term, id, rest)) = self.pattern_work.pop() {
             steps += 1;
             if steps > 1_000_000 {
                 return Err(self.error(root, "pattern type work budget exceeded"));
             }
             self.save(node, term);
             let mark = self.pattern_work.len();
-            let kind = self.pattern_kind(node, term)?;
+            let kind = self.pattern_kind(node, term, rest)?;
             self.pattern_work[mark..].reverse();
             self.facts.patterns.nodes[id.0 as usize].kind = kind;
         }
         Ok(())
     }
-    fn pattern_kind(&mut self, node: NodeId, term: TermId) -> Result<PatternKind, Error> {
+    fn pattern_kind(
+        &mut self,
+        node: NodeId,
+        term: TermId,
+        rest: bool,
+    ) -> Result<PatternKind, Error> {
         match self.kind(node) {
             Kind::Wildcard => Ok(PatternKind::Wildcard),
+            Kind::RestPattern if rest => Ok(PatternKind::Wildcard),
             Kind::Binding {
                 by_ref: false,
                 mutable,
@@ -82,7 +96,7 @@ impl Checker<'_> {
                     self.bindings.push(definition);
                 }
                 let subpattern = subpattern
-                    .map(|child| self.reserve_pattern(child, term))
+                    .map(|child| self.schedule_pattern(child, term, rest))
                     .transpose()?;
                 Ok(PatternKind::Binding {
                     definition,
@@ -93,6 +107,11 @@ impl Checker<'_> {
             Kind::Binding { by_ref: true, .. } | Kind::ReferencePattern { .. } => {
                 Err(self.error(node, "reference patterns require pattern borrow semantics"))
             }
+            Kind::Pattern {
+                flavor: PatternFlavor::Slice,
+                elements,
+                ..
+            } => self.array_pattern(node, term, elements),
             Kind::Pattern {
                 flavor: PatternFlavor::Tuple,
                 elements,
@@ -255,10 +274,10 @@ impl Checker<'_> {
                 )
             };
             let pattern = self.reserve_pattern(child, child_term)?;
-            self.facts
-                .patterns
-                .fields
-                .push(Field { selection, pattern });
+            self.facts.patterns.fields.push(Field {
+                selection: Projection::Field(selection),
+                pattern,
+            });
         }
         let end = self.pattern_index(node, self.facts.patterns.fields.len())?;
         Ok(PatternKind::Product {
@@ -311,7 +330,7 @@ impl Checker<'_> {
             self.save(field_node, child_term);
             let pattern = self.reserve_pattern(pattern, child_term)?;
             self.facts.patterns.fields.push(Field {
-                selection: Selection::Nominal(field),
+                selection: Projection::Field(Selection::Nominal(field)),
                 pattern,
             });
         }
@@ -321,6 +340,91 @@ impl Checker<'_> {
         let end = self.pattern_index(node, self.facts.patterns.fields.len())?;
         Ok(PatternKind::Product {
             variant: Some(variant_id),
+            fields: Fields { start, end },
+        })
+    }
+    fn slice_rest(&self, node: NodeId) -> bool {
+        match self.kind(node) {
+            Kind::RestPattern => true,
+            Kind::Binding {
+                subpattern: Some(child),
+                ..
+            } => {
+                matches!(self.kind(child), Kind::RestPattern)
+            }
+            _ => false,
+        }
+    }
+    fn array_pattern(
+        &mut self,
+        node: NodeId,
+        term: TermId,
+        elements: List,
+    ) -> Result<PatternKind, Error> {
+        let unit = self.report.package.unit(self.file);
+        let elements = unit.configured.ast.list(elements);
+        let mut rest = None;
+        for (index, &child) in elements.iter().enumerate() {
+            if self.slice_rest(child) && rest.replace(index).is_some() {
+                return Err(self.error(child, "multiple rest patterns in one array"));
+            }
+        }
+        let explicit = u64::try_from(elements.len() - usize::from(rest.is_some()))
+            .map_err(|_| self.error(node, "array pattern arity overflow"))?;
+        if self.head(node, term)?.is_none() && rest.is_none() {
+            let element = self.variable(node, Domain::Any)?;
+            let array = self
+                .infer
+                .construct(Constructor::Array(explicit), &[element])
+                .map_err(|e| self.error(node, e))?;
+            self.equate(node, term, array)?;
+        }
+        let Some(Constructor::Array(length)) = self.head(node, term)? else {
+            return Err(self.error(node, "array pattern requires a known fixed-array type"));
+        };
+        if explicit > length || (rest.is_none() && explicit != length) {
+            return Err(self.error(node, "array pattern length disagrees with its type"));
+        }
+        let element = self.child(node, term, 0)?;
+        let start = self.pattern_index(node, self.facts.patterns.fields.len())?;
+        for (index, &child) in elements.iter().enumerate() {
+            let ordinal = u64::try_from(index)
+                .map_err(|_| self.error(child, "array pattern index overflow"))?;
+            let is_rest = rest == Some(index);
+            let (selection, child_term) = if is_rest {
+                if matches!(self.kind(child), Kind::RestPattern) {
+                    self.save(child, term);
+                    continue;
+                }
+                let remaining = length - explicit;
+                let ty = self
+                    .infer
+                    .construct(Constructor::Array(remaining), &[element])
+                    .map_err(|e| self.error(child, e))?;
+                (
+                    Projection::Subarray {
+                        start: ordinal,
+                        end: ordinal + remaining,
+                    },
+                    ty,
+                )
+            } else {
+                let index = if rest.is_some_and(|rest| index > rest) {
+                    length - explicit + ordinal - 1
+                } else {
+                    ordinal
+                };
+                (Projection::Index(index), element)
+            };
+            let pattern = self.schedule_pattern(child, child_term, is_rest)?;
+            self.facts
+                .patterns
+                .fields
+                .push(Field { selection, pattern });
+        }
+        let end = self.pattern_index(node, self.facts.patterns.fields.len())?;
+        Ok(PatternKind::Product {
+            variant: None,
             fields: Fields { start, end },
         })
     }

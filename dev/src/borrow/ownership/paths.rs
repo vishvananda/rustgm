@@ -1,7 +1,8 @@
-//! Sparse field paths; array indexing keeps its containing array indivisible.
+//! Sparse move paths; ordinary indexing keeps its containing array indivisible.
+mod arrays;
 use crate::{
     body::ir::{Body, LocalId, Place, ProjectionKind, Selection, ValueId},
-    types::TypeId,
+    types::{Kind, Store, TypeId},
 };
 use std::collections::HashMap;
 
@@ -12,10 +13,16 @@ pub enum Root {
     Local(LocalId),
     Temporary(ValueId),
 }
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub enum Component {
+    Field(Selection),
+    Index(u64),
+    Subarray { start: u64, end: u64 },
+}
 pub struct Path {
     pub root: Root,
     pub parent: Option<PathId>,
-    pub field: Option<Selection>,
+    pub component: Option<Component>,
     pub ty: TypeId,
     /// DFS interval includes this path's shallow structure and all tracked fields.
     /// The shallow bit also represents unmentioned fields: field writes require
@@ -29,16 +36,20 @@ pub struct Path {
 pub(super) struct PlaceInfo {
     pub path: Option<PathId>,
     pub indexed: bool,
+    /// An empty subarray is not a read or move of its containing array.
+    pub empty: bool,
 }
 pub struct Paths {
     pub entries: Vec<Path>,
+    pub bits: u32,
     pub(super) projections: Vec<PlaceInfo>,
     pub(super) temporaries: HashMap<ValueId, PathId>,
 }
 impl Paths {
-    pub(super) fn build(body: &Body) -> Result<Self, &'static str> {
+    pub(super) fn build(body: &Body, types: &Store) -> Result<Self, &'static str> {
         let mut paths = Self {
             entries: Vec::new(),
+            bits: 0,
             projections: Vec::new(),
             temporaries: HashMap::new(),
         };
@@ -47,6 +58,7 @@ impl Paths {
             paths.insert(Root::Local(id), None, None, local.ty)?;
         }
         let mut fields = HashMap::new();
+        let mut arrays = arrays::Arrays::default();
         for projection in &body.projections {
             if let Place::Temporary(value) = projection.base
                 && !paths.temporaries.contains_key(&value)
@@ -60,49 +72,98 @@ impl Paths {
                 paths.temporaries.insert(value, id);
             }
             let mut info = paths.place(projection.base)?;
-            match projection.kind {
-                ProjectionKind::Field(field) if !info.indexed => {
-                    if let Some(parent) = info.path {
-                        let id = if let Some(id) = fields.get(&(parent, field)) {
-                            *id
-                        } else {
-                            let root = paths.entries[parent.0 as usize].root;
-                            let id =
-                                paths.insert(root, Some(parent), Some(field), projection.ty)?;
-                            fields.insert((parent, field), id);
-                            id
-                        };
-                        info.path = Some(id);
-                    }
+            let component = match projection.kind {
+                ProjectionKind::Field(field) => Some(Component::Field(field)),
+                ProjectionKind::ConstantIndex(index) => Some(Component::Index(index)),
+                ProjectionKind::Subarray { start, end } => {
+                    info.empty = start == end;
+                    Some(Component::Subarray { start, end })
                 }
-                ProjectionKind::Index { .. } => info.indexed = true,
-                ProjectionKind::Field(_) => {}
+                ProjectionKind::Index { .. } => {
+                    info.indexed = true;
+                    None
+                }
+            };
+            if !info.indexed
+                && let (Some(parent), Some(component)) = (info.path, component)
+            {
+                let (parent, component) = paths.normalize(parent, component)?;
+                let key = (parent, component);
+                let id = if let Some(id) = fields.get(&key) {
+                    *id
+                } else {
+                    let root = paths.entries[parent.0 as usize].root;
+                    let id = paths.insert(root, Some(parent), Some(component), projection.ty)?;
+                    if !matches!(component, Component::Field(_)) {
+                        let Some(Kind::Array { length, .. }) =
+                            types.kind(paths.entries[parent.0 as usize].ty)
+                        else {
+                            return Err("pattern move path requires a fixed array");
+                        };
+                        arrays.add(parent, id, component, length)?;
+                    }
+                    fields.insert(key, id);
+                    id
+                };
+                info.path = Some(id);
             }
             paths.projections.push(info);
         }
-        paths.number()?;
+        if arrays.is_empty() {
+            paths.number()?;
+        } else {
+            arrays.number(&mut paths)?;
+        }
         Ok(paths)
+    }
+    fn normalize(
+        &self,
+        parent: PathId,
+        component: Component,
+    ) -> Result<(PathId, Component), &'static str> {
+        let path = &self.entries[parent.0 as usize];
+        let Some(Component::Subarray { start, end }) = path.component else {
+            return Ok((parent, component));
+        };
+        let component = match component {
+            Component::Index(index) if index < end - start => Component::Index(start + index),
+            Component::Subarray {
+                start: from,
+                end: to,
+            } if from <= to && to <= end - start => Component::Subarray {
+                start: start + from,
+                end: start + to,
+            },
+            _ => return Err("invalid projection through pattern subarray"),
+        };
+        Ok((
+            path.parent.ok_or("subarray has no containing move path")?,
+            component,
+        ))
     }
     fn insert(
         &mut self,
         root: Root,
         parent: Option<PathId>,
-        field: Option<Selection>,
+        component: Option<Component>,
         ty: TypeId,
     ) -> Result<PathId, &'static str> {
         let id = PathId(u32::try_from(self.entries.len()).map_err(|_| "too many move paths")?);
-        let sibling = parent.and_then(|p| self.entries[p.0 as usize].child);
+        // Subarrays alias ranges of the array's elements; they do not add an
+        // independent subtree or shallow bit to the physical ownership state.
+        let tree_parent = parent.filter(|_| !matches!(component, Some(Component::Subarray { .. })));
+        let sibling = tree_parent.and_then(|p| self.entries[p.0 as usize].child);
         self.entries.push(Path {
             root,
             parent,
-            field,
+            component,
             ty,
             start: 0,
             end: 0,
             child: None,
             sibling,
         });
-        if let Some(parent) = parent {
+        if let Some(parent) = tree_parent {
             self.entries[parent.0 as usize].child = Some(id);
         }
         Ok(id)
@@ -137,6 +198,7 @@ impl Paths {
                 }
             }
         }
+        self.bits = next;
         Ok(())
     }
     pub(super) fn place(&self, place: Place) -> Result<PlaceInfo, &'static str> {
@@ -160,6 +222,7 @@ impl Paths {
         Ok(PlaceInfo {
             path,
             indexed: false,
+            empty: false,
         })
     }
 }

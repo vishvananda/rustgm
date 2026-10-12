@@ -14,7 +14,7 @@ use crate::{
         copy::{Copies, Properties},
     },
 };
-pub use paths::{Path, PathId, Paths, Root};
+pub use paths::{Component, Path, PathId, Paths, Root};
 use state::State;
 use std::{collections::HashMap, hash::BuildHasher};
 
@@ -129,7 +129,7 @@ fn visit<'a, S: BuildHasher>(
             }
         }
         let mut facts = BodyFacts {
-            paths: Paths::build(body).map_err(error)?,
+            paths: Paths::build(body, types).map_err(error)?,
             uses,
             reachable: Vec::new(),
         };
@@ -154,6 +154,7 @@ impl BodyFacts {
                 {
                     let info = self.paths.place(place)?;
                     if !info.indexed
+                        && !info.empty
                         && let Some(path) = info.path
                     {
                         state.fill(&self.paths.entries[path.0 as usize], false)?;
@@ -184,15 +185,19 @@ impl BodyFacts {
             Action::Evaluate(id) => {
                 if let Rvalue::Read(place) = body.values[id.0 as usize].kind {
                     let info = self.paths.place(place)?;
-                    if let Some(path) = info.path {
-                        if !state.initialized(&self.paths.entries[path.0 as usize])? {
-                            return Err(if self.uses[id.0 as usize] == Use::Copy {
-                                "local may be uninitialized at this read"
-                            } else {
-                                "local may be uninitialized or moved at this read"
-                            });
-                        }
-                    } else if self.uses[id.0 as usize] == Use::Move {
+                    if !info.empty
+                        && let Some(path) = info.path
+                        && !state.initialized(&self.paths.entries[path.0 as usize])?
+                    {
+                        return Err(if self.uses[id.0 as usize] == Use::Copy {
+                            "local may be uninitialized at this read"
+                        } else {
+                            "local may be uninitialized or moved at this read"
+                        });
+                    }
+                    // Eligibility to move through a place still applies to an
+                    // empty subarray, even though it reads no initialization bits.
+                    if info.path.is_none() && self.uses[id.0 as usize] == Use::Move {
                         return Err("cannot move a non-Copy value out of static storage");
                     }
                     if info.indexed && self.uses[id.0 as usize] == Use::Move {

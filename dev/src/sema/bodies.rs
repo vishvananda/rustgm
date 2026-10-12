@@ -90,7 +90,7 @@ pub(super) struct Checker<'a> {
     locals: Vec<Option<TermId>>,
     touched: Vec<NodeId>,
     bindings: Vec<DefId>,
-    pattern_work: Vec<(NodeId, TermId, super::patterns::PatternId)>,
+    pattern_work: Vec<(NodeId, TermId, super::patterns::PatternId, bool)>,
     pattern_types: Vec<(super::patterns::PatternId, TermId)>,
     work: Vec<Work>,
     children: Vec<NodeId>,
