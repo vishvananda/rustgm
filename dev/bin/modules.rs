@@ -104,7 +104,7 @@ pub fn run(
                     .map_err(|e| e.to_string());
                 }
                 if matches!(mode, Mode::Lowir) {
-                    let lowir = lower(&mut report, &facts, &program)?;
+                    let lowir = lower(&mut report, &mut facts, &program)?;
                     drop(program);
                     drop(facts);
                     drop(report);
@@ -174,13 +174,18 @@ fn phase_error(
 }
 fn lower(
     report: &mut resolve::expansion::Report,
-    facts: &rustgm::sema::model::Declarations,
+    facts: &mut rustgm::sema::model::Declarations,
     program: &rustgm::body::ir::Program,
 ) -> Result<rustgm::lowir::program::Program, String> {
     let entry =
         rustgm::sema::entry::select(report, facts).map_err(|e| report.diagnostic(e).to_string())?;
-    let checked = rustgm::body::scalar_check::check(program)
-        .map_err(|e| phase_error(report, e.node, e.message))?;
-    rustgm::lower::build(&facts.types, &checked, entry)
-        .map_err(|e| phase_error(report, e.node, e.message))
+    let checked = rustgm::borrow::ownership::verify(
+        &facts.types,
+        &facts.aggregates,
+        &facts.derives,
+        &mut facts.copies,
+        program,
+    )
+    .map_err(|e| phase_error(report, e.node, e.message))?;
+    rustgm::lower::build(facts, &checked, entry).map_err(|e| phase_error(report, e.node, e.message))
 }

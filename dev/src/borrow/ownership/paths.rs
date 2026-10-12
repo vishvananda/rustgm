@@ -114,6 +114,13 @@ impl Paths {
             if self.entries[index].parent.is_some() {
                 continue;
             }
+            let path = &mut self.entries[index];
+            if path.child.is_none() {
+                path.start = next;
+                path.end = next.checked_add(1).ok_or("too many move state bits")?;
+                next = path.end;
+                continue;
+            }
             work.push((index, false));
             while let Some((index, finish)) = work.pop() {
                 if finish {

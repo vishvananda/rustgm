@@ -36,6 +36,8 @@ pub struct Layout {
     pub align: u32,
     pub inhabited: bool,
     pub contains_explicit_align: bool,
+    /// By-value references remain visible when an aggregate is represented as bytes.
+    pub contains_reference: bool,
     pub shape: Shape,
 }
 #[derive(Clone, Copy, Debug)]
@@ -229,6 +231,7 @@ impl Layouts {
                 align: 1,
                 inhabited: false,
                 contains_explicit_align: false,
+                contains_reference: false,
                 shape: Shape::Scalar,
             }),
             Kind::Primitive(p) => primitive(p),
@@ -241,7 +244,10 @@ impl Layouts {
                 if types.is_sized(pointee) != Some(true) {
                     return Err("unsized pointer metadata requires later layout support");
                 }
-                Ok(scalar(8, 8))
+                Ok(Layout {
+                    contains_reference: matches!(kind, Kind::Reference { .. }),
+                    ..scalar(8, 8)
+                })
             }
             Kind::Slice(_) => Err("unsized slice has no fixed layout"),
             Kind::Array { element, length } => {
@@ -256,6 +262,7 @@ impl Layouts {
                     align: element_layout.align,
                     inhabited: length == 0 || element_layout.inhabited,
                     contains_explicit_align: element_layout.contains_explicit_align,
+                    contains_reference: element_layout.contains_reference,
                     shape: Shape::Array {
                         element,
                         stride: element_layout.size,
@@ -296,6 +303,7 @@ impl Layouts {
         let mut align = repr.align.unwrap_or(1);
         let mut inhabited = true;
         let mut contains_explicit_align = repr.align.is_some();
+        let mut contains_reference = false;
         let mut transparent = None;
         for ty in types.list(fields).ok_or("missing aggregate fields")? {
             let field = *self.get(*ty).ok_or("missing aggregate field layout")?;
@@ -303,6 +311,7 @@ impl Layouts {
                 return Err("packed aggregate transitively contains an explicitly aligned type");
             }
             contains_explicit_align |= field.contains_explicit_align;
+            contains_reference |= field.contains_reference;
             inhabited &= field.inhabited;
             if repr.representation == Representation::Transparent {
                 if field.size != 0 || field.align != 1 {
@@ -345,6 +354,7 @@ impl Layouts {
             inhabited,
             shape: Shape::Scalar,
             contains_explicit_align,
+            contains_reference,
         })
     }
     fn aggregate(
@@ -386,6 +396,7 @@ impl Layouts {
         let mut payload_align = 1;
         let mut inhabited = false;
         let mut contains_explicit_align = repr.align.is_some();
+        let mut contains_reference = false;
         for variant in variants {
             let layout = self.fields(
                 types,
@@ -399,6 +410,7 @@ impl Layouts {
             payload_align = payload_align.max(layout.align);
             inhabited |= layout.inhabited;
             contains_explicit_align |= layout.contains_explicit_align;
+            contains_reference |= layout.contains_reference;
         }
         if !inline_tag {
             let base = padded(tag_layout.size, payload_align)?;
@@ -426,6 +438,7 @@ impl Layouts {
                 tag,
             },
             contains_explicit_align,
+            contains_reference,
         })
     }
 }
@@ -435,6 +448,7 @@ fn scalar(size: u64, align: u32) -> Layout {
         align,
         inhabited: true,
         contains_explicit_align: false,
+        contains_reference: false,
         shape: Shape::Scalar,
     }
 }

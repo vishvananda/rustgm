@@ -45,6 +45,11 @@ impl Copies {
         selected: &HashMap<ItemId, Properties, S>,
         ty: TypeId,
     ) -> Result<Properties, &'static str> {
+        match self.states.get(ty.0 as usize) {
+            Some(State::Ready(value)) => return Ok(*value),
+            Some(State::Failed(message)) => return Err(message),
+            _ => {}
+        }
         self.states.resize(types.len(), State::Unseen);
         self.work.clear();
         self.work.push((ty, false));

@@ -15,7 +15,7 @@ use crate::{
         item::Shape,
     },
     types::{
-        Primitive,
+        Primitive, TypeId,
         aggregate::{self, Repr},
     },
 };
@@ -132,6 +132,19 @@ impl Checker<'_> {
                     .map_err(|e| self.error(group.key, e))?;
             }
             self.check_discriminant_forms(key, repr, &groups)?;
+            if kind == aggregate::Kind::Enum
+                && variants.iter().all(|v| {
+                    self.facts
+                        .types
+                        .list(v.fields)
+                        .is_some_and(<[TypeId]>::is_empty)
+                })
+                && groups
+                    .iter()
+                    .all(|g| g.discriminant.is_none() || g.shape == Shape::Unit)
+            {
+                self.facts.enum_casts.insert(item);
+            }
             self.facts
                 .aggregates
                 .insert(item, kind, repr, &variants)

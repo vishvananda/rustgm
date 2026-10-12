@@ -6,20 +6,24 @@ mod function;
 mod remainder;
 
 use crate::{
-    body::scalar_check::Checked,
+    borrow::ownership::Checked,
     lowir::program,
     resolve::{model::DefId, unit::NodeKey},
-    types::Store,
+    sema::model::Declarations,
 };
 pub struct Error {
     pub node: NodeKey,
     pub message: &'static str,
 }
 
-/// Construct typed scalar `LowIR`, including the executable entry adapter.
+/// Construct typed `LowIR` from proved owned bodies, including the entry adapter.
 ///
 /// # Errors
 /// Diagnoses unsupported demanded representations and inconsistent typed facts.
-pub fn build(types: &Store, bodies: &Checked<'_>, entry: DefId) -> Result<program::Program, Error> {
-    context::Context::build(types, bodies.program(), entry)
+pub fn build(
+    facts: &mut Declarations,
+    bodies: &Checked<'_>,
+    entry: DefId,
+) -> Result<program::Program, Error> {
+    context::Context::build(facts, bodies.program(), entry)
 }

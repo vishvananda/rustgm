@@ -60,8 +60,8 @@ Place construction uses a reusable operand stack rather than another dense
 per-syntax-node side array. Unreachable work still balances that stack; tests
 cover divergence in RHS expressions, indices, updates and nested branches.
 Aggregate expressions are available in the type/body inspection views. The
-scalar executable proof still rejects aggregate values and projections until
-the owned-value proof below is connected to aggregate lowering.
+executable path now consumes the owned-value proof below for both scalar and
+aggregate bodies. The former scalar-only checker has been removed.
 
 ## Owned-value proof
 
@@ -91,17 +91,56 @@ bitset words touched and bound both state memory and solver work. Ordinary
 indexing requires an initialized array and cannot move a non-Copy element.
 Repeats evaluate their operand once, including lengths zero/one; larger repeats
 require Copy or a constant operand. The proof retains selected Copy/Move uses.
+The repeat bound is also discharged by semantic analysis before unreachable
+body code is discarded: Rust requires this type obligation even after `return`.
+Pinned-rustc controls cover divergent operands and unreachable repeats, while
+ordinary unreachable move/read checks retain their CFG behavior.
 
 `--emit-ownership` and `--count-ownership` expose this proof for maintainer
 inspection. These are provisional views while PA14 remains planned. They do
-not discharge reference adjustments, loan or region obligations. The existing
-scalar LowIR boundary remains until aggregate lowering consumes the new proof;
-successful inspection alone does not enable executable aggregate output.
+not discharge reference adjustments, loan or region obligations. Executable
+lowering accepts only the checked program witness, then separately checks its
+demanded storage representations before erasing source values.
+Inspection returns an `Analysis` containing the checked witness and per-body
+records. Executable verification uses the identical checking engine but releases
+each body's inspection records immediately; lowering needs the witness rather
+than retaining all move-path arenas beside its growing output.
+
+## Executable aggregates
+
+`lower::function::aggregate` lowers owned tuples, arrays, structs and enums
+through the typed LowIR object operations. By-value reads create independent
+snapshots; constructors and calls produce fresh storage. Assignments, callee
+parameter initialization and returned values copy only between these distinct
+allocations. Copy/move legality comes from the preceding proof, not from the
+physical `copyobj` operation. Transfers retain the actual minimum address
+alignment, including packed fields.
+
+The private calling convention passes nonzero aggregate arguments as pointers
+to evaluated snapshots and nonzero aggregate results through a hidden first
+output pointer. Function pointers use the same signature transformation.
+Zero-sized parameters/results carry no physical payload, while preserving
+evaluation effects, moves, initialization and array bounds. This is RustGM's
+internal convention, not a claim about rustc's unspecified native ABI.
+
+Field offsets consume retained member ordinals and cached layouts. Array place
+formation emits an unsigned bounds guard, including wildcard discards and
+zero-sized elements. Repetition emits a constant-size loop for nonzero storage;
+huge zero-sized arrays require no loop or object allocation. `Option<Selected>`
+remains at most 24 bytes, so aggregate addresses do not widen ordinary snapshots.
+
+Field-less enum casts retain a semantic eligibility fact, honoring the rule
+that only unit variants may have explicit discriminants when non-unit empty
+variants are present. Lowering reads the selected physical tag, or materializes
+the fixed discriminant of an untagged single-variant enum, then uses the existing
+integer conversion rules. Layouts also retain a by-value `contains_reference`
+fact. A nested reference cannot evade the pending ownership/region boundary by
+being copied as aggregate bytes, including inside a zero-sized array.
 
 ## Evidence at this checkpoint
 
 - All 1,547 PA1–PA11 fixture outputs are unchanged.
-- Debug and release suites each pass 233 Rust tests. The declaration acceptance
+- Debug and release suites each pass 238 Rust tests. The declaration acceptance
   matrix checks the pinned rustc with default lints, including representation
   conflicts, duplicate fields, recursive storage and discriminant failures.
 - Guaranteed layout vectors compare sizes, alignments and field/payload offsets
@@ -119,13 +158,21 @@ successful inspection alone does not enable executable aggregate output.
   `obj/pa12-work/ownership-differential/`. Structural tests cover 20,000 nested
   Copy queries, cached failures, 10,000 projections, 40,000 independent locals,
   repeated projections and an array of `u64::MAX` zero-sized elements.
-- Strict Clippy/rustfmt pass. The file/phase audit checks 156 Rust files with
+- Strict Clippy/rustfmt pass. The file/phase audit checks 157 Rust files with
   zero findings; two audit tests and 19 harness tests pass.
 - The typed object-memory probe in `dev/tests/lowir_lowering.rs` writes
   `obj/pa12-work/memory.lowir`. The pinned bridge validates it and its executable
-  returns exactly 42 with empty streams. This is an IR-contract check, not
-  evidence of completed Rust aggregate lowering. The existing backend smoke
-  check also passes.
+  returns exactly 42 with empty streams. The existing backend smoke check also
+  passes. A separate address probe verifies actual 64-byte object-slot alignment.
+- Twenty Rust aggregate programs independently compile and execute through
+  rustc and the pinned C++ backend with matching clean exit zero. They exercise
+  snapshot order, direct/indirect calls, packed and over-aligned objects, nested
+  arrays, struct updates, scalar field access, repeats, zero-sized operand
+  effects and enum casts. Eight additional bounds probes match the qualified
+  panic-abort behavior, including wildcard, zero-sized and `u64::MAX` cases.
+  Evidence is in `obj/pa12-work/aggregate-native/`, `aggregate-bounds/` and
+  `lowering-vectors/`. The complete PA11 native suite was rerun: 194 independent
+  checks, including all 180 executable comparisons, pass.
 
 Raw logs and frozen binaries are in `obj/pa12-work/`. Existing oracles remain
 authoritative until a new assignment has declared outcomes, independent source
@@ -177,14 +224,44 @@ All 54 observations and full-output checks remain in
 `obj/perf/1791818122849043847/samples.json`. There was no preceding ownership
 binary, so this is scaling evidence rather than an A/B regression claim.
 
+The aggregate-lowering checkpoint binary is
+`53a6deffe50d39001774c0bbe27bcec7919b1f119df4528819775a4c1dfad39d`.
+Against the published ownership checkpoint, scalar LowIR baseline/candidate
+medians at 4,000, 16,000 and 64,000 functions are 196.67/208.72, 827.64/840.07
+and 3458.12/3572.63 ms. Largest-scale peak RSS is 696,928/698,344 KiB.
+These observations include about 3.3% elapsed overhead at the largest scale;
+they do not establish a speedup. Counts and full output bytes agree. The same
+CPU pinning, A/A calibration and three ABBA blocks retain all 54 observations
+in `obj/perf/1791821870358292310/samples.json`.
+
+The initial executable aggregate candidate retained ownership inspection arenas
+through lowering and increased largest-scale scalar peak RSS by about 28 MiB.
+Streaming the identical proof and releasing each body's records removes most
+of that increase. Copy-cache hits also avoid resetting query scratch, and
+root-only move paths avoid allocating a traversal stack. Intermediate binaries
+and every earlier observation remain in `obj/pa12-work/` and
+`obj/perf/1791820338675201752/`, `1791820505192926655/`,
+`1791821183202994711/` and `1791821293117823723/`; they are not the final
+candidate. The aggregate workload is selectable with
+`scripts/measure_lexer.py --stage lowir --aggregate-input`.
+
+The final aggregate A/B run compares the initial executable candidate with
+this checkpoint at 1,000, 4,000 and 16,000 demanded procedures. The
+baseline/candidate medians are 86.62/83.08, 370.19/378.56 and
+1480.62/1510.16 ms. Largest-scale peak RSS falls from 321,904 to 310,528 KiB,
+with about 2.0% measured elapsed overhead. Complete LowIR outputs agree at every scale. All 54 samples,
+including both baselines and calibration, remain in
+`obj/perf/1791821983967599492/samples.json`. This measures the entire frontend
+through LowIR, not just the ownership solver or object transfers.
+
 ## Required continuation
 
-1. PA12: connect the owned-value proof to executable aggregate lowering; the
-   expression/member selections, typed places and proof are implemented. Implement
-   enum discriminant constant expressions. Lower
-   aggregate values/calls with owned snapshots and explicit bounds checks,
-   including zero-sized values. Add source fixtures, native comparisons and
-   a deterministic layout inspection contract before activating the assignment.
+1. PA12: implement enum discriminant constant expressions; source expressions,
+   layouts, owned-value checking and executable aggregate lowering are connected.
+   Add the declared source fixtures and text oracles, extend the independent
+   native runner beyond PA11, and freeze a deterministic layout inspection
+   contract before activating the assignment. Native aggregate probes exist,
+   but the assignment handout and grading contract are not yet published.
 2. PA13: use the same field/variant identities for binding modes, match CFGs,
    guards, or-patterns, slices and usefulness/exhaustiveness. Retain move and
    reference semantics for the subsequent checks; do not erase unproved borrows
@@ -197,17 +274,16 @@ binary, so this is scaling evidence rather than an A/B regression claim.
    outlives constraints and caller/callee relationships, including nested
    reference returns. Full loan checking remains PA16's responsibility.
 
-The proposed private Rust calling convention passes nonzero aggregate arguments
-via pointers to evaluated snapshots and aggregate results via a hidden output
-pointer. Zero-sized parameters/results require no physical payload but retain
-their effects and initialization/move obligations. Function-pointer signatures
-must reflect the same convention. This is a pending implementation choice, not
-an assertion of rustc's unspecified native ABI or a backend change.
+For discriminant expressions, reuse the existing expression type checker and
+its selected scalar facts. Complete nominal shapes and constructor identities
+before solving explicit/implicit discriminant dependencies; freeze the layout
+cache only after their values are final. Retain variant/constant identities in
+an iterative query graph, including cycle errors, instead of adding a second
+source parser or a separate ad hoc expression type inference path. Preserve
+the existing scalar-only declaration/body behavior when no such queries occur.
 
-The lowering boundary must consume the owned-value proof before erasure to
-`copyobj`; a physical memory copy alone is not permission to reuse a moved Rust
-value. Keep ordinary indexing separate from PA13's pattern projections, which
+Keep ordinary indexing separate from PA13's pattern projections, which
 will need constant-index/downcast path identities. Reference adjustments and
 region obligations need their own checked facts before reference erasure. The
-current scalar rejection gate must be replaced by these proofs, not removed to
-make aggregate examples compile.
+current reference rejection gate must be replaced by these proofs, not removed
+to make reference examples compile.

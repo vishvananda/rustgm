@@ -270,6 +270,13 @@ fn aggregate_expression_types_match_pinned_rustc() -> Result<(), String> {
     check_cases(
         "aggregates",
         &[
+            ("struct N; fn f(){return;let _a=[N;2];}", false),
+            ("struct N; fn f()->[N;2]{[return f();2]}", false),
+            (
+                "#[derive(Clone,Copy)]struct N; fn f(){return;let _a=[N;2];}",
+                true,
+            ),
+            ("struct N; const C:N=N; fn f(){return;let _a=[C;2];}", true),
             ("fn f()->(u8,bool){(1,true)}", true),
             ("fn f()->u8{let a=(1,false);a.0}", true),
             ("fn f()->u8{let a:((u8,),bool)=((1,),false);a.0.0}", true),

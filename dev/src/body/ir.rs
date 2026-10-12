@@ -1,8 +1,9 @@
 //! Function-owned flat control-flow storage. Values snapshot reads before later effects.
+pub use crate::resolve::unit::NodeKey;
 pub use crate::sema::members::Selection;
 use crate::{
     lex::token::Punctuation,
-    resolve::{model::DefId, unit::NodeKey},
+    resolve::model::DefId,
     sema::model::{Cast, InitializerKind, RegionEquality, Scalar},
     syntax::ast::{NodeId, Unary},
     types::TypeId,

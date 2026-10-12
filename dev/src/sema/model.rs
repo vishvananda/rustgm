@@ -28,6 +28,7 @@ pub enum Cast {
     BoolToInteger,
     CharToInteger,
     U8ToChar,
+    EnumToInteger,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Operation {
@@ -127,6 +128,7 @@ pub struct RegionEquality {
     pub right: RegionId,
 }
 pub struct Declarations {
+    pub enum_casts: std::collections::HashSet<crate::types::ItemId>,
     pub derives: std::collections::HashMap<crate::types::ItemId, crate::types::copy::Properties>,
     pub copies: crate::types::copy::Copies,
     pub aggregates: crate::types::aggregate::Definitions,
@@ -142,6 +144,7 @@ pub struct Declarations {
 impl Declarations {
     pub(super) fn new(report: &Report) -> Result<Self, Error> {
         let mut value = Self {
+            enum_casts: std::collections::HashSet::new(),
             derives: std::collections::HashMap::new(),
             copies: crate::types::copy::Copies::default(),
             aggregates: crate::types::aggregate::Definitions::default(),

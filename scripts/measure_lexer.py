@@ -47,8 +47,11 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--baseline", type=Path)
     parser.add_argument("--candidate", type=Path, default=ROOT / "obj/rust/release/rustgm")
+    parser.add_argument("--aggregate-input", action="store_true", help="exercise owned aggregate LowIR at 1000/4000/16000 procedures")
     parser.add_argument("--stage", choices=("tokens", "literals", "token-trees", "ast", "crate-ast", "names", "expanded", "expanded-crate", "types", "body-ir", "ownership", "lowir"), default="tokens")
     args = parser.parse_args()
+    if args.aggregate_input and args.stage != "lowir":
+        parser.error("--aggregate-input requires --stage lowir")
     directory = ROOT / "obj/perf" / str(time.time_ns())
     directory.mkdir(parents=True)
     candidate = args.candidate.resolve()
@@ -62,13 +65,22 @@ def main():
         binaries[name] = target
     receipt = {"kind": "ABBA" if args.baseline else "A/A scaling calibration",
                "stage": args.stage,
+               "aggregate_input": args.aggregate_input,
                "binary_sha256": {name: hashlib.sha256(p.read_bytes()).hexdigest() for name, p in binaries.items()},
                "samples": [], "full_output_sha256": {}}
     scales = (4000, 16000, 64000) if args.stage in ("token-trees", "ast", "crate-ast", "names", "expanded", "expanded-crate", "types", "body-ir", "ownership", "lowir") else (16000, 64000, 256000)
+    if args.aggregate_input:
+        scales = (1000, 4000, 16000)
     line = {"tokens": LINE, "literals": LITERAL_LINE, "token-trees": TREE_LINE, "ast": AST_LINE, "crate-ast": CRATE_LINE, "names": b"", "expanded": b"", "expanded-crate": b"", "types": b"", "body-ir": b"", "ownership": b"", "lowir": b""}[args.stage]
     for lines in scales:
         source = directory / f"input-{lines}.rs"
-        if args.stage in ("types", "body-ir", "lowir"):
+        if args.aggregate_input:
+            source.write_text("struct N(u64);struct Pair{left:N,right:N}fn consume(x:N)->u64{x.0}\n" + "".join(
+                f"fn measured_{i}(mut x:Pair,c:bool)->u64{{let n=consume(x.left);"
+                "if c{x.left=N(n+1);}else{x.left=N(2);}consume(x.left)+consume(x.right)}\n"
+                for i in range(lines)) + "fn main(){" + "".join(
+                f"measured_{i}(Pair{{left:N(1),right:N(2)}},false);" for i in range(lines)) + "}\n")
+        elif args.stage in ("types", "body-ir", "lowir"):
             source.write_text("fn identity(x:u64)->u64{x}\n" + "".join(
                 f"fn measured_{i}(x:u64)->u64{{let n={i};let v=identity(n);if x>v{{x+v}}else{{v-x}}}}\n"
                 for i in range(lines)))

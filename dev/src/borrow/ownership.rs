@@ -2,7 +2,10 @@
 mod paths;
 mod state;
 pub mod view;
-pub use crate::body::scalar_check::Error;
+pub struct Error {
+    pub node: crate::body::ir::NodeKey,
+    pub message: &'static str,
+}
 use crate::{
     body::ir::{Action, Body, LocalKind, Place, Program, Rvalue},
     types::{
@@ -30,7 +33,20 @@ pub struct BodyFacts {
 }
 pub struct Checked<'a> {
     program: &'a Program,
+}
+pub struct Analysis<'a> {
+    checked: Checked<'a>,
     pub bodies: Vec<BodyFacts>,
+}
+impl Analysis<'_> {
+    #[must_use]
+    pub const fn program(&self) -> &Program {
+        self.checked.program
+    }
+    #[must_use]
+    pub const fn checked(&self) -> &Checked<'_> {
+        &self.checked
+    }
 }
 impl Checked<'_> {
     #[must_use]
@@ -48,8 +64,35 @@ pub fn check<'a, S: BuildHasher>(
     derives: &HashMap<ItemId, Properties, S>,
     copies: &mut Copies,
     program: &'a Program,
-) -> Result<Checked<'a>, Error> {
+) -> Result<Analysis<'a>, Error> {
     let mut bodies = Vec::with_capacity(program.bodies.len());
+    let checked = visit(types, definitions, derives, copies, program, |facts| {
+        bodies.push(facts);
+    })?;
+    Ok(Analysis { checked, bodies })
+}
+/// Run the identical proof while releasing each body's inspection records before
+/// executable lowering. Later analyses that need move paths use `check` instead.
+///
+/// # Errors
+/// Reports the same ownership, initialization and resource errors as `check`.
+pub fn verify<'a, S: BuildHasher>(
+    types: &Store,
+    definitions: &Definitions,
+    derives: &HashMap<ItemId, Properties, S>,
+    copies: &mut Copies,
+    program: &'a Program,
+) -> Result<Checked<'a>, Error> {
+    visit(types, definitions, derives, copies, program, drop)
+}
+fn visit<'a, S: BuildHasher>(
+    types: &Store,
+    definitions: &Definitions,
+    derives: &HashMap<ItemId, Properties, S>,
+    copies: &mut Copies,
+    program: &'a Program,
+    mut record: impl FnMut(BodyFacts),
+) -> Result<Checked<'a>, Error> {
     for body in &program.bodies {
         let error = |message| Error {
             node: body.source,
@@ -91,9 +134,9 @@ pub fn check<'a, S: BuildHasher>(
             reachable: Vec::new(),
         };
         state::verify(body, &mut facts)?;
-        bodies.push(facts);
+        record(facts);
     }
-    Ok(Checked { program, bodies })
+    Ok(Checked { program })
 }
 impl BodyFacts {
     fn transfer(&self, body: &Body, state: &mut State, action: Action) -> Result<(), &'static str> {
@@ -143,7 +186,11 @@ impl BodyFacts {
                     let info = self.paths.place(place)?;
                     if let Some(path) = info.path {
                         if !state.initialized(&self.paths.entries[path.0 as usize])? {
-                            return Err("local may be uninitialized or moved at this read");
+                            return Err(if self.uses[id.0 as usize] == Use::Copy {
+                                "local may be uninitialized at this read"
+                            } else {
+                                "local may be uninitialized or moved at this read"
+                            });
                         }
                     } else if self.uses[id.0 as usize] == Use::Move {
                         return Err("cannot move a non-Copy value out of static storage");

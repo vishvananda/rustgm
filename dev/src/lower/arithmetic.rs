@@ -16,7 +16,7 @@ pub(super) struct Arithmetic<'a> {
     pub panic: &'a mut Option<BlockId>,
 }
 impl Arithmetic<'_> {
-    fn guard(&mut self, fault: Value) -> Result<(), &'static str> {
+    pub fn guard(&mut self, fault: Value) -> Result<(), &'static str> {
         let panic = if let Some(block) = *self.panic {
             block
         } else {

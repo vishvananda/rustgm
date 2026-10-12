@@ -1,11 +1,11 @@
 //! Deterministic inspection of the owned-value proof, never semantic transport.
-use super::{Checked, Root, Use};
+use super::{Analysis, Root, Use};
 use crate::body::ir::Selection;
 use std::io::{self, Write};
 
 /// # Errors
 /// Propagates output failures.
-pub fn write(checked: &Checked<'_>, out: &mut impl Write) -> io::Result<()> {
+pub fn write(checked: &Analysis<'_>, out: &mut impl Write) -> io::Result<()> {
     writeln!(out, "ownership-crate 1")?;
     for (index, facts) in checked.bodies.iter().enumerate() {
         let body = &checked.program().bodies[index];
@@ -47,7 +47,7 @@ pub fn write(checked: &Checked<'_>, out: &mut impl Write) -> io::Result<()> {
 }
 /// # Errors
 /// Propagates output failures.
-pub fn count(checked: &Checked<'_>, out: &mut impl Write) -> io::Result<()> {
+pub fn count(checked: &Analysis<'_>, out: &mut impl Write) -> io::Result<()> {
     let mut paths = 0;
     let mut copies = 0;
     let mut moves = 0;

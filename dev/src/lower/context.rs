@@ -1,23 +1,28 @@
 //! Demand and ABI identities are indexed by already selected semantic definitions/types.
 use super::{Error, function, remainder};
 use crate::{
+    abi::layout::{Layout, Layouts},
     body::ir::{self, Owner},
     lowir::{
         builder::Builder,
-        program::{Operand, Program, SignatureId, SymbolId, Terminator},
+        program::{MemorySpan, Operand, Program, SignatureId, SymbolId, Terminator},
         vocabulary::Type,
     },
     resolve::{
         model::DefId,
         unit::{FileId, NodeKey},
     },
+    sema::{members::Members, model::Declarations},
     syntax::ast::NodeId,
-    types::{Kind, Primitive, Store, TypeId},
+    types::{Kind, Primitive, Store, TypeId, aggregate::Definitions},
 };
 use std::collections::HashMap;
 
 pub(super) struct Context<'a> {
     pub types: &'a Store,
+    pub aggregates: &'a Definitions,
+    pub members: &'a Members,
+    pub layouts: &'a mut Layouts,
     pub bodies: &'a ir::Program,
     pub output: Program,
     body_indices: Vec<Option<usize>>,
@@ -27,9 +32,28 @@ pub(super) struct Context<'a> {
     abort: Option<SymbolId>,
     remainders: [Option<SymbolId>; 2],
 }
+#[derive(Clone, Copy)]
+pub(super) enum Representation {
+    Scalar(Type),
+    Object(MemorySpan),
+}
+impl Representation {
+    pub const fn parameter(self) -> Type {
+        match self {
+            Self::Scalar(ty) => ty,
+            Self::Object(_) => Type::Ptr,
+        }
+    }
+    pub const fn result(self) -> Type {
+        match self {
+            Self::Scalar(ty) => ty,
+            Self::Object(_) => Type::Void,
+        }
+    }
+}
 impl<'a> Context<'a> {
     pub fn build(
-        types: &'a Store,
+        facts: &'a mut Declarations,
         bodies: &'a ir::Program,
         entry: DefId,
     ) -> Result<Program, Error> {
@@ -51,7 +75,10 @@ impl<'a> Context<'a> {
             .max()
             .unwrap_or(0);
         let mut context = Self {
-            types,
+            types: &facts.types,
+            aggregates: &facts.aggregates,
+            members: &facts.members,
+            layouts: &mut facts.layouts,
             bodies,
             output: Program::default(),
             body_indices: vec![None; size],
@@ -109,22 +136,56 @@ impl<'a> Context<'a> {
             return Err("lifetime-polymorphic and unsafe calls require later checking");
         }
         let mut native = Vec::new();
+        let result_type = self.representation(result)?;
+        if matches!(result_type, Representation::Object(_)) {
+            native.push(Type::Ptr);
+        }
         for ty in self
             .types
             .list(parameters)
             .ok_or("missing parameter list")?
         {
-            let representation = representation(self.types, *ty)?;
+            let representation = self.representation(*ty)?.parameter();
             if representation != Type::Void {
                 native.push(representation);
             }
         }
-        let result_type = representation(self.types, result)?;
-        let signature = self
-            .output
-            .signature(&native, result_type, result == TypeId::NEVER)?;
+        let signature =
+            self.output
+                .signature(&native, result_type.result(), result == TypeId::NEVER)?;
         self.signatures.insert(ty, signature);
         Ok(signature)
+    }
+    pub fn layout(&mut self, ty: TypeId) -> Result<Layout, &'static str> {
+        let id = self
+            .layouts
+            .demand(self.types, self.aggregates, ty)
+            .map_err(|e| e.message)?;
+        self.layouts
+            .at(id)
+            .copied()
+            .ok_or("missing demanded storage layout")
+    }
+    pub fn representation(&mut self, ty: TypeId) -> Result<Representation, &'static str> {
+        if matches!(
+            self.types.kind(ty),
+            Some(Kind::Tuple(_) | Kind::Array { .. } | Kind::Adt(_))
+        ) && ty != TypeId::UNIT
+        {
+            let layout = self.layout(ty)?;
+            if layout.contains_reference {
+                return Err("reference lowering requires ownership and region checking");
+            }
+            return Ok(if layout.size == 0 {
+                Representation::Scalar(Type::Void)
+            } else {
+                Representation::Object(MemorySpan {
+                    bytes: layout.size,
+                    align: layout.align,
+                })
+            });
+        }
+        representation(self.types, ty).map(Representation::Scalar)
     }
     pub fn demand(&mut self, definition: DefId) -> Result<SymbolId, &'static str> {
         if let Some(Some(symbol)) = self.symbols.get(definition.0 as usize) {

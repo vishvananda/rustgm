@@ -341,7 +341,7 @@ impl Checker<'_> {
         }
         self.validate_operations()?;
         self.validate_assignments()?;
-        self.validate_literals()?;
+        self.validate_values()?;
         for node in self.touched.drain(..) {
             self.terms[self.file.0 as usize][node.0 as usize] = None;
         }
@@ -1305,6 +1305,16 @@ impl Checker<'_> {
                         Some(Type::Function { .. })
                     ) {
                         super::model::Cast::FunctionPointer
+                    } else if let Some(Type::Adt(item)) = self.facts.types.kind(self.ty(value)?) {
+                        if !self.facts.enum_casts.contains(&item)
+                            || self.primitive(ty)?.integer().is_none()
+                        {
+                            return Err(self.error(
+                                *node,
+                                "only eligible field-less enums can be cast to integers",
+                            ));
+                        }
+                        super::model::Cast::EnumToInteger
                     } else {
                         scalar::cast(self.primitive(value)?, self.primitive(ty)?)
                             .ok_or_else(|| self.error(*node, "invalid scalar cast"))?
@@ -1325,20 +1335,25 @@ impl Checker<'_> {
         }
         Ok(())
     }
-    fn validate_literals(&mut self) -> Result<(), Error> {
+    fn validate_values(&mut self) -> Result<(), Error> {
         // Keep only negated literal IDs; no per-function copy of the file's AST.
-        for node in &self.touched {
-            let Kind::Literal(index) = self.kind(*node) else {
+        for index in 0..self.touched.len() {
+            let node = self.touched[index];
+            if let Kind::Repeat { value, .. } = self.kind(node) {
+                self.validate_repeat(node, value)?;
+                continue;
+            }
+            let Kind::Literal(index) = self.kind(node) else {
                 continue;
             };
             let unit = self.report.package.unit(self.file);
             let value = unit
                 .literal(index)
-                .map_err(|e| self.error(*node, e.message))?;
-            let negated = self.negated.contains(node);
-            let scalar = scalar::literal(&value, self.primitive(*node)?, negated)
-                .map_err(|e| self.error(*node, e))?;
-            let key = self.key(*node);
+                .map_err(|e| self.error(node, e.message))?;
+            let negated = self.negated.contains(&node);
+            let scalar = scalar::literal(&value, self.primitive(node)?, negated)
+                .map_err(|e| self.error(node, e))?;
+            let key = self.key(node);
             self.facts
                 .node_mut(key)
                 .ok_or_else(|| Declarations::error(self.report, key, "invalid literal node"))?

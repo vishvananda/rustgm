@@ -10,6 +10,39 @@ const U8: TypeId = TypeId::primitive(Primitive::U8);
 const U16: TypeId = TypeId::primitive(Primitive::U16);
 const U64: TypeId = TypeId::primitive(Primitive::U64);
 const U128: TypeId = TypeId::primitive(Primitive::U128);
+
+#[test]
+fn byte_layouts_retain_nested_reference_obligations() -> Result<(), Box<dyn std::error::Error>> {
+    let mut world = World::default();
+    let reference = world.types.intern(Kind::Reference {
+        mutable: false,
+        region: rustgm::types::RegionId::STATIC,
+        referent: U8,
+    })?;
+    let pointer = world.types.intern(Kind::Pointer {
+        mutable: false,
+        pointee: reference,
+    })?;
+    let zero = world.types.intern(Kind::Array {
+        element: reference,
+        length: 0,
+    })?;
+    let aggregate = world.adt(0, aggregate::Kind::Struct, Repr::default(), &[&[zero]], &[])?;
+    let mut layouts = Layouts::default();
+    for (ty, contains) in [
+        (reference, true),
+        (pointer, false),
+        (zero, true),
+        (aggregate, true),
+    ] {
+        let id = layouts.demand(&world.types, &world.definitions, ty)?;
+        assert_eq!(
+            layouts.at(id).ok_or("missing layout")?.contains_reference,
+            contains
+        );
+    }
+    Ok(())
+}
 #[derive(Default)]
 struct World {
     types: Store,

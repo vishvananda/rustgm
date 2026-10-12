@@ -137,6 +137,41 @@ impl Checker<'_> {
         self.coerce(value, element)?;
         Ok(term)
     }
+    pub(super) fn validate_repeat(&mut self, node: NodeId, mut value: NodeId) -> Result<(), Error> {
+        let Some(Type::Array { element, length }) = self.facts.types.kind(self.ty(node)?) else {
+            return Err(self.error(node, "repeat has no solved array type"));
+        };
+        if length <= 1 {
+            return Ok(());
+        }
+        while let Kind::Group(child) = self.kind(value) {
+            value = child;
+        }
+        let constant = self
+            .facts
+            .node(self.key(value))
+            .and_then(|f| f.reference)
+            .is_some_and(|reference| {
+                matches!(reference, Target::Definition(id)
+                if self.report.resolution.definitions[id.0 as usize].kind == super::DefKind::Const)
+            });
+        if !constant
+            && !self
+                .facts
+                .copies
+                .demand(
+                    &self.facts.types,
+                    &self.facts.aggregates,
+                    &self.facts.derives,
+                    element,
+                )
+                .map_err(|e| self.error(node, e))?
+                .copy
+        {
+            return Err(self.error(node, "repeated array element must implement Copy"));
+        }
+        Ok(())
+    }
     pub(super) fn select_unit_constructor(
         &mut self,
         node: NodeId,

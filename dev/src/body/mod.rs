@@ -2,6 +2,5 @@
 pub mod body_view;
 mod build;
 pub mod ir;
-pub mod scalar_check;
 
 pub use build::build;

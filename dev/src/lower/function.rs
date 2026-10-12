@@ -1,9 +1,10 @@
 //! Function-local slots, snapshots and control flow consume the PA10 typed body.
+mod aggregate;
 use super::{
     Error,
     arithmetic::Arithmetic,
     casts,
-    context::{Context, representation},
+    context::{Context, Representation},
 };
 use crate::{
     body::ir::{self, Action, LocalKind, Place, Rvalue},
@@ -11,7 +12,7 @@ use crate::{
     literal::value::FloatBits,
     lowir::{
         builder::Builder,
-        program::{BlockId, Function, Literal, Operand, SlotId, Terminator, Value},
+        program::{BlockId, Function, Literal, Operand, Terminator, Value},
         vocabulary::Type,
     },
     resolve::{model::DefId, unit::NodeKey},
@@ -25,6 +26,17 @@ enum Selected {
     Unit,
     Item(DefId),
     Runtime(Value),
+    Object(Address),
+}
+#[derive(Clone, Copy)]
+struct Address {
+    operand: Operand,
+    align: u32,
+}
+#[derive(Clone, Copy)]
+enum Projected {
+    Pending,
+    Ready(Option<Address>),
 }
 impl Selected {
     fn runtime(self) -> Result<Value, &'static str> {
@@ -39,7 +51,8 @@ struct Lower<'a, 'b> {
     context: &'a mut Context<'b>,
     body: &'b ir::Body,
     builder: Builder,
-    locals: Vec<Option<SlotId>>,
+    locals: Vec<Option<Address>>,
+    projections: Vec<Projected>,
     values: Vec<Option<Selected>>,
     blocks: Vec<BlockId>,
     panic: Option<BlockId>,
@@ -52,6 +65,7 @@ pub(super) fn lower<'a>(context: &mut Context<'a>, body: &'a ir::Body) -> Result
         body,
         builder: Builder::default(),
         locals: Vec::new(),
+        projections: vec![Projected::Pending; body.projections.len()],
         values: vec![None; body.values.len()],
         blocks: Vec::new(),
         panic: None,
@@ -73,12 +87,8 @@ pub(super) fn lower<'a>(context: &mut Context<'a>, body: &'a ir::Body) -> Result
 impl Lower<'_, '_> {
     fn run(&mut self) -> Result<(), &'static str> {
         for local in &self.body.locals {
-            let ty = representation(self.context.types, local.ty)?;
-            self.locals.push(if ty == Type::Void {
-                None
-            } else {
-                Some(self.builder.slot(ty)?)
-            });
+            let address = self.allocate(local.ty)?;
+            self.locals.push(address);
         }
         for _ in &self.body.blocks {
             self.blocks.push(self.builder.block()?);
@@ -93,21 +103,16 @@ impl Lower<'_, '_> {
             for statement in &self.body.statements[block.start as usize..block.end as usize] {
                 self.source = statement.source;
                 match statement.action {
-                    Action::Project(_) => {
-                        return Err("aggregate places require checked aggregate lowering");
-                    }
+                    Action::Project(id) => self.project(id)?,
                     Action::StorageLive(_) | Action::StorageDead(_) => {}
                     Action::Evaluate(value) => {
                         let result = self.evaluate(value)?;
                         self.values[value.0 as usize] = Some(result);
                     }
                     Action::Store { place, value } => {
-                        let slot = self.place(place)?;
+                        let address = self.place(place)?;
                         let selected = self.value(value)?;
-                        if let Selected::Runtime(value) = selected {
-                            let slot = slot.ok_or("runtime store to a zero-sized local")?;
-                            self.builder.store(value, Operand::Slot(slot))?;
-                        }
+                        self.write(address, selected, self.body.values[value.0 as usize].ty)?;
                     }
                 }
             }
@@ -121,6 +126,18 @@ impl Lower<'_, '_> {
                 },
                 ir::Terminator::Return(value) => Terminator::Return(match self.value(value)? {
                     Selected::Runtime(value) => Some(value),
+                    Selected::Object(address) => {
+                        let align = self.context.layout(self.body.result)?.align;
+                        self.write(
+                            Some(Address {
+                                operand: Operand::Parameter(0),
+                                align,
+                            }),
+                            Selected::Object(address),
+                            self.body.result,
+                        )?;
+                        None
+                    }
                     Selected::Unit | Selected::Item(_) => None,
                 }),
                 ir::Terminator::Unreachable => Terminator::Unreachable,
@@ -144,29 +161,41 @@ impl Lower<'_, '_> {
         Ok(())
     }
     fn parameters(&mut self) -> Result<(), &'static str> {
-        let mut parameter = 0;
-        for (local, slot) in self.body.locals.iter().zip(&self.locals) {
+        let mut parameter = u32::from(matches!(
+            self.context.representation(self.body.result)?,
+            Representation::Object(_)
+        ));
+        for (index, local) in self.body.locals.iter().enumerate() {
             if matches!(local.kind, LocalKind::Parameter(_))
-                && let Some(slot) = slot
+                && let Some(address) = self.locals[index]
             {
-                let ty = representation(self.context.types, local.ty)?;
-                self.builder.store(
-                    Value {
+                let value = match self.context.representation(local.ty)? {
+                    Representation::Scalar(ty) => Selected::Runtime(Value {
                         ty,
                         operand: Operand::Parameter(parameter),
-                    },
-                    Operand::Slot(*slot),
-                )?;
+                    }),
+                    Representation::Object(span) => Selected::Object(Address {
+                        operand: Operand::Parameter(parameter),
+                        align: span.align,
+                    }),
+                };
+                self.write(Some(address), value, local.ty)?;
                 parameter += 1;
             }
         }
         Ok(())
     }
-    fn place(&self, place: Place) -> Result<Option<SlotId>, &'static str> {
+    fn place(&self, place: Place) -> Result<Option<Address>, &'static str> {
         match place {
-            Place::Temporary(_) | Place::Projection(_) => {
-                Err("aggregate places require checked aggregate lowering")
-            }
+            Place::Temporary(id) => match self.value(id)? {
+                Selected::Object(address) => Ok(Some(address)),
+                Selected::Unit | Selected::Item(_) => Ok(None),
+                Selected::Runtime(_) => Err("scalar temporary has no aggregate place"),
+            },
+            Place::Projection(id) => match self.projections.get(id.0 as usize) {
+                Some(Projected::Ready(address)) => Ok(*address),
+                _ => Err("projected address does not dominate its use"),
+            },
             Place::Local(id) => self
                 .locals
                 .get(id.0 as usize)
@@ -202,14 +231,20 @@ impl Lower<'_, '_> {
             Ok(selected)
         }
     }
+    #[expect(
+        clippy::too_many_lines,
+        reason = "One typed-rvalue dispatch consumes the selected body operations"
+    )]
     fn evaluate(&mut self, id: ir::ValueId) -> Result<Selected, &'static str> {
         let value = &self.body.values[id.0 as usize];
-        let ty = representation(self.context.types, value.ty)?;
+        let representation = self.context.representation(value.ty)?;
+        let ty = representation.result();
         let runtime = match value.kind {
             Rvalue::Unit => return Ok(Selected::Unit),
-            Rvalue::Aggregate { .. } | Rvalue::Repeat { .. } => {
-                return Err("aggregate values require checked aggregate lowering");
+            Rvalue::Aggregate { variant, fields } => {
+                return self.aggregate(value.ty, variant, fields);
             }
+            Rvalue::Repeat { value: operand } => return self.repeat(value.ty, operand),
             Rvalue::Function(definition) => return Ok(Selected::Item(definition)),
             Rvalue::Scalar(scalar) => match self.body.scalars[scalar.0 as usize] {
                 Scalar::Integer(bits) => self.builder.integer(ty, bits)?,
@@ -225,8 +260,15 @@ impl Lower<'_, '_> {
                 }
             },
             Rvalue::Read(place) => {
-                if let Some(slot) = self.place(place)? {
-                    self.builder.load(ty, Operand::Slot(slot))?
+                if let Some(address) = self.place(place)? {
+                    if matches!(representation, Representation::Object(_)) {
+                        let destination = self
+                            .allocate(value.ty)?
+                            .ok_or("missing aggregate snapshot")?;
+                        self.write(Some(destination), Selected::Object(address), value.ty)?;
+                        return Ok(Selected::Object(destination));
+                    }
+                    self.builder.load(ty, address.operand)?
                 } else {
                     return Ok(
                         if let Some(Kind::FunctionItem { item, .. }) =
@@ -281,6 +323,12 @@ impl Lower<'_, '_> {
                     .binary(operator, primitive, lhs, rhs)?
                 }
             }
+            Rvalue::Cast {
+                kind: Cast::EnumToInteger,
+                operand,
+            } => {
+                return self.enum_cast(operand, ty);
+            }
             Rvalue::Cast { kind, operand } => {
                 let source = self.primitive(self.body.values[operand.0 as usize].ty)?;
                 let target = self.primitive(value.ty)?;
@@ -291,7 +339,7 @@ impl Lower<'_, '_> {
                 signature,
                 callee,
                 arguments,
-            } => return self.call(signature, callee, arguments, ty),
+            } => return self.call(signature, callee, arguments, value.ty),
         };
         Ok(Selected::Runtime(runtime))
     }
@@ -300,23 +348,41 @@ impl Lower<'_, '_> {
         signature: TypeId,
         callee: ir::ValueId,
         arguments: ir::ValueList,
-        ty: Type,
+        result: TypeId,
     ) -> Result<Selected, &'static str> {
         let signature = self.context.signature(signature)?;
+        let representation = self.context.representation(result)?;
         let callee = match self.value(callee)? {
             Selected::Item(definition) => Operand::Symbol(self.context.demand(definition)?),
             Selected::Runtime(value) => value.operand,
-            Selected::Unit => return Err("unit used as call target"),
+            Selected::Unit | Selected::Object(_) => return Err("non-function used as call target"),
         };
         self.arguments.clear();
+        let destination = if matches!(representation, Representation::Object(_)) {
+            let address = self.allocate(result)?.ok_or("missing result allocation")?;
+            let pointer = self.pointer(address)?;
+            self.arguments.push(pointer);
+            Some(address)
+        } else {
+            None
+        };
         for id in &self.body.arguments[arguments.start as usize..arguments.end as usize] {
-            if let Selected::Runtime(value) = self.value(*id)? {
-                self.arguments.push(value);
+            match self.value(*id)? {
+                Selected::Runtime(value) => self.arguments.push(value),
+                Selected::Object(address) => {
+                    let pointer = self.pointer(address)?;
+                    self.arguments.push(pointer);
+                }
+                Selected::Unit | Selected::Item(_) => {}
             }
         }
-        self.builder
-            .call(signature, ty, callee, &self.arguments)
-            .map(|value| value.map_or(Selected::Unit, Selected::Runtime))
+        let value =
+            self.builder
+                .call(signature, representation.result(), callee, &self.arguments)?;
+        Ok(destination.map_or_else(
+            || value.map_or(Selected::Unit, Selected::Runtime),
+            Selected::Object,
+        ))
     }
 }
 
@@ -349,4 +415,12 @@ fn order(body: &ir::Body) -> Result<(Vec<usize>, Vec<bool>), &'static str> {
     }
     order.reverse();
     Ok((order, seen))
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn aggregate_addresses_keep_ordinary_snapshots_compact() {
+        assert!(std::mem::size_of::<Option<super::Selected>>() <= 24);
+    }
 }

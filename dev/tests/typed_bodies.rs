@@ -202,7 +202,7 @@ fn region_conversions_remain_explicit_obligations() -> Result<(), String> {
 fn aggregate_places_preserve_evaluation_order_and_partial_update_reads() -> Result<(), String> {
     use body::ir::{Action, Place, ProjectionKind, Rvalue};
     use rustgm::sema::members::{FieldId, Selection};
-    let (report, _, program) = analyze(
+    let (report, mut facts, program) = analyze(
         "struct S{a:u8,b:u16} fn rhs()->u8{7} fn index()->usize{1} fn make()->[u8;2]{[3,4]} fn f(mut a:[u8;2],s:S)->(u8,S){a[index()]+=rhs();let n=make()[index()];let t=S{a:rhs(),..s};let _=a[index()];(n,t)}",
     )?;
     let body = program.bodies.last().ok_or("missing aggregate body")?;
@@ -254,7 +254,16 @@ fn aggregate_places_preserve_evaluation_order_and_partial_update_reads() -> Resu
         })
         .collect();
     assert_eq!(fields, [Selection::Nominal(FieldId(1))]);
-    assert!(body::scalar_check::check(&program).is_err());
+    assert!(
+        rustgm::borrow::ownership::check(
+            &facts.types,
+            &facts.aggregates,
+            &facts.derives,
+            &mut facts.copies,
+            &program,
+        )
+        .is_ok()
+    );
     Ok(())
 }
 
