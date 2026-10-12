@@ -1,0 +1,2021 @@
+{
+  "schema": 1,
+  "mode": "--emit-ast",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "panic": "abort",
+  "debug_assertions": false,
+  "cases": [
+    {
+      "path": "tests/spec/precedence/arithmetic.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.precedence"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/precedence/grouping.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.precedence"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/precedence/left-associative.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.precedence"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/precedence/boolean.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.precedence"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/precedence/bitwise.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.precedence"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/precedence/comparison.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.precedence"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/precedence/shift.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.precedence"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/precedence/cast.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.precedence"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/precedence/nested-casts.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.precedence"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/precedence/assignment.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.precedence"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/precedence/compound.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.precedence"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/precedence/all-compound.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.precedence"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/precedence/unary.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.precedence"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/precedence/double-borrow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.precedence"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/precedence/raw-contextual.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.precedence"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/precedence/raw-borrow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.precedence"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/precedence/mutable-borrow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.precedence"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/precedence/range.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.precedence"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/precedence/inclusive-range.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.precedence"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/precedence/range-from.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.precedence"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/precedence/range-to.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.precedence"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/precedence/range-to-inclusive.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.precedence"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/precedence/range-full.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.precedence"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/precedence/range-nested-group.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.precedence"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/postfix/unit.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.postfix"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/postfix/tuple.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.postfix"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/postfix/singleton.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.postfix"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/postfix/array.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.postfix"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/postfix/empty-array.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.postfix"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0,
+        "prefix": "fn main() { let _: [i32; 0] = ",
+        "suffix": "; }"
+      }
+    },
+    {
+      "path": "tests/spec/postfix/repeat.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.postfix"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/postfix/index.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.postfix"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/postfix/tuple-field.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.postfix"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/postfix/nested-tuple-field.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.postfix"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/postfix/tuple-call.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.postfix"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/postfix/method-call.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.postfix"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/postfix/closure-call.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.postfix"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/postfix/field-call.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.postfix"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/postfix/path-call.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.postfix"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/postfix/absolute-path.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.postfix"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/postfix/raw-name.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.postfix"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/postfix/struct.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.postfix"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0,
+        "prefix": "struct Point { x: i32, y: i32 } fn main() { let _ = ",
+        "suffix": "; }"
+      }
+    },
+    {
+      "path": "tests/spec/postfix/struct-shorthand.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.postfix"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0,
+        "prefix": "struct Point { x: i32, y: i32 } fn main() { let _ = ",
+        "suffix": "; }"
+      }
+    },
+    {
+      "path": "tests/spec/postfix/struct-update.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.postfix"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0,
+        "prefix": "struct Point { x: i32, y: i32 } fn main() { let _ = ",
+        "suffix": "; }"
+      }
+    },
+    {
+      "path": "tests/spec/postfix/struct-numeric.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.postfix"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0,
+        "prefix": "struct Pair(i32, i32); fn main() { let _ = ",
+        "suffix": "; }"
+      }
+    },
+    {
+      "path": "tests/spec/postfix/await.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.postfix"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/postfix/try.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.postfix"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0,
+        "prefix": "fn check() -> Option<i32> { ",
+        "suffix": " }"
+      }
+    },
+    {
+      "path": "tests/spec/postfix/borrow-cast.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.postfix"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/postfix/byte-c-string.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.postfix"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/statements/empty.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.statements"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/statements/empty-statements.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.statements"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/statements/tail.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.statements"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/statements/typed-let.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.statements"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/statements/reference-type.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.statements"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/statements/array-type.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.statements"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/statements/tuple-type.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.statements"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/statements/inferred-type.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.statements"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/statements/nested.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.statements"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/statements/statement-boundary.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.statements"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/statements/block-method.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.statements"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/statements/block-parenthesized.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.statements"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/statements/unsafe.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.statements"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/statements/const.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.statements"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/statements/async.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.statements"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/statements/async-move.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.statements"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/statements/let-else.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.statements"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/statements/let-else-parenthesized.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.statements"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/statements/tuple-pattern.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.statements"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/statements/slice-pattern.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.statements"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/statements/ref-pattern.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.statements"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/statements/reference-pattern.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.statements"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/statements/binding-pattern.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.statements"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/control/if-else.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.control"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/control/else-if.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.control"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/control/if-let.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.control"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/control/let-chain.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.control"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/control/if-or-pattern.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.control"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/control/while.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.control"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/control/while-let.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.control"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/control/for.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.control"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/control/for-destructure.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.control"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/control/loop-value.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.control"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/control/label-loop.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.control"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/control/label-block.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.control"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/control/continue.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.control"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/control/return.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.control"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/control/match.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.control"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/control/match-block.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.control"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/control/match-or.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.control"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/control/match-negative.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.control"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/control/closure.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.control"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/control/closure-empty.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.control"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/control/closure-move.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.control"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/control/closure-result.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.control"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/control/closure-async.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.control"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/control/closure-async-move.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.control"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/macros/paren.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.macros"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/macros/bracket.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.macros"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/macros/brace.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.macros"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/macros/opaque-doc.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.macros"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/macros/opaque-invalid-literal.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.macros"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1,
+        "reason": "PA4 captures opaque macro tokens; rustc validates escapes eagerly. Macro-consumer validation belongs to PA7/PA8."
+      }
+    },
+    {
+      "path": "tests/spec/reject/empty.rs",
+      "exit_status": 1,
+      "features": [
+        "pa4.reject"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/reject/trailing.rs",
+      "exit_status": 1,
+      "features": [
+        "pa4.reject"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/reject/operator.rs",
+      "exit_status": 1,
+      "features": [
+        "pa4.reject"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/reject/prefix.rs",
+      "exit_status": 1,
+      "features": [
+        "pa4.reject"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/reject/comparison-chain.rs",
+      "exit_status": 1,
+      "features": [
+        "pa4.reject"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/reject/mixed-comparison.rs",
+      "exit_status": 1,
+      "features": [
+        "pa4.reject"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/reject/range-chain.rs",
+      "exit_status": 1,
+      "features": [
+        "pa4.reject"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/reject/inclusive-no-end.rs",
+      "exit_status": 1,
+      "features": [
+        "pa4.reject"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/reject/inclusive-no-start-end.rs",
+      "exit_status": 1,
+      "features": [
+        "pa4.reject"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/reject/missing-close.rs",
+      "exit_status": 1,
+      "features": [
+        "pa4.reject"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/reject/wrong-close.rs",
+      "exit_status": 1,
+      "features": [
+        "pa4.reject"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/reject/missing-comma.rs",
+      "exit_status": 1,
+      "features": [
+        "pa4.reject"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/reject/repeat-extra.rs",
+      "exit_status": 1,
+      "features": [
+        "pa4.reject"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/reject/tuple-index-leading-zero.rs",
+      "exit_status": 1,
+      "features": [
+        "pa4.reject"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/reject/tuple-index-suffix.rs",
+      "exit_status": 1,
+      "features": [
+        "pa4.reject"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/reject/tuple-index-underscore.rs",
+      "exit_status": 1,
+      "features": [
+        "pa4.reject"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/reject/field-keyword.rs",
+      "exit_status": 1,
+      "features": [
+        "pa4.reject"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/reject/method-missing-argument.rs",
+      "exit_status": 1,
+      "features": [
+        "pa4.reject"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/reject/statement-semicolon.rs",
+      "exit_status": 1,
+      "features": [
+        "pa4.reject"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/reject/let-semicolon.rs",
+      "exit_status": 1,
+      "features": [
+        "pa4.reject"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/reject/let-no-pattern.rs",
+      "exit_status": 1,
+      "features": [
+        "pa4.reject"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/reject/let-else-no-value.rs",
+      "exit_status": 1,
+      "features": [
+        "pa4.reject"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/reject/let-else-brace.rs",
+      "exit_status": 1,
+      "features": [
+        "pa4.reject"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/reject/let-else-boolean.rs",
+      "exit_status": 1,
+      "features": [
+        "pa4.reject"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/reject/block-add-ambiguity.rs",
+      "exit_status": 1,
+      "features": [
+        "pa4.reject"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/reject/async-statement.rs",
+      "exit_status": 1,
+      "features": [
+        "pa4.reject"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/reject/if-no-condition.rs",
+      "exit_status": 1,
+      "features": [
+        "pa4.reject"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/reject/if-no-block.rs",
+      "exit_status": 1,
+      "features": [
+        "pa4.reject"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/reject/else-expression.rs",
+      "exit_status": 1,
+      "features": [
+        "pa4.reject"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/reject/let-outside-condition.rs",
+      "exit_status": 1,
+      "features": [
+        "pa4.reject"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/reject/let-in-parens.rs",
+      "exit_status": 1,
+      "features": [
+        "pa4.reject"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/reject/let-or.rs",
+      "exit_status": 1,
+      "features": [
+        "pa4.reject"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/reject/let-unary.rs",
+      "exit_status": 1,
+      "features": [
+        "pa4.reject"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/reject/for-no-in.rs",
+      "exit_status": 1,
+      "features": [
+        "pa4.reject"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/reject/for-no-body.rs",
+      "exit_status": 1,
+      "features": [
+        "pa4.reject"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/reject/while-no-body.rs",
+      "exit_status": 1,
+      "features": [
+        "pa4.reject"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/reject/label-expression.rs",
+      "exit_status": 1,
+      "features": [
+        "pa4.reject"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/reject/continue-value.rs",
+      "exit_status": 1,
+      "features": [
+        "pa4.reject"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/reject/match-no-arrow.rs",
+      "exit_status": 1,
+      "features": [
+        "pa4.reject"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/reject/match-no-comma.rs",
+      "exit_status": 1,
+      "features": [
+        "pa4.reject"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/reject/match-no-pattern.rs",
+      "exit_status": 1,
+      "features": [
+        "pa4.reject"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/reject/closure-no-pipe.rs",
+      "exit_status": 1,
+      "features": [
+        "pa4.reject"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/reject/closure-result-no-block.rs",
+      "exit_status": 1,
+      "features": [
+        "pa4.reject"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/reject/move-nonclosure.rs",
+      "exit_status": 1,
+      "features": [
+        "pa4.reject"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/reject/async-nonblock.rs",
+      "exit_status": 1,
+      "features": [
+        "pa4.reject"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/reject/macro-no-delimiter.rs",
+      "exit_status": 1,
+      "features": [
+        "pa4.reject"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/reject/macro-mismatch.rs",
+      "exit_status": 1,
+      "features": [
+        "pa4.reject"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/reject/macro-unclosed.rs",
+      "exit_status": 1,
+      "features": [
+        "pa4.reject"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/reject/bad-literal.rs",
+      "exit_status": 1,
+      "features": [
+        "pa4.reject"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/reject/reserved-name.rs",
+      "exit_status": 1,
+      "features": [
+        "pa4.reject"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/reject/bad-pointer-type.rs",
+      "exit_status": 1,
+      "features": [
+        "pa4.reject"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/reject/struct-field-comma.rs",
+      "exit_status": 1,
+      "features": [
+        "pa4.reject"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/reject/struct-update-last.rs",
+      "exit_status": 1,
+      "features": [
+        "pa4.reject"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/reject/cast-less.rs",
+      "exit_status": 1,
+      "features": [
+        "pa4.reject"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/reject/cast-shift.rs",
+      "exit_status": 1,
+      "features": [
+        "pa4.reject"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/reject/cast-call.rs",
+      "exit_status": 1,
+      "features": [
+        "pa4.reject"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/reject/cast-field.rs",
+      "exit_status": 1,
+      "features": [
+        "pa4.reject"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/reject/cast-index.rs",
+      "exit_status": 1,
+      "features": [
+        "pa4.reject"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/reject/cast-try.rs",
+      "exit_status": 1,
+      "features": [
+        "pa4.reject"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/reject/struct-keyword.rs",
+      "exit_status": 1,
+      "features": [
+        "pa4.reject"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/reject/struct-index.rs",
+      "exit_status": 1,
+      "features": [
+        "pa4.reject"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/reject/struct-numeric-shorthand.rs",
+      "exit_status": 1,
+      "features": [
+        "pa4.reject"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/reject/raw-self.rs",
+      "exit_status": 1,
+      "features": [
+        "pa4.reject"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/reject/negative-pattern.rs",
+      "exit_status": 1,
+      "features": [
+        "pa4.reject"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/precedence/cast-comparison.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.precedence"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/precedence/cast-shift-group.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.precedence"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/precedence/cast-grouped-type.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.precedence"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/precedence/grouped-type.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.precedence"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/precedence/pointer-cast.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.precedence"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/precedence/wide-tuple-index.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.precedence"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/precedence/projection-with-space.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.precedence"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/precedence/destructure-assignment.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.precedence"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/syntax-only/unresolved-name.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.syntax-only"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1,
+        "reason": "PA4 parses syntax; name, type and control-context checks are later assignments."
+      }
+    },
+    {
+      "path": "tests/spec/syntax-only/type-mismatch.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.syntax-only"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1,
+        "reason": "PA4 parses syntax; name, type and control-context checks are later assignments."
+      }
+    },
+    {
+      "path": "tests/spec/syntax-only/invalid-place.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.syntax-only"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1,
+        "reason": "PA4 parses syntax; name, type and control-context checks are later assignments."
+      }
+    },
+    {
+      "path": "tests/spec/syntax-only/break-outside-loop.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.syntax-only"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1,
+        "reason": "PA4 parses syntax; name, type and control-context checks are later assignments."
+      }
+    },
+    {
+      "path": "tests/spec/syntax-only/non-boolean-condition.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.syntax-only"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1,
+        "reason": "PA4 parses syntax; name, type and control-context checks are later assignments."
+      }
+    },
+    {
+      "path": "tests/spec/syntax-only/non-boolean-range.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.syntax-only"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1,
+        "reason": "PA4 parses syntax; the condition boolean type check belongs to a later assignment."
+      }
+    },
+    {
+      "path": "tests/spec/reject/let-chain-or-prefix.rs",
+      "exit_status": 1,
+      "features": [
+        "pa4.reject"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/reject/let-chain-or-suffix.rs",
+      "exit_status": 1,
+      "features": [
+        "pa4.reject"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/control/let-chain-grouped-or.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.control"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    }
+  ]
+}

@@ -3,8 +3,9 @@
 ## Current implemented slice
 
 The repository is initialized with the CPPGM layout and 38 assignment briefs.
-PA1's lexer, PA2's literal interpretation and PA3's token trees/attributes have
-executable text contracts. PA4 onward remain visibly planned. No student export or Rust source
+PA1's lexer, PA2's literal interpretation, PA3's token trees/attributes and
+PA4's expression/statement parser have executable text contracts. PA5 onward
+remain visibly planned. No student export or Rust source
 to LowIR lowering exists yet. The external backend smoke exercises handwritten
 LowIR through the pinned CPPGM tools.
 
@@ -117,6 +118,50 @@ three ABBA blocks, inputs and raw observations are in
 `obj/perf/1791763002707070858/`. These measure an intentionally retained
 diagnostic forest; the ordinary source parser must not retain a whole forest.
 
+## PA4 buildout
+
+PA4 adds a three-token cursor, Pratt expression parser, explicit statement
+boundaries and typed syntax arenas with compact IDs/ranges. It distinguishes
+method calls from field calls and preserves path absoluteness. Only actual
+macro captures retain token trees. The shared builder consumes already lexed
+tokens; tuple projections and compound punctuation split typed tokens without
+relexing source. Condition checks reuse scratch capacity. Recursion has a
+256-call diagnosed budget; flat chains and captured groups remain iterative.
+
+Evidence: 181 course oracles and rustc expression checks, with seven explicit
+phase-boundary acceptance differences (deferred semantics and opaque macro
+literal contents). Twelve new structural/resource invariants pass in debug and
+release, including 20,000-operator chains and 20,000-level macro groups. All 278
+earlier course outputs are unchanged. The full total is 459 course fixtures,
+39 Rust invariants and 12 harness tests. Clippy, architecture/file audits,
+upstream provenance, full reports and oracle generation pass.
+
+The initial builder extraction measured an approximately 11% tree slowdown.
+Removing repeated validation of lexer-owned spans and enabling inlining removed
+that regression. Frozen PA3 baseline/final-candidate medians in milliseconds:
+
+| Tree source bytes | Baseline | Candidate | Candidate peak KiB |
+| ---: | ---: | ---: | ---: |
+| 284,000 | 15.90 | 13.76 | 4,340 |
+| 1,136,000 | 48.40 | 44.47 | 11,372 |
+| 4,544,000 | 161.97 | 160.21 | 38,140 |
+
+New expression-parser A/A scaling (startup and source reads included):
+
+| Source bytes | Median ms | Peak RSS KiB |
+| ---: | ---: | ---: |
+| 140,004 | 13.89 | 5,056 |
+| 560,004 | 49.19 | 14,200 |
+| 2,240,004 | 184.96 | 49,400 |
+
+These are shared-host observations, not portable speed guarantees. Full text
+output equality, frozen inputs/binaries, warmups, calibration and every ABBA
+observation are retained in `obj/perf/1791764190532643755/` (initial regression),
+`obj/perf/1791764334673790599/` (fixed trees) and
+`obj/perf/1791764197895932737/` (new parser baseline). Final minor condition
+validation changes do not occur in the parser scaling input. Logs of all course,
+independent, audit and release checks are under `obj/pa4-work/`.
+
 ## Next implementation boundary
 
 First audit PA1 against the pinned grammar's malformed-token boundaries and
@@ -126,9 +171,11 @@ explicitly labels the current boundary as a draft.
 
 PA2 now freezes that initial value contract. Its decoder deliberately preserves
 integer magnitudes and unsuffixed decimal spelling until context is known.
-PA3 now exposes typed token trees, attributes and configuration. PA4 should
-parse expressions/statements using bounded token lookahead and typed arenas;
-PA5 adds item/type/pattern ownership and applies disabled-item decisions.
+PA3 now exposes typed token trees, attributes and configuration. PA4 parses
+expression fragments with bounded lookahead and typed arenas. PA5 adds the
+`--emit-crate-ast` entry point, full item/type/pattern ownership and attribute
+attachment, and applies disabled-item decisions. PA4 fragment oracles remain
+under `--emit-ast`; crate parsing must reuse the same body parser.
 Literal decoding is demanded by syntax/expansion, never applied eagerly to all
 macro input. Expand reserved-prefix and grammar-edge tests before claiming
 complete token conformance. PA9/PA10 must enforce inferred-type agreement and

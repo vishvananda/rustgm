@@ -1,0 +1,12 @@
+node 0 1 2 literal 0
+value 0 integer 1 2 infer 1
+node 1 6 9 name "i32"
+node 2 6 9 path false [1]
+node 3 6 9 type Path [2]
+node 4 1 9 cast 0 3
+node 5 0 10 group 4
+node 6 13 14 literal 1
+value 1 integer 13 14 infer 2
+node 7 0 14 binary < 5 6
+root 7
+eof 15

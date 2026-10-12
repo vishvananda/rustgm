@@ -1,0 +1,9 @@
+node 0 1 2 literal 0
+value 0 integer 1 2 infer 1
+node 1 4 8 literal 1
+value 1 boolean 4 8 true
+node 2 10 17 literal 2
+value 2 string 10 17 5 "three"
+node 3 0 19 tuple [0,1,2]
+root 3
+eof 20

@@ -1,0 +1,14 @@
+node 0 2 3 literal 0
+value 0 integer 2 3 infer 1
+node 1 6 7 literal 1
+value 1 integer 6 7 infer 2
+node 2 9 10 literal 2
+value 2 integer 9 10 infer 3
+node 3 5 11 tuple [1,2]
+node 4 1 12 tuple [0,3]
+node 5 0 14 tuple [4]
+node 6 0 16 field 5 "0"
+node 7 0 18 field 6 "1"
+node 8 0 20 field 7 "0"
+root 8
+eof 21

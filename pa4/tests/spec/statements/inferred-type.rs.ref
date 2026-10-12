@@ -1,0 +1,12 @@
+node 0 6 7 name "x"
+node 1 6 7 path false [0]
+node 2 6 7 binding false false "x" -
+node 3 9 10 infer-type
+node 4 13 14 literal 0
+value 0 integer 13 14 infer 3
+node 5 2 15 let 2 3 4 -
+node 6 16 17 name "x"
+node 7 16 17 path false [6]
+node 8 0 19 block Plain [5] 7
+root 8
+eof 20

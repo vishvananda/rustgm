@@ -1,0 +1,12 @@
+node 0 0 3 literal 0
+value 0 integer 0 3 u8 1
+node 1 7 10 name "u16"
+node 2 7 10 path false [1]
+node 3 7 10 type Path [2]
+node 4 0 10 cast 0 3
+node 5 14 17 name "u32"
+node 6 14 17 path false [5]
+node 7 14 17 type Path [6]
+node 8 0 17 cast 4 7
+root 8
+eof 18

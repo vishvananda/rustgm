@@ -1,0 +1,16 @@
+node 0 7 8 literal 0
+value 0 integer 7 8 infer 1
+node 1 6 8 unary negate 0
+node 2 12 13 literal 1
+value 1 integer 12 13 infer 1
+node 3 11 13 unary negate 2
+node 4 17 18 literal 2
+value 2 integer 17 18 infer 7
+node 5 11 18 arm 3 - 4
+node 6 20 21 wildcard
+node 7 25 26 literal 3
+value 3 integer 25 26 infer 0
+node 8 20 26 arm 6 - 7
+node 9 0 28 match 1 [5,8]
+root 9
+eof 29

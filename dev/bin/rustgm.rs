@@ -6,6 +6,7 @@ use rustgm::{
     },
     literal,
     support::source::SourceFile,
+    syntax::expression,
 };
 use std::{
     fs,
@@ -32,7 +33,8 @@ fn options() -> Result<Options, String> {
     let mut args = std::env::args().skip(1);
     while let Some(arg) = args.next() {
         match arg.as_str() {
-            "--emit-tokens" | "--emit-literals" | "--emit-token-trees" | "--emit-lowir" => {
+            "--emit-tokens" | "--emit-literals" | "--emit-token-trees" | "--emit-ast"
+            | "--emit-lowir" => {
                 options.mode = arg;
                 options.count = false;
             }
@@ -46,6 +48,10 @@ fn options() -> Result<Options, String> {
             }
             "--count-token-trees" => {
                 options.mode = "--emit-token-trees".into();
+                options.count = true;
+            }
+            "--count-ast" => {
+                options.mode = "--emit-ast".into();
                 options.count = true;
             }
             "--cfg" => {
@@ -87,7 +93,20 @@ fn compile(options: &Options) -> Result<(), String> {
         )),
         None => Box::new(io::BufWriter::new(stdout.lock())),
     };
-    let result = if options.count && options.mode == "--emit-token-trees" {
+    let result = if options.count && options.mode == "--emit-ast" {
+        let ast =
+            expression::parse(source.text()).map_err(|e| format!("{}: {}", e.offset, e.message))?;
+        writeln!(
+            output,
+            "nodes {} edges {} captures {} lookahead {} bytes {}",
+            ast.nodes.len(),
+            ast.edges.len(),
+            ast.captures.len(),
+            ast.lookahead_high_water,
+            source.text().len()
+        )
+        .map_err(|e| e.to_string())
+    } else if options.count && options.mode == "--emit-token-trees" {
         let report = expand::render::analyze(source.text(), &options.config)
             .map_err(|e| format!("{}: {}", e.offset, e.message))?;
         writeln!(
@@ -115,7 +134,9 @@ fn compile(options: &Options) -> Result<(), String> {
         }
         writeln!(output, "tokens {count} bytes {}", source.text().len()).map_err(|e| e.to_string())
     } else {
-        let rendered = if options.mode == "--emit-token-trees" {
+        let rendered = if options.mode == "--emit-ast" {
+            expression::render::expression(source.text(), &mut output)
+        } else if options.mode == "--emit-token-trees" {
             expand::render::token_trees(source.text(), &options.config, &mut output)
         } else if options.mode == "--emit-literals" {
             literal::render::literals(source.text(), &mut output)

@@ -1,0 +1,8 @@
+node 0 9 10 literal 0
+value 0 integer 9 10 infer 1
+node 1 13 14 literal 1
+value 1 integer 13 14 infer 2
+node 2 9 14 binary + 0 1
+node 3 0 16 block Unsafe [] 2
+root 3
+eof 17

@@ -1,0 +1,5 @@
+node 0 1 2 literal 0
+value 0 integer 1 2 infer 1
+node 1 0 4 tuple [0]
+root 1
+eof 5

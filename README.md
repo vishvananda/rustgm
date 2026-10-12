@@ -17,7 +17,9 @@ repository with pinned reference tools. It has not been built yet.
   and text oracles independently checked against rustc values and rejections.
 - PA3 has flat token trees, doc/attribute syntax, typed configuration facts,
   custom cfg options and independently checked text oracles.
-- PA4–PA38 have buildout briefs and Makefiles. Their suites and implementation
+- PA4 has a bounded expression/statement parser, dense typed syntax arenas,
+  macro captures and independently checked text oracles.
+- PA5–PA38 have buildout briefs and Makefiles. Their suites and implementation
   are not complete; invoking an unbuilt assignment fails explicitly.
 - The backend bridge has an executable LowIR smoke test. Rust source lowering
   begins at PA11; the smoke test is not evidence of Rust source compilation.
@@ -46,7 +48,7 @@ dependency initially supplies Unicode XID property tables; it is not a lexer.
 See [dependency review](docs/dependencies.md).
 
 Run `dev/rustgm --emit-tokens source.rs`, `dev/rustgm --emit-literals source.rs`,
-or `dev/rustgm --emit-token-trees source.rs`,
+`dev/rustgm --emit-token-trees source.rs`, or `dev/rustgm --emit-ast expression.rs`,
 or pass source on stdin. The reference
 wrapper `dev/rustgm-ref` invokes the same maintained solution. Override
 `RUSTGM_TEST_APP=/absolute/path/to/candidate` to test another implementation
@@ -81,3 +83,6 @@ counts on scaled inputs. Performance changes require frozen A/B binaries and
 the paired measurement procedure in `spec.md`; a single timing is not a gate.
 `make perf-literals` measures the literal interpreter and suffixed float
 conversion with the same procedure, including full rendered-output checks.
+
+`make perf-ast` measures expression/statement parsing with frozen inputs, full
+output equality and the same paired scaling procedure.

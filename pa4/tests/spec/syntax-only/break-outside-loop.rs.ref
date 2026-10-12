@@ -1,0 +1,5 @@
+node 0 6 7 literal 0
+value 0 integer 6 7 infer 3
+node 1 0 7 break - 0
+root 1
+eof 8

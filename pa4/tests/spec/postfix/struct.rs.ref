@@ -1,0 +1,14 @@
+node 0 0 5 name "Point"
+node 1 0 5 path false [0]
+node 2 11 12 literal 0
+value 0 integer 11 12 infer 1
+node 3 15 16 literal 1
+value 1 integer 15 16 infer 2
+node 4 11 16 binary + 2 3
+node 5 8 16 field-init "x" 4
+node 6 21 22 literal 2
+value 2 integer 21 22 infer 4
+node 7 18 22 field-init "y" 6
+node 8 0 24 struct 1 [5,7] -
+root 8
+eof 25

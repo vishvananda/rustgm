@@ -1,0 +1,13 @@
+node 0 0 1 literal 0
+value 0 integer 0 1 infer 1
+node 1 4 5 literal 1
+value 1 integer 4 5 infer 2
+node 2 0 5 binary + 0 1
+node 3 9 10 literal 2
+value 2 integer 9 10 infer 8
+node 4 13 14 literal 3
+value 3 integer 13 14 infer 2
+node 5 9 14 binary * 3 4
+node 6 0 14 range false 2 5
+root 6
+eof 15

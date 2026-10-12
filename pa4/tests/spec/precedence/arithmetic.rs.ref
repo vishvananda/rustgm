@@ -1,0 +1,19 @@
+node 0 0 1 literal 0
+value 0 integer 0 1 infer 1
+node 1 4 5 literal 1
+value 1 integer 4 5 infer 2
+node 2 8 9 literal 2
+value 2 integer 8 9 infer 3
+node 3 4 9 binary * 1 2
+node 4 0 9 binary + 0 3
+node 5 12 13 literal 3
+value 3 integer 12 13 infer 4
+node 6 16 17 literal 4
+value 4 integer 16 17 infer 2
+node 7 12 17 binary / 5 6
+node 8 20 21 literal 5
+value 5 integer 20 21 infer 2
+node 9 12 21 binary % 7 8
+node 10 0 21 binary - 4 9
+root 10
+eof 22

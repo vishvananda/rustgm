@@ -1,0 +1,10 @@
+node 0 0 2 literal 0
+value 0 integer 0 2 infer 32
+node 1 6 7 literal 1
+value 1 integer 6 7 infer 1
+node 2 10 11 literal 2
+value 2 integer 10 11 infer 2
+node 3 6 11 binary + 1 2
+node 4 0 11 binary >> 0 3
+root 4
+eof 12

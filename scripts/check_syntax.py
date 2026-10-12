@@ -10,20 +10,34 @@ import sys
 from course import ROOT, execute, load_cases
 
 
+def check_classification(case):
+    metadata = case["rustc"]
+    if metadata["kind"] == "fragment":
+        return
+    if metadata.get("status", 0) != case["exit_status"] and not metadata.get("reason"):
+        raise ValueError(f"independent outcome mismatch requires an explicit reason: {case['path']}")
+
+
+def expression_source(data, metadata):
+    return (metadata.get("prefix", "fn main() { let _ = ").encode() + data
+            + metadata.get("suffix", "; }\n").encode())
+
+
 def check(stage, app):
     version = subprocess.check_output(["rustc", "--version"], text=True)
     if not version.startswith("rustc 1.98.0 "):
         raise ValueError(f"expected rustc 1.98.0, got {version.strip()}")
-    _, cases = load_cases(ROOT, stage)
+    manifest, cases = load_cases(ROOT, stage)
     directory = ROOT / "obj/rustc-syntax" / stage
     directory.mkdir(parents=True, exist_ok=True)
 
     def worker(case):
+        check_classification(case)
         metadata = case["rustc"]
         kind = metadata["kind"]
         if kind == "fragment":
             return False
-        if kind not in ("program", "predicate"):
+        if kind not in ("program", "predicate", "expression"):
             raise ValueError(f"unknown independent check kind: {kind}")
         fixture = ROOT / stage / case["path"]
         data = fixture.read_bytes()
@@ -32,6 +46,8 @@ def check(stage, app):
         binary = directory / name
         if kind == "predicate":
             source.write_text('fn main() { println!("{}", cfg!(' + metadata["predicate"] + ')); }\n')
+        elif kind == "expression":
+            source.write_bytes(expression_source(data, metadata))
         else:
             source.write_bytes(data)
         command = ["rustc", "--edition=2024", "--target", "x86_64-unknown-linux-gnu",
@@ -44,7 +60,7 @@ def check(stage, app):
         wanted = 0 if kind == "predicate" else metadata["status"]
         if result.returncode != wanted:
             raise ValueError(f"rustc disagreement: {fixture}: {result.returncode}, wanted {wanted}\n{result.stderr.decode(errors='replace')}")
-        actual = execute([str(app), "--emit-token-trees", "--edition=2024", *case.get("args", [])], data, 10)
+        actual = execute([str(app), manifest["mode"], "--edition=2024", *case.get("args", [])], data, 10)
         if actual[2] != f"{case['exit_status']}\n".encode():
             raise ValueError(f"candidate outcome disagreement: {fixture}: {actual[1]!r}")
         if kind == "predicate":
@@ -66,6 +82,10 @@ def check(stage, app):
     if count == 0:
         raise ValueError("empty independent syntax check suite")
     print(f"PASS: {stage}: {count} independent rustc checks; {len(cases) - count} declared stream fragments")
+    differences = sum(c.get("rustc", {}).get("status", 0) != c["exit_status"]
+                      for c in cases if c["rustc"]["kind"] != "fragment")
+    if differences:
+        print(f"  {differences} documented phase-boundary differences, not acceptance equivalence")
 
 
 if __name__ == "__main__":

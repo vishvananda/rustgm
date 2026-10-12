@@ -11,6 +11,7 @@ import time
 ROOT = Path(__file__).resolve().parents[1]
 LINE = b'fn measured(value: u64) -> u64 { value + 17 }\n'
 LITERAL_LINE = br'''42u64 0.1f32 'x' '\u{1f980}' b'\xff' "plain" "escaped\n" br##"raw"## c"\xe6"''' + b"\n"
+AST_LINE = b"let value: u64 = 1 + 2 * 3; value;\n"
 TREE_LINE = b'#[cfg_attr(unix, allow(unused))] fn measured(x: u64) -> u64 { x + 17 }\n'
 
 
@@ -45,7 +46,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--baseline", type=Path)
     parser.add_argument("--candidate", type=Path, default=ROOT / "obj/rust/release/rustgm")
-    parser.add_argument("--stage", choices=("tokens", "literals", "token-trees"), default="tokens")
+    parser.add_argument("--stage", choices=("tokens", "literals", "token-trees", "ast"), default="tokens")
     args = parser.parse_args()
     directory = ROOT / "obj/perf" / str(time.time_ns())
     directory.mkdir(parents=True)
@@ -62,11 +63,11 @@ def main():
                "stage": args.stage,
                "binary_sha256": {name: hashlib.sha256(p.read_bytes()).hexdigest() for name, p in binaries.items()},
                "samples": [], "full_output_sha256": {}}
-    scales = (4000, 16000, 64000) if args.stage == "token-trees" else (16000, 64000, 256000)
-    line = {"tokens": LINE, "literals": LITERAL_LINE, "token-trees": TREE_LINE}[args.stage]
+    scales = (4000, 16000, 64000) if args.stage in ("token-trees", "ast") else (16000, 64000, 256000)
+    line = {"tokens": LINE, "literals": LITERAL_LINE, "token-trees": TREE_LINE, "ast": AST_LINE}[args.stage]
     for lines in scales:
         source = directory / f"input-{lines}.rs"
-        source.write_bytes(line * lines)
+        source.write_bytes(b"{\n" + line * lines + b"}\n" if args.stage == "ast" else line * lines)
         full_outputs = {name: full_output_hash(binary, source, directory, args.stage) for name, binary in binaries.items()}
         if full_outputs["A"] != full_outputs["B"]:
             raise ValueError("full output differs between immutable binaries")

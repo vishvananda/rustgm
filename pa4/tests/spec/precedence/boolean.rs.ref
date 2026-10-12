@@ -1,0 +1,11 @@
+node 0 0 5 literal 0
+value 0 boolean 0 5 false
+node 1 9 13 literal 1
+value 1 boolean 9 13 true
+node 2 18 23 literal 2
+value 2 boolean 18 23 false
+node 3 17 23 unary not 2
+node 4 9 23 binary && 1 3
+node 5 0 23 binary || 0 4
+root 5
+eof 24

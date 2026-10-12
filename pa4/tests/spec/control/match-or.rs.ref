@@ -1,0 +1,17 @@
+node 0 6 7 literal 0
+value 0 integer 6 7 infer 2
+node 1 12 13 literal 1
+value 1 integer 12 13 infer 1
+node 2 16 17 literal 2
+value 2 integer 16 17 infer 2
+node 3 12 17 pattern Or - [1,2]
+node 4 21 22 literal 3
+value 3 integer 21 22 infer 3
+node 5 12 22 arm 3 - 4
+node 6 24 25 wildcard
+node 7 29 30 literal 4
+value 4 integer 29 30 infer 0
+node 8 24 30 arm 6 - 7
+node 9 0 32 match 0 [5,8]
+root 9
+eof 33

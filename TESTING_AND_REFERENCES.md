@@ -49,6 +49,12 @@ predicates with the pinned target/profile. Cases may declare `args` as explicit
 in evidence. Reference receipts hash the manifest as well as source fixtures,
 so changing configuration or expected outcomes requires an explicit review.
 
+PA4's `check_syntax.py pa4` checks expression fragments in explicit wrappers.
+A mismatch between parser acceptance and rustc acceptance requires a manifest
+reason (for example, type checking deferred to a later stage). Structural tests
+check AST shape independently of generated sidecars; resource tests check deep
+input, bounded lookahead and nonrecursive arena destruction.
+
 Rustc has no LowIR output. From PA11, maintainer-generated LowIR is the course
 text oracle, with independent run-pass checks through CPPGM versus rustc. Do
 not grade LLVM IR or assume Rust's unspecified layout matches rustc. Test exact
@@ -72,8 +78,8 @@ our oracle: their representation and diagnostic contracts belong to upstream.
 
 ## Release discipline
 
-PA1–PA3 are implemented drafts, not a claim of full Rust frontend conformance.
-Planned PA4–PA38 fail on invocation and are excluded from pass counts. Promote
+PA1–PA4 are implemented drafts, not a claim of full Rust frontend conformance.
+Planned PA5–PA38 fail on invocation and are excluded from pass counts. Promote
 a stage only after handout/reference/fixtures are coherent, independent checks
 pass, the source-to-feature ledger is reviewed and all prior stages remain green.
 Keep maintainer measurements and logs in ignored `obj/`; keep student handout

@@ -1,0 +1,6 @@
+node 0 0 9 name "stringify"
+node 1 0 9 path false [0]
+node 2 0 27 macro 1 0
+capture 0 10 27 8 "[[a b] { c } (d)]"
+root 2
+eof 28

@@ -1,0 +1,7 @@
+node 0 0 1 literal 0
+value 0 integer 0 1 infer 1
+node 1 4 8 literal 1
+value 1 boolean 4 8 true
+node 2 0 8 binary + 0 1
+root 2
+eof 9

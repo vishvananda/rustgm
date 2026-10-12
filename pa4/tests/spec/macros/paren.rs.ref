@@ -1,0 +1,6 @@
+node 0 0 9 name "stringify"
+node 1 0 9 path false [0]
+node 2 0 52 macro 1 0
+capture 0 10 52 11 "(1suffix #[cfg(bad())] + arbitrary tokens)"
+root 2
+eof 53

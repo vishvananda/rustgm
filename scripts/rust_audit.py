@@ -23,7 +23,7 @@ ALLOWED_DEPENDENCIES = {
     "borrow": {"support", "types", "body"},
     "const_eval": {"support", "types", "body"},
     "lex": {"support", "types"}, "preprocess": {"support", "lex", "types"},
-    "syntax": {"support", "lex", "types", "preprocess"},
+    "syntax": {"support", "lex", "literal", "types", "preprocess"},
     "sema": {"support", "lex", "types", "syntax", "resolve", "abi"},
     "abi": {"support", "lex", "types"}, "lowir": {"support", "types"},
     "lower": {"support", "lex", "types", "syntax", "sema", "body", "borrow", "const_eval", "abi", "lowir"},

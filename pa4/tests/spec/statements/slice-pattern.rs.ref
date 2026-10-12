@@ -1,0 +1,24 @@
+node 0 7 8 name "x"
+node 1 7 8 path false [0]
+node 2 7 8 binding false false "x" -
+node 3 10 12 rest-pattern
+node 4 14 15 name "y"
+node 5 14 15 path false [4]
+node 6 14 15 binding false false "y" -
+node 7 6 16 pattern Slice - [2,3,6]
+node 8 20 21 literal 0
+value 0 integer 20 21 infer 1
+node 9 23 24 literal 1
+value 1 integer 23 24 infer 2
+node 10 26 27 literal 2
+value 2 integer 26 27 infer 3
+node 11 19 28 array [8,9,10]
+node 12 2 29 let 7 - 11 -
+node 13 30 31 name "x"
+node 14 30 31 path false [13]
+node 15 34 35 name "y"
+node 16 34 35 path false [15]
+node 17 30 35 binary + 14 16
+node 18 0 37 block Plain [12] 17
+root 18
+eof 38

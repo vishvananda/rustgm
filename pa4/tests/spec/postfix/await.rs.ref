@@ -1,0 +1,7 @@
+node 0 16 17 literal 0
+value 0 integer 16 17 infer 7
+node 1 8 19 block Async [] 0
+node 2 8 25 unary await 1
+node 3 0 27 block Async [] 2
+root 3
+eof 28

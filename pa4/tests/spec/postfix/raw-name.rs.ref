@@ -1,0 +1,11 @@
+node 0 6 11 name "r#gen"
+node 1 6 11 path false [0]
+node 2 6 11 binding false false "r#gen" -
+node 3 14 15 literal 0
+value 0 integer 14 15 infer 3
+node 4 2 16 let 2 - 3 -
+node 5 17 22 name "r#gen"
+node 6 17 22 path false [5]
+node 7 0 24 block Plain [4] 6
+root 7
+eof 25

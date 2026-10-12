@@ -1,0 +1,8 @@
+node 0 1 2 literal 0
+value 0 integer 1 2 infer 1
+node 1 4 5 literal 1
+value 1 integer 4 5 infer 2
+node 2 0 6 tuple [0,1]
+node 3 0 8 field 2 "1"
+root 3
+eof 9

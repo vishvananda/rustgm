@@ -1,0 +1,6 @@
+node 0 0 9 name "stringify"
+node 1 0 9 path false [0]
+node 2 0 32 macro 1 0
+capture 0 10 32 3 "(/** docs */ 1invalid)"
+root 2
+eof 33

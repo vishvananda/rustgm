@@ -1,0 +1,8 @@
+node 0 13 14 literal 0
+value 0 integer 13 14 infer 4
+node 1 7 14 break - 0
+node 2 7 15 statement 1
+node 3 5 17 block Plain [2] -
+node 4 0 17 loop 3
+root 4
+eof 18

@@ -1,0 +1,28 @@
+node 0 10 11 name "x"
+node 1 10 11 path false [0]
+node 2 6 11 binding true false "x" -
+node 3 2 12 let 2 - - -
+node 4 21 22 name "y"
+node 5 21 22 path false [4]
+node 6 17 22 binding true false "y" -
+node 7 13 23 let 6 - - -
+node 8 25 26 name "x"
+node 9 25 26 path false [8]
+node 10 28 29 name "y"
+node 11 28 29 path false [10]
+node 12 24 30 tuple [9,11]
+node 13 34 35 literal 0
+value 0 integer 34 35 infer 1
+node 14 37 38 literal 1
+value 1 integer 37 38 infer 2
+node 15 33 39 tuple [13,14]
+node 16 24 39 binary = 12 15
+node 17 24 40 statement 16
+node 18 41 42 name "x"
+node 19 41 42 path false [18]
+node 20 45 46 name "y"
+node 21 45 46 path false [20]
+node 22 41 46 binary + 19 21
+node 23 0 48 block Plain [3,7,17] 22
+root 23
+eof 49

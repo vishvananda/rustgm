@@ -1,0 +1,11 @@
+node 0 35 36 literal 0
+value 0 integer 35 36 infer 3
+node 1 22 36 break "'outer" 0
+node 2 22 37 statement 1
+node 3 20 39 block Plain [2] -
+node 4 15 39 loop 3
+node 5 13 41 block Plain [] 4
+node 6 8 41 loop 5
+node 7 0 41 label "'outer" 6
+root 7
+eof 42

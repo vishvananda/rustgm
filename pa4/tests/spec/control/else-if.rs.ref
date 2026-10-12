@@ -1,0 +1,17 @@
+node 0 3 8 literal 0
+value 0 boolean 3 8 false
+node 1 11 12 literal 1
+value 1 integer 11 12 infer 1
+node 2 9 14 block Plain [] 1
+node 3 23 27 literal 2
+value 2 boolean 23 27 true
+node 4 30 31 literal 3
+value 3 integer 30 31 infer 2
+node 5 28 33 block Plain [] 4
+node 6 41 42 literal 4
+value 4 integer 41 42 infer 3
+node 7 39 44 block Plain [] 6
+node 8 20 44 if 3 5 7
+node 9 0 44 if 0 2 8
+root 9
+eof 45

@@ -9,7 +9,12 @@ use crate::{
 };
 use std::io::{self, Write};
 
-fn value(output: &mut impl Write, literal: &Value<'_>, start: u32, end: u32) -> io::Result<()> {
+pub(crate) fn value(
+    output: &mut impl Write,
+    literal: &Value<'_>,
+    start: u32,
+    end: u32,
+) -> io::Result<()> {
     match literal {
         Value::Integer(integer) => writeln!(
             output,

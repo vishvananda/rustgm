@@ -1,0 +1,11 @@
+node 0 2 6 name "core"
+node 1 8 11 name "cmp"
+node 2 13 16 name "min"
+node 3 0 16 path true [0,1,2]
+node 4 17 18 literal 0
+value 0 integer 17 18 infer 1
+node 5 20 21 literal 1
+value 1 integer 20 21 infer 2
+node 6 0 22 call 3 [4,5]
+root 6
+eof 23

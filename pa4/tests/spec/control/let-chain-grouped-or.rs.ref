@@ -1,0 +1,22 @@
+node 0 7 8 name "x"
+node 1 7 8 path false [0]
+node 2 7 8 binding false false "x" -
+node 3 11 12 literal 0
+value 0 integer 11 12 infer 1
+node 4 3 12 let-condition 2 3
+node 5 17 22 literal 1
+value 1 boolean 17 22 false
+node 6 26 30 literal 2
+value 2 boolean 26 30 true
+node 7 17 30 binary || 5 6
+node 8 16 31 group 7
+node 9 3 31 binary && 4 8
+node 10 34 35 name "x"
+node 11 34 35 path false [10]
+node 12 32 37 block Plain [] 11
+node 13 45 46 literal 3
+value 3 integer 45 46 infer 0
+node 14 43 48 block Plain [] 13
+node 15 0 48 if 9 12 14
+root 15
+eof 49

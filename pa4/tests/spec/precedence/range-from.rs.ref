@@ -1,0 +1,5 @@
+node 0 0 1 literal 0
+value 0 integer 0 1 infer 1
+node 1 0 3 range false 0 -
+root 1
+eof 4

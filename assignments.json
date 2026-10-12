@@ -38,7 +38,7 @@
       "title": "Token trees and attributes",
       "mode": "--emit-token-trees",
       "status": "implemented-draft",
-      "scope": "Delimiter trees, attribute/doc syntax and cfg facts; syntax-owned attachment and elision follow in PA4/PA5",
+      "scope": "Delimiter trees, attribute/doc syntax and cfg facts; syntax-owned attachment and elision follow in PA5",
       "test_families": [
         "nested groups",
         "mismatched delimiters",
@@ -51,8 +51,8 @@
       "path": "pa4",
       "title": "Expressions and statements",
       "mode": "--emit-ast",
-      "status": "planned",
-      "scope": "Expression and statement grammar with bounded lookahead",
+      "status": "implemented-draft",
+      "scope": "Expression fragments and statements with bounded lookahead; full item/type/pattern grammar and attribute attachment at PA5",
       "test_families": [
         "precedence",
         "blocks",
@@ -66,7 +66,7 @@
       "number": 5,
       "path": "pa5",
       "title": "Items types and patterns",
-      "mode": "--emit-ast",
+      "mode": "--emit-crate-ast",
       "status": "planned",
       "scope": "Item/type/pattern grammar and macro invocation placeholders",
       "test_families": [

@@ -65,7 +65,7 @@ retain opaque contents, so an attribute-looking sequence inside macro input is
 not eagerly processed. The reusable attribute API accepts a syntax-owned tree
 position, allowing the later parser to demand attributes on fields, statements,
 parameters and nested items. An attribute set is enabled only if all its cfg
-facts are true. PA4/PA5 attach these facts to parsed constructs and omit disabled
+facts are true. PA5 attaches these facts to parsed constructs and omit disabled
 constructs from subsequent semantic work. Do not guess item boundaries by
 searching for braces or semicolons. PA7/PA8 own macro matching and expansion;
 PA36 closes the complete attribute/edition semantics.

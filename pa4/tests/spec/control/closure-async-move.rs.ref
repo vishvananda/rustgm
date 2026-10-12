@@ -1,0 +1,5 @@
+node 0 14 15 literal 0
+value 0 integer 14 15 infer 7
+node 1 0 15 closure true true [] - 0
+root 1
+eof 16

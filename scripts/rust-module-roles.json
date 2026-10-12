@@ -1,5 +1,6 @@
 {
   "dev/src/lex/token.rs": "interface",
   "dev/src/literal/value.rs": "interface",
-  "dev/src/syntax/attribute.rs": "interface"
+  "dev/src/syntax/attribute.rs": "interface",
+  "dev/src/syntax/ast.rs": "model"
 }

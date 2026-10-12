@@ -1,0 +1,15 @@
+node 0 6 7 name "x"
+node 1 6 7 path false [0]
+node 2 6 7 binding false false "x" -
+node 3 10 13 name "i32"
+node 4 10 13 path false [3]
+node 5 10 13 type Path [4]
+node 6 9 14 group 5
+node 7 17 18 literal 0
+value 0 integer 17 18 infer 1
+node 8 2 19 let 2 6 7 -
+node 9 20 21 name "x"
+node 10 20 21 path false [9]
+node 11 0 23 block Plain [8] 10
+root 11
+eof 24

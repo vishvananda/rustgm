@@ -1,0 +1,8 @@
+node 0 13 14 literal 0
+value 0 integer 13 14 infer 1
+node 1 17 18 literal 1
+value 1 integer 17 18 infer 2
+node 2 13 18 binary + 0 1
+node 3 0 20 block AsyncMove [] 2
+root 3
+eof 21

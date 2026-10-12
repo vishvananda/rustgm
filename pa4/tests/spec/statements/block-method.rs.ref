@@ -1,0 +1,8 @@
+node 0 2 4 block Plain [] -
+node 1 2 12 method-call 0 "clone" []
+node 2 2 13 statement 1
+node 3 14 15 literal 0
+value 0 integer 14 15 infer 1
+node 4 0 17 block Plain [2] 3
+root 4
+eof 18

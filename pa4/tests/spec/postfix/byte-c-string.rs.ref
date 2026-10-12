@@ -1,0 +1,11 @@
+node 0 1 7 literal 0
+value 0 byte-string 1 7 3 "abc"
+node 1 9 15 literal 1
+value 1 c-string 9 15 4 "def\x00"
+node 2 17 20 literal 2
+value 2 character 17 20 U+000078
+node 3 22 26 literal 3
+value 3 byte 22 26 0x78
+node 4 0 27 tuple [0,1,2,3]
+root 4
+eof 28

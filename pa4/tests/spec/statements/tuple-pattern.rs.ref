@@ -1,0 +1,21 @@
+node 0 7 8 name "x"
+node 1 7 8 path false [0]
+node 2 7 8 binding false false "x" -
+node 3 10 11 name "y"
+node 4 10 11 path false [3]
+node 5 10 11 binding false false "y" -
+node 6 6 12 pattern Tuple - [2,5]
+node 7 16 17 literal 0
+value 0 integer 16 17 infer 1
+node 8 19 20 literal 1
+value 1 integer 19 20 infer 2
+node 9 15 21 tuple [7,8]
+node 10 2 22 let 6 - 9 -
+node 11 23 24 name "x"
+node 12 23 24 path false [11]
+node 13 27 28 name "y"
+node 14 27 28 path false [13]
+node 15 23 28 binary + 12 14
+node 16 0 30 block Plain [10] 15
+root 16
+eof 31
