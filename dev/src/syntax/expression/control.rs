@@ -355,6 +355,11 @@ impl Parser<'_, '_> {
         self.expect(P::OpenBrace)?;
         let mark = self.scratch.len();
         while !self.eat(P::CloseBrace)? {
+            let attributes = if self.extended {
+                self.attributes(false)?
+            } else {
+                crate::syntax::item::AttributeRange::default()
+            };
             let pattern = self.pattern(true)?;
             let guard = if self.word("if")? {
                 Some(self.expr(0, NORMAL)?)
@@ -377,6 +382,7 @@ impl Parser<'_, '_> {
                     value,
                 },
             )?;
+            let arm = self.attach(attributes, arm)?;
             self.scratch.push(arm);
             if self.eat(P::CloseBrace)? {
                 break;

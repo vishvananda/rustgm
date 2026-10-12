@@ -1,7 +1,7 @@
 //! Sparse move paths; ordinary indexing keeps its containing array indivisible.
 mod arrays;
 use crate::{
-    body::ir::{Body, LocalId, Place, ProjectionKind, Selection, ValueId},
+    body::ir::{Body, LocalId, Place, ProjectionKind, Rvalue, Selection, ValueId},
     types::{Kind, Store, TypeId},
 };
 use std::collections::HashMap;
@@ -60,16 +60,8 @@ impl Paths {
         let mut fields = HashMap::new();
         let mut arrays = arrays::Arrays::default();
         for projection in &body.projections {
-            if let Place::Temporary(value) = projection.base
-                && !paths.temporaries.contains_key(&value)
-            {
-                let ty = body
-                    .values
-                    .get(value.0 as usize)
-                    .ok_or("invalid temporary place")?
-                    .ty;
-                let id = paths.insert(Root::Temporary(value), None, None, ty)?;
-                paths.temporaries.insert(value, id);
+            if let Place::Temporary(value) = projection.base {
+                paths.temporary(body, value)?;
             }
             let mut info = paths.place(projection.base)?;
             let component = match projection.kind {
@@ -109,12 +101,29 @@ impl Paths {
             }
             paths.projections.push(info);
         }
+        for value in &body.values {
+            if let Rvalue::Read(Place::Temporary(id)) = value.kind {
+                paths.temporary(body, id)?;
+            }
+        }
         if arrays.is_empty() {
             paths.number()?;
         } else {
             arrays.number(&mut paths)?;
         }
         Ok(paths)
+    }
+    fn temporary(&mut self, body: &Body, value: ValueId) -> Result<(), &'static str> {
+        if !self.temporaries.contains_key(&value) {
+            let ty = body
+                .values
+                .get(value.0 as usize)
+                .ok_or("invalid temporary place")?
+                .ty;
+            let id = self.insert(Root::Temporary(value), None, None, ty)?;
+            self.temporaries.insert(value, id);
+        }
+        Ok(())
     }
     fn normalize(
         &self,

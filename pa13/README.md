@@ -26,8 +26,11 @@ The in-progress implementation also accepts `--emit-patterns` and
 grading contract or a lifetime/loan validity claim. Simple standalone value
 bindings and wildcards use the earlier direct path and have no selected root.
 The view covers irrefutable owned products/arrays, explicit reference patterns,
-edition-2024 binding modes, and irrefutable borrowed slice rests. Conditional
-patterns, match decisions, guards, usefulness and witnesses remain unfinished.
+edition-2024 binding modes, irrefutable borrowed slice rests, and scalar match
+decisions. Boolean, integer and character matches have exhaustiveness and
+whole-arm usefulness checks with deterministic missing-value witnesses.
+Unguarded scalar matches can execute. General constructor coverage, guarded
+execution and conditional bindings remain unfinished.
 
 The current vocabulary is `selected-patterns 1`, the canonical type table,
 `root FILE:NODE pattern=ID`, and arena-ordered `pattern ID source=FILE:NODE
@@ -36,6 +39,7 @@ follow deterministic source traversal. A pattern's input type remains distinct
 from a binding's local type. Kinds are:
 
 - `wildcard` (including a selected rest with no binding operation).
+- `range=ID` for a scalar literal or interval in the separate range arena.
 - `bind def=ID local=TYPE mutable=BOOL capture=value|ref|ref-mut`, followed by
   `region=REGION loan=pending` for borrowed captures, then `subpattern=ID|-`.
 - `deref mutable=BOOL implicit=BOOL pattern=ID` for each reference adjustment.
@@ -48,6 +52,23 @@ subslice values count excluded elements at either end. Currently only `0:0`
 is irrefutable for a dynamic slice. `alternative ID pattern=ID` records retain
 each occurrence, including distinct capture operations for a shared binding.
 
+`range ID ranks=LOW:HIGH` uses inclusive, ordered target ranks. Signed integers
+use a sign-bit bias; character ranks exclude the surrogate gap. The input type
+determines how to interpret ranks. `match ID source=FILE:NODE input=FILE:NODE
+arms=START:END exhaustive=true work=N` retains the scrutinee and a half-open
+source-ordered arm range. `arm ID source=FILE:NODE pattern=ID guard=FILE:NODE|-
+useful=BOOL value=FILE:NODE` retains the guard and result identities. Guarded
+arms contribute no exhaustiveness coverage. Usefulness refers to the whole arm,
+not individual redundant alternatives. Coverage counts visited pattern nodes
+and interval-index operations and rejects work beyond 1,000,000 per query.
+
+Scalar decisions retain ordered alternatives, read the scrutinee only when the
+decision or capture requires it, and capture values after a successful decision.
+A full-domain interval requires no value test. Guarded execution is rejected
+before publishing body IR: inspection has not proved protected guard accesses,
+delayed moves or failed-guard retries. Scalar-only irrefutable binding coverage
+is checked, but conditional let/parameter execution is not yet available.
+
 `region-var region:N body=FILE:NODE source=FILE:NODE origin=pattern-borrow|pattern-input
 pending` gives existential region provenance. IDs are globally allocated from
 one and do not alias `static` or signature `bound:DEPTH:INDEX` regions. Pending
@@ -55,8 +76,10 @@ one and do not alias `static` or signature `bound:DEPTH:INDEX` regions. Pending
 capture's fresh region constitutes a loan or outlives proof. Borrowed captures
 and reference-pattern execution are rejected at the body-building boundary.
 
-The final line is `eof roots=N patterns=N fields=N alternatives=N region-vars=N
-region-equalities=N`. Count mode emits that same line without `eof `, after the
+The final line is `eof roots=N patterns=N fields=N alternatives=N ranges=N
+matches=N arms=N coverage-work=N region-vars=N region-equalities=N`.
+`coverage-work` sums match queries; it does not count ordinary binding checks.
+Count mode emits that same line without `eof `, after the
 same checks. Diagnostics return 1 and emit no partial pattern view. No PA13
 manifest or generated sidecars are published until the whole assignment passes.
 

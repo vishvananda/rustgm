@@ -53,6 +53,12 @@ impl Builder<'_> {
             base
         };
         match pattern.kind {
+            Kind::Range(_) => {
+                return Err(self.error(
+                    node,
+                    "conditional binding execution requires pattern decisions",
+                ));
+            }
             Kind::Dereference { .. }
             | Kind::Binding {
                 capture: Capture::Borrow { .. },
@@ -101,7 +107,11 @@ impl Builder<'_> {
         }
         Ok(())
     }
-    fn pattern_capture(&mut self, id: PatternId, place: Option<Place>) -> Result<(), Error> {
+    pub(super) fn pattern_capture(
+        &mut self,
+        id: PatternId,
+        place: Option<Place>,
+    ) -> Result<(), Error> {
         let pattern = &self.facts.patterns.nodes[id.0 as usize];
         let node = pattern.source.node;
         let Kind::Binding {

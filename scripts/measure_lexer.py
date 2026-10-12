@@ -54,9 +54,10 @@ def main():
     workloads.add_argument("--product-input", action="store_true", help="exercise owned product bindings at 1000/4000/16000 procedures")
     workloads.add_argument("--array-pattern-input", action="store_true", help="exercise owned array ranges at 1000/4000/16000 procedures")
     workloads.add_argument("--borrowed-pattern-input", action="store_true", help="exercise borrowed arrays/slices and occurrence captures at 1000/4000/16000 procedures")
+    workloads.add_argument("--scalar-match-input", action="store_true", help="exercise ordered scalar match decisions at 1000/4000/16000 procedures")
     parser.add_argument("--stage", choices=("tokens", "literals", "token-trees", "ast", "crate-ast", "names", "expanded", "expanded-crate", "types", "patterns", "layouts", "body-ir", "ownership", "lowir"), default="tokens")
     args = parser.parse_args()
-    if (args.aggregate_input or args.discriminant_input or args.product_input or args.array_pattern_input) and args.stage != "lowir":
+    if (args.aggregate_input or args.discriminant_input or args.product_input or args.array_pattern_input or args.scalar_match_input) and args.stage != "lowir":
         parser.error("aggregate, discriminant and owned-pattern workloads require --stage lowir")
     if args.pattern_input and args.stage != "names":
         parser.error("pattern identity workloads require --stage names")
@@ -81,15 +82,22 @@ def main():
                "product_input": args.product_input,
                "array_pattern_input": args.array_pattern_input,
                "borrowed_pattern_input": args.borrowed_pattern_input,
+               "scalar_match_input": args.scalar_match_input,
                "binary_sha256": {name: hashlib.sha256(p.read_bytes()).hexdigest() for name, p in binaries.items()},
                "samples": [], "full_output_sha256": {}}
     scales = (4000, 16000, 64000) if args.stage in ("token-trees", "ast", "crate-ast", "names", "expanded", "expanded-crate", "types", "body-ir", "ownership", "lowir") else (16000, 64000, 256000)
-    if args.aggregate_input or args.discriminant_input or args.pattern_input or args.product_input or args.array_pattern_input or args.borrowed_pattern_input or args.stage == "layouts":
+    if args.aggregate_input or args.discriminant_input or args.pattern_input or args.product_input or args.array_pattern_input or args.borrowed_pattern_input or args.scalar_match_input or args.stage == "layouts":
         scales = (1000, 4000, 16000)
     line = {"tokens": LINE, "literals": LITERAL_LINE, "token-trees": TREE_LINE, "ast": AST_LINE, "crate-ast": CRATE_LINE, "names": b"", "expanded": b"", "expanded-crate": b"", "types": b"", "patterns": b"", "layouts": b"", "body-ir": b"", "ownership": b"", "lowir": b""}[args.stage]
     for lines in scales:
         source = directory / f"input-{lines}.rs"
-        if args.borrowed_pattern_input:
+        if args.scalar_match_input:
+            source.write_text("".join(
+                f"fn measured_{i}(x:u64)->u64{{match x{{"
+                "n@(0|2|4)=>n+1,1..=9=>7,10..100=>9,n=>n}}\n"
+                for i in range(lines)) + "fn main(){" + "".join(
+                f"measured_{i}(3);" for i in range(lines)) + "}\n")
+        elif args.borrowed_pattern_input:
             source.write_text("".join(
                 f"fn measured_{i}(xs:&&mut[u8;5],ys:&mut[u8],zs:(&u8,&[u8;1])){{"
                 "let[first,tail@..,last]=xs;let[all@..]=ys;let((x,_)|(_,[x]))=zs;}\n"

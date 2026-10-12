@@ -398,3 +398,109 @@ use shared views before committing binding moves; failed guards retry matching
 or-pattern alternatives. PA15 must develop reference coercions/outlives and
 variance beyond the current pending equality model. None of these obligations
 is discharged by the new inspection mode.
+
+## Scalar match checkpoint
+
+Scalar match selection now shares ordinary body inference and stores source
+identities, arm ranges, captures, intervals and whole-arm usefulness in typed
+arenas. Boolean, integer and character domains use inclusive ordered ranks;
+signed values bias the sign bit and character ranks compress the surrogate gap.
+The interval index keeps disjoint maximal covered ranges with ordered lookup and
+an explicit one-million-operation budget per query. Guards do not add coverage.
+Missing witnesses render target values, including signed minima and characters,
+not internal ranks. Nested alternatives are visited iteratively without a
+Cartesian product. This is a scalar specialization, not general constructor
+coverage or an implementation of per-alternative redundancy diagnostics.
+
+Unguarded scalar matches lower to source-ordered decisions with existing body
+CFG joins and storage cleanup. The scrutinee's place is evaluated once; captures
+happen after a successful decision. Tests exercise overlapping/open/exclusive
+ranges, i128/u128 endpoints, the Unicode gap, nested matches, macros, configured
+arms, function-item joins, returns and loop transfers. Direct scalar temporary
+reads now participate in ownership paths and reuse immutable SSA values during
+LowIR lowering. Aggregate snapshots still follow their existing copy path.
+
+Pinned rustc probes establish a subtle initialization distinction: an unused
+uninitialized scalar can match `_`, `_|0` or its whole-domain range, but `0|_`
+and a binding read are rejected. The decision builder avoids full-range tests
+without erasing ordered alternatives. Accepted vectors also exercise a whole
+unit-struct temporary, which exposed the same direct-temporary path issue.
+
+Scalar-only irrefutable binding coverage can be inspected; composite coverage
+and conditional binding execution remain unfinished. Guard expressions are
+inferred and retained, but their protected accesses are not yet proved. A
+control deliberately allows inspection of a mutable binding assignment in a
+guard and requires atomic rejection at body IR/LowIR publication. Do not treat
+this inspection success as Rust acceptance. Guard execution still needs delayed
+moves, source-place protection and retry of matching alternatives. General
+products, enums, references, slices, named constants, condition-let chains and
+let-else require the remaining PA13 work. PA14 and PA15 are still required.
+
+Parsing match-arm attributes belongs to PA5. Two new declared fixtures cover
+active/disabled arms and invalid syntax in a disabled arm; pinned rustc checks
+both. The earlier PA4 expression mode is preserved. The PA12 enum-match boundary
+still rejects, now with the more specific diagnostic `refutable constructor
+requires conditional pattern semantics`. This is the only changed existing
+oracle; other receipt changes record compiler sources, with PA5 additionally
+recording its two fixtures and manifest. PA13 has no grading manifest yet.
+
+The frozen candidate is `obj/pa13-work/scalar-candidate`, SHA-256
+`52328222ea3cd7e242be78bfd3e7762c27192d08b2b09690f78274d0dad84543`.
+Both complete Rust test configurations pass 267 tests. Strict Clippy and
+formatting pass; the file/architecture audit checks 173 files with zero findings.
+All 1,671 active text-oracle cases pass. The scalar tests compare 26 accepted and
+17 rejected source programs with pinned rustc, test every interval against all
+256 subsets of an eight-point domain, and check budget exhaustion, deterministic
+views and atomic diagnostics. The 26 accepted programs plus 48 earlier
+product/array programs also execute through the qualified CPPGM backend and
+rustc; commands, source/binary hashes and streams are retained in
+`obj/pa13-work/scalar-native-1791834818786448644/evidence.json`.
+
+The complete independent course checks also pass: PA11 has 194 LowIR checks
+and 180 executions, PA12 has 98 LowIR checks and 48 executions plus 12 separately
+qualified layout views. Harness discovery, all upstream checks and pinned rustc
+checks for the active stages pass; see `scalar-independent.log`.
+
+Before generalizing coverage, retain the pinned controls in
+`obj/pa13-work/constructor-validity-probes-1791834983142819960/evidence.json`.
+An empty match is accepted for a directly uninhabited enum, a tuple/visible
+struct containing it and a positive-length array of it. It is rejected for
+`&Void`, `[Void; 0]` and a struct whose uninhabited field is private from the
+matching module. A public field allows the empty match. A variant containing
+`Void` need not be covered, but `[]` alone does not exhaust `&[Void]`. These
+controls forbid using the layout engine's inhabitation result as the complete
+coverage predicate. The unrelated `char-end-exclusive` probe is a malformed
+`..=>` syntax control, not evidence about character coverage; the existing scalar
+suite already covers the correctly separated open range. General coverage must
+retain the matching module and place-validity context in its query identity.
+
+Frozen measurements pin CPU 10, retain all warmups, A/A calibration and three
+ABBA blocks per size, and compare complete rendered LowIR bytes and counts.
+There were no concurrent builds or tests from this task during these runs.
+The first three use `borrowed-candidate` as the baseline. The new scalar
+workload uses candidate A/A, because the earlier compiler cannot compile it.
+All 216 observations and input/binary hashes remain under `obj/perf/`:
+
+| Workload | Run | Largest baseline/candidate median ms | Largest baseline/candidate peak KiB |
+| --- | --- | ---: | ---: |
+| Ordinary LowIR, 4k/16k/64k | 1791834999833771820 | 3582.97 / 3596.85 | 700788 / 701388 |
+| Product LowIR, 1k/4k/16k | 1791835094409770775 | 1567.40 / 1587.10 | 322384 / 322592 |
+| Array LowIR, 1k/4k/16k | 1791835137032824860 | 1729.75 / 1732.88 | 382484 / 382924 |
+| Scalar-match LowIR A/A, 1k/4k/16k | 1791835183369469408 | 964.57 / 940.12 | 234440 / 234372 |
+
+All nine old/new full-output comparisons are equal. The largest median changes
+are approximately +0.4%, +1.3% and +0.2%; do not interpret them as proof of no
+regression. The largest ordinary paired-block ratios range from 0.953 to 1.028;
+product ratios are 1.007, 1.027 and 1.004. Memory remains close to baseline. The
+new scalar workload's medians are 54.24, 247.18 and 940.12 ms with candidate peak
+RSS 17744, 61144 and 234372 KiB. It measures scaling across independent match
+bodies, not an adversarial single constructor-matrix query.
+
+A final direct-temporary control verifies that moving the same non-Copy unit
+value into two `@` bindings is rejected by both compilers, while one capture is
+accepted. Evidence is in
+`obj/pa13-work/direct-temporary-controls-1791835252744843721/evidence.json`.
+The negative control is retained in `dev/tests/scalar_matches.rs`; its final
+four-test suite was rerun in debug/release, followed by lint/audit and explicit
+reference regeneration. This test-only addition does not change the frozen
+compiler used for native qualification or performance.

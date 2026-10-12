@@ -1,4 +1,5 @@
 //! Selected pattern structure is shared by semantic checks and body construction.
+pub mod scalar;
 use super::members::{Selection, VariantId};
 use crate::{
     resolve::{model::DefId, unit::NodeKey},
@@ -8,6 +9,30 @@ use std::collections::HashMap;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct PatternId(pub u32);
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct RangeId(pub u32);
+/// Inclusive ordered scalar ranks; signed integers and Unicode gaps are normalized.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct Interval {
+    pub lower: u128,
+    pub upper: u128,
+}
+#[derive(Clone, Copy)]
+pub struct Arm {
+    pub source: NodeKey,
+    pub pattern: Option<PatternId>,
+    pub guard: Option<NodeKey>,
+    pub value: NodeKey,
+    pub useful: bool,
+}
+pub struct Match {
+    pub source: NodeKey,
+    pub scrutinee: NodeKey,
+    pub start: u32,
+    pub end: u32,
+    /// Logical pattern visits and interval-index operations, including guard checks.
+    pub work: u64,
+}
 #[derive(Clone, Copy, Debug)]
 pub struct Fields {
     pub start: u32,
@@ -40,6 +65,7 @@ pub enum Capture {
 pub enum Kind {
     Pending,
     Wildcard,
+    Range(RangeId),
     Binding {
         definition: DefId,
         mutable: bool,
@@ -69,6 +95,10 @@ pub struct Patterns {
     pub nodes: Vec<Pattern>,
     pub fields: Vec<Field>,
     pub alternatives: Vec<PatternId>,
+    pub ranges: Vec<Interval>,
+    pub matches: HashMap<NodeKey, u32>,
+    pub decisions: Vec<Match>,
+    pub arms: Vec<Arm>,
 }
 impl Patterns {
     /// Reserve a compact identity before elaborating nested pattern structure.

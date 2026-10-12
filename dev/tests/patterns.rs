@@ -712,3 +712,72 @@ fn slice_rest_binds_a_reference_to_an_unsized_place() -> Result<(), String> {
     assert_eq!(facts.types.is_sized(local), Some(true));
     Ok(())
 }
+
+#[test]
+fn scalar_coverage_retains_redundancy_without_counting_guards() -> Result<(), String> {
+    let (_, facts) =
+        analyze("fn f(x:u8)->u8{match x{0..=5 if false=>1,0..=1=>2,0..=1=>3,2..=255=>4}}")?;
+    assert_eq!(facts.patterns.decisions.len(), 1);
+    let decision = &facts.patterns.decisions[0];
+    assert_eq!(decision.start, 0);
+    assert_eq!(decision.end, 4);
+    assert_eq!(
+        facts
+            .patterns
+            .arms
+            .iter()
+            .map(|a| a.useful)
+            .collect::<Vec<_>>(),
+        [true, true, false, true]
+    );
+    assert!(decision.work > 0 && decision.work <= rustgm::sema::patterns::scalar::Coverage::LIMIT);
+    assert!(facts.patterns.arms[0].guard.is_some());
+    assert!(facts.patterns.arms[1..].iter().all(|a| a.guard.is_none()));
+    Ok(())
+}
+
+#[test]
+fn scalar_witnesses_are_target_values_and_errors_are_atomic()
+-> Result<(), Box<dyn std::error::Error>> {
+    for (source, expected) in [
+        ("fn f(x:bool){match x{true=>()}}", "missing false"),
+        ("fn f(x:u8){match x{0..3=>(),4.. =>()}}", "missing 3"),
+        ("fn f(x:i8){match x{0.. =>()}}", "missing -128"),
+        (
+            "fn f(x:char){match x{'\\0'..='\\u{d7ff}'=>()}}",
+            "missing '\\u{e000}'",
+        ),
+    ] {
+        for mode in ["--emit-patterns", "--count-patterns"] {
+            let result = compile(source, mode)?;
+            assert_eq!(result.status.code(), Some(1));
+            assert!(result.stdout.is_empty());
+            assert!(
+                String::from_utf8_lossy(&result.stderr).contains(expected),
+                "{}",
+                String::from_utf8_lossy(&result.stderr)
+            );
+        }
+    }
+    Ok(())
+}
+
+#[test]
+fn guarded_scalar_inspection_does_not_claim_execution_safety()
+-> Result<(), Box<dyn std::error::Error>> {
+    // A scalar capture may be inspected before the guard's protected-view
+    // rules are implemented. Lowering must not accidentally copy it first.
+    let source = "fn main(){match 1u8{mut x if {x=2;true}=>(),_=>()}}";
+    for mode in ["--emit-patterns", "--count-patterns"] {
+        let result = compile(source, mode)?;
+        assert!(result.status.success());
+        assert!(result.stderr.is_empty());
+    }
+    for mode in ["--emit-body-ir", "--emit-lowir", "--count-lowir"] {
+        let result = compile(source, mode)?;
+        assert_eq!(result.status.code(), Some(1));
+        assert!(result.stdout.is_empty());
+        assert!(String::from_utf8_lossy(&result.stderr).contains("protected captures"));
+    }
+    Ok(())
+}

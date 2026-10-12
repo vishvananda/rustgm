@@ -77,6 +77,18 @@ impl Checker<'_> {
         Ok(id)
     }
     pub(super) fn pattern(&mut self, root: NodeId, term: TermId) -> Result<(), Error> {
+        let mark = self.range_work.len();
+        let root = self.selected_pattern(root, term)?;
+        if self.range_work.len() != mark {
+            self.pattern_requirements.push(root);
+        }
+        Ok(())
+    }
+    pub(super) fn selected_pattern(
+        &mut self,
+        root: NodeId,
+        term: TermId,
+    ) -> Result<PatternId, Error> {
         let id = self.reserve_pattern(root, term, Mode::Value)?;
         self.facts.patterns.roots.insert(self.key(root), id);
         let mut steps = 0;
@@ -99,7 +111,7 @@ impl Checker<'_> {
             self.pattern_work[mark..].reverse();
             self.facts.patterns.nodes[id.0 as usize].kind = kind;
         }
-        Ok(())
+        Ok(id)
     }
     fn pattern_kind(
         &mut self,
@@ -109,6 +121,12 @@ impl Checker<'_> {
         rest: bool,
     ) -> Result<PatternKind, Error> {
         match self.kind(node) {
+            Kind::Literal(_)
+            | Kind::Unary {
+                op: crate::syntax::ast::Unary::Negate,
+                ..
+            }
+            | Kind::PatternRange { .. } => self.scalar_pattern(node, term),
             Kind::Wildcard => Ok(PatternKind::Wildcard),
             Kind::RestPattern if rest => Ok(PatternKind::Wildcard),
             Kind::Binding {
@@ -218,10 +236,17 @@ impl Checker<'_> {
     ) -> Result<(PatternId, TermId, Mode), Error> {
         let structural = matches!(
             self.kind(node),
-            Kind::Pattern {
-                flavor: PatternFlavor::Slice | PatternFlavor::Tuple | PatternFlavor::Variant,
-                ..
-            } | Kind::StructPattern { .. }
+            Kind::Literal(_)
+                | Kind::Unary {
+                    op: crate::syntax::ast::Unary::Negate,
+                    ..
+                }
+                | Kind::PatternRange { .. }
+                | Kind::Pattern {
+                    flavor: PatternFlavor::Slice | PatternFlavor::Tuple | PatternFlavor::Variant,
+                    ..
+                }
+                | Kind::StructPattern { .. }
                 | Kind::Path { .. }
         ) || matches!(self.kind(node), Kind::Binding { .. })
             && self

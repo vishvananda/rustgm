@@ -1,5 +1,6 @@
 //! Scalar body constraints consume resolved identities; fallback occurs once per body.
 mod aggregates;
+mod matches;
 mod patterns;
 use super::{
     declarations,
@@ -67,6 +68,15 @@ struct BreakSite {
     next: Option<usize>,
 }
 enum Work {
+    MatchArms {
+        node: NodeId,
+        expected: Option<TermId>,
+    },
+    Arm {
+        index: u32,
+        term: TermId,
+        expected: Option<TermId>,
+    },
     BindPattern {
         pattern: NodeId,
         term: TermId,
@@ -93,6 +103,9 @@ pub(super) struct Checker<'a> {
     bindings: Vec<DefId>,
     pattern_work: Vec<patterns::Work>,
     pattern_types: Vec<(super::patterns::PatternId, TermId)>,
+    range_work: Vec<matches::RangeWork>,
+    pattern_requirements: Vec<super::patterns::PatternId>,
+    matches: Vec<u32>,
     work: Vec<Work>,
     children: Vec<NodeId>,
     checks: Vec<NodeId>,
@@ -127,6 +140,9 @@ impl<'a> Checker<'a> {
             bindings: Vec::new(),
             pattern_work: Vec::new(),
             pattern_types: Vec::new(),
+            range_work: Vec::new(),
+            pattern_requirements: Vec::new(),
+            matches: Vec::new(),
             work: Vec::new(),
             children: Vec::new(),
             checks: Vec::new(),
@@ -271,6 +287,12 @@ impl Checker<'_> {
                 return Err(self.error(body, "body type work budget exceeded"));
             }
             match work {
+                Work::MatchArms { node, expected } => self.match_arms(node, expected)?,
+                Work::Arm {
+                    index,
+                    term,
+                    expected,
+                } => self.match_arm(index, term, expected)?,
                 Work::BindPattern {
                     pattern,
                     term,
@@ -388,6 +410,7 @@ impl Checker<'_> {
         self.validate_operations()?;
         self.validate_assignments()?;
         self.validate_values()?;
+        self.finish_patterns()?;
         for node in self.touched.drain(..) {
             self.terms[self.file.0 as usize][node.0 as usize] = None;
         }
@@ -592,6 +615,11 @@ impl Checker<'_> {
         self.work.push(Work::Exit(node));
         self.children.clear();
         match self.kind(node) {
+            Kind::Match { value, .. } => {
+                self.work.push(Work::MatchArms { node, expected });
+                self.work.push(Work::Enter(value, None));
+                return Ok(());
+            }
             Kind::Tuple(elements) | Kind::Array(elements) => {
                 return self.enter_elements(node, elements, expected);
             }
@@ -709,6 +737,14 @@ impl Checker<'_> {
     )]
     fn expression(&mut self, node: NodeId) -> Result<TermId, Error> {
         match self.kind(node) {
+            Kind::Match { value, arms } => self.match_result(node, value, arms),
+            Kind::Arm { guard, value, .. } => {
+                if let Some(guard) = guard {
+                    let boolean = self.known(guard, TypeId::primitive(Primitive::Bool))?;
+                    self.coerce(guard, boolean)?;
+                }
+                self.term(value)
+            }
             Kind::Literal(index) => self.literal(node, index),
             Kind::Path { .. } | Kind::Name(_) => {
                 let Some(Target::Definition(id)) =
@@ -784,7 +820,11 @@ impl Checker<'_> {
                 if let Some(value) = value {
                     let term = self.term(value)?;
                     diverges = self.head(node, term)? == Some(Constructor::Never);
-                    self.coerce(value, self.term(pattern)?)?;
+                    // Compound patterns were constrained after their initializer
+                    // by BindPattern; a literal's node type may now be adjusted.
+                    if self.simple_pattern(pattern) {
+                        self.coerce(value, self.term(pattern)?)?;
+                    }
                 }
                 self.known(
                     node,

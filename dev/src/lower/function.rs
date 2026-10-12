@@ -260,6 +260,13 @@ impl Lower<'_, '_> {
                 }
             },
             Rvalue::Read(place) => {
+                if let Place::Temporary(id) = place
+                    && let Selected::Runtime(snapshot) = self.value(id)?
+                {
+                    // Scalar temporaries are immutable evaluated snapshots; their
+                    // owned-value proof still precedes this SSA reuse.
+                    return Ok(Selected::Runtime(snapshot));
+                }
                 if let Some(address) = self.place(place)? {
                     if matches!(representation, Representation::Object(_)) {
                         let destination = self

@@ -1,5 +1,6 @@
 //! Iterative construction visits executable syntax once and consumes PA9 selections.
 mod aggregates;
+mod matches;
 mod patterns;
 use super::ir::{
     Action, Block, BlockId, Body, Local, LocalId, LocalKind, Owner, Place, Program, Rvalue,
@@ -53,6 +54,8 @@ pub fn build(report: &Report, facts: &Declarations) -> Result<Program, Error> {
         places: Vec::new(),
         field_values: Vec::new(),
         pattern_work: Vec::new(),
+        match_frames: Vec::new(),
+        match_patterns: Vec::new(),
     };
     let mut program = Program {
         bodies: Vec::new(),
@@ -127,6 +130,8 @@ struct Reach {
 }
 #[derive(Clone, Copy)]
 enum Work {
+    MatchStart(NodeId),
+    MatchNext(usize),
     BindPattern {
         node: NodeId,
         pattern: crate::sema::patterns::PatternId,
@@ -171,6 +176,8 @@ enum Work {
     },
 }
 struct Scratch {
+    match_frames: Vec<matches::Frame>,
+    match_patterns: Vec<crate::sema::patterns::PatternId>,
     pattern_work: Vec<patterns::Work>,
     places: Vec<Option<Place>>,
     field_values: Vec<Option<ValueId>>,
@@ -496,6 +503,8 @@ impl<'a> Builder<'a> {
         self.scratch.live.clear();
         self.scratch.controls.clear();
         self.scratch.reach.clear();
+        self.scratch.match_frames.clear();
+        self.scratch.match_patterns.clear();
         if !self.scratch.places.is_empty() {
             return Err(self.error(root, "unbalanced place construction stack"));
         }
@@ -507,6 +516,8 @@ impl<'a> Builder<'a> {
     )]
     fn step(&mut self, work: Work) -> Result<(), Error> {
         match work {
+            Work::MatchStart(node) => self.start_match(node)?,
+            Work::MatchNext(frame) => self.next_match_arm(frame)?,
             Work::BindPattern {
                 node,
                 pattern,
@@ -662,6 +673,10 @@ impl<'a> Builder<'a> {
             return Ok(());
         }
         match self.kind(node) {
+            Kind::Match { value, .. } => {
+                self.scratch.work.push(Work::MatchStart(node));
+                self.scratch.work.push(Work::Place(value));
+            }
             Kind::Block {
                 flavor: BlockFlavor::Plain,
                 statements,

@@ -2376,6 +2376,32 @@
         "kind": "program",
         "status": 0
       }
+    },
+    {
+      "path": "tests/spec/attributes/match-arms.rs",
+      "exit_status": 0,
+      "features": [
+        "pa5.attributes"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "configured": [
+          false,
+          true
+        ]
+      }
+    },
+    {
+      "path": "tests/spec/attributes/disabled-invalid-arm.rs",
+      "exit_status": 1,
+      "features": [
+        "pa5.attributes"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
     }
   ]
 }

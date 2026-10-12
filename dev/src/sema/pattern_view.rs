@@ -21,6 +21,67 @@ pub fn write(facts: &Declarations, out: &mut impl Write) -> io::Result<()> {
             source.file.0, source.node.0, id.0
         )?;
     }
+    nodes(facts, out)?;
+    for (ordinal, field) in facts.patterns.fields.iter().enumerate() {
+        write!(out, "field {ordinal} ")?;
+        match field.selection {
+            Projection::Field(Selection::Tuple(index)) => write!(out, "tuple={index}")?,
+            Projection::Field(Selection::Nominal(field)) => write!(out, "nominal={}", field.0)?,
+            Projection::Index(index) => write!(out, "index={index}")?,
+            Projection::Subarray { start, end } => write!(out, "subarray={start}:{end}")?,
+            Projection::Subslice { prefix, suffix } => write!(out, "subslice={prefix}:{suffix}")?,
+        }
+        writeln!(out, " pattern={}", field.pattern.0)?;
+    }
+    for (ordinal, alternative) in facts.patterns.alternatives.iter().enumerate() {
+        writeln!(out, "alternative {ordinal} pattern={}", alternative.0)?;
+    }
+    for (ordinal, interval) in facts.patterns.ranges.iter().enumerate() {
+        writeln!(
+            out,
+            "range {ordinal} ranks={}:{}",
+            interval.lower, interval.upper
+        )?;
+    }
+    for (ordinal, decision) in facts.patterns.decisions.iter().enumerate() {
+        writeln!(
+            out,
+            "match {ordinal} source={}:{} input={}:{} arms={}:{} exhaustive=true work={}",
+            decision.source.file.0,
+            decision.source.node.0,
+            decision.scrutinee.file.0,
+            decision.scrutinee.node.0,
+            decision.start,
+            decision.end,
+            decision.work
+        )?;
+    }
+    for (ordinal, arm) in facts.patterns.arms.iter().enumerate() {
+        let pattern = arm
+            .pattern
+            .ok_or_else(|| io::Error::other("missing match arm selection"))?;
+        write!(
+            out,
+            "arm {ordinal} source={}:{} pattern={} guard=",
+            arm.source.file.0, arm.source.node.0, pattern.0
+        )?;
+        if let Some(guard) = arm.guard {
+            write!(out, "{}:{}", guard.file.0, guard.node.0)?;
+        } else {
+            write!(out, "-")?;
+        }
+        writeln!(
+            out,
+            " useful={} value={}:{}",
+            arm.useful, arm.value.file.0, arm.value.node.0
+        )?;
+    }
+    type_view::body_regions(&facts.body_regions, out)?;
+    type_view::regions(&facts.region_equalities, out)?;
+    write!(out, "eof ")?;
+    count(facts, out)
+}
+fn nodes(facts: &Declarations, out: &mut impl Write) -> io::Result<()> {
     for (ordinal, pattern) in facts.patterns.nodes.iter().enumerate() {
         let ty = pattern
             .ty
@@ -33,6 +94,7 @@ pub fn write(facts: &Declarations, out: &mut impl Write) -> io::Result<()> {
         match pattern.kind {
             Kind::Pending => return Err(io::Error::other("incomplete selected pattern")),
             Kind::Wildcard => write!(out, "wildcard")?,
+            Kind::Range(id) => write!(out, "range={}", id.0)?,
             Kind::Binding {
                 definition,
                 mutable,
@@ -91,35 +153,22 @@ pub fn write(facts: &Declarations, out: &mut impl Write) -> io::Result<()> {
         }
         writeln!(out)?;
     }
-    for (ordinal, field) in facts.patterns.fields.iter().enumerate() {
-        write!(out, "field {ordinal} ")?;
-        match field.selection {
-            Projection::Field(Selection::Tuple(index)) => write!(out, "tuple={index}")?,
-            Projection::Field(Selection::Nominal(field)) => write!(out, "nominal={}", field.0)?,
-            Projection::Index(index) => write!(out, "index={index}")?,
-            Projection::Subarray { start, end } => write!(out, "subarray={start}:{end}")?,
-            Projection::Subslice { prefix, suffix } => write!(out, "subslice={prefix}:{suffix}")?,
-        }
-        writeln!(out, " pattern={}", field.pattern.0)?;
-    }
-    for (ordinal, alternative) in facts.patterns.alternatives.iter().enumerate() {
-        writeln!(out, "alternative {ordinal} pattern={}", alternative.0)?;
-    }
-    type_view::body_regions(&facts.body_regions, out)?;
-    type_view::regions(&facts.region_equalities, out)?;
-    write!(out, "eof ")?;
-    count(facts, out)
+    Ok(())
 }
 /// # Errors
 /// Propagates output failures after the same analysis as the complete view.
 pub fn count(facts: &Declarations, out: &mut impl Write) -> io::Result<()> {
     writeln!(
         out,
-        "roots={} patterns={} fields={} alternatives={} region-vars={} region-equalities={}",
+        "roots={} patterns={} fields={} alternatives={} ranges={} matches={} arms={} coverage-work={} region-vars={} region-equalities={}",
         facts.patterns.roots.len(),
         facts.patterns.nodes.len(),
         facts.patterns.fields.len(),
         facts.patterns.alternatives.len(),
+        facts.patterns.ranges.len(),
+        facts.patterns.decisions.len(),
+        facts.patterns.arms.len(),
+        facts.patterns.decisions.iter().map(|m| m.work).sum::<u64>(),
         facts.body_regions.len(),
         facts.region_equalities.len()
     )

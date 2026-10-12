@@ -1,1 +1,1 @@
-ERROR: file 0: 38: body construct requires later semantic implementation
+ERROR: file 0: 38: refutable constructor requires conditional pattern semantics
