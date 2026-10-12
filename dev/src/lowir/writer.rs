@@ -1,7 +1,8 @@
 //! Serialize the typed scalar model using the pinned CPPGM `LowIR` vocabulary.
 use super::{
     program::{
-        Function, Instruction, Literal, Operand, Operation, Program, SignatureId, Terminator,
+        Function, Instruction, Literal, Operand, Operation, Program, SignatureId, Storage,
+        Terminator,
     },
     vocabulary::Type,
 };
@@ -80,8 +81,19 @@ fn parameters(
     Ok(())
 }
 fn function_body(program: &Program, function: &Function, out: &mut impl Write) -> io::Result<()> {
-    for (index, ty) in function.slots.iter().enumerate() {
-        writeln!(out, "  slot $s{index} : {}", ty.name())?;
+    for (index, storage) in function.slots.iter().enumerate() {
+        write!(out, "  slot $s{index} : ")?;
+        match storage {
+            Storage::Scalar(ty) => write!(out, "{}", ty.name())?,
+            Storage::Object(id) => {
+                let span = function
+                    .spans
+                    .get(id.0 as usize)
+                    .ok_or_else(|| io::Error::other("invalid LowIR object span"))?;
+                write!(out, "obj<{}x{}>", span.bytes, span.align)?;
+            }
+        }
+        writeln!(out)?;
     }
     for id in &function.order {
         let block = function
@@ -128,6 +140,10 @@ fn result_type(function: &Function, inst: &Instruction) -> io::Result<Type> {
         .copied()
         .ok_or_else(|| io::Error::other("invalid LowIR temporary"))
 }
+#[expect(
+    clippy::too_many_lines,
+    reason = "one exhaustive dispatch spells typed LowIR instructions and their shared operand tail"
+)]
 fn instruction(
     program: &Program,
     function: &Function,
@@ -142,6 +158,30 @@ fn instruction(
         Operation::Address(value) => {
             write!(out, "addr ")?;
             value
+        }
+        Operation::Index {
+            element,
+            base,
+            offset,
+        } => {
+            write!(out, "index {} ", element.name())?;
+            operand(program, function, base, out)?;
+            write!(out, ", ")?;
+            offset
+        }
+        Operation::CopyObject {
+            span,
+            source,
+            destination,
+        } => {
+            let span = function
+                .spans
+                .get(span.0 as usize)
+                .ok_or_else(|| io::Error::other("invalid LowIR copy span"))?;
+            write!(out, "copyobj {}x{} ", span.bytes, span.align)?;
+            operand(program, function, source, out)?;
+            write!(out, ", ")?;
+            destination
         }
         Operation::Load { ty, address } => {
             write!(out, "load {} ", ty.name())?;

@@ -1,4 +1,5 @@
 //! Demand aliases and function signatures through an iterative dependency graph.
+mod aggregates;
 use super::{
     model::{Declarations, Function, Initializer, InitializerKind},
     regions::{self, BinderId, Position, Regions},
@@ -75,6 +76,7 @@ pub fn analyze(report: &Report) -> Result<Declarations, Error> {
 }
 impl Checker<'_> {
     fn run(&mut self) -> Result<(), Error> {
+        self.reserve_nominals()?;
         let mut steps = 0_usize;
         // Linear declaration work is bounded by the input graph, not by a fixed
         // whole-crate size. Alias states diagnose cycles independently.
@@ -107,6 +109,7 @@ impl Checker<'_> {
             self.work.push(Work::Definition(id, false));
             self.drain(&mut steps, work_limit)?;
         }
+        self.complete_nominals(&mut steps, work_limit)?;
         self.validate_signatures()?;
         self.local_annotations(&mut steps, work_limit)
     }
@@ -408,7 +411,7 @@ impl Checker<'_> {
                     };
                     if !matches!(
                         self.report.resolution.definitions[id.0 as usize].kind,
-                        DefKind::Primitive | DefKind::TypeAlias
+                        DefKind::Primitive | DefKind::TypeAlias | DefKind::Struct | DefKind::Enum
                     ) {
                         return Err(self.error(
                             key,

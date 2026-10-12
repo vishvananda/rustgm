@@ -1,4 +1,5 @@
 //! Immutable canonical type shapes and interned child lists; no source/text keys.
+pub mod aggregate;
 pub mod infer;
 
 use std::{
@@ -136,6 +137,8 @@ impl TypeId {
 pub enum Kind {
     Never,
     Primitive(Primitive),
+    /// Nominal identity; field definitions and by-value cycles are checked separately.
+    Adt(ItemId),
     Tuple(ListId),
     Array {
         element: TypeId,
@@ -293,7 +296,7 @@ impl Store {
         }
         let valid_type = |id: TypeId| self.kind(id).is_some();
         let valid = match kind {
-            Kind::Never | Kind::Primitive(_) => true,
+            Kind::Never | Kind::Primitive(_) | Kind::Adt(_) => true,
             Kind::Tuple(list) => self.list(list).is_some(),
             Kind::Slice(element) | Kind::Array { element, .. } => valid_type(element),
             Kind::Reference { referent, .. } => valid_type(referent),
@@ -327,7 +330,9 @@ impl Store {
             well_formed: true,
         };
         match kind {
-            Kind::Never => {}
+            // The closed aggregate profile requires sized, well-formed fields at
+            // declaration completion. Nominal recursion is not a structural child edge.
+            Kind::Never | Kind::Adt(_) => {}
             Kind::Primitive(p) => result.sized = p != Primitive::Str,
             Kind::Array { element, .. } | Kind::Slice(element) => {
                 let element = child(element)?;

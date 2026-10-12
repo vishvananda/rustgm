@@ -13,6 +13,18 @@ pub struct SlotId(pub u32);
 pub struct TempId(pub u32);
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct LiteralId(pub u32);
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct SpanId(pub u32);
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct MemorySpan {
+    pub bytes: u64,
+    pub align: u32,
+}
+#[derive(Clone, Copy, Debug)]
+pub enum Storage {
+    Scalar(Type),
+    Object(SpanId),
+}
 #[derive(Clone, Copy, Debug)]
 pub enum Operand {
     Temporary(TempId),
@@ -42,6 +54,16 @@ pub enum Literal {
 pub enum Operation {
     Copy(Value),
     Address(Operand),
+    Index {
+        element: Type,
+        base: Operand,
+        offset: Operand,
+    },
+    CopyObject {
+        span: SpanId,
+        source: Operand,
+        destination: Operand,
+    },
     Load {
         ty: Type,
         address: Operand,
@@ -95,7 +117,8 @@ pub struct Block {
 }
 #[derive(Default)]
 pub struct Function {
-    pub slots: Vec<Type>,
+    pub slots: Vec<Storage>,
+    pub spans: Vec<MemorySpan>,
     pub temporaries: Vec<Type>,
     pub literals: Vec<Literal>,
     pub arguments: Vec<Value>,

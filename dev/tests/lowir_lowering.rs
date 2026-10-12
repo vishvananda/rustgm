@@ -96,6 +96,67 @@ fn comparison_width_and_placement_order_are_typed() -> Result<(), &'static str> 
 }
 
 #[test]
+fn object_storage_and_projection_emit_the_backend_contract()
+-> Result<(), Box<dyn std::error::Error>> {
+    use rustgm::lowir::{
+        program::{MemorySpan, Program},
+        vocabulary::{Binary, Convert},
+        writer,
+    };
+    let mut program = Program::default();
+    let signature = program.signature(&[], Type::I32, false)?;
+    let entry = program.declare("memory_probe".into(), signature, true)?;
+    let mut builder = Builder::default();
+    for span in [
+        MemorySpan { bytes: 0, align: 1 },
+        MemorySpan { bytes: 8, align: 3 },
+        MemorySpan {
+            bytes: u64::MAX,
+            align: 8,
+        },
+    ] {
+        assert!(builder.object_slot(span).is_err());
+    }
+    let span = MemorySpan {
+        bytes: 24,
+        align: 8,
+    };
+    let a = builder.object_slot(span)?;
+    let b = builder.object_slot(span)?;
+    let block = builder.block()?;
+    builder.enter(block)?;
+    let source = builder.address(Operand::Slot(a))?;
+    let destination = builder.address(Operand::Slot(b))?;
+    let offset = builder.integer(Type::I64, 8)?;
+    assert!(builder.index(Type::Void, source, offset).is_err());
+    assert!(builder.index(Type::U8, offset, offset).is_err());
+    let second = builder.index(Type::U8, source, offset)?;
+    let first_value = builder.integer(Type::I64, 41)?;
+    let second_value = builder.integer(Type::I64, 1)?;
+    builder.store(first_value, source.operand)?;
+    builder.store(second_value, second.operand)?;
+    assert!(builder.copy_object(span, first_value, destination).is_err());
+    builder.copy_object(span, source, destination)?;
+    let second = builder.index(Type::U8, destination, offset)?;
+    let first_value = builder.load(Type::I64, destination.operand)?;
+    let second_value = builder.load(Type::I64, second.operand)?;
+    let result = builder.binary(Binary::Add, first_value, second_value)?;
+    let result = builder.convert(Convert::Trunc, Type::I32, result)?;
+    builder.terminate(Terminator::Return(Some(result)))?;
+    program.symbols[entry.0 as usize].body = Some(builder.finish()?);
+    let mut bytes = Vec::new();
+    writer::write(&program, &mut bytes)?;
+    let text = std::str::from_utf8(&bytes)?;
+    assert_eq!(text.matches(" : obj<24x8>").count(), 2);
+    assert!(text.contains("copyobj 24x8 %t0, %t1"));
+    assert!(text.contains("index u8 %t0, 8"));
+    let directory = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../obj/pa12-work");
+    std::fs::create_dir_all(&directory)?;
+    std::fs::write(directory.join("memory.lowir"), bytes)?;
+    Ok(())
+}
+
+#[test]
 fn executable_checks_all_bodies_but_emits_only_demanded_functions()
 -> Result<(), Box<dyn std::error::Error>> {
     let result = compile("fn unused(x:u128,y:u128)->u128{x/y} fn main(){}")?;

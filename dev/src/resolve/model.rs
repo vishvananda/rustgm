@@ -189,6 +189,8 @@ impl Introductions {
 }
 #[derive(Default)]
 pub struct Resolution {
+    /// Field restrictions are resolved once, before semantic field selection.
+    pub field_access: HashMap<NodeKey, Access>,
     pub macro_prelude: HashMap<NameId, DefId>,
     pub introductions: Introductions,
     pub textual_imports: HashMap<usize, Binding>,

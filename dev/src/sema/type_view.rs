@@ -180,6 +180,7 @@ fn ty(store: &Store, id: TypeId, out: &mut impl Write) -> io::Result<()> {
     {
         Kind::Never => write!(out, "never"),
         Kind::Primitive(p) => write!(out, "primitive {}", p.name()),
+        Kind::Adt(item) => write!(out, "aggregate def={}", item.0),
         Kind::Tuple(elements) => {
             write!(out, "tuple ")?;
             list(store, elements, out)

@@ -168,7 +168,13 @@ impl Resolver<'_> {
                 self.optional(c, value, Namespace::Type)?;
                 self.visit_list(c, bounds, Namespace::Type)
             }
-            Kind::FieldDefinition { ty, .. } => self.visit(c, ty, Namespace::Type),
+            Kind::FieldDefinition { ty, visibility, .. } => {
+                let access = self.visibility(c, visibility)?;
+                self.facts
+                    .field_access
+                    .insert(NodeKey { file: c.file, node }, access);
+                self.visit(c, ty, Namespace::Type)
+            }
             Kind::Generic(index) => {
                 let generic = self.package.unit(c.file).configured.ast.generics[index as usize];
                 self.optional(c, generic.ty, Namespace::Type)?;

@@ -1,17 +1,19 @@
 //! Function construction emits contiguous block ranges and diagnoses invalid state.
 use super::{
     program::{
-        self, Block, BlockId, Function, Instruction, Literal, LiteralId, Operand, Operation, Range,
-        SignatureId, SlotId, TempId, Terminator, Value,
+        self, Block, BlockId, Function, Instruction, Literal, LiteralId, MemorySpan, Operand,
+        Operation, Range, SignatureId, SlotId, SpanId, Storage, TempId, Terminator, Value,
     },
     vocabulary::{Binary, Convert, Predicate, Type, Unary},
 };
+use std::collections::HashMap;
 
 #[derive(Default)]
 pub struct Builder {
     function: Function,
     current: Option<BlockId>,
     opened: Vec<bool>,
+    spans: HashMap<MemorySpan, SpanId>,
 }
 impl Builder {
     /// # Errors
@@ -21,8 +23,75 @@ impl Builder {
             return Err("void LowIR slot");
         }
         let id = SlotId(program::index(self.function.slots.len())?);
-        self.function.slots.push(ty);
+        self.function.slots.push(Storage::Scalar(ty));
         Ok(id)
+    }
+    fn span(&mut self, span: MemorySpan) -> Result<SpanId, &'static str> {
+        if span.bytes == 0 || span.bytes > i64::MAX as u64 || !span.align.is_power_of_two() {
+            return Err("invalid LowIR object span");
+        }
+        if let Some(id) = self.spans.get(&span) {
+            return Ok(*id);
+        }
+        let id = SpanId(program::index(self.function.spans.len())?);
+        self.function.spans.push(span);
+        self.spans.insert(span, id);
+        Ok(id)
+    }
+    /// Reserve positive-sized addressable storage. Rust ZSTs need no object slot.
+    ///
+    /// # Errors
+    /// Rejects invalid spans and exhausted identities.
+    pub fn object_slot(&mut self, span: MemorySpan) -> Result<SlotId, &'static str> {
+        let span = self.span(span)?;
+        let id = SlotId(program::index(self.function.slots.len())?);
+        self.function.slots.push(Storage::Object(span));
+        Ok(id)
+    }
+    /// Emit a proved non-overlapping object transfer; span alignment is an address fact.
+    ///
+    /// # Errors
+    /// Rejects invalid spans, non-pointer addresses and invalid construction state.
+    pub fn copy_object(
+        &mut self,
+        span: MemorySpan,
+        source: Value,
+        destination: Value,
+    ) -> Result<(), &'static str> {
+        if source.ty != Type::Ptr || destination.ty != Type::Ptr {
+            return Err("object copy requires pointer operands");
+        }
+        let span = self.span(span)?;
+        self.emit(
+            Operation::CopyObject {
+                span,
+                source: source.operand,
+                destination: destination.operand,
+            },
+            None,
+        )
+    }
+    /// Advance a pointer by an already checked count of scalar elements.
+    ///
+    /// # Errors
+    /// Rejects non-pointer bases, noninteger offsets and void strides.
+    pub fn index(
+        &mut self,
+        element: Type,
+        base: Value,
+        offset: Value,
+    ) -> Result<Value, &'static str> {
+        if element == Type::Void || base.ty != Type::Ptr || !offset.ty.is_integer() {
+            return Err("invalid LowIR address projection");
+        }
+        self.value(
+            Type::Ptr,
+            Operation::Index {
+                element,
+                base: base.operand,
+                offset: offset.operand,
+            },
+        )
     }
     /// # Errors
     /// Rejects exhausted block identities.

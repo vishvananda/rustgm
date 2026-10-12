@@ -14,6 +14,7 @@ pub enum Domain {
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Constructor {
     Primitive(Primitive),
+    Adt(ItemId),
     Never,
     Tuple,
     Array(u64),
@@ -129,7 +130,9 @@ impl Context {
     /// Rejects invalid arity, child identities and compact arena overflow.
     pub fn construct(&mut self, kind: Constructor, children: &[TermId]) -> Result<TermId, Error> {
         let valid = match kind {
-            Constructor::Primitive(_) | Constructor::Never => children.is_empty(),
+            Constructor::Primitive(_) | Constructor::Adt(_) | Constructor::Never => {
+                children.is_empty()
+            }
             Constructor::Tuple => true,
             Constructor::Function { parameters, .. } => {
                 children.len().checked_sub(1) == Some(parameters as usize)
@@ -370,6 +373,7 @@ impl Context {
         let constructor = match kind {
             Kind::Never => Constructor::Never,
             Kind::Primitive(p) => Constructor::Primitive(p),
+            Kind::Adt(item) => Constructor::Adt(item),
             Kind::Tuple(list) => {
                 for ty in store.list(list).ok_or(Error::InvalidIdentity)? {
                     children.push(self.known(store, *ty)?);
@@ -522,6 +526,7 @@ fn canonical(
     let first = || children.first().copied().ok_or(Error::InvalidIdentity);
     let kind = match constructor {
         Constructor::Primitive(p) => Kind::Primitive(p),
+        Constructor::Adt(item) => Kind::Adt(item),
         Constructor::Never => Kind::Never,
         Constructor::Tuple => {
             Kind::Tuple(store.intern_list(children).map_err(|_| Error::Overflow)?)

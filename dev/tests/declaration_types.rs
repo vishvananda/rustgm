@@ -109,6 +109,104 @@ fn structural_annotations_and_configured_parameters_consume_typed_syntax() -> Re
     );
     Ok(())
 }
+
+#[test]
+fn nominal_source_facts_retain_layout_visibility_and_constructor_identity() -> Result<(), String> {
+    use rustgm::{
+        resolve::model::{Access, DefKind},
+        sema::members::Name,
+        types::ItemId,
+    };
+    let (report, facts) = analyze(
+        "mod m{#[repr(C,align(16))] pub struct R{pub a:u8,pub(crate) b:u64,#[cfg(any())] gone:Missing} pub struct T(pub u8,u64); #[repr(i8)] pub enum E{A=-2,B,C{v:u64}=3}} macro_rules! make{()=>{#[repr(C,align(32))] struct Generated(u8,u64);}} make!();",
+    )?;
+    for (name, size, align, offsets) in
+        [("R", 16, 16, vec![0, 8]), ("Generated", 32, 32, vec![0, 8])]
+    {
+        let ty = definition(&report, &facts, name)?;
+        let layout = facts.layouts.get(ty).ok_or("missing nominal layout")?;
+        assert_eq!((layout.size, layout.align), (size, align));
+        let variant = facts
+            .layouts
+            .variants(layout)
+            .first()
+            .ok_or("missing layout variant")?;
+        assert_eq!(facts.layouts.offsets(variant), offsets);
+    }
+    let r = definition(&report, &facts, "R")?;
+    let Some(Kind::Adt(item)) = facts.types.kind(r) else {
+        return Err("missing nominal identity".into());
+    };
+    let variant = facts
+        .members
+        .variants
+        .iter()
+        .find(|v| v.owner == item)
+        .ok_or("missing member variant")?;
+    let fields = &facts.members.fields[variant.start as usize..variant.end as usize];
+    assert_eq!(fields.len(), 2);
+    assert_eq!(fields[0].access, Access::Public);
+    assert_eq!(
+        fields[1].access,
+        Access::Within(rustgm::resolve::package::ModuleId(0))
+    );
+    let Name::Named(name) = fields[1].name else {
+        return Err("missing named field".into());
+    };
+    assert_eq!(facts.members.names.get(name), "b");
+    let (id, _) = report
+        .resolution
+        .definitions
+        .iter()
+        .enumerate()
+        .find(|(_, d)| d.kind == DefKind::Constructor && report.package.names.get(d.name) == "T")
+        .ok_or("missing tuple constructor")?;
+    let constructor = facts.definitions[id].ok_or("missing constructor type")?;
+    let Some(Kind::FunctionItem {
+        item: constructor_item,
+        signature,
+    }) = facts.types.kind(constructor)
+    else {
+        return Err("missing constructor function item".into());
+    };
+    assert_eq!(
+        constructor_item,
+        ItemId(u32::try_from(id).map_err(|e| e.to_string())?)
+    );
+    let Some(Kind::Function {
+        parameters, result, ..
+    }) = facts.types.kind(signature)
+    else {
+        return Err("missing constructor signature".into());
+    };
+    assert_eq!(result, definition(&report, &facts, "T")?);
+    assert_eq!(
+        facts.types.list(parameters),
+        Some(
+            [
+                TypeId::primitive(Primitive::U8),
+                TypeId::primitive(Primitive::U64)
+            ]
+            .as_slice()
+        )
+    );
+    let e = definition(&report, &facts, "E")?;
+    let Some(Kind::Adt(item)) = facts.types.kind(e) else {
+        return Err("missing enum identity".into());
+    };
+    let e = facts
+        .aggregates
+        .get(item)
+        .ok_or("missing enum definition")?;
+    let discriminants: Vec<_> = facts
+        .aggregates
+        .variants(e)
+        .iter()
+        .map(|v| v.discriminant)
+        .collect();
+    assert_eq!(discriminants, [254, 255, 3]);
+    Ok(())
+}
 #[test]
 fn aliases_created_by_expansion_keep_the_resolved_definition_identity() -> Result<(), String> {
     let (report, facts) = analyze(
@@ -191,7 +289,11 @@ fn nested_binders_do_not_capture_outer_signature_lifetimes() -> Result<(), Strin
 }
 
 #[test]
-fn signature_elision_acceptance_matches_pinned_rustc() -> Result<(), Box<dyn std::error::Error>> {
+#[expect(
+    clippy::too_many_lines,
+    reason = "one independently specified acceptance matrix shares a pinned rustc driver"
+)]
+fn declaration_acceptance_matches_pinned_rustc() -> Result<(), Box<dyn std::error::Error>> {
     use std::{
         io::Write,
         process::{Command, Stdio},
@@ -225,6 +327,62 @@ fn signature_elision_acceptance_matches_pinned_rustc() -> Result<(), Box<dyn std
         ("fn f<'a>(x:&'a i32)->&i32{x}", true),
         ("fn f(x:&i32,y:&i32)->&i32{x}", false),
         ("fn f()->&'static i32{loop{}}", true),
+        ("struct S { a:u8,b:u64 } type A=S;", true),
+        ("struct Node { next:*const Node }", true),
+        ("type Link=Node; struct Node { next:*mut Link }", true),
+        ("struct A { b:B } struct B { a:*const A }", true),
+        ("struct A { a:A }", false),
+        ("type A=S; struct S { a:A }", false),
+        ("struct A { b:B } struct B { a:A }", false),
+        ("struct A { a:[A;0] }", false),
+        ("struct A { x:u8, x:u16 }", false),
+        ("struct A { r#x:u8, x:u16 }", false),
+        ("struct A { é:u8, e\u{301}:u16 }", false),
+        ("struct A { #[cfg(any())] x:Missing, y:bool }", true),
+        ("#[repr(C)] struct A { a:u8,b:u64 }", true),
+        ("#[repr(C,packed(2))] struct A(u8,u64);", true),
+        ("#[repr(align(32))] struct A;", true),
+        ("#[repr(transparent)] struct A((),u64,());", true),
+        ("#[repr(transparent)] struct A(u8,u64);", false),
+        ("#[repr(align(3))] struct A;", false),
+        ("#[repr(align(1073741824))] struct A;", false),
+        ("#[repr(packed,align(8))] struct A;", false),
+        (
+            "#[repr(align(8))] struct A; #[repr(packed)] struct B(A);",
+            false,
+        ),
+        (
+            "#[repr(align(8))] struct A; struct B(A); #[repr(packed)] struct C(B);",
+            false,
+        ),
+        ("#[repr(align(2),align(16))] struct A;", true),
+        ("#[repr(packed(2),packed(4))] struct A(u64);", false),
+        ("#[repr(C,C)] struct A(u64);", true),
+        ("#[repr(u8,u8)] enum A { B }", false),
+        ("#[repr(Rust,C)] struct A(u64);", false),
+        ("#[repr(transparent,C)] struct A(u64);", false),
+        ("#[repr(u8)] struct A;", false),
+        ("#[repr(packed(2u8))] struct A(u64);", false),
+        ("#[cfg_attr(all(),repr(C,align(16)))] struct A(u8);", true),
+        ("#[cfg_attr(any(),repr(align(3)))] struct A(u8);", true),
+        ("enum Empty {} struct A([Empty;0]);", true),
+        ("#[repr(C)] enum Empty {}", false),
+        ("enum A { X,Y=9,Z }", true),
+        ("enum A { X=-1,Y,Z }", true),
+        ("enum A { X=1,Y=1 }", false),
+        ("enum A { X=1,Y,Z=2 }", false),
+        ("#[repr(u8)] enum A { X=255,Y }", false),
+        ("#[repr(u8)] enum A { X=255,Y=0,Z }", true),
+        ("#[repr(i8)] enum A { X=-128,Y }", true),
+        ("#[repr(i8)] enum A { X=-129 }", false),
+        ("#[repr(u8)] enum A { X=-1 }", false),
+        ("#[repr(u8)] enum A { X=1u16 }", false),
+        ("#[repr(C,u8)] enum A { X(u8)=1,Y{field:u64}=2 }", true),
+        ("enum A { X(u8),Y=2 }", false),
+        ("enum A { X(),Y=2 }", false),
+        ("enum A { X()=2 }", false),
+        ("#[repr(transparent)] enum A { X(u64) }", true),
+        ("#[repr(transparent)] enum A { X(u64),Y }", false),
     ];
     for (index, (source, accepted)) in cases.into_iter().enumerate() {
         let mut child = Command::new("rustc")
@@ -232,7 +390,6 @@ fn signature_elision_acceptance_matches_pinned_rustc() -> Result<(), Box<dyn std
                 "--edition=2024",
                 "--crate-type=lib",
                 "--emit=metadata",
-                "--cap-lints=allow",
                 "--crate-name=signature_check",
                 "-",
             ])

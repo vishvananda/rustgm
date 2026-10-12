@@ -1,0 +1,101 @@
+//! Completed nominal shapes are separate from canonical, potentially recursive identity.
+use super::{ItemId, ListId, Primitive};
+use std::collections::HashMap;
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Kind {
+    Struct,
+    Enum,
+}
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum Representation {
+    #[default]
+    Rust,
+    C,
+    Transparent,
+}
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub struct Repr {
+    pub representation: Representation,
+    pub packed: Option<u32>,
+    pub align: Option<u32>,
+    pub tag: Option<Primitive>,
+}
+#[derive(Clone, Copy, Debug)]
+pub struct Variant {
+    pub fields: ListId,
+    /// Target-width two's-complement bits; the semantic checker validates its range.
+    pub discriminant: u128,
+}
+#[derive(Clone, Copy, Debug)]
+pub struct Definition {
+    pub item: ItemId,
+    pub kind: Kind,
+    pub repr: Repr,
+    pub start: u32,
+    pub end: u32,
+}
+#[derive(Default)]
+pub struct Definitions {
+    entries: Vec<Definition>,
+    index: HashMap<ItemId, u32>,
+    variants: Vec<Variant>,
+}
+impl Definitions {
+    /// Publish a completed shape once, retaining declaration/variant ordering.
+    ///
+    /// # Errors
+    /// Rejects duplicate publication, invalid struct arity and compact ID overflow.
+    pub fn insert(
+        &mut self,
+        item: ItemId,
+        kind: Kind,
+        repr: Repr,
+        variants: &[Variant],
+    ) -> Result<(), &'static str> {
+        if self.index.contains_key(&item) {
+            return Err("aggregate definition already complete");
+        }
+        if kind == Kind::Struct && variants.len() != 1 {
+            return Err("a struct has exactly one field group");
+        }
+        let id = u32::try_from(self.entries.len()).map_err(|_| "too many aggregate definitions")?;
+        let start =
+            u32::try_from(self.variants.len()).map_err(|_| "too many aggregate variants")?;
+        let end = self
+            .variants
+            .len()
+            .checked_add(variants.len())
+            .and_then(|n| u32::try_from(n).ok())
+            .ok_or("too many aggregate variants")?;
+        self.variants.extend_from_slice(variants);
+        self.entries.push(Definition {
+            item,
+            kind,
+            repr,
+            start,
+            end,
+        });
+        self.index.insert(item, id);
+        Ok(())
+    }
+    #[must_use]
+    pub fn get(&self, item: ItemId) -> Option<&Definition> {
+        self.entries.get(*self.index.get(&item)? as usize)
+    }
+    #[must_use]
+    pub fn variants(&self, definition: &Definition) -> &[Variant] {
+        &self.variants[definition.start as usize..definition.end as usize]
+    }
+    pub fn iter(&self) -> std::slice::Iter<'_, Definition> {
+        self.entries.iter()
+    }
+}
+
+impl<'a> IntoIterator for &'a Definitions {
+    type Item = &'a Definition;
+    type IntoIter = std::slice::Iter<'a, Definition>;
+    fn into_iter(self) -> Self::IntoIter {
+        self.iter()
+    }
+}

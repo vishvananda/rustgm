@@ -110,6 +110,9 @@ pub struct RegionEquality {
     pub right: RegionId,
 }
 pub struct Declarations {
+    pub aggregates: crate::types::aggregate::Definitions,
+    pub members: super::members::Members,
+    pub layouts: crate::abi::layout::Layouts,
     pub region_equalities: Vec<RegionEquality>,
     pub initializers: Vec<Initializer>,
     pub types: Store,
@@ -120,6 +123,9 @@ pub struct Declarations {
 impl Declarations {
     pub(super) fn new(report: &Report) -> Result<Self, Error> {
         let mut value = Self {
+            aggregates: crate::types::aggregate::Definitions::default(),
+            members: super::members::Members::default(),
+            layouts: crate::abi::layout::Layouts::default(),
             region_equalities: Vec::new(),
             initializers: Vec::new(),
             types: Store::default(),
