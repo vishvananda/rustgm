@@ -7,6 +7,7 @@ use super::{
     package::Error,
     unit::NodeKey,
 };
+use crate::expand::stream::ContextId;
 use crate::syntax::ast::{Kind, NodeId, PatternFlavor};
 use std::collections::{HashMap, HashSet};
 #[derive(Clone, Copy)]
@@ -22,12 +23,12 @@ impl Resolver<'_> {
         c: Context,
         node: NodeId,
         kind: DefKind,
-        seen: &mut HashSet<NameId>,
+        seen: &mut HashSet<super::hygiene::Ident>,
     ) -> Result<(), Error> {
         let mut bindings = Vec::new();
         self.pattern(c, node, &mut bindings)?;
         for local in bindings {
-            if !seen.insert(local.name) {
+            if !seen.insert(self.pattern_identity(c, local)?) {
                 return Err(self.error(
                     c,
                     local.node,
@@ -52,6 +53,21 @@ impl Resolver<'_> {
         }
         Ok(())
     }
+    fn pattern_identity(&self, c: Context, local: Local) -> Result<super::hygiene::Ident, Error> {
+        let context = if self.hygiene.is_some() {
+            let offset = super::hygiene::name_offset(
+                self.package,
+                NodeKey {
+                    file: c.file,
+                    node: local.node,
+                },
+            );
+            self.package.expansion_context(c.file, offset)?
+        } else {
+            ContextId(0)
+        };
+        Ok(super::hygiene::Ident::new(local.name, context))
+    }
     #[expect(
         clippy::too_many_lines,
         reason = "bounded pattern dispatch keeps alternative identity and reference rules together"
@@ -66,6 +82,21 @@ impl Resolver<'_> {
             return Ok(());
         }
         match self.kind(c, node) {
+            Kind::Receiver {
+                name,
+                lifetime,
+                mutable,
+            } => {
+                if lifetime.end > lifetime.start {
+                    self.lifetime(c, node, lifetime)?;
+                }
+                bindings.push(Local {
+                    name: self.package.name(c.file, name)?,
+                    node,
+                    mutable,
+                    by_ref: true,
+                });
+            }
             Kind::Binding {
                 name,
                 mutable,
@@ -122,7 +153,10 @@ impl Resolver<'_> {
                     let mut names = HashMap::new();
                     for local in &branch {
                         if names
-                            .insert(local.name, (local.mutable, local.by_ref))
+                            .insert(
+                                self.pattern_identity(c, *local)?,
+                                (local.mutable, local.by_ref),
+                            )
                             .is_some()
                         {
                             return Err(self.error(c, local.node, "duplicate binding in pattern"));
@@ -162,14 +196,10 @@ impl Resolver<'_> {
             Kind::Path { .. } | Kind::Qualified { .. } => self.visit(c, node, Namespace::Value)?,
             Kind::PatternRange { start, end, .. } => {
                 for bound in [start, end].into_iter().flatten() {
-                    if let Kind::Binding { name, .. } = self.kind(c, bound) {
-                        let name = self.package.name(c.file, name)?;
-                        let target = self.target(
-                            c,
-                            bound,
-                            &self.lexical(c.scope, name, Namespace::Value),
-                            Namespace::Value,
-                        )?;
+                    if let Kind::Binding { name: span, .. } = self.kind(c, bound) {
+                        let name = self.package.name(c.file, span)?;
+                        let target =
+                            self.hygienic_name(c, bound, span.start, name, Namespace::Value)?;
                         self.facts.references.push(Reference {
                             scope: c.scope,
                             node: NodeKey {

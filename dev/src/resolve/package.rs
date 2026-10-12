@@ -3,6 +3,7 @@ use super::{
     names::{NameId, Names},
     unit::{FileId, NodeKey, Unit},
 };
+use crate::expand::stream::ContextId;
 use crate::syntax::{
     ast::{Kind, NodeId},
     token_tree::Span,
@@ -44,6 +45,34 @@ impl Error {
     }
 }
 impl Package {
+    /// # Errors
+    /// Rejects malformed or excessively deep expansion provenance.
+    pub fn expansion_context(&self, mut file: FileId, mut offset: u32) -> Result<ContextId, Error> {
+        for _ in 0..4096 {
+            let origins = &self.unit(file).origins;
+            let index = origins.partition_point(|origin| {
+                origin.generated.end <= offset && origin.generated.start != offset
+            });
+            let Some(origin) = origins.get(index).filter(|origin| {
+                origin.generated.start <= offset && offset <= origin.generated.end
+            }) else {
+                return Ok(ContextId(0));
+            };
+            if let Some(context) = origin.context {
+                return Ok(context);
+            }
+            offset = origin.original.span.start
+                + (offset - origin.generated.start)
+                    .min(origin.original.span.end - origin.original.span.start);
+            file = origin.original.file;
+        }
+        Err(Error::at(
+            file,
+            offset,
+            "expansion provenance chain exceeds 4096",
+        ))
+    }
+
     /// Read canonical names directly from a parsed path.
     /// # Errors
     /// Rejects malformed path facts, unsupported crate identities and name overflow.

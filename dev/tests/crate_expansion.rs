@@ -342,7 +342,9 @@ const PATH_IMPORTS_CASES: &[(&str, &str, bool)] = &[
 #[test]
 fn path_imports_match_pinned_rustc() {
     for &(name, source, success) in PATH_IMPORTS_CASES {
-        let result = analyze(source, &mut Files::default());
+        let result = analyze(source, &mut Files::default()).and_then(|report| {
+            resolve::analyze_expanded(report).map_err(|error| format!("{error:?}"))
+        });
         assert_eq!(
             result.is_ok(),
             success,
@@ -389,7 +391,9 @@ const MODULE_BARRIERS_CASES: &[(&str, &str, bool)] = &[
 #[test]
 fn module_barriers_match_pinned_rustc() {
     for &(name, source, success) in MODULE_BARRIERS_CASES {
-        let result = analyze(source, &mut Files::default());
+        let result = analyze(source, &mut Files::default()).and_then(|report| {
+            resolve::analyze_expanded(report).map_err(|error| format!("{error:?}"))
+        });
         assert_eq!(
             result.is_ok(),
             success,
@@ -455,7 +459,9 @@ const GENERATED_IMPORTS_CASES: &[(&str, &str, bool)] = &[
 #[test]
 fn generated_imports_match_pinned_rustc() {
     for &(name, source, success) in GENERATED_IMPORTS_CASES {
-        let result = analyze(source, &mut Files::default());
+        let result = analyze(source, &mut Files::default()).and_then(|report| {
+            resolve::analyze_expanded(report).map_err(|error| format!("{error:?}"))
+        });
         assert_eq!(
             result.is_ok(),
             success,
@@ -521,7 +527,9 @@ const PATH_BINDING_ANCESTRY_CASES: &[(&str, &str, bool)] = &[
 #[test]
 fn path_binding_ancestry_match_pinned_rustc() {
     for &(name, source, success) in PATH_BINDING_ANCESTRY_CASES {
-        let result = analyze(source, &mut Files::default());
+        let result = analyze(source, &mut Files::default()).and_then(|report| {
+            resolve::analyze_expanded(report).map_err(|error| format!("{error:?}"))
+        });
         assert_eq!(
             result.is_ok(),
             success,

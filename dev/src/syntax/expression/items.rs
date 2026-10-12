@@ -512,12 +512,20 @@ impl Parser<'_, '_> {
                     self.required()?;
                     let lifetime = self.required()?;
                     let mutable = self.word("mut")?;
+                    let name = self
+                        .cursor
+                        .peek(0)?
+                        .ok_or_else(|| error(self.cursor.end(), "expected receiver"))?;
                     if !self.word("self")? {
                         return Err(self.error("reference lifetime in a parameter requires self")?);
                     }
                     self.node(
                         start,
                         Kind::Receiver {
+                            name: Span {
+                                start: name.start,
+                                end: name.end,
+                            },
                             lifetime: Span {
                                 start: lifetime.start,
                                 end: lifetime.end,

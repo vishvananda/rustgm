@@ -260,6 +260,11 @@ impl Paths {
                 }
             };
             self.work.set_textual(index, source);
+            if let TextualSource::Found(binding) = source {
+                self.state.facts.textual_imports.insert(index, binding);
+            } else {
+                self.state.facts.textual_imports.remove(&index);
+            }
         }
         self.state.bind(package).drive_imports(&mut self.work)?;
         let mut ready = Vec::new();

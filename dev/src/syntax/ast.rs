@@ -86,6 +86,7 @@ pub enum MacroContext {
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Kind {
     Receiver {
+        name: Span,
         lifetime: Span,
         mutable: bool,
     },

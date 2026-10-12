@@ -58,7 +58,8 @@ pub struct Report {
     pub invocations: Vec<Invocation>,
     pub captures: Registry,
     pub textual_scopes: Scopes,
-    pub macro_paths: Resolution,
+    pub resolution: Resolution,
+    pub(crate) names_resolved: bool,
 }
 #[derive(Clone, Copy)]
 struct Visit {
@@ -183,7 +184,8 @@ pub fn analyze(
         invocations: engine.invocations,
         captures: engine.captures,
         textual_scopes: engine.scopes,
-        macro_paths: engine.paths.state.facts,
+        resolution: engine.paths.state.facts,
+        names_resolved: false,
     })
 }
 impl<S: Sources> Engine<'_, S> {
@@ -560,30 +562,8 @@ impl<S: Sources> Engine<'_, S> {
         let call = &self.calls[index];
         self.paths.lookup(&mut self.loader.package, call, index)
     }
-    fn context(&self, mut file: FileId, mut offset: u32) -> Result<ContextId, Error> {
-        for _ in 0..4096 {
-            let origins = &self.loader.package.unit(file).origins;
-            let index = origins.partition_point(|origin| {
-                origin.generated.end <= offset && origin.generated.start != offset
-            });
-            let Some(origin) = origins.get(index).filter(|origin| {
-                origin.generated.start <= offset && offset <= origin.generated.end
-            }) else {
-                return Ok(ContextId(0));
-            };
-            if let Some(context) = origin.context {
-                return Ok(context);
-            }
-            offset = origin.original.span.start
-                + (offset - origin.generated.start)
-                    .min(origin.original.span.end - origin.original.span.start);
-            file = origin.original.file;
-        }
-        Err(Error::at(
-            file,
-            offset,
-            "expansion provenance chain exceeds 4096",
-        ))
+    fn context(&self, file: FileId, offset: u32) -> Result<ContextId, Error> {
+        self.loader.package.expansion_context(file, offset)
     }
     fn input(&mut self, file: FileId, capture: u32) -> Result<Input, Error> {
         let unit = &mut self.loader.package.units[file.0 as usize];

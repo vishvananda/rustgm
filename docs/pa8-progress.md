@@ -80,23 +80,17 @@ individual observations when drawing conclusions.
 
 ## Work still required before activation
 
-1. Complete the grammar consumers for forwarded classes and continuations.
-   Examples include expression fragments used in patterns, type/path fragments
-   forwarded to metadata, and composed fragments containing nested opaque input.
-2. Integrate the retained macro graph with ordinary name resolution. PA6's
-   declaration pass still treats macro_rules names as ordinary direct bindings;
-   it must consume the expansion result without reintroducing duplicate or
-   forward-visible textual names. Keep import targets and module scopes typed.
-3. Consume recorded expansion contexts for mixed-site hygiene, `$crate`, and
-   local/label definition-site visibility. Context IDs and token provenance alone
-   are not a hygiene implementation. Qualified `$crate` syntax still needs the
-   applicable path consumers and crate visibility checks.
-4. Add the specified builtin macros, source diagnostics/provenance projection,
-   recursion-limit attributes, and independently classified course fixtures.
-5. Measure the full expansion path, finalize the PA8 handout/text vocabulary,
-   refresh receipts explicitly, validate debug/release and CI, then activate and
-   push the milestone. Continue through PA9 types/inference, PA10 typed body CFG,
-   and PA11 actual Rust-to-LowIR execution using the pinned CPPGM backend.
+1. Complete final-context coverage for composed opaque fragments and macro
+   hygiene. Probe captured import/item introduction marks separately from the
+   identifier's syntax context, and carry generated-binding checks through
+   ordinary import completion.
+2. Finish `$crate`/`local_inner_macros` coverage, builtin macros, projected
+   definition/call-site diagnostics and recursion-limit attributes.
+3. Measure the full expansion path, finalize the PA8 handout/text vocabulary,
+   add independently classified course fixtures, refresh receipts explicitly,
+   validate debug/release and CI, then activate the milestone.
+4. Continue through PA9 types/inference, PA10 typed body CFG, and PA11 actual
+   Rust-to-LowIR execution using the pinned CPPGM backend.
 
 The broad goal is still active. A backend smoke test on handwritten LowIR does
 not establish Rust lowering, and neither PA8 nor the goal is complete yet.
@@ -122,7 +116,7 @@ errors can clear when stronger dependencies resolve.
 Shared resolver changes preserve PA6's ordinary mode. Optional selected-path
 traces and generated-binding conflict checks are enabled only for the expansion
 import graph. The expansion report retains its macro path resolution facts.
-This is not yet the mixed-site local-variable and label hygiene implementation.
+The later mixed-site local/label implementation is described below.
 
 `obj/pa8-work/resolution-probes/` retains pinned-rustc inputs, diagnostics and
 classifications. In particular, a generated explicit import that conflicts with
@@ -183,3 +177,76 @@ consumer changes against the frozen post-path-integration binary in
 that scale. Lower-scale medians were higher, with substantial calibration
 variation. These measurements do not establish a general no-regression claim.
 The source files, immutable A/B binaries and every observation remain retained.
+
+
+## Ordinary resolution and mixed-site locals
+
+`resolve::analyze_expanded` consumes and completes the expansion report's
+`resolution` graph. Module and macro IDs, flattened imports and textual import
+sources are reused. Existing block/trait scopes are reparented beneath ordinary
+function and condition scopes instead of rebuilding the early graph. Plain
+macro_rules definitions are not republished as forward-visible path bindings.
+A completed report can be passed through this entry point again without
+changing identities. Generated item wrappers now visit their expanded bodies.
+
+Hygienic local/parameter/label bindings use canonical name and context IDs.
+Each macro definition records its lexical scope and visible binding version.
+Local shadow histories retain earlier targets, with binary search for an older
+snapshot. A single binding occupies the map entry directly; only shadowed names
+allocate a history vector. Identifier/context pairs use one packed 64-bit key,
+without widening temporary pattern records. Ordinary PA6 lookup bypasses
+expansion provenance queries.
+
+Lookup respects function/closure label barriers and nearer item scopes. Captured
+identifiers retain caller identity; generated locals remain separate. Repeated
+expansions retain independent local instances. Locals with the same spelling
+but distinct contexts can coexist in one pattern or parameter list. Final
+references retain canonical declaration targets, so the local-history scratch
+can be released after resolution; later phases must consume those references.
+
+`obj/pa8-work/hygiene-probes/` retains pinned rustc compile/runtime evidence for
+local shadowing, captures, item precedence, labels, exported scope escapes and
+receivers. `dev/tests/hygiene.rs` checks declaration identities, not just success,
+and includes 2,000 shadows followed by 2,000 references to an early snapshot.
+The macro-path test tables now also run ordinary resolution after expansion.
+
+This work exposed an earlier receiver omission. PA6 now binds an explicit-lifetime
+receiver and checks its lifetime, with positive/negative fixtures in
+`pa6/tests/spec/names/receiver_*.rs`. The receiver AST retains the actual `self`
+identifier span so a captured receiver keeps its own syntax context. Existing
+AST text views and all previous oracle bytes remain unchanged.
+
+`hygiene-compact-validation.log` records 133 Rust tests, all 1,008 active course
+fixtures and strict Clippy passing; the 100-file audit reports zero findings.
+`receiver-validation.log` records the new fixture checks, the 14 harness tests,
+and upstream/Reference provenance verification.
+
+CI's oracle-reproducibility pathspec now uses explicit Git globs for nested
+fixture files. The earlier quoted `pa*/tests` pattern missed nested changes;
+the corrected guard was independently observed returning failure for the
+modified PA6 fixture manifest (`obj/pa8-work/oracle-guard-check.log`).
+
+
+The ordinary-name performance investigation retains the initial regression in
+`obj/perf/1791781865584839719/samples.json` and the compact-pattern followup in
+`obj/perf/1791782070898545634/samples.json`. The latter 64,000-function A/B
+medians were 902.99/975.96 ms. Hardware counters show approximately 0.3% more
+retired instructions, with a larger increase in cycles; the cycle profile and
+assembly comparison are retained under `obj/pa8-work/hygiene-*`. The changed
+binary also has different register allocation/layout in unchanged parser code,
+so the timing difference does not establish a lookup-algorithm regression.
+
+A repeat pinned to CPU 0, using the same immutable binaries and input bytes,
+is retained in `obj/perf/1791782496455053566/samples.json`. After A/A calibration
+and three ABBA blocks, 4,000/16,000/64,000-function A/B medians were
+86.18/87.17, 355.47/362.83 and 1404.88/1443.14 ms; full output hashes match.
+The 64,000-function A/A observations ranged 1419.38–1438.42 ms. The host load
+was variable. These observations narrow the measured difference to roughly
+1–3% on that pinned run; they do not prove no regression. Full PA8 throughput
+and further performance review remain part of activation.
+
+`hygiene-release-validation.log` records the release-profile Rust invariants.
+`hygiene-reference-validation.log` records all independent rustc checks,
+14 harness tests, upstream provenance, and regenerated course references.
+Only the two new PA6 receiver fixtures add oracle bytes; all earlier sidecars
+are unchanged. The PA1–PA7 receipts refresh compiler source fingerprints.

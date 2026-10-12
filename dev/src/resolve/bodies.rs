@@ -112,28 +112,8 @@ impl Resolver<'_> {
                 self.optional(c, ty, Namespace::Type)?;
                 self.bind_pattern(c, pattern, DefKind::Parameter, &mut HashSet::new())
             }
-            Kind::Receiver { lifetime, .. } => {
-                if lifetime.end > lifetime.start {
-                    self.lifetime(c, node, lifetime)?;
-                }
-                let name = self
-                    .package
-                    .names
-                    .intern("self")
-                    .map_err(|e| self.error(c, node, e))?;
-                self.define(
-                    Definition {
-                        name,
-                        namespace: Namespace::Value,
-                        kind: DefKind::Parameter,
-                        scope: c.scope,
-                        node: Some(NodeKey { file: c.file, node }),
-                        access: Access::Within(c.module),
-                        members: None,
-                    },
-                    false,
-                )?;
-                Ok(())
+            Kind::Receiver { .. } => {
+                self.bind_pattern(c, node, DefKind::Parameter, &mut HashSet::new())
             }
             Kind::Cast { value, ty } => {
                 self.visit(c, value, Namespace::Value)?;
@@ -292,14 +272,19 @@ impl Resolver<'_> {
     }
     fn item_body(&mut self, c: Context, node: NodeId, index: u32) -> Result<(), Error> {
         let item = self.package.unit(c.file).configured.ast.items[index as usize];
+        if matches!(item.kind, ItemKind::MacroRules { .. })
+            && let Some(hygiene) = self.hygiene
+        {
+            hygiene.snapshot(c.module, node, c.scope, self.facts.definitions.len());
+        }
         self.visit_list(c, item.generics, Namespace::Type)?;
         self.visit_list(c, item.where_clause, Namespace::Type)?;
         match item.kind {
             ItemKind::Module { .. }
             | ItemKind::Use(_)
             | ItemKind::ExternCrate { .. }
-            | ItemKind::MacroRules { .. }
-            | ItemKind::MacroInvocation(_) => Ok(()),
+            | ItemKind::MacroRules { .. } => Ok(()),
+            ItemKind::MacroInvocation(value) => self.visit(c, value, Namespace::Value),
             ItemKind::Function {
                 parameters,
                 result,
@@ -376,7 +361,7 @@ impl Resolver<'_> {
         });
         self.path_arguments(c, node)
     }
-    fn lifetime(
+    pub(super) fn lifetime(
         &mut self,
         c: Context,
         node: NodeId,
@@ -407,7 +392,8 @@ impl Resolver<'_> {
         span: crate::syntax::token_tree::Span,
     ) -> Result<(), Error> {
         let name = self.package.name(c.file, span)?;
-        let Lookup::Found(binding) = self.lexical(c.scope, name, Namespace::Label) else {
+        let Some((_, binding)) = self.hygienic_lexical(c, span.start, name, Namespace::Label)?
+        else {
             return Err(self.error(c, node, "unresolved label"));
         };
         self.facts.references.push(Reference {

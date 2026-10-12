@@ -1,5 +1,6 @@
 mod bodies;
 pub mod expansion;
+mod hygiene;
 mod imports;
 mod index;
 pub mod load;
@@ -23,3 +24,29 @@ pub fn analyze(package: &mut package::Package) -> Result<model::Resolution, pack
     Ok(state.facts)
 }
 pub mod render;
+
+/// Continue from the expansion graph to ordinary names and mixed-site local facts.
+/// Earlier macro imports and module identities are consumed directly.
+///
+/// # Errors
+/// Reports unresolved/private ordinary names, invalid imports and hygiene failures.
+pub fn analyze_expanded(
+    mut report: expansion::Report,
+) -> Result<expansion::Report, package::Error> {
+    if report.names_resolved {
+        return Ok(report);
+    }
+    let mut state = index::State::default();
+    state.facts = std::mem::take(&mut report.resolution);
+    state.hygiene = Some(hygiene::Hygiene::new(
+        &report.definitions,
+        &report.invocations,
+    ));
+    let mut resolver = state.bind(&mut report.package);
+    resolver.collect()?;
+    resolver.imports()?;
+    resolver.bodies()?;
+    report.resolution = state.facts;
+    report.names_resolved = true;
+    Ok(report)
+}

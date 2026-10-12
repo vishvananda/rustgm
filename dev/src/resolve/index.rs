@@ -22,6 +22,7 @@ pub(crate) struct Context {
 #[derive(Default)]
 pub(crate) struct State {
     pub facts: Resolution,
+    pub hygiene: Option<super::hygiene::Hygiene>,
     scratch: Vec<NodeId>,
     pending: Vec<(Context, NodeId)>,
     visits: Vec<(Context, NodeId, Namespace)>,
@@ -31,6 +32,7 @@ impl State {
         Resolver {
             package,
             facts: &mut self.facts,
+            hygiene: &mut self.hygiene,
             scratch: &mut self.scratch,
             pending: &mut self.pending,
             visits: &mut self.visits,
@@ -40,6 +42,7 @@ impl State {
 pub(crate) struct Resolver<'a> {
     pub package: &'a mut Package,
     pub facts: &'a mut Resolution,
+    pub hygiene: &'a mut Option<super::hygiene::Hygiene>,
     pub scratch: &'a mut Vec<NodeId>,
     pub pending: &'a mut Vec<(Context, NodeId)>,
     pub visits: &'a mut Vec<(Context, NodeId, Namespace)>,
@@ -49,7 +52,9 @@ impl Resolver<'_> {
         self.facts
             .module_scopes
             .resize(self.package.modules.len(), ScopeId(0));
-        self.new_scope(None, ModuleId(0), true)?;
+        if self.facts.scopes.is_empty() {
+            self.new_scope(None, ModuleId(0), true)?;
+        }
         for spelling in [
             "bool", "char", "str", "i8", "i16", "i32", "i64", "i128", "isize", "u8", "u16", "u32",
             "u64", "u128", "usize", "f32", "f64",
@@ -121,14 +126,45 @@ impl Resolver<'_> {
         });
         Ok(id)
     }
+    fn node_scope(&mut self, c: Context, node: NodeId, barrier: bool) -> Result<ScopeId, Error> {
+        if self.hygiene.is_some()
+            && let Some(scope) = self.facts.node_scopes.get(&(c.module, node)).copied()
+        {
+            let frame = &mut self.facts.scopes[scope.0 as usize];
+            frame.parent = Some(c.scope);
+            frame.barrier = barrier;
+            frame.label_barrier = barrier;
+            return Ok(scope);
+        }
+        self.new_scope(Some(c.scope), c.module, barrier)
+    }
     pub fn define(&mut self, definition: Definition, shadow: bool) -> Result<DefId, Error> {
         let id = DefId(
             u32::try_from(self.facts.definitions.len())
                 .map_err(|_| Error::at(FileId(0), 0, "too many definitions"))?,
         );
+        if self.hygiene.is_some() && super::hygiene::Hygiene::is_local(definition.kind) {
+            let key = definition
+                .node
+                .ok_or_else(|| Error::at(FileId(0), 0, "local binding has no source"))?;
+            let offset = super::hygiene::name_offset(self.package, key);
+            let context = self.package.expansion_context(key.file, offset)?;
+            if let Some(hygiene) = self.hygiene {
+                hygiene
+                    .define(&definition, id, context, shadow)
+                    .map_err(|e| Error::at(key.file, offset, e))?;
+            }
+            self.facts.definitions.push(definition);
+            return Ok(id);
+        }
         let scope = &mut self.facts.scopes[definition.scope.0 as usize];
         let key = (definition.name, definition.namespace);
-        if scope.bindings.contains_key(&key) && !shadow {
+        if scope
+            .bindings
+            .get(&key)
+            .is_some_and(|binding| !matches!(binding.origin, Origin::Glob(_)))
+            && !shadow
+        {
             let node = definition.node;
             return Err(Error::at(
                 node.map_or(FileId(0), |n| n.file),
@@ -198,7 +234,7 @@ impl Resolver<'_> {
             otherwise,
         } = self.kind(c, node)
         {
-            let scope = self.new_scope(Some(c.scope), c.module, false)?;
+            let scope = self.node_scope(c, node, false)?;
             self.facts.node_scopes.insert((c.module, node), scope);
             let condition_context = Context { scope, ..c };
             if let Some(otherwise) = otherwise {
@@ -220,7 +256,7 @@ impl Resolver<'_> {
             | Kind::Bound { .. }
             | Kind::Where { .. }
             | Kind::FunctionType(_) => {
-                c.scope = self.new_scope(Some(c.scope), c.module, false)?;
+                c.scope = self.node_scope(c, node, false)?;
                 self.facts.scopes[c.scope.0 as usize].label_barrier =
                     matches!(self.kind(c, node), Kind::Closure { .. });
                 self.facts.node_scopes.insert((c.module, node), c.scope);
@@ -274,6 +310,16 @@ impl Resolver<'_> {
     fn item(&mut self, c: Context, node: NodeId, index: u32) -> Result<(), Error> {
         let item = self.package.unit(c.file).configured.ast.items[index as usize];
         let access = self.visibility(c, item.visibility)?;
+        if let Some(hygiene) = self.hygiene {
+            if matches!(item.kind, ItemKind::MacroRules { .. }) {
+                hygiene.scope(c.module, node, c.scope);
+                self.facts.node_scopes.insert((c.module, node), c.scope);
+                return Ok(());
+            }
+            if matches!(item.kind, ItemKind::Use(_)) {
+                return Ok(());
+            }
+        }
         if let ItemKind::Use(tree) = item.kind {
             return self.import(c, tree, &[], false, access);
         }
@@ -284,15 +330,21 @@ impl Resolver<'_> {
                 .children
                 .get(&(c.module, key))
                 .ok_or_else(|| self.error(c, node, "missing loaded module"))?;
-            let scope = self.new_scope(None, module, true)?;
-            self.item_definition(
-                c,
-                node,
-                item,
-                (Namespace::Type, DefKind::Module),
-                access,
-                Some(scope),
-            )?;
+            let scope = if self.hygiene.is_some() {
+                self.facts.module_scopes[module.0 as usize]
+            } else {
+                self.new_scope(None, module, true)?
+            };
+            if self.hygiene.is_none() {
+                self.item_definition(
+                    c,
+                    node,
+                    item,
+                    (Namespace::Type, DefKind::Module),
+                    access,
+                    Some(scope),
+                )?;
+            }
             self.module(module, scope);
             return Ok(());
         }
@@ -309,7 +361,7 @@ impl Resolver<'_> {
                 | ItemKind::Static { .. }
         );
         let body = if owned {
-            self.new_scope(Some(c.scope), c.module, true)?
+            self.node_scope(c, node, true)?
         } else {
             c.scope
         };

@@ -24,7 +24,9 @@ pub(super) fn node(
         Kind::PreciseCapture(parameters) => {
             write!(output, "precise-capture {}", Children(ast, parameters))
         }
-        Kind::Receiver { lifetime, mutable } => {
+        Kind::Receiver {
+            lifetime, mutable, ..
+        } => {
             write!(output, "receiver {mutable} ")?;
             spelling(source, lifetime, output)
         }

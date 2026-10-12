@@ -148,6 +148,7 @@ pub struct Reference {
 }
 #[derive(Default)]
 pub struct Resolution {
+    pub textual_imports: HashMap<usize, Binding>,
     pub crate_root: Option<DefId>,
     pub scopes: Vec<Scope>,
     pub definitions: Vec<Definition>,

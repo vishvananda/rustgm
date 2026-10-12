@@ -23,6 +23,45 @@ pub(crate) enum Lookup {
     Missing,
 }
 impl Resolver<'_> {
+    pub fn hygienic_lexical(
+        &self,
+        c: Context,
+        offset: u32,
+        name: NameId,
+        namespace: Namespace,
+    ) -> Result<Option<(ScopeId, Binding)>, Error> {
+        if matches!(namespace, Namespace::Value | Namespace::Label)
+            && let Some(hygiene) = self.hygiene.as_ref()
+        {
+            let context = self.package.expansion_context(c.file, offset)?;
+            return hygiene
+                .lookup(
+                    self.facts,
+                    super::hygiene::Query {
+                        scope: c.scope,
+                        name,
+                        namespace,
+                        context,
+                        visible: self.facts.definitions.len(),
+                    },
+                )
+                .map_err(|e| Error::at(c.file, offset, e));
+        }
+        Ok(self.lexical_binding(c.scope, name, namespace))
+    }
+    pub fn hygienic_name(
+        &self,
+        c: Context,
+        node: NodeId,
+        offset: u32,
+        name: NameId,
+        namespace: Namespace,
+    ) -> Result<Target, Error> {
+        let found = self
+            .hygienic_lexical(c, offset, name, namespace)?
+            .map_or(Lookup::Missing, |(_, binding)| Lookup::Found(binding));
+        self.target(c, node, &found, namespace)
+    }
     pub fn visible(&self, access: Access, module: ModuleId) -> bool {
         match access {
             Access::Public => true,
@@ -183,6 +222,12 @@ impl Resolver<'_> {
                     .get(&(name, ns))
                     .copied()
                     .map(|binding| (scope, binding))
+            } else if self.hygiene.is_some() {
+                let offset = super::hygiene::name_offset(
+                    self.package,
+                    super::unit::NodeKey { file: c.file, node },
+                );
+                self.hygienic_lexical(c, offset, name, ns)?
             } else {
                 self.lexical_binding(c.scope, name, ns)
             };

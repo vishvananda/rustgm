@@ -63,7 +63,11 @@ impl Work {
                 .collect(),
             candidates: HashMap::new(),
             provided: (0..count).map(|_| HashSet::new()).collect(),
-            textual: HashMap::new(),
+            textual: facts
+                .textual_imports
+                .iter()
+                .map(|(index, binding)| (*index, TextualSource::Found(*binding)))
+                .collect(),
             attempts: 0,
             observe: false,
             events: Vec::new(),

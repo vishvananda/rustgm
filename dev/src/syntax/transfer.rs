@@ -255,7 +255,11 @@ impl Bases {
         span: &mut impl FnMut(Span) -> Result<Span, LexError>,
     ) -> Result<(), LexError> {
         match kind {
-            Kind::Receiver { lifetime, .. } | Kind::Name(lifetime) => *lifetime = span(*lifetime)?,
+            Kind::Receiver { name, lifetime, .. } => {
+                *name = span(*name)?;
+                *lifetime = span(*lifetime)?;
+            }
+            Kind::Name(name) => *name = span(*name)?,
             Kind::GenericMethodCall {
                 receiver,
                 method,

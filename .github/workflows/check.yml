@@ -19,4 +19,4 @@ jobs:
       - name: Oracle reproducibility
         run: |
           make ref-test
-          git diff --exit-code -- 'pa*/tests' 'pa*/reference.json'
+          git diff --exit-code -- ':(glob)pa*/tests/**' ':(glob)pa*/reference.json'
