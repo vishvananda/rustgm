@@ -1,0 +1,2 @@
+ERROR: file 1: 0: included source "pa8/tests/spec/include/missing/missing.rs" does not exist
+  in macro include at file 0: 0; builtin

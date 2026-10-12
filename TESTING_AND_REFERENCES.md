@@ -77,6 +77,15 @@ invariants additionally verify ordered-rule fragment reuse, capture opacity,
 repetition cardinality and doc-token provenance. The two deliberate acceptance
 differences defer generated-syntax parsing to PA8. See `docs/pa7-validation.md`.
 
+PA8 checks all 87 expansion/hygiene programs with pinned rustc. A case may supply
+`environment` as a name-to-string map; null removes that name from the child
+process. The same overrides apply to both compilers and are recorded in harness
+evidence and the manifest receipt. Inherited runner variables are otherwise
+preserved. No test variable is read implicitly from the developer's environment.
+The optional rustc `default_lints: true` metadata omits the usual lint cap for a
+case whose expected rejection depends on a default lint, such as incomplete
+`include!()` expressions. Such a case is not an acceptance-boundary exception.
+
 Rustc has no LowIR output. From PA11, maintainer-generated LowIR is the course
 text oracle, with independent run-pass checks through CPPGM versus rustc. Do
 not grade LLVM IR or assume Rust's unspecified layout matches rustc. Test exact
@@ -100,8 +109,8 @@ our oracle: their representation and diagnostic contracts belong to upstream.
 
 ## Release discipline
 
-PA1–PA7 are implemented drafts, not a claim of full Rust frontend conformance.
-Planned PA8–PA38 fail on invocation and are excluded from pass counts. Promote
+PA1–PA8 are implemented drafts, not a claim of full Rust frontend conformance.
+Planned PA9–PA38 fail on invocation and are excluded from pass counts. Promote
 a stage only after handout/reference/fixtures are coherent, independent checks
 pass, the source-to-feature ledger is reviewed and all prior stages remain green.
 Keep maintainer measurements and logs in ignored `obj/`; keep student handout

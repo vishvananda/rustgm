@@ -49,6 +49,7 @@ pub(super) fn stream_error(
 
 fn physical(
     package: &Package,
+    invocations: &[Invocation],
     mut location: Location,
 ) -> Result<(Location, Option<ContextId>), &'static str> {
     let mut context = None;
@@ -63,6 +64,16 @@ fn physical(
         };
         if context.is_none() {
             context = origin.context.filter(|context| context.0 != 0);
+            // Includes preserve source hygiene, so their origins have no syntax
+            // context. Error-only lookup recovers the separate invocation ancestry.
+            if context.is_none() && package.unit(origin.original.file).include_context.is_some() {
+                context = invocations
+                    .iter()
+                    .find(|call| {
+                        call.node.file == location.file && call.generated == origin.generated
+                    })
+                    .map(|call| call.context);
+            }
         }
         let extent = origin.original.span.end - origin.original.span.start;
         location = Location {
@@ -79,12 +90,13 @@ fn physical(
 }
 fn project_frame(
     package: &Package,
+    invocations: &[Invocation],
     trace: &mut ExpansionTrace,
 ) -> Result<Option<ContextId>, &'static str> {
-    let (call, context) = physical(package, trace.call)?;
+    let (call, context) = physical(package, invocations, trace.call)?;
     trace.call = call;
     if let Some(definition) = trace.definition {
-        trace.definition = Some(physical(package, definition)?.0);
+        trace.definition = Some(physical(package, invocations, definition)?.0);
     }
     Ok(context)
 }
@@ -97,6 +109,7 @@ fn project(
     let result = (|| {
         let (location, mut context) = physical(
             package,
+            invocations,
             Location {
                 file: error.file,
                 span: error.span,
@@ -105,7 +118,7 @@ fn project(
         error.file = location.file;
         error.span = location.span;
         for trace in &mut error.expansions {
-            let parent = project_frame(package, trace)?;
+            let parent = project_frame(package, invocations, trace)?;
             if context.is_none() {
                 context = parent;
             }
@@ -132,7 +145,7 @@ fn project(
                     span: call.original,
                 },
             );
-            project_frame(package, &mut trace)?;
+            project_frame(package, invocations, &mut trace)?;
             error.expansions.push(trace);
             context = Some(call.parent);
         }

@@ -133,7 +133,7 @@ fn borrowed_and_decoded_literals_are_transferred_by_value() -> Result<(), String
         assert_eq!(result.ast.literals[0], expected);
         let mut storage = Storage::default();
         let value = storage
-            .store(&source, result.ast.literals[0].clone())
+            .store(&source, &result.ast.literals[0])
             .map_err(str::to_owned)?;
         assert_eq!(
             storage.view(&source, value).map_err(str::to_owned)?,

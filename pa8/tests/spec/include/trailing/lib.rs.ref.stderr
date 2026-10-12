@@ -1,0 +1,2 @@
+ERROR: file 1: 2: include expected a single expression
+  in macro include at file 0: 12; builtin

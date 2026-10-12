@@ -786,3 +786,15 @@ hashes. At 1,000/4,000/16,000 groups of three builtins, A/B medians were
 nominal Option identity. The remaining PA8 source builtin is `include!`; then
 its graded suite and contract can be assembled and activated. PA9–PA11 remain
 required before the active source-to-LowIR goal is complete.
+
+## PA8 draft activation
+
+Source `include!()` now caches parsed typed fragments, preserves requested alias
+names, installs independent caller copies, owns included module directories and
+retains physical locations plus invocation diagnostics. PA8 is activated with
+87 complete-program fixtures, all independently checked against pinned rustc,
+bringing the active total to 1,106. Its handout now defines the grading view,
+source-template records, builtin/provider boundaries and include grammar rules.
+See `pa8-validation.md` for the final architecture ledger, checks and measured
+include overhead. This closes PA8's draft; PA9–PA11 remain required before the
+source-to-LowIR goal is achieved.

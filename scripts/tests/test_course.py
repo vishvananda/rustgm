@@ -27,6 +27,22 @@ class HarnessTests(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     load_cases(root, "pa1")
 
+    def test_environment_is_explicit_and_null_removes_an_inherited_value(self):
+        with tempfile.TemporaryDirectory() as name:
+            case = {"path": "tests/x.rs", "exit_status": 0,
+                    "environment": {"RUSTGM_HARNESS_TEST": "a b\né", "PATH": None}}
+            root, tests = self.fixture_root(name, [case])
+            (tests / "x.rs").write_text("input")
+            load_cases(root, "pa1")
+            app = [sys.executable, "-c", "import json,os; print(json.dumps([os.getenv('RUSTGM_HARNESS_TEST'),os.getenv('PATH')]))"]
+            _, actual = run_case(root, "pa1", "--emit-tokens", case, app, 2)
+            self.assertEqual(json.loads(actual[0]), ["a b\né", None])
+            for invalid in ({"": "x"}, {"a=b": "x"}, {"x": 1}, {"x": "a\0b"}, []):
+                case["environment"] = invalid
+                (tests / "manifest.json").write_text(json.dumps({"mode": "--emit-tokens", "cases": [case]}))
+                with self.assertRaises(ValueError):
+                    load_cases(root, "pa1")
+
     def test_module_inputs_are_explicit_discovered_and_hashed(self):
         with tempfile.TemporaryDirectory() as name:
             case = {"path": "tests/package/lib.rs", "exit_status": 0, "input": "file",

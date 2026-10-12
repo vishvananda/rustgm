@@ -9,7 +9,7 @@ use crate::{
     literal::Value,
     support::source::SourceFile,
     syntax::{
-        ast::{Kind, NodeId},
+        ast::{Kind, MacroContext, NodeId},
         attribute::Input,
         item::ItemKind,
     },
@@ -56,6 +56,7 @@ struct Visit {
     node: NodeId,
     in_block: bool,
     owner: Option<NodeId>,
+    include: Option<FileId>,
 }
 pub(crate) struct Loader<'a, S> {
     pub package: Package,
@@ -65,6 +66,8 @@ pub(crate) struct Loader<'a, S> {
     identities: Vec<PathBuf>,
     cache: HashMap<PathBuf, FileId>,
     separate_instances: bool,
+    includes: HashMap<(PathBuf, MacroContext), FileId>,
+    include_requests: HashMap<(PathBuf, MacroContext), FileId>,
     resources: HashMap<PathBuf, Result<Option<Vec<u8>>, String>>,
     environment: HashMap<String, Result<Option<String>, String>>,
 }
@@ -84,6 +87,7 @@ pub fn load(
         node: root_node,
         in_block: false,
         owner: None,
+        include: None,
     }];
     let mut children = Vec::new();
     while let Some(visit) = work.pop() {
@@ -107,6 +111,7 @@ pub fn load(
                 node: loader.package.modules[module.0 as usize].root,
                 in_block: false,
                 owner: None,
+                include: None,
             });
             continue;
         }
@@ -124,6 +129,7 @@ pub fn load(
                 node: *node,
                 in_block,
                 owner,
+                include: None,
             });
         }
     }
@@ -174,6 +180,8 @@ impl<'a, S: Sources> Loader<'a, S> {
             identities: vec![root.identity.clone()],
             cache: HashMap::from([(root.identity, FileId(0))]),
             separate_instances: false,
+            includes: HashMap::new(),
+            include_requests: HashMap::new(),
             resources: HashMap::new(),
             environment: HashMap::new(),
         })
@@ -206,6 +214,7 @@ impl<'a, S: Sources> Loader<'a, S> {
         node: NodeId,
         owner: Option<NodeId>,
         in_block: bool,
+        include: Option<FileId>,
     ) -> Result<ModuleId, Error> {
         let file = self.package.modules[module.0 as usize].file;
         if let Some(id) = self.package.children.get(&(module, NodeKey { file, node })) {
@@ -220,6 +229,7 @@ impl<'a, S: Sources> Loader<'a, S> {
                 node,
                 in_block,
                 owner,
+                include,
             },
             index,
         )
@@ -238,7 +248,16 @@ impl<'a, S: Sources> Loader<'a, S> {
         let name = self.package.name(file, span)?;
         let spelling = self.package.names.get(name).to_owned();
         let explicit = self.path(file, visit.owner)?;
-        let directory = &self.directories[visit.module.0 as usize];
+        let included_directory = visit.include.map(|id| Directory {
+            path: self.package.file_paths[id.0 as usize]
+                .parent()
+                .unwrap_or(Path::new(""))
+                .into(),
+            relative: None,
+        });
+        let directory = included_directory
+            .as_ref()
+            .unwrap_or(&self.directories[visit.module.0 as usize]);
         let mut path = directory.path.clone();
         let inline = matches!(item.kind, ItemKind::Module { items: Some(_) });
         if let Some(explicit) = &explicit {
@@ -427,5 +446,56 @@ impl<S: Sources> Loader<'_, S> {
             .as_ref()
             .map(|text| text.as_deref())
             .map_err(Clone::clone)
+    }
+}
+
+impl<S: Sources> Loader<'_, S> {
+    /// Cache parsed include fragments separately from complete module syntax.
+    /// Requested aliases retain source names while sharing canonical parsed facts.
+    pub(crate) fn include(
+        &mut self,
+        path: &Path,
+        grammar: MacroContext,
+    ) -> Result<(FileId, bool), Error> {
+        let requested = (path.components().collect(), grammar);
+        if let Some(file) = self.include_requests.get(&requested) {
+            return Ok((*file, false));
+        }
+        let id = FileId(
+            u32::try_from(self.package.units.len())
+                .map_err(|_| Error::at(FileId(0), 0, "too many included source files"))?,
+        );
+        let input = self
+            .sources
+            .read(path)
+            .map_err(|e| Error::at(id, 0, e))?
+            .ok_or_else(|| {
+                Error::at(
+                    id,
+                    0,
+                    format!(
+                        "included source {:?} does not exist",
+                        path.to_string_lossy()
+                    ),
+                )
+            })?;
+        let key = (input.identity.clone(), grammar);
+        let (unit, parsed) = if let Some(file) = self.includes.get(&key) {
+            (self.package.unit(*file).fresh_instance(), false)
+        } else {
+            (
+                Unit::parse_include(input.source, self.config, grammar),
+                true,
+            )
+        };
+        let unit = unit.map_err(|e| Error::at(id, e.offset, e.message))?;
+        self.package.units.push(unit);
+        self.package
+            .file_paths
+            .push(input.path.components().collect());
+        self.identities.push(input.identity);
+        self.includes.entry(key).or_insert(id);
+        self.include_requests.insert(requested, id);
+        Ok((id, parsed))
     }
 }

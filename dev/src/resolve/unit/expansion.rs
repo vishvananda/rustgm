@@ -1,16 +1,45 @@
 //! Install only newly configured expansion facts into a file's stable syntax arenas.
 use super::Unit;
 use crate::{
-    expand::{crate_syntax::ConfiguredCrate, stream::Origin},
+    expand::{
+        crate_syntax::{AttributeEffect, ConfiguredCrate, ConfiguredSyntax, Owner},
+        stream::Origin,
+    },
     lex::token::LexError,
+    literal::storage::{Storage, StoredValue},
     syntax::{
-        ast::{Kind, NodeId},
+        ast::{Kind, NodeId, Syntax},
         attribute::Input,
         token_tree::{Span, error},
         transfer,
     },
 };
 use std::num::NonZeroU32;
+
+struct Configuration {
+    active: Vec<bool>,
+    owners: Vec<Owner>,
+    effects: Vec<AttributeEffect>,
+}
+impl Configuration {
+    fn take<L>(generated: ConfiguredSyntax<L>) -> (Syntax<L>, Self) {
+        (
+            generated.ast,
+            Self {
+                active: generated.active,
+                owners: generated.owners,
+                effects: generated.effects,
+            },
+        )
+    }
+    fn copy<L>(generated: &ConfiguredSyntax<L>) -> Self {
+        Self {
+            active: generated.active.clone(),
+            owners: generated.owners.clone(),
+            effects: generated.effects.clone(),
+        }
+    }
+}
 
 fn add(base: usize, count: usize) -> Result<u32, LexError> {
     base.checked_add(count)
@@ -49,8 +78,56 @@ impl Unit {
         &mut self,
         target: NodeId,
         source: &str,
-        mut generated: ConfiguredCrate<'_>,
+        generated: ConfiguredCrate<'_>,
         origins: &[Origin],
+    ) -> Result<Span, LexError> {
+        let (ast, configuration) = Configuration::take(generated);
+        self.install(
+            target,
+            source,
+            &ast,
+            configuration,
+            origins,
+            |storage, value, base| {
+                storage
+                    .store(source, value)
+                    .and_then(|value| value.offset_source(base))
+                    .map_err(|e| error(0, e))
+            },
+        )
+    }
+    /// Install cached included syntax by borrowing its arenas and copying only demanded facts.
+    ///
+    /// # Errors
+    /// Rejects invalid targets, source mappings, literal storage or compact arena overflow.
+    pub fn install_include(
+        &mut self,
+        target: NodeId,
+        included: &Self,
+        origins: &[Origin],
+    ) -> Result<Span, LexError> {
+        let source = included.source.text();
+        self.install(
+            target,
+            source,
+            &included.configured.ast,
+            Configuration::copy(&included.configured),
+            origins,
+            |storage, value, base| {
+                storage
+                    .import(source, &included.literals, *value, base)
+                    .map_err(|e| error(0, e))
+            },
+        )
+    }
+    fn install<L>(
+        &mut self,
+        target: NodeId,
+        source: &str,
+        ast: &Syntax<L>,
+        mut configuration: Configuration,
+        origins: &[Origin],
+        mut literal: impl FnMut(&mut Storage, &L, u32) -> Result<StoredValue, LexError>,
     ) -> Result<Span, LexError> {
         let target_node = self
             .configured
@@ -67,7 +144,8 @@ impl Unit {
             ));
         }
         let base = self.source.append_offset(source).map_err(|e| error(0, e))?;
-        let indices = self.expansion_metadata(target, &mut generated, base, source.len())?;
+        let indices =
+            self.expansion_metadata(target, ast, &mut configuration, base, source.len())?;
         let mut previous_end = 0;
         for origin in origins {
             shift(origin.generated, base, source.len())?;
@@ -79,13 +157,20 @@ impl Unit {
             }
             previous_end = origin.generated.end;
         }
-        let new_root = append_syntax(
-            source,
-            base,
-            generated.ast,
+        let mark = self.literals.decoded_bytes();
+        let result = transfer::append(
+            ast,
             &mut self.configured.ast,
-            &mut self.literals,
-        )?;
+            |span| shift(span, base, source.len()),
+            |value| literal(&mut self.literals, value, base),
+        );
+        let new_root = match result {
+            Ok(root) => root,
+            Err(error) => {
+                self.literals.truncate(mark);
+                return Err(error);
+            }
+        };
         // All ranges were validated above; this is the transaction's commit point.
         self.source.append(source).map_err(|e| error(0, e))?;
         let mut obsolete = vec![target];
@@ -99,18 +184,11 @@ impl Unit {
             self.configured.active[node.0 as usize] = false;
             self.configured.ast.push_children(node, &mut obsolete);
         }
-        self.configured.active.extend(generated.active);
+        self.retain_configuration(configuration, indices);
         self.configured.active[target.0 as usize] = self.configured.active[new_root.0 as usize];
         self.configured.active[new_root.0 as usize] = false;
         self.configured.ast.nodes[target.0 as usize] =
             self.configured.ast.nodes[new_root.0 as usize];
-        self.owner_indices
-            .resize(self.configured.ast.nodes.len(), None);
-        for (owner, index) in generated.owners.iter().zip(indices) {
-            self.owner_indices[owner.node.0 as usize] = Some(index);
-        }
-        self.configured.owners.extend(generated.owners);
-        self.configured.effects.extend(generated.effects);
         self.origins
             .extend(origins.iter().copied().map(|mut origin| {
                 origin.generated.start += base;
@@ -124,26 +202,22 @@ impl Unit {
                     .map_err(|_| error(base, "invalid expansion source length"))?,
         })
     }
-    fn expansion_metadata(
+    fn expansion_metadata<L>(
         &self,
         target: NodeId,
-        generated: &mut ConfiguredCrate<'_>,
+        ast: &Syntax<L>,
+        generated: &mut Configuration,
         base: u32,
         length: usize,
     ) -> Result<Vec<NonZeroU32>, LexError> {
-        let node_base = add(self.configured.ast.nodes.len(), generated.ast.nodes.len())?;
-        let attribute_base = add(
-            self.configured.ast.attributes.len(),
-            generated.ast.attributes.len(),
-        )?;
+        let node_base = add(self.configured.ast.nodes.len(), ast.nodes.len())?;
+        let attribute_base = add(self.configured.ast.attributes.len(), ast.attributes.len())?;
         let effect_base = add(self.configured.effects.len(), generated.effects.len())?;
         let owner_base = add(self.configured.owners.len(), generated.owners.len())?;
-        if generated.active.len() != generated.ast.nodes.len()
-            || generated.ast.root.0 as usize >= generated.ast.nodes.len()
-        {
+        if generated.active.len() != ast.nodes.len() || ast.root.0 as usize >= ast.nodes.len() {
             return Err(error(0, "invalid configured expansion arena"));
         }
-        let root = generated.ast.root;
+        let root = ast.root;
         let mapped_node = |node: NodeId| {
             if node == root {
                 target
@@ -152,7 +226,7 @@ impl Unit {
             }
         };
         for owner in &mut generated.owners {
-            if owner.node.0 as usize >= generated.ast.nodes.len()
+            if owner.node.0 as usize >= ast.nodes.len()
                 || owner.attributes.start > owner.attributes.end
                 || owner.attributes.end > generated.effects.len()
             {
@@ -164,7 +238,7 @@ impl Unit {
         }
         let effect_count = generated.effects.len();
         for effect in &mut generated.effects {
-            if effect.capture as usize >= generated.ast.attributes.len()
+            if effect.capture as usize >= ast.attributes.len()
                 || effect
                     .attribute
                     .parent
@@ -205,7 +279,7 @@ fn append_syntax(
     let mark = literals.decoded_bytes();
     let stored = ast.map_literals(|value| {
         literals
-            .store(source, value)
+            .store(source, &value)
             .and_then(|value| value.offset_source(base))
             .map_err(|e| error(0, e))
     });
@@ -240,27 +314,24 @@ impl Unit {
         let source = self.source.text();
         let inputs = registry.view(|id| if id == file { Some(source) } else { other(id) });
         let ast = crate::syntax::expression::fragment::parse_arguments(source, tokens, &inputs)?;
-        let mut generated = crate::expand::crate_syntax::configure(source, ast, config)?;
-        let root = NodeId(
-            add(self.configured.ast.nodes.len(), generated.ast.nodes.len())? + generated.ast.root.0,
-        );
-        let indices = self.expansion_metadata(root, &mut generated, 0, source.len())?;
-        let root = append_syntax(
-            source,
-            0,
-            generated.ast,
-            &mut self.configured.ast,
-            &mut self.literals,
-        )?;
-        self.configured.active.extend(generated.active);
+        let (ast, mut configuration) =
+            Configuration::take(crate::expand::crate_syntax::configure(source, ast, config)?);
+        let root = NodeId(add(self.configured.ast.nodes.len(), ast.nodes.len())? + ast.root.0);
+        let indices = self.expansion_metadata(root, &ast, &mut configuration, 0, source.len())?;
+        let root = append_syntax(source, 0, ast, &mut self.configured.ast, &mut self.literals)?;
+        self.retain_configuration(configuration, indices);
+        Ok(root)
+    }
+
+    fn retain_configuration(&mut self, configuration: Configuration, indices: Vec<NonZeroU32>) {
+        self.configured.active.extend(configuration.active);
         self.owner_indices
             .resize(self.configured.ast.nodes.len(), None);
-        for (owner, index) in generated.owners.iter().zip(indices) {
+        for (owner, index) in configuration.owners.iter().zip(indices) {
             self.owner_indices[owner.node.0 as usize] = Some(index);
         }
-        self.configured.owners.extend(generated.owners);
-        self.configured.effects.extend(generated.effects);
-        Ok(root)
+        self.configured.owners.extend(configuration.owners);
+        self.configured.effects.extend(configuration.effects);
     }
 
     pub(crate) fn retire_arguments(&mut self, root: NodeId) {

@@ -1,0 +1,2 @@
+ERROR: file 0: 20: unresolved value name
+  in macro m at file 0: 44; defined at file 0: 0

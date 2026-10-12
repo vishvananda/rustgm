@@ -68,14 +68,14 @@ impl Storage {
     }
     /// # Errors
     /// Rejects borrowed data outside the source or a decoded pool over 4 GiB.
-    pub fn store(&mut self, source: &str, value: Value<'_>) -> Result<StoredValue, &'static str> {
+    pub fn store(&mut self, source: &str, value: &Value<'_>) -> Result<StoredValue, &'static str> {
         Ok(match value {
-            Value::Integer(value) => StoredValue::Integer(value),
-            Value::Character(value) => StoredValue::Character(value),
-            Value::Byte(value) => StoredValue::Byte(value),
-            Value::Boolean(value) => StoredValue::Boolean(value),
+            Value::Integer(value) => StoredValue::Integer(*value),
+            Value::Character(value) => StoredValue::Character(*value),
+            Value::Byte(value) => StoredValue::Byte(*value),
+            Value::Boolean(value) => StoredValue::Boolean(*value),
             Value::Float(value) => StoredValue::Float {
-                decimal: match value.decimal {
+                decimal: match &value.decimal {
                     Cow::Borrowed(text) => Self::borrowed(source, text.as_bytes())?,
                     Cow::Owned(text) => self.owned(text.as_bytes())?,
                 },
@@ -87,10 +87,38 @@ impl Storage {
         })
     }
 
-    fn bytes(&mut self, source: &str, value: Cow<'_, [u8]>) -> Result<Bytes, &'static str> {
+    /// Copy decoded bytes once and rebase source ranges when installing cached syntax.
+    pub(crate) fn import(
+        &mut self,
+        source: &str,
+        storage: &Self,
+        mut value: StoredValue,
+        base: u32,
+    ) -> Result<StoredValue, &'static str> {
+        let bytes = match &mut value {
+            StoredValue::Float { decimal, .. } => Some(decimal),
+            StoredValue::String(bytes)
+            | StoredValue::ByteString(bytes)
+            | StoredValue::CString(bytes) => Some(bytes),
+            _ => None,
+        };
+        if let Some(bytes) = bytes {
+            let data = storage.get(source, *bytes)?;
+            if matches!(bytes, Bytes::Decoded { .. }) {
+                *bytes = self.owned(data)?;
+            }
+        }
+        value.offset_source(base)
+    }
+
+    #[expect(
+        clippy::ptr_arg,
+        reason = "Cow ownership distinguishes source ranges from decoded pool bytes"
+    )]
+    fn bytes(&mut self, source: &str, value: &Cow<'_, [u8]>) -> Result<Bytes, &'static str> {
         match value {
             Cow::Borrowed(bytes) => Self::borrowed(source, bytes),
-            Cow::Owned(bytes) => self.owned(&bytes),
+            Cow::Owned(bytes) => self.owned(bytes),
         }
     }
 

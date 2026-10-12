@@ -1,0 +1,2 @@
+ERROR: file 0: 21: unresolved macro is not in textual scope or path scope
+  in macro concat at file 0: 13; builtin

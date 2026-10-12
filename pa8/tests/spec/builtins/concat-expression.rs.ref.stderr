@@ -1,0 +1,2 @@
+ERROR: file 0: 21: concat requires literal arguments
+  in macro concat at file 0: 13; builtin

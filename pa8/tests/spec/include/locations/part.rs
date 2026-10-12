@@ -1,0 +1,1 @@
+fn f()-> &'static str{concat!(file!(),":",line!(),":",module_path!())}

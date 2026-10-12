@@ -15,6 +15,7 @@ use std::{
 struct Files {
     sources: HashMap<PathBuf, String>,
     reads: Vec<PathBuf>,
+    identities: HashMap<PathBuf, PathBuf>,
     resources: HashMap<PathBuf, Vec<u8>>,
     resource_reads: Vec<PathBuf>,
     environment: HashMap<String, Result<Option<String>, String>>,
@@ -36,7 +37,11 @@ impl Sources for Files {
             .get(path)
             .map(|text| {
                 Ok(InputFile {
-                    identity: path.to_owned(),
+                    identity: self
+                        .identities
+                        .get(path)
+                        .cloned()
+                        .unwrap_or_else(|| path.to_owned()),
                     path: path.to_owned(),
                     source: SourceFile::new(text.as_bytes().to_vec())?,
                 })
@@ -1992,5 +1997,241 @@ fn resource_paths_follow_physical_call_causes_and_requested_source_paths() -> Re
         &Config::default(),
     );
     assert!(result.is_err());
+    Ok(())
+}
+
+#[test]
+fn source_includes_cache_syntax_but_expand_each_receiving_scope() -> Result<(), String> {
+    let mut files = Files::default();
+    files.sources.insert(
+        "/crate/shared.rs".into(),
+        "pub fn answer()->i32{value!()}".into(),
+    );
+    let report = analyze(
+        "macro_rules! value{()=>{1}} mod first{include!(\"shared.rs\");} macro_rules! value{()=>{2}} mod second{include!(concat!(\"shared\",\".rs\"));}",
+        &mut files,
+    )?;
+    assert_eq!(files.reads, [PathBuf::from("/crate/shared.rs")]);
+    let calls = report
+        .invocations
+        .iter()
+        .filter(|call| {
+            matches!(
+                report.definitions[call.definition].body,
+                expansion::Body::Builtin(rustgm::expand::builtin::Builtin::Include)
+            )
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(
+        calls
+            .iter()
+            .map(|call| call.parser_calls)
+            .collect::<Vec<_>>(),
+        [2, 1]
+    );
+    let values = report
+        .invocations
+        .iter()
+        .filter(|call| {
+            report
+                .package
+                .names
+                .get(report.definitions[call.definition].name)
+                == "value"
+        })
+        .map(|call| {
+            let unit = report.package.unit(call.node.file);
+            let rustgm::syntax::ast::Kind::Literal(index) =
+                unit.configured.ast.node(call.node.node).kind
+            else {
+                return Err("expected integer syntax".to_owned());
+            };
+            let rustgm::literal::Value::Integer(value) =
+                unit.literal(index).map_err(|e| e.message)?
+            else {
+                return Err("expected integer literal".to_owned());
+            };
+            Ok(value.magnitude)
+        })
+        .collect::<Result<Vec<_>, String>>()?;
+    assert_eq!(values, [1, 2]);
+    assert_eq!(report.package.units.len(), 2);
+    assert!(report.package.units[1].origins.is_empty());
+    let report = rustgm::resolve::analyze_expanded(report).map_err(|e| e.to_string())?;
+    assert!(report.resolution.expansions.is_empty());
+    Ok(())
+}
+
+#[test]
+fn included_modules_take_directory_ownership_and_restore_the_caller() -> Result<(), String> {
+    let mut files = Files::default();
+    for (path, source) in [
+        (
+            "/crate/generated/part.rs",
+            "mod child; mod nested{mod leaf;} fn location()-> &'static str{concat!(file!(),\":\",line!(),\":\",module_path!())}",
+        ),
+        ("/crate/generated/child.rs", "pub fn child(){}"),
+        ("/crate/generated/nested/leaf.rs", "pub fn leaf(){}"),
+        ("/crate/after.rs", "pub fn after(){}"),
+    ] {
+        files.sources.insert(path.into(), source.into());
+    }
+    let report = analyze("include!(\"generated/part.rs\"); mod after;", &mut files)?;
+    assert_eq!(report.package.modules.len(), 5);
+    assert!(builtin_strings(&report)?.contains(&"/crate/generated/part.rs:1:lib".to_owned()));
+    assert!(
+        files
+            .reads
+            .contains(&PathBuf::from("/crate/generated/child.rs"))
+    );
+    assert!(
+        files
+            .reads
+            .contains(&PathBuf::from("/crate/generated/nested/leaf.rs"))
+    );
+    assert!(files.reads.contains(&PathBuf::from("/crate/after.rs")));
+    rustgm::resolve::analyze_expanded(report).map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+#[test]
+fn included_expressions_are_unhygienic_and_preserve_decoded_literals() -> Result<(), String> {
+    let mut files = Files::default();
+    files.sources.insert(
+        "/crate/expr.rs".into(),
+        "{let _=\"a\\nb\";let _=b\"\\xff\";x + 1}".into(),
+    );
+    let report = analyze(
+        "fn f(x:i32)->i32{include!(\"expr.rs\")} fn g(x:i32)->i32{include!(\"expr.rs\")}",
+        &mut files,
+    )?;
+    assert_eq!(files.reads.len(), 1);
+    let unit = &report.package.units[0];
+    let strings = (0..unit.configured.ast.literals.len())
+        .map(|index| {
+            unit.literal(u32::try_from(index).map_err(|e| e.to_string())?)
+                .map_err(|e| e.message.to_owned())
+        })
+        .collect::<Result<Vec<_>, String>>()?;
+    assert_eq!(strings.iter().filter(|value| matches!(value, rustgm::literal::Value::String(bytes) if bytes.as_ref() == b"a\nb")).count(), 2);
+    assert_eq!(strings.iter().filter(|value| matches!(value, rustgm::literal::Value::ByteString(bytes) if bytes.as_ref() == [255])).count(), 2);
+    rustgm::resolve::analyze_expanded(report).map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+#[test]
+fn include_context_restrictions_and_recursive_inclusion_are_diagnosed() -> Result<(), String> {
+    for (part, source) in [
+        ("42; 7", "fn f()->i32{include!(\"part.rs\")}"),
+        ("let x=1;x;", "fn f(){include!(\"part.rs\");}"),
+        ("fn made(){}", "fn f(){include!(\"part.rs\");}"),
+        ("i32", "type T=include!(\"part.rs\");"),
+        ("1", "fn f(){match 1{include!(\"part.rs\")=>(),_=>()}}"),
+        ("#![allow(unused)] fn made(){}", "include!(\"part.rs\");"),
+        ("#!/bin/rust\n42", "fn f()->i32{include!(\"part.rs\")}"),
+        ("fn made(){}", "trait T{include!(\"part.rs\");}"),
+        ("fn made(){}", "struct S;impl S{include!(\"part.rs\");}"),
+        ("fn made();", "unsafe extern \"C\"{include!(\"part.rs\");}"),
+    ] {
+        let mut files = Files::default();
+        files.sources.insert("/crate/part.rs".into(), part.into());
+        assert!(analyze(source, &mut files).is_err(), "{part}: {source}");
+    }
+    let mut files = Files::default();
+    files
+        .sources
+        .insert("/crate/part.rs".into(), "include!(\"part.rs\");".into());
+    let error = analyze(
+        "#![recursion_limit=\"8\"] include!(\"part.rs\");",
+        &mut files,
+    )
+    .err()
+    .ok_or("expected recursive include failure")?;
+    assert!(error.contains("recursion exceeds 8"), "{error}");
+    assert_eq!(files.reads.len(), 1);
+    files
+        .sources
+        .insert("/crate/part.rs".into(), "#!/bin/rust\nfn made(){}".into());
+    rustgm::resolve::analyze_expanded(analyze("include!(\"part.rs\");", &mut files)?)
+        .map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+#[test]
+fn included_macros_wait_for_eager_dependencies_and_keep_physical_errors() -> Result<(), String> {
+    let mut files = Files::default();
+    files
+        .sources
+        .insert("/crate/path.rs".into(), "name!()".into());
+    files
+        .sources
+        .insert("/crate/part.rs".into(), "fn f()->i32{missing!()}".into());
+    let source = "macro_rules! name{()=>{\"part.rs\"}} include!(include!(\"path.rs\"));";
+    let error = analyze(source, &mut files)
+        .err()
+        .ok_or("expected missing macro failure")?;
+    assert!(error.contains("unresolved macro"), "{error}");
+    assert!(error.contains("file: FileId(2)"), "{error}");
+    assert!(error.contains("macro_name: \"include\""), "{error}");
+    files
+        .sources
+        .insert("/crate/part.rs".into(), "fn f()->i32{42}".into());
+    rustgm::resolve::analyze_expanded(analyze(source, &mut files)?).map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+#[test]
+fn canonical_include_aliases_reuse_parsing_and_keep_requested_file_names() -> Result<(), String> {
+    let mut files = Files::default();
+    for name in ["first", "second"] {
+        let path = PathBuf::from(format!("/crate/{name}/part.rs"));
+        files.sources.insert(path.clone(), "file!()".into());
+        files.identities.insert(path, "/physical/part.rs".into());
+    }
+    let report = analyze(
+        "fn f(){let _=include!(\"first/part.rs\");let _=include!(\"second/part.rs\");}",
+        &mut files,
+    )?;
+    let calls = report
+        .invocations
+        .iter()
+        .filter(|call| {
+            matches!(
+                report.definitions[call.definition].body,
+                expansion::Body::Builtin(rustgm::expand::builtin::Builtin::Include)
+            )
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(
+        calls
+            .iter()
+            .map(|call| call.parser_calls)
+            .collect::<Vec<_>>(),
+        [2, 1]
+    );
+    let values = builtin_strings(&report)?;
+    assert!(values.contains(&"/crate/first/part.rs".to_owned()));
+    assert!(values.contains(&"/crate/second/part.rs".to_owned()));
+    assert_eq!(files.reads.len(), 2);
+    rustgm::resolve::analyze_expanded(report).map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+#[test]
+fn included_ordinary_name_errors_keep_the_include_invocation_trace() -> Result<(), String> {
+    let mut files = Files::default();
+    files
+        .sources
+        .insert("/crate/part.rs".into(), "missing".into());
+    let report = analyze("fn f()->i32{include!(\"part.rs\")}", &mut files)?;
+    let error = rustgm::resolve::analyze_expanded(report)
+        .err()
+        .ok_or("expected ordinary name failure")?;
+    assert_eq!(error.file.0, 1);
+    assert_eq!(error.span.start, 0);
+    assert_eq!(error.expansions.len(), 1);
+    assert_eq!(error.expansions[0].macro_name, "include");
+    assert_eq!(error.expansions[0].call.file.0, 0);
+    assert_eq!(error.expansions[0].call.span.start, 12);
     Ok(())
 }

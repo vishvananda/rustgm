@@ -8,7 +8,7 @@ import shutil
 import subprocess
 import sys
 
-from course import ROOT, load_cases, run_case
+from course import ROOT, load_cases, run_case, case_environment
 
 
 def check_classification(case):
@@ -70,11 +70,13 @@ def check(stage, app):
         crate_names = [arguments[i + 1] for i in range(0, len(arguments), 2) if arguments[i] == "--crate-name"]
         extra = [part for i in range(0, len(arguments), 2) if arguments[i] != "--crate-name" for part in arguments[i:i + 2]]
         command = ["rustc", "--edition=2024", "--target", "x86_64-unknown-linux-gnu",
-                   "-C", "panic=abort", "-C", "debug-assertions=off", "--cap-lints", "allow",
+                   "-C", "panic=abort", "-C", "debug-assertions=off",
                    "--crate-name", crate_names[-1] if crate_names else "syntax_check", *extra, str(source), "-o", str(binary)]
+        if not metadata.get("default_lints", False):
+            command += ["--cap-lints", "allow"]
         if kind != "predicate":
             command += ["--crate-type=lib", "--emit=metadata"]
-        result = subprocess.run(command, capture_output=True, timeout=30)
+        result = subprocess.run(command, capture_output=True, timeout=30, env=case_environment(case))
         (case_directory / "rustc.stderr").write_bytes(result.stderr)
         wanted = 0 if kind == "predicate" else metadata["status"]
         if result.returncode != wanted:

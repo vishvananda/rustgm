@@ -113,13 +113,16 @@
       "path": "pa8",
       "title": "Expansion and hygiene",
       "mode": "--emit-expanded-crate",
-      "status": "planned",
-      "scope": "Expansion contexts, mixed-site hygiene, macro resolution and builtins",
+      "status": "implemented-draft",
+      "scope": "Worklist expansion, mixed-site hygiene, macro/name resolution, eager builtins and cached source inclusion",
       "test_families": [
         "dollar-crate",
         "generated imports/items",
         "recursion",
-        "definition/call-site spans"
+        "definition/call-site spans",
+        "eager builtin dependencies",
+        "source and resource inclusion",
+        "environment providers"
       ]
     },
     {

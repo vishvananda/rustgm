@@ -1,0 +1,2 @@
+#!/bin/rust
+fn made(){}

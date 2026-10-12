@@ -1,0 +1,114 @@
+expanded-crate 1
+macro 0 name=12 module=0 context=0 introduction=0 source=builtin builtin=include
+invocation 0 context=1 parent=0 macro=0 source=0:2 original=0:19 generated=36:47 rule=builtin parser-calls=2
+file 0
+active [2,3,4,5,6,7,8,9,12,13]
+node 0 0 7 name "include"
+node 1 0 7 path false [0]
+node 2 36 47 expansion [13] tail=-
+node 3 0 20 item 0
+item 0 - private [] [] macro-invocation 2
+node 4 27 31 name "made"
+node 5 27 31 path false [4]
+node 6 27 33 call 5 []
+node 7 26 34 block Plain [] 6
+node 8 20 34 item 1
+item 1 "f" private [] [] function false false false false - [] - 7
+node 9 0 34 crate [3,8]
+node 10 9 18 literal 0
+value 0 string 9 18 7 "part.rs"
+node 11 9 18 expansion [10] tail=-
+node 12 45 47 block Plain [] -
+node 13 36 47 item 2
+item 2 "made" private [] [] function false false false false - [] - 12
+node 14 36 47 expansion [13] tail=-
+capture 0 8 19 2 "(\"part.rs\")"
+root 9
+eof 47
+origin 36:47 source=1:0:11 context=inherit
+end-file 0
+file 1
+include-template Items(Module)
+active [0,1,2]
+node 0 9 11 block Plain [] -
+node 1 0 11 item 0
+item 0 "made" private [] [] function false false false false - [] - 0
+node 2 0 11 expansion [1] tail=-
+root 2
+eof 11
+end-file 1
+name 0 "crate"
+name 1 "cfg"
+name 2 "line"
+name 3 "column"
+name 4 "file"
+name 5 "module_path"
+name 6 "stringify"
+name 7 "concat"
+name 8 "compile_error"
+name 9 "env"
+name 10 "include_str"
+name 11 "include_bytes"
+name 12 "include"
+name 13 "f"
+name 14 "made"
+name 15 "bool"
+name 16 "char"
+name 17 "str"
+name 18 "i8"
+name 19 "i16"
+name 20 "i32"
+name 21 "i64"
+name 22 "i128"
+name 23 "isize"
+name 24 "u8"
+name 25 "u16"
+name 26 "u32"
+name 27 "u64"
+name 28 "u128"
+name 29 "usize"
+name 30 "f32"
+name 31 "f64"
+module 0 name=0 file=0 scope=0 parent=root
+scope 0 module=0 barrier=true parent=root
+scope 1 module=0 barrier=true parent=0
+scope 2 module=0 barrier=false parent=1
+scope 3 module=0 barrier=true parent=0
+scope 4 module=0 barrier=false parent=3
+def 0 type module name=0 scope=0 access=public members=0
+def 1 macro builtin-macro name=1 scope=0 access=public
+def 2 macro builtin-macro name=2 scope=0 access=public
+def 3 macro builtin-macro name=3 scope=0 access=public
+def 4 macro builtin-macro name=4 scope=0 access=public
+def 5 macro builtin-macro name=5 scope=0 access=public
+def 6 macro builtin-macro name=6 scope=0 access=public
+def 7 macro builtin-macro name=7 scope=0 access=public
+def 8 macro builtin-macro name=8 scope=0 access=public
+def 9 macro builtin-macro name=9 scope=0 access=public
+def 10 macro builtin-macro name=10 scope=0 access=public
+def 11 macro builtin-macro name=11 scope=0 access=public
+def 12 macro builtin-macro name=12 scope=0 access=public
+def 13 value function name=13 scope=0 access=module:0 source=0:8
+def 14 value function name=14 scope=0 access=module:0 source=0:13
+def 15 type primitive name=15 scope=0 access=public
+def 16 type primitive name=16 scope=0 access=public
+def 17 type primitive name=17 scope=0 access=public
+def 18 type primitive name=18 scope=0 access=public
+def 19 type primitive name=19 scope=0 access=public
+def 20 type primitive name=20 scope=0 access=public
+def 21 type primitive name=21 scope=0 access=public
+def 22 type primitive name=22 scope=0 access=public
+def 23 type primitive name=23 scope=0 access=public
+def 24 type primitive name=24 scope=0 access=public
+def 25 type primitive name=25 scope=0 access=public
+def 26 type primitive name=26 scope=0 access=public
+def 27 type primitive name=27 scope=0 access=public
+def 28 type primitive name=28 scope=0 access=public
+def 29 type primitive name=29 scope=0 access=public
+def 30 type primitive name=30 scope=0 access=public
+def 31 type primitive name=31 scope=0 access=public
+binding scope=0 value name=13 def=13 Direct ambiguous=false access=module:0
+binding scope=0 value name=14 def=14 Direct ambiguous=false access=module:0
+ref 0:5 scope=2 value def=14
+eof files=2 modules=1 definitions=32 references=1
+end-expanded-crate files 2 modules 1 macros 1 invocations 1 captures 0 definitions 32 references 1

@@ -1,0 +1,2 @@
+ERROR: file 0: 13: environment variable "RUSTGM_FIXTURE_ABSENT" is not defined
+  in macro env at file 0: 13; builtin

@@ -1,0 +1,81 @@
+expanded-crate 1
+file 0
+configured 4 false
+attribute-effect 4 0 0 root cfg=false
+active [5]
+node 0 14 21 name "include"
+node 1 14 21 path false [0]
+node 2 14 36 macro 1 0
+node 3 14 37 item 0
+item 0 - private [] [] macro-invocation 2
+node 4 0 37 attributed 0 1 3
+node 5 0 37 crate [4]
+attribute-capture 0 outer 0 13 "#[cfg(any())]"
+capture 0 22 36 2 "(\"missing.rs\")"
+root 5
+eof 38
+end-file 0
+name 0 "crate"
+name 1 "cfg"
+name 2 "line"
+name 3 "column"
+name 4 "file"
+name 5 "module_path"
+name 6 "stringify"
+name 7 "concat"
+name 8 "compile_error"
+name 9 "env"
+name 10 "include_str"
+name 11 "include_bytes"
+name 12 "include"
+name 13 "bool"
+name 14 "char"
+name 15 "str"
+name 16 "i8"
+name 17 "i16"
+name 18 "i32"
+name 19 "i64"
+name 20 "i128"
+name 21 "isize"
+name 22 "u8"
+name 23 "u16"
+name 24 "u32"
+name 25 "u64"
+name 26 "u128"
+name 27 "usize"
+name 28 "f32"
+name 29 "f64"
+module 0 name=0 file=0 scope=0 parent=root
+scope 0 module=0 barrier=true parent=root
+def 0 type module name=0 scope=0 access=public members=0
+def 1 macro builtin-macro name=1 scope=0 access=public
+def 2 macro builtin-macro name=2 scope=0 access=public
+def 3 macro builtin-macro name=3 scope=0 access=public
+def 4 macro builtin-macro name=4 scope=0 access=public
+def 5 macro builtin-macro name=5 scope=0 access=public
+def 6 macro builtin-macro name=6 scope=0 access=public
+def 7 macro builtin-macro name=7 scope=0 access=public
+def 8 macro builtin-macro name=8 scope=0 access=public
+def 9 macro builtin-macro name=9 scope=0 access=public
+def 10 macro builtin-macro name=10 scope=0 access=public
+def 11 macro builtin-macro name=11 scope=0 access=public
+def 12 macro builtin-macro name=12 scope=0 access=public
+def 13 type primitive name=13 scope=0 access=public
+def 14 type primitive name=14 scope=0 access=public
+def 15 type primitive name=15 scope=0 access=public
+def 16 type primitive name=16 scope=0 access=public
+def 17 type primitive name=17 scope=0 access=public
+def 18 type primitive name=18 scope=0 access=public
+def 19 type primitive name=19 scope=0 access=public
+def 20 type primitive name=20 scope=0 access=public
+def 21 type primitive name=21 scope=0 access=public
+def 22 type primitive name=22 scope=0 access=public
+def 23 type primitive name=23 scope=0 access=public
+def 24 type primitive name=24 scope=0 access=public
+def 25 type primitive name=25 scope=0 access=public
+def 26 type primitive name=26 scope=0 access=public
+def 27 type primitive name=27 scope=0 access=public
+def 28 type primitive name=28 scope=0 access=public
+def 29 type primitive name=29 scope=0 access=public
+eof files=1 modules=1 definitions=30 references=0
+end-expanded-crate files 1 modules 1 macros 0 invocations 0 captures 0 definitions 30 references 0

@@ -27,7 +27,7 @@ impl ParsedSyntax {
     pub fn own(source: &str, ast: Ast<'_>) -> Result<Self, LexError> {
         let mut literals = Storage::default();
         let ast =
-            ast.map_literals(|value| literals.store(source, value).map_err(|e| error(0, e)))?;
+            ast.map_literals(|value| literals.store(source, &value).map_err(|e| error(0, e)))?;
         Ok(Self { ast, literals })
     }
 }

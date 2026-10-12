@@ -48,12 +48,12 @@ fn literal_storage_rejects_foreign_and_invalid_ranges() -> Result<(), String> {
     let mut storage = Storage::default();
     assert!(
         storage
-            .store(&source, Value::String(Cow::Borrowed(foreign.as_bytes())))
+            .store(&source, &Value::String(Cow::Borrowed(foreign.as_bytes())))
             .is_err()
     );
     let value = storage.store(
         &source,
-        Value::String(Cow::Borrowed(&source.as_bytes()[1..4])),
+        &Value::String(Cow::Borrowed(&source.as_bytes()[1..4])),
     )?;
     assert_eq!(
         value,
@@ -63,7 +63,7 @@ fn literal_storage_rejects_foreign_and_invalid_ranges() -> Result<(), String> {
         storage.view(&source, value)?,
         Value::String(Cow::Borrowed(b"amp"))
     );
-    let escaped = storage.store(&source, Value::ByteString(Cow::Owned(vec![0, 255])))?;
+    let escaped = storage.store(&source, &Value::ByteString(Cow::Owned(vec![0, 255])))?;
     assert_eq!(storage.decoded_bytes(), 2);
     assert_eq!(
         storage.view(&source, escaped)?,

@@ -1,0 +1,131 @@
+expanded-crate 1
+macro 0 name=13 module=0 context=0 introduction=0 source=0:0 rules=1 local-inner=false
+invocation 0 context=1 parent=0 macro=0 source=0:3 original=74:78 generated=81:157 rule=0 parser-calls=0
+file 0
+configured 12 false
+attribute-effect 12 0 0 root cfg_attr=true
+attribute-effect 12 1 0 0 cfg=false
+active [0,3,4,5]
+node 0 0 73 item 0
+item 0 "m" private [] [] macro-rules 0
+node 1 74 75 name "m"
+node 2 74 75 path false [1]
+node 3 81 156 expansion [12] tail=-
+node 4 74 79 item 1
+item 1 - private [] [] macro-invocation 3
+node 5 0 79 crate [0,4]
+node 6 139 146 name "missing"
+node 7 139 146 path false [6]
+node 8 139 152 macro 7 2
+node 9 139 154 statement 8
+node 10 137 156 block Plain [9] -
+node 11 126 156 item 2
+item 2 "off" private [] [] function false false false false - [] - 10
+node 12 81 156 attributed 0 1 11
+node 13 81 156 expansion [12] tail=-
+attribute-capture 0 outer 81 125 "# [ cfg_attr ( all ( ) , cfg ( any ( ) ) ) ]"
+capture 0 14 73 23 "{()=>{#[cfg_attr(all(),cfg(any()))] fn off(){missing!();}}}"
+capture 1 76 78 1 "()"
+capture 2 149 152 1 "( )"
+root 5
+eof 157
+origin 81:82 source=0:20:21 context=1
+origin 83:84 source=0:21:22 context=1
+origin 85:93 source=0:22:30 context=1
+origin 94:95 source=0:30:31 context=1
+origin 96:99 source=0:31:34 context=1
+origin 100:101 source=0:34:35 context=1
+origin 102:103 source=0:35:36 context=1
+origin 104:105 source=0:36:37 context=1
+origin 106:109 source=0:37:40 context=1
+origin 110:111 source=0:40:41 context=1
+origin 112:115 source=0:41:44 context=1
+origin 116:117 source=0:44:45 context=1
+origin 118:119 source=0:45:46 context=1
+origin 120:121 source=0:46:47 context=1
+origin 122:123 source=0:47:48 context=1
+origin 124:125 source=0:48:49 context=1
+origin 126:128 source=0:50:52 context=1
+origin 129:132 source=0:53:56 context=1
+origin 133:134 source=0:56:57 context=1
+origin 135:136 source=0:57:58 context=1
+origin 137:138 source=0:58:59 context=1
+origin 139:146 source=0:59:66 context=1
+origin 147:148 source=0:66:67 context=1
+origin 149:150 source=0:67:68 context=1
+origin 151:152 source=0:68:69 context=1
+origin 153:154 source=0:69:70 context=1
+origin 155:156 source=0:70:71 context=1
+end-file 0
+name 0 "crate"
+name 1 "cfg"
+name 2 "line"
+name 3 "column"
+name 4 "file"
+name 5 "module_path"
+name 6 "stringify"
+name 7 "concat"
+name 8 "compile_error"
+name 9 "env"
+name 10 "include_str"
+name 11 "include_bytes"
+name 12 "include"
+name 13 "m"
+name 14 "cfg_attr"
+name 15 "all"
+name 16 "any"
+name 17 "fn"
+name 18 "off"
+name 19 "missing"
+name 20 "bool"
+name 21 "char"
+name 22 "str"
+name 23 "i8"
+name 24 "i16"
+name 25 "i32"
+name 26 "i64"
+name 27 "i128"
+name 28 "isize"
+name 29 "u8"
+name 30 "u16"
+name 31 "u32"
+name 32 "u64"
+name 33 "u128"
+name 34 "usize"
+name 35 "f32"
+name 36 "f64"
+module 0 name=0 file=0 scope=0 parent=root
+scope 0 module=0 barrier=true parent=root
+def 0 type module name=0 scope=0 access=public members=0
+def 1 macro builtin-macro name=1 scope=0 access=public
+def 2 macro builtin-macro name=2 scope=0 access=public
+def 3 macro builtin-macro name=3 scope=0 access=public
+def 4 macro builtin-macro name=4 scope=0 access=public
+def 5 macro builtin-macro name=5 scope=0 access=public
+def 6 macro builtin-macro name=6 scope=0 access=public
+def 7 macro builtin-macro name=7 scope=0 access=public
+def 8 macro builtin-macro name=8 scope=0 access=public
+def 9 macro builtin-macro name=9 scope=0 access=public
+def 10 macro builtin-macro name=10 scope=0 access=public
+def 11 macro builtin-macro name=11 scope=0 access=public
+def 12 macro builtin-macro name=12 scope=0 access=public
+def 13 macro macro name=13 scope=0 access=module:0 source=0:0
+def 14 type primitive name=20 scope=0 access=public
+def 15 type primitive name=21 scope=0 access=public
+def 16 type primitive name=22 scope=0 access=public
+def 17 type primitive name=23 scope=0 access=public
+def 18 type primitive name=24 scope=0 access=public
+def 19 type primitive name=25 scope=0 access=public
+def 20 type primitive name=26 scope=0 access=public
+def 21 type primitive name=27 scope=0 access=public
+def 22 type primitive name=28 scope=0 access=public
+def 23 type primitive name=29 scope=0 access=public
+def 24 type primitive name=30 scope=0 access=public
+def 25 type primitive name=31 scope=0 access=public
+def 26 type primitive name=32 scope=0 access=public
+def 27 type primitive name=33 scope=0 access=public
+def 28 type primitive name=34 scope=0 access=public
+def 29 type primitive name=35 scope=0 access=public
+def 30 type primitive name=36 scope=0 access=public
+eof files=1 modules=1 definitions=31 references=0
+end-expanded-crate files 1 modules 1 macros 1 invocations 1 captures 0 definitions 31 references 0

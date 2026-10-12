@@ -11,7 +11,7 @@ use crate::{
     },
     support::source::SourceFile,
     syntax::{
-        ast::NodeId,
+        ast::{MacroContext, NodeId},
         token_tree::{Span, error},
     },
 };
@@ -28,6 +28,8 @@ pub struct NodeKey {
 
 pub struct Unit {
     pub source: SourceFile,
+    /// Cached include templates are provenance; only installed copies enter module traversal.
+    pub include_context: Option<MacroContext>,
     pub configured: ConfiguredSyntax<StoredValue>,
     pub literals: Storage,
     pub owner_indices: Vec<Option<std::num::NonZeroU32>>,
@@ -41,11 +43,37 @@ impl Unit {
     /// # Errors
     /// Propagates syntax/configuration errors and storage-range overflows.
     pub fn parse(source: SourceFile, config: &Config) -> Result<Self, LexError> {
-        let report = crate_syntax::analyze(source.text(), config)?;
+        Self::parsed(source, config, None)
+    }
+
+    /// # Errors
+    /// Reports malformed included fragments and demanded configuration errors.
+    pub fn parse_include(
+        source: SourceFile,
+        config: &Config,
+        context: MacroContext,
+    ) -> Result<Self, LexError> {
+        Self::parsed(source, config, Some(context))
+    }
+
+    fn parsed(
+        source: SourceFile,
+        config: &Config,
+        context: Option<MacroContext>,
+    ) -> Result<Self, LexError> {
+        let report = if let Some(context) = context {
+            crate_syntax::configure(
+                source.text(),
+                crate::syntax::expression::fragment::parse_include(source.text(), context)?,
+                config,
+            )?
+        } else {
+            crate_syntax::analyze(source.text(), config)?
+        };
         let mut literals = Storage::default();
         let ast = report.ast.map_literals(|value| {
             literals
-                .store(source.text(), value)
+                .store(source.text(), &value)
                 .map_err(|message| error(0, message))
         })?;
         let configured = ConfiguredSyntax {
@@ -66,6 +94,7 @@ impl Unit {
         let original = original::Original::new(&configured, &literals);
         Ok(Self {
             source,
+            include_context: context,
             configured,
             literals,
             owner_indices,

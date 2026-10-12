@@ -372,3 +372,58 @@ pub fn parse_arguments<'s>(
     parser.ast.lookahead_high_water = parser.cursor.high_water;
     Ok(parser.ast)
 }
+
+/// Parse included source once using the ordinary bounded source cursor.
+/// Includes supply module items or one expression; block statements use that expression.
+///
+/// # Errors
+/// Rejects unsupported contexts, inner file attributes and unused trailing tokens.
+pub fn parse_include(
+    source: &str,
+    context: crate::syntax::ast::MacroContext,
+) -> Result<Ast<'_>, LexError> {
+    use crate::syntax::{
+        ast::{List, MacroContext},
+        item::ItemContext,
+    };
+    let items = match context {
+        MacroContext::Items(ItemContext::Module) => true,
+        MacroContext::Expression | MacroContext::Statements => false,
+        _ => {
+            return Err(super::error(
+                0,
+                "include supports module items or an expression",
+            ));
+        }
+    };
+    let mut parser = Parser::with_cursor(Cursor::source(source, items)?, true);
+    let root = if items {
+        let children = parser.item_list(false, ItemContext::Module)?;
+        parser.node(
+            0,
+            Kind::Expansion {
+                children,
+                tail: None,
+            },
+        )?
+    } else {
+        let expression = parser.expr(0, NORMAL)?;
+        if parser.cursor.peek(0)?.is_some() {
+            return Err(parser.error("include expected a single expression")?);
+        }
+        if context == MacroContext::Statements {
+            parser.node(
+                0,
+                Kind::Expansion {
+                    children: List { start: 0, end: 0 },
+                    tail: Some(expression),
+                },
+            )?
+        } else {
+            expression
+        }
+    };
+    parser.ast.root = root;
+    parser.ast.lookahead_high_water = parser.cursor.high_water;
+    Ok(parser.ast)
+}

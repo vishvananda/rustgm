@@ -1,0 +1,2 @@
+ERROR: file 0: 26: included string is not UTF-8
+  in macro include_str at file 0: 13; builtin

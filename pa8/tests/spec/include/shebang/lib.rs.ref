@@ -1,0 +1,102 @@
+expanded-crate 1
+macro 0 name=12 module=0 context=0 introduction=0 source=builtin builtin=include
+invocation 0 context=1 parent=0 macro=0 source=0:2 original=0:19 generated=22:45 rule=builtin parser-calls=2
+file 0
+active [2,3,4,7,8]
+node 0 0 7 name "include"
+node 1 0 7 path false [0]
+node 2 22 45 expansion [8] tail=-
+node 3 0 20 item 0
+item 0 - private [] [] macro-invocation 2
+node 4 0 20 crate [3]
+node 5 9 18 literal 0
+value 0 string 9 18 7 "part.rs"
+node 6 9 18 expansion [5] tail=-
+node 7 43 45 block Plain [] -
+node 8 34 45 item 1
+item 1 "made" private [] [] function false false false false - [] - 7
+node 9 22 45 expansion [8] tail=-
+capture 0 8 19 2 "(\"part.rs\")"
+root 4
+eof 45
+origin 22:45 source=1:0:23 context=inherit
+end-file 0
+file 1
+include-template Items(Module)
+active [0,1,2]
+node 0 21 23 block Plain [] -
+node 1 12 23 item 0
+item 0 "made" private [] [] function false false false false - [] - 0
+node 2 0 23 expansion [1] tail=-
+root 2
+eof 23
+end-file 1
+name 0 "crate"
+name 1 "cfg"
+name 2 "line"
+name 3 "column"
+name 4 "file"
+name 5 "module_path"
+name 6 "stringify"
+name 7 "concat"
+name 8 "compile_error"
+name 9 "env"
+name 10 "include_str"
+name 11 "include_bytes"
+name 12 "include"
+name 13 "made"
+name 14 "bool"
+name 15 "char"
+name 16 "str"
+name 17 "i8"
+name 18 "i16"
+name 19 "i32"
+name 20 "i64"
+name 21 "i128"
+name 22 "isize"
+name 23 "u8"
+name 24 "u16"
+name 25 "u32"
+name 26 "u64"
+name 27 "u128"
+name 28 "usize"
+name 29 "f32"
+name 30 "f64"
+module 0 name=0 file=0 scope=0 parent=root
+scope 0 module=0 barrier=true parent=root
+scope 1 module=0 barrier=true parent=0
+scope 2 module=0 barrier=false parent=1
+def 0 type module name=0 scope=0 access=public members=0
+def 1 macro builtin-macro name=1 scope=0 access=public
+def 2 macro builtin-macro name=2 scope=0 access=public
+def 3 macro builtin-macro name=3 scope=0 access=public
+def 4 macro builtin-macro name=4 scope=0 access=public
+def 5 macro builtin-macro name=5 scope=0 access=public
+def 6 macro builtin-macro name=6 scope=0 access=public
+def 7 macro builtin-macro name=7 scope=0 access=public
+def 8 macro builtin-macro name=8 scope=0 access=public
+def 9 macro builtin-macro name=9 scope=0 access=public
+def 10 macro builtin-macro name=10 scope=0 access=public
+def 11 macro builtin-macro name=11 scope=0 access=public
+def 12 macro builtin-macro name=12 scope=0 access=public
+def 13 value function name=13 scope=0 access=module:0 source=0:8
+def 14 type primitive name=14 scope=0 access=public
+def 15 type primitive name=15 scope=0 access=public
+def 16 type primitive name=16 scope=0 access=public
+def 17 type primitive name=17 scope=0 access=public
+def 18 type primitive name=18 scope=0 access=public
+def 19 type primitive name=19 scope=0 access=public
+def 20 type primitive name=20 scope=0 access=public
+def 21 type primitive name=21 scope=0 access=public
+def 22 type primitive name=22 scope=0 access=public
+def 23 type primitive name=23 scope=0 access=public
+def 24 type primitive name=24 scope=0 access=public
+def 25 type primitive name=25 scope=0 access=public
+def 26 type primitive name=26 scope=0 access=public
+def 27 type primitive name=27 scope=0 access=public
+def 28 type primitive name=28 scope=0 access=public
+def 29 type primitive name=29 scope=0 access=public
+def 30 type primitive name=30 scope=0 access=public
+binding scope=0 value name=13 def=13 Direct ambiguous=false access=module:0
+eof files=2 modules=1 definitions=31 references=0
+end-expanded-crate files 2 modules 1 macros 1 invocations 1 captures 0 definitions 31 references 0

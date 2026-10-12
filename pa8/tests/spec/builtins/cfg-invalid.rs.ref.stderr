@@ -1,0 +1,2 @@
+ERROR: file 0: 18: not requires exactly one cfg predicate
+  in macro cfg at file 0: 13; builtin

@@ -16,6 +16,10 @@ impl<'source> Lexer<'source> {
     /// # Errors
     /// Rejects inputs beyond the compact offset range.
     pub fn new(text: &'source str) -> Result<Self, LexError> {
+        Self::source(text, true)
+    }
+
+    pub(crate) fn source(text: &'source str, strip_shebang: bool) -> Result<Self, LexError> {
         if u32::try_from(text.len()).is_err() {
             return Err(LexError {
                 offset: 0,
@@ -28,7 +32,7 @@ impl<'source> Lexer<'source> {
         };
         // Rust recognizes a shebang only if the next non-whitespace/comment
         // token after #! is not [. Probe with the same lexer, without copying.
-        if lexer.rest().starts_with("#!") && lexer.is_shebang() {
+        if strip_shebang && lexer.rest().starts_with("#!") && lexer.is_shebang() {
             while lexer.peek().is_some_and(|ch| ch != '\n') {
                 lexer.bump();
             }

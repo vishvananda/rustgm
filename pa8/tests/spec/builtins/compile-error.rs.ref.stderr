@@ -1,0 +1,4 @@
+ERROR: file 0: 15: stop now
+  in macro compile_error at file 0: 0; builtin
+  in macro concat at file 0: 15; builtin
+  in macro compile_error at file 0: 0; builtin

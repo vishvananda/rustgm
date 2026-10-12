@@ -25,7 +25,9 @@ repository with pinned reference tools. It has not been built yet.
   namespace-directed references and imports with independently checked text oracles.
 - PA7 has ordered macro matching, cached fragment parsing, typed transcription
   and independently checked repetition/follow-set/ambiguity oracles.
-- PA8–PA38 have buildout briefs and Makefiles. Their suites and implementation
+- PA8 has worklist expansion, mixed-site hygiene, macro/name resolution, eager
+  builtins, cached source inclusion and independently checked text oracles.
+- PA9–PA38 have buildout briefs and Makefiles. Their suites and implementation
   are not complete; invoking an unbuilt assignment fails explicitly.
 - The backend bridge has an executable LowIR smoke test. Rust source lowering
   begins at PA11; the smoke test is not evidence of Rust source compilation.

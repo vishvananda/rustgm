@@ -38,9 +38,13 @@ impl<'source> Cursor<'source> {
     /// # Errors
     /// Applies PA1's source size and shebang checks.
     pub fn new(source: &'source str) -> Result<Self, LexError> {
+        Self::source(source, true)
+    }
+
+    pub(crate) fn source(source: &'source str, strip_shebang: bool) -> Result<Self, LexError> {
         Ok(Self {
             source,
-            input: Input::Source(Lexer::new(source)?),
+            input: Input::Source(Lexer::source(source, strip_shebang)?),
             produced: 0,
             last_ordinal: 0,
             pending: VecDeque::with_capacity(3),

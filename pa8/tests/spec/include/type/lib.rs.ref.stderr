@@ -1,0 +1,2 @@
+ERROR: file 1: 0: include supports module items or an expression
+  in macro include at file 0: 7; builtin

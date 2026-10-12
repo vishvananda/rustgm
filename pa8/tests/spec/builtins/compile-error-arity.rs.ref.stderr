@@ -1,0 +1,2 @@
+ERROR: file 0: 15: builtin requires one string literal argument
+  in macro compile_error at file 0: 0; builtin

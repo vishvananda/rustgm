@@ -86,6 +86,7 @@ struct Visit {
     introduction: ContextId,
     path_scope: ScopeId,
     eager: Option<usize>,
+    include: Option<FileId>,
 }
 enum Work {
     Visit(Visit),
@@ -194,6 +195,7 @@ pub fn analyze_with_crate_name(
             introduction: ContextId(0),
             path_scope: ScopeId(0),
             eager: None,
+            include: None,
         })],
         children: Vec::new(),
         recursion_limit,
@@ -566,9 +568,13 @@ impl<S: Sources> Engine<'_, S> {
         Ok(())
     }
     fn module(&mut self, visit: Visit, file: FileId, visibility: Visibility) -> Result<(), Error> {
-        let child =
-            self.loader
-                .load_module(visit.module, visit.node, visit.owner, visit.in_block)?;
+        let child = self.loader.load_module(
+            visit.module,
+            visit.node,
+            visit.owner,
+            visit.in_block,
+            visit.include,
+        )?;
         let path_scope = self.paths.module(
             &mut self.loader.package,
             Context {
@@ -589,6 +595,7 @@ impl<S: Sources> Engine<'_, S> {
             node: self.loader.package.modules[child.0 as usize].root,
             owner: None,
             in_block: false,
+            include: None,
             path_scope,
             ..visit
         }));

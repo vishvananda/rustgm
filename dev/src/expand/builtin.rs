@@ -31,9 +31,10 @@ pub enum Builtin {
     Env,
     IncludeStr,
     IncludeBytes,
+    Include,
 }
 impl Builtin {
-    pub const ALL: [Self; 11] = [
+    pub const ALL: [Self; 12] = [
         Self::Cfg,
         Self::Line,
         Self::Column,
@@ -45,12 +46,18 @@ impl Builtin {
         Self::Env,
         Self::IncludeStr,
         Self::IncludeBytes,
+        Self::Include,
     ];
     #[must_use]
     pub const fn eager(self) -> bool {
         matches!(
             self,
-            Self::Concat | Self::CompileError | Self::Env | Self::IncludeStr | Self::IncludeBytes
+            Self::Concat
+                | Self::CompileError
+                | Self::Env
+                | Self::IncludeStr
+                | Self::IncludeBytes
+                | Self::Include
         )
     }
     #[must_use]
@@ -71,6 +78,7 @@ impl Builtin {
             Self::Env => "env",
             Self::IncludeStr => "include_str",
             Self::IncludeBytes => "include_bytes",
+            Self::Include => "include",
         }
     }
 }
@@ -101,7 +109,8 @@ pub fn expand(
         | Builtin::CompileError
         | Builtin::Env
         | Builtin::IncludeStr
-        | Builtin::IncludeBytes => Err(error(0, "builtin requires expanded argument facts")),
+        | Builtin::IncludeBytes
+        | Builtin::Include => Err(error(0, "builtin requires expanded argument facts")),
         Builtin::Cfg => cfg(
             source,
             input,

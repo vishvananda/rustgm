@@ -1,0 +1,9 @@
+ERROR: file 0: 44: macro expansion recursion exceeds 8
+  in macro m at file 0: 44; defined at file 0: 24
+  in macro m at file 0: 44; defined at file 0: 24
+  in macro m at file 0: 44; defined at file 0: 24
+  in macro m at file 0: 44; defined at file 0: 24
+  in macro m at file 0: 44; defined at file 0: 24
+  in macro m at file 0: 44; defined at file 0: 24
+  in macro m at file 0: 44; defined at file 0: 24
+  in macro m at file 0: 58; defined at file 0: 24

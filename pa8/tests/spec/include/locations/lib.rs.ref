@@ -1,0 +1,163 @@
+expanded-crate 1
+macro 0 name=12 module=0 context=0 introduction=0 source=builtin builtin=include
+macro 1 name=7 module=0 context=0 introduction=0 source=builtin builtin=concat
+macro 2 name=4 module=0 context=0 introduction=0 source=builtin builtin=file
+macro 3 name=2 module=0 context=0 introduction=0 source=builtin builtin=line
+macro 4 name=5 module=0 context=0 introduction=0 source=builtin builtin=module_path
+invocation 0 context=1 parent=0 macro=0 source=0:2 original=0:19 generated=22:92 rule=builtin parser-calls=2
+invocation 1 context=2 parent=1 macro=1 source=0:14 original=44:91 generated=147:195 rule=builtin parser-calls=1
+invocation 2 context=3 parent=2 macro=2 source=0:20 original=52:59 generated=93:135 rule=builtin parser-calls=0
+invocation 3 context=4 parent=2 macro=3 source=0:24 original=64:71 generated=136:140 rule=builtin parser-calls=0
+invocation 4 context=5 parent=2 macro=4 source=0:28 original=76:90 generated=141:146 rule=builtin parser-calls=0
+file 0
+active [2,3,4,7,8,9,10,11,14,15,16]
+node 0 0 7 name "include"
+node 1 0 7 path false [0]
+node 2 22 92 expansion [16] tail=-
+node 3 0 20 item 0
+item 0 - private [] [] macro-invocation 2
+node 4 0 20 crate [3]
+node 5 9 18 literal 0
+value 0 string 9 18 7 "part.rs"
+node 6 9 18 expansion [5] tail=-
+node 7 32 39 name "'static"
+node 8 40 43 name "str"
+node 9 40 43 path false [8]
+node 10 40 43 type Path [9]
+node 11 31 43 type Ref [7,10]
+node 12 44 50 name "concat"
+node 13 44 50 path false [12]
+node 14 147 195 literal 6
+value 6 string 147 195 46 "pa8/tests/spec/include/locations/part.rs:1:lib"
+node 15 43 92 block Plain [] 14
+node 16 22 92 item 1
+item 1 "f" private [] [] function false false false false - [] 11 15
+node 17 22 92 expansion [16] tail=-
+node 18 52 56 name "file"
+node 19 52 56 path false [18]
+node 20 93 135 literal 3
+value 3 string 93 135 40 "pa8/tests/spec/include/locations/part.rs"
+node 21 60 63 literal 1
+value 1 string 60 63 1 ":"
+node 22 64 68 name "line"
+node 23 64 68 path false [22]
+node 24 136 140 literal 4
+value 4 integer 136 140 u32 1
+node 25 72 75 literal 2
+value 2 string 72 75 1 ":"
+node 26 76 87 name "module_path"
+node 27 76 87 path false [26]
+node 28 141 146 literal 5
+value 5 string 141 146 3 "lib"
+node 29 52 90 expansion [20,21,24,25,28] tail=-
+node 30 93 135 literal 3
+value 3 string 93 135 40 "pa8/tests/spec/include/locations/part.rs"
+node 31 136 140 literal 4
+value 4 integer 136 140 u32 1
+node 32 141 146 literal 5
+value 5 string 141 146 3 "lib"
+node 33 147 195 literal 6
+value 6 string 147 195 46 "pa8/tests/spec/include/locations/part.rs:1:lib"
+capture 0 8 19 2 "(\"part.rs\")"
+capture 1 51 91 16 "(file!(),\":\",line!(),\":\",module_path!())"
+capture 2 57 59 1 "()"
+capture 3 69 71 1 "()"
+capture 4 88 90 1 "()"
+root 4
+eof 195
+origin 22:92 source=1:0:70 context=inherit
+origin 93:135 source=0:52:59 context=3
+origin 136:140 source=0:64:71 context=4
+origin 141:146 source=0:76:90 context=5
+origin 147:195 source=0:44:91 context=2
+end-file 0
+file 1
+include-template Items(Module)
+active [0,1,2,3,4,5,6,7,8,9,10]
+node 0 10 17 name "'static"
+node 1 18 21 name "str"
+node 2 18 21 path false [1]
+node 3 18 21 type Path [2]
+node 4 9 21 type Ref [0,3]
+node 5 22 28 name "concat"
+node 6 22 28 path false [5]
+node 7 22 69 macro 6 0
+node 8 21 70 block Plain [] 7
+node 9 0 70 item 0
+item 0 "f" private [] [] function false false false false - [] 4 8
+node 10 0 70 expansion [9] tail=-
+capture 0 29 69 16 "(file!(),\":\",line!(),\":\",module_path!())"
+root 10
+eof 70
+end-file 1
+name 0 "crate"
+name 1 "cfg"
+name 2 "line"
+name 3 "column"
+name 4 "file"
+name 5 "module_path"
+name 6 "stringify"
+name 7 "concat"
+name 8 "compile_error"
+name 9 "env"
+name 10 "include_str"
+name 11 "include_bytes"
+name 12 "include"
+name 13 "f"
+name 14 "bool"
+name 15 "char"
+name 16 "str"
+name 17 "i8"
+name 18 "i16"
+name 19 "i32"
+name 20 "i64"
+name 21 "i128"
+name 22 "isize"
+name 23 "u8"
+name 24 "u16"
+name 25 "u32"
+name 26 "u64"
+name 27 "u128"
+name 28 "usize"
+name 29 "f32"
+name 30 "f64"
+name 31 "static"
+module 0 name=0 file=0 scope=0 parent=root
+scope 0 module=0 barrier=true parent=root
+scope 1 module=0 barrier=true parent=0
+scope 2 module=0 barrier=false parent=1
+def 0 type module name=0 scope=0 access=public members=0
+def 1 macro builtin-macro name=1 scope=0 access=public
+def 2 macro builtin-macro name=2 scope=0 access=public
+def 3 macro builtin-macro name=3 scope=0 access=public
+def 4 macro builtin-macro name=4 scope=0 access=public
+def 5 macro builtin-macro name=5 scope=0 access=public
+def 6 macro builtin-macro name=6 scope=0 access=public
+def 7 macro builtin-macro name=7 scope=0 access=public
+def 8 macro builtin-macro name=8 scope=0 access=public
+def 9 macro builtin-macro name=9 scope=0 access=public
+def 10 macro builtin-macro name=10 scope=0 access=public
+def 11 macro builtin-macro name=11 scope=0 access=public
+def 12 macro builtin-macro name=12 scope=0 access=public
+def 13 value function name=13 scope=0 access=module:0 source=0:16
+def 14 type primitive name=14 scope=0 access=public
+def 15 type primitive name=15 scope=0 access=public
+def 16 type primitive name=16 scope=0 access=public
+def 17 type primitive name=17 scope=0 access=public
+def 18 type primitive name=18 scope=0 access=public
+def 19 type primitive name=19 scope=0 access=public
+def 20 type primitive name=20 scope=0 access=public
+def 21 type primitive name=21 scope=0 access=public
+def 22 type primitive name=22 scope=0 access=public
+def 23 type primitive name=23 scope=0 access=public
+def 24 type primitive name=24 scope=0 access=public
+def 25 type primitive name=25 scope=0 access=public
+def 26 type primitive name=26 scope=0 access=public
+def 27 type primitive name=27 scope=0 access=public
+def 28 type primitive name=28 scope=0 access=public
+def 29 type primitive name=29 scope=0 access=public
+def 30 type primitive name=30 scope=0 access=public
+binding scope=0 value name=13 def=13 Direct ambiguous=false access=module:0
+ref 0:9 scope=1 type def=16
+eof files=2 modules=1 definitions=31 references=1
+end-expanded-crate files 2 modules 1 macros 5 invocations 5 captures 0 definitions 31 references 1

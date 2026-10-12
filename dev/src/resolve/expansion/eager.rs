@@ -144,7 +144,51 @@ impl<S: Sources> Engine<'_, S> {
         let (root, context) = (arguments.root, arguments.context);
         let unit = self.loader.package.unit(file);
         let original = unit.configured.ast.node(visit.node).span;
-        let generated = match self.definitions[definition].body {
+        let (generated, include) = if matches!(
+            self.definitions[definition].body,
+            Body::Builtin(builtin::Builtin::Include)
+        ) {
+            let (span, included, parsed) = self
+                .include_builtin(file, visit.node, root, grammar)
+                .map_err(|e| self.eager_error(index, definition, e))?;
+            self.invocations[context.0 as usize - 1].parser_calls += usize::from(parsed);
+            (span, Some(included))
+        } else {
+            let generated = self
+                .eager_value(index, definition, root)
+                .map_err(|e| self.eager_error(index, definition, e))?;
+            (
+                self.install_builtin(file, visit.node, original, context, generated)?,
+                visit.include,
+            )
+        };
+        self.invocations[context.0 as usize - 1].generated = generated;
+        self.loader.package.units[file.0 as usize].retire_arguments(root);
+        self.calls[index].eager = None;
+        self.work.push(Work::Finish {
+            output,
+            restore: self.head,
+        });
+        self.head = scope;
+        self.work.push(Work::Visit(Visit {
+            depth: visit.depth + 1,
+            introduction: context,
+            include,
+            ..visit
+        }));
+        self.scan()?;
+        self.completed(index)
+    }
+    fn eager_value(
+        &mut self,
+        index: usize,
+        definition: usize,
+        root: NodeId,
+    ) -> Result<builtin::Expansion, Error> {
+        let call = &self.calls[index];
+        let (file, visit, grammar) = (call.file, call.visit, call.grammar);
+        let unit = self.loader.package.unit(file);
+        match self.definitions[definition].body {
             Body::Builtin(builtin::Builtin::Concat) => builtin::concat(
                 &unit.configured.ast,
                 root,
@@ -168,22 +212,5 @@ impl<S: Sources> Engine<'_, S> {
             ) => self.resource_builtin(file, visit.node, root, grammar, builtin),
             _ => Err(call.diagnostic("invalid eager builtin definition")),
         }
-        .map_err(|e| self.eager_error(index, definition, e))?;
-        let generated = self.install_builtin(file, visit.node, original, context, generated)?;
-        self.invocations[context.0 as usize - 1].generated = generated;
-        self.loader.package.units[file.0 as usize].retire_arguments(root);
-        self.calls[index].eager = None;
-        self.work.push(Work::Finish {
-            output,
-            restore: self.head,
-        });
-        self.head = scope;
-        self.work.push(Work::Visit(Visit {
-            depth: visit.depth + 1,
-            introduction: context,
-            ..visit
-        }));
-        self.scan()?;
-        self.completed(index)
     }
 }

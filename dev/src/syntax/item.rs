@@ -5,7 +5,7 @@ use super::{
     token_tree::{Forest, Span},
 };
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum ItemContext {
     Module,
     Trait,

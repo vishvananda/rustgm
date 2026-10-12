@@ -1,56 +1,54 @@
 # RustGM Programming Assignment 8: Expansion and hygiene
 
-Status: **planned**. This is a buildout brief, not a released grading contract.
-Prerequisite: PA7. The common source profile is Rust 1.98.0, initially edition
-2024 and Linux x86-64. Later edition support is explicit at PA36.
+Status: **implemented-draft**. Prerequisite: PA7. The source profile is Rust
+1.98.0, edition 2024, Linux x86-64. This stage completes expansion and ordinary
+name resolution; type inference begins at PA9. Core/std library hooks, procedural
+macros, older editions and final attribute/lint closure retain their later owners.
 
 ## Required implementation
 
-Expansion contexts, mixed-site hygiene, macro resolution and builtins.
+Expand configured crate syntax to a fixed point using a dependency worklist.
+Generated definitions, imports, modules and invocations participate in the same
+textual and path scopes as source-written syntax. Preserve mixed-site hygiene:
+local variables and labels use definition contexts, captured syntax keeps its
+context, ordinary item lookup follows call sites, and `$crate` has typed defining
+crate identity. Honor macro exports, aliases, `macro_use`, local-inner rewriting,
+shadowing and scope restoration. Diagnose unresolved calls, ambiguity, invalid
+output syntax and recursion limits without repeatedly scanning the whole crate.
 
-The maintainer implements this responsibility in `dev/src/` and introduces its
-typed interface before generating text views. Consult `spec.md`, the pinned
-Rust Reference, and the existing CPPGM implementation for efficient algorithms.
-Do not introduce rendered text as transport between compiler phases.
+Use PA7's typed captures and the ordinary parser for newly generated syntax.
+Forwarded opaque fragments are installed from their typed facts. Eager builtins
+wait for expanded argument facts; source includes cache parsed fragments. Keep
+source provenance, expansion ancestry and syntax hygiene distinct. Every library
+I/O or environment dependency is an explicit provider input at the driver boundary.
+Read `spec.md` and the pinned Rust Reference before changing these contracts.
 
-## Tool surface
+## Tool surface and tests
 
-Extend `dev/rustgm --emit-expanded-crate -o OUTPUT SOURCE`. Earlier stage views remain
-available. Freeze the exact text vocabulary, deterministic ordering, error
-contract and example outputs before declaring this assignment active.
+`dev/rustgm --emit-expanded-crate -o OUTPUT SOURCE` emits the deterministic view
+below. Earlier modes remain available. Omit SOURCE or use `-` for stdin.
+`--count-expanded-crate` reports counts for measurements. Source failures are
+atomic: no partial stdout or replacement output file.
 
-## Tests to develop with the reference
+`make -C pa8 test` runs the 87 manifest cases against committed stdout, stderr
+and exit-status text. `make test-rustc` independently checks every PA8 program.
+See [tests/README.md](tests/README.md) for fixture ownership and
+[the validation record](../docs/pa8-validation.md) for typed invariants and
+measurements. The [small cfg fixture](tests/spec/builtins/cfg.rs) and its
+[complete output](tests/spec/builtins/cfg.rs.ref) are a compact worked example.
+Expected outcomes are declared before reference generation; missing sidecars,
+empty suites, timeouts, panics and not-implemented exits cannot pass.
 
-dollar-crate; generated imports/items; recursion; definition/call-site spans.
+## Text view
 
-Add spec fixtures, positive/negative controls and cross-feature regressions in
-the earliest owning assignment. Use the course reference for text oracles and
-pinned rustc for independent language checks. From PA11, execute emitted LowIR
-with the configured CPPGM backend. Do not require new future-stage behavior
-implicitly. An empty suite or a not-implemented result cannot pass.
-
-## Completion and review
-
-Publish the semantic and lowering boundary, tests/manifest.json and reference
-sidecars together. Run all active earlier suites, lint, file/architecture audits,
-and affected scaling measurements. Record independent checks before setting
-status active in `assignments.json` and adding the stage to the root report.
-Student export is a later operation: this repository owns the full solution.
-
-## Maintainer prototype view
-
-The maintainer CLI currently implements `--emit-expanded-crate` and
-`--count-expanded-crate`, including module loading and final ordinary-name
-resolution. This does not activate the planned grading suite. Remaining builtin
-and grading-suite work is tracked in `docs/pa8-progress.md`.
-
-The draft view begins with `expanded-crate 1`. Its sections are:
+The view begins with `expanded-crate 1`. Its sections are:
 
 ```text
 macro ID name=NAME module=MODULE context=CONTEXT introduction=CONTEXT source=FILE:NODE|builtin rules=COUNT local-inner=BOOL
 macro ID name=NAME module=MODULE context=CONTEXT introduction=CONTEXT source=builtin builtin=NAME
 invocation ID context=CONTEXT parent=CONTEXT macro=ID source=FILE:NODE original=START:END generated=START:END rule=ID|builtin parser-calls=COUNT
 file FILE
+[include-template Expression|Statements|Items(Module), only for cached sources]
 [PA5 configuration and syntax records]
 origin START:END source=FILE:START:END context=CONTEXT|inherit
 end-file FILE
@@ -63,11 +61,15 @@ invocation IDs follow creation/expansion order. Context 0 denotes physical sourc
 context N identifies invocation N−1. Introduction/parent contexts record expansion
 ancestry, while token origins retain syntax hygiene independently. Builtins have
 no invented source definition node or matcher rule. `parser-calls` counts ordinary
-fragment-parser callbacks from matching, or the single argument-list parse for
-an eager builtin. A forwarded opaque fragment does not need another callback.
+fragment-parser callbacks from matching, the single argument-list parse for
+an eager builtin, and a demanded uncached include-source parse. A forwarded opaque fragment does not need another callback.
 
 Per-file syntax IDs index retained arenas. The PA5 `active` record identifies the
-configured tree; inactive original nodes may remain as provenance. Offsets use
+configured tree; inactive original nodes may remain as provenance. An
+`include-template` unit retains unexpanded source facts for reuse and provenance.
+It is not an additional module or executable body: semantic traversal starts
+from module roots and reaches the installed copies. File counts include these
+cached sources. Offsets use
 the normalized, append-only spelling image, with origin records mapping generated
 ranges to their parents. These images and records are diagnostic views, never
 inputs reparsed by a later phase. Literal values are read directly from the
@@ -99,7 +101,7 @@ rejects its first rule, retains an expression capture, duplicates its typed
 syntax and resolves the generated body. It verifies full output hashes as well
 as counts, freezes binaries/inputs, and retains A/A and paired observations.
 
-The prototype implements `cfg!`, `line!`, `column!`, `file!` and `module_path!`
+This assignment implements `cfg!`, `line!`, `column!`, `file!` and `module_path!`
 using typed literals. Location builtins accept no arguments. `file!` follows the
 physical invocation cause and retains the requested source path, including
 symlink aliases, leading `./` and `..`; redundant interior `.` components are
@@ -139,7 +141,8 @@ resolution worklist; an explicit dependency count resumes the builtin after
 those invocations finish. Delayed definitions and imports do not cause another
 argument parse. Temporary argument nodes retain their source spans and typed
 literal storage and are retired after the resulting value is installed.
-For an eager builtin, `parser-calls=1` records that argument-list parse.
+For an eager builtin, `parser-calls=1` records that argument-list parse; the
+first include in a grammar context adds one for parsing the included source.
 
 `concat!` accepts strings, characters, booleans and numeric literals, including
 unary-negative numeric literals. Integer spellings become decimal magnitudes;
@@ -167,7 +170,23 @@ These resources are not parsed as Rust and do not create source syntax units.
 Disabled code and discarded macro input request no resources. Drivers implement
 raw-byte reads separately from normalized Rust source reads.
 
-`include!` remains the final source-builtin implementation needed for this draft.
+`include!` eagerly obtains one string path, then parses the included source with
+ordinary source normalization and a bounded cursor. It supplies module items or
+one expression; statement-position includes still require one expression. Type,
+pattern, trait/impl/foreign-item positions and inner file attributes are rejected.
+An item include strips a shebang; an expression include does not. Trailing tokens
+after an included expression are rejected, matching rustc's default lint setting.
+The independent fixture selects that setting rather than suppressing the lint.
+
+Canonical file identity plus grammar context keys the syntax cache. Requested
+aliases retain their own observable paths while reusing parsed facts. Repeated
+insertions copy typed arenas and decoded literals directly into the receiving
+unit, then expand independently in each caller's scope. Included syntax is
+unhygienic and retains physical file/line origins. Modules declared inside it
+start beside the included file; directory ownership is restored after that
+subtree. Recursive includes use the same bounded expansion worklist. Inactive
+includes perform no reads. Source reads remain injected provider operations.
+
 `option_env!`, formatting/assertion facilities and other expansions that need
 library identities belong to PA26's language/library hooks. PA8 does not invent
 external core/std definitions to make those calls resolve.

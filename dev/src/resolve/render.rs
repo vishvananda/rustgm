@@ -180,6 +180,9 @@ pub fn expanded(report: &Report, out: &mut impl Write) -> io::Result<()> {
     }
     for (index, unit) in report.package.units.iter().enumerate() {
         writeln!(out, "file {index}")?;
+        if let Some(context) = unit.include_context {
+            writeln!(out, "include-template {context:?}")?;
+        }
         crate_syntax::write_configuration(&unit.configured, out)?;
         expression::render::write_syntax(
             unit.source.text(),

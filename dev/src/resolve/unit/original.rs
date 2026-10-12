@@ -92,6 +92,7 @@ impl Unit {
         let original = Original::new(&configured, &literals);
         Ok(Self {
             source: self.source.physical_copy(),
+            include_context: self.include_context,
             configured,
             literals,
             owner_indices,

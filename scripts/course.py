@@ -5,6 +5,7 @@ from concurrent.futures import ThreadPoolExecutor
 import difflib
 import hashlib
 import json
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -57,6 +58,12 @@ def load_cases(root, stage):
                     or not child.is_relative_to((assignment / "tests").resolve())):
                 raise ValueError(f"{stage}: invalid auxiliary path {file}")
             auxiliary.add(file)
+        environment = case.get("environment", {})
+        if (not isinstance(environment, dict)
+                or any(not isinstance(key, str) or not key or "=" in key or "\0" in key
+                       or (value is not None and (not isinstance(value, str) or "\0" in value))
+                       for key, value in environment.items())):
+            raise ValueError(f"{stage}: environment must map valid names to strings or null")
         args = case.get("args", [])
         if (not isinstance(args, list) or any(not isinstance(arg, str) for arg in args)
                 or len(args) % 2 or any(args[i] not in ("--cfg", "--crate-name") for i in range(0, len(args), 2))):
@@ -68,9 +75,19 @@ def load_cases(root, stage):
     return manifest, cases
 
 
-def execute(command, data, timeout, *, cwd=None):
+def case_environment(case):
+    environment = dict(os.environ)
+    for name, value in case.get("environment", {}).items():
+        if value is None:
+            environment.pop(name, None)
+        else:
+            environment[name] = value
+    return environment
+
+
+def execute(command, data, timeout, *, cwd=None, env=None):
     try:
-        result = subprocess.run(command, input=data, capture_output=True, timeout=timeout, cwd=cwd)
+        result = subprocess.run(command, input=data, capture_output=True, timeout=timeout, cwd=cwd, env=env)
     except subprocess.TimeoutExpired as error:
         raise ValueError("compiler timed out") from error
     except OSError as error:
@@ -87,7 +104,7 @@ def run_case(root, stage, mode, case, app, timeout):
     if case.get("input") == "file":
         command.append(str(Path(stage) / case["path"]))
         data = b""
-    actual = execute(command, data, timeout, cwd=root)
+    actual = execute(command, data, timeout, cwd=root, env=case_environment(case))
     return fixture, actual
 
 
@@ -130,7 +147,7 @@ def run_stage(root, stage, app, *, bless=False, jobs=4, timeout=10):
             for suffix, value in zip((".stdout", ".stderr", ".exit_status"), actual):
                 Path(str(destination) + suffix).write_bytes(value)
     (artifacts / "results.json").write_text(json.dumps({"stage": stage, "cwd": str(root.resolve()), "command": [*app, manifest["mode"], "--edition=2024"],
-        "bless": bless, "cases": [{"path": case["path"], "args": case.get("args", []), "passed": not errors, "errors": errors}
+        "bless": bless, "cases": [{"path": case["path"], "args": case.get("args", []), "environment": case.get("environment", {}), "passed": not errors, "errors": errors}
                                    for case, _, _, errors in results]}, indent=2) + "\n")
     # Check every independent expected outcome before changing any reference.
     if bless and not any(errors for _, _, _, errors in results):

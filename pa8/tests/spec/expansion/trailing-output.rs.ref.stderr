@@ -1,0 +1,2 @@
+ERROR: file 0: 22: unexpected token after macro expansion
+  in macro m at file 0: 38; defined at file 0: 0

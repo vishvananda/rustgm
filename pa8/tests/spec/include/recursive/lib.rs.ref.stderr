@@ -1,0 +1,9 @@
+ERROR: file 1: 0: macro expansion recursion exceeds 8
+  in macro include at file 1: 0; builtin
+  in macro include at file 1: 0; builtin
+  in macro include at file 1: 0; builtin
+  in macro include at file 1: 0; builtin
+  in macro include at file 1: 0; builtin
+  in macro include at file 1: 0; builtin
+  in macro include at file 1: 0; builtin
+  in macro include at file 0: 24; builtin
