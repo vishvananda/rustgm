@@ -8,7 +8,7 @@ pub struct SourceFile {
     original: String,
     normalized: Option<String>,
     physical_len: usize,
-    line_starts: std::sync::OnceLock<Vec<u32>>,
+    positions: std::sync::OnceLock<Box<Positions>>,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -65,7 +65,7 @@ impl SourceFile {
             original,
             normalized,
             physical_len,
-            line_starts: std::sync::OnceLock::new(),
+            positions: std::sync::OnceLock::new(),
         })
     }
 
@@ -78,7 +78,7 @@ impl SourceFile {
             normalized: (self.original.len() != self.physical_len)
                 .then(|| self.text()[..self.physical_len].to_owned()),
             physical_len: self.physical_len,
-            line_starts: self.line_starts.clone(),
+            positions: self.positions.clone(),
         }
     }
 
@@ -92,29 +92,19 @@ impl SourceFile {
         if end > source.len() || !source.is_char_boundary(end) {
             return Err("physical source offset is out of range or inside a character");
         }
-        let starts = self.line_starts.get_or_init(|| {
-            std::iter::once(0)
-                .chain(
-                    source
-                        .bytes()
-                        .enumerate()
-                        .filter(|(_, byte)| *byte == b'\n')
-                        .map(|(index, _)| u32::try_from(index + 1).unwrap_or(u32::MAX)),
-                )
-                .collect()
-        });
-        let line = starts.partition_point(|start| *start <= offset);
-        let start = starts[line.saturating_sub(1)] as usize;
-        let prefix = &source[start..end];
-        let prefix = if start == 0 {
-            prefix.strip_prefix('\u{feff}').unwrap_or(prefix)
-        } else {
-            prefix
-        };
+        let positions = self
+            .positions
+            .get_or_init(|| Box::new(Positions::new(source)));
+        let line = positions.lines.partition_point(|start| *start <= offset);
+        let start = positions.lines[line.saturating_sub(1)];
+        let extra = positions.extra_before(offset) - positions.extra_before(start);
+        let bom = u32::from(start == 0 && offset >= 3 && source.starts_with('\u{feff}'));
+        let column = (offset - start - extra - bom)
+            .checked_add(1)
+            .ok_or("too many source columns")?;
         Ok(Position {
             line: u32::try_from(line).map_err(|_| "too many source lines")?,
-            column: u32::try_from(prefix.chars().count() + 1)
-                .map_err(|_| "source column overflow")?,
+            column,
         })
     }
 
@@ -126,5 +116,39 @@ impl SourceFile {
     #[must_use]
     pub fn original(&self) -> &str {
         &self.original
+    }
+}
+
+/// A single physical-source scan indexes lines and cumulative UTF-8 width. Only
+/// non-ASCII scalars need a width record; ASCII columns require no prefix scan.
+#[derive(Clone)]
+struct Positions {
+    lines: Vec<u32>,
+    wide: Vec<(u32, u32)>,
+}
+impl Positions {
+    fn new(source: &str) -> Self {
+        let mut result = Self {
+            lines: vec![0],
+            wide: Vec::new(),
+        };
+        let mut extra = 0;
+        for (index, ch) in source.char_indices() {
+            // SourceFile validated the complete physical byte length as u32.
+            let end = u32::try_from(index + ch.len_utf8()).unwrap_or(u32::MAX);
+            if !ch.is_ascii() {
+                let start = u32::try_from(index).unwrap_or(u32::MAX);
+                extra += end - start - 1;
+                result.wide.push((end, extra));
+            }
+            if ch == '\n' {
+                result.lines.push(end);
+            }
+        }
+        result
+    }
+    fn extra_before(&self, offset: u32) -> u32 {
+        let end = self.wide.partition_point(|(end, _)| *end <= offset);
+        end.checked_sub(1).map_or(0, |index| self.wide[index].1)
     }
 }

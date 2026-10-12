@@ -141,3 +141,34 @@ fn physical_positions_ignore_bom_and_generated_images_and_count_unicode() -> Res
     );
     Ok(())
 }
+
+#[test]
+fn physical_positions_keep_scalar_columns_across_unicode_lines() -> Result<(), String> {
+    use rustgm::support::source::{Position, SourceFile};
+    let source = SourceFile::new(
+        "\u{feff}α\r\n🦀界e\u{301}\t𐐀\r\nz\u{feff}"
+            .as_bytes()
+            .to_vec(),
+    )?;
+    for (offset, line, column) in [
+        (26, 3, 3),
+        (23, 3, 2),
+        (22, 3, 1),
+        (21, 2, 7),
+        (17, 2, 6),
+        (16, 2, 5),
+        (14, 2, 4),
+        (13, 2, 3),
+        (10, 2, 2),
+        (6, 2, 1),
+        (5, 1, 2),
+        (3, 1, 1),
+        (0, 1, 1),
+    ] {
+        assert_eq!(source.position(offset)?, Position { line, column });
+    }
+    for offset in [1, 2, 4, 7, 8, 9, 11, 12, 15, 18, 19, 20, 24, 25] {
+        assert!(source.position(offset).is_err());
+    }
+    Ok(())
+}
