@@ -303,10 +303,6 @@ impl Resolver<'_> {
         self.scratch.truncate(mark);
         Ok(())
     }
-    #[expect(
-        clippy::too_many_lines,
-        reason = "one declaration-kind dispatch creates namespaces and their owned scopes"
-    )]
     fn item(&mut self, c: Context, node: NodeId, index: u32) -> Result<(), Error> {
         let item = self.package.unit(c.file).configured.ast.items[index as usize];
         let access = self.visibility(c, item.visibility)?;
@@ -348,6 +344,39 @@ impl Resolver<'_> {
             self.module(module, scope);
             return Ok(());
         }
+        let body_context = if self.hygiene.is_some()
+            && let Some(scope) = self.facts.node_scopes.get(&(c.module, node)).copied()
+        {
+            Context { scope, ..c }
+        } else {
+            self.declare_item(c, node, item, access)?
+        };
+        let mark = self.scratch.len();
+        self.package
+            .unit(c.file)
+            .configured
+            .ast
+            .push_children(node, self.scratch);
+        let end = self.scratch.len();
+        for index in (mark..end).rev() {
+            self.pending.push((body_context, self.scratch[index]));
+        }
+        self.scratch.truncate(mark);
+        Ok(())
+    }
+    /// Register an ordinary item and its member namespaces without walking its
+    /// children. Expansion deliberately leaves generic parameters to resolution.
+    #[expect(
+        clippy::too_many_lines,
+        reason = "one item-header dispatch defines its namespaces, member scope and enum variants"
+    )]
+    pub fn declare_item(
+        &mut self,
+        c: Context,
+        node: NodeId,
+        item: Item,
+        access: Access,
+    ) -> Result<Context, Error> {
         let owned = matches!(
             item.kind,
             ItemKind::Function { .. }
@@ -469,18 +498,7 @@ impl Resolver<'_> {
                 }
             }
         }
-        let mark = self.scratch.len();
-        self.package
-            .unit(c.file)
-            .configured
-            .ast
-            .push_children(node, self.scratch);
-        let end = self.scratch.len();
-        for index in (mark..end).rev() {
-            self.pending.push((body_context, self.scratch[index]));
-        }
-        self.scratch.truncate(mark);
-        Ok(())
+        Ok(body_context)
     }
     fn constructor_access(
         &mut self,

@@ -379,6 +379,10 @@ impl<S: Sources> Engine<'_, S> {
         Ok(())
     }
 
+    #[expect(
+        clippy::too_many_lines,
+        reason = "one typed-node visit coordinates declaration, module and expansion scope transitions"
+    )]
     fn visit(&mut self, mut visit: Visit) -> Result<(), Error> {
         let module = &self.loader.package.modules[visit.module.0 as usize];
         let file = module.file;
@@ -387,7 +391,7 @@ impl<S: Sources> Engine<'_, S> {
             return Ok(());
         }
         let kind = unit.configured.ast.node(visit.node).kind;
-        let mut scope = matches!(kind, Kind::Block { .. });
+        let mut item_scope = None;
         if let Kind::Item(index) = kind {
             let item = unit.configured.ast.items[index as usize];
             if let ItemKind::MacroRules { capture } = item.kind {
@@ -409,7 +413,19 @@ impl<S: Sources> Engine<'_, S> {
             if matches!(item.kind, ItemKind::Module { .. }) && visit.node != module.root {
                 return self.module(visit, file, item.visibility);
             }
-            scope |= matches!(item.kind, ItemKind::Trait { .. } | ItemKind::Impl { .. });
+            if !matches!(item.kind, ItemKind::Module { .. }) {
+                item_scope = Some(self.paths.item(
+                    &mut self.loader.package,
+                    Context {
+                        module: visit.module,
+                        file,
+                        scope: visit.path_scope,
+                    },
+                    visit.node,
+                    item,
+                    visit.introduction,
+                )?);
+            }
         }
         if let Kind::Macro {
             path,
@@ -420,7 +436,14 @@ impl<S: Sources> Engine<'_, S> {
             if visit.depth >= self.recursion_limit {
                 return Err(Error::at(
                     file,
-                    unit.configured.ast.node(visit.node).span.start,
+                    self.loader
+                        .package
+                        .unit(file)
+                        .configured
+                        .ast
+                        .node(visit.node)
+                        .span
+                        .start,
                     format!("macro expansion recursion exceeds {}", self.recursion_limit),
                 ));
             }
@@ -429,7 +452,12 @@ impl<S: Sources> Engine<'_, S> {
             }
             return self.register(visit, file, path, capture, context);
         }
-        if scope {
+        if let Some(scope) = item_scope {
+            if scope != visit.path_scope {
+                self.work.push(Work::Restore(self.head));
+                visit.path_scope = scope;
+            }
+        } else if matches!(kind, Kind::Block { .. }) {
             self.work.push(Work::Restore(self.head));
             visit.path_scope = self.paths.block(
                 &mut self.loader.package,

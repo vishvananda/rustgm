@@ -437,3 +437,47 @@ This run observes an approximately 8–10% slowdown and does not establish a
 no-regression result. The ordinary-name path does not demand a line index;
 source container layout and binary layout remain possible contributors, not
 measured explanations. Revisit alongside the forthcoming full expansion workload.
+
+## Ordinary declarations during expansion
+
+Expansion now shares the ordinary item-header indexer, registering item/member
+namespaces, scopes and enum variants before attempting macro calls. Generic
+parameters remain a later-resolution responsibility: pinned rustc accepts
+`a::make!()` through an outer module even inside `fn f<a>()`, but ordinary
+structs, enums and type aliases hide that module. Qualified paths, value locals
+and nested item barriers have explicit positive controls. Generated headers
+publish dependency events, so a late generated type can invalidate a previously
+selected macro path. Final name resolution reuses those declaration identities
+and scopes instead of creating a second graph or collecting headers again.
+
+Nineteen pinned cases are retained in `obj/pa8-work/type-shadow-probes/`.
+The additional cases cover enum-variant imports, glob ambiguity, a generated
+shadow after a call, generic import rejection, generated function imports and
+stable definition identities across the ordinary-resolution handoff.
+
+These controls also exposed PA6's missing single-variant imports. A namespace
+without a variant constructor or macro is an absent binding, not an associated
+item import. Four independently classified fixtures now cover unit, tuple and
+record variant imports and a missing-variant rejection. No earlier acceptance
+contract is relaxed to accommodate a macro implementation limitation.
+
+The earlier immutable item-indexer measurement (before the subsequent enum
+lookup correction) is `obj/perf/1791785809293502448/samples.json`. CPU-10 A/B
+medians were 89.17/88.76, 366.95/371.69 and 1505.43/1503.10 ms at
+4,000/16,000/64,000 functions; largest A/A samples ranged 1475.27–1523.29 ms.
+Full outputs matched. The host's absolute timings differ substantially from the
+previous checkpoint, so compare paired observations only. Full expansion
+performance still needs its public count/view interface.
+
+Final validation passes 152 Rust tests, all 1,016 active course fixtures,
+strict Clippy, the 102-file audit, 14 harness tests, pinned rustc checks,
+upstream/Reference provenance and release tests. Evidence is in the
+`early-items-*-validation.log` and `early-items-final-build.log` files.
+Receipt review confirms only fingerprints and the four new PA6 fixtures changed;
+all previously shipped fixture and oracle bytes remain identical.
+
+The final-code immutable comparison is
+`obj/perf/1791786099966592827/samples.json`. Full outputs match. Paired A/B
+medians at the three scales are 55.31/55.82, 228.31/226.36, 950.25/954.99 ms;
+largest A/A samples range 978.10–993.85 ms. These observations do not
+replace full PA8 expansion throughput measurements.

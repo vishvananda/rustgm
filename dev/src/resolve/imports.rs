@@ -88,6 +88,13 @@ impl Work {
             self.provided.push(HashSet::new());
         }
     }
+    /// Publish a direct declaration already installed by the shared item indexer.
+    /// Its scope order was recorded by `define`; only dependency journals remain.
+    pub fn declared(&mut self, key: BindingKey) {
+        self.recorded.insert(key);
+        self.changes[key.0.0 as usize].push((key.1, key.2));
+        self.changed(key);
+    }
     pub fn set_textual(&mut self, index: usize, binding: TextualSource) {
         let previous = self
             .textual

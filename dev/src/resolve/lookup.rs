@@ -337,11 +337,22 @@ impl Resolver<'_> {
             let definition = &self.facts.definitions[binding.target.0 as usize];
             if let Some(members) = definition.members {
                 scope = Some(members);
-                associated = (definition.kind != DefKind::Module).then_some(binding.target);
+                // Enum variants occupy ordinary import namespaces. A record
+                // variant intentionally has no value constructor; that absence
+                // cannot turn a valid type-only import into an associated import.
+                associated = (namespace != Namespace::Macro
+                    && definition.kind != DefKind::Module
+                    && !(matches!(mode, LookupMode::Import(_))
+                        && definition.kind == DefKind::Enum))
+                    .then_some(binding.target);
             } else if matches!(definition.kind, DefKind::Module | DefKind::ExternCrate) {
                 return Err(self.error(c, node, "module metadata unavailable"));
             } else {
-                return Ok(Lookup::Associated(binding.target));
+                return Ok(if namespace == Namespace::Macro {
+                    Lookup::Missing
+                } else {
+                    Lookup::Associated(binding.target)
+                });
             }
         }
     }

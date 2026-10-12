@@ -78,6 +78,36 @@ impl Paths {
             waiting: HashMap::new(),
         })
     }
+    pub fn item(
+        &mut self,
+        package: &mut Package,
+        context: Context,
+        node: NodeId,
+        item: crate::syntax::item::Item,
+        introduction: ContextId,
+    ) -> Result<ScopeId, Error> {
+        let mut resolver = self.state.bind(package);
+        let first = resolver.facts.definitions.len();
+        let access = resolver.visibility(context, item.visibility)?;
+        let body = resolver.declare_item(context, node, item, access)?;
+        self.work.extend(resolver.facts);
+        for index in first..resolver.facts.definitions.len() {
+            let definition = &resolver.facts.definitions[index];
+            if introduction.0 != 0 {
+                let id = DefId(u32::try_from(index).map_err(|_| {
+                    resolver.error(context, node, "too many early item definitions")
+                })?);
+                resolver
+                    .facts
+                    .introductions
+                    .definitions
+                    .insert(id, introduction);
+            }
+            self.work
+                .declared((definition.scope, definition.name, definition.namespace));
+        }
+        Ok(body.scope)
+    }
     pub fn block(
         &mut self,
         package: &mut Package,

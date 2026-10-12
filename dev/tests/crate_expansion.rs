@@ -1192,3 +1192,82 @@ fn location_builtins_reject_arguments() {
         assert!(analyze(source, &mut Files::default()).is_err(), "{source}");
     }
 }
+
+#[test]
+fn ordinary_type_items_shadow_modules_but_generics_do_not_in_macro_lookup() -> Result<(), String> {
+    let prelude = "#[macro_export] macro_rules! make {()=>{1}} mod a{pub use crate::make;} ";
+    for (body, accepted) in [
+        ("fn f(){struct a;let _=a::make!();}", false),
+        ("fn f<a>(){let _=a::make!();}", true),
+        ("fn f<a>(_: [u8; a::make!()]){}", true),
+        ("fn f(){enum a{B}let _=a::make!();}", false),
+        ("fn f(){type a=u8;let _=a::make!();}", false),
+        ("fn f(){let _=a::make!();struct a;}", false),
+        ("fn f<a>(){let _=crate::a::make!();}", true),
+        ("fn f<a>(){fn g(){let _=a::make!();}}", true),
+        ("fn f(){let a=2;let _=a::make!();}", true),
+        (
+            "macro_rules! shadow{()=>{struct a;}} fn f(){shadow!();let _=a::make!();}",
+            false,
+        ),
+        (
+            "macro_rules! f{()=>{fn f<a>(_: [u8;a::make!()]){}}}f!();",
+            true,
+        ),
+        (
+            "macro_rules! f{($e:expr)=>{fn f<a>(){let _=$e;}}}f!(a::make!());",
+            true,
+        ),
+    ] {
+        let source = format!("{prelude}{body}");
+        let result = analyze(&source, &mut Files::default());
+        assert_eq!(
+            result.is_ok(),
+            accepted,
+            "{source}: {:?}",
+            result.as_ref().err()
+        );
+        if let Ok(report) = result {
+            resolve::analyze_expanded(report).map_err(|e| format!("{source}: {e:?}"))?;
+        }
+    }
+    Ok(())
+}
+
+#[test]
+fn early_item_imports_and_late_shadows_reuse_final_definition_identities() -> Result<(), String> {
+    let prelude = "#[macro_export] macro_rules! make {()=>{1}} mod a{pub use crate::make;} ";
+    for body in [
+        "enum E{V} fn f(){use E::V as a;let _=a::make!();}",
+        "mod types{pub struct a;}fn f(){use types::*;let _=a::make!();}",
+        "macro_rules! shadow{()=>{struct a;}}fn f(){let _=a::make!();shadow!();}",
+        "fn f<a>(){use a::make;let _=make!();}",
+    ] {
+        let source = format!("{prelude}{body}");
+        let result = analyze(&source, &mut Files::default())
+            .and_then(|r| resolve::analyze_expanded(r).map_err(|e| format!("{e:?}")));
+        assert!(result.is_err(), "{source}");
+    }
+    for source in [
+        format!("{prelude}fn f(){{struct a;let _=crate::a::make!();}}"),
+        "macro_rules! setup{()=>{fn g()->i32{3}}}setup!();use g as f;fn h()->i32{f()}".into(),
+        "enum E{V}use E::V as a;fn f(){let _=a;}".into(),
+    ] {
+        let report = analyze(&source, &mut Files::default())?;
+        let definitions: Vec<_> = report
+            .resolution
+            .definitions
+            .iter()
+            .map(|d| (d.name, d.namespace, d.kind, d.scope, d.node, d.members))
+            .collect();
+        let report = resolve::analyze_expanded(report).map_err(|e| format!("{source}: {e:?}"))?;
+        for (index, expected) in definitions.into_iter().enumerate() {
+            let d = &report.resolution.definitions[index];
+            assert_eq!(
+                (d.name, d.namespace, d.kind, d.scope, d.node, d.members),
+                expected
+            );
+        }
+    }
+    Ok(())
+}
