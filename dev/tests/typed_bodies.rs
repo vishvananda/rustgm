@@ -42,6 +42,11 @@ fn analyze(source: &str) -> Result<(Report, Declarations, Program), String> {
 }
 const CASES: &[(&str, &str, u128)] = &[
     (
+        "macro-binding-scope",
+        "macro_rules! bind{($v:ident,$e:expr)=>{let $v=$e;}}fn entry()->u64{bind!(x,40);{bind!(x,7);let _=x;}bind!(y,2);x+y}",
+        42,
+    ),
+    (
         "wildcard-uninitialized-place",
         "fn entry()->u64{let x:u64;let _=(x);let y:();let _=y;0}",
         0,

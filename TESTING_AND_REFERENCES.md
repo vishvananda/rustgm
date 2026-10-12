@@ -93,8 +93,8 @@ assignment. The type view retains those facts without claiming those obligations
 are proved. CLI tests check deterministic output, count/full-view agreement and
 empty stdout on semantic failure. See `docs/pa9-validation.md`.
 
-PA10 adds 48 typed-body fixtures. Its integer CFG test executor verifies the
-33 execution cases against both declared results and rustc, including dynamic
+PA10 adds 49 typed-body fixtures. Its integer CFG test executor verifies the
+34 execution cases against both declared results and rustc, including dynamic
 storage state and evaluation order. It is test-only and never implements a
 frontend phase. Pending region constraints remain explicit in body IR.
 See `docs/pa10-validation.md` for the feature handoff and measurements.

@@ -1,5 +1,6 @@
 //! Scalar body constraints consume resolved identities; fallback occurs once per body.
 mod aggregates;
+mod patterns;
 use super::{
     declarations,
     model::{Adjustment, AdjustmentKind, Declarations, Function, Operation, RegionEquality},
@@ -66,6 +67,11 @@ struct BreakSite {
     next: Option<usize>,
 }
 enum Work {
+    BindPattern {
+        pattern: NodeId,
+        term: TermId,
+        value: Option<NodeId>,
+    },
     Enter(NodeId, Option<TermId>),
     Exit(NodeId),
     CallArguments(NodeId),
@@ -84,6 +90,8 @@ pub(super) struct Checker<'a> {
     locals: Vec<Option<TermId>>,
     touched: Vec<NodeId>,
     bindings: Vec<DefId>,
+    pattern_work: Vec<(NodeId, TermId, super::patterns::PatternId)>,
+    pattern_types: Vec<(super::patterns::PatternId, TermId)>,
     work: Vec<Work>,
     children: Vec<NodeId>,
     checks: Vec<NodeId>,
@@ -112,6 +120,8 @@ impl<'a> Checker<'a> {
             infer: Context::default(),
             touched: Vec::new(),
             bindings: Vec::new(),
+            pattern_work: Vec::new(),
+            pattern_types: Vec::new(),
             work: Vec::new(),
             children: Vec::new(),
             checks: Vec::new(),
@@ -254,6 +264,16 @@ impl Checker<'_> {
                 return Err(self.error(body, "body type work budget exceeded"));
             }
             match work {
+                Work::BindPattern {
+                    pattern,
+                    term,
+                    value,
+                } => {
+                    if let Some(value) = value {
+                        self.coerce(value, term)?;
+                    }
+                    self.binding(pattern, term)?;
+                }
                 Work::Enter(node, expected) if self.active(node) => self.enter(node, expected)?,
                 Work::Enter(..) => {}
                 Work::CallArguments(node) => self.call_arguments(node)?,
@@ -298,6 +318,9 @@ impl Checker<'_> {
             .finish(&mut self.facts.types)
             .map_err(|e| self.error(body, e))?;
         let body_key = self.key(body);
+        for (id, term) in self.pattern_types.drain(..) {
+            self.facts.patterns.nodes[id.0 as usize].ty = Some(solved.types[term.0 as usize]);
+        }
         self.facts
             .region_equalities
             .extend(
@@ -371,6 +394,9 @@ impl Checker<'_> {
         Ok(())
     }
     fn binding(&mut self, mut node: NodeId, term: TermId) -> Result<(), Error> {
+        if !self.simple_pattern(node) {
+            return self.pattern(node, term);
+        }
         while let Kind::Attributed { value, .. } | Kind::Group(value) = self.kind(node) {
             self.save(node, term);
             node = value;
@@ -580,7 +606,15 @@ impl Checker<'_> {
                 } else {
                     self.variable(node, Domain::Any)?
                 };
-                self.binding(pattern, term)?;
+                if self.simple_pattern(pattern) {
+                    self.binding(pattern, term)?;
+                } else {
+                    self.work.push(Work::BindPattern {
+                        pattern,
+                        term,
+                        value,
+                    });
+                }
                 self.work
                     .extend(value.map(|value| Work::Enter(value, Some(term))));
                 return Ok(());

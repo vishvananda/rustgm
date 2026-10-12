@@ -1,5 +1,6 @@
 //! Iterative construction visits executable syntax once and consumes PA9 selections.
 mod aggregates;
+mod patterns;
 use super::ir::{
     Action, Block, BlockId, Body, Local, LocalId, LocalKind, Owner, Place, Program, Rvalue,
     ScalarId, Statement, Terminator, Value, ValueId, ValueList,
@@ -34,6 +35,7 @@ pub fn build(report: &Report, facts: &Declarations) -> Result<Program, Error> {
         reach: Vec::new(),
         places: Vec::new(),
         field_values: Vec::new(),
+        pattern_work: Vec::new(),
     };
     let mut program = Program {
         bodies: Vec::new(),
@@ -108,6 +110,11 @@ struct Reach {
 }
 #[derive(Clone, Copy)]
 enum Work {
+    BindPattern {
+        node: NodeId,
+        pattern: crate::sema::patterns::PatternId,
+        has_value: bool,
+    },
     Place(NodeId),
     FinishPlace(NodeId),
     TemporaryPlace(NodeId),
@@ -118,7 +125,7 @@ enum Work {
     EndBlock {
         node: NodeId,
         tail: Option<NodeId>,
-        base: usize,
+        base: Option<usize>,
     },
     Switch(BlockId),
     Branch {
@@ -147,6 +154,7 @@ enum Work {
     },
 }
 struct Scratch {
+    pattern_work: Vec<patterns::Work>,
     places: Vec<Option<Place>>,
     field_values: Vec<Option<ValueId>>,
     values: Vec<Vec<Option<ValueId>>>,
@@ -417,7 +425,27 @@ impl<'a> Builder<'a> {
             let Kind::Parameter { pattern, .. } = self.kind(parameter) else {
                 return Err(self.error(parameter, "missing parameter syntax"));
             };
-            self.binding(pattern, self.ty(parameter)?, LocalKind::Parameter(index))?;
+            if let Some(id) = self
+                .facts
+                .patterns
+                .roots
+                .get(&NodeKey {
+                    file: self.body.source.file,
+                    node: pattern,
+                })
+                .copied()
+            {
+                let local = self.local(
+                    pattern,
+                    self.ty(parameter)?,
+                    LocalKind::Parameter(index),
+                    None,
+                    false,
+                )?;
+                self.bind_pattern(id, Some(Place::Local(local)))?;
+            } else {
+                self.binding(pattern, self.ty(parameter)?, LocalKind::Parameter(index))?;
+            }
             index += 1;
         }
         Ok(())
@@ -456,8 +484,28 @@ impl<'a> Builder<'a> {
         }
         Ok(self.body)
     }
+    #[expect(
+        clippy::too_many_lines,
+        reason = "flat worklist dispatch keeps storage and control-flow continuations explicit within the file audit limit"
+    )]
     fn step(&mut self, work: Work) -> Result<(), Error> {
         match work {
+            Work::BindPattern {
+                node,
+                pattern,
+                has_value,
+            } => {
+                let place = if has_value {
+                    self.pop_place(node)?
+                } else {
+                    None
+                };
+                if self.current.is_some() {
+                    self.bind_pattern(pattern, place)?;
+                    let value = self.unit(node)?;
+                    self.save(node, value)?;
+                }
+            }
             Work::Place(node) => self.enter_place(node)?,
             Work::FinishPlace(node) => self.finish_place(node)?,
             Work::TemporaryPlace(node) => {
@@ -476,18 +524,7 @@ impl<'a> Builder<'a> {
             Work::Finish(node) if self.current.is_some() => self.finish(node)?,
             Work::Finish(node) => self.discard_unreachable_place(node)?,
             Work::Enter(_) => {}
-            Work::EndBlock { node, tail, base } => {
-                if self.current.is_some() {
-                    let value = if let Some(tail) = tail {
-                        self.value(tail)?
-                    } else {
-                        self.unit(node)?
-                    };
-                    self.save(node, value)?;
-                    self.cleanup(node, base)?;
-                }
-                self.scratch.live.truncate(base);
-            }
+            Work::EndBlock { node, tail, base } => self.finish_scope(node, tail, base)?,
             Work::Switch(target) => {
                 self.switch(self.body.blocks[target.0 as usize].source, target)?;
             }
@@ -567,11 +604,46 @@ impl<'a> Builder<'a> {
             .work
             .extend(children.iter().rev().copied().map(Work::Enter));
     }
+    fn finish_scope(
+        &mut self,
+        node: NodeId,
+        tail: Option<NodeId>,
+        base: Option<usize>,
+    ) -> Result<(), Error> {
+        if self.current.is_some() {
+            let value = if let Some(tail) = tail {
+                self.value(tail)?
+            } else {
+                self.unit(node)?
+            };
+            self.save(node, value)?;
+            if let Some(base) = base {
+                self.cleanup(node, base)?;
+            }
+        }
+        if let Some(base) = base {
+            self.scratch.live.truncate(base);
+        }
+        Ok(())
+    }
     #[expect(
         clippy::too_many_lines,
         reason = "cohesive syntax dispatch exposes evaluation order and work-stack scheduling"
     )]
     fn enter(&mut self, node: NodeId) -> Result<(), Error> {
+        if let Kind::Let { pattern, value, .. } = self.kind(node)
+            && let Some(pattern) = self.pattern_root(pattern)
+        {
+            self.scratch.work.push(Work::BindPattern {
+                node,
+                pattern,
+                has_value: value.is_some(),
+            });
+            if let Some(value) = value {
+                self.scratch.work.push(Work::Place(value));
+            }
+            return Ok(());
+        }
         match self.kind(node) {
             Kind::Block {
                 flavor: BlockFlavor::Plain,
@@ -585,7 +657,10 @@ impl<'a> Builder<'a> {
                 self.scratch.work.push(Work::EndBlock {
                     node,
                     tail,
-                    base: self.scratch.live.len(),
+                    // A statement expansion adds statements to its enclosing
+                    // scope; only a source block ends their bindings' storage.
+                    base: matches!(self.kind(node), Kind::Block { .. })
+                        .then_some(self.scratch.live.len()),
                 });
                 if let Some(tail) = tail {
                     self.scratch.work.push(Work::Enter(tail));

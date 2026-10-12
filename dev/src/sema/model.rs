@@ -129,6 +129,7 @@ pub struct RegionEquality {
     pub right: RegionId,
 }
 pub struct Declarations {
+    pub patterns: super::patterns::Patterns,
     pub enum_casts: std::collections::HashSet<crate::types::ItemId>,
     pub derives: std::collections::HashMap<crate::types::ItemId, crate::types::copy::Properties>,
     pub copies: crate::types::copy::Copies,
@@ -145,6 +146,7 @@ pub struct Declarations {
 impl Declarations {
     pub(super) fn new(report: &Report) -> Result<Self, Error> {
         let mut value = Self {
+            patterns: super::patterns::Patterns::default(),
             enum_casts: std::collections::HashSet::new(),
             derives: std::collections::HashMap::new(),
             copies: crate::types::copy::Copies::default(),

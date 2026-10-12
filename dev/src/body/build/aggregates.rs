@@ -179,7 +179,7 @@ impl Builder<'_> {
         }
         Ok(())
     }
-    fn project(
+    pub(super) fn project(
         &mut self,
         node: NodeId,
         ty: TypeId,

@@ -311,6 +311,18 @@ impl Context {
             .copied()
             .ok_or(Error::InvalidIdentity)
     }
+    /// Number of children of a known constructor, without resolving inference variables.
+    ///
+    /// # Errors
+    /// Rejects invalid identities or exhausted term storage.
+    pub fn arity(&mut self, store: &Store, id: TermId) -> Result<Option<usize>, Error> {
+        let id = self.root(id)?;
+        if self.head(store, id)?.is_none() {
+            return Ok(None);
+        }
+        let term = self.terms[id.0 as usize];
+        Ok(Some((term.end - term.start) as usize))
+    }
     /// Apply the edition-2024 never fallback to an otherwise unconstrained
     /// general variable at a never-coercion site, after all body constraints.
     /// Numeric variables retain their own defaults.

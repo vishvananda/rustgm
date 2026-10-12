@@ -52,11 +52,82 @@ Reproduce the workload with `scripts/measure_lexer.py --stage names --pattern-in
 
 ## Implementation sequence
 
-1. Elaborate irrefutable tuple/struct/fixed-array patterns and function parameters
-   against the existing inference terms and canonical member identities. Retain
-   selected fields, binding modes and reference adjustments. Bindings in different
-   alternatives must agree on their solved type and effective binding mode.
-   Do not infer those facts again during body construction.
+The first owned-product checkpoint is implemented. `sema::patterns` retains
+compact pattern IDs, source-ordered selected fields, constructor identities and
+shared or-pattern bindings. The checker solves every retained type with the
+containing body; body construction consumes these facts without repeating name
+lookup, shape selection or inference. Group wrappers do not allocate semantic
+pattern nodes. Simple bindings keep their existing path and the dense node
+record remains 80 bytes. A 16,000-field tuple with two selected fields retains
+three pattern nodes and two projections, without expanding the rest pattern.
+Both elaboration and binding construction use reusable iterative worklists.
+The checker diagnoses its explicit per-root work budget; the CLI releases the
+selected-pattern arena after building body IR.
+
+This checkpoint accepts owned tuple, record, tuple-struct and single-variant
+constructor patterns, including nested patterns, rest, parameters, uninitialized
+declarations, `@` bindings and irrefutable alternatives. Wildcards form places
+without reading their values. Place initializers run once, including indexing
+effects, and divergent initializers balance the construction stacks. Copies
+from an `@` subpattern precede the containing move; overlapping non-Copy moves
+remain rejected by the owned-value checker. Alternatives share binding types
+and canonical definitions. Selecting their first alternative is valid only for
+this currently irrefutable profile: conditional patterns must add a decision CFG
+before extending that path.
+
+A statement-macro regression exposed an earlier storage-scope bug: expansion
+containers ended their bindings' storage even though the bindings belong to the
+surrounding source scope. Only explicit source blocks now end that storage.
+The owning PA10 fixture checks both a binding that survives expansion and an
+inner block that shadows it; its declared result, body-IR interpreter and rustc
+all agree on 42. No existing text oracle changed. PA10 now has 49 cases,
+including 34 independently executed integer-CFG vectors.
+
+Five new maintainer tests cover selected identities, sparse storage, deterministic
+LowIR, positive runtime vectors and semantic/move errors. All 18 positive
+programs execute with clean zero status and empty streams through the pinned
+CPPGM backend and rustc 1.98.0. Their assertions exercise complete values rather
+than relying on truncated exit codes. All 15 negative programs are independently
+rejected by rustc. This is work-in-progress evidence, not an active PA13 grading
+suite; no partial PA13 manifest has been installed.
+
+The checkpoint passes all 1,669 active course cases and all 252 Rust tests in
+debug and release. Strict Clippy/rustfmt, the 166-file audit, harness and pinned
+source checks pass. The frozen candidate is `obj/pa13-work/product-candidate`,
+SHA-256 `098deb0dae8655a518e5be2dbd4ca1b68ba67b8851ee508c651b5f203eb2fee0`.
+Logs are `obj/pa13-work/product-*.log`; native product evidence, commands,
+source hashes and compiler/backend hashes are retained in
+`obj/pa13-work/product-native-1791827855382493997/evidence.json`.
+The existing PA11 and PA12 native suites also pass: 194/98 LowIR checks and
+180/48 executions respectively, including their declared panic outcomes. All
+independent rustc checks and PA12 layout probes pass.
+
+Frozen ordinary LowIR A/B measurements on CPU 10 compare the previous identity
+checkpoint with this candidate. At 4k/16k/64k demanded procedures, paired
+baseline/candidate medians are 207.12/209.02, 846.87/845.74 and
+3547.67/3484.08 ms. Largest-scale peak RSS is 700,816/701,372 KiB. Full LowIR
+bytes and count outputs agree. All 54 observations, including warmups, A/A
+calibration and three ABBA blocks, are retained in
+`obj/perf/1791827983669936871/samples.json`. These measurements show no material
+regression and do not establish a speedup.
+
+The new `scripts/measure_lexer.py --stage lowir --product-input` workload demands
+1k/4k/16k procedures with nested non-Copy record parameters, tuple rest,
+`@` bindings and shared alternatives. Candidate A/A medians are
+90.61/375.23/1579.07 ms; paired peak RSS is 23,360/82,560/319,196 KiB.
+The 54 observations and full-output hashes are retained in
+`obj/perf/1791828079238821288/samples.json`. This records scaling of the new
+capability; the previous compiler rejects that source, so it is not an A/B
+performance comparison. No RustGM build or test ran during either measurement.
+
+The remaining sequence is:
+
+1. Extend the selected owned-product facts to fixed-array patterns and retain
+   binding modes and reference adjustments. Bindings in different alternatives
+   must agree on their solved type and effective binding mode. Array moves need
+   typed constant-index/subarray projections with correct overlap facts, rather
+   than weakening PA12's ordinary indexed-place restrictions. Do not infer those
+   facts again during body construction.
 2. Type match scrutinees and arms, let conditions and let-else. Validate literal,
    range, constructor, rest, reference and slice patterns, including privacy,
    field/arity checks and edition-2024 binding-mode restrictions. Reuse selected

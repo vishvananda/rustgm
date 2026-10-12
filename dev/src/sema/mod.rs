@@ -6,6 +6,7 @@ pub mod entry;
 pub mod layout_view;
 pub mod members;
 pub mod model;
+pub mod patterns;
 mod regions;
 mod representation;
 mod scalar;

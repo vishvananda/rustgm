@@ -185,7 +185,7 @@ impl Checker<'_> {
         }
         Ok(())
     }
-    fn constructor(&self, node: NodeId) -> Result<VariantId, Error> {
+    pub(super) fn constructor(&self, node: NodeId) -> Result<VariantId, Error> {
         let Some(Target::Definition(definition)) =
             self.facts.node(self.key(node)).and_then(|f| f.reference)
         else {
@@ -211,7 +211,7 @@ impl Checker<'_> {
             .and_then(|key| self.facts.members.at_node(key))
             .ok_or_else(|| self.error(node, "missing struct member facts"))
     }
-    fn member_name(&mut self, node: NodeId, span: Span) -> Result<Name, Error> {
+    pub(super) fn member_name(&mut self, node: NodeId, span: Span) -> Result<Name, Error> {
         let spelling = self
             .report
             .package
@@ -236,7 +236,7 @@ impl Checker<'_> {
             .map(Name::Named)
             .map_err(|e| self.error(node, e))
     }
-    fn accessible(&self, node: NodeId, field: FieldId) -> Result<(), Error> {
+    pub(super) fn accessible(&self, node: NodeId, field: FieldId) -> Result<(), Error> {
         let access = self.facts.members.fields[field.0 as usize].access;
         if let Access::Within(module) = access
             && !self.report.package.is_descendant(self.module, module)

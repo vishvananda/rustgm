@@ -51,10 +51,11 @@ def main():
     workloads.add_argument("--aggregate-input", action="store_true", help="exercise owned aggregate LowIR at 1000/4000/16000 procedures")
     workloads.add_argument("--discriminant-input", action="store_true", help="exercise typed discriminant queries at 1000/4000/16000 enums")
     workloads.add_argument("--pattern-input", action="store_true", help="exercise nested pattern binding identities at 1000/4000/16000 procedures")
+    workloads.add_argument("--product-input", action="store_true", help="exercise owned product bindings at 1000/4000/16000 procedures")
     parser.add_argument("--stage", choices=("tokens", "literals", "token-trees", "ast", "crate-ast", "names", "expanded", "expanded-crate", "types", "layouts", "body-ir", "ownership", "lowir"), default="tokens")
     args = parser.parse_args()
-    if (args.aggregate_input or args.discriminant_input) and args.stage != "lowir":
-        parser.error("aggregate and discriminant workloads require --stage lowir")
+    if (args.aggregate_input or args.discriminant_input or args.product_input) and args.stage != "lowir":
+        parser.error("aggregate, discriminant and product workloads require --stage lowir")
     if args.pattern_input and args.stage != "names":
         parser.error("pattern identity workloads require --stage names")
     directory = ROOT / "obj/perf" / str(time.time_ns())
@@ -73,15 +74,22 @@ def main():
                "aggregate_input": args.aggregate_input,
                "discriminant_input": args.discriminant_input,
                "pattern_input": args.pattern_input,
+               "product_input": args.product_input,
                "binary_sha256": {name: hashlib.sha256(p.read_bytes()).hexdigest() for name, p in binaries.items()},
                "samples": [], "full_output_sha256": {}}
     scales = (4000, 16000, 64000) if args.stage in ("token-trees", "ast", "crate-ast", "names", "expanded", "expanded-crate", "types", "body-ir", "ownership", "lowir") else (16000, 64000, 256000)
-    if args.aggregate_input or args.discriminant_input or args.pattern_input or args.stage == "layouts":
+    if args.aggregate_input or args.discriminant_input or args.pattern_input or args.product_input or args.stage == "layouts":
         scales = (1000, 4000, 16000)
     line = {"tokens": LINE, "literals": LITERAL_LINE, "token-trees": TREE_LINE, "ast": AST_LINE, "crate-ast": CRATE_LINE, "names": b"", "expanded": b"", "expanded-crate": b"", "types": b"", "layouts": b"", "body-ir": b"", "ownership": b"", "lowir": b""}[args.stage]
     for lines in scales:
         source = directory / f"input-{lines}.rs"
-        if args.pattern_input:
+        if args.product_input:
+            source.write_text("struct N(u64);struct S{a:N,b:N}\n" + "".join(
+                f"fn measured_{i}(S{{a:N(x),b:N(y)}}:S)->u64{{"
+                "let whole@(a,..,b)=(x,0u8,y);let ((c,d)|(d,c))=(a,b);whole.0+c+d}\n"
+                for i in range(lines)) + "fn main(){" + "".join(
+                f"measured_{i}(S{{a:N(1),b:N(2)}});" for i in range(lines)) + "}\n")
+        elif args.pattern_input:
             source.write_text("".join(
                 f"fn measured_{i}(v:(u8,u8)){{match v{{((x,0)|(x,1))|((0,x)|(1,x))=>{{x;}},_=>{{}}}}}}\n"
                 for i in range(lines)))

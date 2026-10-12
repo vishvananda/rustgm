@@ -166,6 +166,9 @@ fn semantic(
     }
     if matches!(mode, Mode::Bodies | Mode::Ownership | Mode::Lowir) {
         let program = rustgm::body::build(&report, &facts).map_err(|e| e.to_string())?;
+        // Selected patterns have become explicit places and binding actions.
+        // Ownership and lowering consume those actions, so release this arena.
+        drop(std::mem::take(&mut facts.patterns));
         if matches!(mode, Mode::Ownership) {
             let checked = rustgm::borrow::ownership::check(
                 &facts.types,

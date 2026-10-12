@@ -55,6 +55,9 @@ its first store/read. Normal exits end storage in reverse creation order;
 transfers end storage they leave. Conditional/condition temporaries end on their
 actual paths. `dead` is a storage boundary, not a destructor or initialization
 proof. Retain definition identity, declared mutability and local role.
+Statement-macro expansions add statements to their enclosing scope. The
+expansion container does not end binding storage; explicit blocks inside the
+expansion retain their ordinary scope boundaries.
 
 ## Deferred obligations
 
