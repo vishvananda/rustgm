@@ -79,7 +79,11 @@ impl Checker<'_> {
                 u32::try_from(index)
                     .map_err(|_| self.error(key, "too many nominal declarations"))?,
             );
-            let repr = representations.get(&key).copied().unwrap_or_default();
+            let attributes = representations.get(&key).copied().unwrap_or_default();
+            if attributes.derives != crate::types::copy::Properties::default() {
+                self.facts.derives.insert(item, attributes.derives);
+            }
+            let repr = attributes.repr;
             let (kind, groups) = self.groups(key)?;
             let tag = repr.tag.unwrap_or(Primitive::Isize);
             let mut next = Some(0);
@@ -148,7 +152,47 @@ impl Checker<'_> {
                     )
                 })?;
         }
+        self.copy_obligations()?;
         self.constructors()
+    }
+    fn copy_obligations(&mut self) -> Result<(), Error> {
+        for definition in &self.facts.aggregates {
+            let key = self.report.resolution.definitions[definition.item.0 as usize]
+                .node
+                .ok_or_else(|| Error::at(FileId(0), 0, "missing derive syntax"))?;
+            let ty = self.facts.definitions[definition.item.0 as usize]
+                .ok_or_else(|| self.error(key, "missing derive type"))?;
+            let properties = self
+                .facts
+                .copies
+                .demand(
+                    &self.facts.types,
+                    &self.facts.aggregates,
+                    &self.facts.derives,
+                    ty,
+                )
+                .map_err(|e| self.error(key, e))?;
+            let selected = self
+                .facts
+                .derives
+                .get(&definition.item)
+                .copied()
+                .unwrap_or_default();
+            if selected.copy && !properties.copy {
+                return Err(self.error(key, "derived Copy requires every field to implement Copy"));
+            }
+            if selected.clone_ && !properties.clone_ {
+                if definition.repr.packed.is_some() {
+                    return Err(
+                        self.error(key, "derived Clone on a packed struct requires Copy fields")
+                    );
+                }
+                return Err(
+                    self.error(key, "derived Clone requires every field to implement Clone")
+                );
+            }
+        }
+        Ok(())
     }
     fn groups(&self, key: NodeKey) -> Result<(aggregate::Kind, Vec<Group>), Error> {
         match self.item(key)?.kind {

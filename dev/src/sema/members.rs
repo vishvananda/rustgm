@@ -14,7 +14,7 @@ use std::collections::HashMap;
 pub struct VariantId(pub u32);
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct FieldId(pub u32);
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum Selection {
     Tuple(u32),
     Nominal(FieldId),

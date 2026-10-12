@@ -6,7 +6,7 @@ ACTIVE_PAS := pa1 pa2 pa3 pa4 pa5 pa6 pa7 pa8 pa9 pa10 pa11
 RUSTGM_TEST_APP ?= $(ROOT)/dev/rustgm
 REF_TEST_APP ?= $(ROOT)/dev/rustgm-ref
 
-.PHONY: all test test-report ref-test lint setup-audit audit-rust test-harness test-backend test-native test-upstream test-rustc perf perf-literals perf-ast perf-crate-ast perf-names perf-expanded perf-expanded-crate perf-types perf-body-ir perf-lowir clean
+.PHONY: all test test-report ref-test lint setup-audit audit-rust test-harness test-backend test-native test-upstream test-rustc perf perf-literals perf-ast perf-crate-ast perf-names perf-expanded perf-expanded-crate perf-types perf-body-ir perf-ownership perf-lowir clean
 all:
 	$(CARGO) build --manifest-path dev/Cargo.toml --release --locked
 test: all
@@ -70,5 +70,7 @@ perf-body-ir: all
 	$(PYTHON) scripts/measure_lexer.py --stage body-ir
 perf-lowir: all
 	$(PYTHON) scripts/measure_lexer.py --stage lowir
+perf-ownership: all
+	$(PYTHON) scripts/measure_lexer.py --stage ownership
 clean:
 	$(CARGO) clean --manifest-path dev/Cargo.toml

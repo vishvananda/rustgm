@@ -1,5 +1,6 @@
 //! Immutable canonical type shapes and interned child lists; no source/text keys.
 pub mod aggregate;
+pub mod copy;
 pub mod infer;
 
 use std::{

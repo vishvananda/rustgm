@@ -46,6 +46,7 @@ fn options() -> Result<Options, String> {
             | "--emit-expanded-crate"
             | "--emit-types"
             | "--emit-body-ir"
+            | "--emit-ownership"
             | "--emit-lowir" => {
                 options.mode = arg;
                 options.count = false;
@@ -56,6 +57,10 @@ fn options() -> Result<Options, String> {
             }
             "--count-body-ir" => {
                 options.mode = "--emit-body-ir".into();
+                options.count = true;
+            }
+            "--count-ownership" => {
+                options.mode = "--emit-ownership".into();
                 options.count = true;
             }
             "--count-lowir" => {
@@ -142,6 +147,7 @@ fn compile(options: &Options) -> Result<(), String> {
             | "--emit-expanded-crate"
             | "--emit-types"
             | "--emit-body-ir"
+            | "--emit-ownership"
             | "--emit-lowir"
     ) {
         modules::run(
@@ -156,6 +162,8 @@ fn compile(options: &Options) -> Result<(), String> {
                 modules::Mode::Types
             } else if options.mode == "--emit-body-ir" {
                 modules::Mode::Bodies
+            } else if options.mode == "--emit-ownership" {
+                modules::Mode::Ownership
             } else if options.mode == "--emit-lowir" {
                 modules::Mode::Lowir
             } else {

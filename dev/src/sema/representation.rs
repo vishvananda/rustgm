@@ -1,4 +1,4 @@
-//! Interpret retained representation attributes without reparsing item source.
+//! Interpret retained nominal attributes without reparsing item source.
 use super::model::Declarations;
 use crate::{
     lex::token::Punctuation,
@@ -17,10 +17,18 @@ use crate::{
     types::{
         Primitive,
         aggregate::{Repr, Representation},
+        copy::Properties,
     },
 };
 
-pub(super) fn analyze(report: &Report) -> Result<std::collections::HashMap<NodeKey, Repr>, Error> {
+#[derive(Clone, Copy, Default)]
+pub(super) struct Attributes {
+    pub repr: Repr,
+    pub derives: Properties,
+}
+pub(super) fn analyze(
+    report: &Report,
+) -> Result<std::collections::HashMap<NodeKey, Attributes>, Error> {
     let mut representations = std::collections::HashMap::new();
     for (file, unit) in report.package.units.iter().enumerate() {
         if unit.include_context.is_some() {
@@ -51,7 +59,7 @@ pub(super) fn analyze(report: &Report) -> Result<std::collections::HashMap<NodeK
     }
     Ok(representations)
 }
-fn parse(report: &Report, key: NodeKey, index: usize) -> Result<Repr, Error> {
+fn parse(report: &Report, key: NodeKey, index: usize) -> Result<Attributes, Error> {
     let unit = report.package.unit(key.file);
     let owner = &unit.configured.owners[index];
     let mut parser = Parser {
@@ -59,21 +67,27 @@ fn parse(report: &Report, key: NodeKey, index: usize) -> Result<Repr, Error> {
         base: None,
         hints: 0,
     };
+    let mut derives = Properties::default();
     for index in owner.attributes.clone() {
         let effect = &unit.configured.effects[index];
         let attribute = effect.attribute.attribute;
         let forest = &unit.configured.ast.attributes[effect.capture as usize].forest;
-        if attribute.name(forest, unit.source.text()) != Some("repr") {
+        let name = attribute.name(forest, unit.source.text());
+        if !matches!(name, Some("repr" | "derive")) {
             continue;
         }
         let error = |message| Error::at(key.file, attribute.span.start, message);
         let Input::Delimited(group) = attribute.input else {
-            return Err(error("repr requires parenthesized hints"));
+            return Err(error("nominal attribute requires parenthesized arguments"));
         };
         let range = parentheses(forest, group).map_err(error)?;
-        parser
-            .parse(forest, unit.source.text(), range)
-            .map_err(error)?;
+        if name == Some("derive") {
+            derive(forest, unit.source.text(), range, &mut derives).map_err(error)?;
+        } else {
+            parser
+                .parse(forest, unit.source.text(), range)
+                .map_err(error)?;
+        }
     }
     if parser.base == Some(Representation::Transparent) && parser.hints != 1 {
         return Err(Declarations::error(
@@ -82,7 +96,43 @@ fn parse(report: &Report, key: NodeKey, index: usize) -> Result<Repr, Error> {
             "transparent representation cannot combine with other hints",
         ));
     }
-    Ok(parser.repr)
+    if derives.copy && !derives.clone_ {
+        return Err(Declarations::error(
+            report,
+            key,
+            "Copy requires a Clone implementation",
+        ));
+    }
+    Ok(Attributes {
+        repr: parser.repr,
+        derives,
+    })
+}
+fn derive(
+    forest: &Forest,
+    source: &str,
+    range: TreeRange,
+    selected: &mut Properties,
+) -> Result<(), &'static str> {
+    let mut index = range.start;
+    while index < range.end {
+        let field = match forest.name(source, index) {
+            Some("Copy") => &mut selected.copy,
+            Some("Clone") => &mut selected.clone_,
+            _ => return Err("this derive requires the trait or procedural macro assignment"),
+        };
+        if std::mem::replace(field, true) {
+            return Err("conflicting derived trait implementations");
+        }
+        index += 1;
+        if index < range.end {
+            if !forest.punctuation(index, Punctuation::Comma) {
+                return Err("expected comma between built-in derives");
+            }
+            index += 1;
+        }
+    }
+    Ok(())
 }
 struct Parser {
     repr: Repr,

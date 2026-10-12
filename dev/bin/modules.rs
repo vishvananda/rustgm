@@ -49,6 +49,7 @@ pub enum Mode {
     Expanded,
     Types,
     Bodies,
+    Ownership,
     Lowir,
 }
 pub fn run(
@@ -71,18 +72,37 @@ pub fn run(
     };
     if matches!(
         mode,
-        Mode::Expanded | Mode::Types | Mode::Bodies | Mode::Lowir
+        Mode::Expanded | Mode::Types | Mode::Bodies | Mode::Ownership | Mode::Lowir
     ) {
         let mut report =
             resolve::expansion::analyze_with_crate_name(root, &mut Files, config, crate_name)
                 .and_then(resolve::analyze_expanded)
                 .map_err(|e| e.to_string())?;
-        if matches!(mode, Mode::Types | Mode::Bodies | Mode::Lowir) {
-            let facts = rustgm::sema::declarations::analyze(&report)
+        if matches!(
+            mode,
+            Mode::Types | Mode::Bodies | Mode::Ownership | Mode::Lowir
+        ) {
+            let mut facts = rustgm::sema::declarations::analyze(&report)
                 .and_then(|facts| rustgm::sema::bodies::analyze(&report, facts))
                 .map_err(|e| e.to_string())?;
-            if matches!(mode, Mode::Bodies | Mode::Lowir) {
+            if matches!(mode, Mode::Bodies | Mode::Ownership | Mode::Lowir) {
                 let program = rustgm::body::build(&report, &facts).map_err(|e| e.to_string())?;
+                if matches!(mode, Mode::Ownership) {
+                    let checked = rustgm::borrow::ownership::check(
+                        &facts.types,
+                        &facts.aggregates,
+                        &facts.derives,
+                        &mut facts.copies,
+                        &program,
+                    )
+                    .map_err(|e| phase_error(&report, e.node, e.message))?;
+                    return if count {
+                        rustgm::borrow::ownership::view::count(&checked, out)
+                    } else {
+                        rustgm::borrow::ownership::view::write(&checked, out)
+                    }
+                    .map_err(|e| e.to_string());
+                }
                 if matches!(mode, Mode::Lowir) {
                     let lowir = lower(&mut report, &facts, &program)?;
                     drop(program);

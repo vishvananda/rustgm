@@ -127,6 +127,8 @@ pub struct RegionEquality {
     pub right: RegionId,
 }
 pub struct Declarations {
+    pub derives: std::collections::HashMap<crate::types::ItemId, crate::types::copy::Properties>,
+    pub copies: crate::types::copy::Copies,
     pub aggregates: crate::types::aggregate::Definitions,
     pub members: super::members::Members,
     pub layouts: crate::abi::layout::Layouts,
@@ -140,6 +142,8 @@ pub struct Declarations {
 impl Declarations {
     pub(super) fn new(report: &Report) -> Result<Self, Error> {
         let mut value = Self {
+            derives: std::collections::HashMap::new(),
+            copies: crate::types::copy::Copies::default(),
             aggregates: crate::types::aggregate::Definitions::default(),
             members: super::members::Members::default(),
             layouts: crate::abi::layout::Layouts::default(),

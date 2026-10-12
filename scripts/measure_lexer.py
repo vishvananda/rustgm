@@ -47,7 +47,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--baseline", type=Path)
     parser.add_argument("--candidate", type=Path, default=ROOT / "obj/rust/release/rustgm")
-    parser.add_argument("--stage", choices=("tokens", "literals", "token-trees", "ast", "crate-ast", "names", "expanded", "expanded-crate", "types", "body-ir", "lowir"), default="tokens")
+    parser.add_argument("--stage", choices=("tokens", "literals", "token-trees", "ast", "crate-ast", "names", "expanded", "expanded-crate", "types", "body-ir", "ownership", "lowir"), default="tokens")
     args = parser.parse_args()
     directory = ROOT / "obj/perf" / str(time.time_ns())
     directory.mkdir(parents=True)
@@ -64,8 +64,8 @@ def main():
                "stage": args.stage,
                "binary_sha256": {name: hashlib.sha256(p.read_bytes()).hexdigest() for name, p in binaries.items()},
                "samples": [], "full_output_sha256": {}}
-    scales = (4000, 16000, 64000) if args.stage in ("token-trees", "ast", "crate-ast", "names", "expanded", "expanded-crate", "types", "body-ir", "lowir") else (16000, 64000, 256000)
-    line = {"tokens": LINE, "literals": LITERAL_LINE, "token-trees": TREE_LINE, "ast": AST_LINE, "crate-ast": CRATE_LINE, "names": b"", "expanded": b"", "expanded-crate": b"", "types": b"", "body-ir": b"", "lowir": b""}[args.stage]
+    scales = (4000, 16000, 64000) if args.stage in ("token-trees", "ast", "crate-ast", "names", "expanded", "expanded-crate", "types", "body-ir", "ownership", "lowir") else (16000, 64000, 256000)
+    line = {"tokens": LINE, "literals": LITERAL_LINE, "token-trees": TREE_LINE, "ast": AST_LINE, "crate-ast": CRATE_LINE, "names": b"", "expanded": b"", "expanded-crate": b"", "types": b"", "body-ir": b"", "ownership": b"", "lowir": b""}[args.stage]
     for lines in scales:
         source = directory / f"input-{lines}.rs"
         if args.stage in ("types", "body-ir", "lowir"):
@@ -75,6 +75,11 @@ def main():
             if args.stage == "lowir":
                 with source.open("a") as stream:
                     stream.write("fn main(){" + "".join(f"measured_{i}(0);" for i in range(lines)) + "}\n")
+        elif args.stage == "ownership":
+            source.write_text("struct N(u64);struct Pair{left:N,right:N}fn consume(x:N)->u64{x.0}\n" + "".join(
+                f"fn measured_{i}(mut x:Pair,c:bool)->u64{{let n=consume(x.left);"
+                "if c{x.left=N(n);}else{x.left=N(1);}consume(x.left)+consume(x.right)}\n"
+                for i in range(lines)))
         elif args.stage == "expanded-crate":
             source.write_text("macro_rules! measured {($e:expr,wrong)=>{};($e:expr,right)=>{$e+$e}}\n" + "".join(
                 f"fn measured_{i}()->u64{{measured!({i},right)}}\n" for i in range(lines)))

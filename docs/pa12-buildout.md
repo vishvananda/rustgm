@@ -60,13 +60,48 @@ Place construction uses a reusable operand stack rather than another dense
 per-syntax-node side array. Unreachable work still balances that stack; tests
 cover divergence in RHS expressions, indices, updates and nested branches.
 Aggregate expressions are available in the type/body inspection views. The
-scalar executable proof deliberately rejects aggregate values and projections
-until the move/initialization proof and aggregate lowering are integrated.
+scalar executable proof still rejects aggregate values and projections until
+the owned-value proof below is connected to aggregate lowering.
+
+## Owned-value proof
+
+`types::copy` caches closed-profile Copy/Clone obligations independently of
+layout. Tuples and arrays inherit their fields' abilities, including zero-length
+arrays. Nominal types require explicit built-in derives. Shared references,
+raw pointers and function values are Copy; mutable references are not.
+Retained `derive(Clone, Copy)` attributes use the same configured token-tree
+pass as representation hints. Field obligations, duplicate implementations,
+the Clone prerequisite and packed-struct Clone/Copy restrictions are checked
+even on unused declarations. This does not implement general trait selection,
+Clone method calls, imported/qualified derives or procedural derive macros.
+
+`borrow::ownership` interns sparse local/temporary field paths and numbers
+subtrees into bitset intervals. One shallow bit represents an initialized
+aggregate structure and its unmentioned fields. A field move clears its subtree
+while retaining its parent's structure; a whole move clears both. Field writes
+require an initialized parent. This permits partial reinitialization without
+accepting writes into wholly moved or never-initialized aggregates. Arrays stay
+atomic for ordinary indexing; their lengths never expand the path arena.
+
+The CFG fixed point intersects definitely initialized bits and unions possibly
+written bits. Moves do not reset immutable-write history. Storage markers reset
+state for fresh loop iterations; temporary snapshots gain state on evaluation.
+Diagnostics inspect converged reachable states. Budgets account for actual
+bitset words touched and bound both state memory and solver work. Ordinary
+indexing requires an initialized array and cannot move a non-Copy element.
+Repeats evaluate their operand once, including lengths zero/one; larger repeats
+require Copy or a constant operand. The proof retains selected Copy/Move uses.
+
+`--emit-ownership` and `--count-ownership` expose this proof for maintainer
+inspection. These are provisional views while PA14 remains planned. They do
+not discharge reference adjustments, loan or region obligations. The existing
+scalar LowIR boundary remains until aggregate lowering consumes the new proof;
+successful inspection alone does not enable executable aggregate output.
 
 ## Evidence at this checkpoint
 
 - All 1,547 PA1–PA11 fixture outputs are unchanged.
-- Debug and release suites each pass 227 Rust tests. The declaration acceptance
+- Debug and release suites each pass 233 Rust tests. The declaration acceptance
   matrix checks the pinned rustc with default lints, including representation
   conflicts, duplicate fields, recursive storage and discriminant failures.
 - Guaranteed layout vectors compare sizes, alignments and field/payload offsets
@@ -77,7 +112,14 @@ until the move/initialization proof and aggregate lowering are integrated.
   field reads, generated constructor bodies, wildcard places and control-flow
   divergence. A 10,000-field projection chain constructs iteratively and reads
   only its selected leaf.
-- Strict Clippy/rustfmt pass. The file/phase audit checks 149 Rust files with
+- The ownership matrix checks 74 declared acceptance/rejection cases against
+  pinned rustc. A deterministic additional differential run checks 256 operation
+  sequences with straight-line, branch and loop flow: 177 accepted, 79 rejected,
+  no disagreement. Sources and both diagnostics remain in
+  `obj/pa12-work/ownership-differential/`. Structural tests cover 20,000 nested
+  Copy queries, cached failures, 10,000 projections, 40,000 independent locals,
+  repeated projections and an array of `u64::MAX` zero-sized elements.
+- Strict Clippy/rustfmt pass. The file/phase audit checks 156 Rust files with
   zero findings; two audit tests and 19 harness tests pass.
 - The typed object-memory probe in `dev/tests/lowir_lowering.rs` writes
   `obj/pa12-work/memory.lowir`. The pinned bridge validates it and its executable
@@ -117,10 +159,28 @@ reduced memory overhead. Those pre-fix observations are retained too, in
 `obj/perf/1791815793886761711/samples.json` and
 `obj/perf/1791815869736630624/samples.json`; they are not the final candidate.
 
+The ownership checkpoint binary is
+`3fe4f24061576023d1f9fb1ae2254779870f916f01ad9e40ab233fcc99d913f8`.
+Compared with the expression/body candidate, LowIR baseline/candidate medians
+at 4,000, 16,000 and 64,000 functions are 201.22/201.97, 805.58/806.60 and
+3411.84/3397.71 ms. Largest-scale peak RSS is 696,928/696,968 KiB. Counts and
+complete output hashes agree at every scale; the observations show no measured
+regression, not a claimed speedup. All 54 samples remain in
+`obj/perf/1791817977115983992/samples.json`.
+
+`make perf-ownership` exercises partial moves, branch reinitialization and
+consumption of distinct nominal fields. A/A scaling with the same frozen
+binary, CPU 10 and three paired blocks gives 261.50, 1091.65 and 4444.72 ms for
+4,000, 16,000 and 64,000 functions; peak RSS is 55,280, 209,780 and 825,932 KiB.
+These measure the entire frontend through ownership, not the solver alone.
+All 54 observations and full-output checks remain in
+`obj/perf/1791818122849043847/samples.json`. There was no preceding ownership
+binary, so this is scaling evidence rather than an A/B regression claim.
+
 ## Required continuation
 
-1. PA12: integrate aggregate ownership checks and executable lowering; the
-   expression/member selections and typed places are implemented. Implement
+1. PA12: connect the owned-value proof to executable aggregate lowering; the
+   expression/member selections, typed places and proof are implemented. Implement
    enum discriminant constant expressions. Lower
    aggregate values/calls with owned snapshots and explicit bounds checks,
    including zero-sized values. Add source fixtures, native comparisons and
@@ -129,9 +189,10 @@ reduced memory overhead. Those pre-fix observations are retained too, in
    guards, or-patterns, slices and usefulness/exhaustiveness. Retain move and
    reference semantics for the subsequent checks; do not erase unproved borrows
    merely to reach LowIR.
-3. PA14: generalize the scalar initialization proof to move paths, structural
-   Copy rules, partial moves, disjoint fields, reinitialization and CFG joins.
-   Supply the ownership text view and independently checked rejection cases.
+3. PA14: extend the owned-value proof to PA13's pattern projections and binding
+   modes, and retain maybe-initialized path facts separately from write history.
+   Freeze the ownership view, publish assignment fixtures and their
+   independently checked outcomes, and integrate the executable proof boundary.
 4. PA15: discharge lifetime contracts through region parameters, elision,
    outlives constraints and caller/callee relationships, including nested
    reference returns. Full loan checking remains PA16's responsibility.
@@ -143,14 +204,10 @@ their effects and initialization/move obligations. Function-pointer signatures
 must reflect the same convention. This is a pending implementation choice, not
 an assertion of rustc's unspecified native ABI or a backend change.
 
-The next ownership proof must distinguish moving a whole local from moving one
-field: a partial move retains the parent's structure and permits reinitializing
-that field, whereas assigning into a wholly moved/uninitialized aggregate has
-different requirements. Use sparse, interned move paths with typed field keys,
-and retain state for unmentioned fields when checking whole-value reads. Do not
-expand large arrays into per-element records. Built-in Copy rules and explicit
-nominal Copy selection must precede erasure to `copyobj`; a physical memory copy
-alone is not permission to reuse a moved Rust value. Ordinary indexing cannot
-move a non-Copy element out of an array; pattern projections are a separate
-operation. The current scalar rejection gate must be replaced by that proof,
-not removed to make aggregate examples compile.
+The lowering boundary must consume the owned-value proof before erasure to
+`copyobj`; a physical memory copy alone is not permission to reuse a moved Rust
+value. Keep ordinary indexing separate from PA13's pattern projections, which
+will need constant-index/downcast path identities. Reference adjustments and
+region obligations need their own checked facts before reference erasure. The
+current scalar rejection gate must be replaced by these proofs, not removed to
+make aggregate examples compile.
