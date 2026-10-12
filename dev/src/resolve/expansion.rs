@@ -36,6 +36,7 @@ mod diagnostics;
 mod eager;
 mod location;
 mod paths;
+mod resources;
 
 pub enum Body {
     Declarative(Compiled),

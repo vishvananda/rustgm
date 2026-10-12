@@ -36,3 +36,10 @@ sidecars together. Run all active earlier suites, lint, file/architecture audits
 and affected scaling measurements. Record independent checks before setting
 status active in `assignments.json` and adding the stage to the root report.
 Student export is a later operation: this repository owns the full solution.
+
+The builtin boundary includes `option_env!`: its expansion needs the library's
+nominal `Option<&'static str>` identity and Some/None constructors. PA8 supplies
+the eager argument worklist and explicit environment provider, but must not
+fabricate core/std paths while those library identities are unavailable.
+Formatting, assertion and panic-related macro hooks similarly need explicit
+library/runtime contracts and tests at their owning stage.

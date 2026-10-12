@@ -13,13 +13,26 @@ use std::{
 
 #[derive(Default)]
 struct Files {
-    files: HashMap<PathBuf, String>,
+    sources: HashMap<PathBuf, String>,
     reads: Vec<PathBuf>,
+    resources: HashMap<PathBuf, Vec<u8>>,
+    resource_reads: Vec<PathBuf>,
+    environment: HashMap<String, Result<Option<String>, String>>,
+    environment_reads: Vec<String>,
 }
 impl Sources for Files {
+    fn resource(&mut self, path: &Path) -> Result<Option<Vec<u8>>, String> {
+        self.resource_reads.push(path.to_owned());
+        Ok(self.resources.get(path).cloned())
+    }
+    fn environment(&mut self, name: &str) -> Result<Option<String>, String> {
+        self.environment_reads.push(name.to_owned());
+        self.environment.get(name).cloned().unwrap_or(Ok(None))
+    }
+
     fn read(&mut self, path: &Path) -> Result<Option<InputFile>, String> {
         self.reads.push(path.to_owned());
-        self.files
+        self.sources
             .get(path)
             .map(|text| {
                 Ok(InputFile {
@@ -95,7 +108,7 @@ fn whole_crate_nested_captures_are_parsed_once_and_scopes_are_restored() -> Resu
 fn generated_file_modules_use_the_declaring_directory_and_textual_scope() -> Result<(), String> {
     let source = "macro_rules! value {()=>{42}} macro_rules! make {()=>{mod child;}} make!(); fn f()->i32{child::answer()}";
     let mut files = Files::default();
-    files.files.insert(
+    files.sources.insert(
         "/crate/child.rs".into(),
         "pub fn answer()->i32{value!()}".into(),
     );
@@ -120,7 +133,9 @@ fn repeated_physical_modules_expand_from_original_typed_facts() -> Result<(), St
     let source = "macro_rules! value {()=>{1}} #[path=\"shared.rs\"] mod first; macro_rules! value {()=>{2}} #[path=\"shared.rs\"] mod second;";
     let shared = "#[cfg(any())] fn hidden(){missing!();}\r\npub fn answer()->i32{let _=\"base\\n\";value!()}\r\n";
     let mut files = Files::default();
-    files.files.insert("/crate/shared.rs".into(), shared.into());
+    files
+        .sources
+        .insert("/crate/shared.rs".into(), shared.into());
     let report = analyze(source, &mut files)?;
     assert_eq!(
         report
@@ -1366,7 +1381,7 @@ fn expansion_diagnostics_project_physical_tokens_and_ordered_call_definition_tra
 fn expansion_diagnostics_cross_files_and_handle_uninstalled_failed_modules() -> Result<(), String> {
     let mut files = Files::default();
     let child = "macro_rules! m {()=>{missing}}";
-    files.files.insert("/crate/child.rs".into(), child.into());
+    files.sources.insert("/crate/child.rs".into(), child.into());
     let error = diagnosed("#[macro_use] mod child; fn f(){m!();}", &mut files)?;
     assert_eq!(error.file.0, 1);
     assert_eq!(error.span.start, 21);
@@ -1381,7 +1396,7 @@ fn expansion_diagnostics_cross_files_and_handle_uninstalled_failed_modules() -> 
             .is_some_and(|d| d.file.0 == 1 && d.span.start == 0)
     );
     files
-        .files
+        .sources
         .insert("/crate/child.rs".into(), "fn invalid(".into());
     let error = diagnosed("macro_rules! m{()=>{mod child;}}m!();", &mut files)?;
     assert_eq!(error.file.0, 1);
@@ -1398,7 +1413,12 @@ fn builtin_strings(report: &expansion::Report) -> Result<Vec<String>, String> {
         if !matches!(
             report.definitions[call.definition].body,
             expansion::Body::Builtin(
-                Builtin::File | Builtin::ModulePath | Builtin::Stringify | Builtin::Concat
+                Builtin::File
+                    | Builtin::ModulePath
+                    | Builtin::Stringify
+                    | Builtin::Concat
+                    | Builtin::Env
+                    | Builtin::IncludeStr
             )
         ) {
             continue;
@@ -1470,7 +1490,7 @@ fn file_and_module_builtins_keep_requested_names_and_current_module_identity() -
     assert_eq!(builtin_strings(&report)?, ["lib::inner", "lib::child"]);
     resolve::analyze_expanded(report).map_err(|e| e.to_string())?;
     let mut files = Files::default();
-    files.files.insert(
+    files.sources.insert(
         "/crate/defs.rs".into(),
         "macro_rules! name{()=>{file!()}}".into(),
     );
@@ -1832,7 +1852,7 @@ fn eager_errors_report_the_failing_dependency_and_expansion_chain() -> Result<()
 #[test]
 fn eager_arguments_borrow_opaque_facts_from_another_source_unit() -> Result<(), String> {
     let mut files = Files::default();
-    files.files.insert("/crate/defs.rs".into(), "macro_rules! make{($e:expr)=>{#[macro_export] macro_rules! invoke{()=>{concat!($e,\"!\")}}}} make!(\"cross\");".into());
+    files.sources.insert("/crate/defs.rs".into(), "macro_rules! make{($e:expr)=>{#[macro_export] macro_rules! invoke{()=>{concat!($e,\"!\")}}}} make!(\"cross\");".into());
     let source = "mod defs; fn f()-> &'static str{crate::invoke!()}";
     let report = analyze(source, &mut files)?;
     assert_eq!(builtin_strings(&report)?, ["cross!"]);
@@ -1840,5 +1860,137 @@ fn eager_arguments_borrow_opaque_facts_from_another_source_unit() -> Result<(), 
     assert_eq!(report.captures.token_count(), 1);
     assert_eq!(report.package.units[0].source.original(), source);
     rustgm::resolve::analyze_expanded(report).map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+#[test]
+fn environment_builtins_are_explicit_cached_and_eager() -> Result<(), String> {
+    let mut files = Files::default();
+    files
+        .environment
+        .insert("RUSTGM_TEST".into(), Ok(Some("é\r\nvalue".into())));
+    let report = analyze(
+        "fn f(){let _=env!(concat!(\"RUSTGM_\",\"TEST\"));let _=env!(\"RUSTGM_TEST\",\"unused\");} #[cfg(any())] fn off(){let _=env!(\"MISSING\");}",
+        &mut files,
+    )?;
+    let values = builtin_strings(&report)?;
+    assert_eq!(
+        values.iter().filter(|v| v.as_str() == "é\r\nvalue").count(),
+        2
+    );
+    assert_eq!(files.environment_reads, ["RUSTGM_TEST"]);
+    rustgm::resolve::analyze_expanded(report).map_err(|e| e.to_string())?;
+    let error = analyze(
+        "fn f(){let _=env!(\"ABSENT\",concat!(\"custom \",\"message\"));}",
+        &mut files,
+    )
+    .err()
+    .ok_or("missing environment error")?;
+    assert!(error.contains("custom message"), "{error}");
+    files
+        .environment
+        .insert("BAD".into(), Err("value is not Unicode".into()));
+    let error = analyze("fn f(){let _=env!(\"BAD\",\"custom\");}", &mut files)
+        .err()
+        .ok_or("missing provider error")?;
+    assert!(error.contains("value is not Unicode"), "{error}");
+    for arguments in [
+        "",
+        "42",
+        "\"RUSTGM_TEST\",42",
+        "\"RUSTGM_TEST\",\"a\",\"b\"",
+        "(\"RUSTGM_TEST\")",
+    ] {
+        files.environment_reads.clear();
+        assert!(analyze(&format!("fn f(){{let _=env!({arguments});}}"), &mut files).is_err());
+        assert!(files.environment_reads.is_empty());
+    }
+    Ok(())
+}
+
+#[test]
+fn included_resources_preserve_original_bytes_and_share_provider_reads() -> Result<(), String> {
+    let mut files = Files::default();
+    let text = "\u{feff}hello\r\nworld\r";
+    files
+        .resources
+        .insert("/crate/text.txt".into(), text.as_bytes().to_vec());
+    files
+        .resources
+        .insert("/crate/data.bin".into(), vec![0, 255, 13, 10, 128, 65]);
+    let report = analyze(
+        "fn f(){let _=include_str!(concat!(\"text\",\".txt\"));let _=include_str!(\"./text.txt\");let _=include_bytes!(\"data.bin\");} #[cfg(any())] fn off(){let _=include_str!(\"missing\");}",
+        &mut files,
+    )?;
+    assert_eq!(
+        builtin_strings(&report)?
+            .iter()
+            .filter(|v| v.as_str() == text)
+            .count(),
+        2
+    );
+    assert_eq!(
+        files.resource_reads,
+        [
+            PathBuf::from("/crate/text.txt"),
+            PathBuf::from("/crate/data.bin")
+        ]
+    );
+    let call = report
+        .invocations
+        .iter()
+        .find(|call| {
+            matches!(
+                report.definitions[call.definition].body,
+                expansion::Body::Builtin(rustgm::expand::builtin::Builtin::IncludeBytes)
+            )
+        })
+        .ok_or("missing include_bytes")?;
+    let unit = report.package.unit(call.node.file);
+    let rustgm::syntax::ast::Kind::Literal(index) = unit.configured.ast.node(call.node.node).kind
+    else {
+        return Err("missing byte literal".into());
+    };
+    assert_eq!(
+        unit.literal(index).map_err(|e| e.message)?,
+        rustgm::literal::Value::ByteString(vec![0, 255, 13, 10, 128, 65].into())
+    );
+    assert_eq!(report.package.units.len(), 1);
+    rustgm::resolve::analyze_expanded(report).map_err(|e| e.to_string())?;
+    let error = analyze("fn f(){let _=include_str!(\"data.bin\");}", &mut files)
+        .err()
+        .ok_or("expected UTF-8 failure")?;
+    assert!(error.contains("not UTF-8"));
+    assert!(analyze("fn f(){let _=include_bytes!(\"missing\");}", &mut files).is_err());
+    Ok(())
+}
+
+#[test]
+fn resource_paths_follow_physical_call_causes_and_requested_source_paths() -> Result<(), String> {
+    let mut files = Files::default();
+    files
+        .resources
+        .insert("/crate/text.txt".into(), b"root".to_vec());
+    files
+        .resources
+        .insert("/crate/sub/text.txt".into(), b"child".to_vec());
+    files.sources.insert("/crate/sub/defs.rs".into(), "#[macro_export] macro_rules! text{()=>{include_str!(\"text.txt\")}} macro_rules! make{($e:expr)=>{#[macro_export] macro_rules! captured{()=>{$e}}}} make!(include_str!(\"text.txt\"));".into());
+    let source =
+        "#[path=\"sub/defs.rs\"] mod defs;fn f(){let _=crate::text!();let _=crate::captured!();}";
+    assert_eq!(
+        builtin_strings(&analyze(source, &mut files)?)?,
+        ["root", "root"]
+    );
+    let source = "fn f(){let _=include_str!(\"text.txt\");}";
+    let result = expansion::analyze(
+        InputFile {
+            identity: "stdin.rs".into(),
+            path: "<anon>".into(),
+            source: SourceFile::new(source.as_bytes().to_vec())?,
+        },
+        &mut files,
+        &Config::default(),
+    );
+    assert!(result.is_err());
     Ok(())
 }

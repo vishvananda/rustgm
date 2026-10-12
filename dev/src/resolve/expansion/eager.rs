@@ -161,6 +161,11 @@ impl<S: Sources> Engine<'_, S> {
                     Err(error) => Error::at(file, error.offset, error.message),
                 },
             ),
+            Body::Builtin(
+                builtin @ (builtin::Builtin::Env
+                | builtin::Builtin::IncludeStr
+                | builtin::Builtin::IncludeBytes),
+            ) => self.resource_builtin(file, visit.node, root, grammar, builtin),
             _ => Err(call.diagnostic("invalid eager builtin definition")),
         }
         .map_err(|e| self.eager_error(index, definition, e))?;

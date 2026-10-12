@@ -732,3 +732,57 @@ A/B medians were 39.55/40.21, 152.88/155.30 and 693.20/695.61 ms. Largest
 A/A samples span 688.52–720.32 ms. Identical snapshots, full output hashes,
 frozen inputs, affinity and every observation are retained. PA8 remains planned
 until its remaining source builtins and nonempty released suite are ready.
+
+## Explicit environment and byte-resource builtins
+
+`env!`, `include_str!` and `include_bytes!` now consume eager string arguments
+through the source provider. The library reads neither the process environment
+nor the filesystem. Drivers supply raw resource bytes and Unicode environment
+values; per-compilation caches retain both values and lookup failures. Relative
+resource paths follow the invocation's physical expansion cause and requested
+source name. Anonymous stdin requires an absolute path. Resource bytes do not
+pass through Rust source normalization or create syntax units.
+
+Typed tests cover BOM/CRLF/bare-CR preservation, arbitrary binary bytes, invalid
+UTF-8, missing resources, cached reads, inactive code, eager argument validation,
+custom absence diagnostics and non-Unicode provider errors. Child-process CLI
+tests explicitly control the environment without mutating the test runner's
+process. Cross-file probes confirm that both a template include and an opaque
+include retained in a generated exported macro use the eventual root callsite
+in those cases. An initially hypothesized definition-directory result was
+rejected by the independent compiler and was never blessed as an oracle.
+
+All 18 independently declared acceptance/value cases in
+`obj/pa8-work/resource-probes/matrix.py` match pinned rustc. Physical-path probe
+results are retained in `path-results.json`. The final suite has 176 Rust tests
+and 1,019 active course fixtures. `resource-full-validation.log` passes those
+before a test-provider field name triggered Clippy after its structure grew;
+the field was renamed, and `resource-reference-validation.log` passes strict
+Clippy, the 107-file audit, 15 harness tests, independent rustc, full reference
+regeneration and upstream checks. Release tests and affected final debug tests
+also pass. Earlier receipts change only compiler fingerprints; all PA1–PA7
+fixture/oracle bytes remain identical. Commit `6c87353` passed GitHub CI.
+
+The CPU-10 full-expansion comparison is
+`obj/perf/1791792331054843996/samples.json`. Baseline `6c87353` only registers
+the three unused resource builtin names for view compatibility; the exact patch
+is `obj/pa8-work/resource-baseline-prelude.patch`. Full output hashes agree.
+At 4,000/16,000/64,000 calls, A/B medians were 57.11/57.01, 232.32/232.06 and
+985.99/984.24 ms; largest peak RSS was 188,824/189,132 KiB and A/A samples
+spanned 971.82–983.27 ms. The nested-concat comparison in
+`obj/perf/1791792358833885287/samples.json` also has identical full outputs:
+38.19/39.46, 167.55/166.34 and 687.40/690.55 ms at 1,000/4,000/16,000 outer
+calls; largest RSS was 108,732/108,800 KiB and A/A range 687.88–700.58 ms.
+These are bounded-workload observations, not a general performance claim.
+
+The new cached-resource workload has an A/A baseline in
+`obj/perf/1791792378389779294/samples.json`. It freezes source and resource
+bytes, explicitly records the supplied environment and verifies complete output
+hashes. At 1,000/4,000/16,000 groups of three builtins, A/B medians were
+32.96/32.71, 131.27/132.02 and 549.31/553.85 ms; largest A/A range was
+541.55–572.03 ms. All snapshots, hashes and observations are retained.
+
+`option_env!` is now explicitly assigned to PA26 because it needs the library's
+nominal Option identity. The remaining PA8 source builtin is `include!`; then
+its graded suite and contract can be assembled and activated. PA9–PA11 remain
+required before the active source-to-LowIR goal is complete.

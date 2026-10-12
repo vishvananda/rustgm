@@ -7,7 +7,17 @@ fn run(mode: &str, source: &str) -> std::io::Result<Output> {
     run_args(mode, source, &[])
 }
 fn run_args(mode: &str, source: &str, args: &[&str]) -> std::io::Result<Output> {
+    run_env(mode, source, args, &[])
+}
+fn run_env(
+    mode: &str,
+    source: &str,
+    args: &[&str],
+    environment: &[(&str, std::ffi::OsString)],
+) -> std::io::Result<Output> {
     let mut child = Command::new(env!("CARGO_BIN_EXE_rustgm"))
+        .env_clear()
+        .envs(environment.iter().map(|(name, value)| (*name, value)))
         .arg(mode)
         .args(args)
         .arg("-")
@@ -145,5 +155,44 @@ fn expanded_cli_preserves_stdin_name_and_explicit_crate_name() -> std::io::Resul
     )?;
     assert_eq!(conflict.status.code(), Some(1));
     assert!(conflict.stdout.is_empty());
+    Ok(())
+}
+
+#[test]
+fn expanded_cli_reads_only_the_childs_explicit_environment() -> std::io::Result<()> {
+    let source = "fn f(){let _=env!(concat!(\"RUSTGM_\",\"TEST_ENV\"));}";
+    let output = run_env(
+        "--emit-expanded-crate",
+        source,
+        &[],
+        &[("RUSTGM_TEST_ENV", "value\r\n".into())],
+    )?;
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    assert!(String::from_utf8_lossy(&output.stdout).contains("\"value\\r\\n\""));
+    let missing = run("--emit-expanded-crate", source)?;
+    assert_eq!(missing.status.code(), Some(1));
+    assert!(missing.stdout.is_empty());
+    assert!(String::from_utf8_lossy(&missing.stderr).contains("is not defined"));
+    Ok(())
+}
+
+#[cfg(unix)]
+#[test]
+fn expanded_cli_diagnoses_non_unicode_environment_values() -> std::io::Result<()> {
+    use std::os::unix::ffi::OsStringExt;
+    let value = std::ffi::OsString::from_vec(vec![0xff]);
+    let output = run_env(
+        "--emit-expanded-crate",
+        "fn f(){let _=env!(\"RUSTGM_TEST_ENV\");}",
+        &[],
+        &[("RUSTGM_TEST_ENV", value)],
+    )?;
+    assert_eq!(output.status.code(), Some(1));
+    assert!(output.stdout.is_empty());
+    assert!(String::from_utf8_lossy(&output.stderr).contains("is not Unicode"));
     Ok(())
 }

@@ -150,3 +150,24 @@ requires one eagerly expanded string and diagnoses its contents. Both preserve
 ordinary macro shadowing. `concat_bytes!` remains unstable in Rust 1.98.0 and is
 outside this stable-language profile. Library-dependent builtin expansion is
 owned by the later language/library hooks rather than fabricated external names.
+
+`env!`, `include_str!` and `include_bytes!` also expand their arguments eagerly.
+`env!` requires a string name and optionally a string diagnostic for an absent
+variable. Missing values and non-Unicode values fail; the custom diagnostic
+applies only to absence. Each lookup is an explicit source-provider request,
+cached for that compilation. The library has no ambient process environment.
+
+Resource includes require one string path. Relative paths use the requested
+source filename at the invocation's physical expansion cause, including aliases;
+a relative path from anonymous stdin is rejected. Absolute paths are allowed.
+Repeated normalized requested paths share a provider read. `include_str!`
+requires UTF-8 and preserves all original content, including BOM, CRLF and bare
+CR. `include_bytes!` accepts arbitrary bytes and produces a typed byte string.
+These resources are not parsed as Rust and do not create source syntax units.
+Disabled code and discarded macro input request no resources. Drivers implement
+raw-byte reads separately from normalized Rust source reads.
+
+`include!` remains the final source-builtin implementation needed for this draft.
+`option_env!`, formatting/assertion facilities and other expansions that need
+library identities belong to PA26's language/library hooks. PA8 does not invent
+external core/std definitions to make those calls resolve.

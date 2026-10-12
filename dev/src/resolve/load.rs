@@ -30,6 +30,22 @@ pub trait Sources {
     /// # Errors
     /// Reports I/O errors; a nonexistent file is `Ok(None)`.
     fn read(&mut self, path: &Path) -> Result<Option<InputFile>, String>;
+    /// Raw include resources retain every byte, including BOMs and CRLF.
+    /// Binary-capable providers override this source-only default.
+    ///
+    /// # Errors
+    /// Reports resource I/O errors, including invalid UTF-8 in the default provider.
+    fn resource(&mut self, path: &Path) -> Result<Option<Vec<u8>>, String> {
+        self.read(path)
+            .map(|file| file.map(|file| file.source.original().as_bytes().to_vec()))
+    }
+    /// Compiler libraries have no ambient environment. The driver supplies values.
+    ///
+    /// # Errors
+    /// Reports inaccessible or non-Unicode values.
+    fn environment(&mut self, _name: &str) -> Result<Option<String>, String> {
+        Ok(None)
+    }
 }
 struct Directory {
     path: PathBuf,
@@ -49,6 +65,8 @@ pub(crate) struct Loader<'a, S> {
     identities: Vec<PathBuf>,
     cache: HashMap<PathBuf, FileId>,
     separate_instances: bool,
+    resources: HashMap<PathBuf, Result<Option<Vec<u8>>, String>>,
+    environment: HashMap<String, Result<Option<String>, String>>,
 }
 /// Load each source image once; disabled module declarations never request I/O.
 ///
@@ -156,6 +174,8 @@ impl<'a, S: Sources> Loader<'a, S> {
             identities: vec![root.identity.clone()],
             cache: HashMap::from([(root.identity, FileId(0))]),
             separate_instances: false,
+            resources: HashMap::new(),
+            environment: HashMap::new(),
         })
     }
     pub(crate) fn isolate_expansions(&mut self) {
@@ -384,5 +404,28 @@ impl<'a, S: Sources> Loader<'a, S> {
             ));
         }
         Ok(None)
+    }
+}
+
+impl<S: Sources> Loader<'_, S> {
+    pub(crate) fn resource(&mut self, path: &Path) -> Result<Option<&[u8]>, String> {
+        let value = self
+            .resources
+            .entry(path.components().collect())
+            .or_insert_with(|| self.sources.resource(path));
+        value
+            .as_ref()
+            .map(|bytes| bytes.as_deref())
+            .map_err(Clone::clone)
+    }
+    pub(crate) fn environment(&mut self, name: &str) -> Result<Option<&str>, String> {
+        let value = self
+            .environment
+            .entry(name.to_owned())
+            .or_insert_with(|| self.sources.environment(name));
+        value
+            .as_ref()
+            .map(|text| text.as_deref())
+            .map_err(Clone::clone)
     }
 }

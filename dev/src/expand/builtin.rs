@@ -28,9 +28,12 @@ pub enum Builtin {
     Stringify,
     Concat,
     CompileError,
+    Env,
+    IncludeStr,
+    IncludeBytes,
 }
 impl Builtin {
-    pub const ALL: [Self; 8] = [
+    pub const ALL: [Self; 11] = [
         Self::Cfg,
         Self::Line,
         Self::Column,
@@ -39,10 +42,16 @@ impl Builtin {
         Self::Stringify,
         Self::Concat,
         Self::CompileError,
+        Self::Env,
+        Self::IncludeStr,
+        Self::IncludeBytes,
     ];
     #[must_use]
     pub const fn eager(self) -> bool {
-        matches!(self, Self::Concat | Self::CompileError)
+        matches!(
+            self,
+            Self::Concat | Self::CompileError | Self::Env | Self::IncludeStr | Self::IncludeBytes
+        )
     }
     #[must_use]
     pub const fn needs_position(self) -> bool {
@@ -59,6 +68,9 @@ impl Builtin {
             Self::Stringify => "stringify",
             Self::Concat => "concat",
             Self::CompileError => "compile_error",
+            Self::Env => "env",
+            Self::IncludeStr => "include_str",
+            Self::IncludeBytes => "include_bytes",
         }
     }
 }
@@ -85,9 +97,11 @@ pub fn expand(
     environment: &Environment<'_>,
 ) -> Result<Expansion, LexError> {
     match builtin {
-        Builtin::Concat | Builtin::CompileError => {
-            Err(error(0, "builtin requires expanded argument facts"))
-        }
+        Builtin::Concat
+        | Builtin::CompileError
+        | Builtin::Env
+        | Builtin::IncludeStr
+        | Builtin::IncludeBytes => Err(error(0, "builtin requires expanded argument facts")),
         Builtin::Cfg => cfg(
             source,
             input,
@@ -273,12 +287,7 @@ pub fn concat<'a, L>(
             }
         }
     }
-    literal(
-        Value::String(text.as_bytes().to_vec().into()),
-        format!("{text:?}"),
-        grammar,
-        config,
-    )
+    string(text, grammar, config)
 }
 
 /// Read one eagerly expanded string argument for diagnostic and source builtins.
@@ -316,4 +325,74 @@ pub fn string_argument<'a, L>(
     };
     let text = String::from_utf8(bytes.into_owned()).map_err(|_| failure())?;
     Ok((node.span, text))
+}
+
+/// # Errors
+/// Rejects output contexts which cannot contain a string expression/pattern.
+pub fn string(
+    value: String,
+    grammar: MacroContext,
+    config: &Config,
+) -> Result<Expansion, LexError> {
+    let spelling = format!("{value:?}");
+    literal(
+        Value::String(value.into_bytes().into()),
+        spelling,
+        grammar,
+        config,
+    )
+}
+
+/// # Errors
+/// Rejects invalid output contexts and diagnostic spelling failures.
+pub fn byte_string(
+    value: Vec<u8>,
+    grammar: MacroContext,
+    config: &Config,
+) -> Result<Expansion, LexError> {
+    let mut spelling = vec![b'b'];
+    crate::support::quoted::bytes(&mut spelling, &value, false)
+        .map_err(|_| error(0, "cannot quote builtin byte string"))?;
+    let spelling = String::from_utf8(spelling)
+        .map_err(|_| error(0, "invalid builtin byte string spelling"))?;
+    literal(Value::ByteString(value.into()), spelling, grammar, config)
+}
+
+/// # Errors
+/// Rejects env's arity or non-string arguments before an external lookup occurs.
+pub fn environment_arguments<'a, L>(
+    ast: &crate::syntax::ast::Syntax<L>,
+    root: NodeId,
+    mut value: impl FnMut(u32) -> Result<Value<'a>, LexError>,
+) -> Result<(String, Option<String>), LexError> {
+    let container = ast.node(root);
+    let failure = || {
+        error(
+            container.span.start,
+            "env requires one or two string literal arguments",
+        )
+    };
+    let Kind::Expansion {
+        children,
+        tail: None,
+    } = container.kind
+    else {
+        return Err(failure());
+    };
+    let arguments = ast.list(children);
+    if !(1..=2).contains(&arguments.len()) {
+        return Err(failure());
+    }
+    let mut strings = arguments.iter().map(|argument| {
+        let Kind::Literal(index) = ast.node(*argument).kind else {
+            return Err(failure());
+        };
+        let Value::String(bytes) = value(index)? else {
+            return Err(failure());
+        };
+        String::from_utf8(bytes.into_owned()).map_err(|_| failure())
+    });
+    let name = strings.next().ok_or_else(failure)??;
+    let message = strings.next().transpose()?;
+    Ok((name, message))
 }

@@ -13,6 +13,23 @@ use std::{
 };
 struct Files;
 impl Sources for Files {
+    fn resource(&mut self, path: &Path) -> Result<Option<Vec<u8>>, String> {
+        match fs::read(path) {
+            Ok(bytes) => Ok(Some(bytes)),
+            Err(error) if error.kind() == io::ErrorKind::NotFound => Ok(None),
+            Err(error) => Err(error.to_string()),
+        }
+    }
+    fn environment(&mut self, name: &str) -> Result<Option<String>, String> {
+        match std::env::var(name) {
+            Ok(value) => Ok(Some(value)),
+            Err(std::env::VarError::NotPresent) => Ok(None),
+            Err(std::env::VarError::NotUnicode(_)) => {
+                Err(format!("environment variable {name:?} is not Unicode"))
+            }
+        }
+    }
+
     fn read(&mut self, path: &Path) -> Result<Option<InputFile>, String> {
         let bytes = match fs::read(path) {
             Ok(bytes) => bytes,
