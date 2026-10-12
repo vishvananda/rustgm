@@ -1,0 +1,515 @@
+//! Per-body constraints over flat terms, with path-compressed variable identities.
+//! A failed constraint may retain prior progress; callers discard that body context.
+use super::{ItemId, Kind, Primitive, RegionId, Store, TypeId};
+use std::collections::HashSet;
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct TermId(pub u32);
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Domain {
+    Any,
+    Integer,
+    Float,
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Constructor {
+    Primitive(Primitive),
+    Never,
+    Tuple,
+    Array(u64),
+    Slice,
+    Reference { mutable: bool, region: RegionId },
+    Pointer { mutable: bool },
+    Function { parameters: u32, unsafe_: bool },
+    FunctionItem(ItemId),
+}
+#[derive(Clone, Copy)]
+enum Value {
+    Variable(Domain),
+    Known(TypeId),
+    Construct(Constructor),
+}
+#[derive(Clone, Copy)]
+struct Term {
+    parent: TermId,
+    rank: u8,
+    value: Value,
+    start: u32,
+    end: u32,
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Error {
+    InvalidIdentity,
+    Overflow,
+    Mismatch,
+    Occurs,
+    Unresolved,
+    Budget,
+}
+impl std::fmt::Display for Error {
+    fn fmt(&self, out: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        out.write_str(match self {
+            Self::InvalidIdentity => "invalid inference identity",
+            Self::Overflow => "inference arena exceeds 32 bits",
+            Self::Mismatch => "incompatible types",
+            Self::Occurs => "type variable occurs in its own type",
+            Self::Unresolved => "type annotations needed",
+            Self::Budget => "type constraint work budget exceeded",
+        })
+    }
+}
+impl std::error::Error for Error {}
+#[derive(Default)]
+pub struct Context {
+    terms: Vec<Term>,
+    edges: Vec<TermId>,
+    known: Vec<Option<TermId>>,
+    pairs: Vec<(TermId, TermId)>,
+    seen: HashSet<(TermId, TermId)>,
+    occurs_work: Vec<TermId>,
+    child_scratch: Vec<TermId>,
+    marks: Vec<u32>,
+    epoch: u32,
+    /// Equalities are retained for the later region checker, not silently erased.
+    pub region_equalities: Vec<(RegionId, RegionId)>,
+    pub steps: usize,
+}
+impl Context {
+    fn push(&mut self, value: Value, children: &[TermId]) -> Result<TermId, Error> {
+        if children.iter().any(|id| id.0 as usize >= self.terms.len()) {
+            return Err(Error::InvalidIdentity);
+        }
+        let id = TermId(u32::try_from(self.terms.len()).map_err(|_| Error::Overflow)?);
+        let start = u32::try_from(self.edges.len()).map_err(|_| Error::Overflow)?;
+        let end = self
+            .edges
+            .len()
+            .checked_add(children.len())
+            .and_then(|n| u32::try_from(n).ok())
+            .ok_or(Error::Overflow)?;
+        self.edges.extend_from_slice(children);
+        self.terms.push(Term {
+            parent: id,
+            rank: 0,
+            value,
+            start,
+            end,
+        });
+        self.marks.push(0);
+        Ok(id)
+    }
+    /// # Errors
+    /// Rejects compact identity overflow.
+    pub fn variable(&mut self, domain: Domain) -> Result<TermId, Error> {
+        self.push(Value::Variable(domain), &[])
+    }
+    /// # Errors
+    /// Rejects invalid canonical identities and compact arena overflow.
+    pub fn known(&mut self, store: &Store, id: TypeId) -> Result<TermId, Error> {
+        if store.kind(id).is_none() {
+            return Err(Error::InvalidIdentity);
+        }
+        if self.known.len() < store.len() {
+            self.known.resize(store.len(), None);
+        }
+        if let Some(term) = self.known[id.0 as usize] {
+            return Ok(term);
+        }
+        let term = self.push(Value::Known(id), &[])?;
+        self.known[id.0 as usize] = Some(term);
+        Ok(term)
+    }
+    /// # Errors
+    /// Rejects invalid arity, child identities and compact arena overflow.
+    pub fn construct(&mut self, kind: Constructor, children: &[TermId]) -> Result<TermId, Error> {
+        let valid = match kind {
+            Constructor::Primitive(_) | Constructor::Never => children.is_empty(),
+            Constructor::Tuple => true,
+            Constructor::Function { parameters, .. } => {
+                children.len().checked_sub(1) == Some(parameters as usize)
+            }
+            _ => children.len() == 1,
+        };
+        if !valid {
+            return Err(Error::InvalidIdentity);
+        }
+        self.push(Value::Construct(kind), children)
+    }
+    /// # Errors
+    /// Rejects an out-of-range identity.
+    pub fn root(&mut self, mut id: TermId) -> Result<TermId, Error> {
+        let mut root = id;
+        loop {
+            let parent = self
+                .terms
+                .get(root.0 as usize)
+                .ok_or(Error::InvalidIdentity)?
+                .parent;
+            if parent == root {
+                break;
+            }
+            root = parent;
+        }
+        while id != root {
+            let term = &mut self.terms[id.0 as usize];
+            let parent = term.parent;
+            term.parent = root;
+            id = parent;
+        }
+        Ok(root)
+    }
+    fn step(&mut self) -> Result<(), Error> {
+        self.steps += 1;
+        if self.steps > 1_000_000 {
+            return Err(Error::Budget);
+        }
+        Ok(())
+    }
+    fn occurs(&mut self, variable: TermId, candidate: TermId) -> Result<bool, Error> {
+        self.epoch = self.epoch.wrapping_add(1);
+        if self.epoch == 0 {
+            self.marks.fill(0);
+            self.epoch = 1;
+        }
+        self.occurs_work.clear();
+        self.occurs_work.push(candidate);
+        while let Some(next) = self.occurs_work.pop() {
+            self.step()?;
+            let next = self.root(next)?;
+            if next == variable {
+                return Ok(true);
+            }
+            if self.marks[next.0 as usize] == self.epoch {
+                continue;
+            }
+            self.marks[next.0 as usize] = self.epoch;
+            let term = self.terms[next.0 as usize];
+            self.occurs_work
+                .extend_from_slice(&self.edges[term.start as usize..term.end as usize]);
+        }
+        Ok(false)
+    }
+    fn variable_pair(
+        &mut self,
+        left: TermId,
+        right: TermId,
+        a: Domain,
+        b: Domain,
+    ) -> Result<(), Error> {
+        let domain = match (a, b) {
+            (Domain::Any, value) | (value, Domain::Any) => value,
+            (a, b) if a == b => a,
+            _ => return Err(Error::Mismatch),
+        };
+        let (parent, child) =
+            if self.terms[left.0 as usize].rank >= self.terms[right.0 as usize].rank {
+                (left, right)
+            } else {
+                (right, left)
+            };
+        if self.terms[parent.0 as usize].rank == self.terms[child.0 as usize].rank {
+            self.terms[parent.0 as usize].rank += 1;
+        }
+        self.terms[child.0 as usize].parent = parent;
+        self.terms[parent.0 as usize].value = Value::Variable(domain);
+        Ok(())
+    }
+    fn bind(
+        &mut self,
+        store: &Store,
+        variable: TermId,
+        candidate: TermId,
+        domain: Domain,
+    ) -> Result<(), Error> {
+        let primitive = match self.terms[candidate.0 as usize].value {
+            Value::Known(id) => match store.kind(id) {
+                Some(Kind::Primitive(p)) => Some(p),
+                _ => None,
+            },
+            Value::Construct(Constructor::Primitive(p)) => Some(p),
+            _ => None,
+        };
+        let accepts = match domain {
+            Domain::Any => true,
+            Domain::Integer => primitive.is_some_and(|p| p.integer().is_some()),
+            Domain::Float => primitive.is_some_and(Primitive::is_float),
+        };
+        if !accepts {
+            return Err(Error::Mismatch);
+        }
+        if matches!(self.terms[candidate.0 as usize].value, Value::Construct(_))
+            && self.occurs(variable, candidate)?
+        {
+            return Err(Error::Occurs);
+        }
+        self.terms[variable.0 as usize].parent = candidate;
+        Ok(())
+    }
+    /// Equality, not coercion: never and numeric conversions require explicit callers.
+    ///
+    /// # Errors
+    /// Reports incompatible shapes/domains, recursive types, invalid IDs and work limits.
+    pub fn equate(&mut self, store: &Store, left: TermId, right: TermId) -> Result<(), Error> {
+        self.pairs.clear();
+        self.seen.clear();
+        self.pairs.push((left, right));
+        while let Some((a, b)) = self.pairs.pop() {
+            self.step()?;
+            let a = self.root(a)?;
+            let b = self.root(b)?;
+            if a == b {
+                continue;
+            }
+            match (
+                self.terms[a.0 as usize].value,
+                self.terms[b.0 as usize].value,
+            ) {
+                (Value::Variable(x), Value::Variable(y)) => self.variable_pair(a, b, x, y)?,
+                (Value::Variable(domain), _) => self.bind(store, a, b, domain)?,
+                (_, Value::Variable(domain)) => self.bind(store, b, a, domain)?,
+                (Value::Known(x), Value::Known(y)) if x == y => {}
+                _ => {
+                    let pair = if a.0 < b.0 { (a, b) } else { (b, a) };
+                    if !self.seen.insert(pair) {
+                        continue;
+                    }
+                    self.structural(store, a, b)?;
+                }
+            }
+        }
+        Ok(())
+    }
+    fn structural(&mut self, store: &Store, a: TermId, b: TermId) -> Result<(), Error> {
+        let left = self.materialize(store, a)?;
+        let right = self.materialize(store, b)?;
+        match (left, right) {
+            (
+                Constructor::Reference {
+                    mutable: x,
+                    region: a,
+                },
+                Constructor::Reference {
+                    mutable: y,
+                    region: b,
+                },
+            ) if x == y => {
+                if a != b {
+                    self.region_equalities.push((a, b));
+                }
+            }
+            (x, y) if x == y => {}
+            _ => return Err(Error::Mismatch),
+        }
+        let a = self.terms[a.0 as usize];
+        let b = self.terms[b.0 as usize];
+        if a.end - a.start != b.end - b.start {
+            return Err(Error::Mismatch);
+        }
+        self.pairs.extend(
+            self.edges[a.start as usize..a.end as usize]
+                .iter()
+                .copied()
+                .zip(self.edges[b.start as usize..b.end as usize].iter().copied()),
+        );
+        Ok(())
+    }
+    fn materialize(&mut self, store: &Store, id: TermId) -> Result<Constructor, Error> {
+        let ty = match self.terms[id.0 as usize].value {
+            Value::Construct(kind) => return Ok(kind),
+            Value::Known(ty) => ty,
+            Value::Variable(_) => return Err(Error::InvalidIdentity),
+        };
+        let kind = store.kind(ty).ok_or(Error::InvalidIdentity)?;
+        let mut children = std::mem::take(&mut self.child_scratch);
+        children.clear();
+        let constructor = match kind {
+            Kind::Never => Constructor::Never,
+            Kind::Primitive(p) => Constructor::Primitive(p),
+            Kind::Tuple(list) => {
+                for ty in store.list(list).ok_or(Error::InvalidIdentity)? {
+                    children.push(self.known(store, *ty)?);
+                }
+                Constructor::Tuple
+            }
+            Kind::Array { element, length } => {
+                children.push(self.known(store, element)?);
+                Constructor::Array(length)
+            }
+            Kind::Slice(element) => {
+                children.push(self.known(store, element)?);
+                Constructor::Slice
+            }
+            Kind::Reference {
+                mutable,
+                region,
+                referent,
+            } => {
+                children.push(self.known(store, referent)?);
+                Constructor::Reference { mutable, region }
+            }
+            Kind::Pointer { mutable, pointee } => {
+                children.push(self.known(store, pointee)?);
+                Constructor::Pointer { mutable }
+            }
+            Kind::Function {
+                parameters,
+                result,
+                unsafe_,
+            } => {
+                let parameters = store.list(parameters).ok_or(Error::InvalidIdentity)?;
+                for ty in parameters {
+                    children.push(self.known(store, *ty)?);
+                }
+                children.push(self.known(store, result)?);
+                Constructor::Function {
+                    parameters: u32::try_from(parameters.len()).map_err(|_| Error::Overflow)?,
+                    unsafe_,
+                }
+            }
+            Kind::FunctionItem { item, signature } => {
+                children.push(self.known(store, signature)?);
+                Constructor::FunctionItem(item)
+            }
+        };
+        let start = u32::try_from(self.edges.len()).map_err(|_| Error::Overflow)?;
+        let end = self
+            .edges
+            .len()
+            .checked_add(children.len())
+            .and_then(|n| u32::try_from(n).ok())
+            .ok_or(Error::Overflow)?;
+        self.edges.extend_from_slice(&children);
+        let term = &mut self.terms[id.0 as usize];
+        term.value = Value::Construct(constructor);
+        term.start = start;
+        term.end = end;
+        self.child_scratch = children;
+        Ok(constructor)
+    }
+}
+
+pub struct Solved {
+    /// One canonical type per original inference term, including unified aliases.
+    pub types: Vec<TypeId>,
+    pub region_equalities: Vec<(RegionId, RegionId)>,
+    pub steps: usize,
+}
+impl Context {
+    /// Default unconstrained numeric variables and publish canonical types once.
+    /// Traversal and destruction remain iterative for deeply nested types.
+    ///
+    /// # Errors
+    /// Rejects unconstrained general variables, invalid identities and work/arena limits.
+    pub fn finish(mut self, store: &mut Store) -> Result<Solved, Error> {
+        let mut resolved = vec![None; self.terms.len()];
+        let mut state = vec![0_u8; self.terms.len()];
+        let mut work = Vec::new();
+        let mut children = Vec::new();
+        for ordinal in 0..self.terms.len() {
+            let id = TermId(u32::try_from(ordinal).map_err(|_| Error::Overflow)?);
+            work.push((id, false));
+            while let Some((id, exiting)) = work.pop() {
+                self.step()?;
+                let id = self.root(id)?;
+                if resolved[id.0 as usize].is_some() {
+                    continue;
+                }
+                let term = self.terms[id.0 as usize];
+                if exiting {
+                    children.clear();
+                    for index in term.start..term.end {
+                        let child = self.root(self.edges[index as usize])?;
+                        children.push(resolved[child.0 as usize].ok_or(Error::InvalidIdentity)?);
+                    }
+                    let Value::Construct(kind) = term.value else {
+                        return Err(Error::InvalidIdentity);
+                    };
+                    let canonical = canonical(store, kind, &children)?;
+                    resolved[id.0 as usize] = Some(canonical);
+                    state[id.0 as usize] = 2;
+                } else {
+                    match term.value {
+                        Value::Known(ty) => resolved[id.0 as usize] = Some(ty),
+                        Value::Variable(domain) => {
+                            resolved[id.0 as usize] = Some(match domain {
+                                Domain::Integer => TypeId::primitive(Primitive::I32),
+                                Domain::Float => TypeId::primitive(Primitive::F64),
+                                Domain::Any => return Err(Error::Unresolved),
+                            });
+                        }
+                        Value::Construct(_) => {
+                            if state[id.0 as usize] == 1 {
+                                return Err(Error::Occurs);
+                            }
+                            state[id.0 as usize] = 1;
+                            work.push((id, true));
+                            for child in self.edges[term.start as usize..term.end as usize]
+                                .iter()
+                                .rev()
+                            {
+                                work.push((*child, false));
+                            }
+                        }
+                    }
+                }
+            }
+            let root = self.root(id)?;
+            resolved[ordinal] = resolved[root.0 as usize];
+        }
+        let types = resolved
+            .into_iter()
+            .map(|ty| ty.ok_or(Error::InvalidIdentity))
+            .collect::<Result<_, _>>()?;
+        Ok(Solved {
+            types,
+            region_equalities: self.region_equalities,
+            steps: self.steps,
+        })
+    }
+}
+fn canonical(
+    store: &mut Store,
+    constructor: Constructor,
+    children: &[TypeId],
+) -> Result<TypeId, Error> {
+    let first = || children.first().copied().ok_or(Error::InvalidIdentity);
+    let kind = match constructor {
+        Constructor::Primitive(p) => Kind::Primitive(p),
+        Constructor::Never => Kind::Never,
+        Constructor::Tuple => {
+            Kind::Tuple(store.intern_list(children).map_err(|_| Error::Overflow)?)
+        }
+        Constructor::Array(length) => Kind::Array {
+            element: first()?,
+            length,
+        },
+        Constructor::Slice => Kind::Slice(first()?),
+        Constructor::Reference { mutable, region } => Kind::Reference {
+            mutable,
+            region,
+            referent: first()?,
+        },
+        Constructor::Pointer { mutable } => Kind::Pointer {
+            mutable,
+            pointee: first()?,
+        },
+        Constructor::Function {
+            parameters,
+            unsafe_,
+        } => {
+            let parameters = parameters as usize;
+            Kind::Function {
+                parameters: store
+                    .intern_list(children.get(..parameters).ok_or(Error::InvalidIdentity)?)
+                    .map_err(|_| Error::Overflow)?,
+                result: *children.get(parameters).ok_or(Error::InvalidIdentity)?,
+                unsafe_,
+            }
+        }
+        Constructor::FunctionItem(item) => Kind::FunctionItem {
+            item,
+            signature: first()?,
+        },
+    };
+    store.intern(kind).map_err(|_| Error::InvalidIdentity)
+}

@@ -33,7 +33,7 @@
     "dev/src/lex/punctuation.rs": "ea43b0a3ec2335f95f6978627542655128fde825bb0ca5cec140ee54b77229b0",
     "dev/src/lex/render.rs": "10ade0ffee31a2d11b52a3018709aec6d0731076da3f51905065bc2ee97a67b4",
     "dev/src/lex/token.rs": "a3993de7d82180b8812aee44a89616329ecd5bc172bfeb4621af9042c2c7f2dd",
-    "dev/src/lib.rs": "5fce7850f535d19ba3b50284f559054758a781257e29526894c76a5412d19f98",
+    "dev/src/lib.rs": "8f1140da8e9c9d347ff305ed5c52747fe39cd39c8d95c369edaa9ca375f025ab",
     "dev/src/literal/escapes.rs": "3cab0ce7ed3ffaed60bb8b09eb9d6b4928255f6ed1a1f5b29f903de77ad67d5b",
     "dev/src/literal/mod.rs": "550b9adae856fb5f221eb6efee1702460d123ed40ded50237c06e1ef8911f799",
     "dev/src/literal/number.rs": "657603bf6fe31ad93a7d08492028a25ec5655acdec6d9819e27f85e3f0796cf2",
@@ -86,6 +86,8 @@
     "dev/src/syntax/token_tree.rs": "44738dc0438408854d76db913ac5d95618f8bf44521a93533ded8da2677a339c",
     "dev/src/syntax/transfer.rs": "d80e64f52cd27f60e2d80f5bf730d7bb8fa7eaf25039dc4e3b7f704c7f044776",
     "dev/src/syntax/walk.rs": "0adfeb24c1b3684f2a0be518dc37006c5dcf7a5d0179e78b82b36cde4497acc0",
+    "dev/src/types/infer.rs": "162b4ddfe15363b28b8054f5ec7d4cab10beaf7ec9c80d5b4519fa1a74238a72",
+    "dev/src/types/mod.rs": "b8e9d39005daec6aa829851a7b67e3f21eaecb475c27887682d4911927e0df0e",
     "dev/tests/crate_expansion.rs": "f6e38ed228f6d32bdd5691036c4833ac3f2b440160df42679e5e269fdc9c76ec",
     "dev/tests/crate_syntax.rs": "615714d368f91b131b0542a48563cf2815e6379f11645f7512fcfa7b714c3471",
     "dev/tests/expanded_cli.rs": "ab0030a9695eb767f44afd622cf0d71e37a29d95ac76df9a53cf0904484cc03c",
@@ -108,7 +110,8 @@
     "dev/tests/resolution.rs": "de12ed4c1473d193a2bda7bace027f034c370284e6c8829f8e7ac5f431fbd429",
     "dev/tests/syntax_transfer.rs": "d59121770eb92bf93569806fc48eeb8a32a3c60670eafa217e0b0f5a7f9098fa",
     "dev/tests/textual_scopes.rs": "915f27ee5227931eea92af67eb854a57eb80a8d719a229ec78f443981aadc0df",
-    "dev/tests/token_trees.rs": "32935b431cfe780293f8cc0c6e775845708a4411fe6cff0eb07d2f7bbd2271cc"
+    "dev/tests/token_trees.rs": "32935b431cfe780293f8cc0c6e775845708a4411fe6cff0eb07d2f7bbd2271cc",
+    "dev/tests/type_inference.rs": "39a306fb54ede69c5e8fe1b79efa1a4f4d4d6f333df677622f1da3caa43ae6c5"
   },
   "manifest_sha256": "d8b0af26d9793a735b3967370acead95ea492ba5a16de221f52e9d3f0c677a62",
   "fixtures": {
