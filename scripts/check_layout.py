@@ -7,6 +7,7 @@ import re
 import sys
 from course import ROOT, SIDECARS, load_cases
 from check_native import classification
+from check_layouts import classification as layout_classification
 
 
 def check(root=ROOT):
@@ -21,10 +22,16 @@ def check(root=ROOT):
             if not (folder / name).is_file():
                 raise ValueError(f"missing assignment document: {folder / name}")
         if stage["status"] != "planned":
-            _, cases = load_cases(root, stage["path"])
-            if stage["mode"] == "--emit-lowir":
-                for case in cases:
+            manifest, cases = load_cases(root, stage["path"])
+            if (manifest["mode"] != stage["mode"]
+                    or manifest.get("additional_modes", []) != stage.get("additional_modes", [])):
+                raise ValueError(f"assignment modes disagree with manifest: {folder}")
+            for case in cases:
+                mode = case.get("mode", manifest["mode"])
+                if mode == "--emit-lowir":
                     classification(case)
+                elif mode == "--emit-layouts":
+                    layout_classification(case)
             receipt = json.loads((folder / "reference.json").read_text())
             if receipt.get("manifest_sha256") != hashlib.sha256((folder / "tests/manifest.json").read_bytes()).hexdigest():
                 raise ValueError(f"manifest changed since reference generation: {folder}")

@@ -130,6 +130,7 @@ pub struct Scope {
     pub module: ModuleId,
     pub barrier: bool,
     pub associated: bool,
+    pub nominal_self: Option<DefId>,
     pub label_barrier: bool,
     pub bindings: HashMap<(NameId, Namespace), Binding>,
     pub order: Vec<(NameId, Namespace)>,

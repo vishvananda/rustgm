@@ -3,6 +3,7 @@ pub mod bodies;
 mod constants;
 pub mod declarations;
 pub mod entry;
+pub mod layout_view;
 pub mod members;
 pub mod model;
 mod regions;

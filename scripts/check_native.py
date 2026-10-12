@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Independent PA11 source-to-LowIR execution against pinned rustc and explicit outcomes."""
+"""Independent source-to-LowIR execution against pinned rustc and explicit outcomes."""
 import argparse
 from concurrent.futures import ThreadPoolExecutor
 import json
@@ -11,6 +11,7 @@ import sys
 
 from backend import digest, load_tools
 from course import ROOT, case_environment, load_cases, run_case
+from check_syntax import rustc_arguments
 
 
 def classification(case):
@@ -37,17 +38,27 @@ def execution(result, outcome, compiler):
         if result.returncode != 134 or result.stderr:
             raise ValueError(f"cppgm: expected qualified abort exit 134, got {result.returncode}")
     elif result.returncode != -signal.SIGABRT or b"panicked at" not in result.stderr:
-        raise ValueError(f"rustc: expected an arithmetic panic with abort, got {result.returncode}")
+        raise ValueError(f"rustc: expected a runtime panic with abort, got {result.returncode}")
 
 
-def check(app, jobs):
+def native_cases(manifest, cases):
+    selected = [case for case in cases if case.get("mode", manifest["mode"]) == "--emit-lowir"]
+    if not selected:
+        raise ValueError("native assignment has no LowIR cases")
+    for case in selected:
+        classification(case)
+    return selected
+
+
+def check(app, jobs, stage="pa11"):
     version = subprocess.check_output(["rustc", "--version"], text=True)
     if not version.startswith("rustc 1.98.0 "):
         raise ValueError(f"expected pinned rustc 1.98.0: {version.strip()}")
     tools = load_tools()  # Hash the immutable backend tools once for this run.
     candidate_hash = digest(app)
-    manifest, cases = load_cases(ROOT, "pa11")
-    directory = ROOT / "obj/native/pa11"
+    manifest, cases = load_cases(ROOT, stage)
+    cases = native_cases(manifest, cases)
+    directory = ROOT / "obj/native" / stage
     directory.mkdir(parents=True, exist_ok=True)
 
     def worker(case):
@@ -58,11 +69,11 @@ def check(app, jobs):
             if folder.exists():
                 shutil.rmtree(folder)
             folder.mkdir(parents=True)
-            fixture = ROOT / "pa11" / case["path"]
+            fixture = ROOT / stage / case["path"]
             source = folder / fixture.name
             source.write_bytes(fixture.read_bytes())
             for auxiliary in case.get("auxiliary", []):
-                original = ROOT / "pa11" / auxiliary
+                original = ROOT / stage / auxiliary
                 destination = folder / original.relative_to(fixture.parent)
                 destination.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copyfile(original, destination)
@@ -75,7 +86,7 @@ def check(app, jobs):
                 (folder / (label + ".stderr")).write_bytes(result.stderr)
                 return result
 
-            _, actual = run_case(ROOT, "pa11", manifest["mode"], case, [str(app)], 30)
+            _, actual = run_case(ROOT, stage, manifest["mode"], case, [str(app)], 30)
             for suffix, data in zip(("stdout", "stderr", "status"), actual):
                 (folder / ("frontend." + suffix)).write_bytes(data)
             if actual[2] != f"{case['exit_status']}\n".encode():
@@ -84,11 +95,10 @@ def check(app, jobs):
                 raise ValueError("successful LowIR emission requires nonempty stdout and empty stderr")
             if case["exit_status"] and (actual[0] or not actual[1]):
                 raise ValueError("rejections require empty stdout and a diagnostic")
-            arguments = case.get("args", [])
             rustexe = folder / "rustc-output"
             command = ["rustc", "--edition=2024", "--target", "x86_64-unknown-linux-gnu",
-                       "--crate-name", "native_check", "-C", "panic=abort", "-C", "overflow-checks=yes",
-                       "-C", "debug-assertions=off", *arguments, str(source), "-o", str(rustexe)]
+                       *rustc_arguments(case, "native_check"), "-C", "panic=abort", "-C", "overflow-checks=yes",
+                       "-C", "debug-assertions=off", str(source), "-o", str(rustexe)]
             rust = run(command, "rustc")
             if rust.returncode != case["rustc"]["status"]:
                 raise ValueError(f"rustc outcome differs: {rust.returncode}: {rust.stderr.decode(errors='replace')}")
@@ -115,23 +125,24 @@ def check(app, jobs):
     if digest(app) != candidate_hash:
         raise ValueError("candidate bytes changed during the independent run")
     (directory / "evidence.json").write_text(json.dumps({"rustc": version.strip(), "candidate_sha256": candidate_hash,
-        "manifest_sha256": digest(ROOT / "pa11/tests/manifest.json"),
+        "manifest_sha256": digest(ROOT / stage / "tests/manifest.json"),
         "backend": json.loads((ROOT / "backend.lock.json").read_text()), "cases": results}, indent=2) + "\n")
     failures = [item for item in results if not item["passed"]]
     for item in failures:
         print(f"FAIL {item['path']}: {item['error']}")
     if failures:
         raise ValueError(f"{len(failures)}/{len(cases)} independent native checks failed")
-    print(f"PASS: PA11: {len(cases)} independent checks; {sum('native' in c for c in cases)} executable comparisons")
+    print(f"PASS: {stage.upper()}: {len(cases)} independent checks; {sum('native' in c for c in cases)} executable comparisons")
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("stage", nargs="?", default="pa11")
     parser.add_argument("--app", type=Path, default=ROOT / "dev/rustgm")
     parser.add_argument("--jobs", type=int, choices=range(1, 9), default=4)
     args = parser.parse_args()
     try:
-        check(args.app.resolve(), args.jobs)
+        check(args.app.resolve(), args.jobs, args.stage)
         return 0
     except (ValueError, OSError, subprocess.SubprocessError) as error:
         print(f"native check failed: {error}", file=sys.stderr)

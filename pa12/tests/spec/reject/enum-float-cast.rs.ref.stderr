@@ -1,0 +1,1 @@
+ERROR: file 0: 25: only eligible field-less enums can be cast to integers

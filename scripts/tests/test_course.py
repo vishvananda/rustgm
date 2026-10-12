@@ -11,6 +11,25 @@ from course import compare, execute, load_cases, run_stage, run_case
 
 
 class HarnessTests(unittest.TestCase):
+    def test_supplemental_mode_must_be_declared_and_is_passed_exactly(self):
+        with tempfile.TemporaryDirectory() as name:
+            case = {"path": "tests/x.rs", "exit_status": 0, "mode": "--emit-layouts"}
+            root, tests = self.fixture_root(name, [case])
+            (tests / "x.rs").write_text("input")
+            with self.assertRaises(ValueError):
+                load_cases(root, "pa1")
+            manifest = {"mode": "--emit-lowir", "additional_modes": ["--emit-layouts"], "cases": [case]}
+            (tests / "manifest.json").write_text(json.dumps(manifest))
+            load_cases(root, "pa1")
+            app = [sys.executable, "-c", "import json,sys; print(json.dumps(sys.argv[1:]))"]
+            _, actual = run_case(root, "pa1", "--emit-lowir", case, app, 2)
+            self.assertEqual(json.loads(actual[0]), ["--emit-layouts", "--edition=2024"])
+            for modes in (["--emit-lowir"], ["-o"], [1], [["--emit-layouts"]], "--emit-layouts"):
+                manifest["additional_modes"] = modes
+                (tests / "manifest.json").write_text(json.dumps(manifest))
+                with self.assertRaises(ValueError):
+                    load_cases(root, "pa1")
+
     def test_cfg_arguments_are_preserved_without_shell_interpretation(self):
         with tempfile.TemporaryDirectory() as name:
             args = ["--cfg", 'feature="a b"', "--cfg", "custom"]

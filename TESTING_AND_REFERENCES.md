@@ -77,7 +77,7 @@ invariants additionally verify ordered-rule fragment reuse, capture opacity,
 repetition cardinality and doc-token provenance. The two deliberate acceptance
 differences defer generated-syntax parsing to PA8. See `docs/pa7-validation.md`.
 
-PA8 checks all 87 expansion/hygiene programs with pinned rustc. A case may supply
+PA8 checks all 89 expansion/hygiene programs with pinned rustc. A case may supply
 `environment` as a name-to-string map; null removes that name from the child
 process. The same overrides apply to both compilers and are recorded in harness
 evidence and the manifest receipt. Inherited runner variables are otherwise
@@ -114,6 +114,18 @@ not grade LLVM IR or assume Rust's unspecified layout matches rustc. Test exact
 layouts where guaranteed or where the course contract deliberately specifies
 them. Keep runtime evidence separate from the raw LowIR text comparison.
 
+PA12 has 110 fixtures: 40 clean native executions, eight expected bounds panics,
+12 layout cases and 50 rejection or explicit stage-boundary cases. The manifest
+declares `--emit-layouts` as a supplementary mode; a case's mode must be one of
+the assignment's declared modes. `make test-layouts` checks declared size,
+alignment and field-offset vectors against candidate/committed text and rustc
+probes where guaranteed. Course Rust field order and transparent ancillary ZST
+offsets have explicit exceptions. `make test-rustc` includes these layout checks
+and PA11/PA12 acceptance checks, so hosted CI exercises them without a backend.
+`make test-native` qualifies both PA11 and PA12; `make test-native-pa12` selects
+the aggregate suite. Layout cases never count as native execution. See
+`docs/pa12-validation.md` for the profile and retained evidence.
+
 ## Placement and provenance
 
 Every `.rs` fixture under an active assignment's tests directory must be in its
@@ -131,8 +143,8 @@ our oracle: their representation and diagnostic contracts belong to upstream.
 
 ## Release discipline
 
-PA1–PA11 are implemented drafts, not a claim of full Rust frontend conformance.
-Planned PA12–PA38 fail on invocation and are excluded from pass counts. Promote
+PA1–PA12 are implemented drafts, not a claim of full Rust frontend conformance.
+Planned PA13–PA38 fail on invocation and are excluded from pass counts. Promote
 a stage only after handout/reference/fixtures are coherent, independent checks
 pass, the source-to-feature ledger is reviewed and all prior stages remain green.
 Keep maintainer measurements and logs in ignored `obj/`; keep student handout

@@ -1,8 +1,15 @@
 # PA12 fixture ownership
 
-Planned: no graded fixtures or generated reference outputs yet.
+The manifest declares 110 cases before reference generation: 40 clean native
+programs, eight native bounds panics, 12 layout vectors and 50 source rejections
+or explicit later-stage boundaries. Every input is discovered; no fixture uses
+implicit stdout, status or runtime expectations.
 
-Required families: offsets; sizes; alignment; array indexing; enum variants; ZSTs.
+`aggregates`, `arrays`, `enums`, `representation`, `bounds`, `packages`, `reject`
+and `boundary` exercise `--emit-lowir`. `layout` explicitly selects the declared
+supplementary `--emit-layouts` mode. Its metadata contains independently chosen
+sizes/alignments/offsets and names rustc can inspect. Unspecified Rust field order
+and transparent zero-sized offsets have explicit comparison exceptions.
 
-Put required regressions here, in the earliest assignment owning all their
-features. Register every input in `manifest.json`; no undiscovered fixtures.
+The fixtures are authored for RustGM; no new upstream text is imported here.
+Required partial-move/pattern/lifetime tests belong to PA14/PA13/PA15, respectively.

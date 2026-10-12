@@ -48,6 +48,7 @@ pub enum Mode {
     Names,
     Expanded,
     Types,
+    Layouts,
     Bodies,
     Ownership,
     Lowir,
@@ -72,62 +73,17 @@ pub fn run(
     };
     if matches!(
         mode,
-        Mode::Expanded | Mode::Types | Mode::Bodies | Mode::Ownership | Mode::Lowir
+        Mode::Expanded | Mode::Types | Mode::Layouts | Mode::Bodies | Mode::Ownership | Mode::Lowir
     ) {
-        let mut report =
+        let report =
             resolve::expansion::analyze_with_crate_name(root, &mut Files, config, crate_name)
                 .and_then(resolve::analyze_expanded)
                 .map_err(|e| e.to_string())?;
         if matches!(
             mode,
-            Mode::Types | Mode::Bodies | Mode::Ownership | Mode::Lowir
+            Mode::Types | Mode::Layouts | Mode::Bodies | Mode::Ownership | Mode::Lowir
         ) {
-            let mut facts = rustgm::sema::declarations::analyze(&report)
-                .and_then(|facts| rustgm::sema::bodies::analyze(&report, facts))
-                .map_err(|e| e.to_string())?;
-            if matches!(mode, Mode::Bodies | Mode::Ownership | Mode::Lowir) {
-                let program = rustgm::body::build(&report, &facts).map_err(|e| e.to_string())?;
-                if matches!(mode, Mode::Ownership) {
-                    let checked = rustgm::borrow::ownership::check(
-                        &facts.types,
-                        &facts.aggregates,
-                        &facts.derives,
-                        &mut facts.copies,
-                        &program,
-                    )
-                    .map_err(|e| phase_error(&report, e.node, e.message))?;
-                    return if count {
-                        rustgm::borrow::ownership::view::count(&checked, out)
-                    } else {
-                        rustgm::borrow::ownership::view::write(&checked, out)
-                    }
-                    .map_err(|e| e.to_string());
-                }
-                if matches!(mode, Mode::Lowir) {
-                    let lowir = lower(&mut report, &mut facts, &program)?;
-                    drop(program);
-                    drop(facts);
-                    drop(report);
-                    return if count {
-                        rustgm::lowir::writer::count(&lowir, out)
-                    } else {
-                        rustgm::lowir::writer::write(&lowir, out)
-                    }
-                    .map_err(|e| e.to_string());
-                }
-                return if count {
-                    rustgm::body::body_view::count(&program, out)
-                } else {
-                    rustgm::body::body_view::write(&program, &facts.types, out)
-                }
-                .map_err(|e| e.to_string());
-            }
-            return if count {
-                rustgm::sema::type_view::count(&facts, out)
-            } else {
-                rustgm::sema::type_view::write(&report, &facts, out)
-            }
-            .map_err(|e| e.to_string());
+            return semantic(report, count, mode, out);
         }
         return if count {
             resolve::render::count_expanded(&report, out)
@@ -188,4 +144,67 @@ fn lower(
     )
     .map_err(|e| phase_error(report, e.node, e.message))?;
     rustgm::lower::build(facts, &checked, entry).map_err(|e| phase_error(report, e.node, e.message))
+}
+
+fn semantic(
+    mut report: resolve::expansion::Report,
+    count: bool,
+    mode: Mode,
+    out: &mut impl Write,
+) -> Result<(), String> {
+    let mut facts = rustgm::sema::declarations::analyze(&report)
+        .and_then(|facts| rustgm::sema::bodies::analyze(&report, facts))
+        .map_err(|e| e.to_string())?;
+    if matches!(mode, Mode::Layouts) {
+        rustgm::sema::layout_view::analyze(&mut facts).map_err(|e| e.to_string())?;
+        return if count {
+            rustgm::sema::layout_view::count(&facts, out)
+        } else {
+            rustgm::sema::layout_view::write(&report, &facts, out)
+        }
+        .map_err(|e| e.to_string());
+    }
+    if matches!(mode, Mode::Bodies | Mode::Ownership | Mode::Lowir) {
+        let program = rustgm::body::build(&report, &facts).map_err(|e| e.to_string())?;
+        if matches!(mode, Mode::Ownership) {
+            let checked = rustgm::borrow::ownership::check(
+                &facts.types,
+                &facts.aggregates,
+                &facts.derives,
+                &mut facts.copies,
+                &program,
+            )
+            .map_err(|e| phase_error(&report, e.node, e.message))?;
+            return if count {
+                rustgm::borrow::ownership::view::count(&checked, out)
+            } else {
+                rustgm::borrow::ownership::view::write(&checked, out)
+            }
+            .map_err(|e| e.to_string());
+        }
+        if matches!(mode, Mode::Lowir) {
+            let lowir = lower(&mut report, &mut facts, &program)?;
+            drop(program);
+            drop(facts);
+            drop(report);
+            return if count {
+                rustgm::lowir::writer::count(&lowir, out)
+            } else {
+                rustgm::lowir::writer::write(&lowir, out)
+            }
+            .map_err(|e| e.to_string());
+        }
+        return if count {
+            rustgm::body::body_view::count(&program, out)
+        } else {
+            rustgm::body::body_view::write(&program, &facts.types, out)
+        }
+        .map_err(|e| e.to_string());
+    }
+    if count {
+        rustgm::sema::type_view::count(&facts, out)
+    } else {
+        rustgm::sema::type_view::write(&report, &facts, out)
+    }
+    .map_err(|e| e.to_string())
 }

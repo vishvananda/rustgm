@@ -35,70 +35,33 @@ fn options() -> Result<Options, String> {
     };
     let mut args = std::env::args().skip(1);
     while let Some(arg) = args.next() {
+        let view = arg
+            .strip_prefix("--emit-")
+            .map(|name| (name, false))
+            .or_else(|| arg.strip_prefix("--count-").map(|name| (name, true)));
+        if let Some((name, count)) = view
+            && matches!(
+                name,
+                "tokens"
+                    | "literals"
+                    | "token-trees"
+                    | "ast"
+                    | "crate-ast"
+                    | "names"
+                    | "expanded"
+                    | "expanded-crate"
+                    | "types"
+                    | "layouts"
+                    | "body-ir"
+                    | "ownership"
+                    | "lowir"
+            )
+        {
+            options.mode = format!("--emit-{name}");
+            options.count = count;
+            continue;
+        }
         match arg.as_str() {
-            "--emit-tokens"
-            | "--emit-literals"
-            | "--emit-token-trees"
-            | "--emit-ast"
-            | "--emit-crate-ast"
-            | "--emit-names"
-            | "--emit-expanded"
-            | "--emit-expanded-crate"
-            | "--emit-types"
-            | "--emit-body-ir"
-            | "--emit-ownership"
-            | "--emit-lowir" => {
-                options.mode = arg;
-                options.count = false;
-            }
-            "--count-types" => {
-                options.mode = "--emit-types".into();
-                options.count = true;
-            }
-            "--count-body-ir" => {
-                options.mode = "--emit-body-ir".into();
-                options.count = true;
-            }
-            "--count-ownership" => {
-                options.mode = "--emit-ownership".into();
-                options.count = true;
-            }
-            "--count-lowir" => {
-                options.mode = "--emit-lowir".into();
-                options.count = true;
-            }
-            "--count-names" => {
-                options.mode = "--emit-names".into();
-                options.count = true;
-            }
-            "--count-expanded-crate" => {
-                options.mode = "--emit-expanded-crate".into();
-                options.count = true;
-            }
-            "--count-expanded" => {
-                options.mode = "--emit-expanded".into();
-                options.count = true;
-            }
-            "--count-tokens" => {
-                options.mode = "--emit-tokens".into();
-                options.count = true;
-            }
-            "--count-literals" => {
-                options.mode = "--emit-literals".into();
-                options.count = true;
-            }
-            "--count-token-trees" => {
-                options.mode = "--emit-token-trees".into();
-                options.count = true;
-            }
-            "--count-ast" => {
-                options.mode = "--emit-ast".into();
-                options.count = true;
-            }
-            "--count-crate-ast" => {
-                options.mode = "--emit-crate-ast".into();
-                options.count = true;
-            }
             "--crate-name" => {
                 options.crate_name = Some(args.next().ok_or("--crate-name requires a name")?);
             }
@@ -146,6 +109,7 @@ fn compile(options: &Options) -> Result<(), String> {
         "--emit-names"
             | "--emit-expanded-crate"
             | "--emit-types"
+            | "--emit-layouts"
             | "--emit-body-ir"
             | "--emit-ownership"
             | "--emit-lowir"
@@ -160,6 +124,8 @@ fn compile(options: &Options) -> Result<(), String> {
                 modules::Mode::Names
             } else if options.mode == "--emit-types" {
                 modules::Mode::Types
+            } else if options.mode == "--emit-layouts" {
+                modules::Mode::Layouts
             } else if options.mode == "--emit-body-ir" {
                 modules::Mode::Bodies
             } else if options.mode == "--emit-ownership" {

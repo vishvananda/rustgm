@@ -1974,6 +1974,28 @@
         "kind": "program",
         "status": 0
       }
+    },
+    {
+      "path": "tests/spec/names/self-nominal.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/self-nested-item.rs",
+      "exit_status": 1,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
     }
   ]
 }

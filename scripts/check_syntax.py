@@ -24,6 +24,19 @@ def expression_source(data, metadata):
             + metadata.get("suffix", "; }\n").encode())
 
 
+def rustc_arguments(case, default_name):
+    """Preserve cfg arguments and the CLI's last explicit crate-name choice."""
+    arguments = case.get("args", [])
+    name = default_name
+    extra = []
+    for index in range(0, len(arguments), 2):
+        if arguments[index] == "--crate-name":
+            name = arguments[index + 1]
+        else:
+            extra.extend(arguments[index:index + 2])
+    return ["--crate-name", name, *extra]
+
+
 def check_configured_owners(metadata, output):
     if "configured" in metadata:
         actual = [value == b"true" for value in re.findall(rb"^configured \d+ (true|false)$", output, re.M)]
@@ -66,16 +79,15 @@ def check(stage, app):
             source.write_bytes(expression_source(data, metadata))
         else:
             source.write_bytes(data)
-        arguments = case.get("args", [])
-        crate_names = [arguments[i + 1] for i in range(0, len(arguments), 2) if arguments[i] == "--crate-name"]
-        extra = [part for i in range(0, len(arguments), 2) if arguments[i] != "--crate-name" for part in arguments[i:i + 2]]
         command = ["rustc", "--edition=2024", "--target", "x86_64-unknown-linux-gnu",
                    "-C", "panic=abort", "-C", "debug-assertions=off",
-                   "--crate-name", crate_names[-1] if crate_names else "syntax_check", *extra, str(source), "-o", str(binary)]
+                   *rustc_arguments(case, "syntax_check"), str(source), "-o", str(binary)]
         if not metadata.get("default_lints", False):
             command += ["--cap-lints", "allow"]
         if kind != "predicate":
-            command += ["--crate-type=lib", "--emit=metadata"]
+            mode = case.get("mode", manifest["mode"])
+            command += ["--crate-type=bin" if mode == "--emit-lowir" else "--crate-type=lib",
+                        "--emit=metadata"]
         result = subprocess.run(command, capture_output=True, timeout=30, env=case_environment(case))
         (case_directory / "rustc.stderr").write_bytes(result.stderr)
         wanted = 0 if kind == "predicate" else metadata["status"]

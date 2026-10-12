@@ -175,8 +175,9 @@
       "path": "pa12",
       "title": "Aggregates and layout",
       "mode": "--emit-lowir",
-      "status": "planned",
-      "scope": "Tuples arrays structs enums discriminants and zero-sized values",
+      "additional_modes": ["--emit-layouts"],
+      "status": "implemented-draft",
+      "scope": "Concrete owned aggregates, typed scalar discriminants, cached layouts, checked indexing, by-value calls and zero-sized values",
       "test_families": [
         "offsets",
         "sizes",

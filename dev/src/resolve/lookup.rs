@@ -127,6 +127,21 @@ impl Resolver<'_> {
         let mut barriers = 0_u32;
         while let Some(scope) = current {
             let frame = &self.facts.scopes[scope.0 as usize];
+            if let Some(target) = frame.nominal_self
+                && barriers == 0
+                && namespace == Namespace::Type
+                && self.package.names.get(name) == "Self"
+            {
+                return Some((
+                    scope,
+                    Binding {
+                        target,
+                        access: self.facts.definitions[target.0 as usize].access,
+                        origin: Origin::Direct,
+                        ambiguous: false,
+                    },
+                ));
+            }
             if let Some(binding) = frame.bindings.get(&(name, namespace))
                 && binding.is_lexical(&self.facts.definitions)
                 && (barriers == 0

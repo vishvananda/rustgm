@@ -3,10 +3,17 @@ from pathlib import Path
 import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from check_syntax import check_classification, expression_source, check_configured_owners
+from check_syntax import check_classification, expression_source, check_configured_owners, rustc_arguments
 
 
 class IndependentSyntaxTests(unittest.TestCase):
+    def test_independent_compilers_keep_cfg_and_one_effective_crate_name(self):
+        case = {"args": ["--crate-name", "first", "--cfg", 'feature="two words"',
+                         "--crate-name", "last", "--cfg", "selected"]}
+        self.assertEqual(rustc_arguments(case, "default"),
+                         ["--crate-name", "last", "--cfg", 'feature="two words"', "--cfg", "selected"])
+        self.assertEqual(rustc_arguments({}, "default"), ["--crate-name", "default"])
+
     def test_configured_owners_are_explicit_and_ordered(self):
         output = b"configured 8 false\nconfigured 10 true\nactive [9,10]\n"
         check_configured_owners({"configured": [False, True]}, output)

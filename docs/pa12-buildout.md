@@ -1,8 +1,9 @@
 # PA12–PA15 implementation handoff
 
-PA12–PA15 remain planned. This records the maintainer's implementation in
-progress; it is not a released student contract or a claim that these stages
-pass. The active objective includes all four assignments.
+PA12 is now an implemented draft; [its validation record](pa12-validation.md)
+and handout publish the grading contract. PA13–PA15 remain planned. This file
+retains the implementation history and continuation requirements; the active
+objective includes all four assignments.
 
 ## Completed aggregate foundation
 
@@ -313,12 +314,9 @@ bytes. At 4,000, 16,000 and 64,000 functions, baseline/candidate medians are
 
 ## Required continuation
 
-1. PA12: source expressions, typed scalar discriminant queries, layouts,
-   owned-value checking and executable aggregate lowering are connected.
-   Add the declared source fixtures and text oracles, extend the independent
-   native runner beyond PA11, and freeze a deterministic layout inspection
-   contract before activating the assignment. Native aggregate probes exist,
-   but the assignment handout and grading contract are not yet published.
+1. PA12 is published with 110 declared fixtures, text oracles, independent
+   aggregate execution and a deterministic layout inspection contract. Preserve
+   those behaviors while extending the same typed facts in subsequent stages.
 2. PA13: use the same field/variant identities for binding modes, match CFGs,
    guards, or-patterns, slices and usefulness/exhaustiveness. Retain move and
    reference semantics for the subsequent checks; do not erase unproved borrows
@@ -331,10 +329,9 @@ bytes. At 4,000, 16,000 and 64,000 functions, baseline/candidate medians are
    outlives constraints and caller/callee relationships, including nested
    reference returns. Full loan checking remains PA16's responsibility.
 
-Before publishing PA12, review the exact bounded constant-expression profile,
-including `Self` in nominal declarations and array lengths, rather than silently
-claiming PA25's full constant evaluator. Freeze those boundaries in the handout
-and declared negative controls alongside the new layout view and native suite.
+PA12's handout freezes the scalar constant-expression profile, including `Self`
+in nominal declarations and literal/grouped array lengths. Its declared negative
+controls keep PA25's full evaluator boundary explicit.
 
 Keep ordinary indexing separate from PA13's pattern projections, which
 will need constant-index/downcast path identities. Reference adjustments and

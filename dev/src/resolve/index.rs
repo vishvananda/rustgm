@@ -120,6 +120,7 @@ impl Resolver<'_> {
             module,
             barrier,
             associated: false,
+            nominal_self: None,
             label_barrier: barrier,
             bindings: HashMap::new(),
             order: Vec::new(),
@@ -417,7 +418,7 @@ impl Resolver<'_> {
             _ => (Namespace::Type, DefKind::SelfType),
         };
         if item.name.is_some() {
-            self.item_definition(
+            let definition = self.item_definition(
                 c,
                 node,
                 item,
@@ -425,6 +426,9 @@ impl Resolver<'_> {
                 access,
                 member.then_some(body),
             )?;
+            if matches!(kind, DefKind::Struct | DefKind::Enum) {
+                self.facts.scopes[body.0 as usize].nominal_self = Some(definition);
+            }
         }
         if let ItemKind::Struct {
             shape: Shape::Unit | Shape::Tuple,

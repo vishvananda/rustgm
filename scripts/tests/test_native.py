@@ -6,10 +6,21 @@ import unittest
 
 SCRIPTS = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SCRIPTS))
-from check_native import classification, execution
+from check_native import classification, execution, native_cases
 
 
 class NativeContract(unittest.TestCase):
+    def test_supplemental_views_do_not_weaken_native_requirements(self):
+        manifest = {"mode": "--emit-lowir", "additional_modes": ["--emit-layouts"]}
+        layout = {"mode": "--emit-layouts", "exit_status": 0}
+        accepted = {"exit_status": 0, "rustc": {"kind": "program", "status": 0}}
+        with self.assertRaises(ValueError):
+            native_cases(manifest, [layout, accepted])
+        with self.assertRaises(ValueError):
+            native_cases(manifest, [layout])
+        accepted["native"] = {"outcome": "pass"}
+        self.assertEqual(native_cases(manifest, [layout, accepted]), [accepted])
+
     def test_every_accepted_case_requires_execution_evidence(self):
         case = {"exit_status": 0, "rustc": {"kind": "program", "status": 0}}
         with self.assertRaises(ValueError):

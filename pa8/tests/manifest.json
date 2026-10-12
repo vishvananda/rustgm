@@ -1101,6 +1101,17 @@
         "kind": "program",
         "status": 0
       }
+    },
+    {
+      "path": "tests/spec/expansion/self-nominal-macro.rs",
+      "exit_status": 0,
+      "features": [
+        "pa8.expansion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
     }
   ]
 }

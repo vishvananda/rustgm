@@ -33,7 +33,9 @@ repository with pinned reference tools. It has not been built yet.
   text oracles and independent CFG execution checks against rustc.
 - PA11 lowers checked scalar Rust procedures into typed LowIR, with committed
   text oracles and independent native execution through the pinned CPPGM backend.
-- PA12–PA38 have buildout briefs and Makefiles. Their suites and implementation
+- PA12 adds concrete owned aggregates, discriminants, checked indexing and
+  aggregate calls, with layout vectors and independent native execution checks.
+- PA13–PA38 have buildout briefs and Makefiles. Their suites and implementation
   are not complete; invoking an unbuilt assignment fails explicitly.
 
 Read [ROADMAP.md](ROADMAP.md), [spec.md](spec.md),
@@ -61,7 +63,7 @@ See [dependency review](docs/dependencies.md).
 
 Run `dev/rustgm --emit-tokens source.rs`, `dev/rustgm --emit-literals source.rs`,
 `dev/rustgm --emit-token-trees source.rs`, or `dev/rustgm --emit-ast expression.rs`, or `dev/rustgm --emit-crate-ast crate.rs`, or `dev/rustgm --emit-names crate.rs`,
-or `dev/rustgm --emit-types crate.rs`, `--emit-body-ir` or `--emit-lowir`,
+or `dev/rustgm --emit-types crate.rs`, `--emit-layouts`, `--emit-body-ir` or `--emit-lowir`,
 or pass source on stdin. The reference
 wrapper `dev/rustgm-ref` invokes the same maintained solution. Override
 `RUSTGM_TEST_APP=/absolute/path/to/candidate` to test another implementation
@@ -110,6 +112,10 @@ including glob propagation, with deterministic full-output checks.
 `make perf-types` measures the expanded/resolved scalar frontend through type
 checking with immutable binaries, full-output equality, A/A calibration and
 paired scaling runs. See [PA9 validation](docs/pa9-validation.md).
+
+`make perf-layouts` measures cached layout inspection at 1k/4k/16k nominal
+declarations and array aliases, with frozen inputs and full-output checks.
+See [PA12 validation](docs/pa12-validation.md).
 
 `make perf-lowir` measures demanded scalar lowering with frozen sources, full
 output equality, A/A calibration and paired blocks. See

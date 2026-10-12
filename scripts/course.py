@@ -6,6 +6,7 @@ import difflib
 import hashlib
 import json
 import os
+import re
 from pathlib import Path
 import subprocess
 import sys
@@ -27,6 +28,12 @@ def load_cases(root, stage):
     if not manifest_path.is_file():
         raise ValueError(f"{stage}: planned assignment; no accepted test contract yet")
     manifest = json.loads(manifest_path.read_text())
+    extra_modes = manifest.get("additional_modes", [])
+    modes = [manifest["mode"], *extra_modes] if isinstance(extra_modes, list) else []
+    if (not modes
+            or any(not isinstance(mode, str) or not re.fullmatch(r"--emit-[a-z-]+", mode) for mode in modes)
+            or len(modes) != len(set(modes))):
+        raise ValueError(f"{stage}: invalid declared inspection modes")
     cases = manifest["cases"]
     if not cases:
         raise ValueError(f"{stage}: an empty suite cannot pass")
@@ -37,6 +44,8 @@ def load_cases(root, stage):
         raise ValueError(f"{stage}: duplicate fixture identity")
     auxiliary = set()
     for case in cases:
+        if case.get("mode", manifest["mode"]) not in modes:
+            raise ValueError(f"{stage}: fixture selects an undeclared mode")
         path = (assignment / case["path"]).resolve()
         if not path.is_relative_to((assignment / "tests").resolve()) or not path.is_file():
             raise ValueError(f"{stage}: invalid fixture path {path}")
@@ -99,7 +108,7 @@ def execute(command, data, timeout, *, cwd=None, env=None):
 
 def run_case(root, stage, mode, case, app, timeout):
     fixture = root / stage / case["path"]
-    command = [*app, mode, "--edition=2024", *case.get("args", [])]
+    command = [*app, case.get("mode", mode), "--edition=2024", *case.get("args", [])]
     data = fixture.read_bytes()
     if case.get("input") == "file":
         command.append(str(Path(stage) / case["path"]))
@@ -147,7 +156,7 @@ def run_stage(root, stage, app, *, bless=False, jobs=4, timeout=10):
             for suffix, value in zip((".stdout", ".stderr", ".exit_status"), actual):
                 Path(str(destination) + suffix).write_bytes(value)
     (artifacts / "results.json").write_text(json.dumps({"stage": stage, "cwd": str(root.resolve()), "command": [*app, manifest["mode"], "--edition=2024"],
-        "bless": bless, "cases": [{"path": case["path"], "args": case.get("args", []), "environment": case.get("environment", {}), "passed": not errors, "errors": errors}
+        "bless": bless, "cases": [{"path": case["path"], "mode": case.get("mode", manifest["mode"]), "args": case.get("args", []), "environment": case.get("environment", {}), "passed": not errors, "errors": errors}
                                    for case, _, _, errors in results]}, indent=2) + "\n")
     # Check every independent expected outcome before changing any reference.
     if bless and not any(errors for _, _, _, errors in results):

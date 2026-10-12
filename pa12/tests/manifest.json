@@ -1,0 +1,1752 @@
+{
+  "schema": 1,
+  "mode": "--emit-lowir",
+  "additional_modes": [
+    "--emit-layouts"
+  ],
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "panic": "abort",
+  "overflow_checks": true,
+  "debug_assertions": false,
+  "cases": [
+    {
+      "path": "tests/spec/representation/aligned.rs",
+      "exit_status": 0,
+      "features": [
+        "pa12.representation"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/arrays/array-repeat.rs",
+      "exit_status": 0,
+      "features": [
+        "pa12.arrays"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aggregates/assignment.rs",
+      "exit_status": 0,
+      "features": [
+        "pa12.aggregates"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/enums/enum-array.rs",
+      "exit_status": 0,
+      "features": [
+        "pa12.enums"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/enums/enum-payload.rs",
+      "exit_status": 0,
+      "features": [
+        "pa12.enums"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aggregates/function-pointer.rs",
+      "exit_status": 0,
+      "features": [
+        "pa12.aggregates"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/arrays/nested-arrays.rs",
+      "exit_status": 0,
+      "features": [
+        "pa12.arrays"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/representation/packed.rs",
+      "exit_status": 0,
+      "features": [
+        "pa12.representation"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/arrays/repeat-zero-one.rs",
+      "exit_status": 0,
+      "features": [
+        "pa12.arrays"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aggregates/snapshot.rs",
+      "exit_status": 0,
+      "features": [
+        "pa12.aggregates"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/enums/tag-c.rs",
+      "exit_status": 0,
+      "features": [
+        "pa12.enums"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/enums/tag-constant.rs",
+      "exit_status": 0,
+      "features": [
+        "pa12.enums"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/enums/tag-cross-constant.rs",
+      "exit_status": 0,
+      "features": [
+        "pa12.enums"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/enums/tag-fieldless.rs",
+      "exit_status": 0,
+      "features": [
+        "pa12.enums"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/enums/tag-forward-constant.rs",
+      "exit_status": 0,
+      "features": [
+        "pa12.enums"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/enums/tag-i8.rs",
+      "exit_status": 0,
+      "features": [
+        "pa12.enums"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/enums/tag-lazy-constant.rs",
+      "exit_status": 0,
+      "features": [
+        "pa12.enums"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/enums/tag-u128.rs",
+      "exit_status": 0,
+      "features": [
+        "pa12.enums"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/enums/tag-zst.rs",
+      "exit_status": 0,
+      "features": [
+        "pa12.enums"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aggregates/tuple.rs",
+      "exit_status": 0,
+      "features": [
+        "pa12.aggregates"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aggregates/update.rs",
+      "exit_status": 0,
+      "features": [
+        "pa12.aggregates"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aggregates/zero-sized.rs",
+      "exit_status": 0,
+      "features": [
+        "pa12.aggregates"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aggregates/zst-effects.rs",
+      "exit_status": 0,
+      "features": [
+        "pa12.aggregates"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aggregates/aggregate-branch.rs",
+      "exit_status": 0,
+      "features": [
+        "pa12.aggregates"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aggregates/aggregate-initialization.rs",
+      "exit_status": 0,
+      "features": [
+        "pa12.aggregates"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aggregates/transparent-result.rs",
+      "exit_status": 0,
+      "features": [
+        "pa12.aggregates"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aggregates/field-temporary.rs",
+      "exit_status": 0,
+      "features": [
+        "pa12.aggregates"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aggregates/tuple-assignment.rs",
+      "exit_status": 0,
+      "features": [
+        "pa12.aggregates"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/arrays/array-call-snapshots.rs",
+      "exit_status": 0,
+      "features": [
+        "pa12.arrays"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/arrays/array-index-order.rs",
+      "exit_status": 0,
+      "features": [
+        "pa12.arrays"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/arrays/wildcard-place.rs",
+      "exit_status": 0,
+      "features": [
+        "pa12.arrays"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/arrays/array-wide-values.rs",
+      "exit_status": 0,
+      "features": [
+        "pa12.arrays"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/arrays/array-function-pointers.rs",
+      "exit_status": 0,
+      "features": [
+        "pa12.arrays"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aggregates/update-retains-copy-fields.rs",
+      "exit_status": 0,
+      "features": [
+        "pa12.aggregates"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aggregates/unicode-field.rs",
+      "exit_status": 0,
+      "features": [
+        "pa12.aggregates"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aggregates/macro-constructor.rs",
+      "exit_status": 0,
+      "features": [
+        "pa12.aggregates"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aggregates/cfg-fields.rs",
+      "exit_status": 0,
+      "features": [
+        "pa12.aggregates"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/enums/self-discriminants.rs",
+      "exit_status": 0,
+      "features": [
+        "pa12.enums"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aggregates/zero-inhabited-array.rs",
+      "exit_status": 0,
+      "features": [
+        "pa12.aggregates"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/bounds/read.rs",
+      "exit_status": 0,
+      "features": [
+        "pa12.bounds"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/bounds/wildcard.rs",
+      "exit_status": 0,
+      "features": [
+        "pa12.bounds"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/bounds/maximum-index.rs",
+      "exit_status": 0,
+      "features": [
+        "pa12.bounds"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/bounds/zero-sized.rs",
+      "exit_status": 0,
+      "features": [
+        "pa12.bounds"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/bounds/empty.rs",
+      "exit_status": 0,
+      "features": [
+        "pa12.bounds"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/bounds/huge-zst.rs",
+      "exit_status": 0,
+      "features": [
+        "pa12.bounds"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/bounds/store.rs",
+      "exit_status": 0,
+      "features": [
+        "pa12.bounds"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/bounds/nested.rs",
+      "exit_status": 0,
+      "features": [
+        "pa12.bounds"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/reject/missing-field.rs",
+      "exit_status": 1,
+      "features": [
+        "pa12.reject"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/reject/duplicate-field.rs",
+      "exit_status": 1,
+      "features": [
+        "pa12.reject"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/reject/unknown-field.rs",
+      "exit_status": 1,
+      "features": [
+        "pa12.reject"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/reject/field-type.rs",
+      "exit_status": 1,
+      "features": [
+        "pa12.reject"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/reject/field-private.rs",
+      "exit_status": 1,
+      "features": [
+        "pa12.reject"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/reject/private-update.rs",
+      "exit_status": 1,
+      "features": [
+        "pa12.reject"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/reject/tuple-field.rs",
+      "exit_status": 1,
+      "features": [
+        "pa12.reject"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/reject/record-tuple-field.rs",
+      "exit_status": 1,
+      "features": [
+        "pa12.reject"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/reject/tuple-named-field.rs",
+      "exit_status": 1,
+      "features": [
+        "pa12.reject"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/reject/constructor-arity.rs",
+      "exit_status": 1,
+      "features": [
+        "pa12.reject"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/reject/record-called.rs",
+      "exit_status": 1,
+      "features": [
+        "pa12.reject"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/reject/unit-called.rs",
+      "exit_status": 1,
+      "features": [
+        "pa12.reject"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/reject/array-element-types.rs",
+      "exit_status": 1,
+      "features": [
+        "pa12.reject"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/reject/array-length-mismatch.rs",
+      "exit_status": 1,
+      "features": [
+        "pa12.reject"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/reject/array-index-type.rs",
+      "exit_status": 1,
+      "features": [
+        "pa12.reject"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/reject/index-tuple.rs",
+      "exit_status": 1,
+      "features": [
+        "pa12.reject"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/reject/duplicate-declaration-field.rs",
+      "exit_status": 1,
+      "features": [
+        "pa12.reject"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/reject/recursive-struct.rs",
+      "exit_status": 1,
+      "features": [
+        "pa12.reject"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/reject/recursive-mutual.rs",
+      "exit_status": 1,
+      "features": [
+        "pa12.reject"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/reject/recursive-zero-array.rs",
+      "exit_status": 1,
+      "features": [
+        "pa12.reject"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/reject/unsized-field.rs",
+      "exit_status": 1,
+      "features": [
+        "pa12.reject"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/reject/transparent-multiple.rs",
+      "exit_status": 1,
+      "features": [
+        "pa12.reject"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/reject/packed-aligned.rs",
+      "exit_status": 1,
+      "features": [
+        "pa12.reject"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/reject/packed-transitive-align.rs",
+      "exit_status": 1,
+      "features": [
+        "pa12.reject"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/reject/align-not-power-two.rs",
+      "exit_status": 1,
+      "features": [
+        "pa12.reject"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/reject/align-too-large.rs",
+      "exit_status": 1,
+      "features": [
+        "pa12.reject"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/reject/conflicting-repr.rs",
+      "exit_status": 1,
+      "features": [
+        "pa12.reject"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/reject/integer-repr-struct.rs",
+      "exit_status": 1,
+      "features": [
+        "pa12.reject"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/reject/empty-c-enum.rs",
+      "exit_status": 1,
+      "features": [
+        "pa12.reject"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/reject/enum-duplicate.rs",
+      "exit_status": 1,
+      "features": [
+        "pa12.reject"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/reject/enum-implicit-overflow.rs",
+      "exit_status": 1,
+      "features": [
+        "pa12.reject"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/reject/enum-arithmetic-overflow.rs",
+      "exit_status": 1,
+      "features": [
+        "pa12.reject"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/reject/enum-division-overflow.rs",
+      "exit_status": 1,
+      "features": [
+        "pa12.reject"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/reject/enum-negative-shift.rs",
+      "exit_status": 1,
+      "features": [
+        "pa12.reject"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/reject/enum-cycle.rs",
+      "exit_status": 1,
+      "features": [
+        "pa12.reject"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/reject/enum-constant-cycle.rs",
+      "exit_status": 1,
+      "features": [
+        "pa12.reject"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/reject/enum-suffix.rs",
+      "exit_status": 1,
+      "features": [
+        "pa12.reject"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/reject/enum-data-explicit.rs",
+      "exit_status": 1,
+      "features": [
+        "pa12.reject"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/reject/enum-data-cast.rs",
+      "exit_status": 1,
+      "features": [
+        "pa12.reject"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/reject/enum-empty-nonunit-cast.rs",
+      "exit_status": 1,
+      "features": [
+        "pa12.reject"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/reject/enum-float-cast.rs",
+      "exit_status": 1,
+      "features": [
+        "pa12.reject"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/reject/enum-nonconst-call.rs",
+      "exit_status": 1,
+      "features": [
+        "pa12.reject"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/reject/enum-dead-nonconst-call.rs",
+      "exit_status": 1,
+      "features": [
+        "pa12.reject"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/boundary/match.rs",
+      "exit_status": 1,
+      "features": [
+        "pa12.boundary"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "reason": "PA13 owns pattern selection and match lowering."
+      }
+    },
+    {
+      "path": "tests/spec/boundary/generic.rs",
+      "exit_status": 1,
+      "features": [
+        "pa12.boundary"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "reason": "PA18 owns type-parameterized aggregates and instantiation."
+      }
+    },
+    {
+      "path": "tests/spec/boundary/regions.rs",
+      "exit_status": 1,
+      "features": [
+        "pa12.boundary"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "reason": "PA15 owns nominal region parameters; loans follow at PA16."
+      }
+    },
+    {
+      "path": "tests/spec/boundary/constant-function.rs",
+      "exit_status": 1,
+      "features": [
+        "pa12.boundary"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "reason": "PA25 owns general const functions; PA12 discriminants use typed scalar expressions."
+      }
+    },
+    {
+      "path": "tests/spec/boundary/constant-statements.rs",
+      "exit_status": 1,
+      "features": [
+        "pa12.boundary"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "reason": "PA25 owns general constant statements and mutable evaluation state."
+      }
+    },
+    {
+      "path": "tests/spec/boundary/constant-array-length.rs",
+      "exit_status": 1,
+      "features": [
+        "pa12.boundary"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "reason": "PA25 owns nonliteral array-length queries; PA12 retains the earlier concrete array annotation profile."
+      }
+    },
+    {
+      "path": "tests/spec/boundary/nested-reference.rs",
+      "exit_status": 1,
+      "features": [
+        "pa12.boundary"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "reason": "References inside aggregate storage retain pending region/loan proofs, including zero-sized fields."
+      }
+    },
+    {
+      "path": "tests/spec/layout/c-record.rs",
+      "exit_status": 0,
+      "features": [
+        "pa12.layout"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "mode": "--emit-layouts",
+      "layout_checks": [
+        {
+          "name": "C",
+          "rust_type": "C",
+          "size": 24,
+          "align": 8,
+          "offsets": [
+            0,
+            8,
+            16
+          ],
+          "field_names": [
+            "a",
+            "b",
+            "c"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "tests/spec/layout/packed.rs",
+      "exit_status": 0,
+      "features": [
+        "pa12.layout"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "mode": "--emit-layouts",
+      "layout_checks": [
+        {
+          "name": "P",
+          "rust_type": "P",
+          "size": 12,
+          "align": 2,
+          "offsets": [
+            0,
+            2,
+            10
+          ],
+          "field_names": [
+            "a",
+            "b",
+            "c"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "tests/spec/layout/aligned-zst.rs",
+      "exit_status": 0,
+      "features": [
+        "pa12.layout"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "mode": "--emit-layouts",
+      "layout_checks": [
+        {
+          "name": "Z",
+          "rust_type": "Z",
+          "size": 0,
+          "align": 32,
+          "offsets": [],
+          "field_names": []
+        },
+        {
+          "name": "C",
+          "rust_type": "C",
+          "size": 64,
+          "align": 32,
+          "offsets": [
+            0,
+            32,
+            32
+          ],
+          "field_names": [
+            "a",
+            "z",
+            "b"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "tests/spec/layout/transparent.rs",
+      "exit_status": 0,
+      "features": [
+        "pa12.layout"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "mode": "--emit-layouts",
+      "layout_checks": [
+        {
+          "name": "T",
+          "rust_type": "T",
+          "size": 8,
+          "align": 8,
+          "offsets": [
+            0,
+            0,
+            0
+          ],
+          "field_names": [
+            "0",
+            "1",
+            "2"
+          ],
+          "rustc_offsets": false,
+          "reason": "Transparent representation guarantees size/alignment; RustGM places the ancillary zero-sized fields at offset zero."
+        }
+      ]
+    },
+    {
+      "path": "tests/spec/layout/array-stride.rs",
+      "exit_status": 0,
+      "features": [
+        "pa12.layout"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "mode": "--emit-layouts",
+      "layout_checks": [
+        {
+          "name": "C",
+          "rust_type": "C",
+          "size": 16,
+          "align": 8,
+          "offsets": [
+            0,
+            8
+          ],
+          "field_names": [
+            "a",
+            "b"
+          ]
+        },
+        {
+          "name": "A",
+          "rust_type": "A",
+          "size": 48,
+          "align": 8
+        }
+      ]
+    },
+    {
+      "path": "tests/spec/layout/huge-zst.rs",
+      "exit_status": 0,
+      "features": [
+        "pa12.layout"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "mode": "--emit-layouts",
+      "layout_checks": [
+        {
+          "name": "Z",
+          "rust_type": "Z",
+          "size": 0,
+          "align": 16,
+          "offsets": [],
+          "field_names": []
+        },
+        {
+          "name": "A",
+          "rust_type": "A",
+          "size": 0,
+          "align": 16
+        }
+      ]
+    },
+    {
+      "path": "tests/spec/layout/uninhabited.rs",
+      "exit_status": 0,
+      "features": [
+        "pa12.layout"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "mode": "--emit-layouts",
+      "layout_checks": [
+        {
+          "name": "Void",
+          "rust_type": "Void",
+          "size": 0,
+          "align": 1
+        },
+        {
+          "name": "Empty",
+          "rust_type": "Empty",
+          "size": 0,
+          "align": 1
+        },
+        {
+          "name": "S",
+          "rust_type": "S",
+          "size": 0,
+          "align": 1,
+          "offsets": [
+            0
+          ],
+          "field_names": [
+            "0"
+          ],
+          "rustc_layout": false,
+          "reason": "RustGM fixes source-order layout where Rust deliberately leaves field layout unspecified."
+        }
+      ]
+    },
+    {
+      "path": "tests/spec/layout/recursive-pointer.rs",
+      "exit_status": 0,
+      "features": [
+        "pa12.layout"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "mode": "--emit-layouts",
+      "layout_checks": [
+        {
+          "name": "Node",
+          "rust_type": "Node",
+          "size": 16,
+          "align": 8,
+          "offsets": [
+            0,
+            8
+          ],
+          "field_names": [
+            "value",
+            "next"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "tests/spec/layout/enum-tags.rs",
+      "exit_status": 0,
+      "features": [
+        "pa12.layout"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "mode": "--emit-layouts",
+      "layout_checks": [
+        {
+          "name": "Byte",
+          "rust_type": "Byte",
+          "size": 1,
+          "align": 1
+        },
+        {
+          "name": "Wide",
+          "rust_type": "Wide",
+          "size": 16,
+          "align": 16
+        },
+        {
+          "name": "Large",
+          "rust_type": "Large",
+          "size": 8,
+          "align": 8
+        }
+      ]
+    },
+    {
+      "path": "tests/spec/layout/enum-payload.rs",
+      "exit_status": 0,
+      "features": [
+        "pa12.layout"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "mode": "--emit-layouts",
+      "layout_checks": [
+        {
+          "name": "CE",
+          "rust_type": "CE",
+          "size": 32,
+          "align": 16
+        },
+        {
+          "name": "IE",
+          "rust_type": "IE",
+          "size": 32,
+          "align": 16
+        },
+        {
+          "name": "CIE",
+          "rust_type": "CIE",
+          "size": 32,
+          "align": 16
+        }
+      ]
+    },
+    {
+      "path": "tests/spec/layout/source-order.rs",
+      "exit_status": 0,
+      "features": [
+        "pa12.layout"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "mode": "--emit-layouts",
+      "layout_checks": [
+        {
+          "name": "S",
+          "rust_type": "S",
+          "size": 24,
+          "align": 8,
+          "offsets": [
+            0,
+            8,
+            16
+          ],
+          "field_names": [],
+          "rustc_layout": false,
+          "reason": "RustGM fixes source-order layout where Rust deliberately leaves field layout unspecified."
+        },
+        {
+          "name": "T",
+          "rust_type": "T",
+          "size": 24,
+          "align": 8,
+          "offsets": [
+            0,
+            8,
+            16
+          ],
+          "field_names": [],
+          "rustc_layout": false,
+          "reason": "RustGM fixes source-order layout where Rust deliberately leaves field layout unspecified."
+        }
+      ]
+    },
+    {
+      "path": "tests/spec/layout/configured-fields.rs",
+      "exit_status": 0,
+      "features": [
+        "pa12.layout"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "mode": "--emit-layouts",
+      "layout_checks": [
+        {
+          "name": "C",
+          "rust_type": "C",
+          "size": 8,
+          "align": 4,
+          "offsets": [
+            0,
+            4
+          ],
+          "field_names": [
+            "a",
+            "b"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "tests/spec/packages/modules/main.rs",
+      "exit_status": 0,
+      "features": [
+        "pa12.packages"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      },
+      "input": "file",
+      "auxiliary": [
+        "tests/spec/packages/modules/items.rs"
+      ]
+    }
+  ]
+}

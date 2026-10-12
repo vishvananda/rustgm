@@ -1,0 +1,21 @@
+function @rg.16() -> void {
+  block ^b0:
+    %t0 = call i64 @rg.15()
+    %t1 = cmp uge i64 %t0, 18446744073709551615
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    return void
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+function @rg.15() -> i64 {
+  block ^b0:
+    return i64 18446744073709551615
+}
+declare function @abort() -> void [return=noreturn]
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.16()
+    return i64 0
+}

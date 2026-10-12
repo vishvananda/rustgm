@@ -50,7 +50,7 @@ def main():
     workloads = parser.add_mutually_exclusive_group()
     workloads.add_argument("--aggregate-input", action="store_true", help="exercise owned aggregate LowIR at 1000/4000/16000 procedures")
     workloads.add_argument("--discriminant-input", action="store_true", help="exercise typed discriminant queries at 1000/4000/16000 enums")
-    parser.add_argument("--stage", choices=("tokens", "literals", "token-trees", "ast", "crate-ast", "names", "expanded", "expanded-crate", "types", "body-ir", "ownership", "lowir"), default="tokens")
+    parser.add_argument("--stage", choices=("tokens", "literals", "token-trees", "ast", "crate-ast", "names", "expanded", "expanded-crate", "types", "layouts", "body-ir", "ownership", "lowir"), default="tokens")
     args = parser.parse_args()
     if (args.aggregate_input or args.discriminant_input) and args.stage != "lowir":
         parser.error("aggregate and discriminant workloads require --stage lowir")
@@ -72,9 +72,9 @@ def main():
                "binary_sha256": {name: hashlib.sha256(p.read_bytes()).hexdigest() for name, p in binaries.items()},
                "samples": [], "full_output_sha256": {}}
     scales = (4000, 16000, 64000) if args.stage in ("token-trees", "ast", "crate-ast", "names", "expanded", "expanded-crate", "types", "body-ir", "ownership", "lowir") else (16000, 64000, 256000)
-    if args.aggregate_input or args.discriminant_input:
+    if args.aggregate_input or args.discriminant_input or args.stage == "layouts":
         scales = (1000, 4000, 16000)
-    line = {"tokens": LINE, "literals": LITERAL_LINE, "token-trees": TREE_LINE, "ast": AST_LINE, "crate-ast": CRATE_LINE, "names": b"", "expanded": b"", "expanded-crate": b"", "types": b"", "body-ir": b"", "ownership": b"", "lowir": b""}[args.stage]
+    line = {"tokens": LINE, "literals": LITERAL_LINE, "token-trees": TREE_LINE, "ast": AST_LINE, "crate-ast": CRATE_LINE, "names": b"", "expanded": b"", "expanded-crate": b"", "types": b"", "layouts": b"", "body-ir": b"", "ownership": b"", "lowir": b""}[args.stage]
     for lines in scales:
         source = directory / f"input-{lines}.rs"
         if args.discriminant_input:
@@ -89,6 +89,10 @@ def main():
                 "if c{x.left=N(n+1);}else{x.left=N(2);}consume(x.left)+consume(x.right)}\n"
                 for i in range(lines)) + "fn main(){" + "".join(
                 f"measured_{i}(Pair{{left:N(1),right:N(2)}},false);" for i in range(lines)) + "}\n")
+        elif args.stage == "layouts":
+            source.write_text("".join(
+                f"#[repr(C)]struct T{i}{{a:u8,b:u64,c:[u32;3]}}type A{i}=[T{i};4];\n"
+                for i in range(lines)))
         elif args.stage in ("types", "body-ir", "lowir"):
             source.write_text("fn identity(x:u64)->u64{x}\n" + "".join(
                 f"fn measured_{i}(x:u64)->u64{{let n={i};let v=identity(n);if x>v{{x+v}}else{{v-x}}}}\n"
