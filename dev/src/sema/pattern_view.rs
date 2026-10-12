@@ -46,13 +46,14 @@ pub fn write(facts: &Declarations, out: &mut impl Write) -> io::Result<()> {
     for (ordinal, decision) in facts.patterns.decisions.iter().enumerate() {
         writeln!(
             out,
-            "match {ordinal} source={}:{} input={}:{} arms={}:{} exhaustive=true work={}",
+            "match {ordinal} source={}:{} input={}:{} arms={}:{} exhaustive=true uninhabited={} work={}",
             decision.source.file.0,
             decision.source.node.0,
             decision.scrutinee.file.0,
             decision.scrutinee.node.0,
             decision.start,
             decision.end,
+            decision.uninhabited,
             decision.work
         )?;
     }

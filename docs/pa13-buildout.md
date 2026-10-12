@@ -504,3 +504,124 @@ The negative control is retained in `dev/tests/scalar_matches.rs`; its final
 four-test suite was rerun in debug/release, followed by lint/audit and explicit
 reference regeneration. This test-only addition does not change the frozen
 compiler used for native qualification or performance.
+
+## Constructor coverage checkpoint
+
+Coverage now composes selected tuple, record, enum, fixed-array and reference
+patterns with scalar intervals. The scalar-only fast path remains in place.
+Composite queries compile pattern sets into reduced binary decision diagrams
+whose variables identify typed places and whose bits encode ordered ranks.
+Intersection models products, union models alternatives, and difference proves
+whole-arm usefulness and finds uncovered inputs. Memoized operations and interned
+nodes share unchanged subgraphs; nested alternatives are not expanded into a
+Cartesian product. Dynamic slices still support only irrefutable rests, and
+named/structural constants remain future work in this assignment.
+
+The graph uses only the demanded array projections, including huge ZST arrays.
+Constructor rank domains exclude variants known to be empty in the matching
+context. Unused binary encodings alias the final valid rank, preserving set
+complement without inventing an extra variant or character; witnesses map back
+to valid ranks. Dedicated tests cover non-power-of-two domains and u128 endpoints.
+The one-million-operation budget still applies to each composite coverage query.
+
+`Members` now keeps an owner-to-variant index. Inhabitation queries share a cache
+keyed by module and canonical type, and constructor domains also retain the
+validity context. This avoids rescanning every declaration for each pattern or
+recomputing variant domains for each arm. References terminate visible-empty
+proofs; their referents may be invalid places. Private fields do not expose empty
+proofs outside their permitted module. These facts are deliberately separate
+from physical layout inhabitation. A match's `uninhabited` inspection field
+records this contextual result, not an initialization or loan proof.
+
+Refutable constructors are now selected and ordinary binding irrefutability can
+combine constructors and scalar patterns. General match execution remains gated:
+its next implementation must add typed tag decisions, conditional captures,
+source-ordered retry paths and reads that enforce place validity. The control
+`enum Void{} fn main(){let x:Void;match x{}}` passes coverage but is rejected by
+rustc's initialization check. Body IR and LowIR must reject it until the required
+validity read exists; an empty-domain proof cannot erase that obligation.
+By-reference captures retain their earlier region/loan gate. Guards still add no
+coverage and their access protection and retry execution remain unfinished.
+
+Missing constructor witnesses are deterministic partial assignments, such as
+`{ $ = E::B }` or `{ $.0 = false, $.1 = true }`. Names come from selected member
+facts and declaration provenance only during diagnostic rendering. Tests include
+macro-generated variants and Unicode fields. No diagnostic string is semantic
+transport. PA13 remains planned without a partial manifest; PA14 and PA15 remain
+part of the implementation goal.
+
+The first interval-edge graph exposed an avoidable quadratic update pattern.
+A bit-reversed ordering of unit enum arms took 3,697 logical operations at 32
+variants, 796,657 at 512, and exceeded the budget at 1,024. Replacing complete
+edge-array rewrites with shared binary domain subtrees gives 1,386, 31,146,
+66,466 and 141,210 operations at 32, 512, 1,024 and 2,048 variants. The source,
+complete outputs and counter observations are retained under
+`obj/pa13-work/enum-coverage-scaling-1791837378450914531/`. A permanent test checks
+256/1,024/4,096 variants and bounded growth; these are logical-work observations,
+not elapsed-time speedup measurements.
+
+The earlier frozen draft is retained as `obj/pa13-work/coverage-candidate`,
+SHA-256 `42937a8ea790317bbd04c955c1e71cca4af2d7dac4192e909b439b5cf9ae5752`,
+along with its validation logs and native evidence. It is superseded by
+`obj/pa13-work/coverage-final-candidate`, SHA-256
+`f4ade8cf0a423016ce6131260432ed5b92a113ed9c653b52ff9652cb31400d42`.
+
+The constructor integration suite has 29 accepted and 16 rejected programs
+checked against pinned rustc, four witness controls, all 16 subsets of Boolean
+pairs for usefulness, a 64-column alternative-sharing test, a sparse trillion-
+element ZST array control and the execution-validity boundary. A smaller product
+and the 256-variant case are independently checked with rustc. The original
+64-column rustc probe was explicitly terminated after remaining live for over
+60 seconds; this is not a language rejection or passing independent check.
+Its source and termination receipt remain in
+`obj/pa13-work/coverage-sharing/3660725/`. The resource test now checks RustGM's
+work bound directly and uses a separate smaller Rust control.
+
+The final compiler passes all 276 Rust tests in debug and release, strict Clippy,
+formatting and the 179-file audit with zero findings. All 1,671 active assignment
+cases, harness discovery, upstream checks and independent Rust checks pass.
+PA11 has 194 independent checks and 180 native executions; PA12 has 98 LowIR
+checks and 48 executions plus 12 independently qualified layout views. The
+additional 74 scalar/product/array programs pass against both runtimes, with
+complete commands, hashes and streams in
+`obj/pa13-work/coverage-final-native-1791837796840234379/evidence.json`.
+Constructor inspection cases are not counted as native executions. The only
+changed existing oracle is PA12's match boundary: it now rejects at the explicit
+constructor-execution/validity gate rather than during constructor selection.
+All other reference changes are compiler-source provenance receipts.
+
+Performance runs freeze binaries/inputs, pin CPU 10, retain warmups, A/A
+calibration and three ABBA blocks at each size, and compare full output bytes
+as well as counts. No build or test from this task ran concurrently. The four
+existing executable workloads compare with `scalar-candidate`; constructor
+inspection uses candidate A/A because the baseline lacks that capability.
+All 270 observations remain under `obj/perf/`:
+
+| Workload | Run | Largest baseline/candidate median ms | Largest baseline/candidate peak KiB |
+| --- | --- | ---: | ---: |
+| Ordinary LowIR, 4k/16k/64k | 1791837971913417841 | 3503.65 / 3462.47 | 700828 / 700828 |
+| Product LowIR, 1k/4k/16k | 1791838070869200344 | 1608.62 / 1588.70 | 322424 / 322640 |
+| Array LowIR, 1k/4k/16k | 1791838114056467837 | 1696.07 / 1701.65 | 382924 / 382492 |
+| Scalar-match LowIR, 1k/4k/16k | 1791838159852911889 | 1488.97 / 1353.54 | 234664 / 234840 |
+| Constructor-pattern A/A, 1k/4k/16k | 1791838193822472693 | 1744.01 / 1735.69 | 223804 / 223900 |
+
+All twelve existing-workload full-output comparisons are equal. Memory stays
+close to baseline. Absolute wall times drift: ordinary 16k calibration samples
+range from 855.9 to 888.5 ms, while paired medians are 1436.62/1443.75 ms. The
+largest scalar paired-block ratios are 1.069, 0.968 and 0.895, and even the
+identical-binary constructor run has a 1k block ratio of 0.763. These observations
+do not support a precise speedup or regression-free claim. The new constructor
+candidate medians are 137.28, 422.75 and 1735.69 ms, with peak RSS 17740, 58572
+and 223900 KiB. Logical-work and sparse-storage invariants are checked separately
+from these noisy wall-time observations.
+
+Before enabling source dereference expressions or general constructor execution,
+retain the root-place probes in
+`obj/pa13-work/root-place-validity-1791838489370427268/evidence.json`.
+Pinned rustc accepts an empty match on `*x` for `x: &Void`, but rejects covering
+only `E::B` in `match *x` when `E::A(Void)` also exists. It also differs in the
+unreachable-pattern warning for a wildcard on a dereferenced versus owned Void.
+RustGM currently rejects those dereference expressions before coverage, so these
+are explicit future controls, not acceptance-equivalence claims. Do not open
+that expression boundary while treating every root as a validated owned value;
+root validity and nested-reference validity need separate qualification.

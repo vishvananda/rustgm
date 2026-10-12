@@ -79,7 +79,7 @@ impl Checker<'_> {
     pub(super) fn pattern(&mut self, root: NodeId, term: TermId) -> Result<(), Error> {
         let mark = self.range_work.len();
         let root = self.selected_pattern(root, term)?;
-        if self.range_work.len() != mark {
+        if self.range_work.len() != mark || self.pattern_refutable {
             self.pattern_requirements.push(root);
         }
         Ok(())
@@ -89,6 +89,7 @@ impl Checker<'_> {
         root: NodeId,
         term: TermId,
     ) -> Result<PatternId, Error> {
+        self.pattern_refutable = false;
         let id = self.reserve_pattern(root, term, Mode::Value)?;
         self.facts.patterns.roots.insert(self.key(root), id);
         let mut steps = 0;
@@ -420,10 +421,7 @@ impl Checker<'_> {
             .get(variant.owner)
             .ok_or_else(|| self.error(node, "missing pattern constructor shape"))?;
         if definition.end - definition.start != 1 {
-            return Err(self.error(
-                node,
-                "refutable constructor requires conditional pattern semantics",
-            ));
+            self.pattern_refutable = true;
         }
         let ty = self.facts.definitions[variant.owner.0 as usize]
             .ok_or_else(|| self.error(node, "missing pattern constructor type"))?;

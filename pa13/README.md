@@ -27,10 +27,11 @@ grading contract or a lifetime/loan validity claim. Simple standalone value
 bindings and wildcards use the earlier direct path and have no selected root.
 The view covers irrefutable owned products/arrays, explicit reference patterns,
 edition-2024 binding modes, irrefutable borrowed slice rests, and scalar match
-decisions. Boolean, integer and character matches have exhaustiveness and
-whole-arm usefulness checks with deterministic missing-value witnesses.
-Unguarded scalar matches can execute. General constructor coverage, guarded
-execution and conditional bindings remain unfinished.
+decisions. Boolean, integer and character intervals compose with tuple, record,
+enum, fixed-array and reference patterns for exhaustiveness and whole-arm
+usefulness. Dynamic slices currently support only irrefutable rests. Unguarded
+scalar matches can execute; constructor decisions, guarded execution, named
+constants and conditional bindings remain unfinished.
 
 The current vocabulary is `selected-patterns 1`, the canonical type table,
 `root FILE:NODE pattern=ID`, and arena-ordered `pattern ID source=FILE:NODE
@@ -55,19 +56,40 @@ each occurrence, including distinct capture operations for a shared binding.
 `range ID ranks=LOW:HIGH` uses inclusive, ordered target ranks. Signed integers
 use a sign-bit bias; character ranks exclude the surrogate gap. The input type
 determines how to interpret ranks. `match ID source=FILE:NODE input=FILE:NODE
-arms=START:END exhaustive=true work=N` retains the scrutinee and a half-open
+arms=START:END exhaustive=true uninhabited=BOOL work=N` retains the scrutinee and a half-open
 source-ordered arm range. `arm ID source=FILE:NODE pattern=ID guard=FILE:NODE|-
 useful=BOOL value=FILE:NODE` retains the guard and result identities. Guarded
 arms contribute no exhaustiveness coverage. Usefulness refers to the whole arm,
 not individual redundant alternatives. Coverage counts visited pattern nodes
-and interval-index operations and rejects work beyond 1,000,000 per query.
+and interval-index operations for the scalar fast path. Composite queries count
+type/pattern visits and shared decision-graph operations. Both reject work beyond
+1,000,000 per query. Cached type facts are keyed by the matching module; enum
+domains additionally distinguish valid values from possibly invalid referents.
+
+`uninhabited` is a contextual coverage fact, not a physical layout property or
+proof that a place was initialized. Private fields cannot expose an empty-type
+proof to an unrelated module, and references to empty types remain possible
+coverage inputs. Constructor execution is gated until typed decisions enforce
+the required reads and initialization checks. An empty match on an uninitialized
+empty-type local may pass pattern inspection but must not publish executable IR.
+
+Composite coverage uses reduced binary decisions over normalized scalar and
+constructor ranks at sparse typed places.
+Union, intersection and difference queries are memoized; products and nested
+alternatives are not eagerly expanded into combinations. A missing witness is a
+deterministic partial assignment such as `{ $.0 = false, $.1 = true }` or
+`{ $ = E::B }`. `$` is the input, `.name`/`.N` select fields, `.*` dereferences,
+and `[N]` selects an array element. Unconstrained inputs render `_`; these are
+diagnostic constraints, not Rust source to reparse. Whole-arm usefulness still
+ignores guard outcomes and does not diagnose individual redundant alternatives.
 
 Scalar decisions retain ordered alternatives, read the scrutinee only when the
 decision or capture requires it, and capture values after a successful decision.
 A full-domain interval requires no value test. Guarded execution is rejected
 before publishing body IR: inspection has not proved protected guard accesses,
-delayed moves or failed-guard retries. Scalar-only irrefutable binding coverage
-is checked, but conditional let/parameter execution is not yet available.
+delayed moves or failed-guard retries. Irrefutable binding coverage can combine
+constructors and scalar intervals, but conditional let/parameter execution is
+not yet available.
 
 `region-var region:N body=FILE:NODE source=FILE:NODE origin=pattern-borrow|pattern-input
 pending` gives existential region provenance. IDs are globally allocated from

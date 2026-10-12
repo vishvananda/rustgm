@@ -49,6 +49,7 @@ pub struct Members {
     pub fields: Vec<Field>,
     field_ordinals: Vec<u32>,
     by_node: HashMap<NodeKey, VariantId>,
+    by_owner: HashMap<ItemId, Vec<VariantId>>,
     by_name: HashMap<(VariantId, Name), FieldId>,
 }
 impl Members {
@@ -93,7 +94,12 @@ impl Members {
             end,
         });
         self.by_node.insert(node, id);
+        self.by_owner.entry(owner).or_default().push(id);
         Ok(id)
+    }
+    #[must_use]
+    pub fn variants(&self, owner: ItemId) -> &[VariantId] {
+        self.by_owner.get(&owner).map_or(&[], Vec::as_slice)
     }
     #[must_use]
     pub fn at_node(&self, node: NodeKey) -> Option<VariantId> {

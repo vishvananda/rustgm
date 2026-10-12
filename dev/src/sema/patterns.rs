@@ -1,4 +1,5 @@
 //! Selected pattern structure is shared by semantic checks and body construction.
+pub(super) mod coverage;
 pub mod scalar;
 use super::members::{Selection, VariantId};
 use crate::{
@@ -32,6 +33,8 @@ pub struct Match {
     pub end: u32,
     /// Logical pattern visits and interval-index operations, including guard checks.
     pub work: u64,
+    /// Empty only in the matching module's coverage context, not by layout alone.
+    pub uninhabited: bool,
 }
 #[derive(Clone, Copy, Debug)]
 pub struct Fields {
@@ -48,7 +51,7 @@ pub struct Field {
     pub selection: Projection,
     pub pattern: PatternId,
 }
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum Projection {
     Field(Selection),
     Index(u64),

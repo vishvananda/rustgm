@@ -36,6 +36,19 @@ impl Builder<'_> {
             })
             .ok_or_else(|| self.error(node, "missing checked match decisions"))?;
         let decision = &self.facts.patterns.decisions[id as usize];
+        let input = self
+            .facts
+            .node(decision.scrutinee)
+            .and_then(|f| f.ty)
+            .ok_or_else(|| self.error(node, "missing match input type"))?;
+        if input != TypeId::NEVER
+            && !matches!(self.facts.types.kind(input), Some(Type::Primitive(p)) if Domain::new(p).is_some())
+        {
+            return Err(self.error(
+                node,
+                "constructor match execution requires typed decisions and place validity",
+            ));
+        }
         let (start, end) = (decision.start, decision.end);
         if self.facts.patterns.arms[start as usize..end as usize]
             .iter()

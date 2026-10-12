@@ -122,6 +122,7 @@ impl Checker<'_> {
             start,
             end,
             work: 0,
+            uninhabited: false,
         });
         self.matches.push(id);
         self.work.extend((start..end).rev().map(|index| Work::Arm {
@@ -309,14 +310,17 @@ impl Checker<'_> {
             .ok_or_else(|| self.error(node, "missing match input type"))?;
         if ty == TypeId::NEVER {
             self.facts.patterns.decisions[id as usize].work = 1;
+            self.facts.patterns.decisions[id as usize].uninhabited = true;
             return Ok(());
         }
         let domain = if let Some(Type::Primitive(primitive)) = self.facts.types.kind(ty) {
             Domain::new(primitive)
         } else {
             None
-        }
-        .ok_or_else(|| self.error(node, "match coverage requires constructor specialization"))?;
+        };
+        let Some(domain) = domain else {
+            return self.constructor_match(id, ty);
+        };
         let mut coverage = Coverage::default();
         let mut intervals = Vec::new();
         for index in start..end {
@@ -346,22 +350,9 @@ impl Checker<'_> {
         }
         Ok(())
     }
-    fn require_irrefutable(&self, mut root: PatternId) -> Result<(), Error> {
-        while self.pattern_domain(root).is_none() {
-            let pattern = &self.facts.patterns.nodes[root.0 as usize];
-            root = match pattern.kind {
-                Pattern::Binding {
-                    subpattern: Some(child),
-                    ..
-                }
-                | Pattern::Dereference { pattern: child, .. } => child,
-                _ => {
-                    return Err(self.error(
-                        pattern.source.node,
-                        "binding coverage requires constructor specialization",
-                    ));
-                }
-            };
+    fn require_irrefutable(&mut self, root: PatternId) -> Result<(), Error> {
+        if self.pattern_domain(root).is_none() {
+            return self.constructor_binding(root);
         }
         let node = self.facts.patterns.nodes[root.0 as usize].source.node;
         let domain = self
@@ -383,6 +374,62 @@ impl Checker<'_> {
                         .map_err(|e| self.error(node, e))?
                 ),
             ));
+        }
+        Ok(())
+    }
+    fn constructor_match(&mut self, id: u32, ty: TypeId) -> Result<(), Error> {
+        let decision = &self.facts.patterns.decisions[id as usize];
+        let (node, start, end) = (decision.source.node, decision.start, decision.end);
+        let (report, source) = (self.report, self.key(node));
+        let error =
+            |message: &str| crate::sema::model::Declarations::error(report, source, message);
+        let mut coverage = patterns::coverage::Coverage::new(
+            self.facts,
+            report,
+            self.module,
+            ty,
+            &mut self.coverage_cache,
+        )
+        .map_err(error)?;
+        let mut usefulness = Vec::new();
+        for index in start..end {
+            let arm = self.facts.patterns.arms[index as usize];
+            let pattern = arm.pattern.ok_or_else(|| error("missing arm pattern"))?;
+            usefulness.push(coverage.arm(pattern, arm.guard.is_some()).map_err(error)?);
+        }
+        let missing = coverage.missing().map_err(error)?;
+        let work = coverage.work();
+        let uninhabited = coverage.uninhabited();
+        if let Some(missing) = missing {
+            return Err(self.error(node, format!("non-exhaustive match; missing {missing}")));
+        }
+        for (index, useful) in (start..end).zip(usefulness) {
+            self.facts.patterns.arms[index as usize].useful = useful;
+        }
+        self.facts.patterns.decisions[id as usize].work = work;
+        self.facts.patterns.decisions[id as usize].uninhabited = uninhabited;
+        Ok(())
+    }
+    fn constructor_binding(&mut self, root: PatternId) -> Result<(), Error> {
+        let pattern = &self.facts.patterns.nodes[root.0 as usize];
+        let node = pattern.source.node;
+        let ty = pattern
+            .ty
+            .ok_or_else(|| self.error(node, "missing pattern input type"))?;
+        let (report, source) = (self.report, self.key(node));
+        let error =
+            |message: &str| crate::sema::model::Declarations::error(report, source, message);
+        let mut coverage = patterns::coverage::Coverage::new(
+            self.facts,
+            report,
+            self.module,
+            ty,
+            &mut self.coverage_cache,
+        )
+        .map_err(error)?;
+        coverage.arm(root, false).map_err(error)?;
+        if let Some(missing) = coverage.missing().map_err(error)? {
+            return Err(self.error(node, format!("refutable binding; missing {missing}")));
         }
         Ok(())
     }

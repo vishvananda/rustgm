@@ -55,14 +55,15 @@ def main():
     workloads.add_argument("--array-pattern-input", action="store_true", help="exercise owned array ranges at 1000/4000/16000 procedures")
     workloads.add_argument("--borrowed-pattern-input", action="store_true", help="exercise borrowed arrays/slices and occurrence captures at 1000/4000/16000 procedures")
     workloads.add_argument("--scalar-match-input", action="store_true", help="exercise ordered scalar match decisions at 1000/4000/16000 procedures")
+    workloads.add_argument("--constructor-pattern-input", action="store_true", help="exercise shared enum/product/array coverage at 1000/4000/16000 procedures")
     parser.add_argument("--stage", choices=("tokens", "literals", "token-trees", "ast", "crate-ast", "names", "expanded", "expanded-crate", "types", "patterns", "layouts", "body-ir", "ownership", "lowir"), default="tokens")
     args = parser.parse_args()
     if (args.aggregate_input or args.discriminant_input or args.product_input or args.array_pattern_input or args.scalar_match_input) and args.stage != "lowir":
         parser.error("aggregate, discriminant and owned-pattern workloads require --stage lowir")
     if args.pattern_input and args.stage != "names":
         parser.error("pattern identity workloads require --stage names")
-    if args.borrowed_pattern_input != (args.stage == "patterns"):
-        parser.error("--stage patterns and --borrowed-pattern-input must be used together")
+    if (args.borrowed_pattern_input or args.constructor_pattern_input) != (args.stage == "patterns"):
+        parser.error("--stage patterns requires --borrowed-pattern-input or --constructor-pattern-input")
     directory = ROOT / "obj/perf" / str(time.time_ns())
     directory.mkdir(parents=True)
     candidate = args.candidate.resolve()
@@ -83,15 +84,23 @@ def main():
                "array_pattern_input": args.array_pattern_input,
                "borrowed_pattern_input": args.borrowed_pattern_input,
                "scalar_match_input": args.scalar_match_input,
+               "constructor_pattern_input": args.constructor_pattern_input,
                "binary_sha256": {name: hashlib.sha256(p.read_bytes()).hexdigest() for name, p in binaries.items()},
                "samples": [], "full_output_sha256": {}}
     scales = (4000, 16000, 64000) if args.stage in ("token-trees", "ast", "crate-ast", "names", "expanded", "expanded-crate", "types", "body-ir", "ownership", "lowir") else (16000, 64000, 256000)
-    if args.aggregate_input or args.discriminant_input or args.pattern_input or args.product_input or args.array_pattern_input or args.borrowed_pattern_input or args.scalar_match_input or args.stage == "layouts":
+    if args.aggregate_input or args.discriminant_input or args.pattern_input or args.product_input or args.array_pattern_input or args.borrowed_pattern_input or args.scalar_match_input or args.constructor_pattern_input or args.stage == "layouts":
         scales = (1000, 4000, 16000)
     line = {"tokens": LINE, "literals": LITERAL_LINE, "token-trees": TREE_LINE, "ast": AST_LINE, "crate-ast": CRATE_LINE, "names": b"", "expanded": b"", "expanded-crate": b"", "types": b"", "patterns": b"", "layouts": b"", "body-ir": b"", "ownership": b"", "lowir": b""}[args.stage]
     for lines in scales:
         source = directory / f"input-{lines}.rs"
-        if args.scalar_match_input:
+        if args.constructor_pattern_input:
+            source.write_text("enum E{A(bool,u8),B{flag:bool},C}\n" + "".join(
+                f"fn measured_{i}(x:(E,[bool;2])){{match x{{"
+                "(E::A(true,_),_)|(E::B{flag:true},_)=>(),"
+                "(E::A(false,0..=127),[_,true])=>(),"
+                "(E::A(false,_),_)|(E::B{flag:false},_)|(E::C,_)=>()}}\n"
+                for i in range(lines)))
+        elif args.scalar_match_input:
             source.write_text("".join(
                 f"fn measured_{i}(x:u64)->u64{{match x{{"
                 "n@(0|2|4)=>n+1,1..=9=>7,10..100=>9,n=>n}}\n"
