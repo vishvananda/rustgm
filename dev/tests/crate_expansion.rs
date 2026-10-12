@@ -973,3 +973,62 @@ fn expanded_textual_candidates_compare_path_candidate_ancestry() {
         );
     }
 }
+
+#[test]
+fn early_paths_check_outer_candidates_without_changing_ordinary_lookup() {
+    for (source, success) in [
+        (
+            "mod glob {pub mod m {pub struct S;}}mod m {pub struct S;} fn f(){use glob::*;use m::S;}fn main(){}",
+            false,
+        ),
+        (
+            "mod glob {pub mod m {pub struct S;}}mod m {pub struct S;} fn f(){use glob::*;let _=m::S;}fn main(){}",
+            true,
+        ),
+        (
+            "mod m{pub struct S;}mod glob{pub(crate) use crate::m;}fn f(){use glob::*;use m::S;}fn main(){}",
+            true,
+        ),
+        (
+            "mod glob {pub mod m {pub struct S;}}mod m {pub struct S;} fn f(){use glob::*;use crate::glob::m::S;}fn main(){}",
+            true,
+        ),
+        (
+            "mod a {macro_rules! m{()=>{1}}pub(crate) use m;}mod b {macro_rules! m{()=>{2}}pub(crate) use m;}use a::m;fn main(){use b::*;let _=m!();}",
+            false,
+        ),
+        (
+            "mod a {macro_rules! m{()=>{1}}pub(crate) use m;}mod b {macro_rules! m{()=>{2}}pub(crate) use m;}use a::m;fn main(){use b::m;let _=m!();}",
+            true,
+        ),
+        (
+            "mod a {macro_rules! m{()=>{1}}pub(crate) use m;}mod b {macro_rules! m{()=>{2}}pub(crate) use m;}use a::m;macro_rules! setup{()=>{use b::m;}}fn main(){setup!();let _=m!();}",
+            false,
+        ),
+        (
+            "mod a {macro_rules! m{()=>{1}}pub(crate) use m;}mod b {macro_rules! m{()=>{2}}pub(crate) use m;}use a::m;macro_rules! setup{()=>{use b::m;let _=m!();}}fn main(){setup!();}",
+            true,
+        ),
+        (
+            "mod glob {pub mod m {pub struct S;}}mod m {pub struct S;} macro_rules! setup {()=>{mod m{pub struct S;}}}fn f(){setup!();use m::S;}fn main(){}",
+            false,
+        ),
+        (
+            "mod a {pub mod m{pub struct S;}}mod b {pub mod m{pub struct S;}}use a::*;macro_rules! setup{()=>{use b::m;}}setup!();use m::S;fn main(){}",
+            false,
+        ),
+        (
+            "mod a {pub mod m{pub struct S;}}mod b {pub mod m{pub struct S;}}use a::*;macro_rules! setup{()=>{use b::m;}}setup!();fn f(){let _=m::S;}fn main(){}",
+            true,
+        ),
+    ] {
+        let result = analyze(source, &mut Files::default())
+            .and_then(|report| resolve::analyze_expanded(report).map_err(|e| format!("{e:?}")));
+        assert_eq!(
+            result.is_ok(),
+            success,
+            "{source}: {}",
+            result.err().unwrap_or_default()
+        );
+    }
+}

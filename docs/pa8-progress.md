@@ -310,3 +310,46 @@ measurements still require the forthcoming expanded-crate CLI contract.
 checks, upstream/Reference provenance and explicit reference regeneration.
 A structured comparison confirms only `compiler_source_sha256` changed in each
 PA1–PA7 receipt; every earlier fixture and oracle byte is unchanged.
+
+
+## Expansion-time outer-scope checks
+
+Selected import/macro paths now record whether each binding was found lexically
+or through a qualified path. Expansion-time lookup rejects an inner glob that
+conflicts with an outer candidate, and rejects a more-expanded binding that
+would hide an outer candidate from outside its expansion. Qualified paths and
+ordinary expression/type references retain their separate lookup rules. Equal
+targets and references inside the introducing expansion are positive controls.
+Import completion runs these checks for every namespace and reuses its selected
+path buffer across queries. A hidden glob contribution still wakes dependent
+imports when its ambiguity evidence changes.
+
+Four independently classified PA6 fixtures own the ordinary-import behavior:
+`import_outer_conflict.rs`, `ordinary_inner_glob.rs`, `import_same_target.rs`
+and `import_qualified_control.rs`. Their probes and the corresponding macro
+cases are in `obj/pa8-work/outer-scope-probes/`. The emitted positive reference
+for `ordinary_inner_glob` targets the inner module's constructor, while the
+negative import reports `ambiguous import path binding` at its use path.
+
+`outer-scope-final.log` passes 143 Rust tests, all 1,012 active course fixtures,
+strict Clippy, the 100-file audit and 14 harness tests. `outer-scope-reference.log`
+passes all independent rustc checks and regenerates receipts.
+`outer-scope-release.log` passes all 143 Rust tests in release mode.
+`outer-scope-full.log` also verifies upstream/Reference provenance.
+All earlier oracle bytes remain unchanged; PA6 adds exactly these four cases.
+The preceding commit `ff50a6c` passed GitHub CI.
+
+The immutable import-alias benchmark is retained in
+`obj/perf/1791783813276120270/samples.json`, with its generator at
+`obj/pa8-work/measure-imports.py`. It freezes 4,000/16,000/64,000 independent
+aliases, verifies full outputs, pins both binaries to CPU 10, calibrates A/A,
+and retains three ABBA blocks. A/B medians are 18.21/18.63, 67.29/68.18 and
+280.40/290.78 ms; 64,000-alias A/A observations ranged 274.57–285.52 ms.
+These measurements show a roughly 1–4% cost on this import-heavy workload for
+the added ambiguity checks, not a general no-regression claim.
+
+Before activation, revisit early declaration registration for non-macro items
+that can shadow a module used by expansion. The current early graph indexes
+modules and macros; primary resolution indexes the other declarations. Builtins,
+physical diagnostics, the expanded-crate text contract and its course suite
+remain the next main work. PA8 and the source-to-LowIR goal remain incomplete.

@@ -12,10 +12,15 @@ pub(crate) enum LookupMode {
     Import(Namespace),
 }
 pub(crate) type BindingKey = (ScopeId, NameId, Namespace);
+pub(crate) struct Selection {
+    pub key: BindingKey,
+    pub binding: Binding,
+    pub lexical: bool,
+}
 #[derive(Default)]
 pub(crate) struct Observations {
     pub dependencies: Vec<BindingKey>,
-    pub selected: Option<Vec<(BindingKey, Binding)>>,
+    pub selected: Option<Vec<Selection>>,
 }
 pub(crate) enum Lookup {
     Found(Binding),
@@ -277,7 +282,11 @@ impl Resolver<'_> {
                 None => return Ok(Lookup::Missing),
             };
             if let Some(trace) = observed.as_mut().and_then(|o| o.selected.as_mut()) {
-                trace.push(((found_scope, name, ns), binding));
+                trace.push(Selection {
+                    key: (found_scope, name, ns),
+                    binding,
+                    lexical: scope.is_none(),
+                });
             }
             if binding.ambiguous {
                 return Err(self.error(

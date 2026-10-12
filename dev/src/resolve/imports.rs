@@ -1,7 +1,7 @@
 //! Import dependencies and glob deltas wake only the scopes and paths they affect.
 use super::{
     index::Resolver,
-    lookup::{BindingKey, Lookup, LookupMode, Observations},
+    lookup::{BindingKey, Lookup, LookupMode, Observations, Selection},
     model::{Access, Binding, DefId, DefKind, Import, Namespace, Origin, ScopeId},
     names::NameId,
     package::Error,
@@ -30,6 +30,7 @@ pub(crate) struct Work {
     textual: HashMap<usize, TextualSource>,
     attempts: usize,
     observe: bool,
+    selections: Vec<Selection>,
     pub events: Vec<BindingKey>,
 }
 impl Work {
@@ -68,6 +69,7 @@ impl Work {
                 .collect(),
             attempts: 0,
             observe: false,
+            selections: Vec::new(),
             events: Vec::new(),
         }
     }
@@ -111,20 +113,34 @@ impl Work {
                 .any(|candidate| candidate.target != target || candidate.ambiguous)
         })
     }
-    pub fn ambiguous_expanded_path(
+    pub fn ambiguous_early_path(
         &self,
         facts: &super::model::Resolution,
         observations: &Observations,
+        introduction: crate::expand::stream::ContextId,
     ) -> bool {
-        observations
-            .selected
-            .iter()
-            .flatten()
-            .any(|(key, binding)| {
-                let expanded = !matches!(binding.origin, Origin::Glob(_))
-                    && facts.introductions.binding(*binding).0 != 0;
-                expanded && self.glob_conflicts(*key, binding.target)
-            })
+        observations.selected.iter().flatten().any(|selected| {
+            let (key, binding) = (selected.key, selected.binding);
+            let marks = &facts.introductions;
+            let defined = marks.binding(binding);
+            let glob = matches!(binding.origin, Origin::Glob(_));
+            if !glob && defined.0 != 0 && self.glob_conflicts(key, binding.target) {
+                return true;
+            }
+            let more_expanded = !marks.ancestor(defined, introduction);
+            if selected.lexical && (glob || more_expanded) {
+                let mut current = facts.scopes[key.0.0 as usize].parent;
+                while let Some(scope) = current {
+                    let frame = &facts.scopes[scope.0 as usize];
+                    if let Some(outer) = frame.bindings.get(&(key.1, key.2)) {
+                        return (outer.ambiguous || outer.target != binding.target)
+                            && (glob || !marks.ancestor(defined, marks.binding(*outer)));
+                    }
+                    current = frame.parent;
+                }
+            }
+            false
+        })
     }
 
     pub fn wake(&mut self, index: usize) {
@@ -247,7 +263,7 @@ impl Resolver<'_> {
             import.scope,
         );
         let mut observed = Observations {
-            selected: work.observe.then(Vec::new),
+            selected: Some(std::mem::take(&mut work.selections)),
             ..Observations::default()
         };
         let result = self.lookup_path(
@@ -258,10 +274,21 @@ impl Resolver<'_> {
             LookupMode::Import(ns),
             Some(&mut observed),
         );
-        let ambiguous = work.ambiguous_expanded_path(self.facts, &observed);
+        let introduction = self
+            .facts
+            .introductions
+            .imports
+            .get(&index)
+            .copied()
+            .unwrap_or(crate::expand::stream::ContextId(0));
+        let ambiguous = work.ambiguous_early_path(self.facts, &observed, introduction);
+        if let Some(mut selections) = observed.selected.take() {
+            selections.clear();
+            work.selections = selections;
+        }
         work.watch(index, observed.dependencies);
         if ambiguous {
-            return Err(self.import_error(import, "ambiguous macro-expanded path binding"));
+            return Err(self.import_error(import, "ambiguous import path binding"));
         }
         result
     }
@@ -458,7 +485,7 @@ impl Resolver<'_> {
             .get(&(key.1, key.2))
             .is_some_and(|b| !matches!(b.origin, Origin::Glob(_)))
         {
-            if work.observe && previous != binding {
+            if previous != binding {
                 work.changed(key);
             }
             return;

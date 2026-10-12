@@ -337,7 +337,9 @@ impl Paths {
             LookupMode::Use(Namespace::Macro),
             Some(&mut observed),
         );
-        let ambiguous = self.work.ambiguous_expanded_path(resolver.facts, &observed);
+        let ambiguous =
+            self.work
+                .ambiguous_early_path(resolver.facts, &observed, call.visit.introduction);
         for key in observed.dependencies {
             self.waiting.entry(key).or_default().insert(request);
         }
