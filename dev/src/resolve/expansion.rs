@@ -148,7 +148,20 @@ pub fn analyze(
     sources: &mut impl Sources,
     config: &Config,
 ) -> Result<Report, Error> {
+    analyze_with_crate_name(root, sources, config, None)
+}
+
+/// Expand a crate with an explicit driver-supplied crate name when present.
+/// # Errors
+/// Reports expansion failures and invalid/conflicting crate names.
+pub fn analyze_with_crate_name(
+    root: InputFile,
+    sources: &mut impl Sources,
+    config: &Config,
+    crate_name: Option<&str>,
+) -> Result<Report, Error> {
     let mut loader = Loader::new(root, sources, config)?;
+    loader.package.crate_name = attributes::crate_name(&loader.package, crate_name)?;
     loader.isolate_expansions();
     let root = loader.package.modules[0].root;
     let recursion_limit = attributes::recursion_limit(&loader.package)?;
@@ -722,6 +735,10 @@ impl<S: Sources> Engine<'_, S> {
             .ok_or_else(|| Error::at(file, 0, "macro invocation requires delimiters"))?;
         Input::from_forest(forest, range).map_err(|e| Error::at(file, e.offset, e.message))
     }
+    #[expect(
+        clippy::too_many_lines,
+        reason = "one builtin transaction derives its environment, installs typed syntax and commits provenance"
+    )]
     fn invoke_builtin(
         &mut self,
         visit: Visit,
@@ -741,19 +758,36 @@ impl<S: Sources> Engine<'_, S> {
             .ast
             .node(visit.node)
             .span;
-        let position = if builtin.needs_position() && input.tokens.is_empty() {
-            let physical = self.call_location(Location {
-                file,
-                span: original,
-            })?;
-            Some(
+        let physical =
+            if (builtin.needs_position() || builtin == Builtin::File) && input.tokens.is_empty() {
+                Some(self.call_location(Location {
+                    file,
+                    span: original,
+                })?)
+            } else {
+                None
+            };
+        let position = physical
+            .filter(|_| builtin.needs_position())
+            .map(|physical| {
                 self.loader
                     .package
                     .unit(physical.file)
                     .source
                     .position(physical.span.start)
-                    .map_err(|e| Error::at(physical.file, physical.span.start, e))?,
-            )
+                    .map_err(|e| Error::at(physical.file, physical.span.start, e))
+            })
+            .transpose()?;
+        let text = if input.tokens.is_empty() {
+            match builtin {
+                Builtin::File => physical.map(|physical| {
+                    self.loader.package.file_paths[physical.file.0 as usize]
+                        .to_string_lossy()
+                        .into_owned()
+                }),
+                Builtin::ModulePath => Some(self.module_path(visit.module)),
+                _ => None,
+            }
         } else {
             None
         };
@@ -770,6 +804,7 @@ impl<S: Sources> Engine<'_, S> {
                 config: self.config,
                 grammar,
                 position,
+                text: text.as_deref(),
             },
         )
         .map_err(|e| {

@@ -23,9 +23,17 @@ pub enum Builtin {
     Cfg,
     Line,
     Column,
+    File,
+    ModulePath,
 }
 impl Builtin {
-    pub const ALL: [Self; 3] = [Self::Cfg, Self::Line, Self::Column];
+    pub const ALL: [Self; 5] = [
+        Self::Cfg,
+        Self::Line,
+        Self::Column,
+        Self::File,
+        Self::ModulePath,
+    ];
     #[must_use]
     pub const fn needs_position(self) -> bool {
         matches!(self, Self::Line | Self::Column)
@@ -36,6 +44,8 @@ impl Builtin {
             Self::Cfg => "cfg",
             Self::Line => "line",
             Self::Column => "column",
+            Self::File => "file",
+            Self::ModulePath => "module_path",
         }
     }
 }
@@ -44,6 +54,7 @@ pub struct Environment<'a> {
     pub config: &'a Config,
     pub grammar: MacroContext,
     pub position: Option<Position>,
+    pub text: Option<&'a str>,
 }
 
 pub struct Expansion {
@@ -68,6 +79,20 @@ pub fn expand(
             environment.config,
             environment.grammar,
         ),
+        Builtin::File | Builtin::ModulePath => {
+            if let Some(token) = input.tokens.first() {
+                return Err(error(token.start, "location builtin takes no arguments"));
+            }
+            let text = environment
+                .text
+                .ok_or_else(|| error(0, "missing builtin source name"))?;
+            literal(
+                Value::String(text.as_bytes().to_vec().into()),
+                format!("{text:?}"),
+                environment.grammar,
+                environment.config,
+            )
+        }
         Builtin::Line | Builtin::Column => {
             if let Some(token) = input.tokens.first() {
                 return Err(error(token.start, "location builtin takes no arguments"));

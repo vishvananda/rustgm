@@ -98,3 +98,19 @@ The count mode emits just the footer's counts, without `end-expanded-crate`.
 rejects its first rule, retains an expression capture, duplicates its typed
 syntax and resolves the generated body. It verifies full output hashes as well
 as counts, freezes binaries/inputs, and retains A/A and paired observations.
+
+The prototype implements `cfg!`, `line!`, `column!`, `file!` and `module_path!`
+using typed literals. Location builtins accept no arguments. `file!` follows the
+physical invocation cause and retains the requested source path, including
+symlink aliases, leading `./` and `..`; redundant interior `.` components are
+normalized. Stdin is named `<anon>`. `module_path!` uses the module receiving the
+expansion, including modules generated around a captured invocation. Function
+names do not become module-path components.
+
+`--crate-name NAME` supplies that path's first component. Otherwise the first
+root `#![crate_name = "NAME"]` wins, then the input filename stem (with dashes
+replaced by underscores), or `rust_out` for stdin. An explicit name must agree
+with a root attribute. Empty names, characters other than letters/digits/`_`,
+malformed duplicate attributes and `crate_name` inside `cfg_attr` are errors.
+These identities do not require source reparsing or filesystem calls in the
+compiler library.

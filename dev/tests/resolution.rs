@@ -19,6 +19,7 @@ fn package(text: &str) -> Result<Package, String> {
     resolve::load::load(
         InputFile {
             identity: PathBuf::from("source.rs"),
+            path: PathBuf::from("source.rs"),
             source: SourceFile::new(text.as_bytes().to_vec())?,
         },
         &mut Empty,

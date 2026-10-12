@@ -53,14 +53,14 @@ def load_cases(root, stage):
         for file in files:
             check_relative_path(file, stage)
             child = (assignment / file).resolve()
-            if (not child.is_relative_to(path.parent) or not child.is_file()
+            if (not child.is_relative_to((assignment / case["path"]).parent.resolve()) or not child.is_file()
                     or not child.is_relative_to((assignment / "tests").resolve())):
                 raise ValueError(f"{stage}: invalid auxiliary path {file}")
             auxiliary.add(file)
         args = case.get("args", [])
         if (not isinstance(args, list) or any(not isinstance(arg, str) for arg in args)
-                or len(args) % 2 or any(args[i] != "--cfg" for i in range(0, len(args), 2))):
-            raise ValueError(f"{stage}: case args must be --cfg/value pairs")
+                or len(args) % 2 or any(args[i] not in ("--cfg", "--crate-name") for i in range(0, len(args), 2))):
+            raise ValueError(f"{stage}: case args must be --cfg/value or --crate-name/value pairs")
     discovered = {p.relative_to(assignment).as_posix() for p in (assignment / "tests").rglob("*.rs")}
     declared_rs = {p for p in set(paths) | auxiliary if p.endswith(".rs")}
     if discovered != declared_rs:
@@ -68,9 +68,9 @@ def load_cases(root, stage):
     return manifest, cases
 
 
-def execute(command, data, timeout):
+def execute(command, data, timeout, *, cwd=None):
     try:
-        result = subprocess.run(command, input=data, capture_output=True, timeout=timeout)
+        result = subprocess.run(command, input=data, capture_output=True, timeout=timeout, cwd=cwd)
     except subprocess.TimeoutExpired as error:
         raise ValueError("compiler timed out") from error
     except OSError as error:
@@ -85,9 +85,9 @@ def run_case(root, stage, mode, case, app, timeout):
     command = [*app, mode, "--edition=2024", *case.get("args", [])]
     data = fixture.read_bytes()
     if case.get("input") == "file":
-        command.append(str(fixture.resolve()))
+        command.append(str(Path(stage) / case["path"]))
         data = b""
-    actual = execute(command, data, timeout)
+    actual = execute(command, data, timeout, cwd=root)
     return fixture, actual
 
 
@@ -129,7 +129,7 @@ def run_stage(root, stage, app, *, bless=False, jobs=4, timeout=10):
             destination.parent.mkdir(parents=True, exist_ok=True)
             for suffix, value in zip((".stdout", ".stderr", ".exit_status"), actual):
                 Path(str(destination) + suffix).write_bytes(value)
-    (artifacts / "results.json").write_text(json.dumps({"stage": stage, "command": [*app, manifest["mode"], "--edition=2024"],
+    (artifacts / "results.json").write_text(json.dumps({"stage": stage, "cwd": str(root.resolve()), "command": [*app, manifest["mode"], "--edition=2024"],
         "bless": bless, "cases": [{"path": case["path"], "args": case.get("args", []), "passed": not errors, "errors": errors}
                                    for case, _, _, errors in results]}, indent=2) + "\n")
     # Check every independent expected outcome before changing any reference.

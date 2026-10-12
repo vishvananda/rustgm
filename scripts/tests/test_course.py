@@ -52,6 +52,21 @@ class HarnessTests(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     load_cases(root, "pa1")
 
+    def test_file_input_names_are_stable_when_checkout_is_relocated(self):
+        outputs = []
+        for _ in range(2):
+            with tempfile.TemporaryDirectory() as name:
+                case = {"path": "tests/input.rs", "exit_status": 0, "input": "file",
+                        "args": ["--crate-name", "chosen"]}
+                root, tests = self.fixture_root(name, [case])
+                (tests / "input.rs").write_text("input")
+                load_cases(root, "pa1")
+                app = [sys.executable, "-c", "import pathlib,sys; print(sys.argv[-1]); print(pathlib.Path(sys.argv[-1]).read_text()); print(sys.argv[-3:-1])"]
+                _, actual = run_case(root, "pa1", "--emit-expanded-crate", case, app, 2)
+                outputs.append(actual)
+        self.assertEqual(outputs[0], outputs[1])
+        self.assertEqual(outputs[0], (b"pa1/tests/input.rs\ninput\n['--crate-name', 'chosen']\n", b"", b"0\n"))
+
     def test_signals_stub_and_other_exits_are_failures(self):
         for code in (2, 86, 101, -9):
             command = "import os,signal; os.kill(os.getpid(),signal.SIGKILL)" if code < 0 else f"raise SystemExit({code})"

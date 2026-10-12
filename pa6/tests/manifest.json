@@ -1880,6 +1880,56 @@
         "kind": "program",
         "status": 1
       }
+    },
+    {
+      "path": "tests/spec/modules/requested_alias_explicit/lib.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.module-files"
+      ],
+      "input": "file",
+      "auxiliary": [
+        "tests/spec/modules/requested_alias_explicit/physical.rs",
+        "tests/spec/modules/requested_alias_explicit/alias/child.rs",
+        "tests/spec/modules/requested_alias_explicit/alias/entry.rs"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/modules/requested_alias_implicit/lib.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.module-files"
+      ],
+      "input": "file",
+      "auxiliary": [
+        "tests/spec/modules/requested_alias_implicit/physical/mod.rs",
+        "tests/spec/modules/requested_alias_implicit/alias/nested.rs",
+        "tests/spec/modules/requested_alias_implicit/alias.rs"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/modules/requested_root_alias/lib.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.module-files"
+      ],
+      "input": "file",
+      "auxiliary": [
+        "tests/spec/modules/requested_root_alias/physical/lib.rs",
+        "tests/spec/modules/requested_root_alias/child.rs"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
     }
   ]
 }

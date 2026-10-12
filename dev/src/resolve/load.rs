@@ -20,7 +20,10 @@ use std::{
 };
 
 pub struct InputFile {
+    /// Canonical identity supplied by the driver, used only for cache/cycle keys.
     pub identity: PathBuf,
+    /// Requested path controls module directories and observable source names.
+    pub path: PathBuf,
     pub source: SourceFile,
 }
 pub trait Sources {
@@ -123,6 +126,16 @@ impl<'a, S: Sources> Loader<'a, S> {
         let root_node = unit.configured.ast.root;
         Ok(Self {
             package: Package {
+                file_paths: vec![root.path.components().collect()],
+                crate_name: if root.path == Path::new("<anon>") {
+                    "rust_out".into()
+                } else {
+                    root.path
+                        .file_stem()
+                        .unwrap_or_default()
+                        .to_string_lossy()
+                        .replace('-', "_")
+                },
                 units: vec![unit],
                 modules: vec![Module {
                     parent: None,
@@ -137,7 +150,7 @@ impl<'a, S: Sources> Loader<'a, S> {
             sources,
             config,
             directories: vec![Directory {
-                path: root.identity.parent().unwrap_or(Path::new("")).into(),
+                path: root.path.parent().unwrap_or(Path::new("")).into(),
                 relative: None,
             }],
             identities: vec![root.identity.clone()],
@@ -148,7 +161,7 @@ impl<'a, S: Sources> Loader<'a, S> {
     pub(crate) fn isolate_expansions(&mut self) {
         self.separate_instances = true;
     }
-    fn cached_instance(&mut self, file: FileId) -> Result<FileId, Error> {
+    fn cached_instance(&mut self, file: FileId, path: &Path) -> Result<FileId, Error> {
         if !self.separate_instances {
             return Ok(file);
         }
@@ -164,6 +177,7 @@ impl<'a, S: Sources> Loader<'a, S> {
         self.identities
             .push(self.identities[file.0 as usize].clone());
         self.package.units.push(unit);
+        self.package.file_paths.push(path.components().collect());
         Ok(id)
     }
     pub(crate) fn load_module(
@@ -276,10 +290,10 @@ impl<'a, S: Sources> Loader<'a, S> {
                 ancestor = module.parent;
             }
             let directory = Directory {
-                path: selected.identity.parent().unwrap_or(Path::new("")).into(),
+                path: selected.path.parent().unwrap_or(Path::new("")).into(),
                 relative: if explicit.is_none()
                     && selected
-                        .identity
+                        .path
                         .file_name()
                         .is_some_and(|name| name != "mod.rs")
                 {
@@ -289,7 +303,7 @@ impl<'a, S: Sources> Loader<'a, S> {
                 },
             };
             let source_file = if let Some(id) = self.cache.get(&selected.identity).copied() {
-                self.cached_instance(id)?
+                self.cached_instance(id, &selected.path)?
             } else {
                 let id = FileId(
                     u32::try_from(self.package.units.len())
@@ -300,6 +314,9 @@ impl<'a, S: Sources> Loader<'a, S> {
                 self.cache.insert(selected.identity.clone(), id);
                 self.identities.push(selected.identity);
                 self.package.units.push(unit);
+                self.package
+                    .file_paths
+                    .push(selected.path.components().collect());
                 id
             };
             (

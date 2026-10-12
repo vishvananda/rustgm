@@ -1,6 +1,21 @@
 //! Physical builtin locations follow complete captured spans and template calls.
 use super::{Engine, Error, Location, Sources};
 impl<S: Sources> Engine<'_, S> {
+    pub(super) fn module_path(&self, mut module: super::ModuleId) -> String {
+        let package = &self.loader.package;
+        let mut parts = Vec::new();
+        while let Some(parent) = package.modules[module.0 as usize].parent {
+            parts.push(package.modules[module.0 as usize].name);
+            module = parent;
+        }
+        let mut path = package.crate_name.clone();
+        for name in parts.into_iter().rev() {
+            path.push_str("::");
+            path.push_str(package.names.get(name));
+        }
+        path
+    }
+
     pub(super) fn call_location(&self, mut location: Location) -> Result<Location, Error> {
         for _ in 0..4096 {
             let Some(first) = self

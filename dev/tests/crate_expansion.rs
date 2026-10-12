@@ -24,6 +24,7 @@ impl Sources for Files {
             .map(|text| {
                 Ok(InputFile {
                     identity: path.to_owned(),
+                    path: path.to_owned(),
                     source: SourceFile::new(text.as_bytes().to_vec())?,
                 })
             })
@@ -34,6 +35,7 @@ fn analyze(source: &str, files: &mut Files) -> Result<expansion::Report, String>
     expansion::analyze(
         InputFile {
             identity: "/crate/lib.rs".into(),
+            path: "/crate/lib.rs".into(),
             source: SourceFile::new(source.as_bytes().to_vec())?,
         },
         files,
@@ -1276,6 +1278,7 @@ fn diagnosed(source: &str, files: &mut Files) -> Result<resolve::package::Error,
     let result = expansion::analyze(
         InputFile {
             identity: "/crate/lib.rs".into(),
+            path: "/crate/lib.rs".into(),
             source: SourceFile::new(source.as_bytes().to_vec())?,
         },
         files,
@@ -1385,5 +1388,144 @@ fn expansion_diagnostics_cross_files_and_handle_uninstalled_failed_modules() -> 
     assert_eq!(error.expansions.len(), 1);
     assert_eq!(error.expansions[0].macro_name, "m");
     assert_eq!(error.expansions[0].call.file.0, 0);
+    Ok(())
+}
+
+fn builtin_strings(report: &expansion::Report) -> Result<Vec<String>, String> {
+    use rustgm::{expand::builtin::Builtin, literal::Value, syntax::ast::Kind};
+    let mut values = Vec::new();
+    for call in &report.invocations {
+        if !matches!(
+            report.definitions[call.definition].body,
+            expansion::Body::Builtin(Builtin::File | Builtin::ModulePath)
+        ) {
+            continue;
+        }
+        let unit = report.package.unit(call.node.file);
+        let Kind::Literal(index) = unit.configured.ast.node(call.node.node).kind else {
+            return Err("expected a typed string literal".into());
+        };
+        let Value::String(bytes) = unit.literal(index).map_err(|e| e.message)? else {
+            return Err("expected a string value".into());
+        };
+        values.push(String::from_utf8(bytes.into_owned()).map_err(|e| e.to_string())?);
+    }
+    Ok(values)
+}
+
+#[test]
+fn file_and_module_builtins_keep_requested_names_and_current_module_identity() -> Result<(), String>
+{
+    struct Aliases;
+    impl Sources for Aliases {
+        fn read(&mut self, path: &Path) -> Result<Option<InputFile>, String> {
+            if !matches!(
+                path.file_name().and_then(|name| name.to_str()),
+                Some("shared.rs" | "alias.rs")
+            ) {
+                return Ok(None);
+            }
+            Ok(Some(InputFile {
+                identity: "/physical/shared.rs".into(),
+                path: path.to_owned(),
+                source: SourceFile::new(
+                    "pub fn f()->&'static str{file!()}pub fn m()->&'static str{module_path!()}"
+                        .as_bytes()
+                        .to_vec(),
+                )?,
+            }))
+        }
+    }
+    let source = "#[path=\"shared.rs\"]mod a;#[path=\"./shared.rs\"]mod b;#[path=\"alias.rs\"]mod c;const F:&str=file!();const M:&str=module_path!();";
+    let report = expansion::analyze_with_crate_name(
+        InputFile {
+            identity: "/physical/main.rs".into(),
+            path: "main.rs".into(),
+            source: SourceFile::new(source.as_bytes().to_vec())?,
+        },
+        &mut Aliases,
+        &Config::default(),
+        Some("probe"),
+    )
+    .and_then(resolve::analyze_expanded)
+    .map_err(|e| e.to_string())?;
+    assert_eq!(report.package.units.len(), 4);
+    assert_eq!(
+        builtin_strings(&report)?,
+        [
+            "shared.rs",
+            "probe::a",
+            "./shared.rs",
+            "probe::b",
+            "alias.rs",
+            "probe::c",
+            "main.rs",
+            "probe"
+        ]
+    );
+    let captured = "macro_rules! make{($e:expr)=>{mod child{pub fn f()->&'static str{$e}}}}make!(module_path!());fn f(){mod inner{pub fn m()->&'static str{module_path!()}}}";
+    let report = analyze(captured, &mut Files::default())?;
+    assert_eq!(builtin_strings(&report)?, ["lib::inner", "lib::child"]);
+    resolve::analyze_expanded(report).map_err(|e| e.to_string())?;
+    let mut files = Files::default();
+    files.files.insert(
+        "/crate/defs.rs".into(),
+        "macro_rules! name{()=>{file!()}}".into(),
+    );
+    let report = analyze("#[macro_use] mod defs; const F:&str=name!();", &mut files)?;
+    assert_eq!(builtin_strings(&report)?, ["/crate/lib.rs"]);
+    Ok(())
+}
+
+#[test]
+fn crate_names_follow_driver_attributes_and_the_pinned_first_value_rules() -> Result<(), String> {
+    for (prefix, requested, expected) in [
+        ("", None, Some("lib")),
+        ("", Some("probe"), Some("probe")),
+        ("#![crate_name=\"selected\"]", None, Some("selected")),
+        ("#![crate_name=\"probe\"]", Some("probe"), Some("probe")),
+        ("#![crate_name=\"inner\"]", Some("probe"), None),
+        (
+            "#![crate_name=\"first\"]#![crate_name=\"second\"]",
+            None,
+            Some("first"),
+        ),
+        ("#![crate_name=\"first\"]#![crate_name=1]", None, None),
+        ("#![cfg_attr(unix,crate_name=\"active\")]", None, None),
+        ("", Some("dash-name"), None),
+        ("", Some(""), None),
+        ("", Some("123"), Some("123")),
+        ("", Some("héllo"), Some("héllo")),
+    ] {
+        let source = format!("{prefix}const M:&str=module_path!();");
+        let result = expansion::analyze_with_crate_name(
+            InputFile {
+                identity: "/crate/lib.rs".into(),
+                path: "/crate/lib.rs".into(),
+                source: SourceFile::new(source.as_bytes().to_vec())?,
+            },
+            &mut Files::default(),
+            &Config::default(),
+            requested,
+        );
+        assert_eq!(
+            result.is_ok(),
+            expected.is_some(),
+            "{source}: {:?}",
+            result.as_ref().err()
+        );
+        if let (Ok(report), Some(expected)) = (result, expected) {
+            assert_eq!(builtin_strings(&report)?, [expected]);
+        }
+    }
+    for name in ["file", "module_path"] {
+        for source in [
+            format!("const S:&str={name}!(1);"),
+            format!("{name}!();"),
+            format!("type T={name}!();"),
+        ] {
+            assert!(analyze(&source, &mut Files::default()).is_err(), "{source}");
+        }
+    }
     Ok(())
 }

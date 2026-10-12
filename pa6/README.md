@@ -8,7 +8,7 @@ type validity, macro expansion and executable lowering belong to later stages.
 
 Load configured modules, intern semantic names, collect declarations and resolve
 lexical references. Preserve PA1–PA5 views. `dev/rustgm --emit-names SOURCE`
-produces the view below; stdin uses a virtual `stdin.rs` in the current directory.
+produces the view below; stdin uses a virtual source in the current directory.
 `--cfg` keeps PA3's explicit arguments. `--count-names` reports sizes for scaling
 measurements. No compiler-library code reads the environment or filesystem: the
 driver supplies source files through the loader's source-provider interface.
@@ -25,6 +25,9 @@ candidate files, missing files and circular inclusion. External modules in
 blocks and non-ASCII filesystem module names require explicit paths. An explicit
 file path acts like a `mod.rs` directory owner for child lookup. Parse each
 canonical source path once, but give each inclusion its own module/scope identity.
+The provider supplies both a canonical cache identity and the requested path.
+Child directories follow the requested path, including aliases and symlinks;
+canonicalization must not relocate them to a physical target directory.
 Disabled declarations must never request files or resolve their contents.
 
 Collect forward-visible items before resolving bodies. Keep primitive-type

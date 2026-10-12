@@ -4,8 +4,13 @@ use std::{
 };
 
 fn run(mode: &str, source: &str) -> std::io::Result<Output> {
+    run_args(mode, source, &[])
+}
+fn run_args(mode: &str, source: &str, args: &[&str]) -> std::io::Result<Output> {
     let mut child = Command::new(env!("CARGO_BIN_EXE_rustgm"))
-        .args([mode, "-"])
+        .arg(mode)
+        .args(args)
+        .arg("-")
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
@@ -102,5 +107,40 @@ fn expanded_cli_reports_physical_offsets_and_macro_notes_atomically() -> std::io
         String::from_utf8_lossy(&result.stderr),
         "ERROR: file 0: 24: unresolved value name\n  in macro inner at file 0: 58; defined at file 0: 0\n  in macro outer at file 0: 76; defined at file 0: 34\n"
     );
+    Ok(())
+}
+
+#[test]
+fn expanded_cli_preserves_stdin_name_and_explicit_crate_name() -> std::io::Result<()> {
+    let source = "const F:&str=file!();mod child{const M:&str=module_path!();}";
+    for (args, expected) in [
+        (vec![], "rust_out::child"),
+        (vec!["--crate-name", "chosen"], "chosen::child"),
+    ] {
+        let result = run_args("--emit-expanded-crate", source, &args)?;
+        assert!(
+            result.status.success(),
+            "{}",
+            String::from_utf8_lossy(&result.stderr)
+        );
+        let text = String::from_utf8_lossy(&result.stdout);
+        let values: Vec<_> = text
+            .lines()
+            .filter(|line| line.starts_with("value "))
+            .collect();
+        assert!(values.iter().any(|line| line.ends_with("\"<anon>\"")));
+        assert!(
+            values
+                .iter()
+                .any(|line| line.ends_with(&format!("\"{expected}\"")))
+        );
+    }
+    let conflict = run_args(
+        "--emit-expanded-crate",
+        "#![crate_name=\"inner\"]const M:&str=module_path!();",
+        &["--crate-name", "outer"],
+    )?;
+    assert_eq!(conflict.status.code(), Some(1));
+    assert!(conflict.stdout.is_empty());
     Ok(())
 }

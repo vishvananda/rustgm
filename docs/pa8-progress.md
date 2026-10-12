@@ -586,3 +586,42 @@ The frozen CPU-10 full-expansion comparison is
 at 4,000/16,000/64,000 calls were 93.64/94.47, 228.71/228.86 and
 999.74/983.45 ms; largest A/A samples ranged 969.66–979.38 ms. These paired
 observations accompany the error-path change without asserting a general speedup.
+
+## Requested source names and module identities
+
+`file!` and `module_path!` now produce typed strings. The source provider keeps
+requested paths separately from canonical cache identities, so aliases retain
+their observable names and nested modules load beside the requested path. This
+also fixes PA6 directory ownership through symlinks. Three independently checked
+PA6 cases cover explicit aliases, implicit aliases to `mod.rs`, and an aliased
+root file. Source instances still share parsed physical input where appropriate.
+
+Module paths use the expansion's receiving module and configured crate name.
+The driver accepts `--crate-name`; root string attributes, first-attribute
+selection, conflict/malformed checks, filename defaults, stdin and Unicode names
+have typed and CLI checks. Independent rustc observations live in
+`obj/pa8-work/source-name-probes/`, including actual symlink packages and a
+captured call moved into a generated child module.
+
+The harness now supplies relative file arguments from the repository root,
+records that cwd and permits explicit crate-name arguments. A relocation test
+checks portability. Existing fixture and oracle bytes remain unchanged; only
+three PA6 cases and their generated sidecars were added. Earlier receipts change
+only compiler fingerprints; PA6 additionally records the new inputs and manifest.
+
+`file-builtins-final-validation.log` passes 162 Rust tests, all 1,019 active
+fixtures and 15 harness tests. The full validation log also passes strict Clippy
+and the 104-file architecture audit; release and reference validation logs pass
+release tests, independent rustc checks, regeneration and upstream checks.
+The preceding diagnostic commit `b6c086f` passed GitHub CI.
+
+The frozen CPU-10 ordinary-name comparison is
+`obj/perf/1791789227393580160/samples.json`. Full outputs agree. A/B medians at
+4,000/16,000/64,000 functions were 52.80/51.62, 283.41/338.91 and
+876.78/880.90 ms. The middle scale's A/A samples span 209.26–346.44 ms, so those
+observations do not establish a regression or improvement. Largest A/A samples
+span 881.59–906.58 ms. The new file/module builtin workload has an A/A baseline
+in `obj/perf/1791789253199624990/samples.json`: at 1,000/4,000/16,000 pairs,
+A/B medians were 24.26/24.15, 88.73/90.84 and 388.56/398.58 ms. It freezes
+identical binaries and verifies complete output hashes; it makes no A/B claim.
+PA8 remains planned while other builtin behavior and its grading suite develop.

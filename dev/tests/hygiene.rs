@@ -18,6 +18,7 @@ fn analyze(source: &str) -> Result<expansion::Report, String> {
     let expanded = expansion::analyze(
         InputFile {
             identity: "/crate/lib.rs".into(),
+            path: "/crate/lib.rs".into(),
             source: SourceFile::new(source.as_bytes().to_vec())?,
         },
         &mut NoFiles,

@@ -45,7 +45,7 @@ manifest rather than silently treated as runnable value expressions.
 
 PA3's `check_syntax.py pa3` checks complete programs and evaluates configuration
 predicates with the pinned target/profile. Cases may declare `args` as explicit
-`--cfg`/value pairs; the harness preserves argument boundaries and records them
+`--cfg`/value or `--crate-name`/value pairs; the harness preserves argument boundaries and records them
 in evidence. Reference receipts hash the manifest as well as source fixtures,
 so changing configuration or expected outcomes requires an explicit review.
 
@@ -65,6 +65,12 @@ PA6 adds file-input cases with explicitly declared auxiliary module sources.
 Discovery and receipts include those sources; independent checks copy only the
 declared package into a fresh directory. Name-resolution invariants check target
 identity independently of generated output, including shadowing and reexports.
+File cases run from the repository root with relative requested paths, keeping
+future `file!()` text oracles independent of checkout location. Requested source
+aliases remain intact; canonical identities are only loader cache/cycle keys.
+Auxiliary files belong to the requested primary file's package directory, even
+when the primary itself is a symlink. Targets remain inside the assignment's
+fixture tree. Harness evidence records the working directory.
 
 PA7 independently checks all matching/transcription fixtures with rustc. Typed
 invariants additionally verify ordered-rule fragment reuse, capture opacity,

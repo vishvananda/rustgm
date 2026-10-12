@@ -21,6 +21,7 @@ impl Sources for Files {
         };
         Ok(Some(InputFile {
             identity: fs::canonicalize(path).map_err(|e| e.to_string())?,
+            path: path.to_owned(),
             source: SourceFile::new(bytes)?,
         }))
     }
@@ -34,6 +35,7 @@ pub fn run(
     source: SourceFile,
     path: Option<&str>,
     config: &Config,
+    crate_name: Option<&str>,
     count: bool,
     mode: Mode,
     out: &mut impl Write,
@@ -42,11 +44,16 @@ pub fn run(
         || Ok(PathBuf::from("stdin.rs")),
         |p| fs::canonicalize(p).map_err(|e| e.to_string()),
     )?;
-    let root = InputFile { identity, source };
+    let root = InputFile {
+        identity,
+        path: path.filter(|p| *p != "-").unwrap_or("<anon>").into(),
+        source,
+    };
     if matches!(mode, Mode::Expanded) {
-        let report = resolve::expansion::analyze(root, &mut Files, config)
-            .and_then(resolve::analyze_expanded)
-            .map_err(|e| e.to_string())?;
+        let report =
+            resolve::expansion::analyze_with_crate_name(root, &mut Files, config, crate_name)
+                .and_then(resolve::analyze_expanded)
+                .map_err(|e| e.to_string())?;
         return if count {
             resolve::render::count_expanded(&report, out)
         } else {

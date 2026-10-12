@@ -21,6 +21,8 @@ pub struct Module {
 }
 pub struct Package {
     pub units: Vec<Unit>,
+    pub file_paths: Vec<std::path::PathBuf>,
+    pub crate_name: String,
     pub modules: Vec<Module>,
     pub names: Names,
     pub children: HashMap<(ModuleId, NodeKey), ModuleId>,

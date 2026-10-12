@@ -24,6 +24,7 @@ impl Sources for Memory {
 fn input(path: &Path, text: &str) -> Result<InputFile, String> {
     Ok(InputFile {
         identity: path.into(),
+        path: path.into(),
         source: SourceFile::new(text.as_bytes().to_vec())?,
     })
 }

@@ -88,6 +88,7 @@ fn generated_items_enter_name_resolution_with_stable_source_facts() -> Result<()
     let mut package = load::load(
         InputFile {
             identity: "/crate/lib.rs".into(),
+            path: "/crate/lib.rs".into(),
             source: SourceFile::new(source.as_bytes().to_vec())?,
         },
         &mut NoFiles,

@@ -21,6 +21,7 @@ struct Options {
     count: bool,
     mode: String,
     config: Config,
+    crate_name: Option<String>,
 }
 
 fn options() -> Result<Options, String> {
@@ -30,6 +31,7 @@ fn options() -> Result<Options, String> {
         count: false,
         mode: String::new(),
         config: Config::default(),
+        crate_name: None,
     };
     let mut args = std::env::args().skip(1);
     while let Some(arg) = args.next() {
@@ -78,6 +80,9 @@ fn options() -> Result<Options, String> {
                 options.mode = "--emit-crate-ast".into();
                 options.count = true;
             }
+            "--crate-name" => {
+                options.crate_name = Some(args.next().ok_or("--crate-name requires a name")?);
+            }
             "--cfg" => {
                 let setting = args.next().ok_or("--cfg requires an option")?;
                 options
@@ -125,6 +130,7 @@ fn compile(options: &Options) -> Result<(), String> {
             source,
             options.input.as_deref(),
             &options.config,
+            options.crate_name.as_deref(),
             options.count,
             if options.mode == "--emit-names" {
                 modules::Mode::Names
