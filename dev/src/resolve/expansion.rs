@@ -32,6 +32,7 @@ use crate::{
 use std::collections::VecDeque;
 mod attributes;
 mod bindings;
+mod diagnostics;
 mod location;
 mod paths;
 
@@ -177,25 +178,7 @@ pub fn analyze(
         recursion_limit,
         builtin_definitions: vec![None; Builtin::ALL.len()],
     };
-    engine.scan()?;
-    while let Some(index) = engine.ready.pop_front() {
-        engine.calls[index].queued = false;
-        engine.attempt(index)?;
-    }
-    if let Some(index) = engine
-        .calls
-        .iter()
-        .position(|call| call.state != State::Complete)
-    {
-        if let Some(error) = engine.calls[index].error.take() {
-            return Err(error);
-        }
-        return Err(engine.calls[index]
-            .diagnostic("unresolved macro is not in textual scope or path scope"));
-    }
-    if let Some(error) = engine.paths.take_error() {
-        return Err(error);
-    }
+    engine.run().map_err(|error| engine.diagnostic(error))?;
     Ok(Report {
         package: engine.loader.package,
         definitions: engine.definitions,
@@ -207,6 +190,28 @@ pub fn analyze(
     })
 }
 impl<S: Sources> Engine<'_, S> {
+    fn run(&mut self) -> Result<(), Error> {
+        self.scan()?;
+        while let Some(index) = self.ready.pop_front() {
+            self.calls[index].queued = false;
+            self.attempt(index)?;
+        }
+        if let Some(index) = self
+            .calls
+            .iter()
+            .position(|call| call.state != State::Complete)
+        {
+            if let Some(error) = self.calls[index].error.take() {
+                return Err(error);
+            }
+            return Err(self.calls[index]
+                .diagnostic("unresolved macro is not in textual scope or path scope"));
+        }
+        if let Some(error) = self.paths.take_error() {
+            return Err(error);
+        }
+        Ok(())
+    }
     fn wake(&mut self, index: usize) {
         if !self.calls[index].queued {
             self.calls[index].queued = true;
@@ -216,7 +221,12 @@ impl<S: Sources> Engine<'_, S> {
     fn scan(&mut self) -> Result<(), Error> {
         while let Some(work) = self.work.pop() {
             match work {
-                Work::Visit(visit) => self.visit(visit)?,
+                Work::Visit(visit) => self.visit(visit).map_err(|mut error| {
+                    if error.introduction.0 == 0 {
+                        error.introduction = visit.introduction;
+                    }
+                    error
+                })?,
                 Work::Restore(head) => self.head = head,
                 Work::Finish { output, restore } => {
                     if let Some(output) = output {
@@ -360,6 +370,22 @@ impl<S: Sources> Engine<'_, S> {
             Ok(context) => context,
             Err(error) => {
                 self.calls[index].state = State::Failed;
+                let mut error = error;
+                error.expansions.push(diagnostics::frame(
+                    &self.loader.package,
+                    &self.definitions[definition],
+                    Location {
+                        file,
+                        span: self
+                            .loader
+                            .package
+                            .unit(file)
+                            .configured
+                            .ast
+                            .node(visit.node)
+                            .span,
+                    },
+                ));
                 return Err(error);
             }
         };
@@ -746,7 +772,17 @@ impl<S: Sources> Engine<'_, S> {
                 position,
             },
         )
-        .map_err(|e| Error::at(file, original.start, e.message))?;
+        .map_err(|e| {
+            Error::at(
+                file,
+                if e.offset == 0 {
+                    original.start
+                } else {
+                    e.offset
+                },
+                e.message,
+            )
+        })?;
         let span = Span {
             start: 0,
             end: u32::try_from(generated.source.len())
@@ -846,9 +882,9 @@ impl<S: Sources> Engine<'_, S> {
             .view(|id| units.get(id.0 as usize).map(|u| u.source.text()));
         let ast =
             fragment::parse_expansion_with_inputs(&stream.source, &stream.tokens, grammar, &view)
-                .map_err(|e| Error::at(file, original.start, e.message))?;
+                .map_err(|e| diagnostics::stream_error(&stream, file, original, e))?;
         let configured = crate_syntax::configure(&stream.source, ast, self.config)
-            .map_err(|e| Error::at(file, original.start, e.message))?;
+            .map_err(|e| diagnostics::stream_error(&stream, file, original, e))?;
         let generated = package.units[file.0 as usize]
             .install_expansion(visit.node, &stream.source, configured, &stream.origins)
             .map_err(|e| Error::at(file, original.start, e.message))?;

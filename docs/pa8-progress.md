@@ -553,3 +553,36 @@ fixtures, strict Clippy, the 103-file audit and 14 harness tests. The correspond
 reference-validation and release-validation logs pass independent rustc checks,
 receipt regeneration and release tests. Only compiler fingerprints changed in
 receipts; no course fixture or oracle bytes changed. Commit `ce07ed0` passed CI.
+
+## Physical diagnostics and expansion traces
+
+Expansion and the ordinary-resolution handoff now project source errors through
+retained origin records. Typed error frames retain macro names and physical
+call/definition locations; their public display emits innermost-first notes.
+Captured expressions retain the caller's location. Failed parse/configuration
+of a new expansion maps its token offset before installation, and a failed
+invocation still contributes a selected-definition frame. Builtin failures use
+their argument offset when available. Newly loaded files can fail before a unit
+exists; error projection handles that case and retains the introducing macro.
+Projection and frame allocation run only on error paths. The error type also
+implements the standard Display and Error traits.
+
+Independent rustc JSON diagnostics in `obj/pa8-work/diagnostic-probes/` establish
+physical locations for nested calls, captured expressions, generated definitions
+and malformed output. Their primary offsets agree for those cases. The builtin
+argument case intentionally locates the bad argument, while rustc highlights
+the builtin call. RustGM does not promise rustc's diagnostic wording or notes.
+Tests also cover separate-file definitions, uninstalled malformed modules and
+atomic CLI output. The handout records the diagnostic vocabulary.
+
+`diagnostic-full-validation.log` passes 159 Rust tests, all 1,016 active fixtures,
+strict Clippy, the 104-file audit and 14 harness tests. Reference and release
+validation logs pass independent checks, receipt regeneration and release tests.
+Only compiler fingerprints changed in earlier receipts; no course fixture or
+oracle bytes changed. The Unicode index checkpoint `08f851a` passed GitHub CI.
+
+The frozen CPU-10 full-expansion comparison is
+`obj/perf/1791787467770017233/samples.json`. Full output hashes agree. A/B medians
+at 4,000/16,000/64,000 calls were 93.64/94.47, 228.71/228.86 and
+999.74/983.45 ms; largest A/A samples ranged 969.66–979.38 ms. These paired
+observations accompany the error-path change without asserting a general speedup.

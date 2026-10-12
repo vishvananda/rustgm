@@ -46,7 +46,7 @@ pub fn run(
     if matches!(mode, Mode::Expanded) {
         let report = resolve::expansion::analyze(root, &mut Files, config)
             .and_then(resolve::analyze_expanded)
-            .map_err(|e| diagnostic(&e))?;
+            .map_err(|e| e.to_string())?;
         return if count {
             resolve::render::count_expanded(&report, out)
         } else {
@@ -54,8 +54,8 @@ pub fn run(
         }
         .map_err(|e| e.to_string());
     }
-    let mut package = resolve::load::load(root, &mut Files, config).map_err(|e| diagnostic(&e))?;
-    let facts = resolve::analyze(&mut package).map_err(|e| diagnostic(&e))?;
+    let mut package = resolve::load::load(root, &mut Files, config).map_err(|e| e.to_string())?;
+    let facts = resolve::analyze(&mut package).map_err(|e| e.to_string())?;
     if count {
         writeln!(
             out,
@@ -71,10 +71,4 @@ pub fn run(
     } else {
         resolve::render::write(&package, &facts, out).map_err(|e| e.to_string())
     }
-}
-fn diagnostic(error: &resolve::package::Error) -> String {
-    format!(
-        "file {}: {}: {}",
-        error.file.0, error.span.start, error.message
-    )
 }

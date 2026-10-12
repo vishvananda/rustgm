@@ -89,3 +89,18 @@ fn expanded_cli_renders_owned_builtin_values_without_parser_callbacks() -> std::
     assert!(text.contains(" macros 3 invocations 3 captures 0 "));
     Ok(())
 }
+
+#[test]
+fn expanded_cli_reports_physical_offsets_and_macro_notes_atomically() -> std::io::Result<()> {
+    let result = run(
+        "--emit-expanded-crate",
+        "macro_rules! inner{()=>{missing}} macro_rules! outer{()=>{inner!()}} fn f(){outer!();}",
+    )?;
+    assert_eq!(result.status.code(), Some(1));
+    assert!(result.stdout.is_empty());
+    assert_eq!(
+        String::from_utf8_lossy(&result.stderr),
+        "ERROR: file 0: 24: unresolved value name\n  in macro inner at file 0: 58; defined at file 0: 0\n  in macro outer at file 0: 76; defined at file 0: 34\n"
+    );
+    Ok(())
+}

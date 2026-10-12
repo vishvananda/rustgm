@@ -43,9 +43,11 @@ pub fn analyze_expanded(
         &report.invocations,
     ));
     let mut resolver = state.bind(&mut report.package);
-    resolver.collect()?;
-    resolver.imports()?;
-    resolver.bodies()?;
+    let result = resolver
+        .collect()
+        .and_then(|()| resolver.imports())
+        .and_then(|()| resolver.bodies());
+    result.map_err(|error| report.diagnostic(error))?;
     report.resolution = state.facts;
     report.names_resolved = true;
     Ok(report)

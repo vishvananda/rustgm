@@ -42,7 +42,7 @@ Student export is a later operation: this repository owns the full solution.
 The maintainer CLI currently implements `--emit-expanded-crate` and
 `--count-expanded-crate`, including module loading and final ordinary-name
 resolution. This does not activate the planned grading suite. Remaining builtin
-and diagnostic work is tracked in `docs/pa8-progress.md`.
+and grading-suite work is tracked in `docs/pa8-progress.md`.
 
 The draft view begins with `expanded-crate 1`. Its sections are:
 
@@ -77,8 +77,21 @@ Name IDs use the PA6 spelling table, now including the early builtin prelude and
 ordinary item declarations. Name definitions can additionally have kind
 `builtin-macro`. Successful output contains fully resolved ordinary names and no
 pending expansion references. Source failures emit no view bytes, exit 1 and
-report `ERROR: file FILE: OFFSET: MESSAGE` on stderr. Diagnostic provenance is
-still being completed before the grading contract is frozen.
+report `ERROR: file FILE: OFFSET: MESSAGE` on stderr. Error offsets refer to
+normalized physical source, not the appended expansion image. When applicable,
+subsequent lines report innermost-first expansion ancestry:
+
+```text
+  in macro NAME at file FILE: OFFSET; defined at file FILE: OFFSET
+  in macro NAME at file FILE: OFFSET; builtin
+```
+
+A captured expression keeps its original physical error location. A failed
+expansion can report its selected definition even before an invocation record
+has been committed. Module parse errors retain their introducing expansion,
+including when the invalid file has not yet entered the source registry. These
+are RustGM diagnostic messages; rustc's wording and note layout are not an oracle
+contract.
 
 The count mode emits just the footer's counts, without `end-expanded-crate`.
 `make perf-expanded-crate` measures independent functions whose macro matcher

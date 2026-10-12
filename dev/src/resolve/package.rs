@@ -26,10 +26,18 @@ pub struct Package {
     pub children: HashMap<(ModuleId, NodeKey), ModuleId>,
 }
 #[derive(Debug)]
+pub struct ExpansionTrace {
+    pub macro_name: String,
+    pub call: crate::expand::stream::Location,
+    pub definition: Option<crate::expand::stream::Location>,
+}
+#[derive(Debug)]
 pub struct Error {
     pub file: FileId,
     pub span: Span,
     pub message: String,
+    pub expansions: Vec<ExpansionTrace>,
+    pub(crate) introduction: ContextId,
 }
 impl Error {
     #[must_use]
@@ -41,9 +49,38 @@ impl Error {
                 end: offset,
             },
             message: message.into(),
+            expansions: Vec::new(),
+            introduction: ContextId(0),
         }
     }
 }
+impl std::fmt::Display for Error {
+    fn fmt(&self, output: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            output,
+            "file {}: {}: {}",
+            self.file.0, self.span.start, self.message
+        )?;
+        for trace in &self.expansions {
+            write!(
+                output,
+                "\n  in macro {} at file {}: {}",
+                trace.macro_name, trace.call.file.0, trace.call.span.start
+            )?;
+            if let Some(definition) = trace.definition {
+                write!(
+                    output,
+                    "; defined at file {}: {}",
+                    definition.file.0, definition.span.start
+                )?;
+            } else {
+                write!(output, "; builtin")?;
+            }
+        }
+        Ok(())
+    }
+}
+impl std::error::Error for Error {}
 impl Package {
     pub(crate) fn origin(&self, file: FileId, offset: u32) -> Option<Origin> {
         let origins = &self.unit(file).origins;

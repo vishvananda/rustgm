@@ -1271,3 +1271,119 @@ fn early_item_imports_and_late_shadows_reuse_final_definition_identities() -> Re
     }
     Ok(())
 }
+
+fn diagnosed(source: &str, files: &mut Files) -> Result<resolve::package::Error, String> {
+    let result = expansion::analyze(
+        InputFile {
+            identity: "/crate/lib.rs".into(),
+            source: SourceFile::new(source.as_bytes().to_vec())?,
+        },
+        files,
+        &Config::default(),
+    )
+    .and_then(resolve::analyze_expanded);
+    match result {
+        Ok(_) => Err("expected a source diagnostic".into()),
+        Err(error) => Ok(error),
+    }
+}
+
+#[test]
+fn expansion_diagnostics_project_physical_tokens_and_ordered_call_definition_traces()
+-> Result<(), String> {
+    for (source, offset, names, calls, definitions) in [
+        (
+            "macro_rules! inner{()=>{missing}} macro_rules! outer{()=>{inner!()}} fn f(){outer!();}",
+            24,
+            vec!["inner", "outer"],
+            vec![58, 76],
+            vec![Some(0), Some(34)],
+        ),
+        (
+            "macro_rules! identity{($x:expr)=>{$x}}fn f(){identity!(missing);}",
+            55,
+            vec![],
+            vec![],
+            vec![],
+        ),
+        (
+            "macro_rules! maker{()=>{macro_rules! inner{()=>{missing}} inner!();}}fn f(){maker!();}",
+            48,
+            vec!["inner", "maker"],
+            vec![58, 76],
+            vec![Some(24), Some(0)],
+        ),
+        (
+            "macro_rules! m{()=>{1 2}}fn f(){m!();}",
+            22,
+            vec!["m"],
+            vec![32],
+            vec![Some(0)],
+        ),
+        (
+            "macro_rules! m{()=>{line!(1)}}fn f(){m!();}",
+            26,
+            vec!["line", "m"],
+            vec![20, 37],
+            vec![None, Some(0)],
+        ),
+    ] {
+        let error = diagnosed(source, &mut Files::default())?;
+        assert_eq!(error.file.0, 0);
+        assert_eq!(error.span.start, offset, "{source}");
+        assert_eq!(
+            error
+                .expansions
+                .iter()
+                .map(|e| e.macro_name.as_str())
+                .collect::<Vec<_>>(),
+            names
+        );
+        assert_eq!(
+            error
+                .expansions
+                .iter()
+                .map(|e| e.call.span.start)
+                .collect::<Vec<_>>(),
+            calls
+        );
+        assert_eq!(
+            error
+                .expansions
+                .iter()
+                .map(|e| e.definition.map(|d| d.span.start))
+                .collect::<Vec<_>>(),
+            definitions
+        );
+    }
+    Ok(())
+}
+
+#[test]
+fn expansion_diagnostics_cross_files_and_handle_uninstalled_failed_modules() -> Result<(), String> {
+    let mut files = Files::default();
+    let child = "macro_rules! m {()=>{missing}}";
+    files.files.insert("/crate/child.rs".into(), child.into());
+    let error = diagnosed("#[macro_use] mod child; fn f(){m!();}", &mut files)?;
+    assert_eq!(error.file.0, 1);
+    assert_eq!(error.span.start, 21);
+    assert_eq!(error.expansions.len(), 1);
+    let trace = &error.expansions[0];
+    assert_eq!(trace.macro_name, "m");
+    assert_eq!(trace.call.file.0, 0);
+    assert_eq!(trace.call.span.start, 31);
+    assert!(
+        trace
+            .definition
+            .is_some_and(|d| d.file.0 == 1 && d.span.start == 0)
+    );
+    files
+        .files
+        .insert("/crate/child.rs".into(), "fn invalid(".into());
+    let error = diagnosed("macro_rules! m{()=>{mod child;}}m!();", &mut files)?;
+    assert_eq!(error.file.0, 1);
+    assert_eq!(error.expansions.len(), 1);
+    assert_eq!(error.expansions[0].macro_name, "m");
+    assert_eq!(error.expansions[0].call.file.0, 0);
+    Ok(())
+}
