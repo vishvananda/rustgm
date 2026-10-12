@@ -71,6 +71,7 @@ fn contents(body: &Body, out: &mut impl Write) -> io::Result<()> {
             LocalKind::Parameter(index) => write!(out, "parameter={index}")?,
             LocalKind::Binding => write!(out, "binding")?,
             LocalKind::Merge => write!(out, "merge")?,
+            LocalKind::Guard(id) => write!(out, "guard-view={}", id.0)?,
         }
         if let Some(definition) = local.definition {
             write!(out, " def={}", definition.0)?;
@@ -96,11 +97,32 @@ fn contents(body: &Body, out: &mut impl Write) -> io::Result<()> {
         }
         writeln!(out)?;
     }
+    for (id, guard) in body.guards.iter().enumerate() {
+        writeln!(
+            out,
+            "  guard g{id} tested={}:{} views={}:{}",
+            guard.tested_start, guard.tested_end, guard.views_start, guard.views_end
+        )?;
+    }
+    for (id, protected) in body.guard_places.iter().enumerate() {
+        write!(out, "  guard-place {id} shallow=")?;
+        place(*protected, out)?;
+        writeln!(out)?;
+    }
     for (id, block) in body.blocks.iter().enumerate() {
         writeln!(out, "  block b{id}:")?;
         for statement in body.statements(block) {
             write!(out, "    ")?;
             match statement.action {
+                Action::GuardStart(id) => write!(out, "guard-start g{}", id.0)?,
+                Action::GuardUse(id) => write!(out, "guard-use g{}", id.0)?,
+                Action::BindView {
+                    view,
+                    place: source,
+                } => {
+                    write!(out, "bind-view l{} ", view.0)?;
+                    place(source, out)?;
+                }
                 Action::Project(id) => write!(out, "project p{}", id.0)?,
                 Action::StorageLive(local) => write!(out, "live l{}", local.0)?,
                 Action::StorageDead(local) => write!(out, "dead l{}", local.0)?,

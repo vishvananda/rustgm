@@ -106,6 +106,8 @@ pub fn build(report: &Report, facts: &Declarations) -> Result<Program, Error> {
 impl Body {
     fn new(owner: Owner, source: NodeKey, result: TypeId) -> Self {
         Self {
+            guards: Vec::new(),
+            guard_places: Vec::new(),
             projections: Vec::new(),
             owner,
             source,

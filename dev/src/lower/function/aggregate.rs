@@ -81,6 +81,50 @@ impl Lower<'_, '_> {
         super::super::casts::integer(&mut self.builder, value, target, signed)
             .map(Selected::Runtime)
     }
+    pub(super) fn allocate_local(
+        &mut self,
+        ty: TypeId,
+        kind: crate::body::ir::LocalKind,
+    ) -> Result<Option<Address>, &'static str> {
+        if !matches!(kind, crate::body::ir::LocalKind::Guard(_)) {
+            return self.allocate(ty);
+        }
+        if self.context.layout(ty)?.size == 0 {
+            return Ok(None);
+        }
+        Ok(Some(Address {
+            operand: Operand::Slot(self.builder.slot(Type::Ptr)?),
+            align: 8,
+        }))
+    }
+    pub(super) fn bind_view(
+        &mut self,
+        view: crate::body::ir::LocalId,
+        place: Place,
+    ) -> Result<(), &'static str> {
+        let required = self
+            .context
+            .layout(self.body.locals[view.0 as usize].ty)?
+            .align;
+        let mut origin = place;
+        loop {
+            if self.context.layout(self.place_type(origin)?)?.align < required {
+                return Err("guard binding would reference an unaligned packed field");
+            }
+            let Place::Projection(id) = origin else {
+                break;
+            };
+            origin = self.body.projections[id.0 as usize].base;
+        }
+        let Some(destination) = self.locals[view.0 as usize] else {
+            return Ok(());
+        };
+        let address = self
+            .place(place)?
+            .ok_or("guard view has no source storage")?;
+        let source = self.pointer(address)?;
+        self.builder.store(source, destination.operand)
+    }
     pub(super) fn allocate(&mut self, ty: TypeId) -> Result<Option<Address>, &'static str> {
         let (slot, align) = match self.context.representation(ty)? {
             Representation::Scalar(Type::Void) => return Ok(None),

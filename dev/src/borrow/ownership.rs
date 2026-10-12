@@ -1,4 +1,5 @@
 //! Move/initialization proof for owned values. Loans and regions remain separate proofs.
+mod guards;
 mod paths;
 mod state;
 pub mod view;
@@ -134,6 +135,7 @@ fn visit<'a, S: BuildHasher>(
             reachable: Vec::new(),
         };
         state::verify(body, &mut facts)?;
+        guards::verify(body, &facts)?;
         record(facts);
     }
     Ok(Checked { program })
@@ -141,6 +143,11 @@ fn visit<'a, S: BuildHasher>(
 impl BodyFacts {
     fn transfer(&self, body: &Body, state: &mut State, action: Action) -> Result<(), &'static str> {
         match action {
+            Action::BindView { view, .. } => {
+                let path = &self.paths.entries[view.0 as usize];
+                state.fill(path, true)?;
+                state.written(path.start, true);
+            }
             Action::StorageLive(id) | Action::StorageDead(id) => {
                 let path = &self.paths.entries[id.0 as usize];
                 let initialized = matches!(action, Action::StorageLive(_))
@@ -183,12 +190,43 @@ impl BodyFacts {
                     }
                 }
             }
-            Action::Project(_) => {}
+            Action::GuardStart(_) | Action::GuardUse(_) | Action::Project(_) => {}
         }
         Ok(())
     }
     fn inspect(&self, body: &Body, state: &mut State, action: Action) -> Result<(), &'static str> {
         match action {
+            Action::GuardUse(id) => {
+                let guard = body
+                    .guards
+                    .get(id.0 as usize)
+                    .ok_or("missing guard use owner")?;
+                for local in guard.views_start..guard.views_end {
+                    let path = self
+                        .paths
+                        .entries
+                        .get(local as usize)
+                        .ok_or("invalid guard view")?;
+                    if !state.initialized(path)? {
+                        return Err("guard binding may be uninitialized at guard completion");
+                    }
+                }
+            }
+            Action::BindView { view, place } => {
+                if !matches!(
+                    body.locals.get(view.0 as usize).map(|l| l.kind),
+                    Some(LocalKind::Guard(_))
+                ) {
+                    return Err("view binding requires an internal guard local");
+                }
+                let info = self.paths.place(place)?;
+                if !info.empty
+                    && let Some(path) = info.path
+                    && !state.initialized(&self.paths.entries[path.0 as usize])?
+                {
+                    return Err("guard binding may be uninitialized or moved");
+                }
+            }
             Action::Evaluate(id) => {
                 if let Rvalue::IsVariant { place, .. } | Rvalue::Validate(place) =
                     body.values[id.0 as usize].kind
@@ -211,6 +249,11 @@ impl BodyFacts {
                         } else {
                             "local may be uninitialized or moved at this read"
                         });
+                    }
+                    if self.uses[id.0 as usize] == Use::Move
+                        && self.paths.view_root(body, info.path).is_some()
+                    {
+                        return Err("cannot move a non-Copy value out of a guard binding");
                     }
                     // Eligibility to move through a place still applies to an
                     // empty subarray, even though it reads no initialization bits.
@@ -243,6 +286,9 @@ impl BodyFacts {
         place: Place,
     ) -> Result<(), &'static str> {
         let info = self.paths.place(place)?;
+        if self.paths.view_root(body, info.path).is_some() {
+            return Err("cannot assign through a guard binding");
+        }
         let Some(path) = info.path else {
             return Err("writing static storage requires unsafe checking");
         };

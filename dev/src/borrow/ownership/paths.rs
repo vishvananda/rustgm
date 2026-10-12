@@ -1,7 +1,10 @@
 //! Sparse move paths; ordinary indexing keeps its containing array indivisible.
 mod arrays;
+mod views;
 use crate::{
-    body::ir::{Body, LocalId, Place, ProjectionKind, Rvalue, Selection, ValueId},
+    body::ir::{
+        Action, Body, LocalId, LocalKind, Place, ProjectionKind, Rvalue, Selection, ValueId,
+    },
     types::{Kind, Store, TypeId},
 };
 use std::collections::HashMap;
@@ -32,7 +35,7 @@ pub struct Path {
     child: Option<PathId>,
     sibling: Option<PathId>,
 }
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub(super) struct PlaceInfo {
     pub path: Option<PathId>,
     pub indexed: bool,
@@ -44,6 +47,8 @@ pub struct Paths {
     pub bits: u32,
     pub(super) projections: Vec<PlaceInfo>,
     pub(super) temporaries: HashMap<ValueId, PathId>,
+    pub(super) views: HashMap<LocalId, Vec<PlaceInfo>>,
+    pub(super) guard_places: Vec<Vec<PlaceInfo>>,
 }
 impl Paths {
     pub(super) fn build(body: &Body, types: &Store) -> Result<Self, &'static str> {
@@ -52,6 +57,8 @@ impl Paths {
             bits: 0,
             projections: Vec::new(),
             temporaries: HashMap::new(),
+            views: HashMap::new(),
+            guard_places: Vec::new(),
         };
         for (index, local) in body.locals.iter().enumerate() {
             let id = LocalId(u32::try_from(index).map_err(|_| "too many move locals")?);
@@ -79,25 +86,14 @@ impl Paths {
             if !info.indexed
                 && let (Some(parent), Some(component)) = (info.path, component)
             {
-                let (parent, component) = paths.normalize(parent, component)?;
-                let key = (parent, component);
-                let id = if let Some(id) = fields.get(&key) {
-                    *id
-                } else {
-                    let root = paths.entries[parent.0 as usize].root;
-                    let id = paths.insert(root, Some(parent), Some(component), projection.ty)?;
-                    if !matches!(component, Component::Field(_)) {
-                        let Some(Kind::Array { length, .. }) =
-                            types.kind(paths.entries[parent.0 as usize].ty)
-                        else {
-                            return Err("pattern move path requires a fixed array");
-                        };
-                        arrays.add(parent, id, component, length)?;
-                    }
-                    fields.insert(key, id);
-                    id
-                };
-                info.path = Some(id);
+                info.path = Some(paths.component(
+                    types,
+                    &mut fields,
+                    &mut arrays,
+                    parent,
+                    component,
+                    projection.ty,
+                )?);
             }
             paths.projections.push(info);
         }
@@ -111,6 +107,9 @@ impl Paths {
             {
                 paths.temporary(body, id)?;
             }
+        }
+        if !body.guards.is_empty() {
+            paths.guard_views(body, types, &mut fields, &mut arrays)?;
         }
         if arrays.is_empty() {
             paths.number()?;
@@ -130,6 +129,32 @@ impl Paths {
             self.temporaries.insert(value, id);
         }
         Ok(())
+    }
+    fn component(
+        &mut self,
+        types: &Store,
+        fields: &mut HashMap<(PathId, Component), PathId>,
+        arrays: &mut arrays::Arrays,
+        parent: PathId,
+        component: Component,
+        ty: TypeId,
+    ) -> Result<PathId, &'static str> {
+        let (parent, component) = self.normalize(parent, component)?;
+        let key = (parent, component);
+        if let Some(id) = fields.get(&key) {
+            return Ok(*id);
+        }
+        let root = self.entries[parent.0 as usize].root;
+        let id = self.insert(root, Some(parent), Some(component), ty)?;
+        if !matches!(component, Component::Field(_)) {
+            let Some(Kind::Array { length, .. }) = types.kind(self.entries[parent.0 as usize].ty)
+            else {
+                return Err("pattern move path requires a fixed array");
+            };
+            arrays.add(parent, id, component, length)?;
+        }
+        fields.insert(key, id);
+        Ok(id)
     }
     fn normalize(
         &self,

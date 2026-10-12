@@ -92,6 +92,9 @@ impl Machine<'_> {
                     Action::Store { .. } => {
                         return Err("test executor has no mutable globals".into());
                     }
+                    Action::GuardStart(_) | Action::GuardUse(_) | Action::BindView { .. } => {
+                        return Err("guard views require the native executor".into());
+                    }
                     Action::Project(_) => {
                         return Err(
                             "scalar test executor does not implement aggregate places".into()

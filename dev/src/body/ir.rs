@@ -19,6 +19,15 @@ pub struct ScalarId(pub u32);
 pub struct BlockId(pub u32);
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct ProjectionId(pub u32);
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct GuardId(pub u32);
+/// A guard protects tested places shallowly and its selected binding views deeply.
+pub struct Guard {
+    pub tested_start: u32,
+    pub tested_end: u32,
+    pub views_start: u32,
+    pub views_end: u32,
+}
 #[derive(Clone, Copy, Debug)]
 pub struct ValueList {
     pub start: u32,
@@ -56,6 +65,8 @@ pub enum LocalKind {
     Parameter(u32),
     Binding,
     Merge,
+    /// Internal shared view; native storage holds an address, never an owned snapshot.
+    Guard(GuardId),
 }
 pub struct Local {
     /// Persistent predecessor in the live storage stack at this local's creation.
@@ -116,6 +127,15 @@ pub struct Value {
 }
 #[derive(Clone, Copy, Debug)]
 pub enum Action {
+    /// Start a new guard attempt; previous attempts cannot keep protections live.
+    GuardStart(GuardId),
+    /// Keep guard protections live on paths that finish evaluating the guard.
+    GuardUse(GuardId),
+    /// Select a protected binding address after the pattern decision succeeds.
+    BindView {
+        view: LocalId,
+        place: Place,
+    },
     /// Form a place once; indexing checks bounds even when its value is discarded.
     Project(ProjectionId),
     StorageLive(LocalId),
@@ -179,6 +199,9 @@ pub enum Owner {
     },
 }
 pub struct Body {
+    pub guards: Vec<Guard>,
+    /// Proof-only tested places, including places in inactive variants. Never evaluated.
+    pub guard_places: Vec<Place>,
     pub projections: Vec<Projection>,
     pub owner: Owner,
     pub source: NodeKey,

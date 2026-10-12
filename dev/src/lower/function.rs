@@ -102,7 +102,7 @@ impl Lower<'_, '_> {
         };
         for (index, local) in self.body.locals.iter().enumerate() {
             let address = if live.as_ref().is_none_or(|live| live[index]) {
-                self.allocate(local.ty)?
+                self.allocate_local(local.ty, local.kind)?
             } else {
                 None
             };
@@ -120,9 +120,13 @@ impl Lower<'_, '_> {
             for statement in &self.body.statements[block.start as usize..block.end as usize] {
                 self.source = statement.source;
                 match statement.action {
+                    Action::BindView { view, place } => self.bind_view(view, place)?,
                     Action::Project(id) => self.project(id)?,
-                    Action::StorageLive(_) | Action::StorageDead(_) | Action::StorageEnd { .. } => {
-                    }
+                    Action::GuardStart(_)
+                    | Action::GuardUse(_)
+                    | Action::StorageLive(_)
+                    | Action::StorageDead(_)
+                    | Action::StorageEnd { .. } => {}
                     Action::Evaluate(value) => {
                         let result = self.evaluate(value)?;
                         self.values[value.0 as usize] = Some(result);
@@ -205,22 +209,47 @@ impl Lower<'_, '_> {
         }
         Ok(())
     }
-    fn place(&self, place: Place) -> Result<Option<Address>, &'static str> {
+    fn place(&mut self, place: Place) -> Result<Option<Address>, &'static str> {
         match place {
             Place::Temporary(id) => match self.value(id)? {
                 Selected::Object(address) => Ok(Some(address)),
                 Selected::Unit | Selected::Item(_) => Ok(None),
-                Selected::Runtime(_) => Err("scalar temporary has no aggregate place"),
+                Selected::Runtime(value) => {
+                    let address = self.allocate(self.body.values[id.0 as usize].ty)?;
+                    self.write(
+                        address,
+                        Selected::Runtime(value),
+                        self.body.values[id.0 as usize].ty,
+                    )?;
+                    Ok(address)
+                }
             },
             Place::Projection(id) => match self.projections.get(id.0 as usize) {
                 Some(Projected::Ready(address)) => Ok(*address),
                 _ => Err("projected address does not dominate its use"),
             },
-            Place::Local(id) => self
-                .locals
-                .get(id.0 as usize)
-                .copied()
-                .ok_or("missing body local"),
+            Place::Local(id) => {
+                let address = self
+                    .locals
+                    .get(id.0 as usize)
+                    .copied()
+                    .ok_or("missing body local")?;
+                if matches!(self.body.locals[id.0 as usize].kind, LocalKind::Guard(_))
+                    && let Some(address) = address
+                {
+                    let pointer = self.builder.load(Type::Ptr, address.operand)?;
+                    let align = self
+                        .context
+                        .layout(self.body.locals[id.0 as usize].ty)?
+                        .align;
+                    Ok(Some(Address {
+                        operand: pointer.operand,
+                        align,
+                    }))
+                } else {
+                    Ok(address)
+                }
+            }
             Place::Static(_) => {
                 Err("static values require constant evaluation and allocation lowering")
             }

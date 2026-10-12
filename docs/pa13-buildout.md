@@ -1023,3 +1023,102 @@ disjoint. Guard-let locals have normal move/mutation semantics; moving an outer
 non-Copy value can fail either on retry or on fallback after a failed operand.
 These are requirements for the next execution work, not proofs provided by the
 current inspection mode. PA13 is still planned; PA14/PA15 remain in the goal.
+
+## Guard-view foundation
+
+The body model now has internal `GuardId` groups, `LocalKind::Guard` binding
+views, and `GuardStart`, `BindView`, and `GuardUse` actions. A view retains its
+value type and selected source place; it owns no value snapshot. A group lists
+shallowly protected tested places and a contiguous range of its binding views.
+Tested-place records are proof-only, including places in inactive variants;
+the native path never evaluates them. Guard execution from source is still
+gated while the decision builder gains retry continuations and delayed commits.
+
+Ownership requires initialization when selecting a binding view, rejects moves
+and assignments through views, and requires all selected views at guard
+completion. Physical source identities are resolved before move-path numbering,
+including nested views, projected fields and overlapping array ranges. Alias
+expansion is bounded to one million work units. Existing path interning and
+array boundary numbering are shared with ordinary ownership checking.
+
+A backward may-use worklist computes protection liveness. Guard completion
+uses the shallow tested-place protections and deep binding-view protections;
+ordinary view reads also keep the relevant binding protection live. Starting
+an attempt and binding/recreating view locals end preceding lifetimes. Writes,
+moves and storage changes conflict only with future live protections. Thus a
+path that returns without a later view/guard use can mutate the source. The
+proof follows ownership CFG edges, has a 64 MB state bound and a 32-million
+work budget, and skips allocation entirely for bodies without guard groups.
+This is an internal guard proof, not authorization to erase user reference,
+region or loan obligations.
+
+Native view locals hold addresses. Scalar temporary views materialize already
+evaluated scalar snapshots; aggregate views point to existing storage. Aliases
+are rebound on repeated execution. Zero-sized values need no storage. Native
+binding rejects insufficiently aligned packed origins, including zero-sized
+fields whose alignment is greater than one. Pinned rustc controls for packed
+scalar, product and zero-sized fields reject with E0793; evidence is retained
+under `obj/pa13-work/guard-packed/`. The native check is a required physical
+constraint in addition to the initialization/liveness proof.
+
+Eight new Rust tests exercise the primitives without bypassing the source
+execution gate. Six ownership matrices cover lifetime endings, divergence,
+branch/loop joins, shallow versus deep protection, ancestors, nested aliases,
+initialization, immutability and array overlap. A lowering test turns exactly
+one owned binding into an internal view in each of ten typed development
+programs, preserving the ordinary parser and selected types. Separate rustc
+programs use explicit shared references as the independent component contract.
+The ten programs cover scalar places/temporaries, products, non-Copy values,
+arrays, branch-selected addresses, repeated bindings, zero-sized values and
+function items. A final test rejects packed scalar and zero-sized origins.
+These tests validate the view representation; they do not claim match-guard
+source lowering, retry behavior or a complete PA13 release.
+
+The final foundation checks pass: 297 Rust tests in debug and release; 1,695
+active assignment cases; Clippy all/pedantic, rustfmt and the 189-file audit;
+24 harness tests, the 38-stage placement check, 24 upstream fixtures, 126
+Reference files and the backend smoke test. Explicit `make ref-test` updated
+twelve source receipts; every existing oracle stream/status remains unchanged.
+Logs are `obj/pa13-work/guard-views-{debug,release,quality,refs}.log`.
+
+The frozen release candidate is `obj/pa13-work/guard-views-candidate`, SHA-256
+`fd77bc62717f1b42ae8fe30f7ce1e27a92dcafc142fa8046434c08599eac5d8e`.
+It passes PA11's 180 native executions/194 checks and PA12's 48 native
+executions/97 checks. Their receipts under `obj/native/pa11` and `obj/native/pa12`
+record that exact candidate hash. The ten new component programs additionally
+pass CPPGM validation/execution and their independent rustc programs, with
+receipt `obj/pa13-work/guard-views-qualified-1791847010332432110/evidence.json`.
+That separate component evidence consumes test-produced typed LowIR; it does
+not imply the compiler now accepts guarded source execution.
+
+Next is the compact retry decision builder, selection of views before guards,
+conditional guard scopes and commits after success. The seven pinned order
+probes in `obj/pa13-work/guard-order-1791845855949986699/evidence.json` establish
+source-order product traversal, including record patterns whose written field
+order differs from declaration order, nested alternatives and immediate stop
+on successful guards. The thirteen flow controls in
+`obj/pa13-work/guard-flow-1791845753358155411/evidence.json` additionally require
+imaginary ownership paths bypassing guards without inventing executable
+retries after an irrefutable conditional guard. PA13/PA14/PA15 remain incomplete.
+
+Two frozen CPU-10 LowIR-stage measurements compare the published guard-parser
+compiler with this foundation. A/A calibration and three ABBA blocks per size
+retain all 108 observations. No build or test from this task overlapped timing.
+Every complete LowIR output and count comparison is byte-identical.
+
+| Workload | Run | Largest baseline/candidate median ms | Largest baseline/candidate median peak KiB |
+| --- | --- | ---: | ---: |
+| ordinary, 64,000 functions | 1791847279507720634 | 3434.96 / 3468.18 | 703194 / 715176 |
+| constructor, 16,000 functions | 1791847372306311583 | 2898.79 / 2900.71 | 540540 / 549478 |
+
+These are ordinary and unguarded constructor workloads: source guards remain
+gated, so the measurements cover existing-path overhead, not guard liveness
+scaling. The retained per-body guard arenas have a small representation cost.
+Timing varies between workloads; the observations do not establish a general
+speedup or a regression-free claim. Raw samples remain in `obj/perf/RUN/samples.json`.
+
+At the largest sizes, median peak RSS is about 1.7% higher in each workload;
+median elapsed time is about 1.0% higher for ordinary code and 0.1% higher for
+constructors. The body now retains two empty vector headers even when no guard
+exists. Revisit that per-function cost with guarded workloads when the builder
+is connected; no dense node-fact record grew in this change.

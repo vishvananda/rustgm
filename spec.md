@@ -84,6 +84,12 @@ already-closed nested scopes. Storage compaction is distinct from ownership
 proof complexity: charge the paths/words actually visited and retain explicit
 dataflow memory and work budgets.
 
+Internal match-guard views retain selected place identity and delay owning
+captures until success. Protect tested places without runtime loads or address
+formation for inactive variants. Track guard protection liveness across control
+flow; a diverging path does not imply a later guard use. Internal view proofs
+are distinct from the pending loans and regions of user reference values.
+
 Borrow checking runs before references and moves lose their source semantics
 in LowIR. Region/dataflow analysis uses typed worklists and bounded lattices,
 with per-body storage and complete dependency edges. Pattern usefulness and
