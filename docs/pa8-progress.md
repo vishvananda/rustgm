@@ -81,11 +81,11 @@ individual observations when drawing conclusions.
 ## Work still required before activation
 
 1. Complete final-context coverage for composed opaque fragments and macro
-   hygiene. Probe captured import/item introduction marks separately from the
-   identifier's syntax context, and carry generated-binding checks through
-   ordinary import completion.
-2. Finish `$crate`/`local_inner_macros` coverage, builtin macros, projected
-   definition/call-site diagnostics and recursion-limit attributes.
+   hygiene. Finish expansion-time scope ambiguity checks, including outer/glob
+   candidates and ordinary import completion after non-macro declarations.
+2. Implement builtin macros and projected definition/call-site diagnostics.
+   Extend the `$crate`/`local_inner_macros` and recursion-limit coverage below
+   as those builtin paths are introduced.
 3. Measure the full expansion path, finalize the PA8 handout/text vocabulary,
    add independently classified course fixtures, refresh receipts explicitly,
    validate debug/release and CI, then activate the milestone.
@@ -250,3 +250,63 @@ and further performance review remain part of activation.
 14 harness tests, upstream provenance, and regenerated course references.
 Only the two new PA6 receiver fixtures add oracle bytes; all earlier sidecars
 are unchanged. The PA1–PA7 receipts refresh compiler source fingerprints.
+
+
+## Introduction ancestry, imports and expansion attributes
+
+Identifier syntax context and expansion introduction are now distinct facts.
+A captured path, item, or entire macro call retains its identifier hygiene but
+is introduced by the containing expansion. The worklist carries that
+introduction through generated modules and syntax. Invocation parent links
+record actual expansion ancestry. Sparse definition/import introduction maps
+and parent facts remain in the resolution report for subsequent import checks;
+ordinary PA6 leaves these tables empty.
+
+Textual lookup now checks conflicting path candidates in inner lexical scopes,
+and checks outer candidates when a generated textual definition would shadow
+an earlier binding from outside its expansion. Candidates introduced together,
+including nested expansions, remain compatible. Both calls and textual import
+aliases subscribe to relevant path changes; a later generated import can
+invalidate an earlier speculative selection without rescanning unrelated calls.
+Pinned Reference guidance is in `names/name-resolution.md`, particularly
+`path-vs-textual-macro` and `more-expanded-vs-outer`.
+
+Opaque path/type captures in use declarations consume their parsed path facts.
+Groups, globs and aliases are supported; appended identifiers, generic segments
+and non-path types are rejected according to the pinned probes. `$crate` in a
+use tree produces a typed crate-root segment, with the same placement checks as
+ordinary rich paths. No capture is re-lexed to implement these consumers.
+
+`local_inner_macros` qualifies literal unqualified macro names through the
+defining crate during macro-path resolution. Captured identifiers, expressions,
+token trees and already qualified calls retain their own lookup. Root
+`recursion_limit` is read from configured attributes; the first value wins and
+the default remains 128. The worklist honors the exact requested depth, with a
+201-expansion successful chain tested under a limit of 256. Global work and
+provenance bounds remain separate diagnosed resource limits.
+
+Independent compile/runtime probes are retained under
+`obj/pa8-work/introduction-probes/`, `local-inner-probes/` and `recursion-probes/`.
+They include positive controls for ordinary function imports, generated modules,
+macro aliases, captures and same-expansion shadowing. A `$crate` import probe
+exposed the inner-path-versus-outer-textual ambiguity; its initial test assumption
+was corrected to match rustc, and alias imports provide the positive control.
+
+`ancestry-limits-validation.log` records 142 Rust tests, all 1,008 earlier course
+fixtures, strict Clippy, 100 audited files with zero findings and 14 harness
+tests. The earlier hygiene commit `e9c226a` passed GitHub CI.
+
+The pinned CPU 10 ordinary-name comparison against the immutable hygiene binary
+is in `obj/perf/1791783347942994750/samples.json`. Outputs match in full at every
+scale. After A/A calibration and three ABBA blocks, 4,000/16,000/64,000-function
+A/B medians were 56.19/51.70, 220.60/203.44 and 934.02/856.58 ms. The 64,000
+A/A observations ranged 938.48–955.48 ms. This observed improvement is evidence
+for these binaries and inputs, not a general throughput guarantee; full PA8
+measurements still require the forthcoming expanded-crate CLI contract.
+
+
+`ancestry-limits-release.log` also passes all 142 Rust tests in release mode.
+`ancestry-limits-reference.log` records the independent earlier-stage rustc
+checks, upstream/Reference provenance and explicit reference regeneration.
+A structured comparison confirms only `compiler_source_sha256` changed in each
+PA1–PA7 receipt; every earlier fixture and oracle byte is unchanged.

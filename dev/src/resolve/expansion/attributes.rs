@@ -96,3 +96,54 @@ impl<S: Sources> Engine<'_, S> {
         Ok(result)
     }
 }
+
+pub(super) fn recursion_limit(package: &super::Package) -> Result<usize, Error> {
+    let unit = package.unit(FileId(0));
+    let root = package.modules[0].root;
+    let Some(index) = unit.owner_indices[root.0 as usize] else {
+        return Ok(128);
+    };
+    let owner = &unit.configured.owners[index.get() as usize - 1];
+    for index in owner.attributes.clone() {
+        let effect = &unit.configured.effects[index];
+        if effect.attribute.effect != Effect::Keep {
+            continue;
+        }
+        let attribute = effect.attribute.attribute;
+        let forest = &unit.configured.ast.attributes[effect.capture as usize].forest;
+        if attribute.name(forest, unit.source.text()) != Some("recursion_limit") {
+            continue;
+        }
+        let failure = || {
+            Error::at(
+                FileId(0),
+                attribute.span.start,
+                "recursion_limit requires a string containing a non-negative integer",
+            )
+        };
+        let Input::Equals(range) = attribute.input else {
+            return Err(failure());
+        };
+        if range.end != range.start + 1 {
+            return Err(failure());
+        }
+        let token = forest.token(range.start).ok_or_else(failure)?;
+        if !matches!(
+            token.kind,
+            crate::lex::token::Kind::String | crate::lex::token::Kind::RawString
+        ) {
+            return Err(failure());
+        }
+        let Some(crate::literal::Value::String(bytes)) =
+            crate::literal::interpret(unit.source.text(), token)
+                .map_err(|e| Error::at(FileId(0), e.offset, e.message))?
+        else {
+            return Err(failure());
+        };
+        return std::str::from_utf8(&bytes)
+            .ok()
+            .and_then(|value| value.parse().ok())
+            .ok_or_else(failure);
+    }
+    Ok(128)
+}

@@ -39,6 +39,7 @@ pub struct Definition {
     pub name: NameId,
     pub compiled: Compiled,
     pub context: ContextId,
+    pub introduction: ContextId,
     pub preceding_scope: Scope,
     pub local_inner_macros: bool,
 }
@@ -67,7 +68,8 @@ struct Visit {
     node: NodeId,
     owner: Option<NodeId>,
     in_block: bool,
-    depth: u16,
+    depth: usize,
+    introduction: ContextId,
     path_scope: ScopeId,
 }
 enum Work {
@@ -95,7 +97,6 @@ struct Call {
     path: Vec<NameId>,
     scope: Scope,
     output: Option<Scope>,
-    context: ContextId,
     state: State,
     queued: bool,
     selected: Option<usize>,
@@ -121,6 +122,7 @@ struct Engine<'a, S> {
     workspace: Workspace,
     work: Vec<Work>,
     children: Vec<NodeId>,
+    recursion_limit: usize,
 }
 /// Expand textual macro invocations, including generated syntax and modules.
 /// PA8's path-resolution and hygiene integration builds on this retained state.
@@ -136,6 +138,7 @@ pub fn analyze(
     let mut loader = Loader::new(root, sources, config)?;
     loader.isolate_expansions();
     let root = loader.package.modules[0].root;
+    let recursion_limit = attributes::recursion_limit(&loader.package)?;
     let paths = paths::Paths::new(&mut loader.package)?;
     let mut engine = Engine {
         loader,
@@ -155,9 +158,11 @@ pub fn analyze(
             owner: None,
             in_block: false,
             depth: 0,
+            introduction: ContextId(0),
             path_scope: ScopeId(0),
         })],
         children: Vec::new(),
+        recursion_limit,
     };
     engine.scan()?;
     while let Some(index) = engine.ready.pop_front() {
@@ -229,6 +234,29 @@ impl<S: Sources> Engine<'_, S> {
         }
         Ok(())
     }
+    fn macro_path(&mut self, file: FileId, path: NodeId) -> Result<(bool, Vec<NameId>), Error> {
+        let (absolute, mut names) = self.loader.package.path_names(file, path)?;
+        if !absolute && names.len() == 1 {
+            let offset =
+                super::hygiene::name_offset(&self.loader.package, NodeKey { file, node: path });
+            let context = self.context(file, offset)?;
+            let local_inner = context
+                .0
+                .checked_sub(1)
+                .and_then(|index| self.invocations.get(index as usize))
+                .is_some_and(|call| self.definitions[call.definition].local_inner_macros);
+            if local_inner {
+                let root = self
+                    .loader
+                    .package
+                    .names
+                    .intern("crate")
+                    .map_err(|e| Error::at(file, offset, e))?;
+                names.insert(0, root);
+            }
+        }
+        Ok((absolute, names))
+    }
     fn register(
         &mut self,
         visit: Visit,
@@ -237,7 +265,7 @@ impl<S: Sources> Engine<'_, S> {
         capture: u32,
         grammar: MacroContext,
     ) -> Result<(), Error> {
-        let (absolute, path_names) = self.loader.package.path_names(file, path)?;
+        let (absolute, path_names) = self.macro_path(file, path)?;
         let offset = self
             .loader
             .package
@@ -247,17 +275,6 @@ impl<S: Sources> Engine<'_, S> {
             .node(visit.node)
             .span
             .start;
-        let context = self.context(
-            file,
-            self.loader
-                .package
-                .unit(file)
-                .configured
-                .ast
-                .node(path)
-                .span
-                .start,
-        )?;
         let scope = self.head;
         let output = if matches!(grammar, MacroContext::Items(_) | MacroContext::Statements) {
             let output = self
@@ -280,7 +297,6 @@ impl<S: Sources> Engine<'_, S> {
             path: path_names,
             scope,
             output,
-            context,
             state: State::Unresolved,
             queued: true,
             selected: None,
@@ -325,12 +341,15 @@ impl<S: Sources> Engine<'_, S> {
             call.grammar,
             call.scope,
             call.output,
-            call.context,
+            call.visit.introduction,
         );
-        if let Err(error) = self.invoke(visit, file, capture, grammar, definition, parent) {
-            self.calls[index].state = State::Failed;
-            return Err(error);
-        }
+        let introduction = match self.invoke(visit, file, capture, grammar, definition, parent) {
+            Ok(context) => context,
+            Err(error) => {
+                self.calls[index].state = State::Failed;
+                return Err(error);
+            }
+        };
         self.calls[index].selected = Some(definition);
         self.work.push(Work::Finish {
             output,
@@ -339,6 +358,7 @@ impl<S: Sources> Engine<'_, S> {
         self.head = scope;
         self.work.push(Work::Visit(Visit {
             depth: visit.depth + 1,
+            introduction,
             ..visit
         }));
         self.scan()?;
@@ -361,7 +381,6 @@ impl<S: Sources> Engine<'_, S> {
                 return self.define(visit, file, index, capture);
             }
             if let ItemKind::Use(tree) = item.kind {
-                let context = self.context(file, unit.configured.ast.node(tree).span.start)?;
                 return self.paths.import(
                     &mut self.loader.package,
                     Context {
@@ -371,7 +390,7 @@ impl<S: Sources> Engine<'_, S> {
                     },
                     tree,
                     item.visibility,
-                    (self.head, context),
+                    (self.head, visit.introduction),
                 );
             }
             if matches!(item.kind, ItemKind::Module { .. }) && visit.node != module.root {
@@ -385,11 +404,11 @@ impl<S: Sources> Engine<'_, S> {
             context,
         } = kind
         {
-            if visit.depth >= 128 {
+            if visit.depth >= self.recursion_limit {
                 return Err(Error::at(
                     file,
                     unit.configured.ast.node(visit.node).span.start,
-                    "macro expansion recursion exceeds 128",
+                    format!("macro expansion recursion exceeds {}", self.recursion_limit),
                 ));
             }
             if self.invocations.len() >= 1_000_000 {
@@ -429,17 +448,6 @@ impl<S: Sources> Engine<'_, S> {
         Ok(())
     }
     fn module(&mut self, visit: Visit, file: FileId, visibility: Visibility) -> Result<(), Error> {
-        let context = self.context(
-            file,
-            self.loader
-                .package
-                .unit(file)
-                .configured
-                .ast
-                .node(visit.node)
-                .span
-                .start,
-        )?;
         let child =
             self.loader
                 .load_module(visit.module, visit.node, visit.owner, visit.in_block)?;
@@ -453,7 +461,7 @@ impl<S: Sources> Engine<'_, S> {
             child,
             visit.node,
             visibility,
-            context,
+            visit.introduction,
         )?;
         if !self.flags(file, visit.owner)?.macro_use {
             self.work.push(Work::Restore(self.head));
@@ -516,6 +524,7 @@ impl<S: Sources> Engine<'_, S> {
             name,
             compiled: Compiled::new(definition),
             context,
+            introduction: visit.introduction,
             preceding_scope: self.head,
             local_inner_macros: flags.local_inner_macros,
         });
@@ -533,7 +542,7 @@ impl<S: Sources> Engine<'_, S> {
             visit.node,
             name,
             flags.exported,
-            context,
+            visit.introduction,
         )?;
         Ok(())
     }
@@ -548,10 +557,18 @@ impl<S: Sources> Engine<'_, S> {
                 definitions: &self.definitions,
                 invocations: &self.invocations,
             })
-            .textual(&mut self.scopes, call.scope, name, call.context)
+            .textual(&mut self.scopes, call.scope, name, call.visit.introduction)
             .map_err(|e| self.calls[index].diagnostic(e.message))?
             {
-                Lookup::Found(definition) => return Ok(Some(definition)),
+                Lookup::Found(definition) => {
+                    self.paths.validate_textual(
+                        &mut self.loader.package,
+                        call,
+                        index,
+                        definition,
+                    )?;
+                    return Ok(Some(definition));
+                }
                 Lookup::Pending(scope) => {
                     self.scopes.watch(scope, Observer::Invocation(index));
                     return Ok(None);
@@ -616,7 +633,7 @@ impl<S: Sources> Engine<'_, S> {
         grammar: MacroContext,
         definition: usize,
         parent: ContextId,
-    ) -> Result<(), Error> {
+    ) -> Result<ContextId, Error> {
         let input = self.input(file, capture)?;
         let context = ContextId(
             u32::try_from(self.invocations.len() + 1)
@@ -670,6 +687,7 @@ impl<S: Sources> Engine<'_, S> {
         let generated = package.units[file.0 as usize]
             .install_expansion(visit.node, &stream.source, configured, &stream.origins)
             .map_err(|e| Error::at(file, original.start, e.message))?;
+        self.paths.state.facts.introductions.parents.push(parent);
         self.invocations.push(Invocation {
             context,
             node: NodeKey {
@@ -683,6 +701,6 @@ impl<S: Sources> Engine<'_, S> {
             parser_calls: matched.captures.parser_calls,
             parent,
         });
-        Ok(())
+        Ok(context)
     }
 }

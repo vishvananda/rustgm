@@ -23,6 +23,41 @@ pub(crate) enum Lookup {
     Missing,
 }
 impl Resolver<'_> {
+    pub fn textual_conflict(
+        &self,
+        scope: ScopeId,
+        name: NameId,
+        target: DefId,
+        introduction: crate::expand::stream::ContextId,
+        dependencies: &mut Vec<BindingKey>,
+    ) -> bool {
+        let definition_scope = self.facts.definitions[target.0 as usize].scope;
+        let marks = &self.facts.introductions;
+        let defined = marks
+            .definitions
+            .get(&target)
+            .copied()
+            .unwrap_or(crate::expand::stream::ContextId(0));
+        let more_expanded = !marks.ancestor(defined, introduction);
+        let mut inside = true;
+        let mut current = Some(scope);
+        while let Some(scope) = current {
+            if scope == definition_scope {
+                inside = false;
+            }
+            if !inside && !more_expanded {
+                break;
+            }
+            dependencies.push((scope, name, Namespace::Macro));
+            let frame = &self.facts.scopes[scope.0 as usize];
+            if let Some(binding) = frame.bindings.get(&(name, Namespace::Macro)) {
+                return (binding.ambiguous || binding.target != target)
+                    && (inside || !marks.ancestor(defined, marks.binding(*binding)));
+            }
+            current = frame.parent;
+        }
+        false
+    }
     pub fn hygienic_lexical(
         &self,
         c: Context,

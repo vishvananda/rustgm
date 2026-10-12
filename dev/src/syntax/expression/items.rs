@@ -712,30 +712,64 @@ impl Parser<'_, '_> {
         self.depth -= 1;
         result
     }
+    fn use_path_segment(&mut self, first: bool) -> Result<NodeId, LexError> {
+        let token = self.required()?;
+        let text = self.cursor.spelling(token);
+        if !(super::keyword::identifier(token.kind, text.strip_prefix("r#").unwrap_or(text))
+            || matches!(text, "self" | "super" | "crate")
+            || matches!(token.kind, TokenKind::CrateRoot(_)))
+        {
+            return Err(error(token.start, "expected use path"));
+        }
+        let kind = if let TokenKind::CrateRoot(id) = token.kind {
+            if !first {
+                return Err(error(token.start, "crate marker must begin a use path"));
+            }
+            Kind::CrateRoot(id.get())
+        } else {
+            Kind::Name(Span {
+                start: token.start,
+                end: token.end,
+            })
+        };
+        self.node(token.start, kind)
+    }
+    fn opaque_use_path(&mut self) -> Result<(NodeId, bool), LexError> {
+        let path = self.rich_path(true)?;
+        let node = self.ast.node(path);
+        let Kind::Path { segments, .. } = node.kind else {
+            return Err(error(node.span.start, "use requires a simple path"));
+        };
+        if self.ast.list(segments).iter().any(|node| {
+            !matches!(
+                self.ast.node(*node).kind,
+                Kind::Name(_) | Kind::CrateRoot(_)
+            )
+        }) {
+            return Err(error(node.span.start, "use requires simple path segments"));
+        }
+        let separator = self.eat(P::ColonColon)?;
+        if separator && !self.cursor.at(P::Star)? && !self.cursor.at(P::OpenBrace)? {
+            return Err(self.error("opaque use path requires a group or glob after separator")?);
+        }
+        Ok((path, separator))
+    }
     fn use_tree_inner(&mut self) -> Result<NodeId, LexError> {
         let start = self.cursor.peek(0)?.map_or(self.cursor.end(), |t| t.start);
         let mark = self.scratch.len();
-        let absolute = self.eat(P::ColonColon)?;
+        let opaque = self
+            .splice()?
+            .is_some_and(|s| matches!(s.syntax_kind(), Some(F::Path | F::Type)));
+        let absolute = !opaque && self.eat(P::ColonColon)?;
         let mut prefix = None;
         let mut separator = true;
-        if !self.cursor.at(P::Star)? && !self.cursor.at(P::OpenBrace)? {
+        if opaque {
+            let (path, trailing_separator) = self.opaque_use_path()?;
+            prefix = Some(path);
+            separator = trailing_separator;
+        } else if !self.cursor.at(P::Star)? && !self.cursor.at(P::OpenBrace)? {
             loop {
-                let token = self.required()?;
-                let text = self.cursor.spelling(token);
-                if !(super::keyword::identifier(
-                    token.kind,
-                    text.strip_prefix("r#").unwrap_or(text),
-                ) || matches!(text, "self" | "super" | "crate"))
-                {
-                    return Err(error(token.start, "expected use path"));
-                }
-                let name = self.node(
-                    token.start,
-                    Kind::Name(Span {
-                        start: token.start,
-                        end: token.end,
-                    }),
-                )?;
+                let name = self.use_path_segment(!absolute && self.scratch.len() == mark)?;
                 self.scratch.push(name);
                 separator = self.eat(P::ColonColon)?;
                 if !separator || self.cursor.at(P::Star)? || self.cursor.at(P::OpenBrace)? {

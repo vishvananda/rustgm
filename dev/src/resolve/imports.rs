@@ -31,8 +31,6 @@ pub(crate) struct Work {
     attempts: usize,
     observe: bool,
     pub events: Vec<BindingKey>,
-    expanded_definitions: HashSet<DefId>,
-    expanded_imports: HashSet<usize>,
 }
 impl Work {
     pub fn new(facts: &super::model::Resolution) -> Self {
@@ -71,8 +69,6 @@ impl Work {
             attempts: 0,
             observe: false,
             events: Vec::new(),
-            expanded_definitions: HashSet::new(),
-            expanded_imports: HashSet::new(),
         }
     }
     pub fn observe(&mut self) {
@@ -115,23 +111,18 @@ impl Work {
                 .any(|candidate| candidate.target != target || candidate.ambiguous)
         })
     }
-    pub fn mark_definition(&mut self, target: DefId) {
-        self.expanded_definitions.insert(target);
-    }
-    pub fn mark_import(&mut self, index: usize) {
-        self.expanded_imports.insert(index);
-    }
-    pub fn ambiguous_expanded_path(&self, observations: &Observations) -> bool {
+    pub fn ambiguous_expanded_path(
+        &self,
+        facts: &super::model::Resolution,
+        observations: &Observations,
+    ) -> bool {
         observations
             .selected
             .iter()
             .flatten()
             .any(|(key, binding)| {
-                let expanded = match binding.origin {
-                    Origin::Direct => self.expanded_definitions.contains(&binding.target),
-                    Origin::Import(index) => self.expanded_imports.contains(&(index as usize)),
-                    Origin::Glob(_) => false,
-                };
+                let expanded = !matches!(binding.origin, Origin::Glob(_))
+                    && facts.introductions.binding(*binding).0 != 0;
                 expanded && self.glob_conflicts(*key, binding.target)
             })
     }
@@ -220,10 +211,34 @@ impl Resolver<'_> {
     ) -> Result<Lookup, Error> {
         if ns == Namespace::Macro
             && path.len() == 1
-            && let Some(binding) = work.textual.get(&index)
+            && let Some(binding) = work.textual.get(&index).copied()
         {
             return Ok(match binding {
-                TextualSource::Found(binding) => Lookup::Found(*binding),
+                TextualSource::Found(binding) => {
+                    let mut dependencies = Vec::new();
+                    let introduction = self
+                        .facts
+                        .introductions
+                        .imports
+                        .get(&index)
+                        .copied()
+                        .unwrap_or(crate::expand::stream::ContextId(0));
+                    let conflict = self.textual_conflict(
+                        import.scope,
+                        path[0],
+                        binding.target,
+                        introduction,
+                        &mut dependencies,
+                    );
+                    work.watch(index, dependencies);
+                    if conflict {
+                        return Err(self.import_error(
+                            import,
+                            "ambiguous textual and path-based macro binding",
+                        ));
+                    }
+                    Lookup::Found(binding)
+                }
                 TextualSource::Missing | TextualSource::Pending => Lookup::Missing,
             });
         }
@@ -243,7 +258,7 @@ impl Resolver<'_> {
             LookupMode::Import(ns),
             Some(&mut observed),
         );
-        let ambiguous = work.ambiguous_expanded_path(&observed);
+        let ambiguous = work.ambiguous_expanded_path(self.facts, &observed);
         work.watch(index, observed.dependencies);
         if ambiguous {
             return Err(self.import_error(import, "ambiguous macro-expanded path binding"));

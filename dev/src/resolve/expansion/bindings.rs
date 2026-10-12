@@ -35,7 +35,7 @@ impl Bindings<'_> {
         let found = scopes.lookup(scope, name)?;
         if let Lookup::Found(index) = found {
             let definition = &self.definitions[index];
-            if !self.ancestor(definition.context, context) {
+            if !self.ancestor(definition.introduction, context) {
                 match scopes.lookup(definition.preceding_scope, name)? {
                     Lookup::Found(_) => {
                         return Err(error(0, "ambiguous macro-expanded textual name"));

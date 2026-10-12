@@ -146,8 +146,48 @@ pub struct Reference {
     pub namespace: Namespace,
     pub target: Target,
 }
+/// Expansion-only binding provenance; ordinary resolution leaves these tables empty.
+#[derive(Default)]
+pub struct Introductions {
+    pub definitions: HashMap<DefId, crate::expand::stream::ContextId>,
+    pub imports: HashMap<usize, crate::expand::stream::ContextId>,
+    pub parents: Vec<crate::expand::stream::ContextId>,
+}
+impl Introductions {
+    #[must_use]
+    pub fn binding(&self, binding: Binding) -> crate::expand::stream::ContextId {
+        use crate::expand::stream::ContextId;
+        match binding.origin {
+            Origin::Direct => self.definitions.get(&binding.target),
+            Origin::Import(index) | Origin::Glob(index) => self.imports.get(&(index as usize)),
+        }
+        .copied()
+        .unwrap_or(ContextId(0))
+    }
+    #[must_use]
+    pub fn ancestor(
+        &self,
+        ancestor: crate::expand::stream::ContextId,
+        mut context: crate::expand::stream::ContextId,
+    ) -> bool {
+        for _ in 0..=self.parents.len() {
+            if context == ancestor {
+                return true;
+            }
+            let Some(index) = context.0.checked_sub(1) else {
+                return false;
+            };
+            let Some(parent) = self.parents.get(index as usize) else {
+                return false;
+            };
+            context = *parent;
+        }
+        false
+    }
+}
 #[derive(Default)]
 pub struct Resolution {
+    pub introductions: Introductions,
     pub textual_imports: HashMap<usize, Binding>,
     pub crate_root: Option<DefId>,
     pub scopes: Vec<Scope>,

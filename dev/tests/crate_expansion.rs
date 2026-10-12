@@ -691,3 +691,285 @@ fn forwarded_metadata_and_type_path_boundaries_match_pinned_rustc() {
         );
     }
 }
+
+#[test]
+fn captured_imports_keep_the_expansion_that_introduced_them() -> Result<(), String> {
+    for (setup, source_import) in [
+        ("use b::m;", true),
+        ("macro_rules! setup {()=>{use b::m;}} setup!();", false),
+        (
+            "macro_rules! setup {($p:path)=>{use $p;}} setup!(b::m);",
+            false,
+        ),
+        (
+            "macro_rules! setup {($i:item)=>{$i}} setup!(use b::m;);",
+            false,
+        ),
+        (
+            "macro_rules! setup {($($t:tt)*)=>{$($t)*}} setup!(use b::m;);",
+            false,
+        ),
+        (
+            "macro_rules! setup {($p:ident)=>{use b::$p;}} setup!(m);",
+            false,
+        ),
+    ] {
+        let source = format!(
+            "mod a {{macro_rules! m {{()=>{{1}}}} pub(crate) use m;}} mod b {{macro_rules! m {{()=>{{2}}}} pub(crate) use m;}} use a::*; {setup} fn f(){{let _=m!();}}"
+        );
+        let result = analyze(&source, &mut Files::default());
+        assert_eq!(result.is_ok(), source_import, "{setup}");
+        let source = format!(
+            "mod a {{pub fn m()->i32{{1}}}} mod b {{pub fn m()->i32{{2}}}} use a::*; {setup} fn f(){{let _=m();}}"
+        );
+        resolve::analyze_expanded(analyze(&source, &mut Files::default())?)
+            .map_err(|e| format!("{setup}: {e:?}"))?;
+    }
+    Ok(())
+}
+
+#[test]
+fn captured_calls_use_introduction_ancestry_for_textual_shadows() -> Result<(), String> {
+    for source in [
+        "macro_rules! m {()=>{unknown}} macro_rules! setup {($i:item)=>{macro_rules! m {()=>{2}} $i}} setup!(fn answer()->i32{m!()});",
+        "macro_rules! m {()=>{unknown}} macro_rules! setup {($($i:item)*)=>{$($i)*}} setup!(macro_rules! m {()=>{2}} fn answer()->i32{m!()});",
+        "macro_rules! m {()=>{unknown}} macro_rules! setup {($e:expr)=>{{macro_rules! m {()=>{2}} $e}}}fn f()->i32{setup!(m!())}",
+        "macro_rules! m {()=>{unknown}}macro_rules! forward {($e:expr)=>{$e}}macro_rules! setup {($e:expr)=>{{macro_rules! m {()=>{2}} forward!($e)}}}fn f()->i32{setup!(m!())}",
+    ] {
+        let report = analyze(source, &mut Files::default())?;
+        assert_eq!(
+            report.invocations.last().map(|i| i.definition),
+            Some(report.definitions.len() - 1)
+        );
+        resolve::analyze_expanded(report).map_err(|e| format!("{source}: {e:?}"))?;
+    }
+    assert!(analyze("macro_rules! m {()=>{1}} macro_rules! setup {($i:item)=>{$i}} setup!(macro_rules! m {()=>{2}});fn f()->i32{m!()}", &mut Files::default()).is_err());
+    Ok(())
+}
+
+#[test]
+fn opaque_use_paths_allow_groups_globs_and_aliases_without_reparsing() -> Result<(), String> {
+    for fragment in ["path", "ty"] {
+        for suffix in ["::*", "::{m}", " as alias"] {
+            let source = format!(
+                "mod a {{pub fn m(){{}}}} macro_rules! setup {{($p:{fragment})=>{{use $p{suffix};}}}}setup!(a);"
+            );
+            let report = analyze(&source, &mut Files::default())?;
+            assert_eq!(report.invocations[0].parser_calls, 1);
+            resolve::analyze_expanded(report).map_err(|e| format!("{source}: {e:?}"))?;
+        }
+        for (value, suffix) in [("a", "::m"), ("a::<i32>", " as alias")] {
+            let source = format!(
+                "mod a {{pub fn m(){{}}}} macro_rules! setup {{($p:{fragment})=>{{use $p{suffix};}}}}setup!({value});"
+            );
+            assert!(analyze(&source, &mut Files::default()).is_err(), "{source}");
+        }
+    }
+    assert!(
+        analyze(
+            "macro_rules! setup {($p:ty)=>{use $p as alias;}}setup!(&i32);",
+            &mut Files::default()
+        )
+        .is_err()
+    );
+    Ok(())
+}
+
+#[test]
+fn captured_modules_keep_macro_path_ambiguity_marks() {
+    for setup in [
+        "macro_rules! setup {()=>{pub mod m {macro_rules! f {()=>{2}}pub(crate) use f;}}}setup!();",
+        "macro_rules! setup {($i:item)=>{$i}}setup!(pub mod m {macro_rules! f {()=>{2}}pub(crate) use f;});",
+    ] {
+        let source = format!(
+            "mod a {{pub mod m {{macro_rules! f {{()=>{{1}}}}pub(crate) use f;}}}}use a::*;{setup}fn f()->i32{{m::f!()}}"
+        );
+        let error = analyze(&source, &mut Files::default()).err();
+        assert!(
+            error.is_some_and(|e| e.contains("ambiguous macro-expanded path")),
+            "{source}"
+        );
+    }
+}
+
+#[test]
+fn local_inner_macros_rewrite_literal_names_but_preserve_captured_names() -> Result<(), String> {
+    let root = "#[macro_export]macro_rules! helper {()=>{1}}";
+    for (pattern, body, argument, root_helper) in [
+        ("", "helper!()", "", true),
+        ("$e:expr", "$e", "helper!()", false),
+        ("$i:ident", "$i!()", "helper", false),
+        ("$($i:tt)*", "$($i)*", "helper!()", false),
+        ("", "self::helper!()", "", false),
+    ] {
+        let source = format!(
+            "{root} #[macro_export(local_inner_macros)]macro_rules! outer {{({pattern})=>{{{body}}}}}mod x{{macro_rules! helper{{()=>{{2}}}}pub(crate) use helper;pub fn value()->i32{{crate::outer!({argument})}}}}"
+        );
+        let report = analyze(&source, &mut Files::default())?;
+        assert_eq!(
+            report.invocations.last().map(|i| i.definition),
+            Some(if root_helper { 0 } else { 2 }),
+            "{source}"
+        );
+        resolve::analyze_expanded(report).map_err(|e| format!("{source}: {e:?}"))?;
+    }
+    assert!(analyze("macro_rules! helper {()=>{1}}#[macro_export(local_inner_macros)]macro_rules! outer {()=>{helper!()}}fn f()->i32{outer!()}", &mut Files::default()).is_err());
+    Ok(())
+}
+
+#[test]
+fn dollar_crate_uses_typed_root_identity_in_paths_and_imports() -> Result<(), String> {
+    for body in [
+        "$crate::helper!()",
+        "{use $crate::helper as alias; alias!()}",
+        "{use $crate::{helper as alias}; alias!()}",
+    ] {
+        let source = format!(
+            "#[macro_export]macro_rules! helper {{()=>{{1}}}}macro_rules! outer {{()=>{{{body}}}}}mod x{{macro_rules! helper{{()=>{{2}}}}pub fn value()->i32{{outer!()}}}}"
+        );
+        let report = analyze(&source, &mut Files::default())?;
+        assert_eq!(
+            report.invocations.last().map(|i| i.definition),
+            Some(0),
+            "{source}"
+        );
+        resolve::analyze_expanded(report).map_err(|e| format!("{source}: {e:?}"))?;
+    }
+    for body in [
+        "{use $crate::helper; helper!()}",
+        "{use $crate::{helper}; helper!()}",
+    ] {
+        let source = format!(
+            "#[macro_export]macro_rules! helper {{()=>{{1}}}}macro_rules! outer {{()=>{{{body}}}}}mod x{{macro_rules! helper{{()=>{{2}}}}pub fn value()->i32{{outer!()}}}}"
+        );
+        assert!(analyze(&source, &mut Files::default()).is_err(), "{source}");
+    }
+    Ok(())
+}
+
+#[test]
+fn crate_recursion_limits_follow_configured_first_attribute_and_exact_depth() -> Result<(), String>
+{
+    for (attributes, success) in [
+        (r#"#![recursion_limit="0"]"#, false),
+        (r#"#![recursion_limit="1"]"#, false),
+        (r#"#![recursion_limit="2"]"#, true),
+        (r#"#![recursion_limit="+3"]"#, true),
+        (r#"#![recursion_limit="-1"]"#, false),
+        (r#"#![recursion_limit="abc"]"#, false),
+        (r"#![recursion_limit=3]", false),
+        (r#"#![recursion_limit="0"]#![recursion_limit="3"]"#, false),
+        (r#"#![recursion_limit="3"]#![recursion_limit="0"]"#, true),
+        (r#"#![cfg_attr(unix,recursion_limit="1")]"#, false),
+    ] {
+        let source = format!(
+            "{attributes}macro_rules! a {{()=>{{b!()}}}}macro_rules! b {{()=>{{1}}}}fn f()->i32{{a!()}}"
+        );
+        assert_eq!(
+            analyze(&source, &mut Files::default()).is_ok(),
+            success,
+            "{attributes}"
+        );
+    }
+    let mut source = String::from(r#"#![recursion_limit="256"]"#);
+    for i in 0..200 {
+        use std::fmt::Write as _;
+        write!(source, "macro_rules! m{i} {{()=>{{m{}!()}}}}", i + 1).map_err(|e| e.to_string())?;
+    }
+    source.push_str("macro_rules! m200 {()=>{1}}fn f()->i32{m0!()}");
+    let report = analyze(&source, &mut Files::default())?;
+    assert_eq!(report.invocations.len(), 201);
+    resolve::analyze_expanded(report).map_err(|e| format!("{e:?}"))?;
+    Ok(())
+}
+
+#[test]
+fn textual_path_conflicts_follow_lexical_scope_and_late_imports() {
+    for (source, success) in [
+        (
+            "macro_rules! a {()=>{1}}macro_rules! b{()=>{2}}use b as a;fn main(){let _=a!();}",
+            true,
+        ),
+        (
+            "macro_rules! a{()=>{1}}macro_rules! b{()=>{2}}fn main(){use b as a;let _=a!();}",
+            false,
+        ),
+        (
+            "macro_rules! a{()=>{1}}macro_rules! b{()=>{2}}fn main(){use b as a;use a as alias;let _=alias!();}",
+            false,
+        ),
+        (
+            "macro_rules! a{()=>{1}}mod x{macro_rules! a{()=>{2}}pub(crate) use a;}fn main(){use x::*;let _=a!();}",
+            false,
+        ),
+        (
+            "macro_rules! a{()=>{1}}mod x{macro_rules! a{()=>{2}}pub(crate) use a;}use x::*;fn main(){let _=a!();}",
+            true,
+        ),
+        (
+            "macro_rules! b{()=>{2}}use b as a;fn main(){macro_rules! a{()=>{1}}let _=a!();}",
+            true,
+        ),
+        ("macro_rules! a{()=>{1}}fn main(){use a;let _=a!();}", true),
+        (
+            "macro_rules! b{()=>{2}}use b as a;#[macro_use]mod x{macro_rules! a{()=>{1}}}fn main(){let _=a!();}",
+            false,
+        ),
+        (
+            "macro_rules! a{()=>{1}}macro_rules! b{()=>{2}}macro_rules! setup{()=>{use b as a;}}fn main(){let _=a!();setup!();}",
+            false,
+        ),
+    ] {
+        let result = analyze(source, &mut Files::default())
+            .and_then(|report| resolve::analyze_expanded(report).map_err(|e| format!("{e:?}")));
+        assert_eq!(
+            result.is_ok(),
+            success,
+            "{source}: {}",
+            result.err().unwrap_or_default()
+        );
+    }
+}
+
+#[test]
+fn expanded_textual_candidates_compare_path_candidate_ancestry() {
+    for (source, success) in [
+        (
+            "macro_rules! b{()=>{1}}use b as m;macro_rules! setup{()=>{macro_rules! m{()=>{2}}}}setup!();fn main(){let _=m!();}",
+            false,
+        ),
+        (
+            "macro_rules! b{()=>{1}}use b as m;macro_rules! setup{()=>{macro_rules! m{()=>{2}}fn f()->i32{m!()}}}setup!();fn main(){}",
+            true,
+        ),
+        (
+            "macro_rules! b{()=>{1}}use b as m;macro_rules! setup{()=>{macro_rules! m{()=>{2}}}}setup!();use m as alias;fn main(){let _=alias!();}",
+            false,
+        ),
+        (
+            "macro_rules! b{()=>{1}}macro_rules! setup{()=>{macro_rules! m{()=>{2}}}}setup!();fn main(){let _=m!();}use b as m;",
+            false,
+        ),
+        (
+            "macro_rules! b{()=>{1}}macro_rules! setup{()=>{macro_rules! m{()=>{2}}use b as m;}}setup!();fn main(){let _=m!();}",
+            true,
+        ),
+        (
+            "macro_rules! b{()=>{1}}macro_rules! setup{()=>{use b as m;macro_rules! m{()=>{2}}}}setup!();fn main(){let _=m!();}",
+            true,
+        ),
+        (
+            "macro_rules! b{()=>{1}}macro_rules! import{()=>{use b as m;}}macro_rules! setup{()=>{macro_rules! m{()=>{2}}import!();}}setup!();fn main(){let _=m!();}",
+            true,
+        ),
+    ] {
+        let result = analyze(source, &mut Files::default())
+            .and_then(|report| resolve::analyze_expanded(report).map_err(|e| format!("{e:?}")));
+        assert_eq!(
+            result.is_ok(),
+            success,
+            "{source}: {}",
+            result.err().unwrap_or_default()
+        );
+    }
+}

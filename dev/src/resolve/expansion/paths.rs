@@ -104,7 +104,11 @@ impl Paths {
             members: Some(scope),
         });
         if expansion.0 != 0 {
-            self.work.mark_definition(id);
+            resolver
+                .facts
+                .introductions
+                .definitions
+                .insert(id, expansion);
         }
         resolver
             .facts
@@ -146,7 +150,11 @@ impl Paths {
             members: None,
         });
         if expansion.0 != 0 {
-            self.work.mark_definition(id);
+            resolver
+                .facts
+                .introductions
+                .definitions
+                .insert(id, expansion);
         }
         self.macro_targets.insert(id, self.macros.len());
         self.macros.push(id);
@@ -207,7 +215,11 @@ impl Paths {
         self.work.extend(resolver.facts);
         for index in first..resolver.facts.imports.len() {
             if textual.1.0 != 0 {
-                self.work.mark_import(index);
+                resolver
+                    .facts
+                    .introductions
+                    .imports
+                    .insert(index, textual.1);
             }
             let import = &resolver.facts.imports[index];
             let text =
@@ -277,6 +289,29 @@ impl Paths {
         }
         Ok(ready)
     }
+    pub fn validate_textual(
+        &mut self,
+        package: &mut Package,
+        call: &Call,
+        request: usize,
+        definition: usize,
+    ) -> Result<(), Error> {
+        let mut dependencies = Vec::new();
+        let conflict = self.state.bind(package).textual_conflict(
+            call.visit.path_scope,
+            call.path[0],
+            self.macros[definition],
+            call.visit.introduction,
+            &mut dependencies,
+        );
+        for key in dependencies {
+            self.waiting.entry(key).or_default().insert(request);
+        }
+        if conflict {
+            return Err(call.diagnostic("ambiguous textual and path-based macro binding"));
+        }
+        Ok(())
+    }
     pub fn lookup(
         &mut self,
         package: &mut Package,
@@ -302,7 +337,7 @@ impl Paths {
             LookupMode::Use(Namespace::Macro),
             Some(&mut observed),
         );
-        let ambiguous = self.work.ambiguous_expanded_path(&observed);
+        let ambiguous = self.work.ambiguous_expanded_path(resolver.facts, &observed);
         for key in observed.dependencies {
             self.waiting.entry(key).or_default().insert(request);
         }
