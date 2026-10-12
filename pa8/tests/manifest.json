@@ -1112,6 +1112,28 @@
         "kind": "program",
         "status": 0
       }
+    },
+    {
+      "path": "tests/spec/hygiene/or-pattern-capture.rs",
+      "exit_status": 0,
+      "features": [
+        "pa8.hygiene"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/hygiene/or-pattern-distinct-context.rs",
+      "exit_status": 1,
+      "features": [
+        "pa8.hygiene"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
     }
   ]
 }

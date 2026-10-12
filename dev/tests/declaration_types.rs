@@ -45,6 +45,29 @@ fn definition(report: &Report, facts: &Declarations, name: &str) -> Result<TypeI
         .ok_or_else(|| format!("missing type for {name}"))
 }
 #[test]
+fn alternative_binding_identities_reach_node_facts_without_resolving_again() -> Result<(), String> {
+    let (report, facts) =
+        analyze("fn f(v:(u8,u8)){match v{((x,0)|(x,1))|((0,x)|(1,x))=>{x;},_=>{}}}")?;
+    assert_eq!(report.resolution.pattern_aliases.len(), 3);
+    for &(node, definition) in &report.resolution.pattern_aliases {
+        assert_eq!(
+            facts.node(node).ok_or("missing alias node facts")?.binding,
+            Some(definition)
+        );
+        let first = report.resolution.definitions[definition.0 as usize]
+            .node
+            .ok_or("missing representative node")?;
+        assert_eq!(
+            facts
+                .node(first)
+                .ok_or("missing representative facts")?
+                .binding,
+            Some(definition)
+        );
+    }
+    Ok(())
+}
+#[test]
 fn aliases_forward_signatures_and_function_item_identity_share_canonical_facts()
 -> Result<(), String> {
     let (report, facts) = analyze(

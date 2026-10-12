@@ -201,6 +201,12 @@ impl Declarations {
                     .binding = Some(id);
             }
         }
+        for &(key, definition) in &report.resolution.pattern_aliases {
+            value
+                .node_mut(key)
+                .ok_or_else(|| Self::error(report, key, "invalid pattern binding alias"))?
+                .binding = Some(definition);
+        }
         Ok(value)
     }
     #[must_use]

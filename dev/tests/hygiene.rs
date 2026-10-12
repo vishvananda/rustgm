@@ -61,6 +61,24 @@ fn references(report: &expansion::Report, name: &str, namespace: Namespace) -> V
 }
 
 #[test]
+fn captured_pattern_alternatives_keep_the_captured_binding_identity() -> Result<(), String> {
+    let report = analyze(
+        "macro_rules! select{($p:pat,$x:ident)=>{match(0,1){$p=>$x,_=>0}}}fn f()->i32{select!((x,0)|(0,x),x)}",
+    )?;
+    let locals = definitions(&report, "x", DefKind::Local);
+    assert_eq!(locals.len(), 1);
+    assert_eq!(references(&report, "x", Namespace::Value), locals);
+    assert_eq!(report.resolution.pattern_aliases.len(), 1);
+    assert_eq!(report.resolution.pattern_aliases[0].1, locals[0]);
+    let source = "macro_rules! p{($x:ident)=>{(x,0)|(0,$x)}}fn f(){match(0,0){p!(x)=>{},_=>{}}}";
+    assert!(
+        analyze(source).is_err(),
+        "different hygiene identities cannot be joined by spelling"
+    );
+    Ok(())
+}
+
+#[test]
 fn literal_macro_names_keep_definition_site_binding_versions() -> Result<(), String> {
     let report = analyze("fn f()->i32{let x=1;macro_rules! m {()=>{x}} let x=2;m!()}")?;
     let locals = definitions(&report, "x", DefKind::Local);

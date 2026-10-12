@@ -321,6 +321,8 @@ bytes. At 4,000, 16,000 and 64,000 functions, baseline/candidate medians are
    guards, or-patterns, slices and usefulness/exhaustiveness. Retain move and
    reference semantics for the subsequent checks; do not erase unproved borrows
    merely to reach LowIR.
+   The concrete sequence and completed binding-identity prerequisite are in
+   [the PA13 handoff](pa13-buildout.md).
 3. PA14: extend the owned-value proof to PA13's pattern projections and binding
    modes, and retain maybe-initialized path facts separately from write history.
    Freeze the ownership view, publish assignment fixtures and their

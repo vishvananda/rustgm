@@ -26,7 +26,9 @@ impl Resolver<'_> {
         seen: &mut HashSet<super::hygiene::Ident>,
     ) -> Result<(), Error> {
         let mut bindings = Vec::new();
-        self.pattern(c, node, &mut bindings)?;
+        let mut aliases = Vec::new();
+        self.pattern(c, node, &mut bindings, &mut aliases)?;
+        let mut representatives = (!aliases.is_empty()).then(HashMap::new);
         for local in bindings {
             if !seen.insert(self.pattern_identity(c, local)?) {
                 return Err(self.error(
@@ -35,7 +37,7 @@ impl Resolver<'_> {
                     "duplicate binding in pattern or parameters",
                 ));
             }
-            self.define(
+            let definition = self.define(
                 Definition {
                     name: local.name,
                     namespace: Namespace::Value,
@@ -50,6 +52,28 @@ impl Resolver<'_> {
                 },
                 true,
             )?;
+            if let Some(representatives) = &mut representatives {
+                representatives.insert(local.node, definition);
+            }
+        }
+        let Some(mut representatives) = representatives else {
+            return Ok(());
+        };
+        // An outer alternative links representatives only after visiting its
+        // nested alternatives. Reverse order resolves parents before children.
+        for (alias, representative) in aliases.into_iter().rev() {
+            let definition = representatives
+                .get(&representative)
+                .copied()
+                .ok_or_else(|| self.error(c, alias, "missing pattern binding representative"))?;
+            representatives.insert(alias, definition);
+            self.facts.pattern_aliases.push((
+                NodeKey {
+                    file: c.file,
+                    node: alias,
+                },
+                definition,
+            ));
         }
         Ok(())
     }
@@ -77,6 +101,7 @@ impl Resolver<'_> {
         c: Context,
         node: NodeId,
         bindings: &mut Vec<Local>,
+        aliases: &mut Vec<(NodeId, NodeId)>,
     ) -> Result<(), Error> {
         if !self.active(c, node) {
             return Ok(());
@@ -136,7 +161,7 @@ impl Resolver<'_> {
                     });
                 }
                 if let Some(subpattern) = subpattern {
-                    self.pattern(c, subpattern, bindings)?;
+                    self.pattern(c, subpattern, bindings, aliases)?;
                 }
             }
             Kind::Pattern {
@@ -149,26 +174,41 @@ impl Resolver<'_> {
                 for offset in elements.start..elements.end {
                     let child = self.package.unit(c.file).configured.ast.edges[offset as usize];
                     let mut branch = Vec::new();
-                    self.pattern(c, child, &mut branch)?;
+                    self.pattern(c, child, &mut branch, aliases)?;
                     let mut names = HashMap::new();
                     for local in &branch {
                         if names
-                            .insert(
-                                self.pattern_identity(c, *local)?,
-                                (local.mutable, local.by_ref),
-                            )
+                            .insert(self.pattern_identity(c, *local)?, *local)
                             .is_some()
                         {
                             return Err(self.error(c, local.node, "duplicate binding in pattern"));
                         }
                     }
                     if let Some(expected) = &expected {
-                        if *expected != names {
+                        let expected: &HashMap<_, Local> = expected;
+                        if expected.len() != names.len() {
                             return Err(self.error(
                                 c,
                                 child,
                                 "or-pattern alternatives bind different names or modes",
                             ));
+                        }
+                        // Iterate source order; hash seeds must not order the
+                        // retained identity facts consumed by later phases.
+                        for local in &branch {
+                            let first = expected
+                                .get(&self.pattern_identity(c, *local)?)
+                                .filter(|first| {
+                                    first.mutable == local.mutable && first.by_ref == local.by_ref
+                                })
+                                .ok_or_else(|| {
+                                    self.error(
+                                        c,
+                                        child,
+                                        "or-pattern alternatives bind different names or modes",
+                                    )
+                                })?;
+                            aliases.push((local.node, first.node));
                         }
                     } else {
                         expected = Some(names);
@@ -183,14 +223,14 @@ impl Resolver<'_> {
                 }
                 for offset in elements.start..elements.end {
                     let child = self.package.unit(c.file).configured.ast.edges[offset as usize];
-                    self.pattern(c, child, bindings)?;
+                    self.pattern(c, child, bindings, aliases)?;
                 }
             }
             Kind::StructPattern { path, fields, .. } => {
                 self.reference(c, path, Namespace::Type)?;
                 for offset in fields.start..fields.end {
                     let child = self.package.unit(c.file).configured.ast.edges[offset as usize];
-                    self.pattern(c, child, bindings)?;
+                    self.pattern(c, child, bindings, aliases)?;
                 }
             }
             Kind::Path { .. } | Kind::Qualified { .. } => self.visit(c, node, Namespace::Value)?,
@@ -223,7 +263,7 @@ impl Resolver<'_> {
                     .push_children(node, self.scratch);
                 let end = self.scratch.len();
                 for index in mark..end {
-                    self.pattern(c, self.scratch[index], bindings)?;
+                    self.pattern(c, self.scratch[index], bindings, aliases)?;
                 }
                 self.scratch.truncate(mark);
             }

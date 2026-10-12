@@ -198,6 +198,8 @@ impl Introductions {
 }
 #[derive(Default)]
 pub struct Resolution {
+    /// Alternative occurrences of one or-pattern binding share its definition.
+    pub pattern_aliases: Vec<(NodeKey, DefId)>,
     /// Field restrictions are resolved once, before semantic field selection.
     pub field_access: HashMap<NodeKey, Access>,
     pub macro_prelude: HashMap<NameId, DefId>,

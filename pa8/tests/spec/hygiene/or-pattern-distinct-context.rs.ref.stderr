@@ -1,0 +1,2 @@
+ERROR: file 0: 34: or-pattern alternatives bind different names or modes
+  in macro p at file 0: 60; defined at file 0: 0

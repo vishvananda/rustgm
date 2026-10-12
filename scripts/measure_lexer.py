@@ -50,10 +50,13 @@ def main():
     workloads = parser.add_mutually_exclusive_group()
     workloads.add_argument("--aggregate-input", action="store_true", help="exercise owned aggregate LowIR at 1000/4000/16000 procedures")
     workloads.add_argument("--discriminant-input", action="store_true", help="exercise typed discriminant queries at 1000/4000/16000 enums")
+    workloads.add_argument("--pattern-input", action="store_true", help="exercise nested pattern binding identities at 1000/4000/16000 procedures")
     parser.add_argument("--stage", choices=("tokens", "literals", "token-trees", "ast", "crate-ast", "names", "expanded", "expanded-crate", "types", "layouts", "body-ir", "ownership", "lowir"), default="tokens")
     args = parser.parse_args()
     if (args.aggregate_input or args.discriminant_input) and args.stage != "lowir":
         parser.error("aggregate and discriminant workloads require --stage lowir")
+    if args.pattern_input and args.stage != "names":
+        parser.error("pattern identity workloads require --stage names")
     directory = ROOT / "obj/perf" / str(time.time_ns())
     directory.mkdir(parents=True)
     candidate = args.candidate.resolve()
@@ -69,15 +72,20 @@ def main():
                "stage": args.stage,
                "aggregate_input": args.aggregate_input,
                "discriminant_input": args.discriminant_input,
+               "pattern_input": args.pattern_input,
                "binary_sha256": {name: hashlib.sha256(p.read_bytes()).hexdigest() for name, p in binaries.items()},
                "samples": [], "full_output_sha256": {}}
     scales = (4000, 16000, 64000) if args.stage in ("token-trees", "ast", "crate-ast", "names", "expanded", "expanded-crate", "types", "body-ir", "ownership", "lowir") else (16000, 64000, 256000)
-    if args.aggregate_input or args.discriminant_input or args.stage == "layouts":
+    if args.aggregate_input or args.discriminant_input or args.pattern_input or args.stage == "layouts":
         scales = (1000, 4000, 16000)
     line = {"tokens": LINE, "literals": LITERAL_LINE, "token-trees": TREE_LINE, "ast": AST_LINE, "crate-ast": CRATE_LINE, "names": b"", "expanded": b"", "expanded-crate": b"", "types": b"", "layouts": b"", "body-ir": b"", "ownership": b"", "lowir": b""}[args.stage]
     for lines in scales:
         source = directory / f"input-{lines}.rs"
-        if args.discriminant_input:
+        if args.pattern_input:
+            source.write_text("".join(
+                f"fn measured_{i}(v:(u8,u8)){{match v{{((x,0)|(x,1))|((0,x)|(1,x))=>{{x;}},_=>{{}}}}}}\n"
+                for i in range(lines)))
+        elif args.discriminant_input:
             source.write_text("const SEED:u64=7;\n" + "".join(
                 f"#[repr(u64)]enum E{i}{{A=SEED+{i},B=E{i}::A as u64+1}}"
                 f"fn measured_{i}()->u64{{E{i}::B as u64}}\n"

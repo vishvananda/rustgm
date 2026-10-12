@@ -56,6 +56,62 @@ fn local_references_retain_the_definition_visible_at_their_position() -> Result<
     Ok(())
 }
 #[test]
+fn nested_alternatives_retain_one_binding_identity_without_cross_products() -> Result<(), String> {
+    let text = "fn f(v:(i32,i32)){match v{((x,0)|(x,1))|((0,x)|(1,x))=>{x;},_=>{}}}";
+    let mut previous = None;
+    for _ in 0..4 {
+        let mut package = package(text)?;
+        let facts = resolve::analyze(&mut package).map_err(|e| e.to_string())?;
+        let definitions: Vec<_> = facts
+            .definitions
+            .iter()
+            .enumerate()
+            .filter(|(_, d)| d.kind == DefKind::Local && package.names.get(d.name) == "x")
+            .collect();
+        assert_eq!(definitions.len(), 1);
+        let (identity, representative) = definitions[0];
+        assert_eq!(facts.pattern_aliases.len(), 3);
+        for (node, target) in &facts.pattern_aliases {
+            assert_eq!(target.0 as usize, identity);
+            assert_ne!(Some(*node), representative.node);
+            assert!(matches!(
+                package.unit(node.file).configured.ast.node(node.node).kind,
+                rustgm::syntax::ast::Kind::Binding { .. }
+            ));
+        }
+        assert!(facts.references.iter().any(|reference|
+            matches!(reference.target, Target::Definition(target) if target.0 as usize == identity)));
+        if let Some(previous) = &previous {
+            assert_eq!(previous, &facts.pattern_aliases);
+        }
+        previous = Some(facts.pattern_aliases);
+    }
+    Ok(())
+}
+#[test]
+fn many_alternatives_and_independent_columns_keep_linear_alias_storage() -> Result<(), String> {
+    let text = format!(
+        "fn f(v:u8){{match v{{{}=>{{x;}}}}}}",
+        vec!["x"; 4096].join("|")
+    );
+    let mut input = package(&text)?;
+    let facts = resolve::analyze(&mut input).map_err(|e| e.to_string())?;
+    assert_eq!(facts.pattern_aliases.len(), 4095);
+    let target = facts.pattern_aliases[0].1;
+    assert!(
+        facts
+            .pattern_aliases
+            .iter()
+            .all(|(_, definition)| *definition == target)
+    );
+    let mut input =
+        package("fn f(v:((u8,u8),(u8,u8))){match v{((x,0)|(0,x),(y,0)|(0,y))=>{x+y;},_=>{}}}")?;
+    let facts = resolve::analyze(&mut input).map_err(|e| e.to_string())?;
+    assert_eq!(facts.pattern_aliases.len(), 2);
+    assert_ne!(facts.pattern_aliases[0].1, facts.pattern_aliases[1].1);
+    Ok(())
+}
+#[test]
 fn namespace_and_glob_aliases_preserve_target_identity() -> Result<(), String> {
     let mut package = package(
         "mod a{pub struct S{x:i32}pub fn S(){}}mod b{pub use crate::a::*;}use b::*;fn f(x:S){S();}",
