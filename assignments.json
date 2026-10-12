@@ -83,7 +83,7 @@
       "path": "pa6",
       "title": "Modules and names",
       "mode": "--emit-names",
-      "status": "planned",
+      "status": "implemented-draft",
       "scope": "Crate/module scopes, visibility, namespaces, imports and interning",
       "test_families": [
         "shadowing",

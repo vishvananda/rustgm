@@ -1,0 +1,1775 @@
+{
+  "schema": 1,
+  "mode": "--emit-names",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "panic": "abort",
+  "debug_assertions": false,
+  "cases": [
+    {
+      "path": "tests/spec/names/empty.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/basic.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/undefined.rs",
+      "exit_status": 1,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/names/forward.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/shadow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/module.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/parent_not_lexical.rs",
+      "exit_status": 1,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/names/super.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/privacy.rs",
+      "exit_status": 1,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/names/use.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/use_alias.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/use_group.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/glob.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/chain.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/ambiguous.rs",
+      "exit_status": 1,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/names/glob_shadow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/namespace.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/tuple_conflict.rs",
+      "exit_status": 1,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/names/nfc.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/nfc_duplicate.rs",
+      "exit_status": 1,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/names/generic.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/generic_nested.rs",
+      "exit_status": 1,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/names/closure.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/nested_fn_capture.rs",
+      "exit_status": 1,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/names/impl.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/impl_generic.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/trait.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/enum.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/enum_glob.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/match.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/or.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/or_wrong.rs",
+      "exit_status": 1,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/names/iflet.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/iflet_else.rs",
+      "exit_status": 1,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/names/iflet_after.rs",
+      "exit_status": 1,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/names/label.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/unknown_label.rs",
+      "exit_status": 1,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/names/lifetime.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/unknown_lifetime.rs",
+      "exit_status": 1,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/names/cfg.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/pub_reexport.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/private_reexport.rs",
+      "exit_status": 1,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/names/restricted.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/wrong_visibility.rs",
+      "exit_status": 1,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/names/let_init.rs",
+      "exit_status": 1,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/names/let_else_scope.rs",
+      "exit_status": 1,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/names/field.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/struct_pattern.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/tuple_pattern.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/duplicate_pattern.rs",
+      "exit_status": 1,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/names/duplicate_parameter.rs",
+      "exit_status": 1,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/names/constructor_pattern.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/const_pattern.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/mut_const_shadow.rs",
+      "exit_status": 1,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/names/const_generic.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/associated.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/type_as_value.rs",
+      "exit_status": 1,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/names/value_as_type.rs",
+      "exit_status": 1,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/names/use_missing.rs",
+      "exit_status": 1,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/names/use_cycle.rs",
+      "exit_status": 1,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/names/enum_type.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "reason": "PA6 resolves the variant in the type namespace. Its inability to denote a type is checked by PA9."
+      }
+    },
+    {
+      "path": "tests/spec/names/block_import.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/block_forward_item.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/block_item_outside.rs",
+      "exit_status": 1,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/names/module_local_capture.rs",
+      "exit_status": 1,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/names/glob_duplicate_same.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/glob_unused_ambiguous.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/glob_explicit_precedence.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/glob_reexport_chain.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/glob_cycle_seed.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/glob_cycle_empty.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/glob_private_ignored.rs",
+      "exit_status": 1,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/names/glob_private_unreferenced.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/glob_not_module.rs",
+      "exit_status": 1,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/names/glob_self.rs",
+      "exit_status": 1,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/names/explicit_duplicate.rs",
+      "exit_status": 1,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/names/explicit_direct_conflict.rs",
+      "exit_status": 1,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/names/import_underscore.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/use_nested_groups.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/reexport_private_root.rs",
+      "exit_status": 1,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/names/reexport_crate_visible.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/private_child_visible.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/private_sibling.rs",
+      "exit_status": 1,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/names/restricted_sibling.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/restricted_outside.rs",
+      "exit_status": 1,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/names/super_root.rs",
+      "exit_status": 1,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/names/super_twice.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/self_module_path.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/crate_path.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/raw_names.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/raw_duplicate.rs",
+      "exit_status": 1,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/names/hangul_nfc.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/parameter_type_shadow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/primitive_shadow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/type_local_shadow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/local_module_item.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/loop_scope.rs",
+      "exit_status": 1,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/names/for_scope.rs",
+      "exit_status": 1,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/names/for_binding.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/for_initializer.rs",
+      "exit_status": 1,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/names/while_let.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/while_after.rs",
+      "exit_status": 1,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/names/let_chain.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/closure_shadow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/closure_after.rs",
+      "exit_status": 1,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/names/nested_function_label.rs",
+      "exit_status": 1,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/names/closure_label.rs",
+      "exit_status": 1,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/names/label_shadow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/lifetime_duplicate.rs",
+      "exit_status": 1,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/names/higher_ranked.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/higher_ranked_isolation.rs",
+      "exit_status": 1,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/names/generic_default.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/generic_default_forward.rs",
+      "exit_status": 1,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/names/associated_path.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/tuple_constructor_private.rs",
+      "exit_status": 1,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/names/tuple_constructor_public.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/record_constructor.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/or_modes.rs",
+      "exit_status": 1,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/names/or_nested.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/static_shadow.rs",
+      "exit_status": 1,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/names/cfg_duplicate.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/modules/direct/lib.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.module-files"
+      ],
+      "input": "file",
+      "auxiliary": [
+        "tests/spec/modules/direct/a.rs"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/modules/mod_rs/lib.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.module-files"
+      ],
+      "input": "file",
+      "auxiliary": [
+        "tests/spec/modules/mod_rs/a/mod.rs"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/modules/missing/lib.rs",
+      "exit_status": 1,
+      "features": [
+        "pa6.module-files"
+      ],
+      "input": "file",
+      "auxiliary": [],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/modules/ambiguous/lib.rs",
+      "exit_status": 1,
+      "features": [
+        "pa6.module-files"
+      ],
+      "input": "file",
+      "auxiliary": [
+        "tests/spec/modules/ambiguous/a.rs",
+        "tests/spec/modules/ambiguous/a/mod.rs"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/modules/nested_direct/lib.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.module-files"
+      ],
+      "input": "file",
+      "auxiliary": [
+        "tests/spec/modules/nested_direct/a.rs",
+        "tests/spec/modules/nested_direct/a/b.rs"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/modules/nested_directory/lib.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.module-files"
+      ],
+      "input": "file",
+      "auxiliary": [
+        "tests/spec/modules/nested_directory/a/mod.rs",
+        "tests/spec/modules/nested_directory/a/b.rs"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/modules/inline/lib.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.module-files"
+      ],
+      "input": "file",
+      "auxiliary": [
+        "tests/spec/modules/inline/a/b.rs"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/modules/explicit/lib.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.module-files"
+      ],
+      "input": "file",
+      "auxiliary": [
+        "tests/spec/modules/explicit/other.rs"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/modules/explicit_child/lib.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.module-files"
+      ],
+      "input": "file",
+      "auxiliary": [
+        "tests/spec/modules/explicit_child/other.rs",
+        "tests/spec/modules/explicit_child/b.rs"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/modules/inline_path/lib.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.module-files"
+      ],
+      "input": "file",
+      "auxiliary": [
+        "tests/spec/modules/inline_path/folder/b.rs"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/modules/cfg_absent/lib.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.module-files"
+      ],
+      "input": "file",
+      "auxiliary": [],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/modules/cfg_attr/lib.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.module-files"
+      ],
+      "input": "file",
+      "auxiliary": [
+        "tests/spec/modules/cfg_attr/other.rs"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/modules/shared/lib.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.module-files"
+      ],
+      "input": "file",
+      "auxiliary": [
+        "tests/spec/modules/shared/same.rs"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/modules/circular/lib.rs",
+      "exit_status": 1,
+      "features": [
+        "pa6.module-files"
+      ],
+      "input": "file",
+      "auxiliary": [],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/modules/block_path/lib.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.module-files"
+      ],
+      "input": "file",
+      "auxiliary": [
+        "tests/spec/modules/block_path/other.rs"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/modules/block_default/lib.rs",
+      "exit_status": 1,
+      "features": [
+        "pa6.module-files"
+      ],
+      "input": "file",
+      "auxiliary": [
+        "tests/spec/modules/block_default/a.rs"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/modules/unicode_default/lib.rs",
+      "exit_status": 1,
+      "features": [
+        "pa6.module-files"
+      ],
+      "input": "file",
+      "auxiliary": [
+        "tests/spec/modules/unicode_default/\u00e9.rs"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/modules/unicode_path/lib.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.module-files"
+      ],
+      "input": "file",
+      "auxiliary": [
+        "tests/spec/modules/unicode_path/\u00e9.rs"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/modules/bad_path/lib.rs",
+      "exit_status": 1,
+      "features": [
+        "pa6.module-files"
+      ],
+      "input": "file",
+      "auxiliary": [],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/modules/inner_cfg/lib.rs",
+      "exit_status": 1,
+      "features": [
+        "pa6.module-files"
+      ],
+      "input": "file",
+      "auxiliary": [
+        "tests/spec/modules/inner_cfg/a.rs"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/modules/nested_privacy/lib.rs",
+      "exit_status": 1,
+      "features": [
+        "pa6.module-files"
+      ],
+      "input": "file",
+      "auxiliary": [
+        "tests/spec/modules/nested_privacy/a.rs"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/names/late_explicit_over_glob.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.imports"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/late_explicit_long_chain.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.imports"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/late_explicit_replaces_target.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.imports"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/late_explicit_glob_chain.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.imports"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/late_explicit_glob_target.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.imports"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/glob_reject_struct.rs",
+      "exit_status": 1,
+      "features": [
+        "pa6.imports"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/names/private_constructor_type_import.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.imports"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/private_value_type_import.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.imports"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/private_type_value_import.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.imports"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/private_constructor_type_reexport.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.imports"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/private_type_value_reexport.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.imports"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    }
+  ]
+}

@@ -47,7 +47,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--baseline", type=Path)
     parser.add_argument("--candidate", type=Path, default=ROOT / "obj/rust/release/rustgm")
-    parser.add_argument("--stage", choices=("tokens", "literals", "token-trees", "ast", "crate-ast"), default="tokens")
+    parser.add_argument("--stage", choices=("tokens", "literals", "token-trees", "ast", "crate-ast", "names"), default="tokens")
     args = parser.parse_args()
     directory = ROOT / "obj/perf" / str(time.time_ns())
     directory.mkdir(parents=True)
@@ -64,11 +64,16 @@ def main():
                "stage": args.stage,
                "binary_sha256": {name: hashlib.sha256(p.read_bytes()).hexdigest() for name, p in binaries.items()},
                "samples": [], "full_output_sha256": {}}
-    scales = (4000, 16000, 64000) if args.stage in ("token-trees", "ast", "crate-ast") else (16000, 64000, 256000)
-    line = {"tokens": LINE, "literals": LITERAL_LINE, "token-trees": TREE_LINE, "ast": AST_LINE, "crate-ast": CRATE_LINE}[args.stage]
+    scales = (4000, 16000, 64000) if args.stage in ("token-trees", "ast", "crate-ast", "names") else (16000, 64000, 256000)
+    line = {"tokens": LINE, "literals": LITERAL_LINE, "token-trees": TREE_LINE, "ast": AST_LINE, "crate-ast": CRATE_LINE, "names": b""}[args.stage]
     for lines in scales:
         source = directory / f"input-{lines}.rs"
-        source.write_bytes(b"{\n" + line * lines + b"}\n" if args.stage == "ast" else line * lines)
+        if args.stage == "names":
+            source.write_text("mod origin {\n" + "".join(
+                f"pub fn measured_{i}(value:u64)->u64{{let next=value+17;next}}\n"
+                for i in range(lines)) + "}\nuse origin::*;\n")
+        else:
+            source.write_bytes(b"{\n" + line * lines + b"}\n" if args.stage == "ast" else line * lines)
         full_outputs = {name: full_output_hash(binary, source, directory, args.stage) for name, binary in binaries.items()}
         if full_outputs["A"] != full_outputs["B"]:
             raise ValueError("full output differs between immutable binaries")

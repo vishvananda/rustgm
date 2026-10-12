@@ -2,5 +2,6 @@
 pub mod expand;
 pub mod lex;
 pub mod literal;
+pub mod resolve;
 pub mod support;
 pub mod syntax;

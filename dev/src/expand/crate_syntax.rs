@@ -6,7 +6,7 @@ use super::{
 use crate::{
     lex::{render::RenderError, token::LexError},
     syntax::{
-        ast::{Ast, Kind, NodeId},
+        ast::{Kind, NodeId, Syntax},
         expression,
     },
 };
@@ -21,12 +21,14 @@ pub struct AttributeEffect {
     pub capture: u32,
     pub attribute: ConfiguredAttribute,
 }
-pub struct ConfiguredCrate<'source> {
-    pub ast: Ast<'source>,
+pub struct ConfiguredSyntax<L> {
+    pub ast: Syntax<L>,
     pub owners: Vec<Owner>,
     pub active: Vec<bool>,
     pub effects: Vec<AttributeEffect>,
 }
+
+pub type ConfiguredCrate<'source> = ConfiguredSyntax<crate::literal::Value<'source>>;
 
 /// Parse once, then evaluate only attributes of reachable enabled owners.
 ///

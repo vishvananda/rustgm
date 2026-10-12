@@ -21,7 +21,9 @@ repository with pinned reference tools. It has not been built yet.
   macro captures and independently checked text oracles.
 - PA5 has crate/item/type/pattern syntax, attribute ownership and configuration
   traversal that excludes disabled nodes before literal/semantic work.
-- PA6–PA38 have buildout briefs and Makefiles. Their suites and implementation
+- PA6 has owned module loading, NFC name interning, lexical scopes, privacy,
+  namespace-directed references and imports with independently checked text oracles.
+- PA7–PA38 have buildout briefs and Makefiles. Their suites and implementation
   are not complete; invoking an unbuilt assignment fails explicitly.
 - The backend bridge has an executable LowIR smoke test. Rust source lowering
   begins at PA11; the smoke test is not evidence of Rust source compilation.
@@ -45,12 +47,12 @@ make test-harness test-upstream
 ```
 
 Rust 1.98.0 is pinned by `rust-toolchain.toml`. The course language profile is
-the same release, initially edition 2024, Linux x86-64. The only frontend
-dependency initially supplies Unicode XID property tables; it is not a lexer.
+the same release, initially edition 2024, Linux x86-64. Frontend dependencies supply Unicode XID property tables and NFC normalization;
+they do not implement Rust frontend phases.
 See [dependency review](docs/dependencies.md).
 
 Run `dev/rustgm --emit-tokens source.rs`, `dev/rustgm --emit-literals source.rs`,
-`dev/rustgm --emit-token-trees source.rs`, or `dev/rustgm --emit-ast expression.rs`, or `dev/rustgm --emit-crate-ast crate.rs`,
+`dev/rustgm --emit-token-trees source.rs`, or `dev/rustgm --emit-ast expression.rs`, or `dev/rustgm --emit-crate-ast crate.rs`, or `dev/rustgm --emit-names crate.rs`,
 or pass source on stdin. The reference
 wrapper `dev/rustgm-ref` invokes the same maintained solution. Override
 `RUSTGM_TEST_APP=/absolute/path/to/candidate` to test another implementation
@@ -91,3 +93,6 @@ output equality and the same paired scaling procedure.
 
 `make perf-crate-ast` measures complete crate syntax and configuration with the
 same frozen-snapshot procedure.
+
+`make perf-names` measures source ownership, modules, interning and resolution,
+including glob propagation, with deterministic full-output checks.

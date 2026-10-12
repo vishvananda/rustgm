@@ -61,6 +61,11 @@ inactive-subtree exclusion and diagnosed nesting. External-module and unresolved
 type cases explicitly defer loading/resolution rather than claiming rustc
 acceptance equivalence. Earlier expression-fragment oracles remain unchanged.
 
+PA6 adds file-input cases with explicitly declared auxiliary module sources.
+Discovery and receipts include those sources; independent checks copy only the
+declared package into a fresh directory. Name-resolution invariants check target
+identity independently of generated output, including shadowing and reexports.
+
 Rustc has no LowIR output. From PA11, maintainer-generated LowIR is the course
 text oracle, with independent run-pass checks through CPPGM versus rustc. Do
 not grade LLVM IR or assume Rust's unspecified layout matches rustc. Test exact
@@ -84,8 +89,8 @@ our oracle: their representation and diagnostic contracts belong to upstream.
 
 ## Release discipline
 
-PA1–PA5 are implemented drafts, not a claim of full Rust frontend conformance.
-Planned PA6–PA38 fail on invocation and are excluded from pass counts. Promote
+PA1–PA6 are implemented drafts, not a claim of full Rust frontend conformance.
+Planned PA7–PA38 fail on invocation and are excluded from pass counts. Promote
 a stage only after handout/reference/fixtures are coherent, independent checks
 pass, the source-to-feature ledger is reviewed and all prior stages remain green.
 Keep maintainer measurements and logs in ignored `obj/`; keep student handout

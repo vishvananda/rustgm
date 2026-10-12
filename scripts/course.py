@@ -14,6 +14,12 @@ ROOT = Path(__file__).resolve().parents[1]
 SIDECARS = (".ref", ".ref.stderr", ".ref.exit_status")
 
 
+def check_relative_path(value, stage):
+    if (not isinstance(value, str) or not value or Path(value).is_absolute()
+            or ".." in Path(value).parts or Path(value).as_posix() != value):
+        raise ValueError(f"{stage}: fixture identities must be normalized relative paths")
+
+
 def load_cases(root, stage):
     assignment = root / stage
     manifest_path = assignment / "tests/manifest.json"
@@ -24,21 +30,41 @@ def load_cases(root, stage):
     if not cases:
         raise ValueError(f"{stage}: an empty suite cannot pass")
     paths = [case["path"] for case in cases]
+    for path in paths:
+        check_relative_path(path, stage)
     if len(paths) != len(set(paths)):
         raise ValueError(f"{stage}: duplicate fixture identity")
+    auxiliary = set()
     for case in cases:
         path = (assignment / case["path"]).resolve()
         if not path.is_relative_to((assignment / "tests").resolve()) or not path.is_file():
             raise ValueError(f"{stage}: invalid fixture path {path}")
         if case["exit_status"] not in (0, 1):
             raise ValueError(f"{stage}: expected outcome must be success or diagnosed rejection")
+        if case.get("input", "stdin") not in ("stdin", "file"):
+            raise ValueError(f"{stage}: input must be stdin or file")
+        files = case.get("auxiliary", [])
+        if not isinstance(files, list) or any(not isinstance(p, str) for p in files):
+            raise ValueError(f"{stage}: auxiliary must be a list of paths")
+        if len(set(files)) != len(files) or set(files) & set(paths):
+            raise ValueError(f"{stage}: duplicate or primary auxiliary identity")
+        if files and case.get("input") != "file":
+            raise ValueError(f"{stage}: auxiliary files require file input")
+        for file in files:
+            check_relative_path(file, stage)
+            child = (assignment / file).resolve()
+            if (not child.is_relative_to(path.parent) or not child.is_file()
+                    or not child.is_relative_to((assignment / "tests").resolve())):
+                raise ValueError(f"{stage}: invalid auxiliary path {file}")
+            auxiliary.add(file)
         args = case.get("args", [])
         if (not isinstance(args, list) or any(not isinstance(arg, str) for arg in args)
                 or len(args) % 2 or any(args[i] != "--cfg" for i in range(0, len(args), 2))):
             raise ValueError(f"{stage}: case args must be --cfg/value pairs")
     discovered = {p.relative_to(assignment).as_posix() for p in (assignment / "tests").rglob("*.rs")}
-    if discovered != set(paths):
-        raise ValueError(f"{stage}: undiscovered or missing fixtures: {sorted(discovered ^ set(paths))}")
+    declared_rs = {p for p in set(paths) | auxiliary if p.endswith(".rs")}
+    if discovered != declared_rs:
+        raise ValueError(f"{stage}: undiscovered or missing fixtures: {sorted(discovered ^ declared_rs)}")
     return manifest, cases
 
 
@@ -56,7 +82,12 @@ def execute(command, data, timeout):
 
 def run_case(root, stage, mode, case, app, timeout):
     fixture = root / stage / case["path"]
-    actual = execute([*app, mode, "--edition=2024", *case.get("args", [])], fixture.read_bytes(), timeout)
+    command = [*app, mode, "--edition=2024", *case.get("args", [])]
+    data = fixture.read_bytes()
+    if case.get("input") == "file":
+        command.append(str(fixture.resolve()))
+        data = b""
+    actual = execute(command, data, timeout)
     return fixture, actual
 
 
@@ -112,6 +143,10 @@ def run_stage(root, stage, app, *, bless=False, jobs=4, timeout=10):
                    "manifest_sha256": hashlib.sha256((root / stage / "tests/manifest.json").read_bytes()).hexdigest(),
                    "fixtures": {case["path"]: hashlib.sha256(fixture.read_bytes()).hexdigest()
                                 for case, fixture, _, _ in results}}
+        auxiliary = sorted({p for case in cases for p in case.get("auxiliary", [])})
+        if auxiliary:
+            receipt["auxiliary"] = {p: hashlib.sha256((root / stage / p).read_bytes()).hexdigest()
+                                    for p in auxiliary}
         (root / stage / "reference.json").write_text(json.dumps(receipt, indent=2) + "\n")
     passed = 0
     for case, _, _, errors in results:

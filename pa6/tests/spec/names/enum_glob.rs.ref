@@ -1,0 +1,64 @@
+name 0 "crate"
+name 1 "bool"
+name 2 "char"
+name 3 "str"
+name 4 "i8"
+name 5 "i16"
+name 6 "i32"
+name 7 "i64"
+name 8 "i128"
+name 9 "isize"
+name 10 "u8"
+name 11 "u16"
+name 12 "u32"
+name 13 "u64"
+name 14 "u128"
+name 15 "usize"
+name 16 "f32"
+name 17 "f64"
+name 18 "E"
+name 19 "A"
+name 20 "B"
+name 21 "f"
+module 0 name=0 file=0 scope=0 parent=root
+scope 0 module=0 barrier=true parent=root
+scope 1 module=0 barrier=true parent=0
+scope 2 module=0 barrier=true parent=0
+scope 3 module=0 barrier=false parent=2
+def 0 type primitive name=1 scope=0 access=public
+def 1 type primitive name=2 scope=0 access=public
+def 2 type primitive name=3 scope=0 access=public
+def 3 type primitive name=4 scope=0 access=public
+def 4 type primitive name=5 scope=0 access=public
+def 5 type primitive name=6 scope=0 access=public
+def 6 type primitive name=7 scope=0 access=public
+def 7 type primitive name=8 scope=0 access=public
+def 8 type primitive name=9 scope=0 access=public
+def 9 type primitive name=10 scope=0 access=public
+def 10 type primitive name=11 scope=0 access=public
+def 11 type primitive name=12 scope=0 access=public
+def 12 type primitive name=13 scope=0 access=public
+def 13 type primitive name=14 scope=0 access=public
+def 14 type primitive name=15 scope=0 access=public
+def 15 type primitive name=16 scope=0 access=public
+def 16 type primitive name=17 scope=0 access=public
+def 17 type enum name=18 scope=0 access=module:0 source=0:6 members=1
+def 18 type variant name=19 scope=1 access=module:0 source=0:0
+def 19 value variant name=19 scope=1 access=module:0 source=0:0
+def 20 type variant name=20 scope=1 access=module:0 source=0:5
+def 21 value variant name=20 scope=1 access=module:0 source=0:5
+def 22 value function name=21 scope=0 access=module:0 source=0:19
+binding scope=0 type name=18 def=17 Direct ambiguous=false access=module:0
+binding scope=0 value name=21 def=22 Direct ambiguous=false access=module:0
+binding scope=0 type name=19 def=18 Glob(0) ambiguous=false access=module:0
+binding scope=0 value name=19 def=19 Glob(0) ambiguous=false access=module:0
+binding scope=0 type name=20 def=20 Glob(0) ambiguous=false access=module:0
+binding scope=0 value name=20 def=21 Glob(0) ambiguous=false access=module:0
+binding scope=1 type name=19 def=18 Direct ambiguous=false access=module:0
+binding scope=1 value name=19 def=19 Direct ambiguous=false access=module:0
+binding scope=1 type name=20 def=20 Direct ambiguous=false access=module:0
+binding scope=1 value name=20 def=21 Direct ambiguous=false access=module:0
+ref 0:2 scope=1 type def=5
+ref 0:12 scope=2 type def=17
+ref 0:15 scope=3 value def=21
+eof files=1 modules=1 definitions=23 references=3

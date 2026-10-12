@@ -27,6 +27,31 @@ class HarnessTests(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     load_cases(root, "pa1")
 
+    def test_module_inputs_are_explicit_discovered_and_hashed(self):
+        with tempfile.TemporaryDirectory() as name:
+            case = {"path": "tests/package/lib.rs", "exit_status": 0, "input": "file",
+                    "auxiliary": ["tests/package/child.rs"]}
+            root, tests = self.fixture_root(name, [case])
+            (tests / "package").mkdir()
+            (tests / "package/lib.rs").write_text("mod child;")
+            (tests / "package/child.rs").write_text("pub fn f(){}")
+            load_cases(root, "pa1")
+            app = [sys.executable, "-c", "import pathlib,sys; p=pathlib.Path(sys.argv[-1]); print(p.name, p.with_name('child.rs').read_text())"]
+            with contextlib.redirect_stdout(io.StringIO()):
+                self.assertTrue(run_stage(root, "pa1", app, bless=True))
+                self.assertTrue(run_stage(root, "pa1", app))
+            receipt = json.loads((root / "pa1/reference.json").read_text())
+            self.assertEqual(set(receipt["auxiliary"]), {"tests/package/child.rs"})
+            for changes in ({"input": "stdin"}, {"input": "unknown"},
+                            {"path": str(tests / "package/lib.rs")},
+                            {"path": "tests/package/../package/lib.rs"},
+                            {"auxiliary": []}, {"auxiliary": ["tests/package/lib.rs"]},
+                            {"auxiliary": ["../../outside.rs"]}):
+                invalid = {**case, **changes}
+                (tests / "manifest.json").write_text(json.dumps({"mode": "--emit-tokens", "cases": [invalid]}))
+                with self.assertRaises(ValueError):
+                    load_cases(root, "pa1")
+
     def test_signals_stub_and_other_exits_are_failures(self):
         for code in (2, 86, 101, -9):
             command = "import os,signal; os.kill(os.getpid(),signal.SIGKILL)" if code < 0 else f"raise SystemExit({code})"

@@ -1,10 +1,10 @@
 //! Append child identities in source/grammar order without per-node allocation.
 use super::{
-    ast::{Ast, Kind, List, NodeId},
+    ast::{Kind, List, NodeId, Syntax},
     item::{ItemKind, Visibility},
 };
 
-impl Ast<'_> {
+impl<L> Syntax<L> {
     fn children(&self, list: List, output: &mut Vec<NodeId>) {
         output.extend_from_slice(self.list(list));
     }

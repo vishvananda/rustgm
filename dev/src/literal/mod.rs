@@ -2,6 +2,7 @@
 mod escapes;
 mod number;
 pub mod render;
+pub mod storage;
 mod text;
 pub mod value;
 

@@ -3,5 +3,7 @@
   "dev/src/literal/value.rs": "interface",
   "dev/src/syntax/attribute.rs": "interface",
   "dev/src/syntax/ast.rs": "model",
-  "dev/src/syntax/item.rs": "model"
+  "dev/src/syntax/item.rs": "model",
+  "dev/src/resolve/model.rs": "model",
+  "dev/src/resolve/package.rs": "model"
 }

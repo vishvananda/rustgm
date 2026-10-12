@@ -4,10 +4,11 @@ import argparse
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 import re
+import shutil
 import subprocess
 import sys
 
-from course import ROOT, execute, load_cases
+from course import ROOT, load_cases, run_case
 
 
 def check_classification(case):
@@ -48,9 +49,17 @@ def check(stage, app):
             raise ValueError(f"unknown independent check kind: {kind}")
         fixture = ROOT / stage / case["path"]
         data = fixture.read_bytes()
-        name = fixture.parent.name + "-" + fixture.stem
-        source = directory / (name + ".rs")
-        binary = directory / name
+        case_directory = directory / case["path"].removesuffix(".rs")
+        if case_directory.exists():
+            shutil.rmtree(case_directory)
+        case_directory.mkdir(parents=True)
+        source = case_directory / fixture.name
+        binary = case_directory / "output"
+        for auxiliary in case.get("auxiliary", []):
+            original = ROOT / stage / auxiliary
+            destination = case_directory / original.relative_to(fixture.parent)
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(original, destination)
         if kind == "predicate":
             source.write_text('fn main() { println!("{}", cfg!(' + metadata["predicate"] + ')); }\n')
         elif kind == "expression":
@@ -63,11 +72,11 @@ def check(stage, app):
         if kind != "predicate":
             command += ["--crate-type=lib", "--emit=metadata"]
         result = subprocess.run(command, capture_output=True, timeout=30)
-        (directory / (name + ".stderr")).write_bytes(result.stderr)
+        (case_directory / "rustc.stderr").write_bytes(result.stderr)
         wanted = 0 if kind == "predicate" else metadata["status"]
         if result.returncode != wanted:
             raise ValueError(f"rustc disagreement: {fixture}: {result.returncode}, wanted {wanted}\n{result.stderr.decode(errors='replace')}")
-        actual = execute([str(app), manifest["mode"], "--edition=2024", *case.get("args", [])], data, 10)
+        _, actual = run_case(ROOT, stage, manifest["mode"], case, [str(app)], 10)
         if actual[2] != f"{case['exit_status']}\n".encode():
             raise ValueError(f"candidate outcome disagreement: {fixture}: {actual[1]!r}")
         check_configured_owners(metadata, actual[0])

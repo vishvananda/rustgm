@@ -1,3 +1,4 @@
+mod modules;
 use rustgm::{
     expand::{self, config::Config},
     lex::{
@@ -34,9 +35,13 @@ fn options() -> Result<Options, String> {
     while let Some(arg) = args.next() {
         match arg.as_str() {
             "--emit-tokens" | "--emit-literals" | "--emit-token-trees" | "--emit-ast"
-            | "--emit-crate-ast" | "--emit-lowir" => {
+            | "--emit-crate-ast" | "--emit-names" | "--emit-lowir" => {
                 options.mode = arg;
                 options.count = false;
+            }
+            "--count-names" => {
+                options.mode = "--emit-names".into();
+                options.count = true;
             }
             "--count-tokens" => {
                 options.mode = "--emit-tokens".into();
@@ -97,7 +102,15 @@ fn compile(options: &Options) -> Result<(), String> {
         )),
         None => Box::new(io::BufWriter::new(stdout.lock())),
     };
-    let result = if options.count && options.mode == "--emit-crate-ast" {
+    let result = if options.mode == "--emit-names" {
+        modules::names(
+            source,
+            options.input.as_deref(),
+            &options.config,
+            options.count,
+            &mut output,
+        )
+    } else if options.count && options.mode == "--emit-crate-ast" {
         let report = expand::crate_syntax::analyze(source.text(), &options.config)
             .map_err(|e| format!("{}: {}", e.offset, e.message))?;
         writeln!(

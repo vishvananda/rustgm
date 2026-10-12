@@ -6,7 +6,7 @@ use super::{
 };
 use crate::{lex::token::Punctuation, literal::Value};
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct NodeId(pub u32);
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -303,7 +303,7 @@ pub struct Node {
 }
 
 #[derive(Debug)]
-pub struct Ast<'source> {
+pub struct Syntax<L> {
     pub nodes: Vec<Node>,
     pub items: Vec<Item>,
     pub variants: Vec<Variant>,
@@ -312,13 +312,15 @@ pub struct Ast<'source> {
     pub function_types: Vec<FunctionType>,
     pub attributes: Vec<AttributeCapture>,
     pub edges: Vec<NodeId>,
-    pub literals: Vec<Value<'source>>,
+    pub literals: Vec<L>,
     pub captures: Vec<Forest>,
     pub root: NodeId,
     pub lookahead_high_water: usize,
 }
 
-impl Ast<'_> {
+pub type Ast<'source> = Syntax<Value<'source>>;
+
+impl<L> Syntax<L> {
     #[must_use]
     pub fn list(&self, range: List) -> &[NodeId] {
         &self.edges[range.start as usize..range.end as usize]
@@ -326,5 +328,33 @@ impl Ast<'_> {
     #[must_use]
     pub fn node(&self, id: NodeId) -> Node {
         self.nodes[id.0 as usize]
+    }
+
+    /// Change literal ownership while moving every syntax arena intact.
+    ///
+    /// # Errors
+    /// Propagates errors from the supplied literal-storage conversion.
+    pub fn map_literals<M, E>(
+        self,
+        convert: impl FnMut(L) -> Result<M, E>,
+    ) -> Result<Syntax<M>, E> {
+        Ok(Syntax {
+            nodes: self.nodes,
+            items: self.items,
+            variants: self.variants,
+            use_trees: self.use_trees,
+            generics: self.generics,
+            function_types: self.function_types,
+            attributes: self.attributes,
+            edges: self.edges,
+            captures: self.captures,
+            root: self.root,
+            lookahead_high_water: self.lookahead_high_water,
+            literals: self
+                .literals
+                .into_iter()
+                .map(convert)
+                .collect::<Result<_, _>>()?,
+        })
     }
 }

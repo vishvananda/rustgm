@@ -1,0 +1,1 @@
+ERROR: file 0: 26: pattern binding cannot shadow a constant, static or constructor

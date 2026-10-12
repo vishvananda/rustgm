@@ -18,7 +18,7 @@ ALLOWED_DEPENDENCIES = {
     "support": set(), "types": {"support", "lex"},
     "literal": {"support", "lex"},
     "expand": {"support", "lex", "literal", "syntax"},
-    "resolve": {"support", "lex", "syntax", "expand"},
+    "resolve": {"support", "lex", "literal", "syntax", "expand"},
     "body": {"support", "types", "sema", "syntax"},
     "borrow": {"support", "types", "body"},
     "const_eval": {"support", "types", "body"},
