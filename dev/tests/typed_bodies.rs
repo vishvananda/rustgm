@@ -473,3 +473,84 @@ fn cfg_execution_agrees_with_declared_results_and_rustc() -> Result<(), String> 
     }
     Ok(())
 }
+
+#[test]
+fn conditional_storage_balances_success_failure_and_reentry() -> Result<(), String> {
+    let cases = [
+        (
+            "fn entry()->u64{let x=7;let n@1..=9=x else{return 99;};n}",
+            7,
+        ),
+        ("fn entry()->u64{let x=1;let n@0=x else{return 7;};n}", 7),
+        (
+            "fn entry()->u64{let x=10;let y=3;let n@0..10=x else{let m@0..10=y else{return 99;};return m+10;};n}",
+            13,
+        ),
+        (
+            "fn entry()->u64{let x=7;if let n@1..=9=x&&let m=n&&m==7{n+m}else{0}}",
+            14,
+        ),
+        (
+            "fn entry()->u64{let mut x=4;let mut sum=0;while let mut n@1..=4=x&&n>0{x-=1;if n==3{continue;}n+=1;sum+=n;}sum}",
+            10,
+        ),
+        (
+            "fn entry()->u64{let x=7;if let n@1..=9=x&&false{n}else{9}}",
+            9,
+        ),
+        (
+            "fn entry()->u64{let x=1;'out:loop{let n@0=x else{break 'out 9;};break n;}}",
+            9,
+        ),
+    ];
+    let dir = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../obj/pa13-work/conditional-storage")
+        .join(std::process::id().to_string());
+    std::fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
+    for (index, (source, expected)) in cases.iter().enumerate() {
+        let (_, facts, program) = analyze(source)?;
+        let Owner::Function { definition, .. } = program.bodies[0].owner else {
+            return Err("missing entry function".into());
+        };
+        let actual = Machine {
+            program: &program,
+            types: &facts.types,
+            fuel: 100_000,
+        }
+        .run(definition, &[], 0)?;
+        assert_eq!(actual, Data::Bits(*expected), "{source}");
+        let file = dir.join(format!("case{index}.rs"));
+        std::fs::write(
+            &file,
+            format!("{source}\nfn main(){{print!(\"{{}}\",entry());}}\n"),
+        )
+        .map_err(|e| e.to_string())?;
+        let executable = dir.join(format!("case{index}"));
+        let compiled = Command::new("rustc")
+            .args([
+                "--edition=2024",
+                "-C",
+                "panic=abort",
+                "-C",
+                "overflow-checks=yes",
+            ])
+            .arg(&file)
+            .arg("-o")
+            .arg(&executable)
+            .output()
+            .map_err(|e| e.to_string())?;
+        std::fs::write(file.with_extension("stderr"), &compiled.stderr)
+            .map_err(|e| e.to_string())?;
+        assert!(
+            compiled.status.success(),
+            "{source}: {}",
+            String::from_utf8_lossy(&compiled.stderr)
+        );
+        let ran = Command::new(executable)
+            .output()
+            .map_err(|e| e.to_string())?;
+        assert!(ran.status.success() && ran.stderr.is_empty());
+        assert_eq!(ran.stdout, expected.to_string().as_bytes());
+    }
+    Ok(())
+}

@@ -13,6 +13,10 @@ use std::{path::Path, process::Command};
 const CHECK: &str = "fn check(ok:bool){if !ok{let _=failure(0);}}fn failure(x:i32)->i32{1/x}\n";
 const ACCEPTED: &[(&str, &str)] = &[
     (
+        "irrefutable-or-arm",
+        "fn f(x:u8)->u8{match x{0|_=>7,_=>99}}fn main(){check(f(0)==7&&f(3)==7);}",
+    ),
+    (
         "never-scrutinee",
         "fn diverge()->!{match loop{} {}}fn main(){check(true);}",
     ),
@@ -118,6 +122,9 @@ const ACCEPTED: &[(&str, &str)] = &[
     ),
 ];
 const REJECTED: &[&str] = &[
+    "fn main(){let x:u8;match x{_=>(),0=>()}}",
+    "fn main(){let x:u8;match x{_=>(),n=>{let _=n;}}}",
+    "fn main(){let x:u8;match 0u8{_=>(),_=>{let _=x+1;}}}",
     "struct N;fn main(){let a@b@N=N;let _=a;let _=b;}",
     "fn main(){match true{true=>()}}",
     "fn main(){let x=3u8;match x{0..=2=>(),4.. =>()}}",

@@ -98,11 +98,26 @@ impl Builder<'_> {
             .ok_or_else(|| self.error(frame.node, "missing arm binding selection"))?;
         let yes = self.new_block(arm.source.node)?;
         let no = self.new_block(arm.source.node)?;
+        let checked = frame.next + 1 < frame.end;
         let (plan, next) = if frame.scalar {
+            let entry = self.current;
             self.scalar_decision(pattern, frame.place, yes, no)?;
+            if checked && let Some(entry) = entry {
+                self.check_failure(arm.source.node, entry, no)?;
+            }
             (None, no)
         } else {
-            let plan = self.constructor_decision(pattern, frame.place, yes, no)?;
+            let plan = self.constructor_decision(
+                pattern,
+                frame.place,
+                yes,
+                no,
+                if checked {
+                    super::decisions::Failure::Checked
+                } else {
+                    super::decisions::Failure::Runtime
+                },
+            )?;
             self.switch(arm.source.node, no)?;
             self.cleanup(arm.source.node, frame.base)?;
             let next = self.new_block(arm.source.node)?;

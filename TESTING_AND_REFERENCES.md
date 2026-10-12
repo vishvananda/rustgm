@@ -86,7 +86,7 @@ The optional rustc `default_lints: true` metadata omits the usual lint cap for a
 case whose expected rejection depends on a default lint, such as incomplete
 `include!()` expressions. Such a case is not an acceptance-boundary exception.
 
-PA9 adds 199 full-program type-view fixtures. Its rustc checks retain default
+PA9 has 201 full-program type-view fixtures. Its rustc checks retain default
 literal lints. Four manifest entries explicitly defer initialization/write
 permissions, lifetime proof or constant-call validity to the later owning
 assignment. The type view retains those facts without claiming those obligations

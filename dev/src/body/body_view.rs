@@ -117,6 +117,11 @@ fn contents(body: &Body, out: &mut impl Write) -> io::Result<()> {
         write!(out, "    ")?;
         match block.terminator {
             Terminator::Jump(target) => write!(out, "jump b{}", target.0)?,
+            Terminator::FalseEdge { real, imaginary } => write!(
+                out,
+                "false-edge real=b{} imaginary=b{}",
+                real.0, imaginary.0
+            )?,
             Terminator::Branch { condition, yes, no } => {
                 write!(out, "branch v{} b{} b{}", condition.0, yes.0, no.0)?;
             }

@@ -86,14 +86,31 @@ pub(super) fn lower<'a>(context: &mut Context<'a>, body: &'a ir::Body) -> Result
 }
 impl Lower<'_, '_> {
     fn run(&mut self) -> Result<(), &'static str> {
-        for local in &self.body.locals {
-            let address = self.allocate(local.ty)?;
+        let (order, seen, checked_edges) = order(self.body)?;
+        let live = if checked_edges {
+            let mut live = vec![false; self.body.locals.len()];
+            for &index in &order {
+                for statement in self.body.statements(&self.body.blocks[index]) {
+                    if let Action::StorageLive(id) = statement.action {
+                        live[id.0 as usize] = true;
+                    }
+                }
+            }
+            Some(live)
+        } else {
+            None
+        };
+        for (index, local) in self.body.locals.iter().enumerate() {
+            let address = if live.as_ref().is_none_or(|live| live[index]) {
+                self.allocate(local.ty)?
+            } else {
+                None
+            };
             self.locals.push(address);
         }
         for _ in &self.body.blocks {
             self.blocks.push(self.builder.block()?);
         }
-        let (order, seen) = order(self.body)?;
         for (position, id) in order.into_iter().enumerate() {
             self.builder.enter(self.blocks[id])?;
             if position == 0 {
@@ -118,7 +135,9 @@ impl Lower<'_, '_> {
             }
             self.source = block.source;
             let terminator = match block.terminator {
-                ir::Terminator::Jump(target) => Terminator::Jump(self.blocks[target.0 as usize]),
+                ir::Terminator::Jump(target) | ir::Terminator::FalseEdge { real: target, .. } => {
+                    Terminator::Jump(self.blocks[target.0 as usize])
+                }
                 ir::Terminator::Branch { condition, yes, no } => Terminator::Branch {
                     condition: self.value(condition)?.runtime()?.operand,
                     yes: self.blocks[yes.0 as usize],
@@ -395,13 +414,14 @@ impl Lower<'_, '_> {
 }
 
 /// Reverse postorder places dominating snapshots before uses without recursion.
-fn order(body: &ir::Body) -> Result<(Vec<usize>, Vec<bool>), &'static str> {
+fn order(body: &ir::Body) -> Result<(Vec<usize>, Vec<bool>, bool), &'static str> {
     if body.blocks.is_empty() {
         return Err("body has no entry block");
     }
     let mut seen = vec![false; body.blocks.len()];
     let mut stack = vec![(0, false)];
     let mut order = Vec::with_capacity(body.blocks.len());
+    let mut checked_edges = false;
     while let Some((index, exiting)) = stack.pop() {
         if exiting {
             order.push(index);
@@ -414,6 +434,10 @@ fn order(body: &ir::Body) -> Result<(Vec<usize>, Vec<bool>), &'static str> {
         stack.push((index, true));
         match body.blocks[index].terminator {
             ir::Terminator::Jump(target) => stack.push((target.0 as usize, false)),
+            ir::Terminator::FalseEdge { real, .. } => {
+                checked_edges = true;
+                stack.push((real.0 as usize, false));
+            }
             ir::Terminator::Branch { yes, no, .. } => {
                 stack.push((no.0 as usize, false));
                 stack.push((yes.0 as usize, false));
@@ -422,7 +446,7 @@ fn order(body: &ir::Body) -> Result<(Vec<usize>, Vec<bool>), &'static str> {
         }
     }
     order.reverse();
-    Ok((order, seen))
+    Ok((order, seen, checked_edges))
 }
 
 #[cfg(test)]

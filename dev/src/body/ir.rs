@@ -131,6 +131,11 @@ pub struct Statement {
 #[derive(Clone, Copy, Debug)]
 pub enum Terminator {
     Jump(BlockId),
+    /// The imaginary successor participates in ownership checking, never execution.
+    FalseEdge {
+        real: BlockId,
+        imaginary: BlockId,
+    },
     Branch {
         condition: ValueId,
         yes: BlockId,

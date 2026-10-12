@@ -77,6 +77,24 @@ pub fn write(facts: &Declarations, out: &mut impl Write) -> io::Result<()> {
             arm.useful, arm.value.file.0, arm.value.node.0
         )?;
     }
+    let mut conditions: Vec<_> = facts.patterns.conditions.iter().collect();
+    conditions.sort_unstable_by_key(|(source, _)| (source.file.0, source.node.0));
+    for (source, condition) in conditions {
+        write!(
+            out,
+            "condition source={}:{} input={}:{} pattern={} otherwise=",
+            source.file.0,
+            source.node.0,
+            condition.input.file.0,
+            condition.input.node.0,
+            condition.pattern.0
+        )?;
+        if let Some(otherwise) = condition.otherwise {
+            writeln!(out, "{}:{}", otherwise.file.0, otherwise.node.0)?;
+        } else {
+            writeln!(out, "-")?;
+        }
+    }
     type_view::body_regions(&facts.body_regions, out)?;
     type_view::regions(&facts.region_equalities, out)?;
     write!(out, "eof ")?;
@@ -161,7 +179,7 @@ fn nodes(facts: &Declarations, out: &mut impl Write) -> io::Result<()> {
 pub fn count(facts: &Declarations, out: &mut impl Write) -> io::Result<()> {
     writeln!(
         out,
-        "roots={} patterns={} fields={} alternatives={} ranges={} matches={} arms={} coverage-work={} region-vars={} region-equalities={}",
+        "roots={} patterns={} fields={} alternatives={} ranges={} matches={} arms={} coverage-work={} region-vars={} region-equalities={} conditions={} chains={}",
         facts.patterns.roots.len(),
         facts.patterns.nodes.len(),
         facts.patterns.fields.len(),
@@ -171,6 +189,8 @@ pub fn count(facts: &Declarations, out: &mut impl Write) -> io::Result<()> {
         facts.patterns.arms.len(),
         facts.patterns.decisions.iter().map(|m| m.work).sum::<u64>(),
         facts.body_regions.len(),
-        facts.region_equalities.len()
+        facts.region_equalities.len(),
+        facts.patterns.conditions.len(),
+        facts.patterns.chains.len()
     )
 }

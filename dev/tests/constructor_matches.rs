@@ -143,6 +143,18 @@ const ACCEPTED: &[(&str, &str)] = &[
 ];
 const REJECTED: &[(&str, &str)] = &[
     (
+        "dead-constructor-test",
+        "fn main(){let x:(u8,u8);match x{_=>(),(0,_)=>(),_=>()}}",
+    ),
+    (
+        "dead-constructor-capture",
+        "struct N;fn main(){let x:(N,u8);match x{_=>(),(n,_)=>{let _=n;}}}",
+    ),
+    (
+        "dead-constructor-read",
+        "enum E{A}fn main(){let x:u8;match E::A{E::A=>(),_=>{let _=x+1;}}}",
+    ),
+    (
         "partial-reachable",
         "struct N;fn f(x:(N,N,bool)){let a=x.0;match x{(_,n,true)|(n,_,false)=>{let _=n;}}let _=a;}fn main(){}",
     ),

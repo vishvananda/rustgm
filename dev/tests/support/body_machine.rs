@@ -104,7 +104,9 @@ impl Machine<'_> {
             }
             self.fuel = self.fuel.checked_sub(1).ok_or("test execution exhausted")?;
             block = match block_data.terminator {
-                Terminator::Jump(target) => target.0 as usize,
+                Terminator::Jump(target) | Terminator::FalseEdge { real: target, .. } => {
+                    target.0 as usize
+                }
                 Terminator::Branch { condition, yes, no } => {
                     if frame.value(condition)?.bits()? != 0 {
                         yes.0 as usize

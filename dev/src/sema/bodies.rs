@@ -1,5 +1,7 @@
 //! Scalar body constraints consume resolved identities; fallback occurs once per body.
 mod aggregates;
+mod conditions;
+mod divergence;
 mod matches;
 mod patterns;
 use super::{
@@ -68,6 +70,12 @@ struct BreakSite {
     next: Option<usize>,
 }
 enum Work {
+    Conditional {
+        node: NodeId,
+        pattern: NodeId,
+        value: NodeId,
+        expected: Option<TermId>,
+    },
     MatchArms {
         node: NodeId,
         expected: Option<TermId>,
@@ -98,6 +106,7 @@ pub(super) struct Checker<'a> {
     in_function: bool,
     infer: Context,
     terms: Vec<Vec<Option<TermId>>>,
+    diverges: Vec<bool>,
     locals: Vec<Option<TermId>>,
     touched: Vec<NodeId>,
     bindings: Vec<DefId>,
@@ -126,6 +135,7 @@ impl<'a> Checker<'a> {
         Self {
             report,
             terms: facts.nodes.iter().map(|_| Vec::new()).collect(),
+            diverges: Vec::new(),
             locals: vec![None; facts.definitions.len()],
             facts,
             file: FileId(0),
@@ -181,6 +191,8 @@ impl Checker<'_> {
     fn prepare_file(&mut self, file: FileId) {
         self.file = file;
         self.terms[file.0 as usize].resize(self.facts.nodes[file.0 as usize].len(), None);
+        self.diverges
+            .resize(self.facts.nodes[file.0 as usize].len(), false);
     }
     fn key(&self, node: NodeId) -> NodeKey {
         NodeKey {
@@ -291,6 +303,12 @@ impl Checker<'_> {
                 return Err(self.error(body, "body type work budget exceeded"));
             }
             match work {
+                Work::Conditional {
+                    node,
+                    pattern,
+                    value,
+                    expected,
+                } => self.conditional_pattern(node, pattern, value, expected)?,
                 Work::MatchArms { node, expected } => self.match_arms(node, expected)?,
                 Work::Arm {
                     index,
@@ -320,6 +338,7 @@ impl Checker<'_> {
                 Work::Exit(node) => {
                     let term = self.expression(node)?;
                     self.save(node, term);
+                    let mut local_exit = false;
                     if self
                         .frames
                         .last()
@@ -329,9 +348,11 @@ impl Checker<'_> {
                             .frames
                             .pop()
                             .ok_or_else(|| self.error(node, "missing block control frame"))?;
+                        local_exit = frame.breaks.is_some();
                         let result = self.finish_frame(frame, Some(term))?;
                         self.save(node, result);
                     }
+                    self.finish_divergence(node, local_exit)?;
                 }
             }
         }
@@ -417,6 +438,7 @@ impl Checker<'_> {
         self.finish_patterns()?;
         for node in self.touched.drain(..) {
             self.terms[self.file.0 as usize][node.0 as usize] = None;
+            self.diverges[node.0 as usize] = false;
         }
         self.bindings.clear();
         self.checks.clear();
@@ -659,8 +681,23 @@ impl Checker<'_> {
                 return Ok(());
             }
             Kind::Let {
-                otherwise: Some(_), ..
-            } => return Err(self.error(node, "let-else requires pattern semantics")),
+                pattern,
+                ty,
+                value: Some(value),
+                otherwise: Some(otherwise),
+            } => {
+                return self.enter_let_else(node, pattern, ty, value, otherwise);
+            }
+            Kind::LetCondition { pattern, value } => {
+                self.work.push(Work::Conditional {
+                    node,
+                    pattern,
+                    value,
+                    expected: None,
+                });
+                self.work.push(Work::Enter(value, None));
+                return Ok(());
+            }
             Kind::Cast { value, ty } => {
                 self.annotation(ty)?;
                 self.children.push(value);
@@ -794,8 +831,7 @@ impl Checker<'_> {
                 let mut diverges = false;
                 for statement in unit.configured.ast.list(statements) {
                     if self.active(*statement) {
-                        let term = self.term(*statement)?;
-                        diverges |= self.head(*statement, term)? == Some(Constructor::Never);
+                        diverges |= self.diverges[statement.0 as usize];
                     }
                 }
                 self.known(
@@ -819,14 +855,22 @@ impl Checker<'_> {
                 let never = self.head(node, term)? == Some(Constructor::Never);
                 self.known(node, if never { TypeId::NEVER } else { TypeId::UNIT })
             }
-            Kind::Let { pattern, value, .. } => {
+            Kind::Let {
+                pattern,
+                value,
+                otherwise,
+                ..
+            } => {
+                if let Some(otherwise) = otherwise {
+                    let never = self.known(otherwise, TypeId::NEVER)?;
+                    self.coerce(otherwise, never)?;
+                }
                 let mut diverges = false;
                 if let Some(value) = value {
-                    let term = self.term(value)?;
-                    diverges = self.head(node, term)? == Some(Constructor::Never);
+                    diverges = self.diverges[value.0 as usize];
                     // Compound patterns were constrained after their initializer
                     // by BindPattern; a literal's node type may now be adjusted.
-                    if self.simple_pattern(pattern) {
+                    if otherwise.is_none() && self.simple_pattern(pattern) {
                         self.coerce(value, self.term(pattern)?)?;
                     }
                 }
@@ -856,7 +900,18 @@ impl Checker<'_> {
                 self.checks.push(node);
                 self.term(operand)
             }
-            Kind::Binary { op, left, right } => self.binary(node, op, left, right),
+            Kind::LetCondition { .. } => self.known(node, TypeId::primitive(Primitive::Bool)),
+            Kind::Binary { op, left, right } => {
+                let term = self.binary(node, op, left, right)?;
+                if op == Op::AndAnd
+                    && !self.facts.patterns.chains.is_empty()
+                    && (self.facts.patterns.chains.contains(&self.key(left))
+                        || self.facts.patterns.chains.contains(&self.key(right)))
+                {
+                    self.facts.patterns.chains.insert(self.key(node));
+                }
+                Ok(term)
+            }
             Kind::Call { callee, arguments } => self.call(node, callee, arguments),
             Kind::Loop { body } => self.finish_loop(node, body, None),
             Kind::While { condition, body } => self.finish_loop(node, body, Some(condition)),
@@ -1140,6 +1195,8 @@ impl Checker<'_> {
         if let Some(condition) = condition {
             let boolean = self.known(node, TypeId::primitive(Primitive::Bool))?;
             self.coerce(condition, boolean)?;
+            self.diverges[node.0 as usize] =
+                frame.breaks.is_none() && self.diverges[condition.0 as usize];
         }
         self.finish_frame(
             frame,

@@ -20,7 +20,13 @@ impl Builder<'_> {
             let node = self.facts.patterns.nodes[root.0 as usize].source.node;
             let yes = self.new_block(node)?;
             let no = self.new_block(node)?;
-            let plan = self.constructor_decision(root, place, yes, no)?;
+            let plan = self.constructor_decision(
+                root,
+                place,
+                yes,
+                no,
+                super::decisions::Failure::Runtime,
+            )?;
             self.switch(node, no)?;
             self.terminate(node, super::Terminator::Unreachable);
             self.switch(node, yes)?;

@@ -2413,6 +2413,30 @@
         "status": 0,
         "default_lints": true
       }
+    },
+    {
+      "path": "tests/spec/control/diverging-condition.rs",
+      "exit_status": 0,
+      "features": [
+        "pa9.control"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/control/diverging-condition-tail.rs",
+      "exit_status": 1,
+      "features": [
+        "pa9.control"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
     }
   ]
 }

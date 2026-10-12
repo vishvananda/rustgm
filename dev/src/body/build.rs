@@ -1,5 +1,6 @@
 //! Iterative construction visits executable syntax once and consumes PA9 selections.
 mod aggregates;
+mod conditions;
 mod decisions;
 mod matches;
 mod patterns;
@@ -57,6 +58,7 @@ pub fn build(report: &Report, facts: &Declarations) -> Result<Program, Error> {
         pattern_work: Vec::new(),
         match_frames: Vec::new(),
         match_patterns: Vec::new(),
+        conditional_live: Vec::new(),
     };
     let mut program = Program {
         bodies: Vec::new(),
@@ -131,6 +133,7 @@ struct Reach {
 }
 #[derive(Clone, Copy)]
 enum Work {
+    Conditional(conditions::Work),
     MatchStart(NodeId),
     MatchNext(usize),
     BindPattern {
@@ -177,6 +180,7 @@ enum Work {
     },
 }
 struct Scratch {
+    conditional_live: Vec<LocalId>,
     match_frames: Vec<matches::Frame>,
     match_patterns: Vec<crate::sema::patterns::PatternId>,
     pattern_work: Vec<patterns::Work>,
@@ -343,7 +347,11 @@ impl<'a> Builder<'a> {
         if let Some(block) = self.current.take() {
             match terminator {
                 Terminator::Jump(target) => self.scratch.reach[target.0 as usize].incoming = true,
-                Terminator::Branch { yes, no, .. } => {
+                Terminator::Branch { yes, no, .. }
+                | Terminator::FalseEdge {
+                    real: yes,
+                    imaginary: no,
+                } => {
                     self.scratch.reach[yes.0 as usize].incoming = true;
                     self.scratch.reach[no.0 as usize].incoming = true;
                 }
@@ -506,6 +514,9 @@ impl<'a> Builder<'a> {
         self.scratch.reach.clear();
         self.scratch.match_frames.clear();
         self.scratch.match_patterns.clear();
+        if !self.scratch.conditional_live.is_empty() {
+            return Err(self.error(root, "unbalanced conditional storage continuations"));
+        }
         if !self.scratch.places.is_empty() {
             return Err(self.error(root, "unbalanced place construction stack"));
         }
@@ -517,6 +528,7 @@ impl<'a> Builder<'a> {
     )]
     fn step(&mut self, work: Work) -> Result<(), Error> {
         match work {
+            Work::Conditional(work) => self.conditional_step(work)?,
             Work::MatchStart(node) => self.start_match(node)?,
             Work::MatchNext(frame) => self.next_match_arm(frame)?,
             Work::BindPattern {
@@ -660,6 +672,18 @@ impl<'a> Builder<'a> {
         reason = "cohesive syntax dispatch exposes evaluation order and work-stack scheduling"
     )]
     fn enter(&mut self, node: NodeId) -> Result<(), Error> {
+        if let Kind::Let {
+            value: Some(value),
+            otherwise: Some(_),
+            ..
+        } = self.kind(node)
+        {
+            self.scratch
+                .work
+                .push(Work::Conditional(conditions::Work::Else(node)));
+            self.scratch.work.push(Work::Place(value));
+            return Ok(());
+        }
         if let Kind::Let { pattern, value, .. } = self.kind(node)
             && let Some(pattern) = self.pattern_root(pattern)
         {
@@ -704,6 +728,13 @@ impl<'a> Builder<'a> {
                 condition,
                 then,
                 otherwise,
+            } if self.conditional_chain(condition) => {
+                self.conditional_choice(node, condition, then, otherwise)?;
+            }
+            Kind::If {
+                condition,
+                then,
+                otherwise,
             } => self.choice(node, condition, Some(then), otherwise)?,
             Kind::Binary {
                 op: Op::AndAnd,
@@ -716,6 +747,9 @@ impl<'a> Builder<'a> {
                 right,
             } => self.choice(node, left, Some(left), Some(right))?,
             Kind::Loop { body } => self.loop_body(node, body, None)?,
+            Kind::While { condition, body } if self.conditional_chain(condition) => {
+                self.conditional_loop(node, condition, body)?;
+            }
             Kind::While { condition, body } => self.loop_body(node, body, Some(condition))?,
             Kind::Label { value, .. } if matches!(self.kind(value), Kind::Block { .. }) => {
                 let merge = self.merge(value)?;

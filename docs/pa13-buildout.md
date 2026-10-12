@@ -736,3 +736,143 @@ speedup. New constructor candidate medians are 154.91/671.91/2830.23 ms and peak
 RSS is 37228/137976/539076 KiB. The independent CFG-size assertions establish
 that tested nested alternatives stay linear in pattern columns; these timings
 cover complete compilation at increasing function counts.
+
+## Owned conditional patterns
+
+Owned `let-else`, `if let`, `while let` and edition-2024 let chains now use the
+same typed constructor decisions and delayed captures as matches. Sparse
+conditional records retain the initializer, selected pattern and optional
+failure block. A sparse set marks the enclosing conjunctions during inference;
+body construction consumes those identities without another semantic walk.
+Successful captures are in scope for subsequent chain operands. Every false
+operand cleans the successful prefix before entering the failure branch.
+While conditions recreate their bindings on reentry; break, continue and
+labeled transfers use the existing control and storage machinery.
+
+Let-else requires a divergent failure block, checked in the surrounding scope.
+The builder keeps just the newly introduced success locals in shared LIFO
+scratch while constructing that block. It never clones the complete surrounding
+live-local list for each declaration. Iterative size controls at 16/64/256
+chain operands and sequential declarations bound blocks by `8 * width + 10`.
+Seven independently interpreted scalar CFG programs check actual storage
+balance and declared results against rustc.
+
+This is a block-count bound, not a claim that the entire generated body is
+linear. The retained structural samples expose quadratic individual
+`StorageDead` statements when each failure cleans a growing prefix: chains at
+16/64/256 operands have 289/2665/35209 statements, and sequential let-else has
+331/2851/35971. The shared continuation storage avoids copying live lists, but
+these cleanup actions still need a compact persistent scope representation.
+Address that before PA13 acceptance; the fixed-width function-count benchmarks
+below do not measure this limitation. Keep the scalar storage interpreter and
+native checks when changing the representation, and independently expand the
+compact form when reviewing earlier body-view oracle changes.
+
+This exposed two earlier semantic gaps. Definite control transfer is now a
+transient dense byte fact separate from an expression's contextual type. A
+statement with a diverging condition can make an otherwise tail-less block
+never-valued, while an explicit unit-valued tail retains its type. Short-circuit
+operators only inherit definite transfer from their mandatory left operand;
+loop and labeled-block breaks are checked against their own frames. Retained
+`NodeFacts` remain 80 bytes. Two PA9 control fixtures own the earlier-language
+correction; PA9 now has 201 cases.
+
+Pinned rustc also checks reads, moves and repeated initialization in statically
+impossible pattern failures and later unreachable match arms. Body IR now has
+`FalseEdge { real, imaginary }`: ownership traverses both successors, while
+runtime lowering traverses only `real`. Ordinary failure edges need no extra
+edge. When possible, the builder replaces an existing jump in place; a decision
+entry branch is split only when an imaginary failure is necessary. Final match
+arms and ordinary irrefutable declarations do not require a failure body.
+Storage used solely on imaginary paths is not allocated, including a regression
+with a one-billion-byte local. A diverging input has no failure continuation;
+a wildcard-or-literal inside a single arm still short-circuits without a read.
+
+The independent exploratory controls and their streams are retained under
+`obj/pa13-work/conditional-divergence-1791841918357522681` and
+`imaginary-flow-controls-1791842128446406073`. Permanent controls now include
+40 accepted conditional programs, 32 rejected conditional programs, three new
+scalar and three new constructor unreachable-arm rejections, and a scalar
+irrefutable-or execution. This includes selected alternative captures, divergent
+inputs, failed-prefix moves, reinitialization, nested failure scopes, macros,
+shadows, disjoint fields and invalid let syntax. Borrowed conditional selection
+is inspectable but still records pending region/loan obligations and cannot
+publish executable IR.
+
+This checkpoint leaves guards, refutable dynamic slices, named/non-integral
+constants and borrowed execution unfinished. PA13 remains planned, with no
+partial grading manifest. PA14 and PA15 remain in the active objective.
+
+Validation uses `obj/pa13-work/conditions-final-candidate`, SHA-256
+`a0bc003fbfdd7239f42319aad39cb401b13c9330ef2326010720eaaa29877afd`.
+All 285 Rust tests pass in debug and release. Final source-only extensions of
+the scalar/conditional corpus pass again in release. All 1,672 active assignment
+cases, strict Clippy/rustfmt, the 185-file audit, the 24-test harness, 24 pinned
+upstream fixtures and 126 Reference files pass. Explicit reference regeneration
+updates the twelve source receipts and adds the two declared PA9 controls;
+every pre-existing oracle byte is unchanged. The first harness invocation ran
+before regeneration and detected the changed PA9 manifest; the final invocation
+passes with current receipts. Logs are `obj/pa13-work/conditions-*.log`.
+
+Another 149 complete programs (40 conditional and 109 existing or extended
+scalar/product/array/constructor controls) execute successfully through both
+the pinned CPPGM backend and rustc, with source assertions, zero exits and
+empty streams. Immutable inputs, commands and frontend/backend hashes are in
+`obj/pa13-work/conditions-final-native-1791842668192418448/evidence.json`.
+
+All independent rustc checks and twelve PA12 layout controls pass. PA11 adds
+194 LowIR checks with 180 executable comparisons; PA12 adds 97 LowIR checks
+with 48 executable comparisons. The backend bridge qualification also passes
+its parse/validate/execute control. Together with the 149 development programs,
+this is 377 native comparisons, including the assignment panic outcomes.
+
+The next guard implementation must follow the pinned Reference's
+`expr.match.guard.next`, `shared-ref`, `value` and `no-mutation` rules in
+`doc/rust-reference/src/expressions/match-expr.md`. A false guard retries other
+matching alternatives within the same arm, including nested products; it cannot
+jump directly to the following arm. During the guard, pattern bindings denote
+protected views of the selected places. Actual Copy/move captures commit only
+after success. Access checking must allow unrelated effects while rejecting
+moves or writes that invalidate those protected places. Guard-local conditional
+bindings add another success-only scope, with cleanup on retry and divergence.
+Add independent controls for retry count/order, changed capture locations,
+nested alternatives, disjoint mutation, prohibited overlapping writes/moves,
+conditional guards and failed retries before enabling execution. Preserve a
+shared decision representation rather than expanding combinations of columns.
+
+The immediate next checkpoint is compact cleanup storage, before guard
+execution. Retain a typed persistent live-scope tail so a branch can end a
+prefix with one operation rather than copying or emitting every preceding
+local. Preserve separate lexical scope identities across shadowing, macros,
+loop reentry and imaginary ownership paths. This belongs to PA10's body
+contract; any changed text vocabulary needs a handout update and reviewed
+oracles, with a replay/expansion check against the previous scalar storage
+sequence. Measure both function-count scaling and long-chain/declaration width;
+state the remaining cost of ownership dataflow separately from body size.
+
+Six performance runs retain all 324 observations, on CPU 10 with frozen inputs,
+immutable binaries, A/A calibration and three ABBA blocks per size. No build
+or test from this task ran concurrently. The five existing workloads compare
+with the published constructor candidate; every full LowIR and count comparison
+is byte-identical at all three sizes. The new conditional workload uses A/A
+because the published baseline cannot execute it.
+
+| Workload | Run | Largest baseline/candidate median ms | Largest baseline/candidate peak KiB |
+| --- | --- | ---: | ---: |
+| ordinary | 1791842776173261861 | 3580.27 / 3614.00 | 700864 / 701092 |
+| product | 1791842872569966562 | 1573.62 / 1571.47 | 322404 / 320536 |
+| array | 1791842914099061565 | 1598.54 / 1657.31 | 382484 / 382352 |
+| scalar | 1791842959595557416 | 987.83 / 995.27 | 234796 / 234812 |
+| constructor | 1791842986413263809 | 2863.43 / 2915.83 | 539068 / 538808 |
+| conditional | 1791843065185019943 | 2126.48 / 2156.58 | 456024 / 456000 |
+
+Largest ordinary/product/array/scalar/constructor median ratios are recorded by
+these observations, not claimed as stable speedups. Array and constructor
+workloads show small elapsed increases; peak memory remains close to baseline.
+The new conditional workload is available as
+`scripts/measure_lexer.py --stage lowir --conditional-pattern-input`; it combines
+let-else, a while-let chain and multiple conditional captures. This measures
+complete compilation with fixed pattern width, and does not close the separate
+long-prefix storage-cleanup issue described above.
+
+Conditional A/A candidate medians at 1k/4k/16k functions are 124.27/513.18/2156.58 ms; paired peak RSS is 31796/117024/456000 KiB.

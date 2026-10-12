@@ -30,7 +30,8 @@ edition-2024 binding modes, irrefutable borrowed slice rests, and owned match
 decisions. Boolean, integer and character intervals compose with tuple, record,
 enum, fixed-array and reference patterns for exhaustiveness and whole-arm
 usefulness. Dynamic slices currently support only irrefutable rests. Unguarded owned matches and irrefutable constructor bindings can execute.
-Guards, named constants, let conditions/chains and let-else remain unfinished.
+Owned let-else, if-let, while-let and condition chains also execute. Guards,
+named constants and refutable dynamic slices remain unfinished.
 
 The current vocabulary is `selected-patterns 1`, the canonical type table,
 `root FILE:NODE pattern=ID`, and arena-ordered `pattern ID source=FILE:NODE
@@ -96,11 +97,30 @@ The ordinary let/parameter path uses these decisions when an irrefutable pattern
 combines refutable alternatives. A declaration without an initializer only
 declares its bindings. Field identity retains its owning variant for layout;
 constructor tests compare the stored discriminant with the selected layout value.
+
+Conditional selection retains `condition source=FILE:NODE input=FILE:NODE
+pattern=ID otherwise=FILE:NODE|-`, sorted by source identity. The failure block
+exists only for let-else. Sparse chain identities distinguish conditional `&&`
+from ordinary boolean expressions; the builder consumes them directly. Inputs
+run once; successful captures become visible to subsequent operands and the
+success body. False operands end every earlier chain binding's storage.
+While-let recreates bindings at each iteration and balances storage for loop
+exit, continue and labeled transfers. Let-else checks its failure block in the
+surrounding scope, requires divergence, and preserves success bindings for the
+following statements. Owned decisions and delayed captures share the same
+constructor worklists as matches.
+
+Even statically impossible pattern failures must pass ownership checks. Body IR
+retains `false-edge real=bN imaginary=bN` only when ordinary decision edges
+cannot reach the failure. Ownership traverses both successors; executable
+lowering follows only the real successor and allocates no storage used solely
+on imaginary paths. Non-final irrefutable match arms use the same rule to check
+later arms. A diverging input has no such failure continuation. None of these
+rules bypass pending region or loan obligations.
 A full-domain interval requires no value test. Guarded execution is rejected
 before publishing body IR: inspection has not proved protected guard accesses,
-delayed moves or failed-guard retries. Irrefutable binding coverage and execution can combine
-constructors and scalar intervals; conditional let/let-else execution is
-not yet available.
+delayed moves or failed-guard retries. Irrefutable and conditional binding
+execution can combine constructors and scalar intervals.
 
 `region-var region:N body=FILE:NODE source=FILE:NODE origin=pattern-borrow|pattern-input
 pending` gives existential region provenance. IDs are globally allocated from
@@ -110,7 +130,8 @@ capture's fresh region constitutes a loan or outlives proof. Borrowed captures
 and reference-pattern execution are rejected at the body-building boundary.
 
 The final line is `eof roots=N patterns=N fields=N alternatives=N ranges=N
-matches=N arms=N coverage-work=N region-vars=N region-equalities=N`.
+matches=N arms=N coverage-work=N region-vars=N region-equalities=N conditions=N
+chains=N`.
 `coverage-work` sums match queries; it does not count ordinary binding checks.
 Count mode emits that same line without `eof `, after the
 same checks. Diagnostics return 1 and emit no partial pattern view. No PA13

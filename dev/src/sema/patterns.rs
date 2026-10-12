@@ -6,7 +6,15 @@ use crate::{
     resolve::{model::DefId, unit::NodeKey},
     types::{RegionId, TypeId},
 };
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
+
+#[derive(Clone, Copy)]
+pub struct Conditional {
+    pub input: NodeKey,
+    pub pattern: PatternId,
+    /// A let-else failure block; conditions instead transfer to their control's false edge.
+    pub otherwise: Option<NodeKey>,
+}
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct PatternId(pub u32);
@@ -94,6 +102,9 @@ pub struct Pattern {
 }
 #[derive(Default)]
 pub struct Patterns {
+    pub conditions: HashMap<NodeKey, Conditional>,
+    /// Let conditions and their enclosing conjunctions, selected during type checking.
+    pub chains: HashSet<NodeKey>,
     pub roots: HashMap<NodeKey, PatternId>,
     pub nodes: Vec<Pattern>,
     pub fields: Vec<Field>,

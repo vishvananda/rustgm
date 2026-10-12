@@ -17,6 +17,11 @@ pub(super) struct Plan {
     bindings: Vec<PatternId>,
 }
 #[derive(Clone, Copy)]
+pub(super) enum Failure {
+    Runtime,
+    Checked,
+}
+#[derive(Clone, Copy)]
 struct Test {
     pattern: PatternId,
     base: Place,
@@ -72,8 +77,10 @@ impl Builder<'_> {
         place: Place,
         yes: BlockId,
         no: BlockId,
+        failure: Failure,
     ) -> Result<Plan, Error> {
         let plan = self.prepare_decisions(root)?;
+        let entry = self.current;
         let mut work = vec![Decision::Test(Test {
             pattern: root,
             base: place,
@@ -185,7 +192,48 @@ impl Builder<'_> {
                 }
             }
         }
+        if matches!(failure, Failure::Checked)
+            && let Some(entry) = entry
+        {
+            let node = self.facts.patterns.nodes[root.0 as usize].source.node;
+            self.check_failure(node, entry, no)?;
+        }
         Ok(plan)
+    }
+    /// Keep statically impossible failures in ownership flow without changing execution.
+    pub(super) fn check_failure(
+        &mut self,
+        node: NodeId,
+        entry: BlockId,
+        no: BlockId,
+    ) -> Result<(), Error> {
+        if self.scratch.reach[no.0 as usize].incoming {
+            return Ok(());
+        }
+        let terminator = self.body.blocks[entry.0 as usize].terminator;
+        let real = match terminator {
+            Terminator::Jump(target) => target,
+            Terminator::Branch { .. } => {
+                let target = self.new_block(node)?;
+                let end = self.index(node, self.body.statements.len())?;
+                let block = &mut self.body.blocks[target.0 as usize];
+                block.start = end;
+                block.end = end;
+                block.terminator = terminator;
+                self.scratch.reach[target.0 as usize] = super::Reach {
+                    incoming: true,
+                    opened: true,
+                };
+                target
+            }
+            _ => return Err(self.error(node, "missing decision entry for checked failure")),
+        };
+        self.body.blocks[entry.0 as usize].terminator = Terminator::FalseEdge {
+            real,
+            imaginary: no,
+        };
+        self.scratch.reach[no.0 as usize].incoming = true;
+        Ok(())
     }
     fn prepare_decisions(&mut self, root: PatternId) -> Result<Plan, Error> {
         let mut order = Vec::new();

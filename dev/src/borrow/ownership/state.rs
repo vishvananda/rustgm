@@ -111,7 +111,11 @@ pub(super) fn verify(body: &Body, facts: &mut BodyFacts) -> Result<(), Error> {
         }
         let successors = match block.terminator {
             Terminator::Jump(target) => [Some(target), None],
-            Terminator::Branch { yes, no, .. } => [Some(yes), Some(no)],
+            Terminator::Branch { yes, no, .. }
+            | Terminator::FalseEdge {
+                real: yes,
+                imaginary: no,
+            } => [Some(yes), Some(no)],
             _ => [None, None],
         };
         for target in successors.into_iter().flatten() {

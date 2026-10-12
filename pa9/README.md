@@ -39,6 +39,13 @@ assignments select the corresponding built-in operator. Iterator loops,
 nontrivial patterns, aggregate values, methods and closures retain their later
 owners even though their grammar was already parsed in PA4/PA5.
 
+Definite control transfer is separate from contextual value type. For example,
+`fn f()->! { if loop {} {}; }` has a diverging statement and no tail value;
+removing the semicolon leaves an explicit unit-valued `if` tail and is rejected.
+Control-flow propagation respects short-circuit operators and each loop or
+labeled block's own breaks. This transient analysis does not enlarge retained
+node facts or replace the expression types consumed by later phases.
+
 Local annotations may contain `_`; item signatures may not. Concrete local
 annotations share declaration elaboration, while incomplete shapes become
 inference constraints. General, integer and floating variables are distinct.
