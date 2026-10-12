@@ -625,3 +625,55 @@ in `obj/perf/1791789253199624990/samples.json`: at 1,000/4,000/16,000 pairs,
 A/B medians were 24.26/24.15, 88.73/90.84 and 388.56/398.58 ms. It freezes
 identical binaries and verifies complete output hashes; it makes no A/B claim.
 PA8 remains planned while other builtin behavior and its grading suite develop.
+
+## Typed stringification and retained capture tokens
+
+`stringify!` now walks classified tokens, opaque capture handles and explicit
+spacing provenance. Demanded opaque tokens occupy one flat registry arena;
+repeated/forwarded substitutions reuse the same range. Grammar-split boundary
+tokens are retained with their typed categories. Ordinary source is never
+relexed and opaque syntax is never reconstructed from rendered text.
+
+The renderer uses explicit continuation stacks and a flat layout buffer.
+Source/template spacing, identifier NFC, invisible empty visibility, delimiter
+edges, 78-byte wrapping, brace indentation and direct versus captured doc
+comments have permanent regressions. Template doc comments retain their typed
+comment category until a consumer requires desugaring. Synthetic doc attributes
+record spacing independently of their physical diagnostic origin. A 512-level
+stringification case checks iterative traversal; work/frame bounds diagnose
+excessive demands. The renderer does not expand argument macros or call the
+fragment parser.
+
+`obj/pa8-work/stringify-probes/matrix.py` checks 77 direct/template/capture,
+Unicode, documentation, delimiter, long-layout and split-token cases against
+pinned rustc runtime values; every value matches. The earlier small probe placed
+stringification inside `println!`, which itself captured and desugared comments.
+The expanded matrix intentionally checks functions returning strings directly
+and found that distinction. Raw observations are in `matrix-results.json`.
+
+`stringify-full-validation.log` passes 166 Rust tests, all 1,019 active fixtures,
+strict Clippy, the 105-file audit and 15 harness tests. Reference/release logs
+pass independent rustc checks, all receipt regeneration, upstream checks and
+release tests. PA1–PA7 receipts change only compiler fingerprints; all prior
+fixture and oracle bytes remain identical. Commit `f930ffc` passed GitHub CI.
+
+The frozen CPU-10 full-expansion comparison is
+`obj/perf/1791790578919403274/samples.json`. Its baseline is `f930ffc` with only
+an unused `stringify` prelude entry added, so the planned view's name/definition
+IDs agree. The exact compatibility patch is retained as
+`obj/pa8-work/stringify-baseline-prelude.patch`; the workload never invokes it.
+Full output hashes agree. At 4,000/16,000/64,000 captures, A/B medians were
+55.29/56.64, 303.96/365.68 and 969.31/983.33 ms; peak RSS was
+14,216/14,232, 48,268/48,424 and 183,304/185,552 KiB. Middle-scale A/A samples
+were 221.81, 211.84, 224.37 and 207.35 ms, substantially below both paired
+medians; the run contains time variation and does not isolate a throughput
+regression. Largest A/A observations span 907.86–973.53 ms. The memory cost of
+retained captures and spacing provenance is visible at the largest scale.
+
+The new repeated-opaque `stringify` workload establishes an A/A baseline in
+`obj/perf/1791790606716603990/samples.json`. At 1,000/4,000/16,000 invocations,
+A/B medians were 24.20/24.09, 90.98/90.58 and 385.89/399.41 ms; largest A/A
+samples span 369.34–425.25 ms. Both snapshots are identical; complete output
+hashes, frozen inputs, affinity and every observation are retained. This is a
+scaling baseline, not a speedup claim. PA8 still needs eager builtins and its
+released course suite before activation.

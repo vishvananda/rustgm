@@ -114,3 +114,21 @@ with a root attribute. Empty names, characters other than letters/digits/`_`,
 malformed duplicate attributes and `crate_name` inside `cfg_attr` are errors.
 These identities do not require source reparsing or filesystem calls in the
 compiler library.
+
+`stringify!` consumes classified tokens without expanding its arguments. It walks
+retained opaque fragments by identity and produces an owned string literal, with
+no fragment-parser callback. Captured tokens occupy one shared arena; repeated
+or forwarded substitutions do not duplicate that storage. Unicode identifier
+spellings normalize to NFC. Source spacing, macro-template spacing, delimiter
+edges and invisible fragment boundaries remain distinct. Direct documentation
+comments retain their spelling; matching them as token trees can desugar them
+into attributes before stringification.
+
+The pinned stringification layout uses a 78-byte target width, with at least
+60 bytes available after indentation, consistent brace edges and independently
+wrapping contents. Long individual tokens may exceed that target. The iterative
+walker diagnoses more than 1,000,000 token visits or 4,096 nested continuation
+frames. These formatting decisions follow the pinned compiler's observable
+[token printer](https://github.com/rust-lang/rust/blob/88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_ast_pretty/src/pprust/state.rs)
+and are checked with independent runtime values. Rendered output remains a
+builtin value and diagnostic view, never a syntax transport.

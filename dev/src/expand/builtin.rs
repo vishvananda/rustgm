@@ -25,14 +25,16 @@ pub enum Builtin {
     Column,
     File,
     ModulePath,
+    Stringify,
 }
 impl Builtin {
-    pub const ALL: [Self; 5] = [
+    pub const ALL: [Self; 6] = [
         Self::Cfg,
         Self::Line,
         Self::Column,
         Self::File,
         Self::ModulePath,
+        Self::Stringify,
     ];
     #[must_use]
     pub const fn needs_position(self) -> bool {
@@ -46,6 +48,7 @@ impl Builtin {
             Self::Column => "column",
             Self::File => "file",
             Self::ModulePath => "module_path",
+            Self::Stringify => "stringify",
         }
     }
 }
@@ -79,8 +82,10 @@ pub fn expand(
             environment.config,
             environment.grammar,
         ),
-        Builtin::File | Builtin::ModulePath => {
-            if let Some(token) = input.tokens.first() {
+        Builtin::File | Builtin::ModulePath | Builtin::Stringify => {
+            if let Some(token) = input.tokens.first()
+                && builtin != Builtin::Stringify
+            {
                 return Err(error(token.start, "location builtin takes no arguments"));
             }
             let text = environment

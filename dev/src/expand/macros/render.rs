@@ -66,7 +66,7 @@ pub fn write_report(source: &str, report: &Report, output: &mut impl Write) -> i
                 }
                 Piece::Opaque(id) => writeln!(output, "opaque {}", id.0)?,
                 Piece::Crate(_) => writeln!(output, "crate definition {}", invocation.definition)?,
-                Piece::Doc { inner, body } => {
+                Piece::Doc { inner, body, .. } => {
                     write!(output, "doc definition inner={inner} ")?;
                     quoted::bytes(
                         output,

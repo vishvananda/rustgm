@@ -83,7 +83,13 @@ fn next_call(
     )
     .map_err(|e| format!("{e:?}"))?;
     registry
-        .adopt(&mut stream, &mut matched, FileId(1))
+        .adopt(
+            &mut stream,
+            &mut matched,
+            FileId(1),
+            &current.source,
+            &input,
+        )
         .map_err(|e| format!("{e:?}"))?;
     Ok(stream)
 }
@@ -102,12 +108,25 @@ fn persistent_handles_survive_generated_syntax_and_repeated_forwarding() -> Resu
     .map_err(|e| format!("{e:?}"))?;
     let mut registry = Registry::default();
     registry
-        .adopt(&mut stream, &mut call.matched, FileId(0))
+        .adopt(
+            &mut stream,
+            &mut call.matched,
+            FileId(0),
+            source,
+            &call.input,
+        )
         .map_err(|e| format!("{e:?}"))?;
     assert_eq!(registry.len(), 1);
+    assert_eq!(registry.token_count(), 3);
     assert!(
         registry
-            .adopt(&mut stream, &mut call.matched, FileId(0))
+            .adopt(
+                &mut stream,
+                &mut call.matched,
+                FileId(0),
+                source,
+                &call.input
+            )
             .is_err()
     );
     assert!(stream.syntax_inputs(&call.matched, source).is_err());
@@ -128,6 +147,7 @@ fn persistent_handles_survive_generated_syntax_and_repeated_forwarding() -> Resu
     )?;
     drop(middle);
     assert_eq!(registry.len(), 1);
+    assert_eq!(registry.token_count(), 3);
     let ast = fragment::parse_expansion_with_inputs(
         &final_stream.source,
         &final_stream.tokens,

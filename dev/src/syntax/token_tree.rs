@@ -326,3 +326,14 @@ impl ForestBuilder {
         Ok(self.forest)
     }
 }
+
+/// Recover the retained documentation category from its typed delimiter/body spans.
+#[must_use]
+pub(crate) fn doc_kind(inner: bool, span: Span, body: Span) -> Kind {
+    match (inner, span.end == body.end) {
+        (false, true) => Kind::OuterLineDoc,
+        (true, true) => Kind::InnerLineDoc,
+        (false, false) => Kind::OuterBlockDoc,
+        (true, false) => Kind::InnerBlockDoc,
+    }
+}

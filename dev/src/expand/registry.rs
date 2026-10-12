@@ -1,6 +1,6 @@
 //! A crate retains demanded opaque captures once; emitted tokens hold stable dense handles.
 use super::{
-    macros::{capture::Payload, matcher::Matched, model::Fragment},
+    macros::{capture::Payload, input::Input, matcher::Matched, model::Fragment},
     stream::{OpaqueSource, Stream},
 };
 use crate::{
@@ -17,10 +17,12 @@ struct Entry {
     payload: Payload,
     file: FileId,
     original: Span,
+    tokens: std::ops::Range<u32>,
 }
 #[derive(Default)]
 pub struct Registry {
     entries: Vec<Entry>,
+    tokens: Vec<Token>,
 }
 pub struct View<'a, F> {
     registry: &'a Registry,
@@ -46,6 +48,25 @@ impl Registry {
         self.entries.is_empty()
     }
 
+    /// Borrow a capture's original classified tokens, without reconstructing syntax.
+    ///
+    /// # Errors
+    /// Rejects handles outside this registry.
+    pub fn tokens(&self, id: ExpansionId) -> Result<(FileId, &[Token]), LexError> {
+        let entry = self
+            .entries
+            .get(id.get() as usize)
+            .ok_or_else(|| error(0, "missing persistent macro capture"))?;
+        Ok((
+            entry.file,
+            &self.tokens[entry.tokens.start as usize..entry.tokens.end as usize],
+        ))
+    }
+    #[must_use]
+    pub fn token_count(&self) -> usize {
+        self.tokens.len()
+    }
+
     /// Move demanded captures into the registry and rewrite only emitted token
     /// handles. Forwarded tokens keep their identity; repeated substitutions
     /// share a single payload. Unused/failed-alternative captures are not retained.
@@ -58,6 +79,8 @@ impl Registry {
         stream: &mut Stream,
         matched: &mut Matched,
         file: FileId,
+        source: &str,
+        input: &Input,
     ) -> Result<(), LexError> {
         if stream.registered {
             return Err(error(0, "expansion stream is already registered"));
@@ -104,11 +127,17 @@ impl Registry {
                         let value = &mut matched.captures.values[id.0 as usize];
                         let index = u32::try_from(self.entries.len())
                             .map_err(|_| error(0, "capture identity overflow"))?;
+                        let start = u32::try_from(self.tokens.len())
+                            .map_err(|_| error(0, "capture token arena exceeds 32 bits"))?;
+                        input.retain(source, opaque.original, &mut self.tokens)?;
+                        let end = u32::try_from(self.tokens.len())
+                            .map_err(|_| error(0, "capture token arena exceeds 32 bits"))?;
                         self.entries.push(Entry {
                             fragment: value.fragment,
                             payload: std::mem::replace(&mut value.payload, Payload::Transparent),
                             file,
                             original: opaque.original,
+                            tokens: start..end,
                         });
                         captures[id.0 as usize] = Some(index);
                         index

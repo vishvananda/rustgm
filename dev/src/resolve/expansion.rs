@@ -692,9 +692,16 @@ impl<S: Sources> Engine<'_, S> {
     fn context(&self, file: FileId, offset: u32) -> Result<ContextId, Error> {
         self.loader.package.expansion_context(file, offset)
     }
-    fn input(&mut self, file: FileId, capture: u32) -> Result<Input, Error> {
+    fn input(&mut self, file: FileId, capture: u32, docs: bool) -> Result<Input, Error> {
         let unit = &mut self.loader.package.units[file.0 as usize];
         let forest = &unit.configured.ast.captures[capture as usize];
+        if docs {
+            let range = forest
+                .children(0)
+                .ok_or_else(|| Error::at(file, 0, "macro invocation requires delimiters"))?;
+            return Input::with_docs(forest, range)
+                .map_err(|e| Error::at(file, e.offset, e.message));
+        }
         let prepared = prepare::if_needed(unit.source.text(), forest)
             .map_err(|e| Error::at(file, e.offset, e.message))?;
         let prepared = if let Some(prepared) = prepared {
@@ -722,6 +729,7 @@ impl<S: Sources> Engine<'_, S> {
                         span: origin.original,
                     },
                     context: None,
+                    joint: origin.joint,
                 }));
             Some(mapped)
         } else {
@@ -778,7 +786,9 @@ impl<S: Sources> Engine<'_, S> {
                     .map_err(|e| Error::at(physical.file, physical.span.start, e))
             })
             .transpose()?;
-        let text = if input.tokens.is_empty() {
+        let text = if builtin == Builtin::Stringify {
+            Some(self.stringify(file, input)?)
+        } else if input.tokens.is_empty() {
             match builtin {
                 Builtin::File => physical.map(|physical| {
                     self.loader.package.file_paths[physical.file.0 as usize]
@@ -830,6 +840,7 @@ impl<S: Sources> Engine<'_, S> {
                 span: original,
             },
             context: Some(context),
+            joint: None,
         }];
         let generated = package.units[file.0 as usize]
             .install_expansion(visit.node, &generated.source, generated.syntax, &origins)
@@ -859,7 +870,11 @@ impl<S: Sources> Engine<'_, S> {
         definition: usize,
         parent: ContextId,
     ) -> Result<ContextId, Error> {
-        let input = self.input(file, capture)?;
+        let docs = matches!(
+            self.definitions[definition].body,
+            Body::Builtin(Builtin::Stringify)
+        );
+        let input = self.input(file, capture, docs)?;
         let context = ContextId(
             u32::try_from(self.invocations.len() + 1)
                 .map_err(|_| Error::at(file, 0, "too many expansion contexts"))?,
@@ -910,7 +925,7 @@ impl<S: Sources> Engine<'_, S> {
         let mut stream = Stream::transcribe(&transcription, &matched, &input, &environment)
             .map_err(|e| Error::at(file, original.start, e.message))?;
         self.captures
-            .adopt(&mut stream, &mut matched, file)
+            .adopt(&mut stream, &mut matched, file, source, &input)
             .map_err(|e| Error::at(file, original.start, e.message))?;
         let view = self
             .captures

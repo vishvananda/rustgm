@@ -1397,7 +1397,7 @@ fn builtin_strings(report: &expansion::Report) -> Result<Vec<String>, String> {
     for call in &report.invocations {
         if !matches!(
             report.definitions[call.definition].body,
-            expansion::Body::Builtin(Builtin::File | Builtin::ModulePath)
+            expansion::Body::Builtin(Builtin::File | Builtin::ModulePath | Builtin::Stringify)
         ) {
             continue;
         }
@@ -1526,6 +1526,161 @@ fn crate_names_follow_driver_attributes_and_the_pinned_first_value_rules() -> Re
         ] {
             assert!(analyze(&source, &mut Files::default()).is_err(), "{source}");
         }
+    }
+    Ok(())
+}
+
+#[test]
+fn stringify_preserves_source_spacing_and_delimiter_rules() -> Result<(), String> {
+    for (tokens, expected) in [
+        ("", ""),
+        ("a+b", "a+b"),
+        ("a /* comment */ + b", "a + b"),
+        (
+            "a ( b,c ) {d} [ e ] f ! () x :: y",
+            "a(b,c) {d} [e] f! () x :: y",
+        ),
+        (
+            "{ a} {b } { c } {} { /*c*/ } (( a ))",
+            "{ a } {b} { c } {} {} ((a))",
+        ),
+        (
+            "r#fn ! (x) fn (x) let (x) Self () pub (crate) if ! x",
+            "r#fn! (x) fn(x) let (x) Self() pub(crate) if ! x",
+        ),
+        ("e\u{301} r#e\u{301} 'e\u{301}", "é r#é 'é"),
+        ("a\u{200e}+\u{200f}b", "a + b"),
+        ("missing!(arbitrary tokens)", "missing!(arbitrary tokens)"),
+    ] {
+        let report = analyze(
+            &format!("fn f(){{let _=stringify!({tokens});}}"),
+            &mut Files::default(),
+        )?;
+        assert_eq!(builtin_strings(&report)?, [expected], "{tokens}");
+        assert_eq!(report.invocations.len(), 1);
+        assert_eq!(report.invocations[0].parser_calls, 0);
+        rustgm::resolve::analyze_expanded(report).map_err(|e| e.to_string())?;
+    }
+    Ok(())
+}
+
+#[test]
+fn stringify_uses_template_spacing_and_original_opaque_tokens() -> Result<(), String> {
+    for (definition, invocation, expected, retained) in [
+        (
+            "macro_rules! m{()=>{stringify!(a+b f!() &mut x x::y x.foo {d})}}",
+            "m!()",
+            "a + b f! () & mut x x :: y x.foo {d}",
+            0,
+        ),
+        (
+            "macro_rules! m{($e:expr)=>{stringify!(a $e b $e; ($e) $e + x)}}",
+            "m!(1+2)",
+            "a 1+2 b 1+2; (1+2) 1+2 + x",
+            3,
+        ),
+        (
+            "macro_rules! m{($e:expr)=>{n!($e)}} macro_rules! n{($e:expr)=>{stringify!($e $e)}}",
+            "m!(1+2)",
+            "1+2 1+2",
+            3,
+        ),
+        (
+            "macro_rules! m{($v:vis struct $i:ident)=>{stringify!(a $v b $v struct $i)}}",
+            "m!(struct X)",
+            "a  b  struct X",
+            0,
+        ),
+        (
+            "macro_rules! m{(A<$t:ty>)=>{stringify!($t)}}",
+            "m!(A<B<u32>>)",
+            "B<u32>",
+            4,
+        ),
+        (
+            "macro_rules! m{($i:item)=>{stringify!($i)}}",
+            "m!(fn f(){let x=1;})",
+            "fn f(){let x=1;}",
+            11,
+        ),
+        (
+            "macro_rules! m{()=>{stringify!($crate::a)}}",
+            "m!()",
+            "$crate :: a",
+            0,
+        ),
+        (
+            "macro_rules! m{($x:ident)=>{stringify!($x where)}}",
+            "m!(name)",
+            "name where",
+            0,
+        ),
+    ] {
+        let report = analyze(
+            &format!("{definition} fn f(){{let _={invocation};}}"),
+            &mut Files::default(),
+        )?;
+        assert_eq!(builtin_strings(&report)?, [expected], "{invocation}");
+        assert_eq!(report.captures.token_count(), retained, "{invocation}");
+    }
+    Ok(())
+}
+
+#[test]
+fn stringify_distinguishes_direct_and_captured_documentation() -> Result<(), String> {
+    let docs = "/// hello\n/** block */ /*! inner */ //! line\nx";
+    let direct = analyze(
+        &format!("fn f(){{let _=stringify!({docs});}}"),
+        &mut Files::default(),
+    )?;
+    assert_eq!(
+        builtin_strings(&direct)?,
+        ["/// hello\n/** block */\n /*! inner */\n //! line\nx"]
+    );
+    let template = analyze(
+        &format!("macro_rules! m{{()=>{{stringify!({docs})}}}} fn f(){{let _=m!();}}"),
+        &mut Files::default(),
+    )?;
+    assert_eq!(builtin_strings(&template)?, builtin_strings(&direct)?);
+    let captured = analyze(
+        &format!(
+            "macro_rules! m{{($($x:tt)*)=>{{stringify!($($x)*)}}}} fn f(){{let _=m!({docs});}}"
+        ),
+        &mut Files::default(),
+    )?;
+    assert_eq!(
+        builtin_strings(&captured)?,
+        [
+            "#[doc = r\" hello\"] #[doc = r\" block \"] #![doc = r\" inner \"] #![doc = r\" line\"]\nx"
+        ]
+    );
+    Ok(())
+}
+
+#[test]
+fn stringify_wraps_long_groups_with_bounded_iterative_layout() -> Result<(), String> {
+    let words = (0..20)
+        .map(|n| format!("name{n}"))
+        .collect::<Vec<_>>()
+        .join(" ");
+    let report = analyze(
+        &format!("fn f(){{let _=stringify!({{ {words} }});}}"),
+        &mut Files::default(),
+    )?;
+    assert_eq!(
+        builtin_strings(&report)?,
+        [
+            "{\n    name0 name1 name2 name3 name4 name5 name6 name7 name8 name9 name10 name11\n    name12 name13 name14 name15 name16 name17 name18 name19\n}"
+        ]
+    );
+    let nested = format!("{}x{}", "(".repeat(512), ")".repeat(512));
+    let report = analyze(
+        &format!("fn f(){{let _=stringify!({nested});}}"),
+        &mut Files::default(),
+    )?;
+    assert_eq!(builtin_strings(&report)?, [nested]);
+    for source in ["type T=stringify!(x);", "stringify!(x);"] {
+        assert!(analyze(source, &mut Files::default()).is_err());
     }
     Ok(())
 }

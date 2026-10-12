@@ -180,7 +180,7 @@ impl<'source> Lexer<'source> {
     }
 }
 
-fn is_whitespace(ch: char) -> bool {
+pub(crate) fn is_whitespace(ch: char) -> bool {
     matches!(
         ch,
         '\t' | '\n'

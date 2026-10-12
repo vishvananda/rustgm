@@ -7,4 +7,5 @@ pub mod macros;
 pub mod registry;
 pub mod render;
 pub mod stream;
+pub mod stringify;
 pub mod textual;

@@ -3,7 +3,6 @@ use super::macros::{
     capture::CaptureId,
     input::Input,
     matcher::Matched,
-    prepare::doc_tokens,
     transcribe::{Origin as PieceOrigin, Piece, Transcription},
 };
 use crate::{
@@ -28,6 +27,8 @@ pub struct Origin {
     pub original: Location,
     /// None inherits hygiene from the corresponding offset in the parent image.
     pub context: Option<ContextId>,
+    /// Synthetic tokens can specify spacing independently of their physical origin.
+    pub joint: Option<bool>,
 }
 #[derive(Clone, Copy)]
 pub struct Source<'a> {
@@ -148,19 +149,15 @@ impl Stream {
                         Some(environment.context),
                     )?;
                 }
-                Piece::Doc { inner, body } => {
-                    let origin = Location {
-                        file: environment.definition.file,
-                        span: body,
-                    };
-                    doc_tokens(
-                        inner,
-                        text(environment.definition.text, body)?,
-                        |kind, spelling| {
-                            output
-                                .token(kind, spelling, origin, Some(environment.context))
-                                .map(|_| ())
+                Piece::Doc { inner, body, span } => {
+                    output.token(
+                        crate::syntax::token_tree::doc_kind(inner, span, body),
+                        text(environment.definition.text, span)?,
+                        Location {
+                            file: environment.definition.file,
+                            span,
                         },
+                        Some(environment.context),
                     )?;
                 }
             }
@@ -185,6 +182,7 @@ impl Stream {
             generated,
             original,
             context,
+            joint: None,
         });
         self.source.push(' ');
         Ok(generated)

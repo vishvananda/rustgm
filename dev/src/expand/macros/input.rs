@@ -3,7 +3,7 @@ use crate::{
     lex::token::{Kind, LexError, Punctuation as P, Token},
     syntax::{
         cursor::{TokenPosition, token_at},
-        token_tree::{Delimiter, Forest, TreeKind, TreeRange, error},
+        token_tree::{Delimiter, Forest, Span, TreeKind, TreeRange, error},
     },
 };
 #[derive(Default)]
@@ -21,6 +21,16 @@ impl Input {
     /// # Errors
     /// Rejects invalid caller-supplied tree ranges.
     pub fn from_forest(forest: &Forest, range: TreeRange) -> Result<Self, LexError> {
+        Self::flatten(forest, range, false)
+    }
+    /// Preserve documentation tokens for direct builtin stringification.
+    ///
+    /// # Errors
+    /// Rejects invalid caller-supplied tree ranges.
+    pub fn with_docs(forest: &Forest, range: TreeRange) -> Result<Self, LexError> {
+        Self::flatten(forest, range, true)
+    }
+    fn flatten(forest: &Forest, range: TreeRange, docs: bool) -> Result<Self, LexError> {
         let mut result = Self::default();
         let mut work = vec![Work::Range(range)];
         while let Some(task) = work.pop() {
@@ -47,6 +57,11 @@ impl Input {
                     match tree.kind {
                         TreeKind::Token(kind) => result.push(Token {
                             kind,
+                            start: tree.span.start,
+                            end: tree.span.end,
+                        }),
+                        TreeKind::Doc { inner, body } if docs => result.push(Token {
+                            kind: crate::syntax::token_tree::doc_kind(inner, tree.span, body),
                             start: tree.span.start,
                             end: tree.span.end,
                         }),
@@ -83,6 +98,51 @@ impl Input {
             }
         }
         Ok(result)
+    }
+    /// Retain the classified spelling of one demanded opaque fragment in a shared
+    /// arena. Grammar splits affect at most the two boundary tokens.
+    ///
+    /// # Errors
+    /// Rejects invalid spans and punctuation splits not produced by the parser.
+    pub fn retain(
+        &self,
+        source: &str,
+        span: Span,
+        output: &mut Vec<Token>,
+    ) -> Result<(), LexError> {
+        let start = self.tokens.partition_point(|token| token.end <= span.start);
+        for &original in self.tokens[start..]
+            .iter()
+            .take_while(|t| t.start < span.end)
+        {
+            let mut token = token_at(
+                source,
+                std::slice::from_ref(&original),
+                TokenPosition {
+                    index: 0,
+                    offset: span.start.saturating_sub(original.start),
+                },
+            )?
+            .ok_or_else(|| error(span.start, "missing captured boundary token"))?;
+            if token.end > span.end {
+                token.kind = match (token.kind, span.end - token.start) {
+                    (
+                        Kind::Punctuation(P::ShiftRight | P::ShiftRightEqual | P::GreaterEqual),
+                        1,
+                    ) => Kind::Punctuation(P::Greater),
+                    (Kind::Punctuation(P::ShiftRightEqual), 2) => Kind::Punctuation(P::ShiftRight),
+                    (Kind::Punctuation(P::ShiftLeft | P::LeftArrow), 1) => {
+                        Kind::Punctuation(P::Less)
+                    }
+                    (Kind::Punctuation(P::AndAnd), 1) => Kind::Punctuation(P::And),
+                    (Kind::Float, _) => Kind::Integer,
+                    _ => return Err(error(token.start, "invalid captured token prefix")),
+                };
+                token.end = span.end;
+            }
+            output.push(token);
+        }
+        Ok(())
     }
     fn push(&mut self, token: Token) {
         self.tokens.push(token);

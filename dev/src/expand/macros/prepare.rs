@@ -8,6 +8,7 @@ use crate::{
 pub struct Origin {
     pub generated: Span,
     pub original: Span,
+    pub joint: Option<bool>,
 }
 pub struct Prepared {
     pub source: String,
@@ -106,6 +107,7 @@ impl Builder {
         self.origins.push(Origin {
             generated: Span { start, end },
             original,
+            joint: None,
         });
         self.source.push(' ');
         Ok(())
@@ -118,7 +120,11 @@ impl Builder {
         body: Span,
     ) -> Result<(), LexError> {
         doc_tokens(inner, text(source, body)?, |kind, spelling| {
-            self.token(kind, spelling, original)
+            self.token(kind, spelling, original)?;
+            if let Some(origin) = self.origins.last_mut() {
+                origin.joint = Some(matches!(kind, Kind::Punctuation(P::Pound | P::Bang)));
+            }
+            Ok(())
         })
     }
 }

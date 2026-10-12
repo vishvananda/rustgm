@@ -31,6 +31,7 @@ pub enum Piece {
     Doc {
         inner: bool,
         body: Span,
+        span: Span,
     },
 }
 pub struct Transcription {
@@ -103,7 +104,11 @@ impl Writer<'_> {
             self.tick(node.span.start)?;
             match node.kind {
                 Kind::Crate => self.output.pieces.push(Piece::Crate(node.span)),
-                Kind::Doc { inner, body } => self.output.pieces.push(Piece::Doc { inner, body }),
+                Kind::Doc { inner, body } => self.output.pieces.push(Piece::Doc {
+                    inner,
+                    body,
+                    span: node.span,
+                }),
                 Kind::Atom(atom) => self.token(atom.token, Origin::Definition)?,
                 Kind::Group {
                     delimiter,
