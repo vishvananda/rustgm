@@ -1,7 +1,7 @@
 //! Per-body constraints over flat terms, with path-compressed variable identities.
 //! A failed constraint may retain prior progress; callers discard that body context.
 use super::{ItemId, Kind, Primitive, RegionId, Store, TypeId};
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct TermId(pub u32);
@@ -18,9 +18,18 @@ pub enum Constructor {
     Tuple,
     Array(u64),
     Slice,
-    Reference { mutable: bool, region: RegionId },
-    Pointer { mutable: bool },
-    Function { parameters: u32, unsafe_: bool },
+    Reference {
+        mutable: bool,
+        region: RegionId,
+    },
+    Pointer {
+        mutable: bool,
+    },
+    Function {
+        bound_regions: u32,
+        parameters: u32,
+        unsafe_: bool,
+    },
     FunctionItem(ItemId),
 }
 #[derive(Clone, Copy)]
@@ -63,7 +72,7 @@ impl std::error::Error for Error {}
 pub struct Context {
     terms: Vec<Term>,
     edges: Vec<TermId>,
-    known: Vec<Option<TermId>>,
+    known: HashMap<TypeId, TermId>,
     pairs: Vec<(TermId, TermId)>,
     seen: HashSet<(TermId, TermId)>,
     occurs_work: Vec<TermId>,
@@ -109,14 +118,11 @@ impl Context {
         if store.kind(id).is_none() {
             return Err(Error::InvalidIdentity);
         }
-        if self.known.len() < store.len() {
-            self.known.resize(store.len(), None);
-        }
-        if let Some(term) = self.known[id.0 as usize] {
-            return Ok(term);
+        if let Some(term) = self.known.get(&id) {
+            return Ok(*term);
         }
         let term = self.push(Value::Known(id), &[])?;
-        self.known[id.0 as usize] = Some(term);
+        self.known.insert(id, term);
         Ok(term)
     }
     /// # Errors
@@ -279,6 +285,45 @@ impl Context {
         }
         Ok(())
     }
+    /// Inspect only the outer shape, materializing canonical children on demand.
+    /// An unconstrained variable has no shape; this never applies fallback.
+    ///
+    /// # Errors
+    /// Rejects invalid identities and compact arena overflow.
+    pub fn head(&mut self, store: &Store, id: TermId) -> Result<Option<Constructor>, Error> {
+        let id = self.root(id)?;
+        if matches!(self.terms[id.0 as usize].value, Value::Variable(_)) {
+            return Ok(None);
+        }
+        self.materialize(store, id).map(Some)
+    }
+    /// # Errors
+    /// Rejects invalid identities, missing children and arena overflow.
+    pub fn child(&mut self, store: &Store, id: TermId, index: usize) -> Result<TermId, Error> {
+        let id = self.root(id)?;
+        self.materialize(store, id)?;
+        let term = self.terms[id.0 as usize];
+        self.edges[term.start as usize..term.end as usize]
+            .get(index)
+            .copied()
+            .ok_or(Error::InvalidIdentity)
+    }
+    /// Apply the edition-2024 never fallback to an otherwise unconstrained
+    /// general variable at a never-coercion site, after all body constraints.
+    /// Numeric variables retain their own defaults.
+    ///
+    /// # Errors
+    /// Rejects an invalid inference identity.
+    pub fn default_never(&mut self, id: TermId) -> Result<(), Error> {
+        let id = self.root(id)?;
+        if matches!(
+            self.terms[id.0 as usize].value,
+            Value::Variable(Domain::Any)
+        ) {
+            self.terms[id.0 as usize].value = Value::Known(TypeId::NEVER);
+        }
+        Ok(())
+    }
     fn structural(&mut self, store: &Store, a: TermId, b: TermId) -> Result<(), Error> {
         let left = self.materialize(store, a)?;
         let right = self.materialize(store, b)?;
@@ -352,6 +397,7 @@ impl Context {
                 Constructor::Pointer { mutable }
             }
             Kind::Function {
+                bound_regions,
                 parameters,
                 result,
                 unsafe_,
@@ -362,6 +408,7 @@ impl Context {
                 }
                 children.push(self.known(store, result)?);
                 Constructor::Function {
+                    bound_regions,
                     parameters: u32::try_from(parameters.len()).map_err(|_| Error::Overflow)?,
                     unsafe_,
                 }
@@ -494,11 +541,13 @@ fn canonical(
             pointee: first()?,
         },
         Constructor::Function {
+            bound_regions,
             parameters,
             unsafe_,
         } => {
             let parameters = parameters as usize;
             Kind::Function {
+                bound_regions,
                 parameters: store
                     .intern_list(children.get(..parameters).ok_or(Error::InvalidIdentity)?)
                     .map_err(|_| Error::Overflow)?,

@@ -21,6 +21,7 @@ fn canonical_shapes_share_lists_but_preserve_semantic_identity() -> Result<(), &
     let tuple = store.intern(Kind::Tuple(list))?;
     assert_eq!(store.intern(Kind::Tuple(list))?, tuple);
     let signature = store.intern(Kind::Function {
+        bound_regions: 0,
         parameters: list,
         result: i32_,
         unsafe_: false,

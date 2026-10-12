@@ -6,5 +6,6 @@
   "dev/src/syntax/item.rs": "model",
   "dev/src/resolve/model.rs": "model",
   "dev/src/resolve/package.rs": "model",
-  "dev/src/expand/macros/model.rs": "model"
+  "dev/src/expand/macros/model.rs": "model",
+  "dev/src/sema/model.rs": "model"
 }

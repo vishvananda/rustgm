@@ -18,6 +18,25 @@ pub struct ItemId(pub u32);
 pub struct RegionId(pub u32);
 impl RegionId {
     pub const STATIC: Self = Self(0);
+    /// # Errors
+    /// Rejects binder depth beyond the compact bound-region encoding.
+    pub const fn bound(depth: u16, index: u16) -> Result<Self, &'static str> {
+        if depth >= 0x8000 {
+            return Err("region binder nesting exceeds 32767");
+        }
+        Ok(Self(0x8000_0000 | ((depth as u32) << 16) | index as u32))
+    }
+    #[must_use]
+    pub fn bound_parts(self) -> Option<(u16, u16)> {
+        if self.0 & 0x8000_0000 == 0 {
+            return None;
+        }
+        let bytes = self.0.to_be_bytes();
+        Some((
+            u16::from_be_bytes([bytes[0] & 0x7f, bytes[1]]),
+            u16::from_be_bytes([bytes[2], bytes[3]]),
+        ))
+    }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -133,6 +152,7 @@ pub enum Kind {
         pointee: TypeId,
     },
     Function {
+        bound_regions: u32,
         parameters: ListId,
         result: TypeId,
         unsafe_: bool,
