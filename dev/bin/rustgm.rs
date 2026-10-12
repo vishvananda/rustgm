@@ -58,6 +58,10 @@ fn options() -> Result<Options, String> {
                 options.mode = "--emit-body-ir".into();
                 options.count = true;
             }
+            "--count-lowir" => {
+                options.mode = "--emit-lowir".into();
+                options.count = true;
+            }
             "--count-names" => {
                 options.mode = "--emit-names".into();
                 options.count = true;
@@ -134,7 +138,11 @@ fn compile(options: &Options) -> Result<(), String> {
     };
     let result = if matches!(
         options.mode.as_str(),
-        "--emit-names" | "--emit-expanded-crate" | "--emit-types" | "--emit-body-ir"
+        "--emit-names"
+            | "--emit-expanded-crate"
+            | "--emit-types"
+            | "--emit-body-ir"
+            | "--emit-lowir"
     ) {
         modules::run(
             source,
@@ -148,6 +156,8 @@ fn compile(options: &Options) -> Result<(), String> {
                 modules::Mode::Types
             } else if options.mode == "--emit-body-ir" {
                 modules::Mode::Bodies
+            } else if options.mode == "--emit-lowir" {
+                modules::Mode::Lowir
             } else {
                 modules::Mode::Expanded
             },
@@ -261,10 +271,6 @@ fn render_view(options: &Options, source: &str, output: &mut impl Write) -> Resu
 
 fn main() -> ExitCode {
     match options() {
-        Ok(options) if options.mode == "--emit-lowir" => {
-            let _ = writeln!(io::stderr().lock(), "NOT_IMPLEMENTED: {}", options.mode);
-            ExitCode::from(86)
-        }
         Ok(options) => match compile(&options) {
             Ok(()) => ExitCode::SUCCESS,
             Err(error) => {

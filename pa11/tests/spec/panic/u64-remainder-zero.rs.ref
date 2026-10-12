@@ -1,0 +1,28 @@
+function @rg.14() -> void {
+  block ^b0:
+    %t0 = call i64 @rg.13(1, 0)
+    return void
+}
+function @rg.13(%p0 : i64, %p1 : i64) -> i64 {
+  slot $s0 : i64
+  slot $s1 : i64
+  block ^b0:
+    store i64 %p0, $s0
+    store i64 %p1, $s1
+    %t0 = load i64 $s0
+    %t1 = load i64 $s1
+    %t2 = cmp eq i64 %t1, 0
+    branch %t2, ^b1, ^b2
+  block ^b2:
+    %t3 = binary umod i64 %t0, %t1
+    return i64 %t3
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+declare function @abort() -> void [return=noreturn]
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.14()
+    return i64 0
+}

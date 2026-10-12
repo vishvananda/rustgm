@@ -1,0 +1,30 @@
+function @rg.15() -> void {
+  block ^b0:
+    %t0 = unary neg i16 1
+    %t1 = call u8 @rg.14(1, %t0)
+    return void
+}
+function @rg.14(%p0 : u8, %p1 : i16) -> u8 {
+  slot $s0 : u8
+  slot $s1 : i16
+  block ^b0:
+    store u8 %p0, $s0
+    store i16 %p1, $s1
+    %t0 = load u8 $s0
+    %t1 = load i16 $s1
+    %t2 = cmp uge i16 %t1, 8
+    branch %t2, ^b1, ^b2
+  block ^b2:
+    %t3 = convert trunc u8 i16 %t1
+    %t4 = binary ushr u8 %t0, %t3
+    return u8 %t4
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+declare function @abort() -> void [return=noreturn]
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.15()
+    return i64 0
+}

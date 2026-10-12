@@ -1,0 +1,525 @@
+function @rg.16() -> void {
+  block ^b0:
+    %t0 = unary neg f64 1.58301379741087961e-283
+    %t1 = unary neg f64 1.65217887829758138e-277
+    %t2 = call f64 @rg.15(%t0, %t1)
+    %t3 = unary neg f64 1.58301379741087961e-283
+    %t4 = cmp eq f64 %t2, %t3
+    %t5 = convert trunc i1 i64 %t4
+    call void @rg.13(%t5)
+    %t6 = unary neg f64 1.29645074665578478e-239
+    %t7 = call f64 @rg.15(4.73352496318635622e231, %t6)
+    %t8 = cmp eq f64 %t7, 9.53701714482905347e-240
+    %t9 = convert trunc i1 i64 %t8
+    call void @rg.13(%t9)
+    %t10 = unary neg f64 1.87276710581094032e-15
+    %t11 = unary neg f64 4.55046779710005951e9
+    %t12 = call f64 @rg.15(%t10, %t11)
+    %t13 = unary neg f64 1.87276710581094032e-15
+    %t14 = cmp eq f64 %t12, %t13
+    %t15 = convert trunc i1 i64 %t14
+    call void @rg.13(%t15)
+    %t16 = unary neg f64 1.33122937807574410e-302
+    %t17 = call f64 @rg.15(1.91749390870366209e-106, %t16)
+    %t18 = cmp eq f64 %t17, 8.00253963220466938e-303
+    %t19 = convert trunc i1 i64 %t18
+    call void @rg.13(%t19)
+    %t20 = unary neg f64 1.60461943674623401e42
+    %t21 = call f64 @rg.15(%t20, 1.17185168027337541e95)
+    %t22 = unary neg f64 1.60461943674623401e42
+    %t23 = cmp eq f64 %t21, %t22
+    %t24 = convert trunc i1 i64 %t23
+    call void @rg.13(%t24)
+    %t25 = unary neg f64 1.43659175724187234e-36
+    %t26 = unary neg f64 8.28387247094751717e-123
+    %t27 = call f64 @rg.15(%t25, %t26)
+    %t28 = unary neg f64 8.95268921138194863e-124
+    %t29 = cmp eq f64 %t27, %t28
+    %t30 = convert trunc i1 i64 %t29
+    call void @rg.13(%t30)
+    %t31 = unary neg f64 5.28237683555207089e247
+    %t32 = unary neg f64 1.91524228436832036e32
+    %t33 = call f64 @rg.15(%t31, %t32)
+    %t34 = unary neg f64 1.41130390921320159e31
+    %t35 = cmp eq f64 %t33, %t34
+    %t36 = convert trunc i1 i64 %t35
+    call void @rg.13(%t36)
+    %t37 = call f64 @rg.15(2.41621652444525313e-208, 3.42358036590433150e-172)
+    %t38 = cmp eq f64 %t37, 2.41621652444525313e-208
+    %t39 = convert trunc i1 i64 %t38
+    call void @rg.13(%t39)
+    %t40 = unary neg f64 4.26516243250671371e-274
+    %t41 = unary neg f64 5.40903612685796204e103
+    %t42 = call f64 @rg.15(%t40, %t41)
+    %t43 = unary neg f64 4.26516243250671371e-274
+    %t44 = cmp eq f64 %t42, %t43
+    %t45 = convert trunc i1 i64 %t44
+    call void @rg.13(%t45)
+    %t46 = unary neg f64 3.82103095328490777e41
+    %t47 = call f64 @rg.15(%t46, 1.39234673202196370e-62)
+    %t48 = unary neg f64 4.23198609103211845e-63
+    %t49 = cmp eq f64 %t47, %t48
+    %t50 = convert trunc i1 i64 %t49
+    call void @rg.13(%t50)
+    %t51 = unary neg f64 9.32642659690286522e-14
+    %t52 = unary neg f64 1.10657337809737026e172
+    %t53 = call f64 @rg.15(%t51, %t52)
+    %t54 = unary neg f64 9.32642659690286522e-14
+    %t55 = cmp eq f64 %t53, %t54
+    %t56 = convert trunc i1 i64 %t55
+    call void @rg.13(%t56)
+    %t57 = unary neg f64 5.92556435509700872e52
+    %t58 = unary neg f64 3.66375784095002421e234
+    %t59 = call f64 @rg.15(%t57, %t58)
+    %t60 = unary neg f64 5.92556435509700872e52
+    %t61 = cmp eq f64 %t59, %t60
+    %t62 = convert trunc i1 i64 %t61
+    call void @rg.13(%t62)
+    %t63 = unary neg f64 7.33410867365631516e159
+    %t64 = unary neg f64 3.76894722510811979e239
+    %t65 = call f64 @rg.15(%t63, %t64)
+    %t66 = unary neg f64 7.33410867365631516e159
+    %t67 = cmp eq f64 %t65, %t66
+    %t68 = convert trunc i1 i64 %t67
+    call void @rg.13(%t68)
+    %t69 = unary neg f64 7.53779405847959757e260
+    %t70 = call f64 @rg.15(4.33765445215801948e-192, %t69)
+    %t71 = cmp eq f64 %t70, 4.33765445215801948e-192
+    %t72 = convert trunc i1 i64 %t71
+    call void @rg.13(%t72)
+    %t73 = call f64 @rg.15(1.15536023038216047e108, 9.67466664680554009e-56)
+    %t74 = cmp eq f64 %t73, 3.94521848131546113e-56
+    %t75 = convert trunc i1 i64 %t74
+    call void @rg.13(%t75)
+    %t76 = unary neg f64 1.46163001529883743e-302
+    %t77 = call f64 @rg.15(%t76, 1.49956087308240838e125)
+    %t78 = unary neg f64 1.46163001529883743e-302
+    %t79 = cmp eq f64 %t77, %t78
+    %t80 = convert trunc i1 i64 %t79
+    call void @rg.13(%t80)
+    %t81 = unary neg f64 6.45388003022741850e3
+    %t82 = unary neg f64 2.83090229054217232e-140
+    %t83 = call f64 @rg.15(%t81, %t82)
+    %t84 = unary neg f64 3.20782797920704840e-141
+    %t85 = cmp eq f64 %t83, %t84
+    %t86 = convert trunc i1 i64 %t85
+    call void @rg.13(%t86)
+    %t87 = unary neg f64 1.69493375677076338e-150
+    %t88 = call f64 @rg.15(1.64073390661069630e75, %t87)
+    %t89 = cmp eq f64 %t88, 1.59885814652193768e-150
+    %t90 = convert trunc i1 i64 %t89
+    call void @rg.13(%t90)
+    %t91 = call f64 @rg.15(4.64251150281175735e268, 6.17776267876318432e142)
+    %t92 = cmp eq f64 %t91, 2.07682707280361101e142
+    %t93 = convert trunc i1 i64 %t92
+    call void @rg.13(%t93)
+    %t94 = unary neg f64 7.65873270456150657e-266
+    %t95 = unary neg f64 2.69501338047250836e-141
+    %t96 = call f64 @rg.15(%t94, %t95)
+    %t97 = unary neg f64 7.65873270456150657e-266
+    %t98 = cmp eq f64 %t96, %t97
+    %t99 = convert trunc i1 i64 %t98
+    call void @rg.13(%t99)
+    %t100 = unary neg f64 4.52964347645275333e-35
+    %t101 = unary neg f64 1.92147812356278246e113
+    %t102 = call f64 @rg.15(%t100, %t101)
+    %t103 = unary neg f64 4.52964347645275333e-35
+    %t104 = cmp eq f64 %t102, %t103
+    %t105 = convert trunc i1 i64 %t104
+    call void @rg.13(%t105)
+    %t106 = unary neg f64 1.05257997689974791e40
+    %t107 = unary neg f64 3.50313908136204629e-72
+    %t108 = call f64 @rg.15(%t106, %t107)
+    %t109 = unary neg f64 7.74881904717289836e-73
+    %t110 = cmp eq f64 %t108, %t109
+    %t111 = convert trunc i1 i64 %t110
+    call void @rg.13(%t111)
+    %t112 = unary neg f64 2.86724645614788161e271
+    %t113 = call f64 @rg.15(7.39025248752957983e-88, %t112)
+    %t114 = cmp eq f64 %t113, 7.39025248752957983e-88
+    %t115 = convert trunc i1 i64 %t114
+    call void @rg.13(%t115)
+    %t116 = unary neg f64 7.88948602797766404e97
+    %t117 = call f64 @rg.15(%t116, 1.92268956025807340e307)
+    %t118 = unary neg f64 7.88948602797766404e97
+    %t119 = cmp eq f64 %t117, %t118
+    %t120 = convert trunc i1 i64 %t119
+    call void @rg.13(%t120)
+    %t121 = unary neg f64 3.07826024252981954e-65
+    %t122 = call f64 @rg.15(9.19141231305720292e-160, %t121)
+    %t123 = cmp eq f64 %t122, 9.19141231305720292e-160
+    %t124 = convert trunc i1 i64 %t123
+    call void @rg.13(%t124)
+    %t125 = unary neg f64 5.72248347459924761e-225
+    %t126 = call f64 @rg.15(3.01949352862358917e-207, %t125)
+    %t127 = cmp eq f64 %t126, 3.31056050840800658e-225
+    %t128 = convert trunc i1 i64 %t127
+    call void @rg.13(%t128)
+    %t129 = unary neg f64 3.29855048297620954e249
+    %t130 = call f64 @rg.15(8.38845307047034886e-173, %t129)
+    %t131 = cmp eq f64 %t130, 8.38845307047034886e-173
+    %t132 = convert trunc i1 i64 %t131
+    call void @rg.13(%t132)
+    %t133 = unary neg f64 1.68206592830281364e153
+    %t134 = unary neg f64 5.06400793518074918e55
+    %t135 = call f64 @rg.15(%t133, %t134)
+    %t136 = unary neg f64 4.85118016380453990e55
+    %t137 = cmp eq f64 %t135, %t136
+    %t138 = convert trunc i1 i64 %t137
+    call void @rg.13(%t138)
+    %t139 = unary neg f64 1.21673048648829897e149
+    %t140 = call f64 @rg.15(%t139, 9.65546467549792132e-260)
+    %t141 = unary neg f64 5.15875933548645854e-260
+    %t142 = cmp eq f64 %t140, %t141
+    %t143 = convert trunc i1 i64 %t142
+    call void @rg.13(%t143)
+    %t144 = unary neg f64 7.55732437917124152e-306
+    %t145 = call f64 @rg.15(5.52808517982456631e-193, %t144)
+    %t146 = cmp eq f64 %t145, 5.88732296078517444e-306
+    %t147 = convert trunc i1 i64 %t146
+    call void @rg.13(%t147)
+    %t148 = unary neg f64 1.76770295975105706e-274
+    %t149 = call f64 @rg.15(1.86927138056155833e297, %t148)
+    %t150 = cmp eq f64 %t149, 1.72105942098635910e-274
+    %t151 = convert trunc i1 i64 %t150
+    call void @rg.13(%t151)
+    %t152 = unary neg f64 7.13662306009461814e-85
+    %t153 = call f64 @rg.15(9.15432188495709802e-190, %t152)
+    %t154 = cmp eq f64 %t153, 9.15432188495709802e-190
+    %t155 = convert trunc i1 i64 %t154
+    call void @rg.13(%t155)
+    %t156 = unary neg f64 3.53142011824422620e77
+    %t157 = unary neg f64 2.25730087246821034e-157
+    %t158 = call f64 @rg.15(%t156, %t157)
+    %t159 = unary neg f64 4.30884508915106256e-158
+    %t160 = cmp eq f64 %t158, %t159
+    %t161 = convert trunc i1 i64 %t160
+    call void @rg.13(%t161)
+    %t162 = call f64 @rg.15(7.60829284853805609e-156, 8.83220625868207623e138)
+    %t163 = cmp eq f64 %t162, 7.60829284853805609e-156
+    %t164 = convert trunc i1 i64 %t163
+    call void @rg.13(%t164)
+    %t165 = unary neg f64 1.40164973765159996e117
+    %t166 = call f64 @rg.15(1.51004492623418846e-109, %t165)
+    %t167 = cmp eq f64 %t166, 1.51004492623418846e-109
+    %t168 = convert trunc i1 i64 %t167
+    call void @rg.13(%t168)
+    %t169 = call f64 @rg.15(2.99171888792160677e126, 3.28287090758609112e166)
+    %t170 = cmp eq f64 %t169, 2.99171888792160677e126
+    %t171 = convert trunc i1 i64 %t170
+    call void @rg.13(%t171)
+    %t172 = unary neg f64 4.16885088023038849e151
+    %t173 = unary neg f64 2.37622068418310941e-47
+    %t174 = call f64 @rg.15(%t172, %t173)
+    %t175 = unary neg f64 1.56489182763189740e-47
+    %t176 = cmp eq f64 %t174, %t175
+    %t177 = convert trunc i1 i64 %t176
+    call void @rg.13(%t177)
+    %t178 = unary neg f64 7.50420962160478618e-273
+    %t179 = unary neg f64 7.17315306160907218e-1
+    %t180 = call f64 @rg.15(%t178, %t179)
+    %t181 = unary neg f64 7.50420962160478618e-273
+    %t182 = cmp eq f64 %t180, %t181
+    %t183 = convert trunc i1 i64 %t182
+    call void @rg.13(%t183)
+    %t184 = unary neg f64 1.07047334825908174e-245
+    %t185 = unary neg f64 3.34746111179015719e-203
+    %t186 = call f64 @rg.15(%t184, %t185)
+    %t187 = unary neg f64 1.07047334825908174e-245
+    %t188 = cmp eq f64 %t186, %t187
+    %t189 = convert trunc i1 i64 %t188
+    call void @rg.13(%t189)
+    %t190 = unary neg f64 3.30624826178687867e-63
+    %t191 = call f64 @rg.15(%t190, 1.22147838959329960e-132)
+    %t192 = unary neg f64 1.14001889116375618e-132
+    %t193 = cmp eq f64 %t191, %t192
+    %t194 = convert trunc i1 i64 %t193
+    call void @rg.13(%t194)
+    %t195 = unary neg f64 1.05791941635195169e-4
+    %t196 = call f64 @rg.15(%t195, 6.32542628917759704e214)
+    %t197 = unary neg f64 1.05791941635195169e-4
+    %t198 = cmp eq f64 %t196, %t197
+    %t199 = convert trunc i1 i64 %t198
+    call void @rg.13(%t199)
+    %t200 = unary neg f64 6.54663574060552754e-294
+    %t201 = unary neg f64 4.66169738184868409e-62
+    %t202 = call f64 @rg.15(%t200, %t201)
+    %t203 = unary neg f64 6.54663574060552754e-294
+    %t204 = cmp eq f64 %t202, %t203
+    %t205 = convert trunc i1 i64 %t204
+    call void @rg.13(%t205)
+    %t206 = unary neg f64 1.00760627610048869e258
+    %t207 = call f64 @rg.15(%t206, 1.09366503988547312e-272)
+    %t208 = unary neg f64 7.37857700281110090e-273
+    %t209 = cmp eq f64 %t207, %t208
+    %t210 = convert trunc i1 i64 %t209
+    call void @rg.13(%t210)
+    %t211 = unary neg f64 2.88531285211176334e61
+    %t212 = call f64 @rg.15(%t211, 2.25715175639862387e-73)
+    %t213 = unary neg f64 1.75365465753877385e-73
+    %t214 = cmp eq f64 %t212, %t213
+    %t215 = convert trunc i1 i64 %t214
+    call void @rg.13(%t215)
+    %t216 = call f64 @rg.15(2.39845142884970016e219, 6.36290167517088675e-20)
+    %t217 = cmp eq f64 %t216, 6.18971111887676839e-20
+    %t218 = convert trunc i1 i64 %t217
+    call void @rg.13(%t218)
+    %t219 = call f64 @rg.15(1.43226012009706098e241, 2.42625577968269950e-113)
+    %t220 = cmp eq f64 %t219, 4.41439666173719548e-114
+    %t221 = convert trunc i1 i64 %t220
+    call void @rg.13(%t221)
+    %t222 = call f64 @rg.15(3.23878228676741382e-175, 6.27100581087677245e-19)
+    %t223 = cmp eq f64 %t222, 3.23878228676741382e-175
+    %t224 = convert trunc i1 i64 %t223
+    call void @rg.13(%t224)
+    %t225 = unary neg f64 6.27946064388270441e56
+    %t226 = unary neg f64 1.09194907555245514e-52
+    %t227 = call f64 @rg.15(%t225, %t226)
+    %t228 = unary neg f64 1.02291194168735088e-52
+    %t229 = cmp eq f64 %t227, %t228
+    %t230 = convert trunc i1 i64 %t229
+    call void @rg.13(%t230)
+    %t231 = unary neg f64 1.99764033946912366e27
+    %t232 = call f64 @rg.15(%t231, 8.86040993893952424e-292)
+    %t233 = unary neg f64 1.04999721305401987e-293
+    %t234 = cmp eq f64 %t232, %t233
+    %t235 = convert trunc i1 i64 %t234
+    call void @rg.13(%t235)
+    %t236 = unary neg f64 1.57879487741692816e60
+    %t237 = call f64 @rg.15(9.94629509582943694e-260, %t236)
+    %t238 = cmp eq f64 %t237, 9.94629509582943694e-260
+    %t239 = convert trunc i1 i64 %t238
+    call void @rg.13(%t239)
+    %t240 = unary neg f64 1.84279796852805031e112
+    %t241 = call f64 @rg.15(%t240, 4.60493881340047266e122)
+    %t242 = unary neg f64 1.84279796852805031e112
+    %t243 = cmp eq f64 %t241, %t242
+    %t244 = convert trunc i1 i64 %t243
+    call void @rg.13(%t244)
+    %t245 = call f64 @rg.15(2.02542588200575610e-220, 2.11473087082240200e-232)
+    %t246 = cmp eq f64 %t245, 1.66322084753825670e-232
+    %t247 = convert trunc i1 i64 %t246
+    call void @rg.13(%t247)
+    %t248 = call f64 @rg.15(3.06761616833374855e114, 3.96632381597858085e135)
+    %t249 = cmp eq f64 %t248, 3.06761616833374855e114
+    %t250 = convert trunc i1 i64 %t249
+    call void @rg.13(%t250)
+    %t251 = unary neg f64 6.00798248937328722e-106
+    %t252 = call f64 @rg.15(%t251, 1.98335354815702529e138)
+    %t253 = unary neg f64 6.00798248937328722e-106
+    %t254 = cmp eq f64 %t252, %t253
+    %t255 = convert trunc i1 i64 %t254
+    call void @rg.13(%t255)
+    %t256 = unary neg f64 1.76030054801529128e179
+    %t257 = unary neg f64 4.66051121047993621e-300
+    %t258 = call f64 @rg.15(%t256, %t257)
+    %t259 = unary neg f64 4.51936117681445065e-300
+    %t260 = cmp eq f64 %t258, %t259
+    %t261 = convert trunc i1 i64 %t260
+    call void @rg.13(%t261)
+    %t262 = unary neg f64 2.75854729730019653e180
+    %t263 = unary neg f64 2.84642897717262889e221
+    %t264 = call f64 @rg.15(%t262, %t263)
+    %t265 = unary neg f64 2.75854729730019653e180
+    %t266 = cmp eq f64 %t264, %t265
+    %t267 = convert trunc i1 i64 %t266
+    call void @rg.13(%t267)
+    %t268 = unary neg f64 1.11211732723062057e189
+    %t269 = call f64 @rg.15(%t268, 6.25334526998673607e-61)
+    %t270 = unary neg f64 5.26972854394450860e-61
+    %t271 = cmp eq f64 %t269, %t270
+    %t272 = convert trunc i1 i64 %t271
+    call void @rg.13(%t272)
+    %t273 = unary neg f64 1.66437665223466602e218
+    %t274 = call f64 @rg.15(%t273, 1.02473869986814807e153)
+    %t275 = unary neg f64 4.40022829566054470e151
+    %t276 = cmp eq f64 %t274, %t275
+    %t277 = convert trunc i1 i64 %t276
+    call void @rg.13(%t277)
+    %t278 = unary neg f64 1.60053826800673910e223
+    %t279 = call f64 @rg.15(%t278, 1.12994347524060292e-243)
+    %t280 = unary neg f64 4.02995046332359411e-244
+    %t281 = cmp eq f64 %t279, %t280
+    %t282 = convert trunc i1 i64 %t281
+    call void @rg.13(%t282)
+    %t283 = unary neg f64 2.57710062955611057e79
+    %t284 = call f64 @rg.15(%t283, 1.13552017699565023e237)
+    %t285 = unary neg f64 2.57710062955611057e79
+    %t286 = cmp eq f64 %t284, %t285
+    %t287 = convert trunc i1 i64 %t286
+    call void @rg.13(%t287)
+    %t288 = unary neg f64 5.60135150761301745e-72
+    %t289 = unary neg f64 1.34950912848196013e-297
+    %t290 = call f64 @rg.15(%t288, %t289)
+    %t291 = unary neg f64 1.00201589095918311e-297
+    %t292 = cmp eq f64 %t290, %t291
+    %t293 = convert trunc i1 i64 %t292
+    call void @rg.13(%t293)
+    %t294 = call f64 @rg.15(4.43862996224687191e-212, 2.14390994482321073e261)
+    %t295 = cmp eq f64 %t294, 4.43862996224687191e-212
+    %t296 = convert trunc i1 i64 %t295
+    call void @rg.13(%t296)
+    %t297 = unary neg f64 1.07348074828472606e87
+    %t298 = call f64 @rg.15(%t297, 4.61759062352437295e-271)
+    %t299 = unary neg f64 4.08205602087968016e-271
+    %t300 = cmp eq f64 %t298, %t299
+    %t301 = convert trunc i1 i64 %t300
+    call void @rg.13(%t301)
+    %t302 = unary neg f64 1.36346747246814125e-6
+    %t303 = unary neg f64 8.55514558788373283e262
+    %t304 = call f64 @rg.15(%t302, %t303)
+    %t305 = unary neg f64 1.36346747246814125e-6
+    %t306 = cmp eq f64 %t304, %t305
+    %t307 = convert trunc i1 i64 %t306
+    call void @rg.13(%t307)
+    return void
+}
+function @rg.15(%p0 : f64, %p1 : f64) -> f64 {
+  slot $s0 : f64
+  slot $s1 : f64
+  block ^b0:
+    store f64 %p0, $s0
+    store f64 %p1, $s1
+    %t0 = load f64 $s0
+    %t1 = load f64 $s1
+    %t2 = call f64 @rg.rem.f64(%t0, %t1)
+    return f64 %t2
+}
+function @rg.13(%p0 : i1) -> void {
+  slot $s0 : i1
+  block ^b0:
+    store i1 %p0, $s0
+    %t0 = load i1 $s0
+    %t1 = unary not i1 %t0
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    jump ^b3
+  block ^b1:
+    %t2 = call i32 @rg.14(0)
+    jump ^b3
+  block ^b3:
+    return void
+}
+function @rg.rem.f64(%p0 : f64, %p1 : f64) -> f64 {
+  slot $s0 : i64
+  slot $s1 : i64
+  slot $s2 : f64
+  slot $s3 : f64
+  slot $s4 : f64
+  block ^b0:
+    %t0 = copy i64 %p0
+    %t1 = copy i64 %p1
+    %t2 = binary and i64 %t0, 9223372036854775808
+    %t3 = binary and i64 %t0, 9223372036854775807
+    %t4 = binary and i64 %t1, 9223372036854775807
+    %t5 = cmp uge i64 %t3, 9218868437227405312
+    %t6 = cmp ugt i64 %t4, 9218868437227405312
+    %t7 = cmp eq i64 %t4, 0
+    %t8 = binary or i64 %t5, %t6
+    %t9 = binary or i64 %t8, %t7
+    branch %t9, ^b1, ^b2
+  block ^b1:
+    return f64 nan
+  block ^b2:
+    %t10 = cmp ult i64 %t3, %t4
+    branch %t10, ^b3, ^b4
+  block ^b3:
+    return f64 %p0
+  block ^b4:
+    %t11 = binary ushr i64 %t3, 52
+    %t12 = cmp ne i64 %t11, 0
+    %t13 = cmp eq i64 %t11, 0
+    %t14 = binary shl i64 %t12, 52
+    %t15 = binary and i64 %t3, 4503599627370495
+    %t16 = binary or i64 %t15, %t14
+    %t17 = binary add i64 %t11, %t13
+    %t18 = unary clz i64 %t16
+    %t19 = binary sub i64 %t18, 11
+    %t20 = binary shl i64 %t16, %t19
+    %t21 = binary sub i64 %t17, %t19
+    %t22 = binary ushr i64 %t4, 52
+    %t23 = cmp ne i64 %t22, 0
+    %t24 = cmp eq i64 %t22, 0
+    %t25 = binary shl i64 %t23, 52
+    %t26 = binary and i64 %t4, 4503599627370495
+    %t27 = binary or i64 %t26, %t25
+    %t28 = binary add i64 %t22, %t24
+    %t29 = unary clz i64 %t27
+    %t30 = binary sub i64 %t29, 11
+    %t31 = binary shl i64 %t27, %t30
+    %t32 = binary sub i64 %t28, %t30
+    store i64 %t20, $s0
+    store i64 %t21, $s1
+    jump ^b5
+  block ^b5:
+    %t33 = load i64 $s0
+    %t34 = load i64 $s1
+    %t35 = cmp gt i64 %t34, %t32
+    branch %t35, ^b6, ^b7
+  block ^b6:
+    %t36 = cmp uge i64 %t33, %t31
+    %t37 = binary mul i64 %t31, %t36
+    %t38 = binary sub i64 %t33, %t37
+    %t39 = binary shl i64 %t38, 1
+    %t40 = binary sub i64 %t34, 1
+    store i64 %t39, $s0
+    store i64 %t40, $s1
+    jump ^b5
+  block ^b7:
+    %t41 = cmp uge i64 %t33, %t31
+    %t42 = binary mul i64 %t31, %t41
+    %t43 = binary sub i64 %t33, %t42
+    %t44 = cmp eq i64 %t43, 0
+    branch %t44, ^b8, ^b9
+  block ^b8:
+    store i64 %t2, $s2
+    %t45 = load f64 $s2
+    return f64 %t45
+  block ^b9:
+    %t46 = unary clz i64 %t43
+    %t47 = binary sub i64 %t46, 11
+    %t48 = binary shl i64 %t43, %t47
+    %t49 = binary sub i64 %t34, %t47
+    %t50 = cmp gt i64 %t49, 0
+    branch %t50, ^b10, ^b11
+  block ^b10:
+    %t51 = binary and i64 %t48, 4503599627370495
+    %t52 = binary shl i64 %t49, 52
+    %t53 = binary or i64 %t51, %t52
+    %t54 = binary or i64 %t53, %t2
+    store i64 %t54, $s3
+    %t55 = load f64 $s3
+    return f64 %t55
+  block ^b11:
+    %t56 = binary sub i64 1, %t49
+    %t57 = binary ushr i64 %t48, %t56
+    %t58 = binary or i64 %t57, %t2
+    store i64 %t58, $s4
+    %t59 = load f64 $s4
+    return f64 %t59
+}
+function @rg.14(%p0 : i32) -> i32 {
+  slot $s0 : i32
+  block ^b0:
+    store i32 %p0, $s0
+    %t0 = load i32 $s0
+    %t1 = cmp eq i32 %t0, 0
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    %t2 = cmp eq i32 1, 2147483648
+    %t3 = cmp eq i32 %t0, 4294967295
+    %t4 = binary and i64 %t2, %t3
+    branch %t4, ^b1, ^b3
+  block ^b3:
+    %t5 = binary div i32 1, %t0
+    return i32 %t5
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+declare function @abort() -> void [return=noreturn]
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.16()
+    return i64 0
+}

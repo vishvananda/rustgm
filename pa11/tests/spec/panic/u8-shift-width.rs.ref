@@ -1,0 +1,29 @@
+function @rg.15() -> void {
+  block ^b0:
+    %t0 = call u8 @rg.13(1, 8)
+    return void
+}
+function @rg.13(%p0 : u8, %p1 : i128) -> u8 {
+  slot $s0 : u8
+  slot $s1 : i128
+  block ^b0:
+    store u8 %p0, $s0
+    store i128 %p1, $s1
+    %t0 = load u8 $s0
+    %t1 = load i128 $s1
+    %t2 = cmp uge i128 %t1, 8
+    branch %t2, ^b1, ^b2
+  block ^b2:
+    %t3 = convert trunc u8 i128 %t1
+    %t4 = binary shl u8 %t0, %t3
+    return u8 %t4
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+declare function @abort() -> void [return=noreturn]
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.15()
+    return i64 0
+}

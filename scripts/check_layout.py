@@ -6,6 +6,7 @@ from pathlib import Path
 import re
 import sys
 from course import ROOT, SIDECARS, load_cases
+from check_native import classification
 
 
 def check(root=ROOT):
@@ -21,6 +22,9 @@ def check(root=ROOT):
                 raise ValueError(f"missing assignment document: {folder / name}")
         if stage["status"] != "planned":
             _, cases = load_cases(root, stage["path"])
+            if stage["mode"] == "--emit-lowir":
+                for case in cases:
+                    classification(case)
             receipt = json.loads((folder / "reference.json").read_text())
             if receipt.get("manifest_sha256") != hashlib.sha256((folder / "tests/manifest.json").read_bytes()).hexdigest():
                 raise ValueError(f"manifest changed since reference generation: {folder}")

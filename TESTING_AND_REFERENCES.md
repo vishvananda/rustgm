@@ -93,11 +93,20 @@ assignment. The type view retains those facts without claiming those obligations
 are proved. CLI tests check deterministic output, count/full-view agreement and
 empty stdout on semantic failure. See `docs/pa9-validation.md`.
 
-PA10 adds 47 typed-body fixtures. Its integer CFG test executor verifies the
-32 execution cases against both declared results and rustc, including dynamic
+PA10 adds 48 typed-body fixtures. Its integer CFG test executor verifies the
+33 execution cases against both declared results and rustc, including dynamic
 storage state and evaluation order. It is test-only and never implements a
 frontend phase. Pending region constraints remain explicit in body IR.
 See `docs/pa10-validation.md` for the feature handoff and measurements.
+
+PA11 has 194 scalar LowIR fixtures, including 180 executable comparisons with
+pinned rustc and the qualified CPPGM backend. `make test-native` is required
+locally; ordinary hosted CI has no qualified backend binary and checks the
+committed text, frontend invariants and harness instead. Compiler signals and
+exit 86 always fail. Explicit runtime-panic cases require CPPGM exit 134 with
+empty streams and rustc SIGABRT with a panic diagnostic. Success requires clean
+exit zero; source assertions compare full values. No native outcome is inferred
+from a text-oracle match. See `docs/pa11-validation.md`.
 
 Rustc has no LowIR output. From PA11, maintainer-generated LowIR is the course
 text oracle, with independent run-pass checks through CPPGM versus rustc. Do
@@ -122,8 +131,8 @@ our oracle: their representation and diagnostic contracts belong to upstream.
 
 ## Release discipline
 
-PA1–PA10 are implemented drafts, not a claim of full Rust frontend conformance.
-Planned PA11–PA38 fail on invocation and are excluded from pass counts. Promote
+PA1–PA11 are implemented drafts, not a claim of full Rust frontend conformance.
+Planned PA12–PA38 fail on invocation and are excluded from pass counts. Promote
 a stage only after handout/reference/fixtures are coherent, independent checks
 pass, the source-to-feature ledger is reviewed and all prior stages remain green.
 Keep maintainer measurements and logs in ignored `obj/`; keep student handout

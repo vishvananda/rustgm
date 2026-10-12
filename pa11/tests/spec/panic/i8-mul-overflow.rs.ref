@@ -1,0 +1,32 @@
+function @rg.14() -> void {
+  block ^b0:
+    %t0 = call i8 @rg.13(127, 2)
+    return void
+}
+function @rg.13(%p0 : i8, %p1 : i8) -> i8 {
+  slot $s0 : i8
+  slot $s1 : i8
+  block ^b0:
+    store i8 %p0, $s0
+    store i8 %p1, $s1
+    %t0 = load i8 $s0
+    %t1 = load i8 $s1
+    %t2 = convert sext i16 i8 %t0
+    %t3 = convert sext i16 i8 %t1
+    %t4 = binary mul i16 %t2, %t3
+    %t5 = convert trunc i8 i16 %t4
+    %t6 = convert sext i16 i8 %t5
+    %t7 = cmp ne i16 %t4, %t6
+    branch %t7, ^b1, ^b2
+  block ^b2:
+    return i8 %t5
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+declare function @abort() -> void [return=noreturn]
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.14()
+    return i64 0
+}

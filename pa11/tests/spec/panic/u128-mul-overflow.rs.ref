@@ -1,0 +1,34 @@
+function @rg.14() -> void {
+  block ^b0:
+    %t0 = call i128 @rg.13(340282366920938463463374607431768211455, 2)
+    return void
+}
+function @rg.13(%p0 : i128, %p1 : i128) -> i128 {
+  slot $s0 : i128
+  slot $s1 : i128
+  block ^b0:
+    store i128 %p0, $s0
+    store i128 %p1, $s1
+    %t0 = load i128 $s0
+    %t1 = load i128 $s1
+    %t2 = binary mul i128 %t0, %t1
+    %t3 = cmp ne i128 %t1, 0
+    branch %t3, ^b1, ^b2
+  block ^b1:
+    %t4 = binary udiv i128 %t2, %t1
+    %t5 = cmp ne i128 %t4, %t0
+    branch %t5, ^b3, ^b4
+  block ^b4:
+    jump ^b2
+  block ^b2:
+    return i128 %t2
+  block ^b3:
+    call void @abort()
+    unreachable
+}
+declare function @abort() -> void [return=noreturn]
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.14()
+    return i64 0
+}

@@ -31,7 +31,8 @@ left to right. An argument that changes a function-pointer local cannot change
 the callee already evaluated.
 
 Simple assignment evaluates its right side before its destination. PA9 permits
-only simple local/parameter assignment places. Primitive compound assignment
+only simple local/parameter assignment places. A wildcard binding does not read
+or move a plain local place (`let _ = x`); other initializer effects still run. Primitive compound assignment
 also evaluates the right side before reading/updating the place:
 `let mut x=1; x += { x=10; 3 };` leaves x equal to 13. Overloaded/generic
 compound assignment needs its later semantic selections.
@@ -58,7 +59,8 @@ proof. Retain definition identity, declared mutability and local role.
 ## Deferred obligations
 
 By-value reads do not yet decide Copy/move eligibility, definite initialization,
-write permission, loans or drops (PA14–PA17 and later trait work). Constant
+write permission, loans or drops. PA11 adds the scalar executable initialization/
+write-permission check; PA14–PA17 and later trait work generalize these rules. Constant
 validity/evaluation belongs to PA25. This is not whole-Rust acceptance.
 
 Region equalities remain explicit with their owning source-body identity.

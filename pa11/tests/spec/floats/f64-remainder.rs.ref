@@ -1,0 +1,208 @@
+function @rg.16() -> void {
+  block ^b0:
+    %t0 = call f64 @rg.15(7.50000000000000000e0, 2.00000000000000000e0)
+    %t1 = cmp eq f64 %t0, 1.50000000000000000e0
+    %t2 = convert trunc i1 i64 %t1
+    call void @rg.13(%t2)
+    %t3 = unary neg f64 7.50000000000000000e0
+    %t4 = call f64 @rg.15(%t3, 2.00000000000000000e0)
+    %t5 = unary neg f64 1.50000000000000000e0
+    %t6 = cmp eq f64 %t4, %t5
+    %t7 = convert trunc i1 i64 %t6
+    call void @rg.13(%t7)
+    %t8 = unary neg f64 2.00000000000000000e0
+    %t9 = call f64 @rg.15(7.50000000000000000e0, %t8)
+    %t10 = cmp eq f64 %t9, 1.50000000000000000e0
+    %t11 = convert trunc i1 i64 %t10
+    call void @rg.13(%t11)
+    %t12 = call f64 @rg.15(2.00000000000000000e0, 7.00000000000000000e0)
+    %t13 = cmp eq f64 %t12, 2.00000000000000000e0
+    %t14 = convert trunc i1 i64 %t13
+    call void @rg.13(%t14)
+    %t15 = binary div f64 1.00000000000000000e0, 0.00000000000000000e0
+    %t16 = call f64 @rg.15(2.00000000000000000e0, %t15)
+    %t17 = cmp eq f64 %t16, 2.00000000000000000e0
+    %t18 = convert trunc i1 i64 %t17
+    call void @rg.13(%t18)
+    %t19 = call f64 @rg.15(0.00000000000000000e0, 2.00000000000000000e0)
+    %t20 = cmp eq f64 %t19, 0.00000000000000000e0
+    %t21 = convert trunc i1 i64 %t20
+    call void @rg.13(%t21)
+    %t22 = unary neg f64 4.00000000000000000e0
+    %t23 = call f64 @rg.15(%t22, 2.00000000000000000e0)
+    %t24 = binary div f64 1.00000000000000000e0, %t23
+    %t25 = unary neg f64 1.00000000000000000e0
+    %t26 = binary div f64 %t25, 0.00000000000000000e0
+    %t27 = cmp eq f64 %t24, %t26
+    %t28 = convert trunc i1 i64 %t27
+    call void @rg.13(%t28)
+    %t29 = call f64 @rg.15(2.00000000000000000e0, 0.00000000000000000e0)
+    %t30 = call f64 @rg.15(2.00000000000000000e0, 0.00000000000000000e0)
+    %t31 = cmp ne f64 %t29, %t30
+    %t32 = convert trunc i1 i64 %t31
+    call void @rg.13(%t32)
+    %t33 = binary div f64 1.00000000000000000e0, 0.00000000000000000e0
+    %t34 = call f64 @rg.15(%t33, 2.00000000000000000e0)
+    %t35 = binary div f64 1.00000000000000000e0, 0.00000000000000000e0
+    %t36 = call f64 @rg.15(%t35, 2.00000000000000000e0)
+    %t37 = cmp ne f64 %t34, %t36
+    %t38 = convert trunc i1 i64 %t37
+    call void @rg.13(%t38)
+    %t39 = binary div f64 0.00000000000000000e0, 0.00000000000000000e0
+    %t40 = call f64 @rg.15(2.00000000000000000e0, %t39)
+    %t41 = binary div f64 0.00000000000000000e0, 0.00000000000000000e0
+    %t42 = call f64 @rg.15(2.00000000000000000e0, %t41)
+    %t43 = cmp ne f64 %t40, %t42
+    %t44 = convert trunc i1 i64 %t43
+    call void @rg.13(%t44)
+    return void
+}
+function @rg.15(%p0 : f64, %p1 : f64) -> f64 {
+  slot $s0 : f64
+  slot $s1 : f64
+  block ^b0:
+    store f64 %p0, $s0
+    store f64 %p1, $s1
+    %t0 = load f64 $s0
+    %t1 = load f64 $s1
+    %t2 = call f64 @rg.rem.f64(%t0, %t1)
+    return f64 %t2
+}
+function @rg.13(%p0 : i1) -> void {
+  slot $s0 : i1
+  block ^b0:
+    store i1 %p0, $s0
+    %t0 = load i1 $s0
+    %t1 = unary not i1 %t0
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    jump ^b3
+  block ^b1:
+    %t2 = call i32 @rg.14(0)
+    jump ^b3
+  block ^b3:
+    return void
+}
+function @rg.rem.f64(%p0 : f64, %p1 : f64) -> f64 {
+  slot $s0 : i64
+  slot $s1 : i64
+  slot $s2 : f64
+  slot $s3 : f64
+  slot $s4 : f64
+  block ^b0:
+    %t0 = copy i64 %p0
+    %t1 = copy i64 %p1
+    %t2 = binary and i64 %t0, 9223372036854775808
+    %t3 = binary and i64 %t0, 9223372036854775807
+    %t4 = binary and i64 %t1, 9223372036854775807
+    %t5 = cmp uge i64 %t3, 9218868437227405312
+    %t6 = cmp ugt i64 %t4, 9218868437227405312
+    %t7 = cmp eq i64 %t4, 0
+    %t8 = binary or i64 %t5, %t6
+    %t9 = binary or i64 %t8, %t7
+    branch %t9, ^b1, ^b2
+  block ^b1:
+    return f64 nan
+  block ^b2:
+    %t10 = cmp ult i64 %t3, %t4
+    branch %t10, ^b3, ^b4
+  block ^b3:
+    return f64 %p0
+  block ^b4:
+    %t11 = binary ushr i64 %t3, 52
+    %t12 = cmp ne i64 %t11, 0
+    %t13 = cmp eq i64 %t11, 0
+    %t14 = binary shl i64 %t12, 52
+    %t15 = binary and i64 %t3, 4503599627370495
+    %t16 = binary or i64 %t15, %t14
+    %t17 = binary add i64 %t11, %t13
+    %t18 = unary clz i64 %t16
+    %t19 = binary sub i64 %t18, 11
+    %t20 = binary shl i64 %t16, %t19
+    %t21 = binary sub i64 %t17, %t19
+    %t22 = binary ushr i64 %t4, 52
+    %t23 = cmp ne i64 %t22, 0
+    %t24 = cmp eq i64 %t22, 0
+    %t25 = binary shl i64 %t23, 52
+    %t26 = binary and i64 %t4, 4503599627370495
+    %t27 = binary or i64 %t26, %t25
+    %t28 = binary add i64 %t22, %t24
+    %t29 = unary clz i64 %t27
+    %t30 = binary sub i64 %t29, 11
+    %t31 = binary shl i64 %t27, %t30
+    %t32 = binary sub i64 %t28, %t30
+    store i64 %t20, $s0
+    store i64 %t21, $s1
+    jump ^b5
+  block ^b5:
+    %t33 = load i64 $s0
+    %t34 = load i64 $s1
+    %t35 = cmp gt i64 %t34, %t32
+    branch %t35, ^b6, ^b7
+  block ^b6:
+    %t36 = cmp uge i64 %t33, %t31
+    %t37 = binary mul i64 %t31, %t36
+    %t38 = binary sub i64 %t33, %t37
+    %t39 = binary shl i64 %t38, 1
+    %t40 = binary sub i64 %t34, 1
+    store i64 %t39, $s0
+    store i64 %t40, $s1
+    jump ^b5
+  block ^b7:
+    %t41 = cmp uge i64 %t33, %t31
+    %t42 = binary mul i64 %t31, %t41
+    %t43 = binary sub i64 %t33, %t42
+    %t44 = cmp eq i64 %t43, 0
+    branch %t44, ^b8, ^b9
+  block ^b8:
+    store i64 %t2, $s2
+    %t45 = load f64 $s2
+    return f64 %t45
+  block ^b9:
+    %t46 = unary clz i64 %t43
+    %t47 = binary sub i64 %t46, 11
+    %t48 = binary shl i64 %t43, %t47
+    %t49 = binary sub i64 %t34, %t47
+    %t50 = cmp gt i64 %t49, 0
+    branch %t50, ^b10, ^b11
+  block ^b10:
+    %t51 = binary and i64 %t48, 4503599627370495
+    %t52 = binary shl i64 %t49, 52
+    %t53 = binary or i64 %t51, %t52
+    %t54 = binary or i64 %t53, %t2
+    store i64 %t54, $s3
+    %t55 = load f64 $s3
+    return f64 %t55
+  block ^b11:
+    %t56 = binary sub i64 1, %t49
+    %t57 = binary ushr i64 %t48, %t56
+    %t58 = binary or i64 %t57, %t2
+    store i64 %t58, $s4
+    %t59 = load f64 $s4
+    return f64 %t59
+}
+function @rg.14(%p0 : i32) -> i32 {
+  slot $s0 : i32
+  block ^b0:
+    store i32 %p0, $s0
+    %t0 = load i32 $s0
+    %t1 = cmp eq i32 %t0, 0
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    %t2 = cmp eq i32 1, 2147483648
+    %t3 = cmp eq i32 %t0, 4294967295
+    %t4 = binary and i64 %t2, %t3
+    branch %t4, ^b1, ^b3
+  block ^b3:
+    %t5 = binary div i32 1, %t0
+    return i32 %t5
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+declare function @abort() -> void [return=noreturn]
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.16()
+    return i64 0
+}

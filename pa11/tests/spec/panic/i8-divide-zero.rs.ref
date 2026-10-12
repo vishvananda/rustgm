@@ -1,0 +1,33 @@
+function @rg.14() -> void {
+  block ^b0:
+    %t0 = call i8 @rg.13(1, 0)
+    return void
+}
+function @rg.13(%p0 : i8, %p1 : i8) -> i8 {
+  slot $s0 : i8
+  slot $s1 : i8
+  block ^b0:
+    store i8 %p0, $s0
+    store i8 %p1, $s1
+    %t0 = load i8 $s0
+    %t1 = load i8 $s1
+    %t2 = cmp eq i8 %t1, 0
+    branch %t2, ^b1, ^b2
+  block ^b2:
+    %t3 = cmp eq i8 %t0, 128
+    %t4 = cmp eq i8 %t1, 255
+    %t5 = binary and i64 %t3, %t4
+    branch %t5, ^b1, ^b3
+  block ^b3:
+    %t6 = binary div i8 %t0, %t1
+    return i8 %t6
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+declare function @abort() -> void [return=noreturn]
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.14()
+    return i64 0
+}

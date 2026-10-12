@@ -49,6 +49,7 @@ pub enum Mode {
     Expanded,
     Types,
     Bodies,
+    Lowir,
 }
 pub fn run(
     source: SourceFile,
@@ -68,17 +69,32 @@ pub fn run(
         path: path.filter(|p| *p != "-").unwrap_or("<anon>").into(),
         source,
     };
-    if matches!(mode, Mode::Expanded | Mode::Types | Mode::Bodies) {
-        let report =
+    if matches!(
+        mode,
+        Mode::Expanded | Mode::Types | Mode::Bodies | Mode::Lowir
+    ) {
+        let mut report =
             resolve::expansion::analyze_with_crate_name(root, &mut Files, config, crate_name)
                 .and_then(resolve::analyze_expanded)
                 .map_err(|e| e.to_string())?;
-        if matches!(mode, Mode::Types | Mode::Bodies) {
+        if matches!(mode, Mode::Types | Mode::Bodies | Mode::Lowir) {
             let facts = rustgm::sema::declarations::analyze(&report)
                 .and_then(|facts| rustgm::sema::bodies::analyze(&report, facts))
                 .map_err(|e| e.to_string())?;
-            if matches!(mode, Mode::Bodies) {
+            if matches!(mode, Mode::Bodies | Mode::Lowir) {
                 let program = rustgm::body::build(&report, &facts).map_err(|e| e.to_string())?;
+                if matches!(mode, Mode::Lowir) {
+                    let lowir = lower(&mut report, &facts, &program)?;
+                    drop(program);
+                    drop(facts);
+                    drop(report);
+                    return if count {
+                        rustgm::lowir::writer::count(&lowir, out)
+                    } else {
+                        rustgm::lowir::writer::write(&lowir, out)
+                    }
+                    .map_err(|e| e.to_string());
+                }
                 return if count {
                     rustgm::body::body_view::count(&program, out)
                 } else {
@@ -117,4 +133,34 @@ pub fn run(
     } else {
         resolve::render::write(&package, &facts, out).map_err(|e| e.to_string())
     }
+}
+
+fn phase_error(
+    report: &resolve::expansion::Report,
+    node: resolve::unit::NodeKey,
+    message: &str,
+) -> String {
+    let offset = report
+        .package
+        .unit(node.file)
+        .configured
+        .ast
+        .node(node.node)
+        .span
+        .start;
+    report
+        .diagnostic(resolve::package::Error::at(node.file, offset, message))
+        .to_string()
+}
+fn lower(
+    report: &mut resolve::expansion::Report,
+    facts: &rustgm::sema::model::Declarations,
+    program: &rustgm::body::ir::Program,
+) -> Result<rustgm::lowir::program::Program, String> {
+    let entry =
+        rustgm::sema::entry::select(report, facts).map_err(|e| report.diagnostic(e).to_string())?;
+    let checked = rustgm::body::scalar_check::check(program)
+        .map_err(|e| phase_error(report, e.node, e.message))?;
+    rustgm::lower::build(&facts.types, &checked, entry)
+        .map_err(|e| phase_error(report, e.node, e.message))
 }

@@ -1,0 +1,142 @@
+#!/usr/bin/env python3
+"""Independent PA11 source-to-LowIR execution against pinned rustc and explicit outcomes."""
+import argparse
+from concurrent.futures import ThreadPoolExecutor
+import json
+from pathlib import Path
+import shutil
+import signal
+import subprocess
+import sys
+
+from backend import digest, load_tools
+from course import ROOT, case_environment, load_cases, run_case
+
+
+def classification(case):
+    metadata = case["rustc"]
+    if metadata["kind"] != "program" or metadata["status"] not in (0, 1):
+        raise ValueError("native fixtures must declare full-program rustc outcomes")
+    if metadata["status"] != case["exit_status"] and not metadata.get("reason"):
+        raise ValueError("acceptance differences require a phase-boundary reason")
+    if case["exit_status"] == 0:
+        if metadata["status"] != 0 or case.get("native", {}).get("outcome") not in ("pass", "panic"):
+            raise ValueError("every accepted native fixture needs a rustc executable and declared outcome")
+    elif "native" in case:
+        raise ValueError("rejected sources cannot declare native execution")
+
+
+def execution(result, outcome, compiler):
+    if result.stdout:
+        raise ValueError(f"{compiler}: unexpected runtime stdout")
+    if outcome == "pass":
+        if result.returncode or result.stderr:
+            raise ValueError(f"{compiler}: expected clean exit 0, got {result.returncode}: {result.stderr!r}")
+    elif compiler == "cppgm":
+        # The pinned course runtime implements abort as exit(134), not SIGABRT.
+        if result.returncode != 134 or result.stderr:
+            raise ValueError(f"cppgm: expected qualified abort exit 134, got {result.returncode}")
+    elif result.returncode != -signal.SIGABRT or b"panicked at" not in result.stderr:
+        raise ValueError(f"rustc: expected an arithmetic panic with abort, got {result.returncode}")
+
+
+def check(app, jobs):
+    version = subprocess.check_output(["rustc", "--version"], text=True)
+    if not version.startswith("rustc 1.98.0 "):
+        raise ValueError(f"expected pinned rustc 1.98.0: {version.strip()}")
+    tools = load_tools()  # Hash the immutable backend tools once for this run.
+    candidate_hash = digest(app)
+    manifest, cases = load_cases(ROOT, "pa11")
+    directory = ROOT / "obj/native/pa11"
+    directory.mkdir(parents=True, exist_ok=True)
+
+    def worker(case):
+        evidence = {"path": case["path"], "commands": [], "passed": False}
+        folder = directory / case["path"].removesuffix(".rs")
+        try:
+            classification(case)
+            if folder.exists():
+                shutil.rmtree(folder)
+            folder.mkdir(parents=True)
+            fixture = ROOT / "pa11" / case["path"]
+            source = folder / fixture.name
+            source.write_bytes(fixture.read_bytes())
+            for auxiliary in case.get("auxiliary", []):
+                original = ROOT / "pa11" / auxiliary
+                destination = folder / original.relative_to(fixture.parent)
+                destination.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copyfile(original, destination)
+            env = case_environment(case)
+
+            def run(command, label, timeout=60):
+                result = subprocess.run(command, capture_output=True, timeout=timeout, cwd=ROOT, env=env)
+                evidence["commands"].append({"argv": command, "status": result.returncode})
+                (folder / (label + ".stdout")).write_bytes(result.stdout)
+                (folder / (label + ".stderr")).write_bytes(result.stderr)
+                return result
+
+            _, actual = run_case(ROOT, "pa11", manifest["mode"], case, [str(app)], 30)
+            for suffix, data in zip(("stdout", "stderr", "status"), actual):
+                (folder / ("frontend." + suffix)).write_bytes(data)
+            if actual[2] != f"{case['exit_status']}\n".encode():
+                raise ValueError(f"frontend outcome differs: {actual[2]!r}, {actual[1]!r}")
+            if not case["exit_status"] and (actual[1] or not actual[0]):
+                raise ValueError("successful LowIR emission requires nonempty stdout and empty stderr")
+            if case["exit_status"] and (actual[0] or not actual[1]):
+                raise ValueError("rejections require empty stdout and a diagnostic")
+            arguments = case.get("args", [])
+            rustexe = folder / "rustc-output"
+            command = ["rustc", "--edition=2024", "--target", "x86_64-unknown-linux-gnu",
+                       "--crate-name", "native_check", "-C", "panic=abort", "-C", "overflow-checks=yes",
+                       "-C", "debug-assertions=off", *arguments, str(source), "-o", str(rustexe)]
+            rust = run(command, "rustc")
+            if rust.returncode != case["rustc"]["status"]:
+                raise ValueError(f"rustc outcome differs: {rust.returncode}: {rust.stderr.decode(errors='replace')}")
+            if case["exit_status"] == 0:
+                text = folder / "output.lowir"
+                text.write_bytes(actual[0])
+                validated = folder / "validated.lowir"
+                native = folder / "native-output"
+                for command, label in [([tools["lowir"], "-o", str(validated), str(text)], "validate"),
+                                       ([tools["lowir2native"], "-O0", "-o", str(native), str(validated)], "backend")]:
+                    result = run(command, label)
+                    if result.returncode:
+                        raise ValueError(f"{label} failed ({result.returncode}): {result.stderr.decode(errors='replace')}")
+                outcome = case["native"]["outcome"]
+                execution(run([str(rustexe)], "rustc-run", 10), outcome, "rustc")
+                execution(run([str(native)], "native-run", 10), outcome, "cppgm")
+            evidence["passed"] = True
+        except (ValueError, OSError, subprocess.SubprocessError) as error:
+            evidence["error"] = str(error)
+        return evidence
+
+    with ThreadPoolExecutor(max_workers=jobs) as pool:
+        results = list(pool.map(worker, cases))
+    if digest(app) != candidate_hash:
+        raise ValueError("candidate bytes changed during the independent run")
+    (directory / "evidence.json").write_text(json.dumps({"rustc": version.strip(), "candidate_sha256": candidate_hash,
+        "manifest_sha256": digest(ROOT / "pa11/tests/manifest.json"),
+        "backend": json.loads((ROOT / "backend.lock.json").read_text()), "cases": results}, indent=2) + "\n")
+    failures = [item for item in results if not item["passed"]]
+    for item in failures:
+        print(f"FAIL {item['path']}: {item['error']}")
+    if failures:
+        raise ValueError(f"{len(failures)}/{len(cases)} independent native checks failed")
+    print(f"PASS: PA11: {len(cases)} independent checks; {sum('native' in c for c in cases)} executable comparisons")
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--app", type=Path, default=ROOT / "dev/rustgm")
+    parser.add_argument("--jobs", type=int, choices=range(1, 9), default=4)
+    args = parser.parse_args()
+    try:
+        check(args.app.resolve(), args.jobs)
+        return 0
+    except (ValueError, OSError, subprocess.SubprocessError) as error:
+        print(f"native check failed: {error}", file=sys.stderr)
+        return 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())

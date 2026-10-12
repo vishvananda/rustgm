@@ -535,6 +535,10 @@ impl<'a> Builder<'a> {
             .work
             .extend(children.iter().rev().copied().map(Work::Enter));
     }
+    #[expect(
+        clippy::too_many_lines,
+        reason = "cohesive syntax dispatch exposes evaluation order and work-stack scheduling"
+    )]
     fn enter(&mut self, node: NodeId) -> Result<(), Error> {
         match self.kind(node) {
             Kind::Block {
@@ -604,6 +608,11 @@ impl<'a> Builder<'a> {
             kind => {
                 self.scratch.work.push(Work::Finish(node));
                 match kind {
+                    Kind::Let {
+                        pattern,
+                        value: Some(value),
+                        ..
+                    } if self.discarded_local(pattern, value)? => {}
                     Kind::Let { value, .. } | Kind::Return(value) | Kind::Break { value, .. } => {
                         if let Some(value) = value {
                             self.scratch.work.push(Work::Enter(value));
@@ -632,6 +641,28 @@ impl<'a> Builder<'a> {
             }
         }
         Ok(())
+    }
+    fn discarded_local(&self, mut pattern: NodeId, mut value: NodeId) -> Result<bool, Error> {
+        while let Kind::Group(inner) | Kind::Attributed { value: inner, .. } = self.kind(pattern) {
+            pattern = inner;
+        }
+        if !matches!(self.kind(pattern), Kind::Wildcard) {
+            return Ok(false);
+        }
+        while let Kind::Group(inner) | Kind::Attributed { value: inner, .. } = self.kind(value) {
+            value = inner;
+        }
+        if !matches!(self.kind(value), Kind::Path { .. } | Kind::Name(_)) {
+            return Ok(false);
+        }
+        let Some(Target::Definition(definition)) = self.fact(value)?.reference else {
+            return Ok(false);
+        };
+        // A wildcard does not read/move a place. Calls and block values still evaluate.
+        Ok(matches!(
+            self.report.resolution.definitions[definition.0 as usize].kind,
+            DefKind::Local | DefKind::Parameter
+        ))
     }
     fn choice(
         &mut self,

@@ -1,0 +1,265 @@
+//! Serialize the typed scalar model using the pinned CPPGM `LowIR` vocabulary.
+use super::{
+    program::{
+        Function, Instruction, Literal, Operand, Operation, Program, SignatureId, Terminator,
+    },
+    vocabulary::Type,
+};
+use std::io::{self, Write};
+
+/// Count owned, already constructed records without rendering them.
+///
+/// # Errors
+/// Propagates output errors.
+pub fn count(program: &Program, out: &mut impl Write) -> io::Result<()> {
+    let (mut functions, mut blocks, mut instructions, mut slots, mut temporaries) =
+        (0_usize, 0, 0, 0, 0);
+    for body in program
+        .symbols
+        .iter()
+        .filter_map(|symbol| symbol.body.as_ref())
+    {
+        functions += 1;
+        blocks += body.blocks.len();
+        instructions += body.instructions.len();
+        slots += body.slots.len();
+        temporaries += body.temporaries.len();
+    }
+    writeln!(
+        out,
+        "symbols {} functions {functions} blocks {blocks} instructions {instructions} slots {slots} temporaries {temporaries}",
+        program.symbols.len()
+    )
+}
+
+/// # Errors
+/// Propagates output errors and inconsistent typed identities.
+pub fn write(program: &Program, out: &mut impl Write) -> io::Result<()> {
+    for symbol in &program.symbols {
+        let signature = program
+            .signatures
+            .get(symbol.signature.0 as usize)
+            .ok_or_else(|| io::Error::other("invalid LowIR signature"))?;
+        if symbol.body.is_none() {
+            write!(out, "declare ")?;
+        }
+        write!(out, "function @{}(", symbol.name)?;
+        parameters(program, symbol.signature, true, out)?;
+        write!(out, ") -> {}", signature.result.name())?;
+        if symbol.entry {
+            write!(out, " [role=entry]")?;
+        }
+        if signature.noreturn {
+            write!(out, " [return=noreturn]")?;
+        }
+        if let Some(function) = &symbol.body {
+            writeln!(out, " {{")?;
+            function_body(program, function, out)?;
+            writeln!(out, "}}")?;
+        } else {
+            writeln!(out)?;
+        }
+    }
+    Ok(())
+}
+fn parameters(
+    program: &Program,
+    signature: SignatureId,
+    names: bool,
+    out: &mut impl Write,
+) -> io::Result<()> {
+    for (index, ty) in program.parameters(signature).iter().enumerate() {
+        if index != 0 {
+            write!(out, ", ")?;
+        }
+        if names {
+            write!(out, "%p{index} : ")?;
+        }
+        write!(out, "{}", ty.name())?;
+    }
+    Ok(())
+}
+fn function_body(program: &Program, function: &Function, out: &mut impl Write) -> io::Result<()> {
+    for (index, ty) in function.slots.iter().enumerate() {
+        writeln!(out, "  slot $s{index} : {}", ty.name())?;
+    }
+    for id in &function.order {
+        let block = function
+            .blocks
+            .get(id.0 as usize)
+            .ok_or_else(|| io::Error::other("invalid LowIR block"))?;
+        writeln!(out, "  block ^b{}:", id.0)?;
+        for inst in &function.instructions
+            [block.instructions.start as usize..block.instructions.end as usize]
+        {
+            write!(out, "    ")?;
+            if let Some(temp) = inst.result {
+                write!(out, "%t{} = ", temp.0)?;
+            }
+            instruction(program, function, inst, out)?;
+            writeln!(out)?;
+        }
+        write!(out, "    ")?;
+        match block.terminator {
+            Terminator::Jump(target) => write!(out, "jump ^b{}", target.0)?,
+            Terminator::Branch { condition, yes, no } => {
+                write!(out, "branch ")?;
+                operand(program, function, condition, out)?;
+                write!(out, ", ^b{}, ^b{}", yes.0, no.0)?;
+            }
+            Terminator::Return(Some(value)) => {
+                write!(out, "return {} ", value.ty.name())?;
+                operand(program, function, value.operand, out)?;
+            }
+            Terminator::Return(None) => write!(out, "return void")?,
+            Terminator::Unreachable => write!(out, "unreachable")?,
+        }
+        writeln!(out)?;
+    }
+    Ok(())
+}
+fn result_type(function: &Function, inst: &Instruction) -> io::Result<Type> {
+    let temp = inst
+        .result
+        .ok_or_else(|| io::Error::other("LowIR instruction lacks result"))?;
+    function
+        .temporaries
+        .get(temp.0 as usize)
+        .copied()
+        .ok_or_else(|| io::Error::other("invalid LowIR temporary"))
+}
+fn instruction(
+    program: &Program,
+    function: &Function,
+    inst: &Instruction,
+    out: &mut impl Write,
+) -> io::Result<()> {
+    let value = match inst.operation {
+        Operation::Copy(value) => {
+            write!(out, "copy {} ", result_type(function, inst)?.name())?;
+            value.operand
+        }
+        Operation::Address(value) => {
+            write!(out, "addr ")?;
+            value
+        }
+        Operation::Load { ty, address } => {
+            write!(out, "load {} ", ty.name())?;
+            address
+        }
+        Operation::Store { value, address } => {
+            write!(out, "store {} ", value.ty.name())?;
+            operand(program, function, value.operand, out)?;
+            write!(out, ", ")?;
+            address
+        }
+        Operation::Unary { op, value } => {
+            write!(out, "unary {} {} ", op.name(), value.ty.name())?;
+            value.operand
+        }
+        Operation::Binary { op, left, right } => {
+            write!(out, "binary {} {} ", op.name(), left.ty.name())?;
+            operand(program, function, left.operand, out)?;
+            write!(out, ", ")?;
+            right
+        }
+        Operation::Compare {
+            predicate,
+            left,
+            right,
+        } => {
+            write!(out, "cmp {} {} ", predicate.name(), left.ty.name())?;
+            operand(program, function, left.operand, out)?;
+            write!(out, ", ")?;
+            right
+        }
+        Operation::Convert { op, value } => {
+            write!(
+                out,
+                "convert {} {} {} ",
+                op.name(),
+                result_type(function, inst)?.name(),
+                value.ty.name()
+            )?;
+            value.operand
+        }
+        Operation::Call {
+            signature,
+            callee,
+            arguments,
+        } => {
+            let data = program
+                .signatures
+                .get(signature.0 as usize)
+                .ok_or_else(|| io::Error::other("invalid call signature"))?;
+            write!(out, "call {} ", data.result.name())?;
+            operand(program, function, callee, out)?;
+            write!(out, "(")?;
+            for (index, value) in function.arguments
+                [arguments.start as usize..arguments.end as usize]
+                .iter()
+                .enumerate()
+            {
+                if index != 0 {
+                    write!(out, ", ")?;
+                }
+                operand(program, function, value.operand, out)?;
+            }
+            write!(out, ")")?;
+            if !matches!(callee, Operand::Symbol(_)) {
+                write!(out, " as (")?;
+                parameters(program, signature, true, out)?;
+                write!(out, ") -> {}", data.result.name())?;
+                if data.noreturn {
+                    write!(out, " [return=noreturn]")?;
+                }
+            }
+            return Ok(());
+        }
+    };
+    operand(program, function, value, out)
+}
+fn operand(
+    program: &Program,
+    function: &Function,
+    value: Operand,
+    out: &mut impl Write,
+) -> io::Result<()> {
+    match value {
+        Operand::Temporary(id) => write!(out, "%t{}", id.0),
+        Operand::Parameter(index) => write!(out, "%p{index}"),
+        Operand::Slot(id) => write!(out, "$s{}", id.0),
+        Operand::Symbol(id) => write!(
+            out,
+            "@{}",
+            program
+                .symbols
+                .get(id.0 as usize)
+                .ok_or_else(|| io::Error::other("invalid LowIR symbol"))?
+                .name
+        ),
+        Operand::Literal(id) => {
+            let literal = function
+                .literals
+                .get(id.0 as usize)
+                .ok_or_else(|| io::Error::other("invalid LowIR literal"))?;
+            match *literal {
+                Literal::Integer(bits) => write!(out, "{bits}"),
+                Literal::Null => write!(out, "nullptr"),
+                Literal::F32(bits) => floating(f64::from(f32::from_bits(bits)), out),
+                Literal::F64(bits) => floating(f64::from_bits(bits), out),
+            }
+        }
+    }
+}
+fn floating(value: f64, out: &mut impl Write) -> io::Result<()> {
+    if value.is_nan() {
+        write!(out, "nan")
+    } else if value == f64::INFINITY {
+        write!(out, "inf")
+    } else if value == f64::NEG_INFINITY {
+        write!(out, "-inf")
+    } else {
+        write!(out, "{value:.17e}")
+    }
+}

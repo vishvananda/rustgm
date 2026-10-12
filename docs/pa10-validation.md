@@ -2,7 +2,8 @@
 
 PA10 implements the typed-body profile in [its handout](../pa10/README.md).
 It does not claim ownership checking or native Rust execution; those remain
-explicit later-stage responsibilities. PA11 is still planned.
+explicit later-stage responsibilities. The original PA10 release preceded PA11;
+see `pa11-validation.md` for the later scalar checks and wildcard-place correction.
 
 ## Architecture and feature ownership
 

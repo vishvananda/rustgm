@@ -2,11 +2,11 @@ PYTHON ?= python3
 CARGO ?= cargo
 ROOT := $(CURDIR)
 export CARGO_TARGET_DIR := $(ROOT)/obj/rust
-ACTIVE_PAS := pa1 pa2 pa3 pa4 pa5 pa6 pa7 pa8 pa9 pa10
+ACTIVE_PAS := pa1 pa2 pa3 pa4 pa5 pa6 pa7 pa8 pa9 pa10 pa11
 RUSTGM_TEST_APP ?= $(ROOT)/dev/rustgm
 REF_TEST_APP ?= $(ROOT)/dev/rustgm-ref
 
-.PHONY: all test test-report ref-test lint setup-audit audit-rust test-harness test-backend test-upstream test-rustc perf perf-literals perf-ast perf-crate-ast perf-names perf-expanded perf-expanded-crate perf-types perf-body-ir clean
+.PHONY: all test test-report ref-test lint setup-audit audit-rust test-harness test-backend test-native test-upstream test-rustc perf perf-literals perf-ast perf-crate-ast perf-names perf-expanded perf-expanded-crate perf-types perf-body-ir perf-lowir clean
 all:
 	$(CARGO) build --manifest-path dev/Cargo.toml --release --locked
 test: all
@@ -14,7 +14,7 @@ test: all
 	@status=0; for stage in $(ACTIVE_PAS); do $(PYTHON) scripts/course.py $$stage --app "$(RUSTGM_TEST_APP)" || status=1; done; exit $$status
 test-report: all
 	@status=0; for stage in $(ACTIVE_PAS); do $(PYTHON) scripts/course.py $$stage --app "$(RUSTGM_TEST_APP)" || status=1; done; exit $$status
-	@echo 'PA11-PA38: planned, not included in acceptance totals'
+	@echo 'PA12-PA38: planned, not included in acceptance totals'
 test-pa%: all
 	$(PYTHON) scripts/course.py pa$* --app "$(RUSTGM_TEST_APP)"
 ref-test: all
@@ -35,6 +35,8 @@ test-harness:
 	$(PYTHON) scripts/check_layout.py
 test-backend:
 	$(PYTHON) scripts/backend.py --test
+test-native: all
+	$(PYTHON) scripts/check_native.py --app "$(RUSTGM_TEST_APP)"
 test-upstream:
 	$(PYTHON) scripts/upstream.py --verify
 test-rustc: all
@@ -66,5 +68,7 @@ perf-types: all
 	$(PYTHON) scripts/measure_lexer.py --stage types
 perf-body-ir: all
 	$(PYTHON) scripts/measure_lexer.py --stage body-ir
+perf-lowir: all
+	$(PYTHON) scripts/measure_lexer.py --stage lowir
 clean:
 	$(CARGO) clean --manifest-path dev/Cargo.toml

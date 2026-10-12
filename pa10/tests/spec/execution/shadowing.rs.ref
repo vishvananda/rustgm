@@ -32,13 +32,12 @@ body 0 function def=13 signature=19 result=14 source=0:21
     live l1 source=10
     store l1 v2 source=12
     v3 type=1 = unit source=12
-    v4 type=7 = read l1 source=15
-    v5 type=1 = unit source=16
-    v6 type=1 = unit source=17
+    v4 type=1 = unit source=16
+    v5 type=1 = unit source=17
     dead l1 source=17
-    v7 type=1 = unit source=18
-    v8 type=14 = read l0 source=20
+    v6 type=1 = unit source=18
+    v7 type=14 = read l0 source=20
     dead l0 source=21
-    return v8 source=21
+    return v7 source=21
 end-body
-eof bodies=1 locals=2 values=9 statements=15 blocks=1
+eof bodies=1 locals=2 values=8 statements=14 blocks=1

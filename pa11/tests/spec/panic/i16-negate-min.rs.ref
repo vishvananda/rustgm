@@ -1,0 +1,26 @@
+function @rg.14() -> void {
+  block ^b0:
+    %t0 = unary neg i16 32768
+    %t1 = call i16 @rg.13(%t0)
+    return void
+}
+function @rg.13(%p0 : i16) -> i16 {
+  slot $s0 : i16
+  block ^b0:
+    store i16 %p0, $s0
+    %t0 = load i16 $s0
+    %t1 = cmp eq i16 %t0, 32768
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    %t2 = unary neg i16 %t0
+    return i16 %t2
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+declare function @abort() -> void [return=noreturn]
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.14()
+    return i64 0
+}

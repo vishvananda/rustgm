@@ -31,10 +31,10 @@ repository with pinned reference tools. It has not been built yet.
   selected operation/control facts and independently checked type-view oracles.
 - PA10 has typed function/initializer CFGs, explicit storage and evaluation order,
   text oracles and independent CFG execution checks against rustc.
-- PA11–PA38 have buildout briefs and Makefiles. Their suites and implementation
+- PA11 lowers checked scalar Rust procedures into typed LowIR, with committed
+  text oracles and independent native execution through the pinned CPPGM backend.
+- PA12–PA38 have buildout briefs and Makefiles. Their suites and implementation
   are not complete; invoking an unbuilt assignment fails explicitly.
-- The backend bridge has an executable LowIR smoke test. Rust source lowering
-  begins at PA11; the smoke test is not evidence of Rust source compilation.
 
 Read [ROADMAP.md](ROADMAP.md), [spec.md](spec.md),
 [TESTING_AND_REFERENCES.md](TESTING_AND_REFERENCES.md) and
@@ -61,7 +61,8 @@ See [dependency review](docs/dependencies.md).
 
 Run `dev/rustgm --emit-tokens source.rs`, `dev/rustgm --emit-literals source.rs`,
 `dev/rustgm --emit-token-trees source.rs`, or `dev/rustgm --emit-ast expression.rs`, or `dev/rustgm --emit-crate-ast crate.rs`, or `dev/rustgm --emit-names crate.rs`,
-or `dev/rustgm --emit-types crate.rs`, or pass source on stdin. The reference
+or `dev/rustgm --emit-types crate.rs`, `--emit-body-ir` or `--emit-lowir`,
+or pass source on stdin. The reference
 wrapper `dev/rustgm-ref` invokes the same maintained solution. Override
 `RUSTGM_TEST_APP=/absolute/path/to/candidate` to test another implementation
 against the committed oracles without regenerating them.
@@ -72,8 +73,9 @@ Configure a built checkout of the commit in `backend.lock.json`:
 
 ```sh
 python3 scripts/backend.py --configure /path/to/cppgm-extended
-make test-backend
-python3 scripts/backend.py program.lowir -o obj/program
+make test-backend test-native
+dev/rustgm --emit-lowir -o obj/program.lowir program.rs
+python3 scripts/backend.py obj/program.lowir -o obj/program
 ```
 
 The initial lock records the qualified Linux binaries as well as their source
@@ -108,3 +110,7 @@ including glob propagation, with deterministic full-output checks.
 `make perf-types` measures the expanded/resolved scalar frontend through type
 checking with immutable binaries, full-output equality, A/A calibration and
 paired scaling runs. See [PA9 validation](docs/pa9-validation.md).
+
+`make perf-lowir` measures demanded scalar lowering with frozen sources, full
+output equality, A/A calibration and paired blocks. See
+[PA11 validation](docs/pa11-validation.md) for the executable profile and evidence.

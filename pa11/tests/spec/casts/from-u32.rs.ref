@@ -1,0 +1,286 @@
+function @rg.25() -> void {
+  block ^b0:
+    %t0 = call i8 @rg.15(0)
+    %t1 = cmp eq i8 %t0, 0
+    %t2 = convert trunc i1 i64 %t1
+    call void @rg.13(%t2)
+    %t3 = call i8 @rg.15(4294967295)
+    %t4 = unary neg i8 1
+    %t5 = cmp eq i8 %t3, %t4
+    %t6 = convert trunc i1 i64 %t5
+    call void @rg.13(%t6)
+    %t7 = call i8 @rg.15(0)
+    %t8 = cmp eq i8 %t7, 0
+    %t9 = convert trunc i1 i64 %t8
+    call void @rg.13(%t9)
+    %t10 = call i8 @rg.15(73)
+    %t11 = cmp eq i8 %t10, 73
+    %t12 = convert trunc i1 i64 %t11
+    call void @rg.13(%t12)
+    %t13 = call i16 @rg.16(0)
+    %t14 = cmp eq i16 %t13, 0
+    %t15 = convert trunc i1 i64 %t14
+    call void @rg.13(%t15)
+    %t16 = call i16 @rg.16(4294967295)
+    %t17 = unary neg i16 1
+    %t18 = cmp eq i16 %t16, %t17
+    %t19 = convert trunc i1 i64 %t18
+    call void @rg.13(%t19)
+    %t20 = call i16 @rg.16(0)
+    %t21 = cmp eq i16 %t20, 0
+    %t22 = convert trunc i1 i64 %t21
+    call void @rg.13(%t22)
+    %t23 = call i16 @rg.16(73)
+    %t24 = cmp eq i16 %t23, 73
+    %t25 = convert trunc i1 i64 %t24
+    call void @rg.13(%t25)
+    %t26 = call i32 @rg.17(0)
+    %t27 = cmp eq i32 %t26, 0
+    %t28 = convert trunc i1 i64 %t27
+    call void @rg.13(%t28)
+    %t29 = call i32 @rg.17(4294967295)
+    %t30 = unary neg i32 1
+    %t31 = cmp eq i32 %t29, %t30
+    %t32 = convert trunc i1 i64 %t31
+    call void @rg.13(%t32)
+    %t33 = call i32 @rg.17(0)
+    %t34 = cmp eq i32 %t33, 0
+    %t35 = convert trunc i1 i64 %t34
+    call void @rg.13(%t35)
+    %t36 = call i32 @rg.17(73)
+    %t37 = cmp eq i32 %t36, 73
+    %t38 = convert trunc i1 i64 %t37
+    call void @rg.13(%t38)
+    %t39 = call i64 @rg.18(0)
+    %t40 = cmp eq i64 %t39, 0
+    %t41 = convert trunc i1 i64 %t40
+    call void @rg.13(%t41)
+    %t42 = call i64 @rg.18(4294967295)
+    %t43 = cmp eq i64 %t42, 4294967295
+    %t44 = convert trunc i1 i64 %t43
+    call void @rg.13(%t44)
+    %t45 = call i64 @rg.18(0)
+    %t46 = cmp eq i64 %t45, 0
+    %t47 = convert trunc i1 i64 %t46
+    call void @rg.13(%t47)
+    %t48 = call i64 @rg.18(73)
+    %t49 = cmp eq i64 %t48, 73
+    %t50 = convert trunc i1 i64 %t49
+    call void @rg.13(%t50)
+    %t51 = call i128 @rg.19(0)
+    %t52 = cmp eq i128 %t51, 0
+    %t53 = convert trunc i1 i64 %t52
+    call void @rg.13(%t53)
+    %t54 = call i128 @rg.19(4294967295)
+    %t55 = cmp eq i128 %t54, 4294967295
+    %t56 = convert trunc i1 i64 %t55
+    call void @rg.13(%t56)
+    %t57 = call i128 @rg.19(0)
+    %t58 = cmp eq i128 %t57, 0
+    %t59 = convert trunc i1 i64 %t58
+    call void @rg.13(%t59)
+    %t60 = call i128 @rg.19(73)
+    %t61 = cmp eq i128 %t60, 73
+    %t62 = convert trunc i1 i64 %t61
+    call void @rg.13(%t62)
+    %t63 = call u8 @rg.20(0)
+    %t64 = cmp eq u8 %t63, 0
+    %t65 = convert trunc i1 i64 %t64
+    call void @rg.13(%t65)
+    %t66 = call u8 @rg.20(4294967295)
+    %t67 = cmp eq u8 %t66, 255
+    %t68 = convert trunc i1 i64 %t67
+    call void @rg.13(%t68)
+    %t69 = call u8 @rg.20(0)
+    %t70 = cmp eq u8 %t69, 0
+    %t71 = convert trunc i1 i64 %t70
+    call void @rg.13(%t71)
+    %t72 = call u8 @rg.20(73)
+    %t73 = cmp eq u8 %t72, 73
+    %t74 = convert trunc i1 i64 %t73
+    call void @rg.13(%t74)
+    %t75 = call u16 @rg.21(0)
+    %t76 = cmp eq u16 %t75, 0
+    %t77 = convert trunc i1 i64 %t76
+    call void @rg.13(%t77)
+    %t78 = call u16 @rg.21(4294967295)
+    %t79 = cmp eq u16 %t78, 65535
+    %t80 = convert trunc i1 i64 %t79
+    call void @rg.13(%t80)
+    %t81 = call u16 @rg.21(0)
+    %t82 = cmp eq u16 %t81, 0
+    %t83 = convert trunc i1 i64 %t82
+    call void @rg.13(%t83)
+    %t84 = call u16 @rg.21(73)
+    %t85 = cmp eq u16 %t84, 73
+    %t86 = convert trunc i1 i64 %t85
+    call void @rg.13(%t86)
+    %t87 = call u32 @rg.22(0)
+    %t88 = cmp eq u32 %t87, 0
+    %t89 = convert trunc i1 i64 %t88
+    call void @rg.13(%t89)
+    %t90 = call u32 @rg.22(4294967295)
+    %t91 = cmp eq u32 %t90, 4294967295
+    %t92 = convert trunc i1 i64 %t91
+    call void @rg.13(%t92)
+    %t93 = call u32 @rg.22(0)
+    %t94 = cmp eq u32 %t93, 0
+    %t95 = convert trunc i1 i64 %t94
+    call void @rg.13(%t95)
+    %t96 = call u32 @rg.22(73)
+    %t97 = cmp eq u32 %t96, 73
+    %t98 = convert trunc i1 i64 %t97
+    call void @rg.13(%t98)
+    %t99 = call i64 @rg.23(0)
+    %t100 = cmp eq i64 %t99, 0
+    %t101 = convert trunc i1 i64 %t100
+    call void @rg.13(%t101)
+    %t102 = call i64 @rg.23(4294967295)
+    %t103 = cmp eq i64 %t102, 4294967295
+    %t104 = convert trunc i1 i64 %t103
+    call void @rg.13(%t104)
+    %t105 = call i64 @rg.23(0)
+    %t106 = cmp eq i64 %t105, 0
+    %t107 = convert trunc i1 i64 %t106
+    call void @rg.13(%t107)
+    %t108 = call i64 @rg.23(73)
+    %t109 = cmp eq i64 %t108, 73
+    %t110 = convert trunc i1 i64 %t109
+    call void @rg.13(%t110)
+    %t111 = call i128 @rg.24(0)
+    %t112 = cmp eq i128 %t111, 0
+    %t113 = convert trunc i1 i64 %t112
+    call void @rg.13(%t113)
+    %t114 = call i128 @rg.24(4294967295)
+    %t115 = cmp eq i128 %t114, 4294967295
+    %t116 = convert trunc i1 i64 %t115
+    call void @rg.13(%t116)
+    %t117 = call i128 @rg.24(0)
+    %t118 = cmp eq i128 %t117, 0
+    %t119 = convert trunc i1 i64 %t118
+    call void @rg.13(%t119)
+    %t120 = call i128 @rg.24(73)
+    %t121 = cmp eq i128 %t120, 73
+    %t122 = convert trunc i1 i64 %t121
+    call void @rg.13(%t122)
+    return void
+}
+function @rg.15(%p0 : u32) -> i8 {
+  slot $s0 : u32
+  block ^b0:
+    store u32 %p0, $s0
+    %t0 = load u32 $s0
+    %t1 = convert trunc i8 u32 %t0
+    return i8 %t1
+}
+function @rg.13(%p0 : i1) -> void {
+  slot $s0 : i1
+  block ^b0:
+    store i1 %p0, $s0
+    %t0 = load i1 $s0
+    %t1 = unary not i1 %t0
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    jump ^b3
+  block ^b1:
+    %t2 = call i32 @rg.14(0)
+    jump ^b3
+  block ^b3:
+    return void
+}
+function @rg.16(%p0 : u32) -> i16 {
+  slot $s0 : u32
+  block ^b0:
+    store u32 %p0, $s0
+    %t0 = load u32 $s0
+    %t1 = convert trunc i16 u32 %t0
+    return i16 %t1
+}
+function @rg.17(%p0 : u32) -> i32 {
+  slot $s0 : u32
+  block ^b0:
+    store u32 %p0, $s0
+    %t0 = load u32 $s0
+    %t1 = copy i32 %t0
+    return i32 %t1
+}
+function @rg.18(%p0 : u32) -> i64 {
+  slot $s0 : u32
+  block ^b0:
+    store u32 %p0, $s0
+    %t0 = load u32 $s0
+    %t1 = convert zext i64 u32 %t0
+    return i64 %t1
+}
+function @rg.19(%p0 : u32) -> i128 {
+  slot $s0 : u32
+  block ^b0:
+    store u32 %p0, $s0
+    %t0 = load u32 $s0
+    %t1 = convert zext i128 u32 %t0
+    return i128 %t1
+}
+function @rg.20(%p0 : u32) -> u8 {
+  slot $s0 : u32
+  block ^b0:
+    store u32 %p0, $s0
+    %t0 = load u32 $s0
+    %t1 = convert trunc u8 u32 %t0
+    return u8 %t1
+}
+function @rg.21(%p0 : u32) -> u16 {
+  slot $s0 : u32
+  block ^b0:
+    store u32 %p0, $s0
+    %t0 = load u32 $s0
+    %t1 = convert trunc u16 u32 %t0
+    return u16 %t1
+}
+function @rg.22(%p0 : u32) -> u32 {
+  slot $s0 : u32
+  block ^b0:
+    store u32 %p0, $s0
+    %t0 = load u32 $s0
+    return u32 %t0
+}
+function @rg.23(%p0 : u32) -> i64 {
+  slot $s0 : u32
+  block ^b0:
+    store u32 %p0, $s0
+    %t0 = load u32 $s0
+    %t1 = convert zext i64 u32 %t0
+    return i64 %t1
+}
+function @rg.24(%p0 : u32) -> i128 {
+  slot $s0 : u32
+  block ^b0:
+    store u32 %p0, $s0
+    %t0 = load u32 $s0
+    %t1 = convert zext i128 u32 %t0
+    return i128 %t1
+}
+function @rg.14(%p0 : i32) -> i32 {
+  slot $s0 : i32
+  block ^b0:
+    store i32 %p0, $s0
+    %t0 = load i32 $s0
+    %t1 = cmp eq i32 %t0, 0
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    %t2 = cmp eq i32 1, 2147483648
+    %t3 = cmp eq i32 %t0, 4294967295
+    %t4 = binary and i64 %t2, %t3
+    branch %t4, ^b1, ^b3
+  block ^b3:
+    %t5 = binary div i32 1, %t0
+    return i32 %t5
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+declare function @abort() -> void [return=noreturn]
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.25()
+    return i64 0
+}

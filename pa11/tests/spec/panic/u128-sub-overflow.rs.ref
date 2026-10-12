@@ -1,0 +1,28 @@
+function @rg.14() -> void {
+  block ^b0:
+    %t0 = call i128 @rg.13(0, 1)
+    return void
+}
+function @rg.13(%p0 : i128, %p1 : i128) -> i128 {
+  slot $s0 : i128
+  slot $s1 : i128
+  block ^b0:
+    store i128 %p0, $s0
+    store i128 %p1, $s1
+    %t0 = load i128 $s0
+    %t1 = load i128 $s1
+    %t2 = binary sub i128 %t0, %t1
+    %t3 = cmp ult i128 %t0, %t1
+    branch %t3, ^b1, ^b2
+  block ^b2:
+    return i128 %t2
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+declare function @abort() -> void [return=noreturn]
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.14()
+    return i64 0
+}

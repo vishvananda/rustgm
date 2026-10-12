@@ -159,14 +159,15 @@
       "path": "pa11",
       "title": "Procedural LowIR",
       "mode": "--emit-lowir",
-      "status": "planned",
-      "scope": "Scalar procedures lowered from typed facts into shared LowIR",
+      "status": "implemented-draft",
+      "scope": "Checked scalar procedures, initialization/write permission, demanded typed LowIR, native signatures, Rust arithmetic/casts and entry shim",
       "test_families": [
-        "run-pass scalar programs",
-        "checked arithmetic",
-        "branches",
-        "calls",
-        "entry shim"
+        "native scalar/control-flow programs",
+        "checked arithmetic panics",
+        "saturating casts and floating remainder",
+        "calls and stack arguments",
+        "initialization joins",
+        "entry shim and source packages"
       ]
     },
     {

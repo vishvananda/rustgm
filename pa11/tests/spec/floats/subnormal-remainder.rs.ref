@@ -1,0 +1,283 @@
+function @rg.17() -> void {
+  block ^b0:
+    %t0 = call f32 @rg.15(4.20389539297445121e-45, 2.80259692864963414e-45)
+    %t1 = cmp eq f32 %t0, 1.40129846432481707e-45
+    %t2 = convert trunc i1 i64 %t1
+    call void @rg.13(%t2)
+    %t3 = call f64 @rg.16(1.48219693752373963e-323, 9.88131291682493088e-324)
+    %t4 = cmp eq f64 %t3, 4.94065645841246544e-324
+    %t5 = convert trunc i1 i64 %t4
+    call void @rg.13(%t5)
+    %t6 = call f64 @rg.16(1.00000000000000001e308, 3.00000000000000000e0)
+    %t7 = cmp eq f64 %t6, 2.00000000000000000e0
+    %t8 = convert trunc i1 i64 %t7
+    call void @rg.13(%t8)
+    %t9 = call f32 @rg.15(3.40282346638528860e38, 3.00000000000000000e0)
+    %t10 = cmp eq f32 %t9, 0.00000000000000000e0
+    %t11 = convert trunc i1 i64 %t10
+    call void @rg.13(%t11)
+    return void
+}
+function @rg.15(%p0 : f32, %p1 : f32) -> f32 {
+  slot $s0 : f32
+  slot $s1 : f32
+  block ^b0:
+    store f32 %p0, $s0
+    store f32 %p1, $s1
+    %t0 = load f32 $s0
+    %t1 = load f32 $s1
+    %t2 = call f32 @rg.rem.f32(%t0, %t1)
+    return f32 %t2
+}
+function @rg.13(%p0 : i1) -> void {
+  slot $s0 : i1
+  block ^b0:
+    store i1 %p0, $s0
+    %t0 = load i1 $s0
+    %t1 = unary not i1 %t0
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    jump ^b3
+  block ^b1:
+    %t2 = call i32 @rg.14(0)
+    jump ^b3
+  block ^b3:
+    return void
+}
+function @rg.16(%p0 : f64, %p1 : f64) -> f64 {
+  slot $s0 : f64
+  slot $s1 : f64
+  block ^b0:
+    store f64 %p0, $s0
+    store f64 %p1, $s1
+    %t0 = load f64 $s0
+    %t1 = load f64 $s1
+    %t2 = call f64 @rg.rem.f64(%t0, %t1)
+    return f64 %t2
+}
+function @rg.rem.f32(%p0 : f32, %p1 : f32) -> f32 {
+  slot $s0 : i64
+  slot $s1 : i64
+  slot $s2 : f32
+  slot $s3 : f32
+  slot $s4 : f32
+  block ^b0:
+    %t0 = copy u32 %p0
+    %t1 = convert zext i64 u32 %t0
+    %t2 = copy u32 %p1
+    %t3 = convert zext i64 u32 %t2
+    %t4 = binary and i64 %t1, 2147483648
+    %t5 = binary and i64 %t1, 2147483647
+    %t6 = binary and i64 %t3, 2147483647
+    %t7 = cmp uge i64 %t5, 2139095040
+    %t8 = cmp ugt i64 %t6, 2139095040
+    %t9 = cmp eq i64 %t6, 0
+    %t10 = binary or i64 %t7, %t8
+    %t11 = binary or i64 %t10, %t9
+    branch %t11, ^b1, ^b2
+  block ^b1:
+    return f32 nan
+  block ^b2:
+    %t12 = cmp ult i64 %t5, %t6
+    branch %t12, ^b3, ^b4
+  block ^b3:
+    return f32 %p0
+  block ^b4:
+    %t13 = binary ushr i64 %t5, 23
+    %t14 = cmp ne i64 %t13, 0
+    %t15 = cmp eq i64 %t13, 0
+    %t16 = binary shl i64 %t14, 23
+    %t17 = binary and i64 %t5, 8388607
+    %t18 = binary or i64 %t17, %t16
+    %t19 = binary add i64 %t13, %t15
+    %t20 = unary clz i64 %t18
+    %t21 = binary sub i64 %t20, 40
+    %t22 = binary shl i64 %t18, %t21
+    %t23 = binary sub i64 %t19, %t21
+    %t24 = binary ushr i64 %t6, 23
+    %t25 = cmp ne i64 %t24, 0
+    %t26 = cmp eq i64 %t24, 0
+    %t27 = binary shl i64 %t25, 23
+    %t28 = binary and i64 %t6, 8388607
+    %t29 = binary or i64 %t28, %t27
+    %t30 = binary add i64 %t24, %t26
+    %t31 = unary clz i64 %t29
+    %t32 = binary sub i64 %t31, 40
+    %t33 = binary shl i64 %t29, %t32
+    %t34 = binary sub i64 %t30, %t32
+    store i64 %t22, $s0
+    store i64 %t23, $s1
+    jump ^b5
+  block ^b5:
+    %t35 = load i64 $s0
+    %t36 = load i64 $s1
+    %t37 = cmp gt i64 %t36, %t34
+    branch %t37, ^b6, ^b7
+  block ^b6:
+    %t38 = cmp uge i64 %t35, %t33
+    %t39 = binary mul i64 %t33, %t38
+    %t40 = binary sub i64 %t35, %t39
+    %t41 = binary shl i64 %t40, 1
+    %t42 = binary sub i64 %t36, 1
+    store i64 %t41, $s0
+    store i64 %t42, $s1
+    jump ^b5
+  block ^b7:
+    %t43 = cmp uge i64 %t35, %t33
+    %t44 = binary mul i64 %t33, %t43
+    %t45 = binary sub i64 %t35, %t44
+    %t46 = cmp eq i64 %t45, 0
+    branch %t46, ^b8, ^b9
+  block ^b8:
+    %t47 = convert trunc u32 i64 %t4
+    store u32 %t47, $s2
+    %t48 = load f32 $s2
+    return f32 %t48
+  block ^b9:
+    %t49 = unary clz i64 %t45
+    %t50 = binary sub i64 %t49, 40
+    %t51 = binary shl i64 %t45, %t50
+    %t52 = binary sub i64 %t36, %t50
+    %t53 = cmp gt i64 %t52, 0
+    branch %t53, ^b10, ^b11
+  block ^b10:
+    %t54 = binary and i64 %t51, 8388607
+    %t55 = binary shl i64 %t52, 23
+    %t56 = binary or i64 %t54, %t55
+    %t57 = binary or i64 %t56, %t4
+    %t58 = convert trunc u32 i64 %t57
+    store u32 %t58, $s3
+    %t59 = load f32 $s3
+    return f32 %t59
+  block ^b11:
+    %t60 = binary sub i64 1, %t52
+    %t61 = binary ushr i64 %t51, %t60
+    %t62 = binary or i64 %t61, %t4
+    %t63 = convert trunc u32 i64 %t62
+    store u32 %t63, $s4
+    %t64 = load f32 $s4
+    return f32 %t64
+}
+function @rg.14(%p0 : i32) -> i32 {
+  slot $s0 : i32
+  block ^b0:
+    store i32 %p0, $s0
+    %t0 = load i32 $s0
+    %t1 = cmp eq i32 %t0, 0
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    %t2 = cmp eq i32 1, 2147483648
+    %t3 = cmp eq i32 %t0, 4294967295
+    %t4 = binary and i64 %t2, %t3
+    branch %t4, ^b1, ^b3
+  block ^b3:
+    %t5 = binary div i32 1, %t0
+    return i32 %t5
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+function @rg.rem.f64(%p0 : f64, %p1 : f64) -> f64 {
+  slot $s0 : i64
+  slot $s1 : i64
+  slot $s2 : f64
+  slot $s3 : f64
+  slot $s4 : f64
+  block ^b0:
+    %t0 = copy i64 %p0
+    %t1 = copy i64 %p1
+    %t2 = binary and i64 %t0, 9223372036854775808
+    %t3 = binary and i64 %t0, 9223372036854775807
+    %t4 = binary and i64 %t1, 9223372036854775807
+    %t5 = cmp uge i64 %t3, 9218868437227405312
+    %t6 = cmp ugt i64 %t4, 9218868437227405312
+    %t7 = cmp eq i64 %t4, 0
+    %t8 = binary or i64 %t5, %t6
+    %t9 = binary or i64 %t8, %t7
+    branch %t9, ^b1, ^b2
+  block ^b1:
+    return f64 nan
+  block ^b2:
+    %t10 = cmp ult i64 %t3, %t4
+    branch %t10, ^b3, ^b4
+  block ^b3:
+    return f64 %p0
+  block ^b4:
+    %t11 = binary ushr i64 %t3, 52
+    %t12 = cmp ne i64 %t11, 0
+    %t13 = cmp eq i64 %t11, 0
+    %t14 = binary shl i64 %t12, 52
+    %t15 = binary and i64 %t3, 4503599627370495
+    %t16 = binary or i64 %t15, %t14
+    %t17 = binary add i64 %t11, %t13
+    %t18 = unary clz i64 %t16
+    %t19 = binary sub i64 %t18, 11
+    %t20 = binary shl i64 %t16, %t19
+    %t21 = binary sub i64 %t17, %t19
+    %t22 = binary ushr i64 %t4, 52
+    %t23 = cmp ne i64 %t22, 0
+    %t24 = cmp eq i64 %t22, 0
+    %t25 = binary shl i64 %t23, 52
+    %t26 = binary and i64 %t4, 4503599627370495
+    %t27 = binary or i64 %t26, %t25
+    %t28 = binary add i64 %t22, %t24
+    %t29 = unary clz i64 %t27
+    %t30 = binary sub i64 %t29, 11
+    %t31 = binary shl i64 %t27, %t30
+    %t32 = binary sub i64 %t28, %t30
+    store i64 %t20, $s0
+    store i64 %t21, $s1
+    jump ^b5
+  block ^b5:
+    %t33 = load i64 $s0
+    %t34 = load i64 $s1
+    %t35 = cmp gt i64 %t34, %t32
+    branch %t35, ^b6, ^b7
+  block ^b6:
+    %t36 = cmp uge i64 %t33, %t31
+    %t37 = binary mul i64 %t31, %t36
+    %t38 = binary sub i64 %t33, %t37
+    %t39 = binary shl i64 %t38, 1
+    %t40 = binary sub i64 %t34, 1
+    store i64 %t39, $s0
+    store i64 %t40, $s1
+    jump ^b5
+  block ^b7:
+    %t41 = cmp uge i64 %t33, %t31
+    %t42 = binary mul i64 %t31, %t41
+    %t43 = binary sub i64 %t33, %t42
+    %t44 = cmp eq i64 %t43, 0
+    branch %t44, ^b8, ^b9
+  block ^b8:
+    store i64 %t2, $s2
+    %t45 = load f64 $s2
+    return f64 %t45
+  block ^b9:
+    %t46 = unary clz i64 %t43
+    %t47 = binary sub i64 %t46, 11
+    %t48 = binary shl i64 %t43, %t47
+    %t49 = binary sub i64 %t34, %t47
+    %t50 = cmp gt i64 %t49, 0
+    branch %t50, ^b10, ^b11
+  block ^b10:
+    %t51 = binary and i64 %t48, 4503599627370495
+    %t52 = binary shl i64 %t49, 52
+    %t53 = binary or i64 %t51, %t52
+    %t54 = binary or i64 %t53, %t2
+    store i64 %t54, $s3
+    %t55 = load f64 $s3
+    return f64 %t55
+  block ^b11:
+    %t56 = binary sub i64 1, %t49
+    %t57 = binary ushr i64 %t48, %t56
+    %t58 = binary or i64 %t57, %t2
+    store i64 %t58, $s4
+    %t59 = load f64 $s4
+    return f64 %t59
+}
+declare function @abort() -> void [return=noreturn]
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.17()
+    return i64 0
+}

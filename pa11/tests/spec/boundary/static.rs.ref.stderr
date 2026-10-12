@@ -1,0 +1,1 @@
+ERROR: file 0: 32: static values require constant evaluation and allocation lowering

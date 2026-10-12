@@ -41,6 +41,11 @@ fn analyze(source: &str) -> Result<(Report, Declarations, Program), String> {
     Ok((report, facts, program))
 }
 const CASES: &[(&str, &str, u128)] = &[
+    (
+        "wildcard-uninitialized-place",
+        "fn entry()->u64{let x:u64;let _=(x);let y:();let _=y;0}",
+        0,
+    ),
     ("literal", "fn entry()->u64{42}", 42),
     (
         "binary-snapshot",

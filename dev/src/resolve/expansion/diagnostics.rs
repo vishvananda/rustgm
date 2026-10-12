@@ -17,7 +17,9 @@ impl<S: Sources> Engine<'_, S> {
     }
 }
 impl Report {
-    pub(crate) fn diagnostic(&self, error: Error) -> Error {
+    /// Project a phase error through retained source and expansion provenance.
+    #[must_use]
+    pub fn diagnostic(&self, error: Error) -> Error {
         project(&self.package, &self.definitions, &self.invocations, error)
     }
 }

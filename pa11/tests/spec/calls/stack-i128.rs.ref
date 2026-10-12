@@ -1,0 +1,168 @@
+function @rg.16() -> void {
+  block ^b0:
+    %t0 = call i128 @rg.15(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11)
+    %t1 = cmp eq i128 %t0, 66
+    %t2 = convert trunc i1 i64 %t1
+    call void @rg.13(%t2)
+    return void
+}
+function @rg.15(%p0 : i128, %p1 : i128, %p2 : i128, %p3 : i128, %p4 : i128, %p5 : i128, %p6 : i128, %p7 : i128, %p8 : i128, %p9 : i128, %p10 : i128, %p11 : i128) -> i128 {
+  slot $s0 : i128
+  slot $s1 : i128
+  slot $s2 : i128
+  slot $s3 : i128
+  slot $s4 : i128
+  slot $s5 : i128
+  slot $s6 : i128
+  slot $s7 : i128
+  slot $s8 : i128
+  slot $s9 : i128
+  slot $s10 : i128
+  slot $s11 : i128
+  block ^b0:
+    store i128 %p0, $s0
+    store i128 %p1, $s1
+    store i128 %p2, $s2
+    store i128 %p3, $s3
+    store i128 %p4, $s4
+    store i128 %p5, $s5
+    store i128 %p6, $s6
+    store i128 %p7, $s7
+    store i128 %p8, $s8
+    store i128 %p9, $s9
+    store i128 %p10, $s10
+    store i128 %p11, $s11
+    %t0 = load i128 $s0
+    %t1 = load i128 $s1
+    %t2 = binary add i128 %t0, %t1
+    %t3 = binary xor i128 %t0, %t2
+    %t4 = binary xor i128 %t2, %t1
+    %t5 = binary and i128 %t3, %t4
+    %t6 = cmp lt i128 %t5, 0
+    branch %t6, ^b1, ^b2
+  block ^b2:
+    %t7 = load i128 $s2
+    %t8 = binary add i128 %t2, %t7
+    %t9 = binary xor i128 %t2, %t8
+    %t10 = binary xor i128 %t8, %t7
+    %t11 = binary and i128 %t9, %t10
+    %t12 = cmp lt i128 %t11, 0
+    branch %t12, ^b1, ^b3
+  block ^b3:
+    %t13 = load i128 $s3
+    %t14 = binary add i128 %t8, %t13
+    %t15 = binary xor i128 %t8, %t14
+    %t16 = binary xor i128 %t14, %t13
+    %t17 = binary and i128 %t15, %t16
+    %t18 = cmp lt i128 %t17, 0
+    branch %t18, ^b1, ^b4
+  block ^b4:
+    %t19 = load i128 $s4
+    %t20 = binary add i128 %t14, %t19
+    %t21 = binary xor i128 %t14, %t20
+    %t22 = binary xor i128 %t20, %t19
+    %t23 = binary and i128 %t21, %t22
+    %t24 = cmp lt i128 %t23, 0
+    branch %t24, ^b1, ^b5
+  block ^b5:
+    %t25 = load i128 $s5
+    %t26 = binary add i128 %t20, %t25
+    %t27 = binary xor i128 %t20, %t26
+    %t28 = binary xor i128 %t26, %t25
+    %t29 = binary and i128 %t27, %t28
+    %t30 = cmp lt i128 %t29, 0
+    branch %t30, ^b1, ^b6
+  block ^b6:
+    %t31 = load i128 $s6
+    %t32 = binary add i128 %t26, %t31
+    %t33 = binary xor i128 %t26, %t32
+    %t34 = binary xor i128 %t32, %t31
+    %t35 = binary and i128 %t33, %t34
+    %t36 = cmp lt i128 %t35, 0
+    branch %t36, ^b1, ^b7
+  block ^b7:
+    %t37 = load i128 $s7
+    %t38 = binary add i128 %t32, %t37
+    %t39 = binary xor i128 %t32, %t38
+    %t40 = binary xor i128 %t38, %t37
+    %t41 = binary and i128 %t39, %t40
+    %t42 = cmp lt i128 %t41, 0
+    branch %t42, ^b1, ^b8
+  block ^b8:
+    %t43 = load i128 $s8
+    %t44 = binary add i128 %t38, %t43
+    %t45 = binary xor i128 %t38, %t44
+    %t46 = binary xor i128 %t44, %t43
+    %t47 = binary and i128 %t45, %t46
+    %t48 = cmp lt i128 %t47, 0
+    branch %t48, ^b1, ^b9
+  block ^b9:
+    %t49 = load i128 $s9
+    %t50 = binary add i128 %t44, %t49
+    %t51 = binary xor i128 %t44, %t50
+    %t52 = binary xor i128 %t50, %t49
+    %t53 = binary and i128 %t51, %t52
+    %t54 = cmp lt i128 %t53, 0
+    branch %t54, ^b1, ^b10
+  block ^b10:
+    %t55 = load i128 $s10
+    %t56 = binary add i128 %t50, %t55
+    %t57 = binary xor i128 %t50, %t56
+    %t58 = binary xor i128 %t56, %t55
+    %t59 = binary and i128 %t57, %t58
+    %t60 = cmp lt i128 %t59, 0
+    branch %t60, ^b1, ^b11
+  block ^b11:
+    %t61 = load i128 $s11
+    %t62 = binary add i128 %t56, %t61
+    %t63 = binary xor i128 %t56, %t62
+    %t64 = binary xor i128 %t62, %t61
+    %t65 = binary and i128 %t63, %t64
+    %t66 = cmp lt i128 %t65, 0
+    branch %t66, ^b1, ^b12
+  block ^b12:
+    return i128 %t62
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+function @rg.13(%p0 : i1) -> void {
+  slot $s0 : i1
+  block ^b0:
+    store i1 %p0, $s0
+    %t0 = load i1 $s0
+    %t1 = unary not i1 %t0
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    jump ^b3
+  block ^b1:
+    %t2 = call i32 @rg.14(0)
+    jump ^b3
+  block ^b3:
+    return void
+}
+declare function @abort() -> void [return=noreturn]
+function @rg.14(%p0 : i32) -> i32 {
+  slot $s0 : i32
+  block ^b0:
+    store i32 %p0, $s0
+    %t0 = load i32 $s0
+    %t1 = cmp eq i32 %t0, 0
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    %t2 = cmp eq i32 1, 2147483648
+    %t3 = cmp eq i32 %t0, 4294967295
+    %t4 = binary and i64 %t2, %t3
+    branch %t4, ^b1, ^b3
+  block ^b3:
+    %t5 = binary div i32 1, %t0
+    return i32 %t5
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.16()
+    return i64 0
+}

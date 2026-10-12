@@ -3,6 +3,8 @@ pub mod body;
 pub mod expand;
 pub mod lex;
 pub mod literal;
+pub mod lower;
+pub mod lowir;
 pub mod resolve;
 pub mod sema;
 pub mod support;

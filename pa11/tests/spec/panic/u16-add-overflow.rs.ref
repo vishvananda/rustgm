@@ -1,0 +1,32 @@
+function @rg.14() -> void {
+  block ^b0:
+    %t0 = call u16 @rg.13(65535, 1)
+    return void
+}
+function @rg.13(%p0 : u16, %p1 : u16) -> u16 {
+  slot $s0 : u16
+  slot $s1 : u16
+  block ^b0:
+    store u16 %p0, $s0
+    store u16 %p1, $s1
+    %t0 = load u16 $s0
+    %t1 = load u16 $s1
+    %t2 = convert zext i32 u16 %t0
+    %t3 = convert zext i32 u16 %t1
+    %t4 = binary add i32 %t2, %t3
+    %t5 = convert trunc u16 i32 %t4
+    %t6 = convert zext i32 u16 %t5
+    %t7 = cmp ne i32 %t4, %t6
+    branch %t7, ^b1, ^b2
+  block ^b2:
+    return u16 %t5
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+declare function @abort() -> void [return=noreturn]
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.14()
+    return i64 0
+}

@@ -1,0 +1,2895 @@
+{
+  "schema": 1,
+  "mode": "--emit-lowir",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "panic": "abort",
+  "overflow_checks": true,
+  "debug_assertions": false,
+  "cases": [
+    {
+      "path": "tests/spec/entry/empty.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/control/literal.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/control/binary-snapshot.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/control/argument-order.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/control/callee-before-arguments.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/control/compound-rhs-first.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/control/assignment-rhs-first.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/control/and-skips.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/control/or-skips.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/control/nested-side-effects.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/control/nested-short-circuit.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/control/nested-if.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/control/else-if.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/control/while.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/control/loop-continue.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/control/while-continue.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/control/outer-break.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/control/outer-continue.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/control/labeled-block.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/control/block-fallthrough.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/control/early-return.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/control/condition-effects.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/control/condition-short-circuit.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/control/labeled-condition-break.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/control/branch-initialization.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/control/unit-call.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/control/recursive-call.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/control/function-pointer-join.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/control/grouped-binding.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/control/shadowing.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/control/signed-shift.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/control/wildcard-uninitialized-place.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/integers/i8.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/panic/i8-add-overflow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/panic/i8-sub-overflow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/panic/i8-mul-overflow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/panic/i8-divide-zero.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/panic/i8-remainder-zero.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/panic/i8-divide-min.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/panic/i8-remainder-min.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/panic/i8-multiply-min.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/panic/i8-negate-min.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/shifts/i8.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/panic/i8-shift-width.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/panic/i8-shift-negative.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/integers/i16.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/panic/i16-add-overflow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/panic/i16-sub-overflow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/panic/i16-mul-overflow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/panic/i16-divide-zero.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/panic/i16-remainder-zero.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/panic/i16-divide-min.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/panic/i16-remainder-min.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/panic/i16-multiply-min.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/panic/i16-negate-min.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/shifts/i16.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/panic/i16-shift-width.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/panic/i16-shift-negative.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/integers/i32.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/panic/i32-add-overflow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/panic/i32-sub-overflow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/panic/i32-mul-overflow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/panic/i32-divide-zero.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/panic/i32-remainder-zero.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/panic/i32-divide-min.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/panic/i32-remainder-min.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/panic/i32-multiply-min.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/panic/i32-negate-min.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/shifts/i32.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/panic/i32-shift-width.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/panic/i32-shift-negative.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/integers/i64.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/panic/i64-add-overflow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/panic/i64-sub-overflow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/panic/i64-mul-overflow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/panic/i64-divide-zero.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/panic/i64-remainder-zero.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/panic/i64-divide-min.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/panic/i64-remainder-min.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/panic/i64-multiply-min.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/panic/i64-negate-min.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/shifts/i64.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/panic/i64-shift-width.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/panic/i64-shift-negative.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/integers/i128.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/panic/i128-add-overflow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/panic/i128-sub-overflow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/panic/i128-mul-overflow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/panic/i128-divide-zero.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/panic/i128-remainder-zero.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/panic/i128-divide-min.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/panic/i128-remainder-min.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/panic/i128-multiply-min.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/panic/i128-negate-min.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/shifts/i128.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/panic/i128-shift-width.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/panic/i128-shift-negative.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/integers/u8.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/panic/u8-add-overflow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/panic/u8-sub-overflow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/panic/u8-mul-overflow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/panic/u8-divide-zero.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/panic/u8-remainder-zero.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/shifts/u8.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/panic/u8-shift-width.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/panic/u8-shift-negative.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/integers/u16.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/panic/u16-add-overflow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/panic/u16-sub-overflow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/panic/u16-mul-overflow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/panic/u16-divide-zero.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/panic/u16-remainder-zero.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/shifts/u16.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/panic/u16-shift-width.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/panic/u16-shift-negative.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/integers/u32.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/panic/u32-add-overflow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/panic/u32-sub-overflow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/panic/u32-mul-overflow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/panic/u32-divide-zero.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/panic/u32-remainder-zero.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/shifts/u32.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/panic/u32-shift-width.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/panic/u32-shift-negative.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/integers/u64.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/panic/u64-add-overflow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/panic/u64-sub-overflow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/panic/u64-mul-overflow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/panic/u64-divide-zero.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/panic/u64-remainder-zero.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/shifts/u64.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/panic/u64-shift-width.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/panic/u64-shift-negative.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/integers/u128.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/panic/u128-add-overflow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/panic/u128-sub-overflow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/panic/u128-mul-overflow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/panic/u128-divide-zero.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/panic/u128-remainder-zero.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/shifts/u128.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/panic/u128-shift-width.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/panic/u128-shift-negative.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/casts/from-i8.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/casts/from-i16.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/casts/from-i32.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/casts/from-i64.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/casts/from-i128.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/casts/from-u8.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/casts/from-u16.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/casts/from-u32.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/casts/from-u64.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/casts/from-u128.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/casts/f32-saturation.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/floats/f32-arithmetic.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/floats/f32-remainder.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/casts/f64-saturation.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/floats/f64-arithmetic.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/floats/f64-remainder.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/floats/subnormal-remainder.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/casts/int-float-widths.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/calls/recursion.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/calls/wide-function-pointer.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/calls/unit-arguments.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/calls/unit-return.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/calls/never-return.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/entry/imported-main.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/entry/macro-main.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/entry/demand-only.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/initialization/both-arms.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/initialization/loop-scope.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/reject/uninitialized.rs",
+      "exit_status": 1,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/reject/one-arm.rs",
+      "exit_status": 1,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/reject/immutable.rs",
+      "exit_status": 1,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/reject/parameter.rs",
+      "exit_status": 1,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/reject/loop-reassign.rs",
+      "exit_status": 1,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/reject/loop-uninitialized.rs",
+      "exit_status": 1,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/reject/compound-read.rs",
+      "exit_status": 1,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/reject/zero-sized-read.rs",
+      "exit_status": 1,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/reject/missing-main.rs",
+      "exit_status": 1,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/reject/main-result.rs",
+      "exit_status": 1,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/reject/main-arguments.rs",
+      "exit_status": 1,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/boundary/constant.rs",
+      "exit_status": 1,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "reason": "PA25 owns constant evaluation; PA11 does not emit an initializer as a function or substitute an oracle value."
+      }
+    },
+    {
+      "path": "tests/spec/boundary/static.rs",
+      "exit_status": 1,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "reason": "Static allocation and constant evaluation are outside the scalar procedure profile."
+      }
+    },
+    {
+      "path": "tests/spec/floats/f32-remainder-vectors.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/floats/f64-remainder-vectors.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/integers/platform.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/calls/stack-i128.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/calls/stack-f64.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/packages/modules/main.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      },
+      "input": "file",
+      "auxiliary": [
+        "tests/spec/packages/modules/child.rs"
+      ]
+    },
+    {
+      "path": "tests/spec/packages/include/main.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      },
+      "input": "file",
+      "auxiliary": [
+        "tests/spec/packages/include/value.rs"
+      ]
+    },
+    {
+      "path": "tests/spec/expansion/generated-loop.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/expansion/configured.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      },
+      "args": [
+        "--cfg",
+        "chosen"
+      ]
+    },
+    {
+      "path": "tests/spec/boundary/reference.rs",
+      "exit_status": 1,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "reason": "Reference-bearing native signatures require later ownership and region checking, even when only a function address is demanded."
+      }
+    },
+    {
+      "path": "tests/spec/entry/never-main.rs",
+      "exit_status": 0,
+      "features": [
+        "pa11.procedural-lowir"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    }
+  ]
+}
