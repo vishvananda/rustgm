@@ -27,8 +27,7 @@ Read `spec.md` and the pinned Rust Reference before changing these contracts.
 
 `dev/rustgm --emit-expanded-crate -o OUTPUT SOURCE` emits the deterministic view
 below. Earlier modes remain available. Omit SOURCE or use `-` for stdin.
-`--count-expanded-crate` reports counts for measurements. Source failures are
-atomic: no partial stdout or replacement output file.
+`--count-expanded-crate` reports counts for measurements. Source failures emit no partial stdout.
 
 `make -C pa8 test` runs the 87 manifest cases against committed stdout, stderr
 and exit-status text. `make test-rustc` independently checks every PA8 program.
