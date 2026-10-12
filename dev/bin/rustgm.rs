@@ -51,6 +51,7 @@ fn options() -> Result<Options, String> {
                     | "expanded"
                     | "expanded-crate"
                     | "types"
+                    | "patterns"
                     | "layouts"
                     | "body-ir"
                     | "ownership"
@@ -109,6 +110,7 @@ fn compile(options: &Options) -> Result<(), String> {
         "--emit-names"
             | "--emit-expanded-crate"
             | "--emit-types"
+            | "--emit-patterns"
             | "--emit-layouts"
             | "--emit-body-ir"
             | "--emit-ownership"
@@ -122,6 +124,8 @@ fn compile(options: &Options) -> Result<(), String> {
             options.count,
             if options.mode == "--emit-names" {
                 modules::Mode::Names
+            } else if options.mode == "--emit-patterns" {
+                modules::Mode::Patterns
             } else if options.mode == "--emit-types" {
                 modules::Mode::Types
             } else if options.mode == "--emit-layouts" {

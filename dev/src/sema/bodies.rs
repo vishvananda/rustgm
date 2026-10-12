@@ -81,6 +81,7 @@ pub(super) struct Checker<'a> {
     report: &'a Report,
     pub(super) facts: &'a mut Declarations,
     file: FileId,
+    body: NodeKey,
     module: ModuleId,
     field_seen: Vec<bool>,
     result: TypeId,
@@ -90,7 +91,7 @@ pub(super) struct Checker<'a> {
     locals: Vec<Option<TermId>>,
     touched: Vec<NodeId>,
     bindings: Vec<DefId>,
-    pattern_work: Vec<(NodeId, TermId, super::patterns::PatternId, bool)>,
+    pattern_work: Vec<patterns::Work>,
     pattern_types: Vec<(super::patterns::PatternId, TermId)>,
     work: Vec<Work>,
     children: Vec<NodeId>,
@@ -113,6 +114,10 @@ impl<'a> Checker<'a> {
             locals: vec![None; facts.definitions.len()],
             facts,
             file: FileId(0),
+            body: NodeKey {
+                file: FileId(0),
+                node: NodeId(0),
+            },
             module: ModuleId(0),
             field_seen: Vec::new(),
             result: TypeId::UNIT,
@@ -137,6 +142,7 @@ impl<'a> Checker<'a> {
         }
     }
     pub(super) fn constant(&mut self, key: NodeKey, ty: TypeId, owner: DefId) -> Result<(), Error> {
+        self.body = key;
         self.prepare_file(key.file);
         let scope = self.report.resolution.definitions[owner.0 as usize].scope;
         self.module = self.report.resolution.scopes[scope.0 as usize].module;
@@ -216,6 +222,7 @@ impl Checker<'_> {
             ));
         };
         self.prepare_file(body.file);
+        self.body = body;
         let scope = self.report.resolution.definitions[function.definition.0 as usize].scope;
         self.module = self.report.resolution.scopes[scope.0 as usize].module;
         let Some(Type::Function { result, .. }) = self.facts.types.kind(function.signature) else {

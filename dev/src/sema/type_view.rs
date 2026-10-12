@@ -1,6 +1,7 @@
 //! Deterministic type facts are an output view; later phases consume the model.
 use super::model::{
-    AdjustmentKind, Declarations, InitializerKind, Operation, RegionEquality, Scalar,
+    AdjustmentKind, BodyRegion, BodyRegionOrigin, Declarations, InitializerKind, Operation,
+    RegionEquality, Scalar,
 };
 use crate::{
     literal::value::FloatBits,
@@ -61,6 +62,7 @@ pub fn write(report: &Report, facts: &Declarations, out: &mut impl Write) -> io:
             initializer.value.node.0
         )?;
     }
+    body_regions(&facts.body_regions, out)?;
     regions(&facts.region_equalities, out)?;
     nodes(report, facts, out)?;
     write!(out, "eof ")?;
@@ -81,6 +83,28 @@ pub fn regions(equalities: &[RegionEquality], out: &mut impl Write) -> io::Resul
         write!(out, " right=")?;
         region(equality.right, out)?;
         writeln!(out)?;
+    }
+    Ok(())
+}
+/// Write existential region provenance without implying a solved lifetime.
+///
+/// # Errors
+/// Propagates output errors.
+pub fn body_regions(regions: &[BodyRegion], out: &mut impl Write) -> io::Result<()> {
+    for (ordinal, variable) in regions.iter().enumerate() {
+        let origin = match variable.origin {
+            BodyRegionOrigin::PatternBorrow => "pattern-borrow",
+            BodyRegionOrigin::PatternInput => "pattern-input",
+        };
+        writeln!(
+            out,
+            "region-var region:{} body={}:{} source={}:{} origin={origin} pending",
+            ordinal + 1,
+            variable.body.file.0,
+            variable.body.node.0,
+            variable.source.file.0,
+            variable.source.node.0
+        )?;
     }
     Ok(())
 }
@@ -164,7 +188,7 @@ fn list(store: &Store, id: ListId, out: &mut impl Write) -> io::Result<()> {
     }
     write!(out, "]")
 }
-fn region(id: RegionId, out: &mut impl Write) -> io::Result<()> {
+pub(super) fn region(id: RegionId, out: &mut impl Write) -> io::Result<()> {
     if id == RegionId::STATIC {
         write!(out, "static")
     } else if let Some((depth, index)) = id.bound_parts() {

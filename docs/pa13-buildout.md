@@ -305,3 +305,96 @@ Both bind `x: &u8`. The mutable-reference version is also accepted. Do not
 require identical effective capture operations across alternatives when their
 written qualifiers and binding types agree. The next typed pattern model must
 retain these distinct per-occurrence operations and their region obligations.
+
+## Reference binding and slice inspection checkpoint
+
+The checker now elaborates explicit reference patterns and ergonomic automatic
+dereferences into the flat selected-pattern arena. Each binding occurrence has
+its own value/shared/mutable capture operation. Its canonical definition carries
+the solved local type; pattern inputs keep their matched-place type. This
+distinction also matters at a let root: coercing the initializer to a borrowed
+binding's local type would incorrectly reject `let ref x = 1u8`.
+
+Default binding mode travels with iterative pattern work. Shared mode survives
+subsequent mutable dereferences, bindings and wildcards do not auto-dereference,
+and edition-2024 restrictions reject written `mut`/`ref`/`ref mut` or reference
+patterns after an inherited reference mode. Explicit reference patterns require
+exact reference mutability. Array rest bindings retain fixed-array types;
+irrefutable dynamic slice rests retain a selected subslice and an unsized input
+behind a sized reference. Conditional slice shapes still await match semantics.
+
+Every borrowed capture gets an existential body region with source and body
+provenance; inference of an explicit reference pattern's unknown input uses the
+same identity space with a distinct origin. These IDs never substitute `static`
+or a signature binder. Region equalities remain pending and capture records
+retain their loan obligations. The body builder rejects these pending regions
+even if an irrefutable or-pattern would choose an earlier value-capture
+alternative. Explicit dereference and subslice operations also retain an
+execution boundary until their body representation and proofs are implemented.
+
+`--emit-patterns`/`--count-patterns` publish these facts deterministically. The
+owning PA13 brief describes the sparse arena, local/input distinction, operation
+vocabulary, provenance, counts and atomic error contract. This view does not yet
+claim coverage/usefulness or lifetime/loan validity, and PA13 stays planned.
+
+Independent controls in `dev/tests/borrowed_patterns.rs` cover 34 accepted and
+18 rejected programs, compare pinned rustc outcomes, check deterministic text
+and count agreement, and verify the executable boundary. Two additional cases
+deliberately pass pattern inspection while rustc rejects a lifetime escape
+(E0515) or mutable borrow through a shared reference (E0596); both are blocked
+from LowIR. The escape control borrows a parameter: a literal-only temporary
+can be promoted and is not a valid rejection control. Typed-model tests retain
+per-occurrence captures, shared-mode precedence, region origin/ownership and
+the unsized-input/sized-binding distinction. Earlier 48 native product/array
+vectors, 39 rejection vectors and 371 overlap combinations remain required.
+
+The frozen compiler for this checkpoint is
+`obj/pa13-work/borrowed-candidate`, SHA-256
+`ab2552143501de51f4f63d254cfa84cd6179c92c2f6830e635f6edab67b01696`.
+Local full debug and release runs pass 259 tests, followed by the final two-test
+borrowed-pattern suite in both configurations after adding the proof-boundary
+control (260 total tests). Clippy, formatting, the 169-file Rust audit and
+harness checks pass. Regeneration changes only compiler-source receipts; all
+1,669 active PA1–PA12 oracle cases retain identical bytes. Upstream verification
+checks 24 imported fixtures and all 126 vendored Reference files.
+
+`make test-rustc test-native` passes: PA11 has 194 independent checks and 180
+native executions, and PA12 has 98 LowIR checks and 48 executions (its 12 layout
+views are qualified separately). The 48 additional owned-pattern programs pass
+against both pinned rustc and CPPGM; their complete commands, streams and hashes
+are in `obj/pa13-work/borrowed-native-1791831956755083515/evidence.json`.
+PA10's 34 execution vectors pass through its test-only body-IR executor; the
+LowIR-native runner correctly refuses its body-IR manifest. That inapplicable
+extra invocation is retained at the end of `borrowed-independent.log`.
+
+Performance comparisons pin CPU 10 and freeze binaries and inputs. Each run
+retains warmup, A/A calibration and three ABBA blocks at each of three scales
+(54 observations), checks complete rendered bytes as well as counts, and runs
+without concurrent builds or tests from this task. Old executable workloads
+compare against `array-candidate`; the new pattern view uses candidate A/A.
+All five runs are retained under `obj/perf/`:
+
+| Workload | Run | Largest baseline/candidate median ms | Largest baseline/candidate peak KiB |
+| --- | --- | ---: | ---: |
+| Ordinary LowIR, 4k/16k/64k | 1791831992696241148 | 3388.49 / 3391.27 | 701452 / 701432 |
+| Product LowIR, 1k/4k/16k | 1791832081544806945 | 1520.75 / 1611.91 | 322412 / 322380 |
+| Array LowIR, 1k/4k/16k | 1791832123733994891 | 1655.85 / 1626.64 | 382896 / 382308 |
+| Borrowed-pattern A/A, 1k/4k/16k | 1791832167567592733 | 970.85 / 983.60 | 214732 / 214552 |
+| Product LowIR repeat | 1791832260888940284 | 2711.26 / 2748.31 | 322412 / 322692 |
+
+The first product run warranted a repeat: at 4k, ABBA candidate/baseline ratios
+were 1.078, 1.130 and 1.030. The repeat was visibly noisier, with 4k ratios
+1.005, 0.912 and 1.248; at 16k the baseline fell from 2699.8 to 1668.1 ms
+within its last paired block. Absolute times also shifted substantially between
+runs. These measurements do not establish a precise product-throughput effect
+or support a regression-free performance claim. Memory and output equality
+remain stable. The new borrowed view's candidate medians are 60.88, 251.74 and
+983.60 ms, with peak RSS 16868, 56528 and 214552 KiB. Do not discard either
+product comparison or infer a speedup from the noisy array timing.
+
+Next work remains conditional patterns and match CFGs, including guarded
+captures, coverage/usefulness and deterministic witnesses. Guard accesses must
+use shared views before committing binding moves; failed guards retry matching
+or-pattern alternatives. PA15 must develop reference coercions/outlives and
+variance beyond the current pending equality model. None of these obligations
+is discharged by the new inspection mode.

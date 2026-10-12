@@ -2,7 +2,7 @@
 use super::members::{Selection, VariantId};
 use crate::{
     resolve::{model::DefId, unit::NodeKey},
-    types::TypeId,
+    types::{RegionId, TypeId},
 };
 use std::collections::HashMap;
 
@@ -28,6 +28,13 @@ pub enum Projection {
     Field(Selection),
     Index(u64),
     Subarray { start: u64, end: u64 },
+    Subslice { prefix: u64, suffix: u64 },
+}
+/// An occurrence's operation; alternatives can share a definition but differ here.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Capture {
+    Value,
+    Borrow { mutable: bool, region: RegionId },
 }
 #[derive(Clone, Copy, Debug)]
 pub enum Kind {
@@ -36,7 +43,13 @@ pub enum Kind {
     Binding {
         definition: DefId,
         mutable: bool,
+        capture: Capture,
         subpattern: Option<PatternId>,
+    },
+    Dereference {
+        mutable: bool,
+        implicit: bool,
+        pattern: PatternId,
     },
     Product {
         variant: Option<VariantId>,

@@ -24,6 +24,23 @@ use std::collections::HashMap;
 /// # Errors
 /// Diagnoses missing typed facts, exhausted identities and unsupported body forms.
 pub fn build(report: &Report, facts: &Declarations) -> Result<Program, Error> {
+    // Even an unselected or-pattern occurrence can introduce region constraints.
+    // Keep their provenance in the semantic phase until the body IR carries it.
+    if let Some(region) = facts.body_regions.first() {
+        let offset = report
+            .package
+            .unit(region.source.file)
+            .configured
+            .ast
+            .node(region.source.node)
+            .span
+            .start;
+        return Err(report.diagnostic(Error::at(
+            region.source.file,
+            offset,
+            "reference pattern execution requires region and loan proofs",
+        )));
+    }
     let mut scratch = Scratch {
         values: facts.nodes.iter().map(|n| vec![None; n.len()]).collect(),
         definitions: vec![None; facts.definitions.len()],

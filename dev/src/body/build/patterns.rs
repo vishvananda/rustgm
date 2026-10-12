@@ -2,7 +2,7 @@
 use super::{Builder, Error, LocalKind, NodeId, Place, Rvalue};
 use crate::{
     body::ir::ProjectionKind,
-    sema::patterns::{Kind, PatternId, Projection},
+    sema::patterns::{Capture, Kind, PatternId, Projection},
 };
 pub(super) enum Work {
     Enter(PatternId, Option<Place>, Option<Projection>),
@@ -41,12 +41,28 @@ impl Builder<'_> {
                 Projection::Field(field) => ProjectionKind::Field(field),
                 Projection::Index(index) => ProjectionKind::ConstantIndex(index),
                 Projection::Subarray { start, end } => ProjectionKind::Subarray { start, end },
+                Projection::Subslice { .. } => {
+                    return Err(self.error(
+                        node,
+                        "slice pattern execution requires region and loan proofs",
+                    ));
+                }
             };
             Some(self.project(node, ty, base, projection)?)
         } else {
             base
         };
         match pattern.kind {
+            Kind::Dereference { .. }
+            | Kind::Binding {
+                capture: Capture::Borrow { .. },
+                ..
+            } => {
+                return Err(self.error(
+                    node,
+                    "reference pattern execution requires region and loan proofs",
+                ));
+            }
             Kind::Wildcard => {}
             Kind::Binding { subpattern, .. } => {
                 self.scratch.pattern_work.push(Work::Capture(id, place));

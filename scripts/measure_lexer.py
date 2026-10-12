@@ -53,12 +53,15 @@ def main():
     workloads.add_argument("--pattern-input", action="store_true", help="exercise nested pattern binding identities at 1000/4000/16000 procedures")
     workloads.add_argument("--product-input", action="store_true", help="exercise owned product bindings at 1000/4000/16000 procedures")
     workloads.add_argument("--array-pattern-input", action="store_true", help="exercise owned array ranges at 1000/4000/16000 procedures")
-    parser.add_argument("--stage", choices=("tokens", "literals", "token-trees", "ast", "crate-ast", "names", "expanded", "expanded-crate", "types", "layouts", "body-ir", "ownership", "lowir"), default="tokens")
+    workloads.add_argument("--borrowed-pattern-input", action="store_true", help="exercise borrowed arrays/slices and occurrence captures at 1000/4000/16000 procedures")
+    parser.add_argument("--stage", choices=("tokens", "literals", "token-trees", "ast", "crate-ast", "names", "expanded", "expanded-crate", "types", "patterns", "layouts", "body-ir", "ownership", "lowir"), default="tokens")
     args = parser.parse_args()
     if (args.aggregate_input or args.discriminant_input or args.product_input or args.array_pattern_input) and args.stage != "lowir":
         parser.error("aggregate, discriminant and owned-pattern workloads require --stage lowir")
     if args.pattern_input and args.stage != "names":
         parser.error("pattern identity workloads require --stage names")
+    if args.borrowed_pattern_input != (args.stage == "patterns"):
+        parser.error("--stage patterns and --borrowed-pattern-input must be used together")
     directory = ROOT / "obj/perf" / str(time.time_ns())
     directory.mkdir(parents=True)
     candidate = args.candidate.resolve()
@@ -77,15 +80,21 @@ def main():
                "pattern_input": args.pattern_input,
                "product_input": args.product_input,
                "array_pattern_input": args.array_pattern_input,
+               "borrowed_pattern_input": args.borrowed_pattern_input,
                "binary_sha256": {name: hashlib.sha256(p.read_bytes()).hexdigest() for name, p in binaries.items()},
                "samples": [], "full_output_sha256": {}}
     scales = (4000, 16000, 64000) if args.stage in ("token-trees", "ast", "crate-ast", "names", "expanded", "expanded-crate", "types", "body-ir", "ownership", "lowir") else (16000, 64000, 256000)
-    if args.aggregate_input or args.discriminant_input or args.pattern_input or args.product_input or args.array_pattern_input or args.stage == "layouts":
+    if args.aggregate_input or args.discriminant_input or args.pattern_input or args.product_input or args.array_pattern_input or args.borrowed_pattern_input or args.stage == "layouts":
         scales = (1000, 4000, 16000)
-    line = {"tokens": LINE, "literals": LITERAL_LINE, "token-trees": TREE_LINE, "ast": AST_LINE, "crate-ast": CRATE_LINE, "names": b"", "expanded": b"", "expanded-crate": b"", "types": b"", "layouts": b"", "body-ir": b"", "ownership": b"", "lowir": b""}[args.stage]
+    line = {"tokens": LINE, "literals": LITERAL_LINE, "token-trees": TREE_LINE, "ast": AST_LINE, "crate-ast": CRATE_LINE, "names": b"", "expanded": b"", "expanded-crate": b"", "types": b"", "patterns": b"", "layouts": b"", "body-ir": b"", "ownership": b"", "lowir": b""}[args.stage]
     for lines in scales:
         source = directory / f"input-{lines}.rs"
-        if args.array_pattern_input:
+        if args.borrowed_pattern_input:
+            source.write_text("".join(
+                f"fn measured_{i}(xs:&&mut[u8;5],ys:&mut[u8],zs:(&u8,&[u8;1])){{"
+                "let[first,tail@..,last]=xs;let[all@..]=ys;let((x,_)|(_,[x]))=zs;}\n"
+                for i in range(lines)))
+        elif args.array_pattern_input:
             source.write_text("struct N(u64);\n" + "".join(
                 f"fn measured_{i}(xs:[N;5])->u64{{let[a,..,e]=xs;let[_,middle@..,_]=xs;"
                 "let[b,c,d]=middle;a.0+b.0+c.0+d.0+e.0}\n"

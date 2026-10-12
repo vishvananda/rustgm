@@ -589,3 +589,126 @@ fn product_errors_and_move_conflicts_match_rustc() -> Result<(), Box<dyn std::er
     }
     Ok(())
 }
+
+#[test]
+fn borrowed_patterns_keep_input_types_capture_modes_and_region_provenance() -> Result<(), String> {
+    use rustgm::{
+        sema::patterns::Capture,
+        types::{Kind as Type, Primitive, RegionId, TypeId},
+    };
+    let (_, facts) = analyze(
+        "fn f(xs:&&mut[u8;1]){let[x]=xs;}fn g(ys:&mut[u8;1]){let[y]=ys;}fn h(mut z:u8){let ref mut a=z;}",
+    )?;
+    let bindings: Vec<_> = facts
+        .patterns
+        .nodes
+        .iter()
+        .filter_map(|p| {
+            if let Kind::Binding {
+                definition,
+                mutable,
+                capture,
+                ..
+            } = p.kind
+            {
+                Some((p, definition, mutable, capture))
+            } else {
+                None
+            }
+        })
+        .collect();
+    assert_eq!(bindings.len(), 3);
+    assert_eq!(facts.body_regions.len(), 3);
+    for (index, (pattern, definition, local_mutable, capture)) in bindings.iter().enumerate() {
+        assert!(!local_mutable);
+        assert_eq!(pattern.ty, Some(TypeId::primitive(Primitive::U8)));
+        let Capture::Borrow { mutable, region } = capture else {
+            return Err("missing borrow capture".into());
+        };
+        assert_eq!(*mutable, index != 0);
+        assert_ne!(*region, RegionId::STATIC);
+        assert_eq!(region.bound_parts(), None);
+        let origin = &facts.body_regions[region.0 as usize - 1];
+        assert_eq!(origin.source, pattern.source);
+        if index != 0 {
+            assert_ne!(origin.body, facts.body_regions[index - 1].body);
+        }
+        assert!(
+            matches!(facts.types.kind(facts.definitions[definition.0 as usize].ok_or("missing local type")?),
+            Some(Type::Reference { mutable: m, region: r, referent }) if m == *mutable && r == *region && Some(referent) == pattern.ty)
+        );
+    }
+    assert_eq!(
+        facts
+            .patterns
+            .nodes
+            .iter()
+            .filter(|p| matches!(p.kind, Kind::Dereference { .. }))
+            .count(),
+        3
+    );
+    Ok(())
+}
+#[test]
+fn alternatives_share_local_types_without_erasing_per_occurrence_captures() -> Result<(), String> {
+    use rustgm::sema::patterns::Capture;
+    for qualifier in ["", "mut "] {
+        let (_, facts) = analyze(&format!(
+            "fn f(xs:(&{qualifier}u8,&{qualifier}[u8;1])){{let((x,_)|(_,[x]))=xs;}}"
+        ))?;
+        let bindings: Vec<_> = facts
+            .patterns
+            .nodes
+            .iter()
+            .filter_map(|p| {
+                if let Kind::Binding {
+                    definition,
+                    capture,
+                    ..
+                } = p.kind
+                {
+                    Some((definition, capture))
+                } else {
+                    None
+                }
+            })
+            .collect();
+        assert_eq!(bindings.len(), 2);
+        assert_eq!(bindings[0].0, bindings[1].0);
+        assert_eq!(bindings[0].1, Capture::Value);
+        assert!(
+            matches!(bindings[1].1, Capture::Borrow { mutable, .. } if mutable != qualifier.is_empty())
+        );
+        assert!(!facts.region_equalities.is_empty());
+        assert_eq!(facts.body_regions.len(), 1);
+    }
+    Ok(())
+}
+#[test]
+fn slice_rest_binds_a_reference_to_an_unsized_place() -> Result<(), String> {
+    use rustgm::{sema::patterns::Projection, types::Kind as Type};
+    let (_, facts) = analyze("fn f(xs:&[u8]){let[tail@..]=xs;}")?;
+    assert!(facts.patterns.fields.iter().any(|f| f.selection
+        == Projection::Subslice {
+            prefix: 0,
+            suffix: 0
+        }));
+    let pattern = facts
+        .patterns
+        .nodes
+        .iter()
+        .find(|p| matches!(p.kind, Kind::Binding { .. }))
+        .ok_or("missing slice binding")?;
+    let Kind::Binding { definition, .. } = pattern.kind else {
+        return Err("missing binding".into());
+    };
+    let input = pattern.ty.ok_or("missing slice input type")?;
+    assert!(matches!(facts.types.kind(input), Some(Type::Slice(_))));
+    assert_eq!(facts.types.is_sized(input), Some(false));
+    let local = facts.definitions[definition.0 as usize].ok_or("missing slice local type")?;
+    assert!(
+        matches!(facts.types.kind(local), Some(Type::Reference { mutable: false, referent, .. }) if referent == input)
+    );
+    assert_eq!(facts.types.is_sized(local), Some(true));
+    Ok(())
+}

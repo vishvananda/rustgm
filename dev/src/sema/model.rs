@@ -128,6 +128,18 @@ pub struct RegionEquality {
     pub left: RegionId,
     pub right: RegionId,
 }
+#[derive(Clone, Copy)]
+pub enum BodyRegionOrigin {
+    PatternBorrow,
+    PatternInput,
+}
+/// Existential region identity `1 + ordinal`; these are obligations, not proofs.
+#[derive(Clone, Copy)]
+pub struct BodyRegion {
+    pub body: NodeKey,
+    pub source: NodeKey,
+    pub origin: BodyRegionOrigin,
+}
 pub struct Declarations {
     pub patterns: super::patterns::Patterns,
     pub enum_casts: std::collections::HashSet<crate::types::ItemId>,
@@ -137,6 +149,7 @@ pub struct Declarations {
     pub members: super::members::Members,
     pub layouts: crate::abi::layout::Layouts,
     pub region_equalities: Vec<RegionEquality>,
+    pub body_regions: Vec<BodyRegion>,
     pub initializers: Vec<Initializer>,
     pub types: Store,
     pub definitions: Vec<Option<TypeId>>,
@@ -154,6 +167,7 @@ impl Declarations {
             members: super::members::Members::default(),
             layouts: crate::abi::layout::Layouts::default(),
             region_equalities: Vec::new(),
+            body_regions: Vec::new(),
             initializers: Vec::new(),
             types: Store::default(),
             definitions: vec![None; report.resolution.definitions.len()],

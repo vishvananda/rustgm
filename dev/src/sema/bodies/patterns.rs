@@ -3,11 +3,27 @@ use super::{Checker, Constructor, Domain, Error, Kind, List, NodeId, TermId};
 use crate::{
     sema::{
         members::{FieldId, Selection, VariantId},
-        patterns::{Alternatives, Field, Fields, Kind as PatternKind, PatternId, Projection},
+        model::{BodyRegion, BodyRegionOrigin},
+        patterns::{
+            Alternatives, Capture, Field, Fields, Kind as PatternKind, PatternId, Projection,
+        },
     },
     syntax::{ast::PatternFlavor, item::Shape},
+    types::RegionId,
 };
 
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum Mode {
+    Value,
+    Reference { mutable: bool },
+}
+pub(super) struct Work {
+    node: NodeId,
+    term: TermId,
+    id: PatternId,
+    mode: Mode,
+    rest: bool,
+}
 impl Checker<'_> {
     pub(super) fn simple_pattern(&self, mut node: NodeId) -> bool {
         while let Kind::Group(inner) | Kind::Attributed { value: inner, .. } = self.kind(node) {
@@ -26,13 +42,19 @@ impl Checker<'_> {
                 .node(self.key(node))
                 .is_some_and(|fact| fact.binding.is_some())
     }
-    fn reserve_pattern(&mut self, node: NodeId, term: TermId) -> Result<PatternId, Error> {
-        self.schedule_pattern(node, term, false)
+    fn reserve_pattern(
+        &mut self,
+        node: NodeId,
+        term: TermId,
+        mode: Mode,
+    ) -> Result<PatternId, Error> {
+        self.schedule_pattern(node, term, mode, false)
     }
     fn schedule_pattern(
         &mut self,
         mut node: NodeId,
         term: TermId,
+        mode: Mode,
         rest: bool,
     ) -> Result<PatternId, Error> {
         while let Kind::Group(inner) | Kind::Attributed { value: inner, .. } = self.kind(node) {
@@ -44,22 +66,36 @@ impl Checker<'_> {
             .patterns
             .reserve(self.key(node))
             .map_err(|e| self.error(node, e))?;
-        self.pattern_work.push((node, term, id, rest));
+        self.pattern_work.push(Work {
+            node,
+            term,
+            id,
+            mode,
+            rest,
+        });
         self.pattern_types.push((id, term));
         Ok(id)
     }
     pub(super) fn pattern(&mut self, root: NodeId, term: TermId) -> Result<(), Error> {
-        let id = self.reserve_pattern(root, term)?;
+        let id = self.reserve_pattern(root, term, Mode::Value)?;
         self.facts.patterns.roots.insert(self.key(root), id);
         let mut steps = 0;
-        while let Some((node, term, id, rest)) = self.pattern_work.pop() {
+        while let Some(Work {
+            node,
+            term,
+            id,
+            mode,
+            rest,
+        }) = self.pattern_work.pop()
+        {
             steps += 1;
             if steps > 1_000_000 {
                 return Err(self.error(root, "pattern type work budget exceeded"));
             }
             self.save(node, term);
             let mark = self.pattern_work.len();
-            let kind = self.pattern_kind(node, term, rest)?;
+            let (id, term, mode) = self.pattern_adjust(node, term, id, mode, &mut steps)?;
+            let kind = self.pattern_kind(node, term, mode, rest)?;
             self.pattern_work[mark..].reverse();
             self.facts.patterns.nodes[id.0 as usize].kind = kind;
         }
@@ -69,13 +105,14 @@ impl Checker<'_> {
         &mut self,
         node: NodeId,
         term: TermId,
+        mode: Mode,
         rest: bool,
     ) -> Result<PatternKind, Error> {
         match self.kind(node) {
             Kind::Wildcard => Ok(PatternKind::Wildcard),
             Kind::RestPattern if rest => Ok(PatternKind::Wildcard),
             Kind::Binding {
-                by_ref: false,
+                by_ref,
                 mutable,
                 subpattern,
                 ..
@@ -84,39 +121,21 @@ impl Checker<'_> {
                 .node(self.key(node))
                 .is_some_and(|fact| fact.binding.is_some()) =>
             {
-                let definition = self
-                    .facts
-                    .node(self.key(node))
-                    .and_then(|fact| fact.binding)
-                    .ok_or_else(|| self.error(node, "missing pattern binding identity"))?;
-                if let Some(prior) = self.locals[definition.0 as usize] {
-                    self.equate(node, prior, term)?;
-                } else {
-                    self.locals[definition.0 as usize] = Some(term);
-                    self.bindings.push(definition);
-                }
-                let subpattern = subpattern
-                    .map(|child| self.schedule_pattern(child, term, rest))
-                    .transpose()?;
-                Ok(PatternKind::Binding {
-                    definition,
-                    mutable,
-                    subpattern,
-                })
+                self.pattern_binding(node, term, mode, (by_ref, mutable), subpattern, rest)
             }
-            Kind::Binding { by_ref: true, .. } | Kind::ReferencePattern { .. } => {
-                Err(self.error(node, "reference patterns require pattern borrow semantics"))
+            Kind::ReferencePattern { mutable, pattern } => {
+                self.reference_pattern(node, term, mode, mutable, pattern)
             }
             Kind::Pattern {
                 flavor: PatternFlavor::Slice,
                 elements,
                 ..
-            } => self.array_pattern(node, term, elements),
+            } => self.array_pattern(node, term, elements, mode),
             Kind::Pattern {
                 flavor: PatternFlavor::Tuple,
                 elements,
                 ..
-            } => self.positional_pattern(node, term, elements, None),
+            } => self.positional_pattern(node, term, elements, None, mode),
             Kind::Pattern {
                 flavor: PatternFlavor::Variant,
                 path: Some(path),
@@ -128,10 +147,10 @@ impl Checker<'_> {
                         self.error(node, "tuple-struct pattern requires a tuple constructor")
                     );
                 }
-                self.positional_pattern(node, term, elements, Some(variant))
+                self.positional_pattern(node, term, elements, Some(variant), mode)
             }
             Kind::StructPattern { path, fields, rest } => {
-                self.record_pattern(node, term, path, fields, rest)
+                self.record_pattern(node, term, path, fields, rest, mode)
             }
             Kind::Pattern {
                 flavor: PatternFlavor::Or,
@@ -141,7 +160,7 @@ impl Checker<'_> {
                 let start = self.pattern_index(node, self.facts.patterns.alternatives.len())?;
                 let unit = self.report.package.unit(self.file);
                 for child in unit.configured.ast.list(elements) {
-                    let id = self.reserve_pattern(*child, term)?;
+                    let id = self.reserve_pattern(*child, term, mode)?;
                     self.facts.patterns.alternatives.push(id);
                 }
                 let end = self.pattern_index(node, self.facts.patterns.alternatives.len())?;
@@ -171,6 +190,196 @@ impl Checker<'_> {
     }
     fn pattern_index(&self, node: NodeId, value: usize) -> Result<u32, Error> {
         u32::try_from(value).map_err(|_| self.error(node, "pattern identity space exhausted"))
+    }
+    fn pattern_region(
+        &mut self,
+        node: NodeId,
+        origin: BodyRegionOrigin,
+    ) -> Result<RegionId, Error> {
+        let ordinal = u32::try_from(self.facts.body_regions.len())
+            .ok()
+            .and_then(|n| n.checked_add(1))
+            .filter(|n| *n < 0x8000_0000)
+            .ok_or_else(|| self.error(node, "body region identity space exhausted"))?;
+        self.facts.body_regions.push(BodyRegion {
+            body: self.body,
+            source: self.key(node),
+            origin,
+        });
+        Ok(RegionId(ordinal))
+    }
+    fn pattern_adjust(
+        &mut self,
+        node: NodeId,
+        mut term: TermId,
+        mut id: PatternId,
+        mut mode: Mode,
+        steps: &mut usize,
+    ) -> Result<(PatternId, TermId, Mode), Error> {
+        let structural = matches!(
+            self.kind(node),
+            Kind::Pattern {
+                flavor: PatternFlavor::Slice | PatternFlavor::Tuple | PatternFlavor::Variant,
+                ..
+            } | Kind::StructPattern { .. }
+                | Kind::Path { .. }
+        ) || matches!(self.kind(node), Kind::Binding { .. })
+            && self
+                .facts
+                .node(self.key(node))
+                .is_some_and(|fact| fact.binding.is_none());
+        if structural {
+            while let Some(Constructor::Reference { mutable, .. }) = self.head(node, term)? {
+                *steps += 1;
+                if *steps > 1_000_000 {
+                    return Err(self.error(node, "pattern type work budget exceeded"));
+                }
+                mode = Mode::Reference {
+                    mutable: mutable && mode != Mode::Reference { mutable: false },
+                };
+                term = self.child(node, term, 0)?;
+                let child = self
+                    .facts
+                    .patterns
+                    .reserve(self.key(node))
+                    .map_err(|e| self.error(node, e))?;
+                self.pattern_types.push((child, term));
+                self.facts.patterns.nodes[id.0 as usize].kind = PatternKind::Dereference {
+                    mutable,
+                    implicit: true,
+                    pattern: child,
+                };
+                id = child;
+            }
+        }
+        Ok((id, term, mode))
+    }
+    fn pattern_binding(
+        &mut self,
+        node: NodeId,
+        term: TermId,
+        mode: Mode,
+        written: (bool, bool),
+        subpattern: Option<NodeId>,
+        rest: bool,
+    ) -> Result<PatternKind, Error> {
+        let (by_ref, mutable) = written;
+        if mode != Mode::Value && (by_ref || mutable) {
+            return Err(self.error(
+                node,
+                "explicit binding qualifiers require the move default binding mode in edition 2024",
+            ));
+        }
+        let capture_mode = if by_ref {
+            Mode::Reference { mutable }
+        } else {
+            mode
+        };
+        let (capture, local) = match capture_mode {
+            Mode::Value => (Capture::Value, term),
+            Mode::Reference { mutable } => {
+                let region = self.pattern_region(node, BodyRegionOrigin::PatternBorrow)?;
+                let local = self
+                    .infer
+                    .construct(Constructor::Reference { mutable, region }, &[term])
+                    .map_err(|e| self.error(node, e))?;
+                (Capture::Borrow { mutable, region }, local)
+            }
+        };
+        let definition = self
+            .facts
+            .node(self.key(node))
+            .and_then(|fact| fact.binding)
+            .ok_or_else(|| self.error(node, "missing pattern binding identity"))?;
+        if let Some(prior) = self.locals[definition.0 as usize] {
+            self.equate(node, prior, local)?;
+        } else {
+            self.locals[definition.0 as usize] = Some(local);
+            self.bindings.push(definition);
+        }
+        let subpattern = subpattern
+            .map(|child| self.schedule_pattern(child, term, mode, rest))
+            .transpose()?;
+        Ok(PatternKind::Binding {
+            definition,
+            mutable: mutable && !by_ref,
+            capture,
+            subpattern,
+        })
+    }
+    fn reference_pattern(
+        &mut self,
+        node: NodeId,
+        term: TermId,
+        mode: Mode,
+        mutable: bool,
+        pattern: NodeId,
+    ) -> Result<PatternKind, Error> {
+        if mode != Mode::Value {
+            return Err(self.error(
+                node,
+                "reference patterns require the move default binding mode in edition 2024",
+            ));
+        }
+        if self.head(node, term)?.is_none() {
+            let region = self.pattern_region(node, BodyRegionOrigin::PatternInput)?;
+            let referent = self.variable(node, Domain::Any)?;
+            let reference = self
+                .infer
+                .construct(Constructor::Reference { mutable, region }, &[referent])
+                .map_err(|e| self.error(node, e))?;
+            self.equate(node, term, reference)?;
+        }
+        let Some(Constructor::Reference {
+            mutable: actual, ..
+        }) = self.head(node, term)?
+        else {
+            return Err(self.error(node, "reference pattern requires a reference type"));
+        };
+        if mutable != actual {
+            return Err(self.error(node, "reference pattern mutability disagrees with its type"));
+        }
+        let child = self.child(node, term, 0)?;
+        let pattern = self.reserve_pattern(pattern, child, Mode::Value)?;
+        Ok(PatternKind::Dereference {
+            mutable,
+            implicit: false,
+            pattern,
+        })
+    }
+    fn slice_pattern(
+        &mut self,
+        node: NodeId,
+        term: TermId,
+        elements: &[NodeId],
+        rest: Option<usize>,
+        mode: Mode,
+    ) -> Result<PatternKind, Error> {
+        if rest != Some(0) || elements.len() != 1 {
+            return Err(self.error(
+                node,
+                "refutable slice requires conditional pattern semantics",
+            ));
+        }
+        let child = elements[0];
+        let start = self.pattern_index(node, self.facts.patterns.fields.len())?;
+        if matches!(self.kind(child), Kind::RestPattern) {
+            self.save(child, term);
+        } else {
+            let pattern = self.schedule_pattern(child, term, mode, true)?;
+            self.facts.patterns.fields.push(Field {
+                selection: Projection::Subslice {
+                    prefix: 0,
+                    suffix: 0,
+                },
+                pattern,
+            });
+        }
+        let end = self.pattern_index(node, self.facts.patterns.fields.len())?;
+        Ok(PatternKind::Product {
+            variant: None,
+            fields: Fields { start, end },
+        })
     }
     fn pattern_constructor(
         &mut self,
@@ -203,6 +412,7 @@ impl Checker<'_> {
         term: TermId,
         elements: List,
         variant: Option<VariantId>,
+        mode: Mode,
     ) -> Result<PatternKind, Error> {
         let unit = self.report.package.unit(self.file);
         let elements = unit.configured.ast.list(elements);
@@ -273,7 +483,7 @@ impl Checker<'_> {
                     self.child(node, term, ordinal)?,
                 )
             };
-            let pattern = self.reserve_pattern(child, child_term)?;
+            let pattern = self.reserve_pattern(child, child_term, mode)?;
             self.facts.patterns.fields.push(Field {
                 selection: Projection::Field(selection),
                 pattern,
@@ -292,6 +502,7 @@ impl Checker<'_> {
         path: NodeId,
         fields: List,
         rest: bool,
+        mode: Mode,
     ) -> Result<PatternKind, Error> {
         let variant_id = self.pattern_constructor(node, path, term)?;
         let variant = self.facts.members.variants[variant_id.0 as usize];
@@ -328,7 +539,7 @@ impl Checker<'_> {
             let child_term = self.known(field_node, ty)?;
             self.save(wrapper, child_term);
             self.save(field_node, child_term);
-            let pattern = self.reserve_pattern(pattern, child_term)?;
+            let pattern = self.reserve_pattern(pattern, child_term, mode)?;
             self.facts.patterns.fields.push(Field {
                 selection: Projection::Field(Selection::Nominal(field)),
                 pattern,
@@ -360,6 +571,7 @@ impl Checker<'_> {
         node: NodeId,
         term: TermId,
         elements: List,
+        mode: Mode,
     ) -> Result<PatternKind, Error> {
         let unit = self.report.package.unit(self.file);
         let elements = unit.configured.ast.list(elements);
@@ -378,6 +590,9 @@ impl Checker<'_> {
                 .construct(Constructor::Array(explicit), &[element])
                 .map_err(|e| self.error(node, e))?;
             self.equate(node, term, array)?;
+        }
+        if self.head(node, term)? == Some(Constructor::Slice) {
+            return self.slice_pattern(node, term, elements, rest, mode);
         }
         let Some(Constructor::Array(length)) = self.head(node, term)? else {
             return Err(self.error(node, "array pattern requires a known fixed-array type"));
@@ -416,7 +631,7 @@ impl Checker<'_> {
                 };
                 (Projection::Index(index), element)
             };
-            let pattern = self.schedule_pattern(child, child_term, is_rest)?;
+            let pattern = self.schedule_pattern(child, child_term, mode, is_rest)?;
             self.facts
                 .patterns
                 .fields

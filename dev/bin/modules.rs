@@ -48,6 +48,7 @@ pub enum Mode {
     Names,
     Expanded,
     Types,
+    Patterns,
     Layouts,
     Bodies,
     Ownership,
@@ -73,7 +74,13 @@ pub fn run(
     };
     if matches!(
         mode,
-        Mode::Expanded | Mode::Types | Mode::Layouts | Mode::Bodies | Mode::Ownership | Mode::Lowir
+        Mode::Expanded
+            | Mode::Types
+            | Mode::Patterns
+            | Mode::Layouts
+            | Mode::Bodies
+            | Mode::Ownership
+            | Mode::Lowir
     ) {
         let report =
             resolve::expansion::analyze_with_crate_name(root, &mut Files, config, crate_name)
@@ -81,7 +88,12 @@ pub fn run(
                 .map_err(|e| e.to_string())?;
         if matches!(
             mode,
-            Mode::Types | Mode::Layouts | Mode::Bodies | Mode::Ownership | Mode::Lowir
+            Mode::Types
+                | Mode::Patterns
+                | Mode::Layouts
+                | Mode::Bodies
+                | Mode::Ownership
+                | Mode::Lowir
         ) {
             return semantic(report, count, mode, out);
         }
@@ -155,6 +167,14 @@ fn semantic(
     let mut facts = rustgm::sema::declarations::analyze(&report)
         .and_then(|facts| rustgm::sema::bodies::analyze(&report, facts))
         .map_err(|e| e.to_string())?;
+    if matches!(mode, Mode::Patterns) {
+        return if count {
+            rustgm::sema::pattern_view::count(&facts, out)
+        } else {
+            rustgm::sema::pattern_view::write(&facts, out)
+        }
+        .map_err(|e| e.to_string());
+    }
     if matches!(mode, Mode::Layouts) {
         rustgm::sema::layout_view::analyze(&mut facts).map_err(|e| e.to_string())?;
         return if count {
