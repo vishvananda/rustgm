@@ -353,3 +353,57 @@ that can shadow a module used by expansion. The current early graph indexes
 modules and macros; primary resolution indexes the other declarations. Builtins,
 physical diagnostics, the expanded-crate text contract and its course suite
 remain the next main work. PA8 and the source-to-LowIR goal remain incomplete.
+
+
+## Typed builtin bootstrap
+
+`cfg!` now uses an explicit builtin macro prelude, separate from crate item
+bindings. Its result is a boolean literal node with a retained typed value;
+no boolean text is parsed to recover that value. The configured predicate
+implementation is shared with cfg attributes. Opaque metadata/path inputs are
+consumed through the persistent registry and existing typed forest consumers.
+The ordinary parser and builtin builder share the syntax arena's empty
+constructor.
+
+Expansion definitions distinguish declarative bodies from builtins. A builtin
+has no invented source definition node or matcher rule. Builtin definitions are
+materialized on demand; macro path registration carries the actual definition
+index, including gaps from intervening builtin definitions. A regression test
+first reproduced an out-of-bounds textual target when cfg expansion preceded a
+generated macro definition. The explicit mapping fixes it, and an independent
+rustc program compiles and runs the same sequence successfully.
+
+Pinned probes are under `obj/pa8-work/builtin-probes/`. They establish that cfg
+is callable with `no_implicit_prelude`, can be shadowed by a source textual
+macro, is absent from the crate root, and is ambiguous in an unqualified import
+because of its attribute identity. Captured metadata works; a nested macro in
+the predicate's string position is rejected rather than eagerly expanded.
+The `cfg_no_std` executable probe failed for missing panic/runtime support and
+is not evidence of cfg rejection.
+
+The same directory retains preliminary probes for subsequent builtins.
+Stringify output is sensitive to token provenance: an opaque compact expression
+and captured compact token sequence preserve `1+2` / `a+b`, while a literal
+macro template produces `a + b`. Group spacing is not a blanket whitespace
+collapse. Do not implement this by reparsing captured source or assuming all
+builtins use eager argument expansion. Import aliases for stringify, concat,
+line, column, file and module_path are independently accepted.
+
+`builtin-full-validation.log` passes 147 Rust tests, all 1,012 course fixtures,
+strict Clippy, 101 audited files with zero findings, and 14 harness tests.
+The cfg builtin remains groundwork for planned PA8; other builtins and the
+public expanded-crate text contract still need implementation and validation.
+
+
+`builtin-reference-validation.log` passes independent earlier-stage rustc
+checks and reference regeneration; only compiler source fingerprints change in
+PA1–PA7 receipts. `builtin-release-validation.log` passes all 147 Rust tests in
+release mode. No earlier fixture or oracle bytes changed.
+
+
+The immutable CPU-10 ordinary-name comparison for the builtin bootstrap is
+`obj/perf/1791784671136744000/samples.json`. Full outputs match. Following A/A
+calibration and three ABBA blocks, A/B medians at 4,000/16,000/64,000 functions
+were 51.21/51.59, 192.00/196.04 and 858.06/861.00 ms. The largest A/A samples
+ranged 818.66–854.23 ms. These bounded observations accompany the change;
+full expanded-crate throughput remains required before PA8 activation.

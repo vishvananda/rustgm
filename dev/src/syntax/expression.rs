@@ -74,20 +74,7 @@ impl<'source> Parser<'source, '_> {
     fn with_cursor(cursor: Cursor<'source>, extended: bool) -> Self {
         Self {
             cursor,
-            ast: Ast {
-                nodes: Vec::new(),
-                edges: Vec::new(),
-                literals: Vec::new(),
-                captures: Vec::new(),
-                root: NodeId(0),
-                items: Vec::new(),
-                variants: Vec::new(),
-                use_trees: Vec::new(),
-                generics: Vec::new(),
-                function_types: Vec::new(),
-                attributes: Vec::new(),
-                lookahead_high_water: 0,
-            },
+            ast: Ast::default(),
             scratch: Vec::new(),
             depth: 0,
             condition_work: Vec::new(),

@@ -1,5 +1,7 @@
 //! Early macro paths reuse the ordinary import dependency graph and glob journals.
-use super::{Call, Error, ModuleId, NodeId, NodeKey, Package, bindings::Bindings};
+use super::{
+    Builtin, Call, Error, MacroTarget, ModuleId, NodeId, NodeKey, Package, bindings::Bindings,
+};
 use crate::{
     expand::{
         stream::ContextId,
@@ -19,8 +21,8 @@ use std::collections::{HashMap, HashSet, VecDeque};
 pub(super) struct Paths {
     pub state: State,
     work: Work,
-    macros: Vec<DefId>,
-    macro_targets: HashMap<DefId, usize>,
+    macros: Vec<Option<DefId>>,
+    macro_targets: HashMap<DefId, MacroTarget>,
     textual: Vec<Option<(TextScope, ContextId)>>,
     text_ready: VecDeque<usize>,
     text_queued: Vec<bool>,
@@ -41,13 +43,35 @@ impl Paths {
             access: Access::Public,
             members: Some(scope),
         });
+        let mut macro_targets = HashMap::new();
+        for builtin in Builtin::ALL {
+            let name = package
+                .names
+                .intern(builtin.name())
+                .map_err(|e| Error::at(super::FileId(0), 0, e))?;
+            let target = DefId(
+                u32::try_from(state.facts.definitions.len())
+                    .map_err(|_| Error::at(super::FileId(0), 0, "too many builtin definitions"))?,
+            );
+            state.facts.definitions.push(Definition {
+                name,
+                namespace: Namespace::Macro,
+                kind: DefKind::BuiltinMacro,
+                scope,
+                node: None,
+                access: Access::Public,
+                members: None,
+            });
+            state.facts.macro_prelude.insert(name, target);
+            macro_targets.insert(target, MacroTarget::Builtin(builtin));
+        }
         let mut work = Work::new(&state.facts);
         work.observe();
         Ok(Self {
             state,
             work,
             macros: Vec::new(),
-            macro_targets: HashMap::new(),
+            macro_targets,
             textual: Vec::new(),
             text_ready: VecDeque::new(),
             text_queued: Vec::new(),
@@ -125,8 +149,9 @@ impl Paths {
         node: NodeId,
         name: NameId,
         exported: bool,
-        expansion: ContextId,
+        introduced: (usize, ContextId),
     ) -> Result<(), Error> {
+        let (index, expansion) = introduced;
         let access = if exported {
             Access::Public
         } else {
@@ -156,8 +181,10 @@ impl Paths {
                 .definitions
                 .insert(id, expansion);
         }
-        self.macro_targets.insert(id, self.macros.len());
-        self.macros.push(id);
+        self.macro_targets
+            .insert(id, MacroTarget::Declarative(index));
+        self.macros.resize(index + 1, None);
+        self.macros[index] = Some(id);
         if exported {
             Self::direct(
                 &mut resolver,
@@ -261,7 +288,9 @@ impl Paths {
                     TextualSource::Pending
                 }
                 textual::Lookup::Found(index) => {
-                    let target = self.macros[index];
+                    let target = self.macros.get(index).copied().flatten().ok_or_else(|| {
+                        Error::at(import.node.file, 0, "missing textual macro identity")
+                    })?;
                     let definition = &self.state.facts.definitions[target.0 as usize];
                     TextualSource::Found(Binding {
                         target,
@@ -296,11 +325,17 @@ impl Paths {
         request: usize,
         definition: usize,
     ) -> Result<(), Error> {
+        let target = self
+            .macros
+            .get(definition)
+            .copied()
+            .flatten()
+            .ok_or_else(|| call.diagnostic("missing textual macro identity"))?;
         let mut dependencies = Vec::new();
         let conflict = self.state.bind(package).textual_conflict(
             call.visit.path_scope,
             call.path[0],
-            self.macros[definition],
+            target,
             call.visit.introduction,
             &mut dependencies,
         );
@@ -317,7 +352,7 @@ impl Paths {
         package: &mut Package,
         call: &Call,
         request: usize,
-    ) -> Result<Option<usize>, Error> {
+    ) -> Result<Option<MacroTarget>, Error> {
         let context = Context {
             module: call.visit.module,
             file: call.file,

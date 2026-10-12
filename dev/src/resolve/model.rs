@@ -36,6 +36,7 @@ pub enum Access {
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum DefKind {
     Primitive,
+    BuiltinMacro,
     Module,
     Function,
     Struct,
@@ -60,6 +61,7 @@ impl DefKind {
     pub const fn name(self) -> &'static str {
         match self {
             Self::Primitive => "primitive",
+            Self::BuiltinMacro => "builtin-macro",
             Self::Module => "module",
             Self::Function => "function",
             Self::Struct => "struct",
@@ -187,6 +189,7 @@ impl Introductions {
 }
 #[derive(Default)]
 pub struct Resolution {
+    pub macro_prelude: HashMap<NameId, DefId>,
     pub introductions: Introductions,
     pub textual_imports: HashMap<usize, Binding>,
     pub crate_root: Option<DefId>,

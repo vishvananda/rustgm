@@ -336,6 +336,25 @@ pub struct Syntax<L> {
 
 pub type Ast<'source> = Syntax<Value<'source>>;
 
+impl<L> Default for Syntax<L> {
+    fn default() -> Self {
+        Self {
+            nodes: Vec::new(),
+            items: Vec::new(),
+            variants: Vec::new(),
+            use_trees: Vec::new(),
+            generics: Vec::new(),
+            function_types: Vec::new(),
+            attributes: Vec::new(),
+            edges: Vec::new(),
+            literals: Vec::new(),
+            captures: Vec::new(),
+            root: NodeId(0),
+            lookahead_high_water: 0,
+        }
+    }
+}
+
 impl<L> Syntax<L> {
     #[must_use]
     pub fn list(&self, range: List) -> &[NodeId] {

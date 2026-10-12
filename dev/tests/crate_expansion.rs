@@ -1032,3 +1032,93 @@ fn early_paths_check_outer_candidates_without_changing_ordinary_lookup() {
         );
     }
 }
+
+#[test]
+fn cfg_builtin_emits_typed_booleans_and_consumes_opaque_metadata() -> Result<(), String> {
+    use rustgm::{literal::Value, syntax::ast::Kind};
+    for (source, expected, calls) in [
+        ("fn f()->bool{cfg!(unix)}", true, 1),
+        ("fn f()->bool{cfg!(windows,)}", false, 1),
+        (
+            "fn f()->bool{cfg!(all(unix, target_os=\"linux\"))}",
+            true,
+            1,
+        ),
+        (
+            "macro_rules! query {($m:meta)=>{cfg!($m)}}fn f()->bool{query!(all(unix,target_os=\"linux\"))}",
+            true,
+            2,
+        ),
+        ("#![no_implicit_prelude]fn f()->bool{cfg!(unix)}", true, 1),
+    ] {
+        let report = analyze(source, &mut Files::default())?;
+        assert_eq!(report.invocations.len(), calls);
+        let call = report
+            .invocations
+            .last()
+            .ok_or("missing builtin invocation")?;
+        assert_eq!(call.rule, None);
+        assert_eq!(call.parser_calls, 0);
+        let unit = report.package.unit(call.node.file);
+        let Kind::Literal(index) = unit.configured.ast.node(call.node.node).kind else {
+            return Err("builtin did not construct a literal node".into());
+        };
+        assert!(
+            matches!(unit.literal(index).map_err(|e| format!("{e:?}"))?, Value::Boolean(value) if value == expected)
+        );
+        assert_eq!(unit.source.original(), source);
+        resolve::analyze_expanded(report).map_err(|e| format!("{e:?}"))?;
+    }
+    Ok(())
+}
+
+#[test]
+fn builtin_scope_can_be_shadowed_but_is_not_the_crate_root() -> Result<(), String> {
+    for source in [
+        "macro_rules! cfg {()=>{7}}fn f()->i32{cfg!()}",
+        "macro_rules! setup {()=>{macro_rules! cfg {()=>{7}}fn f()->i32{cfg!()}}}setup!();",
+        "#[cfg(any())] fn hidden(){cfg!(broken input);}fn f(){cfg!(unix);}",
+    ] {
+        resolve::analyze_expanded(analyze(source, &mut Files::default())?)
+            .map_err(|e| format!("{e:?}"))?;
+    }
+    for source in [
+        "fn f()->bool{crate::cfg!(unix)}",
+        "use cfg as chosen;fn f()->bool{chosen!(unix)}",
+        "macro_rules! setup {()=>{macro_rules! cfg {()=>{7}}}}setup!();fn f()->i32{cfg!()}",
+    ] {
+        assert!(analyze(source, &mut Files::default()).is_err(), "{source}");
+    }
+    Ok(())
+}
+
+#[test]
+fn cfg_builtin_rejects_invalid_arguments_and_output_contexts() {
+    for source in [
+        "fn f(){cfg!();}",
+        "fn f(){cfg!(unix,windows);}",
+        "fn f(){cfg!(unix,,);}",
+        "fn f(){cfg!(target_os=concat!(\"lin\",\"ux\"));}",
+        "fn f(){cfg!(target_os=3);}",
+        "type T=cfg!(unix);",
+        "cfg!(unix);",
+    ] {
+        assert!(analyze(source, &mut Files::default()).is_err(), "{source}");
+    }
+}
+
+#[test]
+fn builtin_materialization_does_not_renumber_later_generated_macro_targets() -> Result<(), String> {
+    let source = "fn early()->bool{cfg!(unix)}macro_rules! make {()=>{macro_rules! late{()=>{3}}use late as alias;}}make!();fn f()->i32{alias!()}";
+    let report = analyze(source, &mut Files::default())?;
+    let last = report.invocations.last().ok_or("missing generated call")?;
+    assert_eq!(
+        report
+            .package
+            .names
+            .get(report.definitions[last.definition].name),
+        "late"
+    );
+    resolve::analyze_expanded(report).map_err(|e| format!("{e:?}"))?;
+    Ok(())
+}

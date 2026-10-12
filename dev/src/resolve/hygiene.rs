@@ -63,7 +63,7 @@ impl Hygiene {
             definitions: definitions
                 .iter()
                 .enumerate()
-                .map(|(index, d)| ((d.module, d.node.node), index))
+                .filter_map(|(index, d)| d.node.map(|node| ((d.module, node.node), index)))
                 .collect(),
             expansions: invocations.iter().map(|i| i.definition).collect(),
             locals: HashMap::new(),

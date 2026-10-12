@@ -61,7 +61,12 @@ impl Resolver<'_> {
             }
             current = frame.parent;
         }
-        false
+        more_expanded
+            && self
+                .facts
+                .macro_prelude
+                .get(&name)
+                .is_some_and(|builtin| *builtin != target)
     }
     pub fn hygienic_lexical(
         &self,
@@ -141,6 +146,19 @@ impl Resolver<'_> {
             }
             barriers += u32::from(frame.barrier);
             current = frame.parent;
+        }
+        if namespace == Namespace::Macro
+            && let Some(target) = self.facts.macro_prelude.get(&name)
+        {
+            return Some((
+                ScopeId(0),
+                Binding {
+                    target: *target,
+                    access: Access::Public,
+                    origin: Origin::Direct,
+                    ambiguous: false,
+                },
+            ));
         }
         if namespace == Namespace::Type
             && let Some(def) = self.facts.primitives.get(&name)

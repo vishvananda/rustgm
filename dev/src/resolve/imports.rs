@@ -287,6 +287,16 @@ impl Resolver<'_> {
             work.selections = selections;
         }
         work.watch(index, observed.dependencies);
+        if let Ok(Lookup::Found(binding)) = &result
+            && self.facts.definitions[binding.target.0 as usize].kind == DefKind::BuiltinMacro
+            && self
+                .package
+                .names
+                .get(self.facts.definitions[binding.target.0 as usize].name)
+                == "cfg"
+        {
+            return Err(self.import_error(import, "ambiguous builtin cfg import"));
+        }
         if ambiguous {
             return Err(self.import_error(import, "ambiguous import path binding"));
         }

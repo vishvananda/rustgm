@@ -8,6 +8,7 @@ use super::{
 };
 use crate::{
     expand::{
+        builtin::{self, Builtin},
         config::Config,
         crate_syntax,
         macros::{
@@ -33,11 +34,20 @@ mod attributes;
 mod bindings;
 mod paths;
 
+pub enum Body {
+    Declarative(Compiled),
+    Builtin(Builtin),
+}
+#[derive(Clone, Copy)]
+enum MacroTarget {
+    Declarative(usize),
+    Builtin(Builtin),
+}
 pub struct Definition {
-    pub node: NodeKey,
+    pub node: Option<NodeKey>,
     pub module: ModuleId,
     pub name: NameId,
-    pub compiled: Compiled,
+    pub body: Body,
     pub context: ContextId,
     pub introduction: ContextId,
     pub preceding_scope: Scope,
@@ -48,7 +58,7 @@ pub struct Invocation {
     pub node: NodeKey,
     pub original: Span,
     pub definition: usize,
-    pub rule: usize,
+    pub rule: Option<usize>,
     pub generated: Span,
     pub parser_calls: usize,
     pub parent: ContextId,
@@ -123,6 +133,7 @@ struct Engine<'a, S> {
     work: Vec<Work>,
     children: Vec<NodeId>,
     recursion_limit: usize,
+    builtin_definitions: Vec<Option<usize>>,
 }
 /// Expand textual macro invocations, including generated syntax and modules.
 /// PA8's path-resolution and hygiene integration builds on this retained state.
@@ -163,6 +174,7 @@ pub fn analyze(
         })],
         children: Vec::new(),
         recursion_limit,
+        builtin_definitions: vec![None; Builtin::ALL.len()],
     };
     engine.scan()?;
     while let Some(index) = engine.ready.pop_front() {
@@ -516,13 +528,13 @@ impl<S: Sources> Engine<'_, S> {
         .map_err(|e| Error::at(file, e.offset, e.message))?;
         let index = self.definitions.len();
         self.definitions.push(Definition {
-            node: NodeKey {
+            node: Some(NodeKey {
                 file,
                 node: visit.node,
-            },
+            }),
             module: visit.module,
             name,
-            compiled: Compiled::new(definition),
+            body: Body::Declarative(Compiled::new(definition)),
             context,
             introduction: visit.introduction,
             preceding_scope: self.head,
@@ -542,7 +554,7 @@ impl<S: Sources> Engine<'_, S> {
             visit.node,
             name,
             flags.exported,
-            visit.introduction,
+            (index, visit.introduction),
         )?;
         Ok(())
     }
@@ -577,7 +589,37 @@ impl<S: Sources> Engine<'_, S> {
             }
         }
         let call = &self.calls[index];
-        self.paths.lookup(&mut self.loader.package, call, index)
+        let target = self.paths.lookup(&mut self.loader.package, call, index)?;
+        match target {
+            Some(MacroTarget::Declarative(index)) => Ok(Some(index)),
+            Some(MacroTarget::Builtin(builtin)) => self.builtin_definition(builtin).map(Some),
+            None => Ok(None),
+        }
+    }
+    fn builtin_definition(&mut self, builtin: Builtin) -> Result<usize, Error> {
+        let slot = builtin as usize;
+        if let Some(index) = self.builtin_definitions[slot] {
+            return Ok(index);
+        }
+        let name = self
+            .loader
+            .package
+            .names
+            .intern(builtin.name())
+            .map_err(|e| Error::at(FileId(0), 0, e))?;
+        let index = self.definitions.len();
+        self.definitions.push(Definition {
+            node: None,
+            module: ModuleId(0),
+            name,
+            body: Body::Builtin(builtin),
+            context: ContextId(0),
+            introduction: ContextId(0),
+            preceding_scope: Scope::ROOT,
+            local_inner_macros: false,
+        });
+        self.builtin_definitions[slot] = Some(index);
+        Ok(index)
     }
     fn context(&self, file: FileId, offset: u32) -> Result<ContextId, Error> {
         self.loader.package.expansion_context(file, offset)
@@ -625,6 +667,63 @@ impl<S: Sources> Engine<'_, S> {
             .ok_or_else(|| Error::at(file, 0, "macro invocation requires delimiters"))?;
         Input::from_forest(forest, range).map_err(|e| Error::at(file, e.offset, e.message))
     }
+    fn invoke_builtin(
+        &mut self,
+        visit: Visit,
+        grammar: MacroContext,
+        definition: usize,
+        context: ContextId,
+        input: &Input,
+        builtin: Builtin,
+    ) -> Result<ContextId, Error> {
+        let package = &mut self.loader.package;
+        let file = package.modules[visit.module.0 as usize].file;
+        let parent = visit.introduction;
+        let original = package.unit(file).configured.ast.node(visit.node).span;
+        let view = self
+            .captures
+            .view(|id| package.units.get(id.0 as usize).map(|u| u.source.text()));
+        let generated = builtin::expand(
+            builtin,
+            package.unit(file).source.text(),
+            input,
+            &view,
+            self.config,
+            grammar,
+        )
+        .map_err(|e| Error::at(file, original.start, e.message))?;
+        let span = Span {
+            start: 0,
+            end: u32::try_from(generated.source.len())
+                .map_err(|_| Error::at(file, original.start, "builtin output too large"))?,
+        };
+        let origins = [Origin {
+            generated: span,
+            original: Location {
+                file,
+                span: original,
+            },
+            context: Some(context),
+        }];
+        let generated = package.units[file.0 as usize]
+            .install_expansion(visit.node, &generated.source, generated.syntax, &origins)
+            .map_err(|e| Error::at(file, original.start, e.message))?;
+        self.paths.state.facts.introductions.parents.push(parent);
+        self.invocations.push(Invocation {
+            context,
+            node: NodeKey {
+                file,
+                node: visit.node,
+            },
+            original,
+            definition,
+            rule: None,
+            generated,
+            parser_calls: 0,
+            parent,
+        });
+        Ok(context)
+    }
     fn invoke(
         &mut self,
         visit: Visit,
@@ -639,17 +738,29 @@ impl<S: Sources> Engine<'_, S> {
             u32::try_from(self.invocations.len() + 1)
                 .map_err(|_| Error::at(file, 0, "too many expansion contexts"))?,
         );
+        if let Body::Builtin(builtin) = self.definitions[definition].body {
+            return self.invoke_builtin(visit, grammar, definition, context, &input, builtin);
+        }
         let package = &mut self.loader.package;
         let units = &package.units;
         let original = units[file.0 as usize].configured.ast.node(visit.node).span;
         let entry = &mut self.definitions[definition];
-        let definition_source = units[entry.node.file.0 as usize].source.text();
+        let node = entry
+            .node
+            .ok_or_else(|| Error::at(file, original.start, "declarative macro has no source"))?;
+        let Body::Declarative(compiled) = &mut entry.body else {
+            return Err(Error::at(
+                file,
+                original.start,
+                "invalid declarative macro body",
+            ));
+        };
+        let definition_source = units[node.file.0 as usize].source.text();
         let source = units[file.0 as usize].source.text();
         let view = self
             .captures
             .view(|id| units.get(id.0 as usize).map(|u| u.source.text()));
-        let mut matched = entry
-            .compiled
+        let mut matched = compiled
             .invoke_with_inputs(
                 definition_source,
                 source,
@@ -659,12 +770,11 @@ impl<S: Sources> Engine<'_, S> {
                 &view,
             )
             .map_err(|e| Error::at(file, e.offset, e.message))?;
-        let transcription =
-            transcribe::transcribe(&entry.compiled.definition, &matched, source, &input)
-                .map_err(|e| Error::at(file, original.start, e.message))?;
+        let transcription = transcribe::transcribe(&compiled.definition, &matched, source, &input)
+            .map_err(|e| Error::at(file, original.start, e.message))?;
         let environment = Environment {
             definition: Source {
-                file: entry.node.file,
+                file: node.file,
                 text: definition_source,
             },
             invocation: Source { file, text: source },
@@ -696,7 +806,7 @@ impl<S: Sources> Engine<'_, S> {
             },
             original,
             definition,
-            rule: matched.rule,
+            rule: Some(matched.rule),
             generated,
             parser_calls: matched.captures.parser_calls,
             parent,
