@@ -407,3 +407,33 @@ calibration and three ABBA blocks, A/B medians at 4,000/16,000/64,000 functions
 were 51.21/51.59, 192.00/196.04 and 858.06/861.00 ms. The largest A/A samples
 ranged 818.66–854.23 ms. These bounded observations accompany the change;
 full expanded-crate throughput remains required before PA8 activation.
+
+## Physical location builtins
+
+`line!` and `column!` now construct typed `u32` literals. Their provenance walk
+preserves a whole captured call's original location, but attributes a call
+constructed from a captured identifier and template delimiters to its enclosing
+invocation. Literal-template and nested-template calls follow that invocation
+chain. The independently compiled/run cases in `builtin-probes/location-results.json`
+cover these distinctions, direct calls, Unicode scalar columns and UTF-8 BOMs.
+The same reference-implementation tests exercise LF and CRLF input.
+
+Physical source positions build a line-start index on first demand. Generated
+spelling images never become physical lines, and cloned physical module instances
+retain the index. Invalid offsets inside UTF-8 scalars are diagnosed. Location
+builtins reject arguments and do not invoke the syntax parser to recover values.
+
+`location-full-validation.log` passes 150 Rust tests, all 1,012 active fixtures,
+strict Clippy, the 102-file audit and 14 harness tests. Independent earlier-stage
+checks and receipt regeneration are in `location-reference-validation.log`;
+only compiler fingerprints changed, with every earlier oracle byte identical.
+`location-release-validation.log` passes the release Rust tests.
+
+The frozen CPU-10 ordinary-name comparison is
+`obj/perf/1791785364032056514/samples.json`. All full outputs match. A/B medians
+at 4,000/16,000/64,000 functions were 52.86/58.09, 208.64/229.93 and
+883.12/952.25 ms; largest-input A/A samples ranged 820.82–879.01 ms.
+This run observes an approximately 8–10% slowdown and does not establish a
+no-regression result. The ordinary-name path does not demand a line index;
+source container layout and binary layout remain possible contributors, not
+measured explanations. Revisit alongside the forthcoming full expansion workload.

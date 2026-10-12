@@ -121,3 +121,23 @@ fn scalar_corpus_always_advances_or_diagnoses() -> Result<(), String> {
     }
     Ok(())
 }
+
+#[test]
+fn physical_positions_ignore_bom_and_generated_images_and_count_unicode() -> Result<(), String> {
+    use rustgm::support::source::Position;
+    let mut source = SourceFile::new("\u{feff}é\r\n\t🦀x\r\n".as_bytes().to_vec())?;
+    assert_eq!(source.position(3)?, Position { line: 1, column: 1 });
+    assert_eq!(source.position(5)?, Position { line: 1, column: 2 });
+    assert_eq!(source.position(7)?, Position { line: 2, column: 2 });
+    assert_eq!(source.position(11)?, Position { line: 2, column: 3 });
+    assert_eq!(source.position(13)?, Position { line: 3, column: 1 });
+    assert!(source.position(8).is_err());
+    let base = source.append("generated")?;
+    assert!(source.position(base).is_err());
+    assert_eq!(source.position(11)?, Position { line: 2, column: 3 });
+    assert_eq!(
+        source.physical_copy().position(11)?,
+        Position { line: 2, column: 3 }
+    );
+    Ok(())
+}

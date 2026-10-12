@@ -3,7 +3,7 @@ use super::{
     names::{NameId, Names},
     unit::{FileId, NodeKey, Unit},
 };
-use crate::expand::stream::ContextId;
+use crate::expand::stream::{ContextId, Origin};
 use crate::syntax::{
     ast::{Kind, NodeId},
     token_tree::Span,
@@ -45,17 +45,21 @@ impl Error {
     }
 }
 impl Package {
+    pub(crate) fn origin(&self, file: FileId, offset: u32) -> Option<Origin> {
+        let origins = &self.unit(file).origins;
+        let index = origins.partition_point(|origin| {
+            origin.generated.end <= offset && origin.generated.start != offset
+        });
+        origins
+            .get(index)
+            .filter(|origin| origin.generated.start <= offset && offset <= origin.generated.end)
+            .copied()
+    }
     /// # Errors
     /// Rejects malformed or excessively deep expansion provenance.
     pub fn expansion_context(&self, mut file: FileId, mut offset: u32) -> Result<ContextId, Error> {
         for _ in 0..4096 {
-            let origins = &self.unit(file).origins;
-            let index = origins.partition_point(|origin| {
-                origin.generated.end <= offset && origin.generated.start != offset
-            });
-            let Some(origin) = origins.get(index).filter(|origin| {
-                origin.generated.start <= offset && offset <= origin.generated.end
-            }) else {
+            let Some(origin) = self.origin(file, offset) else {
                 return Ok(ContextId(0));
             };
             if let Some(context) = origin.context {

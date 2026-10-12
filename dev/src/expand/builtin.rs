@@ -6,7 +6,11 @@ use super::{
 };
 use crate::{
     lex::token::{Kind as TokenKind, LexError, Punctuation},
-    literal::Value,
+    literal::{
+        Value,
+        value::{Integer, IntegerType},
+    },
+    support::source::Position,
     syntax::{
         ast::{Ast, Kind, List, MacroContext, Node, NodeId},
         interpolation::{Inputs, Nonterminal},
@@ -17,15 +21,29 @@ use crate::{
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Builtin {
     Cfg,
+    Line,
+    Column,
 }
 impl Builtin {
-    pub const ALL: [Self; 1] = [Self::Cfg];
+    pub const ALL: [Self; 3] = [Self::Cfg, Self::Line, Self::Column];
+    #[must_use]
+    pub const fn needs_position(self) -> bool {
+        matches!(self, Self::Line | Self::Column)
+    }
     #[must_use]
     pub const fn name(self) -> &'static str {
         match self {
             Self::Cfg => "cfg",
+            Self::Line => "line",
+            Self::Column => "column",
         }
     }
+}
+
+pub struct Environment<'a> {
+    pub config: &'a Config,
+    pub grammar: MacroContext,
+    pub position: Option<Position>,
 }
 
 pub struct Expansion {
@@ -40,13 +58,41 @@ pub fn expand(
     source: &str,
     input: &Input,
     inputs: &dyn Inputs,
-    config: &Config,
-    context: MacroContext,
+    environment: &Environment<'_>,
 ) -> Result<Expansion, LexError> {
     match builtin {
-        Builtin::Cfg => cfg(source, input, inputs, config, context),
+        Builtin::Cfg => cfg(
+            source,
+            input,
+            inputs,
+            environment.config,
+            environment.grammar,
+        ),
+        Builtin::Line | Builtin::Column => {
+            if let Some(token) = input.tokens.first() {
+                return Err(error(token.start, "location builtin takes no arguments"));
+            }
+            let position = environment
+                .position
+                .ok_or_else(|| error(0, "missing physical builtin position"))?;
+            let value = if builtin == Builtin::Line {
+                position.line
+            } else {
+                position.column
+            };
+            literal(
+                Value::Integer(Integer {
+                    magnitude: u128::from(value),
+                    suffix: Some(IntegerType::U32),
+                }),
+                format!("{value}u32"),
+                environment.grammar,
+                environment.config,
+            )
+        }
     }
 }
+
 fn cfg(
     source: &str,
     input: &Input,

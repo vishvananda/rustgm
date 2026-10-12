@@ -1122,3 +1122,73 @@ fn builtin_materialization_does_not_renumber_later_generated_macro_targets() -> 
     resolve::analyze_expanded(report).map_err(|e| format!("{e:?}"))?;
     Ok(())
 }
+
+#[test]
+fn location_builtins_distinguish_templates_from_whole_captured_calls() -> Result<(), String> {
+    use rustgm::{
+        expand::builtin::Builtin,
+        literal::{Value, value::IntegerType},
+        resolve::expansion::Body,
+        syntax::ast::Kind,
+    };
+    for (source, expected) in [
+        (
+            "fn main(){\nlet result=(line!(),column!());\n}\n",
+            &[2, 21][..],
+        ),
+        (
+            "macro_rules! m {()=>{(line!(),column!())}}\nfn main(){\n let result=m!();\n}\n",
+            &[3, 13][..],
+        ),
+        (
+            "macro_rules! m {($e:expr)=>{$e}}\nfn main(){\n let result=m!((line!(),column!()));\n}\n",
+            &[3, 25][..],
+        ),
+        (
+            "macro_rules! m {($i:ident)=>{$i!()}}\nfn main(){\n let result=(m!(line),m!(column));\n}\n",
+            &[3, 23][..],
+        ),
+        (
+            "macro_rules! b {($e:expr)=>{$e}}\nmacro_rules! a {()=>{b!((line!(),column!()))}}\nfn main(){\n let result=a!();\n}\n",
+            &[4, 13][..],
+        ),
+        (
+            "fn main(){\n let é=0; let result=(line!(),column!());\n}\n",
+            &[2, 31][..],
+        ),
+        ("﻿const C:u32=column!();\n", &[13][..]),
+    ] {
+        for source in [source.to_owned(), source.replace('\n', "\r\n")] {
+            let report = analyze(&source, &mut Files::default())?;
+            let mut actual = Vec::new();
+            for call in &report.invocations {
+                if !matches!(
+                    report.definitions[call.definition].body,
+                    Body::Builtin(Builtin::Line | Builtin::Column)
+                ) {
+                    continue;
+                }
+                let unit = report.package.unit(call.node.file);
+                let Kind::Literal(index) = unit.configured.ast.node(call.node.node).kind else {
+                    return Err("location result is not a literal".into());
+                };
+                let Value::Integer(value) = unit.literal(index).map_err(|e| format!("{e:?}"))?
+                else {
+                    return Err("location result is not an integer".into());
+                };
+                assert_eq!(value.suffix, Some(IntegerType::U32));
+                actual.push(value.magnitude);
+            }
+            assert_eq!(actual, expected, "{source}");
+            resolve::analyze_expanded(report).map_err(|e| format!("{e:?}"))?;
+        }
+    }
+    Ok(())
+}
+
+#[test]
+fn location_builtins_reject_arguments() {
+    for source in ["fn f(){line!(1);}", "fn f(){column!(,);}"] {
+        assert!(analyze(source, &mut Files::default()).is_err(), "{source}");
+    }
+}

@@ -32,6 +32,7 @@ use crate::{
 use std::collections::VecDeque;
 mod attributes;
 mod bindings;
+mod location;
 mod paths;
 
 pub enum Body {
@@ -676,10 +677,33 @@ impl<S: Sources> Engine<'_, S> {
         input: &Input,
         builtin: Builtin,
     ) -> Result<ContextId, Error> {
-        let package = &mut self.loader.package;
-        let file = package.modules[visit.module.0 as usize].file;
+        let file = self.loader.package.modules[visit.module.0 as usize].file;
         let parent = visit.introduction;
-        let original = package.unit(file).configured.ast.node(visit.node).span;
+        let original = self
+            .loader
+            .package
+            .unit(file)
+            .configured
+            .ast
+            .node(visit.node)
+            .span;
+        let position = if builtin.needs_position() && input.tokens.is_empty() {
+            let physical = self.call_location(Location {
+                file,
+                span: original,
+            })?;
+            Some(
+                self.loader
+                    .package
+                    .unit(physical.file)
+                    .source
+                    .position(physical.span.start)
+                    .map_err(|e| Error::at(physical.file, physical.span.start, e))?,
+            )
+        } else {
+            None
+        };
+        let package = &mut self.loader.package;
         let view = self
             .captures
             .view(|id| package.units.get(id.0 as usize).map(|u| u.source.text()));
@@ -688,8 +712,11 @@ impl<S: Sources> Engine<'_, S> {
             package.unit(file).source.text(),
             input,
             &view,
-            self.config,
-            grammar,
+            &builtin::Environment {
+                config: self.config,
+                grammar,
+                position,
+            },
         )
         .map_err(|e| Error::at(file, original.start, e.message))?;
         let span = Span {

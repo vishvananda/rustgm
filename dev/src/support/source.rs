@@ -8,6 +8,13 @@ pub struct SourceFile {
     original: String,
     normalized: Option<String>,
     physical_len: usize,
+    line_starts: std::sync::OnceLock<Vec<u32>>,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct Position {
+    pub line: u32,
+    pub column: u32,
 }
 
 impl SourceFile {
@@ -58,6 +65,7 @@ impl SourceFile {
             original,
             normalized,
             physical_len,
+            line_starts: std::sync::OnceLock::new(),
         })
     }
 
@@ -70,7 +78,44 @@ impl SourceFile {
             normalized: (self.original.len() != self.physical_len)
                 .then(|| self.text()[..self.physical_len].to_owned()),
             physical_len: self.physical_len,
+            line_starts: self.line_starts.clone(),
         }
+    }
+
+    /// Locate a normalized offset in the original physical source. Columns count
+    /// Unicode scalar values; the UTF-8 BOM does not occupy a source column.
+    /// # Errors
+    /// Rejects generated, out-of-range and non-character-boundary offsets.
+    pub fn position(&self, offset: u32) -> Result<Position, &'static str> {
+        let source = &self.text()[..self.physical_len];
+        let end = offset as usize;
+        if end > source.len() || !source.is_char_boundary(end) {
+            return Err("physical source offset is out of range or inside a character");
+        }
+        let starts = self.line_starts.get_or_init(|| {
+            std::iter::once(0)
+                .chain(
+                    source
+                        .bytes()
+                        .enumerate()
+                        .filter(|(_, byte)| *byte == b'\n')
+                        .map(|(index, _)| u32::try_from(index + 1).unwrap_or(u32::MAX)),
+                )
+                .collect()
+        });
+        let line = starts.partition_point(|start| *start <= offset);
+        let start = starts[line.saturating_sub(1)] as usize;
+        let prefix = &source[start..end];
+        let prefix = if start == 0 {
+            prefix.strip_prefix('\u{feff}').unwrap_or(prefix)
+        } else {
+            prefix
+        };
+        Ok(Position {
+            line: u32::try_from(line).map_err(|_| "too many source lines")?,
+            column: u32::try_from(prefix.chars().count() + 1)
+                .map_err(|_| "source column overflow")?,
+        })
     }
 
     #[must_use]
