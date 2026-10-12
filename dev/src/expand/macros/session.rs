@@ -98,7 +98,7 @@ pub fn analyze(source: &str, config: &Config) -> Result<Report, LexError> {
                 ItemKind::Module { .. } | ItemKind::Trait { .. } | ItemKind::Impl { .. }
             );
         }
-        if let Kind::Macro { path, capture } = data.kind {
+        if let Kind::Macro { path, capture, .. } = data.kind {
             let span = match ast.node(path).kind {
                 Kind::Name(span) => span,
                 Kind::Path {

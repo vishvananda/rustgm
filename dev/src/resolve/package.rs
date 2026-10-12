@@ -3,7 +3,10 @@ use super::{
     names::{NameId, Names},
     unit::{FileId, NodeKey, Unit},
 };
-use crate::syntax::{ast::NodeId, token_tree::Span};
+use crate::syntax::{
+    ast::{Kind, NodeId},
+    token_tree::Span,
+};
 use std::collections::HashMap;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -41,6 +44,48 @@ impl Error {
     }
 }
 impl Package {
+    /// Read canonical names directly from a parsed path.
+    /// # Errors
+    /// Rejects malformed path facts, unsupported crate identities and name overflow.
+    pub fn path_names(
+        &mut self,
+        file: super::unit::FileId,
+        node: NodeId,
+    ) -> Result<(bool, Vec<NameId>), Error> {
+        match self.unit(file).configured.ast.node(node).kind {
+            Kind::CrateRoot(0) => {
+                let name = self.names.intern("crate").map_err(|e| {
+                    Error::at(
+                        file,
+                        self.unit(file).configured.ast.node(node).span.start,
+                        e,
+                    )
+                })?;
+                Ok((false, vec![name]))
+            }
+            Kind::CrateRoot(_) => Err(Error::at(
+                file,
+                self.unit(file).configured.ast.node(node).span.start,
+                "external defining crate requires metadata",
+            )),
+            Kind::Name(span) => Ok((false, vec![self.name(file, span)?])),
+            Kind::Applied { base, .. } => self.path_names(file, base),
+            Kind::Path { absolute, segments } => {
+                let mut names = Vec::with_capacity((segments.end - segments.start) as usize);
+                for offset in segments.start..segments.end {
+                    let id = self.unit(file).configured.ast.edges[offset as usize];
+                    names.extend(self.path_names(file, id)?.1);
+                }
+                Ok((absolute, names))
+            }
+            _ => Err(Error::at(
+                file,
+                self.unit(file).configured.ast.node(node).span.start,
+                "expected a name path",
+            )),
+        }
+    }
+
     #[must_use]
     pub fn unit(&self, file: FileId) -> &Unit {
         &self.units[file.0 as usize]

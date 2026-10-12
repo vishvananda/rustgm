@@ -16,6 +16,9 @@ use crate::{
     },
 };
 
+mod expansion;
+mod original;
+
 pub use crate::support::source::FileId;
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct NodeKey {
@@ -28,6 +31,8 @@ pub struct Unit {
     pub configured: ConfiguredSyntax<StoredValue>,
     pub literals: Storage,
     pub owner_indices: Vec<Option<std::num::NonZeroU32>>,
+    pub origins: Vec<crate::expand::stream::Origin>,
+    original: original::Original,
 }
 
 impl Unit {
@@ -58,11 +63,14 @@ impl Unit {
                 .ok_or_else(|| error(0, "too many attribute owners"))?;
             owner_indices[owner.node.0 as usize] = Some(index);
         }
+        let original = original::Original::new(&configured, &literals);
         Ok(Self {
             source,
             configured,
             literals,
             owner_indices,
+            origins: Vec::new(),
+            original,
         })
     }
 

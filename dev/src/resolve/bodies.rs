@@ -64,7 +64,7 @@ impl Resolver<'_> {
         }
         match self.kind(c, node) {
             Kind::Item(index) => self.item_body(c, node, index),
-            Kind::Path { .. } | Kind::Name(_) => self.reference(c, node, ns),
+            Kind::Path { .. } | Kind::Name(_) | Kind::CrateRoot(_) => self.reference(c, node, ns),
             Kind::Let {
                 pattern,
                 ty,
@@ -261,7 +261,7 @@ impl Resolver<'_> {
                     .unit(c.file)
                     .configured
                     .ast
-                    .push_children(node, &mut self.scratch);
+                    .push_children(node, self.scratch);
                 let end = self.scratch.len();
                 for index in (mark..end).rev() {
                     self.visits.push((c, self.scratch[index], ns));

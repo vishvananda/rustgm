@@ -23,6 +23,30 @@ pub enum StoredValue {
     Boolean(bool),
 }
 
+impl StoredValue {
+    /// Rebase borrowed ranges after appending their source image. Decoded bytes
+    /// already belong to the destination pool and keep their stored identity.
+    ///
+    /// # Errors
+    /// Rejects source ranges overflowing compact offsets.
+    pub fn offset_source(mut self, offset: u32) -> Result<Self, &'static str> {
+        let bytes = match &mut self {
+            Self::Float { decimal, .. } => Some(decimal),
+            Self::String(bytes) | Self::ByteString(bytes) | Self::CString(bytes) => Some(bytes),
+            _ => None,
+        };
+        if let Some(Bytes::Source { start, end }) = bytes {
+            *start = start
+                .checked_add(offset)
+                .ok_or("literal offset exceeds 32 bits")?;
+            *end = end
+                .checked_add(offset)
+                .ok_or("literal offset exceeds 32 bits")?;
+        }
+        Ok(self)
+    }
+}
+
 /// One append-only buffer for escaped/normalized literal payloads in a source.
 /// Plain literal contents remain ranges into that source's immutable image.
 #[derive(Default, Debug)]
@@ -31,6 +55,17 @@ pub struct Storage {
 }
 
 impl Storage {
+    pub(crate) fn copy_prefix(&self, size: usize) -> Result<Self, &'static str> {
+        self.decoded
+            .get(..size)
+            .map(|bytes| Self {
+                decoded: bytes.to_vec(),
+            })
+            .ok_or("invalid literal-pool prefix")
+    }
+    pub(crate) fn truncate(&mut self, size: usize) {
+        self.decoded.truncate(size);
+    }
     /// # Errors
     /// Rejects borrowed data outside the source or a decoded pool over 4 GiB.
     pub fn store(&mut self, source: &str, value: Value<'_>) -> Result<StoredValue, &'static str> {

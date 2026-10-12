@@ -54,13 +54,38 @@ pub struct Tree {
     pub kind: TreeKind,
 }
 
-#[derive(Default, Debug)]
+#[derive(Clone, Default, Debug)]
 pub struct Forest {
     nodes: Vec<Tree>,
     end: u32,
 }
 
 impl Forest {
+    /// Copy retained typed trees into another spelling image, preserving local tree IDs.
+    ///
+    /// # Errors
+    /// Propagates invalid source/provenance mappings; does not lex or interpret text.
+    pub fn map_spans(
+        &self,
+        map: &mut impl FnMut(Span) -> Result<Span, LexError>,
+    ) -> Result<Self, LexError> {
+        let mut nodes = Vec::with_capacity(self.nodes.len());
+        for tree in &self.nodes {
+            let mut tree = *tree;
+            tree.span = map(tree.span)?;
+            if let TreeKind::Doc { body, .. } = &mut tree.kind {
+                *body = map(*body)?;
+            }
+            nodes.push(tree);
+        }
+        let end = map(Span {
+            start: self.end,
+            end: self.end,
+        })?
+        .end;
+        Ok(Self { nodes, end })
+    }
+
     /// Capture a diagnostic file or a retained macro fragment. The ordinary
     /// source parser must not use a whole-file forest as its token buffer.
     ///
@@ -188,6 +213,32 @@ pub(crate) struct ForestBuilder {
 }
 
 impl ForestBuilder {
+    /// Graft already classified, balanced trees without tokenizing their spelling.
+    pub(crate) fn append(
+        &mut self,
+        forest: &Forest,
+        mut span: impl FnMut(Span) -> Result<Span, LexError>,
+    ) -> Result<(), LexError> {
+        let base =
+            u32::try_from(self.forest.nodes.len()).map_err(|_| error(0, "too many token trees"))?;
+        self.forest
+            .nodes
+            .len()
+            .checked_add(forest.nodes.len())
+            .and_then(|n| u32::try_from(n).ok())
+            .ok_or_else(|| error(0, "too many token trees"))?;
+        for tree in &forest.nodes {
+            let mut tree = *tree;
+            tree.span = span(tree.span)?;
+            match &mut tree.kind {
+                TreeKind::Group { after, .. } => *after += base,
+                TreeKind::Doc { body, .. } => *body = span(*body)?,
+                TreeKind::Token(_) => {}
+            }
+            self.forest.nodes.push(tree);
+        }
+        Ok(())
+    }
     /// # Errors
     /// Rejects delimiter errors and bare CR in doc comments. Callers supply
     /// tokens from the lexer/cursor with spans in this source image.

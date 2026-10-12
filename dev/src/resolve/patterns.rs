@@ -190,7 +190,7 @@ impl Resolver<'_> {
                     .unit(c.file)
                     .configured
                     .ast
-                    .push_children(node, &mut self.scratch);
+                    .push_children(node, self.scratch);
                 let end = self.scratch.len();
                 for index in mark..end {
                     self.pattern(c, self.scratch[index], bindings)?;

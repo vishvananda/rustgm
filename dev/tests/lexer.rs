@@ -77,7 +77,7 @@ fn lifetime_and_character_boundaries() -> Result<(), String> {
 fn nested_comments_are_iterative_and_compact() -> Result<(), String> {
     let source = format!("{}{}", "/*".repeat(20000), "*/".repeat(20000));
     assert_eq!(scan(&source)?.len(), 1);
-    assert!(size_of::<Token>() <= 16);
+    assert!(size_of::<Token>() <= 12);
     Ok(())
 }
 

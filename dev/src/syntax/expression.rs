@@ -17,6 +17,8 @@ pub mod fragment;
 mod items;
 pub use items::parse_crate;
 mod attributes;
+mod interpolate;
+use fragment::FragmentKind as F;
 mod pattern;
 pub mod render;
 mod types;
@@ -38,7 +40,7 @@ const CONDITION: Context = Context {
     statement: false,
 };
 
-pub struct Parser<'source> {
+pub struct Parser<'source, 'inputs> {
     cursor: Cursor<'source>,
     ast: Ast<'source>,
     scratch: Vec<NodeId>,
@@ -46,6 +48,8 @@ pub struct Parser<'source> {
     condition_work: Vec<(NodeId, bool)>,
     extended: bool,
     item_scope: items::Scope,
+    inputs: &'inputs dyn super::interpolation::Inputs,
+    has_opaque: bool,
 }
 
 /// Parse one expression fragment, including a block of statements.
@@ -63,7 +67,7 @@ pub fn parse(source: &str) -> Result<Ast<'_>, LexError> {
     Ok(parser.ast)
 }
 
-impl<'source> Parser<'source> {
+impl<'source> Parser<'source, '_> {
     fn new(source: &'source str, extended: bool) -> Result<Self, LexError> {
         Ok(Self::with_cursor(Cursor::new(source)?, extended))
     }
@@ -89,6 +93,8 @@ impl<'source> Parser<'source> {
             condition_work: Vec::new(),
             extended,
             item_scope: items::Scope::Module,
+            inputs: &super::interpolation::EMPTY_INPUTS,
+            has_opaque: false,
         }
     }
     fn nesting_limit(&self) -> u16 {
@@ -273,6 +279,15 @@ impl<'source> Parser<'source> {
     }
 
     fn prefix(&mut self, context: Context) -> Result<NodeId, LexError> {
+        if let Some(node) = self.interpolated(&[
+            F::Expression,
+            F::Expression2021,
+            F::Literal,
+            F::Block,
+            F::Path,
+        ])? {
+            return Ok(node);
+        }
         let token = self
             .cursor
             .peek(0)?
@@ -289,6 +304,7 @@ impl<'source> Parser<'source> {
             return self.node(token.start, Kind::Literal(id));
         }
         match token.kind {
+            TokenKind::CrateRoot(_) => self.path_expression(context),
             TokenKind::Punctuation(P::Minus | P::Bang | P::Star | P::And | P::AndAnd) => {
                 self.unary(context)
             }
@@ -449,7 +465,20 @@ impl<'source> Parser<'source> {
             let capture = u32::try_from(self.ast.captures.len())
                 .map_err(|_| error(start, "too many captured fragments"))?;
             self.ast.captures.push(forest);
-            return self.node(start, Kind::Macro { path, capture });
+            return self.node(
+                start,
+                Kind::Macro {
+                    path,
+                    capture,
+                    context: if context.statement
+                        && opener.kind == TokenKind::Punctuation(P::OpenBrace)
+                    {
+                        crate::syntax::ast::MacroContext::Statements
+                    } else {
+                        crate::syntax::ast::MacroContext::Expression
+                    },
+                },
+            );
         }
         if context.structures && self.cursor.at(P::OpenBrace)? {
             return self.structure(path);

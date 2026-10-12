@@ -5,7 +5,9 @@ use crate::{
     syntax::ast::{PatternFlavor, TypeFlavor},
 };
 
-impl Parser<'_> {
+use super::fragment::FragmentKind as F;
+
+impl Parser<'_, '_> {
     pub(super) fn pattern(&mut self, alternatives: bool) -> Result<NodeId, LexError> {
         if self.depth >= self.nesting_limit() {
             return Err(self.error(if self.extended {
@@ -48,6 +50,28 @@ impl Parser<'_> {
         reason = "cohesive pattern prefix dispatch retains modifier and path ownership within the audit limit"
     )]
     fn pattern_atom(&mut self) -> Result<NodeId, LexError> {
+        if let Some(node) = self.interpolated(&[F::Pattern, F::PatternParameter, F::Literal])? {
+            return Ok(node);
+        }
+        if let Some(node) = self.interpolated(&[F::Expression, F::Expression2021])? {
+            let literal = match self.ast.node(node).kind {
+                Kind::Unary {
+                    op: super::Unary::Negate,
+                    operand,
+                } => operand,
+                _ => node,
+            };
+            if !matches!(
+                self.ast.node(literal).kind,
+                Kind::Literal(_) | Kind::DeferredLiteral(_)
+            ) {
+                return Err(error(
+                    self.ast.node(node).span.start,
+                    "expression fragment is not a literal pattern",
+                ));
+            }
+            return Ok(node);
+        }
         let token = self
             .cursor
             .peek(0)?
@@ -101,9 +125,12 @@ impl Parser<'_> {
         }
         let by_ref = self.word("ref")?;
         let mutable = self.word("mut")?;
+        let opaque_path = self
+            .splice()?
+            .is_some_and(|splice| splice.syntax_kind() == Some(F::Path));
         let path = self.path()?;
         if self.extended && self.eat(P::Bang)? {
-            return self.macro_capture(path);
+            return self.macro_capture(path, crate::syntax::ast::MacroContext::Pattern);
         }
         if self.extended && self.cursor.at(P::OpenBrace)? {
             if by_ref || mutable {
@@ -124,6 +151,12 @@ impl Parser<'_> {
                     elements,
                 },
             );
+        }
+        if opaque_path {
+            if by_ref || mutable {
+                return Err(error(start, "binding modifier requires an identifier"));
+            }
+            return Ok(path);
         }
         let simple = match self.ast.node(path).kind {
             Kind::Path {
@@ -192,6 +225,8 @@ impl Parser<'_> {
                         | TokenKind::Float
                         | TokenKind::Character
                         | TokenKind::Byte
+                        | TokenKind::Interpolated(_)
+                        | TokenKind::CrateRoot(_)
                         | TokenKind::Punctuation(P::Minus | P::ColonColon | P::Less)
                 )
             }) && !self.cursor.word("if")?
@@ -321,6 +356,9 @@ impl Parser<'_> {
     }
 
     pub(super) fn literal_pattern(&mut self) -> Result<NodeId, LexError> {
+        if let Some(node) = self.interpolated(&[F::Literal])? {
+            return Ok(node);
+        }
         let start = self.cursor.peek(0)?.map_or(self.cursor.end(), |t| t.start);
         let negative = self.eat(P::Minus)?;
         let token = self.required()?;
@@ -364,6 +402,9 @@ impl Parser<'_> {
     }
 
     pub(super) fn ty(&mut self) -> Result<NodeId, LexError> {
+        if let Some(node) = self.interpolated(&[F::Type])? {
+            return Ok(node);
+        }
         if self.depth >= self.nesting_limit() {
             return Err(self.error(if self.extended {
                 "crate syntax nesting exceeds 128"

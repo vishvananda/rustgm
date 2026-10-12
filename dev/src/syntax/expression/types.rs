@@ -2,7 +2,9 @@
 use super::{Kind, LexError, List, NORMAL, NodeId, P, Parser, Span, TokenKind, error, keyword};
 use crate::syntax::{ast::TypeFlavor, item::GenericFlavor};
 
-impl Parser<'_> {
+use super::fragment::FragmentKind as F;
+
+impl Parser<'_, '_> {
     pub(super) fn empty_list() -> List {
         List { start: 0, end: 0 }
     }
@@ -53,6 +55,23 @@ impl Parser<'_> {
     }
 
     pub(super) fn rich_path(&mut self, type_position: bool) -> Result<NodeId, LexError> {
+        if let Some(node) = self.interpolated(&[F::Path])? {
+            return Ok(node);
+        }
+        if type_position && let Some(node) = self.interpolated(&[F::Type])? {
+            if let Kind::Type {
+                flavor: TypeFlavor::Path,
+                elements,
+            } = self.ast.node(node).kind
+                && let [path] = self.ast.list(elements)
+            {
+                return Ok(*path);
+            }
+            return Err(error(
+                self.ast.node(node).span.start,
+                "type fragment is not a path",
+            ));
+        }
         let start = self.cursor.peek(0)?.map_or(self.cursor.end(), |t| t.start);
         if self.cursor.at(P::Less)? || self.cursor.at(P::ShiftLeft)? {
             self.angle_start()?;
@@ -78,21 +97,28 @@ impl Parser<'_> {
         let mark = self.scratch.len();
         loop {
             let token = self.required()?;
-            let text = self.cursor.spelling(token);
-            let name = text.strip_prefix("r#").unwrap_or(text);
-            if !(keyword::identifier(token.kind, name)
-                || (token.kind == TokenKind::Identifier
-                    && matches!(name, "Self" | "self" | "super" | "crate")))
-            {
-                return Err(error(token.start, "expected path segment"));
-            }
-            let mut segment = self.node(
-                token.start,
-                Kind::Name(Span {
-                    start: token.start,
-                    end: token.end,
-                }),
-            )?;
+            let mut segment = if let TokenKind::CrateRoot(crate_id) = token.kind {
+                if absolute || self.scratch.len() != mark {
+                    return Err(error(token.start, "crate marker must begin a path"));
+                }
+                self.node(token.start, Kind::CrateRoot(crate_id.get()))?
+            } else {
+                let text = self.cursor.spelling(token);
+                let name = text.strip_prefix("r#").unwrap_or(text);
+                if !(keyword::identifier(token.kind, name)
+                    || (token.kind == TokenKind::Identifier
+                        && matches!(name, "Self" | "self" | "super" | "crate")))
+                {
+                    return Err(error(token.start, "expected path segment"));
+                }
+                self.node(
+                    token.start,
+                    Kind::Name(Span {
+                        start: token.start,
+                        end: token.end,
+                    }),
+                )?
+            };
             let separator = self.cursor.at(P::ColonColon)?
                 && self.cursor.peek(1)?.is_some_and(|next| {
                     matches!(
@@ -240,7 +266,7 @@ impl Parser<'_> {
         }
         let path = self.rich_path(true)?;
         if self.eat(P::Bang)? {
-            return self.macro_capture(path);
+            return self.macro_capture(path, crate::syntax::ast::MacroContext::Type);
         }
         let mark = self.scratch.len();
         self.scratch.push(path);

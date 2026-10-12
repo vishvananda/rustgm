@@ -43,7 +43,37 @@ pub fn parse_at<'s>(
     kind: FragmentKind,
     start: TokenPosition,
 ) -> Result<Parsed<'s>, LexError> {
+    parse_with_splices(source, tokens, kind, start, &[])
+}
+/// # Errors
+/// Returns ordinary grammar failures or invalid opaque-fragment provenance.
+pub fn parse_with_splices<'s>(
+    source: &'s str,
+    tokens: &'s [Token],
+    kind: FragmentKind,
+    start: TokenPosition,
+    splices: &[crate::syntax::interpolation::Splice<'_>],
+) -> Result<Parsed<'s>, LexError> {
+    parse_with_inputs(
+        source,
+        tokens,
+        kind,
+        start,
+        &crate::syntax::interpolation::Slice(splices),
+    )
+}
+/// # Errors
+/// Reports grammar errors or missing persistent nonterminal identities.
+pub fn parse_with_inputs<'s>(
+    source: &'s str,
+    tokens: &'s [Token],
+    kind: FragmentKind,
+    start: TokenPosition,
+    inputs: &dyn crate::syntax::interpolation::Inputs,
+) -> Result<Parsed<'s>, LexError> {
     let mut parser = Parser::with_cursor(Cursor::from_position(source, tokens, start)?, true);
+    parser.inputs = inputs;
+    parser.has_opaque = !inputs.is_empty();
     let root = match kind {
         FragmentKind::Block => {
             let root = parser.block(BlockFlavor::Plain)?;
@@ -83,8 +113,11 @@ pub fn parse_at<'s>(
         position,
     })
 }
-impl Parser<'_> {
+impl Parser<'_, '_> {
     fn fragment_statement(&mut self) -> Result<NodeId, LexError> {
+        if let Some(node) = self.interpolated(&[FragmentKind::Statement])? {
+            return Ok(node);
+        }
         if self.starts_item()? {
             return self.item_in(items::Scope::Module);
         }
@@ -102,6 +135,7 @@ impl Parser<'_> {
                 ..NORMAL
             },
         )?;
+        self.statement_macro(value);
         self.node(self.ast.node(value).span.start, Kind::Statement(value))
     }
 }
@@ -148,22 +182,43 @@ pub fn metadata<'s>(
     tokens: &'s [Token],
     start: TokenPosition,
 ) -> Result<ParsedMetadata<'s>, LexError> {
+    metadata_with_inputs(
+        source,
+        tokens,
+        start,
+        &crate::syntax::interpolation::EMPTY_INPUTS,
+    )
+}
+/// # Errors
+/// Reports malformed metadata and invalid opaque path or expression inputs.
+pub fn metadata_with_inputs<'s>(
+    source: &'s str,
+    tokens: &'s [Token],
+    start: TokenPosition,
+    inputs: &dyn crate::syntax::interpolation::Inputs,
+) -> Result<ParsedMetadata<'s>, LexError> {
     let mut parser = Parser::with_cursor(Cursor::from_position(source, tokens, start)?, true);
+    parser.inputs = inputs;
+    parser.has_opaque = !inputs.is_empty();
     let first = parser
         .cursor
         .peek(0)?
         .ok_or_else(|| super::error(parser.cursor.end(), "expected metadata fragment"))?;
-    parser.eat(P::ColonColon)?;
-    loop {
-        let name = parser.required()?;
-        if !matches!(
-            name.kind,
-            super::TokenKind::Identifier | super::TokenKind::RawIdentifier
-        ) {
-            return Err(super::error(name.start, "expected metadata path"));
-        }
-        if !parser.eat(P::ColonColon)? {
-            break;
+    if parser.splice()?.is_some() {
+        parser.required()?;
+    } else {
+        parser.eat(P::ColonColon)?;
+        loop {
+            let name = parser.required()?;
+            if !matches!(
+                name.kind,
+                super::TokenKind::Identifier | super::TokenKind::RawIdentifier
+            ) {
+                return Err(super::error(name.start, "expected metadata path"));
+            }
+            if !parser.eat(P::ColonColon)? {
+                break;
+            }
         }
     }
     let expression = if parser.eat(P::Equal)? {
@@ -188,6 +243,19 @@ pub fn metadata<'s>(
         let token = cursor
             .take()?
             .ok_or_else(|| super::error(end, "invalid metadata token range"))?;
+        if matches!(token.kind, super::TokenKind::Interpolated(_))
+            && let Some(splice) = inputs.get(token)?
+        {
+            if let crate::syntax::interpolation::Nonterminal::Metadata { forest, .. } =
+                splice.fragment
+            {
+                builder.append(forest, |span| splice.span(span))?;
+                continue;
+            }
+            if splice.append_attribute_path(source, &mut builder)? {
+                continue;
+            }
+        }
         builder.push(source, token)?;
     }
     let forest = builder.finish(end)?;
@@ -212,4 +280,62 @@ pub fn metadata<'s>(
         expression,
         position,
     })
+}
+
+/// Parse a complete generated fragment in its original syntactic context.
+///
+/// # Errors
+/// Rejects malformed generated syntax, invalid splices and trailing unused tokens.
+pub fn parse_expansion<'s>(
+    source: &'s str,
+    tokens: &'s [Token],
+    context: crate::syntax::ast::MacroContext,
+    splices: &[crate::syntax::interpolation::Splice<'_>],
+) -> Result<Ast<'s>, LexError> {
+    parse_expansion_with_inputs(
+        source,
+        tokens,
+        context,
+        &crate::syntax::interpolation::Slice(splices),
+    )
+}
+/// # Errors
+/// Reports malformed expansions or missing persistent nonterminal identities.
+pub fn parse_expansion_with_inputs<'s>(
+    source: &'s str,
+    tokens: &'s [Token],
+    context: crate::syntax::ast::MacroContext,
+    inputs: &dyn crate::syntax::interpolation::Inputs,
+) -> Result<Ast<'s>, LexError> {
+    use crate::syntax::ast::MacroContext;
+    let kind = match context {
+        MacroContext::Expression => Some(FragmentKind::Expression),
+        MacroContext::Type => Some(FragmentKind::Type),
+        MacroContext::Pattern => Some(FragmentKind::Pattern),
+        MacroContext::Statements | MacroContext::Items(_) => None,
+    };
+    if let Some(kind) = kind {
+        let parsed = parse_with_inputs(source, tokens, kind, TokenPosition::default(), inputs)?;
+        if parsed.position.index != tokens.len() || parsed.position.offset != 0 {
+            return Err(super::error(
+                tokens
+                    .get(parsed.position.index)
+                    .map_or(0, |t| t.start + parsed.position.offset),
+                "unexpected token after macro expansion",
+            ));
+        }
+        return Ok(parsed.ast);
+    }
+    let mut parser = Parser::with_cursor(Cursor::from_tokens(source, tokens), true);
+    parser.inputs = inputs;
+    parser.has_opaque = !inputs.is_empty();
+    let (children, tail) = match context {
+        MacroContext::Items(scope) => (parser.item_list(false, scope)?, None),
+        MacroContext::Statements => parser.statement_list(None)?,
+        _ => return Err(super::error(0, "invalid expansion parser context")),
+    };
+    let start = tokens.first().map_or(0, |t| t.start);
+    parser.ast.root = parser.node(start, Kind::Expansion { children, tail })?;
+    parser.ast.lookahead_high_water = parser.cursor.high_water;
+    Ok(parser.ast)
 }

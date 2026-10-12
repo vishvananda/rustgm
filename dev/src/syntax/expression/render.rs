@@ -89,6 +89,12 @@ fn operator(op: P) -> &'static str {
 )]
 fn record(source: &str, ast: &Ast<'_>, kind: Kind, output: &mut impl Write) -> io::Result<()> {
     match kind {
+        Kind::Expansion { children, tail } => write!(
+            output,
+            "expansion {} tail={}",
+            Children(ast, children),
+            Optional(tail)
+        ),
         Kind::DeferredLiteral(token) => {
             write!(output, "deferred-literal {} ", token.kind.name())?;
             spelling(
@@ -122,6 +128,7 @@ fn record(source: &str, ast: &Ast<'_>, kind: Kind, output: &mut impl Write) -> i
         | Kind::PatternField { .. }
         | Kind::PatternRange { .. } => item::node(source, ast, kind, output),
         Kind::Literal(id) => write!(output, "literal {id}"),
+        Kind::CrateRoot(id) => write!(output, "crate-root {id}"),
         Kind::Name(span) => {
             write!(output, "name ")?;
             spelling(source, span, output)
@@ -260,7 +267,7 @@ fn record(source: &str, ast: &Ast<'_>, kind: Kind, output: &mut impl Write) -> i
         Kind::Parameter { pattern, ty } => {
             write!(output, "parameter {} {}", pattern.0, Optional(ty))
         }
-        Kind::Macro { path, capture } => write!(output, "macro {} {capture}", path.0),
+        Kind::Macro { path, capture, .. } => write!(output, "macro {} {capture}", path.0),
         Kind::Binding {
             name,
             mutable,

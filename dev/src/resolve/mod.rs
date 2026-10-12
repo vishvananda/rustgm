@@ -1,4 +1,5 @@
 mod bodies;
+pub mod expansion;
 mod imports;
 mod index;
 pub mod load;
@@ -14,16 +15,11 @@ pub mod unit;
 /// # Errors
 /// Reports duplicate declarations, unresolved or private names and invalid imports.
 pub fn analyze(package: &mut package::Package) -> Result<model::Resolution, package::Error> {
-    let mut resolver = index::Resolver {
-        package,
-        facts: model::Resolution::default(),
-        scratch: Vec::new(),
-        pending: Vec::new(),
-        visits: Vec::new(),
-    };
+    let mut state = index::State::default();
+    let mut resolver = state.bind(package);
     resolver.collect()?;
     resolver.imports()?;
     resolver.bodies()?;
-    Ok(resolver.facts)
+    Ok(state.facts)
 }
 pub mod render;

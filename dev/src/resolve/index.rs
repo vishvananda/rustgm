@@ -19,12 +19,30 @@ pub(crate) struct Context {
     pub file: FileId,
     pub scope: ScopeId,
 }
+#[derive(Default)]
+pub(crate) struct State {
+    pub facts: Resolution,
+    scratch: Vec<NodeId>,
+    pending: Vec<(Context, NodeId)>,
+    visits: Vec<(Context, NodeId, Namespace)>,
+}
+impl State {
+    pub fn bind<'a>(&'a mut self, package: &'a mut Package) -> Resolver<'a> {
+        Resolver {
+            package,
+            facts: &mut self.facts,
+            scratch: &mut self.scratch,
+            pending: &mut self.pending,
+            visits: &mut self.visits,
+        }
+    }
+}
 pub(crate) struct Resolver<'a> {
     pub package: &'a mut Package,
-    pub facts: Resolution,
-    pub scratch: Vec<NodeId>,
-    pub pending: Vec<(Context, NodeId)>,
-    pub visits: Vec<(Context, NodeId, Namespace)>,
+    pub facts: &'a mut Resolution,
+    pub scratch: &'a mut Vec<NodeId>,
+    pub pending: &'a mut Vec<(Context, NodeId)>,
+    pub visits: &'a mut Vec<(Context, NodeId, Namespace)>,
 }
 impl Resolver<'_> {
     pub fn collect(&mut self) -> Result<(), Error> {
@@ -241,7 +259,7 @@ impl Resolver<'_> {
             .unit(c.file)
             .configured
             .ast
-            .push_children(node, &mut self.scratch);
+            .push_children(node, self.scratch);
         let end = self.scratch.len();
         for index in (mark..end).rev() {
             self.pending.push((c, self.scratch[index]));
@@ -404,7 +422,7 @@ impl Resolver<'_> {
             .unit(c.file)
             .configured
             .ast
-            .push_children(node, &mut self.scratch);
+            .push_children(node, self.scratch);
         let end = self.scratch.len();
         for index in (mark..end).rev() {
             self.pending.push((body_context, self.scratch[index]));
@@ -523,21 +541,9 @@ impl Resolver<'_> {
         Ok(Access::Within(module))
     }
     pub fn path_names(&mut self, c: Context, node: NodeId) -> Result<(bool, Vec<NameId>), Error> {
-        match self.kind(c, node) {
-            Kind::Name(span) => Ok((false, vec![self.package.name(c.file, span)?])),
-            Kind::Applied { base, .. } => self.path_names(c, base),
-            Kind::Path { absolute, segments } => {
-                let mut names = Vec::with_capacity((segments.end - segments.start) as usize);
-                for offset in segments.start..segments.end {
-                    let id = self.package.unit(c.file).configured.ast.edges[offset as usize];
-                    names.extend(self.path_names(c, id)?.1);
-                }
-                Ok((absolute, names))
-            }
-            _ => Err(self.error(c, node, "expected a name path")),
-        }
+        self.package.path_names(c.file, node)
     }
-    fn import(
+    pub fn import(
         &mut self,
         c: Context,
         node: NodeId,

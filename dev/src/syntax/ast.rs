@@ -75,6 +75,15 @@ pub enum TypeFlavor {
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum MacroContext {
+    Expression,
+    Statements,
+    Type,
+    Pattern,
+    Items(super::item::ItemContext),
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Kind {
     Receiver {
         lifetime: Span,
@@ -89,6 +98,10 @@ pub enum Kind {
     Variadic,
     Item(u32),
     Crate(List),
+    Expansion {
+        children: List,
+        tail: Option<NodeId>,
+    },
     Attributed {
         attributes: AttributeRange,
         value: NodeId,
@@ -148,6 +161,7 @@ pub enum Kind {
     },
     Literal(u32),
     Name(Span),
+    CrateRoot(u32),
     Path {
         absolute: bool,
         segments: List,
@@ -270,6 +284,7 @@ pub enum Kind {
     Macro {
         path: NodeId,
         capture: u32,
+        context: MacroContext,
     },
     Binding {
         name: Span,

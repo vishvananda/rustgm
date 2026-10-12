@@ -117,34 +117,42 @@ impl Builder {
         inner: bool,
         body: Span,
     ) -> Result<(), LexError> {
-        self.token(Kind::Punctuation(P::Pound), "#", original)?;
-        if inner {
-            self.token(Kind::Punctuation(P::Bang), "!", original)?;
-        }
-        self.token(Kind::Punctuation(P::OpenBracket), "[", original)?;
-        self.token(Kind::Identifier, "doc", original)?;
-        self.token(Kind::Punctuation(P::Equal), "=", original)?;
-        let body = text(source, body)?;
-        let mut hashes = 0;
-        let mut after_quote = None;
-        for byte in body.bytes() {
-            if byte == b'"' {
-                hashes = hashes.max(1);
-                after_quote = Some(0);
-            } else if byte == b'#'
-                && let Some(count) = after_quote.as_mut()
-            {
-                *count += 1;
-                hashes = hashes.max(*count + 1);
-            } else {
-                after_quote = None;
-            }
-        }
-        let marks = "#".repeat(hashes);
-        let spelling = format!("r{marks}\"{body}\"{marks}");
-        self.token(Kind::RawString, &spelling, original)?;
-        self.token(Kind::Punctuation(P::CloseBracket), "]", original)
+        doc_tokens(inner, text(source, body)?, |kind, spelling| {
+            self.token(kind, spelling, original)
+        })
     }
+}
+pub(crate) fn doc_tokens(
+    inner: bool,
+    body: &str,
+    mut emit: impl FnMut(Kind, &str) -> Result<(), LexError>,
+) -> Result<(), LexError> {
+    emit(Kind::Punctuation(P::Pound), "#")?;
+    if inner {
+        emit(Kind::Punctuation(P::Bang), "!")?;
+    }
+    emit(Kind::Punctuation(P::OpenBracket), "[")?;
+    emit(Kind::Identifier, "doc")?;
+    emit(Kind::Punctuation(P::Equal), "=")?;
+    let mut hashes = 0;
+    let mut after_quote = None;
+    for byte in body.bytes() {
+        if byte == b'"' {
+            hashes = hashes.max(1);
+            after_quote = Some(0);
+        } else if byte == b'#'
+            && let Some(count) = after_quote.as_mut()
+        {
+            *count += 1;
+            hashes = hashes.max(*count + 1);
+        } else {
+            after_quote = None;
+        }
+    }
+    let marks = "#".repeat(hashes);
+    let spelling = format!("r{marks}\"{body}\"{marks}");
+    emit(Kind::RawString, &spelling)?;
+    emit(Kind::Punctuation(P::CloseBracket), "]")
 }
 impl Prepared {
     #[must_use]

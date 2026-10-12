@@ -1,7 +1,36 @@
 //! Typed lexical categories. Literal interpretation belongs to PA2.
 
+/// Expansion handles fit the category's existing four-byte slot, keeping all
+/// ordinary source tokens at twelve bytes. Overflow is a diagnosed work limit.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct ExpansionId([u8; 3]);
+impl ExpansionId {
+    pub const LIMIT: usize = 1 << 24;
+    /// # Errors
+    /// Rejects a handle outside the bounded expansion registry.
+    pub fn new(value: u32) -> Result<Self, LexError> {
+        let [a, b, c, high] = value.to_le_bytes();
+        if high != 0 {
+            return Err(LexError {
+                offset: 0,
+                message: "expansion identity exceeds 24 bits",
+            });
+        }
+        Ok(Self([a, b, c]))
+    }
+    #[must_use]
+    pub const fn get(self) -> u32 {
+        let [a, b, c] = self.0;
+        u32::from_le_bytes([a, b, c, 0])
+    }
+}
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Kind {
+    /// A parser-only input handle. The source lexer never produces this category.
+    Interpolated(ExpansionId),
+    /// Definition-site crate identity, introduced only by macro transcription.
+    CrateRoot(ExpansionId),
     Whitespace,
     LineComment,
     BlockComment,
@@ -28,9 +57,21 @@ pub enum Kind {
 }
 
 impl Kind {
+    /// # Errors
+    /// Rejects expansion handle overflow.
+    pub fn interpolated(index: u32) -> Result<Self, LexError> {
+        ExpansionId::new(index).map(Self::Interpolated)
+    }
+    /// # Errors
+    /// Rejects defining-crate identity overflow.
+    pub fn crate_root(index: u32) -> Result<Self, LexError> {
+        ExpansionId::new(index).map(Self::CrateRoot)
+    }
     #[must_use]
     pub const fn name(self) -> &'static str {
         match self {
+            Self::Interpolated(_) => "interpolated",
+            Self::CrateRoot(_) => "crate-root",
             Self::Whitespace => "whitespace",
             Self::LineComment => "line-comment",
             Self::BlockComment => "block-comment",

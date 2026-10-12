@@ -12,6 +12,11 @@ pub(crate) enum LookupMode {
     Import(Namespace),
 }
 pub(crate) type BindingKey = (ScopeId, NameId, Namespace);
+#[derive(Default)]
+pub(crate) struct Observations {
+    pub dependencies: Vec<BindingKey>,
+    pub selected: Option<Vec<(BindingKey, Binding)>>,
+}
 pub(crate) enum Lookup {
     Found(Binding),
     Associated(DefId),
@@ -25,6 +30,15 @@ impl Resolver<'_> {
         }
     }
     pub fn lexical(&self, scope: ScopeId, name: NameId, namespace: Namespace) -> Lookup {
+        self.lexical_binding(scope, name, namespace)
+            .map_or(Lookup::Missing, |(_, binding)| Lookup::Found(binding))
+    }
+    fn lexical_binding(
+        &self,
+        scope: ScopeId,
+        name: NameId,
+        namespace: Namespace,
+    ) -> Option<(ScopeId, Binding)> {
         let mut current = Some(scope);
         let mut barriers = 0_u32;
         while let Some(scope) = current {
@@ -41,7 +55,7 @@ impl Resolver<'_> {
                             DefKind::Generic | DefKind::SelfType
                         )))
             {
-                return Lookup::Found(*binding);
+                return Some((scope, *binding));
             }
             if namespace == Namespace::Label && frame.label_barrier {
                 break;
@@ -52,14 +66,17 @@ impl Resolver<'_> {
         if namespace == Namespace::Type
             && let Some(def) = self.facts.primitives.get(&name)
         {
-            return Lookup::Found(Binding {
-                target: *def,
-                access: Access::Public,
-                origin: Origin::Direct,
-                ambiguous: false,
-            });
+            return Some((
+                ScopeId(0),
+                Binding {
+                    target: *def,
+                    access: Access::Public,
+                    origin: Origin::Direct,
+                    ambiguous: false,
+                },
+            ));
         }
-        Lookup::Missing
+        None
     }
     #[expect(
         clippy::too_many_lines,
@@ -72,7 +89,7 @@ impl Resolver<'_> {
         absolute: bool,
         path: &[NameId],
         mode: LookupMode,
-        mut observed: Option<&mut Vec<BindingKey>>,
+        mut observed: Option<&mut Observations>,
     ) -> Result<Lookup, Error> {
         let (namespace, check_final_privacy) = match mode {
             LookupMode::Use(ns) => (ns, true),
@@ -110,6 +127,19 @@ impl Resolver<'_> {
             _ => {}
         }
         if index == path.len() {
+            if namespace != Namespace::Type {
+                return Ok(Lookup::Missing);
+            }
+            if module == ModuleId(0)
+                && let Some(target) = self.facts.crate_root
+            {
+                return Ok(Lookup::Found(Binding {
+                    target,
+                    access: Access::Public,
+                    origin: Origin::Direct,
+                    ambiguous: false,
+                }));
+            }
             // Importing self/crate names the module itself, whose declaration belongs to its parent.
             if let Some(declaration) = self.package.modules[module.0 as usize].declaration
                 && let Some(parent) = self.package.modules[module.0 as usize].parent
@@ -135,7 +165,8 @@ impl Resolver<'_> {
             } else {
                 Namespace::Type
             };
-            if let Some(keys) = observed.as_mut() {
+            if let Some(observed) = observed.as_mut() {
+                let keys = &mut observed.dependencies;
                 if let Some(scope) = scope {
                     keys.push((scope, name, ns));
                 } else {
@@ -151,20 +182,23 @@ impl Resolver<'_> {
                     .bindings
                     .get(&(name, ns))
                     .copied()
-                    .map_or(Lookup::Missing, Lookup::Found)
+                    .map(|binding| (scope, binding))
             } else {
-                self.lexical(c.scope, name, ns)
+                self.lexical_binding(c.scope, name, ns)
             };
-            let binding = match found {
-                Lookup::Found(binding) => binding,
-                Lookup::Missing if associated.is_some() => {
+            let (found_scope, binding) = match found {
+                Some(found) => found,
+                None if associated.is_some() => {
                     if let Some(target) = associated {
                         return Ok(Lookup::Associated(target));
                     }
-                    return Ok(found);
+                    return Ok(Lookup::Missing);
                 }
-                other => return Ok(other),
+                None => return Ok(Lookup::Missing),
             };
+            if let Some(trace) = observed.as_mut().and_then(|o| o.selected.as_mut()) {
+                trace.push(((found_scope, name, ns), binding));
+            }
             if binding.ambiguous {
                 return Err(self.error(
                     c,

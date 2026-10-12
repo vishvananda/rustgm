@@ -5,12 +5,11 @@ use crate::{
         keyword,
         token::{Kind as K, LexError, Punctuation as P, Token},
     },
-    literal::storage::{Storage, StoredValue},
     syntax::{
-        ast::Syntax,
         attribute::Attribute,
         cursor::TokenPosition,
         expression::fragment::{self, FragmentKind as F},
+        interpolation::{EMPTY_INPUTS, Inputs, Nonterminal},
         item::Visibility,
         token_tree::{Forest, error},
     },
@@ -18,10 +17,7 @@ use crate::{
 use std::collections::HashMap;
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct CaptureId(pub u32);
-pub struct ParsedSyntax {
-    pub ast: Syntax<StoredValue>,
-    pub literals: Storage,
-}
+pub use crate::syntax::interpolation::ParsedSyntax;
 pub enum Payload {
     Transparent,
     Syntax(ParsedSyntax),
@@ -34,6 +30,32 @@ pub enum Payload {
         value: Visibility,
         path: Option<ParsedSyntax>,
     },
+}
+impl Payload {
+    /// # Errors
+    /// Rejects transparent tokens or inconsistent fragment/payload classes.
+    pub fn nonterminal(&self, fragment: Fragment) -> Result<Nonterminal<'_>, LexError> {
+        Ok(match (fragment, self) {
+            (Fragment::Syntax(kind), Self::Syntax(parsed)) => Nonterminal::Syntax { kind, parsed },
+            (
+                Fragment::Metadata,
+                Self::Metadata {
+                    forest,
+                    attribute,
+                    expression,
+                },
+            ) => Nonterminal::Metadata {
+                forest,
+                attribute: *attribute,
+                expression: expression.as_ref(),
+            },
+            (Fragment::Visibility, Self::Visibility { value, path }) => Nonterminal::Visibility {
+                value: *value,
+                path: path.as_ref(),
+            },
+            _ => return Err(error(0, "inconsistent opaque input payload")),
+        })
+    }
 }
 pub struct Captured {
     pub fragment: Fragment,
@@ -60,57 +82,81 @@ impl Captures {
         fragment: Fragment,
         start: TokenPosition,
     ) -> Result<CaptureId, LexError> {
+        self.demand_with_inputs(source, input, fragment, start, &EMPTY_INPUTS)
+    }
+
+    /// # Errors
+    /// Reports fragment failures and invalid forwarded nonterminal identities.
+    pub fn demand_with_inputs(
+        &mut self,
+        source: &str,
+        input: &Input,
+        fragment: Fragment,
+        start: TokenPosition,
+        inputs: &dyn Inputs,
+    ) -> Result<CaptureId, LexError> {
         if let Some(id) = self.memo.get(&(fragment, start)) {
             return Ok(*id);
         }
-        let (end, payload) = match fragment {
-            Fragment::Identifier | Fragment::Lifetime => {
-                (input.advance(source, start)?, Payload::Transparent)
-            }
-            Fragment::Tree => {
-                let token = input
-                    .token(source, start)?
-                    .ok_or_else(|| error(0, "expected token tree"))?;
-                let end = if matches!(
-                    token.kind,
-                    K::Punctuation(P::OpenParen | P::OpenBracket | P::OpenBrace)
-                ) {
-                    TokenPosition {
-                        index: input.after[start.index],
-                        offset: 0,
-                    }
-                } else {
-                    input.advance(source, start)?
-                };
-                (end, Payload::Transparent)
-            }
-            Fragment::Syntax(kind) => {
-                self.parser_calls += 1;
-                let parsed = fragment::parse_at(source, &input.tokens, kind, start)?;
-                (parsed.position, Payload::Syntax(own(source, parsed.ast)?))
-            }
-            Fragment::Metadata => {
-                self.parser_calls += 1;
-                let parsed = fragment::metadata(source, &input.tokens, start)?;
-                (
-                    parsed.position,
-                    Payload::Metadata {
-                        forest: parsed.forest,
-                        attribute: parsed.attribute,
-                        expression: parsed.expression.map(|ast| own(source, ast)).transpose()?,
-                    },
-                )
-            }
-            Fragment::Visibility => {
-                self.parser_calls += 1;
-                let parsed = fragment::visibility(source, &input.tokens, start)?;
-                (
-                    parsed.position,
-                    Payload::Visibility {
-                        value: parsed.value,
-                        path: parsed.ast.map(|ast| own(source, ast)).transpose()?,
-                    },
-                )
+        let (end, payload) = if let Some(end) =
+            forwarded_end(source, input, fragment, start, inputs)?
+        {
+            (end, Payload::Transparent)
+        } else {
+            match fragment {
+                Fragment::Identifier | Fragment::Lifetime => {
+                    (input.advance(source, start)?, Payload::Transparent)
+                }
+                Fragment::Tree => {
+                    let token = input
+                        .token(source, start)?
+                        .ok_or_else(|| error(0, "expected token tree"))?;
+                    let end = if matches!(
+                        token.kind,
+                        K::Punctuation(P::OpenParen | P::OpenBracket | P::OpenBrace)
+                    ) {
+                        TokenPosition {
+                            index: input.after[start.index],
+                            offset: 0,
+                        }
+                    } else {
+                        input.advance(source, start)?
+                    };
+                    (end, Payload::Transparent)
+                }
+                Fragment::Syntax(kind) => {
+                    self.parser_calls += 1;
+                    let parsed =
+                        fragment::parse_with_inputs(source, &input.tokens, kind, start, inputs)?;
+                    (parsed.position, Payload::Syntax(own(source, parsed.ast)?))
+                }
+                Fragment::Metadata => {
+                    self.parser_calls += 1;
+                    let parsed =
+                        fragment::metadata_with_inputs(source, &input.tokens, start, inputs)?;
+                    (
+                        parsed.position,
+                        Payload::Metadata {
+                            forest: parsed.forest,
+                            attribute: parsed.attribute,
+                            expression: parsed
+                                .expression
+                                .map(|ast| own(source, ast))
+                                .transpose()?,
+                        },
+                    )
+                }
+                Fragment::Visibility => {
+                    self.parser_calls += 1;
+                    let parsed = fragment::visibility(source, &input.tokens, start)?;
+                    (
+                        parsed.position,
+                        Payload::Visibility {
+                            value: parsed.value,
+                            path: parsed.ast.map(|ast| own(source, ast)).transpose()?,
+                        },
+                    )
+                }
             }
         };
         let id = CaptureId(
@@ -132,14 +178,127 @@ impl Captures {
         Ok(id)
     }
 }
+
+/// Conservative FIRST sets for already parsed nonterminals. Compatibility is
+/// determined by their typed class, never the spelling inside an opaque token.
+///
+/// # Errors
+/// Rejects missing opaque inputs before the matcher selects a parser branch.
+pub fn may_begin_with_inputs(
+    fragment: Fragment,
+    token: Option<Token>,
+    source: &str,
+    inputs: &dyn Inputs,
+) -> Result<bool, LexError> {
+    let Some(token) = token else {
+        return Ok(false);
+    };
+    if !matches!(token.kind, K::Interpolated(_)) {
+        return Ok(may_begin(fragment, Some(token), source));
+    }
+    let splice = inputs
+        .get(token)?
+        .ok_or_else(|| error(token.start, "missing forwarded macro fragment"))?;
+    let same = match (fragment, splice.fragment) {
+        (Fragment::Tree, _)
+        | (Fragment::Visibility, Nonterminal::Visibility { .. })
+        | (
+            Fragment::Metadata,
+            Nonterminal::Metadata { .. }
+            | Nonterminal::Syntax {
+                kind: F::Path | F::Type,
+                ..
+            },
+        ) => true,
+        (Fragment::Syntax(expected), Nonterminal::Syntax { kind, .. }) => match expected {
+            F::Block => kind == F::Block,
+            F::Literal => kind == F::Literal,
+            F::Item => kind == F::Item,
+            F::Statement => matches!(
+                kind,
+                F::Statement
+                    | F::Item
+                    | F::Block
+                    | F::Expression
+                    | F::Expression2021
+                    | F::Literal
+                    | F::Path
+            ),
+            F::Expression | F::Expression2021 => matches!(
+                kind,
+                F::Expression | F::Expression2021 | F::Literal | F::Block | F::Path
+            ),
+            F::Pattern | F::PatternParameter => matches!(
+                kind,
+                F::Pattern
+                    | F::PatternParameter
+                    | F::Literal
+                    | F::Expression
+                    | F::Expression2021
+                    | F::Path
+            ),
+            F::Path | F::Type => matches!(kind, F::Path | F::Type),
+        },
+        _ => false,
+    };
+    Ok(same)
+}
+fn forwarded_end(
+    source: &str,
+    input: &Input,
+    fragment: Fragment,
+    start: TokenPosition,
+    inputs: &dyn Inputs,
+) -> Result<Option<TokenPosition>, LexError> {
+    if !input
+        .tokens
+        .get(start.index)
+        .is_some_and(|t| matches!(t.kind, K::Interpolated(_)))
+    {
+        return Ok(None);
+    }
+    let token = input.token(source, start)?;
+    let end = input.advance(source, start)?;
+    let complete = input.tokens.get(end.index).is_none_or(|token| {
+        matches!(
+            token.kind,
+            K::Punctuation(
+                P::Comma
+                    | P::Semicolon
+                    | P::FatArrow
+                    | P::CloseParen
+                    | P::CloseBracket
+                    | P::CloseBrace
+            )
+        )
+    });
+    if !complete
+        && fragment == Fragment::Metadata
+        && let Some(token) = token
+        && inputs
+            .get(token)?
+            .is_some_and(|splice| matches!(splice.fragment, Nonterminal::Syntax { .. }))
+    {
+        return Ok(None);
+    }
+    if !complete
+        && !matches!(
+            fragment,
+            Fragment::Metadata | Fragment::Visibility | Fragment::Tree
+        )
+    {
+        return Ok(None);
+    }
+    if !may_begin_with_inputs(fragment, token, source, inputs)? {
+        return Err(error(
+            token.map_or(0, |t| t.start),
+            "incompatible forwarded macro fragment",
+        ));
+    }
+    Ok(Some(end))
+}
 fn own(source: &str, ast: crate::syntax::ast::Ast<'_>) -> Result<ParsedSyntax, LexError> {
-    let mut literals = Storage::default();
-    let ast = ast.map_literals(|value| {
-        literals
-            .store(source, value)
-            .map_err(|message| error(0, message))
-    })?;
-    Ok(ParsedSyntax { ast, literals })
+    ParsedSyntax::own(source, ast)
 }
 #[must_use]
 pub fn may_begin(fragment: Fragment, token: Option<Token>, source: &str) -> bool {
@@ -151,7 +310,10 @@ pub fn may_begin(fragment: Fragment, token: Option<Token>, source: &str) -> bool
         .unwrap_or("");
     match fragment {
         Fragment::Identifier => {
-            matches!(token.kind, K::Identifier | K::RawIdentifier) && spelling != "_"
+            matches!(
+                token.kind,
+                K::Identifier | K::RawIdentifier | K::CrateRoot(_)
+            ) && spelling != "_"
         }
         Fragment::Lifetime => matches!(token.kind, K::Lifetime | K::RawLifetime),
         Fragment::Tree => !matches!(
@@ -189,7 +351,7 @@ fn syntax_start(kind: F, token: Token, spelling: &str) -> bool {
             | K::RawByteString
             | K::RawCString
     ) || (token.kind == K::Identifier && matches!(spelling, "true" | "false"));
-    let path = token.kind == K::RawIdentifier
+    let path = matches!(token.kind, K::RawIdentifier | K::CrateRoot(_))
         || token.kind == K::Punctuation(P::ColonColon)
         || (token.kind == K::Identifier
             && spelling != "_"
@@ -200,7 +362,7 @@ fn syntax_start(kind: F, token: Token, spelling: &str) -> bool {
         F::Literal => literal || token.kind == K::Punctuation(P::Minus),
         F::Path => matches!(
             token.kind,
-            K::Identifier | K::RawIdentifier | K::Punctuation(P::ColonColon)
+            K::Identifier | K::RawIdentifier | K::CrateRoot(_) | K::Punctuation(P::ColonColon)
         ),
         F::Type => {
             path || matches!(

@@ -4,23 +4,60 @@ use super::{
     error,
 };
 
-impl Parser<'_> {
+use super::fragment::FragmentKind as F;
+
+impl Parser<'_, '_> {
     pub(super) fn block(&mut self, flavor: BlockFlavor) -> Result<NodeId, LexError> {
+        if let Some(node) = self.interpolated(&[F::Block])? {
+            return Ok(node);
+        }
         let start = self.expect(P::OpenBrace)?.start;
         let inner = if self.extended {
             self.attributes(true)?
         } else {
             crate::syntax::item::AttributeRange::default()
         };
+        let (statements, tail) = self.statement_list(Some(P::CloseBrace))?;
+        let block = self.node(
+            start,
+            Kind::Block {
+                flavor,
+                statements,
+                tail,
+            },
+        )?;
+        self.attach(inner, block)
+    }
+
+    fn end_statements(&mut self, close: Option<P>) -> Result<bool, LexError> {
+        if let Some(close) = close {
+            self.eat(close)
+        } else {
+            Ok(self.cursor.peek(0)?.is_none())
+        }
+    }
+    pub(super) fn statement_list(
+        &mut self,
+        close: Option<P>,
+    ) -> Result<(super::List, Option<NodeId>), LexError> {
         let mark = self.scratch.len();
         let mut tail = None;
-        while !self.eat(P::CloseBrace)? {
+        while !self.end_statements(close)? {
             let attrs = if self.extended {
                 self.attributes(false)?
             } else {
                 crate::syntax::item::AttributeRange::default()
             };
-            let statement = if self.extended && self.starts_item()? {
+            let statement = if let Some(statement) = self.interpolated(&[F::Statement])? {
+                if !self.eat(P::Semicolon)?
+                    && let Kind::Statement(value) = self.ast.node(statement).kind
+                    && self.end_statements(close)?
+                {
+                    tail = Some(self.attach(attrs, value)?);
+                    break;
+                }
+                statement
+            } else if self.extended && self.starts_item()? {
                 self.item_in(super::items::Scope::Module)?
             } else if self.cursor.at(P::Semicolon)? {
                 let token = self.required()?;
@@ -36,8 +73,9 @@ impl Parser<'_> {
                     },
                 )?;
                 if self.eat(P::Semicolon)? {
+                    self.statement_macro(value);
                     self.node(self.ast.node(value).span.start, Kind::Statement(value))?
-                } else if self.eat(P::CloseBrace)? {
+                } else if self.end_statements(close)? {
                     tail = Some(self.attach(attrs, value)?);
                     break;
                 } else if self.with_block(value) {
@@ -50,15 +88,15 @@ impl Parser<'_> {
             self.scratch.push(statement);
         }
         let statements = self.list(mark)?;
-        let block = self.node(
-            start,
-            Kind::Block {
-                flavor,
-                statements,
-                tail,
-            },
-        )?;
-        self.attach(inner, block)
+        Ok((statements, tail))
+    }
+    pub(super) fn statement_macro(&mut self, mut node: NodeId) {
+        while let Kind::Attributed { value, .. } = self.ast.node(node).kind {
+            node = value;
+        }
+        if let Kind::Macro { context, .. } = &mut self.ast.nodes[node.0 as usize].kind {
+            *context = crate::syntax::ast::MacroContext::Statements;
+        }
     }
 
     pub(super) fn let_statement(&mut self, semicolon: bool) -> Result<NodeId, LexError> {

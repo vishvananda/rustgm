@@ -12,11 +12,13 @@ use crate::{
 };
 use std::io::{self, Write};
 
+#[derive(Clone)]
 pub struct Owner {
     pub node: NodeId,
     pub enabled: bool,
     pub attributes: std::ops::Range<usize>,
 }
+#[derive(Clone)]
 pub struct AttributeEffect {
     pub capture: u32,
     pub attribute: ConfiguredAttribute,
@@ -35,7 +37,18 @@ pub type ConfiguredCrate<'source> = ConfiguredSyntax<crate::literal::Value<'sour
 /// # Errors
 /// Rejects malformed syntax or demanded attribute/configuration predicates.
 pub fn analyze<'s>(source: &'s str, config: &Config) -> Result<ConfiguredCrate<'s>, LexError> {
-    let mut ast = expression::parse_crate(source)?;
+    configure(source, expression::parse_crate(source)?, config)
+}
+
+/// Configure a newly parsed source or expansion without parsing its spelling again.
+///
+/// # Errors
+/// Rejects demanded attribute predicates and literal values in enabled syntax.
+pub fn configure<'s>(
+    source: &'s str,
+    mut ast: crate::syntax::ast::Ast<'s>,
+    config: &Config,
+) -> Result<ConfiguredCrate<'s>, LexError> {
     let mut active = vec![false; ast.nodes.len()];
     let mut work = vec![ast.root];
     let mut owners = Vec::new();

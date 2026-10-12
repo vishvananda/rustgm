@@ -6,6 +6,14 @@ use super::{
 };
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum ItemContext {
+    Module,
+    Trait,
+    Impl,
+    External,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Visibility {
     Private,
     Public,
@@ -115,7 +123,7 @@ pub struct AttributeRange {
     pub end: u32,
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct AttributeCapture {
     pub forest: Forest,
     pub attribute: Attribute,

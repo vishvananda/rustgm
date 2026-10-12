@@ -8,7 +8,11 @@ use super::{
 use crate::{
     lex::token::{Kind, LexError, Token},
     support::names::Names,
-    syntax::{cursor::TokenPosition, token_tree::error},
+    syntax::{
+        cursor::TokenPosition,
+        interpolation::{Inputs, Slice, Splice},
+        token_tree::error,
+    },
 };
 pub const NO_TRACE: u32 = u32::MAX;
 #[derive(Clone, Copy, Debug)]
@@ -73,12 +77,46 @@ impl Compiled {
         names: &mut Names,
         scratch: &mut Workspace,
     ) -> Result<Matched, LexError> {
+        self.invoke_with_splices(definition_source, source, input, names, scratch, &[])
+    }
+    /// # Errors
+    /// Also rejects incompatible or missing forwarded fragment identities.
+    pub fn invoke_with_splices(
+        &mut self,
+        definition_source: &str,
+        source: &str,
+        input: &Input,
+        names: &mut Names,
+        scratch: &mut Workspace,
+        splices: &[Splice<'_>],
+    ) -> Result<Matched, LexError> {
+        self.invoke_with_inputs(
+            definition_source,
+            source,
+            input,
+            names,
+            scratch,
+            &Slice(splices),
+        )
+    }
+    /// # Errors
+    /// Reports matching failures or invalid persistent capture identities.
+    pub fn invoke_with_inputs(
+        &mut self,
+        definition_source: &str,
+        source: &str,
+        input: &Input,
+        names: &mut Names,
+        scratch: &mut Workspace,
+        inputs: &dyn Inputs,
+    ) -> Result<Matched, LexError> {
         let mut captures = Captures::default();
         let mut invocation = Invocation {
             source,
             input,
             names,
             captures: &mut captures,
+            inputs,
             work: 0,
             budget: 1_000_000_usize.saturating_add(input.tokens.len().saturating_mul(128)),
         };
@@ -115,6 +153,7 @@ struct Invocation<'a> {
     input: &'a Input,
     names: &'a mut Names,
     captures: &'a mut Captures,
+    inputs: &'a dyn Inputs,
     work: usize,
     budget: usize,
 }
@@ -276,7 +315,12 @@ impl<'a, 'b> Machine<'a, 'b> {
                 }
                 Instruction::Fragment { variable, next } => {
                     let fragment = self.rule.variables[variable.0 as usize].fragment;
-                    if capture::may_begin(fragment, token, self.invocation.source) {
+                    if capture::may_begin_with_inputs(
+                        fragment,
+                        token,
+                        self.invocation.source,
+                        self.invocation.inputs,
+                    )? {
                         self.scratch.fragments.push(FragmentThread {
                             variable,
                             next,
@@ -319,11 +363,12 @@ impl<'a, 'b> Machine<'a, 'b> {
             }
             if let Some(thread) = self.scratch.fragments.first().copied() {
                 let fragment = self.rule.variables[thread.variable.0 as usize].fragment;
-                let value = self.invocation.captures.demand(
+                let value = self.invocation.captures.demand_with_inputs(
                     self.invocation.source,
                     self.invocation.input,
                     fragment,
                     position,
+                    self.invocation.inputs,
                 )?;
                 position = self.invocation.captures.values[value.0 as usize].end;
                 let trace = self.trace(

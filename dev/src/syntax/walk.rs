@@ -25,7 +25,8 @@ impl<L> Syntax<L> {
                 output.extend([receiver, method]);
                 self.children(arguments, output);
             }
-            Kind::Receiver { .. }
+            Kind::CrateRoot(_)
+            | Kind::Receiver { .. }
             | Kind::DeferredLiteral(_)
             | Kind::Literal(_)
             | Kind::Name(_)
@@ -104,6 +105,10 @@ impl<L> Syntax<L> {
             }
             Kind::Block {
                 statements, tail, ..
+            }
+            | Kind::Expansion {
+                children: statements,
+                tail,
             } => {
                 self.children(statements, output);
                 output.extend(tail);

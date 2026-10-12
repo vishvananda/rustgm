@@ -4,13 +4,7 @@ use super::{
 };
 use crate::syntax::item::{FunctionFlags, Item, ItemKind, Safety, Shape, Visibility};
 
-#[derive(Clone, Copy, PartialEq, Eq)]
-pub(super) enum Scope {
-    Module,
-    Trait,
-    Impl,
-    External,
-}
+pub(super) use crate::syntax::item::ItemContext as Scope;
 
 /// # Errors
 /// Rejects unsupported/malformed crate syntax and excessive recursive nesting.
@@ -24,7 +18,9 @@ pub fn parse_crate(source: &str) -> Result<Ast<'_>, LexError> {
     Ok(parser.ast)
 }
 
-impl Parser<'_> {
+use super::fragment::FragmentKind as F;
+
+impl Parser<'_, '_> {
     pub(super) fn item_list(&mut self, braced: bool, scope: Scope) -> Result<List, LexError> {
         let mark = self.scratch.len();
         loop {
@@ -47,6 +43,15 @@ impl Parser<'_> {
         let Some(token) = self.cursor.peek(0)? else {
             return Ok(false);
         };
+        if matches!(token.kind, TokenKind::Interpolated(_)) {
+            return Ok(self.splice()?.is_some_and(|s| {
+                s.syntax_kind() == Some(F::Item)
+                    || matches!(
+                        s.fragment,
+                        crate::syntax::interpolation::Nonterminal::Visibility { .. }
+                    )
+            }));
+        }
         if token.kind != TokenKind::Identifier {
             return Ok(false);
         }
@@ -127,6 +132,18 @@ impl Parser<'_> {
     )]
     fn item_inner(&mut self) -> Result<NodeId, LexError> {
         let attrs = self.attributes(false)?;
+        if let Some(node) = self.interpolated(&[F::Item])? {
+            let mut owner = node;
+            while let Kind::Attributed { value, .. } = self.ast.node(owner).kind {
+                owner = value;
+            }
+            let Kind::Item(index) = self.ast.node(owner).kind else {
+                return Err(self.error("opaque item has no item root")?);
+            };
+            let item = self.ast.items[index as usize];
+            self.validate_item(&item)?;
+            return self.attach(attrs, node);
+        }
         let start = self.cursor.peek(0)?.map_or(self.cursor.end(), |t| t.start);
         let visibility = self.visibility()?;
         let mut item = Item {
@@ -321,7 +338,10 @@ impl Parser<'_> {
                     } else {
                         let path = self.rich_path(false)?;
                         self.expect(P::Bang)?;
-                        let value = self.macro_capture(path)?;
+                        let value = self.macro_capture(
+                            path,
+                            crate::syntax::ast::MacroContext::Items(self.item_scope),
+                        )?;
                         if !self.with_block(value) {
                             self.expect(P::Semicolon)?;
                         }
@@ -378,6 +398,15 @@ impl Parser<'_> {
     }
 
     pub(super) fn visibility(&mut self) -> Result<Visibility, LexError> {
+        if let Some(splice) = self.splice()?
+            && matches!(
+                splice.fragment,
+                crate::syntax::interpolation::Nonterminal::Visibility { .. }
+            )
+        {
+            self.required()?;
+            return splice.visibility(self.cursor.source, &mut self.ast);
+        }
         if !self.word("pub")? {
             return Ok(Visibility::Private);
         }
@@ -758,7 +787,11 @@ impl Parser<'_> {
         self.node(start, Kind::UseTree(index))
     }
 
-    pub(super) fn macro_capture(&mut self, path: NodeId) -> Result<NodeId, LexError> {
+    pub(super) fn macro_capture(
+        &mut self,
+        path: NodeId,
+        context: crate::syntax::ast::MacroContext,
+    ) -> Result<NodeId, LexError> {
         let first = self.required()?;
         if !matches!(
             first.kind,
@@ -772,7 +805,11 @@ impl Parser<'_> {
         self.ast.captures.push(forest);
         self.node(
             self.ast.node(path).span.start,
-            Kind::Macro { path, capture },
+            Kind::Macro {
+                path,
+                capture,
+                context,
+            },
         )
     }
 }

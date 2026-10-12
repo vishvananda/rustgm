@@ -38,13 +38,14 @@ struct Visit {
     in_block: bool,
     owner: Option<NodeId>,
 }
-struct Loader<'a, S> {
-    package: Package,
+pub(crate) struct Loader<'a, S> {
+    pub package: Package,
     sources: &'a mut S,
     config: &'a Config,
     directories: Vec<Directory>,
     identities: Vec<PathBuf>,
     cache: HashMap<PathBuf, FileId>,
+    separate_instances: bool,
 }
 /// Load each source image once; disabled module declarations never request I/O.
 ///
@@ -55,35 +56,8 @@ pub fn load(
     sources: &mut impl Sources,
     config: &Config,
 ) -> Result<Package, Error> {
-    let unit =
-        Unit::parse(root.source, config).map_err(|e| Error::at(FileId(0), e.offset, e.message))?;
-    let mut names = Names::default();
-    let name = names
-        .intern("crate")
-        .map_err(|e| Error::at(FileId(0), 0, e))?;
-    let root_node = unit.configured.ast.root;
-    let mut loader = Loader {
-        package: Package {
-            units: vec![unit],
-            modules: vec![Module {
-                parent: None,
-                declaration: None,
-                name,
-                file: FileId(0),
-                root: root_node,
-            }],
-            names,
-            children: HashMap::new(),
-        },
-        sources,
-        config,
-        directories: vec![Directory {
-            path: root.identity.parent().unwrap_or(Path::new("")).into(),
-            relative: None,
-        }],
-        identities: vec![root.identity.clone()],
-        cache: HashMap::from([(root.identity, FileId(0))]),
-    };
+    let mut loader = Loader::new(root, sources, config)?;
+    let root_node = loader.package.modules[0].root;
     let mut work = vec![Visit {
         module: ModuleId(0),
         node: root_node,
@@ -134,7 +108,89 @@ pub fn load(
     }
     Ok(loader.package)
 }
-impl<S: Sources> Loader<'_, S> {
+impl<'a, S: Sources> Loader<'a, S> {
+    pub(crate) fn new(
+        root: InputFile,
+        sources: &'a mut S,
+        config: &'a Config,
+    ) -> Result<Self, Error> {
+        let unit = Unit::parse(root.source, config)
+            .map_err(|e| Error::at(FileId(0), e.offset, e.message))?;
+        let mut names = Names::default();
+        let name = names
+            .intern("crate")
+            .map_err(|e| Error::at(FileId(0), 0, e))?;
+        let root_node = unit.configured.ast.root;
+        Ok(Self {
+            package: Package {
+                units: vec![unit],
+                modules: vec![Module {
+                    parent: None,
+                    declaration: None,
+                    name,
+                    file: FileId(0),
+                    root: root_node,
+                }],
+                names,
+                children: HashMap::new(),
+            },
+            sources,
+            config,
+            directories: vec![Directory {
+                path: root.identity.parent().unwrap_or(Path::new("")).into(),
+                relative: None,
+            }],
+            identities: vec![root.identity.clone()],
+            cache: HashMap::from([(root.identity, FileId(0))]),
+            separate_instances: false,
+        })
+    }
+    pub(crate) fn isolate_expansions(&mut self) {
+        self.separate_instances = true;
+    }
+    fn cached_instance(&mut self, file: FileId) -> Result<FileId, Error> {
+        if !self.separate_instances {
+            return Ok(file);
+        }
+        let id = FileId(
+            u32::try_from(self.package.units.len())
+                .map_err(|_| Error::at(file, 0, "too many module instances"))?,
+        );
+        let unit = self
+            .package
+            .unit(file)
+            .fresh_instance()
+            .map_err(|e| Error::at(file, e.offset, e.message))?;
+        self.identities
+            .push(self.identities[file.0 as usize].clone());
+        self.package.units.push(unit);
+        Ok(id)
+    }
+    pub(crate) fn load_module(
+        &mut self,
+        module: ModuleId,
+        node: NodeId,
+        owner: Option<NodeId>,
+        in_block: bool,
+    ) -> Result<ModuleId, Error> {
+        let file = self.package.modules[module.0 as usize].file;
+        if let Some(id) = self.package.children.get(&(module, NodeKey { file, node })) {
+            return Ok(*id);
+        }
+        let Kind::Item(index) = self.package.unit(file).configured.ast.node(node).kind else {
+            return Err(Error::at(file, 0, "module declaration is not an item"));
+        };
+        self.module(
+            &Visit {
+                module,
+                node,
+                in_block,
+                owner,
+            },
+            index,
+        )
+    }
+
     #[expect(
         clippy::too_many_lines,
         reason = "module directory ownership and file identity are one bounded transition"
@@ -232,8 +288,8 @@ impl<S: Sources> Loader<'_, S> {
                     None
                 },
             };
-            let source_file = if let Some(id) = self.cache.get(&selected.identity) {
-                *id
+            let source_file = if let Some(id) = self.cache.get(&selected.identity).copied() {
+                self.cached_instance(id)?
             } else {
                 let id = FileId(
                     u32::try_from(self.package.units.len())

@@ -1,14 +1,20 @@
 //! Import dependencies and glob deltas wake only the scopes and paths they affect.
 use super::{
     index::Resolver,
-    lookup::{BindingKey, Lookup, LookupMode},
-    model::{Access, Binding, DefKind, Import, Namespace, Origin, ScopeId},
+    lookup::{BindingKey, Lookup, LookupMode, Observations},
+    model::{Access, Binding, DefId, DefKind, Import, Namespace, Origin, ScopeId},
     names::NameId,
     package::Error,
 };
 use std::collections::{HashMap, HashSet, VecDeque};
 type Key = (NameId, Namespace);
-struct Work {
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub(crate) enum TextualSource {
+    Missing,
+    Pending,
+    Found(Binding),
+}
+pub(crate) struct Work {
     queue: VecDeque<usize>,
     queued: Vec<bool>,
     waiting: HashMap<BindingKey, HashSet<usize>>,
@@ -21,15 +27,121 @@ struct Work {
     recorded: HashSet<BindingKey>,
     candidates: HashMap<BindingKey, Vec<Binding>>,
     provided: Vec<HashSet<Key>>,
+    textual: HashMap<usize, TextualSource>,
+    attempts: usize,
+    observe: bool,
+    pub events: Vec<BindingKey>,
+    expanded_definitions: HashSet<DefId>,
+    expanded_imports: HashSet<usize>,
 }
 impl Work {
-    fn wake(&mut self, index: usize) {
+    pub fn new(facts: &super::model::Resolution) -> Self {
+        let count = facts.imports.len();
+        Self {
+            queue: (0..count).collect(),
+            queued: vec![true; count],
+            waiting: HashMap::new(),
+            globs: HashMap::new(),
+            sources: vec![None; count],
+            resolved: vec![false; count],
+            changes: facts.scopes.iter().map(|s| s.order.clone()).collect(),
+            cursors: vec![0; count],
+            errors: (0..count).map(|_| None).collect(),
+            recorded: facts
+                .scopes
+                .iter()
+                .enumerate()
+                .flat_map(|(index, scope)| {
+                    scope.order.iter().map(move |key| {
+                        (
+                            ScopeId(u32::try_from(index).unwrap_or(u32::MAX)),
+                            key.0,
+                            key.1,
+                        )
+                    })
+                })
+                .collect(),
+            candidates: HashMap::new(),
+            provided: (0..count).map(|_| HashSet::new()).collect(),
+            textual: HashMap::new(),
+            attempts: 0,
+            observe: false,
+            events: Vec::new(),
+            expanded_definitions: HashSet::new(),
+            expanded_imports: HashSet::new(),
+        }
+    }
+    pub fn observe(&mut self) {
+        self.observe = true;
+    }
+    pub fn extend(&mut self, facts: &super::model::Resolution) {
+        self.changes.resize_with(facts.scopes.len(), Vec::new);
+        for index in self.resolved.len()..facts.imports.len() {
+            self.queue.push_back(index);
+            self.queued.push(true);
+            self.sources.push(None);
+            self.resolved.push(false);
+            self.cursors.push(0);
+            self.errors.push(None);
+            self.provided.push(HashSet::new());
+        }
+    }
+    pub fn set_textual(&mut self, index: usize, binding: TextualSource) {
+        let previous = self
+            .textual
+            .get(&index)
+            .copied()
+            .unwrap_or(TextualSource::Missing);
+        if binding == TextualSource::Missing {
+            self.textual.remove(&index);
+        } else {
+            self.textual.insert(index, binding);
+        }
+        if previous != binding {
+            self.wake(index);
+        }
+    }
+    pub fn take_error(&mut self) -> Option<Error> {
+        self.errors.iter_mut().find_map(Option::take)
+    }
+    fn glob_conflicts(&self, key: BindingKey, target: DefId) -> bool {
+        self.candidates.get(&key).is_some_and(|candidates| {
+            candidates
+                .iter()
+                .any(|candidate| candidate.target != target || candidate.ambiguous)
+        })
+    }
+    pub fn mark_definition(&mut self, target: DefId) {
+        self.expanded_definitions.insert(target);
+    }
+    pub fn mark_import(&mut self, index: usize) {
+        self.expanded_imports.insert(index);
+    }
+    pub fn ambiguous_expanded_path(&self, observations: &Observations) -> bool {
+        observations
+            .selected
+            .iter()
+            .flatten()
+            .any(|(key, binding)| {
+                let expanded = match binding.origin {
+                    Origin::Direct => self.expanded_definitions.contains(&binding.target),
+                    Origin::Import(index) => self.expanded_imports.contains(&(index as usize)),
+                    Origin::Glob(_) => false,
+                };
+                expanded && self.glob_conflicts(*key, binding.target)
+            })
+    }
+
+    pub fn wake(&mut self, index: usize) {
         if !self.queued[index] {
             self.queued[index] = true;
             self.queue.push_back(index);
         }
     }
     fn changed(&mut self, key: BindingKey) {
+        if self.observe {
+            self.events.push(key);
+        }
         if let Some(waiters) = self.waiting.remove(&key) {
             let mut waiters: Vec<_> = waiters.into_iter().collect();
             waiters.sort_unstable();
@@ -52,52 +164,8 @@ impl Work {
 }
 impl Resolver<'_> {
     pub fn imports(&mut self) -> Result<(), Error> {
-        let count = self.facts.imports.len();
-        let mut work = Work {
-            queue: (0..count).collect(),
-            queued: vec![true; count],
-            waiting: HashMap::new(),
-            globs: HashMap::new(),
-            sources: vec![None; count],
-            resolved: vec![false; count],
-            changes: self.facts.scopes.iter().map(|s| s.order.clone()).collect(),
-            cursors: vec![0; count],
-            errors: (0..count).map(|_| None).collect(),
-            recorded: self
-                .facts
-                .scopes
-                .iter()
-                .enumerate()
-                .flat_map(|(index, scope)| {
-                    scope.order.iter().map(move |key| {
-                        (
-                            ScopeId(u32::try_from(index).unwrap_or(u32::MAX)),
-                            key.0,
-                            key.1,
-                        )
-                    })
-                })
-                .collect(),
-            candidates: HashMap::new(),
-            provided: (0..count).map(|_| HashSet::new()).collect(),
-        };
-        let mut attempts = 0_usize;
-        while let Some(index) = work.queue.pop_front() {
-            attempts += 1;
-            work.queued[index] = false;
-            work.resolved[index] = false;
-            let import = self.facts.imports[index].clone();
-            if attempts > 1_000_000 + count.saturating_mul(128) {
-                return Err(self.import_error(&import, "import work budget exceeded"));
-            }
-            let result = if import.glob {
-                self.glob(index, &import, &mut work)
-            } else {
-                self.single_import(index, &import, &mut work)
-            };
-            // Ambiguity/private failures can be provisional while a stronger import is pending.
-            work.errors[index] = result.err();
-        }
+        let mut work = Work::new(self.facts);
+        self.drive_imports(&mut work)?;
         for (index, error) in work.errors.into_iter().enumerate() {
             if let Some(error) = error {
                 return Err(error);
@@ -105,6 +173,26 @@ impl Resolver<'_> {
             if !work.resolved[index] {
                 return Err(self.import_error(&self.facts.imports[index], "unresolved import"));
             }
+        }
+        Ok(())
+    }
+    pub fn drive_imports(&mut self, work: &mut Work) -> Result<(), Error> {
+        let count = self.facts.imports.len();
+        while let Some(index) = work.queue.pop_front() {
+            work.attempts += 1;
+            work.queued[index] = false;
+            work.resolved[index] = false;
+            let import = self.facts.imports[index].clone();
+            if work.attempts > 1_000_000 + count.saturating_mul(128) {
+                return Err(self.import_error(&import, "import work budget exceeded"));
+            }
+            let result = if import.glob {
+                self.glob(index, &import, work)
+            } else {
+                self.single_import(index, &import, work)
+            };
+            // Ambiguity/private failures can be provisional while a stronger import is pending.
+            work.errors[index] = result.err();
         }
         Ok(())
     }
@@ -126,11 +214,23 @@ impl Resolver<'_> {
         ns: Namespace,
         work: &mut Work,
     ) -> Result<Lookup, Error> {
+        if ns == Namespace::Macro
+            && path.len() == 1
+            && let Some(binding) = work.textual.get(&index)
+        {
+            return Ok(match binding {
+                TextualSource::Found(binding) => Lookup::Found(*binding),
+                TextualSource::Missing | TextualSource::Pending => Lookup::Missing,
+            });
+        }
         let c = self.context(
             self.facts.scopes[import.scope.0 as usize].module,
             import.scope,
         );
-        let mut observed = Vec::new();
+        let mut observed = Observations {
+            selected: work.observe.then(Vec::new),
+            ..Observations::default()
+        };
         let result = self.lookup_path(
             c,
             import.node.node,
@@ -139,7 +239,11 @@ impl Resolver<'_> {
             LookupMode::Import(ns),
             Some(&mut observed),
         );
-        work.watch(index, observed);
+        let ambiguous = work.ambiguous_expanded_path(&observed);
+        work.watch(index, observed.dependencies);
+        if ambiguous {
+            return Err(self.import_error(import, "ambiguous macro-expanded path binding"));
+        }
         result
     }
     fn single_import(
@@ -315,6 +419,7 @@ impl Resolver<'_> {
     ) {
         let origin = Origin::Glob(u32::try_from(index).unwrap_or(u32::MAX));
         let candidates = work.candidates.entry(key).or_default();
+        let previous = candidates.iter().find(|b| b.origin == origin).copied();
         if let Some(position) = candidates.iter().position(|b| b.origin == origin) {
             if let Some(binding) = binding {
                 candidates[position] = binding;
@@ -334,6 +439,9 @@ impl Resolver<'_> {
             .get(&(key.1, key.2))
             .is_some_and(|b| !matches!(b.origin, Origin::Glob(_)))
         {
+            if work.observe && previous != binding {
+                work.changed(key);
+            }
             return;
         }
         let merged = self.glob_binding(key, work);
@@ -354,7 +462,7 @@ impl Resolver<'_> {
         }
         Some(result)
     }
-    fn publish(&mut self, key: BindingKey, binding: Option<Binding>, work: &mut Work) {
+    pub fn publish(&mut self, key: BindingKey, binding: Option<Binding>, work: &mut Work) {
         let frame = &mut self.facts.scopes[key.0.0 as usize];
         let name = (key.1, key.2);
         let previous = frame.bindings.get(&name).copied();
