@@ -1,0 +1,32 @@
+node 0 6 9 literal 0
+value 0 integer 6 9 u8 0
+node 1 10 11 wildcard
+node 2 19 20 name "n"
+node 3 19 20 path false [2]
+node 4 19 20 binding false false "n" -
+node 5 21 24 literal 1
+value 1 integer 21 24 u8 7
+node 6 15 24 let-condition 4 5
+node 7 27 28 name "n"
+node 8 27 28 path false [7]
+node 9 30 31 literal 2
+value 2 integer 30 31 infer 7
+node 10 27 31 binary == 8 9
+node 11 33 34 name "n"
+node 12 33 34 path false [11]
+node 13 36 37 literal 3
+value 3 integer 36 37 infer 8
+node 14 33 37 binary == 12 13
+node 15 27 37 binary || 10 14
+node 16 26 38 group 15
+node 17 15 38 binary && 6 16
+node 18 40 41 name "n"
+node 19 40 41 path false [18]
+node 20 10 41 arm 1 17 19
+node 21 42 43 wildcard
+node 22 45 47 literal 4
+value 4 integer 45 47 infer 99
+node 23 42 47 arm 21 - 22
+node 24 0 48 match 0 [20,23]
+root 24
+eof 49

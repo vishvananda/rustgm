@@ -35,6 +35,9 @@ fallback, block items, generics, parameter/local shadowing, closure capture,
 item capture barriers, lifetime binders, labels and their scope boundaries
 explicit. Initializers and let-else bodies precede new local bindings; condition
 bindings are visible in the consequent, not its else branch or following code.
+Guard-chain bindings are visible to subsequent operands and the arm body;
+their initializers see earlier bindings, and neither later arms nor code after
+the match can see them. Guard bindings can shadow the arm's pattern bindings.
 Or-patterns must agree on binding names/modes. Constants and constructors in
 patterns are references rather than invented local variables.
 

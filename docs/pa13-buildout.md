@@ -971,3 +971,55 @@ time and peak memory substantially while preserving complete LowIR bytes.
 For chain-width at 2048 bindings, candidate/baseline elapsed ratio is 0.450 and peak-RSS ratio is 0.268.
 
 For else-width at 2048 bindings, candidate/baseline elapsed ratio is 0.459 and peak-RSS ratio is 0.310.
+
+## Conditional guard grammar checkpoint
+
+Match guards now use the existing conditional-expression parser and validator.
+Passing the expression context into let-scrutinee parsing preserves the guard's
+unambiguous struct-literal syntax while leaving if/while's restriction intact.
+There is no second parse or new syntax representation. Existing resolution and
+selected conditional facts already provide the required left-to-right binding
+scope, shadowing and hygienic identity; invariant tests now assert those facts.
+Guard execution remains rejected until protected views and retries are proved.
+
+Twenty-two fixtures belong to their earliest owners: PA4 has fourteen grammar
+controls, PA5 one configured item/pattern case, PA6 five scope controls, and PA8
+two macro-hygiene controls. Expected outcomes were declared before explicit
+reference generation. All existing stdout, stderr and status oracles remain
+byte-identical. The twelve source receipts match the current compiler/tests.
+
+Validation: 1,695 active course cases; 289 Rust tests in both debug and release;
+Clippy all/pedantic, rustfmt and the 185-file audit; 24 harness tests; the 38-stage
+placement check; 24 pinned upstream fixtures and 126 pinned Reference files;
+all independent rustc checks and twelve layout controls. Logs are
+`obj/pa13-work/guard-parser-{debug,release,quality,harness,independent,refs}.log`.
+No new native execution is claimed by this parser checkpoint.
+
+Frozen baseline is `cleanup-candidate` (the preceding published compiler).
+The new `guard-parser-candidate` and built release binary both hash to
+`e54dca892d21a9d86f9ccbac7fe876e2cee46b7abcf1c3d768f8e1a1b1d669c6`.
+Three CPU-10 names-stage measurements retain 162 observations, with A/A
+calibration and three ABBA blocks per size, and no concurrent build/test from
+this task. Full names output and count output agree for every A/B comparison.
+
+| Workload | Run | Largest A/B median ms | Largest A/B median peak KiB |
+| --- | --- | ---: | ---: |
+| ordinary, 64k functions | 1791845586324228462 | 912.36 / 911.69 | 139332 / 139376 |
+| boolean guards, 16k functions | 1791845612426525196 | 286.23 / 285.25 | 48908 / 48924 |
+| conditional guards, 16k functions | 1791845620626623768 | 480.43 / 472.19 | 57708 / 57722 |
+
+The first two compare old/new compilers; the third is candidate-only A/A
+scaling because the old compiler rejects conditional guards. These observations
+show no material change in the two measured existing workloads, not a general
+performance guarantee. New-workload timing has visible noise; all samples are
+retained under `obj/perf/RUN/samples.json`.
+
+Independent guard investigations retain eighteen grammar cases at
+`obj/pa13-work/guard-grammar-1791844762445246437/evidence.json` and twelve further
+place/move cases at `obj/pa13-work/guard-places-1791845246754733816/evidence.json`.
+The latter show that tests in other arms protect their places, while untested
+unbound tuple fields remain mutable/movable. Ordinary array indexing is not
+disjoint. Guard-let locals have normal move/mutation semantics; moving an outer
+non-Copy value can fail either on retry or on fallback after a failed operand.
+These are requirements for the next execution work, not proofs provided by the
+current inspection mode. PA13 is still planned; PA14/PA15 remain in the goal.

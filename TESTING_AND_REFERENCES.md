@@ -77,7 +77,7 @@ invariants additionally verify ordered-rule fragment reuse, capture opacity,
 repetition cardinality and doc-token provenance. The two deliberate acceptance
 differences defer generated-syntax parsing to PA8. See `docs/pa7-validation.md`.
 
-PA8 checks all 91 expansion/hygiene programs with pinned rustc. A case may supply
+PA8 checks all 93 expansion/hygiene programs with pinned rustc. A case may supply
 `environment` as a name-to-string map; null removes that name from the child
 process. The same overrides apply to both compilers and are recorded in harness
 evidence and the manifest receipt. Inherited runner variables are otherwise

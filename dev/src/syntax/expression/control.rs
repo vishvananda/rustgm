@@ -153,7 +153,7 @@ impl Parser<'_, '_> {
         )
     }
 
-    pub(super) fn let_condition(&mut self) -> Result<NodeId, LexError> {
+    pub(super) fn let_condition(&mut self, context: Context) -> Result<NodeId, LexError> {
         let start = self.required()?.start;
         let pattern = self.pattern(true)?;
         self.expect(P::Equal)?;
@@ -161,7 +161,7 @@ impl Parser<'_, '_> {
             41,
             Context {
                 condition: false,
-                ..CONDITION
+                ..context
             },
         )?;
         self.node(start, Kind::LetCondition { pattern, value })
@@ -362,7 +362,16 @@ impl Parser<'_, '_> {
             };
             let pattern = self.pattern(true)?;
             let guard = if self.word("if")? {
-                Some(self.expr(0, NORMAL)?)
+                // The fat arrow, unlike an if/while body, leaves struct literals unambiguous.
+                let guard = self.expr(
+                    0,
+                    Context {
+                        condition: true,
+                        ..NORMAL
+                    },
+                )?;
+                self.validate_condition(guard)?;
+                Some(guard)
             } else {
                 None
             };

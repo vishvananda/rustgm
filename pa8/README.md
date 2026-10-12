@@ -29,7 +29,7 @@ Read `spec.md` and the pinned Rust Reference before changing these contracts.
 below. Earlier modes remain available. Omit SOURCE or use `-` for stdin.
 `--count-expanded-crate` reports counts for measurements. Source failures emit no partial stdout.
 
-`make -C pa8 test` runs the 87 manifest cases against committed stdout, stderr
+`make -C pa8 test` runs the manifest cases against committed stdout, stderr
 and exit-status text. `make test-rustc` independently checks every PA8 program.
 See [tests/README.md](tests/README.md) for fixture ownership and
 [the validation record](../docs/pa8-validation.md) for typed invariants and

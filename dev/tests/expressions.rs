@@ -209,3 +209,25 @@ fn let_chains_do_not_admit_let_in_arbitrary_expressions() -> Result<(), String> 
     }
     Ok(())
 }
+
+#[test]
+fn conditional_guards_keep_struct_literals_and_chain_shape() -> Result<(), String> {
+    let ast = ast("match x {_ if let s=S{n:7}&&s.n==7=>s.n,_=>99}")?;
+    let Kind::Match { arms, .. } = ast.node(ast.root).kind else {
+        return Err("missing match".into());
+    };
+    let Kind::Arm {
+        guard: Some(guard), ..
+    } = ast.node(ast.list(arms)[0]).kind
+    else {
+        return Err("missing guard".into());
+    };
+    let (left, right) = binary(&ast, guard, P::AndAnd)?;
+    let Kind::LetCondition { value, .. } = ast.node(left).kind else {
+        return Err("missing conditional let".into());
+    };
+    assert!(matches!(ast.node(value).kind, Kind::Struct { .. }));
+    binary(&ast, right, P::EqualEqual)?;
+    assert!(parse("if let s=S{n:7} {}").is_err());
+    Ok(())
+}

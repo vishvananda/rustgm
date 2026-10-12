@@ -117,6 +117,11 @@ lowering follows only the real successor and allocates no storage used solely
 on imaginary paths. Non-final irrefutable match arms use the same rule to check
 later arms. A diverging input has no such failure continuation. None of these
 rules bypass pending region or loan obligations.
+Conditional match guards and their let chains can be parsed, resolved and
+selected using these same conditional facts. Initializers retain pre-shadowing
+binding identities; later operands and arm bodies see the new bindings. This
+inspection support does not establish guarded execution safety.
+
 A full-domain interval requires no value test. Guarded execution is rejected
 before publishing body IR: inspection has not proved protected guard accesses,
 delayed moves or failed-guard retries. Irrefutable and conditional binding

@@ -1,0 +1,23 @@
+node 0 6 9 literal 0
+value 0 integer 6 9 u8 0
+node 1 10 11 wildcard
+node 2 15 16 name "S"
+node 3 15 16 path false [2]
+node 4 19 20 literal 1
+value 1 integer 19 20 infer 7
+node 5 17 20 field-init "n" 4
+node 6 15 21 struct 3 [5] -
+node 7 15 23 field 6 "n"
+node 8 25 26 literal 2
+value 2 integer 25 26 infer 7
+node 9 15 26 binary == 7 8
+node 10 28 29 literal 3
+value 3 integer 28 29 infer 7
+node 11 10 29 arm 1 9 10
+node 12 30 31 wildcard
+node 13 33 35 literal 4
+value 4 integer 33 35 infer 99
+node 14 30 35 arm 12 - 13
+node 15 0 36 match 0 [11,14]
+root 15
+eof 37

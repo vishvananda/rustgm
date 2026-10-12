@@ -58,7 +58,11 @@ statement followed by an array tail; `{ if true {} + 1 }` is rejected. Async
 blocks are expressions-without-block for this purpose. Let-else initializers
 ending in `}` or consisting of a lazy boolean expression require parentheses.
 Only condition conjunction operands may be let expressions; parentheses and
-ordinary expression positions do not introduce let chains.
+ordinary expression positions do not introduce let chains. Match guards also
+accept these conditional lets and conjunctions, with the same restrictions on
+ungrouped `||` and range operands. Guard expressions and let scrutinees permit
+unparenthesized struct expressions because `=>` delimits the guard; if/while
+conditions retain their separate struct-expression ambiguity restriction.
 
 ### PA5 boundary
 

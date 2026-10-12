@@ -1,0 +1,21 @@
+node 0 6 9 literal 0
+value 0 integer 6 9 u8 7
+node 1 10 11 name "x"
+node 2 10 11 path false [1]
+node 3 10 11 binding false false "x" -
+node 4 19 20 name "n"
+node 5 19 20 path false [4]
+node 6 19 20 binding false false "n" -
+node 7 21 22 name "x"
+node 8 21 22 path false [7]
+node 9 15 22 let-condition 6 8
+node 10 24 25 name "n"
+node 11 24 25 path false [10]
+node 12 10 25 arm 3 9 11
+node 13 26 27 wildcard
+node 14 29 31 literal 1
+value 1 integer 29 31 infer 99
+node 15 26 31 arm 13 - 14
+node 16 0 32 match 0 [12,15]
+root 16
+eof 33

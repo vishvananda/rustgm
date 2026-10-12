@@ -781,3 +781,21 @@ fn guarded_scalar_inspection_does_not_claim_execution_safety()
     }
     Ok(())
 }
+
+#[test]
+fn conditional_guards_retain_selected_facts_and_the_execution_gate() -> Result<(), String> {
+    let (report, facts) =
+        analyze("fn f(x:u8)->u8{match x{n if let n=n&&n>0&&let m=n+1=>m,_=>99}}")?;
+    assert_eq!(facts.patterns.conditions.len(), 2);
+    assert_eq!(facts.patterns.chains.len(), 4);
+    let guarded: Vec<_> = facts.patterns.arms.iter().filter_map(|a| a.guard).collect();
+    assert_eq!(guarded.len(), 1);
+    let boolean = rustgm::types::TypeId::primitive(rustgm::types::Primitive::Bool);
+    assert_eq!(facts.node(guarded[0]).and_then(|f| f.ty), Some(boolean));
+    let error = match body::build(&report, &facts) {
+        Ok(_) => return Err("guard execution bypassed protected captures".into()),
+        Err(error) => error.to_string(),
+    };
+    assert!(error.contains("protected captures"), "{error}");
+    Ok(())
+}

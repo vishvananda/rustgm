@@ -325,7 +325,7 @@ impl<'source> Parser<'source, '_> {
                 "loop" | "while" | "for" => self.loop_expression(),
                 "match" => self.match_expression(),
                 "return" | "break" | "continue" => self.jump(),
-                "let" if context.condition => self.let_condition(),
+                "let" if context.condition => self.let_condition(context),
                 "move" => {
                     self.cursor.take()?;
                     self.closure(true, false, token.start)

@@ -1,0 +1,43 @@
+node 0 7 10 literal 0
+value 0 integer 7 10 u8 0
+node 1 11 14 literal 1
+value 1 integer 11 14 u8 7
+node 2 6 15 tuple [0,1]
+node 3 16 17 name "x"
+node 4 16 17 path false [3]
+node 5 16 17 binding false false "x" -
+node 6 26 27 literal 2
+value 2 integer 26 27 infer 0
+node 7 28 29 name "n"
+node 8 28 29 path false [7]
+node 9 28 29 binding false false "n" -
+node 10 25 30 pattern Tuple - [6,9]
+node 11 31 32 name "x"
+node 12 31 32 path false [11]
+node 13 21 32 let-condition 10 12
+node 14 34 35 name "n"
+node 15 34 35 path false [14]
+node 16 37 38 literal 3
+value 3 integer 37 38 infer 7
+node 17 34 38 binary == 15 16
+node 18 21 38 binary && 13 17
+node 19 44 45 name "m"
+node 20 44 45 path false [19]
+node 21 44 45 binding false false "m" -
+node 22 46 47 name "n"
+node 23 46 47 path false [22]
+node 24 48 49 literal 4
+value 4 integer 48 49 infer 1
+node 25 46 49 binary + 23 24
+node 26 40 49 let-condition 21 25
+node 27 21 49 binary && 18 26
+node 28 51 52 name "m"
+node 29 51 52 path false [28]
+node 30 16 52 arm 5 27 29
+node 31 53 54 wildcard
+node 32 56 58 literal 5
+value 5 integer 56 58 infer 99
+node 33 53 58 arm 31 - 32
+node 34 0 59 match 2 [30,33]
+root 34
+eof 60

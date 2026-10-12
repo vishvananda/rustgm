@@ -2016,6 +2016,164 @@
         "kind": "expression",
         "status": 0
       }
+    },
+    {
+      "path": "tests/spec/control/guard-let.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.control"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/control/guard-chain.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.control"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/control/guard-block-input.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.control"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/control/guard-if-input.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.control"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/control/guard-grouped-or.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.control"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/control/guard-range-input.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.control"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/reject/guard-or-prefix.rs",
+      "exit_status": 1,
+      "features": [
+        "pa4.reject"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/reject/guard-or-suffix.rs",
+      "exit_status": 1,
+      "features": [
+        "pa4.reject"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/reject/guard-or-operand.rs",
+      "exit_status": 1,
+      "features": [
+        "pa4.reject"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/reject/guard-grouped-let.rs",
+      "exit_status": 1,
+      "features": [
+        "pa4.reject"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/reject/guard-nested-let.rs",
+      "exit_status": 1,
+      "features": [
+        "pa4.reject"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/reject/guard-ungrouped-range.rs",
+      "exit_status": 1,
+      "features": [
+        "pa4.reject"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/control/guard-struct-bool.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.control"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0,
+        "prefix": "struct S{n:u8} fn main(){let _=",
+        "suffix": ";}"
+      }
+    },
+    {
+      "path": "tests/spec/control/guard-struct-let.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.control"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0,
+        "prefix": "struct S{n:u8} fn main(){let _=",
+        "suffix": ";}"
+      }
     }
   ]
 }

@@ -127,7 +127,7 @@
     "dev/src/syntax/attribute.rs": "ac716fa51cd954b251d9482ca68384ab0ad385d692d7a9430bf8aec2bad1a735",
     "dev/src/syntax/cursor.rs": "bc7876c4d7759b3a856967abb2c1b85c9ddfe63e83108265ddb9e77d5aad0eee",
     "dev/src/syntax/expression/attributes.rs": "d7758337775c9e5a74475234f996331961c81c5a64a7cc12711ae7a947a883b5",
-    "dev/src/syntax/expression/control.rs": "2b2d7992bcf2f2aea4e5b1373be1d0d5ea5061d627b3fbb9efc150f6cdfa5012",
+    "dev/src/syntax/expression/control.rs": "da6f9317efbc401ca870d32ff1871df6f9ed96f8ceecbf995275f0d27fec6641",
     "dev/src/syntax/expression/fragment.rs": "98fdd1e23fa280ad3f89460db01b3273b81f072b1683ced74149e153af3e6dab",
     "dev/src/syntax/expression/interpolate.rs": "956970270f535124aec699aeeb96f7eeac6791b02d4f98e72e18c34bf5c51994",
     "dev/src/syntax/expression/items.rs": "326dae5b01b6dcbb12174e358c63d93d8a9fe905582db53a1ee63514c84ce345",
@@ -135,7 +135,7 @@
     "dev/src/syntax/expression/render/item.rs": "2a984c8bb0acbe4f2cf7fb050e8fd2f57f72c17c018c4136fea2c9a177f68158",
     "dev/src/syntax/expression/render.rs": "c6e5eb4bb44238853d431ba7148d7286978c8233c05088df32d1de7182eaceba",
     "dev/src/syntax/expression/types.rs": "23cd1734c96b74d724b7cb37ca1418373eefeb89a1235ecad95e8c94af3f32b1",
-    "dev/src/syntax/expression.rs": "5044837f7369cd67c05001f6dde86b7dd41127b91e7a68158a5bb1b9c1215fe4",
+    "dev/src/syntax/expression.rs": "22dcd4b4cdc3c5ea0924cb4fa1765c1ebbfe709ba6103a0409965e5980947cda",
     "dev/src/syntax/interpolation.rs": "57da14f6672ba25fe80cdfb76c3886db2a6c57c3113fbb914e745f3c75cebdb6",
     "dev/src/syntax/item.rs": "f29cc009944fe4a319d17420b4bf1c6595923207c5ddf8bd48721a3e73e60ecb",
     "dev/src/syntax/mod.rs": "7e9da6e829735ae79932e35cad218829d9fb8ffdd61162d347b6017b9d9eeacf",
@@ -160,7 +160,7 @@
     "dev/tests/expanded_cli.rs": "ab0030a9695eb767f44afd622cf0d71e37a29d95ac76df9a53cf0904484cc03c",
     "dev/tests/expansion_install.rs": "1c305135f07becdebcafb496bb2be0b0d465f7454f03fea60bac40fa987e5ee5",
     "dev/tests/expansion_stream.rs": "957f3426582b9ecf0c0071a1b98f9038394bc9562a3bd9e5f5c8e7d4360832ae",
-    "dev/tests/expressions.rs": "7a10a25d2bc77c5e28d41fea2bf3c7cc301fb2b85900339f86bb070849e90526",
+    "dev/tests/expressions.rs": "4118aded1ecf72e4a39e5be7a54b60fdc008baab245cec9b207be03b34049efb",
     "dev/tests/fragments.rs": "84d946b7b4dc5c9a10e9e78c4c1ef8dbfba4354d798c838ebb50ad8478fd3074",
     "dev/tests/hygiene.rs": "9ae2815c7934e062b3188641d786df26ae7418b7edbb1ea6f01bb0248de439c8",
     "dev/tests/interpolation.rs": "5fce3499781fcb6f8cdf2218c14d7c89ebe52684f49a8a05802e90e278dd9ed5",
@@ -177,8 +177,8 @@
     "dev/tests/modules.rs": "84926f99b371fdf1909f752eff2b832a74f31fc7c9d27697aae2bc10cdbeab22",
     "dev/tests/name_storage.rs": "c9afba91cdb6156c5327eb4b40a1571cb8e10d26a5654c5f5f97f1791d293e3a",
     "dev/tests/ownership.rs": "db532aa22f87d9cb2297b915beb8910c1e624f7499932a1b82fbb82f49313564",
-    "dev/tests/patterns.rs": "01f1a565eba658862ad96e2fda19c7e81b4aee055d695e61438529e021319e5e",
-    "dev/tests/resolution.rs": "e32796994c8e312b1b1e22c79df1d6e3f87aff6f3a870389273a25a39aa12483",
+    "dev/tests/patterns.rs": "5084491cb43a2fc21d909bfd327041b6a8768b9d9d7b144d3f92b0f3c0d7a535",
+    "dev/tests/resolution.rs": "e1878dc8d34847166cc16e3dc7e8d0abc4f5159130c7ff7404661a24a7f203f7",
     "dev/tests/scalar_matches.rs": "aa407bdd54d1ac3dc9a5a9502043364b91da7774ab3017cca97778ca11390a13",
     "dev/tests/support/body_machine.rs": "60a0346db41d0939c394450a09b7aa3c0c24b7b78bef406a8c38659e8ea7e764",
     "dev/tests/syntax_transfer.rs": "d59121770eb92bf93569806fc48eeb8a32a3c60670eafa217e0b0f5a7f9098fa",
@@ -188,7 +188,7 @@
     "dev/tests/typed_bodies.rs": "695c14eb84ba3ec6976b55191e68ea028a4d3e6041ed1c1b7ce58950521a819a",
     "dev/tests/types_cli.rs": "5560bb9a30a5a2c1a05961b1a0af6869d6a04d490be8f533a35d0c025ef81622"
   },
-  "manifest_sha256": "fe5964371ad48129cde0a5102cd0103e405cfae080bcc0ccc31de13e91ece00d",
+  "manifest_sha256": "c457984051f4adc6e7ba0ee0cad88f4c7dbd367e215ee5f6163467cb58811143",
   "fixtures": {
     "tests/spec/expansion/generated-items.rs": "b535018cac2d9e9aa7b41efacd88447dbf474da858ce5256f6fe16b421b1ce42",
     "tests/spec/expansion/generated-definitions.rs": "704ff2644133b8fab7fb786ec5044776612e3a3b8d4e7fb2738c1a6ec10c816f",
@@ -280,7 +280,9 @@
     "tests/spec/expansion/enum-discriminant-shadow.rs": "fedaddb7a5de0c5db63b254dff32222f1ed844178e6b27c5e2ce27f1e9882346",
     "tests/spec/expansion/self-nominal-macro.rs": "10b9eefd69b1188e452b53f11eb99e66e35f44333636a3c1d260ccd0a9ea0c05",
     "tests/spec/hygiene/or-pattern-capture.rs": "d0915180370af1545160df35c324994f62c8c3f13cc6376511b7cadc7241ac4e",
-    "tests/spec/hygiene/or-pattern-distinct-context.rs": "575d06db61a3aed5167b8d9aa360e3644852040b3f81b47b21aee8695dfa2930"
+    "tests/spec/hygiene/or-pattern-distinct-context.rs": "575d06db61a3aed5167b8d9aa360e3644852040b3f81b47b21aee8695dfa2930",
+    "tests/spec/hygiene/guard-captured-binding.rs": "14ba75b402550745edc7e58e1d431d5f661c7bb03f935d29d08b75105cba7db5",
+    "tests/spec/hygiene/guard-definition-site.rs": "097c62a003f77472d9814cf4a2a643bc5d95b7865d0c79c83cef7a9c0bcde663"
   },
   "auxiliary": {
     "tests/spec/include/block-item/part.rs": "189885d6977151db1644626c7bcbfaa2c8f62fb7a164bb37d3c156810e755978",

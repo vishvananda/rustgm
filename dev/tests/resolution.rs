@@ -204,3 +204,37 @@ fn a_late_explicit_import_retargets_downstream_aliases_and_globs() -> Result<(),
     }
     Ok(())
 }
+
+#[test]
+fn guard_bindings_shadow_only_after_their_initializers() -> Result<(), String> {
+    let mut package = package("fn f(x:u8){match x{n if let n=n&&let m=n=>{m;n;},_=>{x;}}x;}")?;
+    let facts = resolve::analyze(&mut package).map_err(|e| e.to_string())?;
+    let locals: Vec<_> = facts
+        .definitions
+        .iter()
+        .enumerate()
+        .filter(|(_, d)| matches!(d.kind, DefKind::Parameter | DefKind::Local))
+        .map(|(i, _)| u32::try_from(i))
+        .collect::<Result<_, _>>()
+        .map_err(|e| e.to_string())?;
+    assert_eq!(locals.len(), 4);
+    let targets: Vec<_> = facts
+        .references
+        .iter()
+        .filter(|r| r.namespace == Namespace::Value)
+        .filter_map(|r| {
+            if let Target::Definition(id) = r.target {
+                Some(id.0)
+            } else {
+                None
+            }
+        })
+        .collect();
+    assert_eq!(
+        targets,
+        [
+            locals[0], locals[1], locals[2], locals[3], locals[2], locals[0], locals[0]
+        ]
+    );
+    Ok(())
+}

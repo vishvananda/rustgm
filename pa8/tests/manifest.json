@@ -1134,6 +1134,28 @@
         "kind": "program",
         "status": 1
       }
+    },
+    {
+      "path": "tests/spec/hygiene/guard-captured-binding.rs",
+      "exit_status": 0,
+      "features": [
+        "pa8.hygiene"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/hygiene/guard-definition-site.rs",
+      "exit_status": 1,
+      "features": [
+        "pa8.hygiene"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
     }
   ]
 }

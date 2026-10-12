@@ -1,0 +1,24 @@
+node 0 6 9 literal 0
+value 0 integer 6 9 u8 0
+node 1 10 11 wildcard
+node 2 19 20 name "s"
+node 3 19 20 path false [2]
+node 4 19 20 binding false false "s" -
+node 5 21 22 name "S"
+node 6 21 22 path false [5]
+node 7 25 26 literal 1
+value 1 integer 25 26 infer 7
+node 8 23 26 field-init "n" 7
+node 9 21 27 struct 6 [8] -
+node 10 15 27 let-condition 4 9
+node 11 29 30 name "s"
+node 12 29 30 path false [11]
+node 13 29 32 field 12 "n"
+node 14 10 32 arm 1 10 13
+node 15 33 34 wildcard
+node 16 36 38 literal 2
+value 2 integer 36 38 infer 99
+node 17 33 38 arm 15 - 16
+node 18 0 39 match 0 [14,17]
+root 18
+eof 40
