@@ -1,5 +1,8 @@
 //! One owned UTF-8 file, with a normalized view only when CRLF requires it.
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct FileId(pub u32);
+
 /// Original bytes stay available for future physical source diagnostics.
 pub struct SourceFile {
     original: String,

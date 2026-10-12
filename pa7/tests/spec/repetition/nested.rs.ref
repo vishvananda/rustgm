@@ -1,0 +1,26 @@
+macro-matching 1
+definition 0 0 66 "m" rules 1
+invocation 0 67 83 definition 0 rule 0
+capture 0 ident 1:0 2:0 "a" nodes 0
+capture 1 ident 3:0 4:0 "b" nodes 0
+capture 2 ident 10:0 11:0 "c" nodes 0
+token definition identifier "fn"
+token invocation identifier "a"
+token definition punctuation "("
+token definition punctuation ")"
+token definition punctuation "{"
+token definition punctuation "}"
+token definition identifier "fn"
+token invocation identifier "b"
+token definition punctuation "("
+token definition punctuation ")"
+token definition punctuation "{"
+token definition punctuation "}"
+token definition identifier "fn"
+token invocation identifier "c"
+token definition punctuation "("
+token definition punctuation ")"
+token definition punctuation "{"
+token definition punctuation "}"
+end-invocation parser-calls 0
+end-macro-matching definitions 1 invocations 1

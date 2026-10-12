@@ -1,0 +1,9 @@
+macro-matching 1
+definition 0 0 39 "m" rules 1
+invocation 0 40 44 definition 0 rule 0
+doc definition inner=false " hi"
+token definition identifier "struct"
+token definition identifier "S"
+token definition punctuation ";"
+end-invocation parser-calls 0
+end-macro-matching definitions 1 invocations 1

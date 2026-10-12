@@ -2,4 +2,5 @@
 pub mod config;
 pub mod configured;
 pub mod crate_syntax;
+pub mod macros;
 pub mod render;

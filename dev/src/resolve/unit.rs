@@ -16,8 +16,7 @@ use crate::{
     },
 };
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
-pub struct FileId(pub u32);
+pub use crate::support::source::FileId;
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct NodeKey {
     pub file: FileId,

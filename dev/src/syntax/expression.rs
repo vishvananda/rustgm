@@ -13,6 +13,7 @@ use crate::{
 };
 
 mod control;
+pub mod fragment;
 mod items;
 pub use items::parse_crate;
 mod attributes;
@@ -64,8 +65,11 @@ pub fn parse(source: &str) -> Result<Ast<'_>, LexError> {
 
 impl<'source> Parser<'source> {
     fn new(source: &'source str, extended: bool) -> Result<Self, LexError> {
-        Ok(Self {
-            cursor: Cursor::new(source)?,
+        Ok(Self::with_cursor(Cursor::new(source)?, extended))
+    }
+    fn with_cursor(cursor: Cursor<'source>, extended: bool) -> Self {
+        Self {
+            cursor,
             ast: Ast {
                 nodes: Vec::new(),
                 edges: Vec::new(),
@@ -85,7 +89,7 @@ impl<'source> Parser<'source> {
             condition_work: Vec::new(),
             extended,
             item_scope: items::Scope::Module,
-        })
+        }
     }
     fn nesting_limit(&self) -> u16 {
         if self.extended { 128 } else { 256 }

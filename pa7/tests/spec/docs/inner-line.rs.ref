@@ -1,0 +1,6 @@
+macro-matching 1
+definition 0 0 45 "m" rules 1
+invocation 0 46 60 definition 0 rule 0
+capture 0 literal 5:0 6:0 "r\" hello\"" nodes 1
+end-invocation parser-calls 1
+end-macro-matching definitions 1 invocations 1

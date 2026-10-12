@@ -1,0 +1,2004 @@
+{
+  "schema": 1,
+  "mode": "--emit-expanded",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "panic": "abort",
+  "debug_assertions": false,
+  "cases": [
+    {
+      "path": "tests/spec/rules/empty-source.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.rules"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/rules/unused.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.rules"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/rules/ordered.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.rules"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/rules/all-delimiters.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.rules"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/rules/definition-delimiters.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.rules"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/rules/literal-nfc.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.rules"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/rules/raw-ident-match.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.rules"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/rules/raw-ident-different.rs",
+      "exit_status": 1,
+      "features": [
+        "pa7.rules"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/rules/integer-spelling.rs",
+      "exit_status": 1,
+      "features": [
+        "pa7.rules"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/rules/string-spelling.rs",
+      "exit_status": 1,
+      "features": [
+        "pa7.rules"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/rules/different-group.rs",
+      "exit_status": 1,
+      "features": [
+        "pa7.rules"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/rules/empty-definition.rs",
+      "exit_status": 1,
+      "features": [
+        "pa7.rules"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/rules/missing-fragment.rs",
+      "exit_status": 1,
+      "features": [
+        "pa7.rules"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/rules/unknown-fragment.rs",
+      "exit_status": 1,
+      "features": [
+        "pa7.rules"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/rules/duplicate.rs",
+      "exit_status": 1,
+      "features": [
+        "pa7.rules"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/rules/missing-arrow.rs",
+      "exit_status": 1,
+      "features": [
+        "pa7.rules"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/rules/missing-separator.rs",
+      "exit_status": 1,
+      "features": [
+        "pa7.rules"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/rules/invalid-repetition.rs",
+      "exit_status": 1,
+      "features": [
+        "pa7.rules"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/rules/optional-separator.rs",
+      "exit_status": 1,
+      "features": [
+        "pa7.rules"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/rules/empty-repeat.rs",
+      "exit_status": 1,
+      "features": [
+        "pa7.rules"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/rules/nullable-vis.rs",
+      "exit_status": 1,
+      "features": [
+        "pa7.rules"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/rules/nullable-nested.rs",
+      "exit_status": 1,
+      "features": [
+        "pa7.rules"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/rules/nullable-optional.rs",
+      "exit_status": 1,
+      "features": [
+        "pa7.rules"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/rules/reserved-crate.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.rules"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/rules/unpaired-dollar.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.rules"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/rules/fragment-crosses-group.rs",
+      "exit_status": 1,
+      "features": [
+        "pa7.rules"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/fragments/ident-0.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/fragments/ident-1.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/fragments/ident-2.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/fragments/ident-3.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/fragments/lifetime-0.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/fragments/lifetime-1.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/fragments/lifetime-2.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/fragments/tt-0.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/fragments/tt-1.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/fragments/tt-2.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/fragments/tt-3.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/fragments/literal-0.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/fragments/literal-1.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/fragments/literal-2.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/fragments/literal-3.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/fragments/literal-4.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/fragments/literal-5.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/fragments/literal-6.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/fragments/literal-7.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/fragments/literal-8.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/fragments/expr-0.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/fragments/expr-1.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/fragments/expr-2.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/fragments/expr-3.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/fragments/expr-4.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/fragments/expr-5.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/fragments/expr-6.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/fragments/expr-7.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/fragments/expr_2021-0.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/fragments/expr_2021-1.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/fragments/block-0.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/fragments/block-1.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/fragments/pat-0.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/fragments/pat-1.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/fragments/pat-2.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/fragments/pat-3.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/fragments/pat-4.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/fragments/pat-5.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/fragments/pat_param-0.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/fragments/pat_param-1.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/fragments/path-0.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/fragments/path-1.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/fragments/path-2.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/fragments/path-3.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/fragments/ty-0.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/fragments/ty-1.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/fragments/ty-2.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/fragments/ty-3.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/fragments/ty-4.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/fragments/ty-5.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/fragments/ty-6.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/fragments/item-0.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/fragments/item-1.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/fragments/item-2.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/fragments/item-3.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/fragments/item-4.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/fragments/stmt-0.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/fragments/stmt-1.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/fragments/stmt-2.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/fragments/stmt-3.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/fragments/stmt-4.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/fragments/meta-0.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/fragments/meta-1.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/fragments/meta-2.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/fragments/meta-3.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/fragments/meta-4.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/fragments/vis-0.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/fragments/vis-1.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/fragments/vis-2.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/fragments/ident-underscore.rs",
+      "exit_status": 1,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/fragments/ident-empty.rs",
+      "exit_status": 1,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/fragments/lifetime-ident.rs",
+      "exit_status": 1,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/fragments/expr-incomplete.rs",
+      "exit_status": 1,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/fragments/expr_2021-underscore.rs",
+      "exit_status": 1,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/fragments/expr_2021-const.rs",
+      "exit_status": 1,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/fragments/block-inner-attribute.rs",
+      "exit_status": 1,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/fragments/path-qualified.rs",
+      "exit_status": 1,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/fragments/pattern-alternative.rs",
+      "exit_status": 1,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/fragments/vis-empty.rs",
+      "exit_status": 1,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/fragments/vis-number.rs",
+      "exit_status": 1,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/fragments/item-number.rs",
+      "exit_status": 1,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/fragments/expr-extra.rs",
+      "exit_status": 1,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/fragments/vis-empty-before-token.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/fragments/vis-empty-close.rs",
+      "exit_status": 1,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/fragments/split-generic.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/fragments/stmt-no-semicolon.rs",
+      "exit_status": 1,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/fragments/stmt-semicolon.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/fragments/failed-alternatives-memo.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/fragments/fatal-parser-error.rs",
+      "exit_status": 1,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/fragments/conservative-item-start.rs",
+      "exit_status": 1,
+      "features": [
+        "pa7.fragments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/repetition/zero.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.repetition"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/repetition/many.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.repetition"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/repetition/one.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.repetition"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/repetition/one-empty.rs",
+      "exit_status": 1,
+      "features": [
+        "pa7.repetition"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/repetition/trailing.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.repetition"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/repetition/extra-separator.rs",
+      "exit_status": 1,
+      "features": [
+        "pa7.repetition"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/repetition/nested.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.repetition"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/repetition/ambiguity.rs",
+      "exit_status": 1,
+      "features": [
+        "pa7.repetition"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/repetition/literal-ambiguity.rs",
+      "exit_status": 1,
+      "features": [
+        "pa7.repetition"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/repetition/separated.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.repetition"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/repetition/zip.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.repetition"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/repetition/zip-mismatch.rs",
+      "exit_status": 1,
+      "features": [
+        "pa7.repetition"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/repetition/unrepeated-use.rs",
+      "exit_status": 1,
+      "features": [
+        "pa7.repetition"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/repetition/extra-depth.rs",
+      "exit_status": 1,
+      "features": [
+        "pa7.repetition"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/repetition/no-variable.rs",
+      "exit_status": 1,
+      "features": [
+        "pa7.repetition"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/repetition/operator-more.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.repetition"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/repetition/operator-more-empty.rs",
+      "exit_status": 1,
+      "features": [
+        "pa7.repetition"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/repetition/operator-optional.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.repetition"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/repetition/outer-scalar.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.repetition"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/follow/expr-comma.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.follow"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/follow/expr-arrow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.follow"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/follow/expr-word.rs",
+      "exit_status": 1,
+      "features": [
+        "pa7.follow"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/follow/expr-group.rs",
+      "exit_status": 1,
+      "features": [
+        "pa7.follow"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/follow/expr-nullable.rs",
+      "exit_status": 1,
+      "features": [
+        "pa7.follow"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/follow/expr-repeat.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.follow"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/follow/expr-separated.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.follow"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/follow/pattern-alternative.rs",
+      "exit_status": 1,
+      "features": [
+        "pa7.follow"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/follow/pattern-parameter.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.follow"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/follow/pattern-guard.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.follow"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/follow/type-plus.rs",
+      "exit_status": 1,
+      "features": [
+        "pa7.follow"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/follow/type-block.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.follow"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/follow/vis-priv.rs",
+      "exit_status": 1,
+      "features": [
+        "pa7.follow"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/follow/vis-raw-priv.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.follow"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/follow/vis-lifetime.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.follow"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/follow/vis-expression.rs",
+      "exit_status": 1,
+      "features": [
+        "pa7.follow"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/follow/expr-delimited.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.follow"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/docs/outer-line.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.docs"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/docs/outer-block.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.docs"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/docs/inner-line.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.docs"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/docs/raw-spelling.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.docs"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/docs/cooked-spelling.rs",
+      "exit_status": 1,
+      "features": [
+        "pa7.docs"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/docs/quoted-body.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.docs"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/docs/doc-item.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.docs"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/docs/matcher-doc.rs",
+      "exit_status": 1,
+      "features": [
+        "pa7.docs"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/docs/template-doc.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.docs"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/scope/shadow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.scope"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/scope/block-restore.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.scope"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/scope/module-inherit.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.scope"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/scope/module-private.rs",
+      "exit_status": 1,
+      "features": [
+        "pa7.scope"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/scope/forward.rs",
+      "exit_status": 1,
+      "features": [
+        "pa7.scope"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/scope/cfg-inactive.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.scope"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/scope/disabled-definition.rs",
+      "exit_status": 1,
+      "features": [
+        "pa7.scope"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/boundaries/opaque-precedence.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.boundaries"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/boundaries/crate-marker.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.boundaries"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/boundaries/nested-definition.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.boundaries"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/boundaries/unparsed-output.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.boundaries"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "reason": "PA7 transcribes typed tokens; PA8 parses the generated expansion in its syntactic context."
+      }
+    },
+    {
+      "path": "tests/spec/boundaries/unknown-substitution.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.boundaries"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "reason": "Unbound template substitutions survive for nested macro definitions; PA8 rejects this expansion when parsing it as items."
+      }
+    },
+    {
+      "path": "tests/spec/rules/literal-dollar.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.rules"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/rules/crate-marker-is-not-binder.rs",
+      "exit_status": 1,
+      "features": [
+        "pa7.rules"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/rules/joint-punctuation.rs",
+      "exit_status": 1,
+      "features": [
+        "pa7.rules"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/rules/separate-punctuation.rs",
+      "exit_status": 1,
+      "features": [
+        "pa7.rules"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/repetition/adjacent-expressions.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.repetition"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/repetition/adjacent-different-expressions.rs",
+      "exit_status": 0,
+      "features": [
+        "pa7.repetition"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/repetition/nested-adjacent-expressions.rs",
+      "exit_status": 1,
+      "features": [
+        "pa7.repetition"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/docs/matcher-comment.rs",
+      "exit_status": 1,
+      "features": [
+        "pa7.docs"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    }
+  ]
+}

@@ -98,7 +98,7 @@
       "path": "pa7",
       "title": "Macro matching",
       "mode": "--emit-expanded",
-      "status": "planned",
+      "status": "implemented-draft",
       "scope": "macro_rules matchers, fragment parser callbacks and transcription",
       "test_families": [
         "repetitions",
@@ -112,7 +112,7 @@
       "number": 8,
       "path": "pa8",
       "title": "Expansion and hygiene",
-      "mode": "--emit-expanded",
+      "mode": "--emit-expanded-crate",
       "status": "planned",
       "scope": "Expansion contexts, mixed-site hygiene, macro resolution and builtins",
       "test_families": [

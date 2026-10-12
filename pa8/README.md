@@ -15,7 +15,7 @@ Do not introduce rendered text as transport between compiler phases.
 
 ## Tool surface
 
-Extend `dev/rustgm --emit-expanded -o OUTPUT SOURCE`. Earlier stage views remain
+Extend `dev/rustgm --emit-expanded-crate -o OUTPUT SOURCE`. Earlier stage views remain
 available. Freeze the exact text vocabulary, deterministic ordering, error
 contract and example outputs before declaring this assignment active.
 

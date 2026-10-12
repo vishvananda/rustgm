@@ -168,7 +168,7 @@ fn doc_style(kind: Kind) -> Option<bool> {
     }
 }
 
-fn delimiter(kind: Kind) -> Option<(Delimiter, bool)> {
+pub(crate) fn delimiter(kind: Kind) -> Option<(Delimiter, bool)> {
     Some(match kind {
         Kind::Punctuation(Punctuation::OpenParen) => (Delimiter::Parenthesis, false),
         Kind::Punctuation(Punctuation::CloseParen) => (Delimiter::Parenthesis, true),

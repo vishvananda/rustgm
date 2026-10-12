@@ -1,0 +1,7 @@
+macro-matching 1
+definition 0 0 37 "m" rules 1
+invocation 0 38 42 definition 0 rule 0
+token definition punctuation "$"
+token definition identifier "undefined"
+end-invocation parser-calls 0
+end-macro-matching definitions 1 invocations 1

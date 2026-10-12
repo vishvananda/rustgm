@@ -1,0 +1,6 @@
+macro-matching 1
+definition 0 0 33 "m" rules 1
+invocation 0 34 54 definition 0 rule 0
+capture 0 vis 0:0 7:0 "pub(in crate::a)" nodes 3
+end-invocation parser-calls 1
+end-macro-matching definitions 1 invocations 1

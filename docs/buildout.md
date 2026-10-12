@@ -4,8 +4,9 @@
 
 The repository is initialized with the CPPGM layout and 38 assignment briefs.
 PA1's lexer, PA2's literal interpretation, PA3's token trees/attributes and
-PA4's expression/statement parser and PA5's crate/item/type/pattern parser have
-executable text contracts. PA6 onward remain visibly planned. No student export or Rust source
+PA4's expression/statement parser, PA5's crate/item/type/pattern parser, PA6's
+module/name resolution and PA7's macro matching have executable text contracts.
+PA8 onward remain visibly planned. No student export or Rust source
 to LowIR lowering exists yet. The external backend smoke exercises handwritten
 LowIR through the pinned CPPGM tools.
 
@@ -261,3 +262,11 @@ wrappers, retain required fixtures/licenses and validate the resulting student
 checkout. Run plans and local measurements stay out of that export. The current
 `rustgm-ref` wrapper is intentionally maintainer-local, not a distributable
 reference tool or an implementation available to student code.
+
+## PA6 and PA7 buildout
+
+Module/name resolution evidence is in [pa6-validation.md](pa6-validation.md).
+Macro matching, typed transcription and parser input evidence is in
+[pa7-validation.md](pa7-validation.md). PA7 preserves `--emit-expanded` as its
+one-step matching view; PA8 introduces `--emit-expanded-crate` for integrated
+expansion, keeping earlier oracles stable.

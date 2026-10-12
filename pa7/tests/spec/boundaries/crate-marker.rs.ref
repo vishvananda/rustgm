@@ -1,0 +1,27 @@
+macro-matching 1
+definition 0 0 74 "m" rules 1
+invocation 0 75 79 definition 0 rule 0
+token definition identifier "fn"
+token definition identifier "f"
+token definition punctuation "("
+token definition punctuation ")"
+token definition punctuation "->"
+token definition identifier "i32"
+token definition punctuation "{"
+crate definition 0
+token definition punctuation "::"
+token definition identifier "value"
+token definition punctuation "("
+token definition punctuation ")"
+token definition punctuation "}"
+token definition identifier "fn"
+token definition identifier "value"
+token definition punctuation "("
+token definition punctuation ")"
+token definition punctuation "->"
+token definition identifier "i32"
+token definition punctuation "{"
+token definition integer "1"
+token definition punctuation "}"
+end-invocation parser-calls 0
+end-macro-matching definitions 1 invocations 1

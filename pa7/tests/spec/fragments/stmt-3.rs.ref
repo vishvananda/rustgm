@@ -1,0 +1,6 @@
+macro-matching 1
+definition 0 0 34 "m" rules 1
+invocation 0 35 48 definition 0 rule 0
+capture 0 stmt 0:0 3:0 "struct S;" nodes 1
+end-invocation parser-calls 1
+end-macro-matching definitions 1 invocations 1

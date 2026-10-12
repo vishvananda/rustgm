@@ -1,0 +1,6 @@
+macro-matching 1
+definition 0 0 34 "m" rules 1
+invocation 0 35 56 definition 0 rule 0
+capture 0 expr 0:0 10:0 "foo::<Vec<u8>>(a)" nodes 13
+end-invocation parser-calls 1
+end-macro-matching definitions 1 invocations 1

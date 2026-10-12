@@ -23,7 +23,9 @@ repository with pinned reference tools. It has not been built yet.
   traversal that excludes disabled nodes before literal/semantic work.
 - PA6 has owned module loading, NFC name interning, lexical scopes, privacy,
   namespace-directed references and imports with independently checked text oracles.
-- PA7–PA38 have buildout briefs and Makefiles. Their suites and implementation
+- PA7 has ordered macro matching, cached fragment parsing, typed transcription
+  and independently checked repetition/follow-set/ambiguity oracles.
+- PA8–PA38 have buildout briefs and Makefiles. Their suites and implementation
   are not complete; invoking an unbuilt assignment fails explicitly.
 - The backend bridge has an executable LowIR smoke test. Rust source lowering
   begins at PA11; the smoke test is not evidence of Rust source compilation.

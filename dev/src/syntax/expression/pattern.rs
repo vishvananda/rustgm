@@ -320,7 +320,7 @@ impl Parser<'_> {
         Ok((self.list(mark)?, comma))
     }
 
-    fn literal_pattern(&mut self) -> Result<NodeId, LexError> {
+    pub(super) fn literal_pattern(&mut self) -> Result<NodeId, LexError> {
         let start = self.cursor.peek(0)?.map_or(self.cursor.end(), |t| t.start);
         let negative = self.eat(P::Minus)?;
         let token = self.required()?;

@@ -35,12 +35,16 @@ fn options() -> Result<Options, String> {
     while let Some(arg) = args.next() {
         match arg.as_str() {
             "--emit-tokens" | "--emit-literals" | "--emit-token-trees" | "--emit-ast"
-            | "--emit-crate-ast" | "--emit-names" | "--emit-lowir" => {
+            | "--emit-crate-ast" | "--emit-names" | "--emit-expanded" | "--emit-lowir" => {
                 options.mode = arg;
                 options.count = false;
             }
             "--count-names" => {
                 options.mode = "--emit-names".into();
+                options.count = true;
+            }
+            "--count-expanded" => {
+                options.mode = "--emit-expanded".into();
                 options.count = true;
             }
             "--count-tokens" => {
@@ -110,8 +114,39 @@ fn compile(options: &Options) -> Result<(), String> {
             options.count,
             &mut output,
         )
-    } else if options.count && options.mode == "--emit-crate-ast" {
-        let report = expand::crate_syntax::analyze(source.text(), &options.config)
+    } else if options.count {
+        count(options, source.text(), &mut output)
+    } else {
+        render_view(options, source.text(), &mut output)
+    };
+    output.flush().map_err(|e| e.to_string())?;
+    result
+}
+
+fn count(options: &Options, source: &str, output: &mut impl Write) -> Result<(), String> {
+    if options.mode == "--emit-expanded" {
+        let report = expand::macros::session::analyze(source, &options.config)
+            .map_err(|e| format!("{}: {}", e.offset, e.message))?;
+        let captures: usize = report
+            .invocations
+            .iter()
+            .map(|i| i.matched.captures.values.len())
+            .sum();
+        let pieces: usize = report
+            .invocations
+            .iter()
+            .map(|i| i.transcription.pieces.len())
+            .sum();
+        writeln!(
+            output,
+            "definitions {} invocations {} captures {captures} pieces {pieces} bytes {}",
+            report.definitions.len(),
+            report.invocations.len(),
+            source.len()
+        )
+        .map_err(|e| e.to_string())
+    } else if options.mode == "--emit-crate-ast" {
+        let report = expand::crate_syntax::analyze(source, &options.config)
             .map_err(|e| format!("{}: {}", e.offset, e.message))?;
         writeln!(
             output,
@@ -121,12 +156,11 @@ fn compile(options: &Options) -> Result<(), String> {
             report.active.iter().filter(|active| **active).count(),
             report.ast.attributes.len(),
             report.ast.lookahead_high_water,
-            source.text().len()
+            source.len()
         )
         .map_err(|e| e.to_string())
-    } else if options.count && options.mode == "--emit-ast" {
-        let ast =
-            expression::parse(source.text()).map_err(|e| format!("{}: {}", e.offset, e.message))?;
+    } else if options.mode == "--emit-ast" {
+        let ast = expression::parse(source).map_err(|e| format!("{}: {}", e.offset, e.message))?;
         writeln!(
             output,
             "nodes {} edges {} captures {} lookahead {} bytes {}",
@@ -134,27 +168,26 @@ fn compile(options: &Options) -> Result<(), String> {
             ast.edges.len(),
             ast.captures.len(),
             ast.lookahead_high_water,
-            source.text().len()
+            source.len()
         )
         .map_err(|e| e.to_string())
-    } else if options.count && options.mode == "--emit-token-trees" {
-        let report = expand::render::analyze(source.text(), &options.config)
+    } else if options.mode == "--emit-token-trees" {
+        let report = expand::render::analyze(source, &options.config)
             .map_err(|e| format!("{}: {}", e.offset, e.message))?;
         writeln!(
             output,
             "trees {} attributes {} bytes {}",
             report.forest.nodes().len(),
             report.attributes.entries.len(),
-            source.text().len()
+            source.len()
         )
         .map_err(|e| e.to_string())
-    } else if options.count && options.mode == "--emit-literals" {
-        let count = literal::render::count(source.text())
-            .map_err(|e| format!("{}: {}", e.offset, e.message))?;
-        writeln!(output, "literals {count} bytes {}", source.text().len())
-            .map_err(|e| e.to_string())
-    } else if options.count {
-        let mut lexer = Lexer::new(source.text()).map_err(|e| e.message.to_owned())?;
+    } else if options.mode == "--emit-literals" {
+        let count =
+            literal::render::count(source).map_err(|e| format!("{}: {}", e.offset, e.message))?;
+        writeln!(output, "literals {count} bytes {}", source.len()).map_err(|e| e.to_string())
+    } else {
+        let mut lexer = Lexer::new(source).map_err(|e| e.message.to_owned())?;
         let mut count = 0_u64;
         while lexer
             .next_token()
@@ -163,26 +196,28 @@ fn compile(options: &Options) -> Result<(), String> {
         {
             count += 1;
         }
-        writeln!(output, "tokens {count} bytes {}", source.text().len()).map_err(|e| e.to_string())
+        writeln!(output, "tokens {count} bytes {}", source.len()).map_err(|e| e.to_string())
+    }
+}
+
+fn render_view(options: &Options, source: &str, output: &mut impl Write) -> Result<(), String> {
+    let rendered = if options.mode == "--emit-expanded" {
+        expand::macros::render::expanded(source, &options.config, output)
+    } else if options.mode == "--emit-crate-ast" {
+        expand::crate_syntax::render(source, &options.config, output)
+    } else if options.mode == "--emit-ast" {
+        expression::render::expression(source, output)
+    } else if options.mode == "--emit-token-trees" {
+        expand::render::token_trees(source, &options.config, output)
+    } else if options.mode == "--emit-literals" {
+        literal::render::literals(source, output)
     } else {
-        let rendered = if options.mode == "--emit-crate-ast" {
-            expand::crate_syntax::render(source.text(), &options.config, &mut output)
-        } else if options.mode == "--emit-ast" {
-            expression::render::expression(source.text(), &mut output)
-        } else if options.mode == "--emit-token-trees" {
-            expand::render::token_trees(source.text(), &options.config, &mut output)
-        } else if options.mode == "--emit-literals" {
-            literal::render::literals(source.text(), &mut output)
-        } else {
-            render::tokens(source.text(), &mut output)
-        };
-        rendered.map_err(|error| match error {
-            RenderError::Lex(error) => format!("{}: {}", error.offset, error.message),
-            RenderError::Io(error) => error.to_string(),
-        })
+        render::tokens(source, output)
     };
-    output.flush().map_err(|e| e.to_string())?;
-    result
+    rendered.map_err(|error| match error {
+        RenderError::Lex(error) => format!("{}: {}", error.offset, error.message),
+        RenderError::Io(error) => error.to_string(),
+    })
 }
 
 fn main() -> ExitCode {

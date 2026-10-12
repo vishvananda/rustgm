@@ -4,7 +4,7 @@ mod index;
 pub mod load;
 mod lookup;
 pub mod model;
-pub mod names;
+pub use crate::support::names;
 pub mod package;
 mod patterns;
 pub mod unit;

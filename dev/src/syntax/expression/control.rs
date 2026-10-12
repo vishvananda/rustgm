@@ -26,7 +26,7 @@ impl Parser<'_> {
                 let token = self.required()?;
                 self.node(token.start, Kind::EmptyStatement)?
             } else if self.cursor.word("let")? {
-                self.let_statement()?
+                self.let_statement(true)?
             } else {
                 let value = self.expr(
                     0,
@@ -61,7 +61,7 @@ impl Parser<'_> {
         self.attach(inner, block)
     }
 
-    fn let_statement(&mut self) -> Result<NodeId, LexError> {
+    pub(super) fn let_statement(&mut self, semicolon: bool) -> Result<NodeId, LexError> {
         let start = self.required()?.start;
         let pattern = self.pattern(false)?;
         let ty = if self.eat(P::Colon)? {
@@ -101,7 +101,9 @@ impl Parser<'_> {
         } else {
             None
         };
-        self.expect(P::Semicolon)?;
+        if semicolon {
+            self.expect(P::Semicolon)?;
+        }
         self.node(
             start,
             Kind::Let {

@@ -1,0 +1,17 @@
+macro-matching 1
+definition 0 0 51 "m" rules 1
+invocation 0 52 59 definition 0 rule 0
+capture 0 expr 0:0 3:0 "1+2" nodes 3
+token definition identifier "fn"
+token definition identifier "f"
+token definition punctuation "("
+token definition punctuation ")"
+token definition punctuation "->"
+token definition identifier "i32"
+token definition punctuation "{"
+opaque 0
+token definition punctuation "*"
+token definition integer "3"
+token definition punctuation "}"
+end-invocation parser-calls 1
+end-macro-matching definitions 1 invocations 1
