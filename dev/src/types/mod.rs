@@ -6,6 +6,7 @@ pub mod copy;
 pub mod equality;
 pub mod infer;
 pub mod outlives;
+pub mod region_graph;
 pub mod specialize;
 pub mod substitute;
 pub mod variance;

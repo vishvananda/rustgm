@@ -66,6 +66,17 @@ qualified paths through ordinary typed namespace facts. Demand external metadata
 only when used, keep it separate from the crate root, and retain configured
 prelude policy per module so lookup does not rescan attributes.
 
+Resolve a destructor's impl target and receiver once. Retain the nominal item,
+method identity, whole-reference receiver binding and captured lifetime slots.
+Anonymous impl lifetimes are real slots, not fabricated declaration IDs. A
+destructor must cover every instantiation of its nominal type: target lifetimes
+are distinct universals; unused impl lifetimes are existential during coverage
+checking. Prove declared requirements against nominal well-formedness, including
+field-implied bounds, using the shared directed outlives graph. A receiver has an
+independent late lifetime; reference mutability and binding mutability are
+separate facts. A typed destructor is not an ordinary callable function value
+and is not evidence that cleanup has been proved or emitted.
+
 Analyze generic bodies without reparsing syntax. A monomorphization key must
 include all type/const arguments and semantic context affecting its result.
 Trait solver caches include parameter environment, binder universe and mode;

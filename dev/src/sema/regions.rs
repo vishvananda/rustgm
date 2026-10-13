@@ -1,11 +1,12 @@
 //! Canonical signature binders and elision, separate from later outlives checking.
 use crate::{resolve::model::DefId, types::RegionId};
 use std::collections::{HashMap, HashSet};
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, Eq)]
 pub(super) struct BinderId(usize);
 #[derive(Clone, Copy)]
 pub(super) enum Position {
     Input,
+    Impl,
     Output,
     Static,
     Local(crate::syntax::ast::NodeId),
@@ -27,6 +28,7 @@ impl Context {
 }
 struct Binder {
     parent: Option<BinderId>,
+    captured: Option<BinderId>,
     declared: Vec<DefId>,
     named: HashMap<DefId, u16>,
     count: u32,
@@ -43,6 +45,7 @@ impl Regions {
         let id = BinderId(self.binders.len());
         self.binders.push(Binder {
             parent,
+            captured: None,
             declared,
             named: HashMap::new(),
             count: 0,
@@ -51,6 +54,38 @@ impl Regions {
             candidate_count: 0,
         });
         id
+    }
+    /// A method body uses one flat environment, including anonymous impl slots.
+    pub fn capture(&mut self, source: BinderId, declared: Vec<DefId>) -> BinderId {
+        let id = self.binder(None, declared);
+        let (existing, added) = self.binders.split_at_mut(id.0);
+        let captured = &existing[source.0];
+        let method = &mut added[0];
+        method.named.clone_from(&captured.named);
+        method.count = captured.count;
+        let mut names = captured.declared.clone();
+        names.append(&mut method.declared);
+        method.declared = names;
+        method.captured = Some(source);
+        id
+    }
+    pub fn captured_region(
+        &self,
+        mut context: Option<BinderId>,
+        source: BinderId,
+        slot: u16,
+    ) -> Result<RegionId, &'static str> {
+        let mut depth = 0_u16;
+        while let Some(id) = context {
+            if id == source || self.binders[id.0].captured == Some(source) {
+                return RegionId::bound(depth, slot);
+            }
+            context = self.binders[id.0].parent;
+            depth = depth
+                .checked_add(1)
+                .ok_or("lifetime binder depth overflow")?;
+        }
+        Err("Self is outside its implementation lifetime environment")
     }
     pub fn count(&self, id: BinderId) -> u32 {
         self.binders[id.0].count
@@ -83,7 +118,7 @@ impl Regions {
         match context.position {
             Position::Local(_) => Err("local region requires body inference identity"),
             Position::Static => Ok(RegionId::STATIC),
-            Position::Input => RegionId::bound(0, self.fresh(id)?),
+            Position::Input | Position::Impl => RegionId::bound(0, self.fresh(id)?),
             Position::Output => self.binders[id.0]
                 .output
                 .ok_or("cannot infer an output lifetime from these parameters"),

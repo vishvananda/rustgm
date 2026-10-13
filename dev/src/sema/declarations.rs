@@ -2,6 +2,7 @@
 mod aggregates;
 mod annotations;
 mod contracts;
+mod destructors;
 mod lifetimes;
 use super::{
     model::{Declarations, Function, Initializer, InitializerKind},
@@ -39,6 +40,7 @@ enum Work {
     Reference(NodeKey, RegionId),
     Parameter(BinderId, bool),
     Signature(NodeKey, Option<DefId>, SignaturePhase),
+    DropReceiver(NodeKey, DefId, BinderId),
 }
 struct Signature {
     parameters: List,
@@ -56,6 +58,7 @@ struct Checker<'a> {
     discriminants: Vec<super::constants::Discriminant>,
     nominal_regions: std::collections::HashMap<ItemId, regions::Context>,
     function_binders: std::collections::HashMap<NodeKey, BinderId>,
+    drop_binders: std::collections::HashMap<DefId, BinderId>,
 }
 /// Resolve declaration types and shape-affecting constants without reparsing source.
 ///
@@ -69,19 +72,6 @@ pub fn analyze(report: &Report) -> Result<Declarations, Error> {
             "type checking requires completed name resolution",
         ));
     }
-    if let Some(drop_trait) = report.resolution.drop_trait
-        && let Some(reference) = report
-            .resolution
-            .references
-            .iter()
-            .find(|reference| reference.target == Target::Definition(drop_trait))
-    {
-        return Err(Declarations::error(
-            report,
-            reference.node,
-            "Drop implementations require destructor elaboration",
-        ));
-    }
     let mut checker = Checker {
         report,
         facts: Declarations::new(report)?,
@@ -92,6 +82,7 @@ pub fn analyze(report: &Report) -> Result<Declarations, Error> {
         discriminants: Vec::new(),
         nominal_regions: std::collections::HashMap::new(),
         function_binders: std::collections::HashMap::new(),
+        drop_binders: std::collections::HashMap::new(),
     };
     checker.run().map_err(|error| report.diagnostic(error))?;
     Ok(checker.facts)
@@ -113,6 +104,7 @@ impl Checker<'_> {
                     .saturating_add(unit.configured.ast.edges.len())
             })
             .saturating_mul(16);
+        self.prepare_destructors(&mut steps, work_limit)?;
         for index in 0..self.report.resolution.definitions.len() {
             let id = DefId(
                 u32::try_from(index)
@@ -132,6 +124,7 @@ impl Checker<'_> {
             self.drain(&mut steps, work_limit)?;
         }
         self.complete_nominals(&mut steps, work_limit)?;
+        self.validate_destructors()?;
         self.validate_signatures()?;
         self.local_annotations(&mut steps, work_limit)?;
         super::constants::discriminants(self.report, &mut self.facts, &self.discriminants)?;
@@ -159,6 +152,9 @@ impl Checker<'_> {
                     }
                 }
                 Work::Signature(key, owner, phase) => self.signature(key, owner, phase)?,
+                Work::DropReceiver(key, owner, binder) => {
+                    self.complete_receiver(key, owner, binder)?;
+                }
             }
         }
         Ok(())
@@ -438,7 +434,8 @@ impl Checker<'_> {
                     if !matches!(
                         self.report.resolution.definitions[id.0 as usize].kind,
                         DefKind::Primitive | DefKind::TypeAlias | DefKind::Struct | DefKind::Enum
-                    ) {
+                    ) && self.facts.destructors.self_type(id).is_none()
+                    {
                         return Err(self.error(
                             key,
                             "nominal or associated types require later semantic assignments",
@@ -522,7 +519,7 @@ impl Checker<'_> {
                 .configured
                 .ast
                 .function_types[index as usize];
-            if function.abi.is_some() {
+            if !rust_abi(self.report, key, function.abi)? {
                 return Err(
                     self.error(key, "foreign signatures require later semantic assignments")
                 );
@@ -545,7 +542,7 @@ impl Checker<'_> {
         else {
             return Err(self.error(key, "expected function signature"));
         };
-        if abi.is_some() || flags.asynchronous {
+        if !rust_abi(self.report, key, abi)? || flags.asynchronous {
             return Err(self.error(
                 key,
                 "foreign, async or bounded signatures require later semantic assignments",
@@ -579,7 +576,8 @@ impl Checker<'_> {
                         Ok(ItemKind::Function { .. }
                             | ItemKind::TypeAlias { .. }
                             | ItemKind::Struct { .. }
-                            | ItemKind::Enum { .. })
+                            | ItemKind::Enum { .. }
+                            | ItemKind::Impl { .. })
                     ))
             {
                 let message = match self.item(key).map(|item| item.kind) {
@@ -614,13 +612,15 @@ impl Checker<'_> {
             if !unit.configured.active[node.0 as usize] {
                 continue;
             }
-            let ty = parameter_type(
-                self.report,
-                NodeKey {
-                    file: key.file,
-                    node,
-                },
-            )?;
+            let key = self.unattributed(NodeKey {
+                file: key.file,
+                node,
+            });
+            if let Some(receiver) = self.facts.destructors.receivers.get(&key) {
+                self.children.push(receiver.ty);
+                continue;
+            }
+            let ty = parameter_type(self.report, key)?;
             self.children.push(self.ty(NodeKey {
                 file: key.file,
                 node: ty,
@@ -641,11 +641,16 @@ impl Checker<'_> {
         let signature = self.signature_syntax(key)?;
         match phase {
             SignaturePhase::Begin(parent) => {
-                let binder = self
-                    .regions
-                    .binder(parent, self.declared_regions(key, signature.binders)?);
+                let declared = self.declared_regions(key, signature.binders)?;
+                let binder = self.signature_binder(owner, parent, declared);
                 self.work
                     .push(Work::Signature(key, owner, SignaturePhase::Output(binder)));
+                if let Some(owner) = owner
+                    && self.facts.destructors.method(owner).is_some()
+                {
+                    self.schedule_receiver(key, owner, binder, signature.parameters)?;
+                    return Ok(());
+                }
                 let unit = self.report.package.unit(key.file);
                 for node in unit
                     .configured
@@ -938,6 +943,20 @@ pub(super) fn parameter_type(report: &Report, mut key: NodeKey) -> Result<NodeId
             }
         }
     }
+}
+
+/// Explicit Rust ABI spellings use the same calling convention as omission.
+fn rust_abi(report: &Report, key: NodeKey, abi: Option<NodeId>) -> Result<bool, Error> {
+    let Some(node) = abi else { return Ok(true) };
+    let key = NodeKey { node, ..key };
+    let unit = report.package.unit(key.file);
+    let Kind::Literal(index) = unit.configured.ast.node(node).kind else {
+        return Ok(false);
+    };
+    let value = unit
+        .literal(index)
+        .map_err(|e| Declarations::error(report, key, e.message))?;
+    Ok(matches!(value, crate::literal::Value::String(bytes) if bytes.as_ref() == b"Rust"))
 }
 
 pub(super) fn array_length(report: &Report, key: NodeKey) -> Result<u64, Error> {

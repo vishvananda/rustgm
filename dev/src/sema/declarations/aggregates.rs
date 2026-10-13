@@ -292,7 +292,7 @@ impl Checker<'_> {
             _ => Err(self.error(key, "expected aggregate declaration")),
         }
     }
-    fn unattributed(&self, mut key: NodeKey) -> NodeKey {
+    pub(super) fn unattributed(&self, mut key: NodeKey) -> NodeKey {
         while let Kind::Attributed { value, .. } = self.kind(key) {
             key.node = value;
         }

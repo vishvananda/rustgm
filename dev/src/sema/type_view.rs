@@ -45,6 +45,7 @@ pub fn write(report: &Report, facts: &Declarations, out: &mut impl Write) -> io:
         }
         writeln!(out)?;
     }
+    destructors(&facts.destructors, out)?;
     for initializer in &facts.initializers {
         let kind = match initializer.kind {
             InitializerKind::Const => "const",
@@ -69,6 +70,49 @@ pub fn write(report: &Report, facts: &Declarations, out: &mut impl Write) -> io:
     nodes(report, facts, out)?;
     write!(out, "eof ")?;
     count(facts, out)
+}
+
+fn destructors(facts: &super::destructors::Destructors, out: &mut impl Write) -> io::Result<()> {
+    for implementation in facts.implementations() {
+        writeln!(
+            out,
+            "destructor item={} self={} method={} target={} captures={} source={}:{} cleanup=pending",
+            implementation.item.0,
+            implementation.self_definition.0,
+            implementation.method.0,
+            implementation.target.0,
+            implementation.parameters,
+            implementation.source.file.0,
+            implementation.source.node.0
+        )?;
+        for &(a, b) in &implementation.bounds {
+            write!(
+                out,
+                "destructor-bound method={} longer=",
+                implementation.method.0
+            )?;
+            region(a, out)?;
+            write!(out, " shorter=")?;
+            region(b, out)?;
+            writeln!(out)?;
+        }
+    }
+    let mut receivers: Vec<_> = facts.receivers.iter().collect();
+    receivers.sort_unstable_by_key(|(key, _)| (key.file.0, key.node.0));
+    for (key, receiver) in receivers {
+        writeln!(
+            out,
+            "receiver parameter={}:{} binding={}:{} def={} type={} mutable={}",
+            key.file.0,
+            key.node.0,
+            receiver.binding.file.0,
+            receiver.binding.node.0,
+            receiver.definition.0,
+            receiver.ty.0,
+            receiver.mutable
+        )?;
+    }
+    Ok(())
 }
 /// # Errors
 /// Propagates output errors; these are obligations, not completed proofs.
@@ -225,7 +269,7 @@ fn nodes(report: &Report, facts: &Declarations, out: &mut impl Write) -> io::Res
 /// # Errors
 /// Propagates output failures after the same semantic analysis as the full view.
 pub fn count(facts: &Declarations, out: &mut impl Write) -> io::Result<()> {
-    writeln!(
+    write!(
         out,
         "types={} definitions={} nodes={} functions={} initializers={}",
         facts.types.len(),
@@ -238,7 +282,16 @@ pub fn count(facts: &Declarations, out: &mut impl Write) -> io::Result<()> {
             .count(),
         facts.functions.len(),
         facts.initializers.len()
-    )
+    )?;
+    if !facts.destructors.implementations().is_empty() {
+        write!(
+            out,
+            " destructors={} receivers={}",
+            facts.destructors.implementations().len(),
+            facts.destructors.receivers.len()
+        )?;
+    }
+    writeln!(out)
 }
 fn list(store: &Store, id: ListId, out: &mut impl Write) -> io::Result<()> {
     write!(out, "[")?;

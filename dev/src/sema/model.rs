@@ -206,6 +206,7 @@ pub struct ReferenceAlignment {
     pub guard: bool,
 }
 pub struct Declarations {
+    pub destructors: super::destructors::Destructors,
     /// Packed source places remain checked even when their CFG is unreachable.
     pub reference_alignment: Vec<ReferenceAlignment>,
     pub reference_adjustments: std::collections::HashMap<NodeKey, ReferenceAdjustment>,
@@ -252,6 +253,7 @@ impl Declarations {
     }
     pub(super) fn new(report: &Report) -> Result<Self, Error> {
         let mut value = Self {
+            destructors: super::destructors::Destructors::default(),
             reference_alignment: Vec::new(),
             reference_adjustments: std::collections::HashMap::new(),
             partial_annotations: std::collections::HashMap::new(),

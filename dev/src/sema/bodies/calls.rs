@@ -206,6 +206,12 @@ impl Checker<'_> {
         owner: DefId,
         ty: TypeId,
     ) -> Result<TypeId, Error> {
+        if self.facts.destructors.method(owner).is_some() {
+            return Err(self.error(
+                node,
+                "explicit destructor calls or function values are forbidden",
+            ));
+        }
         if let Some(&variant) = self.facts.members.constructors.get(&owner) {
             return self.constructor_item(node, ty, variant);
         }

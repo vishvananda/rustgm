@@ -12,7 +12,10 @@ use rustgm::{
         item::ItemKind,
     },
 };
-use std::{path::Path, process::Command};
+use std::path::Path;
+#[path = "helpers/qualify.rs"]
+mod rustc;
+use rustc::qualify;
 #[path = "support/semantic.rs"]
 mod semantic;
 
@@ -39,33 +42,6 @@ fn resolve(source: &str, expanded: bool) -> Result<Report, String> {
         report.resolution = resolve::analyze(&mut report.package).map_err(|e| e.to_string())?;
         Ok(report)
     }
-}
-
-fn qualify(name: &str, source: &str, accepted: bool) -> Result<(), Box<dyn std::error::Error>> {
-    let folder = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join(format!("../obj/drop-identity-{}", std::process::id()));
-    std::fs::create_dir_all(&folder)?;
-    let input = folder.join(format!("{name}.rs"));
-    std::fs::write(&input, source)?;
-    let output = Command::new("rustc")
-        .args([
-            "--edition=2024",
-            "--crate-type=lib",
-            "--crate-name=drop_identity",
-            "--emit=metadata",
-            "--cap-lints=allow",
-            "-o",
-        ])
-        .arg(folder.join(format!("{name}.rmeta")))
-        .arg(input)
-        .output()?;
-    assert_eq!(
-        output.status.code(),
-        Some(i32::from(!accepted)),
-        "{name}: {}",
-        String::from_utf8_lossy(&output.stderr)
-    );
-    Ok(())
 }
 
 const CASES: &[(&str, &str, bool)] = &[
@@ -219,6 +195,10 @@ fn drop_identity_survives_imports_expansion_and_lexical_shadowing()
             }
             assert_eq!(checked, 1, "{name}");
         }
+        if builtin {
+            let (_, facts) = semantic::analyze(&source).map_err(|e| format!("{name}: {e}"))?;
+            assert_eq!(facts.destructors.implementations().len(), 1, "{name}");
+        }
     }
     Ok(())
 }
@@ -242,15 +222,19 @@ fn ordinary_programs_do_not_allocate_language_trait_metadata() -> Result<(), Str
 
 #[test]
 fn executable_typing_cannot_silently_erase_a_drop_implementation() -> Result<(), String> {
+    assert!(semantic::analyze("struct S;impl Drop for S{}fn main(){}").is_err());
     for source in [
-        "struct S;impl Drop for S{}fn main(){}",
         "struct S;impl Drop for S{fn drop(self:&mut S){}}fn main(){let _s=S;}",
         "use core::ops::Drop as D;struct S;impl D for S{fn drop(self:&mut S){}}fn main(){let _s=S;}",
     ] {
-        let error = semantic::analyze(source)
+        let (report, facts) = semantic::analyze(source)?;
+        let error = rustgm::body::build(&report, &facts)
             .err()
             .ok_or_else(|| format!("destructor was accepted without elaboration: {source}"))?;
-        assert!(error.contains("require destructor elaboration"), "{error}");
+        assert!(
+            error.to_string().contains("require destructor elaboration"),
+            "{error}"
+        );
     }
     Ok(())
 }

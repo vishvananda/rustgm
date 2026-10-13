@@ -150,6 +150,9 @@ impl Checker<'_> {
         id: DefId,
         context: regions::Context,
     ) -> Result<TypeId, Error> {
+        if self.facts.destructors.self_type(id).is_some() {
+            return self.drop_self_type(key, id, context);
+        }
         let ty = self.facts.definitions[id.0 as usize]
             .ok_or_else(|| self.error(key, "missing resolved declaration type"))?;
         let arguments = crate::sema::lifetimes::arguments(self.report, key, false)?;
@@ -167,6 +170,9 @@ impl Checker<'_> {
                 regions.push(region);
             }
         } else {
+            if count != 0 && matches!(context.position, regions::Position::Impl) {
+                return Err(self.error(key, "impl target requires explicit lifetime arguments"));
+            }
             for _ in 0..count {
                 let region = self.region(key, None, context)?;
                 self.regions.record(context, region);

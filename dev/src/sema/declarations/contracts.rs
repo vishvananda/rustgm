@@ -118,6 +118,9 @@ impl Checker<'_> {
         signature: TypeId,
         bounds: Vec<(RegionId, RegionId)>,
     ) -> Result<(), Error> {
+        if self.facts.destructors.method(owner).is_some() {
+            return self.drop_method_regions(key, owner, binder, declared, signature, &bounds);
+        }
         let Type::Function {
             bound_regions,
             parameters,

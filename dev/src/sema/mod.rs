@@ -3,6 +3,7 @@ pub mod bodies;
 mod constants;
 pub use constants::values;
 pub mod declarations;
+pub mod destructors;
 pub mod entry;
 pub mod layout_view;
 pub mod lifetimes;
