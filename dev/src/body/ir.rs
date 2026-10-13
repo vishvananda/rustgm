@@ -33,7 +33,7 @@ pub struct ValueList {
     pub start: u32,
     pub end: u32,
 }
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum Place {
     Local(LocalId),
     Static(DefId),

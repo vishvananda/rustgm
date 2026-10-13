@@ -21,6 +21,30 @@ pub struct Analysis {
     words: usize,
 }
 impl Analysis {
+    pub(crate) fn ends(&self, block: usize) -> impl Iterator<Item = (u32, End)> + '_ {
+        self.index
+            .events(block)
+            .iter()
+            .filter_map(|e| match e.kind {
+                EventKind::End(end) => Some((e.position, end)),
+                EventKind::Birth(_) => None,
+            })
+    }
+    pub(crate) fn edge_ends(
+        &self,
+        block: usize,
+        target: BlockId,
+    ) -> impl Iterator<Item = End> + '_ {
+        self.index
+            .edges(block)
+            .iter()
+            .filter(move |e| e.target == target)
+            .map(|e| e.end)
+    }
+    pub(crate) fn temporary(&self, value: ValueId) -> Option<usize> {
+        let bit = self.index.values.get(value.0 as usize).copied().flatten()? as usize;
+        (!self.index.permanent[bit]).then_some(bit)
+    }
     /// Query a materialized value's definite availability at a reachable block entry.
     #[must_use]
     pub fn live_on_entry(&self, block: BlockId, value: ValueId) -> Option<bool> {

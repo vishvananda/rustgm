@@ -910,3 +910,86 @@ The immutable compiler is `obj/pa15-work/nll-candidate-v1`, SHA-256
 Source hashes and validation receipts use `obj/pa15-work/nll-v1-*`.
 `verify_nll_v1_perf.py` checks the raw observations and the separate probe's
 source/binary identity; `nll-probe.rs` records that probe's exact scope.
+
+## Integrated loan checking and the combined proof boundary
+
+Ownership inspection now runs lifetime-contract, storage, owned-access and loan
+checks together. Valid reference programs can reach the ownership view; invalid
+aliasing or escaping storage receives a semantic diagnostic. Lowering requires
+the new combined `borrow::Checked` token, whose constructor is private to this
+pipeline. Inspection retains per-body facts, while compilation releases them
+after each body. Synthesized tuple-struct and enum constructors receive lifetime
+contracts from their existing typed signatures.
+
+The forward loan pass consumes the retained region solution and backward CFG
+use liveness. Root universal and static regions cover the body; nested callable
+placeholders and the contract-only `LOCAL` sentinel do not become external
+extents. Loan reachability is separate from region membership: killing a loan
+between two use intervals prevents its later resurrection. Implicit two-phase
+reborrows reserve at creation and activate at the consuming call, following
+typed coercion identities. Explicit mutable borrows remain exclusive from
+creation. See the Rust compiler's
+[two-phase borrowing model](https://rustc-dev-guide.rust-lang.org/borrow-check/two-phase-borrows.html).
+
+A shared canonical place index compares fields, fixed pattern positions and
+subranges, conservatively overlapping dynamic indices while retaining later
+field disjointness. Access depth distinguishes reading a referent from replacing
+or ending its pointer storage. Loans behind shared references rely on retained
+parent lifetime constraints. Temporary ends consume existing storage event and
+edge indexes; storage scope walks and all loan/path/dataflow allocations have
+explicit budgets.
+
+Guard protection uses the same place comparisons when references occur. It now
+rejects mutations through a protected referent and mutable borrows passed to
+helpers, while accepting disjoint fields and paths that diverge before a later
+guard use. Nested guard views resolve to their selected source places. Ending
+an internal view's pointer storage does not end the selected referent. Pinned
+rustc independently accepts a reference to a selected copy binding escaping the
+guard into a later use; the hidden view slot must not give that reference an
+artificially short lifetime.
+
+Reference code generation remains explicitly gated on alignment and
+representation checks, including reference operations in unused functions.
+Thin/fat reference lowering, dynamic slice/text execution and PA17 destruction
+are still incomplete. This checkpoint does not activate PA15–PA17 or change any
+assignment fixture, manifest or text oracle.
+
+Validation for this checkpoint:
+
+- All 452 maintainer tests pass. The new combined checker has 65 independently
+  declared source cases checked against pinned rustc 1.98.0, covering last uses,
+  alias conflicts, reborrows, moves, pointer replacement, two-phase activation,
+  disjoint places, loops, temporary ends, zero-length repeats and guard views.
+  CLI checks verify ownership acceptance, semantic rejection and the remaining
+  reference-lowering boundary.
+- Formatting, Clippy all/pedantic with warnings denied, the 274-file audit and
+  all 25 harness tests pass. No lint allowance was added.
+- The course report remains 2,555/2,622 exact on the same 67 reviewed paths.
+  Six rejection diagnostics change from the preceding checkpoint: five now
+  report pending alignment/representation work, and the escaping reference
+  reports its actual invalid lifetime contract. No acceptance status changed.
+  This unreleased branch's course report still fails until contracts release.
+- All 1,230 manifest-listed PA11–PA14 LowIR inputs retain their statuses and
+  identical successful outputs. The same six rejection diagnostics are the
+  only differences from the preceding liveness checkpoint.
+- Measurements retain 162 verified raw observations with frozen binaries and
+  inputs, A/A calibration and paired ABBA blocks. At 64k owned-path functions,
+  baseline/current medians are 4,730.0/5,038.2 ms and 923,186/948,998 KiB; at
+  16k guard-retry functions they are 1,314.4/1,434.0 ms and
+  292,372/297,074 KiB. These CLI paths now perform the combined checks.
+  Time medians rise 6.5%/9.1%, with overlapping ranges and noisy calibration;
+  memory rises 2.8%/1.6%. Both complete rendering and count outputs agree.
+  A separate frozen driver exercises the combined reference checks at
+  256/1,024/4,096 functions, with candidate medians of 27.0/98.9/455.0 ms and
+  7,846/21,928/76,096 KiB. Each generated function contributes two loans,
+  47 points, six region words and 983 work steps; one shared helper contributes
+  no loans. The largest input is independently accepted by pinned rustc.
+  Driver rendering and count outputs agree across repeated runs. This measures
+  reference checking, not reference code generation. No local RustGM build or
+  test overlapped these measurements.
+
+The immutable compiler is `obj/pa15-work/loans-candidate-v1`, SHA-256
+`257d98849d92703f1c7e0907d787735172cd99dfb9e278724d42d3aeef466e2f`.
+Source hashes and validation receipts use `obj/pa15-work/loans-v1-*`.
+`verify_loans_v1_perf.py` checks raw observations, source/binary/input hashes
+and linear counters; `loans-probe.rs` records the separate driver's scope.

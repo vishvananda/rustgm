@@ -378,10 +378,12 @@ fn reference_operations_keep_executable_proofs_pending() -> Result<(), Box<dyn s
         assert_eq!(output.status.code(), Some(1));
         assert!(output.stdout.is_empty());
         let text = String::from_utf8_lossy(&output.stderr);
-        assert!(
-            text.contains("region and loan proofs") || text.contains("owned selected patterns"),
-            "{text}"
-        );
+        let boundary = if index == 3 {
+            "reference expression execution requires region and loan proofs"
+        } else {
+            "reference lowering requires completed alignment and representation checks"
+        };
+        assert!(text.contains(boundary), "{text}");
     }
     Ok(())
 }

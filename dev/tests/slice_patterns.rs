@@ -243,7 +243,9 @@ fn dynamic_slice_selection_matches_rustc_and_keeps_proofs_pending()
             assert!(executable.stdout.is_empty() && !executable.stderr.is_empty());
             let diagnostic = String::from_utf8(executable.stderr)?;
             assert!(
-                diagnostic.contains("region and loan proofs")
+                diagnostic.contains("reference lowering")
+                    || diagnostic
+                        .contains("reference pattern execution requires region and loan proofs")
                     || diagnostic.contains("requires owned selected patterns"),
                 "{name}: {diagnostic}"
             );

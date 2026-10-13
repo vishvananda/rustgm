@@ -476,7 +476,7 @@ fn borrowed_conditions_remain_obligations() -> Result<(), Box<dyn std::error::Er
             .output()?;
         assert_eq!(executable.status.code(), Some(1));
         assert!(executable.stdout.is_empty());
-        assert!(String::from_utf8_lossy(&executable.stderr).contains("region and loan proofs"));
+        assert!(String::from_utf8_lossy(&executable.stderr).contains("reference lowering"));
         let independent = Command::new("rustc")
             .args(["--edition=2024", "--crate-type=lib", "--emit=metadata"])
             .arg(&file)

@@ -107,7 +107,7 @@ fn pattern_inspection_does_not_claim_region_or_loan_validity()
         (
             "escape",
             "fn f(value:u8)->&'static u8{let ref x=value;x}",
-            "reference expression execution requires region and loan proofs",
+            "required lifetime does not outlive its target",
         ),
         (
             "mutable-through-shared",
@@ -247,13 +247,11 @@ fn check_execution_boundary(
 ) -> Result<(), Box<dyn std::error::Error>> {
     for mode in ["--emit-body-ir", "--count-ownership", "--emit-lowir"] {
         let gate = Command::new(compiler).arg(mode).arg(path).output()?;
-        let supported = (mode == "--emit-body-ir"
-            && !matches!(
-                name,
-                "slice-rest" | "slice-rest-mut" | "slice-wild-rest" | "slice-explicit-ref"
-            ))
-            || (mode == "--count-ownership"
-                && matches!(name, "no-initializer" | "infer-reference"));
+        let dynamic = matches!(
+            name,
+            "slice-rest" | "slice-rest-mut" | "slice-wild-rest" | "slice-explicit-ref"
+        );
+        let supported = mode != "--emit-lowir" && !dynamic;
         if supported {
             assert_eq!(
                 gate.status.code(),
@@ -267,8 +265,13 @@ fn check_execution_boundary(
         }
         assert_eq!(gate.status.code(), Some(1), "{name}: {mode}");
         assert!(gate.stdout.is_empty());
+        let boundary = if dynamic {
+            "reference pattern execution requires region and loan proofs"
+        } else {
+            "reference lowering requires completed alignment and representation checks"
+        };
         assert!(
-            String::from_utf8_lossy(&gate.stderr).contains("region and loan proofs"),
+            String::from_utf8_lossy(&gate.stderr).contains(boundary),
             "{name}: {}",
             String::from_utf8_lossy(&gate.stderr)
         );

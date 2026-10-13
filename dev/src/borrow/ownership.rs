@@ -56,6 +56,14 @@ impl Checked<'_> {
         self.program
     }
 }
+impl<'a> Analysis<'a> {
+    pub(super) fn from_proved(program: &'a Program, bodies: Vec<BodyFacts>) -> Self {
+        Self {
+            checked: Checked { program },
+            bodies,
+        }
+    }
+}
 /// # Errors
 /// Rejects moved/uninitialized reads, invalid projected writes, repeated immutable
 /// initialization, moving through indexing, and unsatisfied array-repeat Copy bounds.
@@ -97,47 +105,7 @@ fn visit<'a, S: BuildHasher>(
 ) -> Result<Checked<'a>, Error> {
     let mut pending = None;
     for body in &program.bodies {
-        let error = |message| Error {
-            node: body.source,
-            message,
-        };
-        let mut uses = vec![Use::Other; body.values.len()];
-        for (index, value) in body.values.iter().enumerate() {
-            if matches!(value.kind, Rvalue::Read(_)) {
-                uses[index] = if copies
-                    .demand(types, definitions, derives, value.ty)
-                    .map_err(error)?
-                    .copy
-                {
-                    Use::Copy
-                } else {
-                    Use::Move
-                };
-            }
-            if let Rvalue::Repeat { value: operand } = value.kind {
-                let Some(Kind::Array { element, length }) = types.kind(value.ty) else {
-                    return Err(error("repeat has no canonical array type"));
-                };
-                // A constant operand is evaluated independently for each element;
-                // an ordinary value is evaluated once, including lengths zero/one.
-                if length > 1
-                    && !matches!(body.values[operand.0 as usize].kind, Rvalue::Constant(_))
-                    && !copies
-                        .demand(types, definitions, derives, element)
-                        .map_err(error)?
-                        .copy
-                {
-                    return Err(error("repeated array element must implement Copy"));
-                }
-            }
-        }
-        let mut facts = BodyFacts {
-            paths: Paths::build(body, types).map_err(error)?,
-            uses,
-            reachable: Vec::new(),
-        };
-        state::verify(body, &mut facts, types)?;
-        guards::verify(body, &facts)?;
+        let facts = analyze_body(types, definitions, derives, copies, body)?;
         record(facts);
         if pending.is_none()
             && (body
@@ -159,6 +127,61 @@ fn visit<'a, S: BuildHasher>(
         });
     }
     Ok(Checked { program })
+}
+/// Prove owned initialization/access facts for one body without granting an
+/// executable token. Loan and lifetime checks consume these same typed facts.
+///
+/// # Errors
+/// Rejects invalid moves, initialization, permissions and resource exhaustion.
+pub fn analyze_body<S: BuildHasher>(
+    types: &Store,
+    definitions: &Definitions,
+    derives: &HashMap<ItemId, Properties, S>,
+    copies: &mut Copies,
+    body: &Body,
+) -> Result<BodyFacts, Error> {
+    let error = |message| Error {
+        node: body.source,
+        message,
+    };
+    let mut uses = vec![Use::Other; body.values.len()];
+    for (index, value) in body.values.iter().enumerate() {
+        if matches!(value.kind, Rvalue::Read(_)) {
+            uses[index] = if copies
+                .demand(types, definitions, derives, value.ty)
+                .map_err(error)?
+                .copy
+            {
+                Use::Copy
+            } else {
+                Use::Move
+            };
+        }
+        if let Rvalue::Repeat { value: operand } = value.kind {
+            let Some(Kind::Array { element, length }) = types.kind(value.ty) else {
+                return Err(error("repeat has no canonical array type"));
+            };
+            // A constant operand is evaluated independently for each element;
+            // an ordinary value is evaluated once, including lengths zero/one.
+            if length > 1
+                && !matches!(body.values[operand.0 as usize].kind, Rvalue::Constant(_))
+                && !copies
+                    .demand(types, definitions, derives, element)
+                    .map_err(error)?
+                    .copy
+            {
+                return Err(error("repeated array element must implement Copy"));
+            }
+        }
+    }
+    let mut facts = BodyFacts {
+        paths: Paths::build(body, types).map_err(error)?,
+        uses,
+        reachable: Vec::new(),
+    };
+    state::verify(body, &mut facts, types)?;
+    guards::verify(body, &facts, types)?;
+    Ok(facts)
 }
 impl BodyFacts {
     fn transfer(&self, body: &Body, state: &mut State, action: Action) -> Result<(), &'static str> {

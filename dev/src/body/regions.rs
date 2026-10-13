@@ -72,6 +72,7 @@ pub fn collect(facts: &Declarations) -> Result<Contracts<'_>, &'static str> {
             obligations: Vec::new(),
         });
     }
+    constructors(facts, &mut bodies, &mut index)?;
     let mut add = |body, source, kind| -> Result<(), &'static str> {
         let index = index
             .get(&body)
@@ -119,4 +120,44 @@ pub fn collect(facts: &Declarations) -> Result<Contracts<'_>, &'static str> {
         callables: &facts.lifetimes.callables,
         nominal_bounds: &facts.lifetimes.nominal_bounds,
     })
+}
+fn constructors(
+    facts: &Declarations,
+    bodies: &mut Vec<Contract>,
+    index: &mut HashMap<NodeKey, usize>,
+) -> Result<(), &'static str> {
+    for (ordinal, ty) in facts.definitions.iter().enumerate() {
+        let Some(crate::types::Kind::FunctionItem {
+            item, signature, ..
+        }) = ty.and_then(|ty| facts.types.kind(ty))
+        else {
+            continue;
+        };
+        if item.0 as usize != ordinal {
+            continue;
+        }
+        let Some(variant) = facts
+            .members
+            .constructors
+            .get(&crate::resolve::model::DefId(item.0))
+        else {
+            continue;
+        };
+        let source = facts.members.variants[variant.0 as usize].node;
+        let Some(crate::types::Kind::Function { bound_regions, .. }) = facts.types.kind(signature)
+        else {
+            return Err("constructor has no lifetime signature");
+        };
+        if index.insert(source, bodies.len()).is_some() {
+            return Err("duplicate constructor lifetime owner");
+        }
+        bodies.push(Contract {
+            source,
+            signature: Some(signature),
+            universals: bound_regions,
+            assumptions: Vec::new(),
+            obligations: Vec::new(),
+        });
+    }
+    Ok(())
 }

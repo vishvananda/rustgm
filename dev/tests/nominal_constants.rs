@@ -409,7 +409,7 @@ fn nominal_patterns_keep_use_sites_and_pending_borrows() -> Result<(), Box<dyn s
     let executable = frontend(&path, "--emit-lowir")?;
     assert_eq!(executable.status.code(), Some(1));
     assert!(executable.stdout.is_empty());
-    assert!(String::from_utf8_lossy(&executable.stderr).contains("region and loan proofs"));
+    assert!(String::from_utf8_lossy(&executable.stderr).contains("reference lowering"));
     let rustc = Command::new("rustc")
         .args([
             "--edition=2024",

@@ -29,6 +29,9 @@ pub struct Identities {
     universals: Vec<Region>,
 }
 impl Identities {
+    pub fn universals(&self) -> impl Iterator<Item = Region> + '_ {
+        self.universals.iter().copied()
+    }
     #[must_use]
     pub fn get(&self, id: RegionId) -> Option<Region> {
         if id == RegionId::STATIC {

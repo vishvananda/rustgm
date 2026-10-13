@@ -1,5 +1,9 @@
 //! Ownership and region proofs retain source semantics before executable erasure.
+mod check;
+pub use check::{Analysis, Checked, Environment, Error, check, verify};
 pub mod liveness;
+pub mod loans;
 pub mod ownership;
+mod places;
 pub mod regions;
 pub mod storage;

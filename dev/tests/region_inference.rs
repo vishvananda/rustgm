@@ -54,7 +54,10 @@ fn unused_lifetime_obligations_cannot_bypass_the_executable_proof_gate()
     let result = child.wait_with_output()?;
     assert_eq!(result.status.code(), Some(1));
     assert!(result.stdout.is_empty());
-    assert!(String::from_utf8_lossy(&result.stderr).contains("completed region and loan proofs"));
+    assert!(
+        String::from_utf8_lossy(&result.stderr)
+            .contains("required lifetime does not outlive its target")
+    );
     Ok(())
 }
 

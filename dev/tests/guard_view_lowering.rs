@@ -1,7 +1,6 @@
-//! Component checks while guarded source execution remains gated in the body builder.
+//! Component checks for internal guard-view storage and lowering.
 use rustgm::{
     body::{self, ir::*},
-    borrow::ownership,
     expand::config::Config,
     lowir::writer,
     resolve::{
@@ -103,10 +102,19 @@ fn install_view(body: &mut Body, local: LocalId) -> Result<(), &'static str> {
         _ => Place::Temporary(value),
     };
     let old = std::mem::take(&mut body.statements);
-    for block in &mut body.blocks {
+    let mut locations = std::collections::HashMap::new();
+    let mut birth = None;
+    for (index, block) in body.blocks.iter_mut().enumerate() {
+        let block_id = BlockId(u32::try_from(index).map_err(|_| "blocks")?);
         let range = block.start as usize..block.end as usize;
         block.start = u32::try_from(body.statements.len()).map_err(|_| "statements")?;
-        for statement in &old[range] {
+        let old_end = u32::try_from(range.end).map_err(|_| "statements")?;
+        for at in range {
+            locations.insert(
+                (block_id, u32::try_from(at).map_err(|_| "statements")?),
+                u32::try_from(body.statements.len()).map_err(|_| "statements")?,
+            );
+            let statement = &old[at];
             match statement.action {
                 Action::Evaluate(id)
                     if id == value
@@ -119,6 +127,10 @@ fn install_view(body: &mut Body, local: LocalId) -> Result<(), &'static str> {
                         source,
                         action: Action::GuardStart(GuardId(0)),
                     });
+                    birth = Some((
+                        block_id,
+                        u32::try_from(body.statements.len()).map_err(|_| "statements")?,
+                    ));
                     body.statements.push(Statement {
                         source,
                         action: Action::BindView {
@@ -134,6 +146,44 @@ fn install_view(body: &mut Body, local: LocalId) -> Result<(), &'static str> {
             }
         }
         block.end = u32::try_from(body.statements.len()).map_err(|_| "statements")?;
+        locations.insert((block_id, old_end), block.end);
+    }
+    remap_storage(body, &locations)?;
+    if let Place::Temporary(value) = origin
+        && !body.temporaries.iter().any(|t| t.value == value)
+    {
+        let (block, before) = birth.ok_or("missing temporary view birth")?;
+        body.temporaries.push(Temporary {
+            value,
+            block,
+            before,
+            source,
+            exits_before: 0,
+            lifetime: body::scopes::Lifetime::Scope(body.locals[local.0 as usize].scope),
+        });
+    }
+    Ok(())
+}
+fn remap_storage(
+    body: &mut Body,
+    locations: &std::collections::HashMap<(BlockId, u32), u32>,
+) -> Result<(), &'static str> {
+    for temporary in &mut body.temporaries {
+        temporary.before = *locations
+            .get(&(temporary.block, temporary.before))
+            .ok_or("missing remapped temporary")?;
+    }
+    for exit in &mut body
+        .storage
+        .as_mut()
+        .ok_or("missing fixture storage")?
+        .exits
+    {
+        if let body::storage::Location::At { block, before } = &mut exit.location {
+            *before = *locations
+                .get(&(*block, *before))
+                .ok_or("missing remapped exit")?;
+        }
     }
     Ok(())
 }
@@ -172,11 +222,23 @@ fn lower(source: &str) -> Result<Vec<u8>, String> {
     if changed != 1 {
         return Err("expected one fixture view".into());
     }
-    let checked = ownership::verify(
+    let contracts = rustgm::body::regions::collect(&facts)?;
+    let contracts = rustgm::borrow::regions::check_bodies(
         &facts.types,
         &facts.aggregates,
-        &facts.derives,
-        &mut facts.copies,
+        &facts.lifetimes.variances,
+        &contracts,
+        &program,
+    )
+    .map_err(|e| e.to_string())?;
+    let checked = rustgm::borrow::verify(
+        &mut rustgm::borrow::Environment {
+            types: &facts.types,
+            definitions: &facts.aggregates,
+            derives: &facts.derives,
+            copies: &mut facts.copies,
+        },
+        &contracts,
         &program,
     )
     .map_err(|e| e.message)?;

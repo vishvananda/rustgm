@@ -6,6 +6,10 @@ use super::{
 use crate::body::ir::{
     Action, BlockId, Body, GuardId, LocalId, LocalKind, Place, Rvalue, Terminator,
 };
+use crate::{
+    borrow::places::{Depth, Index},
+    types::{Kind, Store},
+};
 use std::collections::VecDeque;
 
 #[derive(Clone, Copy)]
@@ -14,8 +18,8 @@ struct Frame {
     end: usize,
 }
 enum Loan<'a> {
-    Tested(&'a [Vec<PlaceInfo>]),
-    View(&'a [PlaceInfo]),
+    Tested(&'a [Vec<PlaceInfo>], &'a [Place]),
+    View(&'a [PlaceInfo], LocalId),
 }
 struct Proof<'a> {
     body: &'a Body,
@@ -23,6 +27,7 @@ struct Proof<'a> {
     frames: Vec<Frame>,
     loans: Vec<Loan<'a>>,
     remaining: usize,
+    precise: Option<Index>,
 }
 impl<'a> Proof<'a> {
     fn new(body: &'a Body, facts: &'a BodyFacts) -> Result<Self, &'static str> {
@@ -32,6 +37,19 @@ impl<'a> Proof<'a> {
             frames: Vec::new(),
             loans: Vec::new(),
             remaining: 32_000_000,
+            precise: if body
+                .projections
+                .iter()
+                .any(|p| matches!(p.kind, crate::body::ir::ProjectionKind::Dereference { .. }))
+                || body
+                    .values
+                    .iter()
+                    .any(|v| matches!(v.kind, Rvalue::Borrow { .. }))
+            {
+                Some(Index::new(body)?)
+            } else {
+                None
+            },
         };
         for (index, guard) in body.guards.iter().enumerate() {
             let tested = facts
@@ -44,7 +62,10 @@ impl<'a> Proof<'a> {
                 .get(guard.views_start as usize..guard.views_end as usize)
                 .ok_or("invalid guard view range")?;
             let start = proof.loans.len();
-            proof.loans.push(Loan::Tested(tested));
+            proof.loans.push(Loan::Tested(
+                tested,
+                &body.guard_places[guard.tested_start as usize..guard.tested_end as usize],
+            ));
             for (offset, local) in views.iter().enumerate() {
                 if !matches!(local.kind, LocalKind::Guard(id) if id.0 as usize == index) {
                     return Err("guard view belongs to a different guard");
@@ -59,6 +80,7 @@ impl<'a> Proof<'a> {
                         .views
                         .get(&local)
                         .ok_or("guard view has no selected source")?,
+                    local,
                 ));
             }
             proof.frames.push(Frame {
@@ -175,7 +197,18 @@ impl<'a> Proof<'a> {
             })
         })
     }
-    fn write(&mut self, place: Place, live: &[u64]) -> Result<(), &'static str> {
+    fn write(&mut self, place: Place, live: &[u64], depth: Depth) -> Result<(), &'static str> {
+        if depth == Depth::Storage
+            && let Place::Local(local) = place
+            && matches!(self.body.locals[local.0 as usize].kind, LocalKind::Guard(_))
+        {
+            return Ok(());
+        }
+        if let Some(mut index) = self.precise.take() {
+            let result = self.write_precise(&mut index, place, live, depth);
+            self.precise = Some(index);
+            return result;
+        }
         let info = self.facts.paths.place(place)?;
         // An indirect place retains its pointer's move path for initialization,
         // but writing the referent does not overwrite that pointer. User loans
@@ -193,7 +226,7 @@ impl<'a> Proof<'a> {
                 let bit = word * 64 + bits.trailing_zeros() as usize;
                 bits &= bits - 1;
                 let conflict = match &self.loans[bit] {
-                    Loan::Tested(groups) => {
+                    Loan::Tested(groups, _) => {
                         let cost = groups.iter().map(Vec::len).sum::<usize>();
                         let conflict = groups
                             .iter()
@@ -201,7 +234,7 @@ impl<'a> Proof<'a> {
                         self.charge(cost + 1)?;
                         conflict
                     }
-                    Loan::View(targets) => {
+                    Loan::View(targets, _) => {
                         let cost = targets.len();
                         let conflict = self.conflict(path, targets, true);
                         self.charge(cost + 1)?;
@@ -215,21 +248,65 @@ impl<'a> Proof<'a> {
         }
         Ok(())
     }
-    fn inspect(&mut self, action: Action, live: &[u64]) -> Result<(), &'static str> {
+    fn write_precise(
+        &mut self,
+        index: &mut Index,
+        place: Place,
+        live: &[u64],
+        depth: Depth,
+    ) -> Result<(), &'static str> {
+        self.charge(live.len())?;
+        for (word, &bits) in live.iter().enumerate() {
+            let mut bits = bits;
+            while bits != 0 {
+                self.charge(1)?;
+                let bit = word * 64 + bits.trailing_zeros() as usize;
+                bits &= bits - 1;
+                let conflict = match self.loans[bit] {
+                    Loan::Tested(_, places) => {
+                        self.charge(places.len())?;
+                        let mut conflict = false;
+                        for &target in places {
+                            conflict |= index.protected_conflicts(target, place, depth, false)?;
+                        }
+                        conflict
+                    }
+                    Loan::View(_, local) => {
+                        index.protected_conflicts(Place::Local(local), place, depth, true)?
+                    }
+                };
+                if conflict {
+                    return Err("cannot modify a place protected by a live match guard");
+                }
+            }
+        }
+        Ok(())
+    }
+    fn inspect(&mut self, action: Action, live: &[u64], types: &Store) -> Result<(), &'static str> {
         match action {
-            Action::Store { place, .. } => self.write(place, live)?,
+            Action::Store { place, .. } => self.write(place, live, Depth::Shallow)?,
             Action::Evaluate(id) if self.facts.uses[id.0 as usize] == Use::Move => {
                 if let Rvalue::Read(place) = self.body.values[id.0 as usize].kind {
-                    self.write(place, live)?;
+                    self.write(place, live, Depth::Deep)?;
+                }
+            }
+            Action::Evaluate(id) => {
+                if let Rvalue::Borrow { place, .. } = self.body.values[id.0 as usize].kind
+                    && matches!(
+                        types.kind(self.body.values[id.0 as usize].ty),
+                        Some(Kind::Reference { mutable: true, .. })
+                    )
+                {
+                    self.write(place, live, Depth::Deep)?;
                 }
             }
             Action::StorageLive(local) | Action::StorageDead(local) => {
-                self.write(Place::Local(local), live)?;
+                self.write(Place::Local(local), live, Depth::Storage)?;
             }
             Action::StorageEnd { first, last } => {
                 for local in self.body.storage_range(first, last) {
                     self.charge(1)?;
-                    self.write(Place::Local(local?), live)?;
+                    self.write(Place::Local(local?), live, Depth::Storage)?;
                 }
             }
             _ => {}
@@ -269,7 +346,7 @@ fn predecessors(body: &Body) -> (Vec<usize>, Vec<usize>) {
     }
     (ranges, entries)
 }
-pub(super) fn verify(body: &Body, facts: &BodyFacts) -> Result<(), Error> {
+pub(super) fn verify(body: &Body, facts: &BodyFacts, types: &Store) -> Result<(), Error> {
     if body.guards.is_empty() {
         return Ok(());
     }
@@ -336,7 +413,9 @@ pub(super) fn verify(body: &Body, facts: &BodyFacts) -> Result<(), Error> {
                 },
                 message,
             };
-            proof.inspect(statement.action, &live).map_err(error)?;
+            proof
+                .inspect(statement.action, &live, types)
+                .map_err(error)?;
             proof.transfer(statement.action, &mut live).map_err(error)?;
         }
     }

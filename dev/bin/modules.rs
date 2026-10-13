@@ -147,17 +147,50 @@ fn lower(
 ) -> Result<rustgm::lowir::program::Program, String> {
     let entry =
         rustgm::sema::entry::select(report, facts).map_err(|e| report.diagnostic(e).to_string())?;
-    let checked = rustgm::borrow::ownership::verify(
-        &facts.types,
-        &facts.aggregates,
-        &facts.derives,
-        &mut facts.copies,
+    let contracts = region_proofs(report, facts, program)?;
+    let checked = rustgm::borrow::verify(
+        &mut rustgm::borrow::Environment {
+            types: &facts.types,
+            definitions: &facts.aggregates,
+            derives: &facts.derives,
+            copies: &mut facts.copies,
+        },
+        &contracts,
         program,
     )
-    .map_err(|e| phase_error(report, e.node, e.message))?;
+    .map_err(|e| borrow_error(report, e))?;
     rustgm::lower::build(facts, &checked, entry).map_err(|e| phase_error(report, e.node, e.message))
 }
 
+fn region_proofs(
+    report: &resolve::expansion::Report,
+    facts: &rustgm::sema::model::Declarations,
+    program: &rustgm::body::ir::Program,
+) -> Result<rustgm::borrow::regions::Analysis, String> {
+    let contracts = rustgm::body::regions::collect(facts).map_err(str::to_owned)?;
+    rustgm::borrow::regions::check_bodies(
+        &facts.types,
+        &facts.aggregates,
+        &facts.lifetimes.variances,
+        &contracts,
+        program,
+    )
+    .map_err(|e| {
+        borrow_error(
+            report,
+            rustgm::borrow::Error {
+                node: e.source,
+                message: e.message,
+            },
+        )
+    })
+}
+fn borrow_error(report: &resolve::expansion::Report, error: rustgm::borrow::Error) -> String {
+    match error.node {
+        Some(node) => phase_error(report, node, &error.message),
+        None => error.message,
+    }
+}
 fn semantic(
     mut report: resolve::expansion::Report,
     count: bool,
@@ -185,23 +218,31 @@ fn semantic(
         .map_err(|e| e.to_string());
     }
     if matches!(mode, Mode::Bodies | Mode::Ownership | Mode::Lowir) {
-        let program = rustgm::body::build(&report, &facts).map_err(|e| e.to_string())?;
+        let mut program = rustgm::body::build(&report, &facts).map_err(|e| e.to_string())?;
+        if matches!(mode, Mode::Ownership | Mode::Lowir) {
+            rustgm::body::promote::analyze(&report, &mut facts, &mut program)
+                .map_err(|e| e.to_string())?;
+        }
         // Selected patterns have become explicit places and binding actions.
         // Ownership and lowering consume those actions, so release this arena.
         drop(std::mem::take(&mut facts.patterns));
         if matches!(mode, Mode::Ownership) {
-            let checked = rustgm::borrow::ownership::check(
-                &facts.types,
-                &facts.aggregates,
-                &facts.derives,
-                &mut facts.copies,
+            let contracts = region_proofs(&report, &facts, &program)?;
+            let checked = rustgm::borrow::check(
+                &mut rustgm::borrow::Environment {
+                    types: &facts.types,
+                    definitions: &facts.aggregates,
+                    derives: &facts.derives,
+                    copies: &mut facts.copies,
+                },
+                &contracts,
                 &program,
             )
-            .map_err(|e| phase_error(&report, e.node, e.message))?;
+            .map_err(|e| borrow_error(&report, e))?;
             return if count {
-                rustgm::borrow::ownership::view::count(&checked, out)
+                rustgm::borrow::ownership::view::count(checked.owned(), out)
             } else {
-                rustgm::borrow::ownership::view::write(&checked, out)
+                rustgm::borrow::ownership::view::write(checked.owned(), out)
             }
             .map_err(|e| e.to_string());
         }

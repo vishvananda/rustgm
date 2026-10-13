@@ -341,7 +341,8 @@ fn text_reference_execution_remains_a_proof_boundary() -> Result<(), Box<dyn std
         assert!(output.stdout.is_empty());
         let diagnostic = String::from_utf8_lossy(&output.stderr);
         assert!(
-            diagnostic.contains("loan proofs") || diagnostic.contains("owned selected patterns"),
+            diagnostic.contains("reference lowering")
+                || diagnostic.contains("owned selected patterns"),
             "{diagnostic}"
         );
     }
