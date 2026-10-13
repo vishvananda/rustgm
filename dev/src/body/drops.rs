@@ -1,4 +1,5 @@
 //! Pending destruction requirements; initialization and cleanup order are not proved here.
+pub mod values;
 pub(crate) mod view;
 use super::{
     ir::{Action, Body, LocalId, LocalKind, NodeKey, Place, Program},
@@ -50,6 +51,7 @@ pub const PENDING_MESSAGE: &str = "Drop implementations require destructor elabo
 pub(crate) fn collect(
     facts: &Declarations,
     program: &Program,
+    query: Option<&mut NeedsDrop>,
 ) -> Result<Option<Pending>, (NodeKey, &'static str)> {
     let Some(first) = facts.destructors.implementations().first() else {
         return Ok(None);
@@ -74,11 +76,11 @@ pub(crate) fn collect(
             source: implementation.source,
         });
     }
-    let mut query = NeedsDrop::new(methods.iter().map(|method| method.item));
+    let query = query.ok_or((first.source, "missing destruction query"))?;
     let bodies = program
         .bodies
         .iter()
-        .map(|body| requirements(facts, body, &mut query).map_err(|message| (body.source, message)))
+        .map(|body| requirements(facts, body, query).map_err(|message| (body.source, message)))
         .collect::<Result<Vec<_>, _>>()?;
     Ok(Some(Pending {
         source: first.source,
@@ -87,7 +89,7 @@ pub(crate) fn collect(
         query_steps: query.steps,
     }))
 }
-fn requirements(
+fn classify(
     facts: &Declarations,
     body: &Body,
     query: &mut NeedsDrop,
@@ -109,17 +111,35 @@ fn requirements(
         .iter()
         .map(|value| needs(value.ty))
         .collect::<Result<Vec<_>, _>>()?;
+    for (index, &needed) in values.iter().enumerate() {
+        let value = super::ir::ValueId(u32::try_from(index).map_err(|_| "too many owned values")?);
+        let recorded = body
+            .owned
+            .as_ref()
+            .and_then(|owned| owned.creation(value))
+            .is_some();
+        if needed != recorded {
+            return Err("owned value lacks its destruction scope");
+        }
+    }
     let projections = body
         .projections
         .iter()
         .map(|p| needs(p.ty))
         .collect::<Result<Vec<_>, _>>()?;
-    let mut result = Requirements {
+    Ok(Requirements {
         locals,
         values,
         projections,
         sites: Vec::new(),
-    };
+    })
+}
+fn requirements(
+    facts: &Declarations,
+    body: &Body,
+    query: &mut NeedsDrop,
+) -> Result<Requirements, &'static str> {
+    let mut result = classify(facts, body, query)?;
     if !result.locals.contains(&true)
         && !result.values.contains(&true)
         && !result.projections.contains(&true)

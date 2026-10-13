@@ -6,6 +6,18 @@ use crate::body::{
 };
 
 impl Builder<'_> {
+    pub(super) fn return_value(
+        &mut self,
+        node: NodeId,
+        value: super::ValueId,
+        inner: scopes::Id,
+    ) -> Result<(), Error> {
+        self.release_return(node, value)?;
+        self.exit_scopes(node, Range { inner, outer: None })?;
+        self.cleanup(node, 0)?;
+        self.terminate(node, super::Terminator::Return(value));
+        Ok(())
+    }
     pub(super) fn node_scope(&self, node: NodeId) -> Result<scopes::Id, Error> {
         self.scope_plan
             .node(node)

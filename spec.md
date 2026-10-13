@@ -201,6 +201,21 @@ loan proofs and executable lowering reject pending elaboration. Raw body views
 may expose it explicitly. A value needing destruction cannot be promoted to
 permanent storage, even while its cleanup plan remains pending.
 
+Retain destructible rvalue creation scopes while building the body, including
+discarded values that never become borrowed places. Forwarding a block result
+forwards its temporary scope without inventing a second object. Pattern captures
+use their retained binding scope. Mark returned values as transferred before
+local cleanup, preserving order relative to storage exits at the same point.
+
+Initialization has a distinct may-be-initialized plane; immutable-binding write
+history cannot substitute for it after moves. Share the existing transfer and
+fixed-point implementation, with additional state retained only on demand.
+Expose bounded point queries over retained entry states for cleanup planning.
+Preserve sparse array element/gap partitions from move-path numbering when that
+analysis requests them; never reconstruct these mappings from output or expand
+unselected array elements. A whole-path mixed state can include partial moves
+and does not authorize dropping the entire object behind one flag.
+
 Internal match-guard views retain selected place identity and delay owning
 captures until success. Protect tested places without runtime loads or address
 formation for inactive variants. Track guard protection liveness across control

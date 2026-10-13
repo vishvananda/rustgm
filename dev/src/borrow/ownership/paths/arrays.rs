@@ -2,6 +2,20 @@
 use super::{Component, PathId, Paths};
 use std::collections::HashMap;
 
+/// A physical array interval; unselected ranges share one initialization bit.
+pub struct Segment {
+    pub start: u64,
+    pub end: u64,
+    pub bit: u32,
+    /// An observed element may contain independently moved subfields.
+    pub element: Option<PathId>,
+}
+#[derive(Default)]
+pub(super) struct Partitions {
+    pub segments: Vec<Segment>,
+    pub groups: HashMap<PathId, (usize, usize)>,
+}
+
 struct Boundary {
     array: PathId,
     offset: u64,
@@ -121,7 +135,7 @@ impl Arrays {
         }
         Ok(())
     }
-    pub(super) fn number(mut self, paths: &mut Paths) -> Result<(), &'static str> {
+    pub(super) fn number(mut self, paths: &mut Paths, retain: bool) -> Result<(), &'static str> {
         self.prepare();
         let mut work = Vec::new();
         let mut next = 0_u32;
@@ -159,6 +173,27 @@ impl Arrays {
             path.end = boundaries[last].bit;
         }
         paths.bits = next;
+        if retain {
+            paths.partitions = Some(Box::new(self.partitions()));
+        }
         Ok(())
+    }
+    fn partitions(self) -> Partitions {
+        let mut result = Partitions::default();
+        for pair in self.boundaries.windows(2) {
+            let [first, last] = pair else { continue };
+            if first.array != last.array {
+                continue;
+            }
+            let index = result.segments.len();
+            result.segments.push(Segment {
+                start: first.offset,
+                end: last.offset,
+                bit: first.bit,
+                element: first.element,
+            });
+            result.groups.entry(first.array).or_insert((index, index)).1 = index + 1;
+        }
+        result
     }
 }

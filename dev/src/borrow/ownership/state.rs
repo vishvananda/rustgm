@@ -1,18 +1,20 @@
 //! Must-initialized / may-written fixed point over sparse path intervals.
+use super::initialization::{Maybe, Status};
 use super::{BodyFacts, Error, Path};
 use crate::body::ir::{Body, Terminator};
 use std::collections::VecDeque;
 
 #[derive(Clone, Copy, Default)]
-struct Word {
+pub(super) struct Word<I: Maybe> {
     must: u64,
     may: u64,
+    initialized: I,
 }
-pub(super) struct State {
-    words: Vec<Word>,
+pub(super) struct State<I: Maybe> {
+    words: Vec<Word<I>>,
     remaining: usize,
 }
-impl State {
+impl<I: Maybe> State<I> {
     fn charge(&mut self, cost: usize) -> Result<(), &'static str> {
         self.remaining = self
             .remaining
@@ -26,6 +28,7 @@ impl State {
         }
         self.charge(((path.end - 1) / 64 - path.start / 64 + 1) as usize)?;
         range(path, |index, mask| {
+            self.words[index].initialized.assign(mask, initialized);
             if initialized {
                 self.words[index].must |= mask;
             } else {
@@ -70,11 +73,11 @@ fn range(path: &Path, mut visit: impl FnMut(usize, u64)) {
         bit += width;
     }
 }
-pub(super) fn verify(
+pub(super) fn verify<I: Maybe>(
     body: &Body,
     facts: &mut BodyFacts,
     types: &crate::types::Store,
-) -> Result<(), Error> {
+) -> Result<Vec<Word<I>>, Error> {
     let error = |message| Error {
         node: body.source,
         message,
@@ -85,9 +88,9 @@ pub(super) fn verify(
     let words = (facts.paths.bits as usize).div_ceil(64);
     let size = words
         .checked_mul(body.blocks.len())
-        .filter(|n| *n <= 4_000_000)
+        .filter(|n| *n <= 64_000_000 / std::mem::size_of::<Word<I>>())
         .ok_or_else(|| error("ownership state exceeds 64 MB budget"))?;
-    let mut incoming = vec![Word::default(); size];
+    let mut incoming = vec![Word::<I>::default(); size];
     let mut state = State {
         words: vec![Word::default(); words],
         remaining: 32_000_000,
@@ -130,8 +133,13 @@ pub(super) fn verify(
                 for (old, new) in target.iter_mut().zip(&state.words) {
                     let must = old.must & new.must;
                     let may = old.may | new.may;
-                    changed |= must != old.must || may != old.may;
-                    *old = Word { must, may };
+                    let initialized = old.initialized.join(new.initialized);
+                    changed |= must != old.must || may != old.may || initialized != old.initialized;
+                    *old = Word {
+                        must,
+                        may,
+                        initialized,
+                    };
                 }
             } else {
                 target.copy_from_slice(&state.words);
@@ -168,5 +176,86 @@ pub(super) fn verify(
         }
     }
     facts.reachable = reached;
+    Ok(incoming)
+}
+
+pub(super) fn status(words: &[Word<u64>], path: &Path) -> Status {
+    let mut must = true;
+    let mut may = false;
+    range(path, |index, mask| {
+        must &= words[index].must & mask == mask;
+        may |= words[index].initialized & mask != 0;
+    });
+    if must {
+        Status::Always
+    } else if may {
+        Status::Conditional
+    } else {
+        Status::Never
+    }
+}
+
+impl State<u64> {
+    pub(super) fn classify_bit(&mut self, bit: u32) -> Result<Status, &'static str> {
+        self.charge(1)?;
+        bit_status(&self.words, bit)
+    }
+    pub(super) fn classify(&mut self, path: &Path) -> Result<Status, &'static str> {
+        if path.start != path.end {
+            self.charge(((path.end - 1) / 64 - path.start / 64 + 1) as usize)?;
+        }
+        Ok(status(&self.words, path))
+    }
+}
+
+pub(super) fn bit_status(words: &[Word<u64>], bit: u32) -> Result<Status, &'static str> {
+    let word = words
+        .get(bit as usize / 64)
+        .ok_or("invalid initialization bit")?;
+    let mask = 1_u64 << (bit % 64);
+    Ok(if word.must & mask != 0 {
+        Status::Always
+    } else if word.initialized & mask != 0 {
+        Status::Conditional
+    } else {
+        Status::Never
+    })
+}
+
+pub(super) fn replay(
+    body: &Body,
+    facts: &BodyFacts,
+    incoming: &[Word<u64>],
+    words: usize,
+    mut visitor: impl FnMut(crate::body::storage::Location, &mut State<u64>) -> Result<(), &'static str>,
+) -> Result<(), &'static str> {
+    let mut state = State {
+        words: vec![Word::default(); words],
+        remaining: 32_000_000,
+    };
+    for (index, block) in body.blocks.iter().enumerate() {
+        if !facts.reachable[index] {
+            continue;
+        }
+        state.charge(words + (block.end - block.start) as usize + 1)?;
+        state
+            .words
+            .copy_from_slice(&incoming[index * words..(index + 1) * words]);
+        let block_id = crate::body::ir::BlockId(
+            u32::try_from(index).map_err(|_| "too many initialization blocks")?,
+        );
+        for before in block.start..=block.end {
+            visitor(
+                crate::body::storage::Location::At {
+                    block: block_id,
+                    before,
+                },
+                &mut state,
+            )?;
+            if before < block.end {
+                facts.transfer(body, &mut state, body.statements[before as usize].action)?;
+            }
+        }
+    }
     Ok(())
 }

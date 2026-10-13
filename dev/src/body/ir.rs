@@ -255,6 +255,8 @@ pub enum Owner {
     },
 }
 pub struct Body {
+    /// Destructible rvalues, including values never materialized as borrowed places.
+    pub owned: Option<Box<super::drops::values::Facts>>,
     pub storage: Option<super::storage::Facts>,
     pub promotions: Option<super::promote::Facts>,
     pub temporaries: Vec<Temporary>,

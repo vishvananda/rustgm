@@ -1,5 +1,7 @@
 //! Move/initialization proof for owned values. Loans and regions remain separate proofs.
+mod destructors;
 mod guards;
+pub mod initialization;
 mod paths;
 mod state;
 pub mod view;
@@ -16,7 +18,7 @@ use crate::{
     },
 };
 use paths::Access;
-pub use paths::{Component, Path, PathId, Paths, Root};
+pub use paths::{Component, Path, PathId, Paths, Root, Segment};
 use state::State;
 use std::{collections::HashMap, hash::BuildHasher};
 
@@ -146,6 +148,19 @@ pub fn analyze_body<S: BuildHasher>(
     copies: &mut Copies,
     body: &Body,
 ) -> Result<BodyFacts, Error> {
+    let mut facts = prepare(types, definitions, derives, copies, body, false)?;
+    state::verify::<()>(body, &mut facts, types)?;
+    guards::verify(body, &facts, types)?;
+    Ok(facts)
+}
+fn prepare<S: BuildHasher>(
+    types: &Store,
+    definitions: &Definitions,
+    derives: &HashMap<ItemId, Properties, S>,
+    copies: &mut Copies,
+    body: &Body,
+    retain_arrays: bool,
+) -> Result<BodyFacts, Error> {
     let error = |message| Error {
         node: body.source,
         message,
@@ -180,17 +195,20 @@ pub fn analyze_body<S: BuildHasher>(
             }
         }
     }
-    let mut facts = BodyFacts {
-        paths: Paths::build(body, types).map_err(error)?,
+    let facts = BodyFacts {
+        paths: Paths::build(body, types, retain_arrays).map_err(error)?,
         uses,
         reachable: Vec::new(),
     };
-    state::verify(body, &mut facts, types)?;
-    guards::verify(body, &facts, types)?;
     Ok(facts)
 }
 impl BodyFacts {
-    fn transfer(&self, body: &Body, state: &mut State, action: Action) -> Result<(), &'static str> {
+    fn transfer<I: initialization::Maybe>(
+        &self,
+        body: &Body,
+        state: &mut State<I>,
+        action: Action,
+    ) -> Result<(), &'static str> {
         match action {
             Action::BindView { view, .. } => {
                 let path = &self.paths.entries[view.0 as usize];
@@ -248,11 +266,11 @@ impl BodyFacts {
         }
         Ok(())
     }
-    fn inspect(
+    fn inspect<I: initialization::Maybe>(
         &self,
         body: &Body,
         types: &Store,
-        state: &mut State,
+        state: &mut State<I>,
         action: Action,
     ) -> Result<(), &'static str> {
         match action {
@@ -311,11 +329,11 @@ impl BodyFacts {
         }
         Ok(())
     }
-    fn inspect_value(
+    fn inspect_value<I: initialization::Maybe>(
         &self,
         body: &Body,
         types: &Store,
-        state: &mut State,
+        state: &mut State<I>,
         id: crate::body::ir::ValueId,
     ) -> Result<(), &'static str> {
         if let Rvalue::Borrow { place, .. } = body.values[id.0 as usize].kind {
@@ -383,10 +401,10 @@ impl BodyFacts {
         }
         Ok(())
     }
-    fn inspect_store(
+    fn inspect_store<I: initialization::Maybe>(
         &self,
         body: &Body,
-        state: &mut State,
+        state: &mut State<I>,
         place: Place,
     ) -> Result<(), &'static str> {
         let info = self.paths.place(place)?;

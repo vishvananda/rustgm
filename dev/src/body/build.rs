@@ -2,6 +2,7 @@
 mod aggregates;
 mod conditions;
 mod decisions;
+mod drops;
 mod guards;
 mod matches;
 mod pattern_tests;
@@ -33,6 +34,11 @@ use std::collections::HashMap;
 /// # Errors
 /// Diagnoses missing typed facts, exhausted identities and unsupported body forms.
 pub fn build(report: &Report, facts: &Declarations) -> Result<Program, Error> {
+    let mut drop_query = (!facts.destructors.implementations().is_empty()).then(|| {
+        crate::types::destruction::NeedsDrop::new(
+            facts.destructors.implementations().iter().map(|i| i.item),
+        )
+    });
     let mut scratch = Scratch {
         scopes: scopes::Scratch::default(),
         unadjusted: Vec::new(),
@@ -81,7 +87,14 @@ pub fn build(report: &Report, facts: &Declarations) -> Result<Program, Error> {
             function,
             std::mem::take(&mut scratch.scopes),
         )?;
-        let builder = Builder::new(report, facts, &mut scratch, body, scope_plan);
+        let builder = Builder::new(
+            report,
+            facts,
+            &mut scratch,
+            body,
+            scope_plan,
+            drop_query.as_mut(),
+        );
         program.bodies.push(
             builder
                 .run(Some(function.parameters))
@@ -103,31 +116,26 @@ pub fn build(report: &Report, facts: &Declarations) -> Result<Program, Error> {
             initializer,
             std::mem::take(&mut scratch.scopes),
         )?;
-        let builder = Builder::new(report, facts, &mut scratch, body, scope_plan);
+        let builder = Builder::new(
+            report,
+            facts,
+            &mut scratch,
+            body,
+            scope_plan,
+            drop_query.as_mut(),
+        );
         program
             .bodies
             .push(builder.run(None).map_err(|e| report.diagnostic(e))?);
     }
-    aggregates::constructors(report, facts, &mut program)?;
-    program.drops = super::drops::collect(facts, &program).map_err(|(source, message)| {
-        report.diagnostic(Error::at(
-            source.file,
-            report
-                .package
-                .unit(source.file)
-                .configured
-                .ast
-                .node(source.node)
-                .span
-                .start,
-            message,
-        ))
-    })?;
+    aggregates::constructors(report, facts, &mut program, drop_query.as_mut())?;
+    drops::finish(report, facts, &mut program, drop_query.as_mut())?;
     Ok(program)
 }
 impl Body {
     fn new(owner: Owner, source: NodeKey, result: TypeId) -> Self {
         Self {
+            owned: None,
             storage: None,
             promotions: None,
             temporaries: Vec::new(),
@@ -237,6 +245,7 @@ struct Scratch {
     reach: Vec<Reach>,
 }
 struct Builder<'a> {
+    drop_query: Option<&'a mut crate::types::destruction::NeedsDrop>,
     report: &'a Report,
     facts: &'a Declarations,
     scratch: &'a mut Scratch,
@@ -252,8 +261,10 @@ impl<'a> Builder<'a> {
         scratch: &'a mut Scratch,
         body: Body,
         scope_plan: scopes::Facts,
+        drop_query: Option<&'a mut crate::types::destruction::NeedsDrop>,
     ) -> Self {
         Self {
+            drop_query,
             report,
             facts,
             scratch,
@@ -348,6 +359,7 @@ impl<'a> Builder<'a> {
             self.scratch.touched.push(node);
         }
         *slot = Some(value);
+        self.forward_owned(node, value);
         Ok(())
     }
     fn statement(&mut self, node: NodeId, action: Action) -> Result<(), Error> {
@@ -366,6 +378,7 @@ impl<'a> Builder<'a> {
         let value = ValueId(self.index(node, self.body.values.len())?);
         self.body.values.push(Value { ty, kind });
         self.statement(node, Action::Evaluate(value))?;
+        self.create_owned(node, value)?;
         Ok(value)
     }
     fn unit(&mut self, node: NodeId) -> Result<ValueId, Error> {
@@ -572,9 +585,7 @@ impl<'a> Builder<'a> {
             if self.body.values[value.0 as usize].ty != self.body.result {
                 return Err(self.error(root, "return disagrees with solved result"));
             }
-            self.exit_scopes(root, self.boundary_range(root, scopes::Kind::Body)?)?;
-            self.cleanup(root, 0)?;
-            self.terminate(root, Terminator::Return(value));
+            self.return_value(root, value, self.boundary(root, scopes::Kind::Body)?)?;
         }
         for node in self.scratch.touched.drain(..) {
             self.scratch.values[self.body.source.file.0 as usize][node.0 as usize] = None;
@@ -1242,15 +1253,7 @@ impl<'a> Builder<'a> {
                 } else {
                     self.unit(node)?
                 };
-                self.exit_scopes(
-                    node,
-                    ScopeRange {
-                        inner: self.node_scope(node)?,
-                        outer: None,
-                    },
-                )?;
-                self.cleanup(node, 0)?;
-                self.terminate(node, Terminator::Return(value));
+                self.return_value(node, value, self.node_scope(node)?)?;
                 return Ok(());
             }
             Kind::Break { value, .. } => {

@@ -12,6 +12,7 @@ pub(super) fn constructors(
     report: &crate::resolve::expansion::Report,
     facts: &crate::sema::model::Declarations,
     program: &mut super::Program,
+    mut drop_query: Option<&mut crate::types::destruction::NeedsDrop>,
 ) -> Result<(), Error> {
     use super::{Local, LocalId, LocalKind, Owner, Statement, Value};
     for (index, ty) in facts.definitions.iter().enumerate() {
@@ -87,6 +88,9 @@ pub(super) fn constructors(
             });
         }
         finish_constructor(&mut body, variant_id).map_err(error)?;
+        if let Some(query) = drop_query.as_deref_mut() {
+            super::drops::constructor(facts, &mut body, query).map_err(error)?;
+        }
         program.bodies.push(body);
     }
     Ok(())

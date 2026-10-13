@@ -21,6 +21,13 @@ pub(crate) fn write(program: &Program, pending: &Pending, out: &mut impl Write) 
         )?;
     }
     for (index, facts) in pending.bodies.iter().enumerate() {
+        if let Some(owned) = program
+            .bodies
+            .get(index)
+            .and_then(|body| body.owned.as_ref())
+        {
+            write_owned(index, owned, out)?;
+        }
         write!(out, "drop-requirements body={index} locals=")?;
         selected(&facts.locals, "l", out)?;
         write!(out, " values=")?;
@@ -54,6 +61,33 @@ pub(crate) fn write(program: &Program, pending: &Pending, out: &mut impl Write) 
             }
             writeln!(out, " pending")?;
         }
+    }
+    Ok(())
+}
+fn write_owned(index: usize, facts: &super::values::Facts, out: &mut impl Write) -> io::Result<()> {
+    for value in &facts.created {
+        write!(
+            out,
+            "owned-value body={index} value=v{} scope=",
+            value.value.0
+        )?;
+        match value.lifetime {
+            crate::body::scopes::Lifetime::Scope(id) => write!(out, "{}", id.0)?,
+            crate::body::scopes::Lifetime::Static => write!(out, "static")?,
+        }
+        writeln!(
+            out,
+            " birth=b{}:{} exits-before={} source={}",
+            value.block.0, value.before, value.exits_before, value.source.0
+        )?;
+    }
+    for release in &facts.returned {
+        write!(out, "return-owned body={index} value=v{} ", release.value.0)?;
+        match release.location {
+            Location::At { block, before } => write!(out, "at=b{}:{before}", block.0)?,
+            Location::Edge { block, target } => write!(out, "edge=b{}:b{}", block.0, target.0)?,
+        }
+        writeln!(out, " exits-before={}", release.exits_before)?;
     }
     Ok(())
 }

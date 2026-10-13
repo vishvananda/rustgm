@@ -119,25 +119,62 @@ quadratic declaration scan for wide impl binders.
 
 ## Remaining implementation
 
-Feed actual destructor uses into lifetime and loan checks. Preserve conditional initialization
-facts independently of immutable-write history. Elaborate drop scopes, replacement,
-partial moves, temporaries and early exits into typed plans consumed by LowIR.
+Feed actual destructor uses into lifetime and loan checks. Consume the retained
+initialization and rvalue-scope facts in conditional cleanup planning. Elaborate
+drop scopes, replacement, partial moves, temporaries and early exits into typed
+plans consumed by LowIR.
 
 Ownership's existing `Word.may` records whether storage has ever been written;
-it is not a may-be-initialized drop flag. Keep the new initialization transfer
-facts separate, including residual fields after moves and branch/loop joins.
-Reject non-Copy field moves out of a type with a custom destructor. Replacement
+the new optional initialized plane is separate. Integrate these place facts with
+owned-rvalue operand consumption and cleanup endpoints. The custom-destructor
+field-move checker must be required by completed destruction proofs. Replacement
 must evaluate the incoming value, destroy the initialized old destination and
 then store the replacement.
 
-Retain creation and cleanup scopes for all owned rvalues, including discarded
-values that never become materialized temporary places. Combine overlapping
-candidate sites into one ordered plan: locals and temporaries reverse creation
-order; custom destructors before fields; fields and array elements in their
+Use the retained creation and cleanup scopes for owned rvalues, including
+discarded values that never become materialized temporary places. Combine
+overlapping candidate sites into one ordered plan: locals in reverse declaration
+order and temporaries in reverse creation order; custom destructors before
+fields; fields and array elements in their
 specified forward order. Handle early exits and failed guard attempts explicitly.
 Seed destructor accesses into region and loan liveness before issuing the checked
 token, and retain the proved cleanup plan for lowering. Do not release the current
 pending-proof guards until these obligations are implemented and tested.
+
+## Owned values and initialization
+
+The body builder shares one memoized destruction query with the pending-requirement
+collector. A body allocates its boxed owned-value table only when it creates a
+destructible value. Each value retains its creation point, lexical lifetime and
+ordering relative to storage exits. Transparent result forwarding updates its
+scope without creating another object. Synthesized pattern-capture reads use
+the selected binding's scope. Function and constructor returns record transfer
+before local cleanup. The existing borrowed-place materialization table remains
+separate. Raw body views expose `owned-value` and `return-owned` records.
+
+`ownership::initialization` uses the same move-path construction, transfer
+functions and fixed-point solver as ordinary ownership checking. Its extra
+may-be-initialized word is absent from the ordinary state layout. Retained entry
+states and a bounded replay visitor classify ranges or individual bits as never,
+conditional or always initialized. A conditional aggregate range can contain
+partially moved fields; it must be split before selecting cleanup. The dataflow
+matrix stays within its 64 MB budget and replay charges queries and transfers.
+
+Initialization analysis retains the element/gap partitions already computed by
+array move-path numbering. Unselected intervals share one bit, independently of
+their length; observed elements retain their path identity for nested field moves.
+Ordinary ownership checking does not retain these extra partitions.
+
+The retained facts provide a custom-destructor field-move check using resolved
+nominal identities. It propagates protected ancestors through existing move paths
+and rejects only non-Copy field moves. Whole-object moves, Copy reads, borrowed
+patterns and field replacement remain eligible. This check is available to the
+destruction phase; completed proof entrypoints still reject pending elaboration.
+
+These are not executable drop flags or a finished cleanup plan. Initialization
+currently models the existing explicit move/access transfers; owned-rvalue
+consumption, implicit destruction and its loan/region effects must still be
+integrated before removing the pending-proof boundary.
 
 Required assignment fixtures must establish destructor/field/local order,
 conditional flags, partial initialization and every cleanup path with independent
@@ -342,3 +379,75 @@ candidate SHA-256 is
 `obj/pa15-work/drop-requirements-v1-perf-results.json` indexes all raw receipts,
 including every timing, RSS and child CPU-time observation. The matching source
 hash, binary identity and validation receipts are stored beside it.
+
+## Owned-value checkpoint validation
+
+All 3,093 PA1–PA16 cases retain byte-exact stdout, stderr and exit status. The
+debug and release frontend suites each pass 484 tests; all six explicitly
+selected maintainer native tests pass against the qualified pinned backend.
+These native checks cover existing functionality, not finished destruction.
+Formatting, Clippy all/pedantic with warnings denied, all 25 harness tests and
+upstream verification pass. The syntax-aware audit reports 324 files and zero
+findings. No lint exceptions or assignment reference changes were added.
+
+Seven new tests exercise owned-value lifetimes and return transfer, first versus
+replacement initialization, branch/loop joins, reinitialization, residual fields,
+custom-destructor field-move rules and sparse array flags. Fifteen field-move
+vectors are independently accepted/rejected by pinned rustc. Other source probes
+are also rustc-qualified. An eight-element and a billion-element array retain the
+same path/bit counts and three partitions after conditional first/last moves:
+the endpoints are conditional and the untouched middle remains initialized.
+
+Detailed logs are `obj/pa15-work/drop-values-full1.log`,
+`drop-values-release1.log` and `drop-values-native1.log`; the validation receipt
+hashes each log. Earlier focused logs retain the missing-pattern-scope failure
+and its fix. That regression now passes alongside pattern, array and enum cases.
+
+Performance measurements retain 216 observations on CPU 2, with A/A calibration
+and three ABBA blocks at each scale. The old/new binaries produce identical full
+views and count bytes for the existing body and ownership workloads. New views
+use two identical candidate binaries; initialization analysis uses an immutable
+driver linked to the same frontend library. All 330 source/configuration hashes,
+binary identities and frozen input hashes were verified after measurement. This
+agent ran no builds or tests during timing; unrelated builds continued on the
+shared host, so these observations are not an isolated performance gate.
+
+| Existing workload | Scale | Baseline median | Candidate median | Candidate median RSS |
+| --- | ---: | ---: | ---: | ---: |
+| Body IR | 4,000 | 301.00 ms | 300.76 ms | 59,860 KiB |
+| Body IR | 16,000 | 1,241.70 ms | 1,243.55 ms | 227,378 KiB |
+| Body IR | 64,000 | 5,091.83 ms | 5,068.56 ms | 897,416 KiB |
+| Ownership pipeline | 4,000 | 335.66 ms | 340.32 ms | 63,386 KiB |
+| Ownership pipeline | 16,000 | 1,387.42 ms | 1,388.94 ms | 241,456 KiB |
+| Ownership pipeline | 64,000 | 5,796.46 ms | 5,812.09 ms | 951,186 KiB |
+
+Observed changes range from -0.46% to +1.39%; the largest body/ownership inputs
+change -0.46%/+0.27%. The largest ownership RSS grows by 1,214 KiB (0.13%). These
+measurements do not establish a material throughput regression.
+
+The new owned-body workload has 256/1,024/4,096 locals and an early-return option
+after each declaration. Candidate medians are 6.81/18.54/67.28 ms, with median RSS
+5,048/8,744/20,528 KiB. The retained site counts remain `7N + 3` and shared
+destruction-query work remains seven steps.
+
+The initialization workload has 256/1,024/4,096 functions, each with conditional
+first/last moves from a billion-element array and conditional local replacement.
+Pinned rustc accepts every frozen input. The driver builds typed bodies, proves
+existing moves/accesses, checks custom-destructor field moves and visits every
+statement/bit through the bounded initialization API. Candidate medians are
+18.38/68.07/278.13 ms, with median RSS 7,148/16,312/55,488 KiB. At the largest
+scale it retains 28,673 paths, 32,769 bits and 12,288 sparse segments while making
+1,081,348 queries; all counters grow linearly. This exercises pending analysis,
+not executable cleanup or a production CLI destruction mode.
+
+Baseline SHA-256 is
+`34e769b8ef0858a3af1ebb4b9e710c8e953570054e0badd890aa3bd8fedbd301`;
+candidate SHA-256 is
+`162dbe3490723e334ed5a5a1286ea4c4f187388e14e457702979623bb62c98fc`;
+the initialization driver's SHA-256 is
+`732ce4de27ceb1423c7e77a154d5d9e0a1ae0159d3d13f4830f8f17fa6586ec0`.
+`obj/pa15-work/drop-values-v1-perf-results.json` indexes the raw receipts,
+including every wall-time, RSS, child CPU-time and context-switch observation.
+Source hashes, binary identities, input qualifications and validation receipts
+are stored beside it. The driver's dependency versions/checksums match the
+maintainer lockfile, and its source is included in the frozen source receipt.

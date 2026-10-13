@@ -1,5 +1,6 @@
 //! Sparse move paths; ordinary indexing keeps its containing array indivisible.
 mod arrays;
+pub use arrays::Segment;
 mod views;
 use crate::{
     body::ir::{
@@ -52,6 +53,7 @@ pub(super) struct PlaceInfo {
     pub empty: bool,
 }
 pub struct Paths {
+    partitions: Option<Box<arrays::Partitions>>,
     pub entries: Vec<Path>,
     pub bits: u32,
     pub(super) projections: Vec<PlaceInfo>,
@@ -60,8 +62,13 @@ pub struct Paths {
     pub(super) guard_places: Vec<Vec<PlaceInfo>>,
 }
 impl Paths {
-    pub(super) fn build(body: &Body, types: &Store) -> Result<Self, &'static str> {
+    pub(super) fn build(
+        body: &Body,
+        types: &Store,
+        retain_arrays: bool,
+    ) -> Result<Self, &'static str> {
         let mut paths = Self {
+            partitions: None,
             entries: Vec::new(),
             bits: 0,
             projections: Vec::new(),
@@ -146,9 +153,16 @@ impl Paths {
         if arrays.is_empty() {
             paths.number()?;
         } else {
-            arrays.number(&mut paths)?;
+            arrays.number(&mut paths, retain_arrays)?;
         }
         Ok(paths)
+    }
+    /// Sparse element/gap intervals retained by initialization analysis.
+    #[must_use]
+    pub fn array_segments(&self, array: PathId) -> Option<&[Segment]> {
+        let partitions = self.partitions.as_ref()?;
+        let &(start, end) = partitions.groups.get(&array)?;
+        Some(&partitions.segments[start..end])
     }
     fn temporary(&mut self, body: &Body, value: ValueId) -> Result<(), &'static str> {
         if !self.temporaries.contains_key(&value) {
