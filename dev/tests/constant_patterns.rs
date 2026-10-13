@@ -260,10 +260,6 @@ fn later_constant_capabilities_remain_explicit_boundaries() -> Result<(), Box<dy
     let folder = folder("constant-boundaries")?;
     for (index, (source, boundary)) in [
         (
-            "const C:f32=1.0;fn main(){match 1.0f32{C=>(),_=>()}}",
-            "domain requires later",
-        ),
-        (
             "const C:(u8,bool)=(7,true);fn main(){match (7u8,true){C=>(),_=>()}}",
             "general constant evaluation",
         ),

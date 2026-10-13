@@ -230,7 +230,7 @@ impl Checker<'_> {
                 .end
                 .map(|b| self.bound_rank(domain, b))
                 .transpose()?
-                .unwrap_or(domain.full().upper);
+                .unwrap_or_else(|| domain.ordered().upper);
             let upper = if work.end.is_some() && !work.inclusive {
                 upper
                     .checked_sub(1)

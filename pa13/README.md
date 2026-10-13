@@ -27,14 +27,15 @@ grading contract or a lifetime/loan validity claim. Simple standalone value
 bindings and wildcards use the earlier direct path and have no selected root.
 The view covers irrefutable owned products/arrays, explicit reference patterns,
 edition-2024 binding modes, irrefutable borrowed slice rests, and owned match
-decisions. Boolean, integer and character intervals compose with tuple, record,
+decisions. Boolean, integer, character and floating intervals compose with tuple, record,
 enum, fixed-array and reference patterns for exhaustiveness and whole-arm
 usefulness. Dynamic slices currently support only irrefutable rests. Owned matches, including
 boolean and conditional guards, and irrefutable constructor bindings can execute.
 Owned let-else, if-let, while-let and condition chains also execute. Named
-boolean, integer and character constants work as patterns and range endpoints.
-Structural/reference constants, floating-point pattern domains and refutable
-dynamic slices remain unfinished.
+boolean, integer, character and floating-point constants work as patterns and
+range endpoints. Floating literals and ranges compose with owned products,
+arrays, constructors, guards and conditional bindings. Structural/reference
+constants and refutable dynamic slices remain unfinished.
 
 Named constants use resolved declaration identities and their canonical types;
 pattern endpoints do not coerce between integer types. The shared typed constant
@@ -69,7 +70,13 @@ is irrefutable for a dynamic slice. `alternative ID pattern=ID` records retain
 each occurrence, including distinct capture operations for a shared binding.
 
 `range ID ranks=LOW:HIGH` uses inclusive, ordered target ranks. Signed integers
-use a sign-bit bias; character ranks exclude the surrogate gap. The input type
+use a sign-bit bias; character ranks exclude the surrogate gap. Floating ranks
+order negative infinity through positive infinity, collapse signed zeros for
+matching, and retain one final unordered NaN coverage class. Numeric ranges
+exclude that class, including ranges with an omitted endpoint or infinite
+bounds. NaN constants are invalid pattern values/endpoints; a wildcard or
+unconstrained binding covers NaN. Captures read the original value and preserve
+its zero sign. The input type
 determines how to interpret ranks. `match ID source=FILE:NODE input=FILE:NODE
 arms=START:END exhaustive=true uninhabited=BOOL work=N` retains the scrutinee and a half-open
 source-ordered arm range. `arm ID source=FILE:NODE pattern=ID guard=FILE:NODE|-
@@ -146,6 +153,14 @@ traverse fields in written order and keep the last field as the innermost retry.
 Each subtree has first-match and resume continuations, so generated decisions
 stay proportional to the pattern rather than expanding products of alternatives.
 A product field with no first match rejects that product immediately.
+
+There is a known pinned-rustc discrepancy for opposite signed zeros in a guarded
+or-pattern. The Reference's `expr.match.guard.next` rule retries each matching
+alternative: `-0.0 | 0.0 if { count += 1; false }` therefore runs the guard twice
+for either zero. RustGM follows that rule; rustc 1.98.0 (`88d9e12ae`) runs it once.
+Both run twice for `0.0 | 0.0`. The maintainer tests preserve eight explicit
+Reference/rustc pairs across both widths, both orders and named constants.
+These pairs are documented differences, not same-source runtime parity claims.
 
 Body IR records `guard-view`, `guard`, `guard-place`, `guard-start`, `bind-view`
 and `guard-use` facts. Shallow protection covers tested places across the match;

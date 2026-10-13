@@ -1350,3 +1350,112 @@ a universal timing guarantee. The shared session and bounded-worklist tests
 provide the algorithmic checks against per-use retyping or recursive dependency
 traversal. Raw records are `obj/perf/RUN/samples.json`; the command/receipt index
 is `obj/pa13-work/constant-perf-receipts.json`.
+
+## Floating-point pattern domains
+
+`f32` and `f64` literals, named scalar constants and ranges now use the existing
+scalar interval and composite decision machinery. Bit/rank conversion is O(1)
+and adds no per-value storage or ordinary-node fields. The numeric ranks order
+negative infinity through positive infinity, with signed zeros sharing one rank;
+a final unordered rank represents all NaN payloads for coverage. Open bounds
+stop at numeric infinity. NaN constants are rejected even in an otherwise
+unreachable arm, and ranges covering all numbers still require a fallback for
+NaN. Witnesses identify the missing NaN class.
+
+Lowering keeps its existing typed comparisons. A full numeric range still reads
+and tests the input because it excludes NaN; only the entire domain can omit a
+test. This preserves initialization and guard protection checks. Bindings capture
+the original input rather than the representative rank value, retaining the sign
+of zero. Exclusive bounds use the preceding representable rank, including at
+zero, infinity and subnormal/normal boundaries.
+
+The rank invariants compare 16,384 deterministic encodings per width plus edge
+values against host numeric order. They check inverse nonzero bits, canonical
+zero, negation, infinities, out-of-domain ranks, and positive/negative
+signaling/quiet NaN payload rejection. The independent program matrix has 52
+successful sources and 46 rejected sources across both widths. It covers
+constant endpoints, overlapping guards, conditional selection, arrays, products,
+enums, initialization, and atomic deterministic pattern/LowIR views.
+
+The pinned compiler exposes a specific semantic discrepancy: opposite zero
+spellings in a guarded or-pattern run a failing guard once, whereas the
+Reference's [expr.match.guard.next](../doc/rust-reference/src/expressions/match-expr.md)
+requires trying the next matching alternative. RustGM runs it twice for either
+zero, as it does for two identically spelled zeros. Eight explicit source pairs
+cover both widths, both orders and literal/constant spellings. The RustGM source
+asserts two retries; its separate rustc partner asserts the observed one retry.
+These pairs are not same-source runtime agreement. No source or expected result
+is silently changed to hide the discrepancy. The original probe and MIR are
+retained in `obj/pa13-work/float-retry-probe/`.
+
+Structural/reference/text constants, refutable dynamic slices, and the final
+PA13 fixtures and grading contract remain open. PA13 remains planned;
+PA14 and PA15 are still part of the active goal.
+
+The frozen executable `obj/pa13-work/float-pattern-candidate` has SHA-256
+`7f10435b51748f63e0caf456341d0e18c7bf2de923ac36b99be66f14ea5ec7f3`.
+All 52 parity programs pass CPPGM LowIR validation/native execution and independent
+rustc execution. The eight Reference cases separately execute with the declared
+two-retry result, with their one-retry rustc partners retained. Three small,
+asserting performance-input programs also pass both native paths. Their 63-case
+receipt is `obj/pa13-work/float-qualified-1791854460316738507/evidence.json`.
+
+The candidate additionally requalifies all 242 earlier PA13 native vectors:
+31 constants, 61 guards/stress cases and 150 earlier pattern/storage cases.
+Receipts are `float-constants-qualified-1791854429715662660/evidence.json`,
+`float-guards-qualified-1791854434852819495/evidence.json` and
+`float-previous-native-1791854442510524636/evidence.json`, under `obj/pa13-work/`.
+The same four large guard stress cases retain their previously declared
+constructed-count oracle; other earlier programs also execute with rustc.
+
+Debug and release each pass 311 Rust tests. All 1,695 active assignment cases,
+Clippy all/pedantic, rustfmt, the 198-file audit, 24 harness tests, 38-assignment
+placement checks, upstream/Reference hashes and the backend check pass.
+Full `make test-rustc` passes, retaining earlier declared phase boundaries.
+PA11 passes 194 independent checks/180 native comparisons and PA12 passes
+97 checks/48 native comparisons. Both `obj/native/paN/evidence.json` receipts
+identify the frozen binary hash above. Explicit `make ref-test` updates twelve
+source receipts; existing oracle stdout, stderr and exit-status bytes are unchanged.
+Logs are `obj/pa13-work/float-{full-debug,full-release,all-quality,rustc-course,
+frozen-native,refs}.log` and `float-{patterns,constants,guards,previous}-native.log`.
+
+CPU-10 measurements retain all 378 observations from seven workloads, each
+with immutable binary snapshots, frozen inputs, A/A calibration, and three ABBA
+blocks at each of three sizes. No build or test from this task overlapped timing.
+The four existing workloads compare with `constant-pattern-candidate`
+(`30f7ea6d2490fee11569333a56a2c0257e7f8dcb0de8770b722f71a71c4f4109`);
+their complete LowIR and count outputs agree in every run.
+
+| Existing workload | Run | Largest functions | Baseline/candidate median ms | Baseline/candidate median KiB |
+| --- | --- | ---: | ---: | ---: |
+| ordinary | 1791854597539019046 | 64,000 | 3600.74 / 3587.84 | 715184 / 715178 |
+| scalar-match | 1791854692547558729 | 16,000 | 1056.42 / 1046.00 | 240142 / 240092 |
+| guard-retries | 1791854720451647932 | 16,000 | 1271.24 / 1278.93 | 275914 / 275862 |
+| constant-shared | 1791854754666429311 | 16,000 | 654.88 / 638.24 | 142440 / 142030 |
+
+These medians and memory levels are similar; they do not establish a speedup.
+Largest-scale ordinary A/A spans 3.56–3.75 seconds. The shared-constant
+calibration is faster than its later paired block, showing within-run host noise.
+
+The new float workloads use candidate A/A scaling via
+`scripts/measure_lexer.py --stage lowir --float-pattern-input MODE`:
+
+| Float workload | Run | Functions | Candidate median ms | Candidate median KiB |
+| --- | --- | ---: | ---: | ---: |
+| float-scalar | 1791854771550036971 | 1,000 | 48.00 | 15588 |
+| float-scalar | 1791854771550036971 | 4,000 | 200.43 | 51278 |
+| float-scalar | 1791854771550036971 | 16,000 | 802.72 | 192886 |
+| float-product | 1791854793886750304 | 1,000 | 349.36 | 24026 |
+| float-product | 1791854793886750304 | 4,000 | 1414.54 | 86370 |
+| float-product | 1791854793886750304 | 16,000 | 5737.42 | 335304 |
+| float-retry | 1791854947674408753 | 1,000 | 61.19 | 19848 |
+| float-retry | 1791854947674408753 | 4,000 | 235.16 | 68800 |
+| float-retry | 1791854947674408753 | 16,000 | 1101.96 | 265526 |
+
+The product input emits 896,013 instructions at 16,000 functions; its 1,000,
+4,000 and 16,000 function medians scale roughly with that emitted work. RSS
+also grows roughly with input size across these workloads. These are bounded
+observations, not universal timing guarantees. The three small asserting workload
+programs were independently executed before measurement. Full rendered/count
+outputs agree for every A/A run. Raw records are `obj/perf/RUN/samples.json`;
+the command/receipt index is `obj/pa13-work/float-perf-receipts.json`.

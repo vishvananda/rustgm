@@ -149,3 +149,12 @@ a stage only after handout/reference/fixtures are coherent, independent checks
 pass, the source-to-feature ledger is reviewed and all prior stages remain green.
 Keep maintainer measurements and logs in ignored `obj/`; keep student handout
 contracts and required fixtures tracked. Student export is not implemented yet.
+
+During PA13 buildout, floating-pattern tests record one explicit pinned-rustc
+execution discrepancy. The Reference's `expr.match.guard.next` rule retries both
+matching alternatives in `-0.0 | 0.0` after a false guard; RustGM does so, while
+rustc 1.98.0 (`88d9e12ae`) performs one attempt. Eight separate source pairs
+record the specified and observed results across widths, orders and constant
+spellings. They are excluded from same-source runtime parity claims. Other
+floating-pattern vectors use the same source and assertions for both compilers.
+See [the buildout evidence](docs/pa13-buildout.md#floating-point-pattern-domains).

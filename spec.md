@@ -80,6 +80,13 @@ storage for bodies without constant-backed patterns. Do not instantiate a
 whole-crate checker per use, repeat initializer typing, or interpret pattern
 views. Deferred checks must retain the matching module's visibility context.
 
+Floating pattern domains use constant-time bit/rank conversions. Numeric ranks
+collapse signed zero, while a separate unordered class keeps NaN visible to
+exhaustiveness. Reuse scalar interval indexes and composite coverage decisions;
+do not enumerate floating values or add per-value domain storage. Execution
+compares the original typed value and captures its original bits. Even a range
+covering every numeric rank must test its input because it excludes NaN.
+
 ## Rust body representation
 
 A typed control-flow IR retains places, projections, moves, borrows, storage

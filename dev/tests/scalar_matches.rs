@@ -150,7 +150,7 @@ fn scalar_domains_preserve_endpoints_and_the_unicode_gap() -> Result<(), &'stati
         let Some(domain) = Domain::new(primitive) else {
             continue;
         };
-        for rank in [0, domain.full().upper / 2, domain.full().upper] {
+        for rank in [0, domain.ordered().upper / 2, domain.ordered().upper] {
             assert_eq!(
                 domain.rank(domain.value(rank)?, false)?,
                 rank,

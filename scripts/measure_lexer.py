@@ -43,6 +43,25 @@ def full_output_hash(binary, source, directory, stage):
     return digest.hexdigest()
 
 
+def float_pattern_source(lines, mode):
+    declarations = "const LO:f64=-1.0/0.0;const HI:f64=1.0/0.0;enum E{A([f64;2]),B}\n"
+    if mode == "scalar":
+        parameter = "x:f64"
+        body = "match x{0.0=>1,LO..0.0=>2,0.0..=HI=>3,_=>4}"
+        argument = "0.5"
+    elif mode == "product":
+        parameter = "x:E"
+        body = "match x{E::A([0.0|1.0,LO..0.0])=>1,E::A([LO..=HI,0.0..=HI])=>2,E::A(_)=>3,E::B=>4}"
+        argument = "E::A([0.5,1.0])"
+    else:
+        parameter = "x:f64"
+        body = "let mut calls=0u8;match x{0.0|0.0|LO..=HI if {calls+=1;false}=>0,_=>calls}"
+        argument = "-0.0"
+    functions = "".join(f"fn measured_{i}({parameter})->u8{{{body}}}\n" for i in range(lines))
+    calls = "".join(f"measured_{i}({argument});" for i in range(lines))
+    return declarations + functions + "fn main(){" + calls + "}\n"
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--baseline", type=Path)
@@ -61,9 +80,10 @@ def main():
     workloads.add_argument("--storage-width-input", choices=("chain", "let-else"), help="exercise persistent cleanup at 128/512/2048 bindings in one procedure")
     workloads.add_argument("--guard-input", choices=("boolean", "let-chain", "retry"), help="exercise guard scopes or execution at 1000/4000/16000 procedures")
     workloads.add_argument("--constant-pattern-input", choices=("shared", "unique", "chain"), help="exercise cached or independent constant patterns at 1000/4000/16000 procedures")
+    workloads.add_argument("--float-pattern-input", choices=("scalar", "product", "retry"), help="exercise floating ranges, composite coverage or guard retries at 1000/4000/16000 procedures")
     parser.add_argument("--stage", choices=("tokens", "literals", "token-trees", "ast", "crate-ast", "names", "expanded", "expanded-crate", "types", "patterns", "layouts", "body-ir", "ownership", "lowir"), default="tokens")
     args = parser.parse_args()
-    if (args.aggregate_input or args.discriminant_input or args.product_input or args.array_pattern_input or args.scalar_match_input or args.constructor_match_input or args.conditional_pattern_input or args.storage_width_input or args.constant_pattern_input) and args.stage != "lowir":
+    if (args.aggregate_input or args.discriminant_input or args.product_input or args.array_pattern_input or args.scalar_match_input or args.constructor_match_input or args.conditional_pattern_input or args.storage_width_input or args.constant_pattern_input or args.float_pattern_input) and args.stage != "lowir":
         parser.error("aggregate, discriminant and owned-pattern workloads require --stage lowir")
     if args.pattern_input and args.stage != "names":
         parser.error("pattern identity workloads require --stage names")
@@ -97,17 +117,20 @@ def main():
                "storage_width_input": args.storage_width_input,
                "guard_input": args.guard_input,
                "constant_pattern_input": args.constant_pattern_input,
+               "float_pattern_input": args.float_pattern_input,
                "binary_sha256": {name: hashlib.sha256(p.read_bytes()).hexdigest() for name, p in binaries.items()},
                "samples": [], "full_output_sha256": {}}
     scales = (4000, 16000, 64000) if args.stage in ("token-trees", "ast", "crate-ast", "names", "expanded", "expanded-crate", "types", "body-ir", "ownership", "lowir") else (16000, 64000, 256000)
-    if args.aggregate_input or args.discriminant_input or args.pattern_input or args.product_input or args.array_pattern_input or args.borrowed_pattern_input or args.scalar_match_input or args.constructor_pattern_input or args.constructor_match_input or args.conditional_pattern_input or args.guard_input or args.constant_pattern_input or args.stage == "layouts":
+    if args.aggregate_input or args.discriminant_input or args.pattern_input or args.product_input or args.array_pattern_input or args.borrowed_pattern_input or args.scalar_match_input or args.constructor_pattern_input or args.constructor_match_input or args.conditional_pattern_input or args.guard_input or args.constant_pattern_input or args.float_pattern_input or args.stage == "layouts":
         scales = (1000, 4000, 16000)
     if args.storage_width_input:
         scales = (128, 512, 2048)
     line = {"tokens": LINE, "literals": LITERAL_LINE, "token-trees": TREE_LINE, "ast": AST_LINE, "crate-ast": CRATE_LINE, "names": b"", "expanded": b"", "expanded-crate": b"", "types": b"", "patterns": b"", "layouts": b"", "body-ir": b"", "ownership": b"", "lowir": b""}[args.stage]
     for lines in scales:
         source = directory / f"input-{lines}.rs"
-        if args.constant_pattern_input:
+        if args.float_pattern_input:
+            source.write_text(float_pattern_source(lines, args.float_pattern_input))
+        elif args.constant_pattern_input:
             constants = "const ROOT:u64=7;\n"
             if args.constant_pattern_input != "shared":
                 for i in range(lines):
