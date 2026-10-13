@@ -228,27 +228,23 @@ fn check(path: &Path, expected: i32) -> Result<String, Box<dyn std::error::Error
 }
 
 #[test]
-fn dynamic_slice_selection_matches_rustc_and_keeps_proofs_pending()
+fn dynamic_slice_selection_and_execution_proofs_match_rustc()
 -> Result<(), Box<dyn std::error::Error>> {
     let folder = folder()?;
     for &(name, expected, source) in CASES {
         let path = folder.join(format!("{name}.rs"));
-        std::fs::write(&path, source)?;
+        std::fs::write(&path, format!("{source}fn main(){{}}"))?;
         let view = check(&path, expected)?;
         if expected == 0 {
             assert!(view.contains("slice minimum="), "{name}");
-            // Selecting borrowed patterns cannot bypass the outstanding loan/region proof.
             let executable = frontend(&path, "--emit-lowir")?;
-            assert_eq!(executable.status.code(), Some(1), "{name}");
-            assert!(executable.stdout.is_empty() && !executable.stderr.is_empty());
-            let diagnostic = String::from_utf8(executable.stderr)?;
-            assert!(
-                diagnostic.contains("reference lowering")
-                    || diagnostic
-                        .contains("reference pattern execution requires region and loan proofs")
-                    || diagnostic.contains("requires owned selected patterns"),
-                "{name}: {diagnostic}"
+            assert_eq!(
+                executable.status.code(),
+                Some(0),
+                "{name}: {}",
+                String::from_utf8_lossy(&executable.stderr)
             );
+            assert!(!executable.stdout.is_empty() && executable.stderr.is_empty());
         }
         if name == "mutable-rest" {
             assert!(view.contains("from-end=1"));

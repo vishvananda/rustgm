@@ -210,7 +210,7 @@ fn reference_pattern_views_and_errors_match_pinned_rustc() -> Result<(), Box<dyn
                     .output()?;
                 assert!(again.status.success());
                 assert_eq!(again.stdout, output.stdout);
-                check_execution_boundary(compiler, name, &path)?;
+                check_execution_proofs(compiler, name, &path)?;
             } else {
                 assert!(output.stdout.is_empty());
                 assert!(count.stdout.is_empty());
@@ -240,37 +240,20 @@ fn reference_pattern_views_and_errors_match_pinned_rustc() -> Result<(), Box<dyn
     Ok(())
 }
 
-fn check_execution_boundary(
+fn check_execution_proofs(
     compiler: &str,
     name: &str,
     path: &Path,
 ) -> Result<(), Box<dyn std::error::Error>> {
     for mode in ["--emit-body-ir", "--count-ownership", "--emit-lowir"] {
         let gate = Command::new(compiler).arg(mode).arg(path).output()?;
-        let dynamic = matches!(
-            name,
-            "slice-rest" | "slice-rest-mut" | "slice-wild-rest" | "slice-explicit-ref"
-        );
-        let supported = !dynamic;
-        if supported {
-            assert_eq!(
-                gate.status.code(),
-                Some(0),
-                "{name}: {mode}: {}",
-                String::from_utf8_lossy(&gate.stderr)
-            );
-            assert!(gate.stderr.is_empty());
-            assert!(!gate.stdout.is_empty());
-            continue;
-        }
-        assert_eq!(gate.status.code(), Some(1), "{name}: {mode}");
-        assert!(gate.stdout.is_empty());
-        let boundary = "reference pattern execution requires region and loan proofs";
-        assert!(
-            String::from_utf8_lossy(&gate.stderr).contains(boundary),
-            "{name}: {}",
+        assert_eq!(
+            gate.status.code(),
+            Some(0),
+            "{name}: {mode}: {}",
             String::from_utf8_lossy(&gate.stderr)
         );
+        assert!(gate.stderr.is_empty() && !gate.stdout.is_empty());
     }
     Ok(())
 }

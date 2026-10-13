@@ -266,7 +266,7 @@ impl Builder<'_> {
                     work.extend(subpattern);
                 }
                 Kind::Dereference { pattern, .. } => work.push(pattern),
-                Kind::Product { fields, .. } => work.extend(
+                Kind::Product { fields, .. } | Kind::Slice { fields, .. } => work.extend(
                     self.facts
                         .patterns
                         .fields(fields)
@@ -282,12 +282,9 @@ impl Builder<'_> {
                         .rev()
                         .copied(),
                 ),
-                Kind::Wildcard | Kind::Range(_) => {}
-                _ => {
-                    return Err(self.error(
-                        pattern.source.node,
-                        "constructor execution requires owned selected patterns",
-                    ));
+                Kind::Wildcard | Kind::Range(_) | Kind::Text(_) => {}
+                Kind::Pending => {
+                    return Err(self.error(pattern.source.node, "incomplete constructor pattern"));
                 }
             }
         }
@@ -331,7 +328,7 @@ impl Builder<'_> {
             let has_capture = match self.facts.patterns.nodes[id.0 as usize].kind {
                 Kind::Binding { .. } => true,
                 Kind::Dereference { pattern, .. } => captures.contains(&pattern),
-                Kind::Product { fields, .. } => self
+                Kind::Product { fields, .. } | Kind::Slice { fields, .. } => self
                     .facts
                     .patterns
                     .fields(fields)
@@ -361,9 +358,6 @@ impl Builder<'_> {
         } = test;
         let pattern = &self.facts.patterns.nodes[id.0 as usize];
         let node = pattern.source.node;
-        let ty = pattern
-            .ty
-            .ok_or_else(|| self.error(node, "missing constructor input type"))?;
         let kind = pattern.kind;
         let place = self.selected_place(id, base, selection)?;
         match kind {
@@ -391,13 +385,8 @@ impl Builder<'_> {
                     no,
                 }));
             }
-            Kind::Range(range) => {
-                let test = self.interval_test(
-                    node,
-                    ty,
-                    place,
-                    self.facts.patterns.ranges[range.0 as usize],
-                )?;
+            Kind::Range(_) | Kind::Text(_) => {
+                let test = self.pattern_condition(id, place)?;
                 self.terminate(
                     node,
                     test.map_or(Terminator::Jump(yes), |condition| Terminator::Branch {
@@ -407,7 +396,7 @@ impl Builder<'_> {
                     }),
                 );
             }
-            Kind::Product { variant, fields } => {
+            Kind::Product { fields, .. } | Kind::Slice { fields, .. } => {
                 work.push(Decision::Fields {
                     fields,
                     base: place,
@@ -415,25 +404,17 @@ impl Builder<'_> {
                     yes,
                     no,
                 });
-                if let Some(variant) = variant {
-                    let selected = &self.facts.members.variants[variant.0 as usize];
-                    if self.facts.members.variants(selected.owner).len() > 1 {
-                        let condition = self.evaluate(
-                            node,
-                            TypeId::primitive(Primitive::Bool),
-                            Rvalue::IsVariant { place, variant },
-                        )?;
-                        let fields = self.new_block(node)?;
-                        self.terminate(
-                            node,
-                            Terminator::Branch {
-                                condition,
-                                yes: fields,
-                                no,
-                            },
-                        );
-                        work.push(Decision::Switch(fields));
-                    }
+                if let Some(condition) = self.pattern_condition(id, place)? {
+                    let fields = self.new_block(node)?;
+                    self.terminate(
+                        node,
+                        Terminator::Branch {
+                            condition,
+                            yes: fields,
+                            no,
+                        },
+                    );
+                    work.push(Decision::Switch(fields));
                 }
             }
             Kind::Or(alternatives) => work.push(Decision::Alternatives {
@@ -651,7 +632,7 @@ impl Builder<'_> {
                 let place = self.dereference_place(node, place)?;
                 work.push(Commit::Pattern(pattern, place, None));
             }
-            Kind::Product { fields, .. } => {
+            Kind::Product { fields, .. } | Kind::Slice { fields, .. } => {
                 for field in self.facts.patterns.fields(fields).iter().rev() {
                     work.push(Commit::Pattern(field.pattern, place, Some(field.selection)));
                 }
@@ -673,8 +654,8 @@ impl Builder<'_> {
                     join,
                 });
             }
-            Kind::Wildcard | Kind::Range(_) | Kind::Or(_) => {}
-            _ => return Err(self.error(node, "invalid owned capture selection")),
+            Kind::Wildcard | Kind::Range(_) | Kind::Text(_) | Kind::Or(_) => {}
+            Kind::Pending => return Err(self.error(node, "incomplete capture selection")),
         }
         Ok(())
     }

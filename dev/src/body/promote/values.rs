@@ -158,7 +158,10 @@ impl Engine<'_, '_> {
             Rvalue::Call {
                 callee, arguments, ..
             } => self.call(callee, arguments)?,
-            Rvalue::IsVariant { .. } | Rvalue::Validate(_) => None,
+            Rvalue::IsVariant { .. }
+            | Rvalue::Length(_)
+            | Rvalue::TextEquals { .. }
+            | Rvalue::Validate(_) => None,
         };
         Ok(value.map(|value| Ready {
             value,

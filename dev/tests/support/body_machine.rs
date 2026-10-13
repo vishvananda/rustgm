@@ -138,6 +138,8 @@ impl Machine<'_> {
             Rvalue::Borrow { .. }
             | Rvalue::Text(_)
             | Rvalue::Aggregate { .. }
+            | Rvalue::Length(_)
+            | Rvalue::TextEquals { .. }
             | Rvalue::IsVariant { .. }
             | Rvalue::Validate(_)
             | Rvalue::Repeat { .. }

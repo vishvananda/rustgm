@@ -170,6 +170,8 @@ impl<'a> Proof<'a> {
                 if let Rvalue::Read(place)
                 | Rvalue::Borrow { place, .. }
                 | Rvalue::Validate(place)
+                | Rvalue::Length(place)
+                | Rvalue::TextEquals { place, .. }
                 | Rvalue::IsVariant { place, .. } = self.body.values[id.0 as usize].kind
                 {
                     self.read(place, live)?;

@@ -322,7 +322,7 @@ fn text_pool_is_flat_and_reuses_equal_bytes() -> Result<(), Box<dyn std::error::
 }
 
 #[test]
-fn text_values_lower_while_text_and_slice_decisions_remain_pending()
+fn text_values_and_pattern_decisions_pass_execution_proofs()
 -> Result<(), Box<dyn std::error::Error>> {
     let directory = folder()?;
     for (index, source) in [
@@ -338,18 +338,12 @@ fn text_values_lower_while_text_and_slice_decisions_remain_pending()
         std::fs::write(&path, source)?;
         assert!(frontend(&path, "--emit-patterns")?.status.success());
         let output = frontend(&path, "--emit-lowir")?;
-        if index < 2 {
-            assert!(output.status.success());
-            assert!(output.stderr.is_empty() && !output.stdout.is_empty());
-            continue;
-        }
-        assert_eq!(output.status.code(), Some(1));
-        assert!(output.stdout.is_empty());
-        let diagnostic = String::from_utf8_lossy(&output.stderr);
         assert!(
-            diagnostic.contains("owned selected patterns"),
-            "{diagnostic}"
+            output.status.success(),
+            "{}",
+            String::from_utf8_lossy(&output.stderr)
         );
+        assert!(output.stderr.is_empty() && !output.stdout.is_empty());
     }
     Ok(())
 }

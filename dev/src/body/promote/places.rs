@@ -104,6 +104,8 @@ impl Engine<'_, '_> {
             }
             ProjectionKind::Dereference { .. }
             | ProjectionKind::Subarray { .. }
+            | ProjectionKind::Subslice { .. }
+            | ProjectionKind::FromEnd { .. }
             | ProjectionKind::SliceIndex { .. } => {
                 return Ok(None);
             }

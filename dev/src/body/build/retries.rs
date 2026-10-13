@@ -230,24 +230,17 @@ impl Builder<'_> {
         let pattern = &self.facts.patterns.nodes[test.pattern.0 as usize];
         let node = pattern.source.node;
         let kind = pattern.kind;
-        let ty = pattern
-            .ty
-            .ok_or_else(|| self.error(node, "missing retry input type"))?;
         self.open_retry(test.entry)?;
         match kind {
             Kind::Wildcard
             | Kind::Binding {
                 subpattern: None, ..
             }
-            | Kind::Range(_) => {
-                let value = if let Kind::Range(range) = kind {
+            | Kind::Range(_)
+            | Kind::Text(_) => {
+                let value = if matches!(kind, Kind::Range(_) | Kind::Text(_)) {
                     self.select_pattern_place(node, test.place, anchor)?;
-                    self.interval_test(
-                        node,
-                        ty,
-                        test.place,
-                        self.facts.patterns.ranges[range.0 as usize],
-                    )?
+                    self.pattern_condition(test.pattern, test.place)?
                 } else {
                     None
                 };
@@ -285,8 +278,8 @@ impl Builder<'_> {
                     ..test
                 }));
             }
-            Kind::Product { variant, fields } => {
-                self.retry_product(anchor, test, variant, fields, work)?;
+            Kind::Product { fields, .. } | Kind::Slice { fields, .. } => {
+                self.retry_product(anchor, test, fields, work)?;
             }
             Kind::Or(alternatives) => {
                 let sentinel = self.choice_value(node, alternatives.end)?;
@@ -325,7 +318,6 @@ impl Builder<'_> {
         &mut self,
         anchor: Place,
         test: Test,
-        variant: Option<crate::sema::members::VariantId>,
         fields: Fields,
         work: &mut Vec<Work>,
     ) -> Result<(), Error> {
@@ -338,23 +330,25 @@ impl Builder<'_> {
         } else {
             self.new_block(node)?
         };
-        if let Some(variant) = variant
-            && self
-                .facts
-                .members
-                .variants(self.facts.members.variants[variant.0 as usize].owner)
-                .len()
-                > 1
-        {
+        let kind = self.facts.patterns.nodes[test.pattern.0 as usize].kind;
+        let tested = match kind {
+            Kind::Slice { .. } => true,
+            Kind::Product {
+                variant: Some(v), ..
+            } => {
+                self.facts
+                    .members
+                    .variants(self.facts.members.variants[v.0 as usize].owner)
+                    .len()
+                    > 1
+            }
+            _ => false,
+        };
+        if tested {
             self.select_pattern_place(node, test.place, anchor)?;
-            let condition = self.evaluate(
-                node,
-                TypeId::primitive(Primitive::Bool),
-                Rvalue::IsVariant {
-                    place: test.place,
-                    variant,
-                },
-            )?;
+            let condition = self
+                .pattern_condition(test.pattern, test.place)?
+                .ok_or_else(|| self.error(node, "missing selected constructor test"))?;
             self.terminate(
                 node,
                 Terminator::Branch {

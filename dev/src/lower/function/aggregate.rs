@@ -221,11 +221,21 @@ impl Lower<'_, '_> {
             return self.project_slice_index(id, index);
         }
         let base_type = self.place_type(projection.base)?;
+        if matches!(
+            self.context.types.kind(base_type),
+            Some(crate::types::Kind::Slice(_))
+        ) {
+            return self
+                .project_slice_pattern(id, base.ok_or("slice pattern has no data address")?);
+        }
         let layout = self.context.layout(base_type)?;
         let leaf = self.context.layout(projection.ty)?;
         let retained = leaf.size != 0 || self.addresses.needs(Place::Projection(id));
         let address = match projection.kind {
-            ProjectionKind::Dereference { .. } | ProjectionKind::SliceIndex { .. } => {
+            ProjectionKind::Dereference { .. }
+            | ProjectionKind::SliceIndex { .. }
+            | ProjectionKind::FromEnd { .. }
+            | ProjectionKind::Subslice { .. } => {
                 return Err("reference projection escaped its typed dispatch");
             }
             ProjectionKind::Field(field) => {

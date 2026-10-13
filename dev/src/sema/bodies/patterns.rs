@@ -452,7 +452,13 @@ impl Checker<'_> {
                     term,
                 )
             } else if rest.is_some_and(|rest| index > rest) {
-                (Projection::FromEnd(minimum - ordinal + 1), element)
+                (
+                    Projection::FromEnd {
+                        offset: minimum - ordinal + 1,
+                        minimum,
+                    },
+                    element,
+                )
             } else {
                 (Projection::Index(ordinal), element)
             };

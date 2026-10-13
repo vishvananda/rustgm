@@ -97,7 +97,10 @@ impl Paths {
                     info.empty = start == end;
                     Some(Component::Subarray { start, end })
                 }
-                ProjectionKind::Index { .. } | ProjectionKind::SliceIndex { .. } => {
+                ProjectionKind::Index { .. }
+                | ProjectionKind::SliceIndex { .. }
+                | ProjectionKind::FromEnd { .. }
+                | ProjectionKind::Subslice { .. } => {
                     info.indexed = true;
                     None
                 }
@@ -124,6 +127,11 @@ impl Paths {
                 ..
             }
             | Rvalue::Validate(Place::Temporary(id))
+            | Rvalue::Length(Place::Temporary(id))
+            | Rvalue::TextEquals {
+                place: Place::Temporary(id),
+                ..
+            }
             | Rvalue::IsVariant {
                 place: Place::Temporary(id),
                 ..

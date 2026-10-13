@@ -1,7 +1,7 @@
-//! Static pattern paths share offset recipes, but form addresses in their use blocks.
+//! Pattern recipes share static offsets and dynamic prefixes, evaluated in each use block.
 use super::{Lower, Projected};
 use crate::body::ir::{Place, ProjectionId, ProjectionKind};
-use crate::types::TypeId;
+use crate::types::Kind;
 use std::num::NonZeroU32;
 
 #[derive(Clone, Copy)]
@@ -12,17 +12,59 @@ pub(super) struct Recipe {
 #[derive(Clone, Copy)]
 pub(super) enum Step {
     Offset(u64),
-    Dereference(TypeId),
+    Dynamic(ProjectionId),
 }
-/// A persistent prefix; ordinary offset-only recipes retain their compact shape.
+/// A shared dynamic prefix; ordinary offset-only recipes retain their compact shape.
 #[derive(Clone, Copy)]
-pub(super) struct Dereference {
+pub(super) struct Dynamic {
     parent: Option<NonZeroU32>,
     offset: u64,
-    ty: TypeId,
+    projection: ProjectionId,
 }
 impl Lower<'_, '_> {
-    pub(super) fn select(&mut self, id: ProjectionId, anchor: Place) -> Result<(), &'static str> {
+    fn selection_step(&mut self, id: ProjectionId) -> Result<Step, &'static str> {
+        let projection = &self.body.projections[id.0 as usize];
+        match projection.kind {
+            ProjectionKind::Dereference { .. }
+            | ProjectionKind::FromEnd { .. }
+            | ProjectionKind::Subslice { .. } => Ok(Step::Dynamic(id)),
+            ProjectionKind::Field(field) => {
+                let layout = self.context.layout(self.place_type(projection.base)?)?;
+                Ok(Step::Offset(self.selected_field_offset(&layout, field)?))
+            }
+            ProjectionKind::ConstantIndex(index) => {
+                let ty = self.place_type(projection.base)?;
+                let leaf = self.context.layout(projection.ty)?;
+                let offset = if matches!(self.context.types.kind(ty), Some(Kind::Slice(_))) {
+                    index
+                        .checked_mul(leaf.size)
+                        .ok_or("slice pattern offset overflow")?
+                } else {
+                    let layout = self.context.layout(ty)?;
+                    Self::pattern_byte_offset(&layout, &leaf, index, None)?
+                };
+                Ok(Step::Offset(offset))
+            }
+            ProjectionKind::Subarray { start, end } => {
+                let layout = self.context.layout(self.place_type(projection.base)?)?;
+                let leaf = self.context.layout(projection.ty)?;
+                Ok(Step::Offset(Self::pattern_byte_offset(
+                    &layout,
+                    &leaf,
+                    start,
+                    Some(end),
+                )?))
+            }
+            ProjectionKind::Index { .. } | ProjectionKind::SliceIndex { .. } => {
+                Err("dynamic indexing must precede the pattern path")
+            }
+        }
+    }
+    fn selection_recipe(
+        &mut self,
+        id: ProjectionId,
+        anchor: Place,
+    ) -> Result<(Recipe, Option<NonZeroU32>), &'static str> {
         self.selection_work.clear();
         let mut place = Place::Projection(id);
         let mut offset = 0_u64;
@@ -36,29 +78,12 @@ impl Lower<'_, '_> {
                     return Err("pattern path changed scrutinee");
                 }
                 offset = recipe.offset;
-                parent = self.selection_dereferences.get(&current).copied();
+                parent = self.selection_paths.get(&current).copied();
                 break;
             }
-            let projection = &self.body.projections[current.0 as usize];
-            let layout = self.context.layout(self.place_type(projection.base)?)?;
-            let leaf = self.context.layout(projection.ty)?;
-            let step = match projection.kind {
-                ProjectionKind::Dereference { .. } => Step::Dereference(projection.ty),
-                ProjectionKind::Field(field) => {
-                    Step::Offset(self.selected_field_offset(&layout, field)?)
-                }
-                ProjectionKind::ConstantIndex(index) => {
-                    Step::Offset(Self::pattern_byte_offset(&layout, &leaf, index, None)?)
-                }
-                ProjectionKind::Subarray { start, end } => {
-                    Step::Offset(Self::pattern_byte_offset(&layout, &leaf, start, Some(end))?)
-                }
-                ProjectionKind::Index { .. } | ProjectionKind::SliceIndex { .. } => {
-                    return Err("dynamic indexing must precede the pattern path");
-                }
-            };
+            let step = self.selection_step(current)?;
             self.selection_work.push((current, step));
-            place = projection.base;
+            place = self.body.projections[current.0 as usize].base;
         }
         while let Some((current, step)) = self.selection_work.pop() {
             match step {
@@ -67,51 +92,70 @@ impl Lower<'_, '_> {
                         .checked_add(delta)
                         .ok_or("pattern path offset overflow")?;
                 }
-                Step::Dereference(ty) => {
+                Step::Dynamic(projection) => {
                     let id = self
-                        .dereferences
+                        .selection_steps
                         .len()
                         .checked_add(1)
                         .and_then(|n| u32::try_from(n).ok())
                         .and_then(NonZeroU32::new)
-                        .ok_or("too many pattern dereference recipes")?;
-                    self.dereferences.push(Dereference { parent, offset, ty });
+                        .ok_or("too many dynamic pattern recipes")?;
+                    self.selection_steps.push(Dynamic {
+                        parent,
+                        offset,
+                        projection,
+                    });
                     parent = Some(id);
                     offset = 0;
                 }
             }
             self.selections.insert(current, Recipe { anchor, offset });
             if let Some(id) = parent {
-                self.selection_dereferences.insert(current, id);
+                self.selection_paths.insert(current, id);
             }
         }
-        let leaf = self
-            .context
-            .layout(self.body.projections[id.0 as usize].ty)?;
-        let address = if leaf.size == 0 && !self.addresses.needs(Place::Projection(id)) {
-            None
+        Ok((Recipe { anchor, offset }, parent))
+    }
+    pub(super) fn select(&mut self, id: ProjectionId, anchor: Place) -> Result<(), &'static str> {
+        let (recipe, mut parent) = self.selection_recipe(id, anchor)?;
+        let ty = self.body.projections[id.0 as usize].ty;
+        let wide = self.context.types.is_sized(ty) == Some(false);
+        if !wide
+            && self.context.layout(ty)?.size == 0
+            && !self.addresses.needs(Place::Projection(id))
+        {
+            self.projections[id.0 as usize] = Projected::Ready(None);
+            return Ok(());
+        }
+        let mut base = self
+            .place(anchor)?
+            .ok_or("pattern selection has no input storage")?;
+        let mut length = if self.context.types.is_sized(self.place_type(anchor)?) == Some(false) {
+            Some(self.slice_length(anchor)?)
         } else {
-            let mut base = self
-                .place(anchor)?
-                .ok_or("pattern selection has no input storage")?;
-            self.address_work.clear();
-            while let Some(id) = parent {
-                let index = id.get() as usize - 1;
-                let step = self
-                    .dereferences
-                    .get(index)
-                    .ok_or("missing pattern dereference recipe")?;
-                self.address_work.push(index);
-                parent = step.parent;
-            }
-            while let Some(index) = self.address_work.pop() {
-                let step = self.dereferences[index];
-                base = self.offset(base, step.offset)?;
-                base = self.dereference(base, step.ty)?;
-            }
-            Some(self.offset(base, offset)?)
+            None
         };
-        self.projections[id.0 as usize] = Projected::Ready(address);
+        self.address_work.clear();
+        while let Some(id) = parent {
+            let index = id.get() as usize - 1;
+            let step = self
+                .selection_steps
+                .get(index)
+                .ok_or("missing dynamic pattern recipe")?;
+            self.address_work.push(index);
+            parent = step.parent;
+        }
+        while let Some(index) = self.address_work.pop() {
+            let step = self.selection_steps[index];
+            base = self.offset(base, step.offset)?;
+            (base, length) = self.dynamic_selection(step.projection, base, length)?;
+        }
+        let address = self.offset(base, recipe.offset)?;
+        if wide {
+            self.slice_lengths
+                .insert(id, length.ok_or("unsized selection lacks metadata")?);
+        }
+        self.projections[id.0 as usize] = Projected::Ready(Some(address));
         Ok(())
     }
 }

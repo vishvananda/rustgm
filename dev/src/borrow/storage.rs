@@ -213,6 +213,8 @@ fn inspect_action(
             if let Rvalue::Borrow { place, .. }
             | Rvalue::Read(place)
             | Rvalue::Validate(place)
+            | Rvalue::Length(place)
+            | Rvalue::TextEquals { place, .. }
             | Rvalue::IsVariant { place, .. } = value.kind
             {
                 inspect_place(index, state, place)?;

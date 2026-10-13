@@ -93,7 +93,7 @@ impl Coverage<'_> {
                     }
                 }
                 Step::Field(Projection::Index(index)) => write!(out, "[{index}]"),
-                Step::Field(Projection::FromEnd(offset)) => write!(out, "[-{offset}]"),
+                Step::Field(Projection::FromEnd { offset, .. }) => write!(out, "[-{offset}]"),
                 Step::Field(Projection::Subarray { start, end }) => write!(out, "[{start}..{end}]"),
                 Step::Field(Projection::Subslice { prefix, suffix }) => {
                     write!(out, "[{prefix}..-{suffix}]")

@@ -58,6 +58,16 @@ pub enum ProjectionKind {
     },
     /// Pattern selection with a statically checked bound; permits owned element moves.
     ConstantIndex(u64),
+    /// One-based suffix selection, justified by the enclosing pattern's length test.
+    FromEnd {
+        offset: u64,
+        minimum: u64,
+    },
+    /// Dynamic rest selection excludes a fixed prefix and suffix.
+    Subslice {
+        prefix: u64,
+        suffix: u64,
+    },
     /// A fixed-array pattern's half-open range, with independently tracked overlap.
     Subarray {
         start: u64,
@@ -100,6 +110,13 @@ pub enum Rvalue {
     },
     Scalar(ScalarId),
     Text(crate::sema::text::Id),
+    /// Inspect metadata without reading or moving the elements.
+    Length(Place),
+    /// Compare the exact bytes of a str place without moving it.
+    TextEquals {
+        place: Place,
+        text: crate::sema::text::Id,
+    },
     /// A by-value use; ownership and Copy selection are checked by later stages.
     Read(Place),
     /// Form a reference to a place without reading or moving its referent.

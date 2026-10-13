@@ -189,6 +189,8 @@ impl<'a> Flow<'a> {
         match value.kind {
             Rvalue::Read(place)
             | Rvalue::Borrow { place, .. }
+            | Rvalue::Length(place)
+            | Rvalue::TextEquals { place, .. }
             | Rvalue::IsVariant { place, .. }
             | Rvalue::Validate(place) => self.use_place(place, live)?,
             Rvalue::Aggregate { fields, .. }

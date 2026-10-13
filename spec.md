@@ -206,6 +206,21 @@ values serialize both the address and length at their canonical offsets;
 packed fields use the existing byte serializer and pointer startup fixups.
 Metadata and literal identities must not enlarge ordinary scalar place facts.
 
+Dynamic slice patterns test exact or minimum length before selecting any element.
+Suffix projections retain the tested minimum length as a typed fact; rest
+projections retain excluded prefix/suffix counts. Loan overlap uses those facts
+to distinguish disjoint pattern captures. An arbitrary runtime index does not
+receive the same disjointness proof. Normalize nested rest projections without
+enumerating elements. Pattern metadata reads are distinct from element reads
+and moves, and retain initialization, storage and liveness obligations.
+
+Ordinary and guarded decisions consume the same selected constructor conditions.
+Guard retry recipes rebuild both addresses and lengths in their actual use
+blocks; cached recipes must not cache branch-local runtime values. String tests
+compare exact interned bytes after checking length. Emit a bounded-size comparison
+loop instead of one instruction sequence per literal byte, and never load bytes
+on a failed length test. Constant text patterns obey the same execution path.
+
 Borrow checking runs before references and moves lose their source semantics
 in LowIR. Region/dataflow analysis uses typed worklists and bounded lattices,
 with per-body storage and complete dependency edges. Pattern usefulness and

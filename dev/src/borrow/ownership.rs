@@ -334,8 +334,10 @@ impl BodyFacts {
                 self.mutable_borrow(body, info)?;
             }
         }
-        if let Rvalue::IsVariant { place, .. } | Rvalue::Validate(place) =
-            body.values[id.0 as usize].kind
+        if let Rvalue::IsVariant { place, .. }
+        | Rvalue::Length(place)
+        | Rvalue::TextEquals { place, .. }
+        | Rvalue::Validate(place) = body.values[id.0 as usize].kind
         {
             let info = self.paths.place(place)?;
             if let Some(path) = info.path

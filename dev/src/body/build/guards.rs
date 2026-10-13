@@ -47,14 +47,21 @@ impl Builder<'_> {
                     self.body.guard_places.push(place);
                     work.push((child, Place::Projection(referent), None));
                 }
-                Kind::Product { variant, fields } => {
-                    if variant.is_some_and(|v| {
-                        self.facts
-                            .members
-                            .variants(self.facts.members.variants[v.0 as usize].owner)
-                            .len()
-                            > 1
-                    }) {
+                Kind::Product { fields, .. } | Kind::Slice { fields, .. } => {
+                    let tested = match pattern.kind {
+                        Kind::Slice { .. } => true,
+                        Kind::Product {
+                            variant: Some(v), ..
+                        } => {
+                            self.facts
+                                .members
+                                .variants(self.facts.members.variants[v.0 as usize].owner)
+                                .len()
+                                > 1
+                        }
+                        _ => false,
+                    };
+                    if tested {
                         self.body.guard_places.push(place);
                     }
                     work.extend(
@@ -92,12 +99,10 @@ impl Builder<'_> {
                         self.body.guard_places.push(place);
                     }
                 }
+                Kind::Text(_) => self.body.guard_places.push(place),
                 Kind::Wildcard => {}
-                _ => {
-                    return Err(self.error(
-                        pattern.source.node,
-                        "guard decisions require owned patterns",
-                    ));
+                Kind::Pending => {
+                    return Err(self.error(pattern.source.node, "incomplete guarded pattern"));
                 }
             }
         }

@@ -271,10 +271,10 @@ impl Flow<'_> {
                         .map_or(Mode::Shared, |l| l.mode);
                     self.access(state, place, mode, Depth::Deep, None)?;
                 }
-                Rvalue::Validate(place) => {
+                Rvalue::Validate(place) | Rvalue::TextEquals { place, .. } => {
                     self.access(state, place, Mode::Shared, Depth::Deep, None)?;
                 }
-                Rvalue::IsVariant { place, .. } => {
+                Rvalue::IsVariant { place, .. } | Rvalue::Length(place) => {
                     self.access(state, place, Mode::Shared, Depth::Discriminant, None)?;
                 }
                 _ => {}

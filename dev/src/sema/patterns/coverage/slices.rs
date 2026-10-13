@@ -45,7 +45,7 @@ impl Coverage<'_> {
                             Projection::Index(index) => {
                                 entry.prefix.insert(index);
                             }
-                            Projection::FromEnd(offset) => {
+                            Projection::FromEnd { offset, .. } => {
                                 entry.suffix.insert(offset);
                             }
                             Projection::Subslice { .. } => {}
@@ -115,7 +115,7 @@ impl Coverage<'_> {
             .patterns
             .fields(fields)
             .iter()
-            .any(|field| matches!(field.selection, Projection::FromEnd(_)));
+            .any(|field| matches!(field.selection, Projection::FromEnd { .. }));
         let mut branches = Vec::new();
         let mut lower = minimum;
         if !exact && has_suffix {
@@ -170,11 +170,12 @@ impl Coverage<'_> {
         for field in self.facts.patterns.fields(fields) {
             self.graph.charge()?;
             let selection = match field.selection {
-                Projection::FromEnd(offset) if canonical => Projection::Index(
+                Projection::FromEnd { offset, .. } if canonical => Projection::Index(
                     lower
                         .checked_sub(offset)
                         .ok_or("invalid slice suffix offset")?,
                 ),
+                Projection::FromEnd { offset, .. } => Projection::FromEnd { offset, minimum: 0 },
                 selection => selection,
             };
             children.push(self.child(query.place, field.pattern, Step::Field(selection))?);

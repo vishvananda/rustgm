@@ -96,7 +96,10 @@ impl Engine<'_, '_> {
                     self.push(Key::Value(left))?;
                     Ok(true)
                 }
-                Rvalue::IsVariant { .. } | Rvalue::Validate(_) => Ok(false),
+                Rvalue::IsVariant { .. }
+                | Rvalue::Length(_)
+                | Rvalue::TextEquals { .. }
+                | Rvalue::Validate(_) => Ok(false),
                 Rvalue::Unit
                 | Rvalue::Scalar(_)
                 | Rvalue::Text(_)
@@ -106,9 +109,10 @@ impl Engine<'_, '_> {
             Key::Projection(id) => {
                 let projection = self.projection(id)?;
                 match projection.kind {
-                    ProjectionKind::Dereference { .. } | ProjectionKind::Subarray { .. } => {
-                        Ok(false)
-                    }
+                    ProjectionKind::Dereference { .. }
+                    | ProjectionKind::Subarray { .. }
+                    | ProjectionKind::Subslice { .. }
+                    | ProjectionKind::FromEnd { .. } => Ok(false),
                     ProjectionKind::Index { index, .. } | ProjectionKind::SliceIndex { index } => {
                         self.push(Key::Value(index))?;
                         self.place_dependency(self.projection(id)?.base)

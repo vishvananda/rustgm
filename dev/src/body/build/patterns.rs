@@ -50,7 +50,7 @@ impl Builder<'_> {
         self.scratch.match_patterns.push(root);
         while let Some(id) = self.scratch.match_patterns.pop() {
             match self.facts.patterns.nodes[id.0 as usize].kind {
-                Kind::Range(_) => {
+                Kind::Range(_) | Kind::Text(_) | Kind::Slice { .. } => {
                     self.scratch.match_patterns.clear();
                     return true;
                 }
@@ -200,12 +200,8 @@ impl Builder<'_> {
             Projection::Field(field) => ProjectionKind::Field(field),
             Projection::Index(index) => ProjectionKind::ConstantIndex(index),
             Projection::Subarray { start, end } => ProjectionKind::Subarray { start, end },
-            Projection::Subslice { .. } | Projection::FromEnd(_) => {
-                return Err(self.error(
-                    node,
-                    "slice pattern execution requires region and loan proofs",
-                ));
-            }
+            Projection::Subslice { prefix, suffix } => ProjectionKind::Subslice { prefix, suffix },
+            Projection::FromEnd { offset, minimum } => ProjectionKind::FromEnd { offset, minimum },
         };
         self.projection(node, ty, base, projection)
             .map(Place::Projection)

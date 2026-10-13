@@ -3,6 +3,7 @@ mod aggregate;
 mod references;
 mod selections;
 mod slices;
+mod text;
 use super::{
     Error,
     arithmetic::Arithmetic,
@@ -62,9 +63,9 @@ struct Lower<'a, 'b> {
     slice_lengths: std::collections::HashMap<ir::ProjectionId, Value>,
     projections: Vec<Projected>,
     selections: std::collections::HashMap<ir::ProjectionId, selections::Recipe>,
-    selection_dereferences: std::collections::HashMap<ir::ProjectionId, std::num::NonZeroU32>,
+    selection_paths: std::collections::HashMap<ir::ProjectionId, std::num::NonZeroU32>,
     selection_work: Vec<(ir::ProjectionId, selections::Step)>,
-    dereferences: Vec<selections::Dereference>,
+    selection_steps: Vec<selections::Dynamic>,
     address_work: Vec<usize>,
     values: Vec<Option<Selected>>,
     blocks: Vec<BlockId>,
@@ -82,9 +83,9 @@ pub(super) fn lower<'a>(context: &mut Context<'a>, body: &'a ir::Body) -> Result
         slice_lengths: std::collections::HashMap::new(),
         projections: vec![Projected::Pending; body.projections.len()],
         selections: std::collections::HashMap::new(),
-        selection_dereferences: std::collections::HashMap::new(),
+        selection_paths: std::collections::HashMap::new(),
         selection_work: Vec::new(),
-        dereferences: Vec::new(),
+        selection_steps: Vec::new(),
         address_work: Vec::new(),
         values: vec![None; body.values.len()],
         blocks: Vec::new(),
@@ -423,6 +424,8 @@ impl Lower<'_, '_> {
             Rvalue::Repeat { value: operand } => return self.repeat(value.ty, operand),
             Rvalue::Function(definition) => return Ok(Selected::Item(definition)),
             Rvalue::Scalar(scalar) => self.scalar(self.body.scalars[scalar.0 as usize], ty)?,
+            Rvalue::Length(place) => self.slice_length(place)?,
+            Rvalue::TextEquals { place, text } => self.text_equals(place, text)?,
             Rvalue::Text(text) => return self.text_literal(text, representation),
             Rvalue::IsVariant { place, variant } => return self.is_variant(place, variant),
             Rvalue::Read(place) => {

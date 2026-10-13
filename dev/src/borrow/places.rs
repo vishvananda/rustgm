@@ -12,6 +12,8 @@ enum Step {
     Field(Selection),
     Element(u64),
     Range(u64, u64),
+    FromEnd { offset: u64, minimum: u64 },
+    Subslice { prefix: u64, suffix: u64 },
     Dynamic(ValueId),
 }
 #[derive(Clone, Copy)]
@@ -78,6 +80,8 @@ impl Index {
                 ProjectionKind::Field(field) => Step::Field(field),
                 ProjectionKind::ConstantIndex(i) => Step::Element(i),
                 ProjectionKind::Subarray { start, end } => Step::Range(start, end),
+                ProjectionKind::FromEnd { offset, minimum } => Step::FromEnd { offset, minimum },
+                ProjectionKind::Subslice { prefix, suffix } => Step::Subslice { prefix, suffix },
                 ProjectionKind::Index { index, .. } | ProjectionKind::SliceIndex { index } => {
                     Step::Dynamic(index)
                 }
@@ -140,6 +144,28 @@ impl Index {
     }
     fn child(&mut self, mut base: Id, mut step: Step) -> Result<Id, &'static str> {
         self.charge(1)?;
+        if let Some(Step::Subslice { prefix, suffix }) = self.paths[base.0].step {
+            let sum = |a: u64, b: u64| a.checked_add(b).ok_or("loan slice offset overflow");
+            let normalized = match step {
+                Step::Element(i) => Some(Step::Element(sum(prefix, i)?)),
+                Step::FromEnd { offset, minimum } => Some(Step::FromEnd {
+                    offset: sum(suffix, offset)?,
+                    minimum: sum(sum(prefix, suffix)?, minimum)?,
+                }),
+                Step::Subslice {
+                    prefix: a,
+                    suffix: b,
+                } => Some(Step::Subslice {
+                    prefix: sum(prefix, a)?,
+                    suffix: sum(suffix, b)?,
+                }),
+                _ => None,
+            };
+            if let Some(normalized) = normalized {
+                base = self.paths[base.0].parent.ok_or("loan slice has no base")?;
+                step = normalized;
+            }
+        }
         if let Some(Step::Range(start, end)) = self.paths[base.0].step {
             match step {
                 Step::Element(i) if i < end - start => {
@@ -344,11 +370,20 @@ impl Index {
 fn disjoint(a: Step, b: Step) -> bool {
     match (a, b) {
         (Step::Field(a), Step::Field(b)) => a != b,
-        (Step::Element(a), Step::Element(b)) => a != b,
         (Step::Element(i), Step::Range(a, b)) | (Step::Range(a, b), Step::Element(i)) => {
             i < a || i >= b
         }
         (Step::Range(a, b), Step::Range(c, d)) => b <= c || d <= a,
+        (Step::Element(a), Step::Element(b))
+        | (Step::FromEnd { offset: a, .. }, Step::FromEnd { offset: b, .. }) => a != b,
+        (Step::Element(i), Step::FromEnd { offset, minimum })
+        | (Step::FromEnd { offset, minimum }, Step::Element(i)) => {
+            i.checked_add(offset).is_some_and(|sum| sum < minimum)
+        }
+        (Step::Element(i), Step::Subslice { prefix, .. })
+        | (Step::Subslice { prefix, .. }, Step::Element(i)) => i < prefix,
+        (Step::FromEnd { offset, .. }, Step::Subslice { suffix, .. })
+        | (Step::Subslice { suffix, .. }, Step::FromEnd { offset, .. }) => offset <= suffix,
         _ => false,
     }
 }

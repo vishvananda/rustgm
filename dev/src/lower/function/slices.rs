@@ -1,15 +1,80 @@
 //! Wide pointer values use object storage; unsized places retain sparse length facts.
 use super::{Address, Arithmetic, Lower, Projected, Selected};
 use crate::{
-    body::ir::{Place, ProjectionId, ValueId},
+    body::ir::{Place, ProjectionId, ProjectionKind, ValueId},
     lowir::{
         program::{MemorySpan, Value},
-        vocabulary::{Predicate, Type},
+        vocabulary::{Binary, Predicate, Type},
     },
     types::{Kind, Primitive, TypeId},
 };
 
 impl Lower<'_, '_> {
+    pub(super) fn dynamic_selection(
+        &mut self,
+        id: ProjectionId,
+        base: Address,
+        length: Option<Value>,
+    ) -> Result<(Address, Option<Value>), &'static str> {
+        let projection = &self.body.projections[id.0 as usize];
+        if matches!(projection.kind, ProjectionKind::Dereference { .. }) {
+            let address = self.dereference(base, projection.ty)?;
+            let length = if self.context.types.is_sized(projection.ty) == Some(false) {
+                let tail = self.offset(base, 8)?;
+                Some(self.builder.load(Type::I64, tail.operand)?)
+            } else {
+                None
+            };
+            return Ok((address, length));
+        }
+        let Some(Kind::Slice(element)) = self.context.types.kind(self.place_type(projection.base)?)
+        else {
+            return Err("dynamic pattern selection requires a slice");
+        };
+        let leaf = self.context.layout(element)?;
+        let length = length.ok_or("dynamic selection lacks slice length")?;
+        match projection.kind {
+            ProjectionKind::FromEnd { offset, minimum } if offset != 0 && offset <= minimum => {
+                let offset = self.builder.integer(Type::I64, u128::from(offset))?;
+                let index = self.builder.binary(Binary::Sub, length, offset)?;
+                Ok((self.indexed(base, index, leaf.size, leaf.align)?, None))
+            }
+            ProjectionKind::Subslice { prefix, suffix } => {
+                let excluded = prefix
+                    .checked_add(suffix)
+                    .ok_or("slice pattern length overflow")?;
+                let excluded = self.builder.integer(Type::I64, u128::from(excluded))?;
+                let length = self.builder.binary(Binary::Sub, length, excluded)?;
+                let offset = prefix
+                    .checked_mul(leaf.size)
+                    .ok_or("slice pattern offset overflow")?;
+                Ok((self.offset(base, offset)?, Some(length)))
+            }
+            _ => Err("invalid dynamic pattern projection"),
+        }
+    }
+    pub(super) fn project_slice_pattern(
+        &mut self,
+        id: ProjectionId,
+        base: Address,
+    ) -> Result<(), &'static str> {
+        let projection = &self.body.projections[id.0 as usize];
+        let (address, length) = if let ProjectionKind::ConstantIndex(index) = projection.kind {
+            let leaf = self.context.layout(projection.ty)?;
+            let offset = index
+                .checked_mul(leaf.size)
+                .ok_or("slice pattern offset overflow")?;
+            (self.offset(base, offset)?, None)
+        } else {
+            let length = self.slice_length(projection.base)?;
+            self.dynamic_selection(id, base, Some(length))?
+        };
+        if let Some(length) = length {
+            self.slice_lengths.insert(id, length);
+        }
+        self.projections[id.0 as usize] = Projected::Ready(Some(address));
+        Ok(())
+    }
     pub(super) fn text_literal(
         &mut self,
         text: crate::sema::text::Id,

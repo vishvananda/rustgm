@@ -1513,3 +1513,112 @@ Dynamic slice/text pattern decisions, rest/from-end projections and their guard
 execution remain incomplete, as does PA17 destruction. PA15–PA17 still require
 coherent handouts, required fixtures, manifests and independently reviewed
 oracles before release. Main remains unchanged.
+
+
+## Executing dynamic slice and string patterns
+
+Slice constructors now compare runtime length with their selected exact or minimum
+length before selecting fields. Suffix selections retain the owning pattern's
+minimum length; rest selections retain excluded prefix and suffix counts. The
+loan index uses these facts to allow disjoint prefix/rest/suffix captures and
+normalizes projections through rest slices. Arbitrary runtime indices remain
+conservative. Coverage canonicalizes suffix positions independently of their
+execution bounds, preserving existing selected-pattern views and query identity.
+
+BodyIR distinguishes metadata reads and exact text comparisons from element
+reads and moves. Storage, initialization, liveness and loan checks consume those
+operations. Slice metadata is a shallow discriminant-like access; text comparison
+reads the selected bytes without moving them. Pattern captures retain their
+normal borrow and lifetime proofs.
+
+Ordinary decisions and guard retries share the same constructor-condition
+builder. Dynamic path recipes share persistent prefixes while forming addresses
+and lengths in each actual use block. They handle nested slice dereferences,
+suffix elements and rest subslices without caching branch-local runtime values.
+String decisions check UTF-8 byte length, then compare bytes in a bounded-size
+loop; failed length tests perform no byte loads. Empty, embedded-NUL, multibyte
+and constant strings use the same operation.
+
+Validation for this checkpoint:
+
+- The complete 467-test maintainer run passes. The two subsequently added controls
+  also pass in a final targeted run, bringing the checked inventory to 469 tests.
+  Formatting, Clippy all/pedantic with warnings denied, the 299-file audit,
+  all 25 harness tests, backend smoke and release build pass without new lint
+  allowances or audit exceptions.
+- Twenty-three native vectors run through pinned rustc and CPPGM. They cover
+  exact/minimum slice lengths, prefix/suffix aliasing at short lengths, mutable
+  disjoint and empty-rest captures, nested slices, rest returns, loops, let-else,
+  irrefutable rest patterns, guard retries, mutable guard captures, zero-sized
+  and non-Copy elements, byte constants, string constants, nested string references,
+  UTF-8 and NUL strings, conditionals and packed reference fields. Repeated LowIR
+  output is byte-identical.
+- Fourteen access/lifetime controls have independently declared outcomes: five
+  disjoint captures are accepted and nine overlapping, immutable, guarded, moved
+  or escaping-reference cases are rejected. Pinned rustc and both emitted/count
+  LowIR agree. Candidate failures have status one, empty stdout and identical
+  diagnostics across modes.
+- A 32 KiB string-prefix vector independently executes equal, last-byte-different
+  and shorter inputs with both compilers. Its entire program has fewer than 200
+  LowIR instructions, showing that comparison code does not expand per byte.
+- All 1,230 PA11–PA14 LowIR inputs preserve previously successful output bytes.
+  Fifty-four library-shaped inspection sources now reach a missing-main error
+  instead of a pending slice/text pattern boundary when forced into executable
+  mode. This is proof-pipeline progress, not a claim that these no-main sources
+  have been executed. The native vectors above exercise demanded operations.
+- The course report remains 2,551/2,622 exact with the same 71 reviewed development
+  differences. No required fixture, manifest or generated oracle changed.
+- A source with 2,048 demanded wrapper pairs exercises mutable prefix/suffix
+  guard retries, mutable rest splitting and string decisions. Both native
+  implementations compute the declared sum 67,584. LowIR contains 4,099 defined
+  functions, 157,705 blocks, 565,260 instructions and 45,058 slots.
+- A separate 64 KiB string-prefix source also executes with both compilers,
+  including last-byte mismatch and unequal length. Its LowIR has 59 instructions,
+  three globals and 196,610 data items; the backing bytes grow with the literals,
+  while the comparison loop remains fixed.
+
+Performance validation retains 324 observations across six workloads, each at
+three scales with A/A calibration and three paired ABBA blocks. Ownership,
+guard retries, nested slice coverage and thin-reference execution compare the
+previous immutable compiler with this checkpoint. Dynamic-pattern execution and
+long-text comparison use two immutable candidate copies because the previous
+compiler rejects those capabilities. Full rendered output and count output agree
+for every comparison. No RustGM build or test overlapped the timing runs.
+
+| Largest existing workload | Baseline/current median ms | Baseline/current median KiB |
+| --- | ---: | ---: |
+| 64k ownership functions | 5,681.4 / 5,705.8 | 949,962 / 949,972 |
+| 16k guard-retry functions | 1,497.3 / 1,487.6 | 296,894 / 296,866 |
+| 16k nested slice-coverage functions | 14,806.0 / 14,777.7 | 143,036 / 142,762 |
+| 4,096 thin-reference wrappers | 479.3 / 493.6 | 76,846 / 76,798 |
+
+The thin-reference workload records a roughly 3% higher median at its largest
+scale. Its timing ranges overlap (464–500 ms baseline, 475–506 ms current), and
+the A/A calibration spans 479–511 ms. This run does not distinguish that cost
+from host variation; all observations are retained. The other largest existing
+workloads have median changes below 1%, with overlapping timing ranges and no
+material retained-memory increase.
+
+New dynamic-pattern medians at 128/512/2,048 wrapper pairs are
+75.3/303.9/1,270.7 ms and 13,536/38,840/143,742 KiB. Long-text medians at
+256/4,096/65,536 prefix bytes are 3.0/4.4/15.8 ms and 4,322/5,010/12,906 KiB.
+Slice-coverage, thin-reference, dynamic-pattern and long-text counters grow
+linearly across their scales. Long-text instruction count remains 59. These
+new-capability measurements establish scaling, not a speedup over the baseline.
+
+The immutable compiler is `obj/pa15-work/slicepatterns-candidate-v1`, SHA-256
+`e89959a537430345622fa3b4f4dc70443faa76592ad04c083b400b6705d5525f`.
+Source identities, course/corpus comparisons and performance receipts use
+`obj/pa15-work/slicepatterns-v1-*`; `verify_slicepatterns_v1_perf.py` checks every
+raw observation, source/binary/input hash, output comparison and scaling counter.
+Independent scale execution is recorded in `slicepatterns-scaling-qualification/`
+and `longtext-scaling-qualification/`. Maintainer checks are retained in
+`slicepatterns-full-tests2.log`, `slicepatterns-controls4.log` and
+`slicepatterns-quality4.log` in the same work directory.
+
+PA17 destruction remains incomplete. PA15–PA17 still need coherent handouts,
+required fixtures, manifests and independently reviewed text oracles before
+release. The current ownership view runs lifetime and loan checks but renders
+only move/initialization facts; the assignment contracts must expose the relevant
+proofs and distinguish PA15 lifetime contracts from PA16 loan checking. Main
+remains at the last assignment release.

@@ -64,7 +64,10 @@ pub enum Projection {
     Field(Selection),
     Index(u64),
     /// One-based distance from the end of a dynamically sized slice.
-    FromEnd(u64),
+    FromEnd {
+        offset: u64,
+        minimum: u64,
+    },
     Subarray {
         start: u64,
         end: u64,

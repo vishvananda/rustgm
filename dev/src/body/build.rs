@@ -4,6 +4,7 @@ mod conditions;
 mod decisions;
 mod guards;
 mod matches;
+mod pattern_tests;
 mod patterns;
 mod references;
 mod retries;
