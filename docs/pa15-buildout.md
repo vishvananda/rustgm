@@ -590,25 +590,26 @@ function. Independent scope-query APIs remain available for invariant tests.
 
 Validation at the development checkpoint:
 
-- All 424 maintainer tests pass before the final scratch-retention guard and
-  promoted-metadata negative control; the final focused run passes all 26 scope
+- All 424 maintainer tests pass on the final sources, including 26 focused scope
   and storage tests. Formatting, Clippy all/pedantic with warnings denied,
-  the 263-file audit and all 25 harness tests pass on the final sources.
+  the 263-file audit and all 25 harness tests pass.
 - A 1,238-input PA11–PA14 scan checks storage successfully for all 839 programs
   reaching BodyIR. The other 261 semantic and 138 body rejections are explicitly
-  classified; they are not passing storage checks.
-- The storage-v1 course report remains 2,561/2,622 exact, with all 61 differences
-  byte-identical to the prior checkpoint. No fixture, manifest or oracle changed.
+  classified; they are not passing storage checks. Final v2 results, including
+  work counts and all output streams, exactly match the v1 snapshot.
+- The final storage-v2 course report remains 2,561/2,622 exact, with all 61
+  differences byte-identical to the prior checkpoint. No fixture, manifest or
+  oracle changed.
   Native results remain PA11 194 checks/180 executions, PA13 538/364 with its 16
   documented runtime differences, PA14 12/12, and PA12's one previously reviewed
   lifetime-boundary expectation mismatch.
 - The first measured integration adds work: at 64k ordinary functions the
   baseline/current medians are 2,965/3,513 ms and 567,884/614,812 KiB. At 16k
   array-pattern functions they are 1,685/1,903 ms and 389,760/396,976 KiB.
-  This prompted the scratch-reuse change; its comparative measurements are
-  pending. The initial storage proof scales to 8,192 functions in 1,258 ms and
-  to 2,048 early-return temporaries in 45.6 ms. All 216 initial observations,
-  calibration, input/binary hashes and rendered/count equality were checked.
+  This prompted the scratch-reuse change. The initial storage proof scales to
+  8,192 functions in 1,258 ms and to 2,048 early-return temporaries in 45.6 ms.
+  All 216 initial observations, calibration, input/binary hashes and rendered/count
+  equality were checked.
 
 This is an **unreleased development checkpoint**, not a completed PA15–PA17
 release. The public assignment status remains planned, and the full course
@@ -616,3 +617,32 @@ report still fails on the 61 recorded differences. Do not regenerate references
 merely to make this branch green. Remaining work includes mutable borrows and
 coercion reborrows, reference-pattern places, NLL loan checks, reference lowering,
 Drop elaboration, assignment contracts and independent release fixtures.
+
+
+The scratch-reuse comparison retains another 216 verified raw observations.
+At 64k ordinary functions, v1/v2 medians are **3,169.8/2,971.8 ms** and
+615,058/611,536 KiB. At 16k array-pattern functions they are **1,974.7/1,927.9 ms**
+and 397,210/396,154 KiB. Storage proofs at 8,192 functions take
+1,287.5/1,258.4 ms. At 2,048 early-return temporaries, the medians are
+46.5/52.2 ms, with overlapping 41.8–53.7/42.1–54.3 ms ranges. These measurements
+support retaining scratch reuse but do not establish a precise overall speedup.
+All full renderings, count outputs, work counts, frozen input hashes and binaries
+were checked; no local build or test overlapped either timing series. The v2
+proof measurements reuse the independently rustc-checked v1 input bytes.
+
+Final source hashes and evidence use `obj/pa15-work/storage-v2-*`; verifier scripts
+are `verify_storage_v2_perf.py` and `verify_storage_v2_proofs.py`. The immutable
+compiler snapshot is `storage-candidate-v2`, SHA-256
+`7f372c3ccfe8c720d300e575b227cf6f274c6e465625259a8b27da0c4195ef88`.
+The independent storage probe SHA-256 is
+`1db38fbae84dfc6967d65f842826e5ffc9950384a0410c86c951ccca83d0fc57`.
+
+Implementation checkpoint `eb2b634` is published on `work/pa15-pa17`; `main`
+remains at the last released foundation. Further validated development checkpoints
+will be pushed to this branch while assignment publication remains pending.
+
+[GitHub run 38407785877](https://github.com/vishvananda/rustgm/actions/runs/38407785877)
+for `eb2b634` fails the course comparison on exactly the same 61 reviewed paths.
+The failed-run log was checked against the local review list. Later workflow
+steps did not run after that failure; the formatting, Clippy, architecture and
+harness results above are the completed local checks.
