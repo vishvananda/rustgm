@@ -146,6 +146,9 @@ pub struct Declarations {
     pub patterns: super::patterns::Patterns,
     pub enum_casts: std::collections::HashSet<crate::types::ItemId>,
     pub derives: std::collections::HashMap<crate::types::ItemId, crate::types::copy::Properties>,
+    pub equality_derives:
+        std::collections::HashMap<crate::types::ItemId, crate::types::equality::Properties>,
+    pub equality: crate::types::equality::Equality,
     pub copies: crate::types::copy::Copies,
     pub aggregates: crate::types::aggregate::Definitions,
     pub members: super::members::Members,
@@ -166,6 +169,8 @@ impl Declarations {
             patterns: super::patterns::Patterns::default(),
             enum_casts: std::collections::HashSet::new(),
             derives: std::collections::HashMap::new(),
+            equality_derives: std::collections::HashMap::new(),
+            equality: crate::types::equality::Equality::default(),
             copies: crate::types::copy::Copies::default(),
             aggregates: crate::types::aggregate::Definitions::default(),
             members: super::members::Members::default(),

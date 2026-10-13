@@ -1,8 +1,8 @@
 //! Translate shared constant values into selected patterns with use-site provenance.
-use super::{Declarations, Error, NodeKey, Report, Type, Value, products};
+use super::{Declarations, Error, NodeKey, Report, Type, Value, VariantId, products};
 use crate::{
     sema::{
-        members::Selection,
+        members::{FieldId, Selection},
         patterns::{Field, Fields, Interval, Kind, PatternId, Projection, RangeId, scalar::Domain},
     },
     types::TypeId,
@@ -34,7 +34,14 @@ pub(super) fn expand(
         products: HashMap::new(),
         remaining: 1_000_000,
     };
-    expansion.structural_type(ty).map_err(error)?;
+    let facts = &mut *expansion.facts;
+    let equality = facts
+        .equality
+        .demand(&facts.types, &facts.aggregates, &facts.equality_derives, ty)
+        .map_err(error)?;
+    if !equality.partial_eq {
+        return Err(error("constant pattern type must implement PartialEq"));
+    }
     if let Value::Product(product) = value {
         expansion.products.insert((product, ty), root);
     }
@@ -46,40 +53,6 @@ impl Expansion<'_> {
             .remaining
             .checked_sub(count)
             .ok_or("constant pattern expansion work budget exceeded")?;
-        Ok(())
-    }
-    fn structural_type(&mut self, root: TypeId) -> Result<(), &'static str> {
-        let mut work = vec![(root, false)];
-        while let Some((ty, finish)) = work.pop() {
-            self.charge(1)?;
-            if self.facts.constant_products.structural.contains(&ty) {
-                continue;
-            }
-            if finish {
-                self.facts.constant_products.structural.insert(ty);
-                continue;
-            }
-            work.push((ty, true));
-            match self.facts.types.kind(ty) {
-                Some(Type::Primitive(primitive)) if Domain::new(primitive).is_some() => {}
-                Some(Type::Tuple(fields)) => {
-                    work.extend(
-                        self.facts
-                            .types
-                            .list(fields)
-                            .ok_or("missing constant tuple types")?
-                            .iter()
-                            .map(|ty| (*ty, false)),
-                    );
-                }
-                Some(Type::Array { element, .. }) => work.push((element, false)),
-                _ => {
-                    return Err(
-                        "constant pattern type requires supported structural equality and PartialEq",
-                    );
-                }
-            }
-        }
         Ok(())
     }
     fn drain(&mut self) -> Result<(), &'static str> {
@@ -103,8 +76,20 @@ impl Expansion<'_> {
                     });
                     Kind::Range(range)
                 }
-                (Some(Type::Tuple(_) | Type::Array { .. }), Value::Product(product)) => {
-                    self.product(ty, product)?
+                (
+                    Some(Type::Tuple(_) | Type::Array { .. } | Type::Adt(_)),
+                    Value::Product(product),
+                ) => self.product(ty, product)?,
+                (Some(Type::Adt(_)), Value::Variant(variant)) => {
+                    if self.nominal(ty, variant)? != 0 {
+                        return Err("fieldless constant has constructor fields");
+                    }
+                    let start = u32::try_from(self.facts.patterns.fields.len())
+                        .map_err(|_| "too many constant pattern fields")?;
+                    Kind::Product {
+                        variant: Some(variant),
+                        fields: Fields { start, end: start },
+                    }
                 }
                 _ => return Err("constant pattern requires supported structural equality"),
             };
@@ -114,6 +99,7 @@ impl Expansion<'_> {
     }
     fn product(&mut self, ty: TypeId, product: products::Id) -> Result<Kind, &'static str> {
         let length = self.facts.constant_products.length(product)?;
+        let variant = self.facts.constant_products.variant(product)?;
         let expected = match self.facts.types.kind(ty) {
             Some(Type::Tuple(fields)) => self
                 .facts
@@ -122,6 +108,10 @@ impl Expansion<'_> {
                 .ok_or("missing constant tuple types")?
                 .len() as u64,
             Some(Type::Array { length, .. }) => length,
+            Some(Type::Adt(_)) => self.nominal(
+                ty,
+                variant.ok_or("constant product lacks a selected constructor")?,
+            )?,
             _ => return Err("missing constant product type"),
         };
         if length != expected {
@@ -134,7 +124,7 @@ impl Expansion<'_> {
             .map_err(|_| "too many constant pattern fields")?;
         let mark = self.work.len();
         for index in 0..length {
-            let (ty, selection) = child(self.facts, ty, index)?;
+            let (ty, selection) = child(self.facts, ty, variant, index)?;
             let value = self.facts.constant_products.get(product, index)?;
             let pattern = self.select(ty, value)?;
             self.facts
@@ -146,9 +136,32 @@ impl Expansion<'_> {
         let end = u32::try_from(self.facts.patterns.fields.len())
             .map_err(|_| "too many constant pattern fields")?;
         Ok(Kind::Product {
-            variant: None,
+            variant,
             fields: Fields { start, end },
         })
+    }
+    fn nominal(&self, ty: TypeId, variant: VariantId) -> Result<u64, &'static str> {
+        let Some(Type::Adt(item)) = self.facts.types.kind(ty) else {
+            return Err("missing nominal constant type");
+        };
+        let member = self
+            .facts
+            .members
+            .variants
+            .get(variant.0 as usize)
+            .ok_or("missing constant constructor")?;
+        if item != member.owner {
+            return Err("constant constructor differs from its type");
+        }
+        if !self
+            .facts
+            .equality_derives
+            .get(&item)
+            .is_some_and(|p| p.partial_eq)
+        {
+            return Err("nominal constant patterns require derived PartialEq");
+        }
+        Ok(u64::from(member.end - member.start))
     }
     fn select(&mut self, ty: TypeId, value: Value) -> Result<PatternId, &'static str> {
         if let Value::Product(product) = value
@@ -168,6 +181,7 @@ impl Expansion<'_> {
 fn child(
     facts: &Declarations,
     ty: TypeId,
+    variant: Option<VariantId>,
     index: u64,
 ) -> Result<(TypeId, Projection), &'static str> {
     match facts.types.kind(ty) {
@@ -183,6 +197,20 @@ fn child(
         }
         Some(Type::Array { element, length }) if index < length => {
             Ok((element, Projection::Index(index)))
+        }
+        Some(Type::Adt(_)) => {
+            let member = variant
+                .and_then(|id| facts.members.variants.get(id.0 as usize))
+                .ok_or("missing constant constructor")?;
+            let ordinal = u32::try_from(index).map_err(|_| "constant field index overflow")?;
+            if ordinal >= member.end - member.start {
+                return Err("constant field exceeds constructor arity");
+            }
+            let field = FieldId(member.start + ordinal);
+            Ok((
+                facts.members.fields[field.0 as usize].ty,
+                Projection::Field(Selection::Nominal(field)),
+            ))
         }
         _ => Err("missing constant product field type"),
     }

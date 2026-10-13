@@ -37,8 +37,9 @@ boolean, integer, character and floating-point constants work as patterns and
 range endpoints. Floating literals and ranges compose with owned products,
 arrays, constructors, guards and conditional bindings. Unit, tuple and array
 constants translate into ordinary product/scalar patterns and execute on owned
-inputs. Nominal structural constants and text/reference constants remain
-unfinished. Reference and dynamic-slice execution still require
+inputs. Struct and enum constants with derived `PartialEq` also translate and
+execute, including nested values, struct updates and field projections.
+Text/reference constants remain unfinished. Reference and dynamic-slice execution still require
 the later region and loan proofs.
 
 Named constants use resolved declaration identities and their canonical types;
@@ -57,9 +58,29 @@ limit, charging edges before allocation. This is separate from coverage's limit.
 Constant-backed ranges, irrefutability and match coverage finish after initializer
 typing, retaining each body's file and module context. The resulting intervals
 use the ordinary decision and ownership paths, including guard retries.
-A static cannot be named directly as a constant pattern. General CTFE, nominal
-structural constants, text/reference values and expression-position constant
-execution retain their explicit later-stage boundaries.
+Nominal values retain selected variant and field identities; translation does
+not resolve names or reparse constructors. Type-level equality obligations inspect
+all variant fields, while structural value checks inspect the active variant.
+The builtin `PartialEq`/`Eq` derive hooks check their field obligations; packed
+`PartialEq` additionally requires Copy fields. `Eq` requires `PartialEq` and
+rejects floating fields, including zero-length arrays of floats. These hooks do
+not implement general traits, equality operators on nominals, methods or
+procedural derive expansion; those remain PA19/later capabilities. Recursive
+reference obligations use a bounded iterative fixed point and cache complete
+positive and negative results. Constant calls validate their callee expression,
+and struct updates validate their base even if every field is overridden.
+
+A static cannot be named directly as a constant pattern. General CTFE,
+text/reference values and expression-position constant execution retain their
+explicit later-stage boundaries.
+
+There is a pinned-rustc discrepancy in borrowed constant matching. The Reference's
+`patterns.ident.binding.non-reference` rule permits automatic dereferencing for
+constants of non-reference types. RustGM follows that rule; rustc 1.98.0 requires
+an explicit reference pattern such as `&C`. Tests record six such differences
+(scalar, unit, tuple, array, struct and enum), their explicit-reference controls,
+and a bare constructor control. Borrowed pattern inspection is still separate
+from executable loan/region proofs; these are not same-source rustc parity claims.
 
 The current vocabulary is `selected-patterns 1`, the canonical type table,
 `root FILE:NODE pattern=ID`, and arena-ordered `pattern ID source=FILE:NODE

@@ -25,6 +25,7 @@ use crate::{
 pub(super) struct Attributes {
     pub repr: Repr,
     pub derives: Properties,
+    pub equality: crate::types::equality::Properties,
 }
 pub(super) fn analyze(
     report: &Report,
@@ -68,6 +69,7 @@ fn parse(report: &Report, key: NodeKey, index: usize) -> Result<Attributes, Erro
         hints: 0,
     };
     let mut derives = Properties::default();
+    let mut equality = crate::types::equality::Properties::default();
     for index in owner.attributes.clone() {
         let effect = &unit.configured.effects[index];
         let attribute = effect.attribute.attribute;
@@ -82,7 +84,14 @@ fn parse(report: &Report, key: NodeKey, index: usize) -> Result<Attributes, Erro
         };
         let range = parentheses(forest, group).map_err(error)?;
         if name == Some("derive") {
-            derive(forest, unit.source.text(), range, &mut derives).map_err(error)?;
+            derive(
+                forest,
+                unit.source.text(),
+                range,
+                &mut derives,
+                &mut equality,
+            )
+            .map_err(error)?;
         } else {
             parser
                 .parse(forest, unit.source.text(), range)
@@ -103,9 +112,17 @@ fn parse(report: &Report, key: NodeKey, index: usize) -> Result<Attributes, Erro
             "Copy requires a Clone implementation",
         ));
     }
+    if equality.eq && !equality.partial_eq {
+        return Err(Declarations::error(
+            report,
+            key,
+            "Eq requires a PartialEq implementation",
+        ));
+    }
     Ok(Attributes {
         repr: parser.repr,
         derives,
+        equality,
     })
 }
 fn derive(
@@ -113,12 +130,15 @@ fn derive(
     source: &str,
     range: TreeRange,
     selected: &mut Properties,
+    equality: &mut crate::types::equality::Properties,
 ) -> Result<(), &'static str> {
     let mut index = range.start;
     while index < range.end {
         let field = match forest.name(source, index) {
             Some("Copy") => &mut selected.copy,
             Some("Clone") => &mut selected.clone_,
+            Some("PartialEq") => &mut equality.partial_eq,
+            Some("Eq") => &mut equality.eq,
             _ => return Err("this derive requires the trait or procedural macro assignment"),
         };
         if std::mem::replace(field, true) {

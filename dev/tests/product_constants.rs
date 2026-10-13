@@ -345,7 +345,7 @@ fn product_patterns_keep_use_site_files_and_pending_borrows()
     let path = directory.join("borrowed.rs");
     std::fs::write(
         &path,
-        "const C:(u8,bool)=(7,true);fn f(x:&(u8,bool)){match x{C=>(),_=>()}}",
+        "const C:(u8,bool)=(7,true);fn f(x:&(u8,bool)){match x{&C=>(),_=>()}}",
     )?;
     let selected = frontend(&path, "--emit-patterns")?;
     assert!(selected.status.success() && selected.stderr.is_empty());

@@ -88,6 +88,25 @@ def product_constant_source(lines, mode):
     return "".join(declarations) + "fn main(){" + calls + "}\n"
 
 
+def nominal_constant_source(lines, mode):
+    declarations = []
+    if mode != "unique":
+        declarations.append("#[derive(PartialEq)]struct S{value:([u8;2],bool)}\nconst ROOT:S=S{value:([2,7],true)};\n")
+    if mode == "chain":
+        for i in range(lines):
+            value = f"N{i + 1}" if i + 1 < lines else "ROOT"
+            declarations.append(f"const N{i}:S={value};\n")
+    calls = []
+    for i in range(lines):
+        ty = f"S{i}" if mode == "unique" else "S"
+        name = "ROOT" if mode == "shared" else f"N{i}"
+        if mode == "unique":
+            declarations.append(f"#[derive(PartialEq)]struct {ty}{{value:([u8;2],bool)}}\nconst {name}:{ty}={ty}{{value:([2,7],true)}};\n")
+        declarations.append(f"fn measured_{i}(x:{ty})->u8{{match x{{v@{name}=>v.value.0[1],_=>0}}}}\n")
+        calls.append(f"measured_{i}({ty}{{value:([2,7],true)}});")
+    return "".join(declarations) + "fn main(){" + "".join(calls) + "}\n"
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--baseline", type=Path)
@@ -109,11 +128,12 @@ def main():
     workloads.add_argument("--float-pattern-input", choices=("scalar", "product", "retry"), help="exercise floating ranges, composite coverage or guard retries at 1000/4000/16000 procedures")
     workloads.add_argument("--slice-pattern-input", choices=("scalar", "nested", "sparse"), help="exercise dynamic slice coverage or sparse wide-pattern aliases")
     workloads.add_argument("--product-constant-input", choices=("shared", "unique", "chain"), help="exercise shared composite values and constant-pattern translation")
+    workloads.add_argument("--nominal-constant-input", choices=("shared", "unique", "chain"), help="exercise derived equality and structural nominal constant patterns")
     parser.add_argument("--stage", choices=("tokens", "literals", "token-trees", "ast", "crate-ast", "names", "expanded", "expanded-crate", "types", "patterns", "layouts", "body-ir", "ownership", "lowir"), default="tokens")
     args = parser.parse_args()
     if args.slice_pattern_input and args.stage != "patterns":
         parser.error("slice workloads require --stage patterns until reference execution has loan proofs")
-    if (args.aggregate_input or args.discriminant_input or args.product_input or args.array_pattern_input or args.scalar_match_input or args.constructor_match_input or args.conditional_pattern_input or args.storage_width_input or args.constant_pattern_input or args.float_pattern_input or args.product_constant_input) and args.stage != "lowir":
+    if (args.aggregate_input or args.discriminant_input or args.product_input or args.array_pattern_input or args.scalar_match_input or args.constructor_match_input or args.conditional_pattern_input or args.storage_width_input or args.constant_pattern_input or args.float_pattern_input or args.product_constant_input or args.nominal_constant_input) and args.stage != "lowir":
         parser.error("aggregate, discriminant and owned-pattern workloads require --stage lowir")
     if args.pattern_input and args.stage != "names":
         parser.error("pattern identity workloads require --stage names")
@@ -150,10 +170,11 @@ def main():
                "float_pattern_input": args.float_pattern_input,
                "slice_pattern_input": args.slice_pattern_input,
                "product_constant_input": args.product_constant_input,
+               "nominal_constant_input": args.nominal_constant_input,
                "binary_sha256": {name: hashlib.sha256(p.read_bytes()).hexdigest() for name, p in binaries.items()},
                "samples": [], "full_output_sha256": {}}
     scales = (4000, 16000, 64000) if args.stage in ("token-trees", "ast", "crate-ast", "names", "expanded", "expanded-crate", "types", "body-ir", "ownership", "lowir") else (16000, 64000, 256000)
-    if args.aggregate_input or args.discriminant_input or args.pattern_input or args.product_input or args.array_pattern_input or args.borrowed_pattern_input or args.scalar_match_input or args.constructor_pattern_input or args.constructor_match_input or args.conditional_pattern_input or args.guard_input or args.constant_pattern_input or args.float_pattern_input or args.product_constant_input or args.stage == "layouts":
+    if args.aggregate_input or args.discriminant_input or args.pattern_input or args.product_input or args.array_pattern_input or args.borrowed_pattern_input or args.scalar_match_input or args.constructor_pattern_input or args.constructor_match_input or args.conditional_pattern_input or args.guard_input or args.constant_pattern_input or args.float_pattern_input or args.product_constant_input or args.nominal_constant_input or args.stage == "layouts":
         scales = (1000, 4000, 16000)
     if args.storage_width_input:
         scales = (128, 512, 2048)
@@ -162,7 +183,9 @@ def main():
     line = {"tokens": LINE, "literals": LITERAL_LINE, "token-trees": TREE_LINE, "ast": AST_LINE, "crate-ast": CRATE_LINE, "names": b"", "expanded": b"", "expanded-crate": b"", "types": b"", "patterns": b"", "layouts": b"", "body-ir": b"", "ownership": b"", "lowir": b""}[args.stage]
     for lines in scales:
         source = directory / f"input-{lines}.rs"
-        if args.product_constant_input:
+        if args.nominal_constant_input:
+            source.write_text(nominal_constant_source(lines, args.nominal_constant_input))
+        elif args.product_constant_input:
             source.write_text(product_constant_source(lines, args.product_constant_input))
         elif args.slice_pattern_input:
             source.write_text(slice_pattern_source(lines, args.slice_pattern_input))

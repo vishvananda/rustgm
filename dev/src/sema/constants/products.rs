@@ -1,4 +1,4 @@
-//! Demanded tuple/array values share flat storage; repeats retain one element.
+//! Demanded product values share flat storage; repeats retain one element.
 use super::{Declarations, Error, Kind, NodeKey, Operation, Queries, Query, Type, Value};
 use crate::{resolve::expansion::Report, sema::members::Selection, syntax::ast::List};
 
@@ -6,14 +6,20 @@ use crate::{resolve::expansion::Report, sema::members::Selection, syntax::ast::L
 pub(in crate::sema) struct Id(u32);
 #[derive(Clone, Copy)]
 enum Contents {
-    Fields { start: u32, end: u32 },
-    Repeat { value: Value, length: u64 },
+    Fields {
+        start: u32,
+        end: u32,
+        variant: Option<super::VariantId>,
+    },
+    Repeat {
+        value: Value,
+        length: u64,
+    },
 }
 #[derive(Default)]
 pub(in crate::sema) struct Products {
     nodes: Vec<Contents>,
     fields: Vec<Value>,
-    pub(super) structural: std::collections::HashSet<crate::types::TypeId>,
 }
 impl Products {
     fn insert(&mut self, contents: Contents) -> Result<Value, &'static str> {
@@ -21,14 +27,22 @@ impl Products {
         self.nodes.push(contents);
         Ok(Value::Product(id))
     }
-    fn fields(&mut self, fields: &[Value]) -> Result<Value, &'static str> {
+    pub(super) fn fields(
+        &mut self,
+        fields: &[Value],
+        variant: Option<super::VariantId>,
+    ) -> Result<Value, &'static str> {
         let start = u32::try_from(self.fields.len()).map_err(|_| "too many constant fields")?;
         let end = u32::try_from(fields.len())
             .ok()
             .and_then(|n| start.checked_add(n))
             .ok_or("too many constant fields")?;
         self.fields.extend_from_slice(fields);
-        self.insert(Contents::Fields { start, end })
+        self.insert(Contents::Fields {
+            start,
+            end,
+            variant,
+        })
     }
     pub(super) fn length(&self, id: Id) -> Result<u64, &'static str> {
         match self
@@ -36,7 +50,7 @@ impl Products {
             .get(id.0 as usize)
             .ok_or("missing constant product")?
         {
-            Contents::Fields { start, end } => Ok(u64::from(end - start)),
+            Contents::Fields { start, end, .. } => Ok(u64::from(end - start)),
             Contents::Repeat { length, .. } => Ok(*length),
         }
     }
@@ -46,7 +60,7 @@ impl Products {
             .get(id.0 as usize)
             .ok_or("missing constant product")?
         {
-            Contents::Fields { start, end } if index < u64::from(end - start) => {
+            Contents::Fields { start, end, .. } if index < u64::from(end - start) => {
                 let index = usize::try_from(u64::from(start) + index)
                     .map_err(|_| "constant field index overflow")?;
                 self.fields
@@ -56,6 +70,16 @@ impl Products {
             }
             Contents::Repeat { value, length } if index < length => Ok(value),
             _ => Err("constant index is out of bounds"),
+        }
+    }
+    pub(super) fn variant(&self, id: Id) -> Result<Option<super::VariantId>, &'static str> {
+        match self
+            .nodes
+            .get(id.0 as usize)
+            .ok_or("missing constant product")?
+        {
+            Contents::Fields { variant, .. } => Ok(*variant),
+            Contents::Repeat { .. } => Ok(None),
         }
     }
 }
@@ -147,6 +171,20 @@ impl Queries<'_> {
                     value: child(value),
                     index: u64::from(index),
                 }),
+                (
+                    Kind::Field { value, .. },
+                    Some(Operation::Field {
+                        field: Selection::Nominal(field),
+                    }),
+                ) => {
+                    let index = self.typing.facts.members.ordinal(field).ok_or_else(|| {
+                        self.error(Query::Node(key), "missing constant field ordinal")
+                    })?;
+                    Some(Expression::Field {
+                        value: child(value),
+                        index: u64::from(index),
+                    })
+                }
                 (Kind::Index { value, index }, Some(Operation::Index { .. })) => {
                     Some(Expression::Index {
                         value: child(value),
@@ -176,7 +214,7 @@ impl Queries<'_> {
                 self.typing
                     .facts
                     .constant_products
-                    .fields(&values)
+                    .fields(&values, None)
                     .map_err(|e| self.error(query, e))
             }
             Expression::Repeat { value, length } => {

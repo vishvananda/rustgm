@@ -1708,3 +1708,152 @@ The isolated checkout holds `product-perf-receipts.json`,
 `obj/pa13-work/`. The three qualified existing-workload runs remain in the
 original checkout; absolute receipt paths identify each location. The clean
 new-workload runs use the same binary bytes and inputs in the isolated checkout.
+
+## Nominal constant patterns and derived equality
+
+Struct and enum constants now enter the same typed query and selected-pattern
+pipeline as tuple/array constants. Flat product storage retains a selected
+variant ID and declaration-ordered values. Record construction consumes typed
+field selections; struct updates fill only missing fields from the shared base.
+Field projections use retained nominal ordinals. Forward dependencies, nested
+values, lazily selected branches and empty constructors reuse the existing query
+engine. No constructor names or source fragments are reparsed.
+
+Constructor calls also evaluate their callee expression for constant eligibility.
+The previous fieldless-enum fast path could skip a callee block containing a
+non-constant call. All calls now schedule the callee; a constructor identity is
+a typed constant value distinct from a constructed instance. Struct updates
+likewise check their base even when every field is explicitly supplied or the
+struct has no fields. Negative controls cover both arities and an enum-to-integer
+constant, plus zero-field and completely overridden updates.
+
+The builtin derive hooks now recognize `PartialEq` and `Eq`. These selected
+capabilities check every field of every variant; `Eq` additionally excludes
+floating fields and requires `PartialEq`. Packed equality derives require Copy
+fields, including a packed alignment that happens to fit the particular field.
+This is a closed-profile derive capability, not general trait/operator dispatch,
+manual implementations, methods or procedural derive expansion. Those remain
+later assignment boundaries.
+
+Equality and structural-value eligibility are distinct. An inactive enum field
+may contain a function pointer because it implements PartialEq; a non-equality
+field invalidates the derive even when inactive. Actual translated values inspect
+only the active variant and reject non-structural leaves such as NaN. Empty
+arrays still check the element type's PartialEq capability, but have no actual
+leaves: `[fn(); 0]` and a zero-length float repeat containing NaN can match.
+Nominal translation emits ordinary product patterns with variant and field IDs,
+so existing coverage, ownership, delayed captures and guard retries handle them.
+
+The new equality query uses a flat graph and reverse dependency edges. A greatest
+fixed point propagates missing PartialEq/Eq capabilities through recursive
+reference components before publishing any result. Positive and negative results
+are both cached. Per-query work counts collection and propagation, bounded at
+1,000,000 operations. Direct tests exercise mutually recursive failure propagation
+in either demand order, distinctions among pointer/float/array capabilities,
+20,000 nested types without recursion, and repeated queries with no additional
+solver work. Ordinary node facts remain unchanged.
+
+There are 34 asserting nominal programs and 28 independently declared negative
+programs, plus external-module, recursive-derive, resource and borrowed controls.
+Pinned rustc checks the supported programs and executes every asserting case.
+The invalid cases also require normal diagnostic exit 1, atomic output and
+matching count/full diagnostics. The old derived-nominal rejection was removed
+from the later-capability test and moved into the supported coverage. The
+operator test still requires the explicit scalar-only operator boundary.
+
+Borrow tests exposed a separate pinned-rustc discrepancy in an existing rule.
+The vendored Reference's `patterns.ident.binding.non-reference` and
+`patterns.ident.binding.auto-deref` rules include constants of non-reference
+types among patterns that automatically dereference their input. RustGM retains
+that behavior. Pinned rustc instead rejects bare named scalar, unit, tuple,
+array, struct and enum constants against borrowed inputs (E0308). All six
+explicit `&C` controls pass both compilers, as do implicit/explicit bare unit
+constructor controls. These 14 inspection checks retain the six acceptance
+differences explicitly; they do not claim same-source equivalence. The earlier
+product borrow test now uses the explicit form. Executing borrowed patterns
+still requires the later loan/region proofs.
+
+The frozen candidate is `obj/pa13-work/nominal-constant-candidate`, SHA-256
+`d0a2340bdc200125d3b31a065a766d10631b93b424de0f955e3d3b7f84ac5c9c`.
+Both debug and release pass 327 Rust tests. All 1,695 active assignment cases,
+Clippy all/pedantic, rustfmt, the 207-file audit, 24 harness checks,
+38-assignment placement, 24 upstream fixtures, 126 Reference files, backend
+qualification and the complete independent rustc course checks pass. Explicit
+reference regeneration changes twelve compiler-source receipts only; committed
+oracle stdout, stderr and exit-status bytes remain identical.
+
+Native qualification passes 38 new checks: 34 nominal programs, one cross-file
+package and three small asserting performance inputs. It also passes all 334
+previous PA13 native checks, retaining the four constructed-count guard oracles
+and eight signed-zero Reference/rustc pairs. PA11 passes 194 independent checks
+and 180 native comparisons; PA12 passes 97 checks and 48 native comparisons.
+The built release binary and frozen candidate have identical hashes.
+
+Evidence is summarized in `obj/pa13-work/nominal-validation-summary.json`.
+The six native receipts under that directory's parent are:
+
+- `nominal-patterns-qualified-1791861514054679288/evidence.json`: 38 new checks.
+- `nominal-products-qualified-1791861519561879173/evidence.json`: 29 earlier checks.
+- `nominal-constants-qualified-1791861523555731892/evidence.json`: 31 earlier checks.
+- `nominal-previous-native-1791861527811963605/evidence.json`: 150 earlier checks.
+- `nominal-guards-qualified-1791861548726774322/evidence.json`: 61 earlier checks.
+- `nominal-floats-qualified-1791861556782953344/evidence.json`: 63 earlier checks.
+
+The final validation logs are `nominal-final-{debug,release,lint,refs,report,
+rustc-native}.log`, `nominal-{audit,audit-tests,harness}.log` and
+`nominal-{values,products,constants,previous,guards,floats}-native.log`.
+
+PA13 remains planned: text/reference constant values and the final assignment
+contract/fixtures remain unfinished. PA14 and PA15 remain part of the active goal.
+This checkpoint is developed in the writable temporary checkout while the home
+checkout and network publication remain unavailable under the current session
+permissions; validation does not imply a public push or hosted CI result.
+
+Performance validation retains 378 observations from seven sequential workloads.
+Every workload snapshots its binaries and inputs, checks full rendered and count
+output equality, warms both snapshots, runs four A/A calibration samples, and
+retains three ABBA blocks at each of three sizes. There were no concurrent builds
+or test runs during measurement. `nominal-perf-receipts.json` records run
+intervals; `verify_nominal_perf.py` verifies all raw observations, hashes, phase
+counts and equality in `nominal-perf-verified.json`.
+
+The four existing workloads compare the product baseline
+`3c039049558a8ebb8c3f9837321051067c5c94e5cead02146a69552b080198d2`
+with the nominal candidate, pinned to CPU 10:
+
+| Existing workload | Run | Largest functions | Baseline/candidate median ms | Baseline/candidate median KiB |
+| --- | --- | ---: | ---: | ---: |
+| ordinary | 1791861631992134416 | 64,000 | 6133.56 / 6152.53 | 714140 / 714116 |
+| scalar-constants | 1791861762085392566 | 16,000 | 1124.91 / 1126.78 | 142090 / 142080 |
+| product-shared | 1791861792054810731 | 16,000 | 1997.58 / 1954.50 | 240392 / 240428 |
+| product-chain | 1791861850907062199 | 16,000 | 1780.45 / 1746.55 | 283192 / 283090 |
+
+The paired medians and memory remain comparable; these timings establish no
+speedup. Ordinary largest-scale A/A spans 3.99–5.96 seconds, while paired samples
+span 4.26–6.31 seconds across the two binaries. Shared-product largest-scale
+A/A spans 1.50–2.59 seconds. This substantial host variation limits any precise
+regression claim; every observation is retained rather than discarding slower
+samples.
+
+New nominal workloads use candidate A/A scaling with
+`scripts/measure_lexer.py --stage lowir --nominal-constant-input MODE`:
+
+| Nominal workload | Run | Functions | Candidate median ms | Candidate median KiB |
+| --- | --- | ---: | ---: | ---: |
+| nominal-shared | 1791861899880877575 | 1,000 | 99.72 | 17706 |
+| nominal-shared | 1791861899880877575 | 4,000 | 640.63 | 62122 |
+| nominal-shared | 1791861899880877575 | 16,000 | 1529.04 | 240052 |
+| nominal-unique | 1791861945249716017 | 1,000 | 136.12 | 24630 |
+| nominal-unique | 1791861945249716017 | 4,000 | 564.24 | 89498 |
+| nominal-unique | 1791861945249716017 | 16,000 | 2378.39 | 347456 |
+| nominal-chain | 1791862008431764013 | 1,000 | 102.12 | 19850 |
+| nominal-chain | 1791862008431764013 | 4,000 | 402.29 | 69740 |
+| nominal-chain | 1791862008431764013 | 16,000 | 1615.93 | 268802 |
+
+Shared uses one type/constant, unique uses independently derived nominal types,
+and chain uses forward constant dependencies. Memory grows roughly with input
+size. Unique/chain elapsed times also scale roughly with input size; the shared
+4,000-function case shows a calibration-to-paired shift from 374–421 ms to
+376–646 ms despite identical A/A binaries. No universal complexity or throughput
+bound is inferred from these wall times. The iterative solver's direct work-count
+tests provide separate evidence for deep graphs and cached repeated demands.

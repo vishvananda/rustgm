@@ -78,6 +78,11 @@ impl Checker<'_> {
             if attributes.derives != crate::types::copy::Properties::default() {
                 self.facts.derives.insert(item, attributes.derives);
             }
+            if attributes.equality != crate::types::equality::Properties::default() {
+                self.facts
+                    .equality_derives
+                    .insert(item, attributes.equality);
+            }
             let repr = attributes.repr;
             let (kind, groups) = self.groups(key)?;
             let tag = repr.tag.unwrap_or(Primitive::Isize);
@@ -135,6 +140,7 @@ impl Checker<'_> {
                 .map_err(|e| self.error(key, e))?;
         }
         self.copy_obligations()?;
+        self.equality_obligations()?;
         self.constructors()
     }
     pub(super) fn complete_layouts(&mut self) -> Result<(), Error> {
@@ -190,6 +196,65 @@ impl Checker<'_> {
                 return Err(
                     self.error(key, "derived Clone requires every field to implement Clone")
                 );
+            }
+        }
+        Ok(())
+    }
+    fn equality_obligations(&mut self) -> Result<(), Error> {
+        for definition in &self.facts.aggregates {
+            let Some(&selected) = self.facts.equality_derives.get(&definition.item) else {
+                continue;
+            };
+            let key = self.report.resolution.definitions[definition.item.0 as usize]
+                .node
+                .ok_or_else(|| Error::at(FileId(0), 0, "missing equality derive syntax"))?;
+            let ty = self.facts.definitions[definition.item.0 as usize]
+                .ok_or_else(|| self.error(key, "missing equality derive type"))?;
+            let properties = self
+                .facts
+                .equality
+                .demand(
+                    &self.facts.types,
+                    &self.facts.aggregates,
+                    &self.facts.equality_derives,
+                    ty,
+                )
+                .map_err(|e| self.error(key, e))?;
+            if selected.partial_eq && !properties.partial_eq {
+                return Err(self.error(
+                    key,
+                    "derived PartialEq requires every field to implement PartialEq",
+                ));
+            }
+            if selected.eq && !properties.eq {
+                return Err(self.error(key, "derived Eq requires every field to implement Eq"));
+            }
+            if selected.partial_eq && definition.repr.packed.is_some() {
+                for variant in self.facts.aggregates.variants(definition) {
+                    for &field in self
+                        .facts
+                        .types
+                        .list(variant.fields)
+                        .ok_or_else(|| self.error(key, "missing packed equality fields"))?
+                    {
+                        let copy = self
+                            .facts
+                            .copies
+                            .demand(
+                                &self.facts.types,
+                                &self.facts.aggregates,
+                                &self.facts.derives,
+                                field,
+                            )
+                            .map_err(|e| self.error(key, e))?;
+                        if !copy.copy {
+                            return Err(self.error(
+                                key,
+                                "derived PartialEq on a packed struct requires Copy fields",
+                            ));
+                        }
+                    }
+                }
             }
         }
         Ok(())

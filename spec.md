@@ -85,10 +85,20 @@ element and their length; field/index queries select from that representation
 without materializing the repeated array. Translate constants to the existing
 selected product/scalar patterns with use-site provenance. Share repeated
 product subtrees within a use; retain each projection's distinct place identity
-for decisions and execution. Check type-level structural equality even for
+for decisions and execution. Check type-level PartialEq obligations even for
 empty products, then validate actual scalar leaves (including NaN rejection).
 Reserve expansion work before allocating siblings so pending work is bounded.
 Neither value storage nor pattern translation grows dense ordinary node facts.
+
+Nominal constant products retain selected constructor and field identities from
+typing; updates fill only missing fields from the shared base value. Validate
+constructor callees and update bases even for zero-sized values or completely
+overridden fields. Equality obligations are a separate cached type query from
+actual structural-value eligibility. Check every enum field for the former and
+only the active variant's values for the latter. Derived reference cycles use
+an iterative greatest fixed point with reverse dependency edges: publish all
+positive and negative results only after propagation completes. Count actual
+nodes, dependencies and propagation work under an explicit query budget.
 
 Floating pattern domains use constant-time bit/rank conversions. Numeric ranks
 collapse signed zero, while a separate unordered class keeps NaN visible to

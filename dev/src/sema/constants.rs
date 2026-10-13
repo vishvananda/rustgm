@@ -1,5 +1,6 @@
 //! Shared typed constant queries solve discriminants and pattern values iteratively.
 mod arithmetic;
+mod constructors;
 mod patterns;
 pub(super) mod products;
 use super::{
@@ -30,13 +31,16 @@ pub(super) struct Discriminant {
 pub(super) enum Value {
     Scalar(Scalar),
     Variant(VariantId),
+    Constructor(VariantId),
     Product(products::Id),
 }
 impl Value {
     fn scalar(self) -> Result<Scalar, &'static str> {
         match self {
             Self::Scalar(value) => Ok(value),
-            Self::Variant(_) | Self::Product(_) => Err("constant requires a scalar value"),
+            Self::Variant(_) | Self::Constructor(_) | Self::Product(_) => {
+                Err("constant requires a scalar value")
+            }
         }
     }
     fn integer(self) -> Result<u128, &'static str> {
@@ -67,6 +71,7 @@ enum State {
 enum Expression {
     Value(Value),
     Product(products::Expression),
+    Constructor(constructors::Expression),
     Forward(NodeKey),
     Constant(usize),
     Unary {
@@ -281,21 +286,6 @@ impl Queries<'_> {
             .and_then(|i| self.specs.get(i))
             .ok_or_else(|| self.error(Query::Variant(variant), "missing discriminant query"))
     }
-    fn known_variant(&self, variant: VariantId) -> bool {
-        if !self.specs.is_empty() {
-            return self
-                .variants
-                .get(variant.0 as usize)
-                .is_some_and(Option::is_some);
-        }
-        self.typing
-            .facts
-            .members
-            .variants
-            .get(variant.0 as usize)
-            .and_then(|v| self.typing.facts.aggregates.get(v.owner))
-            .is_some_and(|d| d.kind == crate::types::aggregate::Kind::Enum)
-    }
     fn variant_tag(&self, variant: VariantId) -> Result<Primitive, Error> {
         if !self.specs.is_empty() {
             return Ok(self.spec(variant)?.tag);
@@ -438,6 +428,12 @@ impl Queries<'_> {
                         self.work.push(Work::Enter(Query::Node(child)));
                     });
                 }
+                Expression::Constructor(expression) => {
+                    self.work.push(Work::Finish(key));
+                    expression.dependencies(self.report, key, |child| {
+                        self.work.push(Work::Enter(Query::Node(child)));
+                    });
+                }
                 Expression::Forward(child) => self.forward(query, Query::Node(child)),
                 Expression::Constant(index) => self.forward(query, Query::Constant(index)),
                 Expression::Unary { operand, .. } | Expression::Cast { operand, .. } => {
@@ -558,6 +554,11 @@ impl Queries<'_> {
             self.states.insert(query, State::Ready(value));
             return Ok(());
         }
+        if let Expression::Constructor(expression) = self.expression(key)? {
+            let value = self.constructor_value(key, expression)?;
+            self.states.insert(query, State::Ready(value));
+            return Ok(());
+        }
         let value = match self.expression(key)? {
             Expression::Unary {
                 op,
@@ -633,6 +634,9 @@ impl Queries<'_> {
                 Expression::Product(expression) => {
                     expression.dependencies(self.report, key, |child| self.scan.push(child));
                 }
+                Expression::Constructor(expression) => {
+                    expression.dependencies(self.report, key, |child| self.scan.push(child));
+                }
             }
             self.expressions.insert(key, expression);
         }
@@ -658,39 +662,32 @@ impl Queries<'_> {
         }
         if let Some(Operation::Construct { variant }) = facts.operation {
             let member = self.typing.facts.members.variants[variant.0 as usize];
-            if member.start == member.end && self.known_variant(variant) {
+            if member.start == member.end
+                && !matches!(
+                    Declarations::kind(self.report, key),
+                    Kind::Struct { base: Some(_), .. }
+                )
+            {
                 return Ok(Expression::Value(Value::Variant(variant)));
             }
         }
-        if let Kind::Call { callee, arguments } = Declarations::kind(self.report, key)
-            && self
-                .report
-                .package
-                .unit(key.file)
-                .configured
-                .ast
-                .list(arguments)
-                .is_empty()
-            && let Some(Type::FunctionItem { item, .. }) = self
-                .typing
-                .facts
-                .node(child(callee))
-                .and_then(|f| f.ty)
-                .and_then(|ty| self.typing.facts.types.kind(ty))
-            && let Some(variant) = self.typing.facts.members.constructors.get(&DefId(item.0))
-            && self.known_variant(*variant)
-            && self
-                .typing
-                .facts
-                .members
-                .fields(*variant)
-                .is_some_and(<[_]>::is_empty)
+        if matches!(
+            Declarations::kind(self.report, key),
+            Kind::Name(_) | Kind::Path { .. }
+        ) && let Some(Type::FunctionItem { item, .. }) =
+            facts.ty.and_then(|ty| self.typing.facts.types.kind(ty))
+            && facts.reference == Some(Target::Definition(DefId(item.0)))
+            && let Some(&variant) = self.typing.facts.members.constructors.get(&DefId(item.0))
         {
-            return Ok(Expression::Value(Value::Variant(*variant)));
+            return Ok(Expression::Value(Value::Constructor(variant)));
+        }
+        if let Some(expression) = self.constructor_expression(key)? {
+            return Ok(Expression::Constructor(expression));
         }
         Ok(
             match (Declarations::kind(self.report, key), facts.operation) {
-                (Kind::Group(value) | Kind::Attributed { value, .. }, _) => {
+                (Kind::Group(value) | Kind::Attributed { value, .. }, _)
+                | (Kind::FieldInit { value, .. }, Some(Operation::FieldInit { .. })) => {
                     Expression::Forward(child(value))
                 }
                 (
