@@ -196,31 +196,21 @@ fn alignment_checks_unused_borrows_and_resets_at_dereferences()
                 .arg(mode)
                 .arg(&path)
                 .output()?;
-            let lowering_pending = mode == "--emit-lowir"
-                && accepted
-                && !matches!(name, "packed-owned" | "unreachable-copy");
             assert_eq!(
                 candidate.status.code(),
-                Some(i32::from(!accepted || lowering_pending)),
+                Some(i32::from(!accepted)),
                 "{name} {mode}: {}",
                 String::from_utf8_lossy(&candidate.stderr)
             );
-            if !accepted {
+            if accepted {
+                assert!(candidate.stderr.is_empty());
+            } else {
                 assert!(candidate.stdout.is_empty());
                 assert!(
                     String::from_utf8_lossy(&candidate.stderr).contains("unaligned packed field"),
                     "{name} {mode}: {}",
                     String::from_utf8_lossy(&candidate.stderr)
                 );
-            } else if lowering_pending {
-                assert!(
-                    String::from_utf8_lossy(&candidate.stderr)
-                        .contains("completed representation checks"),
-                    "{name}: {}",
-                    String::from_utf8_lossy(&candidate.stderr)
-                );
-            } else {
-                assert!(candidate.stderr.is_empty());
             }
         }
     }

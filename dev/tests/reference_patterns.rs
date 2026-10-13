@@ -354,7 +354,8 @@ fn cyclic_static_pattern_queries_diagnose_instead_of_recursing()
     Ok(())
 }
 #[test]
-fn reference_operations_keep_executable_proofs_pending() -> Result<(), Box<dyn std::error::Error>> {
+fn thin_references_pass_proofs_while_dynamic_slice_execution_remains_pending()
+-> Result<(), Box<dyn std::error::Error>> {
     let directory = folder()?;
     for (index, source) in [
         "fn f(x:u8){let _=&x;}",
@@ -375,14 +376,20 @@ fn reference_operations_keep_executable_proofs_pending() -> Result<(), Box<dyn s
             String::from_utf8_lossy(&selected.stderr)
         );
         let output = frontend(&path, "--emit-lowir")?;
+        if index != 3 {
+            assert!(
+                output.status.success(),
+                "{}",
+                String::from_utf8_lossy(&output.stderr)
+            );
+            assert!(output.stderr.is_empty());
+            assert!(!output.stdout.is_empty());
+            continue;
+        }
         assert_eq!(output.status.code(), Some(1));
         assert!(output.stdout.is_empty());
         let text = String::from_utf8_lossy(&output.stderr);
-        let boundary = if index == 3 {
-            "reference expression execution requires region and loan proofs"
-        } else {
-            "reference lowering requires completed representation checks"
-        };
+        let boundary = "reference expression execution requires region and loan proofs";
         assert!(text.contains(boundary), "{text}");
     }
     Ok(())

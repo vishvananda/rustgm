@@ -448,7 +448,8 @@ fn conditional_body_storage_grows_linearly() -> Result<(), Box<dyn std::error::E
 }
 
 #[test]
-fn borrowed_conditions_remain_obligations() -> Result<(), Box<dyn std::error::Error>> {
+fn borrowed_conditions_require_and_pass_executable_proofs() -> Result<(), Box<dyn std::error::Error>>
+{
     let dir = folder("conditional-borrows")?;
     for (index, source) in [
         "fn f(x:&(u8,u8)){if let (a,b)=x{let _=a;let _=b;}}",
@@ -474,9 +475,14 @@ fn borrowed_conditions_remain_obligations() -> Result<(), Box<dyn std::error::Er
             .arg("--emit-lowir")
             .arg(&file)
             .output()?;
-        assert_eq!(executable.status.code(), Some(1));
-        assert!(executable.stdout.is_empty());
-        assert!(String::from_utf8_lossy(&executable.stderr).contains("reference lowering"));
+        assert_eq!(
+            executable.status.code(),
+            Some(0),
+            "{}",
+            String::from_utf8_lossy(&executable.stderr)
+        );
+        assert!(!executable.stdout.is_empty());
+        assert!(executable.stderr.is_empty());
         let independent = Command::new("rustc")
             .args(["--edition=2024", "--crate-type=lib", "--emit=metadata"])
             .arg(&file)

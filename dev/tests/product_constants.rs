@@ -297,7 +297,7 @@ fn product_values_share_repeats_and_bound_pattern_expansion()
 }
 
 #[test]
-fn product_patterns_keep_use_site_files_and_pending_borrows()
+fn product_patterns_keep_use_site_files_and_checked_borrows()
 -> Result<(), Box<dyn std::error::Error>> {
     let directory = folder()?.join("package");
     std::fs::create_dir_all(&directory)?;
@@ -350,8 +350,6 @@ fn product_patterns_keep_use_site_files_and_pending_borrows()
     let selected = frontend(&path, "--emit-patterns")?;
     assert!(selected.status.success() && selected.stderr.is_empty());
     let executable = frontend(&path, "--emit-lowir")?;
-    assert_eq!(executable.status.code(), Some(1));
-    assert!(executable.stdout.is_empty());
-    assert!(String::from_utf8_lossy(&executable.stderr).contains("reference lowering"));
+    assert!(executable.status.success() && executable.stderr.is_empty());
     Ok(())
 }

@@ -1219,3 +1219,95 @@ cycles still need evaluation support distinct from value-read cycles. The
 source reference gate remains until thin/fat pointer operations and temporary
 address lifetimes are implemented; dynamic slices/text and PA17 destruction
 also remain. PA15–PA17 are still planned assignments.
+
+
+## Executing checked thin references
+
+LowIR construction now accepts sized reference values after the existing region,
+storage and loan checks. Reference parameters/results use pointer values, proved
+lifetime binders erase, and representation-preserving lifetime conversions reuse
+the checked value. Aggregates may contain thin references. Unsized pointer
+metadata and unsafe calls retain explicit boundaries.
+
+Lowering collects address-observable places and their ancestors in a sparse set.
+Borrowed scalar temporaries get one slot initialized at their defining evaluation;
+object temporaries reuse their snapshot storage. Reads reload materialized
+storage when a mutable reference can change it. Promoted roots use the persistent
+data from the previous checkpoint while preserving source effects, overflow
+checks and bounds checks. Borrowed zero-sized locals, temporaries and function
+items receive nonempty aligned backing; borrowed zero-sized projections preserve
+canonical parent offsets. Their value loads and native parameters remain erased.
+
+Pattern selections retain compact ordinary offset recipes and share flat,
+persistent dereference prefixes. Address calculation and pointer loads occur in
+the actual use block, including guard retries. Dereferencing restores the
+referent's canonical alignment independently of packed pointer-field storage.
+No rendered syntax, reparsing or external frontend implements these operations.
+
+Validation for this checkpoint:
+
+- All 459 maintainer tests pass. Forty-one independent source vectors compile
+  and execute with pinned rustc and CPPGM: reference returns, mutable field
+  returns, reborrows, last uses, reference aggregates, promoted storage and
+  effects, mutable temporaries, constant/static projections, packed references,
+  zero-sized values, higher-ranked calls, borrowed constant patterns, conditional
+  patterns, array rest captures and guard retries. Two cases independently
+  require runtime panic for overflow and bounds checks, using each runtime's
+  explicit termination contract. Repeated LowIR emission is byte-identical.
+- Former maintainer capability rejections become positive checks only where
+  thin-reference execution is implemented. An erased reference-containing array
+  is accepted, while a zero-repeat initializer borrowing a local as `'static`
+  still fails; pinned rustc independently confirms that negative case.
+- Formatting, Clippy all/pedantic with warnings denied, the 287-file audit,
+  all 25 harness tests and the backend smoke test pass. No lint allows were
+  introduced. The release build succeeds.
+- All 1,230 PA11–PA14 LowIR inputs preserve previously successful output bytes.
+  Six former reference-boundary rejections now succeed; all six sources also
+  compile and execute independently with pinned rustc and CPPGM. Some of these
+  old boundary inputs have empty entry functions, so the dedicated native
+  vectors above exercise the corresponding operations directly.
+- The course report is 2,552/2,622 exact with 70 differences. Relative to the
+  previous checkpoint, five already-differing reference boundary cases now
+  accept, and PA12's nested-reference boundary is one additional difference.
+  No fixture, manifest or generated oracle was changed or blessed. This remains
+  an unreleased working branch with a failing course report.
+- A larger independently executed program calls 4,096 separate wrappers that
+  borrow two tuples, mutate their fields, return a mutable field reference and
+  read the tuple after the reference's last use. Both native implementations
+  compute the declared sum 40,960. Its LowIR has 4,101 defined functions,
+  176,175 instructions and 28,679 slots.
+
+Measurements retain 216 verified observations across existing ownership, guard
+retry and packed-storage workloads plus the new reference-execution workload.
+Existing workloads compare immutable baseline/current binaries with A/A
+calibration and three ABBA blocks per scale; reference execution uses two copies
+of the candidate because the baseline rejects it. Full and count outputs agree,
+and packed-storage/reference counts grow linearly. No RustGM build or test
+runs concurrently with timing.
+
+At 64k ownership functions, baseline/current medians are 5,808.9/5,797.7 ms
+and 949,572/949,932 KiB. At 16k guard functions they are 1,537.8/1,558.6 ms
+and 296,796/296,516 KiB. The initial 4,096-object packed-storage comparison
+measures 244.8/265.8 ms with equal 61,202 KiB median memory. Because that timing
+difference warranted investigation, a focused follow-up retains another 42
+observations with nine ABBA blocks on the identical frozen input and binaries.
+Its medians are 294.2/291.0 ms, and the median paired candidate/baseline ratio
+is 0.990. The initial slowdown is not reproduced; host timing varies enough
+that no precise speed claim is supported. Both series remain in the evidence.
+
+New reference-execution medians at 256/1,024/4,096 wrappers are
+32.7/106.6/439.9 ms and 9,238/22,606/77,512 KiB. The largest frozen input is
+also the independently executed scaling qualification above.
+`verify_thinrefs_v1_perf.py` verifies the main series, source/binary/input hashes,
+rendering/count equality and linear counts. The focused storage series retains
+its own verified receipt under `thinrefs-v1-storage-followup/`.
+
+The immutable compiler is `obj/pa15-work/thinrefs-candidate-v1`, SHA-256
+`31aca89b4825c51e1010ebd55939f80e0ecb07e83fc3f9cc6ef1ddba32137b3d`.
+Final source hashes, corpus comparisons, independent acceptance checks and
+scaling qualification use `obj/pa15-work/thinrefs-v1-*`; the complete maintainer
+and quality logs are `thinrefs-full-tests5.log` and `thinrefs-quality5.log`.
+
+Static address cycles still need symbolic address evaluation distinct from
+constant value-read cycles. Fat references, unsizing, dynamic slices/text and
+PA17 destruction remain incomplete. PA15–PA17 are still planned assignments.

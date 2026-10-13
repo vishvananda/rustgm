@@ -353,7 +353,7 @@ fn invalid_nominal_patterns_and_initializers_agree_with_rustc()
 }
 
 #[test]
-fn nominal_patterns_keep_use_sites_and_pending_borrows() -> Result<(), Box<dyn std::error::Error>> {
+fn nominal_patterns_keep_use_sites_and_checked_borrows() -> Result<(), Box<dyn std::error::Error>> {
     let directory = folder()?.join("package");
     std::fs::create_dir_all(&directory)?;
     std::fs::write(
@@ -407,9 +407,7 @@ fn nominal_patterns_keep_use_sites_and_pending_borrows() -> Result<(), Box<dyn s
     let selected = frontend(&path, "--emit-patterns")?;
     assert!(selected.status.success() && selected.stderr.is_empty());
     let executable = frontend(&path, "--emit-lowir")?;
-    assert_eq!(executable.status.code(), Some(1));
-    assert!(executable.stdout.is_empty());
-    assert!(String::from_utf8_lossy(&executable.stderr).contains("reference lowering"));
+    assert!(executable.status.success() && executable.stderr.is_empty());
     let rustc = Command::new("rustc")
         .args([
             "--edition=2024",

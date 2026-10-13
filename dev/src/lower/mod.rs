@@ -29,32 +29,5 @@ pub fn build(
 ) -> Result<program::Program, Error> {
     let program = bodies.program();
     alignment::check(facts, program)?;
-    let pending = program
-        .outlives
-        .first()
-        .map(|r| r.source)
-        .or_else(|| program.coercions.first().map(|c| c.source))
-        .or_else(|| program.region_equalities.first().map(|r| r.body))
-        .or_else(|| program.body_regions.first().map(|r| r.source))
-        .or_else(|| {
-            program
-                .bodies
-                .iter()
-                .find(|body| {
-                    body.values
-                        .iter()
-                        .any(|v| matches!(v.kind, crate::body::ir::Rvalue::Borrow { .. }))
-                        || body.projections.iter().any(|p| {
-                            matches!(p.kind, crate::body::ir::ProjectionKind::Dereference { .. })
-                        })
-                })
-                .map(|body| body.source)
-        });
-    if let Some(node) = pending {
-        return Err(Error {
-            node,
-            message: "reference lowering requires completed representation checks",
-        });
-    }
     context::build(facts, program, entry)
 }

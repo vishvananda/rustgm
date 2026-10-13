@@ -260,10 +260,6 @@ fn later_constant_capabilities_remain_explicit_boundaries() -> Result<(), Box<dy
     let folder = folder("constant-boundaries")?;
     for (index, (source, boundary)) in [
         (
-            "const C:&'static u8=&7;fn main(){match &7u8{C=>(),_=>()}}",
-            "reference lowering requires completed representation checks",
-        ),
-        (
             "const C:&'static str=\"a\";fn main(){match \"a\"{C=>(),_=>()}}",
             "text value execution requires reference lowering and loan proofs",
         ),

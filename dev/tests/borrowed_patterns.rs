@@ -251,7 +251,7 @@ fn check_execution_boundary(
             name,
             "slice-rest" | "slice-rest-mut" | "slice-wild-rest" | "slice-explicit-ref"
         );
-        let supported = mode != "--emit-lowir" && !dynamic;
+        let supported = !dynamic;
         if supported {
             assert_eq!(
                 gate.status.code(),
@@ -265,11 +265,7 @@ fn check_execution_boundary(
         }
         assert_eq!(gate.status.code(), Some(1), "{name}: {mode}");
         assert!(gate.stdout.is_empty());
-        let boundary = if dynamic {
-            "reference pattern execution requires region and loan proofs"
-        } else {
-            "reference lowering requires completed representation checks"
-        };
+        let boundary = "reference pattern execution requires region and loan proofs";
         assert!(
             String::from_utf8_lossy(&gate.stderr).contains(boundary),
             "{name}: {}",

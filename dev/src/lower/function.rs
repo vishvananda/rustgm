@@ -1,5 +1,6 @@
 //! Function-local slots, snapshots and control flow consume the PA10 typed body.
 mod aggregate;
+mod references;
 mod selections;
 use super::{
     Error,
@@ -56,9 +57,13 @@ struct Lower<'a, 'b> {
     body: &'b ir::Body,
     builder: Builder,
     locals: Vec<Option<Address>>,
+    addresses: references::Storage,
     projections: Vec<Projected>,
     selections: std::collections::HashMap<ir::ProjectionId, selections::Recipe>,
-    selection_work: Vec<(ir::ProjectionId, u64)>,
+    selection_dereferences: std::collections::HashMap<ir::ProjectionId, std::num::NonZeroU32>,
+    selection_work: Vec<(ir::ProjectionId, selections::Step)>,
+    dereferences: Vec<selections::Dereference>,
+    address_work: Vec<usize>,
     values: Vec<Option<Selected>>,
     blocks: Vec<BlockId>,
     panic: Option<BlockId>,
@@ -71,9 +76,13 @@ pub(super) fn lower<'a>(context: &mut Context<'a>, body: &'a ir::Body) -> Result
         body,
         builder: Builder::default(),
         locals: Vec::new(),
+        addresses: references::Storage::default(),
         projections: vec![Projected::Pending; body.projections.len()],
         selections: std::collections::HashMap::new(),
+        selection_dereferences: std::collections::HashMap::new(),
         selection_work: Vec::new(),
+        dereferences: Vec::new(),
+        address_work: Vec::new(),
         values: vec![None; body.values.len()],
         blocks: Vec::new(),
         panic: None,
@@ -95,27 +104,7 @@ pub(super) fn lower<'a>(context: &mut Context<'a>, body: &'a ir::Body) -> Result
 impl Lower<'_, '_> {
     fn run(&mut self) -> Result<(), &'static str> {
         let (order, seen, checked_edges) = order(self.body)?;
-        let live = if checked_edges {
-            let mut live = vec![false; self.body.locals.len()];
-            for &index in &order {
-                for statement in self.body.statements(&self.body.blocks[index]) {
-                    if let Action::StorageLive(id) = statement.action {
-                        live[id.0 as usize] = true;
-                    }
-                }
-            }
-            Some(live)
-        } else {
-            None
-        };
-        for (index, local) in self.body.locals.iter().enumerate() {
-            let address = if live.as_ref().is_none_or(|live| live[index]) {
-                self.allocate_local(local.ty, local.kind)?
-            } else {
-                None
-            };
-            self.locals.push(address);
-        }
+        self.initialize_storage(&order, checked_edges)?;
         for _ in &self.body.blocks {
             self.blocks.push(self.builder.block()?);
         }
@@ -138,6 +127,7 @@ impl Lower<'_, '_> {
                     | Action::StorageEnd { .. } => {}
                     Action::Evaluate(value) => {
                         let result = self.evaluate(value)?;
+                        self.materialize(value, result)?;
                         self.values[value.0 as usize] = Some(result);
                     }
                     Action::Store { place, value } => {
@@ -193,6 +183,36 @@ impl Lower<'_, '_> {
         }
         Ok(())
     }
+    fn initialize_storage(
+        &mut self,
+        order: &[usize],
+        checked_edges: bool,
+    ) -> Result<(), &'static str> {
+        self.addresses = references::Storage::collect(self.body)?;
+        let live = if checked_edges {
+            let mut live = vec![false; self.body.locals.len()];
+            for &index in order {
+                for statement in self.body.statements(&self.body.blocks[index]) {
+                    if let Action::StorageLive(id) = statement.action {
+                        live[id.0 as usize] = true;
+                    }
+                }
+            }
+            Some(live)
+        } else {
+            None
+        };
+        for (index, local) in self.body.locals.iter().enumerate() {
+            let address = if live.as_ref().is_none_or(|live| live[index]) {
+                let id = ir::LocalId(u32::try_from(index).map_err(|_| "too many body locals")?);
+                self.allocate_local(local.ty, local.kind, self.addresses.needs(Place::Local(id)))?
+            } else {
+                None
+            };
+            self.locals.push(address);
+        }
+        Ok(())
+    }
     fn parameters(&mut self) -> Result<(), &'static str> {
         let mut parameter = u32::from(matches!(
             self.context.representation(self.body.result)?,
@@ -203,6 +223,7 @@ impl Lower<'_, '_> {
                 && let Some(address) = self.locals[index]
             {
                 let value = match self.context.representation(local.ty)? {
+                    Representation::Scalar(Type::Void) => continue,
                     Representation::Scalar(ty) => Selected::Runtime(Value {
                         ty,
                         operand: Operand::Parameter(parameter),
@@ -236,6 +257,9 @@ impl Lower<'_, '_> {
                         operand: Operand::Global(global),
                         align: self.context.layout(ty)?.align,
                     }));
+                }
+                if let Some(&address) = self.addresses.temporaries.get(&id) {
+                    return Ok(Some(address));
                 }
                 match selected {
                     Selected::Object(address) => Ok(Some(address)),
@@ -378,8 +402,11 @@ impl Lower<'_, '_> {
         let representation = self.context.representation(value.ty)?;
         let ty = representation.result();
         let runtime = match value.kind {
-            Rvalue::Borrow { .. } => {
-                return Err("reference lowering requires completed region and loan proofs");
+            Rvalue::Borrow { place, .. } => {
+                let address = self
+                    .place(place)?
+                    .ok_or("borrowed place lacks stable storage")?;
+                self.pointer(address)?
             }
             Rvalue::Unit | Rvalue::Validate(_) => return Ok(Selected::Unit),
             Rvalue::Aggregate { variant, fields } => {
@@ -402,6 +429,7 @@ impl Lower<'_, '_> {
                     );
                 }
                 if let Place::Temporary(id) = place
+                    && !self.addresses.temporaries.contains_key(&id)
                     && let Selected::Runtime(snapshot) = self.value(id)?
                 {
                     // Scalar temporaries are immutable evaluated snapshots; their
@@ -437,7 +465,7 @@ impl Lower<'_, '_> {
                 kind: Cast::FunctionPointer,
                 operand,
             } => return self.reify(operand),
-            Rvalue::Constrain(_) => return Err("pending region equality requires region checking"),
+            Rvalue::Constrain(operand) => return self.constrain(operand, representation),
             Rvalue::Unary {
                 operator,
                 operand,

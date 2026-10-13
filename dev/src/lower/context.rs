@@ -157,7 +157,7 @@ impl<'a> Context<'a> {
             return Ok(*id);
         }
         let Some(Kind::Function {
-            bound_regions,
+            bound_regions: _,
             parameters,
             result,
             unsafe_,
@@ -165,8 +165,8 @@ impl<'a> Context<'a> {
         else {
             return Err("missing selected function signature");
         };
-        if bound_regions != 0 || unsafe_ {
-            return Err("lifetime-polymorphic and unsafe calls require later checking");
+        if unsafe_ {
+            return Err("unsafe calls require later checking");
         }
         let mut native = Vec::new();
         let result_type = self.representation(result)?;
@@ -206,9 +206,6 @@ impl<'a> Context<'a> {
         ) && ty != TypeId::UNIT
         {
             let layout = self.layout(ty)?;
-            if layout.contains_reference {
-                return Err("reference lowering requires ownership and region checking");
-            }
             return Ok(if layout.size == 0 {
                 Representation::Scalar(Type::Void)
             } else {
@@ -307,8 +304,11 @@ pub(super) fn representation(types: &Store, ty: TypeId) -> Result<Type, &'static
             Primitive::F64 => Type::F64,
             Primitive::Str => return Err("unsized values require later lowering"),
         },
-        Kind::Reference { .. } => {
-            return Err("reference lowering requires ownership and region checking");
+        Kind::Reference { referent, .. } => {
+            if types.is_sized(referent) != Some(true) {
+                return Err("unsized pointer metadata requires later layout support");
+            }
+            Type::Ptr
         }
         _ => return Err("aggregate values require layout lowering"),
     })

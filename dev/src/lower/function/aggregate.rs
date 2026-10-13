@@ -85,11 +85,17 @@ impl Lower<'_, '_> {
         &mut self,
         ty: TypeId,
         kind: crate::body::ir::LocalKind,
+        addressed: bool,
     ) -> Result<Option<Address>, &'static str> {
         if !matches!(kind, crate::body::ir::LocalKind::Guard(_)) {
-            return self.allocate(ty);
+            let address = self.allocate(ty)?;
+            return if address.is_none() && addressed {
+                self.zero_backing(ty).map(Some)
+            } else {
+                Ok(address)
+            };
         }
-        if self.context.layout(ty)?.size == 0 {
+        if self.context.layout(ty)?.size == 0 && !addressed {
             return Ok(None);
         }
         Ok(Some(Address {
@@ -210,16 +216,18 @@ impl Lower<'_, '_> {
         let base_type = self.place_type(projection.base)?;
         let layout = self.context.layout(base_type)?;
         let leaf = self.context.layout(projection.ty)?;
+        let retained = leaf.size != 0 || self.addresses.needs(Place::Projection(id));
         let address = match projection.kind {
-            ProjectionKind::Dereference { .. } => {
-                return Err("reference lowering requires completed region and loan proofs");
-            }
+            ProjectionKind::Dereference { .. } => Some(self.dereference(
+                base.ok_or("reference place has no pointer storage")?,
+                projection.ty,
+            )?),
             ProjectionKind::Field(field) => {
                 let offset = self.selected_field_offset(&layout, field)?;
-                if leaf.size == 0 {
-                    None
-                } else {
+                if retained {
                     Some(self.offset(base.ok_or("nonzero field has no base storage")?, offset)?)
+                } else {
+                    None
                 }
             }
             ProjectionKind::Index { index, length } => {
@@ -242,22 +250,22 @@ impl Lower<'_, '_> {
                 if actual != length {
                     return Err("indexed bound differs from canonical layout");
                 }
-                if leaf.size == 0 {
-                    None
-                } else {
+                if retained {
                     Some(self.indexed(
                         base.ok_or("nonzero array has no storage")?,
                         index,
                         stride,
                         leaf.align,
                     )?)
+                } else {
+                    None
                 }
             }
             ProjectionKind::ConstantIndex(index) => {
-                self.pattern_offset(base, &layout, &leaf, index, None)?
+                self.pattern_offset(base, &layout, &leaf, index, None, retained)?
             }
             ProjectionKind::Subarray { start, end } => {
-                self.pattern_offset(base, &layout, &leaf, start, Some(end))?
+                self.pattern_offset(base, &layout, &leaf, start, Some(end), retained)?
             }
         };
         self.projections[id.0 as usize] = Projected::Ready(address);
@@ -296,9 +304,10 @@ impl Lower<'_, '_> {
         leaf: &Layout,
         start: u64,
         end: Option<u64>,
+        retained: bool,
     ) -> Result<Option<Address>, &'static str> {
         let offset = Self::pattern_byte_offset(layout, leaf, start, end)?;
-        if leaf.size == 0 {
+        if !retained {
             return Ok(None);
         }
         self.offset(base.ok_or("pattern array has no storage")?, offset)

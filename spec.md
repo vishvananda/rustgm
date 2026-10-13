@@ -167,6 +167,18 @@ not an expanded Cartesian product. Preserve written alternative/field order and
 end attempt-local storage on failure. Static path offsets may be cached as typed
 recipes, but addresses must be formed where they dominate their actual uses.
 
+After region and loan proofs, sized references lower to thin pointers and their
+lifetime binders have no runtime representation. Collect address-observable
+places sparsely. Materialize borrowed scalar temporaries once at their defining
+evaluation, preserve object snapshots, and use persistent backing for promoted
+roots without deleting their original effects or runtime checks. Borrowed
+zero-sized values require aligned, nonnull backing; their addressable fields
+retain canonical offsets even though value loads and parameters remain erased.
+Reference pattern paths share persistent dereference prefixes alongside ordinary
+offset recipes. Load each pointer in the current use block, restoring referent
+alignment after dereference. Representation-preserving lifetime conversions may
+reuse values; thin-to-fat coercions must construct metadata explicitly.
+
 Borrow checking runs before references and moves lose their source semantics
 in LowIR. Region/dataflow analysis uses typed worklists and bounded lattices,
 with per-body storage and complete dependency edges. Pattern usefulness and

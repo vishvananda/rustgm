@@ -179,7 +179,7 @@ fn aggregate_erasure_cannot_bypass_move_or_reference_checks()
         "struct N; fn f()->[N;2]{[return f();2]}fn main(){}",
         "struct N;fn main(){let a=N;let _b=a;let _c=a;}",
         "struct N;fn main(){let a=[N];let _b=a[0];}",
-        "struct S(&'static u8);fn main(){let a:[S;0]=[];let _=a;}",
+        "struct S(&'static u8);fn main(){let x=7;let a:[S;0]=[S(&x);0];let _=a;}",
         "#[repr(u8)]enum E{A{}=1,B}fn main(){let _=E::B as u8;}",
         "enum E{A(u8),B}fn main(){let _=E::B as u8;}",
         "enum E{A}fn main(){let _=E::A as bool;}",
