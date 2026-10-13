@@ -188,6 +188,15 @@ builds native code. No oracle object or reference function may replace a failed
 Rust compilation. General assembly and target intrinsics require an explicit
 capability review before PA37; the initial backend is not assumed complete.
 
+Persistent data consumes completed constant values through a read-only typed
+interface. Reserve global identity before following address dependencies;
+statics retain their own storage and projections retain their original root.
+Serialize canonical field offsets and exact scalar bits with bounded flat work.
+Memoize zero-filled products and keep repeated zero data compressed. By-value
+constant aggregates still produce independent runtime snapshots. When the
+external backend cannot relocate an unaligned pointer field, retain its packed
+offset and install the address before Rust entry code; never silently realign it.
+
 ## Ownership, allocation and complexity
 
 Use owned arenas/slabs/vectors and compact IDs instead of Rc/Arc pointer graphs,

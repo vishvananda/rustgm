@@ -279,10 +279,6 @@ fn later_constant_capabilities_remain_explicit_boundaries() -> Result<(), Box<dy
             "const N:isize=7;enum E{A=match 7isize{N=>1,_=>2}}fn main(){}",
             "general constant evaluation",
         ),
-        (
-            "const N:u8=7;fn main(){match 7u8{N=>{let _=N;},_=>()}}",
-            "constant values require the constant evaluator",
-        ),
     ]
     .into_iter()
     .enumerate()

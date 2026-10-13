@@ -159,7 +159,7 @@ pub struct Float<'source> {
     pub suffix: Option<FloatType>,
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum FloatBits {
     F32(u32),
     F64(u64),

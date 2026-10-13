@@ -195,7 +195,13 @@ impl Lower<'_, '_> {
             Place::Local(id) => Ok(self.body.locals[id.0 as usize].ty),
             Place::Temporary(id) => Ok(self.body.values[id.0 as usize].ty),
             Place::Projection(id) => Ok(self.body.projections[id.0 as usize].ty),
-            Place::Static(_) => Err("static places require allocation lowering"),
+            Place::Static(id) => self
+                .context
+                .definitions
+                .get(id.0 as usize)
+                .copied()
+                .flatten()
+                .ok_or("missing static place type"),
         }
     }
     pub(super) fn project(&mut self, id: ProjectionId) -> Result<(), &'static str> {

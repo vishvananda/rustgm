@@ -1132,3 +1132,90 @@ This checkpoint supplies typed storage and read-only semantic access. Rust
 reference execution is still gated until lowering connects checked places to
 persistent data. Thin/fat reference lowering, dynamic slices/text and PA17
 destruction remain; PA15–PA17 are still planned assignments.
+
+## Lowering completed constants into persistent storage
+
+The typed body now collects named constant/static demands in one shared query
+session before LowIR construction. Static initializer evaluation has its own
+entry point: it does not pretend to read or move the static, and promotion's
+existing prohibition on reading static storage remains intact. Lowering receives
+only an immutable constant reader. Its mutable layout cache is restored to the
+semantic result on both successful construction and errors.
+
+Lowering reserves each static, named constant object, promoted root and constant
+location before queuing its initializer. Function addresses can demand further
+functions while draining this queue. Constant projection ancestry is resolved
+iteratively through canonical array strides and selected variant/field offsets.
+Reborrowing an existing shared constant reference retains its location identity.
+
+The data serializer uses a bounded flat worklist and exact integer bit patterns.
+It writes canonical padding and packed scalar bytes, retains compressed zero
+runs, and memoizes zero-filled products without expanding repeated arrays.
+It charges pending sibling work before expansion, including large nonzero
+repeats. Zero-sized persistent objects get aligned, nonempty physical backing.
+Named aggregate constants produce fresh runtime snapshots, so mutating one use
+cannot change another use or write the read-only backing.
+
+The pinned backend supports naturally aligned address relocations. For packed
+pointer fields, lowering instead writes zero bytes at their exact offsets and
+queues typed stores in the entry adapter. Only affected backing becomes writable;
+all fixups execute before the Rust entry call. This covers unaligned function
+pointers today and provides the same mechanism for reference data. It does not
+change CPPGM or reinterpret a packed field at a different offset.
+
+Validation for this checkpoint:
+
+- All 458 maintainer tests pass. Fourteen independent source vectors execute
+  successfully with pinned rustc and the CPPGM backend, covering named scalars,
+  static subobjects, independent constant snapshots, negative and payload enum
+  data, packed integers and function pointers, repeated packed pointers,
+  floating-point values, over-alignment and huge zero-sized arrays. A nested
+  million-element zero repeat emits one 16 MB zero run without enumerating its
+  elements. A nonzero repeat exceeding the work budget fails before expansion
+  and produces no partial output.
+- The former maintainer rejection of an ordinary named constant inside a match
+  is now an independently executed positive case. General constant evaluation
+  and reference-execution boundaries retain their rejection tests.
+- Formatting, Clippy all/pedantic with warnings denied, the 285-file audit,
+  all 25 harness tests and `make test-backend` pass. No lint allowance was added.
+- All 1,230 PA11–PA14 LowIR inputs preserve previously successful output bytes.
+  Exactly two former rejections now succeed: PA11's constant/static boundary
+  fixtures. Both were independently compiled and executed with pinned rustc
+  and CPPGM. The course report is therefore 2,553/2,622 exact, with the previous
+  67 reviewed differences unchanged and these two additional contract changes.
+  No assignment fixture, manifest or oracle was changed or blessed. The working
+  branch remains unreleased, and the course report still fails.
+- A larger independently executed source contains 4,096 packed static arrays
+  and 8,192 pointer fixups. Both native implementations compute the declared
+  result. Its LowIR contains 4,096 globals and 16,384 initializer items.
+- Measurements retain 270 verified raw observations: four existing workloads
+  use A/A calibration followed by paired ABBA blocks, and the new packed-storage
+  workload uses A/A scaling because the old compiler rejects that capability.
+  All binaries and inputs are frozen, and complete rendering/count outputs agree
+  between the compared runs. At 64k owned-path functions, baseline/current
+  medians are 5,901.6/5,659.6 ms and 949,230/949,870 KiB; at 16k guard-retry
+  functions they are 1,555.1/1,583.5 ms and 296,820/297,086 KiB. Constant-place
+  workloads at 1k/4k/16k functions measure 47.6/179.8/777.7 ms before and
+  47.5/163.5/784.8 ms after; largest-scale memory is 132,660/134,626 KiB.
+  Reference chains at depths 128/512/2,048 measure 4.6/10.4/33.5 ms before and
+  4.7/10.3/35.1 ms after. Timing ranges overlap; no precise speed claim is made.
+  New packed-storage medians at 256/1,024/4,096 arrays are 18.8/63.2/288.0 ms
+  and 7,810/18,558/61,194 KiB. Inspection counts grow linearly for both constant
+  workloads and the new data workload. No local RustGM build or test overlapped
+  the timing series.
+
+The immutable compiler is `obj/pa15-work/persistent-candidate-v1`, SHA-256
+`962faf4aa4da0f8bda7ea276783cb8500d690bc48dda74355efce464bbe34738`.
+Course/native/performance receipts and final source hashes use
+`obj/pa15-work/persistent-v1-*`; `verify_persistent_v1_perf.py` verifies the
+complete raw series, immutable identities, output equality and count scaling.
+Maintainer checks are recorded in `storage-full-tests2.log`, `storage-native3.log`
+and `storage-final-quality3.log` in the same directory.
+
+This materializes the existing constant evaluator's supported subset to supply
+the storage needed for PA15 references; it does not implement PA25's general
+const-function, const-generic or memory-evaluation contract. Static address
+cycles still need evaluation support distinct from value-read cycles. The
+source reference gate remains until thin/fat pointer operations and temporary
+address lifetimes are implemented; dynamic slices/text and PA17 destruction
+also remain. PA15–PA17 are still planned assignments.

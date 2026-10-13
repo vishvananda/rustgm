@@ -30,7 +30,7 @@ pub(super) struct Discriminant {
     pub tag: Primitive,
     pub previous: Option<VariantId>,
 }
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub(super) enum Value {
     Scalar(Scalar),
     Function(DefId),

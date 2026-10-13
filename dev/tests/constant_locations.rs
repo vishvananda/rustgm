@@ -14,6 +14,7 @@ static A:S=S{p:(3,[7,11])};static B:S=S{p:(3,[7,11])};
 const RA:&u16=&A.p.1[1];const RB:&u16=&B.p.1[1];const RE:&u16=&*RA;
 const RP:&(u8,[u16;2])=&A.p;const RV:&u16=&RP.1[0];
 const LOCAL:&u16=&(3u8,[7u16,11]).1[1];
+const BASE:&u16=&11;const AGAIN:&u16=&*BASE;
 const REPEAT:[u16;1000000]=[11;1000000];const TEXT:&str=\"hello\";const BYTES:&[u8;3]=b\"abc\";";
 fn definition(report: &Report, name: &str) -> Result<DefId, &'static str> {
     report
@@ -89,13 +90,20 @@ fn constant_places_retain_static_identity_and_nested_subobject_paths()
     {
         let mut evaluator = Evaluator::new(&report, &mut facts);
         for name in [
-            "RA", "RB", "RE", "RP", "RV", "LOCAL", "REPEAT", "TEXT", "BYTES",
+            "RA", "RB", "RE", "RP", "RV", "LOCAL", "BASE", "AGAIN", "REPEAT", "TEXT", "BYTES",
         ] {
             let id = definition(&report, name)?;
             completed.push((name, evaluator.definition(id)?));
         }
     }
     let reader = Reader::new(&facts);
+    let base = reader
+        .definition(definition(&report, "BASE")?)
+        .ok_or("base")?;
+    let again = reader
+        .definition(definition(&report, "AGAIN")?)
+        .ok_or("again")?;
+    assert_eq!(reference(reader, base)?, reference(reader, again)?);
     for (name, root, path) in [
         ("RA", Some(a), vec![0, 1, 1]),
         ("RB", Some(b), vec![0, 1, 1]),

@@ -134,8 +134,10 @@ impl Queries<'_> {
                 self.check_reference_alignment(key, place)?;
                 if matches!(place.access, Access::Owned) {
                     place.access = Access::Shared;
+                    (Query::Node(key), self.insert_place(key, place)?)
+                } else {
+                    (Query::Node(key), value)
                 }
-                (Query::Node(key), self.insert_place(key, place)?)
             }
             Work::Dereference { key, operand } => {
                 let value = self.value(Query::Node(operand))?;

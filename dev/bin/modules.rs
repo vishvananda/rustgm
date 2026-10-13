@@ -249,6 +249,8 @@ fn semantic(
             .map_err(|e| e.to_string());
         }
         if matches!(mode, Mode::Lowir) {
+            rustgm::body::constants::analyze(&report, &mut facts, &program)
+                .map_err(|e| e.to_string())?;
             let lowir = lower(&mut report, &mut facts, &program)?;
             drop(program);
             drop(facts);

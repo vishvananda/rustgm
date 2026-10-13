@@ -11,7 +11,7 @@ use crate::{
 };
 
 /// A value in the declaration result's shared constant arenas.
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Constant(Value);
 
 /// Opaque location identity in the declaration result's flat reference arena.
@@ -208,6 +208,15 @@ impl<'a> Evaluator<'a> {
     /// # Errors
     /// Preserves required-constant diagnostics; runtime faults are not ignored here.
     pub fn definition(&mut self, id: DefId) -> Result<Constant, Error> {
+        self.named(id, false)
+    }
+    /// Demand a static's initializer without reading or moving its storage.
+    /// # Errors
+    /// Preserves constant-evaluation errors and rejects non-static definitions.
+    pub fn initializer(&mut self, id: DefId) -> Result<Constant, Error> {
+        self.named(id, true)
+    }
+    fn named(&mut self, id: DefId, static_: bool) -> Result<Constant, Error> {
         let index = self
             .queries
             .constants
@@ -221,14 +230,24 @@ impl<'a> Evaluator<'a> {
                     "missing constant definition",
                 )
             })?;
-        let query = Query::Constant(index);
-        if !matches!(
+        let is_static = matches!(
             self.queries.typing.facts.initializers[index].kind,
-            InitializerKind::Const
-        ) {
-            return Err(self
-                .queries
-                .error(query, "promotion cannot read static storage"));
+            InitializerKind::Static { .. }
+        );
+        let query = if static_ {
+            Query::Static(index)
+        } else {
+            Query::Constant(index)
+        };
+        if is_static != static_ {
+            return Err(self.queries.error(
+                query,
+                if static_ {
+                    "initializer demand requires a static"
+                } else {
+                    "promotion cannot read static storage"
+                },
+            ));
         }
         self.queries.work.push(Work::Enter(query));
         self.queries.drain()?;

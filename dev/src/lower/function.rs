@@ -17,7 +17,10 @@ use crate::{
         vocabulary::Type,
     },
     resolve::{model::DefId, unit::NodeKey},
-    sema::model::{Cast, Scalar},
+    sema::{
+        model::{Cast, Scalar},
+        values::View,
+    },
     syntax::ast::NodeId,
     types::{Kind, Primitive, TypeId},
 };
@@ -217,19 +220,37 @@ impl Lower<'_, '_> {
     }
     fn place(&mut self, place: Place) -> Result<Option<Address>, &'static str> {
         match place {
-            Place::Temporary(id) => match self.value(id)? {
-                Selected::Object(address) => Ok(Some(address)),
-                Selected::Unit | Selected::Item(_) => Ok(None),
-                Selected::Runtime(value) => {
-                    let address = self.allocate(self.body.values[id.0 as usize].ty)?;
-                    self.write(
-                        address,
-                        Selected::Runtime(value),
-                        self.body.values[id.0 as usize].ty,
+            Place::Temporary(id) => {
+                let selected = self.value(id)?;
+                if let Some(value) = self.body.promotions.as_ref().and_then(|p| p.get(id)) {
+                    let (ir::Owner::Function { definition, .. }
+                    | ir::Owner::Initializer { definition, .. }) = self.body.owner;
+                    let ty = self.body.values[id.0 as usize].ty;
+                    let global = self.context.constant_data(
+                        super::data::Key::Temporary(definition, id),
+                        value,
+                        ty,
+                        true,
                     )?;
-                    Ok(address)
+                    return Ok(Some(Address {
+                        operand: Operand::Global(global),
+                        align: self.context.layout(ty)?.align,
+                    }));
                 }
-            },
+                match selected {
+                    Selected::Object(address) => Ok(Some(address)),
+                    Selected::Unit | Selected::Item(_) => Ok(None),
+                    Selected::Runtime(value) => {
+                        let address = self.allocate(self.body.values[id.0 as usize].ty)?;
+                        self.write(
+                            address,
+                            Selected::Runtime(value),
+                            self.body.values[id.0 as usize].ty,
+                        )?;
+                        Ok(address)
+                    }
+                }
+            }
             Place::Projection(id) => match self.projections.get(id.0 as usize) {
                 Some(Projected::Ready(address)) => Ok(*address),
                 _ => Err("projected address does not dominate its use"),
@@ -256,8 +277,12 @@ impl Lower<'_, '_> {
                     Ok(address)
                 }
             }
-            Place::Static(_) => {
-                Err("static values require constant evaluation and allocation lowering")
+            Place::Static(id) => {
+                let global = self.context.static_data(id)?;
+                Ok(Some(Address {
+                    operand: Operand::Global(global),
+                    align: self.context.output.globals[global.0 as usize].span.align,
+                }))
             }
         }
     }
@@ -286,6 +311,64 @@ impl Lower<'_, '_> {
             Ok(selected)
         }
     }
+    fn scalar(&mut self, scalar: Scalar, ty: Type) -> Result<Value, &'static str> {
+        match scalar {
+            Scalar::Integer(bits) => self.builder.integer(ty, bits),
+            Scalar::Boolean(value) => self.builder.integer(ty, u128::from(value)),
+            Scalar::Character(value) => self.builder.integer(ty, u128::from(u32::from(value))),
+            Scalar::Float(FloatBits::F32(bits)) => self.builder.literal(ty, Literal::F32(bits)),
+            Scalar::Float(FloatBits::F64(bits)) => self.builder.literal(ty, Literal::F64(bits)),
+        }
+    }
+    fn constant(
+        &mut self,
+        definition: DefId,
+        ty: TypeId,
+        representation: Representation,
+    ) -> Result<Selected, &'static str> {
+        let value = self
+            .context
+            .constants
+            .definition(definition)
+            .ok_or("named constant was not evaluated")?;
+        match self.context.constants.view(value)? {
+            View::Scalar(scalar) => self
+                .scalar(scalar, representation.result())
+                .map(Selected::Runtime),
+            View::Function(id) => {
+                if representation.result() == Type::Void {
+                    return Ok(Selected::Item(id));
+                }
+                let symbol = self.context.demand(id)?;
+                self.builder
+                    .address(Operand::Symbol(symbol))
+                    .map(Selected::Runtime)
+            }
+            _ => {
+                if matches!(representation, Representation::Scalar(Type::Void)) {
+                    return Ok(Selected::Unit);
+                }
+                let global = self.context.constant_data(
+                    super::data::Key::Definition(definition),
+                    value,
+                    ty,
+                    true,
+                )?;
+                let source = Address {
+                    operand: Operand::Global(global),
+                    align: self.context.layout(ty)?.align,
+                };
+                if let Representation::Scalar(ty) = representation {
+                    return self.builder.load(ty, source.operand).map(Selected::Runtime);
+                }
+                let destination = self
+                    .allocate(ty)?
+                    .ok_or("constant product lacks snapshot storage")?;
+                self.write(Some(destination), Selected::Object(source), ty)?;
+                Ok(Selected::Object(destination))
+            }
+        }
+    }
     #[expect(
         clippy::too_many_lines,
         reason = "One typed-rvalue dispatch consumes the selected body operations"
@@ -304,21 +387,20 @@ impl Lower<'_, '_> {
             }
             Rvalue::Repeat { value: operand } => return self.repeat(value.ty, operand),
             Rvalue::Function(definition) => return Ok(Selected::Item(definition)),
-            Rvalue::Scalar(scalar) => match self.body.scalars[scalar.0 as usize] {
-                Scalar::Integer(bits) => self.builder.integer(ty, bits)?,
-                Scalar::Boolean(value) => self.builder.integer(ty, u128::from(value))?,
-                Scalar::Character(value) => {
-                    self.builder.integer(ty, u128::from(u32::from(value)))?
-                }
-                Scalar::Float(FloatBits::F32(bits)) => {
-                    self.builder.literal(ty, Literal::F32(bits))?
-                }
-                Scalar::Float(FloatBits::F64(bits)) => {
-                    self.builder.literal(ty, Literal::F64(bits))?
-                }
-            },
+            Rvalue::Scalar(scalar) => self.scalar(self.body.scalars[scalar.0 as usize], ty)?,
             Rvalue::IsVariant { place, variant } => return self.is_variant(place, variant),
             Rvalue::Read(place) => {
+                if matches!(representation, Representation::Scalar(Type::Void)) {
+                    return Ok(
+                        if let Some(Kind::FunctionItem { item, .. }) =
+                            self.context.types.kind(value.ty)
+                        {
+                            Selected::Item(DefId(item.0))
+                        } else {
+                            Selected::Unit
+                        },
+                    );
+                }
                 if let Place::Temporary(id) = place
                     && let Selected::Runtime(snapshot) = self.value(id)?
                 {
@@ -347,7 +429,9 @@ impl Lower<'_, '_> {
                     );
                 }
             }
-            Rvalue::Constant(_) => return Err("constant values require the constant evaluator"),
+            Rvalue::Constant(definition) => {
+                return self.constant(definition, value.ty, representation);
+            }
             Rvalue::Reify(operand)
             | Rvalue::Cast {
                 kind: Cast::FunctionPointer,

@@ -1,6 +1,7 @@
 //! Typed control flow consumes solved semantic facts without repeating inference.
 pub mod body_view;
 mod build;
+pub mod constants;
 pub mod ir;
 pub mod promote;
 pub mod regions;

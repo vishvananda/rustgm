@@ -1,5 +1,5 @@
 //! Demand and ABI identities are indexed by already selected semantic definitions/types.
-use super::{Error, function, remainder};
+use super::{Error, data, function, remainder};
 use crate::{
     abi::layout::{Layout, Layouts},
     body::ir::{self, Owner},
@@ -12,7 +12,11 @@ use crate::{
         model::DefId,
         unit::{FileId, NodeKey},
     },
-    sema::{members::Members, model::Declarations},
+    sema::{
+        members::Members,
+        model::{Declarations, Initializer},
+        values::Reader,
+    },
     syntax::ast::NodeId,
     types::{Kind, Primitive, Store, TypeId, aggregate::Definitions},
 };
@@ -22,15 +26,29 @@ pub(super) struct Context<'a> {
     pub types: &'a Store,
     pub aggregates: &'a Definitions,
     pub members: &'a Members,
+    pub constants: Reader<'a>,
+    pub definitions: &'a [Option<TypeId>],
+    pub initializers: &'a [Initializer],
     pub layouts: &'a mut Layouts,
     pub bodies: &'a ir::Program,
     pub output: Program,
+    pub data: data::Storage,
     body_indices: Vec<Option<usize>>,
     symbols: Vec<Option<SymbolId>>,
     signatures: HashMap<TypeId, SignatureId>,
     queue: Vec<DefId>,
     abort: Option<SymbolId>,
     remainders: [Option<SymbolId>; 2],
+}
+pub(super) fn build(
+    facts: &mut Declarations,
+    bodies: &ir::Program,
+    entry: DefId,
+) -> Result<Program, Error> {
+    let mut layouts = std::mem::take(&mut facts.layouts);
+    let result = Context::build(facts, &mut layouts, bodies, entry);
+    facts.layouts = layouts;
+    result
 }
 #[derive(Clone, Copy)]
 pub(super) enum Representation {
@@ -53,7 +71,8 @@ impl Representation {
 }
 impl<'a> Context<'a> {
     pub fn build(
-        facts: &'a mut Declarations,
+        facts: &'a Declarations,
+        layouts: &'a mut Layouts,
         bodies: &'a ir::Program,
         entry: DefId,
     ) -> Result<Program, Error> {
@@ -78,9 +97,13 @@ impl<'a> Context<'a> {
             types: &facts.types,
             aggregates: &facts.aggregates,
             members: &facts.members,
-            layouts: &mut facts.layouts,
+            constants: Reader::new(facts),
+            definitions: &facts.definitions,
+            initializers: &facts.initializers,
+            layouts,
             bodies,
             output: Program::default(),
+            data: data::Storage::default(),
             body_indices: vec![None; size],
             symbols: vec![None; size],
             signatures: HashMap::new(),
@@ -97,8 +120,18 @@ impl<'a> Context<'a> {
             node: source,
             message,
         })?;
-        let mut next = 0;
-        while next < context.queue.len() {
+        let (mut next, mut next_data) = (0, 0);
+        while next < context.queue.len() || next_data < context.data.pending.len() {
+            if next == context.queue.len() {
+                context
+                    .initialize_data(next_data)
+                    .map_err(|message| Error {
+                        node: source,
+                        message,
+                    })?;
+                next_data += 1;
+                continue;
+            }
             let definition = context.queue[next];
             let index = context.body_indices[definition.0 as usize].ok_or(Error {
                 node: source,
@@ -241,6 +274,7 @@ impl<'a> Context<'a> {
         let mut builder = Builder::default();
         let entry = builder.block()?;
         builder.enter(entry)?;
+        self.initialize_addresses(&mut builder)?;
         builder.call(target, Type::Void, Operand::Symbol(root), &[])?;
         if self.output.signatures[target.0 as usize].noreturn {
             builder.terminate(Terminator::Unreachable)?;

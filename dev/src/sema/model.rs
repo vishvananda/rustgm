@@ -11,7 +11,7 @@ use crate::{
     syntax::ast::{Kind, List, NodeId, Unary},
     types::{RegionId, Store, TypeId},
 };
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum Scalar {
     Integer(u128),
     Float(FloatBits),

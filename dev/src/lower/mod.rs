@@ -3,6 +3,7 @@ pub mod alignment;
 mod arithmetic;
 mod casts;
 mod context;
+mod data;
 mod function;
 mod remainder;
 
@@ -55,5 +56,5 @@ pub fn build(
             message: "reference lowering requires completed representation checks",
         });
     }
-    context::Context::build(facts, program, entry)
+    context::build(facts, program, entry)
 }
