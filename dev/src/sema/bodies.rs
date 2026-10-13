@@ -1,5 +1,6 @@
 //! Scalar body constraints consume resolved identities; fallback occurs once per body.
 mod aggregates;
+mod alignment;
 mod calls;
 mod conditions;
 mod divergence;
@@ -111,6 +112,7 @@ enum Work {
     AssignmentValue(NodeId),
 }
 pub(super) struct Checker<'a> {
+    alignment: alignment::Pending,
     report: &'a Report,
     pub(super) facts: &'a mut Declarations,
     file: FileId,
@@ -161,6 +163,7 @@ pub(super) struct Checker<'a> {
 impl<'a> Checker<'a> {
     pub(super) fn new(report: &'a Report, facts: &'a mut Declarations) -> Self {
         Self {
+            alignment: alignment::Pending::default(),
             report,
             terms: facts.nodes.iter().map(|_| Vec::new()).collect(),
             diverges: Vec::new(),
@@ -494,6 +497,7 @@ impl Checker<'_> {
         self.validate_operations()?;
         self.validate_assignments()?;
         self.validate_values()?;
+        self.publish_reference_alignment()?;
         self.finish_patterns()?;
         for node in self.touched.drain(..) {
             self.terms[self.file.0 as usize][node.0 as usize] = None;
@@ -525,7 +529,10 @@ impl Checker<'_> {
                 .map(|input| self.pattern_input_validity(input))
                 .transpose()?
                 .unwrap_or(true);
-            return self.pattern(node, term, valid);
+            self.pattern(node, term, valid)?;
+            let root = self.facts.patterns.roots[&self.key(node)];
+            self.alignment.patterns.push((root, input));
+            return Ok(());
         }
         while let Kind::Attributed { value, .. } | Kind::Group(value) = self.kind(node) {
             self.save(node, term);

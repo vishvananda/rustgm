@@ -239,6 +239,8 @@ fn semantic(
                 &program,
             )
             .map_err(|e| borrow_error(&report, e))?;
+            rustgm::lower::alignment::check(&mut facts, &program)
+                .map_err(|e| phase_error(&report, e.node, e.message))?;
             return if count {
                 rustgm::borrow::ownership::view::count(checked.owned(), out)
             } else {

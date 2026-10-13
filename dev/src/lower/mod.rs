@@ -1,4 +1,5 @@
 //! Mechanical lowering consumes typed body selections and emits each demanded function once.
+pub mod alignment;
 mod arithmetic;
 mod casts;
 mod context;
@@ -26,6 +27,7 @@ pub fn build(
     entry: DefId,
 ) -> Result<program::Program, Error> {
     let program = bodies.program();
+    alignment::check(facts, program)?;
     let pending = program
         .outlives
         .first()
@@ -50,7 +52,7 @@ pub fn build(
     if let Some(node) = pending {
         return Err(Error {
             node,
-            message: "reference lowering requires completed alignment and representation checks",
+            message: "reference lowering requires completed representation checks",
         });
     }
     context::Context::build(facts, program, entry)

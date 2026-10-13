@@ -102,20 +102,6 @@ impl Lower<'_, '_> {
         view: crate::body::ir::LocalId,
         place: Place,
     ) -> Result<(), &'static str> {
-        let required = self
-            .context
-            .layout(self.body.locals[view.0 as usize].ty)?
-            .align;
-        let mut origin = place;
-        loop {
-            if self.context.layout(self.place_type(origin)?)?.align < required {
-                return Err("guard binding would reference an unaligned packed field");
-            }
-            let Place::Projection(id) = origin else {
-                break;
-            };
-            origin = self.body.projections[id.0 as usize].base;
-        }
         let Some(destination) = self.locals[view.0 as usize] else {
             return Ok(());
         };

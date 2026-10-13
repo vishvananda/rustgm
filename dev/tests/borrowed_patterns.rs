@@ -268,7 +268,7 @@ fn check_execution_boundary(
         let boundary = if dynamic {
             "reference pattern execution requires region and loan proofs"
         } else {
-            "reference lowering requires completed alignment and representation checks"
+            "reference lowering requires completed representation checks"
         };
         assert!(
             String::from_utf8_lossy(&gate.stderr).contains(boundary),

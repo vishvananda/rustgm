@@ -198,7 +198,16 @@ pub struct BodyRegion {
     pub source: NodeKey,
     pub origin: BodyRegionOrigin,
 }
+#[derive(Clone, Copy)]
+pub struct ReferenceAlignment {
+    pub source: NodeKey,
+    pub ty: TypeId,
+    pub packed: u32,
+    pub guard: bool,
+}
 pub struct Declarations {
+    /// Packed source places remain checked even when their CFG is unreachable.
+    pub reference_alignment: Vec<ReferenceAlignment>,
     pub reference_adjustments: std::collections::HashMap<NodeKey, ReferenceAdjustment>,
     pub partial_annotations: std::collections::HashMap<NodeKey, PartialAnnotation>,
     pub well_formed: Vec<WellFormed>,
@@ -242,6 +251,7 @@ impl Declarations {
     }
     pub(super) fn new(report: &Report) -> Result<Self, Error> {
         let mut value = Self {
+            reference_alignment: Vec::new(),
             reference_adjustments: std::collections::HashMap::new(),
             partial_annotations: std::collections::HashMap::new(),
             well_formed: Vec::new(),

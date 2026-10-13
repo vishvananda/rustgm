@@ -78,6 +78,25 @@ pub struct Layouts {
     pub steps: usize,
 }
 impl Layouts {
+    /// Required reference alignment, including referents without a fixed size.
+    /// Pointer storage alignment does not depend on its referent's metadata.
+    /// # Errors
+    /// Preserves layout errors for sized referents and slice elements.
+    pub fn reference_align(
+        &mut self,
+        types: &Store,
+        definitions: &Definitions,
+        ty: TypeId,
+    ) -> Result<u32, Error> {
+        let ty = match types.kind(ty) {
+            Some(Kind::Primitive(Primitive::Str)) => return Ok(1),
+            Some(Kind::Reference { .. } | Kind::Pointer { .. }) => return Ok(8),
+            Some(Kind::Slice(element)) => element,
+            _ => ty,
+        };
+        let id = self.demand(types, definitions, ty)?;
+        Ok(self.records[id.0 as usize].align)
+    }
     #[must_use]
     pub fn get(&self, ty: TypeId) -> Option<&Layout> {
         let State::Ready(id) = self.states.get(ty.0 as usize)? else {

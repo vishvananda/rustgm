@@ -47,6 +47,7 @@ impl Checker<'_> {
             }
         };
         let pattern = self.selected_pattern(pattern, term)?;
+        self.alignment.patterns.push((pattern, Some(value)));
         let otherwise = match self.kind(node) {
             Kind::Let { otherwise, .. } => otherwise.map(|n| self.key(n)),
             Kind::LetCondition { .. } => {

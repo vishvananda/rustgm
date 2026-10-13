@@ -153,9 +153,8 @@ fn cli_checks_loans_and_keeps_reference_lowering_explicit() -> Result<(), Box<dy
                 .write_all(source.as_bytes())?;
             let output = child.wait_with_output()?;
             let expected = diagnostic.or_else(|| {
-                (mode == "--emit-lowir").then_some(
-                    "reference lowering requires completed alignment and representation checks",
-                )
+                (mode == "--emit-lowir")
+                    .then_some("reference lowering requires completed representation checks")
             });
             assert_eq!(
                 output.status.code(),

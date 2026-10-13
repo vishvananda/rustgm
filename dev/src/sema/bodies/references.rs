@@ -326,6 +326,7 @@ impl Checker<'_> {
             .construct(Constructor::Reference { mutable, region }, &[referent])
             .map_err(|e| self.error(node, e))?;
         self.selected(node, Operation::Borrow)?;
+        self.alignment.borrows.push((node, operand));
         Ok(term)
     }
     pub(super) fn dereference(&mut self, node: NodeId, operand: NodeId) -> Result<TermId, Error> {

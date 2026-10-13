@@ -381,7 +381,7 @@ fn reference_operations_keep_executable_proofs_pending() -> Result<(), Box<dyn s
         let boundary = if index == 3 {
             "reference expression execution requires region and loan proofs"
         } else {
-            "reference lowering requires completed alignment and representation checks"
+            "reference lowering requires completed representation checks"
         };
         assert!(text.contains(boundary), "{text}");
     }

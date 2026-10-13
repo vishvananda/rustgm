@@ -993,3 +993,76 @@ The immutable compiler is `obj/pa15-work/loans-candidate-v1`, SHA-256
 Source hashes and validation receipts use `obj/pa15-work/loans-v1-*`.
 `verify_loans_v1_perf.py` checks raw observations, source/binary/input hashes
 and linear counters; `loans-probe.rs` records the separate driver's scope.
+
+## Reference alignment across reachable and discarded code
+
+Reference formation now checks the required ABI alignment before ownership
+inspection or LowIR lowering completes. Taking a reference to an unaligned
+packed field fails even when the reference is unused, the field is zero sized,
+or its function is never called. By-value field reads remain valid. Explicit
+borrows, borrowed pattern captures and implicit guard binding views are covered.
+
+The check separates pointer storage from the pointed-to storage. A dereference
+resets the alignment requirement to that of the referent; loading a reference
+from a packed field does not make its pointee unaligned. Selected field and
+array projections retain the containing storage's alignment limit. Required
+alignment for references, slices and text does not require inventing a fixed
+size for an unsized referent.
+
+An independent probe found that BodyIR discards operations after unconditional
+returns, while Rust still diagnoses unaligned references there. Type checking
+therefore retains sparse packed-place obligations before CFG construction.
+The per-body traversal follows typed expression selections and selected pattern
+graphs, memoizes place provenance, resets at explicit/automatic dereferences,
+and charges traversal and pending children against a work budget. It records
+only packed obligations and adds no field to ordinary node facts. The later
+alignment check consumes those obligations, including unreachable explicit
+borrows, let patterns, conditions, match captures and guarded captures.
+
+The same check validates remaining generated BodyIR places with memoized
+projection alignment. Sources already covered by retained obligations reuse
+those facts. This also covers the maintainer's synthetic guard-view component
+fixtures. The old function-emission-only guard check is removed: validation now
+precedes function demand, and correctly stops at a reference dereference.
+
+Validation for this checkpoint:
+
+- All 453 maintainer tests pass. Thirty-two independently declared source cases
+  agree with pinned rustc 1.98.0; ownership rendering, counts and LowIR rejection
+  are checked. They include packed alignment caps, nested products/arrays,
+  zero-sized and explicitly aligned values, pointer storage versus referents,
+  guard bindings, and unreachable code. Existing synthetic guard-view tests pass.
+- Formatting, Clippy all/pedantic with warnings denied, the 277-file audit and
+  all 25 harness tests pass. No lint allowance was added.
+- The course report remains 2,555/2,622 exact on the same 67 reviewed paths.
+  Five boundary diagnostics now name pending representation checks, since
+  alignment has been implemented. No acceptance status, fixture, manifest or
+  text oracle changed; the unreleased branch's report still fails.
+- All 1,230 manifest-listed PA11–PA14 LowIR inputs preserve their statuses and
+  successful outputs. Only those five boundary diagnostics differ from the
+  preceding loan-checking checkpoint.
+- Measurements retain 216 verified raw observations, immutable binaries and
+  inputs, A/A calibration and paired ABBA blocks, with complete rendering and
+  count equality. At 64k owned-path functions, baseline/current medians are
+  5,265.3/5,259.8 ms and 949,792/949,936 KiB; at 16k guard-retry functions they
+  are 1,341.1/1,327.8 ms and 297,064/296,882 KiB. The reference workload at
+  256/1,024/4,096 functions measures 28.8/114.8/454.9 ms before and
+  30.0/139.1/450.2 ms after the change. A separate workload exercises retained
+  packed-field obligations, byte-array projections and guard captures: its
+  medians are 32.2/115.1/518.9 ms before and 32.6/128.0/545.0 ms after.
+  At the largest packed scale, memory is 79,420/79,748 KiB. Timing ranges
+  overlap; all observations and calibration remain available, without a precise
+  speed claim. Both reference workloads have linear inspection counts and their
+  largest inputs are independently accepted by pinned rustc. No local RustGM
+  build or test overlapped the measurement series.
+
+The immutable compiler is `obj/pa15-work/alignment-candidate-v1`, SHA-256
+`466294bfad1e9e09c44c18df7dcb77108abaea04cac021f6ac7a1f9b907cb9b6`.
+Source hashes and validation receipts use `obj/pa15-work/alignment-v1-*`.
+`verify_alignment_v1_perf.py` verifies raw receipts, immutable identities,
+output equality and the reference workloads' count scaling.
+
+Reference representations and execution are still gated. Persistent backing
+for promoted and static places must precede returning references from calls;
+then thin/fat pointer lowering, dynamic slice/text operations and PA17
+destruction remain. PA15–PA17 are still planned assignments.
