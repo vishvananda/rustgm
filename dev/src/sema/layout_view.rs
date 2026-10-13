@@ -69,6 +69,7 @@ pub fn write(report: &Report, facts: &Declarations, out: &mut impl Write) -> io:
         )?;
         match layout.shape {
             Shape::Scalar => writeln!(out, " scalar")?,
+            Shape::WidePointer => writeln!(out, " wide-pointer data=0 length=8")?,
             Shape::Array {
                 element,
                 stride,

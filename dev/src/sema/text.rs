@@ -1,4 +1,4 @@
-//! Demanded text uses one canonical byte arena; ordinary literals retain lexer storage.
+//! Selected text literals and demanded constants share one canonical byte arena.
 use std::{
     collections::{HashMap, hash_map::RandomState},
     hash::BuildHasher,

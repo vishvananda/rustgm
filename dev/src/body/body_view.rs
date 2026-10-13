@@ -98,6 +98,7 @@ fn contents(body: &Body, out: &mut impl Write) -> io::Result<()> {
             ProjectionKind::Index { index, length } => {
                 write!(out, " index=v{} length={length}", index.0)?;
             }
+            ProjectionKind::SliceIndex { index } => write!(out, " slice-index=v{}", index.0)?,
             ProjectionKind::ConstantIndex(index) => write!(out, " constant-index={index}")?,
             ProjectionKind::Subarray { start, end } => write!(out, " subarray={start}..{end}")?,
         }
@@ -203,6 +204,7 @@ fn rvalue(body: &Body, value: Rvalue, out: &mut impl Write) -> io::Result<()> {
         Rvalue::Repeat { value } => write!(out, "repeat v{}", value.0),
         Rvalue::Unit => write!(out, "unit"),
         Rvalue::Scalar(id) => type_view::scalar(body.scalars[id.0 as usize], out),
+        Rvalue::Text(id) => write!(out, "text t{}", id.0),
         Rvalue::Borrow { place: value, kind } => {
             write!(
                 out,

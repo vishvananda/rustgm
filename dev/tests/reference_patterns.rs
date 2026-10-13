@@ -354,7 +354,7 @@ fn cyclic_static_pattern_queries_diagnose_instead_of_recursing()
     Ok(())
 }
 #[test]
-fn thin_references_pass_proofs_while_dynamic_slice_execution_remains_pending()
+fn thin_references_and_slice_indexing_pass_execution_proofs()
 -> Result<(), Box<dyn std::error::Error>> {
     let directory = folder()?;
     for (index, source) in [
@@ -376,21 +376,13 @@ fn thin_references_pass_proofs_while_dynamic_slice_execution_remains_pending()
             String::from_utf8_lossy(&selected.stderr)
         );
         let output = frontend(&path, "--emit-lowir")?;
-        if index != 3 {
-            assert!(
-                output.status.success(),
-                "{}",
-                String::from_utf8_lossy(&output.stderr)
-            );
-            assert!(output.stderr.is_empty());
-            assert!(!output.stdout.is_empty());
-            continue;
-        }
-        assert_eq!(output.status.code(), Some(1));
-        assert!(output.stdout.is_empty());
-        let text = String::from_utf8_lossy(&output.stderr);
-        let boundary = "reference expression execution requires region and loan proofs";
-        assert!(text.contains(boundary), "{text}");
+        assert!(
+            output.status.success(),
+            "{}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+        assert!(output.stderr.is_empty());
+        assert!(!output.stdout.is_empty());
     }
     Ok(())
 }

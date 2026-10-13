@@ -97,7 +97,6 @@ fn zero_sized_layouts_preserve_reference_footprints_without_expanding_arrays()
 #[test]
 fn incomplete_layouts_never_emit_a_partial_table() -> Result<(), Box<dyn std::error::Error>> {
     for source in [
-        "type P=*const [u8];",
         "struct Bad(Bad);",
         "#[repr(transparent)]struct Bad(u8,u64);",
         "enum E{A=1/0}",

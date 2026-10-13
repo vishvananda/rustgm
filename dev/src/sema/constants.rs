@@ -704,24 +704,16 @@ impl Queries<'_> {
         if let Some(value) = facts.scalar {
             return Ok(Expression::Value(Value::Scalar(value)));
         }
-        if let Kind::Literal(index) = Declarations::kind(self.report, key) {
-            let literal = self
-                .report
-                .package
-                .unit(key.file)
-                .literal(index)
-                .map_err(|e| self.error(query, e.message))?;
-            let (bytes, string) = match literal {
-                crate::literal::Value::String(bytes) => (bytes, true),
-                crate::literal::Value::ByteString(bytes) => (bytes, false),
-                _ => return Err(self.error(query, "missing selected literal value")),
-            };
+        if matches!(Declarations::kind(self.report, key), Kind::Literal(_)) {
             let id = self
                 .typing
                 .facts
-                .texts
-                .intern(&bytes)
-                .map_err(|e| self.error(query, e))?;
+                .text_literals
+                .get(&key)
+                .copied()
+                .ok_or_else(|| self.error(query, "missing selected literal value"))?;
+            let string = facts.ty.and_then(|ty| self.typing.facts.types.kind(ty))
+                .is_some_and(|ty| matches!(ty, Type::Reference { referent, .. } if referent == TypeId::primitive(Primitive::Str)));
             return Ok(Expression::Value(if string {
                 Value::Text(id)
             } else {

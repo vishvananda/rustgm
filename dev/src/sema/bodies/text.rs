@@ -9,10 +9,19 @@ impl Checker<'_> {
     pub(super) fn text_literal_type(
         &mut self,
         node: NodeId,
-        bytes: Option<usize>,
+        bytes: &[u8],
+        string: bool,
     ) -> Result<TermId, Error> {
-        let referent = if let Some(length) = bytes {
-            let length = u64::try_from(length)
+        let text = self
+            .facts
+            .texts
+            .intern(bytes)
+            .map_err(|e| self.error(node, e))?;
+        self.facts.text_literals.insert(self.key(node), text);
+        let referent = if string {
+            TypeId::primitive(Primitive::Str)
+        } else {
+            let length = u64::try_from(bytes.len())
                 .map_err(|_| self.error(node, "byte string length overflow"))?;
             self.facts
                 .types
@@ -21,8 +30,6 @@ impl Checker<'_> {
                     length,
                 })
                 .map_err(|e| self.error(node, e))?
-        } else {
-            TypeId::primitive(Primitive::Str)
         };
         let ty = self
             .facts

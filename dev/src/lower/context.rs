@@ -200,6 +200,23 @@ impl<'a> Context<'a> {
             .ok_or("missing demanded storage layout")
     }
     pub fn representation(&mut self, ty: TypeId) -> Result<Representation, &'static str> {
+        if let Some(
+            Kind::Reference { referent, .. }
+            | Kind::Pointer {
+                pointee: referent, ..
+            },
+        ) = self.types.kind(ty)
+            && matches!(
+                self.types.kind(referent),
+                Some(Kind::Slice(_) | Kind::Primitive(Primitive::Str))
+            )
+        {
+            let layout = self.layout(ty)?;
+            return Ok(Representation::Object(MemorySpan {
+                bytes: layout.size,
+                align: layout.align,
+            }));
+        }
         if matches!(
             self.types.kind(ty),
             Some(Kind::Tuple(_) | Kind::Array { .. } | Kind::Adt(..))

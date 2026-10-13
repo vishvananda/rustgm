@@ -102,7 +102,9 @@ impl Engine<'_, '_> {
                 }
                 u64::try_from(index).map_err(|_| "promotion index exceeds target usize")?
             }
-            ProjectionKind::Dereference { .. } | ProjectionKind::Subarray { .. } => {
+            ProjectionKind::Dereference { .. }
+            | ProjectionKind::Subarray { .. }
+            | ProjectionKind::SliceIndex { .. } => {
                 return Ok(None);
             }
         };

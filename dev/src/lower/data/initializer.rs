@@ -1,5 +1,5 @@
 //! Serialize completed constants in canonical byte order, with bounded flat work.
-use super::{Context, Fixup, Key, Pending, Target, Type};
+use super::{Context, Fixup, Key, Target, Type};
 use crate::{
     abi::layout::Shape,
     literal::value::FloatBits,
@@ -25,7 +25,7 @@ enum Work {
     },
 }
 struct Initializer {
-    object: Pending,
+    global: crate::lowir::data::GlobalId,
     items: Vec<Item>,
     cursor: u64,
     align: u32,
@@ -36,7 +36,7 @@ impl Context<'_> {
         let object = self.data.pending[index];
         let span = self.output.globals[object.global.0 as usize].span;
         let mut init = Initializer {
-            object,
+            global: object.global,
             items: Vec::new(),
             cursor: 0,
             align: span.align,
@@ -79,20 +79,20 @@ impl Context<'_> {
                 let symbol = self.demand(id)?;
                 self.initialize_pointer(init, offset, Target::Function(symbol), 0)
             }
-            View::Reference(id) => {
-                if layout.size != 8 {
-                    return Err("constant reference requires a thin pointer layout");
-                }
-                let pointer = self.constant_pointer(id)?;
-                let addend = i64::try_from(pointer.offset)
-                    .map_err(|_| "constant address offset overflow")?;
-                self.initialize_pointer(init, offset, Target::Global(pointer.global), addend)
-            }
+            View::Reference(id) => self.initialize_reference(
+                init,
+                offset,
+                id,
+                matches!(layout.shape, Shape::WidePointer),
+            ),
             View::Bytes(id) => {
-                if let Some(Kind::Reference { referent, .. }) = self.types.kind(ty) {
-                    let global =
-                        self.constant_data(Key::Bytes(id, referent), value, referent, true)?;
-                    return self.initialize_pointer(init, offset, Target::Global(global), 0);
+                if let Some(Kind::Reference { .. }) = self.types.kind(ty) {
+                    return self.initialize_text(
+                        init,
+                        offset,
+                        id,
+                        matches!(layout.shape, Shape::WidePointer),
+                    );
                 }
                 let bytes = self.constants.bytes(id)?;
                 if !matches!(layout.shape, Shape::Array { stride: 1, length, .. } if length == bytes.len() as u64)
@@ -105,7 +105,7 @@ impl Context<'_> {
                 }
                 Ok(())
             }
-            View::Text(_) => Err("text constants require wide reference lowering"),
+            View::Text(id) => self.initialize_text(init, offset, id, true),
             View::Repeat {
                 value: repeated,
                 length,
@@ -168,6 +168,82 @@ impl Context<'_> {
             }
         }
     }
+    fn initialize_reference(
+        &mut self,
+        init: &mut Initializer,
+        offset: u64,
+        id: crate::sema::values::LocationId,
+        wide: bool,
+    ) -> Result<(), &'static str> {
+        let pointer = self.constant_pointer(id)?;
+        let addend =
+            i64::try_from(pointer.offset).map_err(|_| "constant address offset overflow")?;
+        self.initialize_pointer(init, offset, Target::Global(pointer.global), addend)?;
+        if wide {
+            let location = self.constants.location(id)?;
+            let length = if let Some(Kind::Array { length, .. }) = self.types.kind(location.ty) {
+                length
+            } else {
+                let value = location
+                    .value
+                    .ok_or("wide reference lacks backing metadata")?;
+                let (View::Text(text) | View::Bytes(text)) = self.constants.view(value)? else {
+                    return Err("wide reference lacks array or text metadata");
+                };
+                self.constants.bytes(text)?.len() as u64
+            };
+            init.bits(offset + 8, 8, u128::from(length))?;
+        }
+        Ok(())
+    }
+    pub fn bytes_data(
+        &mut self,
+        id: crate::sema::text::Id,
+    ) -> Result<crate::lowir::data::GlobalId, &'static str> {
+        let key = Key::Bytes(id);
+        if let Some(&global) = self.data.globals.get(&key) {
+            return Ok(global);
+        }
+        let bytes = self.constants.bytes(id)?;
+        self.data.charge(bytes.len().saturating_add(1))?;
+        let size = (bytes.len() as u64).max(1);
+        let global = self.output.global(
+            format!("rg.data.{}", self.output.globals.len()),
+            crate::lowir::program::MemorySpan {
+                bytes: size,
+                align: 1,
+            },
+            true,
+        )?;
+        let mut init = Initializer {
+            global,
+            items: Vec::new(),
+            cursor: 0,
+            align: 1,
+            work: Vec::new(),
+        };
+        for (i, &byte) in bytes.iter().enumerate() {
+            init.bits(i as u64, 1, u128::from(byte))?;
+        }
+        init.pad(size)?;
+        self.output.initialize(global, &init.items)?;
+        self.data.globals.insert(key, global);
+        Ok(global)
+    }
+    fn initialize_text(
+        &mut self,
+        init: &mut Initializer,
+        offset: u64,
+        id: crate::sema::text::Id,
+        wide: bool,
+    ) -> Result<(), &'static str> {
+        let global = self.bytes_data(id)?;
+        self.initialize_pointer(init, offset, Target::Global(global), 0)?;
+        if wide {
+            init.bits(offset + 8, 8, self.constants.bytes(id)?.len() as u128)?;
+        }
+        Ok(())
+    }
     fn initialize_pointer(
         &mut self,
         init: &mut Initializer,
@@ -180,9 +256,9 @@ impl Context<'_> {
             init.items.push(Item::Address { target, addend });
             init.cursor += 8;
         } else {
-            self.output.globals[init.object.global.0 as usize].readonly = false;
+            self.output.globals[init.global.0 as usize].readonly = false;
             self.data.fixups.push(Fixup {
-                global: init.object.global,
+                global: init.global,
                 offset,
                 target,
                 addend,

@@ -431,7 +431,12 @@ impl Checker<'_> {
         if self.facts.node(self.key(left)).is_some_and(|f| {
             matches!(
                 f.operation,
-                Some(Operation::Field { .. } | Operation::Index { .. } | Operation::Dereference)
+                Some(
+                    Operation::Field { .. }
+                        | Operation::Index { .. }
+                        | Operation::IndexSlice
+                        | Operation::Dereference
+                )
             )
         }) {
             return Ok(None);

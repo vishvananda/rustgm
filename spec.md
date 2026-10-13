@@ -100,8 +100,10 @@ an iterative greatest fixed point with reverse dependency edges: publish all
 positive and negative results only after propagation completes. Count actual
 nodes, dependencies and propagation work under an explicit query budget.
 
-Demanded string and byte-string values reuse decoded literal bytes and intern
-them in one flat byte arena. Equality compares exact bytes; identifier Unicode
+Selected string and byte-string literals retain decoded bytes in one flat,
+interned byte arena, addressed by sparse syntax-node facts. Constant evaluation
+and body construction reuse those identities without decoding again.
+Equality compares exact bytes; identifier Unicode
 normalization must never affect text values. Share repeated text subpatterns
 within a constant use while preserving each selected place. Byte-string patterns
 translate to ordinary fixed-array or exact-slice decisions under the existing
@@ -109,8 +111,8 @@ preallocation work budget. String coverage partitions only the current query's
 observed values plus one class for every other string. Do not scan unrelated
 bodies or enumerate a string domain. Matching a value constant compares type
 structure without equating its storage lifetime to the input lifetime; ordinary
-expression constraints remain explicit. This does not discharge reference
-execution proofs or supply unsized-pointer layout.
+expression constraints remain explicit. These pattern facts do not discharge
+the region and loan proofs required for reference execution.
 
 Demanded shared constant references use flat place records containing an optional value,
 canonical type, access provenance and packed alignment. Separate place queries
@@ -186,6 +188,23 @@ Reference pattern paths share persistent dereference prefixes alongside ordinary
 offset recipes. Load each pointer in the current use block, restoring referent
 alignment after dereference. Representation-preserving lifetime conversions may
 reuse values; thin-to-fat coercions must construct metadata explicitly.
+
+The course x86-64 representation for references and raw pointers to slices or
+`str` is a 16-byte, eight-aligned object: a data pointer at offset zero and an
+unsigned 64-bit length at offset eight. This is an explicit course ABI, not a
+claim of a stable Rust ABI. Slice length counts elements, including zero-sized
+elements; string length counts UTF-8 bytes. Unsized referents themselves still
+have no fixed storage layout. Use the existing object calling convention for
+wide values and retain metadata sparsely beside unsized place projections.
+Array-to-slice conversions use the checked source length and compatible element
+layout. Dynamic indexing checks that length before address calculation, even
+when the selected value is zero-sized. Reborrows retain the source metadata.
+
+Literal backing is immutable and shared by canonical bytes. Empty strings and
+byte strings receive nonnull backing with zero logical length. Persistent wide
+values serialize both the address and length at their canonical offsets;
+packed fields use the existing byte serializer and pointer startup fixups.
+Metadata and literal identities must not enlarge ordinary scalar place facts.
 
 Borrow checking runs before references and moves lose their source semantics
 in LowIR. Region/dataflow analysis uses typed worklists and bounded lattices,

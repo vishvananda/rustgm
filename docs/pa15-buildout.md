@@ -1407,3 +1407,109 @@ receipts use `obj/pa15-work/static-addresses-v1-*`. Maintainer evidence is in
 Fat reference metadata, unsizing, dynamic slices/text and PA17 destruction remain
 incomplete. PA15–PA17 handouts, required fixtures and oracles still need their
 coherent release; the assignments remain planned.
+
+
+## Wide reference values and dynamic indexing
+
+Checked references to slices and `str` now use the course's explicit x86-64
+wide-pointer layout: a data pointer at offset zero and a 64-bit length at offset
+eight, with size 16 and alignment eight. Raw pointers to those referents have
+the same layout, without enabling unsafe operations. This specifies the course
+ABI; it is not a guarantee about Rust's stable ABI. Unsized referents still
+have no fixed layout, and general unsized nominal types remain a later stage.
+
+The existing object ABI handles wide parameters, returns, local snapshots and
+aggregate fields. Array-to-slice conversions consume checked adjustments;
+mutable reborrows use the physical array's length when its selected result is
+already a slice reference. Dereference projections retain length metadata in a
+sparse map. Dynamic indexing compares the index with that length before computing
+an element address, including when the element is zero-sized. Element stride and
+alignment come from canonical layouts. Ordinary scalar places remain compact.
+
+Semantic analysis interns selected string and byte-string literal bytes once
+and records sparse syntax-node identities. Constant evaluation and BodyIR consume
+those facts instead of decoding the source again. Literal backing is readonly
+and shared by canonical bytes; empty values retain nonnull storage with zero
+logical length. Persistent wide values serialize both address and metadata,
+including packed fields through the existing pointer fixups and byte serializer.
+String metadata counts UTF-8 bytes; slices count elements.
+
+Validation for this checkpoint:
+
+- All 466 maintainer tests pass. The existing 49 thin-reference execution vectors
+  remain unchanged. Twenty-four new native vectors run through both pinned rustc
+  and CPPGM, covering slice parameters/returns, mutable reborrows, guard bindings,
+  branches, promoted and static backing, reference products, packed fields,
+  borrowed elements, aligned zero-sized elements and byte/string values. Three
+  explicitly require runtime bounds panics, including empty and zero-sized slices.
+  Each vector's repeated LowIR emission is byte-identical.
+- Eight invalid programs are independently rejected by rustc and both emitted
+  and counted LowIR: shared mutation, escaped local/temporary storage, overlapping
+  indexed mutable loans, a shared loan live across mutation, a non-Copy element
+  move, mutable access to a byte literal and integer indexing of a string.
+  Candidate failures have status one, empty stdout and identical diagnostics
+  across the two modes.
+- Layout component assertions cover mutable/shared references, raw pointers and
+  arrays of wide values, with independent target size/alignment checks using
+  rustc. Five typed LowIR data assertions check literal bytes and pointer/length
+  pairs for multibyte characters, a combining character, an embedded NUL and the
+  empty string. The text native vectors alone do not inspect string contents;
+  these data assertions provide that evidence while text decisions remain pending.
+- Formatting, Clippy all/pedantic with warnings denied, the 295-file audit,
+  all 25 harness tests, backend smoke and release build pass. No lint allowances
+  or audit exceptions were added. The shared native process helper lives under
+  `dev/tests/harness/`, outside the compiler support phase's process prohibition.
+- All 1,230 PA11–PA14 LowIR inputs preserve previously successful output bytes.
+  One old slice-index boundary now accepts, and nine library-shaped inspection
+  inputs advance from reference/text capability errors to a missing-main error
+  when explicitly exercised in LowIR mode. The former boundary independently
+  compiles and executes with both compilers; its empty main does not substitute
+  for the actual indexing executions above.
+- The course report is 2,551/2,622 exact, with the previous 70 reviewed differences
+  unchanged and one newly accepted slice-index boundary. No fixture, manifest or
+  generated oracle changed. The working branch remains unreleased and the
+  committed course report still fails.
+- A larger source has 4,096 demanded wrappers exercising mutable array-to-slice
+  conversion, slice reborrows and returns, wide aggregate fields, shared static
+  backing and string values. Both native implementations compute the declared
+  sum 65,536. LowIR contains 4,102 defined functions, 430,124 instructions,
+  49,159 slots, four globals and twelve initializer items.
+
+Measurements retain 270 verified observations. Ownership, guard retry, unique
+text constants and packed storage compare immutable baseline/current binaries
+with A/A calibration and three paired ABBA blocks at each scale. New wide-reference
+execution uses two copies of the candidate because the baseline rejects that
+capability. Complete rendering and count outputs agree for every comparison;
+text-pattern, packed-storage and wide-reference counters grow linearly. No
+RustGM build or test overlapped timing.
+
+| Largest existing workload | Baseline/current median ms | Baseline/current median KiB |
+| --- | ---: | ---: |
+| 64k ownership functions | 5,746.6 / 5,699.6 | 949,948 / 949,042 |
+| 16k guard-retry functions | 1,549.7 / 1,555.8 | 296,856 / 296,850 |
+| 16k unique text constants | 4,603.7 / 4,406.6 | 206,162 / 209,294 |
+| 4,096 packed static objects | 311.8 / 319.9 | 61,206 / 61,190 |
+
+The text workload retains additional literal identities: measured memory costs
+are 722, 734 and 3,132 KiB at 1k, 4k and 16k functions, respectively. The largest
+is approximately 1.5%. Packed storage records a small median timing increase,
+approximately 2.6%; all sampled timing ranges overlap. Host variation prevents
+a precise speedup claim for the lower text median. These costs and every raw
+observation remain recorded rather than normalized away.
+
+New wide-reference medians at 256/1,024/4,096 wrappers are 54.8/210.9/865.3 ms
+and 12,094/34,582/124,550 KiB. The largest frozen input is also independently
+executed by both compilers. `verify_fatrefs_v1_perf.py` checks all observations,
+immutable source/binary/input hashes, output equality and linear counters.
+
+The immutable compiler is `obj/pa15-work/fatrefs-candidate-v1`, SHA-256
+`432123ef130ac13b51f4499a08ef4e057c934d41dfe709016d5c7df6b9c68d1c`.
+Source hashes, corpus/course comparisons, independent boundary qualification and
+performance receipts use `obj/pa15-work/fatrefs-v1-*`. Scaling qualification is
+in `fatrefs-scaling-qualification/`; maintainer checks are in
+`fatrefs-full-tests8.log` and `fatrefs-quality8.log` in the same work directory.
+
+Dynamic slice/text pattern decisions, rest/from-end projections and their guard
+execution remain incomplete, as does PA17 destruction. PA15–PA17 still require
+coherent handouts, required fixtures, manifests and independently reviewed
+oracles before release. Main remains unchanged.

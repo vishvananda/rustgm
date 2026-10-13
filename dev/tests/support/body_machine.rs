@@ -136,6 +136,7 @@ impl Machine<'_> {
         let value = &frame.body.values[value.0 as usize];
         let data = match value.kind {
             Rvalue::Borrow { .. }
+            | Rvalue::Text(_)
             | Rvalue::Aggregate { .. }
             | Rvalue::IsVariant { .. }
             | Rvalue::Validate(_)

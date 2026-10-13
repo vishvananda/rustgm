@@ -1126,8 +1126,8 @@ impl Checker<'_> {
             Value::Boolean(_) => Primitive::Bool,
             Value::Character(_) => Primitive::Char,
             Value::Byte(_) => Primitive::U8,
-            Value::String(_) => return self.text_literal_type(node, None),
-            Value::ByteString(bytes) => return self.text_literal_type(node, Some(bytes.len())),
+            Value::String(bytes) => return self.text_literal_type(node, &bytes, true),
+            Value::ByteString(bytes) => return self.text_literal_type(node, &bytes, false),
             Value::CString(_) => {
                 return Err(self.error(node, "C string values require the library type assignment"));
             }

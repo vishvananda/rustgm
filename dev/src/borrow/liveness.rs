@@ -217,7 +217,11 @@ impl<'a> Flow<'a> {
                 self.use_value(left, live)?;
                 self.use_value(right, live)?;
             }
-            Rvalue::Unit | Rvalue::Scalar(_) | Rvalue::Constant(_) | Rvalue::Function(_) => {}
+            Rvalue::Unit
+            | Rvalue::Scalar(_)
+            | Rvalue::Text(_)
+            | Rvalue::Constant(_)
+            | Rvalue::Function(_) => {}
         }
         Ok(())
     }

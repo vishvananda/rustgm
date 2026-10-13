@@ -136,6 +136,14 @@ impl<'a> Reader<'a> {
 }
 impl Constant {
     #[must_use]
+    pub const fn string(id: crate::sema::text::Id) -> Self {
+        Self(Value::Text(id))
+    }
+    #[must_use]
+    pub const fn bytes(id: crate::sema::text::Id) -> Self {
+        Self(Value::Bytes(id))
+    }
+    #[must_use]
     pub const fn scalar(value: Scalar) -> Self {
         Self(Value::Scalar(value))
     }

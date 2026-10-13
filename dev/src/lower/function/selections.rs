@@ -53,7 +53,7 @@ impl Lower<'_, '_> {
                 ProjectionKind::Subarray { start, end } => {
                     Step::Offset(Self::pattern_byte_offset(&layout, &leaf, start, Some(end))?)
                 }
-                ProjectionKind::Index { .. } => {
+                ProjectionKind::Index { .. } | ProjectionKind::SliceIndex { .. } => {
                     return Err("dynamic indexing must precede the pattern path");
                 }
             };

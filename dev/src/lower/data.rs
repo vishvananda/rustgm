@@ -25,7 +25,7 @@ pub(super) enum Key {
     Definition(DefId),
     Location(LocationId),
     Temporary(DefId, ValueId),
-    Bytes(crate::sema::text::Id, TypeId),
+    Bytes(crate::sema::text::Id),
 }
 #[derive(Clone, Copy)]
 pub(super) struct Pointer {
@@ -144,12 +144,16 @@ impl Context<'_> {
                     break pointer;
                 }
                 Origin::Allocation => {
-                    let global = self.constant_data(
-                        Key::Location(id),
-                        location.value.ok_or("constant allocation lacks a value")?,
-                        location.ty,
-                        true,
-                    )?;
+                    let value = location.value.ok_or("constant allocation lacks a value")?;
+                    let global = if self.types.is_sized(location.ty) == Some(false) {
+                        let (View::Text(text) | View::Bytes(text)) = self.constants.view(value)?
+                        else {
+                            return Err("unsized constant allocation lacks byte storage");
+                        };
+                        self.bytes_data(text)?
+                    } else {
+                        self.constant_data(Key::Location(id), value, location.ty, true)?
+                    };
                     let pointer = Pointer { global, offset: 0 };
                     self.data.locations.insert(id, pointer);
                     break pointer;

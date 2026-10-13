@@ -20,6 +20,8 @@ pub struct Tag {
 #[derive(Clone, Copy, Debug)]
 pub enum Shape {
     Scalar,
+    /// Course x86-64 representation: data pointer at 0, element/byte length at 8.
+    WidePointer,
     Array {
         element: TypeId,
         stride: u64,
@@ -260,12 +262,21 @@ impl Layouts {
             | Kind::Reference {
                 referent: pointee, ..
             } => {
-                if types.is_sized(pointee) != Some(true) {
+                let wide = matches!(
+                    types.kind(pointee),
+                    Some(Kind::Slice(_) | Kind::Primitive(Primitive::Str))
+                );
+                if !wide && types.is_sized(pointee) != Some(true) {
                     return Err("unsized pointer metadata requires later layout support");
                 }
                 Ok(Layout {
                     contains_reference: matches!(kind, Kind::Reference { .. }),
-                    ..scalar(8, 8)
+                    shape: if wide {
+                        Shape::WidePointer
+                    } else {
+                        Shape::Scalar
+                    },
+                    ..scalar(if wide { 16 } else { 8 }, 8)
                 })
             }
             Kind::Slice(_) => Err("unsized slice has no fixed layout"),

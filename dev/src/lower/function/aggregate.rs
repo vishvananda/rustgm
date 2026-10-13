@@ -180,7 +180,7 @@ impl Lower<'_, '_> {
         let align = base.align.min(1_u32 << offset.trailing_zeros().min(29));
         Ok(Address { operand, align })
     }
-    fn indexed(
+    pub(super) fn indexed(
         &mut self,
         base: Address,
         index: Value,
@@ -213,15 +213,21 @@ impl Lower<'_, '_> {
     pub(super) fn project(&mut self, id: ProjectionId) -> Result<(), &'static str> {
         let projection = &self.body.projections[id.0 as usize];
         let base = self.place(projection.base)?;
+        if matches!(projection.kind, ProjectionKind::Dereference { .. }) {
+            return self
+                .project_reference(id, base.ok_or("reference place has no pointer storage")?);
+        }
+        if let ProjectionKind::SliceIndex { index } = projection.kind {
+            return self.project_slice_index(id, index);
+        }
         let base_type = self.place_type(projection.base)?;
         let layout = self.context.layout(base_type)?;
         let leaf = self.context.layout(projection.ty)?;
         let retained = leaf.size != 0 || self.addresses.needs(Place::Projection(id));
         let address = match projection.kind {
-            ProjectionKind::Dereference { .. } => Some(self.dereference(
-                base.ok_or("reference place has no pointer storage")?,
-                projection.ty,
-            )?),
+            ProjectionKind::Dereference { .. } | ProjectionKind::SliceIndex { .. } => {
+                return Err("reference projection escaped its typed dispatch");
+            }
             ProjectionKind::Field(field) => {
                 let offset = self.selected_field_offset(&layout, field)?;
                 if retained {
@@ -419,7 +425,7 @@ impl Lower<'_, '_> {
                     .copied()
                     .ok_or("missing aggregate initializer offset")
             }
-            Shape::Scalar => Err("aggregate initializer has scalar layout"),
+            Shape::Scalar | Shape::WidePointer => Err("aggregate initializer has scalar layout"),
         }
     }
     pub(super) fn repeat(

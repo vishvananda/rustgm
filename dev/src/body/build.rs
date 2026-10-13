@@ -307,13 +307,7 @@ impl<'a> Builder<'a> {
                         value = self.evaluate(node, adjustment.target, Rvalue::Reify(value))?;
                     }
                 }
-                AdjustmentKind::ArrayToSlice => {
-                    return Err(self.error(
-                        node,
-                        "slice reference execution requires region and loan proofs",
-                    ));
-                }
-                AdjustmentKind::Equality => {
+                AdjustmentKind::ArrayToSlice | AdjustmentKind::Equality => {
                     if self.body.values[value.0 as usize].ty != adjustment.target {
                         value = self.evaluate(node, adjustment.target, Rvalue::Constrain(value))?;
                     }
@@ -783,12 +777,6 @@ impl<'a> Builder<'a> {
         reason = "cohesive syntax dispatch exposes evaluation order and work-stack scheduling"
     )]
     fn enter(&mut self, node: NodeId) -> Result<(), Error> {
-        if matches!(self.fact(node)?.operation, Some(Operation::IndexSlice)) {
-            return Err(self.error(
-                node,
-                "reference expression execution requires region and loan proofs",
-            ));
-        }
         if let Kind::Let {
             value: Some(value),
             otherwise: Some(_),
@@ -1129,10 +1117,17 @@ impl<'a> Builder<'a> {
             self.facts.types.kind(ty),
             Some(crate::types::Kind::Reference { .. })
         ) {
-            return Err(self.error(
+            let key = NodeKey {
                 node,
-                "text value execution requires reference lowering and loan proofs",
-            ));
+                ..self.body.source
+            };
+            let text = self
+                .facts
+                .text_literals
+                .get(&key)
+                .copied()
+                .ok_or_else(|| self.error(node, "missing selected text literal"))?;
+            return self.evaluate(node, ty, Rvalue::Text(text));
         }
         let scalar = self
             .fact(node)?

@@ -52,6 +52,10 @@ pub enum ProjectionKind {
         index: ValueId,
         length: u64,
     },
+    /// Bounds come from the slice place's retained pointer metadata.
+    SliceIndex {
+        index: ValueId,
+    },
     /// Pattern selection with a statically checked bound; permits owned element moves.
     ConstantIndex(u64),
     /// A fixed-array pattern's half-open range, with independently tracked overlap.
@@ -95,6 +99,7 @@ pub enum Rvalue {
         value: ValueId,
     },
     Scalar(ScalarId),
+    Text(crate::sema::text::Id),
     /// A by-value use; ownership and Copy selection are checked by later stages.
     Read(Place),
     /// Form a reference to a place without reading or moving its referent.

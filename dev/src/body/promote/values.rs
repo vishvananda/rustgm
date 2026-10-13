@@ -56,12 +56,32 @@ impl Engine<'_, '_> {
             .map(Some)
             .map_err(Error::from)
     }
+    fn text_value(
+        &self,
+        id: crate::sema::text::Id,
+        ty: crate::types::TypeId,
+    ) -> Result<Constant, Error> {
+        let Some(Type::Reference { referent, .. }) = self.evaluator.facts().types.kind(ty) else {
+            return Err("text literal has no reference type".into());
+        };
+        Ok(
+            if referent == crate::types::TypeId::primitive(crate::types::Primitive::Str) {
+                Constant::string(id)
+            } else {
+                Constant::bytes(id)
+            },
+        )
+    }
     pub(super) fn finish_value(&mut self, id: ValueId) -> Result<Option<Ready>, Error> {
         let value = self.value(id)?;
         let (ty, kind) = (value.ty, value.kind);
         let mut immediate = false;
         let mut constant_assignment = false;
         let value = match kind {
+            Rvalue::Text(id) => {
+                immediate = true;
+                Some(self.text_value(id, ty)?)
+            }
             Rvalue::Scalar(id) => {
                 immediate = true;
                 Some(Constant::scalar(

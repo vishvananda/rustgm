@@ -2,6 +2,7 @@
 mod aggregate;
 mod references;
 mod selections;
+mod slices;
 use super::{
     Error,
     arithmetic::Arithmetic,
@@ -58,6 +59,7 @@ struct Lower<'a, 'b> {
     builder: Builder,
     locals: Vec<Option<Address>>,
     addresses: references::Storage,
+    slice_lengths: std::collections::HashMap<ir::ProjectionId, Value>,
     projections: Vec<Projected>,
     selections: std::collections::HashMap<ir::ProjectionId, selections::Recipe>,
     selection_dereferences: std::collections::HashMap<ir::ProjectionId, std::num::NonZeroU32>,
@@ -77,6 +79,7 @@ pub(super) fn lower<'a>(context: &mut Context<'a>, body: &'a ir::Body) -> Result
         builder: Builder::default(),
         locals: Vec::new(),
         addresses: references::Storage::default(),
+        slice_lengths: std::collections::HashMap::new(),
         projections: vec![Projected::Pending; body.projections.len()],
         selections: std::collections::HashMap::new(),
         selection_dereferences: std::collections::HashMap::new(),
@@ -406,7 +409,12 @@ impl Lower<'_, '_> {
                 let address = self
                     .place(place)?
                     .ok_or("borrowed place lacks stable storage")?;
-                self.pointer(address)?
+                let pointer = self.pointer(address)?;
+                if matches!(representation, Representation::Object(_)) {
+                    let length = self.slice_length(place)?;
+                    return self.wide_pointer(pointer, length);
+                }
+                pointer
             }
             Rvalue::Unit | Rvalue::Validate(_) => return Ok(Selected::Unit),
             Rvalue::Aggregate { variant, fields } => {
@@ -415,6 +423,7 @@ impl Lower<'_, '_> {
             Rvalue::Repeat { value: operand } => return self.repeat(value.ty, operand),
             Rvalue::Function(definition) => return Ok(Selected::Item(definition)),
             Rvalue::Scalar(scalar) => self.scalar(self.body.scalars[scalar.0 as usize], ty)?,
+            Rvalue::Text(text) => return self.text_literal(text, representation),
             Rvalue::IsVariant { place, variant } => return self.is_variant(place, variant),
             Rvalue::Read(place) => {
                 if matches!(representation, Representation::Scalar(Type::Void)) {
@@ -465,7 +474,7 @@ impl Lower<'_, '_> {
                 kind: Cast::FunctionPointer,
                 operand,
             } => return self.reify(operand),
-            Rvalue::Constrain(operand) => return self.constrain(operand, representation),
+            Rvalue::Constrain(operand) => return self.constrain(operand, value.ty, representation),
             Rvalue::Unary {
                 operator,
                 operand,

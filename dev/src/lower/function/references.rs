@@ -100,6 +100,7 @@ impl Lower<'_, '_> {
     pub(super) fn constrain(
         &mut self,
         operand: ValueId,
+        target_ty: TypeId,
         target: Representation,
     ) -> Result<Selected, &'static str> {
         let source = self
@@ -113,7 +114,7 @@ impl Lower<'_, '_> {
             _ => false,
         };
         if !same {
-            return Err("reference conversion changes its runtime representation");
+            return self.unsize(operand, target_ty);
         }
         self.value(operand)
     }
@@ -122,7 +123,11 @@ impl Lower<'_, '_> {
         base: Address,
         ty: TypeId,
     ) -> Result<Address, &'static str> {
-        let align = self.context.layout(ty)?.align;
+        let align = self
+            .context
+            .layouts
+            .reference_align(self.context.types, self.context.aggregates, ty)
+            .map_err(|e| e.message)?;
         let value = self.builder.load(Type::Ptr, base.operand)?;
         Ok(Address {
             operand: value.operand,

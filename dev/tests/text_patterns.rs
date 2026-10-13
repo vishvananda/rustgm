@@ -322,7 +322,8 @@ fn text_pool_is_flat_and_reuses_equal_bytes() -> Result<(), Box<dyn std::error::
 }
 
 #[test]
-fn text_reference_execution_remains_a_proof_boundary() -> Result<(), Box<dyn std::error::Error>> {
+fn text_values_lower_while_text_and_slice_decisions_remain_pending()
+-> Result<(), Box<dyn std::error::Error>> {
     let directory = folder()?;
     for (index, source) in [
         r#"fn main(){let _="a";}"#,
@@ -337,12 +338,16 @@ fn text_reference_execution_remains_a_proof_boundary() -> Result<(), Box<dyn std
         std::fs::write(&path, source)?;
         assert!(frontend(&path, "--emit-patterns")?.status.success());
         let output = frontend(&path, "--emit-lowir")?;
+        if index < 2 {
+            assert!(output.status.success());
+            assert!(output.stderr.is_empty() && !output.stdout.is_empty());
+            continue;
+        }
         assert_eq!(output.status.code(), Some(1));
         assert!(output.stdout.is_empty());
         let diagnostic = String::from_utf8_lossy(&output.stderr);
         assert!(
-            diagnostic.contains("reference lowering")
-                || diagnostic.contains("owned selected patterns"),
+            diagnostic.contains("owned selected patterns"),
             "{diagnostic}"
         );
     }
@@ -368,7 +373,10 @@ fn text_coverage_queries_visit_only_their_own_patterns() -> Result<(), String> {
     assert_eq!(facts.texts.len(), 129);
     assert!(facts.patterns.decisions.iter().all(|d| d.work == work));
     let (_, facts) = analyze(r#"fn f(){let _="never demanded";}"#)?;
-    assert!(facts.texts.is_empty());
+    assert_eq!(facts.texts.len(), 1);
+    assert_eq!(facts.text_literals.len(), 1);
+    assert_eq!(facts.texts.get(Id(0))?, b"never demanded");
+    assert!(facts.patterns.decisions.is_empty());
     Ok(())
 }
 
@@ -455,33 +463,30 @@ fn text_witnesses_and_expansion_limits_are_atomic() -> Result<(), Box<dyn std::e
 }
 
 #[test]
-fn unsized_pointer_layout_and_c_strings_keep_their_later_boundaries()
+fn wide_pointer_fields_are_supported_while_c_strings_keep_their_later_boundary()
 -> Result<(), Box<dyn std::error::Error>> {
     let directory = folder()?;
     for (name, source, boundary) in [
-        (
-            "str-field",
-            "struct S(&'static str);",
-            "unsized pointer metadata",
-        ),
-        (
-            "slice-field",
-            "struct S(&'static [u8]);",
-            "unsized pointer metadata",
-        ),
+        ("str-field", "struct S(&'static str);", None),
+        ("slice-field", "struct S(&'static [u8]);", None),
         (
             "c-string",
             r#"fn f(){let _=c"a";}"#,
-            "C string values require the library type assignment",
+            Some("C string values require the library type assignment"),
         ),
     ] {
         let path = directory.join(format!("deferred-{name}.rs"));
         std::fs::write(&path, source)?;
         assert!(rustc(&path)?.status.success());
         let output = frontend(&path, "--emit-patterns")?;
-        assert_eq!(output.status.code(), Some(1));
-        assert!(output.stdout.is_empty());
-        assert!(String::from_utf8_lossy(&output.stderr).contains(boundary));
+        if let Some(boundary) = boundary {
+            assert_eq!(output.status.code(), Some(1));
+            assert!(output.stdout.is_empty());
+            assert!(String::from_utf8_lossy(&output.stderr).contains(boundary));
+        } else {
+            assert!(output.status.success());
+            assert!(output.stderr.is_empty() && !output.stdout.is_empty());
+        }
     }
     Ok(())
 }

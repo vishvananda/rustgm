@@ -78,7 +78,9 @@ impl Index {
                 ProjectionKind::Field(field) => Step::Field(field),
                 ProjectionKind::ConstantIndex(i) => Step::Element(i),
                 ProjectionKind::Subarray { start, end } => Step::Range(start, end),
-                ProjectionKind::Index { index, .. } => Step::Dynamic(index),
+                ProjectionKind::Index { index, .. } | ProjectionKind::SliceIndex { index } => {
+                    Step::Dynamic(index)
+                }
             };
             let path = this.child(base, step)?;
             this.projections.push(path);

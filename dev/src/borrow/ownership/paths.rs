@@ -97,7 +97,7 @@ impl Paths {
                     info.empty = start == end;
                     Some(Component::Subarray { start, end })
                 }
-                ProjectionKind::Index { .. } => {
+                ProjectionKind::Index { .. } | ProjectionKind::SliceIndex { .. } => {
                     info.indexed = true;
                     None
                 }

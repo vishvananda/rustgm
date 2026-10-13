@@ -281,6 +281,14 @@ impl Builder<'_> {
                         length,
                     }
                 }
+                Some(Operation::IndexSlice) => {
+                    let Kind::Index { index, .. } = self.kind(node) else {
+                        return Err(self.error(node, "invalid slice index selection"));
+                    };
+                    ProjectionKind::SliceIndex {
+                        index: self.value(index)?,
+                    }
+                }
                 _ => return Err(self.error(node, "missing selected projection")),
             };
             Some(self.project(node, self.ty(node)?, base, kind)?)
