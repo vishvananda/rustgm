@@ -1,4 +1,5 @@
 //! Conditional patterns share decisions while retaining success-only binding scopes.
+use super::decisions::Failure;
 use super::{
     BlockId, Builder, Control, Error, Kind, NodeId, NodeKey, Terminator, Work as BuildWork,
 };
@@ -15,6 +16,7 @@ pub(super) enum Work {
         end: usize,
     },
     Enter {
+        failure: Failure,
         node: NodeId,
         yes: BlockId,
         no: BlockId,
@@ -27,6 +29,7 @@ pub(super) enum Work {
         base: usize,
     },
     Pattern {
+        failure: Failure,
         node: NodeId,
         yes: BlockId,
         no: BlockId,
@@ -63,6 +66,7 @@ impl Builder<'_> {
                 end,
             } => self.resume_let_else(node, join, base, start, end),
             Work::Enter {
+                failure,
                 node,
                 yes,
                 no,
@@ -80,6 +84,7 @@ impl Builder<'_> {
                 {
                     let next = self.new_block(node)?;
                     self.scratch.work.push(BuildWork::Conditional(Work::Enter {
+                        failure,
                         node: right,
                         yes,
                         no,
@@ -87,6 +92,7 @@ impl Builder<'_> {
                     }));
                     self.scratch.work.push(BuildWork::Switch(next));
                     self.scratch.work.push(BuildWork::Conditional(Work::Enter {
+                        failure,
                         node: left,
                         yes: next,
                         no,
@@ -97,6 +103,7 @@ impl Builder<'_> {
                     self.scratch
                         .work
                         .push(BuildWork::Conditional(Work::Pattern {
+                            failure,
                             node,
                             yes,
                             no,
@@ -141,11 +148,12 @@ impl Builder<'_> {
                 Ok(())
             }
             Work::Pattern {
+                failure,
                 node,
                 yes,
                 no,
                 base,
-            } => self.conditional_test(node, yes, no, base),
+            } => self.conditional_test(node, yes, no, base, failure),
         }
     }
     fn resume_let_else(
@@ -182,6 +190,7 @@ impl Builder<'_> {
         yes: BlockId,
         no: BlockId,
         base: usize,
+        failure: Failure,
     ) -> Result<(), Error> {
         let input = self.pop_place(node)?;
         if self.current.is_none() {
@@ -191,13 +200,8 @@ impl Builder<'_> {
         let selected = self.conditional(node)?;
         let accepted = self.new_block(node)?;
         let rejected = self.new_block(node)?;
-        let plan = self.constructor_decision(
-            selected.pattern,
-            place,
-            accepted,
-            rejected,
-            super::decisions::Failure::Checked,
-        )?;
+        let plan =
+            self.constructor_decision(selected.pattern, place, accepted, rejected, failure)?;
         self.switch(node, rejected)?;
         self.cleanup(node, base)?;
         self.terminate(node, Terminator::Jump(no));
@@ -286,6 +290,7 @@ impl Builder<'_> {
             self.scratch.work.push(BuildWork::Switch(block));
         }
         self.scratch.work.push(BuildWork::Conditional(Work::Enter {
+            failure: Failure::Checked,
             node: condition,
             yes,
             no,
@@ -329,6 +334,7 @@ impl Builder<'_> {
         self.scratch.work.push(BuildWork::Enter(body));
         self.scratch.work.push(BuildWork::Switch(run));
         self.scratch.work.push(BuildWork::Conditional(Work::Enter {
+            failure: Failure::Checked,
             node: condition,
             yes: run,
             no: exit,

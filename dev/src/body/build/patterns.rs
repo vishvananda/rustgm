@@ -153,6 +153,23 @@ impl Builder<'_> {
         base: Place,
         selection: Option<Projection>,
     ) -> Result<Place, Error> {
+        let place = self.pattern_place(id, base, selection)?;
+        if place != base
+            && let Place::Projection(projection) = place
+        {
+            self.statement(
+                self.facts.patterns.nodes[id.0 as usize].source.node,
+                super::Action::Project(projection),
+            )?;
+        }
+        Ok(place)
+    }
+    pub(super) fn pattern_place(
+        &mut self,
+        id: PatternId,
+        base: Place,
+        selection: Option<Projection>,
+    ) -> Result<Place, Error> {
         let Some(selection) = selection else {
             return Ok(base);
         };
@@ -172,7 +189,8 @@ impl Builder<'_> {
                 ));
             }
         };
-        self.project(node, ty, base, projection)
+        self.projection(node, ty, base, projection)
+            .map(Place::Projection)
     }
     pub(super) fn pattern_capture(
         &mut self,

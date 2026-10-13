@@ -29,9 +29,10 @@ The view covers irrefutable owned products/arrays, explicit reference patterns,
 edition-2024 binding modes, irrefutable borrowed slice rests, and owned match
 decisions. Boolean, integer and character intervals compose with tuple, record,
 enum, fixed-array and reference patterns for exhaustiveness and whole-arm
-usefulness. Dynamic slices currently support only irrefutable rests. Unguarded owned matches and irrefutable constructor bindings can execute.
-Owned let-else, if-let, while-let and condition chains also execute. Guards,
-named constants and refutable dynamic slices remain unfinished.
+usefulness. Dynamic slices currently support only irrefutable rests. Owned matches, including
+boolean and conditional guards, and irrefutable constructor bindings can execute.
+Owned let-else, if-let, while-let and condition chains also execute. Named
+constants and refutable dynamic slices remain unfinished.
 
 The current vocabulary is `selected-patterns 1`, the canonical type table,
 `root FILE:NODE pattern=ID`, and arena-ordered `pattern ID source=FILE:NODE
@@ -120,12 +121,37 @@ rules bypass pending region or loan obligations.
 Conditional match guards and their let chains can be parsed, resolved and
 selected using these same conditional facts. Initializers retain pre-shadowing
 binding identities; later operands and arm bodies see the new bindings. This
-inspection support does not establish guarded execution safety.
+selection feeds the guarded execution described below.
 
-A full-domain interval requires no value test. Guarded execution is rejected
-before publishing body IR: inspection has not proved protected guard accesses,
-delayed moves or failed-guard retries. Irrefutable and conditional binding
-execution can combine constructors and scalar intervals.
+A full-domain interval requires no value test. Owned guard execution uses
+internal read-only views of selected bindings, then commits owning captures
+only after success. Guard-let bindings have their ordinary local ownership and
+mutability. Failed guards end attempt-local storage and resume the next matching
+alternative in written order; the scrutinee is evaluated once. Nested products
+traverse fields in written order and keep the last field as the innermost retry.
+Each subtree has first-match and resume continuations, so generated decisions
+stay proportional to the pattern rather than expanding products of alternatives.
+A product field with no first match rejects that product immediately.
+
+Body IR records `guard-view`, `guard`, `guard-place`, `guard-start`, `bind-view`
+and `guard-use` facts. Shallow protection covers tested places across the match;
+selected binding views additionally protect the whole bound value. Mutation of
+an untested, disjoint field can remain valid. Protection follows future uses:
+divergent paths need not preserve values for a guard continuation they cannot
+reach. Moving a non-Copy value or assigning through a view is rejected. Packed
+origins must support the alignment of an internal reference, even for zero-sized
+fields. An empty rest still requires and protects its containing array's shallow
+state; moving disjoint elements remains possible. These are internal view checks,
+separate from user-reference regions.
+
+Retry paths retain imaginary ownership edges for bypassed guards and later
+alternatives. They do not invent a guard-failure edge after an irrefutable
+conditional guard. Native lowering follows only real edges. Static retry paths
+use `select pN anchor=PLACE`: cached typed offset recipes form fresh addresses
+in each use block, preserving dominance after a resume without replaying every
+parent projection. Proof-only tested-place metadata never forms addresses for
+inactive enum variants. Irrefutable and conditional binding execution can combine
+constructors and scalar intervals.
 
 `region-var region:N body=FILE:NODE source=FILE:NODE origin=pattern-borrow|pattern-input
 pending` gives existential region provenance. IDs are globally allocated from

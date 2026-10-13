@@ -10,15 +10,16 @@ use crate::{
 
 #[derive(Clone, Copy)]
 pub(super) struct Frame {
-    node: NodeId,
-    place: Place,
-    next: u32,
-    end: u32,
-    merge: Option<LocalId>,
-    join: BlockId,
-    entry: Option<BlockId>,
-    base: usize,
-    scalar: bool,
+    pub(super) node: NodeId,
+    pub(super) place: Place,
+    pub(super) next: u32,
+    pub(super) end: u32,
+    pub(super) merge: Option<LocalId>,
+    pub(super) join: BlockId,
+    pub(super) entry: Option<BlockId>,
+    pub(super) base: usize,
+    pub(super) scalar: bool,
+    pub(super) tested: Option<(u32, u32)>,
 }
 impl Builder<'_> {
     pub(super) fn start_match(&mut self, node: NodeId) -> Result<(), Error> {
@@ -45,15 +46,14 @@ impl Builder<'_> {
         let scalar = input == TypeId::NEVER
             || matches!(self.facts.types.kind(input), Some(Type::Primitive(p)) if Domain::new(p).is_some());
         let (start, end) = (decision.start, decision.end);
-        if self.facts.patterns.arms[start as usize..end as usize]
+        let tested = if self.facts.patterns.arms[start as usize..end as usize]
             .iter()
             .any(|a| a.guard.is_some())
         {
-            return Err(self.error(
-                node,
-                "guard execution requires protected captures and retry decisions",
-            ));
-        }
+            Some(self.guard_tested_places(start, end, place)?)
+        } else {
+            None
+        };
         if start == end && input != TypeId::NEVER {
             self.evaluate(node, TypeId::UNIT, Rvalue::Validate(place))?;
         }
@@ -70,6 +70,7 @@ impl Builder<'_> {
             entry: None,
             base: self.scratch.live.len(),
             scalar,
+            tested,
         });
         self.scratch.work.push(Work::Join {
             node,
@@ -96,6 +97,9 @@ impl Builder<'_> {
         let pattern = arm
             .pattern
             .ok_or_else(|| self.error(frame.node, "missing arm binding selection"))?;
+        if arm.guard.is_some() {
+            return self.guarded_arm(index, frame, arm, pattern);
+        }
         let yes = self.new_block(arm.source.node)?;
         let no = self.new_block(arm.source.node)?;
         let checked = frame.next + 1 < frame.end;

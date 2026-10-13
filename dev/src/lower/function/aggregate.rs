@@ -175,7 +175,7 @@ impl Lower<'_, '_> {
             Selected::Unit | Selected::Item(_) => Ok(()),
         }
     }
-    fn offset(&mut self, base: Address, offset: u64) -> Result<Address, &'static str> {
+    pub(super) fn offset(&mut self, base: Address, offset: u64) -> Result<Address, &'static str> {
         if offset == 0 {
             return Ok(base);
         }
@@ -201,7 +201,7 @@ impl Lower<'_, '_> {
             align: base.align.min(align),
         })
     }
-    fn place_type(&self, place: Place) -> Result<TypeId, &'static str> {
+    pub(super) fn place_type(&self, place: Place) -> Result<TypeId, &'static str> {
         match place {
             Place::Local(id) => Ok(self.body.locals[id.0 as usize].ty),
             Place::Temporary(id) => Ok(self.body.values[id.0 as usize].ty),
@@ -217,37 +217,7 @@ impl Lower<'_, '_> {
         let leaf = self.context.layout(projection.ty)?;
         let address = match projection.kind {
             ProjectionKind::Field(field) => {
-                let variant_ordinal = match field {
-                    Selection::Tuple(_) => 0,
-                    Selection::Nominal(id) => {
-                        self.context
-                            .members
-                            .variant(id)
-                            .and_then(|v| self.context.members.variants.get(v.0 as usize))
-                            .ok_or("missing selected field variant")?
-                            .ordinal
-                    }
-                };
-                let ordinal = match field {
-                    Selection::Tuple(index) => index,
-                    Selection::Nominal(id) => self
-                        .context
-                        .members
-                        .ordinal(id)
-                        .ok_or("missing selected field ordinal")?,
-                };
-                let variant = self
-                    .context
-                    .layouts
-                    .variants(&layout)
-                    .get(variant_ordinal as usize)
-                    .ok_or("field base has no field group")?;
-                let offset = *self
-                    .context
-                    .layouts
-                    .offsets(variant)
-                    .get(ordinal as usize)
-                    .ok_or("selected field has no layout offset")?;
+                let offset = self.selected_field_offset(&layout, field)?;
                 if leaf.size == 0 {
                     None
                 } else {
@@ -295,6 +265,32 @@ impl Lower<'_, '_> {
         self.projections[id.0 as usize] = Projected::Ready(address);
         Ok(())
     }
+    pub(super) fn selected_field_offset(
+        &self,
+        layout: &Layout,
+        field: Selection,
+    ) -> Result<u64, &'static str> {
+        let variant_ordinal = match field {
+            Selection::Tuple(_) => 0,
+            Selection::Nominal(id) => {
+                self.context
+                    .members
+                    .variant(id)
+                    .and_then(|v| self.context.members.variants.get(v.0 as usize))
+                    .ok_or("missing selected field variant")?
+                    .ordinal
+            }
+        };
+        let ordinal = match field {
+            Selection::Tuple(index) => index,
+            Selection::Nominal(id) => self
+                .context
+                .members
+                .ordinal(id)
+                .ok_or("missing selected field ordinal")?,
+        };
+        self.field_offset(layout, variant_ordinal, ordinal as usize)
+    }
     fn pattern_offset(
         &mut self,
         base: Option<Address>,
@@ -303,6 +299,19 @@ impl Lower<'_, '_> {
         start: u64,
         end: Option<u64>,
     ) -> Result<Option<Address>, &'static str> {
+        let offset = Self::pattern_byte_offset(layout, leaf, start, end)?;
+        if leaf.size == 0 {
+            return Ok(None);
+        }
+        self.offset(base.ok_or("pattern array has no storage")?, offset)
+            .map(Some)
+    }
+    pub(super) fn pattern_byte_offset(
+        layout: &Layout,
+        leaf: &Layout,
+        start: u64,
+        end: Option<u64>,
+    ) -> Result<u64, &'static str> {
         let Shape::Array { stride, length, .. } = layout.shape else {
             return Err("pattern projection base has no array layout");
         };
@@ -324,14 +333,9 @@ impl Lower<'_, '_> {
         } else if start >= length {
             return Err("pattern element exceeds its checked bound");
         }
-        if leaf.size == 0 {
-            return Ok(None);
-        }
-        let offset = start
+        start
             .checked_mul(stride)
-            .ok_or("pattern array offset overflow")?;
-        self.offset(base.ok_or("pattern array has no storage")?, offset)
-            .map(Some)
+            .ok_or("pattern array offset overflow")
     }
     pub(super) fn aggregate(
         &mut self,

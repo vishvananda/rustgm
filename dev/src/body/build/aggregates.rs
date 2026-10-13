@@ -196,10 +196,20 @@ impl Builder<'_> {
         base: Place,
         kind: ProjectionKind,
     ) -> Result<Place, Error> {
-        let id = ProjectionId(self.index(node, self.body.projections.len())?);
-        self.body.projections.push(Projection { base, kind, ty });
+        let id = self.projection(node, ty, base, kind)?;
         self.statement(node, Action::Project(id))?;
         Ok(Place::Projection(id))
+    }
+    pub(super) fn projection(
+        &mut self,
+        node: NodeId,
+        ty: TypeId,
+        base: Place,
+        kind: ProjectionKind,
+    ) -> Result<ProjectionId, Error> {
+        let id = ProjectionId(self.index(node, self.body.projections.len())?);
+        self.body.projections.push(Projection { base, kind, ty });
+        Ok(id)
     }
     pub(super) fn finish_place(&mut self, node: NodeId) -> Result<(), Error> {
         let base = self.pop_place(node)?;

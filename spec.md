@@ -89,6 +89,10 @@ captures until success. Protect tested places without runtime loads or address
 formation for inactive variants. Track guard protection liveness across control
 flow; a diverging path does not imply a later guard use. Internal view proofs
 are distinct from the pending loans and regions of user reference values.
+Build guarded pattern retries with shared first-match and resume continuations,
+not an expanded Cartesian product. Preserve written alternative/field order and
+end attempt-local storage on failure. Static path offsets may be cached as typed
+recipes, but addresses must be formed where they dominate their actual uses.
 
 Borrow checking runs before references and moves lose their source semantics
 in LowIR. Region/dataflow analysis uses typed worklists and bounded lattices,

@@ -149,7 +149,9 @@ impl<'a> Proof<'a> {
                     self.read(place, live)?;
                 }
             }
-            Action::Project(id) => self.read(self.body.projections[id.0 as usize].base, live)?,
+            Action::Project(id) | Action::Select { projection: id, .. } => {
+                self.read(self.body.projections[id.0 as usize].base, live)?;
+            }
             Action::Store { .. } => {}
         }
         Ok(())
@@ -157,12 +159,14 @@ impl<'a> Proof<'a> {
     fn conflict(&self, written: PathId, targets: &[PlaceInfo], deep: bool) -> bool {
         let written = &self.facts.paths.entries[written.0 as usize];
         targets.iter().any(|target| {
-            if target.empty {
-                return false;
-            }
-            target.path.is_some_and(|path| {
+            let (target, shallow) = self.facts.paths.guard_target(*target);
+            target.is_some_and(|path| {
                 let path = &self.facts.paths.entries[path.0 as usize];
-                let end = if deep { path.end } else { path.start + 1 };
+                let end = if deep && !shallow {
+                    path.end
+                } else {
+                    path.start + 1
+                };
                 written.start < end && path.start < written.end
             })
         })

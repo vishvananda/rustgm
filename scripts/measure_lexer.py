@@ -59,13 +59,15 @@ def main():
     workloads.add_argument("--constructor-match-input", action="store_true", help="exercise constructor tests and delayed alternative captures at 1000/4000/16000 procedures")
     workloads.add_argument("--conditional-pattern-input", action="store_true", help="exercise let-else, conditional chains and while-let at 1000/4000/16000 procedures")
     workloads.add_argument("--storage-width-input", choices=("chain", "let-else"), help="exercise persistent cleanup at 128/512/2048 bindings in one procedure")
-    workloads.add_argument("--guard-input", choices=("boolean", "let-chain"), help="exercise guard syntax and binding scopes at 1000/4000/16000 procedures")
+    workloads.add_argument("--guard-input", choices=("boolean", "let-chain", "retry"), help="exercise guard scopes or execution at 1000/4000/16000 procedures")
     parser.add_argument("--stage", choices=("tokens", "literals", "token-trees", "ast", "crate-ast", "names", "expanded", "expanded-crate", "types", "patterns", "layouts", "body-ir", "ownership", "lowir"), default="tokens")
     args = parser.parse_args()
     if (args.aggregate_input or args.discriminant_input or args.product_input or args.array_pattern_input or args.scalar_match_input or args.constructor_match_input or args.conditional_pattern_input or args.storage_width_input) and args.stage != "lowir":
         parser.error("aggregate, discriminant and owned-pattern workloads require --stage lowir")
-    if (args.pattern_input or args.guard_input) and args.stage != "names":
+    if args.pattern_input and args.stage != "names":
         parser.error("pattern identity workloads require --stage names")
+    if args.guard_input and args.stage not in ("names", "lowir"):
+        parser.error("guard workloads require --stage names or --stage lowir")
     if (args.borrowed_pattern_input or args.constructor_pattern_input) != (args.stage == "patterns"):
         parser.error("--stage patterns requires --borrowed-pattern-input or --constructor-pattern-input")
     directory = ROOT / "obj/perf" / str(time.time_ns())
@@ -105,10 +107,15 @@ def main():
         source = directory / f"input-{lines}.rs"
         if args.guard_input:
             guard = "n>0&&n<10" if args.guard_input == "boolean" else "let n=n&&n>0&&let m=n+1"
-            value = "n" if args.guard_input == "boolean" else "m"
+            value = "m" if args.guard_input == "let-chain" else "n"
+            prefix, pattern = "", "n"
+            if args.guard_input == "retry":
+                prefix, pattern = "let mut calls=0;", "n@(0..=9|5..=15|_)"
+                guard = "{calls+=1;calls==2}"
             source.write_text("".join(
-                f"fn measured_{i}(x:u8)->u8{{match x{{n if {guard}=>{value},_=>0}}}}\n"
-                for i in range(lines)))
+                f"fn measured_{i}(x:u8)->u8{{{prefix}match x{{{pattern} if {guard}=>{value},_=>0}}}}\n"
+                for i in range(lines)) + ("fn main(){" + "".join(
+                f"measured_{i}(7);" for i in range(lines)) + "}\n" if args.stage == "lowir" else ""))
         elif args.storage_width_input:
             patterns = [f"n{i}@0..=9=" + ("x" if i == 0 else f"n{i-1}") for i in range(lines)]
             if args.storage_width_input == "chain":

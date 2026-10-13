@@ -190,7 +190,10 @@ impl BodyFacts {
                     }
                 }
             }
-            Action::GuardStart(_) | Action::GuardUse(_) | Action::Project(_) => {}
+            Action::GuardStart(_)
+            | Action::GuardUse(_)
+            | Action::Project(_)
+            | Action::Select { .. } => {}
         }
         Ok(())
     }
@@ -219,12 +222,17 @@ impl BodyFacts {
                 ) {
                     return Err("view binding requires an internal guard local");
                 }
-                let info = self.paths.place(place)?;
-                if !info.empty
-                    && let Some(path) = info.path
-                    && !state.initialized(&self.paths.entries[path.0 as usize])?
-                {
-                    return Err("guard binding may be uninitialized or moved");
+                let (path, shallow) = self.paths.guard_target(self.paths.place(place)?);
+                if let Some(path) = path {
+                    let path = &self.paths.entries[path.0 as usize];
+                    let initialized = if shallow {
+                        state.shallow(path.start)
+                    } else {
+                        state.initialized(path)?
+                    };
+                    if !initialized {
+                        return Err("guard binding may be uninitialized or moved");
+                    }
                 }
             }
             Action::Evaluate(id) => {
@@ -265,7 +273,7 @@ impl BodyFacts {
                     }
                 }
             }
-            Action::Project(id) => {
+            Action::Project(id) | Action::Select { projection: id, .. } => {
                 let info = self.paths.projections[id.0 as usize];
                 if info.indexed
                     && let Some(path) = info.path

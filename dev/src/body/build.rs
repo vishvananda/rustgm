@@ -2,8 +2,10 @@
 mod aggregates;
 mod conditions;
 mod decisions;
+mod guards;
 mod matches;
 mod patterns;
+mod retries;
 use super::ir::{
     Action, Block, BlockId, Body, Local, LocalId, LocalKind, Owner, Place, Program, Rvalue,
     ScalarId, Statement, Terminator, Value, ValueId, ValueList,
@@ -57,6 +59,7 @@ pub fn build(report: &Report, facts: &Declarations) -> Result<Program, Error> {
         field_values: Vec::new(),
         pattern_work: Vec::new(),
         match_frames: Vec::new(),
+        guard_frames: Vec::new(),
         match_patterns: Vec::new(),
         conditional_live: Vec::new(),
     };
@@ -138,6 +141,7 @@ enum Work {
     Conditional(conditions::Work),
     MatchStart(NodeId),
     MatchNext(usize),
+    GuardFinish(usize),
     BindPattern {
         node: NodeId,
         pattern: crate::sema::patterns::PatternId,
@@ -184,6 +188,7 @@ enum Work {
 struct Scratch {
     conditional_live: Vec<LocalId>,
     match_frames: Vec<matches::Frame>,
+    guard_frames: Vec<Option<guards::Frame>>,
     match_patterns: Vec<crate::sema::patterns::PatternId>,
     pattern_work: Vec<patterns::Work>,
     places: Vec<Option<Place>>,
@@ -516,6 +521,7 @@ impl<'a> Builder<'a> {
         self.scratch.controls.clear();
         self.scratch.reach.clear();
         self.scratch.match_frames.clear();
+        self.scratch.guard_frames.clear();
         self.scratch.match_patterns.clear();
         if !self.scratch.conditional_live.is_empty() {
             return Err(self.error(root, "unbalanced conditional storage continuations"));
@@ -534,6 +540,7 @@ impl<'a> Builder<'a> {
             Work::Conditional(work) => self.conditional_step(work)?,
             Work::MatchStart(node) => self.start_match(node)?,
             Work::MatchNext(frame) => self.next_match_arm(frame)?,
+            Work::GuardFinish(frame) => self.finish_guard(frame)?,
             Work::BindPattern {
                 node,
                 pattern,

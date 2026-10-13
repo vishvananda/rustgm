@@ -126,6 +126,23 @@ impl Paths {
         }
         Ok(targets)
     }
+    /// Empty rests read no elements, but their internal references still require
+    /// and protect the containing array's shallow state. Indexed origins retain
+    /// the ordinary conservative whole-array path.
+    pub(in crate::borrow::ownership) fn guard_target(
+        &self,
+        info: PlaceInfo,
+    ) -> (Option<PathId>, bool) {
+        let shallow = info.empty && !info.indexed;
+        let path = info.path.map(|id| {
+            if shallow {
+                self.entries[id.0 as usize].parent.unwrap_or(id)
+            } else {
+                id
+            }
+        });
+        (path, shallow)
+    }
     pub(in crate::borrow::ownership) fn view_root(
         &self,
         body: &Body,

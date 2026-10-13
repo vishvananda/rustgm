@@ -13,8 +13,9 @@ use crate::{
 use std::collections::{HashMap, HashSet};
 
 pub(super) struct Plan {
-    choices: HashMap<PatternId, LocalId>,
+    pub(super) choices: HashMap<PatternId, LocalId>,
     bindings: Vec<PatternId>,
+    capture_choices: Option<HashSet<PatternId>>,
 }
 #[derive(Clone, Copy)]
 pub(super) enum Failure {
@@ -79,7 +80,7 @@ impl Builder<'_> {
         no: BlockId,
         failure: Failure,
     ) -> Result<Plan, Error> {
-        let plan = self.prepare_decisions(root)?;
+        let plan = self.prepare_decisions(root, false)?;
         let entry = self.current;
         let mut work = vec![Decision::Test(Test {
             pattern: root,
@@ -235,7 +236,11 @@ impl Builder<'_> {
         self.scratch.reach[no.0 as usize].incoming = true;
         Ok(())
     }
-    fn prepare_decisions(&mut self, root: PatternId) -> Result<Plan, Error> {
+    pub(super) fn prepare_decisions(
+        &mut self,
+        root: PatternId,
+        retries: bool,
+    ) -> Result<Plan, Error> {
         let mut order = Vec::new();
         let mut work = vec![root];
         let mut bindings = Vec::new();
@@ -305,7 +310,7 @@ impl Builder<'_> {
         let mut choices = HashMap::new();
         for id in order {
             let pattern = &self.facts.patterns.nodes[id.0 as usize];
-            if matches!(pattern.kind, Kind::Or(_)) && captures.contains(&id) {
+            if matches!(pattern.kind, Kind::Or(_)) && (retries || captures.contains(&id)) {
                 let node = pattern.source.node;
                 let local = self.local(
                     node,
@@ -321,7 +326,18 @@ impl Builder<'_> {
                 choices.insert(id, local);
             }
         }
-        Ok(Plan { choices, bindings })
+        let capture_choices = retries.then(|| {
+            choices
+                .keys()
+                .filter(|id| captures.contains(id))
+                .copied()
+                .collect()
+        });
+        Ok(Plan {
+            choices,
+            bindings,
+            capture_choices,
+        })
     }
     fn constructor_test(&mut self, test: Test, work: &mut Vec<Decision>) -> Result<(), Error> {
         let Test {
@@ -416,25 +432,19 @@ impl Builder<'_> {
         root: PatternId,
         place: Place,
     ) -> Result<(), Error> {
+        self.selected_captures(plan, root, place, None)
+    }
+    pub(super) fn selected_captures(
+        &mut self,
+        plan: &Plan,
+        root: PatternId,
+        place: Place,
+        guard: Option<crate::body::ir::GuardId>,
+    ) -> Result<(), Error> {
         if self.current.is_none() || plan.bindings.is_empty() {
             return Ok(());
         }
-        for &id in &plan.bindings {
-            let pattern = &self.facts.patterns.nodes[id.0 as usize];
-            let node = pattern.source.node;
-            let Kind::Binding {
-                definition,
-                mutable,
-                ..
-            } = pattern.kind
-            else {
-                return Err(self.error(node, "invalid constructor capture plan"));
-            };
-            let ty = pattern
-                .ty
-                .ok_or_else(|| self.error(node, "missing capture type"))?;
-            self.local(node, ty, LocalKind::Binding, Some(definition), mutable)?;
-        }
+        self.declare_captures(plan, guard)?;
         let mut work = vec![Commit::Pattern(root, place, None)];
         while let Some(task) = work.pop() {
             match task {
@@ -456,8 +466,15 @@ impl Builder<'_> {
                     let ty = pattern
                         .ty
                         .ok_or_else(|| self.error(node, "missing capture type"))?;
-                    let value = self.evaluate(node, ty, Rvalue::Read(place))?;
-                    self.store(node, target, value)?;
+                    if guard.is_some() {
+                        let Place::Local(view) = target else {
+                            return Err(self.error(node, "guard binding has no local"));
+                        };
+                        self.statement(node, super::Action::BindView { view, place })?;
+                    } else {
+                        let value = self.evaluate(node, ty, Rvalue::Read(place))?;
+                        self.store(node, target, value)?;
+                    }
                 }
                 Commit::Alternatives {
                     pattern,
@@ -515,6 +532,35 @@ impl Builder<'_> {
         }
         Ok(())
     }
+    fn declare_captures(
+        &mut self,
+        plan: &Plan,
+        guard: Option<crate::body::ir::GuardId>,
+    ) -> Result<(), Error> {
+        for &id in &plan.bindings {
+            let pattern = &self.facts.patterns.nodes[id.0 as usize];
+            let node = pattern.source.node;
+            let Kind::Binding {
+                definition,
+                mutable,
+                ..
+            } = pattern.kind
+            else {
+                return Err(self.error(node, "invalid constructor capture plan"));
+            };
+            let ty = pattern
+                .ty
+                .ok_or_else(|| self.error(node, "missing capture type"))?;
+            self.local(
+                node,
+                ty,
+                guard.map_or(LocalKind::Binding, LocalKind::Guard),
+                Some(definition),
+                mutable,
+            )?;
+        }
+        Ok(())
+    }
     fn capture_pattern(
         &mut self,
         plan: &Plan,
@@ -539,7 +585,13 @@ impl Builder<'_> {
                     work.push(Commit::Pattern(field.pattern, place, Some(field.selection)));
                 }
             }
-            Kind::Or(alternatives) if plan.choices.contains_key(&id) => {
+            Kind::Or(alternatives)
+                if plan.choices.contains_key(&id)
+                    && plan
+                        .capture_choices
+                        .as_ref()
+                        .is_none_or(|choices| choices.contains(&id)) =>
+            {
                 let join = self.new_block(node)?;
                 work.push(Commit::Switch(join));
                 work.push(Commit::Alternatives {
@@ -555,7 +607,11 @@ impl Builder<'_> {
         }
         Ok(())
     }
-    fn choice_value(&mut self, node: NodeId, value: u32) -> Result<super::ValueId, Error> {
+    pub(super) fn choice_value(
+        &mut self,
+        node: NodeId,
+        value: u32,
+    ) -> Result<super::ValueId, Error> {
         let scalar = ScalarId(self.index(node, self.body.scalars.len())?);
         self.body.scalars.push(Scalar::Integer(u128::from(value)));
         self.evaluate(

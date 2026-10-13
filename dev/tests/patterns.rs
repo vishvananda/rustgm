@@ -763,27 +763,26 @@ fn scalar_witnesses_are_target_values_and_errors_are_atomic()
 }
 
 #[test]
-fn guarded_scalar_inspection_does_not_claim_execution_safety()
--> Result<(), Box<dyn std::error::Error>> {
-    // A scalar capture may be inspected before the guard's protected-view
-    // rules are implemented. Lowering must not accidentally copy it first.
+fn guarded_scalar_inspection_retains_a_read_only_view() -> Result<(), Box<dyn std::error::Error>> {
+    // Inspection retains a protected view; executable lowering must prove
+    // its use is read-only instead of silently copying it before the guard.
     let source = "fn main(){match 1u8{mut x if {x=2;true}=>(),_=>()}}";
-    for mode in ["--emit-patterns", "--count-patterns"] {
+    for mode in ["--emit-patterns", "--count-patterns", "--emit-body-ir"] {
         let result = compile(source, mode)?;
         assert!(result.status.success());
         assert!(result.stderr.is_empty());
     }
-    for mode in ["--emit-body-ir", "--emit-lowir", "--count-lowir"] {
+    for mode in ["--emit-lowir", "--count-lowir"] {
         let result = compile(source, mode)?;
         assert_eq!(result.status.code(), Some(1));
         assert!(result.stdout.is_empty());
-        assert!(String::from_utf8_lossy(&result.stderr).contains("protected captures"));
+        assert!(String::from_utf8_lossy(&result.stderr).contains("guard binding"));
     }
     Ok(())
 }
 
 #[test]
-fn conditional_guards_retain_selected_facts_and_the_execution_gate() -> Result<(), String> {
+fn conditional_guards_retain_selected_facts_and_protected_views() -> Result<(), String> {
     let (report, facts) =
         analyze("fn f(x:u8)->u8{match x{n if let n=n&&n>0&&let m=n+1=>m,_=>99}}")?;
     assert_eq!(facts.patterns.conditions.len(), 2);
@@ -792,10 +791,13 @@ fn conditional_guards_retain_selected_facts_and_the_execution_gate() -> Result<(
     assert_eq!(guarded.len(), 1);
     let boolean = rustgm::types::TypeId::primitive(rustgm::types::Primitive::Bool);
     assert_eq!(facts.node(guarded[0]).and_then(|f| f.ty), Some(boolean));
-    let error = match body::build(&report, &facts) {
-        Ok(_) => return Err("guard execution bypassed protected captures".into()),
-        Err(error) => error.to_string(),
-    };
-    assert!(error.contains("protected captures"), "{error}");
+    let program = body::build(&report, &facts).map_err(|error| error.to_string())?;
+    let guards: usize = program.bodies.iter().map(|body| body.guards.len()).sum();
+    assert_eq!(guards, 1);
+    assert!(program.bodies.iter().any(|body| {
+        body.locals
+            .iter()
+            .any(|local| matches!(local.kind, rustgm::body::ir::LocalKind::Guard(_)))
+    }));
     Ok(())
 }

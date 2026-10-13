@@ -1,5 +1,6 @@
 //! Function-local slots, snapshots and control flow consume the PA10 typed body.
 mod aggregate;
+mod selections;
 use super::{
     Error,
     arithmetic::Arithmetic,
@@ -53,6 +54,8 @@ struct Lower<'a, 'b> {
     builder: Builder,
     locals: Vec<Option<Address>>,
     projections: Vec<Projected>,
+    selections: std::collections::HashMap<ir::ProjectionId, selections::Recipe>,
+    selection_work: Vec<(ir::ProjectionId, u64)>,
     values: Vec<Option<Selected>>,
     blocks: Vec<BlockId>,
     panic: Option<BlockId>,
@@ -66,6 +69,8 @@ pub(super) fn lower<'a>(context: &mut Context<'a>, body: &'a ir::Body) -> Result
         builder: Builder::default(),
         locals: Vec::new(),
         projections: vec![Projected::Pending; body.projections.len()],
+        selections: std::collections::HashMap::new(),
+        selection_work: Vec::new(),
         values: vec![None; body.values.len()],
         blocks: Vec::new(),
         panic: None,
@@ -122,6 +127,7 @@ impl Lower<'_, '_> {
                 match statement.action {
                     Action::BindView { view, place } => self.bind_view(view, place)?,
                     Action::Project(id) => self.project(id)?,
+                    Action::Select { projection, anchor } => self.select(projection, anchor)?,
                     Action::GuardStart(_)
                     | Action::GuardUse(_)
                     | Action::StorageLive(_)

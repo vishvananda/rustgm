@@ -138,6 +138,11 @@ pub enum Action {
     },
     /// Form a place once; indexing checks bounds even when its value is discarded.
     Project(ProjectionId),
+    /// Re-form a static pattern path relative to an already evaluated scrutinee.
+    Select {
+        projection: ProjectionId,
+        anchor: Place,
+    },
     StorageLive(LocalId),
     StorageDead(LocalId),
     /// End a persistent live-stack suffix, inclusively from last back through first.

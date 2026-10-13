@@ -109,6 +109,9 @@ fn contents(body: &Body, out: &mut impl Write) -> io::Result<()> {
         place(*protected, out)?;
         writeln!(out)?;
     }
+    blocks(body, out)
+}
+fn blocks(body: &Body, out: &mut impl Write) -> io::Result<()> {
     for (id, block) in body.blocks.iter().enumerate() {
         writeln!(out, "  block b{id}:")?;
         for statement in body.statements(block) {
@@ -122,6 +125,10 @@ fn contents(body: &Body, out: &mut impl Write) -> io::Result<()> {
                 } => {
                     write!(out, "bind-view l{} ", view.0)?;
                     place(source, out)?;
+                }
+                Action::Select { projection, anchor } => {
+                    write!(out, "select p{} anchor=", projection.0)?;
+                    place(anchor, out)?;
                 }
                 Action::Project(id) => write!(out, "project p{}", id.0)?,
                 Action::StorageLive(local) => write!(out, "live l{}", local.0)?,

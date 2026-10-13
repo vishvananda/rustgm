@@ -1122,3 +1122,118 @@ median elapsed time is about 1.0% higher for ordinary code and 0.1% higher for
 constructors. The body now retains two empty vector headers even when no guard
 exists. Revisit that per-function cost with guarded workloads when the builder
 is connected; no dense node-fact record grew in this change.
+
+## Owned guarded execution and compact retries
+
+Source guards now connect the protected-view foundation to owned scalar,
+constructor, product and array decisions. Bindings remain read-only views during
+the guard; successful continuation commits their ordinary copies/moves. Guard-let
+bindings use normal local storage and remain visible to later operands and the
+arm result. A false operand ends the complete attempt-local storage suffix before
+resuming the next matching alternative. The original scrutinee place, including
+an evaluated dynamic index, is retained once.
+
+The retry graph gives each subtree first-match and resume entries. Products
+advance in written field order and resume the rightmost field first; a field
+with no initial match fails its product immediately. Or-patterns save the
+successful alternative and dispatch its resume continuation after guard failure.
+Their graph size is linear in pattern occurrences rather than in products of
+alternatives. Runtime may still make all language-required guard attempts.
+Imaginary ownership edges check guard bypasses and alternatives after successful
+matches. An irrefutable conditional guard introduces no executable failure or
+imaginary retry cycle. This distinction permits a one-time outer move through
+an irrefutable guard-let while rejecting the repeated move possible after a
+boolean operand. Diverging guard paths do not acquire future fake uses.
+
+A resumed decision may bypass a previously emitted parent projection block.
+`Action::Select` therefore retains a static selected path and its already
+evaluated scrutinee anchor. Lowering caches typed byte-offset recipes for path
+prefixes and forms the final address in its actual use block. It never reuses a
+branch-local SSA address that does not dominate the resume, and it does not
+replay every ancestor projection at each leaf. Tested-place metadata stays
+proof-only, including inactive variant fields. Ordinary constructor decisions
+and successful captures retain their existing projection path.
+
+Three new integration tests add 86 source programs: 55 accepted executions and
+31 rejections, all independently checked with pinned rustc. They cover guard
+attempt counts, source-ordered tuple and written record fields, overlapping
+ranges, nested alternatives/guards, scrutinee side effects, array rests,
+non-Copy captures, shallow and deep protection, ordinary guard-let ownership,
+shadowing, returns/break/continue, initialization bypasses and packed fields
+including zero-sized fields. Seventeen final controls distinguish an empty
+array rest from the reference used to view it: the view requires and protects
+the containing array's shallow state. Disjoint element moves remain permitted,
+including moves before the view is created; replacing, wholly moving or indexing
+the borrowed array is rejected while that view is live. An uninitialized array
+cannot supply the view, even though moving an empty rest reads no elements.
+The pinned rustc controls exposed this distinction during final review, and the
+shared ownership path query now supplies it to both initialization and liveness.
+The [pinned rustc overlap rules](https://github.com/rust-lang/rust/blob/88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_borrowck/src/places_conflict.rs)
+provide the implementation cross-check; the retained probes verify acceptance. The former two source-execution gates now check
+protected views and ownership rejection. Six additional width/depth programs
+at 4/16/48 levels check bounded body/LowIR growth. Their native assertions prove
+zero attempts when a final field is impossible and one attempt after immediate
+success; neither case needs exponential runtime exploration.
+
+The frozen candidate is `obj/pa13-work/guard-execution-candidate`, SHA-256
+`936cdce4801c6895a4930c2d687b68f7cea80540b9ef605533848f5f7583b8dd`.
+It passes all 61 new native programs through the qualified CPPGM backend.
+57 have independent rustc executions; the four larger constructed stress cases
+use the count invariants just described, without requiring rustc to expand their
+pattern products. Receipt:
+`obj/pa13-work/guard-execution-qualified-1791849800663918269/evidence.json`.
+The prior 150 scalar/product/array/constructor/conditional/storage programs also
+pass this frozen candidate and rustc, with receipt
+`obj/pa13-work/guard-execution-previous-native-1791849808936751051/evidence.json`.
+
+Debug and release each pass 300 Rust tests; all 1,695 active course cases pass.
+Clippy all/pedantic, rustfmt, the 193-file audit, 24 harness tests, 38-stage
+placement, 24 upstream fixtures, 126 pinned Reference files and the backend
+smoke check pass. Explicit `make ref-test` refreshes the twelve source receipts
+without changing any existing oracle stream or status. Full `make test-rustc`
+passes with earlier stages' documented boundary differences retained. Logs use
+`obj/pa13-work/guard-execution-{debug,release,refs-quality,course-native}.log`,
+`guard-empty-quality.log`, and `guard-retry-refs-rustc.log`. The full independent
+rustc course run preceded the final internal empty-rest refinement; all 86
+new source vectors were rechecked against rustc after that refinement.
+The final binary also passes PA11's 194 checks/180 native comparisons and
+PA12's 97 checks/48 native comparisons; `obj/native/pa11/evidence.json` and
+`obj/native/pa12/evidence.json` record the final candidate hash.
+
+PA13 still needs named constants, refutable dynamic slice selection/coverage and
+its final release contract and fixtures. Reference-pattern execution remains
+blocked on user-reference proof obligations; internal guard views do not discharge
+those obligations. PA14 and PA15 remain incomplete. No PA13 manifest or active
+stage promotion accompanies this checkpoint.
+
+Final CPU-10 performance checks retain all 216 observations: frozen binaries,
+full-output equality, A/A calibration and three ABBA blocks at each scale. No
+local build or test from this task overlapped timing. Existing ordinary and
+constructor workloads compare against the published guard-view foundation.
+
+| Workload | Run | Largest baseline/candidate median ms | Largest baseline/candidate median peak KiB |
+| --- | --- | ---: | ---: |
+| ordinary, 64,000 functions | 1791849950636856331 | 4130.08 / 3888.19 | 715178 / 715150 |
+| constructor, 16,000 functions | 1791850064293473131 | 3089.90 / 3099.83 | 549564 / 549510 |
+
+Every complete LowIR output and count agrees across those A/B binaries. RSS is
+essentially unchanged. Largest-scale ordinary A/A calibration spans 3.65–5.45
+seconds, so elapsed medians are noisy; these observations do not establish a
+speedup or a universal regression-free claim.
+
+The newly enabled guard workloads use final-candidate A/A scaling, since the
+published baseline rejects their source execution.
+
+| Workload | Run | Functions | Candidate median ms | Candidate median peak KiB |
+| --- | --- | ---: | ---: | ---: |
+| chain | 1791850147527218406 | 1,000 | 60.55 | 16308 |
+| chain | 1791850147527218406 | 4,000 | 337.07 | 53950 |
+| chain | 1791850147527218406 | 16,000 | 1089.99 | 206258 |
+| retry | 1791850179028107310 | 1,000 | 79.32 | 20544 |
+| retry | 1791850179028107310 | 4,000 | 324.31 | 71300 |
+| retry | 1791850179028107310 | 16,000 | 1292.21 | 275844 |
+
+Both guard workloads show roughly proportional memory growth across these
+scales. Reproduce with `scripts/measure_lexer.py --stage lowir --guard-input
+let-chain` or `--guard-input retry`. The earlier name-stage guard workloads
+remain available. Raw records are `obj/perf/RUN/samples.json`.
