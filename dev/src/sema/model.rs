@@ -142,6 +142,7 @@ pub struct BodyRegion {
 }
 pub struct Declarations {
     pub(super) constant_values: std::collections::HashMap<DefId, super::constants::Value>,
+    pub(super) constant_products: super::constants::products::Products,
     pub patterns: super::patterns::Patterns,
     pub enum_casts: std::collections::HashSet<crate::types::ItemId>,
     pub derives: std::collections::HashMap<crate::types::ItemId, crate::types::copy::Properties>,
@@ -161,6 +162,7 @@ impl Declarations {
     pub(super) fn new(report: &Report) -> Result<Self, Error> {
         let mut value = Self {
             constant_values: std::collections::HashMap::new(),
+            constant_products: super::constants::products::Products::default(),
             patterns: super::patterns::Patterns::default(),
             enum_casts: std::collections::HashSet::new(),
             derives: std::collections::HashMap::new(),

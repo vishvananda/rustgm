@@ -80,6 +80,16 @@ storage for bodies without constant-backed patterns. Do not instantiate a
 whole-crate checker per use, repeat initializer typing, or interpret pattern
 views. Deferred checks must retain the matching module's visibility context.
 
+Demanded tuple/array constant values use flat shared arenas. Repeats retain one
+element and their length; field/index queries select from that representation
+without materializing the repeated array. Translate constants to the existing
+selected product/scalar patterns with use-site provenance. Share repeated
+product subtrees within a use; retain each projection's distinct place identity
+for decisions and execution. Check type-level structural equality even for
+empty products, then validate actual scalar leaves (including NaN rejection).
+Reserve expansion work before allocating siblings so pending work is bounded.
+Neither value storage nor pattern translation grows dense ordinary node facts.
+
 Floating pattern domains use constant-time bit/rank conversions. Numeric ranks
 collapse signed zero, while a separate unordered class keeps NaN visible to
 exhaustiveness. Reuse scalar interval indexes and composite coverage decisions;

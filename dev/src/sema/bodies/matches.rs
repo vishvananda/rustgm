@@ -74,7 +74,7 @@ impl Checker<'_> {
             self.literal(literal, index)?
         } else if !negative && let Some(definition) = self.pattern_constant(literal) {
             let ty = self.pattern_constant_type(literal, definition)?;
-            self.request_pattern_constant(literal, definition);
+            self.request_pattern_constant(literal, definition, None);
             self.known(literal, ty)?
         } else {
             return Err(self.error(

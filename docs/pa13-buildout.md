@@ -1578,3 +1578,133 @@ The initial wrapper rejected the new slice workload name before measurement;
 its diagnostics remain in `slice-perf.log`. After fixing its argument allowlist,
 `slice-perf-resume.log` records only the three remaining workloads. All original
 observations were retained, and the 24 harness checks pass after that fix.
+
+## Unit, tuple and array constant patterns
+
+The shared typed query engine now retains demanded product values in flat arenas.
+A repeated array stores one value and a length. Named dependencies, selected
+field/index reads, lazy if branches and already computed discriminants reuse
+these values; indexing a billion-element repeat does not allocate that array.
+Empty plain blocks produce unit. General statements, calls and expression-position
+constant execution retain their existing later assignment boundaries.
+
+Whole-product requests are distinct from scalar range endpoints. After initializer
+typing, translation fills the selected root with ordinary product/range patterns.
+Repeated product subtrees share IDs within a use, with separate projected place
+identities during coverage and execution. Each generated node retains the use
+site's file/node, so cross-file constants do not transport declaration node IDs
+into body construction. Pending irrefutability and coverage retain their original
+body/module scope. The dense ordinary node facts remain unchanged.
+
+Type-level eligibility is checked even for empty arrays, and actual scalar leaves
+still reject NaN. An empty repeat containing a computed NaN has no NaN leaf and
+can be a pattern. Unit and empty products can be irrefutable. The expansion budget
+charges edges before allocating siblings; it cannot accumulate unbounded pending
+work before discovering the limit. Shared type eligibility and compact repeated
+values avoid per-use type reconstruction and repeated array materialization.
+
+Twenty-five asserting programs cover unit, empty arrays/blocks, nested/repeated
+products, exhaustive Boolean products, projections, forward constants, discriminant
+reuse, captures, guards/retries, condition chains, let-else, while-let, macro
+patterns, modules and signed-zero capture preservation. Eighteen negative programs
+check refutability, type/length mismatches, bounds, cycles, overflow, NaN,
+non-structural empty-array element types, initialization and protected guard writes.
+All are independently checked with pinned rustc; successful rustc programs execute.
+Selected and LowIR views are deterministic; rejected LowIR views are atomic, and
+count mode agrees with selected-pattern footers.
+
+A separate package checks use-site provenance and native behavior for constants
+from an external module. Borrowed product selection remains behind the existing
+executable region/loan boundary. Resource tests check compact indexed repeats,
+shared repeated-product pattern IDs and diagnosed expansion limits; the largest
+stress inputs do not claim rustc resource equivalence.
+
+PA13 remains planned. Nominal structural equality/derived PartialEq, reference/text
+constant patterns and the final assignment fixtures/contract remain unfinished.
+PA14 and PA15 remain in the active goal.
+
+The frozen candidate is `obj/pa13-work/product-constant-candidate`, SHA-256
+`3c039049558a8ebb8c3f9837321051067c5c94e5cead02146a69552b080198d2`.
+Debug and release each pass 318 Rust tests; all 1,695 active assignment cases
+pass. Clippy all/pedantic, rustfmt, the 203-file audit, 24 harness checks,
+38-assignment placement, upstream/Reference hashes, backend checks and complete
+`make test-rustc` pass. Explicit `make ref-test` updates twelve source receipts;
+existing oracle stdout, stderr and exit-status bytes remain unchanged.
+
+The candidate passes PA11's 194 checks/180 native comparisons and PA12's 97
+checks/48 native comparisons. Their receipts identify the frozen hash. It also
+passes all 305 prior PA13 native checks, retaining the previously documented
+four constructed-count guard oracles and eight signed-zero Reference/rustc
+pairs. Those exceptions remain separate from same-source runtime parity.
+
+Native receipts under `obj/pa13-work/` are:
+
+- `product-patterns-qualified-1791858566170423330/evidence.json`: 25 new programs,
+  the cross-file package and three small asserting performance inputs; all 29
+  execute through CPPGM and independent rustc.
+- `product-constants-qualified-1791858541674129462/evidence.json`: 31 earlier checks.
+- `product-guards-qualified-1791858546255431444/evidence.json`: 61 guard/stress checks.
+- `slice-previous-native-1791858554015234415/evidence.json`: 150 earlier checks;
+  this retained directory prefix comes from the reused harness, and its receipt
+  identifies the product candidate hash above.
+- `product-floats-qualified-1791858573534910984/evidence.json`: 63 float/workload checks.
+
+Logs are `product-{full-debug,full-release,quality,harness-final,rustc-native,refs}.log`
+and `product-{patterns,constants,guards,previous,floats}-native.log`.
+
+The qualified timing set contains 324 observations from six workloads, each
+with immutable binaries, frozen inputs, full rendered/count equality, A/A
+calibration and three ABBA blocks at each of three sizes. Existing workloads
+compare the frozen slice baseline
+(`dc713ca8a2722e3dcebddecce1cffe23b7a9f05b74b7a7c71f45dc8956b77b2d`)
+with the product candidate, pinned to CPU 10.
+
+| Existing workload | Run | Largest functions | Baseline/candidate median ms | Baseline/candidate median KiB |
+| --- | --- | ---: | ---: | ---: |
+| ordinary | 1791858717406495913 | 64,000 | 3608.35 / 3591.62 | 715154 / 715162 |
+| scalar-constants | 1791858813452490633 | 16,000 | 630.61 / 619.15 | 142376 / 142104 |
+| slice-coverage | 1791858830447156015 | 16,000 | 6114.43 / 6108.36 | 113354 / 113318 |
+
+Existing-workload medians and memory are similar. Ordinary largest-scale
+A/A spans 3.59–3.68 seconds. These observations do not establish a speedup.
+
+New product workloads use candidate A/A scaling with
+`scripts/measure_lexer.py --stage lowir --product-constant-input MODE`:
+
+| Product workload | Run | Functions | Candidate median ms | Candidate median KiB |
+| --- | --- | ---: | ---: | ---: |
+| product-shared | 1791859489622459904 | 1,000 | 183.41 | 17712 |
+| product-shared | 1791859489622459904 | 4,000 | 741.56 | 62038 |
+| product-shared | 1791859489622459904 | 16,000 | 1439.88 | 240414 |
+| product-unique | 1791859543036961776 | 1,000 | 96.71 | 20526 |
+| product-unique | 1791859543036961776 | 4,000 | 391.71 | 72468 |
+| product-unique | 1791859543036961776 | 16,000 | 1674.95 | 283162 |
+| product-chain | 1791859587874245148 | 1,000 | 105.73 | 20504 |
+| product-chain | 1791859587874245148 | 4,000 | 409.68 | 72486 |
+| product-chain | 1791859587874245148 | 16,000 | 1711.95 | 283190 |
+
+The shared case uses one constant, unique uses distinct aliases, and chain uses
+forward dependencies. Memory grows roughly with input size. Unique/chain elapsed
+medians also grow roughly with input size. Shared timing improves disproportionately
+between 4,000 and 16,000 functions despite identical A/A binaries, so cross-size
+wall times still include host variation. Largest unique/chain calibration spans
+1.68–1.74 and 1.71–1.74 seconds. These are observations, not universal bounds.
+
+An execution-environment transition removed the original tool handle while
+its process continued. A local retry wrapper was interrupted, but its benchmark
+child survived and completed all 54 samples in run `1791859003074821226`.
+Receipt verification caught the child continuing after the wrapper had exited.
+It overlapped the original three product runs and the first shared rerun
+(`1791859258793627456`). Those five runs retain all 270 observations and are
+excluded from the qualified timing set. All three product workloads were then
+rerun after every overlapping process had finished, producing the table above.
+No build/test work overlapped timing; the overlap was the duplicate benchmark.
+
+All 594 observations are retained: 324 qualified samples plus 270 overlapping
+samples. Raw records are `obj/perf/RUN/{samples.json,observations.jsonl}`.
+The isolated checkout holds `product-perf-receipts.json`,
+`product-perf-original-receipts.json`, `product-perf-all-receipts.json`,
+`product-perf-overlapped-receipts.json` and `product-perf-verified.json` under
+`obj/pa13-work/`. The three qualified existing-workload runs remain in the
+original checkout; absolute receipt paths identify each location. The clean
+new-workload runs use the same binary bytes and inputs in the isolated checkout.

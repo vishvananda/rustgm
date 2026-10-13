@@ -108,7 +108,7 @@ impl Checker<'_> {
             self.save(node, term);
             let mark = self.pattern_work.len();
             let (id, term, mode) = self.pattern_adjust(node, term, id, mode, &mut steps)?;
-            let kind = self.pattern_kind(node, term, mode, rest)?;
+            let kind = self.pattern_kind(node, term, id, mode, rest)?;
             self.pattern_work[mark..].reverse();
             self.facts.patterns.nodes[id.0 as usize].kind = kind;
         }
@@ -118,6 +118,7 @@ impl Checker<'_> {
         &mut self,
         node: NodeId,
         term: TermId,
+        id: PatternId,
         mode: Mode,
         rest: bool,
     ) -> Result<PatternKind, Error> {
@@ -189,7 +190,7 @@ impl Checker<'_> {
                 Ok(PatternKind::Or(Alternatives { start, end }))
             }
             Kind::Binding { .. } | Kind::Path { .. } if self.pattern_constant(node).is_some() => {
-                self.scalar_pattern(node, term)
+                self.constant_pattern(node, term, id)
             }
             Kind::Binding { .. } | Kind::Path { .. } => {
                 let variant = self.pattern_constructor(node, node, term)?;

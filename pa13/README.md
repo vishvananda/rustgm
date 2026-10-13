@@ -35,8 +35,10 @@ boolean and conditional guards, and irrefutable constructor bindings can execute
 Owned let-else, if-let, while-let and condition chains also execute. Named
 boolean, integer, character and floating-point constants work as patterns and
 range endpoints. Floating literals and ranges compose with owned products,
-arrays, constructors, guards and conditional bindings. Structural/reference
-constants remain unfinished. Reference and dynamic-slice execution still require
+arrays, constructors, guards and conditional bindings. Unit, tuple and array
+constants translate into ordinary product/scalar patterns and execute on owned
+inputs. Nominal structural constants and text/reference constants remain
+unfinished. Reference and dynamic-slice execution still require
 the later region and loan proofs.
 
 Named constants use resolved declaration identities and their canonical types;
@@ -44,11 +46,19 @@ pattern endpoints do not coerce between integer types. The shared typed constant
 query engine supports scalar literals, dependencies, arithmetic, casts, block
 tails and lazy boolean/if expressions, including casts of completed fieldless
 enum discriminants. It diagnoses dependency cycles and evaluated overflow.
+Tuple/array construction, repeated arrays and selected field/index reads share
+that engine. Empty plain blocks produce unit. Demanded product values use flat
+storage, and a repeat retains one value and its length. Each use expands into
+ordinary selected patterns; repeated product subtrees can share pattern IDs
+while their projections still identify distinct places. Generated nodes retain
+the pattern use's source location. Empty arrays still require an eligible element
+type; nonempty floating leaves must be non-NaN. Expansion has a 1,000,000-work
+limit, charging edges before allocation. This is separate from coverage's limit.
 Constant-backed ranges, irrefutability and match coverage finish after initializer
 typing, retaining each body's file and module context. The resulting intervals
 use the ordinary decision and ownership paths, including guard retries.
-A static cannot be named directly as a constant pattern. General CTFE, structural
-constant expansion, text/reference values and expression-position constant
+A static cannot be named directly as a constant pattern. General CTFE, nominal
+structural constants, text/reference values and expression-position constant
 execution retain their explicit later-stage boundaries.
 
 The current vocabulary is `selected-patterns 1`, the canonical type table,

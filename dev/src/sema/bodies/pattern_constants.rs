@@ -12,7 +12,7 @@ use crate::{
 
 #[derive(Default)]
 pub(super) struct Pending {
-    requests: Vec<(NodeKey, DefId)>,
+    requests: Vec<(NodeKey, DefId, Option<PatternId>)>,
     scopes: Vec<Scope>,
     ranges: Vec<RangeWork>,
     roots: Vec<PatternId>,
@@ -41,13 +41,40 @@ impl Checker<'_> {
         self.facts.definitions[definition.0 as usize]
             .ok_or_else(|| self.error(node, "missing constant pattern type"))
     }
-    pub(super) fn request_pattern_constant(&mut self, node: NodeId, definition: DefId) {
+    pub(super) fn request_pattern_constant(
+        &mut self,
+        node: NodeId,
+        definition: DefId,
+        pattern: Option<PatternId>,
+    ) {
         let key = self.key(node);
         self.pending_patterns
             .get_or_insert_with(Box::default)
             .requests
-            .push((key, definition));
+            .push((key, definition, pattern));
         self.pattern_constants = true;
+    }
+    pub(super) fn constant_pattern(
+        &mut self,
+        node: NodeId,
+        term: crate::types::infer::TermId,
+        id: PatternId,
+    ) -> Result<crate::sema::patterns::Kind, Error> {
+        let definition = self
+            .pattern_constant(node)
+            .ok_or_else(|| self.error(node, "missing constant pattern identity"))?;
+        let ty = self.pattern_constant_type(node, definition)?;
+        if matches!(
+            self.facts.types.kind(ty),
+            Some(crate::types::Kind::Primitive(_))
+        ) {
+            return self.scalar_pattern(node, term);
+        }
+        let value = self.known(node, ty)?;
+        self.equate(node, term, value)?;
+        self.request_pattern_constant(node, definition, Some(id));
+        self.pattern_refutable = true;
+        Ok(crate::sema::patterns::Kind::Pending)
     }
     pub(super) fn defer_pattern_checks(&mut self) -> Result<(), Error> {
         let Some(pending) = &mut self.pending_patterns else {

@@ -260,8 +260,8 @@ fn later_constant_capabilities_remain_explicit_boundaries() -> Result<(), Box<dy
     let folder = folder("constant-boundaries")?;
     for (index, (source, boundary)) in [
         (
-            "const C:(u8,bool)=(7,true);fn main(){match (7u8,true){C=>(),_=>()}}",
-            "general constant evaluation",
+            "#[derive(PartialEq)]struct S(u8);const C:S=S(7);fn main(){match S(7){C=>(),_=>()}}",
+            "trait or procedural macro assignment",
         ),
         (
             "const C:&'static u8=&7;fn main(){match &7u8{C=>(),_=>()}}",

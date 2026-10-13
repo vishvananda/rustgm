@@ -1,5 +1,7 @@
 //! Shared typed constant queries solve discriminants and pattern values iteratively.
 mod arithmetic;
+mod patterns;
+pub(super) mod products;
 use super::{
     bodies,
     members::VariantId,
@@ -28,12 +30,13 @@ pub(super) struct Discriminant {
 pub(super) enum Value {
     Scalar(Scalar),
     Variant(VariantId),
+    Product(products::Id),
 }
 impl Value {
     fn scalar(self) -> Result<Scalar, &'static str> {
         match self {
             Self::Scalar(value) => Ok(value),
-            Self::Variant(_) => Err("constant requires a scalar value"),
+            Self::Variant(_) | Self::Product(_) => Err("constant requires a scalar value"),
         }
     }
     fn integer(self) -> Result<u128, &'static str> {
@@ -63,6 +66,7 @@ enum State {
 #[derive(Clone, Copy)]
 enum Expression {
     Value(Value),
+    Product(products::Expression),
     Forward(NodeKey),
     Constant(usize),
     Unary {
@@ -166,10 +170,10 @@ pub(super) fn discriminants(
 pub(super) fn pattern_values(
     report: &Report,
     facts: &mut Declarations,
-    requests: &[(NodeKey, DefId)],
+    requests: &[(NodeKey, DefId, Option<super::patterns::PatternId>)],
 ) -> Result<(), Error> {
     let mut queries = Queries::new(report, facts, &[]);
-    for &(key, definition) in requests {
+    for &(key, definition, pattern) in requests {
         let index = queries
             .constants
             .get(definition.0 as usize)
@@ -191,8 +195,12 @@ pub(super) fn pattern_values(
         let query = Query::Constant(index);
         queries.work.push(Work::Enter(query));
         queries.drain()?;
-        let value = queries
-            .value(query)?
+        let value = queries.value(query)?;
+        if let Some(pattern) = pattern {
+            patterns::expand(report, queries.typing.facts, pattern, value)?;
+            continue;
+        }
+        let value = value
             .scalar()
             .map_err(|e| Declarations::error(report, key, e))?;
         queries
@@ -424,6 +432,12 @@ impl Queries<'_> {
                 Expression::Value(value) => {
                     self.states.insert(query, State::Ready(value));
                 }
+                Expression::Product(expression) => {
+                    self.work.push(Work::Finish(key));
+                    expression.dependencies(self.report, key, |child| {
+                        self.work.push(Work::Enter(Query::Node(child)));
+                    });
+                }
                 Expression::Forward(child) => self.forward(query, Query::Node(child)),
                 Expression::Constant(index) => self.forward(query, Query::Constant(index)),
                 Expression::Unary { operand, .. } | Expression::Cast { operand, .. } => {
@@ -539,6 +553,11 @@ impl Queries<'_> {
     }
     fn finish(&mut self, key: NodeKey) -> Result<(), Error> {
         let query = Query::Node(key);
+        if let Expression::Product(expression) = self.expression(key)? {
+            let value = self.product_value(key, expression)?;
+            self.states.insert(query, State::Ready(value));
+            return Ok(());
+        }
         let value = match self.expression(key)? {
             Expression::Unary {
                 op,
@@ -611,6 +630,9 @@ impl Queries<'_> {
                     self.scan.push(condition);
                 }
                 Expression::Value(_) | Expression::Constant(_) => {}
+                Expression::Product(expression) => {
+                    expression.dependencies(self.report, key, |child| self.scan.push(child));
+                }
             }
             self.expressions.insert(key, expression);
         }
@@ -630,6 +652,9 @@ impl Queries<'_> {
         let child = |node| NodeKey { node, ..key };
         if let Some(value) = facts.scalar {
             return Ok(Expression::Value(Value::Scalar(value)));
+        }
+        if let Some(expression) = self.product_expression(key)? {
+            return Ok(Expression::Product(expression));
         }
         if let Some(Operation::Construct { variant }) = facts.operation {
             let member = self.typing.facts.members.variants[variant.0 as usize];
