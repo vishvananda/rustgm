@@ -36,4 +36,5 @@ field 0 index=0 pattern=3
 match 0 source=0:25 input=0:14 arms=0:2 exhaustive=true uninhabited=false work=1058
 arm 0 source=0:19 pattern=0 guard=- useful=true value=0:18
 arm 1 source=0:24 pattern=1 guard=- useful=true value=0:23
+region-coercion body=0:4 source=0:4 actual=25 expected=20 kind=array-to-slice pending
 eof roots=2 patterns=5 fields=1 alternatives=0 ranges=0 matches=1 arms=2 coverage-work=1058 region-vars=0 region-equalities=0 conditions=0 chains=0

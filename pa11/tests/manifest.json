@@ -2691,32 +2691,6 @@
       }
     },
     {
-      "path": "tests/spec/boundary/constant.rs",
-      "exit_status": 1,
-      "features": [
-        "pa11.procedural-lowir"
-      ],
-      "rustc": {
-        "kind": "program",
-        "status": 0,
-        "default_lints": true,
-        "reason": "PA25 owns constant evaluation; PA11 does not emit an initializer as a function or substitute an oracle value."
-      }
-    },
-    {
-      "path": "tests/spec/boundary/static.rs",
-      "exit_status": 1,
-      "features": [
-        "pa11.procedural-lowir"
-      ],
-      "rustc": {
-        "kind": "program",
-        "status": 0,
-        "default_lints": true,
-        "reason": "Static allocation and constant evaluation are outside the scalar procedure profile."
-      }
-    },
-    {
       "path": "tests/spec/floats/f32-remainder-vectors.rs",
       "exit_status": 0,
       "features": [
@@ -2862,19 +2836,6 @@
         "--cfg",
         "chosen"
       ]
-    },
-    {
-      "path": "tests/spec/boundary/reference.rs",
-      "exit_status": 1,
-      "features": [
-        "pa11.procedural-lowir"
-      ],
-      "rustc": {
-        "kind": "program",
-        "status": 0,
-        "default_lints": true,
-        "reason": "Reference-bearing native signatures require later ownership and region checking, even when only a function address is demanded."
-      }
     },
     {
       "path": "tests/spec/entry/never-main.rs",

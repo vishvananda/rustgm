@@ -99,7 +99,7 @@ storage state and evaluation order. It is test-only and never implements a
 frontend phase. Pending region constraints remain explicit in body IR.
 See `docs/pa10-validation.md` for the feature handoff and measurements.
 
-PA11 has 194 scalar LowIR fixtures, including 180 executable comparisons with
+PA11 has 191 scalar LowIR fixtures, including 180 executable comparisons with
 pinned rustc and the qualified CPPGM backend. `make test-native` is required
 locally; ordinary hosted CI has no qualified backend binary and checks the
 committed text, frontend invariants and harness instead. Compiler signals and
@@ -108,14 +108,21 @@ empty streams and rustc SIGABRT with a panic diagnostic. Success requires clean
 exit zero; source assertions compare full values. No native outcome is inferred
 from a text-oracle match. See `docs/pa11-validation.md`.
 
+Maintainer Cargo tests that execute CPPGM are explicitly ignored in the default
+frontend suite. Run `make test-maintainer-native` to qualify the backend and run
+all six backend-dependent tests; `make test-native` includes this target before
+the course native suites. Missing configuration or changed backend bytes fails
+that target. No test silently treats an unavailable backend as successful native
+execution. Hosted CI runs the frontend suite and reports these tests as ignored.
+
 Rustc has no LowIR output. From PA11, maintainer-generated LowIR is the course
 text oracle, with independent run-pass checks through CPPGM versus rustc. Do
 not grade LLVM IR or assume Rust's unspecified layout matches rustc. Test exact
 layouts where guaranteed or where the course contract deliberately specifies
 them. Keep runtime evidence separate from the raw LowIR text comparison.
 
-PA12 has 109 fixtures: 40 clean native executions, eight expected bounds panics,
-12 layout cases and 49 rejection or explicit stage-boundary cases. The manifest
+PA12 has 107 fixtures: 40 clean native executions, eight expected bounds panics,
+12 layout cases and 47 rejection or explicit stage-boundary cases. The manifest
 declares `--emit-layouts` as a supplementary mode; a case's mode must be one of
 the assignment's declared modes. `make test-layouts` checks declared size,
 alignment and field-offset vectors against candidate/committed text and rustc
@@ -126,8 +133,8 @@ and PA11/PA12 acceptance checks, so hosted CI exercises them without a backend.
 the aggregate suite. Layout cases never count as native execution. See
 `docs/pa12-validation.md` for the profile and retained evidence.
 
-PA13 has 803 fixtures: 538 LowIR cases and 265 selected-pattern inspections.
-All have pinned-rustc acceptance checks; thirteen explicit qualifications cover
+PA13 has 796 fixtures: 531 LowIR cases and 265 selected-pattern inspections.
+All have pinned-rustc acceptance checks; eight explicit qualifications cover
 pending reference proofs and the Reference's non-reference-constant autoderef
 rule. Native qualification runs 364 programs, of which 348 have matching clean
 execution. Eight signed-zero pairs (16 programs) deliberately assert the
@@ -144,6 +151,20 @@ without exceptions. `--emit-ownership` and `--count-ownership` expose the same
 move/initialization proof already required for LowIR; this is not a lifetime or
 loan proof. Root independent/native targets include PA14. See
 `docs/pa14-validation.md` for the sparse path/bitset contract and scaling evidence.
+
+PA15 has 191 region-contract inspections: declarations, elision, variance,
+explicit/implied bounds, callable universes and borrow-place provenance. PA16
+has 292 cases: 180 loan inspections/rejections and 112 LowIR executions. All
+acceptance outcomes agree with pinned rustc without exceptions. Their separate
+`--emit-regions` and `--emit-loans` views expose actual typed proof facts; the
+contract view alone cannot authorize execution. Twelve earlier executable
+boundary cases moved to these owning assignments instead of retaining obsolete
+rejections. The earlier type/body/pattern views retain pending directed region
+facts; independently reviewed oracles reflect those facts.
+
+`make test-rustc` includes both stages; `make test-native-pa16` selects PA16's
+112 execution cases. The root native target includes PA16 and the six explicit
+maintainer native tests. See `docs/pa15-pa16-validation.md` for the release review.
 
 ## Placement and provenance
 
@@ -162,8 +183,8 @@ our oracle: their representation and diagnostic contracts belong to upstream.
 
 ## Release discipline
 
-PA1–PA14 are implemented drafts, not a claim of full Rust frontend conformance.
-Planned PA15–PA38 fail on invocation and are excluded from pass counts. Promote
+PA1–PA16 are implemented drafts, not a claim of full Rust frontend conformance.
+Planned PA17–PA38 fail on invocation and are excluded from pass counts. Promote
 a stage only after handout/reference/fixtures are coherent, independent checks
 pass, the source-to-feature ledger is reviewed and all prior stages remain green.
 Keep maintainer measurements and logs in ignored `obj/`; keep student handout
@@ -177,3 +198,9 @@ record the specified and observed results across widths, orders and constant
 spellings. They are excluded from same-source runtime parity claims. Other
 floating-pattern vectors use the same source and assertions for both compilers.
 See [the buildout evidence](docs/pa13-buildout.md#floating-point-pattern-domains).
+
+CI compares candidate output directly with the committed oracles in `make test`
+and validates fixture/manifest provenance in `make test-harness`. It does not
+regenerate sidecars. A reference receipt records the compiler used to generate
+that oracle; changing compiler source does not rewrite the historical receipt
+when the output contract is unchanged.

@@ -1,0 +1,69 @@
+loans-crate 1
+body 0 source=0:41
+  place p0 root=l2 shared=false
+  place p1 root=l2 parent=p0 dereference mutable=false shared=true
+  place p2 root=l1 shared=false
+  place p3 root=l3 shared=false
+  place p4 root=l0 shared=false
+  loan q0 borrow=v2 place=p2 region=g2 kind=shared
+  point t0 block=b0 at=s0 reachable=true
+  point t1 block=b0 at=s1 reachable=true
+  point t2 block=b0 at=s2 reachable=true
+  point t3 block=b0 at=s3 reachable=true
+  point t4 block=b0 at=s4 reachable=true
+  point t5 block=b0 at=s5 reachable=true
+  point t6 block=b0 at=s6 reachable=true
+  point t7 block=b0 at=s7 reachable=true
+  point t8 block=b0 at=s8 reachable=true
+  point t9 block=b0 at=s9 reachable=true
+  point t10 block=b0 at=end reachable=true
+  point t11 block=b1 at=s10 reachable=true
+  point t12 block=b1 at=end reachable=true
+  point t13 block=b2 at=s22 reachable=true
+  point t14 block=b2 at=s23 reachable=true
+  point t15 block=b2 at=s24 reachable=true
+  point t16 block=b2 at=s25 reachable=true
+  point t17 block=b2 at=s26 reachable=true
+  point t18 block=b2 at=s27 reachable=true
+  point t19 block=b2 at=s28 reachable=true
+  point t20 block=b2 at=s29 reachable=true
+  point t21 block=b2 at=s30 reachable=true
+  point t22 block=b2 at=end reachable=true
+  point t23 block=b3 at=s11 reachable=true
+  point t24 block=b3 at=s12 reachable=true
+  point t25 block=b3 at=s13 reachable=true
+  point t26 block=b3 at=s14 reachable=true
+  point t27 block=b3 at=s15 reachable=true
+  point t28 block=b3 at=s16 reachable=true
+  point t29 block=b3 at=s17 reachable=true
+  point t30 block=b3 at=s18 reachable=true
+  point t31 block=b3 at=s19 reachable=true
+  point t32 block=b3 at=s20 reachable=true
+  point t33 block=b3 at=s21 reachable=true
+  point t34 block=b3 at=end reachable=true
+  live-region g0 word=0 bits=00000007ffffffff
+  live-region g2 word=0 bits=00000007ff801fe0
+  live-region g3 word=0 bits=00000007ff801f80
+  state t6 word=0 live=0000000000000001 activated=0000000000000000
+  state t7 word=0 live=0000000000000001 activated=0000000000000000
+  state t8 word=0 live=0000000000000001 activated=0000000000000000
+  state t9 word=0 live=0000000000000001 activated=0000000000000000
+  state t10 word=0 live=0000000000000001 activated=0000000000000000
+  state t11 word=0 live=0000000000000001 activated=0000000000000000
+  state t12 word=0 live=0000000000000001 activated=0000000000000000
+  state t23 word=0 live=0000000000000001 activated=0000000000000000
+  state t24 word=0 live=0000000000000001 activated=0000000000000000
+  state t25 word=0 live=0000000000000001 activated=0000000000000000
+  state t26 word=0 live=0000000000000001 activated=0000000000000000
+  state t27 word=0 live=0000000000000001 activated=0000000000000000
+  state t28 word=0 live=0000000000000001 activated=0000000000000000
+  state t29 word=0 live=0000000000000001 activated=0000000000000000
+  state t30 word=0 live=0000000000000001 activated=0000000000000000
+  state t31 word=0 live=0000000000000001 activated=0000000000000000
+  state t32 word=0 live=0000000000000001 activated=0000000000000000
+  state t33 word=0 live=0000000000000001 activated=0000000000000000
+  state t34 word=0 live=0000000000000001 activated=0000000000000000
+end-body
+body 1 source=0:43
+end-body
+eof bodies=2 loans=1 places=5 points=35 region_words=3 state_words=19

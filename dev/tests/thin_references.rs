@@ -248,6 +248,7 @@ const CASES: &[(&str, &str, bool)] = &[
     ),
 ];
 #[test]
+#[ignore = "requires the pinned CPPGM backend; run make test-maintainer-native"]
 fn checked_thin_references_execute_like_rustc() -> Result<(), Box<dyn std::error::Error>> {
     native_references::check_cases("thin-references", CASES)
 }

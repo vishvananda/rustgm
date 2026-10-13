@@ -1,0 +1,2 @@
+fn f<'a,'b>(x:&'a u8,y:&'b u8)->&'a u8{let mut z=x;z=y;z}
+fn main() {}

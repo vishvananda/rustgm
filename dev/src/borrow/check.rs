@@ -24,6 +24,7 @@ pub struct Analysis<'a> {
     checked: Checked<'a>,
     owned: ownership::Analysis<'a>,
     pub loans: Vec<loans::Analysis>,
+    pub inspection: Vec<loans::Inspection>,
 }
 impl Analysis<'_> {
     #[must_use]
@@ -61,16 +62,36 @@ pub fn check<'a, S: BuildHasher>(
     contracts: &regions::Analysis,
     program: &'a Program,
 ) -> Result<Analysis<'a>, Error> {
+    analyze::<false, _>(environment, contracts, program)
+}
+/// Retain canonical loans and sparse point states from the same completed proof.
+/// # Errors
+/// Reports `check` failures and the additional inspection storage limit.
+pub fn inspect<'a, S: BuildHasher>(
+    environment: &mut Environment<'_, S>,
+    contracts: &regions::Analysis,
+    program: &'a Program,
+) -> Result<Analysis<'a>, Error> {
+    analyze::<true, _>(environment, contracts, program)
+}
+fn analyze<'a, const RECORD: bool, S: BuildHasher>(
+    environment: &mut Environment<'_, S>,
+    contracts: &regions::Analysis,
+    program: &'a Program,
+) -> Result<Analysis<'a>, Error> {
     let mut bodies = Vec::with_capacity(program.bodies.len());
     let mut loans = Vec::with_capacity(program.bodies.len());
-    let checked = run(environment, contracts, program, |owned, proof| {
+    let mut inspection = Vec::new();
+    let checked = run::<RECORD, _>(environment, contracts, program, |owned, proof| {
         bodies.push(owned);
-        loans.push(proof);
+        loans.push(proof.analysis);
+        inspection.extend(proof.inspection);
     })?;
     Ok(Analysis {
         checked,
         owned: ownership::Analysis::from_proved(program, bodies),
         loans,
+        inspection,
     })
 }
 /// Run the same proof while releasing per-body inspection facts promptly.
@@ -81,13 +102,13 @@ pub fn verify<'a, S: BuildHasher>(
     contracts: &regions::Analysis,
     program: &'a Program,
 ) -> Result<Checked<'a>, Error> {
-    run(environment, contracts, program, |_, _| {})
+    run::<false, _>(environment, contracts, program, |_, _| {})
 }
-fn run<'a, S: BuildHasher>(
+fn run<'a, const RECORD: bool, S: BuildHasher>(
     environment: &mut Environment<'_, S>,
     contracts: &regions::Analysis,
     program: &'a Program,
-    mut record: impl FnMut(ownership::BodyFacts, loans::Analysis),
+    mut record: impl FnMut(ownership::BodyFacts, loans::Report),
 ) -> Result<Checked<'a>, Error> {
     let by_source: HashMap<_, _> = contracts.bodies.iter().map(|b| (b.source, b)).collect();
     let mut components = LiveRegions::default();
@@ -111,7 +132,7 @@ fn run<'a, S: BuildHasher>(
             node: Some(e.node),
             message: e.message.into(),
         })?;
-        let proof = loans::check(
+        let proof = loans::analyze::<RECORD>(
             environment.types,
             &mut components,
             body,

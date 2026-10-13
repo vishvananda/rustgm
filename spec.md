@@ -225,6 +225,13 @@ Borrow checking runs before references and moves lose their source semantics
 in LowIR. Region/dataflow analysis uses typed worklists and bounded lattices,
 with per-body storage and complete dependency edges. Pattern usefulness and
 trait solving must expose work counters and explicit complexity limits.
+PA15's region inspection exposes the retained directed contract graph separately
+from PA16's checked loan inspection. Render deterministic IDs, direct edges and
+sparse point/loan words; never use inspection text as proof input. Optional loan
+snapshots observe the final checked transfer pass, after pruning and call
+activation. Executable verification must not allocate those snapshots or retain
+the per-body inspection arenas. Counts describe the same facts as the full view.
+
 Destruction consumes initialization/move facts to elaborate conditional drops.
 Async transformation accounts for borrows, pinning and cancellation cleanup.
 

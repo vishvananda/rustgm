@@ -1,0 +1,62 @@
+global @rg.data.0 : obj<32x16> [storage=readonly] = {
+  i128 170141183460469231731687303715884105728
+  i128 340282366920938463463374607431768211455
+}
+function @rg.18() -> void {
+  slot $s0 : i1
+  block ^b0:
+    %t0 = load i128 @rg.data.0
+    %t1 = cmp eq i128 %t0, 170141183460469231731687303715884105728
+    %t2 = convert trunc i1 i64 %t1
+    branch %t2, ^b1, ^b2
+  block ^b2:
+    store i1 %t2, $s0
+    jump ^b3
+  block ^b1:
+    %t3 = addr @rg.data.0
+    %t4 = index u8 %t3, 16
+    %t5 = load i128 %t4
+    %t6 = cmp eq i128 %t5, 340282366920938463463374607431768211455
+    %t7 = convert trunc i1 i64 %t6
+    store i1 %t7, $s0
+    jump ^b3
+  block ^b3:
+    %t8 = load i1 $s0
+    call void @rg.13(%t8)
+    return void
+}
+function @rg.13(%p0 : i1) -> void {
+  slot $s0 : i1
+  block ^b0:
+    store i1 %p0, $s0
+    %t0 = load i1 $s0
+    %t1 = unary not i1 %t0
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    jump ^b3
+  block ^b1:
+    %t2 = call u8 @rg.14(0)
+    jump ^b3
+  block ^b3:
+    return void
+}
+function @rg.14(%p0 : u8) -> u8 {
+  slot $s0 : u8
+  block ^b0:
+    store u8 %p0, $s0
+    %t0 = load u8 $s0
+    %t1 = cmp eq u8 %t0, 0
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    %t2 = binary udiv u8 1, %t0
+    return u8 %t2
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+declare function @abort() -> void [return=noreturn]
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.18()
+    return i64 0
+}

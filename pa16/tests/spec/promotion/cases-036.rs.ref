@@ -1,0 +1,28 @@
+loans-crate 1
+body 0 source=0:13
+  place p0 root=v1 shared=false
+  place p1 root=v1 parent=p0 dereference mutable=false shared=true
+  place p2 root=v0 shared=false
+  place p3 root=v2 shared=false
+  loan q0 borrow=v1 place=p2 region=g2 kind=shared
+  loan q1 borrow=v3 place=p3 region=g4 kind=shared
+  point t0 block=b0 at=s0 reachable=true
+  point t1 block=b0 at=s1 reachable=true
+  point t2 block=b0 at=s2 reachable=true
+  point t3 block=b0 at=s3 reachable=true
+  point t4 block=b0 at=s4 reachable=true
+  point t5 block=b0 at=s5 reachable=true
+  point t6 block=b0 at=end reachable=true
+  live-region g0 word=0 bits=000000000000007f
+  live-region g2 word=0 bits=000000000000007f
+  live-region g3 word=0 bits=000000000000007f
+  live-region g4 word=0 bits=000000000000007f
+  state t2 word=0 live=0000000000000001 activated=0000000000000000
+  state t3 word=0 live=0000000000000001 activated=0000000000000000
+  state t4 word=0 live=0000000000000001 activated=0000000000000000
+  state t5 word=0 live=0000000000000003 activated=0000000000000000
+  state t6 word=0 live=0000000000000003 activated=0000000000000000
+end-body
+body 1 source=0:15
+end-body
+eof bodies=2 loans=2 places=4 points=7 region_words=4 state_words=5

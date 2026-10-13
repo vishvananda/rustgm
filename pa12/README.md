@@ -27,8 +27,8 @@ but wildcard array indexing still forms the place and checks bounds.
 Array repetition evaluates its operand once, including lengths zero and one.
 Larger repeats require a Copy operand or an eligible constant operand. Keep one
 operand and a canonical length, never one body-IR entry per repeated element.
-The executable profile still rejects demanded constant/static materialization;
-PA25 owns that allocation boundary. The earlier concrete array-length profile
+PA16 covers closed constant/static materialization and reference storage with
+their lifetime/loan proofs; general constant evaluation remains PA25. The earlier concrete array-length profile
 remains: lengths in annotations and repeats are usize-compatible integer literals
 or grouped literals. Nonliteral array-length queries belong to PA25.
 

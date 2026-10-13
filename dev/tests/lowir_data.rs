@@ -139,6 +139,7 @@ fn exact_bits(ty: Type, bits: u128) -> Result<Program, &'static str> {
     Ok(p)
 }
 #[test]
+#[ignore = "requires the pinned CPPGM backend; run make test-maintainer-native"]
 fn persistent_objects_and_relocations_execute_through_the_pinned_backend()
 -> Result<(), Box<dyn std::error::Error>> {
     let root = Path::new(env!("CARGO_MANIFEST_DIR"))

@@ -1,7 +1,7 @@
 # RustGM assignment roadmap
 
-Maintainer reference implementation and course tests grow together. PA1–PA14
-have working draft references and executable text-oracle suites; PA15–PA38 are planned.
+Maintainer reference implementation and course tests grow together. PA1–PA16
+have working draft references and executable text-oracle suites; PA17–PA38 are planned.
 No planned assignment is counted as passing.
 
 | PA | Assignment | Status |
@@ -20,8 +20,8 @@ No planned assignment is counted as passing.
 | [12](pa12/README.md) | Aggregates and layout | implemented-draft |
 | [13](pa13/README.md) | Pattern semantics | implemented-draft |
 | [14](pa14/README.md) | Moves and initialization | implemented-draft |
-| [15](pa15/README.md) | Lifetime contracts | planned |
-| [16](pa16/README.md) | Borrow checking | planned |
+| [15](pa15/README.md) | Lifetime contracts | implemented-draft |
+| [16](pa16/README.md) | Borrow checking | implemented-draft |
 | [17](pa17/README.md) | Destruction | planned |
 | [18](pa18/README.md) | Generics | planned |
 | [19](pa19/README.md) | Traits and methods | planned |

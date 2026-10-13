@@ -21,18 +21,24 @@ type 18 primitive f64
 type 19 reference mutable=false region=bound:0:0 referent=11
 type 20 function binders=1 parameters=[19] result=19 unsafe=false
 type 21 function-item def=13 signature=20
+type 22 reference mutable=false region=region:1 referent=11
+region-var region:1 body=0:23 source=0:19 origin=inference pending
+region-coercion body=0:23 source=0:19 actual=19 expected=22 kind=same-shape pending
+region-coercion body=0:23 source=0:23 actual=22 expected=19 kind=same-shape pending
 body 0 function def=13 signature=20 result=19 source=0:23
   local l0 type=19 parameter=0 def=32 mutable=false storage-parent=- source=3
-  local l1 type=19 binding def=33 mutable=false storage-parent=l0 source=17
+  local l1 type=22 binding def=33 mutable=false storage-parent=l0 source=17
   block b0:
     live l0 source=3
     v0 type=19 = read l0 source=19
+    v1 type=22 = constrain v0 source=19
     live l1 source=17
-    store l1 v0 source=20
-    v1 type=1 = unit source=20
-    v2 type=19 = read l1 source=22
+    store l1 v1 source=20
+    v2 type=1 = unit source=20
+    v3 type=22 = read l1 source=22
+    v4 type=19 = constrain v3 source=23
     dead l1 source=23
     dead l0 source=23
-    return v2 source=23
+    return v4 source=23
 end-body
-eof bodies=1 locals=2 values=3 statements=8 blocks=1
+eof bodies=1 locals=2 values=5 statements=10 blocks=1

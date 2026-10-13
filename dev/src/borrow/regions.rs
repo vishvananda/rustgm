@@ -4,4 +4,5 @@ pub mod constraints;
 pub mod graph;
 mod places;
 pub mod points;
+pub mod view;
 pub use check::{Analysis, Body, Error, check, check_bodies};

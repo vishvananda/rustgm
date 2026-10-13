@@ -23,10 +23,16 @@ type 20 array element=19 length=1
 type 21 reference mutable=false region=bound:0:0 referent=20
 type 22 function binders=2 parameters=[21] result=1 unsafe=false
 type 23 function-item def=13 signature=22
+type 24 reference mutable=false region=region:2 referent=11
+type 25 array element=24 length=1
+type 26 reference mutable=false region=region:1 referent=25
 root 0:16 pattern=0
-pattern 0 source=0:16 input=21 deref mutable=false implicit=false pattern=1
-pattern 1 source=0:15 input=20 product variant=- fields=0:1
-pattern 2 source=0:14 input=19 deref mutable=false implicit=false pattern=3
+pattern 0 source=0:16 input=26 deref mutable=false implicit=false pattern=1
+pattern 1 source=0:15 input=25 product variant=- fields=0:1
+pattern 2 source=0:14 input=24 deref mutable=false implicit=false pattern=3
 pattern 3 source=0:13 input=11 bind def=32 local=11 mutable=false capture=value subpattern=-
 field 0 index=0 pattern=2
-eof roots=1 patterns=4 fields=1 alternatives=0 ranges=0 matches=0 arms=0 coverage-work=0 region-vars=0 region-equalities=0 conditions=0 chains=0
+region-var region:1 body=0:20 source=0:18 origin=inference pending
+region-var region:2 body=0:20 source=0:18 origin=inference pending
+region-coercion body=0:20 source=0:18 actual=21 expected=26 kind=same-shape pending
+eof roots=1 patterns=4 fields=1 alternatives=0 ranges=0 matches=0 arms=0 coverage-work=0 region-vars=2 region-equalities=0 conditions=0 chains=0

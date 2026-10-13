@@ -74,6 +74,7 @@ fn success(name: &str, output: Output) -> Result<Vec<u8>, Box<dyn std::error::Er
     Ok(output.stdout)
 }
 #[test]
+#[ignore = "requires the pinned CPPGM backend; run make test-maintainer-native"]
 fn named_constants_and_static_storage_execute_like_rustc() -> Result<(), Box<dyn std::error::Error>>
 {
     let root = Path::new(env!("CARGO_MANIFEST_DIR"))

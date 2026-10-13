@@ -55,6 +55,8 @@ fn options() -> Result<Options, String> {
                     | "layouts"
                     | "body-ir"
                     | "ownership"
+                    | "regions"
+                    | "loans"
                     | "lowir"
             )
         {
@@ -114,6 +116,8 @@ fn compile(options: &Options) -> Result<(), String> {
             | "--emit-layouts"
             | "--emit-body-ir"
             | "--emit-ownership"
+            | "--emit-regions"
+            | "--emit-loans"
             | "--emit-lowir"
     ) {
         modules::run(
@@ -134,6 +138,10 @@ fn compile(options: &Options) -> Result<(), String> {
                 modules::Mode::Bodies
             } else if options.mode == "--emit-ownership" {
                 modules::Mode::Ownership
+            } else if options.mode == "--emit-regions" {
+                modules::Mode::Regions
+            } else if options.mode == "--emit-loans" {
+                modules::Mode::Loans
             } else if options.mode == "--emit-lowir" {
                 modules::Mode::Lowir
             } else {

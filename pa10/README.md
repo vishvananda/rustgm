@@ -150,7 +150,9 @@ call signature=TYPE vCALLEE [vARG,...]
 Scalar bits, unary NAME, punctuation OP and cast KIND use PA9's vocabulary.
 Signed-minimum literal exceptions remain on unary operations. Argument lists
 use commas without spaces. `reify` converts a function item to a pointer;
-`constrain` retains equality obligations. Unit/never calls are evaluated
+`constrain` retains selected type/region conversion obligations. An inferred
+reference local has its own region identity; reading and returning it can add
+conversion values even when the source and result have the same referent type. Unit/never calls are evaluated
 statements; a never call ends its block with `unreachable`.
 
 End each body with `end-body`. The footer is

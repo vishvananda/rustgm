@@ -124,6 +124,7 @@ const CASES: &[(&str, &str, bool)] = &[
     ),
 ];
 #[test]
+#[ignore = "requires the pinned CPPGM backend; run make test-maintainer-native"]
 fn wide_references_execute_with_pointer_and_length() -> Result<(), Box<dyn std::error::Error>> {
     native_references::check_cases("wide-references", CASES)
 }

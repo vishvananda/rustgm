@@ -120,11 +120,13 @@ const CASES: &[(&str, &str, bool)] = &[
 ];
 
 #[test]
+#[ignore = "requires the pinned CPPGM backend; run make test-maintainer-native"]
 fn dynamic_slice_and_text_patterns_execute_like_rustc() -> Result<(), Box<dyn std::error::Error>> {
     native_references::check_cases("dynamic-patterns", CASES)
 }
 
 #[test]
+#[ignore = "requires the pinned CPPGM backend; run make test-maintainer-native"]
 fn long_text_compares_all_bytes_without_expanding_comparison_code()
 -> Result<(), Box<dyn std::error::Error>> {
     let prefix = "a".repeat(32_768);

@@ -222,8 +222,8 @@
       "number": 15,
       "path": "pa15",
       "title": "Lifetime contracts",
-      "mode": "--emit-ownership",
-      "status": "planned",
+      "mode": "--emit-regions",
+      "status": "implemented-draft",
       "scope": "Region parameters, elision, outlives constraints and reference returns",
       "test_families": [
         "valid/invalid returns",
@@ -235,8 +235,8 @@
       "number": 16,
       "path": "pa16",
       "title": "Borrow checking",
-      "mode": "--emit-ownership",
-      "status": "planned",
+      "mode": "--emit-loans",
+      "status": "implemented-draft",
       "scope": "Non-lexical lifetimes, reborrows, loans and two-phase borrowing",
       "test_families": [
         "last use",
@@ -244,7 +244,8 @@
         "reborrows",
         "field disjointness",
         "loop loans"
-      ]
+      ],
+      "additional_modes": ["--emit-lowir"]
     },
     {
       "number": 17,

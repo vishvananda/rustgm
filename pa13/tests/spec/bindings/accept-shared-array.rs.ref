@@ -30,5 +30,5 @@ pattern 1 source=0:3 input=19 product variant=- fields=0:1
 pattern 2 source=0:2 input=11 bind def=31 local=24 mutable=false capture=ref region=region:1 loan=pending subpattern=-
 field 0 index=0 pattern=2
 region-var region:1 body=0:17 source=0:2 origin=pattern-borrow pending
-region-equal body=0:17 left=region:1 right=bound:0:0
-eof roots=1 patterns=3 fields=1 alternatives=0 ranges=0 matches=0 arms=0 coverage-work=0 region-vars=1 region-equalities=1 conditions=0 chains=0
+region-coercion body=0:17 source=0:17 actual=24 expected=21 kind=same-shape pending
+eof roots=1 patterns=3 fields=1 alternatives=0 ranges=0 matches=0 arms=0 coverage-work=0 region-vars=1 region-equalities=0 conditions=0 chains=0

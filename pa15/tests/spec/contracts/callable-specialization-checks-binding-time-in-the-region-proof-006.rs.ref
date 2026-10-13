@@ -1,0 +1,12 @@
+regions-crate 1
+body 0 source=0:33
+  region g0 static
+  region g1 local
+  region g2 variable universe=1
+  require g2:g0
+end-body
+body 1 source=0:35
+  region g0 static
+  region g1 local
+end-body
+eof bodies=2 universals=0 variables=0 regions=5 assumptions=0 requirements=1

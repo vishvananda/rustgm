@@ -33,8 +33,10 @@ execute. Check every constructed body, including undemanded procedures.
 This scalar check is the executable prerequisite. PA14 extends it to moves,
 projections, partial initialization and non-Copy values; PA15–PA17 own regions,
 loans and destruction. Pending region conversions cannot become native casts.
-Aggregates need PA12 layouts. Constant/static materialization needs PA25 and
-allocation lowering; it is rejected when demanded. Unused later-stage
+Aggregates need PA12 layouts. Closed constant/static materialization and reference erasure are exercised
+with their required proofs in PA16. General const functions and mutable constant
+memory remain PA25. Their former executable boundary fixtures now live with
+the owning proof assignment. Unused later-stage
 constructs do not acquire a validity proof through a PA11 pass. Const validity,
 full lint parity, unreachable ownership diagnostics and general Rust acceptance
 remain outside this profile.

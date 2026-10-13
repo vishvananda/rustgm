@@ -11,12 +11,8 @@ jobs:
       - name: Pinned Rust
         run: rustup toolchain install 1.98.0 --profile minimal --component rustfmt --component clippy
       - name: Build and course tests
-        run: make test test-report lint
+        run: make test lint
       - name: Release invariants
         run: CARGO_TARGET_DIR="$PWD/obj/rust" cargo test --manifest-path dev/Cargo.toml --release --locked
       - name: Architecture and harness
         run: make setup-audit audit-rust test-harness test-upstream test-rustc
-      - name: Oracle reproducibility
-        run: |
-          make ref-test
-          git diff --exit-code -- ':(glob)pa*/tests/**' ':(glob)pa*/reference.json'

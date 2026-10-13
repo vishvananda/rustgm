@@ -1,0 +1,43 @@
+loans-crate 1
+body 0 source=0:28
+  place p0 root=l0 shared=false
+  place p1 root=l0 parent=p0 dereference mutable=true shared=false
+  place p2 root=l1 shared=false
+  place p3 root=l1 parent=p2 dereference mutable=true shared=false
+  loan q0 borrow=v0 place=p1 region=g3 kind=mutable
+  point t0 block=b0 at=s0 reachable=true
+  point t1 block=b0 at=s1 reachable=true
+  point t2 block=b0 at=s2 reachable=true
+  point t3 block=b0 at=s3 reachable=true
+  point t4 block=b0 at=s4 reachable=true
+  point t5 block=b0 at=s5 reachable=true
+  point t6 block=b0 at=s6 reachable=true
+  point t7 block=b0 at=s7 reachable=true
+  point t8 block=b0 at=s8 reachable=true
+  point t9 block=b0 at=s9 reachable=true
+  point t10 block=b0 at=s10 reachable=true
+  point t11 block=b0 at=s11 reachable=true
+  point t12 block=b0 at=s12 reachable=true
+  point t13 block=b0 at=s13 reachable=true
+  point t14 block=b0 at=s14 reachable=true
+  point t15 block=b0 at=s15 reachable=true
+  point t16 block=b0 at=s16 reachable=true
+  point t17 block=b0 at=s17 reachable=true
+  point t18 block=b0 at=s18 reachable=true
+  point t19 block=b0 at=s19 reachable=true
+  point t20 block=b0 at=end reachable=true
+  live-region g0 word=0 bits=00000000001fffff
+  live-region g2 word=0 bits=00000000001fffff
+  live-region g3 word=0 bits=00000000000003fc
+  live-region g4 word=0 bits=00000000000003f0
+  state t3 word=0 live=0000000000000001 activated=0000000000000000
+  state t4 word=0 live=0000000000000001 activated=0000000000000000
+  state t5 word=0 live=0000000000000001 activated=0000000000000000
+  state t6 word=0 live=0000000000000001 activated=0000000000000000
+  state t7 word=0 live=0000000000000001 activated=0000000000000000
+  state t8 word=0 live=0000000000000001 activated=0000000000000000
+  state t9 word=0 live=0000000000000001 activated=0000000000000000
+end-body
+body 1 source=0:30
+end-body
+eof bodies=2 loans=1 places=4 points=21 region_words=4 state_words=7

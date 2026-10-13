@@ -1,4 +1,5 @@
 //! Canonical projection recipes for loan overlap, distinct from owned move paths.
+mod view;
 use crate::body::ir::{
     Action, Body, LocalId, LocalKind, Place, ProjectionKind, Selection, ValueId,
 };

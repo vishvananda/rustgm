@@ -1,38 +1,104 @@
 # RustGM Programming Assignment 15: Lifetime contracts
 
-Status: **planned**. This is a buildout brief, not a released grading contract.
-Prerequisite: PA14. The common source profile is Rust 1.98.0, initially edition
-2024 and Linux x86-64. Later edition support is explicit at PA36.
+Status: **implemented-draft**. This is a bounded course language profile.
+Prerequisite: PA14. Profile: Rust 1.98.0, edition 2024, Linux x86-64.
 
 ## Required implementation
 
-Region parameters, elision, outlives constraints and reference returns.
+Retain lifetime identity through type inference and typed bodies. Distinguish
+`'static`, named bound parameters, inferred lifetimes and nested callable
+binders. Apply function and nominal lifetime arguments without capturing a
+nested binder or coupling independent call sites. Diagnose invalid parameter
+names, arity, binding-time arguments and ambiguous return elision.
 
-The maintainer implements this responsibility in `dev/src/` and introduces its
-typed interface before generating text views. Consult `spec.md`, the pinned
-Rust Reference, and the existing CPPGM implementation for efficient algorithms.
-Do not introduce rendered text as transport between compiler phases.
+Elided reference inputs introduce independent parameters. A single eligible
+input lifetime supplies an elided reference result. Preserve explicitly named
+results and captured lifetimes in function-pointer types. Separate early-bound
+function arguments from late-bound callable parameters; explicit arguments
+cannot instantiate late-bound parameters. Lifetime-only aliases, structs and
+enums retain their declared identities. Type/const generics and general traits
+remain later assignments.
 
-## Tool surface
+Collect declared outlives bounds and well-formedness assumptions from signatures.
+A local annotation creates requirements, not new assumptions. Enforce nominal
+bounds at uses; a type alias's own declared bounds are not enforced by the pinned
+language profile. Infer nominal lifetime variance from typed fields. Shared
+reference lifetimes can shorten; mutable referents are invariant. Function
+parameters are contravariant and results covariant. Unsizing an array reference
+to a slice preserves the element type's required relationships.
 
-Extend `dev/rustgm --emit-ownership -o OUTPUT SOURCE`. Earlier stage views remain
-available. Freeze the exact text vocabulary, deterministic ordering, error
-contract and example outputs before declaring this assignment active.
+A coercion is a directed requirement. Never repair an invalid return by merging
+independent universal parameters or by adding the required relationship to the
+assumptions. Instantiate higher-ranked source binders with fresh variables and
+target binders with fresh placeholders. Reject a placeholder that escapes into
+an older universe. Retain constraints from unused calls, casts and function
+items as well as demanded return values.
 
-## Tests to develop with the reference
+Use typed borrow-place provenance to bound references into local storage.
+References into parameters' referents differ from references into the parameter
+variables themselves. Static storage and eligible promoted constants have
+persistent provenance. Promotion retains source evaluation, effects and runtime
+checks. Its closed constant subset does not implement general const functions
+or mutable constant memory (PA25).
 
-valid/invalid returns; nested references; caller/callee constraints.
+This assignment proves lifetime contracts. Intrabody last-use liveness, storage
+expiry along control-flow paths, conflicting accesses and two-phase activation
+belong to PA16. A successful contract view alone does not authorize LowIR
+reference erasure. The executable pipeline must also consume PA14/PA16 proofs.
 
-Add spec fixtures, positive/negative controls and cross-feature regressions in
-the earliest owning assignment. Use the course reference for text oracles and
-pinned rustc for independent language checks. From PA11, execute emitted LowIR
-with the configured CPPGM backend. Do not require new future-stage behavior
-implicitly. An empty suite or a not-implemented result cannot pass.
+## Text contract
 
-## Completion and review
+`dev/rustgm --emit-regions SOURCE` runs the typed-body and lifetime-contract
+pipeline and emits `regions-crate 1`. `--count-regions` performs the same checks
+and emits only the final count line. Both accept `-o OUTPUT`. Language failures
+return 1 with no partial stdout; signals, panics and resource infrastructure
+failures never count as expected language rejection.
 
-Publish the semantic and lowering boundary, tests/manifest.json and reference
-sidecars together. Run all active earlier suites, lint, file/architecture audits,
-and affected scaling measurements. Record independent checks before setting
-status active in `assignments.json` and adding the stage to the root report.
-Student export is a later operation: this repository owns the full solution.
+Bodies follow contract construction order, including initializer and constructor
+bodies, and begin `body N source=FILE:NODE`. Each body contains:
+
+- `  universal bN=gN` in body-parameter order.
+- `  variable rN=gN` in ascending semantic inference identity order.
+- `  region gN static|local` or `  region gN universal|variable universe=N`, in
+  graph identity order. Static is g0; local-storage upper bound is g1.
+- `  assume gLONGER:gSHORTER`, sorted numerically by the pair.
+- `  require gLONGER:gSHORTER`, sorted numerically by the pair.
+
+Body parameter indices are binder-local; semantic inference identities retain
+crate allocation order. Graph identities are body-local. Nested callable
+placeholders and their fresh variables appear as graph nodes with their own
+universe, without masquerading as named body parameters. The `local` sentinel
+is a contract upper bound, not a runtime CFG lifetime.
+
+The edge records are the retained direct constraints, not a transitive closure.
+Implicit reflexive and static requirements are omitted. Explicit assumptions
+and distinct generated requirement occurrences retain their multiplicity;
+identical edge lines are permitted. Every inference variable includes its local
+availability requirement. Assumptions remain separate from requirements even
+when their endpoints match. Do not use rendered text as semantic transport.
+
+Each body ends `end-body`. The final line is
+`eof bodies=N universals=N variables=N regions=N assumptions=N requirements=N`.
+Count mode omits `eof `. Counts cover the same nodes and edge occurrences;
+solver work counters and hash iteration order are not part of the text oracle.
+
+## Efficiency and validation
+
+Consume canonical type, variance, substitution and selected-conversion facts;
+do not parse source again. Use bounded iterative graph propagation and cache
+queries in their exact type/binder environment. Ordinary closed types should
+avoid repeated walks. The contract graph caps retained nodes and edges at
+1,000,000 per body and charges bounded propagation work. Inspection sorts edge
+records; count mode reads retained counts without materializing those records.
+
+The release suite declares 191 cases covering declarations/elision, explicit and
+implied bounds, variance, reference returns, callable binders, casts and nominal
+constraints. Each expected result is declared before oracle generation and
+independently checked with pinned rustc. Structural maintainer controls also
+check small graphs against exhaustive set-inclusion models, variable identity,
+placeholder universes and a hand-written exact text vector.
+
+Run `make test-pa15`, `make test-rustc`, and the root lint/audit/harness checks.
+Only `make ref-test-pa15` regenerates this assignment's references. Activation
+requires the complete handout, manifests, independent evidence and reviewed
+text oracles together; an empty or planned suite cannot count as passing.

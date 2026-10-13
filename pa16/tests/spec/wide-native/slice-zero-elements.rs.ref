@@ -1,0 +1,40 @@
+global @rg.data.0 : obj<1x1> [storage=readonly] = {
+  zero 1
+}
+function @rg.18() -> void {
+  slot $s0 : obj<16x8>
+  block ^b0:
+    %t0 = addr @rg.data.0
+    store ptr %t0, $s0
+    %t1 = addr $s0
+    %t2 = index u8 %t1, 8
+    store i64 3, %t2
+    %t3 = addr $s0
+    call void @rg.17(%t3)
+    return void
+}
+function @rg.17(%p0 : ptr) -> void {
+  slot $s0 : obj<16x8>
+  block ^b0:
+    %t0 = addr $s0
+    copyobj 16x8 %p0, %t0
+    %t1 = load ptr $s0
+    %t2 = addr $s0
+    %t3 = index u8 %t2, 8
+    %t4 = load i64 %t3
+    %t5 = cmp uge i64 2, %t4
+    branch %t5, ^b1, ^b2
+  block ^b2:
+    %t6 = binary mul i64 2, 0
+    %t7 = index u8 %t1, %t6
+    return void
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+declare function @abort() -> void [return=noreturn]
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.18()
+    return i64 0
+}

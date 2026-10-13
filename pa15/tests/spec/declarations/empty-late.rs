@@ -1,0 +1,2 @@
+fn id(x:&u8)->&u8{x}fn f(x:&u8)->&u8{id::<>(x)}
+fn main() {}

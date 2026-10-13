@@ -22,21 +22,24 @@ type 19 array element=11 length=1
 type 20 reference mutable=false region=bound:0:0 referent=19
 type 21 function binders=1 parameters=[20] result=1 unsafe=false
 type 22 function-item def=13 signature=21
-type 23 reference mutable=false region=region:1 referent=11
+type 23 reference mutable=false region=region:1 referent=19
 type 24 reference mutable=false region=region:2 referent=11
+type 25 reference mutable=false region=region:3 referent=11
 root 0:19 pattern=0
-pattern 0 source=0:18 input=20 or alternatives=0:2
-pattern 1 source=0:13 input=20 deref mutable=false implicit=true pattern=3
-pattern 2 source=0:17 input=20 deref mutable=false implicit=true pattern=5
+pattern 0 source=0:18 input=23 or alternatives=0:2
+pattern 1 source=0:13 input=23 deref mutable=false implicit=true pattern=3
+pattern 2 source=0:17 input=23 deref mutable=false implicit=true pattern=5
 pattern 3 source=0:13 input=19 product variant=- fields=0:1
-pattern 4 source=0:12 input=11 bind def=32 local=23 mutable=false capture=ref region=region:1 loan=pending subpattern=-
+pattern 4 source=0:12 input=11 bind def=32 local=24 mutable=false capture=ref region=region:2 loan=pending subpattern=-
 pattern 5 source=0:17 input=19 product variant=- fields=1:2
-pattern 6 source=0:16 input=11 bind def=32 local=23 mutable=false capture=ref region=region:2 loan=pending subpattern=-
+pattern 6 source=0:16 input=11 bind def=32 local=24 mutable=false capture=ref region=region:3 loan=pending subpattern=-
 field 0 index=0 pattern=4
 field 1 index=0 pattern=6
 alternative 0 pattern=1
 alternative 1 pattern=2
-region-var region:1 body=0:23 source=0:12 origin=pattern-borrow pending
-region-var region:2 body=0:23 source=0:16 origin=pattern-borrow pending
-region-equal body=0:23 left=region:1 right=region:2
-eof roots=1 patterns=7 fields=2 alternatives=2 ranges=0 matches=0 arms=0 coverage-work=0 region-vars=2 region-equalities=1 conditions=0 chains=0
+region-var region:1 body=0:23 source=0:21 origin=inference pending
+region-var region:2 body=0:23 source=0:12 origin=pattern-borrow pending
+region-var region:3 body=0:23 source=0:16 origin=pattern-borrow pending
+region-equal body=0:23 left=region:2 right=region:3
+region-coercion body=0:23 source=0:21 actual=20 expected=23 kind=same-shape pending
+eof roots=1 patterns=7 fields=2 alternatives=2 ranges=0 matches=0 arms=0 coverage-work=0 region-vars=3 region-equalities=1 conditions=0 chains=0

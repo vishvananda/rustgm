@@ -43,7 +43,7 @@ def 30 type=18 name="f64"
 def 33 type=19 name="x" source=0:4
 def 34 type=20 name="y" source=0:13
 function def=13 source=0:28 signature=21 body=0:27
-region-equal body=0:27 left=bound:0:1 right=bound:0:0
+region-coercion body=0:27 source=0:27 actual=20 expected=19 kind=same-shape pending
 node 0:4 type=19 span=12:13 binding=33
 node 0:7 type=11 span=18:20
 node 0:8 type=11 span=18:20

@@ -275,12 +275,12 @@ parent projection. Proof-only tested-place metadata never forms addresses for
 inactive enum variants. Irrefutable and conditional binding execution can combine
 constructors and scalar intervals.
 
-`region-var region:N body=FILE:NODE source=FILE:NODE origin=pattern-borrow|pattern-input|expression-borrow
+`region-var region:N body=FILE:NODE source=FILE:NODE origin=ORIGIN
 pending` gives existential region provenance. IDs are globally allocated from
-one and do not alias `static` or signature `bound:DEPTH:INDEX` regions. Pending
-`region-equal` records use PA9's vocabulary; neither these equalities nor a
-capture's fresh region constitutes a loan or outlives proof. Borrowed captures
-and reference-pattern execution are rejected at the body-building boundary.
+one and do not alias `static` or signature `bound:DEPTH:INDEX` regions. Origins and pending `region-equal`/`region-coercion` records use PA9's vocabulary.
+A capture's fresh region is not itself a loan or outlives proof. PA15/PA16 own
+borrowed execution, including the former executable reference-boundary cases;
+this pattern view still does not claim those proofs.
 
 The final line is `eof roots=N patterns=N fields=N alternatives=N ranges=N
 matches=N arms=N coverage-work=N region-vars=N region-equalities=N conditions=N
@@ -291,19 +291,19 @@ same checks. Diagnostics return 1 and emit no partial pattern view.
 
 ## Tests and completion
 
-`make test-pa13` compares all 803 manifest cases against committed stdout,
-stderr and exit-status sidecars. This includes 538 LowIR cases (364 executable
-programs and 174 rejections) and 265 pattern-inspection cases (170 acceptances
+`make test-pa13` compares all 796 manifest cases against committed stdout,
+stderr and exit-status sidecars. This includes 531 LowIR cases (364 executable
+programs and 167 rejections) and 265 pattern-inspection cases (170 acceptances
 and 95 rejections). Every source and auxiliary module is explicitly discovered.
 
-`make test-rustc` includes all 803 independent acceptance checks. Thirteen
+`make test-rustc` includes all 796 independent acceptance checks. Eight
 manifest entries explicitly qualify phase or Reference/rustc differences:
-five valid reference programs remain gated from LowIR, two inspection programs
-still need lifetime/loan rejection, and six non-reference constant patterns
+two inspection programs still need lifetime/loan rejection, and six non-reference
+constant patterns
 follow the Reference's automatic-dereference rule. Their explicit-reference
 controls are also graded.
 
-`make test-native-pa13` checks the 538 LowIR cases with pinned rustc and the
+`make test-native-pa13` checks the 531 LowIR cases with pinned rustc and the
 qualified CPPGM backend. There are 348 programs with matching clean execution
 and eight signed-zero pairs (16 programs) with deliberately opposite pass/panic
 outcomes. Each pair asserts the Reference's count of two and rustc's count of

@@ -1,0 +1,75 @@
+loans-crate 1
+body 0 source=0:39
+  place p0 root=l1 shared=false
+  place p1 root=l1 parent=p0 dereference mutable=false shared=true
+  place p2 root=l0 shared=false
+  place p3 root=l2 shared=false
+  place p4 root=l3 shared=false
+  loan q0 borrow=v1 place=p2 region=g2 kind=shared
+  point t0 block=b0 at=s0 reachable=true
+  point t1 block=b0 at=s1 reachable=true
+  point t2 block=b0 at=s2 reachable=true
+  point t3 block=b0 at=end reachable=true
+  point t4 block=b1 at=s21 reachable=true
+  point t5 block=b1 at=s22 reachable=true
+  point t6 block=b1 at=s23 reachable=true
+  point t7 block=b1 at=s24 reachable=true
+  point t8 block=b1 at=s25 reachable=true
+  point t9 block=b1 at=s26 reachable=true
+  point t10 block=b1 at=s27 reachable=true
+  point t11 block=b1 at=s28 reachable=true
+  point t12 block=b1 at=s29 reachable=true
+  point t13 block=b1 at=s30 reachable=true
+  point t14 block=b1 at=end reachable=true
+  point t15 block=b2 at=s3 reachable=true
+  point t16 block=b2 at=s4 reachable=true
+  point t17 block=b2 at=s5 reachable=true
+  point t18 block=b2 at=s6 reachable=true
+  point t19 block=b2 at=s7 reachable=true
+  point t20 block=b2 at=s8 reachable=true
+  point t21 block=b2 at=s9 reachable=true
+  point t22 block=b2 at=s10 reachable=true
+  point t23 block=b2 at=s11 reachable=true
+  point t24 block=b2 at=end reachable=true
+  point t25 block=b3 at=end reachable=true
+  point t26 block=b4 at=end reachable=true
+  point t27 block=b5 at=end reachable=true
+  point t28 block=b6 at=end reachable=true
+  point t29 block=b7 at=s13 reachable=true
+  point t30 block=b7 at=s14 reachable=true
+  point t31 block=b7 at=s15 reachable=true
+  point t32 block=b7 at=s16 reachable=true
+  point t33 block=b7 at=s17 reachable=true
+  point t34 block=b7 at=s18 reachable=true
+  point t35 block=b7 at=end reachable=true
+  point t36 block=b8 at=end reachable=true
+  point t37 block=b9 at=s12 reachable=true
+  point t38 block=b9 at=end reachable=true
+  point t39 block=b10 at=s19 reachable=true
+  point t40 block=b10 at=s20 reachable=true
+  point t41 block=b10 at=end reachable=true
+  point t42 block=b11 at=end reachable=false
+  live-region g0 word=0 bits=000007ffffffffff
+  live-region g2 word=0 bits=0000000fe1fc00f0
+  live-region g3 word=0 bits=0000000fe1f000f0
+  state t4 word=0 live=0000000000000001 activated=0000000000000000
+  state t5 word=0 live=0000000000000001 activated=0000000000000000
+  state t6 word=0 live=0000000000000001 activated=0000000000000000
+  state t7 word=0 live=0000000000000001 activated=0000000000000000
+  state t19 word=0 live=0000000000000001 activated=0000000000000000
+  state t20 word=0 live=0000000000000001 activated=0000000000000000
+  state t21 word=0 live=0000000000000001 activated=0000000000000000
+  state t22 word=0 live=0000000000000001 activated=0000000000000000
+  state t23 word=0 live=0000000000000001 activated=0000000000000000
+  state t24 word=0 live=0000000000000001 activated=0000000000000000
+  state t29 word=0 live=0000000000000001 activated=0000000000000000
+  state t30 word=0 live=0000000000000001 activated=0000000000000000
+  state t31 word=0 live=0000000000000001 activated=0000000000000000
+  state t32 word=0 live=0000000000000001 activated=0000000000000000
+  state t33 word=0 live=0000000000000001 activated=0000000000000000
+  state t34 word=0 live=0000000000000001 activated=0000000000000000
+  state t35 word=0 live=0000000000000001 activated=0000000000000000
+end-body
+body 1 source=0:41
+end-body
+eof bodies=2 loans=1 places=5 points=43 region_words=3 state_words=17

@@ -21,4 +21,5 @@ type 18 primitive f64
 type 19 reference mutable=false region=bound:0:0 referent=4
 type 20 function binders=1 parameters=[19] result=19 unsafe=false
 type 21 function-item def=13 signature=20
+region-coercion body=0:27 source=0:27 actual=21 expected=20 kind=function-pointer pending
 eof roots=0 patterns=0 fields=0 alternatives=0 ranges=0 matches=0 arms=0 coverage-work=0 region-vars=0 region-equalities=0 conditions=0 chains=0

@@ -1246,19 +1246,6 @@
       }
     },
     {
-      "path": "tests/spec/boundary/regions.rs",
-      "exit_status": 1,
-      "features": [
-        "pa12.boundary"
-      ],
-      "rustc": {
-        "kind": "program",
-        "status": 0,
-        "default_lints": true,
-        "reason": "PA15 owns nominal region parameters; loans follow at PA16."
-      }
-    },
-    {
       "path": "tests/spec/boundary/constant-function.rs",
       "exit_status": 1,
       "features": [
@@ -1295,19 +1282,6 @@
         "status": 0,
         "default_lints": true,
         "reason": "PA25 owns nonliteral array-length queries; PA12 retains the earlier concrete array annotation profile."
-      }
-    },
-    {
-      "path": "tests/spec/boundary/nested-reference.rs",
-      "exit_status": 1,
-      "features": [
-        "pa12.boundary"
-      ],
-      "rustc": {
-        "kind": "program",
-        "status": 0,
-        "default_lints": true,
-        "reason": "References inside aggregate storage retain pending region/loan proofs, including zero-sized fields."
       }
     },
     {

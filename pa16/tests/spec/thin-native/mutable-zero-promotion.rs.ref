@@ -1,0 +1,32 @@
+global @rg.data.0 : obj<1x1> [storage=readonly] = {
+  zero 1
+}
+function @rg.16() -> void {
+  slot $s0 : ptr
+  block ^b0:
+    %t0 = call ptr @rg.15()
+    store ptr %t0, $s0
+    %t1 = load ptr $s0
+    jump ^b2
+  block ^b2:
+    jump ^b1
+  block ^b1:
+    return void
+  block ^b3:
+    unreachable
+  block ^b4:
+    unreachable
+}
+function @rg.15() -> ptr {
+  slot $s0 : ptr
+  block ^b0:
+    %t0 = addr @rg.data.0
+    store ptr %t0, $s0
+    %t1 = load ptr $s0
+    return ptr %t1
+}
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.16()
+    return i64 0
+}

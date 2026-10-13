@@ -2,8 +2,9 @@
 
 The manifest owns every source and declares success, rejection and native
 outcome before generating references. `control/` reuses PA10's declared scalar
-results as full-value native checks. Constant/static materialization is covered
-by explicit rejection boundaries, not by running PA10's test interpreter.
+results as full-value native checks. The former constant/static/reference executable boundaries have moved to
+PA16, where the complete compiler proves and lowers those capabilities.
+PA10's test interpreter never supplies executable frontend behavior.
 
 `integers/`, `shifts/`, `casts/`, `floats/` and `panic/` cover narrow/wide values,
 checked failures, saturation, IEEE special values and remainder. The two fixed

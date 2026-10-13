@@ -1,0 +1,67 @@
+global @rg.data.0 : obj<16x8> [storage=readonly] = {
+  ptr addr @rg.data.2
+  i64 6
+}
+global @rg.data.1 : obj<4x1> [storage=readonly] = {
+  u8 240
+  u8 159
+  u8 166
+  u8 128
+}
+global @rg.data.2 : obj<6x1> [storage=readonly] = {
+  u8 104
+  u8 195
+  u8 169
+  u8 108
+  u8 108
+  u8 111
+}
+function @rg.17() -> void {
+  slot $s0 : obj<16x8>
+  slot $s1 : obj<16x8>
+  slot $s2 : obj<16x8>
+  slot $s3 : obj<16x8>
+  slot $s4 : obj<16x8>
+  block ^b0:
+    %t0 = addr @rg.data.0
+    %t1 = addr $s0
+    copyobj 16x8 %t0, %t1
+    %t2 = addr $s1
+    %t3 = addr $s0
+    call void @rg.16(%t2, %t3)
+    %t4 = addr @rg.data.1
+    store ptr %t4, $s2
+    %t5 = addr $s2
+    %t6 = index u8 %t5, 8
+    store i64 4, %t6
+    %t7 = load ptr $s2
+    %t8 = addr $s2
+    %t9 = index u8 %t8, 8
+    %t10 = load i64 %t9
+    store ptr %t7, $s3
+    %t11 = addr $s3
+    %t12 = index u8 %t11, 8
+    store i64 %t10, %t12
+    %t13 = addr $s4
+    %t14 = addr $s3
+    call void @rg.16(%t13, %t14)
+    return void
+}
+function @rg.16(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : obj<16x8>
+  slot $s1 : obj<16x8>
+  block ^b0:
+    %t0 = addr $s0
+    copyobj 16x8 %p1, %t0
+    %t1 = addr $s0
+    %t2 = addr $s1
+    copyobj 16x8 %t1, %t2
+    %t3 = addr $s1
+    copyobj 16x8 %t3, %p0
+    return void
+}
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.17()
+    return i64 0
+}

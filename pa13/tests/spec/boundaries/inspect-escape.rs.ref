@@ -25,5 +25,5 @@ type 22 reference mutable=false region=region:1 referent=11
 root 0:14 pattern=0
 pattern 0 source=0:14 input=11 bind def=32 local=22 mutable=false capture=ref region=region:1 loan=pending subpattern=-
 region-var region:1 body=0:20 source=0:14 origin=pattern-borrow pending
-region-equal body=0:20 left=region:1 right=static
-eof roots=1 patterns=1 fields=0 alternatives=0 ranges=0 matches=0 arms=0 coverage-work=0 region-vars=1 region-equalities=1 conditions=0 chains=0
+region-coercion body=0:20 source=0:20 actual=22 expected=19 kind=same-shape pending
+eof roots=1 patterns=1 fields=0 alternatives=0 ranges=0 matches=0 arms=0 coverage-work=0 region-vars=1 region-equalities=0 conditions=0 chains=0

@@ -1,4 +1,6 @@
 //! Forward loan reachability constrained by inferred use regions.
+mod inspection;
+pub mod view;
 use super::places::{Depth, Id, Index};
 use super::{
     liveness,
@@ -21,6 +23,7 @@ use crate::{
     },
     types::{Kind, Store, outlives::LiveRegions},
 };
+pub use inspection::Inspection;
 use std::collections::VecDeque;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -68,6 +71,7 @@ struct Flow<'a> {
     uses: liveness::Analysis,
     regions: points::Liveness,
     steps: usize,
+    snapshots: Vec<inspection::Snapshot>,
 }
 impl Flow<'_> {
     fn collect(&mut self, types: &Store, contract: &regions::Body) -> Result<(), &'static str> {
@@ -341,7 +345,12 @@ impl Flow<'_> {
         }
         Ok(())
     }
-    fn transfer(&mut self, block: usize, state: &mut [State], inspect: bool) -> Result<(), Error> {
+    fn transfer<const RECORD: bool>(
+        &mut self,
+        block: usize,
+        state: &mut [State],
+        inspect: bool,
+    ) -> Result<(), Error> {
         let data = &self.body.blocks[block];
         let mut ends = self.storage.ends(block).peekable();
         for at in data.start..=data.end {
@@ -365,11 +374,17 @@ impl Flow<'_> {
                 ends.next();
             }
             if at == data.end {
+                if RECORD && inspect {
+                    inspection::record(&mut self.snapshots, point, state).map_err(error)?;
+                }
                 continue;
             }
             let action = self.body.statements[at as usize].action;
             if let Action::Evaluate(id) = action {
                 self.activation(state, id, inspect).map_err(error)?;
+            }
+            if RECORD && inspect {
+                inspection::record(&mut self.snapshots, point, state).map_err(error)?;
             }
             if inspect {
                 self.inspect(state, action).map_err(error)?;
@@ -385,7 +400,7 @@ impl Flow<'_> {
         }
         Ok(())
     }
-    fn solve(&mut self) -> Result<(), Error> {
+    fn solve<const RECORD: bool>(&mut self) -> Result<(), Error> {
         let error = |message| Error {
             node: self.body.source,
             message,
@@ -407,7 +422,7 @@ impl Flow<'_> {
             queued[block] = false;
             self.charge(words).map_err(error)?;
             state.copy_from_slice(&incoming[block * words..(block + 1) * words]);
-            self.transfer(block, &mut state, false)?;
+            self.transfer::<false>(block, &mut state, false)?;
             for next in successors(self.body.blocks[block].terminator)
                 .into_iter()
                 .flatten()
@@ -437,7 +452,7 @@ impl Flow<'_> {
             }
             self.charge(words).map_err(error)?;
             state.copy_from_slice(&incoming[block * words..(block + 1) * words]);
-            self.transfer(block, &mut state, true)?;
+            self.transfer::<RECORD>(block, &mut state, true)?;
             for target in successors(self.body.blocks[block].terminator)
                 .into_iter()
                 .flatten()
@@ -478,6 +493,20 @@ pub fn check(
     owned: &BodyFacts,
     storage: &storage::Analysis,
 ) -> Result<Analysis, Error> {
+    Ok(analyze::<false>(types, components, body, contract, owned, storage)?.analysis)
+}
+pub(super) struct Report {
+    pub analysis: Analysis,
+    pub inspection: Option<Inspection>,
+}
+pub(super) fn analyze<const RECORD: bool>(
+    types: &Store,
+    components: &mut LiveRegions,
+    body: &Body,
+    contract: &regions::Body,
+    owned: &BodyFacts,
+    storage: &storage::Analysis,
+) -> Result<Report, Error> {
     let error = |message| Error {
         node: body.source,
         message,
@@ -490,11 +519,17 @@ pub fn check(
         .iter()
         .any(|v| matches!(v.kind, Rvalue::Borrow { .. }))
     {
-        return Ok(Analysis {
-            loans: 0,
-            steps: 0,
-            points: 0,
-            region_words: 0,
+        return Ok(Report {
+            analysis: Analysis {
+                loans: 0,
+                steps: 0,
+                points: 0,
+                region_words: 0,
+            },
+            inspection: RECORD.then_some(Inspection {
+                source: body.source,
+                detail: None,
+            }),
         });
     }
     let uses = liveness::analyze(types, components, body).map_err(error)?;
@@ -528,13 +563,27 @@ pub fn check(
         uses,
         regions,
         steps: 0,
+        snapshots: Vec::new(),
     };
     flow.collect(types, contract).map_err(error)?;
-    flow.solve()?;
-    Ok(Analysis {
+    flow.solve::<RECORD>()?;
+    let analysis = Analysis {
         loans: flow.loans.len(),
         steps: flow.steps + flow.places.steps + flow.uses.steps + flow.regions.steps,
         points: flow.uses.points,
         region_words: flow.regions.mask_count(),
+    };
+    Ok(Report {
+        analysis,
+        inspection: RECORD.then_some(Inspection {
+            source: body.source,
+            detail: Some(inspection::Detail {
+                places: flow.places,
+                loans: flow.loans,
+                uses: flow.uses,
+                regions: flow.regions,
+                snapshots: flow.snapshots,
+            }),
+        }),
     })
 }

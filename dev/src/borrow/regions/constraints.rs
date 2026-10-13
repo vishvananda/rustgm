@@ -29,8 +29,14 @@ pub struct Identities {
     universals: Vec<Region>,
 }
 impl Identities {
-    pub fn universals(&self) -> impl Iterator<Item = Region> + '_ {
+    #[must_use]
+    pub fn universals(&self) -> impl ExactSizeIterator<Item = Region> + '_ {
         self.universals.iter().copied()
+    }
+    /// Unordered semantic inference identities; inspection sorts these numeric keys.
+    #[must_use]
+    pub fn variables(&self) -> impl ExactSizeIterator<Item = (RegionId, Region)> + '_ {
+        self.variables.iter().map(|(&id, &region)| (id, region))
     }
     #[must_use]
     pub fn get(&self, id: RegionId) -> Option<Region> {

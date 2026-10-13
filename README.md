@@ -36,11 +36,15 @@ repository with pinned reference tools. It has not been built yet.
 - PA12 adds concrete owned aggregates, discriminants, checked indexing and
   aggregate calls, with layout vectors and independent native execution checks.
 - PA13 adds selected patterns, coverage, owned decisions, conditional bindings,
-  guard retries and constant patterns, with 803 text-oracle cases. Borrowed,
+  guard retries and constant patterns, with 796 text-oracle cases. Borrowed,
   text and dynamic-slice inspections retain explicit pending execution proofs.
 - PA14 publishes move/initialization and Copy/Clone proofs through ownership
   views, with 124 course cases and independent native controls.
-- PA15–PA38 have buildout briefs and Makefiles. Their suites and implementation
+- PA15 proves lifetime contracts and exposes region identities, assumptions and
+  requirements, with 191 independently checked text-oracle cases.
+- PA16 checks loans, storage and non-lexical lifetimes and lowers checked
+  references, with 292 cases including 112 native executions.
+- PA17–PA38 have buildout briefs and Makefiles. Their suites and implementation
   are not complete; invoking an unbuilt assignment fails explicitly.
 
 Read [ROADMAP.md](ROADMAP.md), [spec.md](spec.md),
@@ -68,7 +72,8 @@ See [dependency review](docs/dependencies.md).
 
 Run `dev/rustgm --emit-tokens source.rs`, `dev/rustgm --emit-literals source.rs`,
 `dev/rustgm --emit-token-trees source.rs`, or `dev/rustgm --emit-ast expression.rs`, or `dev/rustgm --emit-crate-ast crate.rs`, or `dev/rustgm --emit-names crate.rs`,
-or `dev/rustgm --emit-types crate.rs`, `--emit-layouts`, `--emit-body-ir` or `--emit-lowir`,
+or `dev/rustgm --emit-types crate.rs`, `--emit-layouts`, `--emit-body-ir`, `--emit-ownership`,
+`--emit-regions`, `--emit-loans` or `--emit-lowir`,
 or pass source on stdin. The reference
 wrapper `dev/rustgm-ref` invokes the same maintained solution. Override
 `RUSTGM_TEST_APP=/absolute/path/to/candidate` to test another implementation

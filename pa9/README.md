@@ -66,7 +66,7 @@ profile uses the default rejection of out-of-range integer/float literals.
 Grouped negative signed-minimum literals are valid; retain their unary-literal
 exception for later overflow lowering. Round floating literals directly to the
 inferred f32/f64 format. Preserve selected operations, call signatures,
-coercion targets, region equalities and initializer identities as typed facts
+coercion targets, directed region requirements and initializer identities as typed facts
 for later phases.
 
 ## Phase boundaries
@@ -78,7 +78,8 @@ unsafe access. Their deferred obligations must not be silently treated as
 proved. The four `boundary/` fixtures deliberately differ from rustc's final
 acceptance and declare the owning later phase in their manifests.
 
-Region equalities are retained with the body identity. Reference borrowing,
+Directed region coercions and genuine equality obligations are retained with
+the body identity. A coercion must not equate unrelated signature lifetimes. Reference borrowing,
 dereferencing, coercion variance and lifetime-polymorphic calls require later
 contracts. Text literals and aggregate expressions require their later value
 and layout semantics. Foreign/async signatures, generic types, associated
@@ -106,7 +107,7 @@ is not an atomic replacement protocol.
 
 The version line is `typed-crate 1`. Records are LF-terminated with decimal
 IDs and no trailing spaces. Canonical types precede definition, function,
-initializer, region-equality and node records. Type IDs reflect deterministic
+initializer, pending-region and node records. Type IDs reflect deterministic
 canonical construction; definition and source-node IDs are PA8 identities.
 Definitions are ordered by ID; node facts by file ID, then node ID. Per-node
 scalar, operation and adjustment records immediately follow their node record.
@@ -137,12 +138,21 @@ def ID type=TYPE name="NAME" [source=FILE:NODE]
 function def=ID source=FILE:NODE signature=TYPE body=FILE:NODE
 initializer KIND def=ID type=TYPE source=FILE:NODE value=FILE:NODE
 region-equal body=FILE:NODE left=REGION right=REGION
+region-var region:N body=FILE:NODE source=FILE:NODE origin=ORIGIN pending
+region-coercion body=FILE:NODE source=FILE:NODE actual=TYPE expected=TYPE kind=KIND pending
+region-outlives body=FILE:NODE source=FILE:NODE longer=REGION shorter=REGION pending
 node FILE:NODE type=TYPE span=START:END [binding=DEFINITION] [control=FILE:NODE]
 scalar FILE:NODE KIND VALUE
 operation FILE:NODE DETAILS
 adjustment FILE:NODE KIND target=TYPE
 eof types=N definitions=N nodes=N functions=N initializers=N
 ```
+
+Pending region variables use globally allocated nonzero identities. Origins are
+`annotation`, `inference`, `item-argument`, `call-argument`, `universal-alias`,
+`expression-borrow`, `pattern-borrow` or `pattern-input`. Coercion kinds are
+`never`, `function-pointer`, `array-to-slice`, `reborrow` and `same-shape`.
+These are obligations, not successful lifetime proofs; PA15 checks them.
 
 Bracketed optional fields above omit their brackets in actual output.
 Initializer kinds are `const`, `static`, `static-mut`. Scalar forms are

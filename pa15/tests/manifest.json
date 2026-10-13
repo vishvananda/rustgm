@@ -1,0 +1,2304 @@
+{
+  "schema": 1,
+  "mode": "--emit-regions",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "panic": "abort",
+  "overflow_checks": true,
+  "debug_assertions": false,
+  "cases": [
+    {
+      "path": "tests/spec/contracts/callable-specialization-checks-binding-time-in-the-region-proof-001.rs",
+      "exit_status": 1,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/callable-specialization-checks-binding-time-in-the-region-proof-002.rs",
+      "exit_status": 1,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/callable-specialization-checks-binding-time-in-the-region-proof-003.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/callable-specialization-checks-binding-time-in-the-region-proof-004.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/callable-specialization-checks-binding-time-in-the-region-proof-005.rs",
+      "exit_status": 1,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/callable-specialization-checks-binding-time-in-the-region-proof-006.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/callable-specialization-checks-binding-time-in-the-region-proof-007.rs",
+      "exit_status": 1,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/callable-specialization-checks-binding-time-in-the-region-proof-008.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/callable-specialization-checks-binding-time-in-the-region-proof-009.rs",
+      "exit_status": 1,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/callable-specialization-checks-binding-time-in-the-region-proof-010.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/callable-specialization-checks-binding-time-in-the-region-proof-011.rs",
+      "exit_status": 1,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/explicit-function-casts-keep-quantifier-obligations-and-one-selected-operation-001.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/explicit-function-casts-keep-quantifier-obligations-and-one-selected-operation-002.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/explicit-function-casts-keep-quantifier-obligations-and-one-selected-operation-003.rs",
+      "exit_status": 1,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/explicit-function-casts-keep-quantifier-obligations-and-one-selected-operation-004.rs",
+      "exit_status": 1,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/explicit-function-casts-keep-quantifier-obligations-and-one-selected-operation-005.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/implied-bounds-come-from-inputs-and-outputs-but-not-local-annotations-001.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/implied-bounds-come-from-inputs-and-outputs-but-not-local-annotations-002.rs",
+      "exit_status": 1,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/implied-bounds-come-from-inputs-and-outputs-but-not-local-annotations-003.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/implied-bounds-come-from-inputs-and-outputs-but-not-local-annotations-004.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/implied-bounds-come-from-inputs-and-outputs-but-not-local-annotations-005.rs",
+      "exit_status": 1,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/implied-bounds-come-from-inputs-and-outputs-but-not-local-annotations-006.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/implied-bounds-come-from-inputs-and-outputs-but-not-local-annotations-007.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/implied-bounds-come-from-inputs-and-outputs-but-not-local-annotations-008.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/implied-bounds-come-from-inputs-and-outputs-but-not-local-annotations-009.rs",
+      "exit_status": 1,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/implied-bounds-come-from-inputs-and-outputs-but-not-local-annotations-010.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/implied-bounds-come-from-inputs-and-outputs-but-not-local-annotations-011.rs",
+      "exit_status": 1,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/implied-bounds-come-from-inputs-and-outputs-but-not-local-annotations-012.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/implied-bounds-come-from-inputs-and-outputs-but-not-local-annotations-013.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/implied-bounds-come-from-inputs-and-outputs-but-not-local-annotations-014.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/implied-bounds-come-from-inputs-and-outputs-but-not-local-annotations-015.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/implied-bounds-come-from-inputs-and-outputs-but-not-local-annotations-016.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/implied-bounds-come-from-inputs-and-outputs-but-not-local-annotations-017.rs",
+      "exit_status": 1,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/implied-bounds-come-from-inputs-and-outputs-but-not-local-annotations-018.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/implied-bounds-come-from-inputs-and-outputs-but-not-local-annotations-019.rs",
+      "exit_status": 1,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/implied-bounds-come-from-inputs-and-outputs-but-not-local-annotations-020.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/implied-bounds-come-from-inputs-and-outputs-but-not-local-annotations-021.rs",
+      "exit_status": 1,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/inferred-item-arguments-obey-declared-variance-without-coupling-distinct-formals-001.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/inferred-item-arguments-obey-declared-variance-without-coupling-distinct-formals-002.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/inferred-item-arguments-obey-declared-variance-without-coupling-distinct-formals-003.rs",
+      "exit_status": 1,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/inferred-item-arguments-obey-declared-variance-without-coupling-distinct-formals-004.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/inferred-item-arguments-obey-declared-variance-without-coupling-distinct-formals-005.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/inferred-item-arguments-obey-declared-variance-without-coupling-distinct-formals-006.rs",
+      "exit_status": 1,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/inferred-item-arguments-obey-declared-variance-without-coupling-distinct-formals-007.rs",
+      "exit_status": 1,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/inferred-item-arguments-obey-declared-variance-without-coupling-distinct-formals-008.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/inferred-item-arguments-obey-declared-variance-without-coupling-distinct-formals-009.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/inferred-item-arguments-obey-declared-variance-without-coupling-distinct-formals-010.rs",
+      "exit_status": 1,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/joins-preserve-a-function-items-coupled-early-lifetimes-001.rs",
+      "exit_status": 1,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/joins-preserve-a-function-items-coupled-early-lifetimes-002.rs",
+      "exit_status": 1,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/joins-preserve-a-function-items-coupled-early-lifetimes-003.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/joins-preserve-a-function-items-coupled-early-lifetimes-004.rs",
+      "exit_status": 1,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/joins-preserve-a-function-items-coupled-early-lifetimes-005.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/mutable-unsizing-keeps-the-element-type-invariant-001.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/mutable-unsizing-keeps-the-element-type-invariant-002.rs",
+      "exit_status": 1,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/mutable-unsizing-keeps-the-element-type-invariant-003.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/nominal-bounds-are-enforced-and-implied-while-alias-bounds-remain-unenforced-001.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/nominal-bounds-are-enforced-and-implied-while-alias-bounds-remain-unenforced-002.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/nominal-bounds-are-enforced-and-implied-while-alias-bounds-remain-unenforced-003.rs",
+      "exit_status": 1,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/nominal-bounds-are-enforced-and-implied-while-alias-bounds-remain-unenforced-004.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/nominal-bounds-are-enforced-and-implied-while-alias-bounds-remain-unenforced-005.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/nominal-bounds-are-enforced-and-implied-while-alias-bounds-remain-unenforced-006.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/nominal-bounds-are-enforced-and-implied-while-alias-bounds-remain-unenforced-007.rs",
+      "exit_status": 1,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/nominal-bounds-are-enforced-and-implied-while-alias-bounds-remain-unenforced-008.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/nominal-bounds-are-enforced-and-implied-while-alias-bounds-remain-unenforced-009.rs",
+      "exit_status": 1,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/nominal-bounds-are-enforced-and-implied-while-alias-bounds-remain-unenforced-010.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/partial-local-annotations-reuse-declared-binders-without-capturing-inferred-holes-001.rs",
+      "exit_status": 1,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/partial-local-annotations-reuse-declared-binders-without-capturing-inferred-holes-002.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/partial-local-annotations-reuse-declared-binders-without-capturing-inferred-holes-003.rs",
+      "exit_status": 1,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/partial-local-annotations-reuse-declared-binders-without-capturing-inferred-holes-004.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/partial-local-annotations-reuse-declared-binders-without-capturing-inferred-holes-005.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/partial-local-annotations-reuse-declared-binders-without-capturing-inferred-holes-006.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/partial-local-annotations-reuse-declared-binders-without-capturing-inferred-holes-007.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/partial-local-annotations-reuse-declared-binders-without-capturing-inferred-holes-008.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/partial-local-annotations-reuse-declared-binders-without-capturing-inferred-holes-009.rs",
+      "exit_status": 1,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/partial-local-annotations-reuse-declared-binders-without-capturing-inferred-holes-010.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/partial-local-annotations-reuse-declared-binders-without-capturing-inferred-holes-011.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/partial-local-annotations-reuse-declared-binders-without-capturing-inferred-holes-012.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/partial-local-annotations-reuse-declared-binders-without-capturing-inferred-holes-013.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/partial-local-annotations-reuse-declared-binders-without-capturing-inferred-holes-014.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/partial-local-annotations-reuse-declared-binders-without-capturing-inferred-holes-015.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/partial-local-annotations-reuse-declared-binders-without-capturing-inferred-holes-016.rs",
+      "exit_status": 1,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/partial-local-annotations-reuse-declared-binders-without-capturing-inferred-holes-017.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/partial-local-annotations-reuse-declared-binders-without-capturing-inferred-holes-018.rs",
+      "exit_status": 1,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/partial-local-annotations-reuse-declared-binders-without-capturing-inferred-holes-019.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/source-contracts-apply-explicit-bounds-variance-and-call-constraints-001.rs",
+      "exit_status": 1,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/source-contracts-apply-explicit-bounds-variance-and-call-constraints-004.rs",
+      "exit_status": 1,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/source-contracts-apply-explicit-bounds-variance-and-call-constraints-006.rs",
+      "exit_status": 1,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/source-contracts-apply-explicit-bounds-variance-and-call-constraints-007.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/source-contracts-apply-explicit-bounds-variance-and-call-constraints-008.rs",
+      "exit_status": 1,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/source-contracts-apply-explicit-bounds-variance-and-call-constraints-009.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/source-contracts-apply-explicit-bounds-variance-and-call-constraints-010.rs",
+      "exit_status": 1,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/source-contracts-apply-explicit-bounds-variance-and-call-constraints-011.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/source-contracts-apply-explicit-bounds-variance-and-call-constraints-012.rs",
+      "exit_status": 1,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/source-contracts-apply-explicit-bounds-variance-and-call-constraints-013.rs",
+      "exit_status": 1,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/contracts/source-contracts-apply-explicit-bounds-variance-and-call-constraints-014.rs",
+      "exit_status": 1,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/region_constraints.rs"
+    },
+    {
+      "path": "tests/spec/declarations/alias-nominal.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.declarations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/lifetime_declarations.rs"
+    },
+    {
+      "path": "tests/spec/declarations/alias.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.declarations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/lifetime_declarations.rs"
+    },
+    {
+      "path": "tests/spec/declarations/auto-deref.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.declarations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/lifetime_declarations.rs"
+    },
+    {
+      "path": "tests/spec/declarations/bounded-return.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.declarations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/lifetime_declarations.rs"
+    },
+    {
+      "path": "tests/spec/declarations/call-captured-pointer.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.declarations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/lifetime_declarations.rs"
+    },
+    {
+      "path": "tests/spec/declarations/call-constructor-explicit.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.declarations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/lifetime_declarations.rs"
+    },
+    {
+      "path": "tests/spec/declarations/call-constructor.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.declarations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/lifetime_declarations.rs"
+    },
+    {
+      "path": "tests/spec/declarations/call-early.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.declarations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/lifetime_declarations.rs"
+    },
+    {
+      "path": "tests/spec/declarations/call-enum.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.declarations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/lifetime_declarations.rs"
+    },
+    {
+      "path": "tests/spec/declarations/call-explicit-early.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.declarations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/lifetime_declarations.rs"
+    },
+    {
+      "path": "tests/spec/declarations/call-higher-rank-pointer.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.declarations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/lifetime_declarations.rs"
+    },
+    {
+      "path": "tests/spec/declarations/call-identity.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.declarations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/lifetime_declarations.rs"
+    },
+    {
+      "path": "tests/spec/declarations/call-independent.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.declarations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/lifetime_declarations.rs"
+    },
+    {
+      "path": "tests/spec/declarations/call-output.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.declarations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/lifetime_declarations.rs"
+    },
+    {
+      "path": "tests/spec/declarations/call-pointer-coercion.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.declarations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/lifetime_declarations.rs"
+    },
+    {
+      "path": "tests/spec/declarations/elided-carrying-alias.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.declarations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/lifetime_declarations.rs"
+    },
+    {
+      "path": "tests/spec/declarations/elided-erased-alias.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.declarations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/lifetime_declarations.rs"
+    },
+    {
+      "path": "tests/spec/declarations/elided.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.declarations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/lifetime_declarations.rs"
+    },
+    {
+      "path": "tests/spec/declarations/empty-early.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.declarations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/lifetime_declarations.rs"
+    },
+    {
+      "path": "tests/spec/declarations/empty-late.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.declarations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/lifetime_declarations.rs"
+    },
+    {
+      "path": "tests/spec/declarations/empty-nominal.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.declarations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/lifetime_declarations.rs"
+    },
+    {
+      "path": "tests/spec/declarations/enum-both.rs",
+      "exit_status": 1,
+      "features": [
+        "pa15.declarations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/lifetime_declarations.rs"
+    },
+    {
+      "path": "tests/spec/declarations/enum-empty-final.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.declarations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/lifetime_declarations.rs"
+    },
+    {
+      "path": "tests/spec/declarations/enum-empty-owner.rs",
+      "exit_status": 1,
+      "features": [
+        "pa15.declarations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/lifetime_declarations.rs"
+    },
+    {
+      "path": "tests/spec/declarations/enum-final.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.declarations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/lifetime_declarations.rs"
+    },
+    {
+      "path": "tests/spec/declarations/enum-owner.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.declarations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/lifetime_declarations.rs"
+    },
+    {
+      "path": "tests/spec/declarations/enum-pattern.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.declarations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/lifetime_declarations.rs"
+    },
+    {
+      "path": "tests/spec/declarations/enum-unit.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.declarations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/lifetime_declarations.rs"
+    },
+    {
+      "path": "tests/spec/declarations/erased-fnptr-output.rs",
+      "exit_status": 1,
+      "features": [
+        "pa15.declarations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/lifetime_declarations.rs"
+    },
+    {
+      "path": "tests/spec/declarations/erased-nominal.rs",
+      "exit_status": 1,
+      "features": [
+        "pa15.declarations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/lifetime_declarations.rs"
+    },
+    {
+      "path": "tests/spec/declarations/explicit-create.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.declarations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/lifetime_declarations.rs"
+    },
+    {
+      "path": "tests/spec/declarations/extra-function-lifetime.rs",
+      "exit_status": 1,
+      "features": [
+        "pa15.declarations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/lifetime_declarations.rs"
+    },
+    {
+      "path": "tests/spec/declarations/forward-alias.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.declarations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/lifetime_declarations.rs"
+    },
+    {
+      "path": "tests/spec/declarations/generic-module.rs",
+      "exit_status": 1,
+      "features": [
+        "pa15.declarations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/lifetime_declarations.rs"
+    },
+    {
+      "path": "tests/spec/declarations/higher-rank-alias.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.declarations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/lifetime_declarations.rs"
+    },
+    {
+      "path": "tests/spec/declarations/late-explicit.rs",
+      "exit_status": 1,
+      "features": [
+        "pa15.declarations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/lifetime_declarations.rs"
+    },
+    {
+      "path": "tests/spec/declarations/local-alias-elided.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.declarations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/lifetime_declarations.rs"
+    },
+    {
+      "path": "tests/spec/declarations/local-alias.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.declarations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/lifetime_declarations.rs"
+    },
+    {
+      "path": "tests/spec/declarations/local-captured-pointer.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.declarations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/lifetime_declarations.rs"
+    },
+    {
+      "path": "tests/spec/declarations/local-elided.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.declarations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/lifetime_declarations.rs"
+    },
+    {
+      "path": "tests/spec/declarations/local-join.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.declarations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/lifetime_declarations.rs"
+    },
+    {
+      "path": "tests/spec/declarations/local-named.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.declarations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/lifetime_declarations.rs"
+    },
+    {
+      "path": "tests/spec/declarations/local-nested-pointer.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.declarations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/lifetime_declarations.rs"
+    },
+    {
+      "path": "tests/spec/declarations/local-nominal.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.declarations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/lifetime_declarations.rs"
+    },
+    {
+      "path": "tests/spec/declarations/local-placeholder.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.declarations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/lifetime_declarations.rs"
+    },
+    {
+      "path": "tests/spec/declarations/local-reassignment.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.declarations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/lifetime_declarations.rs"
+    },
+    {
+      "path": "tests/spec/declarations/missing-alias-lifetime.rs",
+      "exit_status": 1,
+      "features": [
+        "pa15.declarations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/lifetime_declarations.rs"
+    },
+    {
+      "path": "tests/spec/declarations/missing-field-lifetime.rs",
+      "exit_status": 1,
+      "features": [
+        "pa15.declarations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/lifetime_declarations.rs"
+    },
+    {
+      "path": "tests/spec/declarations/module-empty.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.declarations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/lifetime_declarations.rs"
+    },
+    {
+      "path": "tests/spec/declarations/module.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.declarations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/lifetime_declarations.rs"
+    },
+    {
+      "path": "tests/spec/declarations/mutually-recursive-only.rs",
+      "exit_status": 1,
+      "features": [
+        "pa15.declarations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/lifetime_declarations.rs"
+    },
+    {
+      "path": "tests/spec/declarations/nested.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.declarations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/lifetime_declarations.rs"
+    },
+    {
+      "path": "tests/spec/declarations/nominal.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.declarations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/lifetime_declarations.rs"
+    },
+    {
+      "path": "tests/spec/declarations/nongeneric.rs",
+      "exit_status": 1,
+      "features": [
+        "pa15.declarations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/lifetime_declarations.rs"
+    },
+    {
+      "path": "tests/spec/declarations/output-only-never.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.declarations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/lifetime_declarations.rs"
+    },
+    {
+      "path": "tests/spec/declarations/output-only-promoted.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.declarations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/lifetime_declarations.rs"
+    },
+    {
+      "path": "tests/spec/declarations/output-with-erased-input.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.declarations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/lifetime_declarations.rs"
+    },
+    {
+      "path": "tests/spec/declarations/partial-pointer-output-binder.rs",
+      "exit_status": 1,
+      "features": [
+        "pa15.declarations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/lifetime_declarations.rs"
+    },
+    {
+      "path": "tests/spec/declarations/record-create.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.declarations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/lifetime_declarations.rs"
+    },
+    {
+      "path": "tests/spec/declarations/record-pattern.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.declarations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/lifetime_declarations.rs"
+    },
+    {
+      "path": "tests/spec/declarations/record.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.declarations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/lifetime_declarations.rs"
+    },
+    {
+      "path": "tests/spec/declarations/recursive-alias.rs",
+      "exit_status": 1,
+      "features": [
+        "pa15.declarations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/lifetime_declarations.rs"
+    },
+    {
+      "path": "tests/spec/declarations/recursive-only.rs",
+      "exit_status": 1,
+      "features": [
+        "pa15.declarations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/lifetime_declarations.rs"
+    },
+    {
+      "path": "tests/spec/declarations/recursive.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.declarations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/lifetime_declarations.rs"
+    },
+    {
+      "path": "tests/spec/declarations/selected.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.declarations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/lifetime_declarations.rs"
+    },
+    {
+      "path": "tests/spec/declarations/too-few.rs",
+      "exit_status": 1,
+      "features": [
+        "pa15.declarations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/lifetime_declarations.rs"
+    },
+    {
+      "path": "tests/spec/declarations/too-many.rs",
+      "exit_status": 1,
+      "features": [
+        "pa15.declarations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/lifetime_declarations.rs"
+    },
+    {
+      "path": "tests/spec/declarations/transitive-return.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.declarations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/lifetime_declarations.rs"
+    },
+    {
+      "path": "tests/spec/declarations/tuple-pattern.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.declarations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/lifetime_declarations.rs"
+    },
+    {
+      "path": "tests/spec/declarations/two-alias-elision-candidates.rs",
+      "exit_status": 1,
+      "features": [
+        "pa15.declarations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/lifetime_declarations.rs"
+    },
+    {
+      "path": "tests/spec/declarations/two-parameters.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.declarations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/lifetime_declarations.rs"
+    },
+    {
+      "path": "tests/spec/declarations/unused-alias.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.declarations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/lifetime_declarations.rs"
+    },
+    {
+      "path": "tests/spec/declarations/unused-late-explicit.rs",
+      "exit_status": 1,
+      "features": [
+        "pa15.declarations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/lifetime_declarations.rs"
+    },
+    {
+      "path": "tests/spec/declarations/unused-nominal.rs",
+      "exit_status": 1,
+      "features": [
+        "pa15.declarations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/lifetime_declarations.rs"
+    },
+    {
+      "path": "tests/spec/declarations/where-return.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.declarations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/lifetime_declarations.rs"
+    },
+    {
+      "path": "tests/spec/declarations/wrong-argument.rs",
+      "exit_status": 1,
+      "features": [
+        "pa15.declarations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/lifetime_declarations.rs"
+    },
+    {
+      "path": "tests/spec/former-boundaries/pa12-regions.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.provenance"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "pa12/tests/spec/boundary/regions.rs"
+    },
+    {
+      "path": "tests/spec/former-boundaries/pa13-execute-escape.rs",
+      "exit_status": 1,
+      "features": [
+        "pa15.provenance"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "pa13/tests/spec/boundaries/execute-escape.rs"
+    },
+    {
+      "path": "tests/spec/provenance/case-01.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.provenance"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/borrow_places.rs"
+    },
+    {
+      "path": "tests/spec/provenance/case-02.rs",
+      "exit_status": 1,
+      "features": [
+        "pa15.provenance"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/borrow_places.rs"
+    },
+    {
+      "path": "tests/spec/provenance/case-03.rs",
+      "exit_status": 1,
+      "features": [
+        "pa15.provenance"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/borrow_places.rs"
+    },
+    {
+      "path": "tests/spec/provenance/case-04.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.provenance"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/borrow_places.rs"
+    },
+    {
+      "path": "tests/spec/provenance/case-05.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.provenance"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/borrow_places.rs"
+    },
+    {
+      "path": "tests/spec/provenance/case-06.rs",
+      "exit_status": 1,
+      "features": [
+        "pa15.provenance"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/borrow_places.rs"
+    },
+    {
+      "path": "tests/spec/provenance/case-07.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.provenance"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/borrow_places.rs"
+    },
+    {
+      "path": "tests/spec/provenance/case-08.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.provenance"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/borrow_places.rs"
+    },
+    {
+      "path": "tests/spec/provenance/case-09.rs",
+      "exit_status": 1,
+      "features": [
+        "pa15.provenance"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/borrow_places.rs"
+    },
+    {
+      "path": "tests/spec/provenance/case-10.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.provenance"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/borrow_places.rs"
+    },
+    {
+      "path": "tests/spec/provenance/case-11.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.provenance"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/borrow_places.rs"
+    },
+    {
+      "path": "tests/spec/provenance/case-12.rs",
+      "exit_status": 1,
+      "features": [
+        "pa15.provenance"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/borrow_places.rs"
+    },
+    {
+      "path": "tests/spec/provenance/case-13.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.provenance"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/borrow_places.rs"
+    },
+    {
+      "path": "tests/spec/provenance/case-14.rs",
+      "exit_status": 1,
+      "features": [
+        "pa15.provenance"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/borrow_places.rs"
+    },
+    {
+      "path": "tests/spec/provenance/case-15.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.provenance"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/borrow_places.rs"
+    },
+    {
+      "path": "tests/spec/provenance/case-16.rs",
+      "exit_status": 1,
+      "features": [
+        "pa15.provenance"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/borrow_places.rs"
+    },
+    {
+      "path": "tests/spec/provenance/case-17.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.provenance"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/borrow_places.rs"
+    },
+    {
+      "path": "tests/spec/provenance/case-18.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.provenance"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/borrow_places.rs"
+    }
+  ]
+}

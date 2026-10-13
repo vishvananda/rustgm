@@ -52,6 +52,8 @@ pub enum Mode {
     Layouts,
     Bodies,
     Ownership,
+    Regions,
+    Loans,
     Lowir,
 }
 pub fn run(
@@ -80,6 +82,8 @@ pub fn run(
             | Mode::Layouts
             | Mode::Bodies
             | Mode::Ownership
+            | Mode::Regions
+            | Mode::Loans
             | Mode::Lowir
     ) {
         let report =
@@ -93,6 +97,8 @@ pub fn run(
                 | Mode::Layouts
                 | Mode::Bodies
                 | Mode::Ownership
+                | Mode::Regions
+                | Mode::Loans
                 | Mode::Lowir
         ) {
             return semantic(report, count, mode, out);
@@ -191,6 +197,48 @@ fn borrow_error(report: &resolve::expansion::Report, error: rustgm::borrow::Erro
         None => error.message,
     }
 }
+fn ownership_view(
+    report: &resolve::expansion::Report,
+    facts: &mut rustgm::sema::model::Declarations,
+    program: &rustgm::body::ir::Program,
+    mode: Mode,
+    count: bool,
+    out: &mut impl Write,
+) -> Result<(), String> {
+    let contracts = region_proofs(report, facts, program)?;
+    let check = if matches!(mode, Mode::Loans) {
+        rustgm::borrow::inspect
+    } else {
+        rustgm::borrow::check
+    };
+    let checked = check(
+        &mut rustgm::borrow::Environment {
+            types: &facts.types,
+            definitions: &facts.aggregates,
+            derives: &facts.derives,
+            copies: &mut facts.copies,
+        },
+        &contracts,
+        program,
+    )
+    .map_err(|e| borrow_error(report, e))?;
+    rustgm::lower::alignment::check(facts, program)
+        .map_err(|e| phase_error(report, e.node, e.message))?;
+    if matches!(mode, Mode::Loans) {
+        return if count {
+            rustgm::borrow::loans::view::count(&checked, out)
+        } else {
+            rustgm::borrow::loans::view::write(&checked, out)
+        }
+        .map_err(|e| e.to_string());
+    }
+    if count {
+        rustgm::borrow::ownership::view::count(checked.owned(), out)
+    } else {
+        rustgm::borrow::ownership::view::write(checked.owned(), out)
+    }
+    .map_err(|e| e.to_string())
+}
 fn semantic(
     mut report: resolve::expansion::Report,
     count: bool,
@@ -217,36 +265,32 @@ fn semantic(
         }
         .map_err(|e| e.to_string());
     }
-    if matches!(mode, Mode::Bodies | Mode::Ownership | Mode::Lowir) {
+    if matches!(
+        mode,
+        Mode::Bodies | Mode::Ownership | Mode::Regions | Mode::Loans | Mode::Lowir
+    ) {
         let mut program = rustgm::body::build(&report, &facts).map_err(|e| e.to_string())?;
-        if matches!(mode, Mode::Ownership | Mode::Lowir) {
+        if matches!(
+            mode,
+            Mode::Ownership | Mode::Regions | Mode::Loans | Mode::Lowir
+        ) {
             rustgm::body::promote::analyze(&report, &mut facts, &mut program)
                 .map_err(|e| e.to_string())?;
         }
         // Selected patterns have become explicit places and binding actions.
         // Ownership and lowering consume those actions, so release this arena.
         drop(std::mem::take(&mut facts.patterns));
-        if matches!(mode, Mode::Ownership) {
+        if matches!(mode, Mode::Regions) {
             let contracts = region_proofs(&report, &facts, &program)?;
-            let checked = rustgm::borrow::check(
-                &mut rustgm::borrow::Environment {
-                    types: &facts.types,
-                    definitions: &facts.aggregates,
-                    derives: &facts.derives,
-                    copies: &mut facts.copies,
-                },
-                &contracts,
-                &program,
-            )
-            .map_err(|e| borrow_error(&report, e))?;
-            rustgm::lower::alignment::check(&mut facts, &program)
-                .map_err(|e| phase_error(&report, e.node, e.message))?;
             return if count {
-                rustgm::borrow::ownership::view::count(checked.owned(), out)
+                rustgm::borrow::regions::view::count(&contracts, out)
             } else {
-                rustgm::borrow::ownership::view::write(checked.owned(), out)
+                rustgm::borrow::regions::view::write(&contracts, out)
             }
             .map_err(|e| e.to_string());
+        }
+        if matches!(mode, Mode::Ownership | Mode::Loans) {
+            return ownership_view(&report, &mut facts, &program, mode, count, out);
         }
         if matches!(mode, Mode::Lowir) {
             rustgm::body::constants::analyze(&report, &mut facts, &program)

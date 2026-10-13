@@ -1,0 +1,66 @@
+global @rg.data.0 : obj<8x8> [storage=readonly] = {
+  i64 42
+}
+function @rg.16() -> void {
+  slot $s0 : ptr
+  block ^b0:
+    %t0 = call ptr @rg.15()
+    store ptr %t0, $s0
+    %t1 = load ptr $s0
+    %t2 = load i64 %t1
+    %t3 = cmp eq i64 %t2, 42
+    %t4 = convert trunc i1 i64 %t3
+    call void @rg.13(%t4)
+    return void
+}
+function @rg.15() -> ptr {
+  block ^b0:
+    %t0 = convert zext i128 i64 40
+    %t1 = convert zext i128 i64 2
+    %t2 = binary add i128 %t0, %t1
+    %t3 = convert trunc i64 i128 %t2
+    %t4 = convert zext i128 i64 %t3
+    %t5 = cmp ne i128 %t2, %t4
+    branch %t5, ^b1, ^b2
+  block ^b2:
+    %t6 = addr @rg.data.0
+    return ptr %t6
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+function @rg.13(%p0 : i1) -> void {
+  slot $s0 : i1
+  block ^b0:
+    store i1 %p0, $s0
+    %t0 = load i1 $s0
+    %t1 = unary not i1 %t0
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    jump ^b3
+  block ^b1:
+    %t2 = call u8 @rg.14(0)
+    jump ^b3
+  block ^b3:
+    return void
+}
+declare function @abort() -> void [return=noreturn]
+function @rg.14(%p0 : u8) -> u8 {
+  slot $s0 : u8
+  block ^b0:
+    store u8 %p0, $s0
+    %t0 = load u8 $s0
+    %t1 = cmp eq u8 %t0, 0
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    %t2 = binary udiv u8 1, %t0
+    return u8 %t2
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.16()
+    return i64 0
+}

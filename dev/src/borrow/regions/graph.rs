@@ -77,6 +77,16 @@ pub struct Requirement {
     pub source: u32,
 }
 impl Solution {
+    /// Graph construction assigns compact identities in insertion order.
+    pub fn nodes(&self) -> impl Iterator<Item = (Region, Kind)> + '_ {
+        (0_u32..)
+            .zip(&self.graph.kinds)
+            .map(|(id, &kind)| (Region(id), kind))
+    }
+    #[must_use]
+    pub fn assumption_count(&self) -> usize {
+        self.graph.assumptions.len()
+    }
     #[must_use]
     pub fn kind(&self, region: Region) -> Option<Kind> {
         self.graph.kinds.get(region.0 as usize).copied()

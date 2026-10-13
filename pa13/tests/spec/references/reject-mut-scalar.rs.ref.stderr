@@ -1,1 +1,1 @@
-ERROR: file 0: 16: body construct requires later semantic implementation
+ERROR: file 0: 16: mutable constant references require constant memory semantics

@@ -14,6 +14,12 @@ pub struct Liveness {
     pub steps: usize,
 }
 impl Liveness {
+    /// Unordered nonzero words; an inspection view sorts by region then word.
+    pub fn words(&self) -> impl Iterator<Item = (Region, u32, u64)> + '_ {
+        self.masks
+            .iter()
+            .map(|(&(region, word), &bits)| (region, word, bits))
+    }
     /// A missing sparse word contains no live points, not an unknown answer.
     ///
     /// # Errors

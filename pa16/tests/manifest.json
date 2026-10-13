@@ -1,0 +1,4079 @@
+{
+  "schema": 1,
+  "mode": "--emit-loans",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "panic": "abort",
+  "overflow_checks": true,
+  "debug_assertions": false,
+  "cases": [
+    {
+      "path": "tests/spec/former-boundaries/pa11-constant.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.former-boundaries"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "pa11/tests/spec/boundary/constant.rs"
+    },
+    {
+      "path": "tests/spec/former-boundaries/pa11-reference.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.former-boundaries"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "pa11/tests/spec/boundary/reference.rs"
+    },
+    {
+      "path": "tests/spec/former-boundaries/pa11-static.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.former-boundaries"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "pa11/tests/spec/boundary/static.rs"
+    },
+    {
+      "path": "tests/spec/former-boundaries/pa12-nested-reference.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.former-boundaries"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "pa12/tests/spec/boundary/nested-reference.rs"
+    },
+    {
+      "path": "tests/spec/former-boundaries/pa13-execute-borrow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.former-boundaries"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "pa13/tests/spec/boundaries/execute-borrow.rs"
+    },
+    {
+      "path": "tests/spec/former-boundaries/pa13-execute-constant.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.former-boundaries"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "pa13/tests/spec/boundaries/execute-constant.rs"
+    },
+    {
+      "path": "tests/spec/former-boundaries/pa13-execute-deref.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.former-boundaries"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "pa13/tests/spec/boundaries/execute-deref.rs"
+    },
+    {
+      "path": "tests/spec/former-boundaries/pa13-execute-field.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.former-boundaries"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "pa13/tests/spec/boundaries/execute-field.rs"
+    },
+    {
+      "path": "tests/spec/former-boundaries/pa13-execute-index.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.former-boundaries"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "pa13/tests/spec/boundaries/execute-index.rs"
+    },
+    {
+      "path": "tests/spec/former-boundaries/pa13-execute-mutable-through-shared.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.former-boundaries"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "pa13/tests/spec/boundaries/execute-mutable-through-shared.rs"
+    },
+    {
+      "path": "tests/spec/loans/field-disjointness-and-conservative-dynamic-indices-001.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/loans.rs"
+    },
+    {
+      "path": "tests/spec/loans/field-disjointness-and-conservative-dynamic-indices-002.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/loans.rs"
+    },
+    {
+      "path": "tests/spec/loans/field-disjointness-and-conservative-dynamic-indices-003.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/loans.rs"
+    },
+    {
+      "path": "tests/spec/loans/field-disjointness-and-conservative-dynamic-indices-004.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/loans.rs"
+    },
+    {
+      "path": "tests/spec/loans/field-disjointness-and-conservative-dynamic-indices-005.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/loans.rs"
+    },
+    {
+      "path": "tests/spec/loans/field-disjointness-and-conservative-dynamic-indices-006.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/loans.rs"
+    },
+    {
+      "path": "tests/spec/loans/field-disjointness-and-conservative-dynamic-indices-007.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/loans.rs"
+    },
+    {
+      "path": "tests/spec/loans/field-disjointness-and-conservative-dynamic-indices-008.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/loans.rs"
+    },
+    {
+      "path": "tests/spec/loans/field-disjointness-and-conservative-dynamic-indices-009.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/loans.rs"
+    },
+    {
+      "path": "tests/spec/loans/field-disjointness-and-conservative-dynamic-indices-010.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/loans.rs"
+    },
+    {
+      "path": "tests/spec/loans/guards-preserve-protected-referents-and-release-divergent-paths-001.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/loans.rs"
+    },
+    {
+      "path": "tests/spec/loans/guards-preserve-protected-referents-and-release-divergent-paths-002.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/loans.rs"
+    },
+    {
+      "path": "tests/spec/loans/guards-preserve-protected-referents-and-release-divergent-paths-003.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/loans.rs"
+    },
+    {
+      "path": "tests/spec/loans/guards-preserve-protected-referents-and-release-divergent-paths-004.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/loans.rs"
+    },
+    {
+      "path": "tests/spec/loans/guards-preserve-protected-referents-and-release-divergent-paths-005.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/loans.rs"
+    },
+    {
+      "path": "tests/spec/loans/guards-preserve-protected-referents-and-release-divergent-paths-006.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/loans.rs"
+    },
+    {
+      "path": "tests/spec/loans/guards-preserve-protected-referents-and-release-divergent-paths-007.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/loans.rs"
+    },
+    {
+      "path": "tests/spec/loans/guards-preserve-protected-referents-and-release-divergent-paths-008.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/loans.rs"
+    },
+    {
+      "path": "tests/spec/loans/guards-preserve-protected-referents-and-release-divergent-paths-009.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/loans.rs"
+    },
+    {
+      "path": "tests/spec/loans/guards-preserve-protected-referents-and-release-divergent-paths-010.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/loans.rs"
+    },
+    {
+      "path": "tests/spec/loans/guards-preserve-protected-referents-and-release-divergent-paths-011.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/loans.rs"
+    },
+    {
+      "path": "tests/spec/loans/last-uses-aliases-and-reborrow-permissions-001.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/loans.rs"
+    },
+    {
+      "path": "tests/spec/loans/last-uses-aliases-and-reborrow-permissions-002.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/loans.rs"
+    },
+    {
+      "path": "tests/spec/loans/last-uses-aliases-and-reborrow-permissions-003.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/loans.rs"
+    },
+    {
+      "path": "tests/spec/loans/last-uses-aliases-and-reborrow-permissions-004.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/loans.rs"
+    },
+    {
+      "path": "tests/spec/loans/last-uses-aliases-and-reborrow-permissions-005.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/loans.rs"
+    },
+    {
+      "path": "tests/spec/loans/last-uses-aliases-and-reborrow-permissions-006.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/loans.rs"
+    },
+    {
+      "path": "tests/spec/loans/last-uses-aliases-and-reborrow-permissions-007.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/loans.rs"
+    },
+    {
+      "path": "tests/spec/loans/last-uses-aliases-and-reborrow-permissions-008.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/loans.rs"
+    },
+    {
+      "path": "tests/spec/loans/last-uses-aliases-and-reborrow-permissions-009.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/loans.rs"
+    },
+    {
+      "path": "tests/spec/loans/last-uses-aliases-and-reborrow-permissions-010.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/loans.rs"
+    },
+    {
+      "path": "tests/spec/loans/last-uses-aliases-and-reborrow-permissions-011.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/loans.rs"
+    },
+    {
+      "path": "tests/spec/loans/last-uses-aliases-and-reborrow-permissions-012.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/loans.rs"
+    },
+    {
+      "path": "tests/spec/loans/last-uses-aliases-and-reborrow-permissions-013.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/loans.rs"
+    },
+    {
+      "path": "tests/spec/loans/last-uses-aliases-and-reborrow-permissions-014.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/loans.rs"
+    },
+    {
+      "path": "tests/spec/loans/last-uses-aliases-and-reborrow-permissions-015.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/loans.rs"
+    },
+    {
+      "path": "tests/spec/loans/last-uses-aliases-and-reborrow-permissions-016.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/loans.rs"
+    },
+    {
+      "path": "tests/spec/loans/last-uses-aliases-and-reborrow-permissions-017.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/loans.rs"
+    },
+    {
+      "path": "tests/spec/loans/last-uses-aliases-and-reborrow-permissions-018.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/loans.rs"
+    },
+    {
+      "path": "tests/spec/loans/last-uses-aliases-and-reborrow-permissions-019.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/loans.rs"
+    },
+    {
+      "path": "tests/spec/loans/last-uses-aliases-and-reborrow-permissions-020.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/loans.rs"
+    },
+    {
+      "path": "tests/spec/loans/last-uses-aliases-and-reborrow-permissions-021.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/loans.rs"
+    },
+    {
+      "path": "tests/spec/loans/last-uses-aliases-and-reborrow-permissions-022.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/loans.rs"
+    },
+    {
+      "path": "tests/spec/loans/last-uses-aliases-and-reborrow-permissions-023.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/loans.rs"
+    },
+    {
+      "path": "tests/spec/loans/storage-ends-and-loop-paths-bound-loans-001.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/loans.rs"
+    },
+    {
+      "path": "tests/spec/loans/storage-ends-and-loop-paths-bound-loans-002.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/loans.rs"
+    },
+    {
+      "path": "tests/spec/loans/storage-ends-and-loop-paths-bound-loans-003.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/loans.rs"
+    },
+    {
+      "path": "tests/spec/loans/storage-ends-and-loop-paths-bound-loans-004.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/loans.rs"
+    },
+    {
+      "path": "tests/spec/loans/storage-ends-and-loop-paths-bound-loans-005.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/loans.rs"
+    },
+    {
+      "path": "tests/spec/loans/storage-ends-and-loop-paths-bound-loans-006.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/loans.rs"
+    },
+    {
+      "path": "tests/spec/loans/storage-ends-and-loop-paths-bound-loans-007.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/loans.rs"
+    },
+    {
+      "path": "tests/spec/loans/storage-ends-and-loop-paths-bound-loans-008.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/loans.rs"
+    },
+    {
+      "path": "tests/spec/loans/storage-ends-and-loop-paths-bound-loans-009.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/loans.rs"
+    },
+    {
+      "path": "tests/spec/loans/storage-ends-and-loop-paths-bound-loans-010.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/loans.rs"
+    },
+    {
+      "path": "tests/spec/loans/storage-ends-and-loop-paths-bound-loans-011.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/loans.rs"
+    },
+    {
+      "path": "tests/spec/loans/two-phase-borrows-activate-at-the-consuming-call-001.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/loans.rs"
+    },
+    {
+      "path": "tests/spec/loans/two-phase-borrows-activate-at-the-consuming-call-002.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/loans.rs"
+    },
+    {
+      "path": "tests/spec/loans/two-phase-borrows-activate-at-the-consuming-call-003.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/loans.rs"
+    },
+    {
+      "path": "tests/spec/loans/two-phase-borrows-activate-at-the-consuming-call-004.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/loans.rs"
+    },
+    {
+      "path": "tests/spec/loans/two-phase-borrows-activate-at-the-consuming-call-005.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/loans.rs"
+    },
+    {
+      "path": "tests/spec/loans/two-phase-borrows-activate-at-the-consuming-call-006.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/loans.rs"
+    },
+    {
+      "path": "tests/spec/loans/two-phase-borrows-activate-at-the-consuming-call-007.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/loans.rs"
+    },
+    {
+      "path": "tests/spec/loans/two-phase-borrows-activate-at-the-consuming-call-008.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/loans.rs"
+    },
+    {
+      "path": "tests/spec/loans/two-phase-borrows-activate-at-the-consuming-call-009.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/loans.rs"
+    },
+    {
+      "path": "tests/spec/loans/two-phase-borrows-activate-at-the-consuming-call-010.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/loans.rs"
+    },
+    {
+      "path": "tests/spec/pattern-loans/cases-001.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.pattern-loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/dynamic_pattern_loans.rs"
+    },
+    {
+      "path": "tests/spec/pattern-loans/cases-002.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.pattern-loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/dynamic_pattern_loans.rs"
+    },
+    {
+      "path": "tests/spec/pattern-loans/cases-003.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.pattern-loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/dynamic_pattern_loans.rs"
+    },
+    {
+      "path": "tests/spec/pattern-loans/cases-004.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.pattern-loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/dynamic_pattern_loans.rs"
+    },
+    {
+      "path": "tests/spec/pattern-loans/cases-005.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.pattern-loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/dynamic_pattern_loans.rs"
+    },
+    {
+      "path": "tests/spec/pattern-loans/cases-006.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.pattern-loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/dynamic_pattern_loans.rs"
+    },
+    {
+      "path": "tests/spec/pattern-loans/cases-007.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.pattern-loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/dynamic_pattern_loans.rs"
+    },
+    {
+      "path": "tests/spec/pattern-loans/cases-008.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.pattern-loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/dynamic_pattern_loans.rs"
+    },
+    {
+      "path": "tests/spec/pattern-loans/cases-009.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.pattern-loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/dynamic_pattern_loans.rs"
+    },
+    {
+      "path": "tests/spec/pattern-loans/cases-010.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.pattern-loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/dynamic_pattern_loans.rs"
+    },
+    {
+      "path": "tests/spec/pattern-loans/cases-011.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.pattern-loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/dynamic_pattern_loans.rs"
+    },
+    {
+      "path": "tests/spec/pattern-loans/cases-012.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.pattern-loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/dynamic_pattern_loans.rs"
+    },
+    {
+      "path": "tests/spec/pattern-loans/cases-013.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.pattern-loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/dynamic_pattern_loans.rs"
+    },
+    {
+      "path": "tests/spec/pattern-loans/cases-014.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.pattern-loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/dynamic_pattern_loans.rs"
+    },
+    {
+      "path": "tests/spec/pattern-native/byte-patterns.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.pattern-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/dynamic_patterns.rs"
+    },
+    {
+      "path": "tests/spec/pattern-native/lengths.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.pattern-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/dynamic_patterns.rs"
+    },
+    {
+      "path": "tests/spec/pattern-native/multiple-suffix.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.pattern-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/dynamic_patterns.rs"
+    },
+    {
+      "path": "tests/spec/pattern-native/mutable-empty-rest.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.pattern-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/dynamic_patterns.rs"
+    },
+    {
+      "path": "tests/spec/pattern-native/mutable-guard.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.pattern-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/dynamic_patterns.rs"
+    },
+    {
+      "path": "tests/spec/pattern-native/mutable-split.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.pattern-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/dynamic_patterns.rs"
+    },
+    {
+      "path": "tests/spec/pattern-native/nested-slice.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.pattern-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/dynamic_patterns.rs"
+    },
+    {
+      "path": "tests/spec/pattern-native/noncopy-borrow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.pattern-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/dynamic_patterns.rs"
+    },
+    {
+      "path": "tests/spec/pattern-native/packed-slice.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.pattern-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/dynamic_patterns.rs"
+    },
+    {
+      "path": "tests/spec/pattern-native/packed-text.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.pattern-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/dynamic_patterns.rs"
+    },
+    {
+      "path": "tests/spec/pattern-native/prefix-suffix.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.pattern-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/dynamic_patterns.rs"
+    },
+    {
+      "path": "tests/spec/pattern-native/rest-let-else.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.pattern-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/dynamic_patterns.rs"
+    },
+    {
+      "path": "tests/spec/pattern-native/rest-loop.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.pattern-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/dynamic_patterns.rs"
+    },
+    {
+      "path": "tests/spec/pattern-native/rest-return.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.pattern-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/dynamic_patterns.rs"
+    },
+    {
+      "path": "tests/spec/pattern-native/slice-guard-retry.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.pattern-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/dynamic_patterns.rs"
+    },
+    {
+      "path": "tests/spec/pattern-native/slice-rest-guard.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.pattern-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/dynamic_patterns.rs"
+    },
+    {
+      "path": "tests/spec/pattern-native/text-bytes.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.pattern-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/dynamic_patterns.rs"
+    },
+    {
+      "path": "tests/spec/pattern-native/text-conditional.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.pattern-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/dynamic_patterns.rs"
+    },
+    {
+      "path": "tests/spec/pattern-native/text-constant.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.pattern-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/dynamic_patterns.rs"
+    },
+    {
+      "path": "tests/spec/pattern-native/text-guard.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.pattern-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/dynamic_patterns.rs"
+    },
+    {
+      "path": "tests/spec/pattern-native/text-slices.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.pattern-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/dynamic_patterns.rs"
+    },
+    {
+      "path": "tests/spec/pattern-native/whole-rest.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.pattern-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/dynamic_patterns.rs"
+    },
+    {
+      "path": "tests/spec/pattern-native/zero-sized.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.pattern-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/dynamic_patterns.rs"
+    },
+    {
+      "path": "tests/spec/persistent-native/aligned-data.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.persistent-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/constant_storage.rs"
+    },
+    {
+      "path": "tests/spec/persistent-native/constant-pattern-read.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.persistent-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/constant_storage.rs"
+    },
+    {
+      "path": "tests/spec/persistent-native/constant-snapshots.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.persistent-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/constant_storage.rs"
+    },
+    {
+      "path": "tests/spec/persistent-native/enum-data.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.persistent-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/constant_storage.rs"
+    },
+    {
+      "path": "tests/spec/persistent-native/float-data.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.persistent-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/constant_storage.rs"
+    },
+    {
+      "path": "tests/spec/persistent-native/function-data.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.persistent-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/constant_storage.rs"
+    },
+    {
+      "path": "tests/spec/persistent-native/negative-enum.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.persistent-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/constant_storage.rs"
+    },
+    {
+      "path": "tests/spec/persistent-native/packed-functions.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.persistent-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/constant_storage.rs"
+    },
+    {
+      "path": "tests/spec/persistent-native/packed-scalars.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.persistent-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/constant_storage.rs"
+    },
+    {
+      "path": "tests/spec/persistent-native/repeated-packed-functions.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.persistent-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/constant_storage.rs"
+    },
+    {
+      "path": "tests/spec/persistent-native/scalars.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.persistent-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/constant_storage.rs"
+    },
+    {
+      "path": "tests/spec/persistent-native/static-fields.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.persistent-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/constant_storage.rs"
+    },
+    {
+      "path": "tests/spec/persistent-native/zero-repeat.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.persistent-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/constant_storage.rs"
+    },
+    {
+      "path": "tests/spec/persistent-native/zst-repeat.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.persistent-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/constant_storage.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-001.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-002.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-003.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-004.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-005.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-006.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-007.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-008.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-009.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-010.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-011.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-012.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-013.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-014.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-015.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-016.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-017.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-018.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-019.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-020.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-021.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-022.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-023.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-024.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-025.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-026.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-027.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-028.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-029.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-030.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-031.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-032.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-033.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-034.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-035.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-036.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-037.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-038.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-039.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-040.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-041.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-042.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-043.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-044.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-045.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-046.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-047.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-048.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-049.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-050.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-051.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-052.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-053.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-054.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-055.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-056.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-057.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-058.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-059.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-060.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-061.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-062.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-063.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-064.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-065.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-066.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-067.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-068.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-069.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-070.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-071.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-072.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-073.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-074.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-075.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-076.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-077.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-078.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-079.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-080.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-081.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-082.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-083.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-084.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-085.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-086.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-087.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-088.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-089.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-090.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-091.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-092.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/promotion/cases-093.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.promotion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/promotions.rs"
+    },
+    {
+      "path": "tests/spec/thin-native/aligned-packed-field.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.thin-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/thin_references.rs"
+    },
+    {
+      "path": "tests/spec/thin-native/aligned-zero.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.thin-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/thin_references.rs"
+    },
+    {
+      "path": "tests/spec/thin-native/array-rest.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.thin-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/thin_references.rs"
+    },
+    {
+      "path": "tests/spec/thin-native/array-static-cycle.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.thin-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/thin_references.rs"
+    },
+    {
+      "path": "tests/spec/thin-native/borrowed-nominal-constant.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.thin-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/thin_references.rs"
+    },
+    {
+      "path": "tests/spec/thin-native/borrowed-product-constant.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.thin-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/thin_references.rs"
+    },
+    {
+      "path": "tests/spec/thin-native/branch-temporary.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.thin-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/thin_references.rs"
+    },
+    {
+      "path": "tests/spec/thin-native/call-temporary.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.thin-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/thin_references.rs"
+    },
+    {
+      "path": "tests/spec/thin-native/conditional-patterns.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.thin-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/thin_references.rs"
+    },
+    {
+      "path": "tests/spec/thin-native/conditional-return.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.thin-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/thin_references.rs"
+    },
+    {
+      "path": "tests/spec/thin-native/constant-reference-pattern.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.thin-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/thin_references.rs"
+    },
+    {
+      "path": "tests/spec/thin-native/empty-repeat-effects.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.thin-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/thin_references.rs"
+    },
+    {
+      "path": "tests/spec/thin-native/erased-reference-array.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.thin-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/thin_references.rs"
+    },
+    {
+      "path": "tests/spec/thin-native/function-item.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.thin-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/thin_references.rs"
+    },
+    {
+      "path": "tests/spec/thin-native/guard-zero-field.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.thin-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/thin_references.rs"
+    },
+    {
+      "path": "tests/spec/thin-native/guarded-alternatives.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.thin-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/thin_references.rs"
+    },
+    {
+      "path": "tests/spec/thin-native/higher-ranked-call.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.thin-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/thin_references.rs"
+    },
+    {
+      "path": "tests/spec/thin-native/last-use.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.thin-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/thin_references.rs"
+    },
+    {
+      "path": "tests/spec/thin-native/lifetime-struct.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.thin-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/thin_references.rs"
+    },
+    {
+      "path": "tests/spec/thin-native/local-write.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.thin-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/thin_references.rs"
+    },
+    {
+      "path": "tests/spec/thin-native/mutable-array.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.thin-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/thin_references.rs"
+    },
+    {
+      "path": "tests/spec/thin-native/mutable-pattern.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.thin-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/thin_references.rs"
+    },
+    {
+      "path": "tests/spec/thin-native/mutable-reference-temporary.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.thin-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/thin_references.rs"
+    },
+    {
+      "path": "tests/spec/thin-native/mutable-temporary.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.thin-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/thin_references.rs"
+    },
+    {
+      "path": "tests/spec/thin-native/mutable-zero-promotion.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.thin-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/thin_references.rs"
+    },
+    {
+      "path": "tests/spec/thin-native/mutual-static.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.thin-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/thin_references.rs"
+    },
+    {
+      "path": "tests/spec/thin-native/nested-promotion.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.thin-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/thin_references.rs"
+    },
+    {
+      "path": "tests/spec/thin-native/packed-reference.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.thin-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/thin_references.rs"
+    },
+    {
+      "path": "tests/spec/thin-native/packed-static-cycle.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.thin-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/thin_references.rs"
+    },
+    {
+      "path": "tests/spec/thin-native/pattern-double-reference.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.thin-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/thin_references.rs"
+    },
+    {
+      "path": "tests/spec/thin-native/pattern-product.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.thin-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/thin_references.rs"
+    },
+    {
+      "path": "tests/spec/thin-native/pattern-static-address.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.thin-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/thin_references.rs"
+    },
+    {
+      "path": "tests/spec/thin-native/promoted-bounds.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.thin-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "panic"
+      },
+      "maintainer_origin": "dev/tests/thin_references.rs"
+    },
+    {
+      "path": "tests/spec/thin-native/promoted-product.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.thin-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/thin_references.rs"
+    },
+    {
+      "path": "tests/spec/thin-native/promoted-scalar.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.thin-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/thin_references.rs"
+    },
+    {
+      "path": "tests/spec/thin-native/promotion-effects.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.thin-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/thin_references.rs"
+    },
+    {
+      "path": "tests/spec/thin-native/promotion-overflow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.thin-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "panic"
+      },
+      "maintainer_origin": "dev/tests/thin_references.rs"
+    },
+    {
+      "path": "tests/spec/thin-native/read-static-cycle.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.thin-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/thin_references.rs"
+    },
+    {
+      "path": "tests/spec/thin-native/read-through-static-reference.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.thin-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/thin_references.rs"
+    },
+    {
+      "path": "tests/spec/thin-native/reborrow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.thin-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/thin_references.rs"
+    },
+    {
+      "path": "tests/spec/thin-native/reference-product.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.thin-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/thin_references.rs"
+    },
+    {
+      "path": "tests/spec/thin-native/return-mutable-field.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.thin-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/thin_references.rs"
+    },
+    {
+      "path": "tests/spec/thin-native/return-reference.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.thin-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/thin_references.rs"
+    },
+    {
+      "path": "tests/spec/thin-native/self-field-address.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.thin-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/thin_references.rs"
+    },
+    {
+      "path": "tests/spec/thin-native/self-static.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.thin-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/thin_references.rs"
+    },
+    {
+      "path": "tests/spec/thin-native/static-projection.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.thin-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/thin_references.rs"
+    },
+    {
+      "path": "tests/spec/thin-native/untagged-enum.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.thin-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/thin_references.rs"
+    },
+    {
+      "path": "tests/spec/thin-native/wide-scalar.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.thin-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/thin_references.rs"
+    },
+    {
+      "path": "tests/spec/thin-native/zero-field.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.thin-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/thin_references.rs"
+    },
+    {
+      "path": "tests/spec/wide-native/bytes-constant.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.wide-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/wide_references.rs"
+    },
+    {
+      "path": "tests/spec/wide-native/bytes-literal.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.wide-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/wide_references.rs"
+    },
+    {
+      "path": "tests/spec/wide-native/nested-text.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.wide-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/wide_references.rs"
+    },
+    {
+      "path": "tests/spec/wide-native/slice-borrow-element.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.wide-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/wide_references.rs"
+    },
+    {
+      "path": "tests/spec/wide-native/slice-bounds.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.wide-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "panic"
+      },
+      "maintainer_origin": "dev/tests/wide_references.rs"
+    },
+    {
+      "path": "tests/spec/wide-native/slice-branch.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.wide-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/wide_references.rs"
+    },
+    {
+      "path": "tests/spec/wide-native/slice-constant.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.wide-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/wide_references.rs"
+    },
+    {
+      "path": "tests/spec/wide-native/slice-empty-bounds.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.wide-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "panic"
+      },
+      "maintainer_origin": "dev/tests/wide_references.rs"
+    },
+    {
+      "path": "tests/spec/wide-native/slice-empty.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.wide-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/wide_references.rs"
+    },
+    {
+      "path": "tests/spec/wide-native/slice-guard.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.wide-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/wide_references.rs"
+    },
+    {
+      "path": "tests/spec/wide-native/slice-mutable-temporary.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.wide-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/wide_references.rs"
+    },
+    {
+      "path": "tests/spec/wide-native/slice-mutable.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.wide-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/wide_references.rs"
+    },
+    {
+      "path": "tests/spec/wide-native/slice-overaligned-zero.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.wide-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/wide_references.rs"
+    },
+    {
+      "path": "tests/spec/wide-native/slice-packed.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.wide-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/wide_references.rs"
+    },
+    {
+      "path": "tests/spec/wide-native/slice-parameter.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.wide-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/wide_references.rs"
+    },
+    {
+      "path": "tests/spec/wide-native/slice-product.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.wide-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/wide_references.rs"
+    },
+    {
+      "path": "tests/spec/wide-native/slice-promoted.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.wide-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/wide_references.rs"
+    },
+    {
+      "path": "tests/spec/wide-native/slice-reborrow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.wide-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/wide_references.rs"
+    },
+    {
+      "path": "tests/spec/wide-native/slice-return.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.wide-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/wide_references.rs"
+    },
+    {
+      "path": "tests/spec/wide-native/slice-static.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.wide-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/wide_references.rs"
+    },
+    {
+      "path": "tests/spec/wide-native/slice-zero-bounds.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.wide-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "panic"
+      },
+      "maintainer_origin": "dev/tests/wide_references.rs"
+    },
+    {
+      "path": "tests/spec/wide-native/slice-zero-elements.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.wide-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/wide_references.rs"
+    },
+    {
+      "path": "tests/spec/wide-native/text-reborrow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.wide-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/wide_references.rs"
+    },
+    {
+      "path": "tests/spec/wide-native/text-values.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.wide-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/wide_references.rs"
+    }
+  ],
+  "additional_modes": [
+    "--emit-lowir"
+  ]
+}
