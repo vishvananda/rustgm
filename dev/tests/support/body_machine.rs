@@ -135,7 +135,8 @@ impl Machine<'_> {
     ) -> Result<Data, String> {
         let value = &frame.body.values[value.0 as usize];
         let data = match value.kind {
-            Rvalue::Aggregate { .. }
+            Rvalue::Borrow { .. }
+            | Rvalue::Aggregate { .. }
             | Rvalue::IsVariant { .. }
             | Rvalue::Validate(_)
             | Rvalue::Repeat { .. }

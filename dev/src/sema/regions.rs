@@ -8,6 +8,7 @@ pub(super) enum Position {
     Input,
     Output,
     Static,
+    Local(crate::syntax::ast::NodeId),
 }
 #[derive(Clone, Copy)]
 pub(super) struct Context {
@@ -54,6 +55,19 @@ impl Regions {
     pub fn count(&self, id: BinderId) -> u32 {
         self.binders[id.0].count
     }
+    pub fn bindings(&self, id: BinderId) -> Result<Vec<(DefId, RegionId)>, &'static str> {
+        let binder = &self.binders[id.0];
+        binder
+            .declared
+            .iter()
+            .filter_map(|definition| {
+                binder
+                    .named
+                    .get(definition)
+                    .map(|index| RegionId::bound(0, *index).map(|region| (*definition, region)))
+            })
+            .collect()
+    }
     fn fresh(&mut self, id: BinderId) -> Result<u16, &'static str> {
         let binder = &mut self.binders[id.0];
         let index = u16::try_from(binder.count)
@@ -67,6 +81,7 @@ impl Regions {
         }
         let id = context.binder.ok_or("missing lifetime specifier")?;
         match context.position {
+            Position::Local(_) => Err("local region requires body inference identity"),
             Position::Static => Ok(RegionId::STATIC),
             Position::Input => RegionId::bound(0, self.fresh(id)?),
             Position::Output => self.binders[id.0]

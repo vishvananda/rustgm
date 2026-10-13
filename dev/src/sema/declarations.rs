@@ -1,5 +1,8 @@
 //! Demand aliases and function signatures through an iterative dependency graph.
 mod aggregates;
+mod annotations;
+mod contracts;
+mod lifetimes;
 use super::{
     model::{Declarations, Function, Initializer, InitializerKind},
     regions::{self, BinderId, Position, Regions},
@@ -51,6 +54,8 @@ struct Checker<'a> {
     children: Vec<TypeId>,
     regions: Regions,
     discriminants: Vec<super::constants::Discriminant>,
+    nominal_regions: std::collections::HashMap<ItemId, regions::Context>,
+    function_binders: std::collections::HashMap<NodeKey, BinderId>,
 }
 /// Resolve declaration types and shape-affecting constants without reparsing source.
 ///
@@ -72,6 +77,8 @@ pub fn analyze(report: &Report) -> Result<Declarations, Error> {
         children: Vec::new(),
         regions: Regions::default(),
         discriminants: Vec::new(),
+        nominal_regions: std::collections::HashMap::new(),
+        function_binders: std::collections::HashMap::new(),
     };
     checker.run().map_err(|error| report.diagnostic(error))?;
     Ok(checker.facts)
@@ -146,6 +153,7 @@ impl Checker<'_> {
     fn local_annotations(&mut self, steps: &mut usize, limit: usize) -> Result<(), Error> {
         let mut scan = Vec::new();
         let mut nodes = Vec::new();
+        let mut contexts = Vec::new();
         for (index, unit) in self.report.package.units.iter().enumerate() {
             if unit.include_context.is_some() {
                 continue;
@@ -156,7 +164,12 @@ impl Checker<'_> {
             );
             let mut seen = vec![false; unit.configured.ast.nodes.len()];
             nodes.push(unit.configured.ast.root);
+            contexts.push(regions::Context::ALIAS);
             while let Some(node) = nodes.pop() {
+                let inherited = contexts.pop().ok_or_else(|| {
+                    self.error(NodeKey { file, node }, "missing annotation context")
+                })?;
+                let context = self.local_context(NodeKey { file, node }, inherited);
                 if !unit.configured.active[node.0 as usize]
                     || std::mem::replace(&mut seen[node.0 as usize], true)
                 {
@@ -172,16 +185,16 @@ impl Checker<'_> {
                 let mark = nodes.len();
                 unit.configured.ast.push_children(node, &mut nodes);
                 nodes[mark..].reverse();
+                contexts.resize(nodes.len(), context);
                 let (Kind::Let { ty: Some(ty), .. } | Kind::Cast { ty, .. }) =
                     unit.configured.ast.node(node).kind
                 else {
                     continue;
                 };
-                // Concrete annotations share the declaration elaborator. Shapes
-                // containing holes remain constraints owned by the body context.
+                // Holes stay in the owning body, while the ordinary elaborator
+                // resolves every written lifetime and nested callable binder.
                 scan.clear();
                 scan.push(ty);
-                let mut incomplete = false;
                 while let Some(child) = scan.pop() {
                     *steps += 1;
                     if *steps > limit {
@@ -191,15 +204,15 @@ impl Checker<'_> {
                         ));
                     }
                     if matches!(unit.configured.ast.node(child).kind, Kind::InferType) {
-                        incomplete = true;
-                        break;
+                        self.facts.partial_annotations.insert(
+                            NodeKey { file, node: child },
+                            super::model::PartialAnnotation::Hole,
+                        );
                     }
                     unit.configured.ast.push_children(child, &mut scan);
                 }
-                if !incomplete {
-                    self.node_work(file, ty, regions::Context::ALIAS);
-                    self.drain(steps, limit)?;
-                }
+                self.node_work(file, ty, context);
+                self.drain(steps, limit)?;
             }
         }
         Ok(())
@@ -311,15 +324,16 @@ impl Checker<'_> {
                     .push(Work::Signature(key, Some(id), SignaturePhase::Begin(None)));
                 return Ok(());
             }
-            if item.generics.start != item.generics.end
-                || item.where_clause.start != item.where_clause.end
+            if item.where_clause.start != item.where_clause.end
+                && !matches!(item.kind, ItemKind::TypeAlias { .. })
             {
                 return Err(self.error(key, "generic aliases require later semantic assignments"));
             }
             self.work.push(Work::Definition(id, true));
             match item.kind {
                 ItemKind::TypeAlias { ty: Some(ty), .. } => {
-                    self.node_work(key.file, ty, regions::Context::ALIAS);
+                    let context = self.template_context(id, key)?;
+                    self.node_work(key.file, ty, context);
                 }
                 ItemKind::Const { ty, .. } | ItemKind::Static { ty, .. } => {
                     self.node_work(key.file, ty, regions::Context::STATIC);
@@ -372,6 +386,12 @@ impl Checker<'_> {
         if self.facts.node(key).is_some_and(|facts| facts.ty.is_some()) {
             return Ok(());
         }
+        if matches!(
+            self.facts.partial_annotations.get(&key),
+            Some(super::model::PartialAnnotation::Hole)
+        ) {
+            return Ok(());
+        }
         let kind = self.kind(key);
         if !finish {
             if let Kind::FunctionType(_) = kind {
@@ -387,20 +407,7 @@ impl Checker<'_> {
                 elements,
             } = kind
             {
-                let unit = self.report.package.unit(key.file);
-                let elements = unit.configured.ast.list(elements);
-                let referent = *elements
-                    .last()
-                    .ok_or_else(|| self.error(key, "missing reference type"))?;
-                let lifetime = if elements.len() == 2 {
-                    elements.first().copied()
-                } else {
-                    None
-                };
-                let region = self.region(key, lifetime, context)?;
-                self.regions.record(context, region);
-                self.work.push(Work::Reference(key, region));
-                self.node_work(key.file, referent, context);
+                self.schedule_reference(key, elements, context)?;
                 return Ok(());
             }
             self.work.push(Work::Node(key, true, context));
@@ -446,6 +453,12 @@ impl Checker<'_> {
             }
             return Ok(());
         }
+        if self.partial_compound(key) {
+            self.facts
+                .partial_annotations
+                .insert(key, super::model::PartialAnnotation::Shape);
+            return Ok(());
+        }
         let ty = match kind {
             Kind::NeverType => TypeId::NEVER,
             Kind::Group(node) | Kind::Attributed { value: node, .. } => self.ty(NodeKey {
@@ -458,13 +471,34 @@ impl Checker<'_> {
                 else {
                     return Err(self.error(key, "missing type path resolution"));
                 };
-                self.facts.definitions[id.0 as usize]
-                    .ok_or_else(|| self.error(key, "missing resolved declaration type"))?
+                self.path_type(key, id, context)?
             }
             Kind::Type { flavor, elements } => self.compound(key, flavor, elements)?,
             _ => return Err(self.error(key, "invalid completed annotation")),
         };
         self.store(key, ty)
+    }
+    fn schedule_reference(
+        &mut self,
+        key: NodeKey,
+        elements: List,
+        context: regions::Context,
+    ) -> Result<(), Error> {
+        let unit = self.report.package.unit(key.file);
+        let elements = unit.configured.ast.list(elements);
+        let referent = *elements
+            .last()
+            .ok_or_else(|| self.error(key, "missing reference type"))?;
+        let lifetime = if elements.len() == 2 {
+            elements.first().copied()
+        } else {
+            None
+        };
+        let region = self.region(key, lifetime, context)?;
+        self.regions.record(context, region);
+        self.work.push(Work::Reference(key, region));
+        self.node_work(key.file, referent, context);
+        Ok(())
     }
     fn signature_syntax(&self, key: NodeKey) -> Result<Signature, Error> {
         if let Kind::FunctionType(index) = self.kind(key) {
@@ -498,7 +532,7 @@ impl Checker<'_> {
         else {
             return Err(self.error(key, "expected function signature"));
         };
-        if abi.is_some() || flags.asynchronous || item.where_clause.start != item.where_clause.end {
+        if abi.is_some() || flags.asynchronous {
             return Err(self.error(
                 key,
                 "foreign, async or bounded signatures require later semantic assignments",
@@ -526,12 +560,27 @@ impl Checker<'_> {
             };
             let parameter = unit.configured.ast.generics[index as usize];
             if parameter.flavor != GenericFlavor::Lifetime
-                || parameter.bounds.start != parameter.bounds.end
+                || (parameter.bounds.start != parameter.bounds.end
+                    && !matches!(
+                        self.item(key).map(|item| item.kind),
+                        Ok(ItemKind::Function { .. }
+                            | ItemKind::TypeAlias { .. }
+                            | ItemKind::Struct { .. }
+                            | ItemKind::Enum { .. })
+                    ))
             {
-                return Err(self.error(
-                    key,
-                    "type/const parameters and lifetime bounds require later semantic assignments",
-                ));
+                let message = match self.item(key).map(|item| item.kind) {
+                    Ok(ItemKind::TypeAlias { .. }) => {
+                        "generic aliases require later semantic assignments"
+                    }
+                    Ok(ItemKind::Struct { .. } | ItemKind::Enum { .. }) => {
+                        "parameterized aggregates require lifetime or generic assignments"
+                    }
+                    _ => {
+                        "type/const parameters and lifetime bounds require later semantic assignments"
+                    }
+                };
+                return Err(self.error(key, message));
             }
             declared.push(
                 self.facts
@@ -633,16 +682,26 @@ impl Checker<'_> {
                 }
             }
             SignaturePhase::Finish(binder, input_count) => {
+                let bounds = if owner.is_some() {
+                    self.function_bounds(key, binder)?
+                } else {
+                    Vec::new()
+                };
                 let bound_regions = self.regions.count(binder);
-                if bound_regions != input_count {
+                if owner.is_none() && bound_regions != input_count {
                     return Err(self.error(
                         key,
-                        if owner.is_some() {
-                            "return-only lifetime parameters require lifetime contracts"
-                        } else {
-                            "function pointer output lifetime is unconstrained by its inputs"
-                        },
+                        "function pointer output lifetime is unconstrained by its inputs",
                     ));
+                }
+                if owner.is_none()
+                    && self.partial_signature(key, signature.parameters, signature.result)?
+                {
+                    self.facts.partial_annotations.insert(
+                        key,
+                        super::model::PartialAnnotation::Function { bound_regions },
+                    );
+                    return Ok(());
                 }
                 self.parameters(key, signature.parameters)?;
                 let parameters = self
@@ -665,7 +724,17 @@ impl Checker<'_> {
                         unsafe_: signature.unsafe_,
                     },
                 )?;
+                if owner.is_none() && bound_regions != 0 {
+                    crate::types::bound_uses::check_pointer(&self.facts.types, ty)
+                        .map_err(|e| self.error(key, e))?;
+                }
                 if let Some(id) = owner {
+                    self.function_regions(key, id, binder, signature.binders, ty, bounds)?;
+                    self.facts.lifetimes.named.extend(
+                        self.regions
+                            .bindings(binder)
+                            .map_err(|e| self.error(key, e))?,
+                    );
                     let ItemKind::Function { body, .. } = self.item(key)?.kind else {
                         return Err(self.error(key, "invalid function owner"));
                     };
@@ -682,6 +751,7 @@ impl Checker<'_> {
                     let item = self.intern(
                         key,
                         Type::FunctionItem {
+                            arguments: crate::types::RegionArgs::EMPTY,
                             item: ItemId(id.0),
                             signature: ty,
                         },
@@ -729,6 +799,22 @@ impl Checker<'_> {
                     .map_err(|e| self.error(lifetime, e));
             }
         }
+        if let Position::Local(body) = context.position {
+            let ordinal = u32::try_from(self.facts.body_regions.len())
+                .ok()
+                .and_then(|n| n.checked_add(1))
+                .filter(|n| *n < 0x8000_0000)
+                .ok_or_else(|| self.error(key, "body region identity space exhausted"))?;
+            self.facts.body_regions.push(super::model::BodyRegion {
+                body: NodeKey {
+                    file: key.file,
+                    node: body,
+                },
+                source: key,
+                origin: super::model::BodyRegionOrigin::Annotation,
+            });
+            return Ok(RegionId(ordinal));
+        }
         self.regions.elided(context).map_err(|e| self.error(key, e))
     }
     fn reference_type(&mut self, key: NodeKey, region: RegionId) -> Result<(), Error> {
@@ -744,10 +830,17 @@ impl Checker<'_> {
             .list(elements)
             .last()
             .ok_or_else(|| self.error(key, "missing reference child"))?;
-        let referent = self.ty(NodeKey {
+        let child = NodeKey {
             file: key.file,
             node,
-        })?;
+        };
+        if self.facts.partial_annotations.contains_key(&child) {
+            self.facts
+                .partial_annotations
+                .insert(key, super::model::PartialAnnotation::Reference(region));
+            return Ok(());
+        }
+        let referent = self.ty(child)?;
         let ty = self.intern(
             key,
             Type::Reference {

@@ -15,7 +15,9 @@ pub(super) fn constructors(
 ) -> Result<(), Error> {
     use super::{Local, LocalId, LocalKind, Owner, Statement, Value};
     for (index, ty) in facts.definitions.iter().enumerate() {
-        let Some(Type::FunctionItem { item, signature }) = ty.and_then(|ty| facts.types.kind(ty))
+        let Some(Type::FunctionItem {
+            item, signature, ..
+        }) = ty.and_then(|ty| facts.types.kind(ty))
         else {
             continue;
         };
@@ -47,6 +49,9 @@ pub(super) fn constructors(
             variant.node,
             result,
         );
+        body.storage = Some(crate::body::storage::Facts::new(
+            crate::body::scopes::Facts::synthetic(variant.node.node),
+        ));
         for (ordinal, field) in facts
             .members
             .fields(variant_id)
@@ -58,6 +63,7 @@ pub(super) fn constructors(
                 u32::try_from(ordinal).map_err(|_| error("too many constructor fields"))?;
             let local = LocalId(ordinal);
             body.locals.push(Local {
+                scope: crate::body::scopes::Id(0),
                 storage_parent: ordinal.checked_sub(1).map(LocalId),
                 ty: field.ty,
                 kind: LocalKind::Parameter(ordinal),
@@ -108,6 +114,22 @@ fn finish_constructor(
         source: body.source.node,
         action: Action::Evaluate(value),
     });
+    let before =
+        u32::try_from(body.statements.len()).map_err(|_| "too many constructor statements")?;
+    body.storage
+        .as_mut()
+        .ok_or("missing constructor storage")?
+        .exits
+        .push(crate::body::storage::Exit {
+            location: crate::body::storage::Location::At {
+                block: super::BlockId(0),
+                before,
+            },
+            end: crate::body::storage::End::Scopes(crate::body::storage::Range {
+                inner: crate::body::scopes::Id(0),
+                outer: None,
+            }),
+        });
     if let Some(last) = count.checked_sub(1).map(LocalId) {
         body.statements.push(Statement {
             source: body.source.node,
@@ -130,7 +152,15 @@ impl Builder<'_> {
         while let Kind::Group(value) | Kind::Attributed { value, .. } = self.kind(node) {
             node = value;
         }
-        matches!(self.kind(node), Kind::Field { .. } | Kind::Index { .. })
+        matches!(
+            self.kind(node),
+            Kind::Field { .. }
+                | Kind::Index { .. }
+                | Kind::Unary {
+                    op: crate::syntax::ast::Unary::Dereference,
+                    ..
+                }
+        )
     }
     pub(super) fn pop_place(&mut self, node: NodeId) -> Result<Option<Place>, Error> {
         self.scratch
@@ -142,7 +172,7 @@ impl Builder<'_> {
         if matches!(self.kind(node), Kind::Struct { base: Some(_), .. })
             || matches!(
                 self.fact(node)?.operation,
-                Some(Operation::AssignPlace { .. })
+                Some(Operation::AssignPlace { .. } | Operation::Borrow)
             )
         {
             self.pop_place(node)?;
@@ -158,7 +188,17 @@ impl Builder<'_> {
             Kind::Group(value) | Kind::Attributed { value, .. } => {
                 self.scratch.work.push(Work::Place(value));
             }
-            Kind::Field { value, .. } => {
+            Kind::Expansion {
+                children,
+                tail: Some(value),
+            } if children.start == children.end => {
+                self.scratch.work.push(Work::Place(value));
+            }
+            Kind::Unary {
+                op: crate::syntax::ast::Unary::Dereference,
+                operand: value,
+            }
+            | Kind::Field { value, .. } => {
                 self.scratch.work.push(Work::FinishPlace(node));
                 self.scratch.work.push(Work::Place(value));
             }
@@ -212,23 +252,16 @@ impl Builder<'_> {
         Ok(id)
     }
     pub(super) fn finish_place(&mut self, node: NodeId) -> Result<(), Error> {
-        if self
-            .facts
-            .autoderefs
-            .contains_key(&crate::resolve::unit::NodeKey {
-                node,
-                ..self.body.source
-            })
-        {
-            return Err(self.error(
-                node,
-                "reference projection execution requires region and loan proofs",
-            ));
-        }
         let base = self.pop_place(node)?;
         let place = if let Some(base) = base
             && self.current.is_some()
         {
+            let base = self.automatic_dereferences(node, base)?;
+            if self.fact(node)?.operation == Some(Operation::Dereference) {
+                let place = self.dereference_place(node, base)?;
+                self.scratch.places.push(Some(place));
+                return Ok(());
+            }
             let kind = match self.fact(node)?.operation {
                 Some(Operation::Field { field }) => ProjectionKind::Field(field),
                 Some(Operation::Index { length }) => {

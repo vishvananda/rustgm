@@ -1,0 +1,189 @@
+//! Demand promotion from typed CFG values, retaining original runtime checks/effects.
+mod operands;
+mod places;
+mod queries;
+mod values;
+use super::ir::{Body, Program, ProjectionId, Rvalue, ValueId};
+use crate::{
+    resolve::{expansion::Report, package::Error as Diagnostic},
+    sema::{
+        model::Declarations,
+        values::{Constant, Evaluator, Failure},
+    },
+    types::Kind as Type,
+};
+use std::collections::HashMap;
+
+/// Completed promotion facts, distinct from storage-liveness and loan proofs.
+#[derive(Default)]
+pub struct Facts {
+    entries: Vec<(ValueId, Constant)>,
+    index: HashMap<ValueId, usize>,
+    pub steps: usize,
+}
+impl Facts {
+    #[must_use]
+    pub fn get(&self, root: ValueId) -> Option<Constant> {
+        self.index.get(&root).map(|&index| self.entries[index].1)
+    }
+    pub fn entries(&self) -> impl Iterator<Item = (ValueId, Constant)> + '_ {
+        self.entries.iter().copied()
+    }
+}
+/// Evaluate only demanded temporary DAGs with the shared constant value engine.
+/// Original statements remain: promotion cannot remove effects or overflow checks.
+/// # Errors
+/// Preserves required-constant failures and diagnoses malformed or exhausted queries.
+pub fn analyze(
+    report: &Report,
+    facts: &mut Declarations,
+    program: &mut Program,
+) -> Result<(), Diagnostic> {
+    if !program.bodies.iter().any(|body| {
+        body.promotions.is_none()
+            && body
+                .values
+                .iter()
+                .any(|v| matches!(v.kind, Rvalue::Borrow { .. }))
+    }) {
+        return Ok(());
+    }
+    let mut evaluator = Evaluator::new(report, facts);
+    for body in &mut program.bodies {
+        if body.promotions.is_some() {
+            continue;
+        }
+        let mut engine = Engine::new(report, body, &mut evaluator);
+        let output = engine.collect().map_err(|error| match error {
+            Error::Constant(error) => error,
+            Error::Evaluation(error) => {
+                let span = report
+                    .package
+                    .unit(body.source.file)
+                    .configured
+                    .ast
+                    .node(body.source.node)
+                    .span;
+                report.diagnostic(Diagnostic::at(
+                    body.source.file,
+                    span.start,
+                    error.message(),
+                ))
+            }
+        })?;
+        body.promotions = Some(output);
+    }
+    Ok(())
+}
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+enum Key {
+    Value(ValueId),
+    Projection(ProjectionId),
+}
+#[derive(Clone, Copy)]
+struct Ready {
+    value: Constant,
+    immediate: bool,
+    constant_assignment: bool,
+}
+#[derive(Clone, Copy)]
+enum State {
+    Active,
+    Runtime,
+    Ready(Ready),
+}
+enum Error {
+    Evaluation(Failure),
+    Constant(Diagnostic),
+}
+impl From<Failure> for Error {
+    fn from(value: Failure) -> Self {
+        Self::Evaluation(value)
+    }
+}
+impl From<&'static str> for Error {
+    fn from(value: &'static str) -> Self {
+        Self::Evaluation(Failure::Invalid(value))
+    }
+}
+struct Engine<'a, 'b> {
+    report: &'a Report,
+    sources: Vec<Option<crate::syntax::ast::NodeId>>,
+    body: &'a Body,
+    evaluator: &'a mut Evaluator<'b>,
+    states: HashMap<Key, State>,
+    work: Vec<(Key, bool)>,
+    roots: Vec<Option<ValueId>>,
+    steps: usize,
+    limit: usize,
+}
+impl<'a, 'b> Engine<'a, 'b> {
+    fn new(report: &'a Report, body: &'a Body, evaluator: &'a mut Evaluator<'b>) -> Self {
+        Self {
+            report,
+            sources: Vec::new(),
+            body,
+            evaluator,
+            states: HashMap::new(),
+            work: Vec::new(),
+            roots: Vec::new(),
+            steps: 0,
+            limit: 1_000_000,
+        }
+    }
+    fn collect(&mut self) -> Result<Facts, Error> {
+        let mut facts = Facts::default();
+        if !self
+            .body
+            .values
+            .iter()
+            .any(|v| matches!(v.kind, Rvalue::Borrow { .. }))
+        {
+            return Ok(facts);
+        }
+        self.index_roots()?;
+        for value in &self.body.values {
+            self.charge(1)?;
+            let Rvalue::Borrow { place } = value.kind else {
+                continue;
+            };
+            if !self.borrow_allowed(value.ty)? {
+                continue;
+            }
+            let Some(root) = self.root(place)? else {
+                continue;
+            };
+            if facts.index.contains_key(&root) {
+                continue;
+            }
+            if let Some(value) = self.demand(Key::Value(root))? {
+                facts.index.insert(root, facts.entries.len());
+                facts.entries.push((root, value.value));
+            }
+        }
+        facts.steps = self.steps;
+        Ok(facts)
+    }
+    fn charge(&mut self, count: usize) -> Result<(), Error> {
+        self.steps = self
+            .steps
+            .checked_add(count)
+            .filter(|n| *n <= self.limit)
+            .ok_or("promotion query work budget exceeded")?;
+        Ok(())
+    }
+    fn borrow_allowed(&self, ty: crate::types::TypeId) -> Result<bool, Error> {
+        match self.evaluator.facts().types.kind(ty) {
+            Some(Type::Reference { mutable: false, .. }) => Ok(true),
+            Some(Type::Reference {
+                mutable: true,
+                referent,
+                ..
+            }) => Ok(matches!(
+                self.evaluator.facts().types.kind(referent),
+                Some(Type::Array { length: 0, .. })
+            )),
+            _ => Err("borrow value lacks a reference type".into()),
+        }
+    }
+}

@@ -20,6 +20,9 @@ impl Fixture {
             types: Store::default(),
             definitions: aggregate::Definitions::default(),
             body: Body {
+                storage: None,
+                promotions: None,
+                temporaries: Vec::new(),
                 guards: Vec::new(),
                 guard_places: Vec::new(),
                 projections: Vec::new(),
@@ -56,6 +59,7 @@ impl Fixture {
     fn local(&mut self, ty: TypeId, kind: LocalKind) -> Result<LocalId, &'static str> {
         let id = LocalId(u32::try_from(self.body.locals.len()).map_err(|_| "locals")?);
         self.body.locals.push(Local {
+            scope: rustgm::body::scopes::Id(0),
             ty,
             kind,
             definition: None,
@@ -165,6 +169,9 @@ impl Fixture {
         let program = Program {
             bodies: vec![self.body],
             region_equalities: Vec::new(),
+            coercions: Vec::new(),
+            outlives: Vec::new(),
+            body_regions: Vec::new(),
         };
         ownership::verify(
             &self.types,

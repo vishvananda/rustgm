@@ -1,7 +1,9 @@
 //! Scalar body constraints consume resolved identities; fallback occurs once per body.
 mod aggregates;
+mod calls;
 mod conditions;
 mod divergence;
+mod lifetimes;
 mod matches;
 mod pattern_constants;
 mod patterns;
@@ -9,7 +11,7 @@ mod references;
 mod text;
 use super::{
     declarations,
-    model::{Adjustment, AdjustmentKind, Declarations, Function, Operation, RegionEquality},
+    model::{AdjustmentKind, Declarations, Function, Operation, RegionEquality},
     scalar,
 };
 use crate::{
@@ -130,8 +132,13 @@ pub(super) struct Checker<'a> {
     checks: Vec<NodeId>,
     negated: HashSet<NodeId>,
     adjustments: Vec<(NodeId, TermId, AdjustmentKind)>,
+    discarded_adjustments: std::collections::HashMap<usize, (TermId, TermId)>,
     calls: Vec<(NodeId, TermId)>,
+    call_types: calls::CallTypes,
+    body_binders: u32,
     annotation_work: Vec<(NodeId, bool)>,
+    annotation_checks: Vec<NodeId>,
+    annotation_children: HashSet<NodeId>,
     type_children: Vec<TermId>,
     frames: Vec<Frame>,
     pending_label: Option<(NodeId, DefId)>,
@@ -172,8 +179,13 @@ impl<'a> Checker<'a> {
             checks: Vec::new(),
             negated: HashSet::new(),
             adjustments: Vec::new(),
+            discarded_adjustments: std::collections::HashMap::new(),
             calls: Vec::new(),
+            call_types: calls::CallTypes::default(),
+            body_binders: 0,
             annotation_work: Vec::new(),
+            annotation_checks: Vec::new(),
+            annotation_children: HashSet::new(),
             type_children: Vec::new(),
             frames: Vec::new(),
             pending_label: None,
@@ -185,6 +197,8 @@ impl<'a> Checker<'a> {
         self.pending_patterns.is_some()
     }
     pub(super) fn constant(&mut self, key: NodeKey, ty: TypeId, owner: DefId) -> Result<(), Error> {
+        self.call_types.clear();
+        self.body_binders = 0;
         self.body = key;
         self.prepare_file(key.file);
         let scope = self.report.resolution.definitions[owner.0 as usize].scope;
@@ -245,6 +259,11 @@ impl Checker<'_> {
             .equate(&self.facts.types, left, right)
             .map_err(|e| self.error(node, e))
     }
+    fn shape_equation(&mut self, node: NodeId, left: TermId, right: TermId) -> Result<(), Error> {
+        self.infer
+            .equate_shape(&self.facts.types, left, right)
+            .map_err(|e| self.error(node, e))
+    }
     fn head(&mut self, node: NodeId, term: TermId) -> Result<Option<Constructor>, Error> {
         self.infer
             .head(&self.facts.types, term)
@@ -259,6 +278,13 @@ impl Checker<'_> {
         self.report.package.unit(self.file).configured.active[node.0 as usize]
     }
     fn function(&mut self, function: Function) -> Result<(), Error> {
+        self.call_types.clear();
+        self.body_binders = self
+            .facts
+            .lifetimes
+            .functions
+            .get(&function.definition)
+            .map_or(0, |f| f.total);
         self.in_function = true;
         let Some(body) = function.body else {
             return Err(Declarations::error(
@@ -401,12 +427,23 @@ impl Checker<'_> {
                         right: *right,
                     }),
             );
+        let mut well_formed = HashSet::new();
         for node in &self.touched {
             let term = self.term(*node)?;
             let key = self.key(*node);
             let ty = solved.types[term.0 as usize];
             if self.facts.types.is_well_formed(ty) != Some(true) {
                 return Err(self.error(*node, "body uses an ill-formed type"));
+            }
+            if self.facts.types.contains_regions(ty) == Some(true)
+                && !self.annotation_children.contains(node)
+                && well_formed.insert(ty)
+            {
+                self.facts.well_formed.push(super::model::WellFormed {
+                    body: body_key,
+                    source: key,
+                    ty,
+                });
             }
             self.facts
                 .node_mut(key)
@@ -422,21 +459,7 @@ impl Checker<'_> {
                 self.facts.definitions[id.0 as usize] = Some(ty);
             }
         }
-        for (node, term, kind) in &self.adjustments {
-            let key = self.key(*node);
-            let target = solved.types[term.0 as usize];
-            let facts = self
-                .facts
-                .node_mut(key)
-                .ok_or_else(|| Declarations::error(self.report, key, "invalid adjustment node"))?;
-            if *kind == AdjustmentKind::Equality && facts.ty == Some(target) {
-                continue;
-            }
-            facts.adjustment = Some(Adjustment {
-                kind: *kind,
-                target,
-            });
-        }
+        self.publish_adjustments(&solved, body_key)?;
         for (node, term) in &self.calls {
             let key = self.key(*node);
             self.facts
@@ -446,6 +469,12 @@ impl Checker<'_> {
                 signature: solved.types[term.0 as usize],
             });
         }
+        for node in &self.annotation_checks {
+            crate::types::bound_uses::check_pointer(&self.facts.types, self.ty(*node)?)
+                .map_err(|e| self.error(*node, e))?;
+        }
+        self.annotation_checks.clear();
+        self.annotation_children.clear();
         self.validate_operations()?;
         self.validate_assignments()?;
         self.validate_values()?;
@@ -458,6 +487,7 @@ impl Checker<'_> {
         self.checks.clear();
         self.negated.clear();
         self.adjustments.clear();
+        self.discarded_adjustments.clear();
         self.calls.clear();
         self.assignments.clear();
         self.breaks.clear();
@@ -501,6 +531,7 @@ impl Checker<'_> {
         Ok(())
     }
     fn annotation(&mut self, root: NodeId) -> Result<TermId, Error> {
+        let first = self.touched.len();
         self.annotation_work.push((root, false));
         while let Some((node, finish)) = self.annotation_work.pop() {
             if self.terms[self.file.0 as usize][node.0 as usize].is_some() {
@@ -523,10 +554,17 @@ impl Checker<'_> {
                     }
                     Kind::Type { flavor, elements } => {
                         if matches!(flavor, TypeFlavor::Ref | TypeFlavor::RefMut) {
-                            return Err(self.error(
-                                node,
-                                "inferred reference annotations require lifetime contracts",
-                            ));
+                            let referent = unit
+                                .configured
+                                .ast
+                                .list(elements)
+                                .last()
+                                .copied()
+                                .ok_or_else(|| {
+                                    self.error(node, "missing reference annotation referent")
+                                })?;
+                            self.annotation_work.push((referent, false));
+                            continue;
                         }
                         let elements = unit.configured.ast.list(elements);
                         let count = elements
@@ -537,13 +575,6 @@ impl Checker<'_> {
                     }
                     Kind::FunctionType(index) => {
                         let function = unit.configured.ast.function_types[index as usize];
-                        if function.abi.is_some() || function.binders.start != function.binders.end
-                        {
-                            return Err(self.error(
-                                node,
-                                "inferred foreign or bound signatures require later semantics",
-                            ));
-                        }
                         self.annotation_work
                             .extend(function.result.map(|n| (n, false)));
                         for parameter in unit.configured.ast.list(function.parameters).iter().rev()
@@ -562,6 +593,10 @@ impl Checker<'_> {
                 }
             }
         }
+        // Only the complete annotation is a well-formedness root. Its children
+        // may use a callable's private binder, which is not the body binder.
+        self.annotation_children
+            .extend(self.touched[first..].iter().copied().filter(|n| *n != root));
         self.term(root)
     }
     fn annotation_finish(&mut self, node: NodeId) -> Result<TermId, Error> {
@@ -588,6 +623,14 @@ impl Checker<'_> {
                     .configured
                     .ast
                     .list(elements);
+                let children = if matches!(flavor, TypeFlavor::Ref | TypeFlavor::RefMut) {
+                    children
+                        .last()
+                        .map(std::slice::from_ref)
+                        .ok_or_else(|| self.error(node, "missing inferred reference referent"))?
+                } else {
+                    children
+                };
                 for child in children.iter().take(
                     children
                         .len()
@@ -616,38 +659,55 @@ impl Checker<'_> {
                     TypeFlavor::PointerConst | TypeFlavor::PointerMut => Constructor::Pointer {
                         mutable: flavor == TypeFlavor::PointerMut,
                     },
-                    _ => return Err(self.error(node, "unsupported inferred reference type")),
-                }
-            }
-            Kind::FunctionType(index) => {
-                self.type_children.clear();
-                let unit = self.report.package.unit(self.file);
-                let function = unit.configured.ast.function_types[index as usize];
-                for parameter in unit.configured.ast.list(function.parameters) {
-                    if self.active(*parameter) {
-                        let ty = declarations::parameter_type(self.report, self.key(*parameter))?;
-                        self.type_children.push(self.term(ty)?);
+                    TypeFlavor::Ref | TypeFlavor::RefMut => {
+                        let Some(super::model::PartialAnnotation::Reference(region)) =
+                            self.facts.partial_annotations.get(&self.key(node))
+                        else {
+                            return Err(self.error(node, "missing elaborated annotation region"));
+                        };
+                        Constructor::Reference {
+                            mutable: flavor == TypeFlavor::RefMut,
+                            region: *region,
+                        }
                     }
                 }
-                let parameters = u32::try_from(self.type_children.len())
-                    .map_err(|_| self.error(node, "too many function parameters"))?;
-                let result = if let Some(result) = function.result {
-                    self.term(result)?
-                } else {
-                    self.known(node, TypeId::UNIT)?
-                };
-                self.type_children.push(result);
-                Constructor::Function {
-                    bound_regions: 0,
-                    parameters,
-                    unsafe_: function.unsafe_,
-                }
             }
+            Kind::FunctionType(index) => self.annotation_function(node, index)?,
             _ => return Err(self.error(node, "invalid local annotation work")),
         };
         self.infer
             .construct(constructor, &self.type_children)
             .map_err(|e| self.error(node, e))
+    }
+    fn annotation_function(&mut self, node: NodeId, index: u32) -> Result<Constructor, Error> {
+        self.type_children.clear();
+        let unit = self.report.package.unit(self.file);
+        let function = unit.configured.ast.function_types[index as usize];
+        for parameter in unit.configured.ast.list(function.parameters) {
+            if self.active(*parameter) {
+                let ty = declarations::parameter_type(self.report, self.key(*parameter))?;
+                self.type_children.push(self.term(ty)?);
+            }
+        }
+        let parameters = u32::try_from(self.type_children.len())
+            .map_err(|_| self.error(node, "too many function parameters"))?;
+        let result = if let Some(result) = function.result {
+            self.term(result)?
+        } else {
+            self.known(node, TypeId::UNIT)?
+        };
+        self.type_children.push(result);
+        let Some(super::model::PartialAnnotation::Function { bound_regions }) =
+            self.facts.partial_annotations.get(&self.key(node))
+        else {
+            return Err(self.error(node, "missing elaborated callable binder"));
+        };
+        self.annotation_checks.push(node);
+        Ok(Constructor::Function {
+            bound_regions: *bound_regions,
+            parameters,
+            unsafe_: function.unsafe_,
+        })
     }
     #[expect(
         clippy::too_many_lines,
@@ -839,6 +899,7 @@ impl Checker<'_> {
                 let ty = self.facts.definitions[id.0 as usize]
                     .ok_or_else(|| self.error(node, "missing value type"))?;
                 self.select_unit_constructor(node, id)?;
+                let ty = self.function_item(node, id, ty)?;
                 self.known(node, ty)
             }
             Kind::Group(value) | Kind::Attributed { value, .. } | Kind::Label { value, .. } => {
@@ -986,11 +1047,13 @@ impl Checker<'_> {
             Kind::Cast { value, ty } => {
                 let source = self.term(value)?;
                 let target = self.term(ty)?;
-                if matches!(self.head(node, source)?, Some(Constructor::FunctionItem(_)))
-                    && matches!(self.head(node, target)?, Some(Constructor::Function { .. }))
+                if matches!(
+                    self.head(node, source)?,
+                    Some(Constructor::FunctionItem(..))
+                ) && matches!(self.head(node, target)?, Some(Constructor::Function { .. }))
                 {
                     let signature = self.child(node, source, 0)?;
-                    self.equate(node, signature, target)?;
+                    self.callable_shape(node, signature, target)?;
                 }
                 self.checks.push(node);
                 Ok(target)
@@ -1044,25 +1107,38 @@ impl Checker<'_> {
                 .push((source, expected, AdjustmentKind::Never));
             return Ok(());
         }
-        if matches!(actual_head, Some(Constructor::FunctionItem(_)))
+        if matches!(actual_head, Some(Constructor::FunctionItem(..)))
             && matches!(expected_head, Some(Constructor::Function { .. }))
         {
             let signature = self.child(source, actual, 0)?;
-            self.equate(source, signature, expected)?;
+            self.callable_shape(source, signature, expected)?;
             self.adjustments
                 .push((source, expected, AdjustmentKind::FunctionPointer));
+            return Ok(());
+        }
+        if matches!(actual_head, Some(Constructor::Function { .. }))
+            && matches!(expected_head, Some(Constructor::Function { .. }))
+        {
+            self.callable_shape(source, actual, expected)?;
+            self.adjustments
+                .push((source, expected, AdjustmentKind::Equality));
             return Ok(());
         }
         if matches!(actual_head, Some(Constructor::Reference { .. }))
             && matches!(expected_head, Some(Constructor::Reference { .. }))
             && let Some(reference) = self.array_reference_slice(source, actual, expected)?
         {
-            self.equate(source, reference, expected)?;
+            self.callable_shape(source, reference, expected)?;
             self.adjustments
                 .push((source, expected, AdjustmentKind::ArrayToSlice));
             return Ok(());
         }
-        self.equate(source, actual, expected)?;
+        let inferred = if expected_head.is_none() {
+            self.inferred_regions(source, actual)?
+        } else {
+            actual
+        };
+        self.callable_shape(source, inferred, expected)?;
         self.adjustments
             .push((source, expected, AdjustmentKind::Equality));
         Ok(())
@@ -1082,19 +1158,21 @@ impl Checker<'_> {
         if bh == Some(Constructor::Never) {
             return Ok(a);
         }
-        let a_item = matches!(ah, Some(Constructor::FunctionItem(_)));
-        let b_item = matches!(bh, Some(Constructor::FunctionItem(_)));
-        if (a_item && b_item && ah != bh)
+        let a_item = matches!(ah, Some(Constructor::FunctionItem(..)));
+        let b_item = matches!(bh, Some(Constructor::FunctionItem(..)));
+        let distinct_items = matches!((ah, bh),
+            (Some(Constructor::FunctionItem(a, _)), Some(Constructor::FunctionItem(b, _))) if a != b);
+        if distinct_items
             || (a_item && matches!(bh, Some(Constructor::Function { .. })))
             || (b_item && matches!(ah, Some(Constructor::Function { .. })))
         {
             let left = if a_item { self.child(node, a, 0)? } else { a };
             let right = if b_item { self.child(node, b, 0)? } else { b };
-            self.equate(node, left, right)?;
-            return Ok(left);
+            self.shape_equation(node, left, right)?;
+            return self.inferred_regions(node, left);
         }
-        self.equate(node, a, b)?;
-        Ok(a)
+        self.shape_equation(node, a, b)?;
+        self.inferred_regions(node, a)
     }
     fn binary(
         &mut self,
@@ -1147,11 +1225,12 @@ impl Checker<'_> {
             )),
         }
     }
-    fn call(&mut self, node: NodeId, callee: NodeId, arguments: List) -> Result<TermId, Error> {
-        let mut term = self.term(callee)?;
-        if matches!(self.head(node, term)?, Some(Constructor::FunctionItem(_))) {
-            term = self.child(node, term, 0)?;
-        }
+    fn call(&mut self, node: NodeId, _callee: NodeId, arguments: List) -> Result<TermId, Error> {
+        let term = self
+            .call_types
+            .active
+            .remove(&node)
+            .ok_or_else(|| self.error(node, "missing call instantiation"))?;
         let Some(Constructor::Function {
             parameters,
             unsafe_,
@@ -1311,9 +1390,11 @@ impl Checker<'_> {
             return Err(self.error(node, "invalid call work"));
         };
         let mut term = self.term(callee)?;
-        if matches!(self.head(node, term)?, Some(Constructor::FunctionItem(_))) {
+        if matches!(self.head(node, term)?, Some(Constructor::FunctionItem(..))) {
             term = self.child(node, term, 0)?;
         }
+        term = self.call_signature(node, term)?;
+        self.call_types.active.insert(node, term);
         let Some(Constructor::Function { parameters, .. }) = self.head(node, term)? else {
             return Err(self.error(node, "call requires a known function type"));
         };
@@ -1537,6 +1618,20 @@ impl Checker<'_> {
                 _ => return Err(self.error(*node, "invalid scalar operation obligation")),
             };
             let key = self.key(*node);
+            if let Operation::Cast {
+                kind: super::model::Cast::FunctionPointer,
+                source,
+                target,
+            } = operation
+            {
+                self.facts.retain_coercion(super::model::Coercion {
+                    body: self.body,
+                    source: key,
+                    actual: source,
+                    expected: target,
+                    kind: AdjustmentKind::FunctionPointer,
+                });
+            }
             self.facts
                 .node_mut(key)
                 .ok_or_else(|| Declarations::error(self.report, key, "invalid operation node"))?

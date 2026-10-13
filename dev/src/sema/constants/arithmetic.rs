@@ -1,4 +1,5 @@
 //! Target-width constant arithmetic consumes the scalar operations already selected by inference.
+use super::values::{Failure, Overflow};
 use crate::{
     lex::token::Punctuation as Op,
     literal::value::FloatBits,
@@ -36,7 +37,8 @@ pub(super) fn unary(
     ty: Primitive,
     value: Scalar,
     literal: bool,
-) -> Result<Scalar, &'static str> {
+    overflow: Overflow,
+) -> Result<Scalar, Failure> {
     Ok(match (op, value) {
         (Unary::Not, Scalar::Boolean(value)) => Scalar::Boolean(!value),
         (Unary::Not, Scalar::Integer(value)) => {
@@ -46,15 +48,20 @@ pub(super) fn unary(
         (Unary::Negate, Scalar::Integer(value)) => {
             let (is_signed, width) = ty.integer().ok_or("missing integer operand type")?;
             if !is_signed {
-                return Err("unsigned constant negation");
+                return Err(Failure::Invalid("unsigned constant negation"));
             }
             if literal && value == 1_u128 << (width - 1) {
                 return Ok(Scalar::Integer(value));
             }
+            if overflow == Overflow::Wrapping {
+                return Ok(Scalar::Integer(
+                    bits(signed(value, width).wrapping_neg()) & mask(width),
+                ));
+            }
             let value = signed(value, width)
                 .checked_neg()
                 .filter(|v| *v <= maximum(width))
-                .ok_or("constant negation overflows")?;
+                .ok_or(Failure::Fault("constant negation overflows"))?;
             Scalar::Integer(bits(value) & mask(width))
         }
         (Unary::Negate, Scalar::Float(FloatBits::F32(value))) => {
@@ -63,7 +70,11 @@ pub(super) fn unary(
         (Unary::Negate, Scalar::Float(FloatBits::F64(value))) => {
             Scalar::Float(FloatBits::F64(value ^ (1 << 63)))
         }
-        _ => return Err("unsupported selected constant unary operation"),
+        _ => {
+            return Err(Failure::Invalid(
+                "unsupported selected constant unary operation",
+            ));
+        }
     })
 }
 fn comparison<T: Copy + PartialEq + PartialOrd>(op: Op, left: T, right: T) -> Option<bool> {
@@ -77,7 +88,7 @@ fn comparison<T: Copy + PartialEq + PartialOrd>(op: Op, left: T, right: T) -> Op
         _ => return None,
     })
 }
-fn numeric<T>(op: Op, left: T, right: T) -> Result<T, &'static str>
+fn numeric<T>(op: Op, left: T, right: T) -> Result<T, Failure>
 where
     T: std::ops::Add<Output = T>
         + std::ops::Sub<Output = T>
@@ -91,7 +102,11 @@ where
         Op::Star => left * right,
         Op::Slash => left / right,
         Op::Percent => left % right,
-        _ => return Err("unsupported selected floating constant operation"),
+        _ => {
+            return Err(Failure::Invalid(
+                "unsupported selected floating constant operation",
+            ));
+        }
     })
 }
 pub(super) fn binary(
@@ -99,9 +114,10 @@ pub(super) fn binary(
     ty: Primitive,
     left: Scalar,
     right: Scalar,
-) -> Result<Scalar, &'static str> {
+    overflow: Overflow,
+) -> Result<Scalar, Failure> {
     match (left, right) {
-        (Scalar::Integer(left), Scalar::Integer(right)) => integer(op, ty, left, right),
+        (Scalar::Integer(left), Scalar::Integer(right)) => integer(op, ty, left, right, overflow),
         (Scalar::Boolean(left), Scalar::Boolean(right)) => {
             let value = comparison(op, left, right)
                 .or(match op {
@@ -115,7 +131,9 @@ pub(super) fn binary(
         }
         (Scalar::Character(left), Scalar::Character(right)) => comparison(op, left, right)
             .map(Scalar::Boolean)
-            .ok_or("unsupported selected character constant operation"),
+            .ok_or(Failure::Invalid(
+                "unsupported selected character constant operation",
+            )),
         (Scalar::Float(FloatBits::F32(left)), Scalar::Float(FloatBits::F32(right))) => {
             let (left, right) = (f32::from_bits(left), f32::from_bits(right));
             if let Some(value) = comparison(op, left, right) {
@@ -134,10 +152,16 @@ pub(super) fn binary(
                 numeric(op, left, right)?.to_bits(),
             )))
         }
-        _ => Err("mismatched selected constant operands"),
+        _ => Err(Failure::Invalid("mismatched selected constant operands")),
     }
 }
-fn integer(op: Op, ty: Primitive, left: u128, right: u128) -> Result<Scalar, &'static str> {
+fn integer(
+    op: Op,
+    ty: Primitive,
+    left: u128,
+    right: u128,
+    overflow: Overflow,
+) -> Result<Scalar, Failure> {
     let (is_signed, width) = ty.integer().ok_or("missing constant integer type")?;
     let comparison = if is_signed {
         comparison(op, signed(left, width), signed(right, width))
@@ -154,9 +178,10 @@ fn integer(op: Op, ty: Primitive, left: u128, right: u128) -> Result<Scalar, &'s
         Op::ShiftLeft | Op::ShiftRight => {
             // A negative signed RHS has a high target-width bit and fails this
             // range check too. The RHS may have a different integer type.
-            if right >= u128::from(width) {
-                return Err("constant shift amount is out of range");
+            if right >= u128::from(width) && overflow == Overflow::Checked {
+                return Err(Failure::Fault("constant shift amount is out of range"));
             }
+            let right = right % u128::from(width);
             let amount = u32::try_from(right).map_err(|_| "invalid shift amount")?;
             match op {
                 Op::ShiftLeft => left << amount,
@@ -164,6 +189,11 @@ fn integer(op: Op, ty: Primitive, left: u128, right: u128) -> Result<Scalar, &'s
                 _ => left >> amount,
             }
         }
+        Op::Plus | Op::Minus | Op::Star if overflow == Overflow::Wrapping => match op {
+            Op::Plus => left.wrapping_add(right),
+            Op::Minus => left.wrapping_sub(right),
+            _ => left.wrapping_mul(right),
+        },
         _ if is_signed => {
             let (left, right) = (signed(left, width), signed(right, width));
             let value = match op {
@@ -172,13 +202,19 @@ fn integer(op: Op, ty: Primitive, left: u128, right: u128) -> Result<Scalar, &'s
                 Op::Star => left.checked_mul(right),
                 Op::Slash => left.checked_div(right),
                 Op::Percent => left.checked_rem(right),
-                _ => return Err("unsupported selected integer constant operation"),
+                _ => {
+                    return Err(Failure::Invalid(
+                        "unsupported selected integer constant operation",
+                    ));
+                }
             }
             .filter(|v| *v >= minimum(width) && *v <= maximum(width))
-            .ok_or("constant integer arithmetic overflows or divides by zero")?;
+            .ok_or(Failure::Fault(
+                "constant integer arithmetic overflows or divides by zero",
+            ))?;
             // Narrow signed MIN / -1 and MIN % -1 both overflow in Rust.
             if matches!(op, Op::Slash | Op::Percent) && left == minimum(width) && right == -1 {
-                return Err("constant signed division overflows");
+                return Err(Failure::Fault("constant signed division overflows"));
             }
             bits(value)
         }
@@ -188,10 +224,16 @@ fn integer(op: Op, ty: Primitive, left: u128, right: u128) -> Result<Scalar, &'s
             Op::Star => left.checked_mul(right),
             Op::Slash => left.checked_div(right),
             Op::Percent => left.checked_rem(right),
-            _ => return Err("unsupported selected integer constant operation"),
+            _ => {
+                return Err(Failure::Invalid(
+                    "unsupported selected integer constant operation",
+                ));
+            }
         }
         .filter(|v| *v <= mask(width))
-        .ok_or("constant integer arithmetic overflows or divides by zero")?,
+        .ok_or(Failure::Fault(
+            "constant integer arithmetic overflows or divides by zero",
+        ))?,
     };
     Ok(Scalar::Integer(value & mask(width)))
 }
@@ -206,7 +248,7 @@ pub(super) fn cast(
     source: Primitive,
     target: Primitive,
     value: Scalar,
-) -> Result<Scalar, &'static str> {
+) -> Result<Scalar, Failure> {
     match (kind, value) {
         (Cast::IntegerToInteger, Scalar::Integer(value)) => {
             let (is_signed, width) = source.integer().ok_or("missing cast source type")?;
@@ -246,7 +288,7 @@ pub(super) fn cast(
                     })
                     .to_bits(),
                 ),
-                _ => return Err("invalid floating cast target"),
+                _ => return Err(Failure::Invalid("invalid floating cast target")),
             }))
         }
         (Cast::FloatToInteger, Scalar::Float(value)) => {
@@ -270,6 +312,6 @@ pub(super) fn cast(
             }
             (value, _) => value,
         })),
-        _ => Err("unsupported selected constant cast"),
+        _ => Err(Failure::Invalid("unsupported selected constant cast")),
     }
 }

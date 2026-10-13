@@ -72,6 +72,9 @@ impl Paths {
             }
             let mut info = paths.place(projection.base)?;
             let component = match projection.kind {
+                ProjectionKind::Dereference { .. } => {
+                    return Err("reference expression execution requires region and loan proofs");
+                }
                 ProjectionKind::Field(field) => Some(Component::Field(field)),
                 ProjectionKind::ConstantIndex(index) => Some(Component::Index(index)),
                 ProjectionKind::Subarray { start, end } => {

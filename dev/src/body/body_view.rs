@@ -14,6 +14,9 @@ pub fn write(program: &Program, types: &Store, out: &mut impl Write) -> io::Resu
     writeln!(out, "body-crate 1")?;
     type_view::types(types, out)?;
     type_view::regions(&program.region_equalities, out)?;
+    type_view::body_regions(&program.body_regions, out)?;
+    type_view::coercions(&program.coercions, out)?;
+    type_view::outlives(&program.outlives, out)?;
     for (index, body) in program.bodies.iter().enumerate() {
         write!(out, "body {index} ")?;
         match body.owner {
@@ -88,6 +91,9 @@ fn contents(body: &Body, out: &mut impl Write) -> io::Result<()> {
         write!(out, "  projection p{id} type={} base=", projection.ty.0)?;
         place(projection.base, out)?;
         match projection.kind {
+            ProjectionKind::Dereference { region, mutable } => {
+                write!(out, " dereference region={} mutable={mutable}", region.0)?;
+            }
             ProjectionKind::Field(field) => write!(out, " field={field:?}")?,
             ProjectionKind::Index { index, length } => {
                 write!(out, " index=v{} length={length}", index.0)?;
@@ -197,6 +203,10 @@ fn rvalue(body: &Body, value: Rvalue, out: &mut impl Write) -> io::Result<()> {
         Rvalue::Repeat { value } => write!(out, "repeat v{}", value.0),
         Rvalue::Unit => write!(out, "unit"),
         Rvalue::Scalar(id) => type_view::scalar(body.scalars[id.0 as usize], out),
+        Rvalue::Borrow { place: value } => {
+            write!(out, "borrow ")?;
+            place(value, out)
+        }
         Rvalue::Read(value) => {
             write!(out, "read ")?;
             place(value, out)

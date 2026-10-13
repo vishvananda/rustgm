@@ -367,7 +367,7 @@ fn reference_operations_keep_executable_proofs_pending() -> Result<(), Box<dyn s
     .enumerate()
     {
         let path = directory.join(format!("proof{index}.rs"));
-        std::fs::write(&path, source)?;
+        std::fs::write(&path, format!("{source}fn main(){{}}"))?;
         let selected = frontend(&path, "--emit-patterns")?;
         assert!(
             selected.status.success(),

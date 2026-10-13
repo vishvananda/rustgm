@@ -5,6 +5,7 @@ mod patterns;
 mod places;
 pub(super) mod products;
 pub(super) mod references;
+pub mod values;
 use super::{
     bodies,
     members::VariantId,
@@ -32,6 +33,7 @@ pub(super) struct Discriminant {
 #[derive(Clone, Copy)]
 pub(super) enum Value {
     Scalar(Scalar),
+    Function(DefId),
     Reference(references::Id),
     Text(super::text::Id),
     Bytes(super::text::Id),
@@ -44,6 +46,7 @@ impl Value {
         match self {
             Self::Scalar(value) => Ok(value),
             Self::Reference(_)
+            | Self::Function(_)
             | Self::Variant(_)
             | Self::Constructor(_)
             | Self::Product(_)
@@ -386,7 +389,7 @@ impl Queries<'_> {
                         .scalar()
                         .map_err(|e| self.error(Query::Node(key), e))?;
                     let value = arithmetic::cast(Cast::IntegerToInteger, source, target, value)
-                        .map_err(|e| self.error(Query::Node(key), e))?;
+                        .map_err(|e| self.error(Query::Node(key), e.message()))?;
                     self.states
                         .insert(Query::Node(key), State::Ready(Value::Scalar(value)));
                 }
@@ -579,13 +582,25 @@ impl Queries<'_> {
                 operand,
                 ty,
                 literal,
-            } => arithmetic::unary(op, ty, self.scalar(operand)?, literal),
+            } => arithmetic::unary(
+                op,
+                ty,
+                self.scalar(operand)?,
+                literal,
+                values::Overflow::Checked,
+            ),
             Expression::Binary {
                 op,
                 left,
                 right,
                 ty,
-            } => arithmetic::binary(op, ty, self.scalar(left)?, self.scalar(right)?),
+            } => arithmetic::binary(
+                op,
+                ty,
+                self.scalar(left)?,
+                self.scalar(right)?,
+                values::Overflow::Checked,
+            ),
             Expression::Cast {
                 kind: Cast::EnumToInteger,
                 operand,
@@ -612,7 +627,7 @@ impl Queries<'_> {
             ),
             _ => return Err(self.error(query, "invalid completed constant operation")),
         }
-        .map_err(|e| self.error(query, e))?;
+        .map_err(|e| self.error(query, e.message()))?;
         self.states
             .insert(query, State::Ready(Value::Scalar(value)));
         Ok(())
@@ -721,9 +736,17 @@ impl Queries<'_> {
         ) && let Some(Type::FunctionItem { item, .. }) =
             facts.ty.and_then(|ty| self.typing.facts.types.kind(ty))
             && facts.reference == Some(Target::Definition(DefId(item.0)))
-            && let Some(&variant) = self.typing.facts.members.constructors.get(&DefId(item.0))
         {
-            return Ok(Expression::Value(Value::Constructor(variant)));
+            let value = self
+                .typing
+                .facts
+                .members
+                .constructors
+                .get(&DefId(item.0))
+                .map_or(Value::Function(DefId(item.0)), |&variant| {
+                    Value::Constructor(variant)
+                });
+            return Ok(Expression::Value(value));
         }
         if let Some(expression) = self.constructor_expression(key)? {
             return Ok(Expression::Constructor(expression));
@@ -793,6 +816,13 @@ impl Queries<'_> {
                     right: child(right),
                     ty: self.primitive(key, ty)?,
                 },
+                (
+                    Kind::Cast { value, .. },
+                    Some(Operation::Cast {
+                        kind: Cast::FunctionPointer,
+                        ..
+                    }),
+                ) => Expression::Forward(child(value)),
                 (
                     Kind::Cast { value, .. },
                     Some(Operation::Cast {

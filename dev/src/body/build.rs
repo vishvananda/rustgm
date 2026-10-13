@@ -5,11 +5,14 @@ mod decisions;
 mod guards;
 mod matches;
 mod patterns;
+mod references;
 mod retries;
+mod storage;
 use super::ir::{
     Action, Block, BlockId, Body, Local, LocalId, LocalKind, Owner, Place, Program, Rvalue,
     ScalarId, Statement, Terminator, Value, ValueId, ValueList,
 };
+use super::{scopes, storage::Range as ScopeRange};
 use crate::{
     lex::token::Punctuation as Op,
     resolve::{
@@ -31,7 +34,13 @@ use std::collections::HashMap;
 pub fn build(report: &Report, facts: &Declarations) -> Result<Program, Error> {
     // Even an unselected or-pattern occurrence can introduce region constraints.
     // Keep their provenance in the semantic phase until the body IR carries it.
-    if let Some(region) = facts.body_regions.first() {
+    if let Some(region) = facts.body_regions.iter().find(|r| {
+        matches!(
+            r.origin,
+            crate::sema::model::BodyRegionOrigin::PatternBorrow
+                | crate::sema::model::BodyRegionOrigin::PatternInput
+        )
+    }) {
         let offset = report
             .package
             .unit(region.source.file)
@@ -43,17 +52,11 @@ pub fn build(report: &Report, facts: &Declarations) -> Result<Program, Error> {
         return Err(report.diagnostic(Error::at(
             region.source.file,
             offset,
-            if matches!(
-                region.origin,
-                crate::sema::model::BodyRegionOrigin::ExpressionBorrow
-            ) {
-                "reference expression execution requires region and loan proofs"
-            } else {
-                "reference pattern execution requires region and loan proofs"
-            },
+            "reference pattern execution requires region and loan proofs",
         )));
     }
     let mut scratch = Scratch {
+        scopes: scopes::Scratch::default(),
         values: facts.nodes.iter().map(|n| vec![None; n.len()]).collect(),
         definitions: vec![None; facts.definitions.len()],
         touched: Vec::new(),
@@ -73,6 +76,9 @@ pub fn build(report: &Report, facts: &Declarations) -> Result<Program, Error> {
     let mut program = Program {
         bodies: Vec::new(),
         region_equalities: facts.region_equalities.clone(),
+        coercions: facts.coercions.clone(),
+        outlives: facts.outlives.clone(),
+        body_regions: facts.body_regions.clone(),
     };
     for function in &facts.functions {
         let Some(source) = function.body else {
@@ -89,7 +95,13 @@ pub fn build(report: &Report, facts: &Declarations) -> Result<Program, Error> {
             source,
             result,
         );
-        let builder = Builder::new(report, facts, &mut scratch, body);
+        let scope_plan = scopes::function_with_scratch(
+            report,
+            facts,
+            function,
+            std::mem::take(&mut scratch.scopes),
+        )?;
+        let builder = Builder::new(report, facts, &mut scratch, body, scope_plan);
         program.bodies.push(
             builder
                 .run(Some(function.parameters))
@@ -105,7 +117,13 @@ pub fn build(report: &Report, facts: &Declarations) -> Result<Program, Error> {
             initializer.value,
             initializer.ty,
         );
-        let builder = Builder::new(report, facts, &mut scratch, body);
+        let scope_plan = scopes::initializer_with_scratch(
+            report,
+            facts,
+            initializer,
+            std::mem::take(&mut scratch.scopes),
+        )?;
+        let builder = Builder::new(report, facts, &mut scratch, body, scope_plan);
         program
             .bodies
             .push(builder.run(None).map_err(|e| report.diagnostic(e))?);
@@ -116,6 +134,9 @@ pub fn build(report: &Report, facts: &Declarations) -> Result<Program, Error> {
 impl Body {
     fn new(owner: Owner, source: NodeKey, result: TypeId) -> Self {
         Self {
+            storage: None,
+            promotions: None,
+            temporaries: Vec::new(),
             guards: Vec::new(),
             guard_places: Vec::new(),
             projections: Vec::new(),
@@ -137,6 +158,7 @@ struct Control {
     repeat: Option<BlockId>,
     merge: Option<LocalId>,
     live_base: usize,
+    scope: scopes::Id,
 }
 #[derive(Default)]
 struct Reach {
@@ -145,6 +167,10 @@ struct Reach {
 }
 #[derive(Clone, Copy)]
 enum Work {
+    CloseScope {
+        node: NodeId,
+        scopes: ScopeRange,
+    },
     Conditional(conditions::Work),
     MatchStart(NodeId),
     MatchNext(usize),
@@ -173,6 +199,7 @@ enum Work {
         yes: BlockId,
         no: BlockId,
         base: usize,
+        failure_exit: Option<ScopeRange>,
     },
     Arm {
         node: Option<NodeId>,
@@ -180,6 +207,7 @@ enum Work {
         merge: Option<LocalId>,
         target: BlockId,
         base: usize,
+        scope_exit: Option<ScopeRange>,
     },
     Join {
         node: NodeId,
@@ -190,9 +218,11 @@ enum Work {
     Repeat {
         node: NodeId,
         target: BlockId,
+        scope_exit: ScopeRange,
     },
 }
 struct Scratch {
+    scopes: scopes::Scratch,
     conditional_live: Vec<LocalId>,
     match_frames: Vec<matches::Frame>,
     guard_frames: Vec<Option<guards::Frame>>,
@@ -215,6 +245,8 @@ struct Builder<'a> {
     scratch: &'a mut Scratch,
     body: Body,
     current: Option<BlockId>,
+    scope_plan: scopes::Facts,
+    scope_exits: Vec<super::storage::Exit>,
 }
 impl<'a> Builder<'a> {
     fn new(
@@ -222,6 +254,7 @@ impl<'a> Builder<'a> {
         facts: &'a Declarations,
         scratch: &'a mut Scratch,
         body: Body,
+        scope_plan: scopes::Facts,
     ) -> Self {
         Self {
             report,
@@ -229,6 +262,8 @@ impl<'a> Builder<'a> {
             scratch,
             body,
             current: None,
+            scope_plan,
+            scope_exits: Vec::new(),
         }
     }
     fn error(&self, node: NodeId, message: impl Into<String>) -> Error {
@@ -392,6 +427,10 @@ impl<'a> Builder<'a> {
     ) -> Result<LocalId, Error> {
         let local = LocalId(self.index(node, self.body.locals.len())?);
         self.body.locals.push(Local {
+            scope: binding
+                .and_then(|id| self.scope_plan.binding(id))
+                .or_else(|| self.scope_plan.node(node).map(|n| n.scope))
+                .unwrap_or(scopes::Id(0)),
             storage_parent: self.scratch.live.last().copied(),
             ty,
             kind,
@@ -521,6 +560,7 @@ impl<'a> Builder<'a> {
             if self.body.values[value.0 as usize].ty != self.body.result {
                 return Err(self.error(root, "return disagrees with solved result"));
             }
+            self.exit_scopes(root, self.boundary_range(root, scopes::Kind::Body)?)?;
             self.cleanup(root, 0)?;
             self.terminate(root, Terminator::Return(value));
         }
@@ -542,6 +582,14 @@ impl<'a> Builder<'a> {
         if !self.scratch.places.is_empty() {
             return Err(self.error(root, "unbalanced place construction stack"));
         }
+        let scope_work = self.scope_plan.work;
+        let (scopes, scratch) = self.scope_plan.finish();
+        self.scratch.scopes = scratch;
+        self.body.storage = Some(super::storage::Facts {
+            scope_work,
+            scopes,
+            exits: self.scope_exits,
+        });
         Ok(self.body)
     }
     #[expect(
@@ -550,6 +598,7 @@ impl<'a> Builder<'a> {
     )]
     fn step(&mut self, work: Work) -> Result<(), Error> {
         match work {
+            Work::CloseScope { node, scopes } => self.exit_scopes(node, scopes)?,
             Work::Conditional(work) => self.conditional_step(work)?,
             Work::MatchStart(node) => self.start_match(node)?,
             Work::MatchNext(frame) => self.next_match_arm(frame)?,
@@ -573,8 +622,21 @@ impl<'a> Builder<'a> {
             Work::Place(node) => self.enter_place(node)?,
             Work::FinishPlace(node) => self.finish_place(node)?,
             Work::TemporaryPlace(node) => {
-                let place = if self.current.is_some() {
-                    Some(Place::Temporary(self.value(node)?))
+                let place = if let Some(block) = self.current {
+                    let value = self.value(node)?;
+                    self.body.temporaries.push(super::ir::Temporary {
+                        lifetime: self
+                            .scope_plan
+                            .node(node)
+                            .ok_or_else(|| self.error(node, "missing temporary scope"))?
+                            .temporary,
+                        value,
+                        source: node,
+                        block,
+                        before: self.index(node, self.body.statements.len())?,
+                        exits_before: self.index(node, self.scope_exits.len())?,
+                    });
+                    Some(Place::Temporary(value))
                 } else {
                     None
                 };
@@ -584,7 +646,12 @@ impl<'a> Builder<'a> {
             Work::DiscardPlace(node) => {
                 self.pop_place(node)?;
             }
-            Work::Enter(node) if self.current.is_some() && self.active(node) => self.enter(node)?,
+            Work::Enter(node) if self.current.is_some() && self.active(node) => {
+                if let Some(scopes) = self.expression_exit(node) {
+                    self.scratch.work.push(Work::CloseScope { node, scopes });
+                }
+                self.enter(node)?;
+            }
             Work::Finish(node) if self.current.is_some() => self.finish(node)?,
             Work::Finish(node) => self.discard_unreachable_place(node)?,
             Work::Enter(_) => {}
@@ -598,9 +665,13 @@ impl<'a> Builder<'a> {
                 yes,
                 no,
                 base,
+                failure_exit,
             } => {
                 if self.current.is_some() {
                     self.cleanup(node, base)?;
+                    if let Some(scopes) = failure_exit {
+                        self.exit_on_edge(node, no, scopes)?;
+                    }
                     self.terminate(
                         node,
                         Terminator::Branch {
@@ -618,6 +689,7 @@ impl<'a> Builder<'a> {
                 merge,
                 target,
                 base,
+                scope_exit,
             } => {
                 if self.current.is_some() {
                     if let Some(local) = merge {
@@ -627,6 +699,9 @@ impl<'a> Builder<'a> {
                             self.unit(source)?
                         };
                         self.store(source, Place::Local(local), value)?;
+                    }
+                    if let Some(scopes) = scope_exit {
+                        self.exit_scopes(source, scopes)?;
                     }
                     self.cleanup(source, base)?;
                     self.terminate(source, Terminator::Jump(target));
@@ -652,7 +727,14 @@ impl<'a> Builder<'a> {
                     self.save(node, value)?;
                 }
             }
-            Work::Repeat { node, target } => self.terminate(node, Terminator::Jump(target)),
+            Work::Repeat {
+                node,
+                target,
+                scope_exit,
+            } => {
+                self.exit_scopes(node, scope_exit)?;
+                self.terminate(node, Terminator::Jump(target));
+            }
         }
         Ok(())
     }
@@ -682,6 +764,7 @@ impl<'a> Builder<'a> {
             };
             self.save(node, value)?;
             if let Some(base) = base {
+                self.exit_scopes(node, self.boundary_range(node, scopes::Kind::Block)?)?;
                 self.cleanup(node, base)?;
             }
         }
@@ -695,10 +778,7 @@ impl<'a> Builder<'a> {
         reason = "cohesive syntax dispatch exposes evaluation order and work-stack scheduling"
     )]
     fn enter(&mut self, node: NodeId) -> Result<(), Error> {
-        if matches!(
-            self.fact(node)?.operation,
-            Some(Operation::Borrow | Operation::Dereference | Operation::IndexSlice)
-        ) {
+        if matches!(self.fact(node)?.operation, Some(Operation::IndexSlice)) {
             return Err(self.error(
                 node,
                 "reference expression execution requires region and loan proofs",
@@ -712,7 +792,10 @@ impl<'a> Builder<'a> {
         {
             self.scratch
                 .work
-                .push(Work::Conditional(conditions::Work::Else(node)));
+                .push(Work::Conditional(conditions::Work::Else {
+                    node,
+                    temporaries: self.index(node, self.body.temporaries.len())?,
+                }));
             self.scratch.work.push(Work::Place(value));
             return Ok(());
         }
@@ -793,6 +876,7 @@ impl<'a> Builder<'a> {
                         repeat: None,
                         merge,
                         live_base: self.scratch.live.len(),
+                        scope: self.node_scope(value)?,
                     },
                 );
                 self.scratch.work.push(Work::Finish(node));
@@ -808,11 +892,12 @@ impl<'a> Builder<'a> {
                     merge,
                     target: exit,
                     base: self.scratch.live.len(),
+                    scope_exit: None,
                 });
                 self.scratch.work.push(Work::Enter(value));
             }
             kind => {
-                if matches!(kind, Kind::Field { .. } | Kind::Index { .. }) {
+                if self.projected_syntax(node) {
                     self.scratch.work.push(Work::ReadPlace(node));
                     self.scratch.work.push(Work::Place(node));
                     return Ok(());
@@ -833,6 +918,11 @@ impl<'a> Builder<'a> {
                         if let Some(value) = value {
                             self.scratch.work.push(Work::Enter(value));
                         }
+                    }
+                    Kind::Unary { operand, .. }
+                        if self.fact(node)?.operation == Some(Operation::Borrow) =>
+                    {
+                        self.scratch.work.push(Work::Place(operand));
                     }
                     Kind::Unary { operand, .. }
                     | Kind::Group(operand)
@@ -908,6 +998,11 @@ impl<'a> Builder<'a> {
         yes_value: Option<NodeId>,
         no_value: Option<NodeId>,
     ) -> Result<(), Error> {
+        let branch_exit = if matches!(self.kind(node), Kind::If { .. }) {
+            Some(self.boundary_range(node, scopes::Kind::IfThen)?)
+        } else {
+            None
+        };
         let merge = self.merge(node)?;
         let yes = self.new_block(node)?;
         let no = self.new_block(node)?;
@@ -925,6 +1020,7 @@ impl<'a> Builder<'a> {
                 merge,
                 target: join,
                 base: self.scratch.live.len(),
+                scope_exit: if target == yes { branch_exit } else { None },
             });
             if let Some(value) = value
                 && value != condition
@@ -939,6 +1035,7 @@ impl<'a> Builder<'a> {
             yes,
             no,
             base: self.scratch.live.len(),
+            failure_exit: branch_exit,
         });
         self.scratch.work.push(Work::Enter(condition));
         Ok(())
@@ -949,6 +1046,7 @@ impl<'a> Builder<'a> {
         body: NodeId,
         condition: Option<NodeId>,
     ) -> Result<(), Error> {
+        let scope_exit = self.boundary_range(node, scopes::Kind::Iteration)?;
         let merge = self.merge(node)?;
         let header = self.new_block(node)?;
         let exit = self.new_block(node)?;
@@ -959,6 +1057,7 @@ impl<'a> Builder<'a> {
                 repeat: Some(header),
                 merge,
                 live_base: self.scratch.live.len(),
+                scope: self.node_scope(node)?,
             },
         );
         self.terminate(node, Terminator::Jump(header));
@@ -971,6 +1070,7 @@ impl<'a> Builder<'a> {
         self.scratch.work.push(Work::Repeat {
             node,
             target: header,
+            scope_exit,
         });
         self.scratch.work.push(Work::Enter(body));
         if let Some(condition) = condition {
@@ -982,6 +1082,7 @@ impl<'a> Builder<'a> {
                 yes: block,
                 no: exit,
                 base: self.scratch.live.len(),
+                failure_exit: Some(scope_exit),
             });
             self.scratch.work.push(Work::Enter(condition));
         }
@@ -1070,6 +1171,9 @@ impl<'a> Builder<'a> {
                 }
                 self.unit(node)?
             }
+            Kind::Unary { .. } if self.fact(node)?.operation == Some(Operation::Borrow) => {
+                self.finish_borrow(node)?
+            }
             Kind::Unary { operand, .. } => {
                 let Some(Operation::Unary {
                     operator, literal, ..
@@ -1108,6 +1212,13 @@ impl<'a> Builder<'a> {
                 } else {
                     self.unit(node)?
                 };
+                self.exit_scopes(
+                    node,
+                    ScopeRange {
+                        inner: self.node_scope(node)?,
+                        outer: None,
+                    },
+                )?;
                 self.cleanup(node, 0)?;
                 self.terminate(node, Terminator::Return(value));
                 return Ok(());
@@ -1243,6 +1354,13 @@ impl<'a> Builder<'a> {
             }
             control.exit
         };
+        self.exit_scopes(
+            node,
+            ScopeRange {
+                inner: self.node_scope(node)?,
+                outer: Some(control.scope),
+            },
+        )?;
         self.cleanup(node, control.live_base)?;
         self.terminate(node, Terminator::Jump(target));
         Ok(())

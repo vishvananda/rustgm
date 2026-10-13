@@ -32,17 +32,27 @@ impl Products {
         fields: &[Value],
         variant: Option<super::VariantId>,
     ) -> Result<Value, &'static str> {
+        self.sequence(fields.iter().copied(), variant)
+    }
+    pub(super) fn sequence(
+        &mut self,
+        fields: impl ExactSizeIterator<Item = Value>,
+        variant: Option<super::VariantId>,
+    ) -> Result<Value, &'static str> {
         let start = u32::try_from(self.fields.len()).map_err(|_| "too many constant fields")?;
         let end = u32::try_from(fields.len())
             .ok()
             .and_then(|n| start.checked_add(n))
             .ok_or("too many constant fields")?;
-        self.fields.extend_from_slice(fields);
+        self.fields.extend(fields);
         self.insert(Contents::Fields {
             start,
             end,
             variant,
         })
+    }
+    pub(super) fn repeat(&mut self, value: Value, length: u64) -> Result<Value, &'static str> {
+        self.insert(Contents::Repeat { value, length })
     }
     pub(super) fn length(&self, id: Id) -> Result<u64, &'static str> {
         match self
@@ -187,7 +197,7 @@ impl Queries<'_> {
                 self.typing
                     .facts
                     .constant_products
-                    .insert(Contents::Repeat { value, length })
+                    .repeat(value, length)
                     .map_err(|e| self.error(query, e))
             }
         }

@@ -1,5 +1,7 @@
 //! Per-body constraints over flat terms, with path-compressed variable identities.
 //! A failed constraint may retain prior progress; callers discard that body context.
+mod freshen;
+mod resolve;
 use super::{ItemId, Kind, Primitive, RegionArgs, RegionId, Store, TypeId};
 use std::collections::{HashMap, HashSet};
 
@@ -31,7 +33,7 @@ pub enum Constructor {
         parameters: u32,
         unsafe_: bool,
     },
-    FunctionItem(ItemId),
+    FunctionItem(ItemId, RegionArgs),
 }
 #[derive(Clone, Copy)]
 enum Value {
@@ -71,6 +73,7 @@ impl std::fmt::Display for Error {
 impl std::error::Error for Error {}
 #[derive(Default)]
 pub struct Context {
+    generalization: freshen::Scratch,
     terms: Vec<Term>,
     edges: Vec<TermId>,
     known: HashMap<TypeId, TermId>,
@@ -167,6 +170,17 @@ impl Context {
         }
         Ok(root)
     }
+    /// Charge a typed substitution performed on behalf of this inference body.
+    ///
+    /// # Errors
+    /// Rejects work beyond the same budget as inference graph operations.
+    pub fn account_work(&mut self, amount: usize) -> Result<(), Error> {
+        self.steps = self.steps.saturating_add(amount);
+        if self.steps > 1_000_000 {
+            return Err(Error::Budget);
+        }
+        Ok(())
+    }
     fn step(&mut self) -> Result<(), Error> {
         self.steps += 1;
         if self.steps > 1_000_000 {
@@ -261,6 +275,20 @@ impl Context {
     pub fn equate(&mut self, store: &Store, left: TermId, right: TermId) -> Result<(), Error> {
         self.unify(store, left, right, true)
     }
+    /// Constrain type structure while leaving the lifetime relation to the caller.
+    /// Coercions retain a directed relation separately; equality alone cannot
+    /// describe covariance or mutable-reference invariance.
+    ///
+    /// # Errors
+    /// Reports incompatible shapes/domains, recursive types, invalid IDs and work limits.
+    pub fn equate_shape(
+        &mut self,
+        store: &Store,
+        left: TermId,
+        right: TermId,
+    ) -> Result<(), Error> {
+        self.unify(store, left, right, false)
+    }
     /// Match a constant value's type without equating its storage lifetime to
     /// the scrutinee's lifetime. Reference mutability and referent shapes still
     /// agree; existing expression constraints remain intact.
@@ -273,7 +301,7 @@ impl Context {
         left: TermId,
         right: TermId,
     ) -> Result<(), Error> {
-        self.unify(store, left, right, false)
+        self.equate_shape(store, left, right)
     }
     fn unify(
         &mut self,
@@ -386,7 +414,10 @@ impl Context {
                     self.region_equalities.push((a, b));
                 }
             }
-            (Constructor::Adt(x, a), Constructor::Adt(y, b)) if x == y => {
+            (Constructor::Adt(x, a), Constructor::Adt(y, b))
+            | (Constructor::FunctionItem(x, a), Constructor::FunctionItem(y, b))
+                if x == y =>
+            {
                 let a = store.region_args(a).ok_or(Error::InvalidIdentity)?;
                 let b = store.region_args(b).ok_or(Error::InvalidIdentity)?;
                 if a.len() != b.len() {
@@ -400,6 +431,21 @@ impl Context {
                             .filter(|(a, b)| a != b),
                     );
                 }
+            }
+            (
+                Constructor::Function {
+                    parameters: a,
+                    unsafe_: x,
+                    ..
+                },
+                Constructor::Function {
+                    parameters: b,
+                    unsafe_: y,
+                    ..
+                },
+            ) if !record_regions && a == b && x == y => {
+                // Quantifier subsumption belongs to the directed region proof.
+                // Shape inference must permit specialization of a late binder.
             }
             (x, y) if x == y => {}
             _ => return Err(Error::Mismatch),
@@ -473,9 +519,13 @@ impl Context {
                     unsafe_,
                 }
             }
-            Kind::FunctionItem { item, signature } => {
+            Kind::FunctionItem {
+                item,
+                signature,
+                arguments,
+            } => {
                 children.push(self.known(store, signature)?);
-                Constructor::FunctionItem(item)
+                Constructor::FunctionItem(item, arguments)
             }
         };
         let start = u32::try_from(self.edges.len()).map_err(|_| Error::Overflow)?;
@@ -616,8 +666,9 @@ fn canonical(
                 unsafe_,
             }
         }
-        Constructor::FunctionItem(item) => Kind::FunctionItem {
+        Constructor::FunctionItem(item, arguments) => Kind::FunctionItem {
             item,
+            arguments,
             signature: first()?,
         },
     };

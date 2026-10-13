@@ -42,6 +42,11 @@ pub enum Place {
 }
 #[derive(Clone, Copy, Debug)]
 pub enum ProjectionKind {
+    /// Referent access preserves the pointer's region and access capability.
+    Dereference {
+        region: crate::types::RegionId,
+        mutable: bool,
+    },
     Field(crate::sema::members::Selection),
     Index {
         index: ValueId,
@@ -69,6 +74,8 @@ pub enum LocalKind {
     Guard(GuardId),
 }
 pub struct Local {
+    /// Lexical endpoint; explicit `StorageEnd` can additionally close synthetic locals.
+    pub scope: super::scopes::Id,
     /// Persistent predecessor in the live storage stack at this local's creation.
     pub storage_parent: Option<LocalId>,
     pub ty: TypeId,
@@ -90,6 +97,10 @@ pub enum Rvalue {
     Scalar(ScalarId),
     /// A by-value use; ownership and Copy selection are checked by later stages.
     Read(Place),
+    /// Form a reference to a place without reading or moving its referent.
+    Borrow {
+        place: Place,
+    },
     /// Non-moving constructor test; the owned input must be fully initialized.
     IsVariant {
         place: Place,
@@ -124,6 +135,18 @@ pub enum Rvalue {
 pub struct Value {
     pub ty: TypeId,
     pub kind: Rvalue,
+}
+/// A value used as a temporary place. Its scope belongs to this use's syntax,
+/// which can differ from the expression that originally produced the value.
+pub struct Temporary {
+    pub lifetime: super::scopes::Lifetime,
+    pub value: ValueId,
+    pub source: NodeId,
+    pub block: BlockId,
+    /// Materialization happens immediately before this global statement index.
+    pub before: u32,
+    /// Number of previously emitted storage exits; orders events at the same point.
+    pub exits_before: u32,
 }
 #[derive(Clone, Copy, Debug)]
 pub enum Action {
@@ -204,6 +227,9 @@ pub enum Owner {
     },
 }
 pub struct Body {
+    pub storage: Option<super::storage::Facts>,
+    pub promotions: Option<super::promote::Facts>,
+    pub temporaries: Vec<Temporary>,
     pub guards: Vec<Guard>,
     /// Proof-only tested places, including places in inactive variants. Never evaluated.
     pub guard_places: Vec<Place>,
@@ -270,4 +296,7 @@ impl Iterator for StorageRange<'_> {
 pub struct Program {
     pub bodies: Vec<Body>,
     pub region_equalities: Vec<RegionEquality>,
+    pub coercions: Vec<crate::sema::model::Coercion>,
+    pub outlives: Vec<crate::sema::model::Outlives>,
+    pub body_regions: Vec<crate::sema::model::BodyRegion>,
 }

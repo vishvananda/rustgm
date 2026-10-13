@@ -131,11 +131,13 @@ fn nested_nominal_arguments_and_function_items_substitute_without_changing_owner
         unsafe_: false,
     })?;
     let item = store.intern(Kind::FunctionItem {
+        arguments: rustgm::types::RegionArgs::EMPTY,
         item: ItemId(12),
         signature,
     })?;
     let transformed = Bound::new(vec![RegionId(19)]).apply(&mut store, item)?;
     let Some(Kind::FunctionItem {
+        arguments: _,
         item: owner,
         signature,
     }) = store.kind(transformed)

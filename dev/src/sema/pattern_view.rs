@@ -98,6 +98,8 @@ pub fn write(facts: &Declarations, out: &mut impl Write) -> io::Result<()> {
     }
     type_view::body_regions(&facts.body_regions, out)?;
     type_view::regions(&facts.region_equalities, out)?;
+    type_view::coercions(&facts.coercions, out)?;
+    type_view::outlives(&facts.outlives, out)?;
     write!(out, "eof ")?;
     count(facts, out)
 }

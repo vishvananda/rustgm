@@ -1,13 +1,17 @@
 //! Conditional patterns share decisions while retaining success-only binding scopes.
 use super::decisions::Failure;
 use super::{
-    BlockId, Builder, Control, Error, Kind, NodeId, NodeKey, Terminator, Work as BuildWork,
+    BlockId, Builder, Control, Error, Kind, NodeId, NodeKey, ScopeRange, Terminator,
+    Work as BuildWork, scopes,
 };
 use crate::{lex::token::Punctuation as Op, sema::patterns::Conditional};
 
 #[derive(Clone, Copy)]
 pub(super) enum Work {
-    Else(NodeId),
+    Else {
+        node: NodeId,
+        temporaries: u32,
+    },
     Resume {
         node: NodeId,
         join: BlockId,
@@ -16,6 +20,7 @@ pub(super) enum Work {
         end: usize,
     },
     Enter {
+        failure_exit: Option<ScopeRange>,
         failure: Failure,
         node: NodeId,
         yes: BlockId,
@@ -23,12 +28,14 @@ pub(super) enum Work {
         base: usize,
     },
     Boolean {
+        failure_exit: Option<ScopeRange>,
         node: NodeId,
         yes: BlockId,
         no: BlockId,
         base: usize,
     },
     Pattern {
+        failure_exit: Option<ScopeRange>,
         failure: Failure,
         node: NodeId,
         yes: BlockId,
@@ -57,7 +64,7 @@ impl Builder<'_> {
     }
     pub(super) fn conditional_step(&mut self, work: Work) -> Result<(), Error> {
         match work {
-            Work::Else(node) => self.let_else(node),
+            Work::Else { node, temporaries } => self.let_else(node, temporaries),
             Work::Resume {
                 node,
                 join,
@@ -66,6 +73,7 @@ impl Builder<'_> {
                 end,
             } => self.resume_let_else(node, join, base, start, end),
             Work::Enter {
+                failure_exit,
                 failure,
                 node,
                 yes,
@@ -84,6 +92,7 @@ impl Builder<'_> {
                 {
                     let next = self.new_block(node)?;
                     self.scratch.work.push(BuildWork::Conditional(Work::Enter {
+                        failure_exit,
                         failure,
                         node: right,
                         yes,
@@ -92,6 +101,7 @@ impl Builder<'_> {
                     }));
                     self.scratch.work.push(BuildWork::Switch(next));
                     self.scratch.work.push(BuildWork::Conditional(Work::Enter {
+                        failure_exit,
                         failure,
                         node: left,
                         yes: next,
@@ -103,6 +113,7 @@ impl Builder<'_> {
                     self.scratch
                         .work
                         .push(BuildWork::Conditional(Work::Pattern {
+                            failure_exit,
                             failure,
                             node,
                             yes,
@@ -116,6 +127,7 @@ impl Builder<'_> {
                     self.scratch
                         .work
                         .push(BuildWork::Conditional(Work::Boolean {
+                            failure_exit,
                             node,
                             yes,
                             no,
@@ -126,35 +138,48 @@ impl Builder<'_> {
                 Ok(())
             }
             Work::Boolean {
+                failure_exit,
                 node,
                 yes,
                 no,
                 base,
-            } => {
-                if self.current.is_some() {
-                    let failed = self.new_block(node)?;
-                    self.terminate(
-                        node,
-                        Terminator::Branch {
-                            condition: self.value(node)?,
-                            yes,
-                            no: failed,
-                        },
-                    );
-                    self.switch(node, failed)?;
-                    self.cleanup(node, base)?;
-                    self.terminate(node, Terminator::Jump(no));
-                }
-                Ok(())
-            }
+            } => self.conditional_boolean(node, yes, no, base, failure_exit),
             Work::Pattern {
+                failure_exit,
                 failure,
                 node,
                 yes,
                 no,
                 base,
-            } => self.conditional_test(node, yes, no, base, failure),
+            } => self.conditional_test(node, yes, no, base, failure, failure_exit),
         }
+    }
+    fn conditional_boolean(
+        &mut self,
+        node: NodeId,
+        yes: BlockId,
+        no: BlockId,
+        base: usize,
+        failure_exit: Option<ScopeRange>,
+    ) -> Result<(), Error> {
+        if self.current.is_some() {
+            let failed = self.new_block(node)?;
+            self.terminate(
+                node,
+                Terminator::Branch {
+                    condition: self.value(node)?,
+                    yes,
+                    no: failed,
+                },
+            );
+            self.switch(node, failed)?;
+            if let Some(scopes) = failure_exit {
+                self.exit_scopes(node, scopes)?;
+            }
+            self.cleanup(node, base)?;
+            self.terminate(node, Terminator::Jump(no));
+        }
+        Ok(())
     }
     fn resume_let_else(
         &mut self,
@@ -191,6 +216,7 @@ impl Builder<'_> {
         no: BlockId,
         base: usize,
         failure: Failure,
+        failure_exit: Option<ScopeRange>,
     ) -> Result<(), Error> {
         let input = self.pop_place(node)?;
         if self.current.is_none() {
@@ -203,6 +229,9 @@ impl Builder<'_> {
         let plan =
             self.constructor_decision(selected.pattern, place, accepted, rejected, failure)?;
         self.switch(node, rejected)?;
+        if let Some(scopes) = failure_exit {
+            self.exit_scopes(node, scopes)?;
+        }
         self.cleanup(node, base)?;
         self.terminate(node, Terminator::Jump(no));
         self.switch(node, accepted)?;
@@ -210,7 +239,7 @@ impl Builder<'_> {
         self.terminate(node, Terminator::Jump(yes));
         Ok(())
     }
-    fn let_else(&mut self, node: NodeId) -> Result<(), Error> {
+    fn let_else(&mut self, node: NodeId, temporaries: u32) -> Result<(), Error> {
         let input = self.pop_place(node)?;
         if self.current.is_none() {
             return Ok(());
@@ -234,6 +263,7 @@ impl Builder<'_> {
             super::decisions::Failure::Checked,
         )?;
         self.switch(node, no)?;
+        self.end_initializer(node, temporaries)?;
         self.cleanup(node, base)?;
         self.terminate(node, Terminator::Jump(failure));
         self.switch(node, yes)?;
@@ -265,6 +295,7 @@ impl Builder<'_> {
         then: NodeId,
         otherwise: Option<NodeId>,
     ) -> Result<(), Error> {
+        let scope_exit = self.boundary_range(node, scopes::Kind::IfThen)?;
         let merge = self.merge(node)?;
         let base = self.scratch.live.len();
         let yes = self.new_block(node)?;
@@ -283,6 +314,7 @@ impl Builder<'_> {
                 merge,
                 target: join,
                 base,
+                scope_exit: (block == yes).then_some(scope_exit),
             });
             if let Some(value) = value {
                 self.scratch.work.push(BuildWork::Enter(value));
@@ -290,6 +322,7 @@ impl Builder<'_> {
             self.scratch.work.push(BuildWork::Switch(block));
         }
         self.scratch.work.push(BuildWork::Conditional(Work::Enter {
+            failure_exit: Some(scope_exit),
             failure: Failure::Checked,
             node: condition,
             yes,
@@ -304,6 +337,7 @@ impl Builder<'_> {
         condition: NodeId,
         body: NodeId,
     ) -> Result<(), Error> {
+        let scope_exit = self.boundary_range(node, scopes::Kind::Iteration)?;
         let base = self.scratch.live.len();
         let header = self.new_block(node)?;
         let run = self.new_block(body)?;
@@ -315,6 +349,7 @@ impl Builder<'_> {
                 repeat: Some(header),
                 merge: None,
                 live_base: base,
+                scope: self.node_scope(node)?,
             },
         );
         self.terminate(node, Terminator::Jump(header));
@@ -330,10 +365,12 @@ impl Builder<'_> {
             merge: None,
             target: header,
             base,
+            scope_exit: Some(scope_exit),
         });
         self.scratch.work.push(BuildWork::Enter(body));
         self.scratch.work.push(BuildWork::Switch(run));
         self.scratch.work.push(BuildWork::Conditional(Work::Enter {
+            failure_exit: Some(scope_exit),
             failure: Failure::Checked,
             node: condition,
             yes: run,

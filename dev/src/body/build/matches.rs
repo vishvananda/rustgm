@@ -137,6 +137,7 @@ impl Builder<'_> {
             merge: frame.merge,
             target: frame.join,
             base: frame.base,
+            scope_exit: Some(self.boundary_range(arm.source.node, super::scopes::Kind::Arm)?),
         });
         self.scratch.work.push(Work::Enter(arm.value.node));
         self.switch(arm.source.node, yes)?;

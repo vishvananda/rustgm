@@ -295,6 +295,9 @@ impl Lower<'_, '_> {
         let representation = self.context.representation(value.ty)?;
         let ty = representation.result();
         let runtime = match value.kind {
+            Rvalue::Borrow { .. } => {
+                return Err("reference lowering requires completed region and loan proofs");
+            }
             Rvalue::Unit | Rvalue::Validate(_) => return Ok(Selected::Unit),
             Rvalue::Aggregate { variant, fields } => {
                 return self.aggregate(value.ty, variant, fields);

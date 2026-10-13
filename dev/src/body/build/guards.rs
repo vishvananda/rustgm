@@ -11,6 +11,7 @@ use crate::{
 };
 
 pub(super) struct Frame {
+    scope_exit: super::ScopeRange,
     plan: Plan,
     pattern: PatternId,
     parent: matches::Frame,
@@ -112,6 +113,11 @@ impl Builder<'_> {
             .guard
             .ok_or_else(|| self.error(node, "missing selected guard"))?
             .node;
+        let arm_scope = self.boundary_range(node, super::scopes::Kind::Arm)?;
+        let scope_exit = super::ScopeRange {
+            inner: self.boundary(condition, super::scopes::Kind::Guard)?,
+            outer: arm_scope.outer,
+        };
         let plan = self.prepare_decisions(pattern, true)?;
         let attempt_base = self.scratch.live.len();
         let yes = self.new_block(node)?;
@@ -143,6 +149,7 @@ impl Builder<'_> {
         let rejected = self.new_block(node)?;
         let frame = self.scratch.guard_frames.len();
         self.scratch.guard_frames.push(Some(Frame {
+            scope_exit,
             plan,
             pattern,
             parent,
@@ -156,6 +163,7 @@ impl Builder<'_> {
         self.scratch
             .work
             .push(Work::Conditional(conditions::Work::Enter {
+                failure_exit: Some(scope_exit),
                 failure: Failure::Runtime,
                 node: condition,
                 yes: success,
@@ -184,6 +192,7 @@ impl Builder<'_> {
             merge: frame.parent.merge,
             target: frame.parent.join,
             base: frame.parent.base,
+            scope_exit: Some(frame.scope_exit),
         });
         self.scratch.work.push(Work::Enter(frame.arm.value.node));
         Ok(())

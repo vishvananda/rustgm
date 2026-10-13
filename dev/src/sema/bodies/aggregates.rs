@@ -37,9 +37,9 @@ impl Checker<'_> {
                 && self.head(node, expected)? == Some(Constructor::Slice)
             {
                 let element = self.child(node, expected, 0)?;
-                self.equate(node, self.type_children[0], element)?;
+                self.shape_equation(node, self.type_children[0], element)?;
             } else {
-                self.equate(node, term, expected)?;
+                self.shape_equation(node, term, expected)?;
             }
         }
         self.save(node, term);
@@ -142,7 +142,20 @@ impl Checker<'_> {
     pub(super) fn finish_repeat(&mut self, node: NodeId, value: NodeId) -> Result<TermId, Error> {
         let term = self.term(node)?;
         let element = self.child(node, term, 0)?;
+        let mark = self.adjustments.len();
         self.coerce(value, element)?;
+        if self.head(node, term)? == Some(Constructor::Array(0)) {
+            // No element is stored. Keep higher-ranked type compatibility while
+            // removing the discarded value's free storage-lifetime obligations.
+            let original = self.term(value)?;
+            let actual = self.inferred_regions(value, original)?;
+            let expected = self.inferred_regions(value, element)?;
+            if actual != original || expected != element {
+                for index in mark..self.adjustments.len() {
+                    self.discarded_adjustments.insert(index, (actual, expected));
+                }
+            }
+        }
         Ok(term)
     }
     pub(super) fn validate_repeat(&mut self, node: NodeId, mut value: NodeId) -> Result<(), Error> {
@@ -263,11 +276,10 @@ impl Checker<'_> {
     ) -> Result<(), Error> {
         let variant_id = self.constructor(path)?;
         let variant = self.facts.members.variants[variant_id.0 as usize];
-        let ty = self.facts.definitions[variant.owner.0 as usize]
-            .ok_or_else(|| self.error(node, "missing aggregate result type"))?;
+        let ty = self.nominal_type(node, path, variant.owner)?;
         let term = self.known(node, ty)?;
         if let Some(expected) = expected {
-            self.equate(node, term, expected)?;
+            self.shape_equation(node, term, expected)?;
         }
         self.save(node, term);
         self.selected(
@@ -319,8 +331,8 @@ impl Checker<'_> {
                 return Err(self.error(field_node, "duplicate field initializer"));
             }
             self.selected(field_node, Operation::FieldInit { field })?;
-            let ty = self.facts.members.fields[field.0 as usize].ty;
-            let expected = self.known(field_node, ty)?;
+            let expected = self.instance_field(field_node, term, field)?;
+            self.save(field_node, expected);
             self.work.push(Work::Enter(wrapper, Some(expected)));
         }
         if base.is_none() && self.field_seen.contains(&false) {
@@ -344,13 +356,12 @@ impl Checker<'_> {
         node: NodeId,
         value: NodeId,
     ) -> Result<TermId, Error> {
-        let Some(Operation::FieldInit { field }) =
+        let Some(Operation::FieldInit { .. }) =
             self.facts.node(self.key(node)).and_then(|f| f.operation)
         else {
             return Err(self.error(node, "missing selected initializer field"));
         };
-        let ty = self.facts.members.fields[field.0 as usize].ty;
-        let expected = self.known(node, ty)?;
+        let expected = self.term(node)?;
         self.coerce(value, expected)?;
         Ok(expected)
     }
@@ -378,7 +389,7 @@ impl Checker<'_> {
                     .field(variant, name)
                     .ok_or_else(|| self.error(node, "unknown aggregate field"))?;
                 self.accessible(node, field)?;
-                let ty = self.known(node, self.facts.members.fields[field.0 as usize].ty)?;
+                let ty = self.instance_field(node, receiver, field)?;
                 (Selection::Nominal(field), ty)
             }
             _ => return Err(self.error(node, "field access requires a known tuple or struct type")),

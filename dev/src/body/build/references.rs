@@ -1,0 +1,60 @@
+//! Reference operations preserve places and never snapshot a borrowed referent.
+use super::{Builder, Error, NodeId, Place, Rvalue, Type, TypeId, ValueId};
+use crate::body::ir::ProjectionKind;
+
+impl Builder<'_> {
+    pub(super) fn place_type(&self, node: NodeId, place: Place) -> Result<TypeId, Error> {
+        match place {
+            Place::Local(id) => Ok(self.body.locals[id.0 as usize].ty),
+            Place::Temporary(id) => Ok(self.body.values[id.0 as usize].ty),
+            Place::Projection(id) => Ok(self.body.projections[id.0 as usize].ty),
+            Place::Static(id) => self.facts.definitions[id.0 as usize]
+                .ok_or_else(|| self.error(node, "missing static place type")),
+        }
+    }
+    pub(super) fn dereference_place(&mut self, node: NodeId, base: Place) -> Result<Place, Error> {
+        let ty = self.place_type(node, base)?;
+        let Some(Type::Reference {
+            region,
+            mutable,
+            referent,
+        }) = self.facts.types.kind(ty)
+        else {
+            return Err(self.error(node, "selected dereference requires a reference place"));
+        };
+        self.project(
+            node,
+            referent,
+            base,
+            ProjectionKind::Dereference { region, mutable },
+        )
+    }
+    pub(super) fn automatic_dereferences(
+        &mut self,
+        node: NodeId,
+        mut base: Place,
+    ) -> Result<Place, Error> {
+        let key = super::NodeKey {
+            node,
+            ..self.body.source
+        };
+        let count = self.facts.autoderefs.get(&key).copied().unwrap_or(0);
+        for _ in 0..count {
+            base = self.dereference_place(node, base)?;
+        }
+        Ok(base)
+    }
+    pub(super) fn finish_borrow(&mut self, node: NodeId) -> Result<ValueId, Error> {
+        let place = self
+            .pop_place(node)?
+            .ok_or_else(|| self.error(node, "missing borrowed place"))?;
+        let ty = self.ty(node)?;
+        let Some(Type::Reference { referent, .. }) = self.facts.types.kind(ty) else {
+            return Err(self.error(node, "borrow result is not a reference"));
+        };
+        if self.place_type(node, place)? != referent {
+            return Err(self.error(node, "borrow referent differs from selected place"));
+        }
+        self.evaluate(node, ty, Rvalue::Borrow { place })
+    }
+}

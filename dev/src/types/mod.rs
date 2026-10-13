@@ -1,9 +1,14 @@
 //! Immutable canonical type shapes and interned child lists; no source/text keys.
 pub mod aggregate;
+pub mod bound_uses;
+pub mod callable;
 pub mod copy;
 pub mod equality;
 pub mod infer;
+pub mod outlives;
+pub mod specialize;
 pub mod substitute;
+pub mod variance;
 
 use crate::support::intern_slice::Slices;
 use std::collections::HashMap;
@@ -169,16 +174,34 @@ pub enum Kind {
     },
     FunctionItem {
         item: ItemId,
+        arguments: RegionArgs,
         signature: TypeId,
     },
 }
 /// Child lists occupy one shared arena. Hash collisions compare their typed slices.
 /// Type/list IDs are valid only in the store that produced them.
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+enum RegionPresence {
+    None,
+    Bound,
+    Unbound,
+}
+impl RegionPresence {
+    fn of(region: RegionId) -> Self {
+        if region.bound_parts().is_some() {
+            Self::Bound
+        } else {
+            Self::Unbound
+        }
+    }
+}
 #[derive(Clone, Copy)]
 struct Properties {
     sized: bool,
     well_formed: bool,
     escaping: u16,
+    regions: RegionPresence,
+    late_callables: bool,
 }
 pub struct Store {
     properties: Vec<Properties>,
@@ -203,6 +226,8 @@ impl Default for Store {
                 sized: *kind != Kind::Primitive(Primitive::Str),
                 well_formed: true,
                 escaping: 0,
+                regions: RegionPresence::None,
+                late_callables: false,
             })
             .collect();
         Self {
@@ -234,6 +259,22 @@ impl Store {
     #[must_use]
     pub fn escaping_binders(&self, id: TypeId) -> Option<u16> {
         self.properties.get(id.0 as usize).map(|p| p.escaping)
+    }
+    #[must_use]
+    pub fn contains_regions(&self, id: TypeId) -> Option<bool> {
+        self.properties
+            .get(id.0 as usize)
+            .map(|p| p.regions != RegionPresence::None)
+    }
+    #[must_use]
+    pub fn contains_late_callables(&self, id: TypeId) -> Option<bool> {
+        self.properties.get(id.0 as usize).map(|p| p.late_callables)
+    }
+    #[must_use]
+    pub fn has_free_regions(&self, id: TypeId, depth: u16) -> Option<bool> {
+        self.properties
+            .get(id.0 as usize)
+            .map(|p| p.regions == RegionPresence::Unbound || p.escaping > depth)
     }
     #[must_use]
     pub fn list(&self, id: ListId) -> Option<&[TypeId]> {
@@ -288,8 +329,13 @@ impl Store {
             Kind::Function {
                 parameters, result, ..
             } => self.list(parameters).is_some() && valid_type(result),
-            Kind::FunctionItem { signature, .. } => {
-                matches!(self.kind(signature), Some(Kind::Function { .. }))
+            Kind::FunctionItem {
+                signature,
+                arguments,
+                ..
+            } => {
+                self.region_args(arguments).is_some()
+                    && matches!(self.kind(signature), Some(Kind::Function { .. }))
             }
         };
         if !valid {
@@ -313,6 +359,8 @@ impl Store {
             sized: true,
             well_formed: true,
             escaping: 0,
+            regions: RegionPresence::None,
+            late_callables: false,
         };
         match kind {
             // The closed aggregate profile requires sized, well-formed fields at
@@ -324,12 +372,15 @@ impl Store {
                     .ok_or("invalid nominal lifetime arguments")?
                 {
                     result.escaping = result.escaping.max(escaping_region(*region));
+                    result.regions = result.regions.max(RegionPresence::of(*region));
                 }
             }
             Kind::Primitive(p) => result.sized = p != Primitive::Str,
             Kind::Array { element, .. } | Kind::Slice(element) => {
                 let element = child(element)?;
                 result.escaping = element.escaping;
+                result.regions = element.regions;
+                result.late_callables = element.late_callables;
                 result.well_formed = element.well_formed && element.sized;
                 result.sized = matches!(kind, Kind::Array { .. }) && element.sized;
             }
@@ -340,6 +391,8 @@ impl Store {
                     result.well_formed &= p.well_formed && (p.sized || i + 1 == elements.len());
                     result.sized &= p.sized;
                     result.escaping = result.escaping.max(p.escaping);
+                    result.regions = result.regions.max(p.regions);
+                    result.late_callables |= p.late_callables;
                 }
             }
             Kind::Reference { referent: ty, .. }
@@ -348,6 +401,8 @@ impl Store {
                 let properties = child(ty)?;
                 result.well_formed = properties.well_formed;
                 result.escaping = properties.escaping;
+                result.regions = properties.regions;
+                result.late_callables = properties.late_callables;
             }
             Kind::Function {
                 parameters,
@@ -357,6 +412,8 @@ impl Store {
                 let properties = child(ty)?;
                 result.well_formed = properties.well_formed;
                 result.escaping = properties.escaping;
+                result.regions = properties.regions;
+                result.late_callables = properties.late_callables;
                 for ty in self
                     .list(parameters)
                     .ok_or("invalid structural parameter list")?
@@ -364,14 +421,31 @@ impl Store {
                     let properties = child(*ty)?;
                     result.well_formed &= properties.well_formed;
                     result.escaping = result.escaping.max(properties.escaping);
+                    result.regions = result.regions.max(properties.regions);
+                    result.late_callables |= properties.late_callables;
                 }
             }
         }
         match kind {
+            Kind::FunctionItem { arguments, .. } => {
+                // Item identity is inferred atomically; reification selects its signature.
+                result.late_callables = false;
+                for region in self
+                    .region_args(arguments)
+                    .ok_or("invalid function item arguments")?
+                {
+                    result.escaping = result.escaping.max(escaping_region(*region));
+                    result.regions = result.regions.max(RegionPresence::of(*region));
+                }
+            }
             Kind::Reference { region, .. } => {
                 result.escaping = result.escaping.max(escaping_region(region));
+                result.regions = result.regions.max(RegionPresence::of(region));
             }
-            Kind::Function { .. } => result.escaping = result.escaping.saturating_sub(1),
+            Kind::Function { bound_regions, .. } => {
+                result.escaping = result.escaping.saturating_sub(1);
+                result.late_callables |= bound_regions != 0;
+            }
             _ => {}
         }
         Ok(result)

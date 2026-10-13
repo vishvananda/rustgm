@@ -87,7 +87,7 @@ pub enum AdjustmentKind {
     Never,
     FunctionPointer,
     ArrayToSlice,
-    /// Type equality was established modulo retained region obligations.
+    /// The same type shape, with a directed lifetime relation retained separately.
     Equality,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -133,7 +133,46 @@ pub struct RegionEquality {
     pub right: RegionId,
 }
 #[derive(Clone, Copy)]
+pub struct Outlives {
+    pub body: NodeKey,
+    pub source: NodeKey,
+    pub longer: RegionId,
+    pub shorter: RegionId,
+}
+/// A selected conversion awaiting variance-aware region checking. Keep all
+/// coercion sites: one syntax node can constrain several inferred targets.
+#[derive(Clone, Copy)]
+pub struct Coercion {
+    pub body: NodeKey,
+    pub source: NodeKey,
+    pub actual: TypeId,
+    pub expected: TypeId,
+    pub kind: AdjustmentKind,
+}
+/// Types used in a body must satisfy their well-formedness bounds. Function
+/// inputs/outputs supply assumptions; local types never add assumptions.
+#[derive(Clone, Copy)]
+pub struct WellFormed {
+    pub body: NodeKey,
+    pub source: NodeKey,
+    pub ty: TypeId,
+}
+/// Declaration elaboration resolves binders even when a local type has holes.
+/// Only the unresolved shape is completed by the owning body's inference graph.
+#[derive(Clone, Copy)]
+pub enum PartialAnnotation {
+    Hole,
+    Shape,
+    Reference(RegionId),
+    Function { bound_regions: u32 },
+}
+#[derive(Clone, Copy)]
 pub enum BodyRegionOrigin {
+    Annotation,
+    Inference,
+    ItemArgument,
+    CallArgument,
+    UniversalAlias,
     ExpressionBorrow,
     PatternBorrow,
     PatternInput,
@@ -146,6 +185,11 @@ pub struct BodyRegion {
     pub origin: BodyRegionOrigin,
 }
 pub struct Declarations {
+    pub partial_annotations: std::collections::HashMap<NodeKey, PartialAnnotation>,
+    pub well_formed: Vec<WellFormed>,
+    pub coercions: Vec<Coercion>,
+    pub outlives: Vec<Outlives>,
+    pub lifetimes: super::lifetimes::Lifetimes,
     pub(super) constant_values: std::collections::HashMap<DefId, super::constants::Value>,
     pub(super) constant_products: super::constants::products::Products,
     pub(super) constant_references: super::constants::references::References,
@@ -170,8 +214,24 @@ pub struct Declarations {
     pub functions: Vec<Function>,
 }
 impl Declarations {
+    /// Retain the directed lifetime relation independently of runtime adjustment
+    /// selection. In particular an explicit cast must not reify its operand twice.
+    pub(super) fn retain_coercion(&mut self, coercion: Coercion) {
+        if coercion.actual != coercion.expected
+            && coercion.kind != AdjustmentKind::Never
+            && (self.types.contains_regions(coercion.actual) == Some(true)
+                || self.types.contains_regions(coercion.expected) == Some(true))
+        {
+            self.coercions.push(coercion);
+        }
+    }
     pub(super) fn new(report: &Report) -> Result<Self, Error> {
         let mut value = Self {
+            partial_annotations: std::collections::HashMap::new(),
+            well_formed: Vec::new(),
+            coercions: Vec::new(),
+            outlives: Vec::new(),
+            lifetimes: super::lifetimes::Lifetimes::default(),
             constant_values: std::collections::HashMap::new(),
             constant_references: super::constants::references::References::default(),
             autoderefs: std::collections::HashMap::new(),

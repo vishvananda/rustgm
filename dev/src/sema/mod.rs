@@ -1,9 +1,11 @@
 //! Type checking consumes resolved syntax identities and publishes typed facts once.
 pub mod bodies;
 mod constants;
+pub use constants::values;
 pub mod declarations;
 pub mod entry;
 pub mod layout_view;
+pub mod lifetimes;
 pub mod members;
 pub mod model;
 pub mod pattern_view;

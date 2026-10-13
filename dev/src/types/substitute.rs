@@ -46,6 +46,46 @@ impl Bound {
         self.work.clear();
         result
     }
+    /// Transform a signature's parameter/result roots and publish a replacement
+    /// binder. Arguments must already be expressed inside that replacement binder.
+    ///
+    /// # Errors
+    /// Rejects non-signatures and the same invalid data/resource limits as `apply`.
+    pub fn signature(
+        &mut self,
+        store: &mut Store,
+        ty: TypeId,
+        bound_regions: u32,
+    ) -> Result<TypeId, &'static str> {
+        let Some(Kind::Function {
+            parameters,
+            result,
+            unsafe_,
+            ..
+        }) = store.kind(ty)
+        else {
+            return Err("substitution requires a function signature");
+        };
+        let count = store
+            .list(parameters)
+            .ok_or("missing signature parameters")?
+            .len();
+        let mut children = Vec::with_capacity(count);
+        for index in 0..count {
+            let ty = store
+                .list(parameters)
+                .ok_or("missing signature parameter list")?[index];
+            children.push(self.apply(store, ty)?);
+        }
+        let result = self.apply(store, result)?;
+        let parameters = store.intern_list(&children)?;
+        store.intern(Kind::Function {
+            bound_regions,
+            parameters,
+            result,
+            unsafe_,
+        })
+    }
 
     fn result(&self, store: &Store, key: Key) -> Result<Option<TypeId>, &'static str> {
         let escaping = store
@@ -161,20 +201,7 @@ impl Bound {
     fn rebuild(&mut self, store: &mut Store, kind: Kind, depth: u16) -> Result<Kind, &'static str> {
         Ok(match kind {
             Kind::Never | Kind::Primitive(_) => kind,
-            Kind::Adt(item, args) => {
-                let arguments = store
-                    .region_args(args)
-                    .ok_or("invalid nominal lifetime arguments")?;
-                self.steps = self.steps.saturating_add(arguments.len());
-                if self.steps.saturating_add(self.work.len()) > WORK_LIMIT {
-                    return Err("lifetime substitution work budget exceeded");
-                }
-                self.regions.clear();
-                for region in arguments {
-                    self.regions.push(self.region(*region, depth)?);
-                }
-                Kind::Adt(item, store.intern_regions(&self.regions)?)
-            }
+            Kind::Adt(item, args) => Kind::Adt(item, self.arguments(store, args, depth)?),
             Kind::Tuple(list) => Kind::Tuple(self.list(store, list, depth)?),
             Kind::Array { element, length } => Kind::Array {
                 element: self.child(store, element, depth)?,
@@ -208,11 +235,35 @@ impl Bound {
                     unsafe_,
                 }
             }
-            Kind::FunctionItem { item, signature } => Kind::FunctionItem {
+            Kind::FunctionItem {
                 item,
+                signature,
+                arguments,
+            } => Kind::FunctionItem {
+                item,
+                arguments: self.arguments(store, arguments, depth)?,
                 signature: self.child(store, signature, depth)?,
             },
         })
+    }
+    fn arguments(
+        &mut self,
+        store: &mut Store,
+        args: super::RegionArgs,
+        depth: u16,
+    ) -> Result<super::RegionArgs, &'static str> {
+        let arguments = store
+            .region_args(args)
+            .ok_or("invalid lifetime arguments")?;
+        self.steps = self.steps.saturating_add(arguments.len());
+        if self.steps.saturating_add(self.work.len()) > WORK_LIMIT {
+            return Err("lifetime substitution work budget exceeded");
+        }
+        self.regions.clear();
+        for region in arguments {
+            self.regions.push(self.region(*region, depth)?);
+        }
+        store.intern_regions(&self.regions)
     }
 }
 

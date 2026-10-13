@@ -64,9 +64,50 @@ pub fn write(report: &Report, facts: &Declarations, out: &mut impl Write) -> io:
     }
     body_regions(&facts.body_regions, out)?;
     regions(&facts.region_equalities, out)?;
+    coercions(&facts.coercions, out)?;
+    outlives(&facts.outlives, out)?;
     nodes(report, facts, out)?;
     write!(out, "eof ")?;
     count(facts, out)
+}
+/// # Errors
+/// Propagates output errors; these are obligations, not completed proofs.
+pub fn outlives(bounds: &[super::model::Outlives], out: &mut impl Write) -> io::Result<()> {
+    for bound in bounds {
+        write!(
+            out,
+            "region-outlives body={}:{} source={}:{} longer=",
+            bound.body.file.0, bound.body.node.0, bound.source.file.0, bound.source.node.0
+        )?;
+        region(bound.longer, out)?;
+        write!(out, " shorter=")?;
+        region(bound.shorter, out)?;
+        writeln!(out, " pending")?;
+    }
+    Ok(())
+}
+/// # Errors
+/// Propagates output errors; preserve every directed conversion for inspection.
+pub fn coercions(coercions: &[super::model::Coercion], out: &mut impl Write) -> io::Result<()> {
+    for coercion in coercions {
+        let kind = match coercion.kind {
+            AdjustmentKind::Never => "never",
+            AdjustmentKind::FunctionPointer => "function-pointer",
+            AdjustmentKind::ArrayToSlice => "array-to-slice",
+            AdjustmentKind::Equality => "same-shape",
+        };
+        writeln!(
+            out,
+            "region-coercion body={}:{} source={}:{} actual={} expected={} kind={kind} pending",
+            coercion.body.file.0,
+            coercion.body.node.0,
+            coercion.source.file.0,
+            coercion.source.node.0,
+            coercion.actual.0,
+            coercion.expected.0
+        )?;
+    }
+    Ok(())
 }
 /// Write pending region constraints without claiming they have been proved.
 ///
@@ -93,6 +134,11 @@ pub fn regions(equalities: &[RegionEquality], out: &mut impl Write) -> io::Resul
 pub fn body_regions(regions: &[BodyRegion], out: &mut impl Write) -> io::Result<()> {
     for (ordinal, variable) in regions.iter().enumerate() {
         let origin = match variable.origin {
+            BodyRegionOrigin::Annotation => "annotation",
+            BodyRegionOrigin::Inference => "inference",
+            BodyRegionOrigin::ItemArgument => "item-argument",
+            BodyRegionOrigin::CallArgument => "call-argument",
+            BodyRegionOrigin::UniversalAlias => "universal-alias",
             BodyRegionOrigin::ExpressionBorrow => "expression-borrow",
             BodyRegionOrigin::PatternBorrow => "pattern-borrow",
             BodyRegionOrigin::PatternInput => "pattern-input",
@@ -215,20 +261,7 @@ fn ty(store: &Store, id: TypeId, out: &mut impl Write) -> io::Result<()> {
         Kind::Primitive(p) => write!(out, "primitive {}", p.name()),
         Kind::Adt(item, args) => {
             write!(out, "aggregate def={}", item.0)?;
-            let args = store
-                .region_args(args)
-                .ok_or_else(|| io::Error::other("invalid lifetime arguments"))?;
-            if !args.is_empty() {
-                write!(out, " regions=[")?;
-                for (ordinal, id) in args.iter().copied().enumerate() {
-                    if ordinal != 0 {
-                        write!(out, ",")?;
-                    }
-                    region(id, out)?;
-                }
-                write!(out, "]")?;
-            }
-            Ok(())
+            region_arguments(store, args, out)
         }
         Kind::Tuple(elements) => {
             write!(out, "tuple ")?;
@@ -260,12 +293,39 @@ fn ty(store: &Store, id: TypeId, out: &mut impl Write) -> io::Result<()> {
             list(store, parameters, out)?;
             write!(out, " result={} unsafe={unsafe_}", result.0)
         }
-        Kind::FunctionItem { item, signature } => write!(
-            out,
-            "function-item def={} signature={}",
-            item.0, signature.0
-        ),
+        Kind::FunctionItem {
+            item,
+            signature,
+            arguments,
+        } => {
+            write!(
+                out,
+                "function-item def={} signature={}",
+                item.0, signature.0
+            )?;
+            region_arguments(store, arguments, out)
+        }
     }
+}
+fn region_arguments(
+    store: &Store,
+    arguments: crate::types::RegionArgs,
+    out: &mut impl Write,
+) -> io::Result<()> {
+    let args = store
+        .region_args(arguments)
+        .ok_or_else(|| io::Error::other("invalid lifetime arguments"))?;
+    if !args.is_empty() {
+        write!(out, " regions=[")?;
+        for (ordinal, id) in args.iter().copied().enumerate() {
+            if ordinal != 0 {
+                write!(out, ",")?;
+            }
+            region(id, out)?;
+        }
+        write!(out, "]")?;
+    }
+    Ok(())
 }
 /// Write the common canonical type table for semantic and body views.
 ///

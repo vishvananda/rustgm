@@ -93,6 +93,7 @@ fn equality_type_obligations_remain_distinct_from_actual_structural_values()
         unsafe_: false,
     })?;
     let item = types.intern(Kind::FunctionItem {
+        arguments: rustgm::types::RegionArgs::EMPTY,
         item: ItemId(99),
         signature: function,
     })?;

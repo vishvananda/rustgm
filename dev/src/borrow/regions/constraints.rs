@@ -1,0 +1,406 @@
+//! Directed type relations use actual region arguments and explicit binder scopes.
+use super::graph::{Error, Graph, Kind as RegionKind, Region, Solution};
+use crate::types::{
+    Kind, RegionId, Store, TypeId,
+    variance::{Variance, Variances},
+};
+use std::collections::{HashMap, HashSet};
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+struct Scope(usize);
+struct Binder {
+    parent: Option<Scope>,
+    start: usize,
+    end: usize,
+}
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+struct Relation {
+    actual: TypeId,
+    expected: TypeId,
+    left: Scope,
+    right: Scope,
+    unsize: bool,
+}
+/// One body, one immutable type store and one completed nominal variance table.
+pub struct Constraints<'a> {
+    types: &'a Store,
+    variances: &'a Variances,
+    graph: Graph,
+    variables: HashMap<RegionId, Region>,
+    binders: Vec<Binder>,
+    arguments: Vec<Region>,
+    universe: u32,
+    seen: HashSet<Relation>,
+    work: Vec<Relation>,
+    steps: usize,
+    limit: usize,
+}
+impl<'a> Constraints<'a> {
+    /// # Errors
+    /// Rejects an oversized body parameter environment.
+    pub fn new(
+        types: &'a Store,
+        variances: &'a Variances,
+        universals: u32,
+        limit: usize,
+    ) -> Result<Self, Error> {
+        let mut this = Self {
+            types,
+            variances,
+            graph: Graph::new(limit),
+            variables: HashMap::new(),
+            binders: Vec::new(),
+            arguments: Vec::new(),
+            universe: 0,
+            seen: HashSet::new(),
+            work: Vec::new(),
+            steps: 0,
+            limit,
+        };
+        this.binder(None, universals, true)?;
+        Ok(this)
+    }
+    /// Register only the inference variables owned by this body.
+    ///
+    /// # Errors
+    /// Rejects duplicate/non-inference identities and exhausted storage.
+    pub fn variable(&mut self, id: RegionId) -> Result<(), Error> {
+        if id == RegionId::STATIC || id.bound_parts().is_some() || self.variables.contains_key(&id)
+        {
+            return Err(Error::Identity);
+        }
+        let variable = self.graph.region(RegionKind::Variable { universe: 0 })?;
+        self.variables.insert(id, variable);
+        // A free inference argument denotes a lifetime available in this body.
+        // A younger forall placeholder cannot supply even this local extent.
+        self.graph.require(variable, Region::LOCAL, 0)
+    }
+    /// # Errors
+    /// Rejects nonuniversal bounds, missing body identities and storage limits.
+    pub fn assume(&mut self, longer: RegionId, shorter: RegionId) -> Result<(), Error> {
+        self.graph.assume(
+            self.region(longer, Scope(0))?,
+            self.region(shorter, Scope(0))?,
+        )
+    }
+    /// # Errors
+    /// Rejects missing body identities and storage limits.
+    pub fn outlives(
+        &mut self,
+        longer: RegionId,
+        shorter: RegionId,
+        source: u32,
+    ) -> Result<(), Error> {
+        self.graph.require(
+            self.region(longer, Scope(0))?,
+            self.region(shorter, Scope(0))?,
+            source,
+        )
+    }
+    /// A borrow of local storage cannot be returned under a caller's lifetime.
+    /// This upper bound does not prove local liveness or alias permissions.
+    ///
+    /// # Errors
+    /// Rejects missing body identities and storage limits.
+    pub fn local(&mut self, borrow: RegionId, source: u32) -> Result<(), Error> {
+        self.graph
+            .require(Region::LOCAL, self.region(borrow, Scope(0))?, source)
+    }
+    fn binder(
+        &mut self,
+        parent: Option<Scope>,
+        count: u32,
+        universal: bool,
+    ) -> Result<Scope, Error> {
+        let scope = Scope(self.binders.len());
+        let start = self.arguments.len();
+        for _ in 0..count {
+            let kind = if universal {
+                RegionKind::Universal {
+                    universe: self.universe,
+                }
+            } else {
+                RegionKind::Variable {
+                    universe: self.universe,
+                }
+            };
+            self.arguments.push(self.graph.region(kind)?);
+        }
+        self.binders.push(Binder {
+            parent,
+            start,
+            end: self.arguments.len(),
+        });
+        Ok(scope)
+    }
+    fn region(&self, id: RegionId, mut scope: Scope) -> Result<Region, Error> {
+        if id == RegionId::STATIC {
+            return Ok(Region::STATIC);
+        }
+        let Some((depth, index)) = id.bound_parts() else {
+            return self.variables.get(&id).copied().ok_or(Error::Identity);
+        };
+        for _ in 0..depth {
+            scope = self
+                .binders
+                .get(scope.0)
+                .and_then(|b| b.parent)
+                .ok_or(Error::Identity)?;
+        }
+        let binder = self.binders.get(scope.0).ok_or(Error::Identity)?;
+        self.arguments[binder.start..binder.end]
+            .get(usize::from(index))
+            .copied()
+            .ok_or(Error::Identity)
+    }
+    fn push(&mut self, relation: Relation) -> Result<(), Error> {
+        if self.steps.saturating_add(self.work.len()) >= self.limit {
+            return Err(Error::Budget);
+        }
+        self.work.push(relation);
+        Ok(())
+    }
+    fn child(
+        &mut self,
+        parent: Relation,
+        actual: TypeId,
+        expected: TypeId,
+        variance: Variance,
+    ) -> Result<(), Error> {
+        if matches!(variance, Variance::Covariant | Variance::Invariant) {
+            self.push(Relation {
+                actual,
+                expected,
+                unsize: false,
+                ..parent
+            })?;
+        }
+        if matches!(variance, Variance::Contravariant | Variance::Invariant) {
+            self.push(Relation {
+                actual: expected,
+                expected: actual,
+                left: parent.right,
+                right: parent.left,
+                unsize: false,
+            })?;
+        }
+        Ok(())
+    }
+    fn regions(
+        &mut self,
+        relation: Relation,
+        actual: RegionId,
+        expected: RegionId,
+        variance: Variance,
+        source: u32,
+    ) -> Result<(), Error> {
+        let actual = self.region(actual, relation.left)?;
+        let expected = self.region(expected, relation.right)?;
+        if matches!(variance, Variance::Covariant | Variance::Invariant) {
+            self.graph.require(actual, expected, source)?;
+        }
+        if matches!(variance, Variance::Contravariant | Variance::Invariant) {
+            self.graph.require(expected, actual, source)?;
+        }
+        Ok(())
+    }
+    /// Compare canonical types without rewriting or reparsing them. Each target
+    /// callable binder introduces fresh universals; source binders instantiate
+    /// with variables in that universe. Captured lifetimes resolve in the parent.
+    ///
+    /// # Errors
+    /// Rejects incompatible shapes, missing identities and exhausted work.
+    pub fn coerce(
+        &mut self,
+        actual: TypeId,
+        expected: TypeId,
+        unsize: bool,
+        source: u32,
+    ) -> Result<(), Error> {
+        self.push(Relation {
+            actual,
+            expected,
+            unsize,
+            left: Scope(0),
+            right: Scope(0),
+        })?;
+        while let Some(relation) = self.work.pop() {
+            self.steps += 1;
+            if relation.actual == relation.expected
+                && (relation.left == relation.right
+                    || self.types.escaping_binders(relation.actual) == Some(0))
+            {
+                continue;
+            }
+            if !self.seen.insert(relation) {
+                continue;
+            }
+            self.relate(relation, source)?;
+        }
+        Ok(())
+    }
+    #[expect(
+        clippy::too_many_lines,
+        reason = "one exhaustive typed relation dispatch keeps variance and shape checks together"
+    )]
+    fn relate(&mut self, relation: Relation, source: u32) -> Result<(), Error> {
+        let a = self.types.kind(relation.actual).ok_or(Error::Identity)?;
+        let b = self.types.kind(relation.expected).ok_or(Error::Identity)?;
+        let covariant = Variance::Covariant;
+        match (a, b) {
+            (Kind::Never, _) => {}
+            (Kind::Primitive(x), Kind::Primitive(y)) if x == y => {}
+            (
+                Kind::Reference {
+                    mutable: x,
+                    region: a,
+                    referent: left,
+                },
+                Kind::Reference {
+                    mutable: y,
+                    region: b,
+                    referent: right,
+                },
+            ) if x == y => {
+                self.regions(relation, a, b, covariant, source)?;
+                if relation.unsize {
+                    let (Some(Kind::Array { element, .. }), Some(Kind::Slice(target))) =
+                        (self.types.kind(left), self.types.kind(right))
+                    else {
+                        return Err(Error::Identity);
+                    };
+                    self.child(
+                        relation,
+                        element,
+                        target,
+                        if x { Variance::Invariant } else { covariant },
+                    )?;
+                } else {
+                    self.child(
+                        relation,
+                        left,
+                        right,
+                        if x { Variance::Invariant } else { covariant },
+                    )?;
+                }
+            }
+            (
+                Kind::Pointer {
+                    mutable: x,
+                    pointee: left,
+                },
+                Kind::Pointer {
+                    mutable: y,
+                    pointee: right,
+                },
+            ) if x == y => self.child(
+                relation,
+                left,
+                right,
+                if x { Variance::Invariant } else { covariant },
+            )?,
+            (
+                Kind::Array {
+                    element: left,
+                    length: a,
+                },
+                Kind::Array {
+                    element: right,
+                    length: b,
+                },
+            ) if a == b => self.child(relation, left, right, covariant)?,
+            (Kind::Slice(left), Kind::Slice(right)) => {
+                self.child(relation, left, right, covariant)?;
+            }
+            (Kind::Tuple(left), Kind::Tuple(right)) => {
+                let a = self.types.list(left).ok_or(Error::Identity)?;
+                let b = self.types.list(right).ok_or(Error::Identity)?;
+                if a.len() != b.len() {
+                    return Err(Error::Identity);
+                }
+                for (&a, &b) in a.iter().zip(b) {
+                    self.child(relation, a, b, covariant)?;
+                }
+            }
+            (Kind::Adt(x, left), Kind::Adt(y, right)) if x == y => {
+                let a = self.types.region_args(left).ok_or(Error::Identity)?;
+                let b = self.types.region_args(right).ok_or(Error::Identity)?;
+                if a.len() != b.len() {
+                    return Err(Error::Identity);
+                }
+                if !a.is_empty() {
+                    let variances = self.variances.get(x).ok_or(Error::Identity)?;
+                    if a.len() != variances.len() {
+                        return Err(Error::Identity);
+                    }
+                    for ((&a, &b), &variance) in a.iter().zip(b).zip(variances) {
+                        self.regions(relation, a, b, variance, source)?;
+                    }
+                }
+            }
+            (Kind::Function { .. }, Kind::Function { .. }) => self.function(relation, a, b)?,
+            (Kind::FunctionItem { signature, .. }, Kind::Function { .. }) => {
+                self.child(relation, signature, relation.expected, covariant)?;
+            }
+            (
+                Kind::FunctionItem {
+                    item: x,
+                    signature: a,
+                    ..
+                },
+                Kind::FunctionItem {
+                    item: y,
+                    signature: b,
+                    ..
+                },
+            ) if x == y => self.child(relation, a, b, covariant)?,
+            _ => return Err(Error::Identity),
+        }
+        Ok(())
+    }
+    fn function(&mut self, relation: Relation, a: Kind, b: Kind) -> Result<(), Error> {
+        let (
+            Kind::Function {
+                bound_regions: ac,
+                parameters: ap,
+                result: ar,
+                unsafe_: au,
+            },
+            Kind::Function {
+                bound_regions: bc,
+                parameters: bp,
+                result: br,
+                unsafe_: bu,
+            },
+        ) = (a, b)
+        else {
+            return Err(Error::Identity);
+        };
+        if au != bu {
+            return Err(Error::Identity);
+        }
+        let a = self.types.list(ap).ok_or(Error::Identity)?;
+        let b = self.types.list(bp).ok_or(Error::Identity)?;
+        if a.len() != b.len() {
+            return Err(Error::Identity);
+        }
+        self.universe = self.universe.checked_add(1).ok_or(Error::Budget)?;
+        let right = self.binder(Some(relation.right), bc, true)?;
+        let left = self.binder(Some(relation.left), ac, false)?;
+        let nested = Relation {
+            left,
+            right,
+            unsize: false,
+            ..relation
+        };
+        for (&a, &b) in a.iter().zip(b) {
+            self.child(nested, a, b, Variance::Contravariant)?;
+        }
+        self.child(nested, ar, br, Variance::Covariant)
+    }
+    /// # Errors
+    /// Rejects unentailed region requirements and exhausted propagation work.
+    pub fn solve(self) -> Result<Solution, Error> {
+        self.graph.solve()
+    }
+}

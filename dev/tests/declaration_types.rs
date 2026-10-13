@@ -186,6 +186,7 @@ fn nominal_source_facts_retain_layout_visibility_and_constructor_identity() -> R
         .ok_or("missing tuple constructor")?;
     let constructor = facts.definitions[id].ok_or("missing constructor type")?;
     let Some(Kind::FunctionItem {
+        arguments: _,
         item: constructor_item,
         signature,
     }) = facts.types.kind(constructor)

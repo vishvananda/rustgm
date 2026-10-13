@@ -271,9 +271,9 @@ fn value_patterns_do_not_impose_storage_lifetimes() -> Result<(), String> {
         assert!(facts.region_equalities.is_empty(), "{source}");
     }
     let (_, facts) = analyze(r#"fn f<'a,'b>(x:&'a str,y:&'b str)->&'a str{match x{"a"=>y,_=>x}}"#)?;
-    assert!(!facts.region_equalities.is_empty());
+    assert!(!facts.coercions.is_empty());
     let (_, facts) = analyze(r#"fn f<'a>(_:&'a u8)->&'a [u8]{b"ab"}"#)?;
-    assert!(!facts.region_equalities.is_empty());
+    assert!(!facts.coercions.is_empty());
     Ok(())
 }
 

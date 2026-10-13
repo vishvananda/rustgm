@@ -39,17 +39,14 @@ impl Checker<'_> {
                     "union semantics require the unsafe language assignment",
                 ));
             }
-            if item.generics.start != item.generics.end
-                || item.where_clause.start != item.where_clause.end
-            {
-                return Err(self.error(
-                    key,
-                    "parameterized aggregates require lifetime or generic assignments",
-                ));
-            }
             let id = u32::try_from(index)
                 .map_err(|_| self.error(key, "too many nominal declarations"))?;
-            let ty = self.intern(key, Type::Adt(ItemId(id), crate::types::RegionArgs::EMPTY))?;
+            let context = self.template_context(DefId(id), key)?;
+            if context.binder.is_some() {
+                self.nominal_regions.insert(ItemId(id), context);
+            }
+            let arguments = self.template_arguments(DefId(id), key)?;
+            let ty = self.intern(key, Type::Adt(ItemId(id), arguments))?;
             // Resolving an annotation needs the identity, not a completed field
             // graph. Layout later rejects by-value cycles but permits pointers.
             self.complete(DefId(id), key, ty)?;
@@ -89,7 +86,7 @@ impl Checker<'_> {
             let mut previous = None;
             let mut variants = Vec::with_capacity(groups.len());
             for (ordinal, group) in groups.iter().enumerate() {
-                self.field_annotations(group, steps, limit)?;
+                self.field_annotations(group, self.nominal_context(item), steps, limit)?;
                 let fields = self.fields(group, kind == aggregate::Kind::Enum)?;
                 self.children.clear();
                 self.children.extend(fields.iter().map(|field| field.ty));
@@ -139,6 +136,7 @@ impl Checker<'_> {
                 .insert(item, kind, repr, &variants)
                 .map_err(|e| self.error(key, e))?;
         }
+        self.lifetime_variances()?;
         self.copy_obligations()?;
         self.equality_obligations()?;
         self.constructors()
@@ -303,6 +301,7 @@ impl Checker<'_> {
     fn field_annotations(
         &mut self,
         group: &Group,
+        context: regions::Context,
         steps: &mut usize,
         limit: usize,
     ) -> Result<(), Error> {
@@ -315,7 +314,7 @@ impl Checker<'_> {
             let Kind::FieldDefinition { ty, .. } = self.kind(key) else {
                 return Err(self.error(key, "invalid field definition"));
             };
-            self.node_work(key.file, ty, regions::Context::ALIAS);
+            self.node_work(key.file, ty, context);
         }
         self.drain(steps, limit)
     }
@@ -425,15 +424,24 @@ impl Checker<'_> {
                 let signature = self.intern(
                     key,
                     Type::Function {
-                        bound_regions: 0,
+                        bound_regions: u32::try_from(
+                            self.facts
+                                .lifetimes
+                                .parameters
+                                .get(&DefId(variant.owner.0))
+                                .map_or(0, Vec::len),
+                        )
+                        .map_err(|_| self.error(key, "too many constructor lifetimes"))?,
                         parameters: fields,
                         result: owner,
                         unsafe_: false,
                     },
                 )?;
+                self.constructor_template(key, ItemId(id.0), signature)?;
                 self.intern(
                     key,
                     Type::FunctionItem {
+                        arguments: crate::types::RegionArgs::EMPTY,
                         item: ItemId(id.0),
                         signature,
                     },
@@ -444,5 +452,36 @@ impl Checker<'_> {
             self.facts.definitions[index] = Some(ty);
         }
         Ok(())
+    }
+
+    fn constructor_template(
+        &mut self,
+        key: NodeKey,
+        item: ItemId,
+        signature: TypeId,
+    ) -> Result<(), Error> {
+        let Some(Type::Function { bound_regions, .. }) = self.facts.types.kind(signature) else {
+            return Err(self.error(key, "missing constructor signature"));
+        };
+        if bound_regions == 0 {
+            return Ok(());
+        }
+        let mapping = (0..bound_regions)
+            .map(|index| {
+                crate::types::RegionId::bound(
+                    1,
+                    u16::try_from(index).map_err(|_| "too many constructor parameters")?,
+                )
+            })
+            .collect::<Result<Vec<_>, &'static str>>()
+            .map_err(|e| self.error(key, e))?;
+        let template = crate::types::substitute::Bound::new(mapping)
+            .signature(&mut self.facts.types, signature, 0)
+            .map_err(|e| self.error(key, e))?;
+        self.facts
+            .lifetimes
+            .callables
+            .insert(&self.facts.types, item, template, bound_regions, &[])
+            .map_err(|e| self.error(key, e))
     }
 }

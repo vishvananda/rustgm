@@ -99,6 +99,15 @@ fn visit<'a, S: BuildHasher>(
             node: body.source,
             message,
         };
+        if body
+            .values
+            .iter()
+            .any(|v| matches!(v.kind, Rvalue::Borrow { .. }))
+        {
+            return Err(error(
+                "reference expression execution requires region and loan proofs",
+            ));
+        }
         let mut uses = vec![Use::Other; body.values.len()];
         for (index, value) in body.values.iter().enumerate() {
             if matches!(value.kind, Rvalue::Read(_)) {

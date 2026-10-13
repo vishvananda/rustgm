@@ -593,7 +593,7 @@ fn product_errors_and_move_conflicts_match_rustc() -> Result<(), Box<dyn std::er
 #[test]
 fn borrowed_patterns_keep_input_types_capture_modes_and_region_provenance() -> Result<(), String> {
     use rustgm::{
-        sema::patterns::Capture,
+        sema::{model::BodyRegionOrigin, patterns::Capture},
         types::{Kind as Type, Primitive, RegionId, TypeId},
     };
     let (_, facts) = analyze(
@@ -618,7 +618,15 @@ fn borrowed_patterns_keep_input_types_capture_modes_and_region_provenance() -> R
         })
         .collect();
     assert_eq!(bindings.len(), 3);
-    assert_eq!(facts.body_regions.len(), 3);
+    assert_eq!(
+        facts
+            .body_regions
+            .iter()
+            .filter(|r| matches!(r.origin, BodyRegionOrigin::PatternBorrow))
+            .count(),
+        3
+    );
+    let mut previous_body = None;
     for (index, (pattern, definition, local_mutable, capture)) in bindings.iter().enumerate() {
         assert!(!local_mutable);
         assert_eq!(pattern.ty, Some(TypeId::primitive(Primitive::U8)));
@@ -629,10 +637,12 @@ fn borrowed_patterns_keep_input_types_capture_modes_and_region_provenance() -> R
         assert_ne!(*region, RegionId::STATIC);
         assert_eq!(region.bound_parts(), None);
         let origin = &facts.body_regions[region.0 as usize - 1];
+        assert!(matches!(origin.origin, BodyRegionOrigin::PatternBorrow));
         assert_eq!(origin.source, pattern.source);
-        if index != 0 {
-            assert_ne!(origin.body, facts.body_regions[index - 1].body);
+        if let Some(previous) = previous_body {
+            assert_ne!(origin.body, previous);
         }
+        previous_body = Some(origin.body);
         assert!(
             matches!(facts.types.kind(facts.definitions[definition.0 as usize].ok_or("missing local type")?),
             Some(Type::Reference { mutable: m, region: r, referent }) if m == *mutable && r == *region && Some(referent) == pattern.ty)
@@ -680,7 +690,17 @@ fn alternatives_share_local_types_without_erasing_per_occurrence_captures() -> R
             matches!(bindings[1].1, Capture::Borrow { mutable, .. } if mutable != qualifier.is_empty())
         );
         assert!(!facts.region_equalities.is_empty());
-        assert_eq!(facts.body_regions.len(), 1);
+        assert_eq!(
+            facts
+                .body_regions
+                .iter()
+                .filter(|r| matches!(
+                    r.origin,
+                    rustgm::sema::model::BodyRegionOrigin::PatternBorrow
+                ))
+                .count(),
+            1
+        );
     }
     Ok(())
 }

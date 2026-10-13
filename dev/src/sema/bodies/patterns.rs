@@ -457,8 +457,13 @@ impl Checker<'_> {
         if definition.end - definition.start != 1 {
             self.pattern_refutable = true;
         }
-        let ty = self.facts.definitions[variant.owner.0 as usize]
-            .ok_or_else(|| self.error(node, "missing pattern constructor type"))?;
+        if let Some(Constructor::Adt(owner, _)) = self.head(node, term)?
+            && owner == variant.owner
+            && self.nominal_arguments(path, variant.owner)?.is_none()
+        {
+            return Ok(id);
+        }
+        let ty = self.nominal_type(node, path, variant.owner)?;
         let expected = self.known(node, ty)?;
         self.equate(node, term, expected)?;
         Ok(id)
@@ -532,7 +537,7 @@ impl Checker<'_> {
                 self.accessible(child, field)?;
                 (
                     Selection::Nominal(field),
-                    self.known(child, self.facts.members.fields[field.0 as usize].ty)?,
+                    self.instance_field(child, term, field)?,
                 )
             } else {
                 (
@@ -592,8 +597,7 @@ impl Checker<'_> {
             ) {
                 return Err(self.error(field_node, "duplicate pattern field"));
             }
-            let ty = self.facts.members.fields[field.0 as usize].ty;
-            let child_term = self.known(field_node, ty)?;
+            let child_term = self.instance_field(field_node, term, field)?;
             self.save(wrapper, child_term);
             self.save(field_node, child_term);
             let pattern = self.reserve_pattern(pattern, child_term, mode)?;

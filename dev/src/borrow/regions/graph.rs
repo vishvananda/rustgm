@@ -1,0 +1,274 @@
+//! Bounded outlives propagation; universal assumptions never become obligations.
+use std::collections::{HashMap, HashSet};
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct Region(pub u32);
+impl Region {
+    pub const STATIC: Self = Self(0);
+    /// Upper bound on a borrow of storage owned by the current function.
+    /// Finer storage/loan liveness is checked independently in the body CFG.
+    pub const LOCAL: Self = Self(1);
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Kind {
+    Static,
+    Local,
+    Universal { universe: u32 },
+    Variable { universe: u32 },
+}
+impl Kind {
+    const fn universe(self) -> u32 {
+        match self {
+            Self::Static | Self::Local => 0,
+            Self::Universal { universe } | Self::Variable { universe } => universe,
+        }
+    }
+    const fn rigid(self) -> bool {
+        !matches!(self, Self::Variable { .. })
+    }
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Error {
+    Identity,
+    Budget,
+    Unsatisfied {
+        source: u32,
+        longer: Region,
+        shorter: Region,
+    },
+}
+impl std::fmt::Display for Error {
+    fn fmt(&self, out: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        out.write_str(match self {
+            Self::Identity => "invalid lifetime constraint identity",
+            Self::Budget => "lifetime constraint work budget exceeded",
+            Self::Unsatisfied { .. } => "required lifetime does not outlive its target",
+        })
+    }
+}
+impl std::error::Error for Error {}
+#[derive(Clone, Copy)]
+struct Edge {
+    target: Region,
+    source: u32,
+    next: Option<usize>,
+}
+/// All caches belong to this one body/environment. Mutations precede `solve`.
+pub struct Graph {
+    kinds: Vec<Kind>,
+    assumptions: Vec<Edge>,
+    assumed_heads: Vec<Option<usize>>,
+    obligations: Vec<Edge>,
+    incoming: Vec<Option<usize>>,
+    limit: usize,
+}
+pub struct Solution {
+    pub regions: usize,
+    pub obligations: usize,
+    pub propagated: usize,
+    pub steps: usize,
+}
+impl Graph {
+    #[must_use]
+    pub fn new(limit: usize) -> Self {
+        Self {
+            kinds: vec![Kind::Static, Kind::Local],
+            assumptions: Vec::new(),
+            assumed_heads: vec![None; 2],
+            obligations: Vec::new(),
+            incoming: vec![None; 2],
+            limit,
+        }
+    }
+    /// # Errors
+    /// Rejects arena overflow or the body constraint budget.
+    pub fn region(&mut self, kind: Kind) -> Result<Region, Error> {
+        if matches!(kind, Kind::Static | Kind::Local) {
+            return Err(Error::Identity);
+        }
+        self.capacity(1)?;
+        let id = Region(u32::try_from(self.kinds.len()).map_err(|_| Error::Budget)?);
+        self.kinds.push(kind);
+        self.assumed_heads.push(None);
+        self.incoming.push(None);
+        Ok(id)
+    }
+    fn capacity(&self, extra: usize) -> Result<(), Error> {
+        if self
+            .kinds
+            .len()
+            .saturating_add(self.assumptions.len())
+            .saturating_add(self.obligations.len())
+            .saturating_add(extra)
+            > self.limit
+        {
+            return Err(Error::Budget);
+        }
+        Ok(())
+    }
+    fn kind(&self, region: Region) -> Result<Kind, Error> {
+        self.kinds
+            .get(region.0 as usize)
+            .copied()
+            .ok_or(Error::Identity)
+    }
+    /// Declared or implied well-formedness bounds may relate only universals.
+    /// They are immutable while obligations are solved.
+    ///
+    /// # Errors
+    /// Rejects invalid/nonuniversal identities and exhausted constraint storage.
+    pub fn assume(&mut self, longer: Region, shorter: Region) -> Result<(), Error> {
+        let universal = |kind| matches!(kind, Kind::Static | Kind::Universal { .. });
+        if !universal(self.kind(longer)?) || !universal(self.kind(shorter)?) {
+            return Err(Error::Identity);
+        }
+        self.capacity(1)?;
+        self.assumptions.push(Edge {
+            target: shorter,
+            source: 0,
+            next: self.assumed_heads[longer.0 as usize],
+        });
+        self.assumed_heads[longer.0 as usize] = Some(self.assumptions.len() - 1);
+        Ok(())
+    }
+    /// # Errors
+    /// Rejects invalid identities and exhausted constraint storage.
+    pub fn require(&mut self, longer: Region, shorter: Region, source: u32) -> Result<(), Error> {
+        self.kind(longer)?;
+        self.kind(shorter)?;
+        if longer == shorter || longer == Region::STATIC {
+            return Ok(());
+        }
+        self.capacity(1)?;
+        self.obligations.push(Edge {
+            target: longer,
+            source,
+            next: self.incoming[shorter.0 as usize],
+        });
+        self.incoming[shorter.0 as usize] = Some(self.obligations.len() - 1);
+        Ok(())
+    }
+    /// Propagate universal lower bounds backwards through obligations. An outer
+    /// variable cannot name a younger placeholder: its required lower bound is
+    /// promoted to static. This permits valid shortening but rejects binder leaks.
+    ///
+    /// # Errors
+    /// Reports an unentailed universal relationship or bounded-resource failure.
+    pub fn solve(self) -> Result<Solution, Error> {
+        let mut solver = Solver {
+            graph: &self,
+            steps: 0,
+            reached: HashSet::new(),
+            work: Vec::new(),
+            assumed: HashMap::new(),
+            marks: vec![0; self.kinds.len()],
+            epoch: 0,
+            search: Vec::new(),
+        };
+        for (index, kind) in self.kinds.iter().enumerate() {
+            if kind.rigid() {
+                let id = Region(u32::try_from(index).map_err(|_| Error::Budget)?);
+                solver.insert(id, id)?;
+            }
+        }
+        while let Some((shorter, bound)) = solver.work.pop() {
+            let mut edge = self.incoming[shorter.0 as usize];
+            while let Some(index) = edge {
+                solver.charge()?;
+                let relation = self.obligations[index];
+                edge = relation.next;
+                let longer = relation.target;
+                let kind = self.kind(longer)?;
+                let bound = if kind.universe() < self.kind(bound)?.universe() {
+                    Region::STATIC
+                } else {
+                    bound
+                };
+                if kind.rigid() {
+                    if !solver.entails(longer, bound)? {
+                        return Err(Error::Unsatisfied {
+                            source: relation.source,
+                            longer,
+                            shorter: bound,
+                        });
+                    }
+                    // This universal's own seed already reaches its ancestors.
+                    // Propagating entailed descendants again would duplicate work.
+                    continue;
+                }
+                solver.insert(longer, bound)?;
+            }
+        }
+        Ok(Solution {
+            regions: self.kinds.len(),
+            obligations: self.obligations.len(),
+            propagated: solver.reached.len(),
+            steps: solver.steps,
+        })
+    }
+}
+struct Solver<'a> {
+    graph: &'a Graph,
+    steps: usize,
+    reached: HashSet<(Region, Region)>,
+    work: Vec<(Region, Region)>,
+    assumed: HashMap<(Region, Region), bool>,
+    marks: Vec<u32>,
+    epoch: u32,
+    search: Vec<Region>,
+}
+impl Solver<'_> {
+    fn charge(&mut self) -> Result<(), Error> {
+        self.steps += 1;
+        if self.steps > self.graph.limit {
+            return Err(Error::Budget);
+        }
+        Ok(())
+    }
+    fn insert(&mut self, region: Region, bound: Region) -> Result<(), Error> {
+        self.charge()?;
+        if self.reached.insert((region, bound)) {
+            self.work.push((region, bound));
+        }
+        Ok(())
+    }
+    fn entails(&mut self, longer: Region, shorter: Region) -> Result<bool, Error> {
+        if longer == shorter || longer == Region::STATIC {
+            return Ok(true);
+        }
+        if shorter == Region::LOCAL && self.graph.kind(longer)?.universe() == 0 {
+            return Ok(true);
+        }
+        if let Some(result) = self.assumed.get(&(longer, shorter)) {
+            return Ok(*result);
+        }
+        self.epoch = self.epoch.wrapping_add(1);
+        if self.epoch == 0 {
+            self.marks.fill(0);
+            self.epoch = 1;
+        }
+        self.search.clear();
+        self.search.push(longer);
+        self.marks[longer.0 as usize] = self.epoch;
+        let mut result = false;
+        while let Some(region) = self.search.pop() {
+            self.charge()?;
+            if region == shorter || region == Region::STATIC {
+                result = true;
+                break;
+            }
+            let mut edge = self.graph.assumed_heads[region.0 as usize];
+            while let Some(index) = edge {
+                self.charge()?;
+                let relation = self.graph.assumptions[index];
+                edge = relation.next;
+                if self.marks[relation.target.0 as usize] != self.epoch {
+                    self.marks[relation.target.0 as usize] = self.epoch;
+                    self.search.push(relation.target);
+                }
+            }
+        }
+        self.assumed.insert((longer, shorter), result);
+        Ok(result)
+    }
+}

@@ -27,6 +27,9 @@ impl Lower<'_, '_> {
             let layout = self.context.layout(self.place_type(projection.base)?)?;
             let leaf = self.context.layout(projection.ty)?;
             let delta = match projection.kind {
+                ProjectionKind::Dereference { .. } => {
+                    return Err("reference lowering requires completed region and loan proofs");
+                }
                 ProjectionKind::Field(field) => self.selected_field_offset(&layout, field)?,
                 ProjectionKind::ConstantIndex(index) => {
                     Self::pattern_byte_offset(&layout, &leaf, index, None)?

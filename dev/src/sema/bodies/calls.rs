@@ -1,0 +1,362 @@
+//! Callable instantiation separates item arguments, late binders and caller universals.
+use super::{Checker, Constructor, DefId, Error, NodeId, TermId, Type, TypeId};
+use crate::{
+    sema::model::{BodyRegionOrigin, Outlives},
+    types::{RegionArgs, RegionId, infer, substitute::Bound},
+};
+use std::collections::HashMap;
+
+#[derive(Default)]
+pub(super) struct CallTypes {
+    pub active: HashMap<NodeId, TermId>,
+    signatures: HashMap<TermId, TypeId>,
+    universal_regions: Vec<RegionId>,
+    universals: Option<Bound>,
+}
+impl CallTypes {
+    pub fn clear(&mut self) {
+        self.active.clear();
+        self.signatures.clear();
+        self.universal_regions.clear();
+        self.universals = None;
+    }
+}
+
+impl Checker<'_> {
+    pub(super) fn callable_shape(
+        &mut self,
+        node: NodeId,
+        actual: TermId,
+        expected: TermId,
+    ) -> Result<(), Error> {
+        let source = if self.annotation_checks.is_empty() {
+            actual
+        } else {
+            self.annotation_source(node, actual, expected)?
+        };
+        self.shape_equation(node, source, expected)
+    }
+    fn annotation_source(
+        &mut self,
+        node: NodeId,
+        actual: TermId,
+        expected: TermId,
+    ) -> Result<TermId, Error> {
+        match self.infer.resolved(&mut self.facts.types, expected) {
+            Ok(_) => return Ok(actual),
+            Err(infer::Error::Unresolved) => {}
+            Err(e) => return Err(self.error(node, e)),
+        }
+        let ty = match self.infer.resolved(&mut self.facts.types, actual) {
+            Ok(ty) => ty,
+            Err(infer::Error::Unresolved) => return Ok(actual),
+            Err(e) => return Err(self.error(node, e)),
+        };
+        if self.facts.types.contains_late_callables(ty) != Some(true) {
+            return Ok(actual);
+        }
+        let ty = self.alias_type(node, ty)?;
+        let first = u32::try_from(self.facts.body_regions.len())
+            .ok()
+            .and_then(|n| n.checked_add(1))
+            .ok_or_else(|| self.error(node, "body region identity space exhausted"))?;
+        let specialized = crate::types::specialize::callables(&mut self.facts.types, ty, first)
+            .map_err(|e| self.error(node, e))?;
+        self.infer
+            .account_work(specialized.steps)
+            .map_err(|e| self.error(node, e))?;
+        let region = crate::sema::model::BodyRegion {
+            body: self.body,
+            source: self.key(node),
+            origin: BodyRegionOrigin::Inference,
+        };
+        self.facts
+            .body_regions
+            .extend(std::iter::repeat_n(region, specialized.regions as usize));
+        self.known(node, specialized.ty)
+    }
+    fn prepare_universals(&mut self, node: NodeId) -> Result<(), Error> {
+        if self.call_types.universals.is_some() {
+            return Ok(());
+        }
+        for index in 0..self.body_binders {
+            let bound = RegionId::bound(
+                0,
+                u16::try_from(index)
+                    .map_err(|_| self.error(node, "too many body lifetime parameters"))?,
+            )
+            .map_err(|e| self.error(node, e))?;
+            let alias = self.body_region(node, BodyRegionOrigin::UniversalAlias)?;
+            self.call_types.universal_regions.push(alias);
+            self.infer.region_equalities.push((alias, bound));
+        }
+        self.call_types.universals = Some(Bound::new(self.call_types.universal_regions.clone()));
+        Ok(())
+    }
+    fn alias_region(&mut self, node: NodeId, region: RegionId) -> Result<RegionId, Error> {
+        let Some((depth, index)) = region.bound_parts() else {
+            return Ok(region);
+        };
+        if depth != 0 {
+            return Err(self.error(
+                node,
+                "item lifetime argument is outside the current body binder",
+            ));
+        }
+        self.prepare_universals(node)?;
+        self.call_types
+            .universal_regions
+            .get(usize::from(index))
+            .copied()
+            .ok_or_else(|| self.error(node, "missing body lifetime parameter"))
+    }
+    fn alias_type(&mut self, node: NodeId, ty: TypeId) -> Result<TypeId, Error> {
+        if self.facts.types.escaping_binders(ty) == Some(0) {
+            return Ok(ty);
+        }
+        self.prepare_universals(node)?;
+        let Some(substitution) = self.call_types.universals.as_mut() else {
+            return Err(self.error(node, "missing universal substitution"));
+        };
+        substitution
+            .apply(&mut self.facts.types, ty)
+            .map_err(|e| self.error(node, e))
+    }
+
+    pub(super) fn call_signature(&mut self, node: NodeId, term: TermId) -> Result<TermId, Error> {
+        let Some(Constructor::Function { bound_regions, .. }) = self.head(node, term)? else {
+            return Err(self.error(node, "call requires a known function type"));
+        };
+        let root = self.infer.root(term).map_err(|e| self.error(node, e))?;
+        let ty = if let Some(ty) = self.call_types.signatures.get(&root) {
+            *ty
+        } else {
+            let ty = match self.infer.resolved(&mut self.facts.types, root) {
+                Ok(ty) => ty,
+                // Ordinary inference holes stay in the original graph until
+                // argument checking. No polymorphic signature may use this path.
+                Err(infer::Error::Unresolved) if bound_regions == 0 => return Ok(term),
+                Err(error) => return Err(self.error(node, error)),
+            };
+            self.call_types.signatures.insert(root, ty);
+            ty
+        };
+        if bound_regions == 0 && self.facts.types.escaping_binders(ty) == Some(0) {
+            return Ok(term);
+        }
+        let signature = self.instantiate_call(node, ty)?;
+        self.known(node, signature)
+    }
+    fn instantiate_call(&mut self, node: NodeId, signature: TypeId) -> Result<TypeId, Error> {
+        let Some(Type::Function {
+            bound_regions,
+            parameters,
+            result,
+            unsafe_,
+        }) = self.facts.types.kind(signature)
+        else {
+            return Err(self.error(node, "missing callable signature"));
+        };
+        let mut arguments = Vec::with_capacity(bound_regions as usize);
+        for _ in 0..bound_regions {
+            arguments.push(self.body_region(node, BodyRegionOrigin::CallArgument)?);
+        }
+        let mut substitution = Bound::new(arguments);
+        let count = self
+            .facts
+            .types
+            .list(parameters)
+            .ok_or_else(|| self.error(node, "missing call parameters"))?
+            .len();
+        let mut children = Vec::with_capacity(count);
+        for index in 0..count {
+            let ty = self
+                .facts
+                .types
+                .list(parameters)
+                .ok_or_else(|| self.error(node, "missing callable parameters"))?[index];
+            let ty = substitution
+                .apply(&mut self.facts.types, ty)
+                .map_err(|e| self.error(node, e))?;
+            children.push(self.alias_type(node, ty)?);
+        }
+        let result = substitution
+            .apply(&mut self.facts.types, result)
+            .map_err(|e| self.error(node, e))?;
+        let result = self.alias_type(node, result)?;
+        let parameters = self
+            .facts
+            .types
+            .intern_list(&children)
+            .map_err(|e| self.error(node, e))?;
+        self.facts
+            .types
+            .intern(Type::Function {
+                bound_regions: 0,
+                parameters,
+                result,
+                unsafe_,
+            })
+            .map_err(|e| self.error(node, e))
+    }
+
+    pub(super) fn function_item(
+        &mut self,
+        node: NodeId,
+        owner: DefId,
+        ty: TypeId,
+    ) -> Result<TypeId, Error> {
+        if let Some(&variant) = self.facts.members.constructors.get(&owner) {
+            return self.constructor_item(node, ty, variant);
+        }
+        let Some(Type::FunctionItem {
+            item, signature, ..
+        }) = self.facts.types.kind(ty)
+        else {
+            return Ok(ty);
+        };
+        let explicit = crate::sema::lifetimes::arguments(self.report, self.key(node), false)?;
+        let Some(scheme) = self.facts.lifetimes.functions.get(&owner) else {
+            if explicit.is_some_and(|args| args.start != args.end) {
+                return Err(self.error(node, "function does not accept lifetime arguments"));
+            }
+            return Ok(ty);
+        };
+        let count = scheme.early.len();
+        let mut mapping = vec![RegionId::STATIC; scheme.total as usize];
+        for (ordinal, index) in scheme.late.iter().copied().enumerate() {
+            mapping[usize::from(index)] = RegionId::bound(
+                0,
+                u16::try_from(ordinal).map_err(|_| self.error(node, "too many late lifetimes"))?,
+            )
+            .map_err(|e| self.error(node, e))?;
+        }
+        let early: Vec<_> = scheme.early.iter().map(|(_, index)| *index).collect();
+        let late = u32::try_from(scheme.late.len())
+            .map_err(|_| self.error(node, "too many late lifetime slots"))?;
+        let bounds = scheme.bounds.clone();
+        let declared_late = scheme.has_declared_late;
+        let mut arguments = Vec::with_capacity(count);
+        if let Some(list) = explicit {
+            let nodes = self
+                .report
+                .package
+                .unit(self.file)
+                .configured
+                .ast
+                .list(list);
+            if nodes.len() != count || (declared_late && count == 0 && !nodes.is_empty()) {
+                return Err(self.error(
+                    node,
+                    "explicit lifetime arguments must match early-bound parameters",
+                ));
+            }
+            for node in nodes {
+                let region = self.local_region(*node)?;
+                arguments.push(self.alias_region(*node, region)?);
+            }
+        } else {
+            for _ in 0..count {
+                arguments.push(self.body_region(node, BodyRegionOrigin::ItemArgument)?);
+            }
+        }
+        for (index, argument) in early.into_iter().zip(arguments.iter().copied()) {
+            mapping[usize::from(index)] = argument;
+        }
+        self.item_bounds(node, &mapping, &bounds)?;
+        let arguments = self
+            .facts
+            .types
+            .intern_regions(&arguments)
+            .map_err(|e| self.error(node, e))?;
+        let signature = if let Some(template) = self.facts.lifetimes.callables.get(item) {
+            self.facts
+                .lifetimes
+                .substitute(&mut self.facts.types, arguments, template.signature)
+                .map_err(|e| self.error(node, e))?
+        } else {
+            Bound::new(mapping)
+                .signature(&mut self.facts.types, signature, late)
+                .map_err(|e| self.error(node, e))?
+        };
+        self.facts
+            .types
+            .intern(Type::FunctionItem {
+                item,
+                arguments,
+                signature,
+            })
+            .map_err(|e| self.error(node, e))
+    }
+    fn item_bounds(
+        &mut self,
+        node: NodeId,
+        mapping: &[RegionId],
+        bounds: &[(RegionId, RegionId)],
+    ) -> Result<(), Error> {
+        for &(longer, shorter) in bounds {
+            let replace = |region: RegionId| -> Result<RegionId, Error> {
+                if let Some((0, index)) = region.bound_parts() {
+                    mapping
+                        .get(usize::from(index))
+                        .copied()
+                        .ok_or_else(|| self.error(node, "invalid item bound parameter"))
+                } else {
+                    Ok(region)
+                }
+            };
+            let (longer, shorter) = (replace(longer)?, replace(shorter)?);
+            if longer != shorter && longer != RegionId::STATIC {
+                self.facts.outlives.push(Outlives {
+                    body: self.body,
+                    source: self.key(node),
+                    longer,
+                    shorter,
+                });
+            }
+        }
+        Ok(())
+    }
+    fn constructor_item(
+        &mut self,
+        node: NodeId,
+        ty: TypeId,
+        variant: crate::sema::members::VariantId,
+    ) -> Result<TypeId, Error> {
+        let owner = self.facts.members.variants[variant.0 as usize].owner;
+        let nominal = self.nominal_type(node, node, owner)?;
+        let Some(Type::FunctionItem {
+            item, signature, ..
+        }) = self.facts.types.kind(ty)
+        else {
+            return Ok(nominal);
+        };
+        let Some(Type::Adt(_, arguments)) = self.facts.types.kind(nominal) else {
+            return Err(self.error(node, "missing constructor instance"));
+        };
+        if arguments == RegionArgs::EMPTY {
+            return Ok(ty);
+        }
+        let regions = self
+            .facts
+            .types
+            .region_args(arguments)
+            .ok_or_else(|| self.error(node, "missing constructor lifetime arguments"))?
+            .to_vec();
+        let mut aliases = Vec::with_capacity(regions.len());
+        for region in regions {
+            aliases.push(self.alias_region(node, region)?);
+        }
+        let signature = Bound::new(aliases)
+            .signature(&mut self.facts.types, signature, 0)
+            .map_err(|e| self.error(node, e))?;
+        self.facts
+            .types
+            .intern(Type::FunctionItem {
+                item,
+                arguments,
+                signature,
+            })
+            .map_err(|e| self.error(node, e))
+    }
+}

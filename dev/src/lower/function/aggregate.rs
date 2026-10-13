@@ -216,6 +216,9 @@ impl Lower<'_, '_> {
         let layout = self.context.layout(base_type)?;
         let leaf = self.context.layout(projection.ty)?;
         let address = match projection.kind {
+            ProjectionKind::Dereference { .. } => {
+                return Err("reference lowering requires completed region and loan proofs");
+            }
             ProjectionKind::Field(field) => {
                 let offset = self.selected_field_offset(&layout, field)?;
                 if leaf.size == 0 {

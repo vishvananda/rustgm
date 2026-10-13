@@ -196,8 +196,10 @@ const CASES: &[(&str, &str, u128)] = &[
 #[test]
 fn region_conversions_remain_explicit_obligations() -> Result<(), String> {
     let (_, facts, program) = analyze("fn f<'a,'b>(x:&'a u8,y:&'b u8)->&'a u8{y}")?;
-    assert_eq!(program.region_equalities.len(), 1);
-    assert_eq!(facts.region_equalities.len(), 1);
+    assert!(program.region_equalities.is_empty());
+    assert!(facts.region_equalities.is_empty());
+    assert_eq!(program.coercions.len(), 1);
+    assert_eq!(facts.coercions.len(), 1);
     let body = &program.bodies[0];
     let conversion = body
         .values

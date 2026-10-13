@@ -25,5 +25,19 @@ pub fn build(
     bodies: &Checked<'_>,
     entry: DefId,
 ) -> Result<program::Program, Error> {
-    context::Context::build(facts, bodies.program(), entry)
+    let program = bodies.program();
+    let pending = program
+        .outlives
+        .first()
+        .map(|r| r.source)
+        .or_else(|| program.coercions.first().map(|c| c.source))
+        .or_else(|| program.region_equalities.first().map(|r| r.body))
+        .or_else(|| program.body_regions.first().map(|r| r.source));
+    if let Some(node) = pending {
+        return Err(Error {
+            node,
+            message: "reference lowering requires completed region and loan proofs",
+        });
+    }
+    context::Context::build(facts, program, entry)
 }
