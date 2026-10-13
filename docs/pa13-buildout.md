@@ -1459,3 +1459,122 @@ observations, not universal timing guarantees. The three small asserting workloa
 programs were independently executed before measurement. Full rendered/count
 outputs agree for every A/A run. Raw records are `obj/perf/RUN/samples.json`;
 the command/receipt index is `obj/pa13-work/float-perf-receipts.json`.
+
+## Refutable dynamic-slice selection and coverage
+
+Typed selection now retains dynamic-slice length constraints, prefix indices,
+one-based suffix offsets and rest projections. Exact patterns require their
+stated length; a rest permits larger lengths. Rest bindings preserve the slice
+input type and the inherited reference capture mode. Ordinary lets/parameters
+require coverage, while match, let-else, if-let, while-let and condition chains
+retain refutable decisions. `[] | [_, ..]` is irrefutable. These are selected
+semantic facts; reference/slice execution still stops at the existing pending
+region/loan boundary. Local reference annotation elision and reference writes
+are not claimed by the pattern inspection view.
+
+Slices use the existing shared decision graph with a length variable. Each
+coverage query lazily walks its own roots once to collect tested start/end
+positions by canonical slice type. Hash sets collect positions and alias lengths;
+the completed alias list sorts once. Wildcards and unconstrained captures add
+no alias points. At a length where `start_index + end_offset == length`, the end
+projection becomes the corresponding start projection. Other length intervals
+retain independent end projections, even if an interval happens to contain a
+single length. This last distinction preserves identities between patterns with
+different minimum lengths. Nested slices reuse the same typed-place machinery.
+No whole-crate rescan, value enumeration, rendered-text transport or unbounded
+length enumeration is introduced. Collection, position pairs, branches and graph
+operations share the 1,000,000-work limit.
+
+The 35-case matrix checks 23 accepted and 12 rejected sources against pinned
+rustc, including prefix/suffix correlation, sparse alias gaps, nested slices,
+empty element types, constants, floats, conditional selection and binding modes.
+Every accepted matrix case remains rejected at executable lowering's explicit
+owned-pattern or region/loan boundary. Each view is deterministic, count mode
+agrees with its footer, and rejected views have no stdout.
+
+An independent Boolean model enumerates every sequence of lengths zero through
+six for 64 generated six-arm pattern sets. Those lengths cover every aliasing
+partition, exact-length boundary and an independent long-tail representative for
+the generated prefix/suffix widths. Each set is checked both without and with a
+fallback: 128 sources independently checked by rustc and RustGM. Whole-arm
+usefulness is compared with the enumerated set difference; guarded arms add no
+coverage. Resource controls separately exercise 5,000 wildcard positions and a
+sparse 5,001-position pattern below 100,000 coverage operations. A dense pattern
+hits the work limit with matching, atomic emit/count diagnostics. These stress
+controls do not claim rustc throughput or acceptance parity at RustGM's limit.
+
+The immutable executable is `obj/pa13-work/slice-pattern-candidate`, SHA-256
+`dc713ca8a2722e3dcebddecce1cffe23b7a9f05b74b7a7c71f45dc8956b77b2d`.
+Debug and release each pass 314 Rust tests; all 1,695 active assignment cases
+pass. Clippy all/pedantic, rustfmt, the 200-file audit, 24 harness tests,
+38-assignment placement, upstream/Reference hashes, backend checks and complete
+`make test-rustc` pass. Earlier phase-boundary exceptions remain explicit.
+The frozen binary also passes PA11's 194 checks/180 native comparisons and
+PA12's 97 checks/48 native comparisons. Both native receipts identify its hash.
+Explicit `make ref-test` refreshes twelve source receipts; existing assignment
+oracle stdout, stderr and statuses are unchanged.
+
+All 305 prior PA13 native checks pass with the frozen binary: 31 constants,
+61 guard/stress cases, 150 earlier pattern/storage cases, and 63 float/workload
+cases. Their documented constructed-count and signed-zero discrepancy oracles
+remain distinct from same-source rustc parity. Receipts under `obj/pa13-work/`
+are `slice-constants-qualified-1791856297830894889/evidence.json`,
+`slice-guards-qualified-1791856303003830591/evidence.json`,
+`slice-previous-native-1791856310484508920/evidence.json` and
+`slice-floats-qualified-1791856330330278327/evidence.json`.
+Three small slice benchmark sources independently pass rustc and both RustGM
+pattern views in `slice-workload-checks-1791856356981088191/evidence.json`.
+Final logs are `slice-{final-debug,full-release,final-quality,rustc-native,refs}.log`.
+
+PA13 remains planned. Structural/reference/text constant patterns and the final
+published assignment contract/fixtures remain unfinished; borrowed execution
+retains its later proof boundary. PA14/PA15 remain in the active goal.
+
+CPU-10 measurements retain all 324 observations across six workloads, with
+immutable binaries, frozen inputs, A/A calibration and three paired ABBA blocks
+at each of three sizes. No build or test from this task overlapped timing.
+The three existing workloads compare the frozen floating-pattern baseline
+(`7f10435b51748f63e0caf456341d0e18c7bf2de923ac36b99be66f14ea5ec7f3`)
+with the slice candidate. Complete rendered outputs and count outputs agree.
+
+| Existing workload | Run | Largest functions | Baseline/candidate median ms | Baseline/candidate median KiB |
+| --- | --- | ---: | ---: | ---: |
+| ordinary | 1791856487439477587 | 64,000 | 3693.88 / 3752.08 | 715122 / 715152 |
+| constructor-coverage | 1791856588669745861 | 16,000 | 1730.78 / 1737.35 | 225038 / 225014 |
+| guard-retries | 1791856635442328510 | 16,000 | 1218.04 / 1243.24 | 275904 / 276094 |
+
+Largest-scale medians differ by 0.4–2.1%, with similar memory use. Ordinary
+A/A calibration spans 3.60–3.72 seconds, while paired observations include a
+4.69-second candidate sample. The guard median is 2.1% slower in this run;
+these observations do not establish a speedup or a universal regression bound.
+
+New slice workloads use candidate A/A scaling through
+`scripts/measure_lexer.py --stage patterns --slice-pattern-input MODE`:
+
+| Slice workload | Run | Size | Candidate median ms | Candidate median KiB |
+| --- | --- | ---: | ---: | ---: |
+| slice-scalar | 1791856891397946620 | 1,000 | 341.99 | 10642 |
+| slice-scalar | 1791856891397946620 | 4,000 | 1563.80 | 31038 |
+| slice-scalar | 1791856891397946620 | 16,000 | 6500.57 | 113346 |
+| slice-nested | 1791857058500219126 | 1,000 | 1021.77 | 12142 |
+| slice-nested | 1791857058500219126 | 4,000 | 4010.86 | 35990 |
+| slice-nested | 1791857058500219126 | 16,000 | 18239.65 | 135226 |
+| slice-sparse | 1791857524591037130 | 128 | 4.16 | 3692 |
+| slice-sparse | 1791857524591037130 | 512 | 4.74 | 3648 |
+| slice-sparse | 1791857524591037130 | 2,048 | 6.77 | 4394 |
+
+Scalar/nested sizes count functions; sparse sizes count unconstrained prefix
+positions before one tested value in a single function. RSS scales roughly
+with input size. Nested 16,000-function paired samples span 15.8–25.5 seconds
+with identical A/A binaries, versus 15.8–16.4 seconds in calibration; elapsed
+growth therefore includes substantial host noise. Sparse-pattern timings are
+dominated by process startup at these sizes. The wide-pattern work-counter
+controls provide the algorithmic check against enumerating irrelevant lengths.
+
+Raw records are `obj/perf/RUN/samples.json`, with append-only observation logs.
+The combined command index is `obj/pa13-work/slice-perf-receipts.json`; verified
+hashes, sample counts, equality and summaries are in `slice-perf-verified.json`.
+The initial wrapper rejected the new slice workload name before measurement;
+its diagnostics remain in `slice-perf.log`. After fixing its argument allowlist,
+`slice-perf-resume.log` records only the three remaining workloads. All original
+observations were retained, and the 24 harness checks pass after that fix.

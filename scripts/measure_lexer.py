@@ -62,6 +62,19 @@ def float_pattern_source(lines, mode):
     return declarations + functions + "fn main(){" + calls + "}\n"
 
 
+def slice_pattern_source(lines, mode):
+    if mode == "sparse":
+        pattern = ",".join(["_"] * lines + ["true"])
+        return f"fn measured(x:&[bool]){{match x{{[{pattern}]=>(),[..,true]=>(),[..,false]=>(),[]=>()}}}}\n"
+    if mode == "nested":
+        parameter = "x:&[&[bool]]"
+        arms = "[]=>(),[[],..]=>(),[[true,..],..]=>(),[..,[..,false]]=>(),_=>()"
+    else:
+        parameter = "x:&[bool]"
+        arms = "[]=>(),[true,..]=>(),[..,false]=>(),[false,..,true]=>()"
+    return "".join(f"fn measured_{i}({parameter}){{match x{{{arms}}}}}\n" for i in range(lines))
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--baseline", type=Path)
@@ -81,16 +94,19 @@ def main():
     workloads.add_argument("--guard-input", choices=("boolean", "let-chain", "retry"), help="exercise guard scopes or execution at 1000/4000/16000 procedures")
     workloads.add_argument("--constant-pattern-input", choices=("shared", "unique", "chain"), help="exercise cached or independent constant patterns at 1000/4000/16000 procedures")
     workloads.add_argument("--float-pattern-input", choices=("scalar", "product", "retry"), help="exercise floating ranges, composite coverage or guard retries at 1000/4000/16000 procedures")
+    workloads.add_argument("--slice-pattern-input", choices=("scalar", "nested", "sparse"), help="exercise dynamic slice coverage or sparse wide-pattern aliases")
     parser.add_argument("--stage", choices=("tokens", "literals", "token-trees", "ast", "crate-ast", "names", "expanded", "expanded-crate", "types", "patterns", "layouts", "body-ir", "ownership", "lowir"), default="tokens")
     args = parser.parse_args()
+    if args.slice_pattern_input and args.stage != "patterns":
+        parser.error("slice workloads require --stage patterns until reference execution has loan proofs")
     if (args.aggregate_input or args.discriminant_input or args.product_input or args.array_pattern_input or args.scalar_match_input or args.constructor_match_input or args.conditional_pattern_input or args.storage_width_input or args.constant_pattern_input or args.float_pattern_input) and args.stage != "lowir":
         parser.error("aggregate, discriminant and owned-pattern workloads require --stage lowir")
     if args.pattern_input and args.stage != "names":
         parser.error("pattern identity workloads require --stage names")
     if args.guard_input and args.stage not in ("names", "lowir"):
         parser.error("guard workloads require --stage names or --stage lowir")
-    if (args.borrowed_pattern_input or args.constructor_pattern_input) != (args.stage == "patterns"):
-        parser.error("--stage patterns requires --borrowed-pattern-input or --constructor-pattern-input")
+    if bool(args.borrowed_pattern_input or args.constructor_pattern_input or args.slice_pattern_input) != (args.stage == "patterns"):
+        parser.error("--stage patterns requires a borrowed, constructor or slice workload")
     directory = ROOT / "obj/perf" / str(time.time_ns())
     directory.mkdir(parents=True)
     candidate = args.candidate.resolve()
@@ -118,6 +134,7 @@ def main():
                "guard_input": args.guard_input,
                "constant_pattern_input": args.constant_pattern_input,
                "float_pattern_input": args.float_pattern_input,
+               "slice_pattern_input": args.slice_pattern_input,
                "binary_sha256": {name: hashlib.sha256(p.read_bytes()).hexdigest() for name, p in binaries.items()},
                "samples": [], "full_output_sha256": {}}
     scales = (4000, 16000, 64000) if args.stage in ("token-trees", "ast", "crate-ast", "names", "expanded", "expanded-crate", "types", "body-ir", "ownership", "lowir") else (16000, 64000, 256000)
@@ -125,10 +142,14 @@ def main():
         scales = (1000, 4000, 16000)
     if args.storage_width_input:
         scales = (128, 512, 2048)
+    if args.slice_pattern_input:
+        scales = (128, 512, 2048) if args.slice_pattern_input == "sparse" else (1000, 4000, 16000)
     line = {"tokens": LINE, "literals": LITERAL_LINE, "token-trees": TREE_LINE, "ast": AST_LINE, "crate-ast": CRATE_LINE, "names": b"", "expanded": b"", "expanded-crate": b"", "types": b"", "patterns": b"", "layouts": b"", "body-ir": b"", "ownership": b"", "lowir": b""}[args.stage]
     for lines in scales:
         source = directory / f"input-{lines}.rs"
-        if args.float_pattern_input:
+        if args.slice_pattern_input:
+            source.write_text(slice_pattern_source(lines, args.slice_pattern_input))
+        elif args.float_pattern_input:
             source.write_text(float_pattern_source(lines, args.float_pattern_input))
         elif args.constant_pattern_input:
             constants = "const ROOT:u64=7;\n"

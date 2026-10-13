@@ -399,6 +399,9 @@ impl Checker<'_> {
             report,
             self.module,
             ty,
+            patterns::coverage::Roots::Arms(
+                &self.facts.patterns.arms[start as usize..end as usize],
+            ),
             &mut self.coverage_cache,
         )
         .map_err(error)?;
@@ -435,6 +438,7 @@ impl Checker<'_> {
             report,
             self.module,
             ty,
+            patterns::coverage::Roots::Pattern(root),
             &mut self.coverage_cache,
         )
         .map_err(error)?;

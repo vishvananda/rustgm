@@ -1,11 +1,12 @@
 //! Coverage sets over sparse typed places, with shared interval decision subgraphs.
 mod decision;
 mod inhabited;
+mod slices;
 #[cfg(test)]
 mod tests;
 mod witness;
 
-use super::{Kind, PatternId, Projection, scalar::Domain};
+use super::{Arm, Kind, PatternId, Projection, scalar::Domain};
 use crate::{
     resolve::{expansion::Report, package::ModuleId},
     sema::{members::VariantId, model::Declarations},
@@ -33,6 +34,11 @@ struct Place {
 enum Values {
     Scalar(Domain),
     Tags(Arc<[VariantId]>),
+    Length,
+}
+pub enum Roots<'a> {
+    Pattern(PatternId),
+    Arms(&'a [Arm]),
 }
 struct Input {
     place: PlaceId,
@@ -51,6 +57,10 @@ enum Work {
         initial: Id,
         children: Vec<Query>,
     },
+    Slices {
+        query: Query,
+        branches: Vec<slices::Branch>,
+    },
 }
 pub struct Coverage<'a> {
     facts: &'a Declarations,
@@ -63,6 +73,8 @@ pub struct Coverage<'a> {
     patterns: HashMap<Query, Id>,
     covered: Id,
     universe: Id,
+    roots: Roots<'a>,
+    slice_aliases: Option<HashMap<TypeId, Vec<u64>>>,
 }
 impl<'a> Coverage<'a> {
     pub fn new(
@@ -70,6 +82,7 @@ impl<'a> Coverage<'a> {
         report: &'a Report,
         module: ModuleId,
         ty: TypeId,
+        roots: Roots<'a>,
         cache: &'a mut Cache,
     ) -> Result<Self, &'static str> {
         let mut graph = Graph::new(super::scalar::Coverage::LIMIT);
@@ -95,6 +108,8 @@ impl<'a> Coverage<'a> {
             patterns: HashMap::new(),
             covered: Id::EMPTY,
             universe,
+            roots,
+            slice_aliases: None,
         })
     }
     pub fn work(&self) -> u64 {
@@ -160,6 +175,7 @@ impl<'a> Coverage<'a> {
                     .ok_or("empty coverage constructor domain")?;
                 (maximum as u128, Values::Tags(tags))
             }
+            Some(Type::Slice(_)) => (u128::from(u64::MAX), Values::Length),
             _ => return Err("coverage place has no decision domain"),
         };
         let id = self.graph.variable(maximum)?;
@@ -248,6 +264,11 @@ impl<'a> Coverage<'a> {
                 children.push(self.child(query.place, pattern, Step::Dereference)?);
             }
             Kind::Product { variant, fields } => return self.product(query, variant, fields),
+            Kind::Slice {
+                minimum,
+                exact,
+                fields,
+            } => return self.slice(query, minimum, exact, fields),
             Kind::Or(alternatives) => {
                 initial = Id::EMPTY;
                 operation = Operation::Union;
@@ -278,10 +299,17 @@ impl<'a> Coverage<'a> {
                         continue;
                     }
                     let next = self.enter(query)?;
-                    let Work::Finish { children, .. } = &next else {
-                        return Err("missing coverage continuation");
+                    let pending: Vec<_> = match &next {
+                        Work::Finish { children, .. } => {
+                            children.iter().map(|q| Work::Enter(*q)).collect()
+                        }
+                        Work::Slices { branches, .. } => branches
+                            .iter()
+                            .flat_map(|b| b.children.iter())
+                            .map(|q| Work::Enter(*q))
+                            .collect(),
+                        Work::Enter(_) => return Err("missing coverage continuation"),
                     };
-                    let pending: Vec<_> = children.iter().map(|q| Work::Enter(*q)).collect();
                     work.push(next);
                     work.extend(pending.into_iter().rev());
                 }
@@ -298,6 +326,21 @@ impl<'a> Coverage<'a> {
                             .get(&child)
                             .ok_or("missing selected coverage child")?;
                         result = self.graph.apply(operation, result, child)?;
+                    }
+                    self.patterns.insert(query, result);
+                }
+                Work::Slices { query, branches } => {
+                    let mut result = Id::EMPTY;
+                    for branch in branches {
+                        let mut value = branch.length;
+                        for child in branch.children {
+                            let child = *self
+                                .patterns
+                                .get(&child)
+                                .ok_or("missing slice coverage child")?;
+                            value = self.graph.apply(Operation::Intersection, value, child)?;
+                        }
+                        result = self.graph.apply(Operation::Union, result, value)?;
                     }
                     self.patterns.insert(query, result);
                 }

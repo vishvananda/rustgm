@@ -393,29 +393,42 @@ impl Checker<'_> {
         rest: Option<usize>,
         mode: Mode,
     ) -> Result<PatternKind, Error> {
-        if rest != Some(0) || elements.len() != 1 {
-            return Err(self.error(
-                node,
-                "refutable slice requires conditional pattern semantics",
-            ));
-        }
-        let child = elements[0];
+        let minimum = u64::try_from(elements.len() - usize::from(rest.is_some()))
+            .map_err(|_| self.error(node, "slice pattern arity overflow"))?;
+        self.pattern_refutable |= rest.is_none() || minimum != 0;
+        let element = self.child(node, term, 0)?;
         let start = self.pattern_index(node, self.facts.patterns.fields.len())?;
-        if matches!(self.kind(child), Kind::RestPattern) {
-            self.save(child, term);
-        } else {
-            let pattern = self.schedule_pattern(child, term, mode, true)?;
-            self.facts.patterns.fields.push(Field {
-                selection: Projection::Subslice {
-                    prefix: 0,
-                    suffix: 0,
-                },
-                pattern,
-            });
+        for (index, &child) in elements.iter().enumerate() {
+            let ordinal = u64::try_from(index)
+                .map_err(|_| self.error(child, "slice pattern index overflow"))?;
+            let is_rest = rest == Some(index);
+            let (selection, child_term) = if is_rest {
+                if matches!(self.kind(child), Kind::RestPattern) {
+                    self.save(child, term);
+                    continue;
+                }
+                (
+                    Projection::Subslice {
+                        prefix: ordinal,
+                        suffix: minimum - ordinal,
+                    },
+                    term,
+                )
+            } else if rest.is_some_and(|rest| index > rest) {
+                (Projection::FromEnd(minimum - ordinal + 1), element)
+            } else {
+                (Projection::Index(ordinal), element)
+            };
+            let pattern = self.schedule_pattern(child, child_term, mode, is_rest)?;
+            self.facts
+                .patterns
+                .fields
+                .push(Field { selection, pattern });
         }
         let end = self.pattern_index(node, self.facts.patterns.fields.len())?;
-        Ok(PatternKind::Product {
-            variant: None,
+        Ok(PatternKind::Slice {
+            minimum,
+            exact: rest.is_none(),
             fields: Fields { start, end },
         })
     }

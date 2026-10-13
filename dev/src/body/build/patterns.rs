@@ -100,6 +100,7 @@ impl Builder<'_> {
                 ));
             }
             Kind::Dereference { .. }
+            | Kind::Slice { .. }
             | Kind::Binding {
                 capture: Capture::Borrow { .. },
                 ..
@@ -182,7 +183,7 @@ impl Builder<'_> {
             Projection::Field(field) => ProjectionKind::Field(field),
             Projection::Index(index) => ProjectionKind::ConstantIndex(index),
             Projection::Subarray { start, end } => ProjectionKind::Subarray { start, end },
-            Projection::Subslice { .. } => {
+            Projection::Subslice { .. } | Projection::FromEnd(_) => {
                 return Err(self.error(
                     node,
                     "slice pattern execution requires region and loan proofs",

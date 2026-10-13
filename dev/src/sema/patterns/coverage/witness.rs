@@ -22,9 +22,15 @@ impl Coverage<'_> {
             }
             let input = &self.inputs[variable.0 as usize];
             self.path(input.place, &mut result)?;
+            if matches!(input.values, Values::Length) {
+                result.push_str(".len");
+            }
             result.push_str(" = ");
             match &input.values {
                 Values::Scalar(domain) => result.push_str(&domain.witness(rank)?),
+                Values::Length => {
+                    write!(result, "{rank}").map_err(|_| "cannot format slice length")?;
+                }
                 Values::Tags(tags) => {
                     let index = usize::try_from(rank).map_err(|_| "invalid constructor witness")?;
                     self.variant_name(
@@ -75,6 +81,7 @@ impl Coverage<'_> {
                     }
                 }
                 Step::Field(Projection::Index(index)) => write!(out, "[{index}]"),
+                Step::Field(Projection::FromEnd(offset)) => write!(out, "[-{offset}]"),
                 Step::Field(Projection::Subarray { start, end }) => write!(out, "[{start}..{end}]"),
                 Step::Field(Projection::Subslice { prefix, suffix }) => {
                     write!(out, "[{prefix}..-{suffix}]")

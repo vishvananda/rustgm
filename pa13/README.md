@@ -29,13 +29,15 @@ The view covers irrefutable owned products/arrays, explicit reference patterns,
 edition-2024 binding modes, irrefutable borrowed slice rests, and owned match
 decisions. Boolean, integer, character and floating intervals compose with tuple, record,
 enum, fixed-array and reference patterns for exhaustiveness and whole-arm
-usefulness. Dynamic slices currently support only irrefutable rests. Owned matches, including
+usefulness. Dynamic slices support exact lengths, prefixes, suffixes and borrowed
+rest bindings for typed selection and coverage. Owned matches, including
 boolean and conditional guards, and irrefutable constructor bindings can execute.
 Owned let-else, if-let, while-let and condition chains also execute. Named
 boolean, integer, character and floating-point constants work as patterns and
 range endpoints. Floating literals and ranges compose with owned products,
 arrays, constructors, guards and conditional bindings. Structural/reference
-constants and refutable dynamic slices remain unfinished.
+constants remain unfinished. Reference and dynamic-slice execution still require
+the later region and loan proofs.
 
 Named constants use resolved declaration identities and their canonical types;
 pattern endpoints do not coerce between integer types. The shared typed constant
@@ -61,12 +63,16 @@ from a binding's local type. Kinds are:
   `region=REGION loan=pending` for borrowed captures, then `subpattern=ID|-`.
 - `deref mutable=BOOL implicit=BOOL pattern=ID` for each reference adjustment.
 - `product variant=ID|- fields=START:END` with a half-open edge range.
+- `slice minimum=N exact=BOOL fields=START:END` with the required length and
+  a half-open edge range; `exact=false` permits any greater length.
 - `or alternatives=START:END` with shared resolved binding identities.
 
-`field ID tuple=INDEX|nominal=FIELD|index=INDEX|subarray=START:END|subslice=PREFIX:SUFFIX
+`field ID tuple=INDEX|nominal=FIELD|index=INDEX|from-end=OFFSET|subarray=START:END|subslice=PREFIX:SUFFIX
 pattern=ID` records retain selected places. Subarray endpoints are half-open;
-subslice values count excluded elements at either end. Currently only `0:0`
-is irrefutable for a dynamic slice. `alternative ID pattern=ID` records retain
+subslice values count excluded elements at either end. `from-end` is a one-based
+offset, so `1` selects the final element after the length test. A lone rest is
+irrefutable for a dynamic slice; combinations such as `[] | [_, ..]` can also
+cover every length. `alternative ID pattern=ID` records retain
 each occurrence, including distinct capture operations for a shared binding.
 
 `range ID ranks=LOW:HIGH` uses inclusive, ordered target ranks. Signed integers
@@ -108,6 +114,16 @@ deterministic partial assignment such as `{ $.0 = false, $.1 = true }` or
 and `[N]` selects an array element. Unconstrained inputs render `_`; these are
 diagnostic constraints, not Rust source to reparse. Whole-arm usefulness still
 ignores guard outcomes and does not diagnose individual redundant alternatives.
+
+Dynamic slices add a length variable to the same coverage graph. A query lazily
+collects tested start/end positions by canonical slice type from its own roots.
+Only lengths at which those positions can alias need individual specialization;
+the intervening intervals share independent start/end projections. Wildcards and
+unconstrained captures do not add alias points. At an alias length, a suffix
+selects the same canonical start index as the matching prefix. This handles
+short slices without enumerating all lengths or element values. Collection,
+position pairs, branches and graph operations share the existing work budget.
+Diagnostics use `.len` for a length constraint and `[-N]` for an end offset.
 
 Decisions retain ordered alternatives, read the scrutinee only when the
 decision or capture requires it, and capture values after a successful decision.

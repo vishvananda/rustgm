@@ -28,6 +28,7 @@ pub fn write(facts: &Declarations, out: &mut impl Write) -> io::Result<()> {
             Projection::Field(Selection::Tuple(index)) => write!(out, "tuple={index}")?,
             Projection::Field(Selection::Nominal(field)) => write!(out, "nominal={}", field.0)?,
             Projection::Index(index) => write!(out, "index={index}")?,
+            Projection::FromEnd(offset) => write!(out, "from-end={offset}")?,
             Projection::Subarray { start, end } => write!(out, "subarray={start}:{end}")?,
             Projection::Subslice { prefix, suffix } => write!(out, "subslice={prefix}:{suffix}")?,
         }
@@ -161,6 +162,17 @@ fn nodes(facts: &Declarations, out: &mut impl Write) -> io::Result<()> {
                     write!(out, "-")?;
                 }
                 write!(out, " fields={}:{}", fields.start, fields.end)?;
+            }
+            Kind::Slice {
+                minimum,
+                exact,
+                fields,
+            } => {
+                write!(
+                    out,
+                    "slice minimum={minimum} exact={exact} fields={}:{}",
+                    fields.start, fields.end
+                )?;
             }
             Kind::Or(alternatives) => {
                 write!(

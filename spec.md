@@ -87,6 +87,15 @@ do not enumerate floating values or add per-value domain storage. Execution
 compares the original typed value and captures its original bits. Even a range
 covering every numeric rank must test its input because it excludes NaN.
 
+Dynamic-slice coverage retains exact/minimum lengths and typed start/end/rest
+projections. Lazily collect tested positions from the current query's selected
+roots, keyed by canonical slice type. Specialize only lengths at which a tested
+start and end position can alias; keep the remaining length intervals shared.
+Canonicalize aliases to one place identity, including nested patterns. Wildcards
+and unconstrained captures add no alias points. Charge collection, position pairs,
+specialization and graph work to the same bounded query; sort the completed alias
+set once rather than using ordered node containers for hot-path membership.
+
 ## Rust body representation
 
 A typed control-flow IR retains places, projections, moves, borrows, storage

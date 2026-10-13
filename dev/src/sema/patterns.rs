@@ -63,8 +63,16 @@ pub struct Field {
 pub enum Projection {
     Field(Selection),
     Index(u64),
-    Subarray { start: u64, end: u64 },
-    Subslice { prefix: u64, suffix: u64 },
+    /// One-based distance from the end of a dynamically sized slice.
+    FromEnd(u64),
+    Subarray {
+        start: u64,
+        end: u64,
+    },
+    Subslice {
+        prefix: u64,
+        suffix: u64,
+    },
 }
 /// An occurrence's operation; alternatives can share a definition but differ here.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -90,6 +98,11 @@ pub enum Kind {
     },
     Product {
         variant: Option<VariantId>,
+        fields: Fields,
+    },
+    Slice {
+        minimum: u64,
+        exact: bool,
         fields: Fields,
     },
     Or(Alternatives),
