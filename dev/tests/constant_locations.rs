@@ -56,6 +56,19 @@ fn ancestry(
     }
     Err("cyclic constant projection ancestry")
 }
+fn contents(reader: Reader<'_>, id: LocationId) -> Result<Constant, &'static str> {
+    if let Some(value) = reader.location(id)?.value {
+        return Ok(value);
+    }
+    let (root, path) = ancestry(reader, id)?;
+    let mut value = root
+        .and_then(|id| reader.definition(id))
+        .ok_or("static backing")?;
+    for index in path {
+        value = reader.field(value, index)?;
+    }
+    Ok(value)
+}
 #[test]
 fn constant_places_retain_static_identity_and_nested_subobject_paths()
 -> Result<(), Box<dyn std::error::Error>> {
@@ -95,6 +108,9 @@ fn constant_places_retain_static_identity_and_nested_subobject_paths()
             let id = definition(&report, name)?;
             completed.push((name, evaluator.definition(id)?));
         }
+        let reader = Reader::new(evaluator.facts());
+        assert!(reader.definition(a).is_none() && reader.definition(b).is_none());
+        evaluator.complete_static_storage()?;
     }
     let reader = Reader::new(&facts);
     let base = reader
@@ -118,10 +134,10 @@ fn constant_places_retain_static_identity_and_nested_subobject_paths()
             .ok_or("missing evaluated constant")?
             .1;
         let id = reference(reader, value)?;
+        let contents = contents(reader, id)?;
         assert_eq!(ancestry(reader, id)?, (root, path), "{name}");
         if name != "RP" {
-            let View::Scalar(Scalar::Integer(bits)) = reader.view(reader.location(id)?.value)?
-            else {
+            let View::Scalar(Scalar::Integer(bits)) = reader.view(contents)? else {
                 return Err("reference leaf is not an integer".into());
             };
             assert_eq!(bits, if name == "RV" { 7 } else { 11 });

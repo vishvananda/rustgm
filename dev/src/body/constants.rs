@@ -55,5 +55,6 @@ pub fn analyze(report: &Report, facts: &mut Declarations, bodies: &Program) -> R
             evaluator.definition(id)?;
         }
     }
+    evaluator.complete_static_storage()?;
     Ok(())
 }

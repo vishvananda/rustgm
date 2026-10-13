@@ -112,7 +112,7 @@ structure without equating its storage lifetime to the input lifetime; ordinary
 expression constraints remain explicit. This does not discharge reference
 execution proofs or supply unsized-pointer layout.
 
-Demanded shared constant references use flat place records containing the value,
+Demanded shared constant references use flat place records containing an optional value,
 canonical type, access provenance and packed alignment. Separate place queries
 from value reads so borrowing a non-Copy static or selecting its Copy field
 does not move its container. Check Copy reads before consulting a definition's
@@ -123,6 +123,14 @@ alignment after dereference. Borrowing requires alignment, while an owned field
 read need not form a reference. Reference chains use bounded worklists for
 evaluation, pattern translation and destruction. Keep ordinary node facts
 compact; reference operations still require region/loan proofs before LowIR.
+Intern static allocation identities before evaluating their initializers. Forming
+an address or fixed projection uses typed storage facts; it must not introduce
+a dependency on the stored value. Actual reads demand and cache location
+contents through the bounded query worklist, after checking access and Copy
+requirements. Complete reachable static backing with a growing identity queue
+before lowering. Address cycles are valid storage graphs; initializer value
+cycles remain errors. Constant patterns demand finite referent expansion and
+diagnose cycles independently of executable pointer graphs.
 Coverage derives root validity from the selected input place and retains it
 through deferred binding checks. Explicit and automatic dereferences cannot
 reuse owned-value inhabitation to prune variants with potentially invalid fields.

@@ -143,7 +143,7 @@ impl Context<'_> {
                     usize::try_from(length).map_err(|_| "constant product exceeds host size")?,
                 )?;
                 for index in (0..length).rev() {
-                    let (delta, ty) = self.constant_field(&layout, value, index)?;
+                    let (delta, ty) = self.constant_field(&layout, Some(value), index)?;
                     init.work.push(Work::Value {
                         offset: offset + delta,
                         ty,

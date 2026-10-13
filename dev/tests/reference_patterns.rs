@@ -348,7 +348,7 @@ fn cyclic_static_pattern_queries_diagnose_instead_of_recursing()
         assert!(output.stdout.is_empty());
         assert!(
             String::from_utf8_lossy(&output.stderr)
-                .contains("cycle in enum discriminant or constant dependencies")
+                .contains("cyclic constant patterns require finite structural expansion")
         );
     }
     Ok(())

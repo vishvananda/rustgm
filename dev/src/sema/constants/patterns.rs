@@ -89,7 +89,12 @@ impl Expansion<'_> {
                     }),
                     Value::Reference(_),
                 ) => {
-                    let value = self.facts.constant_references.get(value)?.value;
+                    let value = self
+                        .facts
+                        .constant_references
+                        .get(value)?
+                        .value
+                        .ok_or("constant pattern requires completed location contents")?;
                     let pattern = self.select(referent, value)?;
                     Kind::Dereference {
                         mutable: false,

@@ -7,6 +7,46 @@ use std::{
 const CHECK: &str = "fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}\n";
 const CASES: &[(&str, &str, bool)] = &[
     (
+        "self-static",
+        "struct N{v:u64,next:&'static N}static A:N=N{v:7,next:&A};fn main(){check(A.next.next.v==7);}",
+        false,
+    ),
+    (
+        "mutual-static",
+        "struct N{v:u64,next:&'static N}static A:N=N{v:7,next:&B};static B:N=N{v:9,next:&A};fn main(){check(A.next.v==9 && B.next.v==7 && A.next.next.v==7);}",
+        false,
+    ),
+    (
+        "array-static-cycle",
+        "struct N{all:&'static [N;2],v:u8}static A:[N;2]=[N{all:&A,v:3},N{all:&A,v:4}];const R:&u8=&A[1].v;fn main(){check(A[0].all[1].all[0].v==3 && *R==4);}",
+        false,
+    ),
+    (
+        "packed-static-cycle",
+        "#[repr(C,packed)]struct N{v:u8,next:&'static N}static A:N=N{v:7,next:&A};fn main(){check(A.next.next.v==7);}",
+        false,
+    ),
+    (
+        "self-field-address",
+        "struct S{v:u64,r:&'static u64}static A:S=S{v:42,r:&A.v};fn main(){check(*A.r==42);}",
+        false,
+    ),
+    (
+        "read-static-cycle",
+        "struct N{v:u8,next:&'static N}static A:N=N{v:7,next:&B};static B:N=N{v:9,next:&A};const C:u8=A.next.next.v;const R:&u8=&A.next.v;fn main(){check(C==7 && *R==9);}",
+        false,
+    ),
+    (
+        "read-through-static-reference",
+        "static N:u64=42;static P:&u64=&N;const C:u64=*P;fn main(){check(C==42 && *P==42);}",
+        false,
+    ),
+    (
+        "pattern-static-address",
+        "static N:(u8,u8)=(7,9);const C:&u8=&N.1;fn f(x:&u8)->u8{match x{C=>1,_=>2}}fn main(){check(f(&9)==1 && f(&7)==2);}",
+        false,
+    ),
+    (
         "return-mutable-field",
         "fn update<'a>(p:&'a mut(u64,u64),q:&(u64,u64))->&'a mut u64{let(a,b)=p;*a+=q.0;*b+=q.1;a}fn main(){let mut p=(1,2);let q=(3,4);let r=update(&mut p,&q);let n=*r;check(n+p.1==10);}",
         false,

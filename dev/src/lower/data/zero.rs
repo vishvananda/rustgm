@@ -68,7 +68,7 @@ impl Context<'_> {
                     }
                     let mut zero = true;
                     for index in 0..length {
-                        let (_, ty) = self.constant_field(&layout, value, index)?;
+                        let (_, ty) = self.constant_field(&layout, Some(value), index)?;
                         let child = (ty, self.constants.field(value, index)?);
                         if finish {
                             zero &= *self

@@ -1311,3 +1311,99 @@ and quality logs are `thinrefs-full-tests5.log` and `thinrefs-quality5.log`.
 Static address cycles still need symbolic address evaluation distinct from
 constant value-read cycles. Fat references, unsizing, dynamic slices/text and
 PA17 destruction remain incomplete. PA15–PA17 are still planned assignments.
+
+
+## Static address cycles and deferred location reads
+
+Static allocation identity is now independent of initializer value evaluation.
+Each static has one interned root location; fixed field/index projections retain
+that root and their typed path while their contents may remain unread. Address
+formation still checks array bounds and packed-field alignment. Actual reads
+check Copy/access requirements before demanding the stored value, and cache
+completed contents through the existing bounded query worklist. Automatic
+dereferences suspend at the current path segment rather than rescanning prefixes.
+
+A growing queue completes every static initializer reachable through recorded
+addresses before the immutable lowerer runs. The existing data queue reserves
+global identities before serializing pointers, including packed pointer fixups,
+so self-cycles and mutual cycles need no backend changes. The
+[Rust Reference's static-item contract](https://doc.rust-lang.org/reference/items/static-items.html#items.static.init)
+permits static initializers to refer to other statics; the pinned local reference
+remains the course source profile.
+
+Constant patterns actually inspect referents. Their preparation uses a bounded,
+memoized graph traversal, keeps repeated arrays compressed and diagnoses cyclic
+structural expansion separately from initializer value cycles. Pure allocation
+graphs need no additional traversal: they are already complete and acyclic.
+Executable static pointer graphs are not rejected merely because a pattern could
+not finitely expand them. The existing cyclic-pattern robustness test continues
+to avoid the pinned rustc input that previously caused a compiler signal; it now
+expects the specific finite-pattern diagnostic.
+
+Validation for this checkpoint:
+
+- All 462 maintainer tests pass. After the final pure-allocation fast path and
+  test-helper cleanup, the affected location, static-address, reference-pattern,
+  nominal/product-constant and native-reference suites pass again.
+- The native reference suite has 49 independent source vectors. New cases cover
+  self/mutual static links, cyclic arrays, packed cyclic pointers, a reference to
+  a static's own field, constant reads through a cycle, static reference values
+  and static-backed constant patterns. Each executes through pinned rustc and
+  CPPGM; the original overflow/bounds panic controls remain intact.
+- Six negative sources are independently rejected by pinned rustc and both
+  emitted/count LowIR modes: direct and reference-mediated value cycles,
+  a bad initializer reachable only through an address, an out-of-bounds static
+  projection, a non-Copy referent read and an unaligned self-field reference.
+  Candidate failures have empty stdout and diagnosed status one.
+- A component test proves that repeated address queries share identity and leave
+  a value-cyclic initializer unread, while backing completion correctly rejects
+  that initializer. Another follows all 4,096 links of a static ring and checks
+  every definition identity and the return to its original root without recursion.
+- A larger source has 4,096 packed statics in one ring, plus 4,096 demanded
+  functions reading through two links each. Both native implementations compute
+  the independently declared sum. Its LowIR contains 4,096 globals, 4,100 defined
+  functions and 81,936 instructions; 8,175 initializer items reflect merged zero
+  runs for zero-valued tags.
+- Formatting, Clippy all/pedantic with warnings denied, the 289-file audit,
+  all 25 harness tests, backend smoke and release build pass. No lint allowances
+  were introduced.
+- All 1,230 PA11–PA14 LowIR results, including rejected cases' diagnostics,
+  remain byte-identical to the preceding checkpoint. The course report remains
+  2,552/2,622 exact with precisely the same 70 reviewed differences. No assignment
+  fixture, manifest or oracle changed; this remains an unreleased working branch.
+
+Measurements retain 270 verified raw observations: four existing workloads use
+immutable baseline/current binaries, A/A calibration and paired ABBA blocks;
+the new static-ring workload uses A/A scaling because the baseline rejects it.
+Complete rendering and count outputs agree for every comparison. Constant
+pattern counters and static-ring program counters grow linearly. Ring data-item
+counts additionally follow the declared zero-tag periodicity exactly:
+`2*N - ceil(N/251)`; accounting for that zero-run coalescing leaves a linear
+count. Original raw outputs are retained without normalization.
+
+At 64k ownership functions, baseline/current medians are 5,709.0/5,772.1 ms and
+949,958/949,544 KiB. Constant-place patterns at 1k/4k/16k functions measure
+57.6/192.4/836.2 ms before and 48.7/198.9/853.2 ms after; largest-scale memory
+is 134,752/135,504 KiB. The largest place workload therefore has a small recorded
+median time/memory cost, approximately 2%/0.6%. Constant reference chains at
+depths 128/512/2,048 measure 4.5/11.0/36.0 ms before and 4.4/10.9/36.1 ms after.
+Packed storage at 4,096 objects measures 305.0/301.0 ms and 61,156/61,218 KiB.
+Timing ranges overlap, and the ownership series also records substantial host
+noise at its middle scale; no precise speed improvement is claimed.
+
+New static-ring medians at 256/1,024/4,096 nodes are 16.3/58.6/247.5 ms and
+7,158/16,120/49,762 KiB. The largest frozen input is also independently executed
+by both compilers. No RustGM build or test overlapped the measurements.
+`verify_static_addresses_v1_perf.py` verifies all observations, immutable
+source/binary/input hashes, output equality and the count relationships above.
+
+The immutable compiler is `obj/pa15-work/static-addresses-candidate-v1`, SHA-256
+`ccbdd66d52674aefd21d47f0a545bfe456065b2cd2e19189ad4e23c13c9cf715`.
+Source hashes, course/corpus comparisons, ring qualification and measurement
+receipts use `obj/pa15-work/static-addresses-v1-*`. Maintainer evidence is in
+`static-address-full-tests2.log`, `static-address-final-tests3.log` and
+`static-address-quality3.log` in the same directory.
+
+Fat reference metadata, unsizing, dynamic slices/text and PA17 destruction remain
+incomplete. PA15–PA17 handouts, required fixtures and oracles still need their
+coherent release; the assignments remain planned.

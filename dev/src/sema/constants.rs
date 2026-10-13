@@ -1,6 +1,7 @@
 //! Shared typed constant queries solve discriminants and pattern values iteratively.
 mod arithmetic;
 mod constructors;
+mod contents;
 mod patterns;
 mod places;
 pub(super) mod products;
@@ -73,6 +74,7 @@ enum Query {
     Constant(usize),
     Static(usize),
     Place(NodeKey),
+    Contents(NodeKey, references::Id),
     Node(NodeKey),
 }
 #[derive(Clone, Copy)]
@@ -114,6 +116,7 @@ enum Expression {
 }
 enum Work {
     Reference(places::Work),
+    Contents(contents::Work),
     Enter(Query),
     Forward(Query, Query),
     Successor(Query, Query, Primitive),
@@ -133,6 +136,7 @@ struct Queries<'a> {
     scan: Vec<NodeKey>,
     steps: usize,
     limit: usize,
+    pattern_values: HashSet<Value>,
 }
 
 pub(super) fn discriminants(
@@ -230,6 +234,7 @@ pub(super) fn pattern_values(
         queries.drain()?;
         let value = queries.value(query)?;
         if let Some(pattern) = pattern {
+            queries.complete_pattern(key, value)?;
             patterns::expand(report, queries.typing.facts, pattern, value)?;
             continue;
         }
@@ -288,6 +293,7 @@ impl<'a> Queries<'a> {
             scan: Vec::new(),
             steps: 0,
             limit,
+            pattern_values: HashSet::new(),
         }
     }
 }
@@ -298,7 +304,7 @@ impl Queries<'_> {
             Query::Constant(index) | Query::Static(index) => {
                 self.typing.facts.initializers[index].value
             }
-            Query::Node(key) | Query::Place(key) => key,
+            Query::Node(key) | Query::Place(key) | Query::Contents(key, _) => key,
         };
         Declarations::error(self.report, key, message)
     }
@@ -360,6 +366,13 @@ impl Queries<'_> {
                 Work::Forward(query, dependency) => {
                     let value = self.value(dependency)?;
                     self.states.insert(query, State::Ready(value));
+                    if let Query::Contents(_, id) = query {
+                        self.typing
+                            .facts
+                            .constant_references
+                            .complete(id, value)
+                            .map_err(|e| self.error(query, e))?;
+                    }
                     if let Query::Constant(index) | Query::Static(index) = query {
                         let definition = self.typing.facts.initializers[index].definition;
                         self.typing.facts.constant_values.insert(definition, value);
@@ -380,6 +393,7 @@ impl Queries<'_> {
                         .insert(query, State::Ready(Value::Scalar(Scalar::Integer(bits))));
                 }
                 Work::Reference(work) => self.finish_reference(work)?,
+                Work::Contents(work) => self.finish_contents(work)?,
                 Work::Finish(key) => self.finish(key)?,
                 Work::Select(key) => self.select(key)?,
                 Work::EnumCast(key, variant, target) => {
@@ -434,6 +448,7 @@ impl Queries<'_> {
                 self.forward(query, Query::Node(key));
             }
             Query::Place(key) => self.enter_place(key)?,
+            Query::Contents(key, id) => self.enter_contents(key, id)?,
             Query::Node(key) => match self.expression(key)? {
                 Expression::Reference(expression) => self.enter_reference(key, expression),
                 Expression::Value(value) => {

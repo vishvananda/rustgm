@@ -25,7 +25,8 @@ pub enum Origin {
 }
 #[derive(Clone, Copy)]
 pub struct Location {
-    pub value: Constant,
+    /// Address formation need not read an immutable static's initializer.
+    pub value: Option<Constant>,
     pub ty: TypeId,
     pub origin: Origin,
 }
@@ -106,7 +107,7 @@ impl<'a> Reader<'a> {
                 Origin::Allocation
             };
         Ok(Location {
-            value: Constant(place.value),
+            value: place.value.map(Constant),
             ty: place.ty,
             origin,
         })
@@ -216,6 +217,24 @@ impl<'a> Evaluator<'a> {
     pub fn initializer(&mut self, id: DefId) -> Result<Constant, Error> {
         self.named(id, true)
     }
+    /// Complete backing for every static address discovered by this evaluation.
+    /// # Errors
+    /// Preserves initializer errors, including actual value dependency cycles.
+    pub fn complete_static_storage(&mut self) -> Result<(), Error> {
+        let mut index = 0;
+        while let Some(&id) = self
+            .queries
+            .typing
+            .facts
+            .constant_references
+            .static_order
+            .get(index)
+        {
+            self.initializer(id)?;
+            index += 1;
+        }
+        Ok(())
+    }
     fn named(&mut self, id: DefId, static_: bool) -> Result<Constant, Error> {
         let index = self
             .queries
@@ -319,7 +338,7 @@ impl<'a> Evaluator<'a> {
             .facts
             .constant_references
             .insert(references::Place {
-                value: value.0,
+                value: Some(value.0),
                 ty,
                 access: references::Access::Shared,
                 packed: None,
@@ -336,7 +355,11 @@ impl<'a> Evaluator<'a> {
             .facts
             .constant_references
             .get(value.0)
-            .map(|p| Constant(p.value))
+            .and_then(|p| {
+                p.value
+                    .map(Constant)
+                    .ok_or("promotion cannot read static storage")
+            })
             .map_err(Failure::Invalid)
     }
     /// # Errors

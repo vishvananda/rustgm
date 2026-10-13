@@ -144,8 +144,12 @@ impl Context<'_> {
                     break pointer;
                 }
                 Origin::Allocation => {
-                    let global =
-                        self.constant_data(Key::Location(id), location.value, location.ty, true)?;
+                    let global = self.constant_data(
+                        Key::Location(id),
+                        location.value.ok_or("constant allocation lacks a value")?,
+                        location.ty,
+                        true,
+                    )?;
                     let pointer = Pointer { global, offset: 0 };
                     self.data.locations.insert(id, pointer);
                     break pointer;
@@ -177,7 +181,7 @@ impl Context<'_> {
     fn constant_field(
         &self,
         layout: &Layout,
-        value: Constant,
+        value: Option<Constant>,
         index: u64,
     ) -> Result<(u64, TypeId), &'static str> {
         match layout.shape {
@@ -192,7 +196,11 @@ impl Context<'_> {
                 element,
             )),
             Shape::Aggregate { .. } => {
-                let ordinal = self.constant_variant(value)?;
+                let ordinal = if self.layouts.variants(layout).len() == 1 {
+                    0
+                } else {
+                    self.constant_variant(value.ok_or("constant variant lacks a selected value")?)?
+                };
                 let variant = self
                     .layouts
                     .variants(layout)

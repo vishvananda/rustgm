@@ -1,7 +1,7 @@
 //! Place queries inspect storage without implicitly moving its containing value.
 use super::references::{Access, Expression as Reference, Place};
 use super::{Error, Expression, InitializerKind, NodeKey, Queries, Query, State, Type, Value};
-use crate::{sema::model::Scalar, types::TypeId};
+use crate::types::TypeId;
 
 pub(super) enum Work {
     Anchor {
@@ -23,6 +23,12 @@ pub(super) enum Work {
         index: Index,
     },
     Read(NodeKey),
+    Projection {
+        key: NodeKey,
+        location: Value,
+        index: u64,
+        remaining: u32,
+    },
 }
 pub(super) enum Index {
     Fixed(u64),
@@ -70,7 +76,14 @@ impl Queries<'_> {
                 let (source, access) = match initializer.kind {
                     InitializerKind::Const => (Query::Constant(index), Access::Owned),
                     InitializerKind::Static { mutable: false } => {
-                        (Query::Static(index), Access::Static(initializer.definition))
+                        let value = self
+                            .typing
+                            .facts
+                            .constant_references
+                            .static_place(initializer.definition, initializer.ty)
+                            .map_err(|e| self.error(Query::Place(key), e))?;
+                        self.states.insert(Query::Place(key), State::Ready(value));
+                        return Ok(());
                     }
                     InitializerKind::Static { mutable: true } => {
                         return Err(self.error(
@@ -110,7 +123,7 @@ impl Queries<'_> {
                 let value = self.insert_place(
                     key,
                     Place {
-                        value,
+                        value: Some(value),
                         ty,
                         access,
                         packed: None,
@@ -155,15 +168,32 @@ impl Queries<'_> {
                     )
                     .map_err(|_| self.error(Query::Place(key), "constant index overflow"))?,
                 };
-                let value = self.project_place(key, value, index)?;
-                (Query::Place(key), value)
+                let location = self.value(Query::Place(value))?;
+                let remaining = self.typing.facts.autoderefs.get(&key).copied().unwrap_or(0);
+                return self.project_place(key, location, index, remaining);
+            }
+            Work::Projection {
+                key,
+                location,
+                index,
+                remaining,
+            } => {
+                return self.project_place(key, location, index, remaining);
             }
             Work::Read(key) => {
-                let place = self.place(key, self.value(Query::Place(key))?)?;
+                let location = self.value(Query::Place(key))?;
+                let place = self.place(key, location)?;
                 if !matches!(place.access, Access::Owned) {
                     self.check_copy_read(Query::Node(key), self.place_type(key)?)?;
                 }
-                (Query::Node(key), place.value)
+                if let Some(value) = place.value {
+                    (Query::Node(key), value)
+                } else {
+                    let id = super::references::References::id(location)
+                        .map_err(|e| self.error(Query::Place(key), e))?;
+                    self.forward(Query::Node(key), Query::Contents(key, id));
+                    return Ok(());
+                }
             }
         };
         self.states.insert(query, State::Ready(value));
@@ -176,7 +206,7 @@ impl Queries<'_> {
             .and_then(|f| f.ty)
             .ok_or_else(|| self.error(Query::Place(key), "missing constant place type"))
     }
-    fn place(&self, key: NodeKey, value: Value) -> Result<Place, Error> {
+    pub(super) fn place(&self, key: NodeKey, value: Value) -> Result<Place, Error> {
         self.typing
             .facts
             .constant_references
@@ -211,7 +241,7 @@ impl Queries<'_> {
         self.insert_place(
             key,
             Place {
-                value,
+                value: Some(value),
                 ty: referent,
                 access: Access::Shared,
                 packed: None,
@@ -219,15 +249,31 @@ impl Queries<'_> {
             },
         )
     }
-    fn project_place(&mut self, key: NodeKey, base: NodeKey, index: u64) -> Result<Value, Error> {
-        let mut location = self.value(Query::Place(base))?;
+    fn project_place(
+        &mut self,
+        key: NodeKey,
+        mut location: Value,
+        index: u64,
+        mut remaining: u32,
+    ) -> Result<(), Error> {
         let mut place = self.place(key, location)?;
-        let count = self.typing.facts.autoderefs.get(&key).copied().unwrap_or(0);
-        for _ in 0..count {
+        while remaining != 0 {
             self.budget()?;
-            let value = self.referent(key, place.value, place.ty)?;
-            location = value;
-            place = self.place(key, value)?;
+            let Some(value) = place.value else {
+                let id = super::references::References::id(location)
+                    .map_err(|e| self.error(Query::Place(key), e))?;
+                self.reference_work(Work::Projection {
+                    key,
+                    location,
+                    index,
+                    remaining,
+                });
+                self.work.push(super::Work::Enter(Query::Contents(key, id)));
+                return Ok(());
+            };
+            location = self.referent(key, value, place.ty)?;
+            place = self.place(key, location)?;
+            remaining -= 1;
         }
         if let Some(Type::Adt(item, _)) = self.typing.facts.types.kind(place.ty)
             && let Some(pack) = self
@@ -239,41 +285,51 @@ impl Queries<'_> {
         {
             place.packed = Some(place.packed.map_or(pack, |p| p.min(pack)));
         }
-        let value = match place.value {
-            Value::Product(id) => self
-                .typing
-                .facts
-                .constant_products
-                .get(id, index)
-                .map_err(|e| self.error(Query::Place(key), e))?,
-            Value::Bytes(id) => {
-                let byte =
-                    self.typing
-                        .facts
-                        .texts
-                        .get(id)
-                        .map_err(|e| self.error(Query::Place(key), e))?
-                        .get(usize::try_from(index).map_err(|_| {
-                            self.error(Query::Place(key), "constant index overflow")
-                        })?)
-                        .copied()
-                        .ok_or_else(|| {
-                            self.error(Query::Place(key), "constant index is out of bounds")
-                        })?;
-                Value::Scalar(Scalar::Integer(u128::from(byte)))
-            }
-            _ => {
-                return Err(self.error(Query::Place(key), "constant projection requires a product"));
-            }
+        let value = if let Some(value) = place.value {
+            Some(self.field_value(key, value, index)?)
+        } else {
+            self.check_static_projection(key, place.ty, index)?;
+            None
         };
         let ty = self.place_type(key)?;
         let base = super::references::References::id(location)
             .map_err(|e| self.error(Query::Place(key), e))?;
-        self.typing
+        let value = self
+            .typing
             .facts
             .constant_references
             .project(base, index, Place { value, ty, ..place })
-            .map_err(|e| self.error(Query::Place(key), e))
+            .map_err(|e| self.error(Query::Place(key), e))?;
+        self.states.insert(Query::Place(key), State::Ready(value));
+        Ok(())
+    }
+    fn check_static_projection(&self, key: NodeKey, ty: TypeId, index: u64) -> Result<(), Error> {
+        let facts = &*self.typing.facts;
+        let fields = match facts.types.kind(ty) {
+            Some(Type::Array { length, .. }) => {
+                return if index < length {
+                    Ok(())
+                } else {
+                    Err(self.error(Query::Place(key), "constant index is out of bounds"))
+                };
+            }
+            Some(Type::Tuple(fields)) => Some(fields),
+            Some(Type::Adt(item, _)) => facts
+                .aggregates
+                .get(item)
+                .filter(|d| d.kind == crate::types::aggregate::Kind::Struct)
+                .and_then(|d| facts.aggregates.variants(d).first())
+                .map(|v| v.fields),
+            _ => None,
+        };
+        if fields
+            .and_then(|f| facts.types.list(f))
+            .is_some_and(|f| index < f.len() as u64)
+        {
+            Ok(())
+        } else {
+            Err(self.error(Query::Place(key), "constant projection requires a product"))
+        }
     }
     fn check_reference_alignment(&mut self, key: NodeKey, place: Place) -> Result<(), Error> {
         if let Access::Static(id) = place.access {

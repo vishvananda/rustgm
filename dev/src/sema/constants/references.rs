@@ -1,6 +1,7 @@
 //! Constant locations carry value, access and packed-field provenance in a flat arena.
 use super::{Declarations, Error, Kind, NodeKey, Operation, Queries, Query, Value};
 use crate::{resolve::model::DefId, sema::members::Selection, types::TypeId};
+use std::collections::HashMap;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub(in crate::sema) struct Id(u32);
@@ -18,7 +19,7 @@ pub(super) enum Access {
 }
 #[derive(Clone, Copy)]
 pub(super) struct Place {
-    pub value: Value,
+    pub value: Option<Value>,
     pub ty: TypeId,
     pub access: Access,
     pub packed: Option<u32>,
@@ -29,8 +30,32 @@ pub(super) struct Place {
 pub(in crate::sema) struct References {
     places: Vec<Place>,
     projections: Vec<Projection>,
+    statics: HashMap<DefId, Id>,
+    pub(super) static_order: Vec<DefId>,
 }
 impl References {
+    pub(super) fn static_place(&mut self, id: DefId, ty: TypeId) -> Result<Value, &'static str> {
+        if let Some(&place) = self.statics.get(&id) {
+            return Ok(Value::Reference(place));
+        }
+        let value = self.insert(Place {
+            value: None,
+            ty,
+            access: Access::Static(id),
+            packed: None,
+            projection: None,
+        })?;
+        self.statics.insert(id, Self::id(value)?);
+        self.static_order.push(id);
+        Ok(value)
+    }
+    pub(super) fn complete(&mut self, id: Id, value: Value) -> Result<(), &'static str> {
+        self.places
+            .get_mut(id.0 as usize)
+            .ok_or("missing constant place")?
+            .value = Some(value);
+        Ok(())
+    }
     pub(super) fn id(value: Value) -> Result<Id, &'static str> {
         if let Value::Reference(id) = value {
             Ok(id)
