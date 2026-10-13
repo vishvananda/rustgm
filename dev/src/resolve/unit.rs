@@ -38,6 +38,34 @@ pub struct Unit {
 }
 
 impl Unit {
+    pub(crate) fn word_attribute(
+        &self,
+        node: Option<NodeId>,
+        name: &str,
+    ) -> Result<bool, LexError> {
+        let Some(index) = node.and_then(|node| self.owner_indices[node.0 as usize]) else {
+            return Ok(false);
+        };
+        let owner = &self.configured.owners[index.get() as usize - 1];
+        let mut found = false;
+        for index in owner.attributes.clone() {
+            let effect = &self.configured.effects[index];
+            let attribute = effect.attribute.attribute;
+            let forest = &self.configured.ast.attributes[effect.capture as usize].forest;
+            if effect.attribute.effect == crate::expand::configured::Effect::Keep
+                && attribute.name(forest, self.source.text()) == Some(name)
+            {
+                if attribute.input != crate::syntax::attribute::Input::Empty {
+                    return Err(error(
+                        attribute.span.start,
+                        "attribute requires no arguments",
+                    ));
+                }
+                found = true;
+            }
+        }
+        Ok(found)
+    }
     /// Parse/configure once. Loading another file cannot invalidate these facts.
     ///
     /// # Errors

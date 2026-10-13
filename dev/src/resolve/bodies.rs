@@ -348,6 +348,9 @@ impl Resolver<'_> {
             return self.lifetime(c, node, span);
         }
         let (absolute, path) = self.path_names(c, node)?;
+        if ns == Namespace::Type {
+            self.prepare_builtin_path(c, node, &path)?;
+        }
         if ns == Namespace::Type && path.len() == 1 {
             // Syntactically ambiguous const generic arguments are typed after lookup.
             if let Lookup::Missing = self.lexical(c.scope, path[0], ns)

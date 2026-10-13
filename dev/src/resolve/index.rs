@@ -418,14 +418,18 @@ impl Resolver<'_> {
             _ => (Namespace::Type, DefKind::SelfType),
         };
         if item.name.is_some() {
+            let external = self.builtin_crate(c, node, item)?;
             let definition = self.item_definition(
                 c,
                 node,
                 item,
                 (namespace, kind),
                 access,
-                member.then_some(body),
+                external.or_else(|| member.then_some(body)),
             )?;
+            if external.is_some() {
+                self.expose_external(c, definition);
+            }
             if matches!(kind, DefKind::Struct | DefKind::Enum) {
                 self.facts.scopes[body.0 as usize].nominal_self = Some(definition);
             }
@@ -636,6 +640,7 @@ impl Resolver<'_> {
             .unwrap_or_default();
         let mut path = prefix.to_vec();
         path.extend(local);
+        self.prepare_builtin_path(c, node, &path)?;
         if tree.children.start == tree.children.end {
             let alias = tree
                 .rename

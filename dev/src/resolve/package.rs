@@ -13,6 +13,7 @@ use std::collections::HashMap;
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct ModuleId(pub u32);
 pub struct Module {
+    pub implicit_prelude: bool,
     pub parent: Option<ModuleId>,
     pub declaration: Option<NodeKey>,
     pub name: NameId,
@@ -20,6 +21,7 @@ pub struct Module {
     pub root: NodeId,
 }
 pub struct Package {
+    pub no_std: bool,
     pub units: Vec<Unit>,
     pub file_paths: Vec<std::path::PathBuf>,
     pub crate_name: String,

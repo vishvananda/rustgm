@@ -267,9 +267,14 @@ impl Paths {
     ) -> Result<(), Error> {
         let first = self.state.facts.imports.len();
         let mut resolver = self.state.bind(package);
+        let first_definition = resolver.facts.definitions.len();
         let access = resolver.visibility(context, visibility)?;
         resolver.import(context, node, &[], false, access)?;
         self.work.extend(resolver.facts);
+        for definition in &resolver.facts.definitions[first_definition..] {
+            self.work
+                .declared((definition.scope, definition.name, definition.namespace));
+        }
         for index in first..resolver.facts.imports.len() {
             if textual.1.0 != 0 {
                 resolver

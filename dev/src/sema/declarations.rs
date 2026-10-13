@@ -69,6 +69,19 @@ pub fn analyze(report: &Report) -> Result<Declarations, Error> {
             "type checking requires completed name resolution",
         ));
     }
+    if let Some(drop_trait) = report.resolution.drop_trait
+        && let Some(reference) = report
+            .resolution
+            .references
+            .iter()
+            .find(|reference| reference.target == Target::Definition(drop_trait))
+    {
+        return Err(Declarations::error(
+            report,
+            reference.node,
+            "Drop implementations require destructor elaboration",
+        ));
+    }
     let mut checker = Checker {
         report,
         facts: Declarations::new(report)?,

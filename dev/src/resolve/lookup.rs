@@ -189,7 +189,9 @@ impl Resolver<'_> {
                 },
             ));
         }
-        None
+        (namespace == Namespace::Type)
+            .then(|| self.builtin_binding(self.facts.scopes[scope.0 as usize].module, name))
+            .flatten()
     }
     #[expect(
         clippy::too_many_lines,
@@ -208,14 +210,21 @@ impl Resolver<'_> {
             LookupMode::Use(ns) => (ns, true),
             LookupMode::Import(ns) => (ns, false),
         };
-        if absolute {
-            return Err(self.error(c, node, "external-crate paths require external metadata"));
-        }
         let Some(first) = path.first().copied() else {
             return Err(self.error(c, node, "empty path"));
         };
         let mut index = 0;
-        let mut scope = None;
+        let mut scope = if absolute {
+            // A later explicit extern declaration can introduce this name.
+            if let Some(observed) = observed.as_mut() {
+                observed
+                    .dependencies
+                    .push((ScopeId(0), first, Namespace::Type));
+            }
+            Some(self.external_root(c, node, first)?)
+        } else {
+            None
+        };
         let mut associated = None;
         let mut module = c.module;
         match self.package.names.get(first) {
@@ -357,7 +366,7 @@ impl Resolver<'_> {
                 // variant intentionally has no value constructor; that absence
                 // cannot turn a valid type-only import into an associated import.
                 associated = (namespace != Namespace::Macro
-                    && definition.kind != DefKind::Module
+                    && !matches!(definition.kind, DefKind::Module | DefKind::ExternCrate)
                     && !(matches!(mode, LookupMode::Import(_))
                         && definition.kind == DefKind::Enum))
                     .then_some(binding.target);

@@ -60,6 +60,12 @@ nodes or dense side arrays; sparse composite query keys may use hash tables.
 Rendered names/types are never semantic keys. Deterministic output must not
 force ordered node-based containers onto the lookup hot path.
 
+Built-in semantic traits retain their own definition identities; a user item
+with the same spelling cannot acquire language behavior. Resolve aliases and
+qualified paths through ordinary typed namespace facts. Demand external metadata
+only when used, keep it separate from the crate root, and retain configured
+prelude policy per module so lookup does not rescan attributes.
+
 Analyze generic bodies without reparsing syntax. A monomorphization key must
 include all type/const arguments and semantic context affecting its result.
 Trait solver caches include parameter environment, binder universe and mode;

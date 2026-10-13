@@ -148,8 +148,15 @@ impl<'a, S: Sources> Loader<'a, S> {
             .intern("crate")
             .map_err(|e| Error::at(FileId(0), 0, e))?;
         let root_node = unit.configured.ast.root;
+        let no_std = unit
+            .word_attribute(Some(root_node), "no_std")
+            .map_err(|e| Error::at(FileId(0), e.offset, e.message))?;
+        let implicit_prelude = !unit
+            .word_attribute(Some(root_node), "no_implicit_prelude")
+            .map_err(|e| Error::at(FileId(0), e.offset, e.message))?;
         Ok(Self {
             package: Package {
+                no_std,
                 file_paths: vec![root.path.components().collect()],
                 crate_name: if root.path == Path::new("<anon>") {
                     "rust_out".into()
@@ -162,6 +169,7 @@ impl<'a, S: Sources> Loader<'a, S> {
                 },
                 units: vec![unit],
                 modules: vec![Module {
+                    implicit_prelude,
                     parent: None,
                     declaration: None,
                     name,
@@ -372,7 +380,19 @@ impl<'a, S: Sources> Loader<'a, S> {
             file,
             node: visit.node,
         };
+        let implicit_prelude = self.package.modules[visit.module.0 as usize].implicit_prelude
+            && !self
+                .package
+                .unit(file)
+                .word_attribute(visit.owner, "no_implicit_prelude")
+                .map_err(|e| Error::at(file, e.offset, e.message))?
+            && !self
+                .package
+                .unit(source_file)
+                .word_attribute(Some(root), "no_implicit_prelude")
+                .map_err(|e| Error::at(source_file, e.offset, e.message))?;
         self.package.modules.push(Module {
+            implicit_prelude,
             parent: Some(visit.module),
             declaration: Some(declaration),
             name,

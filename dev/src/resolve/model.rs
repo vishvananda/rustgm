@@ -37,6 +37,7 @@ pub enum Access {
 pub enum DefKind {
     Primitive,
     BuiltinMacro,
+    BuiltinTrait,
     Module,
     Function,
     Struct,
@@ -62,6 +63,7 @@ impl DefKind {
         match self {
             Self::Primitive => "primitive",
             Self::BuiltinMacro => "builtin-macro",
+            Self::BuiltinTrait => "builtin-trait",
             Self::Module => "module",
             Self::Function => "function",
             Self::Struct => "struct",
@@ -198,6 +200,10 @@ impl Introductions {
 }
 #[derive(Default)]
 pub struct Resolution {
+    /// Language-owned identity, distinct from any user declaration named `Drop`.
+    pub drop_trait: Option<DefId>,
+    /// Supported external crate metadata, separate from the crate's lexical root.
+    pub extern_scope: Option<ScopeId>,
     /// Alternative occurrences of one or-pattern binding share its definition.
     pub pattern_aliases: Vec<(NodeKey, DefId)>,
     /// Field restrictions are resolved once, before semantic field selection.
