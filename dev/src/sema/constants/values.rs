@@ -13,6 +13,126 @@ use crate::{
 /// A value in the declaration result's shared constant arenas.
 #[derive(Clone, Copy)]
 pub struct Constant(Value);
+
+/// Opaque location identity in the declaration result's flat reference arena.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct LocationId(references::Id);
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Origin {
+    Allocation,
+    Static(DefId),
+    Projection { base: LocationId, index: u64 },
+}
+#[derive(Clone, Copy)]
+pub struct Location {
+    pub value: Constant,
+    pub ty: TypeId,
+    pub origin: Origin,
+}
+#[derive(Clone, Copy)]
+pub enum View {
+    Scalar(Scalar),
+    Function(DefId),
+    Reference(LocationId),
+    Text(crate::sema::text::Id),
+    Bytes(crate::sema::text::Id),
+    Repeat {
+        value: Constant,
+        length: u64,
+    },
+    Product {
+        length: u64,
+        variant: Option<VariantId>,
+    },
+}
+/// Read completed values without starting semantic queries or revisiting syntax.
+#[derive(Clone, Copy)]
+pub struct Reader<'a> {
+    facts: &'a Declarations,
+}
+impl<'a> Reader<'a> {
+    #[must_use]
+    pub const fn new(facts: &'a Declarations) -> Self {
+        Self { facts }
+    }
+    #[must_use]
+    pub fn definition(self, id: DefId) -> Option<Constant> {
+        self.facts.constant_values.get(&id).copied().map(Constant)
+    }
+    /// # Errors
+    /// Rejects missing arena entries or a constructor without an evaluated value.
+    pub fn view(self, constant: Constant) -> Result<View, &'static str> {
+        Ok(match constant.0 {
+            Value::Scalar(value) => View::Scalar(value),
+            Value::Function(id) => View::Function(id),
+            Value::Reference(id) => View::Reference(LocationId(id)),
+            Value::Text(id) => View::Text(id),
+            Value::Bytes(id) => View::Bytes(id),
+            Value::Variant(id) => View::Product {
+                length: 0,
+                variant: Some(id),
+            },
+            Value::Product(id) => {
+                if let Some((value, length)) = self.facts.constant_products.repeated(id)? {
+                    View::Repeat {
+                        value: Constant(value),
+                        length,
+                    }
+                } else {
+                    View::Product {
+                        length: self.facts.constant_products.length(id)?,
+                        variant: self.facts.constant_products.variant(id)?,
+                    }
+                }
+            }
+            Value::Constructor(_) => return Err("unevaluated constant constructor"),
+        })
+    }
+    /// A projected location retains its original base; equal values are not
+    /// interchangeable storage. Following origins needs no expression evaluation.
+    /// # Errors
+    /// Rejects an invalid location identity.
+    pub fn location(self, id: LocationId) -> Result<Location, &'static str> {
+        let place = self.facts.constant_references.get(Value::Reference(id.0))?;
+        let origin =
+            if let Some((base, index)) = self.facts.constant_references.projection(place)? {
+                Origin::Projection {
+                    base: LocationId(base),
+                    index,
+                }
+            } else if let references::Access::Static(id) = place.access {
+                Origin::Static(id)
+            } else {
+                Origin::Allocation
+            };
+        Ok(Location {
+            value: Constant(place.value),
+            ty: place.ty,
+            origin,
+        })
+    }
+    /// # Errors
+    /// Rejects non-products or out-of-bounds field selection.
+    pub fn field(self, constant: Constant, index: u64) -> Result<Constant, &'static str> {
+        match constant.0 {
+            Value::Product(id) => self.facts.constant_products.get(id, index).map(Constant),
+            Value::Bytes(id) => self
+                .facts
+                .texts
+                .get(id)?
+                .get(usize::try_from(index).map_err(|_| "constant index exceeds host size")?)
+                .copied()
+                .map(|b| Constant::scalar(Scalar::Integer(u128::from(b))))
+                .ok_or("constant index is out of bounds"),
+            _ => Err("constant projection requires a product"),
+        }
+    }
+    /// # Errors
+    /// Rejects an invalid interned byte sequence.
+    pub fn bytes(self, id: crate::sema::text::Id) -> Result<&'a [u8], &'static str> {
+        self.facts.texts.get(id)
+    }
+}
 impl Constant {
     #[must_use]
     pub const fn scalar(value: Scalar) -> Self {
@@ -184,6 +304,7 @@ impl<'a> Evaluator<'a> {
                 ty,
                 access: references::Access::Shared,
                 packed: None,
+                projection: None,
             })
             .map(Constant)
             .map_err(Failure::Invalid)

@@ -5,6 +5,12 @@ use crate::{resolve::model::DefId, sema::members::Selection, types::TypeId};
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub(in crate::sema) struct Id(u32);
 #[derive(Clone, Copy)]
+pub(super) struct ProjectionId(u32);
+struct Projection {
+    base: Id,
+    index: u64,
+}
+#[derive(Clone, Copy)]
 pub(super) enum Access {
     Owned,
     Shared,
@@ -16,16 +22,61 @@ pub(super) struct Place {
     pub ty: TypeId,
     pub access: Access,
     pub packed: Option<u32>,
+    /// Physical subobject identity; dereferencing reuses the selected location.
+    pub projection: Option<ProjectionId>,
 }
 #[derive(Default)]
 pub(in crate::sema) struct References {
     places: Vec<Place>,
+    projections: Vec<Projection>,
 }
 impl References {
+    pub(super) fn id(value: Value) -> Result<Id, &'static str> {
+        if let Value::Reference(id) = value {
+            Ok(id)
+        } else {
+            Err("constant value is not a reference")
+        }
+    }
     pub(super) fn insert(&mut self, place: Place) -> Result<Value, &'static str> {
+        if place
+            .projection
+            .is_some_and(|id| id.0 as usize >= self.projections.len())
+        {
+            return Err("invalid constant projection identity");
+        }
         let id = Id(u32::try_from(self.places.len()).map_err(|_| "too many constant places")?);
         self.places.push(place);
         Ok(Value::Reference(id))
+    }
+    pub(super) fn project(
+        &mut self,
+        base: Id,
+        index: u64,
+        mut place: Place,
+    ) -> Result<Value, &'static str> {
+        if base.0 as usize >= self.places.len() {
+            return Err("constant projection lacks an earlier base location");
+        }
+        let id = Id(u32::try_from(self.places.len()).map_err(|_| "too many constant places")?);
+        let projection = ProjectionId(
+            u32::try_from(self.projections.len()).map_err(|_| "too many constant projections")?,
+        );
+        place.projection = Some(projection);
+        self.projections.push(Projection { base, index });
+        self.places.push(place);
+        Ok(Value::Reference(id))
+    }
+    pub(super) fn projection(&self, place: Place) -> Result<Option<(Id, u64)>, &'static str> {
+        place
+            .projection
+            .map(|id| {
+                self.projections
+                    .get(id.0 as usize)
+                    .map(|p| (p.base, p.index))
+                    .ok_or("missing constant projection")
+            })
+            .transpose()
     }
     pub(super) fn get(&self, value: Value) -> Result<Place, &'static str> {
         let Value::Reference(id) = value else {

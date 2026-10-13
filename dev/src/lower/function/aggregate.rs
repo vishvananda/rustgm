@@ -123,7 +123,10 @@ impl Lower<'_, '_> {
         }))
     }
     pub(super) fn pointer(&mut self, address: Address) -> Result<Value, &'static str> {
-        if matches!(address.operand, Operand::Slot(_) | Operand::Symbol(_)) {
+        if matches!(
+            address.operand,
+            Operand::Slot(_) | Operand::Symbol(_) | Operand::Global(_)
+        ) {
             self.builder.address(address.operand)
         } else {
             Ok(Value {

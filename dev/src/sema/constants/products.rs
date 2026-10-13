@@ -22,6 +22,16 @@ pub(in crate::sema) struct Products {
     fields: Vec<Value>,
 }
 impl Products {
+    pub(super) fn repeated(&self, id: Id) -> Result<Option<(Value, u64)>, &'static str> {
+        match self
+            .nodes
+            .get(id.0 as usize)
+            .ok_or("missing constant product")?
+        {
+            Contents::Repeat { value, length } => Ok(Some((*value, *length))),
+            Contents::Fields { .. } => Ok(None),
+        }
+    }
     fn insert(&mut self, contents: Contents) -> Result<Value, &'static str> {
         let id = Id(u32::try_from(self.nodes.len()).map_err(|_| "too many constant products")?);
         self.nodes.push(contents);

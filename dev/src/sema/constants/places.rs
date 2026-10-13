@@ -114,6 +114,7 @@ impl Queries<'_> {
                         ty,
                         access,
                         packed: None,
+                        projection: None,
                     },
                 )?;
                 (Query::Place(key), value)
@@ -212,15 +213,18 @@ impl Queries<'_> {
                 ty: referent,
                 access: Access::Shared,
                 packed: None,
+                projection: None,
             },
         )
     }
     fn project_place(&mut self, key: NodeKey, base: NodeKey, index: u64) -> Result<Value, Error> {
-        let mut place = self.place(key, self.value(Query::Place(base))?)?;
+        let mut location = self.value(Query::Place(base))?;
+        let mut place = self.place(key, location)?;
         let count = self.typing.facts.autoderefs.get(&key).copied().unwrap_or(0);
         for _ in 0..count {
             self.budget()?;
             let value = self.referent(key, place.value, place.ty)?;
+            location = value;
             place = self.place(key, value)?;
         }
         if let Some(Type::Adt(item, _)) = self.typing.facts.types.kind(place.ty)
@@ -261,7 +265,13 @@ impl Queries<'_> {
             }
         };
         let ty = self.place_type(key)?;
-        self.insert_place(key, Place { value, ty, ..place })
+        let base = super::references::References::id(location)
+            .map_err(|e| self.error(Query::Place(key), e))?;
+        self.typing
+            .facts
+            .constant_references
+            .project(base, index, Place { value, ty, ..place })
+            .map_err(|e| self.error(Query::Place(key), e))
     }
     fn check_reference_alignment(&mut self, key: NodeKey, place: Place) -> Result<(), Error> {
         if let Access::Static(id) = place.access {

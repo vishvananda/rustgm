@@ -1066,3 +1066,69 @@ Reference representations and execution are still gated. Persistent backing
 for promoted and static places must precede returning references from calls;
 then thin/fat pointer lowering, dynamic slice/text operations and PA17
 destruction remain. PA15–PA17 are still planned assignments.
+
+## Persistent data and constant-place identity
+
+LowIR now retains globals, initializer items and address targets as typed IDs
+and flat arenas. Reserving a global before initializing it supports forward
+and cyclic address dependencies. The writer emits explicit object size,
+alignment, read-only storage and signed relocation offsets. Integer data items
+preserve exact floating-point bits without converting through decimal text.
+Existing programs without globals retain their previous text and count output.
+
+Initialization validates the complete item sequence before appending it. It
+rejects invalid identities, bit widths, spans, repeated initialization and
+incompatible item alignment. The pinned backend naturally aligns typed data
+items and requires object alignment not to exceed object size. Consequently,
+this interface rejects unaligned pointer relocations rather than changing
+packed layout. Lowering packed pointer-containing constants needs a separate
+supported strategy; aligned backing for zero-sized referents must also satisfy
+the backend's object-span rule.
+
+Constant places now retain sparse parent/index projection records. An immutable
+reader exposes completed values, original static identity, projection ancestry,
+interned bytes and compressed repeated products. It cannot start an evaluator
+or revisit syntax. Equal-valued statics remain distinct storage, and selecting
+a static subobject no longer loses the path needed to compute its address.
+Projection records refer to earlier locations and use flat ownership.
+
+Validation for this checkpoint:
+
+- All 456 maintainer tests pass. Seven generated LowIR programs execute through
+  the pinned backend, covering forward and negative relocation offsets,
+  function pointers, cyclic addresses, NaN payload bits, negative-zero bits
+  and all 128 integer bits. Invalid initializers leave the data arena unchanged.
+- Independently rustc-accepted source checks nested static/product/array
+  projections, explicit and automatic dereferencing, equal-valued statics,
+  promoted temporary ancestry, exact text bytes and a million-element repeat
+  retained without expansion.
+- Formatting, Clippy all/pedantic with warnings denied, the 280-file audit,
+  all 25 harness tests and `make test-backend` pass. No lint allowance was added.
+- The course report remains 2,555/2,622 exact on the same 67 reviewed paths.
+  Every reviewed discrepancy is byte-identical to the alignment checkpoint;
+  no acceptance status, fixture, manifest or oracle changed. All 1,230
+  manifest-listed PA11–PA14 LowIR inputs preserve their complete outputs,
+  including rejection diagnostics. The unreleased branch's report still fails.
+- Measurements retain 216 verified observations with immutable binaries/frozen
+  inputs, A/A calibration and paired ABBA blocks. Full rendering and count
+  outputs agree throughout. At 64k owned-path functions, baseline/current
+  medians are 5,087.9/5,055.2 ms and 949,952/949,956 KiB; at 16k guard-retry
+  functions they are 1,401.5/1,427.9 ms and 296,864/296,860 KiB. Constant-place
+  workloads at 1k/4k/16k functions measure 40.5/160.3/827.0 ms before and
+  41.5/164.7/828.1 ms after. Constant-reference chains at depths 128/512/2,048
+  measure 5.0/10.9/35.3 ms before and 5.0/10.3/35.9 ms after. Inspection counts
+  grow linearly in both constant workloads. Timing ranges overlap; this is not
+  a precise speed claim. No local RustGM build or test overlapped timing.
+
+The immutable compiler is `obj/pa15-work/data-candidate-v1`, SHA-256
+`db16d04fa8636fc7bb3902c1dc0c4e57299c5b17ddca4c8e64ce7eff8a67f2f6`.
+Source hashes and receipts use `obj/pa15-work/data-v1-*`.
+`verify_data_v1_perf.py` checks all raw observations, source/binary/input hashes,
+output equality and constant-workload count scaling. These CLI measurements
+exercise retained constant provenance; global-data serialization is currently
+covered by the component/native checks rather than source-driven lowering.
+
+This checkpoint supplies typed storage and read-only semantic access. Rust
+reference execution is still gated until lowering connects checked places to
+persistent data. Thin/fat reference lowering, dynamic slices/text and PA17
+destruction remain; PA15–PA17 are still planned assignments.

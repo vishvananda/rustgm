@@ -31,6 +31,7 @@ pub enum Operand {
     Parameter(u32),
     Slot(SlotId),
     Symbol(SymbolId),
+    Global(super::data::GlobalId),
     Literal(LiteralId),
 }
 #[derive(Clone, Copy, Debug)]
@@ -140,6 +141,8 @@ pub struct Symbol {
 }
 #[derive(Default)]
 pub struct Program {
+    pub globals: Vec<super::data::Global>,
+    pub data: Vec<super::data::Item>,
     pub parameters: Vec<Type>,
     pub signatures: Vec<Signature>,
     pub symbols: Vec<Symbol>,

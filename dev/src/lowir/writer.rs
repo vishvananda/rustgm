@@ -26,16 +26,26 @@ pub fn count(program: &Program, out: &mut impl Write) -> io::Result<()> {
         slots += body.slots.len();
         temporaries += body.temporaries.len();
     }
-    writeln!(
+    write!(
         out,
         "symbols {} functions {functions} blocks {blocks} instructions {instructions} slots {slots} temporaries {temporaries}",
-        program.symbols.len()
-    )
+        program.symbols.len() + program.globals.len()
+    )?;
+    if !program.globals.is_empty() {
+        write!(
+            out,
+            " globals {} data_items {}",
+            program.globals.len(),
+            program.data.len()
+        )?;
+    }
+    writeln!(out)
 }
 
 /// # Errors
 /// Propagates output errors and inconsistent typed identities.
 pub fn write(program: &Program, out: &mut impl Write) -> io::Result<()> {
+    globals(program, out)?;
     for symbol in &program.symbols {
         let signature = program
             .signatures
@@ -77,6 +87,48 @@ fn parameters(
             write!(out, "%p{index} : ")?;
         }
         write!(out, "{}", ty.name())?;
+    }
+    Ok(())
+}
+fn globals(program: &Program, out: &mut impl Write) -> io::Result<()> {
+    use super::data::Item;
+    for global in &program.globals {
+        let range = global
+            .items
+            .ok_or_else(|| io::Error::other("uninitialized LowIR global"))?;
+        let items = program
+            .data
+            .get(range.start as usize..range.end as usize)
+            .ok_or_else(|| io::Error::other("invalid LowIR global item range"))?;
+        write!(
+            out,
+            "global @{} : obj<{}x{}>",
+            global.name, global.span.bytes, global.span.align
+        )?;
+        if global.readonly {
+            write!(out, " [storage=readonly]")?;
+        }
+        writeln!(out, " = {{")?;
+        for &item in items {
+            match item {
+                Item::Zero(bytes) => writeln!(out, "  zero {bytes}")?,
+                Item::Bits { ty, bits } => writeln!(out, "  {} {bits}", ty.name())?,
+                Item::Address { target, addend } => {
+                    write!(
+                        out,
+                        "  ptr addr @{}",
+                        program.data_target(target).map_err(io::Error::other)?
+                    )?;
+                    if addend > 0 {
+                        write!(out, " + {addend}")?;
+                    } else if addend < 0 {
+                        write!(out, " - {}", addend.unsigned_abs())?;
+                    }
+                    writeln!(out)?;
+                }
+            }
+        }
+        writeln!(out, "}}")?;
     }
     Ok(())
 }
@@ -277,6 +329,13 @@ fn operand(
                 .get(id.0 as usize)
                 .ok_or_else(|| io::Error::other("invalid LowIR symbol"))?
                 .name
+        ),
+        Operand::Global(id) => write!(
+            out,
+            "@{}",
+            program
+                .data_target(super::data::Target::Global(id))
+                .map_err(io::Error::other)?
         ),
         Operand::Literal(id) => {
             let literal = function
