@@ -124,7 +124,7 @@ impl Query {
                 .kind(self.nodes[index].ty)
                 .ok_or("missing equality type")?;
             let initial = match kind {
-                Kind::Adt(item) => selected.get(&item).copied().unwrap_or_default(),
+                Kind::Adt(item, _) => selected.get(&item).copied().unwrap_or_default(),
                 Kind::Primitive(Primitive::F32 | Primitive::F64) => Properties {
                     partial_eq: true,
                     eq: false,
@@ -143,7 +143,7 @@ impl Query {
                             visit(ty)?;
                         }
                     }
-                    Kind::Adt(item) => {
+                    Kind::Adt(item, _) => {
                         let definition =
                             definitions.get(item).ok_or("missing equality aggregate")?;
                         for variant in definitions.variants(definition) {

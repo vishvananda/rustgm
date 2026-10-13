@@ -1,6 +1,6 @@
 //! Per-body constraints over flat terms, with path-compressed variable identities.
 //! A failed constraint may retain prior progress; callers discard that body context.
-use super::{ItemId, Kind, Primitive, RegionId, Store, TypeId};
+use super::{ItemId, Kind, Primitive, RegionArgs, RegionId, Store, TypeId};
 use std::collections::{HashMap, HashSet};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -14,7 +14,7 @@ pub enum Domain {
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Constructor {
     Primitive(Primitive),
-    Adt(ItemId),
+    Adt(ItemId, RegionArgs),
     Never,
     Tuple,
     Array(u64),
@@ -130,7 +130,7 @@ impl Context {
     /// Rejects invalid arity, child identities and compact arena overflow.
     pub fn construct(&mut self, kind: Constructor, children: &[TermId]) -> Result<TermId, Error> {
         let valid = match kind {
-            Constructor::Primitive(_) | Constructor::Adt(_) | Constructor::Never => {
+            Constructor::Primitive(_) | Constructor::Adt(..) | Constructor::Never => {
                 children.is_empty()
             }
             Constructor::Tuple => true,
@@ -386,6 +386,21 @@ impl Context {
                     self.region_equalities.push((a, b));
                 }
             }
+            (Constructor::Adt(x, a), Constructor::Adt(y, b)) if x == y => {
+                let a = store.region_args(a).ok_or(Error::InvalidIdentity)?;
+                let b = store.region_args(b).ok_or(Error::InvalidIdentity)?;
+                if a.len() != b.len() {
+                    return Err(Error::Mismatch);
+                }
+                if record_regions {
+                    self.region_equalities.extend(
+                        a.iter()
+                            .copied()
+                            .zip(b.iter().copied())
+                            .filter(|(a, b)| a != b),
+                    );
+                }
+            }
             (x, y) if x == y => {}
             _ => return Err(Error::Mismatch),
         }
@@ -414,7 +429,7 @@ impl Context {
         let constructor = match kind {
             Kind::Never => Constructor::Never,
             Kind::Primitive(p) => Constructor::Primitive(p),
-            Kind::Adt(item) => Constructor::Adt(item),
+            Kind::Adt(item, args) => Constructor::Adt(item, args),
             Kind::Tuple(list) => {
                 for ty in store.list(list).ok_or(Error::InvalidIdentity)? {
                     children.push(self.known(store, *ty)?);
@@ -567,7 +582,7 @@ fn canonical(
     let first = || children.first().copied().ok_or(Error::InvalidIdentity);
     let kind = match constructor {
         Constructor::Primitive(p) => Kind::Primitive(p),
-        Constructor::Adt(item) => Kind::Adt(item),
+        Constructor::Adt(item, args) => Kind::Adt(item, args),
         Constructor::Never => Kind::Never,
         Constructor::Tuple => {
             Kind::Tuple(store.intern_list(children).map_err(|_| Error::Overflow)?)

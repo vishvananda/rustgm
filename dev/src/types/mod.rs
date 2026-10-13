@@ -3,16 +3,21 @@ pub mod aggregate;
 pub mod copy;
 pub mod equality;
 pub mod infer;
+pub mod substitute;
 
-use std::{
-    collections::{HashMap, hash_map::DefaultHasher},
-    hash::{Hash, Hasher},
-};
+use crate::support::intern_slice::Slices;
+use std::collections::HashMap;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct TypeId(pub u32);
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct ListId(pub u32);
+/// Canonical lifetime arguments; empty arguments preserve ordinary nominal types.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct RegionArgs(pub u32);
+impl RegionArgs {
+    pub const EMPTY: Self = Self(0);
+}
 /// Semantic declaration identity supplied by the owning type-checking context.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct ItemId(pub u32);
@@ -140,7 +145,7 @@ pub enum Kind {
     Never,
     Primitive(Primitive),
     /// Nominal identity; field definitions and by-value cycles are checked separately.
-    Adt(ItemId),
+    Adt(ItemId, RegionArgs),
     Tuple(ListId),
     Array {
         element: TypeId,
@@ -167,30 +172,20 @@ pub enum Kind {
         signature: TypeId,
     },
 }
-struct List {
-    start: u32,
-    end: u32,
-    next: Option<ListId>,
-}
 /// Child lists occupy one shared arena. Hash collisions compare their typed slices.
 /// Type/list IDs are valid only in the store that produced them.
 #[derive(Clone, Copy)]
 struct Properties {
     sized: bool,
     well_formed: bool,
+    escaping: u16,
 }
 pub struct Store {
     properties: Vec<Properties>,
     kinds: Vec<Kind>,
     index: HashMap<Kind, TypeId>,
-    edges: Vec<TypeId>,
-    lists: Vec<List>,
-    list_index: HashMap<u64, ListId>,
-}
-fn fingerprint(values: &[TypeId]) -> u64 {
-    let mut hasher = DefaultHasher::new();
-    values.hash(&mut hasher);
-    hasher.finish()
+    children: Slices<TypeId>,
+    regions: Slices<RegionId>,
 }
 impl Default for Store {
     fn default() -> Self {
@@ -207,19 +202,15 @@ impl Default for Store {
             .map(|kind| Properties {
                 sized: *kind != Kind::Primitive(Primitive::Str),
                 well_formed: true,
+                escaping: 0,
             })
             .collect();
         Self {
             properties,
             kinds,
             index,
-            edges: Vec::new(),
-            lists: vec![List {
-                start: 0,
-                end: 0,
-                next: None,
-            }],
-            list_index: HashMap::from([(fingerprint(&[]), ListId(0))]),
+            children: Slices::default(),
+            regions: Slices::default(),
         }
     }
 }
@@ -239,10 +230,14 @@ impl Store {
     pub fn is_well_formed(&self, id: TypeId) -> Option<bool> {
         self.properties.get(id.0 as usize).map(|p| p.well_formed)
     }
+    /// Number of enclosing binders needed by escaping bound lifetimes.
+    #[must_use]
+    pub fn escaping_binders(&self, id: TypeId) -> Option<u16> {
+        self.properties.get(id.0 as usize).map(|p| p.escaping)
+    }
     #[must_use]
     pub fn list(&self, id: ListId) -> Option<&[TypeId]> {
-        let list = self.lists.get(id.0 as usize)?;
-        self.edges.get(list.start as usize..list.end as usize)
+        self.children.get(id.0)
     }
     #[must_use]
     pub fn len(&self) -> usize {
@@ -254,40 +249,26 @@ impl Store {
     }
     #[must_use]
     pub fn edge_count(&self) -> usize {
-        self.edges.len()
+        self.children.edge_count()
     }
     /// # Errors
     /// Rejects out-of-range IDs and compact arena overflow without changing the store.
     pub fn intern_list(&mut self, values: &[TypeId]) -> Result<ListId, &'static str> {
-        let hash = fingerprint(values);
-        let head = self.list_index.get(&hash).copied();
-        let mut next = head;
-        while let Some(id) = next {
-            if self.list(id) == Some(values) {
-                return Ok(id);
-            }
-            next = self.lists[id.0 as usize].next;
-        }
         if values.iter().any(|id| self.kind(*id).is_none()) {
             return Err("invalid type in canonical child list");
         }
-        let id = ListId(u32::try_from(self.lists.len()).map_err(|_| "too many type lists")?);
-        let start = u32::try_from(self.edges.len()).map_err(|_| "too many type edges")?;
-        let end = self
-            .edges
-            .len()
-            .checked_add(values.len())
-            .and_then(|size| u32::try_from(size).ok())
-            .ok_or("too many type edges")?;
-        self.edges.extend_from_slice(values);
-        self.lists.push(List {
-            start,
-            end,
-            next: head,
-        });
-        self.list_index.insert(hash, id);
-        Ok(id)
+        self.children.intern(values).map(ListId)
     }
+    #[must_use]
+    pub fn region_args(&self, id: RegionArgs) -> Option<&[RegionId]> {
+        self.regions.get(id.0)
+    }
+    /// # Errors
+    /// Rejects compact argument arena overflow.
+    pub fn intern_regions(&mut self, values: &[RegionId]) -> Result<RegionArgs, &'static str> {
+        self.regions.intern(values).map(RegionArgs)
+    }
+
     /// Intern only types whose children already exist: canonical ownership is acyclic.
     ///
     /// # Errors
@@ -298,7 +279,8 @@ impl Store {
         }
         let valid_type = |id: TypeId| self.kind(id).is_some();
         let valid = match kind {
-            Kind::Never | Kind::Primitive(_) | Kind::Adt(_) => true,
+            Kind::Never | Kind::Primitive(_) => true,
+            Kind::Adt(_, args) => self.region_args(args).is_some(),
             Kind::Tuple(list) => self.list(list).is_some(),
             Kind::Slice(element) | Kind::Array { element, .. } => valid_type(element),
             Kind::Reference { referent, .. } => valid_type(referent),
@@ -330,14 +312,24 @@ impl Store {
         let mut result = Properties {
             sized: true,
             well_formed: true,
+            escaping: 0,
         };
         match kind {
             // The closed aggregate profile requires sized, well-formed fields at
             // declaration completion. Nominal recursion is not a structural child edge.
-            Kind::Never | Kind::Adt(_) => {}
+            Kind::Never => {}
+            Kind::Adt(_, args) => {
+                for region in self
+                    .region_args(args)
+                    .ok_or("invalid nominal lifetime arguments")?
+                {
+                    result.escaping = result.escaping.max(escaping_region(*region));
+                }
+            }
             Kind::Primitive(p) => result.sized = p != Primitive::Str,
             Kind::Array { element, .. } | Kind::Slice(element) => {
                 let element = child(element)?;
+                result.escaping = element.escaping;
                 result.well_formed = element.well_formed && element.sized;
                 result.sized = matches!(kind, Kind::Array { .. }) && element.sized;
             }
@@ -347,27 +339,44 @@ impl Store {
                     let p = child(*ty)?;
                     result.well_formed &= p.well_formed && (p.sized || i + 1 == elements.len());
                     result.sized &= p.sized;
+                    result.escaping = result.escaping.max(p.escaping);
                 }
             }
             Kind::Reference { referent: ty, .. }
             | Kind::Pointer { pointee: ty, .. }
             | Kind::FunctionItem { signature: ty, .. } => {
-                result.well_formed = child(ty)?.well_formed;
+                let properties = child(ty)?;
+                result.well_formed = properties.well_formed;
+                result.escaping = properties.escaping;
             }
             Kind::Function {
                 parameters,
                 result: ty,
                 ..
             } => {
-                result.well_formed = child(ty)?.well_formed;
+                let properties = child(ty)?;
+                result.well_formed = properties.well_formed;
+                result.escaping = properties.escaping;
                 for ty in self
                     .list(parameters)
                     .ok_or("invalid structural parameter list")?
                 {
-                    result.well_formed &= child(*ty)?.well_formed;
+                    let properties = child(*ty)?;
+                    result.well_formed &= properties.well_formed;
+                    result.escaping = result.escaping.max(properties.escaping);
                 }
             }
         }
+        match kind {
+            Kind::Reference { region, .. } => {
+                result.escaping = result.escaping.max(escaping_region(region));
+            }
+            Kind::Function { .. } => result.escaping = result.escaping.saturating_sub(1),
+            _ => {}
+        }
         Ok(result)
     }
+}
+fn escaping_region(region: RegionId) -> u16 {
+    region.bound_parts().map_or(0, |(depth, _)| depth + 1)
 }

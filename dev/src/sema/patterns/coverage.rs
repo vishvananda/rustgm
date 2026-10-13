@@ -98,7 +98,7 @@ impl<'a> Coverage<'a> {
         } else {
             match facts.types.kind(ty) {
                 Some(Type::Never) => false,
-                Some(Type::Adt(item)) => !facts.members.variants(item).is_empty(),
+                Some(Type::Adt(item, _)) => !facts.members.variants(item).is_empty(),
                 _ => true,
             }
         };
@@ -187,7 +187,7 @@ impl<'a> Coverage<'a> {
                     Domain::new(primitive).ok_or("coverage requires a supported scalar domain")?;
                 (domain.full().upper, Values::Scalar(domain))
             }
-            Some(Type::Adt(item)) => {
+            Some(Type::Adt(item, _)) => {
                 let tags = self
                     .inhabited
                     .tags(info.ty, item, info.valid, &mut self.graph)?;

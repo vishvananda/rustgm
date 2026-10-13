@@ -90,14 +90,14 @@ impl Copies {
             }
             let kind = types.kind(ty).ok_or("invalid Copy type")?;
             let initial = match kind {
-                Kind::Adt(item) => selected.get(&item).copied().unwrap_or_default(),
+                Kind::Adt(item, _) => selected.get(&item).copied().unwrap_or_default(),
                 Kind::Primitive(Primitive::Str)
                 | Kind::Slice(_)
                 | Kind::Reference { mutable: true, .. } => Properties::default(),
                 _ => Properties::BOTH,
             };
             let mut result = initial;
-            let packed = matches!(kind, Kind::Adt(item)
+            let packed = matches!(kind, Kind::Adt(item, _)
                 if definitions.get(item).is_some_and(|d| d.repr.packed.is_some()));
             if !finish {
                 self.states[ty.0 as usize] = State::Active;
@@ -138,7 +138,7 @@ fn children(
                 visit(*ty)?;
             }
         }
-        Kind::Adt(item) => {
+        Kind::Adt(item, _) => {
             let definition = definitions.get(item).ok_or("missing Copy aggregate")?;
             for variant in definitions.variants(definition) {
                 for ty in types.list(variant.fields).ok_or("invalid Copy fields")? {

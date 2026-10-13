@@ -157,7 +157,7 @@ fn nominal_source_facts_retain_layout_visibility_and_constructor_identity() -> R
         assert_eq!(facts.layouts.offsets(variant), offsets);
     }
     let r = definition(&report, &facts, "R")?;
-    let Some(Kind::Adt(item)) = facts.types.kind(r) else {
+    let Some(Kind::Adt(item, _)) = facts.types.kind(r) else {
         return Err("missing nominal identity".into());
     };
     let variant = facts
@@ -214,7 +214,7 @@ fn nominal_source_facts_retain_layout_visibility_and_constructor_identity() -> R
         )
     );
     let e = definition(&report, &facts, "E")?;
-    let Some(Kind::Adt(item)) = facts.types.kind(e) else {
+    let Some(Kind::Adt(item, _)) = facts.types.kind(e) else {
         return Err("missing enum identity".into());
     };
     let e = facts

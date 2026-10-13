@@ -15,9 +15,9 @@ fn recursive_equality_dependencies_propagate_failures_to_every_parent() -> Resul
     for bad in [false, true] {
         let mut types = Store::default();
         let mut definitions = Definitions::default();
-        let a = types.intern(Kind::Adt(ItemId(0)))?;
-        let b = types.intern(Kind::Adt(ItemId(1)))?;
-        let unsupported = types.intern(Kind::Adt(ItemId(2)))?;
+        let a = types.intern(Kind::Adt(ItemId(0), rustgm::types::RegionArgs::EMPTY))?;
+        let b = types.intern(Kind::Adt(ItemId(1), rustgm::types::RegionArgs::EMPTY))?;
+        let unsupported = types.intern(Kind::Adt(ItemId(2), rustgm::types::RegionArgs::EMPTY))?;
         let a_ref = types.intern(Kind::Reference {
             mutable: false,
             region: RegionId::STATIC,
@@ -96,7 +96,7 @@ fn equality_type_obligations_remain_distinct_from_actual_structural_values()
         item: ItemId(99),
         signature: function,
     })?;
-    let opaque = types.intern(Kind::Adt(ItemId(0)))?;
+    let opaque = types.intern(Kind::Adt(ItemId(0), rustgm::types::RegionArgs::EMPTY))?;
     definitions.insert(
         ItemId(0),
         aggregate::Kind::Struct,
@@ -115,7 +115,7 @@ fn equality_type_obligations_remain_distinct_from_actual_structural_values()
         pointee: opaque,
     })?;
     let fields = types.intern_list(&[float])?;
-    let nominal = types.intern(Kind::Adt(ItemId(1)))?;
+    let nominal = types.intern(Kind::Adt(ItemId(1), rustgm::types::RegionArgs::EMPTY))?;
     definitions.insert(
         ItemId(1),
         aggregate::Kind::Struct,

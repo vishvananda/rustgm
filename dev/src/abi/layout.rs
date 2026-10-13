@@ -196,7 +196,7 @@ impl Layouts {
         match kind {
             Kind::Tuple(fields) => self.dependencies(types, fields)?,
             Kind::Array { element, .. } => self.work.push((element, false)),
-            Kind::Adt(item) => {
+            Kind::Adt(item, _) => {
                 let definition = definitions
                     .get(item)
                     .ok_or("missing completed aggregate definition")?;
@@ -284,7 +284,7 @@ impl Layouts {
                     ..layout
                 })
             }
-            Kind::Adt(item) => {
+            Kind::Adt(item, _) => {
                 let definition = definitions.get(item).ok_or("missing aggregate shape")?;
                 self.aggregate(types, definition, definitions.variants(definition))
             }

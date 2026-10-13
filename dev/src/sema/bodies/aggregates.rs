@@ -202,7 +202,7 @@ impl Checker<'_> {
         if let Some(variant) = self.facts.members.constructors.get(&definition) {
             return Ok(*variant);
         }
-        if let Some(Type::Adt(item)) =
+        if let Some(Type::Adt(item, _)) =
             self.facts.definitions[definition.0 as usize].and_then(|ty| self.facts.types.kind(ty))
         {
             return self.struct_variant(node, item);
@@ -370,7 +370,7 @@ impl Checker<'_> {
                 let ty = self.child(node, receiver, index as usize)?;
                 (Selection::Tuple(index), ty)
             }
-            Some(Constructor::Adt(item)) => {
+            Some(Constructor::Adt(item, _)) => {
                 let variant = self.struct_variant(node, item)?;
                 let field = self
                     .facts

@@ -1513,7 +1513,8 @@ impl Checker<'_> {
                         Some(Type::Function { .. })
                     ) {
                         super::model::Cast::FunctionPointer
-                    } else if let Some(Type::Adt(item)) = self.facts.types.kind(self.ty(value)?) {
+                    } else if let Some(Type::Adt(item, _)) = self.facts.types.kind(self.ty(value)?)
+                    {
                         if !self.facts.enum_casts.contains(&item)
                             || self.primitive(ty)?.integer().is_none()
                         {

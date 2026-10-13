@@ -63,7 +63,7 @@ impl<'a> Inhabited<'a> {
                     Kind::Array { element, length } => {
                         length == 0 || self.cache.values.get(&(self.module, element)) == Some(&true)
                     }
-                    Kind::Adt(item) => self
+                    Kind::Adt(item, _) => self
                         .facts
                         .members
                         .variants(item)
@@ -88,7 +88,7 @@ impl<'a> Inhabited<'a> {
                     work.push((ty, true));
                     work.push((element, false));
                 }
-                Kind::Adt(item) => {
+                Kind::Adt(item, _) => {
                     if self.facts.aggregates.get(item).is_none() {
                         return Err("missing coverage aggregate");
                     }

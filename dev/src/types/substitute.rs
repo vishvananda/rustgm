@@ -1,0 +1,224 @@
+//! Remove one lifetime binder using typed arguments, without capturing nested binders.
+use super::{Kind, ListId, RegionId, Store, TypeId};
+use std::collections::HashMap;
+
+type Key = (TypeId, u16);
+const WORK_LIMIT: usize = 1_000_000;
+
+/// A substitution cache belongs to one store and one argument environment.
+/// Reuse it across the parameters/result/fields of that same instantiation.
+pub struct Bound {
+    arguments: Vec<RegionId>,
+    completed: HashMap<Key, TypeId>,
+    work: Vec<(Key, bool)>,
+    children: Vec<TypeId>,
+    regions: Vec<RegionId>,
+    pub steps: usize,
+}
+
+impl Bound {
+    #[must_use]
+    pub fn new(arguments: Vec<RegionId>) -> Self {
+        Self {
+            arguments,
+            completed: HashMap::new(),
+            work: Vec::new(),
+            children: Vec::new(),
+            regions: Vec::new(),
+            steps: 0,
+        }
+    }
+
+    /// Substitute a type written inside the removed binder. Bound arguments are
+    /// interpreted in the destination context and shifted beneath nested binders.
+    ///
+    /// # Errors
+    /// Rejects missing arguments, invalid IDs, compact overflow and exhausted work.
+    pub fn apply(&mut self, store: &mut Store, ty: TypeId) -> Result<TypeId, &'static str> {
+        let key = (ty, 0);
+        if let Some(result) = self.result(store, key)? {
+            return Ok(result);
+        }
+        self.work.push((key, false));
+        let result = self
+            .drain(store)
+            .and_then(|()| self.result(store, key)?.ok_or("missing substituted root"));
+        self.work.clear();
+        result
+    }
+
+    fn result(&self, store: &Store, key: Key) -> Result<Option<TypeId>, &'static str> {
+        let escaping = store
+            .escaping_binders(key.0)
+            .ok_or("invalid substitution type")?;
+        if escaping <= key.1 {
+            return Ok(Some(key.0));
+        }
+        Ok(self.completed.get(&key).copied())
+    }
+
+    fn child(&self, store: &Store, ty: TypeId, depth: u16) -> Result<TypeId, &'static str> {
+        self.result(store, (ty, depth))?
+            .ok_or("missing substituted dependency")
+    }
+
+    fn drain(&mut self, store: &mut Store) -> Result<(), &'static str> {
+        while let Some((key, finish)) = self.work.pop() {
+            self.steps += 1;
+            if self.steps > WORK_LIMIT {
+                return Err("lifetime substitution work budget exceeded");
+            }
+            if self.result(store, key)?.is_some() {
+                continue;
+            }
+            let kind = store.kind(key.0).ok_or("invalid substitution type")?;
+            if finish {
+                let kind = self.rebuild(store, kind, key.1)?;
+                self.completed.insert(key, store.intern(kind)?);
+            } else {
+                self.work.push((key, true));
+                self.dependencies(store, kind, key.1)?;
+            }
+        }
+        Ok(())
+    }
+
+    fn queue(&mut self, ty: TypeId, depth: u16) -> Result<(), &'static str> {
+        if self.work.len().saturating_add(self.steps) >= WORK_LIMIT {
+            return Err("lifetime substitution work budget exceeded");
+        }
+        self.work.push(((ty, depth), false));
+        Ok(())
+    }
+
+    fn dependencies(&mut self, store: &Store, kind: Kind, depth: u16) -> Result<(), &'static str> {
+        let list = match kind {
+            Kind::Tuple(list) => Some((list, depth)),
+            Kind::Function {
+                parameters, result, ..
+            } => {
+                let depth = nested(depth)?;
+                self.queue(result, depth)?;
+                Some((parameters, depth))
+            }
+            Kind::Array { element: ty, .. }
+            | Kind::Slice(ty)
+            | Kind::Reference { referent: ty, .. }
+            | Kind::Pointer { pointee: ty, .. }
+            | Kind::FunctionItem { signature: ty, .. } => {
+                self.queue(ty, depth)?;
+                None
+            }
+            Kind::Never | Kind::Primitive(_) | Kind::Adt(..) => None,
+        };
+        if let Some((list, depth)) = list {
+            for ty in store.list(list).ok_or("invalid substitution child list")? {
+                self.queue(*ty, depth)?;
+            }
+        }
+        Ok(())
+    }
+
+    fn region(&self, region: RegionId, depth: u16) -> Result<RegionId, &'static str> {
+        let Some((binder, index)) = region.bound_parts() else {
+            return Ok(region);
+        };
+        if binder < depth {
+            return Ok(region);
+        }
+        if binder > depth {
+            return RegionId::bound(binder - 1, index);
+        }
+        let argument = *self
+            .arguments
+            .get(index as usize)
+            .ok_or("missing lifetime argument")?;
+        if let Some((binder, index)) = argument.bound_parts() {
+            RegionId::bound(
+                binder
+                    .checked_add(depth)
+                    .ok_or("lifetime binder depth overflow")?,
+                index,
+            )
+        } else {
+            Ok(argument)
+        }
+    }
+
+    fn list(
+        &mut self,
+        store: &mut Store,
+        list: ListId,
+        depth: u16,
+    ) -> Result<ListId, &'static str> {
+        self.children.clear();
+        for ty in store.list(list).ok_or("invalid substitution list")? {
+            self.children.push(self.child(store, *ty, depth)?);
+        }
+        store.intern_list(&self.children)
+    }
+
+    fn rebuild(&mut self, store: &mut Store, kind: Kind, depth: u16) -> Result<Kind, &'static str> {
+        Ok(match kind {
+            Kind::Never | Kind::Primitive(_) => kind,
+            Kind::Adt(item, args) => {
+                let arguments = store
+                    .region_args(args)
+                    .ok_or("invalid nominal lifetime arguments")?;
+                self.steps = self.steps.saturating_add(arguments.len());
+                if self.steps.saturating_add(self.work.len()) > WORK_LIMIT {
+                    return Err("lifetime substitution work budget exceeded");
+                }
+                self.regions.clear();
+                for region in arguments {
+                    self.regions.push(self.region(*region, depth)?);
+                }
+                Kind::Adt(item, store.intern_regions(&self.regions)?)
+            }
+            Kind::Tuple(list) => Kind::Tuple(self.list(store, list, depth)?),
+            Kind::Array { element, length } => Kind::Array {
+                element: self.child(store, element, depth)?,
+                length,
+            },
+            Kind::Slice(element) => Kind::Slice(self.child(store, element, depth)?),
+            Kind::Reference {
+                mutable,
+                region,
+                referent,
+            } => Kind::Reference {
+                mutable,
+                region: self.region(region, depth)?,
+                referent: self.child(store, referent, depth)?,
+            },
+            Kind::Pointer { mutable, pointee } => Kind::Pointer {
+                mutable,
+                pointee: self.child(store, pointee, depth)?,
+            },
+            Kind::Function {
+                bound_regions,
+                parameters,
+                result,
+                unsafe_,
+            } => {
+                let depth = nested(depth)?;
+                Kind::Function {
+                    bound_regions,
+                    parameters: self.list(store, parameters, depth)?,
+                    result: self.child(store, result, depth)?,
+                    unsafe_,
+                }
+            }
+            Kind::FunctionItem { item, signature } => Kind::FunctionItem {
+                item,
+                signature: self.child(store, signature, depth)?,
+            },
+        })
+    }
+}
+
+fn nested(depth: u16) -> Result<u16, &'static str> {
+    depth
+        .checked_add(1)
+        .filter(|depth| *depth < 0x8000)
+        .ok_or("lifetime binder nesting exceeds 32767")
+}

@@ -116,10 +116,10 @@ impl Expansion<'_> {
                     Kind::Range(range)
                 }
                 (
-                    Some(Type::Tuple(_) | Type::Array { .. } | Type::Slice(_) | Type::Adt(_)),
+                    Some(Type::Tuple(_) | Type::Array { .. } | Type::Slice(_) | Type::Adt(..)),
                     Value::Product(product),
                 ) => self.product(ty, product)?,
-                (Some(Type::Adt(_)), Value::Variant(variant)) => {
+                (Some(Type::Adt(..)), Value::Variant(variant)) => {
                     if self.nominal(ty, variant)? != 0 {
                         return Err("fieldless constant has constructor fields");
                     }
@@ -148,7 +148,7 @@ impl Expansion<'_> {
                 .len() as u64,
             Some(Type::Array { length, .. }) => length,
             Some(Type::Slice(_)) => length,
-            Some(Type::Adt(_)) => self.nominal(
+            Some(Type::Adt(..)) => self.nominal(
                 ty,
                 variant.ok_or("constant product lacks a selected constructor")?,
             )?,
@@ -233,7 +233,7 @@ impl Expansion<'_> {
         })
     }
     fn nominal(&self, ty: TypeId, variant: VariantId) -> Result<u64, &'static str> {
-        let Some(Type::Adt(item)) = self.facts.types.kind(ty) else {
+        let Some(Type::Adt(item, _)) = self.facts.types.kind(ty) else {
             return Err("missing nominal constant type");
         };
         let member = self
@@ -307,7 +307,7 @@ fn child(
         Some(Type::Array { element, length }) if index < length => {
             Ok((element, Projection::Index(index)))
         }
-        Some(Type::Adt(_)) => {
+        Some(Type::Adt(..)) => {
             let member = variant
                 .and_then(|id| facts.members.variants.get(id.0 as usize))
                 .ok_or("missing constant constructor")?;

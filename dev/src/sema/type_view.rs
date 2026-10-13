@@ -213,7 +213,23 @@ fn ty(store: &Store, id: TypeId, out: &mut impl Write) -> io::Result<()> {
     {
         Kind::Never => write!(out, "never"),
         Kind::Primitive(p) => write!(out, "primitive {}", p.name()),
-        Kind::Adt(item) => write!(out, "aggregate def={}", item.0),
+        Kind::Adt(item, args) => {
+            write!(out, "aggregate def={}", item.0)?;
+            let args = store
+                .region_args(args)
+                .ok_or_else(|| io::Error::other("invalid lifetime arguments"))?;
+            if !args.is_empty() {
+                write!(out, " regions=[")?;
+                for (ordinal, id) in args.iter().copied().enumerate() {
+                    if ordinal != 0 {
+                        write!(out, ",")?;
+                    }
+                    region(id, out)?;
+                }
+                write!(out, "]")?;
+            }
+            Ok(())
+        }
         Kind::Tuple(elements) => {
             write!(out, "tuple ")?;
             list(store, elements, out)

@@ -169,7 +169,7 @@ impl<'a> Context<'a> {
     pub fn representation(&mut self, ty: TypeId) -> Result<Representation, &'static str> {
         if matches!(
             self.types.kind(ty),
-            Some(Kind::Tuple(_) | Kind::Array { .. } | Kind::Adt(_))
+            Some(Kind::Tuple(_) | Kind::Array { .. } | Kind::Adt(..))
         ) && ty != TypeId::UNIT
         {
             let layout = self.layout(ty)?;

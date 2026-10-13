@@ -214,7 +214,7 @@ impl Queries<'_> {
             let value = self.referent(key, place.value, place.ty)?;
             place = self.place(key, value)?;
         }
-        if let Some(Type::Adt(item)) = self.typing.facts.types.kind(place.ty)
+        if let Some(Type::Adt(item, _)) = self.typing.facts.types.kind(place.ty)
             && let Some(pack) = self
                 .typing
                 .facts

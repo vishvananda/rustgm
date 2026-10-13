@@ -49,7 +49,7 @@ impl Checker<'_> {
             }
             let id = u32::try_from(index)
                 .map_err(|_| self.error(key, "too many nominal declarations"))?;
-            let ty = self.intern(key, Type::Adt(ItemId(id)))?;
+            let ty = self.intern(key, Type::Adt(ItemId(id), crate::types::RegionArgs::EMPTY))?;
             // Resolving an annotation needs the identity, not a completed field
             // graph. Layout later rejects by-value cycles but permits pointers.
             self.complete(DefId(id), key, ty)?;

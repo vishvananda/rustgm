@@ -349,7 +349,7 @@ fn failed_copy_dependencies_are_cached_without_poisoning_independent_queries()
     use rustgm::types::{ItemId, aggregate};
     let mut types = Store::default();
     let item = ItemId(0);
-    let recursive = types.intern(Kind::Adt(item))?;
+    let recursive = types.intern(Kind::Adt(item, rustgm::types::RegionArgs::EMPTY))?;
     let fields = types.intern_list(&[recursive])?;
     let mut definitions = Definitions::default();
     definitions.insert(
