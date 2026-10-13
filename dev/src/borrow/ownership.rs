@@ -8,13 +8,14 @@ pub struct Error {
     pub message: &'static str,
 }
 use crate::{
-    body::ir::{Action, Body, LocalKind, Place, Program, Rvalue},
+    body::ir::{Action, Body, LocalKind, Place, Program, ProjectionKind, Rvalue},
     types::{
         ItemId, Kind, Store,
         aggregate::Definitions,
         copy::{Copies, Properties},
     },
 };
+use paths::Access;
 pub use paths::{Component, Path, PathId, Paths, Root};
 use state::State;
 use std::{collections::HashMap, hash::BuildHasher};
@@ -94,20 +95,12 @@ fn visit<'a, S: BuildHasher>(
     program: &'a Program,
     mut record: impl FnMut(BodyFacts),
 ) -> Result<Checked<'a>, Error> {
+    let mut pending = None;
     for body in &program.bodies {
         let error = |message| Error {
             node: body.source,
             message,
         };
-        if body
-            .values
-            .iter()
-            .any(|v| matches!(v.kind, Rvalue::Borrow { .. }))
-        {
-            return Err(error(
-                "reference expression execution requires region and loan proofs",
-            ));
-        }
         let mut uses = vec![Use::Other; body.values.len()];
         for (index, value) in body.values.iter().enumerate() {
             if matches!(value.kind, Rvalue::Read(_)) {
@@ -143,9 +136,27 @@ fn visit<'a, S: BuildHasher>(
             uses,
             reachable: Vec::new(),
         };
-        state::verify(body, &mut facts)?;
+        state::verify(body, &mut facts, types)?;
         guards::verify(body, &facts)?;
         record(facts);
+        if pending.is_none()
+            && (body
+                .values
+                .iter()
+                .any(|v| matches!(v.kind, Rvalue::Borrow { .. }))
+                || body
+                    .projections
+                    .iter()
+                    .any(|p| matches!(p.kind, ProjectionKind::Dereference { .. })))
+        {
+            pending = Some(body.source);
+        }
+    }
+    if let Some(node) = pending {
+        return Err(Error {
+            node,
+            message: "reference expression execution requires region and loan proofs",
+        });
     }
     Ok(Checked { program })
 }
@@ -177,6 +188,7 @@ impl BodyFacts {
                 {
                     let info = self.paths.place(place)?;
                     if !info.indexed
+                        && info.access == Access::Owned
                         && !info.empty
                         && let Some(path) = info.path
                     {
@@ -190,6 +202,7 @@ impl BodyFacts {
             Action::Store { place, .. } => {
                 let info = self.paths.place(place)?;
                 if !info.indexed
+                    && info.access == Access::Owned
                     && let Some(path) = info.path
                 {
                     let path = &self.paths.entries[path.0 as usize];
@@ -206,7 +219,13 @@ impl BodyFacts {
         }
         Ok(())
     }
-    fn inspect(&self, body: &Body, state: &mut State, action: Action) -> Result<(), &'static str> {
+    fn inspect(
+        &self,
+        body: &Body,
+        types: &Store,
+        state: &mut State,
+        action: Action,
+    ) -> Result<(), &'static str> {
         match action {
             Action::GuardUse(id) => {
                 let guard = body
@@ -244,55 +263,92 @@ impl BodyFacts {
                     }
                 }
             }
-            Action::Evaluate(id) => {
-                if let Rvalue::IsVariant { place, .. } | Rvalue::Validate(place) =
-                    body.values[id.0 as usize].kind
-                {
-                    let info = self.paths.place(place)?;
-                    if let Some(path) = info.path
-                        && !state.initialized(&self.paths.entries[path.0 as usize])?
-                    {
-                        return Err("pattern input may be uninitialized or moved");
-                    }
-                }
-                if let Rvalue::Read(place) = body.values[id.0 as usize].kind {
-                    let info = self.paths.place(place)?;
-                    if !info.empty
-                        && let Some(path) = info.path
-                        && !state.initialized(&self.paths.entries[path.0 as usize])?
-                    {
-                        return Err(if self.uses[id.0 as usize] == Use::Copy {
-                            "local may be uninitialized at this read"
-                        } else {
-                            "local may be uninitialized or moved at this read"
-                        });
-                    }
-                    if self.uses[id.0 as usize] == Use::Move
-                        && self.paths.view_root(body, info.path).is_some()
-                    {
-                        return Err("cannot move a non-Copy value out of a guard binding");
-                    }
-                    // Eligibility to move through a place still applies to an
-                    // empty subarray, even though it reads no initialization bits.
-                    if info.path.is_none() && self.uses[id.0 as usize] == Use::Move {
-                        return Err("cannot move a non-Copy value out of static storage");
-                    }
-                    if info.indexed && self.uses[id.0 as usize] == Use::Move {
-                        return Err("cannot move a non-Copy value through array indexing");
-                    }
-                }
-            }
+            Action::Evaluate(id) => self.inspect_value(body, types, state, id)?,
             Action::Project(id) | Action::Select { projection: id, .. } => {
                 let info = self.paths.projections[id.0 as usize];
-                if info.indexed
+                if (info.indexed || info.access != Access::Owned)
                     && let Some(path) = info.path
                     && !state.initialized(&self.paths.entries[path.0 as usize])?
                 {
-                    return Err("indexed array may be uninitialized or moved");
+                    return Err(if info.access == Access::Owned {
+                        "indexed array may be uninitialized or moved"
+                    } else {
+                        "dereferenced pointer may be uninitialized or moved"
+                    });
                 }
             }
             Action::Store { place, .. } => self.inspect_store(body, state, place)?,
             _ => {}
+        }
+        Ok(())
+    }
+    fn inspect_value(
+        &self,
+        body: &Body,
+        types: &Store,
+        state: &mut State,
+        id: crate::body::ir::ValueId,
+    ) -> Result<(), &'static str> {
+        if let Rvalue::Borrow { place, .. } = body.values[id.0 as usize].kind {
+            let Some(Kind::Reference { mutable, .. }) = types.kind(body.values[id.0 as usize].ty)
+            else {
+                return Err("borrow value has no reference type");
+            };
+            let info = self.paths.place(place)?;
+            let (path, shallow) = self.paths.guard_target(info);
+            if let Some(path) = path {
+                let path = &self.paths.entries[path.0 as usize];
+                let initialized = if shallow {
+                    state.shallow(path.start)
+                } else {
+                    state.initialized(path)?
+                };
+                if !initialized {
+                    return Err("borrowed place may be uninitialized or moved");
+                }
+            }
+            if mutable {
+                self.mutable_borrow(body, info)?;
+            }
+        }
+        if let Rvalue::IsVariant { place, .. } | Rvalue::Validate(place) =
+            body.values[id.0 as usize].kind
+        {
+            let info = self.paths.place(place)?;
+            if let Some(path) = info.path
+                && !state.initialized(&self.paths.entries[path.0 as usize])?
+            {
+                return Err("pattern input may be uninitialized or moved");
+            }
+        }
+        if let Rvalue::Read(place) = body.values[id.0 as usize].kind {
+            let info = self.paths.place(place)?;
+            if (!info.empty || info.access != Access::Owned)
+                && let Some(path) = info.path
+                && !state.initialized(&self.paths.entries[path.0 as usize])?
+            {
+                return Err(if self.uses[id.0 as usize] == Use::Copy {
+                    "local may be uninitialized at this read"
+                } else {
+                    "local may be uninitialized or moved at this read"
+                });
+            }
+            if self.uses[id.0 as usize] == Use::Move
+                && self.paths.view_root(body, info.path).is_some()
+            {
+                return Err("cannot move a non-Copy value out of a guard binding");
+            }
+            // Eligibility to move through a place still applies to an
+            // empty subarray, even though it reads no initialization bits.
+            if info.access != Access::Owned && self.uses[id.0 as usize] == Use::Move {
+                return Err("cannot move a non-Copy value out of a reference");
+            }
+            if info.path.is_none() && self.uses[id.0 as usize] == Use::Move {
+                return Err("cannot move a non-Copy value out of static storage");
+            }
+            if info.indexed && self.uses[id.0 as usize] == Use::Move {
+                return Err("cannot move a non-Copy value through array indexing");
+            }
         }
         Ok(())
     }
@@ -305,6 +361,12 @@ impl BodyFacts {
         let info = self.paths.place(place)?;
         if self.paths.view_root(body, info.path).is_some() {
             return Err("cannot assign through a guard binding");
+        }
+        if info.access != Access::Owned {
+            if info.access == Access::Shared {
+                return Err("cannot assign through a shared reference");
+            }
+            return Ok(());
         }
         let Some(path) = info.path else {
             return Err("writing static storage requires unsafe checking");
@@ -328,6 +390,27 @@ impl BodyFacts {
         }
         if info.indexed && !state.initialized(path)? {
             return Err("indexed array may be uninitialized or moved");
+        }
+        Ok(())
+    }
+    fn mutable_borrow(&self, body: &Body, info: paths::PlaceInfo) -> Result<(), &'static str> {
+        if self.paths.view_root(body, info.path).is_some() {
+            return Err("cannot mutably borrow through a guard binding");
+        }
+        if info.access == Access::Shared || info.path.is_none() {
+            return Err("cannot mutably borrow shared or static storage");
+        }
+        if info.access == Access::Owned
+            && let Some(path) = info.path
+            && let Root::Local(local) = self.paths.entries[path.0 as usize].root
+        {
+            let local = &body.locals[local.0 as usize];
+            // An unnamed parameter is owned input storage used by a pattern,
+            // just like an rvalue temporary, rather than an immutable binding.
+            let input = local.definition.is_none() && matches!(local.kind, LocalKind::Parameter(_));
+            if !local.mutable && !input {
+                return Err("cannot mutably borrow an immutable local");
+            }
         }
         Ok(())
     }

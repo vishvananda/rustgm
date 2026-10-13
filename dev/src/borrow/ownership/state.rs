@@ -70,7 +70,11 @@ fn range(path: &Path, mut visit: impl FnMut(usize, u64)) {
         bit += width;
     }
 }
-pub(super) fn verify(body: &Body, facts: &mut BodyFacts) -> Result<(), Error> {
+pub(super) fn verify(
+    body: &Body,
+    facts: &mut BodyFacts,
+    types: &crate::types::Store,
+) -> Result<(), Error> {
     let error = |message| Error {
         node: body.source,
         message,
@@ -156,7 +160,7 @@ pub(super) fn verify(body: &Body, facts: &mut BodyFacts) -> Result<(), Error> {
                 Error { node, message }
             };
             facts
-                .inspect(body, &mut state, statement.action)
+                .inspect(body, types, &mut state, statement.action)
                 .map_err(error)?;
             facts
                 .transfer(body, &mut state, statement.action)

@@ -36,9 +36,18 @@ pub struct Path {
     sibling: Option<PathId>,
 }
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
+pub(super) enum Access {
+    Owned,
+    Shared,
+    Mutable,
+}
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub(super) struct PlaceInfo {
+    /// Closest owned path: a dereference retains its pointer's path, never a
+    /// move path for borrowed contents. Access distinguishes these two cases.
     pub path: Option<PathId>,
     pub indexed: bool,
+    pub access: Access,
     /// An empty subarray is not a read or move of its containing array.
     pub empty: bool,
 }
@@ -72,8 +81,15 @@ impl Paths {
             }
             let mut info = paths.place(projection.base)?;
             let component = match projection.kind {
-                ProjectionKind::Dereference { .. } => {
-                    return Err("reference expression execution requires region and loan proofs");
+                ProjectionKind::Dereference { mutable, .. } => {
+                    info.access = if mutable && info.access != Access::Shared && info.path.is_some()
+                    {
+                        Access::Mutable
+                    } else {
+                        Access::Shared
+                    };
+                    info.empty = false;
+                    None
                 }
                 ProjectionKind::Field(field) => Some(Component::Field(field)),
                 ProjectionKind::ConstantIndex(index) => Some(Component::Index(index)),
@@ -87,6 +103,7 @@ impl Paths {
                 }
             };
             if !info.indexed
+                && info.access == Access::Owned
                 && let (Some(parent), Some(component)) = (info.path, component)
             {
                 info.path = Some(paths.component(
@@ -102,6 +119,10 @@ impl Paths {
         }
         for value in &body.values {
             if let Rvalue::Read(Place::Temporary(id))
+            | Rvalue::Borrow {
+                place: Place::Temporary(id),
+                ..
+            }
             | Rvalue::Validate(Place::Temporary(id))
             | Rvalue::IsVariant {
                 place: Place::Temporary(id),
@@ -265,6 +286,7 @@ impl Paths {
         Ok(PlaceInfo {
             path,
             indexed: false,
+            access: Access::Owned,
             empty: false,
         })
     }

@@ -775,3 +775,65 @@ The immutable compiler is `obj/pa15-work/pattern-places-candidate-v1`, SHA-256
 `5d90b508ac276600893d97777e775006e901a9064dd0b9aeae1c8ac18b5e389a`.
 Source hashes and validation receipts use `obj/pa15-work/pattern-places-v1-*`.
 `verify_pattern_places_v1_perf.py` checks the raw measurement receipts.
+
+## Reference access permissions and initialization
+
+Ownership analysis now inspects borrows and dereferences before reaching the
+pending loan/region gate. Sparse move paths retain the closest owned pointer
+path and an owned/shared/mutable access capability. Dereferencing never creates
+move paths for borrowed contents. A store through a reference therefore cannot
+initialize its pointer, and a referent use cannot move that pointer implicitly.
+Pointer reads require initialized storage; borrowing an owned place requires
+its selected fields to be initialized. Non-Copy moves through references reject,
+including zero-sized referents.
+
+Mutable access follows the [Reference's place rules](../doc/rust-reference/src/expressions.md#mutability).
+An immutable binding can contain a writable mutable reference. Shared access
+in an enclosing reference chain prevents mutable access, while ordinary owned
+fields and array elements containing mutable pointers preserve their referent
+capability. Direct mutable borrows still require a mutable local or temporary;
+anonymous parameter input storage supports `ref mut` parameter patterns.
+Immutable statics and match-guard bindings do not grant mutable access.
+
+Internal guard liveness treats borrowing a view as a use. Its physical-path
+write check distinguishes changing pointer storage from changing a referent.
+User-reference aliases still require the pending loan analysis. No reference
+operation receives an executable `Checked` token from this checkpoint: region
+contracts, storage/loan liveness, reference alignment and lowering still need
+integration before PA15–PA17 can be released.
+
+Validation for the access checkpoint:
+
+- Three new tests compare 44 independently declared programs with pinned rustc
+  1.98.0. They cover nested shared/mutable access, projected pointers, anonymous
+  parameters, moved and uninitialized pointers, partial moves, reborrows,
+  statics and guard bindings. Accepted programs must reach the remaining proof
+  gate; rejected programs must report their specific access error.
+- All 438 maintainer tests pass across the full run and the affected boundary
+  rerun. One existing test now expects the specific shared-storage error in its
+  mutable-through-shared case. Formatting, Clippy all/pedantic with warnings
+  denied, the 266-file audit and all 25 harness tests pass.
+- The course comparison remains 2,555/2,622 exact on the same 67 reviewed paths.
+  Only `pa13/tests/spec/boundaries/execute-mutable-through-shared.rs` changes
+  from the preceding checkpoint, still rejecting with status 1 but now reporting
+  its access error. No fixture, manifest or oracle was changed.
+- All 1,230 manifest-listed PA11–PA14 LowIR inputs retain their previous statuses
+  and identical successful output streams. The same single rejected input changes
+  its diagnostic. The native backend and successful emitted programs are unchanged.
+- Measurements retain 162 verified observations with immutable binaries and
+  inputs, A/A calibration and paired blocks. At 64k owned-path functions,
+  baseline/current medians are 5,219.2/5,201.0 ms and 923,306/923,198 KiB.
+  At 16k guard-retry functions they are 1,489.5/1,524.0 ms and
+  292,666/292,146 KiB; timing ranges overlap. Their complete rendered and count
+  outputs match. New reference-access inputs are independently rustc-accepted
+  and scale from 256 to 1,024 to 4,096 functions in candidate medians of
+  16.7, 63.9 and 268.7 ms, with 6,470, 16,666 and 52,706 KiB peak RSS.
+  This last series measures access inspection followed by the mandatory loan
+  rejection, not completed reference compilation. Every rejection status and
+  diagnostic is checked; separate BodyIR counts and full renderings agree and
+  grow linearly. No local RustGM build or test overlapped the timing series.
+
+The immutable compiler is `obj/pa15-work/permissions-candidate-v1`, SHA-256
+`9bc9485f0065659bb6ba45ab3c03ecd106d06add4165602023ffb2fa815c1ad8`.
+Source hashes and validation receipts use `obj/pa15-work/permissions-v1-*`.
+`verify_permissions_v1_perf.py` checks the raw measurement receipts.

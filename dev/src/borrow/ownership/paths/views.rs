@@ -1,7 +1,7 @@
 //! Resolve internal view aliases into canonical physical paths before numbering.
 use super::{
-    Action, Body, Component, LocalId, LocalKind, PathId, Paths, Place, PlaceInfo, Root, Store,
-    arrays,
+    Access, Action, Body, Component, LocalId, LocalKind, PathId, Paths, Place, PlaceInfo, Root,
+    Store, arrays,
 };
 use std::collections::{HashMap, HashSet};
 
@@ -109,6 +109,7 @@ impl Paths {
             context.charge(context.suffix.len())?;
             for &(component, ty) in context.suffix.iter().rev() {
                 if !target.indexed
+                    && target.access == Access::Owned
                     && let Some(parent) = target.path
                 {
                     target.path = Some(self.component(
@@ -123,6 +124,16 @@ impl Paths {
             }
             target.empty |= info.empty;
             target.indexed |= info.indexed;
+            if info.access != Access::Owned {
+                target.access = if info.access == Access::Shared
+                    || target.access == Access::Shared
+                    || target.path.is_none()
+                {
+                    Access::Shared
+                } else {
+                    Access::Mutable
+                };
+            }
         }
         Ok(targets)
     }
@@ -133,7 +144,7 @@ impl Paths {
         &self,
         info: PlaceInfo,
     ) -> (Option<PathId>, bool) {
-        let shallow = info.empty && !info.indexed;
+        let shallow = info.empty && !info.indexed && info.access == Access::Owned;
         let path = info.path.map(|id| {
             if shallow {
                 self.entries[id.0 as usize].parent.unwrap_or(id)

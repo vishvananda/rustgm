@@ -1,5 +1,8 @@
 //! Backward liveness of internal guard protections; divergent paths need no final use.
-use super::{BodyFacts, Error, PathId, Use, paths::PlaceInfo};
+use super::{
+    BodyFacts, Error, PathId, Use,
+    paths::{Access, PlaceInfo},
+};
 use crate::body::ir::{
     Action, BlockId, Body, GuardId, LocalId, LocalKind, Place, Rvalue, Terminator,
 };
@@ -143,6 +146,7 @@ impl<'a> Proof<'a> {
             }
             Action::Evaluate(id) => {
                 if let Rvalue::Read(place)
+                | Rvalue::Borrow { place, .. }
                 | Rvalue::Validate(place)
                 | Rvalue::IsVariant { place, .. } = self.body.values[id.0 as usize].kind
                 {
@@ -173,7 +177,13 @@ impl<'a> Proof<'a> {
     }
     fn write(&mut self, place: Place, live: &[u64]) -> Result<(), &'static str> {
         let info = self.facts.paths.place(place)?;
-        let Some(path) = info.path.filter(|_| !info.empty) else {
+        // An indirect place retains its pointer's move path for initialization,
+        // but writing the referent does not overwrite that pointer. User loans
+        // must separately check referent aliases before reference execution.
+        let Some(path) = info
+            .path
+            .filter(|_| !info.empty && info.access == Access::Owned)
+        else {
             return Ok(());
         };
         self.charge(live.len())?;

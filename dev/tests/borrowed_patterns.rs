@@ -103,11 +103,16 @@ fn pattern_inspection_does_not_claim_region_or_loan_validity()
         .join("../obj/pa13-work/pattern-proof-boundary")
         .join(std::process::id().to_string());
     std::fs::create_dir_all(&folder)?;
-    for (name, source) in [
-        ("escape", "fn f(value:u8)->&'static u8{let ref x=value;x}"),
+    for (name, source, diagnostic) in [
+        (
+            "escape",
+            "fn f(value:u8)->&'static u8{let ref x=value;x}",
+            "reference expression execution requires region and loan proofs",
+        ),
         (
             "mutable-through-shared",
             "fn f(xs:&[u8;1]){let &[ref mut x]=xs;}",
+            "cannot mutably borrow shared or static storage",
         ),
     ] {
         let path = folder.join(format!("{name}.rs"));
@@ -133,7 +138,7 @@ fn pattern_inspection_does_not_claim_region_or_loan_validity()
             .output()?;
         assert_eq!(executed.status.code(), Some(1));
         assert!(executed.stdout.is_empty());
-        assert!(String::from_utf8_lossy(&executed.stderr).contains("region and loan proofs"));
+        assert!(String::from_utf8_lossy(&executed.stderr).contains(diagnostic));
         let checked = Command::new("rustc")
             .args(["--edition=2024", "--crate-type=lib", "--emit=metadata"])
             .arg(&path)
