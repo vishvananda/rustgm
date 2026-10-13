@@ -1,5 +1,5 @@
 //! Pattern bindings read selected places; wildcard fields never load their source.
-use super::{Builder, Error, LocalKind, NodeId, Place, Rvalue};
+use super::{Builder, Error, LocalKind, NodeId, Place, Rvalue, TypeId, ValueId};
 use crate::{
     body::ir::ProjectionKind,
     sema::patterns::{Capture, Kind, PatternId, Projection},
@@ -44,6 +44,8 @@ impl Builder<'_> {
         Ok(())
     }
     fn binding_requires_decision(&mut self, root: PatternId) -> bool {
+        let mut alternatives = false;
+        let mut borrows = false;
         self.scratch.match_patterns.clear();
         self.scratch.match_patterns.push(root);
         while let Some(id) = self.scratch.match_patterns.pop() {
@@ -68,15 +70,27 @@ impl Builder<'_> {
                         .match_patterns
                         .extend(self.facts.patterns.fields(fields).iter().map(|f| f.pattern));
                 }
-                Kind::Or(alternatives) => self
-                    .scratch
-                    .match_patterns
-                    .extend(self.facts.patterns.alternatives(alternatives)),
-                Kind::Binding { subpattern, .. } => self.scratch.match_patterns.extend(subpattern),
+                Kind::Or(choices) => {
+                    alternatives = true;
+                    self.scratch
+                        .match_patterns
+                        .extend(self.facts.patterns.alternatives(choices));
+                }
+                Kind::Binding {
+                    capture,
+                    subpattern,
+                    ..
+                } => {
+                    borrows |= matches!(capture, Capture::Borrow { .. });
+                    self.scratch.match_patterns.extend(subpattern);
+                }
+                Kind::Dereference { pattern, .. } => self.scratch.match_patterns.push(pattern),
                 _ => {}
             }
         }
-        false
+        // Both occurrences must retain provenance even if the first alternative
+        // is irrefutable and always selected at runtime.
+        alternatives && borrows
     }
     fn pattern_step(
         &mut self,
@@ -99,19 +113,21 @@ impl Builder<'_> {
                     "conditional binding execution requires pattern decisions",
                 ));
             }
-            Kind::Text(_)
-            | Kind::Dereference { .. }
-            | Kind::Slice { .. }
-            | Kind::Binding {
-                capture: Capture::Borrow { .. },
-                ..
-            } => {
+            Kind::Text(_) | Kind::Slice { .. } => {
                 return Err(self.error(
                     node,
                     "reference pattern execution requires region and loan proofs",
                 ));
             }
             Kind::Wildcard | Kind::Range(_) => {}
+            Kind::Dereference { pattern, .. } => {
+                let place = place
+                    .map(|base| self.dereference_place(node, base))
+                    .transpose()?;
+                self.scratch
+                    .pattern_work
+                    .push(Work::Enter(pattern, place, None));
+            }
             Kind::Binding { subpattern, .. } => {
                 self.scratch.pattern_work.push(Work::Capture(id, place));
                 // Copies from subpatterns happen before the containing move.
@@ -209,15 +225,43 @@ impl Builder<'_> {
         else {
             return Err(self.error(node, "missing selected pattern binding"));
         };
-        let ty = pattern
-            .ty
+        let ty = self.facts.definitions[definition.0 as usize]
             .ok_or_else(|| self.error(node, "unsolved binding type"))?;
         let local = self.local(node, ty, LocalKind::Binding, Some(definition), mutable)?;
         if let Some(place) = place {
-            let value = self.evaluate(node, ty, Rvalue::Read(place))?;
+            let value = self.capture_value(id, place, ty)?;
             self.store(node, Place::Local(local), value)?;
         }
         Ok(())
+    }
+    pub(super) fn capture_value(
+        &mut self,
+        id: PatternId,
+        place: Place,
+        target: TypeId,
+    ) -> Result<ValueId, Error> {
+        let pattern = &self.facts.patterns.nodes[id.0 as usize];
+        let node = pattern.source.node;
+        let Kind::Binding { capture, .. } = pattern.kind else {
+            return Err(self.error(node, "missing capture operation"));
+        };
+        let (ty, operation) = match capture {
+            Capture::Value => (pattern.ty, Rvalue::Read(place)),
+            Capture::Borrow { .. } => (
+                self.facts.patterns.borrow_types.get(&id).copied(),
+                Rvalue::Borrow {
+                    place,
+                    kind: crate::body::ir::BorrowKind::Immediate,
+                },
+            ),
+        };
+        let ty = ty.ok_or_else(|| self.error(node, "missing selected capture type"))?;
+        let value = self.evaluate(node, ty, operation)?;
+        if ty == target {
+            Ok(value)
+        } else {
+            self.evaluate(node, target, Rvalue::Constrain(value))
+        }
     }
     pub(super) fn pattern_root(&self, node: NodeId) -> Option<PatternId> {
         self.facts

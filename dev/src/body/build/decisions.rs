@@ -15,6 +15,7 @@ use std::collections::{HashMap, HashSet};
 pub(super) struct Plan {
     pub(super) choices: HashMap<PatternId, LocalId>,
     bindings: Vec<PatternId>,
+    borrowed: HashSet<crate::resolve::model::DefId>,
     capture_choices: Option<HashSet<PatternId>>,
 }
 #[derive(Clone, Copy)]
@@ -244,6 +245,7 @@ impl Builder<'_> {
         let mut order = Vec::new();
         let mut work = vec![root];
         let mut bindings = Vec::new();
+        let mut borrowed = HashSet::new();
         let mut definitions = HashSet::new();
         while let Some(id) = work.pop() {
             let pattern = &self.facts.patterns.nodes[id.0 as usize];
@@ -251,15 +253,19 @@ impl Builder<'_> {
             match pattern.kind {
                 Kind::Binding {
                     definition,
-                    capture: Capture::Value,
+                    capture,
                     subpattern,
                     ..
                 } => {
+                    if matches!(capture, Capture::Borrow { .. }) {
+                        borrowed.insert(definition);
+                    }
                     if definitions.insert(definition) {
                         bindings.push(id);
                     }
                     work.extend(subpattern);
                 }
+                Kind::Dereference { pattern, .. } => work.push(pattern),
                 Kind::Product { fields, .. } => work.extend(
                     self.facts
                         .patterns
@@ -285,28 +291,7 @@ impl Builder<'_> {
                 }
             }
         }
-        let mut captures = HashSet::new();
-        for &id in order.iter().rev() {
-            let has_capture = match self.facts.patterns.nodes[id.0 as usize].kind {
-                Kind::Binding { .. } => true,
-                Kind::Product { fields, .. } => self
-                    .facts
-                    .patterns
-                    .fields(fields)
-                    .iter()
-                    .any(|f| captures.contains(&f.pattern)),
-                Kind::Or(alternatives) => self
-                    .facts
-                    .patterns
-                    .alternatives(alternatives)
-                    .iter()
-                    .any(|a| captures.contains(a)),
-                _ => false,
-            };
-            if has_capture {
-                captures.insert(id);
-            }
-        }
+        let captures = self.captured_patterns(&order);
         let mut choices = HashMap::new();
         for id in order {
             let pattern = &self.facts.patterns.nodes[id.0 as usize];
@@ -336,8 +321,35 @@ impl Builder<'_> {
         Ok(Plan {
             choices,
             bindings,
+            borrowed,
             capture_choices,
         })
+    }
+    fn captured_patterns(&self, order: &[PatternId]) -> HashSet<PatternId> {
+        let mut captures = HashSet::new();
+        for &id in order.iter().rev() {
+            let has_capture = match self.facts.patterns.nodes[id.0 as usize].kind {
+                Kind::Binding { .. } => true,
+                Kind::Dereference { pattern, .. } => captures.contains(&pattern),
+                Kind::Product { fields, .. } => self
+                    .facts
+                    .patterns
+                    .fields(fields)
+                    .iter()
+                    .any(|f| captures.contains(&f.pattern)),
+                Kind::Or(alternatives) => self
+                    .facts
+                    .patterns
+                    .alternatives(alternatives)
+                    .iter()
+                    .any(|a| captures.contains(a)),
+                _ => false,
+            };
+            if has_capture {
+                captures.insert(id);
+            }
+        }
+        captures
     }
     fn constructor_test(&mut self, test: Test, work: &mut Vec<Decision>) -> Result<(), Error> {
         let Test {
@@ -369,6 +381,16 @@ impl Builder<'_> {
                 yes,
                 no,
             })),
+            Kind::Dereference { pattern, .. } => {
+                let base = self.dereference_place(node, place)?;
+                work.push(Decision::Test(Test {
+                    pattern,
+                    base,
+                    selection: None,
+                    yes,
+                    no,
+                }));
+            }
             Kind::Range(range) => {
                 let test = self.interval_test(
                     node,
@@ -444,7 +466,7 @@ impl Builder<'_> {
         if self.current.is_none() || plan.bindings.is_empty() {
             return Ok(());
         }
-        self.declare_captures(plan, guard)?;
+        let borrowed_views = self.declare_captures(plan, guard)?;
         let mut work = vec![Commit::Pattern(root, place, None)];
         while let Some(task) = work.pop() {
             match task {
@@ -457,24 +479,7 @@ impl Builder<'_> {
                     self.capture_pattern(plan, id, base, selection, &mut work)?;
                 }
                 Commit::Binding(id, place) => {
-                    let pattern = &self.facts.patterns.nodes[id.0 as usize];
-                    let node = pattern.source.node;
-                    let Kind::Binding { definition, .. } = pattern.kind else {
-                        return Err(self.error(node, "missing constructor capture binding"));
-                    };
-                    let target = self.local_place(node, definition)?;
-                    let ty = pattern
-                        .ty
-                        .ok_or_else(|| self.error(node, "missing capture type"))?;
-                    if guard.is_some() {
-                        let Place::Local(view) = target else {
-                            return Err(self.error(node, "guard binding has no local"));
-                        };
-                        self.statement(node, super::Action::BindView { view, place })?;
-                    } else {
-                        let value = self.evaluate(node, ty, Rvalue::Read(place))?;
-                        self.store(node, target, value)?;
-                    }
+                    self.commit_capture(id, place, guard, &borrowed_views)?;
                 }
                 Commit::Alternatives {
                     pattern,
@@ -532,11 +537,69 @@ impl Builder<'_> {
         }
         Ok(())
     }
+    fn commit_capture(
+        &mut self,
+        id: PatternId,
+        place: Place,
+        guard: Option<crate::body::ir::GuardId>,
+        borrowed_views: &HashMap<crate::resolve::model::DefId, LocalId>,
+    ) -> Result<(), Error> {
+        let pattern = &self.facts.patterns.nodes[id.0 as usize];
+        let node = pattern.source.node;
+        let Kind::Binding {
+            definition,
+            capture,
+            ..
+        } = pattern.kind
+        else {
+            return Err(self.error(node, "missing constructor capture binding"));
+        };
+        let target = self.local_place(node, definition)?;
+        let ty = self.facts.definitions[definition.0 as usize]
+            .ok_or_else(|| self.error(node, "missing capture type"))?;
+        if guard.is_some() {
+            let Place::Local(view) = target else {
+                return Err(self.error(node, "guard binding has no local"));
+            };
+            let place = if matches!(capture, Capture::Borrow { .. }) {
+                let slot = *borrowed_views
+                    .get(&definition)
+                    .ok_or_else(|| self.error(node, "missing guarded reference storage"))?;
+                let value = self.capture_value(id, place, ty)?;
+                self.store(node, Place::Local(slot), value)?;
+                Place::Local(slot)
+            } else {
+                place
+            };
+            self.statement(node, super::Action::BindView { view, place })?;
+        } else {
+            let value = self.capture_value(id, place, ty)?;
+            self.store(node, target, value)?;
+        }
+        Ok(())
+    }
     fn declare_captures(
         &mut self,
         plan: &Plan,
         guard: Option<crate::body::ir::GuardId>,
-    ) -> Result<(), Error> {
+    ) -> Result<HashMap<crate::resolve::model::DefId, super::LocalId>, Error> {
+        let mut borrowed = HashMap::new();
+        if guard.is_some() {
+            for &id in &plan.bindings {
+                let pattern = &self.facts.patterns.nodes[id.0 as usize];
+                if let Kind::Binding { definition, .. } = pattern.kind
+                    && plan.borrowed.contains(&definition)
+                {
+                    let node = pattern.source.node;
+                    let ty = self.facts.definitions[definition.0 as usize].ok_or_else(|| {
+                        self.error(node, "missing guarded reference binding type")
+                    })?;
+                    let local = self.local(node, ty, LocalKind::Binding, None, false)?;
+                    borrowed.insert(definition, local);
+                }
+            }
+        }
+        let first_view = self.index(self.body.source.node, self.body.locals.len())?;
         for &id in &plan.bindings {
             let pattern = &self.facts.patterns.nodes[id.0 as usize];
             let node = pattern.source.node;
@@ -548,8 +611,7 @@ impl Builder<'_> {
             else {
                 return Err(self.error(node, "invalid constructor capture plan"));
             };
-            let ty = pattern
-                .ty
+            let ty = self.facts.definitions[definition.0 as usize]
                 .ok_or_else(|| self.error(node, "missing capture type"))?;
             self.local(
                 node,
@@ -559,7 +621,12 @@ impl Builder<'_> {
                 mutable,
             )?;
         }
-        Ok(())
+        if let Some(guard) = guard {
+            let end = self.index(self.body.source.node, self.body.locals.len())?;
+            self.body.guards[guard.0 as usize].views_start = first_view;
+            self.body.guards[guard.0 as usize].views_end = end;
+        }
+        Ok(borrowed)
     }
     fn capture_pattern(
         &mut self,
@@ -579,6 +646,10 @@ impl Builder<'_> {
                 if let Some(child) = subpattern {
                     work.push(Commit::Pattern(child, place, None));
                 }
+            }
+            Kind::Dereference { pattern, .. } => {
+                let place = self.dereference_place(node, place)?;
+                work.push(Commit::Pattern(pattern, place, None));
             }
             Kind::Product { fields, .. } => {
                 for field in self.facts.patterns.fields(fields).iter().rev() {

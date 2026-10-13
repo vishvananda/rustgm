@@ -116,6 +116,9 @@ pub struct Pattern {
 }
 #[derive(Default)]
 pub struct Patterns {
+    /// Each borrowed occurrence retains its own region, even when alternatives
+    /// share a binding definition and require equal regions.
+    pub borrow_types: HashMap<PatternId, TypeId>,
     pub conditions: HashMap<NodeKey, Conditional>,
     /// Let conditions and their enclosing conjunctions, selected during type checking.
     pub chains: HashSet<NodeKey>,

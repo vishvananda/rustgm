@@ -53,6 +53,15 @@ impl Builder<'_> {
         }
     }
     pub(super) fn dereference_place(&mut self, node: NodeId, base: Place) -> Result<Place, Error> {
+        let id = self.dereference_projection(node, base)?;
+        self.statement(node, super::Action::Project(id))?;
+        Ok(Place::Projection(id))
+    }
+    pub(super) fn dereference_projection(
+        &mut self,
+        node: NodeId,
+        base: Place,
+    ) -> Result<crate::body::ir::ProjectionId, Error> {
         let ty = self.place_type(node, base)?;
         let Some(Type::Reference {
             region,
@@ -62,7 +71,7 @@ impl Builder<'_> {
         else {
             return Err(self.error(node, "selected dereference requires a reference place"));
         };
-        self.project(
+        self.projection(
             node,
             referent,
             base,

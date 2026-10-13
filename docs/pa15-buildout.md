@@ -714,3 +714,64 @@ Final source and measurement receipts use `obj/pa15-work/reborrows-v2-*`;
 `verify_reborrows_v2_perf.py` validates all raw observations and hashes. The
 immutable compiler is `reborrows-candidate-v2`, SHA-256
 `b933aa6a8053953b12b1673ef504d144b0f36a35ee058bb2286218b67c774c7a`.
+
+## Reference-pattern places
+
+Body construction now retains selected dereference places and by-reference
+captures for fixed-size patterns: parameters, local bindings, matches,
+conditional patterns, arrays, products and enum alternatives. Each borrowed
+occurrence has its exact solved reference type, separately from the shared
+binding definition's canonical type. This preserves region constraints when
+different alternatives bind the same name from different places, including an
+unselected alternative behind an irrefutable first choice.
+
+Guarded borrowed captures use anonymous reference-storage slots. Guard views
+alias those slots with the correct reference type, and their contiguous local
+range excludes the storage slots. An alternative that captures by value still
+views its original place until success, even when another alternative borrows
+into the same binding definition. Projection recipes retained for guard
+protection and retry planning do not form runtime addresses for inactive enum
+variants. Actual tests and captures emit their required projections.
+
+Dynamic slice and text pattern execution remain unsupported. The existing
+ownership and LowIR boundaries still require region and loan proofs for
+reference operations. These body facts do not establish alias permissions,
+non-lexical lifetimes or safe reference execution. Reference lowering and Drop
+elaboration remain pending, and PA15–PA17 remain planned.
+
+Validation for the pattern-place checkpoint:
+
+- The 435 maintainer tests pass across the full run and affected-suite reruns.
+  The full run exposed two obsolete boundary assertions; the corrected tests
+  now reach the later reference-proof diagnostic and both affected suites pass.
+  Three new tests cover occurrence types, guarded storage and lifetime contracts
+  independently checked against pinned rustc 1.98.0. Formatting, Clippy
+  all/pedantic with warnings denied, the 265-file audit and all 25 harness tests
+  pass.
+- The course report is 2,555/2,622 exact. All 64 previously reviewed differences
+  are unchanged; three additional PA13 boundary fixtures still reject with
+  status 1 and now reach the later reference-proof diagnostic. No fixture,
+  manifest or oracle changed. The course report remains failing on this
+  unreleased development branch.
+- All 1,230 manifest-listed PA11–PA14 inputs were compared with the preceding
+  reborrow checkpoint through LowIR emission. Every status and every successful
+  output stream is identical. Among rejected inputs, 91 diagnostics change as
+  previously gated pattern operations reach later checks. This is an output
+  comparison against the previously native-qualified checkpoint, not a new
+  claim of native reference execution.
+- Three measurement series retain 162 verified raw observations, A/A
+  calibration, paired ABBA blocks, source/binary/input hashes and full/count
+  output equality. At 64k ordinary functions, baseline/current medians are
+  3,032.6/3,268.0 ms and 611,516/611,404 KiB; at 16k guard-retry functions they
+  are 1,346.4/1,372.0 ms and 290,346/292,646 KiB. Timing ranges overlap and
+  paired blocks disagree on the direction, so these measurements do not
+  establish a precise speed difference. New guarded reference-pattern inputs,
+  independently accepted by rustc, scale from 256 to 1,024 to 4,096 functions
+  in candidate medians of 22.7, 78.8 and 314.3 ms, with 8,578, 22,002 and
+  77,664 KiB median peak RSS. Their retained IR counts grow linearly. No local
+  RustGM build or test overlapped the timing series.
+
+The immutable compiler is `obj/pa15-work/pattern-places-candidate-v1`, SHA-256
+`5d90b508ac276600893d97777e775006e901a9064dd0b9aeae1c8ac18b5e389a`.
+Source hashes and validation receipts use `obj/pa15-work/pattern-places-v1-*`.
+`verify_pattern_places_v1_perf.py` checks the raw measurement receipts.

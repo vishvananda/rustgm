@@ -265,7 +265,13 @@ impl Builder<'_> {
             Kind::Binding {
                 subpattern: Some(pattern),
                 ..
-            } => {
+            }
+            | Kind::Dereference { pattern, .. } => {
+                let place = if matches!(kind, Kind::Dereference { .. }) {
+                    Place::Projection(self.dereference_projection(node, test.place)?)
+                } else {
+                    test.place
+                };
                 let entry = self.new_block(node)?;
                 let retry = self.new_block(node)?;
                 self.terminate(node, Terminator::Jump(entry));
@@ -273,6 +279,7 @@ impl Builder<'_> {
                 self.terminate(node, Terminator::Jump(retry));
                 work.push(Work::Test(Test {
                     pattern,
+                    place,
                     entry,
                     retry,
                     ..test

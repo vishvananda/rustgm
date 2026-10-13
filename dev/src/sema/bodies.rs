@@ -430,9 +430,7 @@ impl Checker<'_> {
             .finish(&mut self.facts.types)
             .map_err(|e| self.error(body, e))?;
         let body_key = self.key(body);
-        for (id, term) in self.pattern_types.drain(..) {
-            self.facts.patterns.nodes[id.0 as usize].ty = Some(solved.types[term.0 as usize]);
-        }
+        self.publish_pattern_types(&solved)?;
         self.facts
             .region_equalities
             .extend(

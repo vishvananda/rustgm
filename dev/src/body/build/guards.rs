@@ -42,6 +42,11 @@ impl Builder<'_> {
                 Kind::Binding { subpattern, .. } => {
                     work.extend(subpattern.map(|id| (id, place, None)));
                 }
+                Kind::Dereference { pattern: child, .. } => {
+                    let referent = self.dereference_projection(pattern.source.node, place)?;
+                    self.body.guard_places.push(place);
+                    work.push((child, Place::Projection(referent), None));
+                }
                 Kind::Product { variant, fields } => {
                     if variant.is_some_and(|v| {
                         self.facts
@@ -144,7 +149,6 @@ impl Builder<'_> {
         });
         self.statement(node, Action::GuardStart(guard))?;
         self.selected_captures(&plan, pattern, parent.place, Some(guard))?;
-        self.body.guards[guard.0 as usize].views_end = self.index(node, self.body.locals.len())?;
         let success = self.new_block(node)?;
         let rejected = self.new_block(node)?;
         let frame = self.scratch.guard_frames.len();

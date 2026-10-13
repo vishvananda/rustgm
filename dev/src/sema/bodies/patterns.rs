@@ -25,6 +25,34 @@ pub(super) struct Work {
     rest: bool,
 }
 impl Checker<'_> {
+    pub(super) fn publish_pattern_types(
+        &mut self,
+        solved: &crate::types::infer::Solved,
+    ) -> Result<(), Error> {
+        for (id, term) in self.pattern_types.drain(..) {
+            let ty = solved.types[term.0 as usize];
+            let pattern = &mut self.facts.patterns.nodes[id.0 as usize];
+            pattern.ty = Some(ty);
+            if let PatternKind::Binding {
+                capture: Capture::Borrow { mutable, region },
+                ..
+            } = pattern.kind
+            {
+                let borrowed = self
+                    .facts
+                    .types
+                    .intern(crate::types::Kind::Reference {
+                        mutable,
+                        region,
+                        referent: ty,
+                    })
+                    .map_err(|e| super::Declarations::error(self.report, pattern.source, e))?;
+                self.facts.patterns.borrow_types.insert(id, borrowed);
+            }
+        }
+        Ok(())
+    }
+
     pub(super) fn simple_pattern(&self, mut node: NodeId) -> bool {
         while let Kind::Group(inner) | Kind::Attributed { value: inner, .. } = self.kind(node) {
             node = inner;

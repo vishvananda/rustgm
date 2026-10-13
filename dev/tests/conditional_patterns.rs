@@ -459,7 +459,7 @@ fn borrowed_conditions_remain_obligations() -> Result<(), Box<dyn std::error::Er
     .enumerate()
     {
         let file = dir.join(format!("borrow{index}.rs"));
-        std::fs::write(&file, source)?;
+        std::fs::write(&file, format!("{source}fn main(){{}}"))?;
         let view = Command::new(env!("CARGO_BIN_EXE_rustgm"))
             .arg("--emit-patterns")
             .arg(&file)

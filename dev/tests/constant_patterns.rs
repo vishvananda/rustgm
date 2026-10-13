@@ -261,7 +261,7 @@ fn later_constant_capabilities_remain_explicit_boundaries() -> Result<(), Box<dy
     for (index, (source, boundary)) in [
         (
             "const C:&'static u8=&7;fn main(){match &7u8{C=>(),_=>()}}",
-            "constructor execution requires owned selected patterns",
+            "reference expression execution requires region and loan proofs",
         ),
         (
             "const C:&'static str=\"a\";fn main(){match \"a\"{C=>(),_=>()}}",

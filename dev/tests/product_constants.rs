@@ -345,13 +345,13 @@ fn product_patterns_keep_use_site_files_and_pending_borrows()
     let path = directory.join("borrowed.rs");
     std::fs::write(
         &path,
-        "const C:(u8,bool)=(7,true);fn f(x:&(u8,bool)){match x{&C=>(),_=>()}}",
+        "const C:(u8,bool)=(7,true);fn f(x:&(u8,bool)){match x{&C=>(),_=>()}}fn main(){}",
     )?;
     let selected = frontend(&path, "--emit-patterns")?;
     assert!(selected.status.success() && selected.stderr.is_empty());
     let executable = frontend(&path, "--emit-lowir")?;
     assert_eq!(executable.status.code(), Some(1));
     assert!(executable.stdout.is_empty());
-    assert!(String::from_utf8_lossy(&executable.stderr).contains("owned selected patterns"));
+    assert!(String::from_utf8_lossy(&executable.stderr).contains("region and loan proofs"));
     Ok(())
 }

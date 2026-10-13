@@ -4,7 +4,7 @@ use super::{
 };
 use crate::{
     lex::token::Punctuation as Op,
-    sema::patterns::{Capture, Interval, Kind, PatternId, scalar::Domain},
+    sema::patterns::{Interval, Kind, PatternId, scalar::Domain},
     types::{Kind as Type, Primitive, TypeId},
 };
 
@@ -298,11 +298,7 @@ impl Builder<'_> {
         while let Some(id) = self.scratch.match_patterns.pop() {
             let pattern = &self.facts.patterns.nodes[id.0 as usize];
             match pattern.kind {
-                Kind::Binding {
-                    capture: Capture::Value,
-                    subpattern,
-                    ..
-                } => {
+                Kind::Binding { subpattern, .. } => {
                     if let Some(child) = subpattern {
                         self.scratch.match_patterns.push(child);
                     }
@@ -311,7 +307,7 @@ impl Builder<'_> {
                 Kind::Or(alternatives) => {
                     // Every scalar occurrence captures this same place with the
                     // same solved type and written qualifiers. No projections or
-                    // by-reference captures pass this execution profile's gate.
+                    // captures choose a different source place here.
                     let first = self
                         .facts
                         .patterns
