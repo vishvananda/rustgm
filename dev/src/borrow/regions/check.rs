@@ -16,6 +16,7 @@ use crate::{
 pub struct Body {
     pub source: NodeKey,
     pub solution: graph::Solution,
+    pub identities: super::constraints::Identities,
 }
 pub struct Analysis {
     pub bodies: Vec<Body>,
@@ -150,7 +151,7 @@ fn body(
             message,
         })?;
     }
-    let solution = constraints.solve().map_err(|e| {
+    let proof = constraints.prove().map_err(|e| {
         let source = match e {
             graph::Error::Unsatisfied { source, .. } => input
                 .obligations
@@ -170,7 +171,8 @@ fn body(
     })?;
     Ok(Body {
         source: input.source,
-        solution,
+        solution: proof.solution,
+        identities: proof.identities,
     })
 }
 fn apply(

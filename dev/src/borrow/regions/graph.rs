@@ -67,6 +67,59 @@ pub struct Solution {
     pub obligations: usize,
     pub propagated: usize,
     pub steps: usize,
+    graph: Graph,
+}
+/// A previously proved directed requirement: `longer` contains the queried
+/// shorter region. Source indexes still name the original typed obligation.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct Requirement {
+    pub longer: Region,
+    pub source: u32,
+}
+impl Solution {
+    #[must_use]
+    pub fn kind(&self, region: Region) -> Option<Kind> {
+        self.graph.kinds.get(region.0 as usize).copied()
+    }
+    /// Iterate retained requirements without rebuilding or solving the graph.
+    ///
+    /// # Errors
+    /// Rejects an identity outside this body's proven graph.
+    pub fn requirements(
+        &self,
+        shorter: Region,
+    ) -> Result<impl Iterator<Item = Requirement> + '_, Error> {
+        let mut edge = *self
+            .graph
+            .incoming
+            .get(shorter.0 as usize)
+            .ok_or(Error::Identity)?;
+        Ok(std::iter::from_fn(move || {
+            let relation = self.graph.obligations.get(edge?)?;
+            edge = relation.next;
+            Some(Requirement {
+                longer: relation.target,
+                source: relation.source,
+            })
+        }))
+    }
+    /// Declared assumptions remain distinct from requirements; downstream passes
+    /// may use the proven environment but cannot strengthen it with obligations.
+    ///
+    /// # Errors
+    /// Rejects an identity outside this body's proven graph.
+    pub fn assumptions(&self, longer: Region) -> Result<impl Iterator<Item = Region> + '_, Error> {
+        let mut edge = *self
+            .graph
+            .assumed_heads
+            .get(longer.0 as usize)
+            .ok_or(Error::Identity)?;
+        Ok(std::iter::from_fn(move || {
+            let relation = self.graph.assumptions.get(edge?)?;
+            edge = relation.next;
+            Some(relation.target)
+        }))
+    }
 }
 impl Graph {
     #[must_use]
@@ -204,6 +257,7 @@ impl Graph {
             obligations: self.obligations.len(),
             propagated: solver.reached.len(),
             steps: solver.steps,
+            graph: self,
         })
     }
 }

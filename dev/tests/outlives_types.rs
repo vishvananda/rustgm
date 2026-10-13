@@ -108,3 +108,44 @@ fn explicit_template_bounds_use_the_same_finite_nominal_propagation() -> Result<
     }
     Ok(())
 }
+
+#[test]
+fn live_components_include_nested_free_regions_but_skip_static_bound_and_empty_values()
+-> Result<(), &'static str> {
+    let mut store = Store::default();
+    let a = RegionId(1);
+    let b = RegionId(2);
+    let inner = reference(&mut store, b, TypeId::UNIT)?;
+    let outer = reference(&mut store, a, inner)?;
+    let static_ = reference(&mut store, RegionId::STATIC, TypeId::UNIT)?;
+    let empty = store.intern(Kind::Array {
+        element: outer,
+        length: 0,
+    })?;
+    let nonempty = store.intern(Kind::Array {
+        element: outer,
+        length: 1,
+    })?;
+    let captured = reference(&mut store, RegionId::bound(1, 0)?, TypeId::UNIT)?;
+    let bound = reference(&mut store, RegionId::bound(0, 0)?, TypeId::UNIT)?;
+    let parameters = store.intern_list(&[captured, bound, static_])?;
+    let function = store.intern(Kind::Function {
+        bound_regions: 1,
+        parameters,
+        result: TypeId::UNIT,
+        unsafe_: false,
+    })?;
+    let mut query = rustgm::types::outlives::LiveRegions::default();
+    assert_eq!(query.get(&store, outer)?, [a, b]);
+    assert_eq!(query.get(&store, nonempty)?, [a, b]);
+    assert!(query.get(&store, empty)?.is_empty());
+    assert!(query.get(&store, static_)?.is_empty());
+    assert_eq!(query.get(&store, function)?, [RegionId::bound(0, 0)?]);
+    let steps = query.steps();
+    for _ in 0..100 {
+        assert_eq!(query.get(&store, outer)?, [a, b]);
+    }
+    assert_eq!(query.steps(), steps);
+    assert!(query.get(&store, TypeId(u32::MAX)).is_err());
+    Ok(())
+}

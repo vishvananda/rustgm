@@ -38,6 +38,20 @@ impl Checker<'_> {
                     .get(&index)
                     .map(|(conversion, _)| *conversion),
             });
+            if let Some((_, borrow)) = self.reference_adjustments.get(&index) {
+                // Runtime reborrows have a fresh region. Keep its relation to
+                // the proof destination as well as the source-place conversion.
+                // A discarded repeat uses the freshened proof type here, not
+                // the annotation's otherwise unobserved destination lifetime.
+                self.facts.retain_coercion(Coercion {
+                    body: body_key,
+                    source: key,
+                    actual: solved.types[borrow.0 as usize],
+                    expected: proof_expected,
+                    kind: AdjustmentKind::Equality,
+                    reference: None,
+                });
+            }
             let facts = self.facts.node_mut(key).ok_or_else(|| {
                 crate::sema::model::Declarations::error(self.report, key, "invalid adjustment node")
             })?;

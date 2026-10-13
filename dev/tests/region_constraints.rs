@@ -18,6 +18,43 @@ fn reference(
         referent,
     })
 }
+
+#[test]
+fn retained_identities_include_only_root_parameters_and_registered_variables()
+-> Result<(), Box<dyn std::error::Error>> {
+    let mut store = Store::default();
+    let a = RegionId::bound(0, 0)?;
+    let bound = reference(&mut store, a, false, TypeId::UNIT)?;
+    let static_ = reference(&mut store, RegionId::STATIC, false, TypeId::UNIT)?;
+    let poly = function(&mut store, 1, &[bound], bound)?;
+    let mono = function(&mut store, 0, &[static_], static_)?;
+    let variances = Variances::default();
+    let mut constraints = Constraints::new(&store, &variances, 1, 10_000)?;
+    constraints.variable(RegionId(17))?;
+    constraints.coerce(poly, mono, false, 23)?;
+    let proof = constraints.prove()?;
+    for (id, kind) in [
+        (
+            a,
+            rustgm::borrow::regions::graph::Kind::Universal { universe: 0 },
+        ),
+        (
+            RegionId(17),
+            rustgm::borrow::regions::graph::Kind::Variable { universe: 0 },
+        ),
+        (
+            RegionId::STATIC,
+            rustgm::borrow::regions::graph::Kind::Static,
+        ),
+    ] {
+        let region = proof.identities.get(id).ok_or("missing body identity")?;
+        assert_eq!(proof.solution.kind(region), Some(kind));
+    }
+    for absent in [RegionId(18), RegionId::bound(0, 1)?, RegionId::bound(1, 0)?] {
+        assert_eq!(proof.identities.get(absent), None);
+    }
+    Ok(())
+}
 fn function(
     store: &mut Store,
     regions: u32,

@@ -22,6 +22,29 @@ struct Relation {
     unsize: bool,
     reborrow: bool,
 }
+/// Body-level identities for the retained graph. Nested callable placeholders
+/// remain graph-local and cannot be mistaken for named body lifetimes.
+pub struct Identities {
+    variables: HashMap<RegionId, Region>,
+    universals: Vec<Region>,
+}
+impl Identities {
+    #[must_use]
+    pub fn get(&self, id: RegionId) -> Option<Region> {
+        if id == RegionId::STATIC {
+            return Some(Region::STATIC);
+        }
+        match id.bound_parts() {
+            Some((0, index)) => self.universals.get(usize::from(index)).copied(),
+            Some(_) => None,
+            None => self.variables.get(&id).copied(),
+        }
+    }
+}
+pub struct Proof {
+    pub solution: Solution,
+    pub identities: Identities,
+}
 /// One body, one immutable type store and one completed nominal variance table.
 pub struct Constraints<'a> {
     types: &'a Store,
@@ -467,5 +490,21 @@ impl<'a> Constraints<'a> {
     /// Rejects unentailed region requirements and exhausted propagation work.
     pub fn solve(self) -> Result<Solution, Error> {
         self.graph.solve()
+    }
+    /// Preserve the proved relations and body identity map for CFG lifetime use.
+    /// No semantic relationship is reconstructed from rendered inspection text.
+    ///
+    /// # Errors
+    /// Rejects unentailed requirements and exhausted propagation work.
+    pub fn prove(mut self) -> Result<Proof, Error> {
+        let end = self.binders.first().ok_or(Error::Identity)?.end;
+        self.arguments.truncate(end);
+        Ok(Proof {
+            solution: self.graph.solve()?,
+            identities: Identities {
+                variables: self.variables,
+                universals: self.arguments,
+            },
+        })
     }
 }

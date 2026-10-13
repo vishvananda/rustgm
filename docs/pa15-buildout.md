@@ -837,3 +837,76 @@ The immutable compiler is `obj/pa15-work/permissions-candidate-v1`, SHA-256
 `9bc9485f0065659bb6ba45ab3c03ecd106d06add4165602023ffb2fa815c1ad8`.
 Source hashes and validation receipts use `obj/pa15-work/permissions-v1-*`.
 `verify_permissions_v1_perf.py` checks the raw measurement receipts.
+
+## Retained lifetime graphs and CFG use liveness
+
+Lifetime contract proofs now retain their original directed obligations,
+declared assumptions and body-level region identities. Later analysis can
+consume these facts directly without rebuilding a type relation or parsing a
+rendered inspection. Nested callable placeholders remain local to their graph;
+they cannot masquerade as a named lifetime of the enclosing body.
+
+Implicit reference adjustments now also retain the relation from the fresh
+runtime reborrow to its destination. The relation uses the proof's expected
+type, including the freshened expectation for discarded zero-length repeats.
+It therefore preserves destination uses without incorrectly requiring a
+discarded operand to have the array annotation's lifetime.
+
+The new backward CFG pass computes use-point seeds for locals and evaluated
+values, including values held across later call arguments. It handles branch
+and loop successors, imaginary ownership edges, overwrite and storage kills,
+internal guard views and unreachable blocks. Whole aggregate uses retain their
+free type regions. Zero-length arrays have no runtime element regions; their
+element types still require well-formedness. The cached type traversal shifts
+free regions through callable binders and includes nested referents.
+
+Sparse point propagation consumes the retained directed requirements. It never
+uses the abstract contract-only `LOCAL` sentinel as a CFG extent or as an edge
+between unrelated local lifetimes. CFG bitsets, sparse words, worklists and
+seeds have explicit storage/work budgets. This follows the distinction between
+[liveness seeds, region constraints and loan checking](https://rustc-dev-guide.rust-lang.org/borrow-check/region-inference.html).
+
+These APIs are tested together but are not yet an executable loan proof.
+Universal external extents, loan generation and kills, overlapping places,
+two-phase activation, storage conflicts and alignment remain to be integrated.
+In particular, a region can contain disconnected use intervals; a loan killed
+between them must not reappear just because that region becomes live again.
+The existing execution gate remains mandatory, and PA15–PA17 remain planned.
+
+Validation for this checkpoint:
+
+- All 446 maintainer tests pass. New tests compare sparse propagation with an
+  independent set-closure model on 128 graphs, preserve original constraint
+  source identities, check root versus nested binders, and cover sparse large
+  point identities and budget/identity errors. Thirteen independently declared
+  source cases are checked with pinned rustc for last use, overwrites, branches,
+  loops, pending call operands and empty arrays. Additional typed tests check
+  implicit reborrow edges and imaginary-edge liveness.
+- Formatting, Clippy all/pedantic with warnings denied, the 270-file audit and
+  all 25 harness tests pass. No lint allowance was added.
+- The course report remains 2,555/2,622 exact on the same 67 reviewed paths.
+  Only the existing PA13 mutable-array inspection changes from the preceding
+  checkpoint: it now displays the additional pending reborrow constraint.
+  No acceptance status, fixture, manifest or oracle changed. This unreleased
+  branch's course report still fails until its contracts are released.
+- All 1,230 manifest-listed PA11–PA14 LowIR inputs are byte-for-byte identical
+  to the preceding permissions checkpoint, including rejection diagnostics.
+- Measurements retain 162 verified raw observations with immutable binaries
+  and frozen inputs, A/A calibration and paired ABBA blocks. At 64k owned-path
+  functions, baseline/current medians are 5,464.9/5,308.8 ms and
+  922,726/923,232 KiB; at 16k guard-retry functions they are
+  1,475.3/1,468.3 ms and 292,176/292,176 KiB. Timing ranges overlap.
+  Both workloads have identical complete rendering and count outputs.
+  A separate driver exercises the new region-point APIs at 256/1,024/4,096
+  functions, with candidate medians of 25.9/70.1/353.0 ms and
+  7,090/17,656/61,048 KiB. Points, seeds, retained masks and work counters grow
+  linearly; complete point sets and counters agree across repeated runs.
+  This measures the new analysis APIs, not completed borrow checking or native
+  reference execution. The largest input is independently accepted by pinned
+  rustc. No local RustGM build or test overlapped these measurements.
+
+The immutable compiler is `obj/pa15-work/nll-candidate-v1`, SHA-256
+`926189080f845939414568281ad3f6cea5a483af44f89f854fad30f4046e0a7b`.
+Source hashes and validation receipts use `obj/pa15-work/nll-v1-*`.
+`verify_nll_v1_perf.py` checks the raw observations and the separate probe's
+source/binary identity; `nll-probe.rs` records that probe's exact scope.

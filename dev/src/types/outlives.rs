@@ -69,10 +69,37 @@ fn children(
 }
 #[derive(Default)]
 struct Components {
-    cache: HashMap<(TypeId, u16), Vec<RegionId>>,
+    cache: HashMap<(TypeId, u16, ComponentKind), Vec<RegionId>>,
     work: Vec<(TypeId, u16)>,
     seen: HashSet<(TypeId, u16)>,
     regions: HashSet<RegionId>,
+}
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+enum ComponentKind {
+    Outlives,
+    LiveValue,
+}
+/// Cached non-static free lifetimes of live values, including nested referents.
+/// Zero-length arrays contain no runtime reference values. Type well-formedness
+/// still checks their element types independently through `Queries`.
+#[derive(Default)]
+pub struct LiveRegions {
+    components: Components,
+    budget: Budget,
+}
+impl LiveRegions {
+    /// Queries belong to one immutable canonical type store.
+    ///
+    /// # Errors
+    /// Rejects malformed types, binder overflow and bounded traversal exhaustion.
+    pub fn get(&mut self, types: &Store, ty: TypeId) -> Result<&[RegionId], &'static str> {
+        self.components
+            .get(types, ty, 0, ComponentKind::LiveValue, &mut self.budget)
+    }
+    #[must_use]
+    pub const fn steps(&self) -> usize {
+        self.budget.0
+    }
 }
 impl Components {
     fn get(
@@ -80,9 +107,14 @@ impl Components {
         types: &Store,
         root: TypeId,
         depth: u16,
+        kind: ComponentKind,
         budget: &mut Budget,
     ) -> Result<&[RegionId], &'static str> {
-        if !self.cache.contains_key(&(root, depth)) {
+        if types.contains_regions(root) == Some(false) {
+            return Ok(&[]);
+        }
+        let key = (root, depth, kind);
+        if !self.cache.contains_key(&key) {
             self.work.clear();
             self.seen.clear();
             self.regions.clear();
@@ -105,7 +137,15 @@ impl Components {
                 match types.kind(ty).ok_or("invalid outlives component type")? {
                     // Its referent's lifetime requirements follow transitively
                     // from this reference's own well-formedness requirements.
-                    Kind::Reference { region, .. } => record(region)?,
+                    Kind::Reference {
+                        region, referent, ..
+                    } => {
+                        record(region)?;
+                        if kind == ComponentKind::LiveValue {
+                            self.work.push((referent, depth));
+                        }
+                    }
+                    Kind::Array { length: 0, .. } if kind == ComponentKind::LiveValue => {}
                     Kind::Adt(_, args)
                     | Kind::FunctionItem {
                         arguments: args, ..
@@ -121,10 +161,10 @@ impl Components {
                     _ => children(types, ty, depth, &mut self.work, budget)?,
                 }
             }
-            self.cache.insert((root, depth), values);
+            self.cache.insert(key, values);
         }
         self.cache
-            .get(&(root, depth))
+            .get(&key)
             .map(Vec::as_slice)
             .ok_or("missing outlives component cache")
     }
@@ -171,9 +211,13 @@ impl Scan {
                     region, referent, ..
                 } => {
                     if let Some(shorter) = free(region, depth)? {
-                        let components =
-                            self.components
-                                .get(types, referent, depth, &mut self.budget)?;
+                        let components = self.components.get(
+                            types,
+                            referent,
+                            depth,
+                            ComponentKind::Outlives,
+                            &mut self.budget,
+                        )?;
                         for longer in components {
                             self.budget.charge()?;
                             let pair = (*longer, shorter);
