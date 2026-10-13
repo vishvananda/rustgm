@@ -1,8 +1,48 @@
 //! Reference operations preserve places and never snapshot a borrowed referent.
 use super::{Builder, Error, NodeId, Place, Rvalue, Type, TypeId, ValueId};
-use crate::body::ir::ProjectionKind;
+use crate::body::ir::{BorrowKind, ProjectionKind};
 
 impl Builder<'_> {
+    pub(super) fn finish_reborrow(&mut self, node: NodeId) -> Result<(), Error> {
+        let place = self.pop_place(node)?;
+        if self.scratch.unadjusted.pop() != Some(node) {
+            return Err(self.error(node, "mismatched reference adjustment continuation"));
+        }
+        let Some(mut place) = place.filter(|_| self.current.is_some()) else {
+            return Ok(());
+        };
+        let key = super::NodeKey {
+            node,
+            ..self.body.source
+        };
+        let reference = self
+            .facts
+            .reference_adjustments
+            .get(&key)
+            .copied()
+            .ok_or_else(|| self.error(node, "missing reference conversion selection"))?;
+        let adjustment = self
+            .fact(node)?
+            .adjustment
+            .ok_or_else(|| self.error(node, "missing reference conversion target"))?;
+        if self.place_type(node, place)? != self.ty(node)? {
+            return Err(self.error(
+                node,
+                "reference conversion source differs from selected place",
+            ));
+        }
+        for _ in 0..reference.conversion.dereferences {
+            place = self.dereference_place(node, place)?;
+        }
+        let kind = if reference.conversion.two_phase {
+            BorrowKind::TwoPhase
+        } else {
+            BorrowKind::Immediate
+        };
+        let value = self.evaluate(node, reference.borrow, Rvalue::Borrow { place, kind })?;
+        let value = self.evaluate(node, adjustment.target, Rvalue::Constrain(value))?;
+        self.save(node, value)
+    }
     pub(super) fn place_type(&self, node: NodeId, place: Place) -> Result<TypeId, Error> {
         match place {
             Place::Local(id) => Ok(self.body.locals[id.0 as usize].ty),
@@ -55,6 +95,13 @@ impl Builder<'_> {
         if self.place_type(node, place)? != referent {
             return Err(self.error(node, "borrow referent differs from selected place"));
         }
-        self.evaluate(node, ty, Rvalue::Borrow { place })
+        self.evaluate(
+            node,
+            ty,
+            Rvalue::Borrow {
+                place,
+                kind: BorrowKind::Immediate,
+            },
+        )
     }
 }

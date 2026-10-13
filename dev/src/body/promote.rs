@@ -144,7 +144,7 @@ impl<'a, 'b> Engine<'a, 'b> {
         self.index_roots()?;
         for value in &self.body.values {
             self.charge(1)?;
-            let Rvalue::Borrow { place } = value.kind else {
+            let Rvalue::Borrow { place, .. } = value.kind else {
                 continue;
             };
             if !self.borrow_allowed(value.ty)? {

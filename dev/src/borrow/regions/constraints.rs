@@ -20,6 +20,7 @@ struct Relation {
     left: Scope,
     right: Scope,
     unsize: bool,
+    reborrow: bool,
 }
 /// One body, one immutable type store and one completed nominal variance table.
 pub struct Constraints<'a> {
@@ -172,6 +173,7 @@ impl<'a> Constraints<'a> {
                 actual,
                 expected,
                 unsize: false,
+                reborrow: false,
                 ..parent
             })?;
         }
@@ -182,6 +184,7 @@ impl<'a> Constraints<'a> {
                 left: parent.right,
                 right: parent.left,
                 unsize: false,
+                reborrow: false,
             })?;
         }
         Ok(())
@@ -221,9 +224,71 @@ impl<'a> Constraints<'a> {
             actual,
             expected,
             unsize,
+            reborrow: false,
             left: Scope(0),
             right: Scope(0),
         })?;
+        self.relations(source)
+    }
+    /// Compare a selected built-in reference conversion, retaining mutable ancestry.
+    /// Nested type relations remain ordinary subtyping, not recursive coercions.
+    /// # Errors
+    /// Rejects invalid dereference selections, mutability, type shape or work limits.
+    pub fn reborrow(
+        &mut self,
+        mut actual: TypeId,
+        expected: TypeId,
+        dereferences: u32,
+        unsize: bool,
+        source: u32,
+    ) -> Result<(), Error> {
+        let Some(Kind::Reference {
+            region: target,
+            mutable: target_mutable,
+            ..
+        }) = self.types.kind(expected)
+        else {
+            return Err(Error::Identity);
+        };
+        if dereferences == 0 || dereferences as usize > self.limit.saturating_sub(self.steps) {
+            return Err(Error::Budget);
+        }
+        let mut ancestors = Vec::new();
+        let mut selected = actual;
+        for depth in 0..dereferences {
+            self.steps += 1;
+            let Some(Kind::Reference {
+                region,
+                mutable,
+                referent,
+            }) = self.types.kind(actual)
+            else {
+                return Err(Error::Identity);
+            };
+            if depth == 0 && target_mutable && !mutable {
+                return Err(Error::Identity);
+            }
+            if !mutable {
+                ancestors.clear();
+            }
+            ancestors.push(region);
+            selected = actual;
+            actual = referent;
+        }
+        for region in ancestors {
+            self.outlives(region, target, source)?;
+        }
+        self.push(Relation {
+            actual: selected,
+            expected,
+            unsize,
+            reborrow: true,
+            left: Scope(0),
+            right: Scope(0),
+        })?;
+        self.relations(source)
+    }
+    fn relations(&mut self, source: u32) -> Result<(), Error> {
         while let Some(relation) = self.work.pop() {
             self.steps += 1;
             if relation.actual == relation.expected
@@ -261,7 +326,7 @@ impl<'a> Constraints<'a> {
                     region: b,
                     referent: right,
                 },
-            ) if x == y => {
+            ) if x == y || (relation.reborrow && x && !y) => {
                 self.regions(relation, a, b, covariant, source)?;
                 if relation.unsize {
                     let (Some(Kind::Array { element, .. }), Some(Kind::Slice(target))) =
@@ -273,14 +338,14 @@ impl<'a> Constraints<'a> {
                         relation,
                         element,
                         target,
-                        if x { Variance::Invariant } else { covariant },
+                        if y { Variance::Invariant } else { covariant },
                     )?;
                 } else {
                     self.child(
                         relation,
                         left,
                         right,
-                        if x { Variance::Invariant } else { covariant },
+                        if y { Variance::Invariant } else { covariant },
                     )?;
                 }
             }

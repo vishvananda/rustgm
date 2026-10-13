@@ -113,11 +113,19 @@ impl Checker<'_> {
             }
         }
         let mut ordinal = 0;
+        let mut reference_hint = false;
         for child in unit.configured.ast.list(elements) {
             if !self.active(*child) {
                 continue;
             }
             let expected = self.child(node, term, if tuple { ordinal } else { 0 })?;
+            if !tuple && reference_hint {
+                self.reference_expected.insert(*child);
+            }
+            reference_hint |= matches!(
+                self.head(*child, self.term(*child)?)?,
+                Some(Constructor::Reference { .. })
+            );
             self.coerce(*child, expected)?;
             ordinal += 1;
         }
@@ -147,11 +155,12 @@ impl Checker<'_> {
         if self.head(node, term)? == Some(Constructor::Array(0)) {
             // No element is stored. Keep higher-ranked type compatibility while
             // removing the discarded value's free storage-lifetime obligations.
-            let original = self.term(value)?;
-            let actual = self.inferred_regions(value, original)?;
-            let expected = self.inferred_regions(value, element)?;
-            if actual != original || expected != element {
-                for index in mark..self.adjustments.len() {
+            for index in mark..self.adjustments.len() {
+                let original = self.adjustments[index].actual;
+                let target = self.adjustments[index].expected;
+                let actual = self.inferred_regions(value, original)?;
+                let expected = self.inferred_regions(value, target)?;
+                if actual != original || expected != target {
                     self.discarded_adjustments.insert(index, (actual, expected));
                 }
             }
@@ -422,7 +431,7 @@ impl Checker<'_> {
         if self.facts.node(self.key(left)).is_some_and(|f| {
             matches!(
                 f.operation,
-                Some(Operation::Field { .. } | Operation::Index { .. })
+                Some(Operation::Field { .. } | Operation::Index { .. } | Operation::Dereference)
             )
         }) {
             return Ok(None);

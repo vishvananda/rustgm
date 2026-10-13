@@ -3,7 +3,9 @@ use super::{Checker, Constructor, DefId, Error, Kind, NodeId, Target, TermId, Ty
 use crate::{
     sema::{
         members::FieldId,
-        model::{Adjustment, AdjustmentKind, BodyRegion, BodyRegionOrigin, Coercion},
+        model::{
+            Adjustment, AdjustmentKind, BodyRegion, BodyRegionOrigin, Coercion, ReferenceAdjustment,
+        },
     },
     types::{ItemId, RegionId},
 };
@@ -14,10 +16,11 @@ impl Checker<'_> {
         solved: &crate::types::infer::Solved,
         body_key: crate::resolve::unit::NodeKey,
     ) -> Result<(), Error> {
-        for (index, (node, term, kind)) in self.adjustments.iter().enumerate() {
-            let key = self.key(*node);
-            let target = solved.types[term.0 as usize];
-            let actual = solved.types[self.term(*node)?.0 as usize];
+        for (index, adjustment) in self.adjustments.iter().enumerate() {
+            let key = self.key(adjustment.node);
+            let target = solved.types[adjustment.expected.0 as usize];
+            let actual = solved.types[adjustment.actual.0 as usize];
+            let kind = adjustment.kind;
             let (proof_actual, proof_expected) = self
                 .discarded_adjustments
                 .get(&index)
@@ -29,18 +32,31 @@ impl Checker<'_> {
                 source: key,
                 actual: proof_actual,
                 expected: proof_expected,
-                kind: *kind,
+                kind,
+                reference: self
+                    .reference_adjustments
+                    .get(&index)
+                    .map(|(conversion, _)| *conversion),
             });
             let facts = self.facts.node_mut(key).ok_or_else(|| {
                 crate::sema::model::Declarations::error(self.report, key, "invalid adjustment node")
             })?;
-            if *kind == AdjustmentKind::Equality && facts.ty == Some(target) {
+            if kind == AdjustmentKind::Equality && facts.ty == Some(target) && !adjustment.reset {
                 continue;
             }
-            facts.adjustment = Some(Adjustment {
-                kind: *kind,
-                target,
-            });
+            facts.adjustment = (kind != AdjustmentKind::Equality || facts.ty != Some(target))
+                .then_some(Adjustment { kind, target });
+            if let Some((conversion, borrow)) = self.reference_adjustments.get(&index) {
+                self.facts.reference_adjustments.insert(
+                    key,
+                    ReferenceAdjustment {
+                        conversion: *conversion,
+                        borrow: solved.types[borrow.0 as usize],
+                    },
+                );
+            } else {
+                self.facts.reference_adjustments.remove(&key);
+            }
         }
         Ok(())
     }

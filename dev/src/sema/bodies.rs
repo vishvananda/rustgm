@@ -77,6 +77,13 @@ struct BreakSite {
     value: Option<NodeId>,
     next: Option<usize>,
 }
+struct PendingAdjustment {
+    node: NodeId,
+    actual: TermId,
+    expected: TermId,
+    kind: AdjustmentKind,
+    reset: bool,
+}
 enum Work {
     Conditional {
         node: NodeId,
@@ -131,7 +138,13 @@ pub(super) struct Checker<'a> {
     children: Vec<NodeId>,
     checks: Vec<NodeId>,
     negated: HashSet<NodeId>,
-    adjustments: Vec<(NodeId, TermId, AdjustmentKind)>,
+    adjustments: Vec<PendingAdjustment>,
+    reference_adjustments:
+        std::collections::HashMap<usize, (super::model::ReferenceConversion, TermId)>,
+    reference_expected: HashSet<NodeId>,
+    reference_work: Vec<references::CoercionWork>,
+    reference_steps: usize,
+    break_roots: std::collections::HashMap<NodeId, usize>,
     discarded_adjustments: std::collections::HashMap<usize, (TermId, TermId)>,
     calls: Vec<(NodeId, TermId)>,
     call_types: calls::CallTypes,
@@ -179,6 +192,11 @@ impl<'a> Checker<'a> {
             checks: Vec::new(),
             negated: HashSet::new(),
             adjustments: Vec::new(),
+            reference_adjustments: std::collections::HashMap::new(),
+            reference_expected: HashSet::new(),
+            reference_work: Vec::new(),
+            reference_steps: 0,
+            break_roots: std::collections::HashMap::new(),
             discarded_adjustments: std::collections::HashMap::new(),
             calls: Vec::new(),
             call_types: calls::CallTypes::default(),
@@ -401,10 +419,10 @@ impl Checker<'_> {
         self.finish(body)
     }
     fn finish(&mut self, body: NodeId) -> Result<(), Error> {
-        for (_, term, kind) in &self.adjustments {
-            if *kind == AdjustmentKind::Never {
+        for adjustment in &self.adjustments {
+            if adjustment.kind == AdjustmentKind::Never {
                 self.infer
-                    .default_never(*term)
+                    .default_never(adjustment.expected)
                     .map_err(|e| self.error(body, e))?;
             }
         }
@@ -487,6 +505,11 @@ impl Checker<'_> {
         self.checks.clear();
         self.negated.clear();
         self.adjustments.clear();
+        self.reference_adjustments.clear();
+        self.reference_expected.clear();
+        self.reference_work.clear();
+        self.reference_steps = 0;
+        self.break_roots.clear();
         self.discarded_adjustments.clear();
         self.calls.clear();
         self.assignments.clear();
@@ -714,6 +737,14 @@ impl Checker<'_> {
         reason = "syntax dispatch schedules context-sensitive child constraints without recursive traversal"
     )]
     fn enter(&mut self, node: NodeId, expected: Option<TermId>) -> Result<(), Error> {
+        if let Some(expected) = expected
+            && matches!(
+                self.head(node, expected)?,
+                Some(Constructor::Reference { .. })
+            )
+        {
+            self.reference_expected.insert(node);
+        }
         if let Some(frame) = self.frames.last_mut()
             && frame.kind == FrameKind::While
             && frame.body == node
@@ -730,7 +761,7 @@ impl Checker<'_> {
                 return Ok(());
             }
             Kind::Unary {
-                op: Unary::Borrow,
+                op: Unary::Borrow | Unary::BorrowMut,
                 operand,
             } => {
                 return self.enter_borrow(node, operand, expected);
@@ -991,9 +1022,9 @@ impl Checker<'_> {
                 self.term(operand)
             }
             Kind::Unary {
-                op: Unary::Borrow,
+                op: op @ (Unary::Borrow | Unary::BorrowMut),
                 operand,
-            } => self.borrow(node, operand),
+            } => self.borrow(node, operand, op == Unary::BorrowMut),
             Kind::Unary {
                 op: Unary::Dereference,
                 operand,
@@ -1099,12 +1130,35 @@ impl Checker<'_> {
         self.known(node, TypeId::primitive(primitive))
     }
     fn coerce(&mut self, source: NodeId, expected: TermId) -> Result<(), Error> {
+        self.coerce_one(source, expected, self.reference_expected.contains(&source))?;
+        self.finish_reference_coercions()
+    }
+    fn record_adjustment(
+        &mut self,
+        node: NodeId,
+        expected: TermId,
+        kind: AdjustmentKind,
+    ) -> Result<(), Error> {
+        self.adjustments.push(PendingAdjustment {
+            node,
+            actual: self.term(node)?,
+            expected,
+            kind,
+            reset: false,
+        });
+        Ok(())
+    }
+    fn coerce_one(
+        &mut self,
+        source: NodeId,
+        expected: TermId,
+        identity_reborrow: bool,
+    ) -> Result<(), Error> {
         let actual = self.term(source)?;
         let actual_head = self.head(source, actual)?;
         let expected_head = self.head(source, expected)?;
         if actual_head == Some(Constructor::Never) {
-            self.adjustments
-                .push((source, expected, AdjustmentKind::Never));
+            self.record_adjustment(source, expected, AdjustmentKind::Never)?;
             return Ok(());
         }
         if matches!(actual_head, Some(Constructor::FunctionItem(..)))
@@ -1112,25 +1166,20 @@ impl Checker<'_> {
         {
             let signature = self.child(source, actual, 0)?;
             self.callable_shape(source, signature, expected)?;
-            self.adjustments
-                .push((source, expected, AdjustmentKind::FunctionPointer));
+            self.record_adjustment(source, expected, AdjustmentKind::FunctionPointer)?;
             return Ok(());
         }
         if matches!(actual_head, Some(Constructor::Function { .. }))
             && matches!(expected_head, Some(Constructor::Function { .. }))
         {
             self.callable_shape(source, actual, expected)?;
-            self.adjustments
-                .push((source, expected, AdjustmentKind::Equality));
+            self.record_adjustment(source, expected, AdjustmentKind::Equality)?;
             return Ok(());
         }
         if matches!(actual_head, Some(Constructor::Reference { .. }))
             && matches!(expected_head, Some(Constructor::Reference { .. }))
-            && let Some(reference) = self.array_reference_slice(source, actual, expected)?
+            && self.reference_coercion(source, actual, expected, identity_reborrow)?
         {
-            self.callable_shape(source, reference, expected)?;
-            self.adjustments
-                .push((source, expected, AdjustmentKind::ArrayToSlice));
             return Ok(());
         }
         let inferred = if expected_head.is_none() {
@@ -1139,8 +1188,7 @@ impl Checker<'_> {
             actual
         };
         self.callable_shape(source, inferred, expected)?;
-        self.adjustments
-            .push((source, expected, AdjustmentKind::Equality));
+        self.record_adjustment(source, expected, AdjustmentKind::Equality)?;
         Ok(())
     }
     fn join(&mut self, node: NodeId, left: NodeId, right: NodeId) -> Result<TermId, Error> {
@@ -1157,6 +1205,11 @@ impl Checker<'_> {
         }
         if bh == Some(Constructor::Never) {
             return Ok(a);
+        }
+        if matches!(ah, Some(Constructor::Reference { .. }))
+            && matches!(bh, Some(Constructor::Reference { .. }))
+        {
+            return self.reference_join(node, a, b);
         }
         let a_item = matches!(ah, Some(Constructor::FunctionItem(..)));
         let b_item = matches!(bh, Some(Constructor::FunctionItem(..)));
@@ -1255,7 +1308,30 @@ impl Checker<'_> {
                 return Err(self.error(node, "too many call arguments"));
             }
             let expected = self.child(node, term, count)?;
+            let exclusive = matches!(
+                self.head(node, expected)?,
+                Some(Constructor::Reference { mutable: true, .. })
+            );
+            let mark = self.adjustments.len();
             self.coerce(*argument, expected)?;
+            let mut site = *argument;
+            while let Kind::Group(value) | Kind::Attributed { value, .. } = self.kind(site) {
+                site = value;
+            }
+            for index in mark..self.adjustments.len() {
+                if self.adjustments[index].node == site
+                    && !matches!(
+                        self.kind(site),
+                        Kind::Unary {
+                            op: Unary::BorrowMut,
+                            ..
+                        }
+                    )
+                    && let Some((adjustment, _)) = self.reference_adjustments.get_mut(&index)
+                {
+                    adjustment.two_phase = exclusive && adjustment.dereferences == 1;
+                }
+            }
             count += 1;
         }
         if count != parameters as usize {
@@ -1337,6 +1413,9 @@ impl Checker<'_> {
         )
     }
     fn finish_frame(&mut self, frame: Frame, base: Option<TermId>) -> Result<TermId, Error> {
+        if let Some(root) = frame.breaks {
+            self.break_roots.insert(frame.node, root);
+        }
         let expected = self.frame_expected(frame)?;
         let mut common = if frame.breaks.is_some() {
             expected.or(base)
@@ -1365,13 +1444,39 @@ impl Checker<'_> {
             self.known(frame.node, TypeId::NEVER)?
         };
         self.equate(frame.node, frame.result, common)?;
+        let reference = matches!(
+            self.head(frame.node, common)?,
+            Some(Constructor::Reference { .. })
+        );
+        let identity_reborrow = self.reference_expected.contains(&frame.node);
         if frame.kind == FrameKind::Block {
-            self.coerce(frame.node, common)?;
+            if reference
+                && let Kind::Block {
+                    tail: Some(tail), ..
+                } = self.kind(frame.node)
+            {
+                if frame.breaks.is_some() {
+                    self.reference_expected.insert(tail);
+                }
+                self.coerce_one(
+                    tail,
+                    frame.result,
+                    identity_reborrow || frame.breaks.is_some(),
+                )?;
+                self.finish_reference_coercions()?;
+            } else {
+                self.coerce(frame.node, if reference { frame.result } else { common })?;
+            }
         }
         let mut site = frame.breaks;
         while let Some(index) = site {
             if let Some(value) = self.breaks[index].value {
-                self.coerce(value, common)?;
+                self.coerce_one(
+                    value,
+                    if reference { frame.result } else { common },
+                    identity_reborrow || self.reference_expected.contains(&value),
+                )?;
+                self.finish_reference_coercions()?;
             }
             site = self.breaks[index].next;
         }
@@ -1454,6 +1559,12 @@ impl Checker<'_> {
             }
             let expected = self.frame_expected(frame)?.unwrap_or(frame.result);
             if let Some(value) = value {
+                if matches!(
+                    self.head(value, expected)?,
+                    Some(Constructor::Reference { .. })
+                ) {
+                    self.reference_expected.insert(value);
+                }
                 self.coerce(value, expected)?;
             } else {
                 let unit = self.known(node, TypeId::UNIT)?;
@@ -1630,6 +1741,7 @@ impl Checker<'_> {
                     actual: source,
                     expected: target,
                     kind: AdjustmentKind::FunctionPointer,
+                    reference: None,
                 });
             }
             self.facts

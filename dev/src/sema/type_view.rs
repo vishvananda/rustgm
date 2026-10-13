@@ -94,6 +94,7 @@ pub fn coercions(coercions: &[super::model::Coercion], out: &mut impl Write) -> 
             AdjustmentKind::Never => "never",
             AdjustmentKind::FunctionPointer => "function-pointer",
             AdjustmentKind::ArrayToSlice => "array-to-slice",
+            AdjustmentKind::Reborrow => "reborrow",
             AdjustmentKind::Equality => "same-shape",
         };
         writeln!(
@@ -199,12 +200,23 @@ fn nodes(report: &Report, facts: &Declarations, out: &mut impl Write) -> io::Res
                     AdjustmentKind::FunctionPointer => "function-pointer",
                     AdjustmentKind::Equality => "equality",
                     AdjustmentKind::ArrayToSlice => "array-to-slice",
+                    AdjustmentKind::Reborrow => "reborrow",
                 };
                 writeln!(
                     out,
                     "adjustment {file}:{node} {kind} target={}",
                     value.target.0
                 )?;
+                if let Some(reference) = facts.reference_adjustments.get(&key) {
+                    writeln!(
+                        out,
+                        "reference-adjustment {file}:{node} dereferences={} unsize={} two-phase={} borrow={}",
+                        reference.conversion.dereferences,
+                        reference.conversion.unsize,
+                        reference.conversion.two_phase,
+                        reference.borrow.0
+                    )?;
+                }
             }
         }
     }

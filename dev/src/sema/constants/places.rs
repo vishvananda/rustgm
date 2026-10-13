@@ -119,6 +119,15 @@ impl Queries<'_> {
                 (Query::Place(key), value)
             }
             Work::Borrow { key, operand } => {
+                if matches!(
+                    self.typing.facts.types.kind(self.place_type(key)?),
+                    Some(Type::Reference { mutable: true, .. })
+                ) {
+                    return Err(self.error(
+                        Query::Node(key),
+                        "mutable constant references require constant memory semantics",
+                    ));
+                }
                 let value = self.value(Query::Place(operand))?;
                 let mut place = self.place(key, value)?;
                 self.check_reference_alignment(key, place)?;

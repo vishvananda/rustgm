@@ -33,7 +33,7 @@ fn borrows_preserve_local_referent_and_projected_storage_without_moves() -> Resu
             .values
             .iter()
             .filter_map(|v| match v.kind {
-                Rvalue::Borrow { place } => Some((place, v.ty)),
+                Rvalue::Borrow { place, .. } => Some((place, v.ty)),
                 _ => None,
             })
             .collect();

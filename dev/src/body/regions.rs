@@ -20,6 +20,7 @@ pub enum Kind {
         actual: TypeId,
         expected: TypeId,
         unsize: bool,
+        reference: Option<crate::sema::model::ReferenceConversion>,
     },
     WellFormed(TypeId),
 }
@@ -106,6 +107,7 @@ pub fn collect(facts: &Declarations) -> Result<Contracts<'_>, &'static str> {
                 actual: c.actual,
                 expected: c.expected,
                 unsize: c.kind == AdjustmentKind::ArrayToSlice,
+                reference: c.reference,
             },
         )?;
     }

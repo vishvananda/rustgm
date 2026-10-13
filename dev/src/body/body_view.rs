@@ -203,8 +203,16 @@ fn rvalue(body: &Body, value: Rvalue, out: &mut impl Write) -> io::Result<()> {
         Rvalue::Repeat { value } => write!(out, "repeat v{}", value.0),
         Rvalue::Unit => write!(out, "unit"),
         Rvalue::Scalar(id) => type_view::scalar(body.scalars[id.0 as usize], out),
-        Rvalue::Borrow { place: value } => {
-            write!(out, "borrow ")?;
+        Rvalue::Borrow { place: value, kind } => {
+            write!(
+                out,
+                "{} ",
+                if kind == super::ir::BorrowKind::TwoPhase {
+                    "borrow-two-phase"
+                } else {
+                    "borrow"
+                }
+            )?;
             place(value, out)
         }
         Rvalue::Read(value) => {

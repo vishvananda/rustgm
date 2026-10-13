@@ -66,7 +66,7 @@ impl Engine<'_, '_> {
         match key {
             Key::Value(id) => match self.value(id)?.kind {
                 Rvalue::Read(place) => self.place_dependency(place),
-                Rvalue::Borrow { place } => {
+                Rvalue::Borrow { place, .. } => {
                     if !self.borrow_allowed(self.value(id)?.ty)? {
                         return Ok(false);
                     }

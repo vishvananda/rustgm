@@ -57,6 +57,7 @@ pub fn build(report: &Report, facts: &Declarations) -> Result<Program, Error> {
     }
     let mut scratch = Scratch {
         scopes: scopes::Scratch::default(),
+        unadjusted: Vec::new(),
         values: facts.nodes.iter().map(|n| vec![None; n.len()]).collect(),
         definitions: vec![None; facts.definitions.len()],
         touched: Vec::new(),
@@ -186,6 +187,8 @@ enum Work {
     ReadPlace(NodeId),
     DiscardPlace(NodeId),
     Enter(NodeId),
+    EnterUnadjusted(NodeId),
+    Reborrow(NodeId),
     Finish(NodeId),
     EndBlock {
         node: NodeId,
@@ -222,6 +225,7 @@ enum Work {
     },
 }
 struct Scratch {
+    unadjusted: Vec<NodeId>,
     scopes: scopes::Scratch,
     conditional_live: Vec<LocalId>,
     match_frames: Vec<matches::Frame>,
@@ -317,7 +321,9 @@ impl<'a> Builder<'a> {
             .ok_or_else(|| self.error(node, "missing evaluated value"))
     }
     fn save(&mut self, node: NodeId, mut value: ValueId) -> Result<(), Error> {
-        if let Some(adjustment) = self.fact(node)?.adjustment {
+        if self.scratch.unadjusted.last() != Some(&node)
+            && let Some(adjustment) = self.fact(node)?.adjustment
+        {
             match adjustment.kind {
                 AdjustmentKind::FunctionPointer => {
                     if self.body.values[value.0 as usize].ty != adjustment.target {
@@ -333,6 +339,11 @@ impl<'a> Builder<'a> {
                 AdjustmentKind::Equality => {
                     if self.body.values[value.0 as usize].ty != adjustment.target {
                         value = self.evaluate(node, adjustment.target, Rvalue::Constrain(value))?;
+                    }
+                }
+                AdjustmentKind::Reborrow => {
+                    if self.body.values[value.0 as usize].ty != adjustment.target {
+                        return Err(self.error(node, "missing selected reference adjustment"));
                     }
                 }
                 // A labeled block's fallthrough can diverge while its break join yields a value.
@@ -582,6 +593,9 @@ impl<'a> Builder<'a> {
         if !self.scratch.places.is_empty() {
             return Err(self.error(root, "unbalanced place construction stack"));
         }
+        if !self.scratch.unadjusted.is_empty() {
+            return Err(self.error(root, "unbalanced reference adjustment continuations"));
+        }
         let scope_work = self.scope_plan.work;
         let (scopes, scratch) = self.scope_plan.finish();
         self.scratch.scopes = scratch;
@@ -646,15 +660,29 @@ impl<'a> Builder<'a> {
             Work::DiscardPlace(node) => {
                 self.pop_place(node)?;
             }
+            Work::Reborrow(node) => self.finish_reborrow(node)?,
+            Work::EnterUnadjusted(node) if self.current.is_some() && self.active(node) => {
+                self.enter(node)?;
+            }
             Work::Enter(node) if self.current.is_some() && self.active(node) => {
                 if let Some(scopes) = self.expression_exit(node) {
                     self.scratch.work.push(Work::CloseScope { node, scopes });
                 }
-                self.enter(node)?;
+                if self
+                    .fact(node)?
+                    .adjustment
+                    .is_some_and(|a| a.kind == AdjustmentKind::Reborrow)
+                {
+                    self.scratch.unadjusted.push(node);
+                    self.scratch.work.push(Work::Reborrow(node));
+                    self.scratch.work.push(Work::Place(node));
+                } else {
+                    self.enter(node)?;
+                }
             }
             Work::Finish(node) if self.current.is_some() => self.finish(node)?,
             Work::Finish(node) => self.discard_unreachable_place(node)?,
-            Work::Enter(_) => {}
+            Work::EnterUnadjusted(_) | Work::Enter(_) => {}
             Work::EndBlock { node, tail, base } => self.finish_scope(node, tail, base)?,
             Work::Switch(target) => {
                 self.switch(self.body.blocks[target.0 as usize].source, target)?;

@@ -210,10 +210,20 @@ fn apply(
             actual,
             expected,
             unsize,
+            reference,
         } => {
-            constraints
-                .coerce(actual, expected, unsize, source)
-                .map_err(|e| e.to_string())?;
+            if let Some(reference) = reference {
+                constraints.reborrow(
+                    actual,
+                    expected,
+                    reference.dereferences,
+                    reference.unsize,
+                    source,
+                )
+            } else {
+                constraints.coerce(actual, expected, unsize, source)
+            }
+            .map_err(|e| e.to_string())?;
         }
         Obligation::WellFormed(ty) => {
             for &(a, b) in queries.requirements(ty)? {

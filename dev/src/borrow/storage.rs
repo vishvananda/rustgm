@@ -186,7 +186,7 @@ fn inspect_action(
                 .values
                 .get(id.0 as usize)
                 .ok_or("invalid storage value")?;
-            if let Rvalue::Borrow { place }
+            if let Rvalue::Borrow { place, .. }
             | Rvalue::Read(place)
             | Rvalue::Validate(place)
             | Rvalue::IsVariant { place, .. } = value.kind

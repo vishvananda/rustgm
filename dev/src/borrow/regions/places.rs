@@ -133,7 +133,7 @@ pub(super) fn bounds(types: &Store, body: &Body) -> Result<Vec<Obligation>, &'st
             .values
             .get(id.0 as usize)
             .ok_or("missing evaluated borrow value")?;
-        let Rvalue::Borrow { place } = value.kind else {
+        let Rvalue::Borrow { place, .. } = value.kind else {
             continue;
         };
         let Some(Kind::Reference { region, .. }) = types.kind(value.ty) else {

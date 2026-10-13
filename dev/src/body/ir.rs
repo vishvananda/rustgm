@@ -100,6 +100,7 @@ pub enum Rvalue {
     /// Form a reference to a place without reading or moving its referent.
     Borrow {
         place: Place,
+        kind: BorrowKind,
     },
     /// Non-moving constructor test; the owned input must be fully initialized.
     IsVariant {
@@ -131,6 +132,11 @@ pub enum Rvalue {
         callee: ValueId,
         arguments: ValueList,
     },
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum BorrowKind {
+    Immediate,
+    TwoPhase,
 }
 pub struct Value {
     pub ty: TypeId,

@@ -102,7 +102,7 @@ impl Engine<'_, '_> {
                 Some(self.evaluator.repeat(value.value, length)?)
             }
             Rvalue::Read(place) => self.place_value(place)?.map(|v| v.value),
-            Rvalue::Borrow { place } => self.borrow_value(place, ty)?,
+            Rvalue::Borrow { place, .. } => self.borrow_value(place, ty)?,
             Rvalue::Constrain(operand) => return self.ready(Key::Value(operand)),
             Rvalue::Reify(operand) => self.ready(Key::Value(operand))?.map(|v| v.value),
             Rvalue::Unary {

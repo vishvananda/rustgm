@@ -352,7 +352,8 @@ fn expression_expansions_preserve_places_and_extending_constructor_paths() -> Re
             .filter(|v| matches!(
                 v.kind,
                 Rvalue::Borrow {
-                    place: Place::Local(_)
+                    place: Place::Local(_),
+                    ..
                 }
             ))
             .count(),

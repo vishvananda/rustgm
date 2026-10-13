@@ -216,7 +216,7 @@ impl Builder<'_> {
                     DefKind::Static => Place::Static(definition),
                     _ => {
                         self.scratch.work.push(Work::TemporaryPlace(node));
-                        self.scratch.work.push(Work::Enter(node));
+                        self.enter_materialized(node);
                         return Ok(());
                     }
                 };
@@ -224,10 +224,18 @@ impl Builder<'_> {
             }
             _ => {
                 self.scratch.work.push(Work::TemporaryPlace(node));
-                self.scratch.work.push(Work::Enter(node));
+                self.enter_materialized(node);
             }
         }
         Ok(())
+    }
+    fn enter_materialized(&mut self, node: NodeId) {
+        let work = if self.scratch.unadjusted.last() == Some(&node) {
+            Work::EnterUnadjusted(node)
+        } else {
+            Work::Enter(node)
+        };
+        self.scratch.work.push(work);
     }
     pub(super) fn project(
         &mut self,

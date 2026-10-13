@@ -87,6 +87,7 @@ pub enum AdjustmentKind {
     Never,
     FunctionPointer,
     ArrayToSlice,
+    Reborrow,
     /// The same type shape, with a directed lifetime relation retained separately.
     Equality,
 }
@@ -94,6 +95,18 @@ pub enum AdjustmentKind {
 pub struct Adjustment {
     pub kind: AdjustmentKind,
     pub target: TypeId,
+}
+/// Selected built-in reference conversion; kept sparse outside ordinary node facts.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct ReferenceConversion {
+    pub dereferences: u32,
+    pub unsize: bool,
+    pub two_phase: bool,
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct ReferenceAdjustment {
+    pub conversion: ReferenceConversion,
+    pub borrow: TypeId,
 }
 #[derive(Clone, Copy, Default)]
 pub struct NodeFacts {
@@ -148,6 +161,7 @@ pub struct Coercion {
     pub actual: TypeId,
     pub expected: TypeId,
     pub kind: AdjustmentKind,
+    pub reference: Option<ReferenceConversion>,
 }
 /// Types used in a body must satisfy their well-formedness bounds. Function
 /// inputs/outputs supply assumptions; local types never add assumptions.
@@ -185,6 +199,7 @@ pub struct BodyRegion {
     pub origin: BodyRegionOrigin,
 }
 pub struct Declarations {
+    pub reference_adjustments: std::collections::HashMap<NodeKey, ReferenceAdjustment>,
     pub partial_annotations: std::collections::HashMap<NodeKey, PartialAnnotation>,
     pub well_formed: Vec<WellFormed>,
     pub coercions: Vec<Coercion>,
@@ -227,6 +242,7 @@ impl Declarations {
     }
     pub(super) fn new(report: &Report) -> Result<Self, Error> {
         let mut value = Self {
+            reference_adjustments: std::collections::HashMap::new(),
             partial_annotations: std::collections::HashMap::new(),
             well_formed: Vec::new(),
             coercions: Vec::new(),

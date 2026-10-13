@@ -646,3 +646,71 @@ for `eb2b634` fails the course comparison on exactly the same 61 reviewed paths.
 The failed-run log was checked against the local review list. Later workflow
 steps did not run after that failure; the formatting, Clippy, architecture and
 harness results above are the completed local checks.
+
+## Mutable references and selected reborrows
+
+Body typing now records mutable borrows and implicit reference conversions as
+typed facts. Conversions retain the chosen dereference depth, mutability,
+unsizing and permitted two-phase reservation. Body construction borrows the
+selected place directly; it does not first read and move a mutable reference.
+An implicit borrow has a fresh region and an explicit constraint to its
+destination type. Contract checking retains mutable referent invariance and
+shared referent covariance, including ancestry through nested references.
+
+Coercion propagation retains contextual reference hints separately from inferred
+join conversions. Inferred `[p]` moves a mutable pointer, while an annotated
+`[&mut u8; 1]` can reborrow it. A block entered with an expected reference
+coerces its tail; a later inferred join cannot undo a move through that block.
+Direct match arms and array elements can therefore differ from `if` branch
+blocks. Earlier array elements and break values can establish a reference hint
+for later values: `[p, q]` moves `p` but can reborrow `q`. Match-arm joins permit
+later direct reborrows without retroactively changing an untyped block's tail.
+Loop breaks preserve their existing inference order. Propagation uses
+an explicit worklist with a per-body work budget, and pending constraints retain
+the actual type selected before any wrapper type changes.
+
+Two-phase reservation is limited to eligible implicit call-argument reborrows.
+Parentheses preserve that site; block tails, branches and explicit mutable
+borrows remain immediate. Zero-length array repeats still execute their operand
+and preserve its move/borrow operation, but discard its destination lifetime
+obligation. Mutable constant-reference evaluation remains explicitly unsupported.
+
+These are inputs to the pending loan checker. Initialization, write permissions,
+loan conflicts, NLL extents and activation points still require execution proofs;
+the ownership/lowering gates remain in place. This checkpoint does not release
+PA15–PA17 or provide reference execution through LowIR.
+
+Validation for the reborrow checkpoint:
+
+- All 432 maintainer tests pass, including eight reborrow tests with pinned
+  rustc acceptance controls and independent assertions on retained moves,
+  borrows and two-phase reservations. Formatting, Clippy all/pedantic with
+  warnings denied, the 264-file audit and all 25 harness tests pass.
+- The course report is 2,558/2,622 exact. The 61 previously reviewed differences
+  remain; three additional mutable-constant fixtures still reject with status 1
+  but now diagnose the unsupported constant-memory operation. The existing
+  mutable-array binding view now retains a reborrow instead of region equality.
+  No fixture, manifest or oracle was changed. The full course report remains
+  failing until the assignment contracts and reference updates are released.
+- Native checks on the first immutable reborrow build pass PA11 (194 checks,
+  180 executions), PA13 (538/364, with its 16 documented runtime differences)
+  and PA14 (12/12). PA12 retains its one previously reviewed boundary mismatch
+  among 97 checks. Final reference-inference and control-view corrections are
+  checked by the full test run and identical emitted LowIR and rejection streams
+  for all 1,230 manifest-listed PA11–PA14 inputs against that native-tested build.
+- Three measurement series retain 162 verified raw observations, A/A
+  calibration, paired ABBA blocks, frozen inputs and binary/source hashes.
+  Ordinary-body and array-pattern full/count outputs equal the preceding storage
+  checkpoint. At 64k ordinary functions, baseline/current medians are
+  2,982.7/3,089.9 ms and 611,508/611,528 KiB; at 16k array-pattern functions they
+  are 1,783.9/1,806.7 ms and 396,442/397,080 KiB. The timing ranges overlap, so
+  this does not establish a precise speed difference. New reborrow inputs,
+  independently accepted by rustc, scale from 256 to 1,024 to 4,096 functions
+  in candidate medians of 23.5, 96.1 and 441.5 ms, with 8,562, 21,954 and
+  77,216 KiB median peak RSS. Their retained IR counts grow linearly. No local
+  RustGM build or test overlapped the timing series.
+
+Final source and measurement receipts use `obj/pa15-work/reborrows-v2-*`;
+`verify_reborrows_v2_perf.py` validates all raw observations and hashes. The
+immutable compiler is `reborrows-candidate-v2`, SHA-256
+`b933aa6a8053953b12b1673ef504d144b0f36a35ee058bb2286218b67c774c7a`.

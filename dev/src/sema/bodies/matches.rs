@@ -189,8 +189,16 @@ impl Checker<'_> {
             .get(&self.key(node))
             .ok_or_else(|| self.error(node, "missing match facts"))?;
         let decision = &self.facts.patterns.decisions[id as usize];
+        let mut reference_hint = false;
         for index in decision.start..decision.end {
-            self.coerce(self.facts.patterns.arms[index as usize].value.node, common)?;
+            let value = self.facts.patterns.arms[index as usize].value.node;
+            let contextual = self.reference_expected.contains(&value);
+            self.coerce_one(value, common, contextual || reference_hint)?;
+            self.finish_reference_coercions()?;
+            reference_hint |= matches!(
+                self.head(value, self.term(value)?)?,
+                Some(Constructor::Reference { .. })
+            );
         }
         if self.head(node, self.term(value)?)? == Some(Constructor::Never) {
             self.known(node, TypeId::NEVER)

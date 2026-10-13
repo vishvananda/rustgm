@@ -364,6 +364,7 @@ fn promotion_queries_are_bounded_iterative_and_cache_shared_subtrees()
             function.values.push(Value {
                 ty: reference,
                 kind: Rvalue::Borrow {
+                    kind: body::ir::BorrowKind::Immediate,
                     place: Place::Temporary(ValueId(id)),
                 },
             });
