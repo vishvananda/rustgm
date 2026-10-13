@@ -30,6 +30,8 @@ pub(super) struct Discriminant {
 #[derive(Clone, Copy)]
 pub(super) enum Value {
     Scalar(Scalar),
+    Text(super::text::Id),
+    Bytes(super::text::Id),
     Variant(VariantId),
     Constructor(VariantId),
     Product(products::Id),
@@ -38,9 +40,11 @@ impl Value {
     fn scalar(self) -> Result<Scalar, &'static str> {
         match self {
             Self::Scalar(value) => Ok(value),
-            Self::Variant(_) | Self::Constructor(_) | Self::Product(_) => {
-                Err("constant requires a scalar value")
-            }
+            Self::Variant(_)
+            | Self::Constructor(_)
+            | Self::Product(_)
+            | Self::Text(_)
+            | Self::Bytes(_) => Err("constant requires a scalar value"),
         }
     }
     fn integer(self) -> Result<u128, &'static str> {
@@ -171,33 +175,46 @@ pub(super) fn discriminants(
     }
     Ok(())
 }
+#[derive(Clone, Copy)]
+pub(super) enum PatternValue {
+    Definition(DefId),
+    Literal(NodeKey),
+}
 /// Resolve pattern uses after their initializer bodies have published typed facts.
 pub(super) fn pattern_values(
     report: &Report,
     facts: &mut Declarations,
-    requests: &[(NodeKey, DefId, Option<super::patterns::PatternId>)],
+    requests: &[(NodeKey, PatternValue, Option<super::patterns::PatternId>)],
 ) -> Result<(), Error> {
     let mut queries = Queries::new(report, facts, &[]);
     for &(key, definition, pattern) in requests {
-        let index = queries
-            .constants
-            .get(definition.0 as usize)
-            .copied()
-            .flatten()
-            .ok_or_else(|| {
-                Declarations::error(report, key, "pattern path requires a named constant")
-            })?;
-        if !matches!(
-            queries.typing.facts.initializers[index].kind,
-            InitializerKind::Const
-        ) {
-            return Err(Declarations::error(
-                report,
-                key,
-                "a static is not a constant pattern",
-            ));
-        }
-        let query = Query::Constant(index);
+        let query = match definition {
+            PatternValue::Definition(definition) => {
+                let index = queries
+                    .constants
+                    .get(definition.0 as usize)
+                    .copied()
+                    .flatten()
+                    .ok_or_else(|| {
+                        Declarations::error(report, key, "pattern path requires a named constant")
+                    })?;
+                if !matches!(
+                    queries.typing.facts.initializers[index].kind,
+                    InitializerKind::Const
+                ) {
+                    return Err(Declarations::error(
+                        report,
+                        key,
+                        "a static is not a constant pattern",
+                    ));
+                }
+                Query::Constant(index)
+            }
+            PatternValue::Literal(source) => {
+                queries.prepare(source)?;
+                Query::Node(source)
+            }
+        };
         queries.work.push(Work::Enter(query));
         queries.drain()?;
         let value = queries.value(query)?;
@@ -646,7 +663,7 @@ impl Queries<'_> {
         clippy::too_many_lines,
         reason = "One typed expression dispatch validates constant eligibility and retains its selected dependencies"
     )]
-    fn classify(&self, key: NodeKey) -> Result<Expression, Error> {
+    fn classify(&mut self, key: NodeKey) -> Result<Expression, Error> {
         let query = Query::Node(key);
         let facts = self
             .typing
@@ -656,6 +673,30 @@ impl Queries<'_> {
         let child = |node| NodeKey { node, ..key };
         if let Some(value) = facts.scalar {
             return Ok(Expression::Value(Value::Scalar(value)));
+        }
+        if let Kind::Literal(index) = Declarations::kind(self.report, key) {
+            let literal = self
+                .report
+                .package
+                .unit(key.file)
+                .literal(index)
+                .map_err(|e| self.error(query, e.message))?;
+            let (bytes, string) = match literal {
+                crate::literal::Value::String(bytes) => (bytes, true),
+                crate::literal::Value::ByteString(bytes) => (bytes, false),
+                _ => return Err(self.error(query, "missing selected literal value")),
+            };
+            let id = self
+                .typing
+                .facts
+                .texts
+                .intern(&bytes)
+                .map_err(|e| self.error(query, e))?;
+            return Ok(Expression::Value(if string {
+                Value::Text(id)
+            } else {
+                Value::Bytes(id)
+            }));
         }
         if let Some(expression) = self.product_expression(key)? {
             return Ok(Expression::Product(expression));

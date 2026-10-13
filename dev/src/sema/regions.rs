@@ -7,6 +7,7 @@ pub(super) struct BinderId(usize);
 pub(super) enum Position {
     Input,
     Output,
+    Static,
 }
 #[derive(Clone, Copy)]
 pub(super) struct Context {
@@ -14,6 +15,10 @@ pub(super) struct Context {
     pub position: Position,
 }
 impl Context {
+    pub const STATIC: Self = Self {
+        binder: None,
+        position: Position::Static,
+    };
     pub const ALIAS: Self = Self {
         binder: None,
         position: Position::Output,
@@ -57,8 +62,12 @@ impl Regions {
         Ok(index)
     }
     pub fn elided(&mut self, context: Context) -> Result<RegionId, &'static str> {
+        if matches!(context.position, Position::Static) {
+            return Ok(RegionId::STATIC);
+        }
         let id = context.binder.ok_or("missing lifetime specifier")?;
         match context.position {
+            Position::Static => Ok(RegionId::STATIC),
             Position::Input => RegionId::bound(0, self.fresh(id)?),
             Position::Output => self.binders[id.0]
                 .output

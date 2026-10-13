@@ -39,8 +39,9 @@ arrays, constructors, guards and conditional bindings. Unit, tuple and array
 constants translate into ordinary product/scalar patterns and execute on owned
 inputs. Struct and enum constants with derived `PartialEq` also translate and
 execute, including nested values, struct updates and field projections.
-Text/reference constants remain unfinished. Reference and dynamic-slice execution still require
-the later region and loan proofs.
+String and byte-string literals and named constants support typed pattern
+selection and coverage. General reference constants remain unfinished. Reference
+and dynamic-slice execution still require the later region and loan proofs.
 
 Named constants use resolved declaration identities and their canonical types;
 pattern endpoints do not coerce between integer types. The shared typed constant
@@ -71,8 +72,29 @@ positive and negative results. Constant calls validate their callee expression,
 and struct updates validate their base even if every field is overridden.
 
 A static cannot be named directly as a constant pattern. General CTFE,
-text/reference values and expression-position constant execution retain their
-explicit later-stage boundaries.
+promoted reference values and expression-position constant execution retain
+their explicit later-stage boundaries.
+
+Text identity uses exact decoded bytes, including Unicode, NUL and empty values.
+Raw and escaped literals with equal bytes select equal patterns; composed and
+decomposed Unicode strings remain different. Byte-string literal patterns accept
+`&[u8; N]` or `&[u8]`; a named constant preserves its declared type and does not
+implicitly unsize while matching. A constant initializer can explicitly declare
+`&[u8]` and unsize its byte-string value. Elided references in constant/static
+annotations default to `static`; nested function-pointer types retain their own
+ordinary lifetime elision rules. Value-pattern type matching does not impose the
+constant's storage lifetime on the input. Expression lifetime constraints remain
+pending for PA15/PA16.
+
+String coverage uses the current query's distinct observed strings and one
+remaining class for every other string. Byte strings use ordinary byte ranges,
+array products and exact slice lengths, so they compose with written slice
+prefixes/suffixes. Finite string cases require an unconstrained case for
+exhaustiveness. Coverage includes strings in supported tuples, arrays and borrowed
+slices. Nominal fields containing `&str` or `&[T]` still encounter PA22's unsized
+pointer layout boundary; nominal fields containing sized byte-array references
+can be inspected. C-string values await the library type assignment. Text value
+execution does not bypass reference lowering, region or loan proofs.
 
 There is a pinned-rustc discrepancy in borrowed constant matching. The Reference's
 `patterns.ident.binding.non-reference` rule permits automatic dereferencing for
@@ -90,6 +112,7 @@ from a binding's local type. Kinds are:
 
 - `wildcard` (including a selected rest with no binding operation).
 - `range=ID` for a scalar literal, named constant or interval in the separate range arena.
+- `text="BYTE_ESCAPED_VALUE"` for an exact string referent.
 - `bind def=ID local=TYPE mutable=BOOL capture=value|ref|ref-mut`, followed by
   `region=REGION loan=pending` for borrowed captures, then `subpattern=ID|-`.
 - `deref mutable=BOOL implicit=BOOL pattern=ID` for each reference adjustment.

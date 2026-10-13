@@ -100,6 +100,18 @@ an iterative greatest fixed point with reverse dependency edges: publish all
 positive and negative results only after propagation completes. Count actual
 nodes, dependencies and propagation work under an explicit query budget.
 
+Demanded string and byte-string values reuse decoded literal bytes and intern
+them in one flat byte arena. Equality compares exact bytes; identifier Unicode
+normalization must never affect text values. Share repeated text subpatterns
+within a constant use while preserving each selected place. Byte-string patterns
+translate to ordinary fixed-array or exact-slice decisions under the existing
+preallocation work budget. String coverage partitions only the current query's
+observed values plus one class for every other string. Do not scan unrelated
+bodies or enumerate a string domain. Matching a value constant compares type
+structure without equating its storage lifetime to the input lifetime; ordinary
+expression constraints remain explicit. This does not discharge reference
+execution proofs or supply unsized-pointer layout.
+
 Floating pattern domains use constant-time bit/rank conversions. Numeric ranks
 collapse signed zero, while a separate unordered class keeps NaN visible to
 exhaustiveness. Reuse scalar interval indexes and composite coverage decisions;

@@ -83,6 +83,7 @@ pub enum Operation {
 pub enum AdjustmentKind {
     Never,
     FunctionPointer,
+    ArrayToSlice,
     /// Type equality was established modulo retained region obligations.
     Equality,
 }
@@ -143,6 +144,7 @@ pub struct BodyRegion {
 pub struct Declarations {
     pub(super) constant_values: std::collections::HashMap<DefId, super::constants::Value>,
     pub(super) constant_products: super::constants::products::Products,
+    pub texts: super::text::Texts,
     pub patterns: super::patterns::Patterns,
     pub enum_casts: std::collections::HashSet<crate::types::ItemId>,
     pub derives: std::collections::HashMap<crate::types::ItemId, crate::types::copy::Properties>,
@@ -166,6 +168,7 @@ impl Declarations {
         let mut value = Self {
             constant_values: std::collections::HashMap::new(),
             constant_products: super::constants::products::Products::default(),
+            texts: super::text::Texts::default(),
             patterns: super::patterns::Patterns::default(),
             enum_casts: std::collections::HashSet::new(),
             derives: std::collections::HashMap::new(),

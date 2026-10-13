@@ -85,6 +85,7 @@ pub enum Kind {
     Pending,
     Wildcard,
     Range(RangeId),
+    Text(super::text::Id),
     Binding {
         definition: DefId,
         mutable: bool,

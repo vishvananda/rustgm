@@ -28,6 +28,18 @@ impl Coverage<'_> {
             result.push_str(" = ");
             match &input.values {
                 Values::Scalar(domain) => result.push_str(&domain.witness(rank)?),
+                Values::Text => {
+                    if let Some(id) = usize::try_from(rank)
+                        .ok()
+                        .and_then(|index| self.texts.as_ref()?.values.get(index))
+                    {
+                        let value = std::str::from_utf8(self.facts.texts.get(*id)?)
+                            .map_err(|_| "invalid UTF-8 in text pattern")?;
+                        write!(result, "{value:?}").map_err(|_| "cannot format text witness")?;
+                    } else {
+                        result.push_str("other string");
+                    }
+                }
                 Values::Length => {
                     write!(result, "{rank}").map_err(|_| "cannot format slice length")?;
                 }

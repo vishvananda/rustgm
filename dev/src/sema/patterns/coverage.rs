@@ -4,6 +4,7 @@ mod inhabited;
 mod slices;
 #[cfg(test)]
 mod tests;
+mod text;
 mod witness;
 
 use super::{Arm, Kind, PatternId, Projection, scalar::Domain};
@@ -35,6 +36,7 @@ enum Values {
     Scalar(Domain),
     Tags(Arc<[VariantId]>),
     Length,
+    Text,
 }
 pub enum Roots<'a> {
     Pattern(PatternId),
@@ -75,6 +77,7 @@ pub struct Coverage<'a> {
     universe: Id,
     roots: Roots<'a>,
     slice_aliases: Option<HashMap<TypeId, Vec<u64>>>,
+    texts: Option<text::Domain>,
 }
 impl<'a> Coverage<'a> {
     pub fn new(
@@ -110,6 +113,7 @@ impl<'a> Coverage<'a> {
             universe,
             roots,
             slice_aliases: None,
+            texts: None,
         })
     }
     pub fn work(&self) -> u64 {
@@ -160,6 +164,16 @@ impl<'a> Coverage<'a> {
             return Ok(variable);
         }
         let (maximum, values) = match self.facts.types.kind(info.ty) {
+            Some(Type::Primitive(crate::types::Primitive::Str)) => {
+                self.prepare_texts()?;
+                let length = self
+                    .texts
+                    .as_ref()
+                    .ok_or("missing text coverage domain")?
+                    .values
+                    .len();
+                (length as u128, Values::Text)
+            }
             Some(Type::Primitive(primitive)) => {
                 let domain =
                     Domain::new(primitive).ok_or("coverage requires a supported scalar domain")?;
@@ -253,6 +267,16 @@ impl<'a> Coverage<'a> {
                 subpattern: Some(pattern),
                 ..
             } => children.push(Query { pattern, ..query }),
+            Kind::Text(text) => {
+                let variable = self.variable(query.place)?;
+                let rank = self
+                    .texts
+                    .as_ref()
+                    .and_then(|d| d.ranks.get(&text))
+                    .copied()
+                    .ok_or("missing text pattern rank")?;
+                initial = self.graph.interval(variable, rank, rank)?;
+            }
             Kind::Range(range) => {
                 let variable = self.variable(query.place)?;
                 let interval = self.facts.patterns.ranges[range.0 as usize];

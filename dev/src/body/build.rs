@@ -282,6 +282,12 @@ impl<'a> Builder<'a> {
                         value = self.evaluate(node, adjustment.target, Rvalue::Reify(value))?;
                     }
                 }
+                AdjustmentKind::ArrayToSlice => {
+                    return Err(self.error(
+                        node,
+                        "slice reference execution requires region and loan proofs",
+                    ));
+                }
                 AdjustmentKind::Equality => {
                     if self.body.values[value.0 as usize].ty != adjustment.target {
                         value = self.evaluate(node, adjustment.target, Rvalue::Constrain(value))?;
@@ -996,6 +1002,24 @@ impl<'a> Builder<'a> {
             },
         )
     }
+    fn literal_value(&mut self, node: NodeId, ty: TypeId) -> Result<ValueId, Error> {
+        if matches!(
+            self.facts.types.kind(ty),
+            Some(crate::types::Kind::Reference { .. })
+        ) {
+            return Err(self.error(
+                node,
+                "text value execution requires reference lowering and loan proofs",
+            ));
+        }
+        let scalar = self
+            .fact(node)?
+            .scalar
+            .ok_or_else(|| self.error(node, "missing scalar value"))?;
+        let id = ScalarId(self.index(node, self.body.scalars.len())?);
+        self.body.scalars.push(scalar);
+        self.evaluate(node, ty, Rvalue::Scalar(id))
+    }
     fn finish(&mut self, node: NodeId) -> Result<(), Error> {
         let ty = self.ty(node)?;
         let value = match self.kind(node) {
@@ -1009,15 +1033,7 @@ impl<'a> Builder<'a> {
             Kind::Group(value) | Kind::Attributed { value, .. } | Kind::Label { value, .. } => {
                 self.value(value)?
             }
-            Kind::Literal(_) => {
-                let scalar = self
-                    .fact(node)?
-                    .scalar
-                    .ok_or_else(|| self.error(node, "missing scalar value"))?;
-                let id = ScalarId(self.index(node, self.body.scalars.len())?);
-                self.body.scalars.push(scalar);
-                self.evaluate(node, ty, Rvalue::Scalar(id))?
-            }
+            Kind::Literal(_) => self.literal_value(node, ty)?,
             Kind::Path { .. } | Kind::Name(_) => {
                 let value = self.path(node)?;
                 self.evaluate(node, ty, value)?

@@ -62,7 +62,7 @@ impl Coverage<'_> {
                     work.extend(self.facts.patterns.alternatives(alternatives));
                 }
                 Kind::Pending => return Err("incomplete slice coverage pattern"),
-                Kind::Wildcard | Kind::Range(_) => {}
+                Kind::Wildcard | Kind::Range(_) | Kind::Text(_) => {}
             }
         }
         let mut aliases = HashMap::new();

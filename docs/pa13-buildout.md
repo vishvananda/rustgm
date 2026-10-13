@@ -1857,3 +1857,144 @@ size. Unique/chain elapsed times also scale roughly with input size; the shared
 376–646 ms despite identical A/A binaries. No universal complexity or throughput
 bound is inferred from these wall times. The iterative solver's direct work-count
 tests provide separate evidence for deep graphs and cached repeated demands.
+
+
+## Text pattern inspection checkpoint
+
+String and byte-string literals, including raw forms, now type as immutable
+static references and participate in selected-pattern inspection. Demanded text
+constants consume the stored decoder result and intern exact bytes in one flat
+arena with compact IDs and collision-checked hash buckets. Ordinary expression
+literals do not allocate semantic text values. Repeated references to a value
+reuse its bytes; repeated subpatterns share IDs while fields retain distinct
+places. The ordinary node record remains unchanged.
+
+Strings translate through a typed dereference to a `text="..."` leaf. Byte
+strings translate to byte ranges within fixed-array products or exact slices,
+using the existing one-million-work expansion budget before allocating edges.
+Literal byte patterns support slice inputs; named constants preserve their
+annotation, while a byte-string constant initializer may unsize to an explicitly
+declared slice reference. This initializer conversion remains a typed adjustment
+with pending ordinary lifetime constraints.
+
+Coverage collects distinct text identities from the current query's roots only.
+It gives each observed string a rank and reserves one extra rank for all other
+strings. Existing product/constructor/slice decision graphs combine those ranks
+without expanding strings or rescanning unrelated bodies. The text view uses the
+ordinary escaped-byte writer. Missing witnesses can name an observed string or
+`other string`; neither is source code for later phases to interpret.
+
+Constant/static annotations now apply Rust's static lifetime default. Nested
+function-pointer binders keep ordinary input/output elision; type aliases do not
+acquire a static default. Pattern value matching unifies type shape without
+recording an equality between the constant's storage lifetime and the input's
+lifetime. A dedicated inference operation retains preexisting expression
+constraints, with no change to ordinary type equality or reference mutability.
+
+Declared independent cases cover 27 acceptances and 18 rejections. Additional
+checks cover decoded/raw duplicate usefulness, composed/decomposed Unicode,
+NUL/empty strings, byte-array and slice mixing, nested products, named aliases,
+macros, cross-file provenance, guard coverage, conditional patterns and static
+elision. Direct invariants cover exact interning, repeated-node sharing, query
+locality, unchanged expression lifetime constraints, and diagnosed expansion
+limits with no partial output. One cross-file positive and three explicitly
+later-stage controls also compile with rustc. These inspection checks do not
+claim executable parity for references.
+
+Nominal `&str`/slice fields still require PA22's fat-pointer layout. Sized
+byte-array reference fields can be inspected. C strings still require the later
+library type. General promoted references, such as `const C:&u8=&7`, remain
+unfinished. The executable builder rejects text values/reference decisions until
+reference lowering and loan proofs exist. PA13 remains planned, with no grading
+manifest or generated PA13 sidecars published yet.
+
+
+The checkpoint passes **338 Rust tests** in debug and release and **1,695 active
+assignment cases**. Existing `.ref`, `.ref.stderr` and `.ref.exit_status` bytes
+are unchanged; twelve compiler-source receipts were regenerated explicitly.
+Clippy/rustfmt, the 211-file syntax/architecture audit (zero findings), harness
+checks and 38-stage fixture placement pass. All 24 imported fixtures and 126
+pinned Reference files verify. Independent rustc checks and CPPGM backend smoke
+checks pass. PA11 records 194 checks/180 executions; PA12 records 97 checks/48
+executions.
+
+All 372 prior PA13 native programs also pass with the initial text candidate.
+Final review gated array-to-slice probing on the reference heads already known
+by ordinary coercion. The final candidate recompiles every one of those inputs
+to byte-identical LowIR, preserving the linked native execution evidence;
+`obj/pa13-work/text-final-native-equality.json` records the input/LowIR hashes and
+prior receipts. The earlier four constructed guard-count oracles and eight
+signed-zero Reference/rustc differences retain their original classification.
+These are not new native executions of text-reference programs.
+
+The final frozen candidate is `obj/pa13-work/text-final-candidate`, SHA-256
+`ae1b8ed10eef4f3f3ccad03a5d3a2a5be1eb05cb42fcfe8f9daa55a0247ccdcf`.
+Its complete source checks are `text-home-{debug,release,quality}-final.log`,
+`text-home-oracles-final.log`, `text-home-rustc-native.log` and
+`text-home-independent.log` under `obj/pa13-work/`. Native receipts are indexed
+in `text-native-receipts.json`. The final build repeats the full debug/release
+suites and earlier assignment checks after the coercion cleanup. No builds or
+tests run alongside the qualified timing series.
+
+
+The timing series retains **432 observations** from eight sequential runs on CPU
+10. Each uses frozen binaries/inputs, complete rendered and count-output
+equality, A/A calibration and three ABBA blocks at each size. Existing workloads
+compare the nominal baseline (`d0a2340bdc200125d3b31a065a766d10631b93b424de0f955e3d3b7f84ac5c9c`)
+with the final text candidate.
+
+| Existing workload | Run | Largest functions | Baseline/candidate median ms | Baseline/candidate median KiB |
+| --- | --- | ---: | ---: | ---: |
+| ordinary | 1791864380753058196 | 64,000 | 3585.32 / 3580.64 | 715180 / 715142 |
+| scalar-constants | 1791864477189243835 | 16,000 | 643.72 / 645.85 | 142128 / 142076 |
+| nominal-shared | 1791864494629540005 | 16,000 | 1497.77 / 1493.43 | 240766 / 240668 |
+| slice-coverage | 1791864539038042600 | 16,000 | 16351.03 / 16115.51 | 135268 / 135288 |
+
+Largest-scale medians and memory are similar. The 4,000-function nominal run
+is noisy: baseline/candidate paired medians are 526.70/611.04 ms, with A/A
+calibration at 355–378 ms and paired samples spanning 364–652 ms. Every sample
+is retained. This series does not establish a precise regression or speedup
+bound, and the largest-scale table must not hide that intermediate-size shift.
+
+New workloads use candidate A/A scaling with
+`scripts/measure_lexer.py --stage patterns --text-pattern-input MODE`:
+
+| Text workload | Run | Functions or arms | Candidate median ms | Candidate median KiB |
+| --- | --- | ---: | ---: | ---: |
+| text-shared | 1791864962307744752 | 1,000 | 255.70 | 12776 |
+| text-shared | 1791864962307744752 | 4,000 | 1008.43 | 39582 |
+| text-shared | 1791864962307744752 | 16,000 | 4196.38 | 148036 |
+| text-unique | 1791865073780817746 | 1,000 | 271.76 | 15614 |
+| text-unique | 1791865073780817746 | 4,000 | 1107.55 | 52244 |
+| text-unique | 1791865073780817746 | 16,000 | 4560.33 | 200440 |
+| text-bytes | 1791865195344650342 | 1,000 | 349.83 | 11418 |
+| text-bytes | 1791865195344650342 | 4,000 | 1434.37 | 34624 |
+| text-bytes | 1791865195344650342 | 16,000 | 5809.79 | 127188 |
+| text-wide | 1791865357389160970 | 128 | 4.99 | 3624 |
+| text-wide | 1791865357389160970 | 512 | 9.00 | 4350 |
+| text-wide | 1791865357389160970 | 2,048 | 23.23 | 7124 |
+
+Shared and unique exercise tuple constants containing strings and byte slices;
+bytes mixes literal, prefix/suffix and empty patterns. Wide has one match with
+128/512/2,048 distinct string arms. The first three have 1,000/4,000/16,000
+functions. Small generated controls compile independently with pinned rustc.
+Time and memory broadly follow input size. Fixed process overhead is visible
+in wide's small inputs. Noise remains visible: unique's smallest A/A includes
+466 ms, and bytes' largest paired samples span 5.30–7.97 seconds despite
+identical A/A binaries. These are scaling observations, not universal bounds.
+
+Raw records are `obj/perf/RUN/{samples.json,observations.jsonl}`. The work index,
+verified statistics and checker are `obj/pa13-work/text-perf-receipts.json`,
+`text-perf-verified.json` and `verify_text_perf.py`; verification output is
+`text-home-perf-verification.log`. All runs include their immutable A/B binaries
+and input snapshots. No timing runs overlap each other or this checkpoint's
+builds/tests.
+
+After filesystem permissions were restored, the two validated product/nominal
+commits were fast-forwarded into `~/rustgm` and pushed to public main. The earlier
+local product diff is preserved in a named Git stash. All 15 temporary performance
+runs are now also archived byte-for-byte under this checkout's `obj/perf/`, and
+their top-level work receipts/binaries are in
+`obj/pa13-work/recovered-isolated/`. Historical receipts keep their original
+absolute paths; `archive-map.json` records the corresponding archive locations.
+The temporary checkout remains intact, but further development uses `~/rustgm`.

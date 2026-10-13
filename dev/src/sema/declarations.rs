@@ -318,10 +318,11 @@ impl Checker<'_> {
             }
             self.work.push(Work::Definition(id, true));
             match item.kind {
-                ItemKind::TypeAlias { ty: Some(ty), .. }
-                | ItemKind::Const { ty, .. }
-                | ItemKind::Static { ty, .. } => {
+                ItemKind::TypeAlias { ty: Some(ty), .. } => {
                     self.node_work(key.file, ty, regions::Context::ALIAS);
+                }
+                ItemKind::Const { ty, .. } | ItemKind::Static { ty, .. } => {
+                    self.node_work(key.file, ty, regions::Context::STATIC);
                 }
                 _ => return Err(self.error(key, "unsupported type declaration")),
             }

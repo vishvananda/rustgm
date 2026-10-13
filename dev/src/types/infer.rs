@@ -259,6 +259,29 @@ impl Context {
     /// # Errors
     /// Reports incompatible shapes/domains, recursive types, invalid IDs and work limits.
     pub fn equate(&mut self, store: &Store, left: TermId, right: TermId) -> Result<(), Error> {
+        self.unify(store, left, right, true)
+    }
+    /// Match a constant value's type without equating its storage lifetime to
+    /// the scrutinee's lifetime. Reference mutability and referent shapes still
+    /// agree; existing expression constraints remain intact.
+    ///
+    /// # Errors
+    /// Reports incompatible shapes/domains, recursive types, invalid IDs and work limits.
+    pub fn equate_pattern(
+        &mut self,
+        store: &Store,
+        left: TermId,
+        right: TermId,
+    ) -> Result<(), Error> {
+        self.unify(store, left, right, false)
+    }
+    fn unify(
+        &mut self,
+        store: &Store,
+        left: TermId,
+        right: TermId,
+        record_regions: bool,
+    ) -> Result<(), Error> {
         self.pairs.clear();
         self.seen.clear();
         self.pairs.push((left, right));
@@ -282,7 +305,7 @@ impl Context {
                     if !self.seen.insert(pair) {
                         continue;
                     }
-                    self.structural(store, a, b)?;
+                    self.structural(store, a, b, record_regions)?;
                 }
             }
         }
@@ -339,7 +362,13 @@ impl Context {
         }
         Ok(())
     }
-    fn structural(&mut self, store: &Store, a: TermId, b: TermId) -> Result<(), Error> {
+    fn structural(
+        &mut self,
+        store: &Store,
+        a: TermId,
+        b: TermId,
+        record_regions: bool,
+    ) -> Result<(), Error> {
         let left = self.materialize(store, a)?;
         let right = self.materialize(store, b)?;
         match (left, right) {
@@ -353,7 +382,7 @@ impl Context {
                     region: b,
                 },
             ) if x == y => {
-                if a != b {
+                if record_regions && a != b {
                     self.region_equalities.push((a, b));
                 }
             }

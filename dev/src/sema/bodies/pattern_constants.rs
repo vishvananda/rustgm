@@ -12,7 +12,11 @@ use crate::{
 
 #[derive(Default)]
 pub(super) struct Pending {
-    requests: Vec<(NodeKey, DefId, Option<PatternId>)>,
+    requests: Vec<(
+        NodeKey,
+        super::super::constants::PatternValue,
+        Option<PatternId>,
+    )>,
     scopes: Vec<Scope>,
     ranges: Vec<RangeWork>,
     roots: Vec<PatternId>,
@@ -26,6 +30,16 @@ struct Scope {
     matches: usize,
 }
 impl Checker<'_> {
+    pub(super) fn equate_pattern(
+        &mut self,
+        node: NodeId,
+        left: crate::types::infer::TermId,
+        right: crate::types::infer::TermId,
+    ) -> Result<(), Error> {
+        self.infer
+            .equate_pattern(&self.facts.types, left, right)
+            .map_err(|e| self.error(node, e))
+    }
     pub(super) fn pattern_constant(&self, node: NodeId) -> Option<DefId> {
         let Target::Definition(definition) = self.facts.node(self.key(node))?.reference? else {
             return None;
@@ -51,7 +65,23 @@ impl Checker<'_> {
         self.pending_patterns
             .get_or_insert_with(Box::default)
             .requests
-            .push((key, definition, pattern));
+            .push((
+                key,
+                super::super::constants::PatternValue::Definition(definition),
+                pattern,
+            ));
+        self.pattern_constants = true;
+    }
+    pub(super) fn request_pattern_literal(&mut self, node: NodeId, pattern: PatternId) {
+        let key = self.key(node);
+        self.pending_patterns
+            .get_or_insert_with(Box::default)
+            .requests
+            .push((
+                key,
+                super::super::constants::PatternValue::Literal(key),
+                Some(pattern),
+            ));
         self.pattern_constants = true;
     }
     pub(super) fn constant_pattern(
@@ -71,7 +101,7 @@ impl Checker<'_> {
             return self.scalar_pattern(node, term);
         }
         let value = self.known(node, ty)?;
-        self.equate(node, term, value)?;
+        self.equate_pattern(node, term, value)?;
         self.request_pattern_constant(node, definition, Some(id));
         self.pattern_refutable = true;
         Ok(crate::sema::patterns::Kind::Pending)

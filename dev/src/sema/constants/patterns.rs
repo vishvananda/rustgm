@@ -5,7 +5,7 @@ use crate::{
         members::{FieldId, Selection},
         patterns::{Field, Fields, Interval, Kind, PatternId, Projection, RangeId, scalar::Domain},
     },
-    types::TypeId,
+    types::{Primitive, TypeId},
 };
 use std::collections::HashMap;
 
@@ -14,6 +14,7 @@ struct Expansion<'a> {
     source: NodeKey,
     work: Vec<(PatternId, Value)>,
     products: HashMap<(products::Id, TypeId), PatternId>,
+    texts: HashMap<(crate::sema::text::Id, TypeId), PatternId>,
     remaining: u64,
 }
 pub(super) fn expand(
@@ -32,6 +33,7 @@ pub(super) fn expand(
         source,
         work: vec![(root, value)],
         products: HashMap::new(),
+        texts: HashMap::new(),
         remaining: 1_000_000,
     };
     let facts = &mut *expansion.facts;
@@ -62,6 +64,25 @@ impl Expansion<'_> {
                 .ty
                 .ok_or("missing constant pattern input type")?;
             let kind = match (self.facts.types.kind(ty), value) {
+                (
+                    Some(Type::Reference {
+                        mutable: false,
+                        referent,
+                        ..
+                    }),
+                    Value::Text(_) | Value::Bytes(_),
+                ) => {
+                    let pattern = self.select(referent, value)?;
+                    Kind::Dereference {
+                        mutable: false,
+                        implicit: false,
+                        pattern,
+                    }
+                }
+                (Some(Type::Primitive(Primitive::Str)), Value::Text(text)) => Kind::Text(text),
+                (Some(Type::Array { .. } | Type::Slice(_)), Value::Bytes(text)) => {
+                    self.bytes(ty, text)?
+                }
                 (Some(Type::Primitive(primitive)), Value::Scalar(value)) => {
                     let domain = Domain::new(primitive)
                         .ok_or("constant pattern requires structural equality")?;
@@ -140,6 +161,50 @@ impl Expansion<'_> {
             fields: Fields { start, end },
         })
     }
+    fn bytes(&mut self, ty: TypeId, text: crate::sema::text::Id) -> Result<Kind, &'static str> {
+        let bytes = self.facts.texts.get(text)?.len();
+        let length = bytes as u64;
+        let byte = TypeId::primitive(Primitive::U8);
+        let slice = match self.facts.types.kind(ty) {
+            Some(Type::Array {
+                element,
+                length: expected,
+            }) if element == byte && length == expected => false,
+            Some(Type::Slice(element)) if element == byte => true,
+            _ => return Err("byte string differs from its selected pattern type"),
+        };
+        self.charge(length)?;
+        let start = u32::try_from(self.facts.patterns.fields.len())
+            .map_err(|_| "too many byte pattern fields")?;
+        let mark = self.work.len();
+        for index in 0..bytes {
+            let value = self.facts.texts.get(text)?[index];
+            let pattern = self.select(
+                byte,
+                Value::Scalar(super::Scalar::Integer(u128::from(value))),
+            )?;
+            self.facts.patterns.fields.push(Field {
+                selection: Projection::Index(index as u64),
+                pattern,
+            });
+        }
+        self.work[mark..].reverse();
+        let end = u32::try_from(self.facts.patterns.fields.len())
+            .map_err(|_| "too many byte pattern fields")?;
+        let fields = Fields { start, end };
+        Ok(if slice {
+            Kind::Slice {
+                minimum: length,
+                exact: true,
+                fields,
+            }
+        } else {
+            Kind::Product {
+                variant: None,
+                fields,
+            }
+        })
+    }
     fn nominal(&self, ty: TypeId, variant: VariantId) -> Result<u64, &'static str> {
         let Some(Type::Adt(item)) = self.facts.types.kind(ty) else {
             return Err("missing nominal constant type");
@@ -169,8 +234,16 @@ impl Expansion<'_> {
         {
             return Ok(id);
         }
+        if let Value::Text(text) | Value::Bytes(text) = value
+            && let Some(&id) = self.texts.get(&(text, ty))
+        {
+            return Ok(id);
+        }
         let id = self.facts.patterns.reserve(self.source)?;
         self.facts.patterns.nodes[id.0 as usize].ty = Some(ty);
+        if let Value::Text(text) | Value::Bytes(text) = value {
+            self.texts.insert((text, ty), id);
+        }
         if let Value::Product(product) = value {
             self.products.insert((product, ty), id);
         }

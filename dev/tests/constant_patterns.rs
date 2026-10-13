@@ -265,7 +265,7 @@ fn later_constant_capabilities_remain_explicit_boundaries() -> Result<(), Box<dy
         ),
         (
             "const C:&'static str=\"a\";fn main(){match \"a\"{C=>(),_=>()}}",
-            "text literal body types are not implemented",
+            "text value execution requires reference lowering and loan proofs",
         ),
         (
             "const C:u8={let n=7;n};fn main(){match 7u8{C=>(),_=>()}}",

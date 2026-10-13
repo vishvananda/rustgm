@@ -182,3 +182,31 @@ fn canonical_structures_constrain_terms_and_retain_region_obligations()
     assert_ne!(result.types[reference.0 as usize], ty);
     Ok(())
 }
+
+#[test]
+fn constant_pattern_equality_preserves_expression_constraints()
+-> Result<(), Box<dyn std::error::Error>> {
+    let mut store = Store::default();
+    let mut cx = Context::default();
+    let variable = cx.variable(Domain::Any)?;
+    let byte = cx.known(&store, TypeId::primitive(Primitive::U8))?;
+    let mut reference = |region, mutable, referent| {
+        cx.construct(Constructor::Reference { mutable, region }, &[referent])
+    };
+    let input = reference(RegionId(1), false, variable)?;
+    let constant = reference(RegionId::STATIC, false, byte)?;
+    let other = reference(RegionId(2), false, byte)?;
+    cx.equate(&store, input, other)?;
+    cx.equate_pattern(&store, input, constant)?;
+    assert_eq!(cx.region_equalities, [(RegionId(1), RegionId(2))]);
+    let solved = cx.finish(&mut store)?;
+    assert_eq!(
+        solved.types[variable.0 as usize],
+        TypeId::primitive(Primitive::U8)
+    );
+    assert_ne!(
+        solved.types[input.0 as usize],
+        solved.types[constant.0 as usize]
+    );
+    Ok(())
+}

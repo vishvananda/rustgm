@@ -99,7 +99,8 @@ impl Builder<'_> {
                     "conditional binding execution requires pattern decisions",
                 ));
             }
-            Kind::Dereference { .. }
+            Kind::Text(_)
+            | Kind::Dereference { .. }
             | Kind::Slice { .. }
             | Kind::Binding {
                 capture: Capture::Borrow { .. },

@@ -5,6 +5,7 @@ mod divergence;
 mod matches;
 mod pattern_constants;
 mod patterns;
+mod text;
 use super::{
     declarations,
     model::{Adjustment, AdjustmentKind, Declarations, Function, Operation, RegionEquality},
@@ -1002,7 +1003,11 @@ impl Checker<'_> {
             Value::Boolean(_) => Primitive::Bool,
             Value::Character(_) => Primitive::Char,
             Value::Byte(_) => Primitive::U8,
-            _ => return Err(self.error(node, "text literal body types are not implemented yet")),
+            Value::String(_) => return self.text_literal_type(node, None),
+            Value::ByteString(bytes) => return self.text_literal_type(node, Some(bytes.len())),
+            Value::CString(_) => {
+                return Err(self.error(node, "C string values require the library type assignment"));
+            }
         };
         self.known(node, TypeId::primitive(primitive))
     }
@@ -1022,6 +1027,15 @@ impl Checker<'_> {
             self.equate(source, signature, expected)?;
             self.adjustments
                 .push((source, expected, AdjustmentKind::FunctionPointer));
+            return Ok(());
+        }
+        if matches!(actual_head, Some(Constructor::Reference { .. }))
+            && matches!(expected_head, Some(Constructor::Reference { .. }))
+            && let Some(reference) = self.array_reference_slice(source, actual, expected)?
+        {
+            self.equate(source, reference, expected)?;
+            self.adjustments
+                .push((source, expected, AdjustmentKind::ArrayToSlice));
             return Ok(());
         }
         self.equate(source, actual, expected)?;
@@ -1520,6 +1534,9 @@ impl Checker<'_> {
             let value = unit
                 .literal(index)
                 .map_err(|e| self.error(node, e.message))?;
+            if matches!(value, Value::String(_) | Value::ByteString(_)) {
+                continue;
+            }
             let negated = self.negated.contains(&node);
             let scalar = scalar::literal(&value, self.primitive(node)?, negated)
                 .map_err(|e| self.error(node, e))?;

@@ -115,6 +115,14 @@ fn nodes(facts: &Declarations, out: &mut impl Write) -> io::Result<()> {
             Kind::Pending => return Err(io::Error::other("incomplete selected pattern")),
             Kind::Wildcard => write!(out, "wildcard")?,
             Kind::Range(id) => write!(out, "range={}", id.0)?,
+            Kind::Text(id) => {
+                write!(out, "text=")?;
+                crate::support::quoted::bytes(
+                    out,
+                    facts.texts.get(id).map_err(io::Error::other)?,
+                    false,
+                )?;
+            }
             Kind::Binding {
                 definition,
                 mutable,

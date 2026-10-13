@@ -12,3 +12,5 @@ mod regions;
 mod representation;
 mod scalar;
 pub mod type_view;
+
+pub mod text;

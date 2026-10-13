@@ -123,6 +123,9 @@ impl Checker<'_> {
         rest: bool,
     ) -> Result<PatternKind, Error> {
         match self.kind(node) {
+            Kind::Literal(index) if self.is_text_literal(node, index)? => {
+                self.text_pattern(node, index, term, id)
+            }
             Kind::Literal(_)
             | Kind::Unary {
                 op: crate::syntax::ast::Unary::Negate,
@@ -267,7 +270,12 @@ impl Checker<'_> {
                     Some(crate::types::Kind::Reference { .. })
                 )
             });
-        if structural && !reference_constant {
+        let text_literal = if let Kind::Literal(index) = self.kind(node) {
+            self.is_text_literal(node, index)?
+        } else {
+            false
+        };
+        if structural && !reference_constant && !text_literal {
             while let Some(Constructor::Reference { mutable, .. }) = self.head(node, term)? {
                 *steps += 1;
                 if *steps > 1_000_000 {

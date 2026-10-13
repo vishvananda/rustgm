@@ -144,6 +144,7 @@ fn nodes(report: &Report, facts: &Declarations, out: &mut impl Write) -> io::Res
                     AdjustmentKind::Never => "never",
                     AdjustmentKind::FunctionPointer => "function-pointer",
                     AdjustmentKind::Equality => "equality",
+                    AdjustmentKind::ArrayToSlice => "array-to-slice",
                 };
                 writeln!(
                     out,
