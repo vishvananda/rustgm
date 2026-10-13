@@ -1,0 +1,1 @@
+const C:(u8,bool)=D;const D:(u8,bool)=C;fn main(){match (7u8,true){C=>(),_=>()}}

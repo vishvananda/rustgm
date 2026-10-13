@@ -1,0 +1,1 @@
+struct N;fn take(_: [N;0])->bool{true}fn main(){let x=[];match x{[n@..] if take(x)=>{let _: [N;0]=n;},_=>()}}

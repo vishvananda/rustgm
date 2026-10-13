@@ -1,0 +1,1 @@
+fn main(){let 0=1u8 else{loop{break;}};}

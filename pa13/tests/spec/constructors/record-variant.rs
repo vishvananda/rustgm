@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=failure(0);}}fn failure(x:i32)->i32{1/x}
+enum E{A{a:u8,b:u64},B{b:u8,a:u64}}fn f(e:E)->u64{match e{E::A{b:n,a:1}=>n,E::A{a:n,b:m}=>m+n as u64,E::B{a:n,b:m}=>n-m as u64}}fn main(){check(f(E::A{a:1,b:99})==99&&f(E::A{a:3,b:55})==58&&f(E::B{a:90,b:9})==81);}

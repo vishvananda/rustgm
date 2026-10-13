@@ -1,0 +1,1 @@
+macro_rules! m{($x:expr)=>{match $x{[]=>(),[_,..]=>()}}}fn f(x:&[u8]){m!(x);}

@@ -1,0 +1,1 @@
+const N:u8=7;fn main(){let ref N=7u8;}

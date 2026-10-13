@@ -1,0 +1,1 @@
+static S:u8=7;const C:&u8=&S;fn f(x:&u8){match x{C=>(),_=>()}}

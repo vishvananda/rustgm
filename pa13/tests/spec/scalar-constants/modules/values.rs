@@ -1,0 +1,1 @@
+const N:char='🦀';pub fn f(x:char)->u8{match x{N=>1,_=>2}}

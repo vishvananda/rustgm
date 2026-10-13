@@ -1,0 +1,1 @@
+const C:&str=D;const D:&str="a";fn f(x:&str){match x{C=>(),D=>(),_=>()}}

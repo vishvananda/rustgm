@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=failure(0);}}fn failure(x:i32)->i32{1/x}
+fn main(){let x=[1u8,2u8,3u8];let mut c=0;match x{[a,rest@..]|[rest@..,a] if {c+=a+rest[0]+rest[1];false}=>(),_=>()}check(c==12);}

@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=failure(0);}}fn failure(x:i32)->i32{1/x}
+enum E{A((u8,u8)),B((u8,u8))}fn f(x:(E,(u8,u8)))->u64{let mut log=0u64;match x{(E::A((a,_))|E::B((_,a)),(b,_)|(_,b)) if {log=log*100+(a*10+b) as u64;false}=>(),_=>()}log}fn main(){check(f((E::A((1,2)),(3,4)))==1314&&f((E::B((1,2)),(3,4)))==2324);}

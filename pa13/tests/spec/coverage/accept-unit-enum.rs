@@ -1,0 +1,1 @@
+enum E{A,B,C}fn f(x:E){match x{E::A|E::B=>(),E::C=>()}}

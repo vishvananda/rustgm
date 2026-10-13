@@ -1,0 +1,1 @@
+mod a{enum Void{}pub struct S{v:Void}}const N:u8=0;fn f(x:a::S,n:u8){match n{N=>(),_=>()}match x{}}fn main(){}

@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=failure(0);}}fn failure(x:i32)->i32{1/x}
+fn entry()->u64{let mut log=0u64;match (1u8,2u8){((a,_)|(_,a))|((_,a)|(a,_)) if {log=log*10+a as u64;false}=>(),_=>()}log}fn main(){check(entry()==1221);}

@@ -1,0 +1,1 @@
+enum V{}enum E{A(V),B}struct S(E);macro_rules! m{($x:expr)=>{match $x{E::B=>()}}}fn f(x:&E){m!(*x)}

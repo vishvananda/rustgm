@@ -43,7 +43,14 @@ pub fn build(report: &Report, facts: &Declarations) -> Result<Program, Error> {
         return Err(report.diagnostic(Error::at(
             region.source.file,
             offset,
-            "reference pattern execution requires region and loan proofs",
+            if matches!(
+                region.origin,
+                crate::sema::model::BodyRegionOrigin::ExpressionBorrow
+            ) {
+                "reference expression execution requires region and loan proofs"
+            } else {
+                "reference pattern execution requires region and loan proofs"
+            },
         )));
     }
     let mut scratch = Scratch {
@@ -688,6 +695,15 @@ impl<'a> Builder<'a> {
         reason = "cohesive syntax dispatch exposes evaluation order and work-stack scheduling"
     )]
     fn enter(&mut self, node: NodeId) -> Result<(), Error> {
+        if matches!(
+            self.fact(node)?.operation,
+            Some(Operation::Borrow | Operation::Dereference | Operation::IndexSlice)
+        ) {
+            return Err(self.error(
+                node,
+                "reference expression execution requires region and loan proofs",
+            ));
+        }
         if let Kind::Let {
             value: Some(value),
             otherwise: Some(_),

@@ -1,0 +1,1 @@
+fn f(x:&mut[u8]){if let[a,rest@..,z]=x{let _=a;let _=rest;let _=z;}}

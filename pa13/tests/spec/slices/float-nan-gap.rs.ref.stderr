@@ -1,0 +1,1 @@
+ERROR: file 0: 15: non-exhaustive match; missing { $.*.len = 1, $.*[0] = -inf }

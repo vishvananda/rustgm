@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=failure(0);}}fn failure(x:i32)->i32{1/x}
+fn main(){let mut c=0;let mut sum=0;loop{c+=1;if c==4{break;}match c{n if {if n==2{continue;}true}=>sum+=n,_=>()}}check(sum==4);}

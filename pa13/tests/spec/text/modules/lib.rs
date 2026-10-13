@@ -1,0 +1,1 @@
+mod values;use values::{S,B};fn f(x:(&str,&[u8;1])){match x{(S,B)=>(),_=>()}}

@@ -1,0 +1,1 @@
+struct S(u8);fn f(xs:&[S;1]){let[x@S(mut y)]=xs;}

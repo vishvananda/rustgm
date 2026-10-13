@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=failure(0);}}fn failure(x:i32)->i32{1/x}
+fn f(first:bool,second:bool)->u8{let mut n=0;if first&&let x={n+=1;n}&&second&&let y={n+=10;n}{check(x==1&&y==11);}n}fn main(){check(f(false,true)==0&&f(true,false)==1&&f(true,true)==11);}

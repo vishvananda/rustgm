@@ -1,0 +1,1 @@
+fn f(xs:&(u8,u16)){let(x,y)=xs;}

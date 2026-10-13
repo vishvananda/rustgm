@@ -1,0 +1,1 @@
+const C:(&[u8],bool)=(b"ab",true);fn f(x:(&[u8],bool)){match x{C=>(),(b"ab",false)=>(),_=>()}}

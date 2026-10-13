@@ -1,0 +1,1 @@
+const C:(u8,bool)=(7,true);fn main(){let mut x=(7u8,true);match x{C if {x.0=0;false}=>(),_=>()}}

@@ -1,0 +1,1 @@
+enum I{A,B}enum E{X(I),Y}fn f(x:E){match x{E::X(I::A|I::B)=>(),E::Y=>()}}

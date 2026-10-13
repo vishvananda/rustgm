@@ -1,0 +1,1 @@
+ERROR: file 0: 49: refutable binding; missing { $ = E::A }

@@ -1,0 +1,1 @@
+struct S{a:u8}fn f(xs:&S){let S{#[cfg(no)] missing,a}=xs;}

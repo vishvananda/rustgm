@@ -192,8 +192,9 @@
       "path": "pa13",
       "title": "Pattern semantics",
       "mode": "--emit-lowir",
-      "status": "planned",
-      "scope": "Binding modes, match lowering and exhaustiveness/usefulness",
+      "additional_modes": ["--emit-patterns"],
+      "status": "implemented-draft",
+      "scope": "Owned pattern decisions, guards, conditional bindings and constant patterns; borrowed/text/slice inspection with explicit pending region/loan proofs",
       "test_families": [
         "guards",
         "or-patterns",

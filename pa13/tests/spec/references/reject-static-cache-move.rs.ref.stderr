@@ -1,0 +1,1 @@
+ERROR: file 0: 44: cannot move a non-Copy constant value out of static storage

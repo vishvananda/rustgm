@@ -1,0 +1,1 @@
+fn main(){let x:[u8;0];match x{[n@..] if true=>{let _=n;},_=>()}}

@@ -1,0 +1,1 @@
+enum V{}enum E{A(V),B}struct S(E);struct T(V);fn f(x:&T){match *x{}}

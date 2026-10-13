@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=failure(0);}}fn failure(x:i32)->i32{1/x}
+fn f()->u8{let mut x=4u8;let mut sum=0;while let mut n@1..=4=x{x-=1;if n==3{continue;}n+=1;sum+=n;}sum}fn main(){check(f()==10);}

@@ -1,0 +1,33 @@
+selected-patterns 1
+type 0 never
+type 1 tuple []
+type 2 primitive bool
+type 3 primitive char
+type 4 primitive str
+type 5 primitive i8
+type 6 primitive i16
+type 7 primitive i32
+type 8 primitive i64
+type 9 primitive i128
+type 10 primitive isize
+type 11 primitive u8
+type 12 primitive u16
+type 13 primitive u32
+type 14 primitive u64
+type 15 primitive u128
+type 16 primitive usize
+type 17 primitive f32
+type 18 primitive f64
+type 19 function binders=0 parameters=[11] result=1 unsafe=false
+type 20 function-item def=14 signature=19
+type 21 array element=11 length=2
+type 22 reference mutable=false region=static referent=21
+root 0:18 pattern=0
+root 0:21 pattern=1
+pattern 0 source=0:18 input=11 range=0
+pattern 1 source=0:21 input=11 wildcard
+range 0 ranks=98:98
+match 0 source=0:24 input=0:15 arms=0:2 exhaustive=true uninhabited=false work=7
+arm 0 source=0:20 pattern=0 guard=- useful=true value=0:19
+arm 1 source=0:23 pattern=1 guard=- useful=true value=0:22
+eof roots=2 patterns=2 fields=0 alternatives=0 ranges=1 matches=1 arms=2 coverage-work=7 region-vars=0 region-equalities=0 conditions=0 chains=0

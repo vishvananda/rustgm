@@ -1,0 +1,1 @@
+#[derive(PartialEq)]pub struct S{a:u8}pub const C:S=S{a:7};pub fn new(a:u8)->S{S{a}}

@@ -1,0 +1,39 @@
+function @rg.15() -> void {
+  block ^b0:
+    jump ^b4
+  block ^b4:
+    jump ^b6
+  block ^b6:
+    jump ^b8
+  block ^b8:
+    jump ^b2
+  block ^b2:
+    return void
+  block ^b1:
+    unreachable
+  block ^b3:
+    unreachable
+  block ^b5:
+    unreachable
+  block ^b7:
+    unreachable
+  block ^b9:
+    unreachable
+  block ^b10:
+    unreachable
+  block ^b11:
+    unreachable
+  block ^b12:
+    unreachable
+  block ^b13:
+    unreachable
+  block ^b14:
+    unreachable
+  block ^b15:
+    unreachable
+}
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.15()
+    return i64 0
+}

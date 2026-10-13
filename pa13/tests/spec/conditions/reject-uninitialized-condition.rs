@@ -1,0 +1,1 @@
+fn main(){let x:u8;if let 0=x{}}

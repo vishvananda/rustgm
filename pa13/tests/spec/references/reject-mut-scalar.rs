@@ -1,0 +1,1 @@
+const C:&mut u8=&mut 7;fn f(x:&mut u8){match x{C=>(),_=>()}}

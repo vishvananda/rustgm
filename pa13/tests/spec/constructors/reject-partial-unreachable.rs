@@ -1,0 +1,1 @@
+struct N{n:u8}fn main(){let x=(N{n:3},N{n:7});let a=x.0;let b=match x{(_,n)|(n,_)=>n};let _=a.n+b.n;}

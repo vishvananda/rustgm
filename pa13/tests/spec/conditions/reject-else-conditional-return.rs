@@ -1,0 +1,1 @@
+fn f(x:u8){let 0=x else{if x>0{return;}};}fn main(){}

@@ -23,11 +23,20 @@ def classification(case):
     if case["exit_status"] == 0:
         if metadata["status"] != 0 or case.get("native", {}).get("outcome") not in ("pass", "panic"):
             raise ValueError("every accepted native fixture needs a rustc executable and declared outcome")
+        native = case["native"]
+        independent = native.get("rustc_outcome", native["outcome"])
+        if independent not in ("pass", "panic"):
+            raise ValueError("rustc runtime outcomes must be pass or qualified panic")
+        if independent != native["outcome"] and (
+                not isinstance(native.get("reason"), str) or not native["reason"].strip()):
+            raise ValueError("runtime differences require an explicit Reference/rustc reason")
     elif "native" in case:
         raise ValueError("rejected sources cannot declare native execution")
 
 
 def execution(result, outcome, compiler):
+    if outcome not in ("pass", "panic"):
+        raise ValueError("unknown runtime outcome")
     if result.stdout:
         raise ValueError(f"{compiler}: unexpected runtime stdout")
     if outcome == "pass":
@@ -113,7 +122,9 @@ def check(app, jobs, stage="pa11"):
                     if result.returncode:
                         raise ValueError(f"{label} failed ({result.returncode}): {result.stderr.decode(errors='replace')}")
                 outcome = case["native"]["outcome"]
-                execution(run([str(rustexe)], "rustc-run", 10), outcome, "rustc")
+                independent = case["native"].get("rustc_outcome", outcome)
+                evidence["native"] = case["native"]
+                execution(run([str(rustexe)], "rustc-run", 10), independent, "rustc")
                 execution(run([str(native)], "native-run", 10), outcome, "cppgm")
             evidence["passed"] = True
         except (ValueError, OSError, subprocess.SubprocessError) as error:
@@ -133,6 +144,10 @@ def check(app, jobs, stage="pa11"):
     if failures:
         raise ValueError(f"{len(failures)}/{len(cases)} independent native checks failed")
     print(f"PASS: {stage.upper()}: {len(cases)} independent checks; {sum('native' in c for c in cases)} executable comparisons")
+    differences = sum(c.get("native", {}).get("rustc_outcome", c.get("native", {}).get("outcome"))
+                      != c.get("native", {}).get("outcome") for c in cases)
+    if differences:
+        print(f"  {differences} documented runtime differences, not same-outcome parity")
 
 
 def main():

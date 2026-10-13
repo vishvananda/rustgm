@@ -85,16 +85,24 @@ impl<'a> Coverage<'a> {
         report: &'a Report,
         module: ModuleId,
         ty: TypeId,
+        root_valid: bool,
         roots: Roots<'a>,
         cache: &'a mut Cache,
     ) -> Result<Self, &'static str> {
         let mut graph = Graph::new(super::scalar::Coverage::LIMIT);
         let mut inhabited = Inhabited::new(facts, report, module, cache);
-        let universe = if inhabited.get(ty, &mut graph)? {
-            Id::ALL
+        // Dereferenced places need not contain valid field values. Only an
+        // explicitly empty root domain permits an empty match in that case.
+        let possible = if root_valid {
+            inhabited.get(ty, &mut graph)?
         } else {
-            Id::EMPTY
+            match facts.types.kind(ty) {
+                Some(Type::Never) => false,
+                Some(Type::Adt(item)) => !facts.members.variants(item).is_empty(),
+                _ => true,
+            }
         };
+        let universe = if possible { Id::ALL } else { Id::EMPTY };
         Ok(Self {
             facts,
             report,
@@ -102,7 +110,7 @@ impl<'a> Coverage<'a> {
             graph,
             places: vec![Place {
                 ty,
-                valid: true,
+                valid: root_valid,
                 parent: None,
                 variable: None,
             }],

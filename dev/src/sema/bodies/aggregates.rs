@@ -11,7 +11,7 @@ use crate::{
 };
 
 impl Checker<'_> {
-    fn selected(&mut self, node: NodeId, operation: Operation) -> Result<(), Error> {
+    pub(super) fn selected(&mut self, node: NodeId, operation: Operation) -> Result<(), Error> {
         let key = self.key(node);
         self.facts
             .node_mut(key)
@@ -32,7 +32,15 @@ impl Checker<'_> {
             .construct(constructor, &self.type_children)
             .map_err(|e| self.error(node, e))?;
         if let Some(expected) = expected {
-            self.equate(node, term, expected)?;
+            // Borrowing can supply a slice element type before reference unsizing.
+            if matches!(constructor, Constructor::Array(_))
+                && self.head(node, expected)? == Some(Constructor::Slice)
+            {
+                let element = self.child(node, expected, 0)?;
+                self.equate(node, self.type_children[0], element)?;
+            } else {
+                self.equate(node, term, expected)?;
+            }
         }
         self.save(node, term);
         Ok(term)
@@ -353,7 +361,7 @@ impl Checker<'_> {
         name: Span,
     ) -> Result<TermId, Error> {
         let name = self.member_name(node, name)?;
-        let receiver = self.term(value)?;
+        let receiver = self.autoderef(node, self.term(value)?)?;
         let (selection, ty) = match self.head(node, receiver)? {
             Some(Constructor::Tuple) => {
                 let Name::Index(index) = name else {
@@ -384,13 +392,15 @@ impl Checker<'_> {
         value: NodeId,
         index: NodeId,
     ) -> Result<TermId, Error> {
-        let array = self.term(value)?;
-        let Some(Constructor::Array(length)) = self.head(node, array)? else {
-            return Err(self.error(node, "indexing requires a known array type"));
+        let array = self.autoderef(node, self.term(value)?)?;
+        let operation = match self.head(node, array)? {
+            Some(Constructor::Array(length)) => Operation::Index { length },
+            Some(Constructor::Slice) => Operation::IndexSlice,
+            _ => return Err(self.error(node, "indexing requires a known array type")),
         };
         let usize = self.known(node, TypeId::primitive(Primitive::Usize))?;
         self.coerce(index, usize)?;
-        self.selected(node, Operation::Index { length })?;
+        self.selected(node, operation)?;
         self.child(node, array, 0)
     }
     pub(super) fn assignment_target(

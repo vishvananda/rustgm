@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=failure(0);}}fn failure(x:i32)->i32{1/x}
+const C:(u8,bool)=(7,true);const D:(u8,bool)=C;fn main(){let mut n=0;match (7u8,true){C|D|(7,true) if {n+=1;false}=>(),_=>()}check(n==3);}

@@ -1,0 +1,1 @@
+fn f(x:&mut [u8;2]){match x{b"ab"=>(),_=>()}}

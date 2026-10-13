@@ -1,0 +1,1 @@
+ERROR: file 0: 71: derived PartialEq on a packed struct requires Copy fields

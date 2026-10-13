@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=failure(0);}}fn failure(x:i32)->i32{1/x}
+#[derive(PartialEq)]struct S(u8);const C:S=S(7);fn main(){let mut n=0;match S(7){v@C|v@S(7) if {n+=1;v.0==0}=>(),S(x)=>check(x==7)}check(n==2);}

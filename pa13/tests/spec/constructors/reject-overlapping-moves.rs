@@ -1,0 +1,1 @@
+struct N;enum E{A(N),B}fn f(x:E){match x{whole@E::A(n)=>{let _=whole;let _=n;},E::B=>()}}fn main(){}

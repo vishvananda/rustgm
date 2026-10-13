@@ -1,0 +1,1 @@
+struct S;fn f(xs:&S){let S=xs;}

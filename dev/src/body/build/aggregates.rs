@@ -212,6 +212,19 @@ impl Builder<'_> {
         Ok(id)
     }
     pub(super) fn finish_place(&mut self, node: NodeId) -> Result<(), Error> {
+        if self
+            .facts
+            .autoderefs
+            .contains_key(&crate::resolve::unit::NodeKey {
+                node,
+                ..self.body.source
+            })
+        {
+            return Err(self.error(
+                node,
+                "reference projection execution requires region and loan proofs",
+            ));
+        }
         let base = self.pop_place(node)?;
         let place = if let Some(base) = base
             && self.current.is_some()

@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=failure(0);}}fn failure(x:i32)->i32{1/x}
+fn main(){let x=[(1u8,2u8),(3u8,4u8)];let mut i=0;let mut log=0;match x[{i+=1;0}]{(n,_)|(_,n) if {log=log*10+n;false}=>(),_=>()}check(i==1&&log==12);}

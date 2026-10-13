@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=failure(0);}}fn failure(x:i32)->i32{1/x}
+mod values;const N:i8=-2;fn f(x:i8)->u8{match x{N=>1,_=>2}}fn main(){check(f(-2)==1&&f(0)==2&&values::f('🦀')==1&&values::f('a')==2);}

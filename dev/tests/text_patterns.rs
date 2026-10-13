@@ -1,18 +1,10 @@
-use rustgm::{
-    expand::config::Config,
-    resolve::{
-        self,
-        expansion::Report,
-        load::{InputFile, Sources},
-    },
-    sema::{
-        self,
-        model::Declarations,
-        patterns::Kind,
-        text::{Id, Texts},
-    },
-    support::source::SourceFile,
+#[path = "support/semantic.rs"]
+mod semantic;
+use rustgm::sema::{
+    patterns::Kind,
+    text::{Id, Texts},
 };
+use semantic::analyze;
 use std::{
     path::{Path, PathBuf},
     process::{Command, Output},
@@ -166,29 +158,6 @@ const REJECTED: &[(&str, &str)] = &[
         r#"const F:fn()->&str=f;fn f()->&'static str{"a"}"#,
     ),
 ];
-struct NoFiles;
-impl Sources for NoFiles {
-    fn read(&mut self, _: &Path) -> Result<Option<InputFile>, String> {
-        Ok(None)
-    }
-}
-fn analyze(source: &str) -> Result<(Report, Declarations), String> {
-    let report = resolve::expansion::analyze(
-        InputFile {
-            identity: "lib.rs".into(),
-            path: "lib.rs".into(),
-            source: SourceFile::new(source.as_bytes().to_vec())?,
-        },
-        &mut NoFiles,
-        &Config::default(),
-    )
-    .and_then(resolve::analyze_expanded)
-    .map_err(|e| e.to_string())?;
-    let facts = sema::declarations::analyze(&report)
-        .and_then(|f| sema::bodies::analyze(&report, f))
-        .map_err(|e| e.to_string())?;
-    Ok((report, facts))
-}
 fn folder() -> Result<PathBuf, std::io::Error> {
     let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("../obj")

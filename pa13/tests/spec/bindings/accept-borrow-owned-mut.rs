@@ -1,0 +1,1 @@
+fn f(){let ref mut x=1u8;}

@@ -1,0 +1,1 @@
+fn id(x:&str)->&str{x}const F:fn(&str)->&str=id;

@@ -1,0 +1,1 @@
+#[derive(PartialEq)]enum E{A(&'static [u8;1]),B}const C:E=E::A(b"a");fn f(x:E){match x{C=>(),E::A(_)=>(),E::B=>()}}

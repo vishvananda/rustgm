@@ -1,0 +1,1 @@
+fn f(x:&[u8],yes:bool){if let[a,..]=x&&yes&&let[b,..]=x{let _=a;let _=b;}}

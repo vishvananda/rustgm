@@ -1,0 +1,1 @@
+ERROR: file 0: 23: derived Eq requires every field to implement Eq

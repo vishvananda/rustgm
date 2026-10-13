@@ -1,0 +1,1 @@
+const C:(u8,bool)=(7,true);fn main(){let C=(7u8,true);}

@@ -1,0 +1,1 @@
+const C:[&str;16]=["a";16];fn f(x:[&str;16]){match x{C=>(),_=>()}}

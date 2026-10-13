@@ -76,11 +76,11 @@ impl Checker<'_> {
         self.pattern_types.push((id, term));
         Ok(id)
     }
-    pub(super) fn pattern(&mut self, root: NodeId, term: TermId) -> Result<(), Error> {
+    pub(super) fn pattern(&mut self, root: NodeId, term: TermId, valid: bool) -> Result<(), Error> {
         let mark = self.range_work.len();
         let root = self.selected_pattern(root, term)?;
         if self.range_work.len() != mark || self.pattern_refutable {
-            self.pattern_requirements.push(root);
+            self.pattern_requirements.push((root, valid));
         }
         Ok(())
     }
@@ -217,7 +217,7 @@ impl Checker<'_> {
     fn pattern_index(&self, node: NodeId, value: usize) -> Result<u32, Error> {
         u32::try_from(value).map_err(|_| self.error(node, "pattern identity space exhausted"))
     }
-    fn pattern_region(
+    pub(super) fn body_region(
         &mut self,
         node: NodeId,
         origin: BodyRegionOrigin,
@@ -325,7 +325,7 @@ impl Checker<'_> {
         let (capture, local) = match capture_mode {
             Mode::Value => (Capture::Value, term),
             Mode::Reference { mutable } => {
-                let region = self.pattern_region(node, BodyRegionOrigin::PatternBorrow)?;
+                let region = self.body_region(node, BodyRegionOrigin::PatternBorrow)?;
                 let local = self
                     .infer
                     .construct(Constructor::Reference { mutable, region }, &[term])
@@ -369,7 +369,7 @@ impl Checker<'_> {
             ));
         }
         if self.head(node, term)?.is_none() {
-            let region = self.pattern_region(node, BodyRegionOrigin::PatternInput)?;
+            let region = self.body_region(node, BodyRegionOrigin::PatternInput)?;
             let referent = self.variable(node, Domain::Any)?;
             let reference = self
                 .infer

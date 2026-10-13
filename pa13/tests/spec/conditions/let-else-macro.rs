@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=failure(0);}}fn failure(x:i32)->i32{1/x}
+macro_rules! bind{($n:ident,$x:expr)=>{let (0,$n)=$x else{return 99;};}}fn f(x:(u8,u8))->u8{bind!(n,x);n}fn main(){check(f((0,7))==7&&f((1,7))==99);}

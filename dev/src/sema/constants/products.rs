@@ -1,6 +1,6 @@
 //! Demanded product values share flat storage; repeats retain one element.
-use super::{Declarations, Error, Kind, NodeKey, Operation, Queries, Query, Type, Value};
-use crate::{resolve::expansion::Report, sema::members::Selection, syntax::ast::List};
+use super::{Declarations, Error, Kind, NodeKey, Queries, Query, Type, Value};
+use crate::{resolve::expansion::Report, syntax::ast::List};
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub(in crate::sema) struct Id(u32);
@@ -88,8 +88,6 @@ impl Products {
 pub(super) enum Expression {
     Fields(List),
     Repeat { value: NodeKey, length: u64 },
-    Field { value: NodeKey, index: u64 },
-    Index { value: NodeKey, index: NodeKey },
 }
 impl Expression {
     pub(super) fn dependencies(
@@ -107,11 +105,7 @@ impl Expression {
                     }
                 }
             }
-            Self::Repeat { value, .. } | Self::Field { value, .. } => visit(value),
-            Self::Index { value, index } => {
-                visit(index);
-                visit(value);
-            }
+            Self::Repeat { value, .. } => visit(value),
         }
     }
 }
@@ -162,35 +156,6 @@ impl Queries<'_> {
                         length,
                     })
                 }
-                (
-                    Kind::Field { value, .. },
-                    Some(Operation::Field {
-                        field: Selection::Tuple(index),
-                    }),
-                ) => Some(Expression::Field {
-                    value: child(value),
-                    index: u64::from(index),
-                }),
-                (
-                    Kind::Field { value, .. },
-                    Some(Operation::Field {
-                        field: Selection::Nominal(field),
-                    }),
-                ) => {
-                    let index = self.typing.facts.members.ordinal(field).ok_or_else(|| {
-                        self.error(Query::Node(key), "missing constant field ordinal")
-                    })?;
-                    Some(Expression::Field {
-                        value: child(value),
-                        index: u64::from(index),
-                    })
-                }
-                (Kind::Index { value, index }, Some(Operation::Index { .. })) => {
-                    Some(Expression::Index {
-                        value: child(value),
-                        index: child(index),
-                    })
-                }
                 _ => None,
             },
         )
@@ -225,26 +190,6 @@ impl Queries<'_> {
                     .insert(Contents::Repeat { value, length })
                     .map_err(|e| self.error(query, e))
             }
-            Expression::Field { value, index } => self.product_field(key, value, index),
-            Expression::Index { value, index } => {
-                let index = self
-                    .value(Query::Node(index))?
-                    .integer()
-                    .map_err(|e| self.error(query, e))?;
-                let index = u64::try_from(index)
-                    .map_err(|_| self.error(query, "constant index overflow"))?;
-                self.product_field(key, value, index)
-            }
         }
-    }
-    fn product_field(&self, key: NodeKey, value: NodeKey, index: u64) -> Result<Value, Error> {
-        let Value::Product(id) = self.value(Query::Node(value))? else {
-            return Err(self.error(Query::Node(key), "constant projection requires a product"));
-        };
-        self.typing
-            .facts
-            .constant_products
-            .get(id, index)
-            .map_err(|e| self.error(Query::Node(key), e))
     }
 }

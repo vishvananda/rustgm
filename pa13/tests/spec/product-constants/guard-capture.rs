@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=failure(0);}}fn failure(x:i32)->i32{1/x}
+const C:([u8;2],bool)=([2,7],true);fn f(x:([u8;2],bool))->u8{match x{v@C if v.0[1]==7=>v.0[0],_=>9}}fn main(){check(f(([2,7],true))==2&&f(([2,7],false))==9);}

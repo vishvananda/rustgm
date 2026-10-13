@@ -1,0 +1,1 @@
+fn f(xs:&[u8]){let[tail@..]=xs;}

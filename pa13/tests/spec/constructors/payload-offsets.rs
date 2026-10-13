@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=failure(0);}}fn failure(x:i32)->i32{1/x}
+enum E{A(u8,u64),B(u64,u8),C}fn f(e:E)->u64{match e{E::A(a,b)=>a as u64+b,E::B(b,a)=>b-a as u64,E::C=>0}}fn main(){check(f(E::A(3,100))==103&&f(E::B(200,7))==193&&f(E::C)==0);}

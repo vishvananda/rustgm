@@ -1,0 +1,1 @@
+struct N;fn f(x:(N,N,bool)){let a=x.0;match x{(_,n,true)|(n,_,false)=>{let _=n;}}let _=a;}fn main(){}

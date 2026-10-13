@@ -1,0 +1,1 @@
+enum V{}fn main(){let x:V;match x{}}

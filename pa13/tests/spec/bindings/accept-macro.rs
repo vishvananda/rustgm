@@ -1,0 +1,1 @@
+macro_rules! bind{($p:pat,$e:expr)=>{let $p=$e;}}fn f(xs:&[u8;1]){bind!([x],xs);let _=x;}

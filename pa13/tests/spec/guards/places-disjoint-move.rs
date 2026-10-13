@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=failure(0);}}fn failure(x:i32)->i32{1/x}
+struct N(u8);fn entry()->u64{let x=(7u8,N(1));match x{(n,_) if {let v=x.1;let _=v;n==0}=>99,_=>x.0 as u64}}fn main(){check(entry()==7);}

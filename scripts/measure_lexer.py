@@ -125,6 +125,25 @@ def text_pattern_source(lines, mode):
     return "".join(declarations)
 
 
+def reference_pattern_source(lines, mode):
+    if mode == "chain":
+        declarations = ["type R0=u8;const C0:R0=7;\n"]
+        for depth in range(1, lines + 1):
+            declarations.append(f"type R{depth}=&'static R{depth - 1};const C{depth}:R{depth}=&C{depth - 1};\n")
+        declarations.append(f"fn measured(x:R{lines}){{match x{{C{lines}=>(),_=>()}}}}\n")
+        return "".join(declarations)
+    declarations = ["const ROOT:&(u8,bool)=&(7,true);\n"]
+    if mode == "places":
+        declarations.append("struct S{value:[u8;2]}static STORE:S=S{value:[2,7]};const POINTER:&S=&STORE;\n")
+    for i in range(lines):
+        name, ty = "ROOT", "&(u8,bool)"
+        if mode == "places":
+            name, ty = f"C{i}", "&u8"
+            declarations.append(f"const {name}:&u8=&POINTER.value[1];\n")
+        declarations.append(f"fn measured_{i}(x:{ty}){{match x{{{name}=>(),_=>()}}}}\n")
+    return "".join(declarations)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--baseline", type=Path)
@@ -148,18 +167,19 @@ def main():
     workloads.add_argument("--product-constant-input", choices=("shared", "unique", "chain"), help="exercise shared composite values and constant-pattern translation")
     workloads.add_argument("--nominal-constant-input", choices=("shared", "unique", "chain"), help="exercise derived equality and structural nominal constant patterns")
     workloads.add_argument("--text-pattern-input", choices=("shared", "unique", "bytes", "wide"), help="exercise exact text identity and mixed byte/string coverage")
+    workloads.add_argument("--reference-pattern-input", choices=("shared", "places", "chain"), help="exercise shared reference patterns, static projections or deep referent queries")
     parser.add_argument("--stage", choices=("tokens", "literals", "token-trees", "ast", "crate-ast", "names", "expanded", "expanded-crate", "types", "patterns", "layouts", "body-ir", "ownership", "lowir"), default="tokens")
     args = parser.parse_args()
-    if (args.slice_pattern_input or args.text_pattern_input) and args.stage != "patterns":
-        parser.error("slice/text workloads require --stage patterns until reference execution has loan proofs")
+    if (args.slice_pattern_input or args.text_pattern_input or args.reference_pattern_input) and args.stage != "patterns":
+        parser.error("slice/text/reference workloads require --stage patterns until reference execution has loan proofs")
     if (args.aggregate_input or args.discriminant_input or args.product_input or args.array_pattern_input or args.scalar_match_input or args.constructor_match_input or args.conditional_pattern_input or args.storage_width_input or args.constant_pattern_input or args.float_pattern_input or args.product_constant_input or args.nominal_constant_input) and args.stage != "lowir":
         parser.error("aggregate, discriminant and owned-pattern workloads require --stage lowir")
     if args.pattern_input and args.stage != "names":
         parser.error("pattern identity workloads require --stage names")
     if args.guard_input and args.stage not in ("names", "lowir"):
         parser.error("guard workloads require --stage names or --stage lowir")
-    if bool(args.borrowed_pattern_input or args.constructor_pattern_input or args.slice_pattern_input or args.text_pattern_input) != (args.stage == "patterns"):
-        parser.error("--stage patterns requires a borrowed, constructor, slice or text workload")
+    if bool(args.borrowed_pattern_input or args.constructor_pattern_input or args.slice_pattern_input or args.text_pattern_input or args.reference_pattern_input) != (args.stage == "patterns"):
+        parser.error("--stage patterns requires a borrowed, constructor, slice, text or reference workload")
     directory = ROOT / "obj/perf" / str(time.time_ns())
     directory.mkdir(parents=True)
     candidate = args.candidate.resolve()
@@ -191,6 +211,7 @@ def main():
                "product_constant_input": args.product_constant_input,
                "nominal_constant_input": args.nominal_constant_input,
                "text_pattern_input": args.text_pattern_input,
+               "reference_pattern_input": args.reference_pattern_input,
                "binary_sha256": {name: hashlib.sha256(p.read_bytes()).hexdigest() for name, p in binaries.items()},
                "samples": [], "full_output_sha256": {}}
     scales = (4000, 16000, 64000) if args.stage in ("token-trees", "ast", "crate-ast", "names", "expanded", "expanded-crate", "types", "body-ir", "ownership", "lowir") else (16000, 64000, 256000)
@@ -202,10 +223,14 @@ def main():
         scales = (128, 512, 2048) if args.slice_pattern_input == "sparse" else (1000, 4000, 16000)
     if args.text_pattern_input:
         scales = (128, 512, 2048) if args.text_pattern_input == "wide" else (1000, 4000, 16000)
+    if args.reference_pattern_input:
+        scales = (128, 512, 2048) if args.reference_pattern_input == "chain" else (1000, 4000, 16000)
     line = {"tokens": LINE, "literals": LITERAL_LINE, "token-trees": TREE_LINE, "ast": AST_LINE, "crate-ast": CRATE_LINE, "names": b"", "expanded": b"", "expanded-crate": b"", "types": b"", "patterns": b"", "layouts": b"", "body-ir": b"", "ownership": b"", "lowir": b""}[args.stage]
     for lines in scales:
         source = directory / f"input-{lines}.rs"
-        if args.text_pattern_input:
+        if args.reference_pattern_input:
+            source.write_text(reference_pattern_source(lines, args.reference_pattern_input))
+        elif args.text_pattern_input:
             source.write_text(text_pattern_source(lines, args.text_pattern_input))
         elif args.nominal_constant_input:
             source.write_text(nominal_constant_source(lines, args.nominal_constant_input))

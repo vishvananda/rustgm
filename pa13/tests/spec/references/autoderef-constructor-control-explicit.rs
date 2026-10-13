@@ -1,0 +1,1 @@
+struct S;fn f(x:&S){match x{&S=>(),_=>()}}

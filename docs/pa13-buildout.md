@@ -1,9 +1,10 @@
 # PA13 pattern implementation handoff
 
-PA12 is published at `ef3b278`. PA13 remains planned until its handout,
-implementation, independent fixtures and text oracles are complete. The active
-objective also includes PA14 and PA15; the identity work below is a prerequisite,
-not completion of pattern semantics.
+PA13 now has its implemented-draft handout and 803-case grading suite; see
+[the release validation](pa13-validation.md). This file preserves the historical
+implementation checkpoints in order, including their then-open boundaries and
+measurements. Earlier statements that PA13 remains planned describe those
+checkpoints. PA14 and PA15 remain in the active objective.
 
 ## Binding identity prerequisite
 
@@ -1998,3 +1999,105 @@ their top-level work receipts/binaries are in
 `obj/pa13-work/recovered-isolated/`. Historical receipts keep their original
 absolute paths; `archive-map.json` records the corresponding archive locations.
 The temporary checkout remains intact, but further development uses `~/rustgm`.
+
+## Shared reference constants and place queries
+
+PA13 inspection now accepts shared promoted references such as `const C:&u8=&7`,
+references to immutable statics, nested references, and array-to-slice initializer
+coercions. Selected constant patterns reuse the existing dereference, product,
+range and exact-slice forms. Reference IDs share subpatterns within a use while
+selected projections retain their own places. Ordinary node facts remain 80
+bytes. Only adjusted field/index nodes allocate sparse autodereference entries.
+
+Constant evaluation separates a place from a value read. A flat place record
+retains value, type, owned/shared/static access and packed alignment; an iterative
+query worklist handles borrowing, dereferencing and projections. Borrowing a
+non-Copy static does not move it. Reading one Copy field does not demand that the
+whole container be Copy. Reads through shared/static storage check Copy before
+using a cached definition value, including after another pattern has borrowed
+and cached that same static. Packed provenance survives projections, while an
+actual dereference uses its referent's own alignment. Immutable static origin
+and alignment are checked when a reference is demanded.
+
+Typed expression inspection also records shared borrows, dereferences, dynamic
+slice indices and automatic field/index dereferences. Function-body borrows get
+fresh `expression-borrow` regions; these are obligations, not proven lifetimes.
+The executable builder diagnoses pending region/loan proofs for these operations,
+including projected references, before producing LowIR. Mutable promotions,
+mutable static access, cyclic allocation storage and general CTFE remain later
+capabilities. This is no claim of native reference execution.
+
+Review closed the root-place validity issue recorded in the constructor coverage
+checkpoint above. Coverage now distinguishes an owned root from a potentially
+invalid referent, using selected dereference/projection facts. It cannot prune
+`E::A(Void)` from `match *x` when `x: &E`. Grouping preserves place identity;
+owned value results retain their separate ownership obligations. A directly
+empty root enum still permits an empty match, while a wildcard on a dereferenced
+empty place remains useful. Irrefutable binding requirements retain root validity
+through the deferred constant-pattern worklist, so a later constant use cannot
+change the answer. Seventeen independent controls cover roots, fields, indices,
+grouping, macros and deferred matches/bindings; separate typed assertions check
+arm usefulness for owned versus dereferenced empty values.
+
+The new maintainer suite declares 34 acceptances and 19 rejections, with an
+additional cross-file acceptance preserving pattern use-site provenance. Together
+with the 17 root-place controls these are 71 pinned-rustc acceptance/rejection
+comparisons. Typed invariants also check selected scalar ranks, shared reference
+subpatterns, static-cache read permissions and a 2,048-level reference chain.
+A cyclic static-pattern query diagnoses a bounded dependency cycle in RustGM.
+Pinned rustc crashes with SIGSEGV on that probe; this is retained as an
+infrastructure failure and is never classified as language-rejection parity.
+The cyclic control therefore runs RustGM only.
+
+The `--reference-pattern-input shared|places|chain` timing generators use the
+pattern stage. Shared reuses one promoted tuple reference across functions;
+places repeatedly borrows an indexed field through a shared pointer to a
+non-Copy immutable static; chain grows nested reference aliases/constants in one
+query. Small examples of all three were independently accepted by pinned rustc.
+The new workloads measure inspection, not runtime loans or reference codegen.
+
+The final frozen compiler is `obj/pa13-work/reference-final-candidate`, SHA-256
+`e730a7af794e7f8697f44ef194a50db75c311ecfd8553f8f351b320ff104793b`.
+The initial `reference-candidate` preceded the root-validity fix and is not the
+release candidate. Debug and release each pass 347 tests. All 1,695 earlier
+assignment cases pass; explicit reference regeneration updates twelve source
+receipts and changes no existing stdout, stderr or status oracle. Rustfmt,
+Clippy, the 216-file audit and harness/placement checks pass. The earlier
+independent run qualifies all active stages, PA11's 180 and PA12's 48 native
+comparisons, the backend bridge and all 24 imported fixtures/126 Reference files.
+The final candidate additionally recompiles every one of the 372 prior PA13
+native inputs to byte-identical LowIR; their actual executions remain in the
+linked prior receipts, with the documented Reference/rustc qualifications.
+
+Validation records: `reference-validation-summary.json`, `reference-final-*.log`,
+`reference-independent.log` and `reference-final-native-equality.json`, under
+`obj/pa13-work/`. The workload controls are in `reference-workload-checks/`.
+
+Seven sequential CPU-10 measurements retain 378 observations: each input has
+warmups, four A/A calibration samples and three paired ABBA blocks. The four
+existing workloads compare against `text-final-candidate`
+(`ae1b8ed10eef4f3f3ccad03a5d3a2a5be1eb05cb42fcfe8f9daa55a0247ccdcf`).
+The three new reference workloads use identical final-candidate A/A binaries.
+No local RustGM build or test overlapped the measurements. Frozen binary/input
+hashes, every raw observation, count output and complete rendered output were
+verified by `verify_reference_perf.py`; the index and results are
+`reference-perf-receipts.json` and `reference-perf-verified.json`.
+
+| Workload (largest scale) | Run under `obj/perf/` | A / B median ms | A / B median peak KiB |
+| --- | --- | --- | --- |
+| ordinary (64000) | 1791868504115063674 | 3607.12 / 3522.85 | 715220 / 715198 |
+| product-shared (16000) | 1791868603000285219 | 1446.50 / 1460.67 | 241342 / 241248 |
+| nominal-shared (16000) | 1791868641774038204 | 1459.90 / 1464.79 | 240700 / 239876 |
+| text-shared (16000) | 1791868680929460519 | 4058.66 / 4086.76 | 148022 / 148002 |
+| reference-shared (16000) | 1791868789277617682 | 545.00 / 547.10 | 85284 / 85196 |
+| reference-places (16000) | 1791868804034794487 | 699.51 / 711.06 | 124290 / 124286 |
+| reference-chain (2048) | 1791868822968850538 | 33.50 / 33.78 | 11344 / 11362 |
+
+The measured existing paths show no material change in median time or peak
+memory. These are noisy wall-time observations, not a precise speedup claim.
+Ordinary calibration spans 3547–3631 ms at its largest 64k-procedure
+input; text calibration spans 4108–4205 ms. Reference-chain candidate medians
+are 5.29/10.77/33.78 ms for 128/512/2048 levels; shared and static-place workloads
+vary function count rather than the depth of a single pattern. The separately
+checked flat-chain and shared-subpattern invariants establish the intended
+representation independently of these timings.

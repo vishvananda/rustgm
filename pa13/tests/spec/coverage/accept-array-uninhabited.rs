@@ -1,0 +1,1 @@
+enum Void{}fn f(x:[Void;1]){match x{}}

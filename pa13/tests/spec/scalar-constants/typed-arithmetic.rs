@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=failure(0);}}fn failure(x:i32)->i32{1/x}
+const N:i8=((-7i8/2)+(-7i8%2))<<1;const M:u8=(256u16+3) as u8;fn f(x:i8)->u8{match x{N=>1,_=>2}}fn g(x:u8)->u8{match x{M=>3,_=>4}}fn main(){check(f(-8)==1&&f(-7)==2&&g(3)==3&&g(0)==4);}

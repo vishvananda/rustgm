@@ -1,0 +1,1 @@
+fn f(x:&str){let "a"=x;}

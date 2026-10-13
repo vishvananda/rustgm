@@ -1,0 +1,1 @@
+fn f(x:(bool,u8)){match x{(true,_)|(false,0..=127)=>(),(false,128..)=>()}}

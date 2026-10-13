@@ -1,0 +1,2 @@
+ERROR: file 0: 61: non-exhaustive match; missing { $ = E::A }
+  in macro m at file 0: 92; defined at file 0: 34

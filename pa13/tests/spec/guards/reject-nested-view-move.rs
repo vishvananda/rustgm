@@ -1,0 +1,1 @@
+struct N(u8);fn take(_:N)->bool{true}fn main(){let x=N(7);match x{n if match n{m if true=>take(m),_=>false}=>(),_=>()}}

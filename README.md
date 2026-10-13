@@ -35,7 +35,10 @@ repository with pinned reference tools. It has not been built yet.
   text oracles and independent native execution through the pinned CPPGM backend.
 - PA12 adds concrete owned aggregates, discriminants, checked indexing and
   aggregate calls, with layout vectors and independent native execution checks.
-- PA13–PA38 have buildout briefs and Makefiles. Their suites and implementation
+- PA13 adds selected patterns, coverage, owned decisions, conditional bindings,
+  guard retries and constant patterns, with 803 text-oracle cases. Borrowed,
+  text and dynamic-slice inspections retain explicit pending execution proofs.
+- PA14–PA38 have buildout briefs and Makefiles. Their suites and implementation
   are not complete; invoking an unbuilt assignment fails explicitly.
 
 Read [ROADMAP.md](ROADMAP.md), [spec.md](spec.md),

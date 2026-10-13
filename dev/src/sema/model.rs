@@ -32,6 +32,9 @@ pub enum Cast {
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Operation {
+    Borrow,
+    Dereference,
+    IndexSlice,
     Construct {
         variant: super::members::VariantId,
     },
@@ -131,6 +134,7 @@ pub struct RegionEquality {
 }
 #[derive(Clone, Copy)]
 pub enum BodyRegionOrigin {
+    ExpressionBorrow,
     PatternBorrow,
     PatternInput,
 }
@@ -144,6 +148,8 @@ pub struct BodyRegion {
 pub struct Declarations {
     pub(super) constant_values: std::collections::HashMap<DefId, super::constants::Value>,
     pub(super) constant_products: super::constants::products::Products,
+    pub(super) constant_references: super::constants::references::References,
+    pub autoderefs: std::collections::HashMap<NodeKey, u32>,
     pub texts: super::text::Texts,
     pub patterns: super::patterns::Patterns,
     pub enum_casts: std::collections::HashSet<crate::types::ItemId>,
@@ -167,6 +173,8 @@ impl Declarations {
     pub(super) fn new(report: &Report) -> Result<Self, Error> {
         let mut value = Self {
             constant_values: std::collections::HashMap::new(),
+            constant_references: super::constants::references::References::default(),
+            autoderefs: std::collections::HashMap::new(),
             constant_products: super::constants::products::Products::default(),
             texts: super::text::Texts::default(),
             patterns: super::patterns::Patterns::default(),

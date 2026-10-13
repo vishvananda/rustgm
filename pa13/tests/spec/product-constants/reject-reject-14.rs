@@ -1,0 +1,1 @@
+static C:(u8,bool)=(7,true);fn main(){match (7u8,true){C=>(),_=>()}}

@@ -126,6 +126,18 @@ and PA11/PA12 acceptance checks, so hosted CI exercises them without a backend.
 the aggregate suite. Layout cases never count as native execution. See
 `docs/pa12-validation.md` for the profile and retained evidence.
 
+PA13 has 803 fixtures: 538 LowIR cases and 265 selected-pattern inspections.
+All have pinned-rustc acceptance checks; thirteen explicit qualifications cover
+pending reference proofs and the Reference's non-reference-constant autoderef
+rule. Native qualification runs 364 programs, of which 348 have matching clean
+execution. Eight signed-zero pairs (16 programs) deliberately assert the
+different Reference/rustc guard-retry counts. `native.rustc_outcome` declares the
+independent pass/panic outcome, and a nonempty `native.reason` is required when
+it differs from `native.outcome`. Both programs still compile and execute;
+signals, exit 86, timeouts and unqualified aborts still fail. Receipts and summaries
+report these runtime differences explicitly. No inspection case counts as native
+execution. See `docs/pa13-validation.md`.
+
 ## Placement and provenance
 
 Every `.rs` fixture under an active assignment's tests directory must be in its

@@ -1,0 +1,1 @@
+struct S;const C:[S;0]=[];fn main(){match []{C=>()}}

@@ -1,0 +1,1 @@
+pub const S:&str="a";pub const B:&[u8;1]=b"a";

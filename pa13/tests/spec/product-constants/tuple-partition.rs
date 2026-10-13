@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=failure(0);}}fn failure(x:i32)->i32{1/x}
+const A:(bool,bool)=(false,false);const B:(bool,bool)=(false,true);const C:(bool,bool)=(true,false);const D:(bool,bool)=(true,true);fn f(x:(bool,bool))->u8{match x{A|D=>1,B|C=>2}}fn main(){check(f((false,false))==1&&f((true,true))==1&&f((true,false))==2&&f((false,true))==2);}

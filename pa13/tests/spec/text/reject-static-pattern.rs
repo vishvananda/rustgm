@@ -1,0 +1,1 @@
+static C:&str="a";fn f(x:&str){match x{C=>(),_=>()}}

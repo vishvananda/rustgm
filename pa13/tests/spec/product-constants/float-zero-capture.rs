@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=failure(0);}}fn failure(x:i32)->i32{1/x}
+const C:(f64,)=(0.0,);fn f(x:(f64,))->bool{match x{v@C=>1.0/v.0<0.0,_=>false}}fn main(){check(f((-0.0,))&&!f((0.0,))&&!f((1.0,)));}

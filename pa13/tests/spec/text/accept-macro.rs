@@ -1,0 +1,1 @@
+macro_rules! m{($x:expr,$p:pat)=>{match $x{$p=>(),_=>()}}}fn f(x:&str){m!(x,"a");}

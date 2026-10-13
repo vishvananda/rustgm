@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=failure(0);}}fn failure(x:i32)->i32{1/x}
+mod values;use values::C as D;fn f(x:values::S)->u8{match x{D=>1,_=>2}}fn main(){check(f(values::new(7))==1&&f(values::new(0))==2);}

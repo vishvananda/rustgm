@@ -1,0 +1,1 @@
+enum E{A(bool),B{v:bool},C}fn f(x:E){match x{E::A(true)|E::B{v:true}=>(),E::A(false)|E::B{v:false}=>(),E::C=>()}}

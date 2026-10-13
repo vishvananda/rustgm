@@ -1,0 +1,1 @@
+fn f(x:&mut[bool]){if let[a,..]=x{let _=a;}}

@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=failure(0);}}fn failure(x:i32)->i32{1/x}
+struct N(u8);fn f(c:bool)->u8{let xs=[N(2),N(3),N(5)];if c{let[a,..]=xs;let _=a;}let[_,tail@..]=xs;tail[0].0+tail[1].0}fn main(){check(f(true)==8&&f(false)==8);}

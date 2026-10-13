@@ -1,0 +1,1 @@
+fn entry()->u64{let mut x=(7u8,1u8);match x{_ if {x=(8,2);false}=>99,(_,0)=>0,_=>x.1 as u64}}fn main(){}

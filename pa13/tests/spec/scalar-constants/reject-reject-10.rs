@@ -1,0 +1,1 @@
+static N:u8=7;fn main(){match 7u8{N=>(),_=>()}}

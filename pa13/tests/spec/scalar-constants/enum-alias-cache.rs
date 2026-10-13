@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=failure(0);}}fn failure(x:i32)->i32{1/x}
+#[repr(i8)]enum E{A=-2,B}const V:E=E::A;const N:u128=V as u128;fn f(x:u128)->u8{match x{N=>1,_=>2}}fn main(){check(f(340282366920938463463374607431768211454)==1&&f(254)==2);}

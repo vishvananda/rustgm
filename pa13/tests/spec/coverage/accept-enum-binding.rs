@@ -1,0 +1,1 @@
+enum E{A(u8),B(u8)}fn f(x:E){let(E::A(n)|E::B(n))=x;let _=n;}

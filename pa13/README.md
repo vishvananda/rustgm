@@ -1,6 +1,6 @@
 # RustGM Programming Assignment 13: Pattern semantics
 
-Status: **planned**. This is a buildout brief, not a released grading contract.
+Status: **implemented-draft**. This handout and its manifest define the grading contract.
 Prerequisite: PA12. The common source profile is Rust 1.98.0, initially edition
 2024 and Linux x86-64. Later edition support is explicit at PA36.
 
@@ -15,15 +15,15 @@ Do not introduce rendered text as transport between compiler phases.
 
 ## Tool surface
 
-Extend `dev/rustgm --emit-lowir -o OUTPUT SOURCE`. Earlier stage views remain
-available. Freeze the exact text vocabulary, deterministic ordering, error
-contract and example outputs before declaring this assignment active.
+`dev/rustgm --emit-lowir -o OUTPUT SOURCE` compiles the owned execution profile.
+`--emit-patterns` inspects selected patterns and their pending reference proofs.
+The manifest chooses one of these modes for every case; earlier views remain
+available. LowIR follows PA11/PA12, and the pattern vocabulary is specified below.
 
-## Maintainer inspection checkpoint
+## Semantic and execution profile
 
-The in-progress implementation also accepts `--emit-patterns` and
-`--count-patterns`. This is a sparse selected-pattern view, not a completed PA13
-grading contract or a lifetime/loan validity claim. Simple standalone value
+`--emit-patterns` and `--count-patterns` publish a sparse selected-pattern view.
+They do not claim lifetime or loan validity. Simple standalone value
 bindings and wildcards use the earlier direct path and have no selected root.
 The view covers irrefutable owned products/arrays, explicit reference patterns,
 edition-2024 binding modes, irrefutable borrowed slice rests, and owned match
@@ -40,7 +40,8 @@ constants translate into ordinary product/scalar patterns and execute on owned
 inputs. Struct and enum constants with derived `PartialEq` also translate and
 execute, including nested values, struct updates and field projections.
 String and byte-string literals and named constants support typed pattern
-selection and coverage. General reference constants remain unfinished. Reference
+selection and coverage. Shared reference constants support promoted values,
+immutable statics, nested references and typed field/index projections. Reference
 and dynamic-slice execution still require the later region and loan proofs.
 
 Named constants use resolved declaration identities and their canonical types;
@@ -71,9 +72,23 @@ reference obligations use a bounded iterative fixed point and cache complete
 positive and negative results. Constant calls validate their callee expression,
 and struct updates validate their base even if every field is overridden.
 
-A static cannot be named directly as a constant pattern. General CTFE,
-promoted reference values and expression-position constant execution retain
-their explicit later-stage boundaries.
+A static cannot be named directly as a constant pattern. Borrowing a static
+does not move its value: a shared constant reference may name non-Copy static
+storage, and a Copy field may be read independently. Reading through a shared
+reference still requires Copy. This check applies even when the containing
+constant/static value is already cached. Shared borrows preserve packed-field
+alignment and static provenance; an unaligned reference is rejected. An actual
+dereference selects the referent's alignment rather than its pointer's container.
+Mutable promoted references, mutable static access, cyclic allocation graphs,
+general CTFE and expression-position constant execution retain their later-stage
+boundaries. Constant references do not authorize runtime reference operations.
+
+Place queries retain values and access provenance in flat arenas. They follow
+selected field identities and sparse automatic-dereference counts, without
+moving or materializing the containing product. Borrow, dereference and dynamic
+slice indexing publish typed operations; `--emit-types` spells them `borrow`,
+`deref` and `index length=dynamic`. An adjusted field/index additionally renders
+`autoderef FILE:NODE count=N`. Ordinary unadjusted nodes allocate no entry.
 
 Text identity uses exact decoded bytes, including Unicode, NUL and empty values.
 Raw and escaped literals with equal bytes select equal patterns; composed and
@@ -151,7 +166,15 @@ domains additionally distinguish valid values from possibly invalid referents.
 `uninhabited` is a contextual coverage fact, not a physical layout property or
 proof that a place was initialized. Private fields cannot expose an empty-type
 proof to an unrelated module, and references to empty types remain possible
-coverage inputs. Constructor decisions retain non-moving `is-variant VARIANT PLACE` body values
+coverage inputs. An explicit dereference or automatic field/index dereference
+also keeps its root potentially invalid: a variant with an empty field must not
+disappear from that constructor domain. Grouping preserves place validity;
+a value-producing expression establishes an owned result whose reads still need
+independent ownership proofs. A directly empty root enum permits an empty match
+even through a reference, while a wildcard on that potentially invalid place
+remains useful. Irrefutable bindings retain the same input-validity context,
+including when named constants defer their coverage checks.
+Constructor decisions retain non-moving `is-variant VARIANT PLACE` body values
 and selected field identities.
 Variant tests require an initialized owned input, including its tracked fields;
 a surviving physical tag does not permit testing a partially moved enum.
@@ -252,7 +275,7 @@ parent projection. Proof-only tested-place metadata never forms addresses for
 inactive enum variants. Irrefutable and conditional binding execution can combine
 constructors and scalar intervals.
 
-`region-var region:N body=FILE:NODE source=FILE:NODE origin=pattern-borrow|pattern-input
+`region-var region:N body=FILE:NODE source=FILE:NODE origin=pattern-borrow|pattern-input|expression-borrow
 pending` gives existential region provenance. IDs are globally allocated from
 one and do not alias `static` or signature `bound:DEPTH:INDEX` regions. Pending
 `region-equal` records use PA9's vocabulary; neither these equalities nor a
@@ -264,23 +287,34 @@ matches=N arms=N coverage-work=N region-vars=N region-equalities=N conditions=N
 chains=N`.
 `coverage-work` sums match queries; it does not count ordinary binding checks.
 Count mode emits that same line without `eof `, after the
-same checks. Diagnostics return 1 and emit no partial pattern view. No PA13
-manifest or generated sidecars are published until the whole assignment passes.
+same checks. Diagnostics return 1 and emit no partial pattern view.
 
-## Tests to develop with the reference
+## Tests and completion
 
-guards; or-patterns; slices; unreachable arms; missing constructors.
+`make test-pa13` compares all 803 manifest cases against committed stdout,
+stderr and exit-status sidecars. This includes 538 LowIR cases (364 executable
+programs and 174 rejections) and 265 pattern-inspection cases (170 acceptances
+and 95 rejections). Every source and auxiliary module is explicitly discovered.
 
-Add spec fixtures, positive/negative controls and cross-feature regressions in
-the earliest owning assignment. Use the course reference for text oracles and
-pinned rustc for independent language checks. From PA11, execute emitted LowIR
-with the configured CPPGM backend. Do not require new future-stage behavior
-implicitly. An empty suite or a not-implemented result cannot pass.
+`make test-rustc` includes all 803 independent acceptance checks. Thirteen
+manifest entries explicitly qualify phase or Reference/rustc differences:
+five valid reference programs remain gated from LowIR, two inspection programs
+still need lifetime/loan rejection, and six non-reference constant patterns
+follow the Reference's automatic-dereference rule. Their explicit-reference
+controls are also graded.
 
-## Completion and review
+`make test-native-pa13` checks the 538 LowIR cases with pinned rustc and the
+qualified CPPGM backend. There are 348 programs with matching clean execution
+and eight signed-zero pairs (16 programs) with deliberately opposite pass/panic
+outcomes. Each pair asserts the Reference's count of two and rustc's count of
+one separately; every runtime difference has a manifest reason. A signal,
+timeout or other infrastructure failure never substitutes for an expected panic.
+Borrowed/text/slice inspection cases do not count as executable comparisons.
 
-Publish the semantic and lowering boundary, tests/manifest.json and reference
-sidecars together. Run all active earlier suites, lint, file/architecture audits,
-and affected scaling measurements. Record independent checks before setting
-status active in `assignments.json` and adding the stage to the root report.
-Student export is a later operation: this repository owns the full solution.
+The maintainer's invariant tests additionally check sparse arenas, pattern
+sharing, bounded coverage, deterministic witnesses, deep flat worklists,
+projection identity and atomic failure. `make lint audit-rust test-harness`
+checks safe Rust, Clippy, file/architecture constraints and fixture discovery.
+See [the validation record](../docs/pa13-validation.md) for the profile,
+independent evidence and measured performance. PA14–PA16 still own the remaining
+move/lifetime/loan contracts; no pending user-reference proof is erased here.

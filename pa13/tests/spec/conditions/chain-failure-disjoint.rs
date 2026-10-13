@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=failure(0);}}fn failure(x:i32)->i32{1/x}
+struct N(u8);fn f(x:(N,N,bool),ok:bool)->u8{if let (n,_,true)=x&&ok{n.0}else{x.1.0}}fn main(){check(f((N(3),N(7),true),false)==7&&f((N(3),N(7),false),true)==7&&f((N(3),N(7),true),true)==3);}

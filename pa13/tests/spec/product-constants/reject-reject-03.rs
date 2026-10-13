@@ -1,0 +1,1 @@
+const C:[u8;2]=[2,7];fn main(){match [2u8,7]{C if true=>()}}

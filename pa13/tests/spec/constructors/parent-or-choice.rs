@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=failure(0);}}fn failure(x:i32)->i32{1/x}
+fn f(x:((u8,u8),u8))->u8{match x{((0,n)|(n,0),1)|((n,0),2)=>n,_=>99}}fn main(){check(f(((0,7),1))==7&&f(((8,0),1))==8&&f(((9,0),2))==9&&f(((0,7),2))==99);}

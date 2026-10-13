@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=failure(0);}}fn failure(x:i32)->i32{1/x}
+struct N{n:u8}fn f(x:(N,N,bool))->u8{match x{(n,_,true)|(_,n,false)=>n.n}}fn main(){check(f((N{n:3},N{n:8},true))==3&&f((N{n:4},N{n:9},false))==9);}

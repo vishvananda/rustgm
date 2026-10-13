@@ -1,0 +1,1 @@
+fn f()->!{if let _=0u8&&loop{} {};}fn main(){}

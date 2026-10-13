@@ -1,0 +1,1 @@
+fn f(x:&str){match x{_ if true=>()}}

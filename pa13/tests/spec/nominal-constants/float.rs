@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=failure(0);}}fn failure(x:i32)->i32{1/x}
+#[derive(PartialEq)]struct S(f64);const C:S=S(0.0);fn f(x:S)->bool{match x{v@C=>1.0/v.0<0.0,_=>false}}fn main(){check(f(S(-0.0))&&!f(S(0.0))&&!f(S(1.0))&&!f(S(0.0/0.0)));}

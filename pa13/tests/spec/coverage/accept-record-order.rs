@@ -1,0 +1,1 @@
+struct S{a:bool,b:bool}fn f(x:S){match x{S{b:true,a:_}=>(),S{a:true,b:false}=>(),S{b:false,a:false}=>()}}

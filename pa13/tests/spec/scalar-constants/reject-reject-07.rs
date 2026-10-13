@@ -1,0 +1,1 @@
+const N:bool=false;fn main(){match true{N..=true=>(),_=>()}}

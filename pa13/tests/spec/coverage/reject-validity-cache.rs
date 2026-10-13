@@ -1,0 +1,1 @@
+enum Void{}enum E{A(Void),B}fn owned(x:E){match x{E::B=>()}}fn borrowed(x:&E){match x{E::B=>()}}

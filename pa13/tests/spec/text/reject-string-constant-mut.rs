@@ -1,0 +1,1 @@
+const C:&str="a";fn f(x:&mut str){match x{C=>(),_=>()}}

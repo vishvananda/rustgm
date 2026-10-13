@@ -1,0 +1,1 @@
+enum Void{}enum E{A(Void),B}fn f(x:E){match x{E::B=>()}}

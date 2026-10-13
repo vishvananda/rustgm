@@ -1,0 +1,1 @@
+#[repr(packed(2))]struct S(u8,u16);const C:&u16=&S(2,7).1;fn f(x:&u16){match x{C=>(),_=>()}}

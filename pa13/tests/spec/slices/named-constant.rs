@@ -1,0 +1,1 @@
+const YES:bool=true;fn f(x:&[bool]){match x{[]=>(),[..,YES]=>(),[..,false]=>()}}

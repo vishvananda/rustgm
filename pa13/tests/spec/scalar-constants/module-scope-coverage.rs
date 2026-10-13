@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=failure(0);}}fn failure(x:i32)->i32{1/x}
+mod a{enum Void{}pub struct S{v:Void}const N:u8=0;pub fn f(x:S,n:u8){match n{N=>(),_=>()}match x{}}}mod b{const N:u8=1;pub fn f(x:u8)->u8{match x{N=>7,_=>9}}}fn main(){check(b::f(1)==7);}

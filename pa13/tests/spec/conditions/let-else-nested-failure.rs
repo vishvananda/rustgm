@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=failure(0);}}fn failure(x:i32)->i32{1/x}
+fn f(x:u8,y:u8)->u8{let n@0..=9=x else{let m@0..=9=y else{return 99;};return m+10;};n}fn main(){check(f(3,5)==3&&f(20,5)==15&&f(20,20)==99);}

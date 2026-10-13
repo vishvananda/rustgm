@@ -1,0 +1,1 @@
+const N:i8=-128/-1;fn main(){match 7i8{N=>(),_=>()}}

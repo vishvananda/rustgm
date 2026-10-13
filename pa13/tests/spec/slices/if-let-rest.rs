@@ -1,0 +1,1 @@
+fn f(x:&[bool]){if let[a,rest@..,z]=x{let _=a;let _=z;let _=rest;}}

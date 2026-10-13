@@ -1,0 +1,1 @@
+fn f(xs:(u8,u8)){let ref whole@(a,b)=xs;}

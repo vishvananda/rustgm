@@ -1,0 +1,1 @@
+fn main(){let _=if let n=1u8{n}else{false};}

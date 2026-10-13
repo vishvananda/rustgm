@@ -1,0 +1,1 @@
+struct N;enum E{A(N),B}fn f(e:E){match e{E::A(n)=>{let _=n;},E::B=>()};match e{E::A(_)=>(),E::B=>()}}fn main(){}

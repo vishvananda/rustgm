@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=failure(0);}}fn failure(x:i32)->i32{1/x}
+const TOP:u128=!0u128;fn f(x:u128)->u8{match x{TOP=>7,_=>9}}fn main(){check(f(340282366920938463463374607431768211455)==7&&f(0)==9);}

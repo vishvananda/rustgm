@@ -14,6 +14,7 @@ struct Expansion<'a> {
     source: NodeKey,
     work: Vec<(PatternId, Value)>,
     products: HashMap<(products::Id, TypeId), PatternId>,
+    references: HashMap<(super::references::Id, TypeId), PatternId>,
     texts: HashMap<(crate::sema::text::Id, TypeId), PatternId>,
     remaining: u64,
 }
@@ -33,6 +34,7 @@ pub(super) fn expand(
         source,
         work: vec![(root, value)],
         products: HashMap::new(),
+        references: HashMap::new(),
         texts: HashMap::new(),
         remaining: 1_000_000,
     };
@@ -79,6 +81,22 @@ impl Expansion<'_> {
                         pattern,
                     }
                 }
+                (
+                    Some(Type::Reference {
+                        mutable: false,
+                        referent,
+                        ..
+                    }),
+                    Value::Reference(_),
+                ) => {
+                    let value = self.facts.constant_references.get(value)?.value;
+                    let pattern = self.select(referent, value)?;
+                    Kind::Dereference {
+                        mutable: false,
+                        implicit: false,
+                        pattern,
+                    }
+                }
                 (Some(Type::Primitive(Primitive::Str)), Value::Text(text)) => Kind::Text(text),
                 (Some(Type::Array { .. } | Type::Slice(_)), Value::Bytes(text)) => {
                     self.bytes(ty, text)?
@@ -98,7 +116,7 @@ impl Expansion<'_> {
                     Kind::Range(range)
                 }
                 (
-                    Some(Type::Tuple(_) | Type::Array { .. } | Type::Adt(_)),
+                    Some(Type::Tuple(_) | Type::Array { .. } | Type::Slice(_) | Type::Adt(_)),
                     Value::Product(product),
                 ) => self.product(ty, product)?,
                 (Some(Type::Adt(_)), Value::Variant(variant)) => {
@@ -129,6 +147,7 @@ impl Expansion<'_> {
                 .ok_or("missing constant tuple types")?
                 .len() as u64,
             Some(Type::Array { length, .. }) => length,
+            Some(Type::Slice(_)) => length,
             Some(Type::Adt(_)) => self.nominal(
                 ty,
                 variant.ok_or("constant product lacks a selected constructor")?,
@@ -156,10 +175,18 @@ impl Expansion<'_> {
         self.work[mark..].reverse();
         let end = u32::try_from(self.facts.patterns.fields.len())
             .map_err(|_| "too many constant pattern fields")?;
-        Ok(Kind::Product {
-            variant,
-            fields: Fields { start, end },
-        })
+        let fields = Fields { start, end };
+        Ok(
+            if matches!(self.facts.types.kind(ty), Some(Type::Slice(_))) {
+                Kind::Slice {
+                    minimum: length,
+                    exact: true,
+                    fields,
+                }
+            } else {
+                Kind::Product { variant, fields }
+            },
+        )
     }
     fn bytes(&mut self, ty: TypeId, text: crate::sema::text::Id) -> Result<Kind, &'static str> {
         let bytes = self.facts.texts.get(text)?.len();
@@ -229,6 +256,11 @@ impl Expansion<'_> {
         Ok(u64::from(member.end - member.start))
     }
     fn select(&mut self, ty: TypeId, value: Value) -> Result<PatternId, &'static str> {
+        if let Value::Reference(reference) = value
+            && let Some(&id) = self.references.get(&(reference, ty))
+        {
+            return Ok(id);
+        }
         if let Value::Product(product) = value
             && let Some(&id) = self.products.get(&(product, ty))
         {
@@ -241,6 +273,9 @@ impl Expansion<'_> {
         }
         let id = self.facts.patterns.reserve(self.source)?;
         self.facts.patterns.nodes[id.0 as usize].ty = Some(ty);
+        if let Value::Reference(reference) = value {
+            self.references.insert((reference, ty), id);
+        }
         if let Value::Text(text) | Value::Bytes(text) = value {
             self.texts.insert((text, ty), id);
         }
@@ -268,6 +303,7 @@ fn child(
                 .ok_or("missing constant tuple field type")?;
             Ok((ty, Projection::Field(Selection::Tuple(index))))
         }
+        Some(Type::Slice(element)) => Ok((element, Projection::Index(index))),
         Some(Type::Array { element, length }) if index < length => {
             Ok((element, Projection::Index(index)))
         }

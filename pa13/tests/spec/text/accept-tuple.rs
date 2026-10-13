@@ -1,0 +1,1 @@
+const C:(&str,bool)=("a",true);fn f(x:(&str,bool)){match x{C=>(),("a",false)=>(),_=>()}}

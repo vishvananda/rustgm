@@ -1,0 +1,1 @@
+struct N;fn main(){let y=N;match 1u8{1|2 if let n=y&&true=>{let _=n;},_=>()}}

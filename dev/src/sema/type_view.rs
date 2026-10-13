@@ -93,6 +93,7 @@ pub fn regions(equalities: &[RegionEquality], out: &mut impl Write) -> io::Resul
 pub fn body_regions(regions: &[BodyRegion], out: &mut impl Write) -> io::Result<()> {
     for (ordinal, variable) in regions.iter().enumerate() {
         let origin = match variable.origin {
+            BodyRegionOrigin::ExpressionBorrow => "expression-borrow",
             BodyRegionOrigin::PatternBorrow => "pattern-borrow",
             BodyRegionOrigin::PatternInput => "pattern-input",
         };
@@ -138,6 +139,13 @@ fn nodes(report: &Report, facts: &Declarations, out: &mut impl Write) -> io::Res
                 write!(out, "operation {file}:{node} ")?;
                 operation(value, out)?;
                 writeln!(out)?;
+            }
+            let key = crate::resolve::unit::NodeKey {
+                file: crate::resolve::unit::FileId(u32::try_from(file).map_err(io::Error::other)?),
+                node: crate::syntax::ast::NodeId(u32::try_from(node).map_err(io::Error::other)?),
+            };
+            if let Some(count) = facts.autoderefs.get(&key) {
+                writeln!(out, "autoderef {file}:{node} count={count}")?;
             }
             if let Some(value) = fact.adjustment {
                 let kind = match value.kind {
@@ -275,6 +283,9 @@ fn operation(value: Operation, out: &mut impl Write) -> io::Result<()> {
     match value {
         Operation::Construct { variant } => write!(out, "construct variant={}", variant.0),
         Operation::FieldInit { field } => write!(out, "field-init field={}", field.0),
+        Operation::Borrow => write!(out, "borrow"),
+        Operation::Dereference => write!(out, "deref"),
+        Operation::IndexSlice => write!(out, "index length=dynamic"),
         Operation::Field { field } => write!(out, "field {field:?}"),
         Operation::Index { length } => write!(out, "index length={length}"),
         Operation::AssignPlace {

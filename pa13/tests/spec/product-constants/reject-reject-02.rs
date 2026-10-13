@@ -1,0 +1,1 @@
+const C:(bool,bool)=(true,true);fn main(){match (true,true){C=>()}}

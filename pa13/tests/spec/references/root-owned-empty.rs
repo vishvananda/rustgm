@@ -1,0 +1,1 @@
+enum V{}enum E{A(V),B}struct S(E);fn f(x:V){match x{_=>()}}

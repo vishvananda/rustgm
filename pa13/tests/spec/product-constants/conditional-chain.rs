@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=failure(0);}}fn failure(x:i32)->i32{1/x}
+const C:(u8,bool)=(7,true);fn f(x:(u8,bool))->u8{if let n@C=x&&n.1{n.0}else{0}}fn main(){check(f((7,true))==7&&f((7,false))==0);}

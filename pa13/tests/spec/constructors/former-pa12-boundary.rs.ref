@@ -1,0 +1,39 @@
+function @rg.20() -> void {
+  slot $s0 : i32
+  slot $s1 : i32
+  slot $s2 : obj<8x8>
+  block ^b0:
+    store i64 0, $s2
+    %t0 = load i64 $s2
+    %t1 = cmp eq i64 %t0, 0
+    branch %t1, ^b4, ^b3
+  block ^b3:
+    jump ^b5
+  block ^b5:
+    %t2 = load i64 $s2
+    %t3 = cmp eq i64 %t2, 1
+    branch %t3, ^b8, ^b7
+  block ^b7:
+    jump ^b9
+  block ^b9:
+    unreachable
+  block ^b8:
+    jump ^b6
+  block ^b6:
+    store i32 2, $s0
+    jump ^b1
+  block ^b4:
+    jump ^b2
+  block ^b2:
+    store i32 1, $s0
+    jump ^b1
+  block ^b1:
+    %t4 = load i32 $s0
+    store i32 %t4, $s1
+    return void
+}
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.20()
+    return i64 0
+}

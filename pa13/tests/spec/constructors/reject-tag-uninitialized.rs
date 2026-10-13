@@ -1,0 +1,1 @@
+enum E{A(u8),B}fn main(){let e:E;match e{E::A(_)=>(),E::B=>()}}

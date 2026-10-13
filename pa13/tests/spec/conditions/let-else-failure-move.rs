@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=failure(0);}}fn failure(x:i32)->i32{1/x}
+struct N{n:u8}enum E{A(N),B(N)}fn other(x:E)->u8{match x{E::A(n)|E::B(n)=>n.n+1}}fn f(x:E)->u8{let E::A(n)=x else{return other(x);};n.n}fn main(){check(f(E::A(N{n:7}))==7&&f(E::B(N{n:8}))==9);}

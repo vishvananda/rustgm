@@ -1,0 +1,1 @@
+const N:u8=7;fn f(N:u8){}fn main(){}

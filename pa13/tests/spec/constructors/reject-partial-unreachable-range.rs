@@ -1,0 +1,1 @@
+struct N;fn main(){let x=(N,N,3u8);let a=x.0;match x{(_,n,0..=255)|(n,_,_)=>{let _=n;}}let _=a;}

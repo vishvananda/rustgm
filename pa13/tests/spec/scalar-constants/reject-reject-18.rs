@@ -1,0 +1,1 @@
+const N:u8=7;fn main(){let x:u8;match x{N=>(),_=>()}}

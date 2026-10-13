@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=failure(0);}}fn failure(x:i32)->i32{1/x}
+struct S{a:(u8,u8),b:(u8,u8)}fn entry()->u64{let mut log=0u64;match (S{a:(1,2),b:(3,4)}){S{b:(b,_)|(_,b),a:(a,_)|(_,a)} if {log=log*100+(a*10+b) as u64;false}=>(),_=>()}log}fn main(){check(entry()==13231424);}

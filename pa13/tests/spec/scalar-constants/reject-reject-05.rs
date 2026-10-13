@@ -1,0 +1,1 @@
+const LO:u8=7;const HI:u8=3;fn main(){match 0u8{LO..=HI=>(),_=>()}}

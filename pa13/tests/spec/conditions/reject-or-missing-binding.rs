@@ -1,0 +1,1 @@
+fn main(){if let (0,n)|(1,_ )=(1u8,2u8){let _=n;}}

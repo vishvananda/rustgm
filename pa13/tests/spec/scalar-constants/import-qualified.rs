@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=failure(0);}}fn failure(x:i32)->i32{1/x}
+mod m{pub const A:u8=3;pub const B:u8=7;}use m::A as LO;fn f(x:u8)->u8{match x{LO..=m::B=>1,_=>2}}fn main(){check(f(3)==1&&f(7)==1&&f(8)==2);}

@@ -1,0 +1,1 @@
+fn f(x:&str){if let "a"=x{}let "b"=x else{return;};}

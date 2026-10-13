@@ -1,0 +1,1 @@
+enum E{A}fn main(){let x:u8;match E::A{E::A=>(),_=>{let _=x+1;}}}

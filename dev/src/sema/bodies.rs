@@ -5,6 +5,7 @@ mod divergence;
 mod matches;
 mod pattern_constants;
 mod patterns;
+mod references;
 mod text;
 use super::{
     declarations,
@@ -122,7 +123,7 @@ pub(super) struct Checker<'a> {
     pattern_constants: bool,
     coverage_cache: super::patterns::coverage::Cache,
     range_work: Vec<matches::RangeWork>,
-    pattern_requirements: Vec<super::patterns::PatternId>,
+    pattern_requirements: Vec<(super::patterns::PatternId, bool)>,
     matches: Vec<u32>,
     work: Vec<Work>,
     children: Vec<NodeId>,
@@ -301,7 +302,7 @@ impl Checker<'_> {
                 .and_then(|f| f.ty)
                 .ok_or_else(|| self.error(node, "missing parameter annotation"))?;
             let term = self.known(node, ty)?;
-            self.binding(pattern, term)?;
+            self.binding(pattern, term, None)?;
             self.save(node, term);
         }
         self.body(body.node)
@@ -336,7 +337,7 @@ impl Checker<'_> {
                     if let Some(value) = value {
                         self.coerce(value, term)?;
                     }
-                    self.binding(pattern, term)?;
+                    self.binding(pattern, term, value)?;
                 }
                 Work::Enter(node, expected) if self.active(node) => self.enter(node, expected)?,
                 Work::Enter(..) => {}
@@ -462,9 +463,18 @@ impl Checker<'_> {
         self.breaks.clear();
         Ok(())
     }
-    fn binding(&mut self, mut node: NodeId, term: TermId) -> Result<(), Error> {
+    fn binding(
+        &mut self,
+        mut node: NodeId,
+        term: TermId,
+        input: Option<NodeId>,
+    ) -> Result<(), Error> {
         if !self.simple_pattern(node) {
-            return self.pattern(node, term);
+            let valid = input
+                .map(|input| self.pattern_input_validity(input))
+                .transpose()?
+                .unwrap_or(true);
+            return self.pattern(node, term, valid);
         }
         while let Kind::Attributed { value, .. } | Kind::Group(value) = self.kind(node) {
             self.save(node, term);
@@ -659,6 +669,12 @@ impl Checker<'_> {
                 self.work.push(Work::Enter(value, None));
                 return Ok(());
             }
+            Kind::Unary {
+                op: Unary::Borrow,
+                operand,
+            } => {
+                return self.enter_borrow(node, operand, expected);
+            }
             Kind::Tuple(elements) | Kind::Array(elements) => {
                 return self.enter_elements(node, elements, expected);
             }
@@ -681,7 +697,7 @@ impl Checker<'_> {
                     self.variable(node, Domain::Any)?
                 };
                 if self.simple_pattern(pattern) {
-                    self.binding(pattern, term)?;
+                    self.binding(pattern, term, value)?;
                 } else {
                     self.work.push(Work::BindPattern {
                         pattern,
@@ -913,6 +929,14 @@ impl Checker<'_> {
                 self.checks.push(node);
                 self.term(operand)
             }
+            Kind::Unary {
+                op: Unary::Borrow,
+                operand,
+            } => self.borrow(node, operand),
+            Kind::Unary {
+                op: Unary::Dereference,
+                operand,
+            } => self.dereference(node, operand),
             Kind::LetCondition { .. } => self.known(node, TypeId::primitive(Primitive::Bool)),
             Kind::Binary { op, left, right } => {
                 let term = self.binary(node, op, left, right)?;

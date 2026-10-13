@@ -1,0 +1,1 @@
+enum E{A,#[cfg(any())]B}fn f(x:E){match x{E::A=>()}}

@@ -1,0 +1,1 @@
+fn main(){match true{0=>(),_=>()}}

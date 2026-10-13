@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=failure(0);}}fn failure(x:i32)->i32{1/x}
+fn a()->!{if let _=loop{} {};}fn b()->!{if loop{}&&let _=0u8 {};}fn c(x:u8)->u8{let n@0=x else{if let _=loop{} {};};n}fn main(){check(true);}

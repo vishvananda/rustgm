@@ -1,0 +1,1 @@
+fn main(){if let n@0=1u8{}let _=n;}

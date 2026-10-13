@@ -1,0 +1,1 @@
+fn f(mut x:&[u8]){while let[_,rest@..]=x{x=rest;}}

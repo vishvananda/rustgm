@@ -1,0 +1,1 @@
+fn f(x:&(bool,bool)){match x{(true,_)=>(),(false,_)=>()}}

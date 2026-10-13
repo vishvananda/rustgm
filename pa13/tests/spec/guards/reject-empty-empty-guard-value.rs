@@ -1,0 +1,1 @@
+fn main(){let mut x:[u8;0]=[];match x{[n@..] if {let _=n;x=[];true}=>(),_=>()}}

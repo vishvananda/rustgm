@@ -1,0 +1,1 @@
+const C:&u8=&b"ab"[2];fn f(x:&u8){match x{C=>(),_=>()}}

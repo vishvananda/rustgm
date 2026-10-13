@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=failure(0);}}fn failure(x:i32)->i32{1/x}
+struct S{a:u8,b:u64}struct Z;fn main(){let p:(u8,u8);let(_, _)=p;let s:S;let S{..}=s;let z:Z;let Z=z;let u:();let ()=u;check(true);}

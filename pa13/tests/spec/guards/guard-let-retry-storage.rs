@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=failure(0);}}fn failure(x:i32)->i32{1/x}
+enum E{A(u8),B}fn main(){let mut c=0;let v=match (1u8,2u8){(n,_)|(_,n) if let E::A(m)={c+=1;if n==1{E::B}else{E::A(n+3)}}&&m>0=>m,_=>99};check(c==2&&v==5);}

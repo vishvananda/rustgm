@@ -1,0 +1,101 @@
+selected-patterns 1
+type 0 never
+type 1 tuple []
+type 2 primitive bool
+type 3 primitive char
+type 4 primitive str
+type 5 primitive i8
+type 6 primitive i16
+type 7 primitive i32
+type 8 primitive i64
+type 9 primitive i128
+type 10 primitive isize
+type 11 primitive u8
+type 12 primitive u16
+type 13 primitive u32
+type 14 primitive u64
+type 15 primitive u128
+type 16 primitive usize
+type 17 primitive f32
+type 18 primitive f64
+type 19 reference mutable=false region=static referent=11
+type 20 array element=19 length=64
+type 21 reference mutable=false region=bound:0:0 referent=11
+type 22 array element=21 length=64
+type 23 function binders=1 parameters=[22] result=1 unsafe=false
+type 24 function-item def=14 signature=23
+root 0:25 pattern=0
+root 0:28 pattern=1
+pattern 0 source=0:25 input=22 product variant=- fields=0:64
+pattern 1 source=0:28 input=22 wildcard
+pattern 2 source=0:25 input=21 deref mutable=false implicit=false pattern=3
+pattern 3 source=0:25 input=11 range=0
+field 0 index=0 pattern=2
+field 1 index=1 pattern=2
+field 2 index=2 pattern=2
+field 3 index=3 pattern=2
+field 4 index=4 pattern=2
+field 5 index=5 pattern=2
+field 6 index=6 pattern=2
+field 7 index=7 pattern=2
+field 8 index=8 pattern=2
+field 9 index=9 pattern=2
+field 10 index=10 pattern=2
+field 11 index=11 pattern=2
+field 12 index=12 pattern=2
+field 13 index=13 pattern=2
+field 14 index=14 pattern=2
+field 15 index=15 pattern=2
+field 16 index=16 pattern=2
+field 17 index=17 pattern=2
+field 18 index=18 pattern=2
+field 19 index=19 pattern=2
+field 20 index=20 pattern=2
+field 21 index=21 pattern=2
+field 22 index=22 pattern=2
+field 23 index=23 pattern=2
+field 24 index=24 pattern=2
+field 25 index=25 pattern=2
+field 26 index=26 pattern=2
+field 27 index=27 pattern=2
+field 28 index=28 pattern=2
+field 29 index=29 pattern=2
+field 30 index=30 pattern=2
+field 31 index=31 pattern=2
+field 32 index=32 pattern=2
+field 33 index=33 pattern=2
+field 34 index=34 pattern=2
+field 35 index=35 pattern=2
+field 36 index=36 pattern=2
+field 37 index=37 pattern=2
+field 38 index=38 pattern=2
+field 39 index=39 pattern=2
+field 40 index=40 pattern=2
+field 41 index=41 pattern=2
+field 42 index=42 pattern=2
+field 43 index=43 pattern=2
+field 44 index=44 pattern=2
+field 45 index=45 pattern=2
+field 46 index=46 pattern=2
+field 47 index=47 pattern=2
+field 48 index=48 pattern=2
+field 49 index=49 pattern=2
+field 50 index=50 pattern=2
+field 51 index=51 pattern=2
+field 52 index=52 pattern=2
+field 53 index=53 pattern=2
+field 54 index=54 pattern=2
+field 55 index=55 pattern=2
+field 56 index=56 pattern=2
+field 57 index=57 pattern=2
+field 58 index=58 pattern=2
+field 59 index=59 pattern=2
+field 60 index=60 pattern=2
+field 61 index=61 pattern=2
+field 62 index=62 pattern=2
+field 63 index=63 pattern=2
+range 0 ranks=7:7
+match 0 source=0:31 input=0:22 arms=0:2 exhaustive=true uninhabited=false work=69390
+arm 0 source=0:27 pattern=0 guard=- useful=true value=0:26
+arm 1 source=0:30 pattern=1 guard=- useful=true value=0:29
+eof roots=2 patterns=4 fields=64 alternatives=0 ranges=1 matches=1 arms=2 coverage-work=69390 region-vars=0 region-equalities=0 conditions=0 chains=0

@@ -1,0 +1,1 @@
+mod m{pub enum Void{}pub struct S{pub v:Void}}fn f(x:m::S){match x{}}

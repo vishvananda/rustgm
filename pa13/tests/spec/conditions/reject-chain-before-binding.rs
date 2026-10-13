@@ -1,0 +1,1 @@
+fn main(){if n==0&&let n=0u8{}}

@@ -1,0 +1,1 @@
+fn main(){let x:u8;let (0|_)=7u8 else{let _=x+1;return;};}

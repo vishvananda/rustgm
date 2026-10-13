@@ -1,0 +1,1 @@
+ERROR: file 0: 74: guard binding would reference an unaligned packed field

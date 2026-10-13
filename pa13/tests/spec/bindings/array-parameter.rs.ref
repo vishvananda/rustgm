@@ -1,0 +1,126 @@
+function @rg.16() -> void {
+  slot $s0 : obj<24x8>
+  block ^b0:
+    store i64 2, $s0
+    %t0 = addr $s0
+    %t1 = index u8 %t0, 8
+    store i64 3, %t1
+    %t2 = addr $s0
+    %t3 = index u8 %t2, 16
+    store i64 5, %t3
+    %t4 = addr $s0
+    %t5 = call i64 @rg.15(%t4)
+    %t6 = cmp eq i64 %t5, 23
+    %t7 = convert trunc i1 i64 %t6
+    call void @rg.13(%t7)
+    return void
+}
+function @rg.15(%p0 : ptr) -> i64 {
+  slot $s0 : obj<24x8>
+  slot $s1 : i64
+  slot $s2 : obj<16x8>
+  slot $s3 : obj<16x8>
+  block ^b0:
+    %t0 = addr $s0
+    copyobj 24x8 %p0, %t0
+    %t1 = load i64 $s0
+    store i64 %t1, $s1
+    %t2 = addr $s0
+    %t3 = index u8 %t2, 8
+    %t4 = addr $s3
+    copyobj 16x8 %t3, %t4
+    %t5 = addr $s3
+    %t6 = addr $s2
+    copyobj 16x8 %t5, %t6
+    %t7 = load i64 $s1
+    %t8 = cmp uge i64 0, 2
+    branch %t8, ^b1, ^b2
+  block ^b2:
+    %t9 = binary mul i64 0, 8
+    %t10 = addr $s2
+    %t11 = index u8 %t10, %t9
+    %t12 = load i64 %t11
+    %t13 = convert zext i128 i64 %t12
+    %t14 = convert zext i128 i64 2
+    %t15 = binary mul i128 %t13, %t14
+    %t16 = convert trunc i64 i128 %t15
+    %t17 = convert zext i128 i64 %t16
+    %t18 = cmp ne i128 %t15, %t17
+    branch %t18, ^b1, ^b3
+  block ^b3:
+    %t19 = convert zext i128 i64 %t7
+    %t20 = convert zext i128 i64 %t16
+    %t21 = binary add i128 %t19, %t20
+    %t22 = convert trunc i64 i128 %t21
+    %t23 = convert zext i128 i64 %t22
+    %t24 = cmp ne i128 %t21, %t23
+    branch %t24, ^b1, ^b4
+  block ^b4:
+    %t25 = cmp uge i64 1, 2
+    branch %t25, ^b1, ^b5
+  block ^b5:
+    %t26 = binary mul i64 1, 8
+    %t27 = addr $s2
+    %t28 = index u8 %t27, %t26
+    %t29 = load i64 %t28
+    %t30 = convert zext i128 i64 %t29
+    %t31 = convert zext i128 i64 3
+    %t32 = binary mul i128 %t30, %t31
+    %t33 = convert trunc i64 i128 %t32
+    %t34 = convert zext i128 i64 %t33
+    %t35 = cmp ne i128 %t32, %t34
+    branch %t35, ^b1, ^b6
+  block ^b6:
+    %t36 = convert zext i128 i64 %t22
+    %t37 = convert zext i128 i64 %t33
+    %t38 = binary add i128 %t36, %t37
+    %t39 = convert trunc i64 i128 %t38
+    %t40 = convert zext i128 i64 %t39
+    %t41 = cmp ne i128 %t38, %t40
+    branch %t41, ^b1, ^b7
+  block ^b7:
+    return i64 %t39
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+function @rg.13(%p0 : i1) -> void {
+  slot $s0 : i1
+  block ^b0:
+    store i1 %p0, $s0
+    %t0 = load i1 $s0
+    %t1 = unary not i1 %t0
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    jump ^b3
+  block ^b1:
+    %t2 = call i32 @rg.14(0)
+    jump ^b3
+  block ^b3:
+    return void
+}
+declare function @abort() -> void [return=noreturn]
+function @rg.14(%p0 : i32) -> i32 {
+  slot $s0 : i32
+  block ^b0:
+    store i32 %p0, $s0
+    %t0 = load i32 $s0
+    %t1 = cmp eq i32 %t0, 0
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    %t2 = cmp eq i32 1, 2147483648
+    %t3 = cmp eq i32 %t0, 4294967295
+    %t4 = binary and i64 %t2, %t3
+    branch %t4, ^b1, ^b3
+  block ^b3:
+    %t5 = binary div i32 1, %t0
+    return i32 %t5
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.16()
+    return i64 0
+}

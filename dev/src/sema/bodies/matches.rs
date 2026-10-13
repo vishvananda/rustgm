@@ -243,8 +243,8 @@ impl Checker<'_> {
             }
             self.facts.patterns.ranges[work.id.0 as usize] = Interval { lower, upper };
         }
-        for root in std::mem::take(&mut self.pattern_requirements) {
-            self.require_irrefutable(root)?;
+        for (root, valid) in std::mem::take(&mut self.pattern_requirements) {
+            self.require_irrefutable(root, valid)?;
         }
         for id in std::mem::take(&mut self.matches) {
             self.check_match(id)?;
@@ -361,9 +361,9 @@ impl Checker<'_> {
         }
         Ok(())
     }
-    fn require_irrefutable(&mut self, root: PatternId) -> Result<(), Error> {
+    fn require_irrefutable(&mut self, root: PatternId, valid: bool) -> Result<(), Error> {
         if self.pattern_domain(root).is_none() {
-            return self.constructor_binding(root);
+            return self.constructor_binding(root, valid);
         }
         let node = self.facts.patterns.nodes[root.0 as usize].source.node;
         let domain = self
@@ -391,6 +391,7 @@ impl Checker<'_> {
     fn constructor_match(&mut self, id: u32, ty: TypeId) -> Result<(), Error> {
         let decision = &self.facts.patterns.decisions[id as usize];
         let (node, start, end) = (decision.source.node, decision.start, decision.end);
+        let valid = self.pattern_input_validity(decision.scrutinee.node)?;
         let (report, source) = (self.report, self.key(node));
         let error =
             |message: &str| crate::sema::model::Declarations::error(report, source, message);
@@ -399,6 +400,7 @@ impl Checker<'_> {
             report,
             self.module,
             ty,
+            valid,
             patterns::coverage::Roots::Arms(
                 &self.facts.patterns.arms[start as usize..end as usize],
             ),
@@ -424,7 +426,7 @@ impl Checker<'_> {
         self.facts.patterns.decisions[id as usize].uninhabited = uninhabited;
         Ok(())
     }
-    fn constructor_binding(&mut self, root: PatternId) -> Result<(), Error> {
+    fn constructor_binding(&mut self, root: PatternId, valid: bool) -> Result<(), Error> {
         let pattern = &self.facts.patterns.nodes[root.0 as usize];
         let node = pattern.source.node;
         let ty = pattern
@@ -438,6 +440,7 @@ impl Checker<'_> {
             report,
             self.module,
             ty,
+            valid,
             patterns::coverage::Roots::Pattern(root),
             &mut self.coverage_cache,
         )

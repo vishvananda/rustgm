@@ -37,6 +37,22 @@ class NativeContract(unittest.TestCase):
             with self.assertRaises(ValueError):
                 execution(subprocess.CompletedProcess([], status, b"", b""), "pass", "cppgm")
 
+    def test_runtime_differences_require_declared_outcomes_and_reasons(self):
+        case = {"exit_status": 0, "rustc": {"kind": "program", "status": 0},
+                "native": {"outcome": "pass", "rustc_outcome": "panic"}}
+        for reason in (None, "", "   ", True):
+            case["native"]["reason"] = reason
+            with self.assertRaises(ValueError):
+                classification(case)
+        case["native"]["reason"] = "Reference requires two guard retries; pinned rustc performs one"
+        classification(case)
+        for outcome in ("failure", 1, "signal", ""):
+            case["native"]["rustc_outcome"] = outcome
+            with self.assertRaises(ValueError):
+                classification(case)
+            with self.assertRaises(ValueError):
+                execution(subprocess.CompletedProcess([], 134, b"", b""), outcome, "cppgm")
+
     def test_only_explicitly_qualified_panic_terminations_pass(self):
         execution(subprocess.CompletedProcess([], 134, b"", b""), "panic", "cppgm")
         execution(subprocess.CompletedProcess([], -signal.SIGABRT, b"", b"panicked at x"), "panic", "rustc")

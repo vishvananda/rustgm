@@ -1,0 +1,183 @@
+function @rg.23() -> void {
+  slot $s0 : i1
+  slot $s1 : i1
+  slot $s2 : obj<16x8>
+  slot $s3 : obj<16x8>
+  slot $s4 : obj<16x8>
+  block ^b0:
+    %t0 = addr $s2
+    call void @rg.17(%t0, 7)
+    %t1 = addr $s2
+    %t2 = call u8 @rg.22(%t1)
+    %t3 = cmp eq u8 %t2, 7
+    %t4 = convert trunc i1 i64 %t3
+    branch %t4, ^b4, ^b5
+  block ^b5:
+    store i1 %t4, $s1
+    jump ^b6
+  block ^b4:
+    %t5 = addr $s3
+    call void @rg.19(%t5, 8)
+    %t6 = addr $s3
+    %t7 = call u8 @rg.22(%t6)
+    %t8 = cmp eq u8 %t7, 9
+    %t9 = convert trunc i1 i64 %t8
+    store i1 %t9, $s1
+    jump ^b6
+  block ^b6:
+    %t10 = load i1 $s1
+    branch %t10, ^b1, ^b2
+  block ^b2:
+    store i1 %t10, $s0
+    jump ^b3
+  block ^b1:
+    store i64 2, $s4
+    %t11 = addr $s4
+    %t12 = call u8 @rg.22(%t11)
+    %t13 = cmp eq u8 %t12, 99
+    %t14 = convert trunc i1 i64 %t13
+    store i1 %t14, $s0
+    jump ^b3
+  block ^b3:
+    %t15 = load i1 $s0
+    call void @rg.13(%t15)
+    return void
+}
+function @rg.17(%p0 : ptr, %p1 : u8) -> void {
+  slot $s0 : u8
+  slot $s1 : obj<16x8>
+  block ^b0:
+    store u8 %p1, $s0
+    %t0 = load u8 $s0
+    store i64 0, $s1
+    %t1 = addr $s1
+    %t2 = index u8 %t1, 8
+    store u8 %t0, %t2
+    %t3 = addr $s1
+    copyobj 16x8 %t3, %p0
+    return void
+}
+function @rg.22(%p0 : ptr) -> u8 {
+  slot $s0 : obj<16x8>
+  slot $s1 : u8
+  slot $s2 : u8
+  slot $s3 : u8
+  slot $s4 : u8
+  block ^b0:
+    %t0 = addr $s0
+    copyobj 16x8 %p0, %t0
+    %t1 = load i64 $s0
+    %t2 = cmp eq i64 %t1, 0
+    branch %t2, ^b6, ^b5
+  block ^b5:
+    jump ^b2
+  block ^b2:
+    %t3 = load i64 $s0
+    %t4 = cmp eq i64 %t3, 1
+    branch %t4, ^b12, ^b11
+  block ^b11:
+    jump ^b8
+  block ^b8:
+    store u8 99, $s3
+    jump ^b9
+  block ^b12:
+    %t5 = addr $s0
+    %t6 = index u8 %t5, 8
+    jump ^b10
+  block ^b10:
+    %t7 = addr $s0
+    %t8 = index u8 %t7, 8
+    %t9 = load u8 %t8
+    store u8 %t9, $s4
+    jump ^b7
+  block ^b7:
+    %t10 = load u8 $s4
+    %t11 = convert zext i16 u8 %t10
+    %t12 = convert zext i16 u8 1
+    %t13 = binary add i16 %t11, %t12
+    %t14 = convert trunc u8 i16 %t13
+    %t15 = convert zext i16 u8 %t14
+    %t16 = cmp ne i16 %t13, %t15
+    branch %t16, ^b13, ^b14
+  block ^b14:
+    store u8 %t14, $s3
+    jump ^b9
+  block ^b9:
+    %t17 = load u8 $s3
+    store u8 %t17, $s1
+    jump ^b3
+  block ^b6:
+    %t18 = addr $s0
+    %t19 = index u8 %t18, 8
+    jump ^b4
+  block ^b4:
+    %t20 = addr $s0
+    %t21 = index u8 %t20, 8
+    %t22 = load u8 %t21
+    store u8 %t22, $s2
+    jump ^b1
+  block ^b1:
+    %t23 = load u8 $s2
+    store u8 %t23, $s1
+    jump ^b3
+  block ^b3:
+    %t24 = load u8 $s1
+    return u8 %t24
+  block ^b13:
+    call void @abort()
+    unreachable
+}
+function @rg.19(%p0 : ptr, %p1 : u8) -> void {
+  slot $s0 : u8
+  slot $s1 : obj<16x8>
+  block ^b0:
+    store u8 %p1, $s0
+    %t0 = load u8 $s0
+    store i64 1, $s1
+    %t1 = addr $s1
+    %t2 = index u8 %t1, 8
+    store u8 %t0, %t2
+    %t3 = addr $s1
+    copyobj 16x8 %t3, %p0
+    return void
+}
+function @rg.13(%p0 : i1) -> void {
+  slot $s0 : i1
+  block ^b0:
+    store i1 %p0, $s0
+    %t0 = load i1 $s0
+    %t1 = unary not i1 %t0
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    jump ^b3
+  block ^b1:
+    %t2 = call i32 @rg.14(0)
+    jump ^b3
+  block ^b3:
+    return void
+}
+declare function @abort() -> void [return=noreturn]
+function @rg.14(%p0 : i32) -> i32 {
+  slot $s0 : i32
+  block ^b0:
+    store i32 %p0, $s0
+    %t0 = load i32 $s0
+    %t1 = cmp eq i32 %t0, 0
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    %t2 = cmp eq i32 1, 2147483648
+    %t3 = cmp eq i32 %t0, 4294967295
+    %t4 = binary and i64 %t2, %t3
+    branch %t4, ^b1, ^b3
+  block ^b3:
+    %t5 = binary div i32 1, %t0
+    return i32 %t5
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.23()
+    return i64 0
+}

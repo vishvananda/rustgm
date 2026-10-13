@@ -1,0 +1,1 @@
+const C:&str=if true{"a"}else{"b"};fn f(x:&str){match x{C=>(),_=>()}}

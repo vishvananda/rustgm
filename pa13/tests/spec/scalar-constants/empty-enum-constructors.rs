@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=failure(0);}}fn failure(x:i32)->i32{1/x}
+enum E{A(),B{}}const A:isize=E::A() as isize;const B:isize=E::B{} as isize;fn f(x:isize)->u8{match x{A=>1,B=>2,_=>3}}fn main(){check(f(0)==1&&f(1)==2&&f(2)==3);}

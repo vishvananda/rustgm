@@ -1,0 +1,1 @@
+fn main(){let _=match true{true=>1u8,false=>false};}

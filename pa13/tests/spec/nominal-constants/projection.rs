@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=failure(0);}}fn failure(x:i32)->i32{1/x}
+struct T(u8,bool);struct S{a:T}const C:S=S{a:T(7,true)};const N:u8=C.a.0;fn f(x:u8)->u8{match x{N=>1,_=>2}}fn main(){check(f(7)==1&&f(0)==2);}

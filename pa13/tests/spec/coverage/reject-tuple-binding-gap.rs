@@ -1,0 +1,1 @@
+fn f(x:(bool,u8)){let(true,n)=x;let _=n;}

@@ -1,0 +1,1 @@
+const C:&mut ()=&mut ();fn f(x:&mut ()){match x{C=>()}}

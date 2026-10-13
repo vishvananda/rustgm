@@ -1,0 +1,1 @@
+const N:u16=7;fn main(){match 7u8{N=>(),_=>()}}

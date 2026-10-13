@@ -1,0 +1,1 @@
+struct N;enum E{A(N),B}fn f(e:E){while let E::A(n)=e{let _=n;}}fn main(){}

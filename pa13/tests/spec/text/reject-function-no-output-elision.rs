@@ -1,0 +1,1 @@
+const F:fn()->&str=f;fn f()->&'static str{"a"}

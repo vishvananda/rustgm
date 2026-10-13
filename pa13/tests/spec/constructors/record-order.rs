@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=failure(0);}}fn failure(x:i32)->i32{1/x}
+struct S{a:u8,b:u64}fn f(x:S)->u64{match x{S{b:n,a:1}=>n,S{a:n,b:m}=>m+n as u64}}fn main(){check(f(S{a:1,b:99})==99&&f(S{a:3,b:55})==58);}

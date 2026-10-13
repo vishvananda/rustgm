@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=failure(0);}}fn failure(x:i32)->i32{1/x}
+enum E{A(u8),B(u8),C}fn f(x:E)->u8{if let E::A(n)=x{n}else if let E::B(n)=x{n+1}else{99}}fn main(){check(f(E::A(7))==7&&f(E::B(8))==9&&f(E::C)==99);}

@@ -1,0 +1,1 @@
+mod m{pub struct S{a:u8}}fn f(xs:&m::S){let m::S{a}=xs;}

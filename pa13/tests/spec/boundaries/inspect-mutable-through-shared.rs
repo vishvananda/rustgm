@@ -1,0 +1,1 @@
+fn f(xs:&[u8;1]){let &[ref mut x]=xs;}

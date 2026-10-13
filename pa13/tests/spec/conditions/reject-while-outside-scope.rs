@@ -1,0 +1,1 @@
+fn main(){while let n@0=1u8{break;}let _=n;}

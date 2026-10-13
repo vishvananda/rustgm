@@ -1,0 +1,1 @@
+fn f(xs:&mut[&mut u8;1]){let[&mut x]=xs;}

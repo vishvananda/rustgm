@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=failure(0);}}fn failure(x:i32)->i32{1/x}
+struct N{n:u8}fn f(x:N)->u8{match x{whole@N{n:1..=10}=>whole.n,whole@N{n}=>whole.n+n}}fn main(){check(f(N{n:7})==7&&f(N{n:20})==40);}

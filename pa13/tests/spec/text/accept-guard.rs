@@ -1,0 +1,1 @@
+fn f(x:&str,b:bool){match x{"a"|"a" if b=>(),"a"=>(),_=>()}}

@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=failure(0);}}fn failure(x:i32)->i32{1/x}
+struct N(u8);enum E{A(N),B}fn f()->u8{let mut e=E::A(N(3));let mut sum=0;while let E::A(n)=e{sum+=n.0;e=if n.0>1{E::A(N(n.0-1))}else{E::B};}sum}fn main(){check(f()==6);}

@@ -1,0 +1,1 @@
+fn f(x:&[bool]){if let &[a,rest@..]=x{}}

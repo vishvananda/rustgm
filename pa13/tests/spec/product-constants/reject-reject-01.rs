@@ -1,0 +1,1 @@
+const C:(u8,bool)=(7,true);fn f(C:(u8,bool)){}fn main(){}

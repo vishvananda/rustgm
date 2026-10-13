@@ -1,0 +1,1 @@
+struct N;fn main(){let x:[N;1];match x{[_,n@..] if true=>{let _=n;},_=>()}}

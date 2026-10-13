@@ -1,0 +1,1 @@
+fn f(x:[bool;2]){match x{[true,true]|[false,false]=>()}}

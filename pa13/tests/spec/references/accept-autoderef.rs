@@ -1,0 +1,1 @@
+struct S(u8);const P:&&S=&&S(7);const C:u8=P.0;fn f(x:u8){match x{C=>(),_=>()}}

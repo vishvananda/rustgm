@@ -1,0 +1,1 @@
+macro_rules! cover{($x:expr,$p:pat)=>{match $x{$p=>()}}}fn f(x:(bool,bool)){cover!(x,(true|false,true|false));}

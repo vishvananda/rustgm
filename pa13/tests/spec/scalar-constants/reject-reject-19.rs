@@ -1,0 +1,1 @@
+const N:u8=7;fn main(){let mut x=7u8;match x{N if {x=0;false}=>(),_=>()}}

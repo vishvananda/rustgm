@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=failure(0);}}fn failure(x:i32)->i32{1/x}
+enum E{A(u8),B}fn f()->u8{let mut n=2;loop{match E::A(n){E::A(0)=>break 7,E::A(v)=>{n=match (v,true){(v,true)=>v-1,_=>0};continue},E::B=>return 9}}}fn main(){check(f()==7);}

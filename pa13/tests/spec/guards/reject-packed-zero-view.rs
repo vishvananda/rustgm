@@ -1,0 +1,1 @@
+#[repr(packed)]struct P{a:u8,z:[u64;0]}fn main(){let p=P{a:0,z:[]};match p{P{z:n,..} if true=>{let _=n;},_=>()}}

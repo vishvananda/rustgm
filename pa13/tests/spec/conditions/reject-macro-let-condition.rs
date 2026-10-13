@@ -1,0 +1,1 @@
+macro_rules! p{($n:ident,$x:expr)=>{let $n=$x}}fn main(){if p!(n,7u8){let _=n;}}

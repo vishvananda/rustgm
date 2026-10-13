@@ -1,0 +1,1 @@
+enum V{}enum E{A(V),B}struct S(E);const C:u8=7;fn f(x:&E,y:u8){let E::B=*x;match y{C=>(),_=>()}}

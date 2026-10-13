@@ -1,0 +1,1 @@
+struct N;fn main(){let x=N;let y=x;let _=0u8 else{let z=x;let _=z;return;};let _=y;}

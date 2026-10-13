@@ -1,0 +1,1 @@
+enum E{A,B}fn f(x:E){match x{E::A if true=>(),E::B=>()}}

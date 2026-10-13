@@ -1,0 +1,1 @@
+mod values;use values::C;fn f(x:&values::S){match x{C=>(),_=>()}}

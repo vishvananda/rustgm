@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=failure(0);}}fn failure(x:i32)->i32{1/x}
+fn f(x:[u8;4])->u8{let [0,middle@..,last]=x else{return 99;};middle[0]+middle[1]+last}fn main(){check(f([0,2,3,4])==9&&f([1,2,3,4])==99);}

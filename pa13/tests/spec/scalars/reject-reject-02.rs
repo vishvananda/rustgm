@@ -1,0 +1,1 @@
+fn main(){let x:u8;match 0u8{_=>(),_=>{let _=x+1;}}}

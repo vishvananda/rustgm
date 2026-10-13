@@ -2,7 +2,9 @@
 mod arithmetic;
 mod constructors;
 mod patterns;
+mod places;
 pub(super) mod products;
+pub(super) mod references;
 use super::{
     bodies,
     members::VariantId,
@@ -30,6 +32,7 @@ pub(super) struct Discriminant {
 #[derive(Clone, Copy)]
 pub(super) enum Value {
     Scalar(Scalar),
+    Reference(references::Id),
     Text(super::text::Id),
     Bytes(super::text::Id),
     Variant(VariantId),
@@ -40,7 +43,8 @@ impl Value {
     fn scalar(self) -> Result<Scalar, &'static str> {
         match self {
             Self::Scalar(value) => Ok(value),
-            Self::Variant(_)
+            Self::Reference(_)
+            | Self::Variant(_)
             | Self::Constructor(_)
             | Self::Product(_)
             | Self::Text(_)
@@ -64,6 +68,8 @@ impl Value {
 enum Query {
     Variant(VariantId),
     Constant(usize),
+    Static(usize),
+    Place(NodeKey),
     Node(NodeKey),
 }
 #[derive(Clone, Copy)]
@@ -75,6 +81,7 @@ enum State {
 enum Expression {
     Value(Value),
     Product(products::Expression),
+    Reference(references::Expression),
     Constructor(constructors::Expression),
     Forward(NodeKey),
     Constant(usize),
@@ -103,6 +110,7 @@ enum Expression {
     },
 }
 enum Work {
+    Reference(places::Work),
     Enter(Query),
     Forward(Query, Query),
     Successor(Query, Query, Primitive),
@@ -284,8 +292,10 @@ impl Queries<'_> {
     fn error(&self, query: Query, message: impl Into<String>) -> Error {
         let key = match query {
             Query::Variant(id) => self.typing.facts.members.variants[id.0 as usize].node,
-            Query::Constant(index) => self.typing.facts.initializers[index].value,
-            Query::Node(key) => key,
+            Query::Constant(index) | Query::Static(index) => {
+                self.typing.facts.initializers[index].value
+            }
+            Query::Node(key) | Query::Place(key) => key,
         };
         Declarations::error(self.report, key, message)
     }
@@ -347,7 +357,7 @@ impl Queries<'_> {
                 Work::Forward(query, dependency) => {
                     let value = self.value(dependency)?;
                     self.states.insert(query, State::Ready(value));
-                    if let Query::Constant(index) = query {
+                    if let Query::Constant(index) | Query::Static(index) = query {
                         let definition = self.typing.facts.initializers[index].definition;
                         self.typing.facts.constant_values.insert(definition, value);
                     }
@@ -366,6 +376,7 @@ impl Queries<'_> {
                     self.states
                         .insert(query, State::Ready(Value::Scalar(Scalar::Integer(bits))));
                 }
+                Work::Reference(work) => self.finish_reference(work)?,
                 Work::Finish(key) => self.finish(key)?,
                 Work::Select(key) => self.select(key)?,
                 Work::EnumCast(key, variant, target) => {
@@ -398,6 +409,9 @@ impl Queries<'_> {
             None => {}
         }
         if let Query::Constant(index) = query {
+            self.check_static_read(index)?;
+        }
+        if let Query::Constant(index) | Query::Static(index) = query {
             let definition = self.typing.facts.initializers[index].definition;
             if let Some(&value) = self.typing.facts.constant_values.get(&definition) {
                 self.states.insert(query, State::Ready(value));
@@ -407,26 +421,7 @@ impl Queries<'_> {
         self.states.insert(query, State::Active);
         match query {
             Query::Variant(variant) => self.enter_variant(variant)?,
-            Query::Constant(index) => {
-                let initializer = self.typing.facts.initializers[index];
-                if matches!(initializer.kind, InitializerKind::Static { .. }) {
-                    let facts = &mut *self.typing.facts;
-                    let properties = facts
-                        .copies
-                        .demand(
-                            &facts.types,
-                            &facts.aggregates,
-                            &facts.derives,
-                            initializer.ty,
-                        )
-                        .map_err(|e| self.error(query, e))?;
-                    if !properties.copy {
-                        return Err(self.error(
-                            query,
-                            "cannot move a non-Copy constant value out of static storage",
-                        ));
-                    }
-                }
+            Query::Constant(index) | Query::Static(index) => {
                 if !self.typing.facts.initializers[index].type_checked {
                     self.typing.initializer(index)?;
                     self.require_complete_patterns(query)?;
@@ -435,7 +430,9 @@ impl Queries<'_> {
                 self.prepare(key)?;
                 self.forward(query, Query::Node(key));
             }
+            Query::Place(key) => self.enter_place(key)?,
             Query::Node(key) => match self.expression(key)? {
+                Expression::Reference(expression) => self.enter_reference(key, expression),
                 Expression::Value(value) => {
                     self.states.insert(query, State::Ready(value));
                 }
@@ -648,6 +645,9 @@ impl Queries<'_> {
                     self.scan.push(condition);
                 }
                 Expression::Value(_) | Expression::Constant(_) => {}
+                Expression::Reference(expression) => {
+                    expression.dependencies(|child| self.scan.push(child));
+                }
                 Expression::Product(expression) => {
                     expression.dependencies(self.report, key, |child| self.scan.push(child));
                 }
@@ -697,6 +697,9 @@ impl Queries<'_> {
             } else {
                 Value::Bytes(id)
             }));
+        }
+        if let Some(expression) = self.reference_expression(key)? {
+            return Ok(Expression::Reference(expression));
         }
         if let Some(expression) = self.product_expression(key)? {
             return Ok(Expression::Product(expression));

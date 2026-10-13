@@ -1,0 +1,1 @@
+#[derive(PartialEq)]pub struct S{value:u8}static V:S=S{value:7};pub const C:&S=&V;

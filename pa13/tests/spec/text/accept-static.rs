@@ -1,0 +1,1 @@
+static C:&str="a";static B:&[u8]=b"ab";

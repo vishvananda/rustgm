@@ -1,0 +1,1 @@
+struct N;fn main(){let a@b@N=N;let _=a;let _=b;}

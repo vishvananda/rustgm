@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=failure(0);}}fn failure(x:i32)->i32{1/x}
+enum E{A(u8),B(u8)}fn main(){let (E::A(n)|E::B(n)):E;n=7;let (m@0..=255):u8;m=9;let (E::A(_)|E::B(_)):E;let ((0,k)|(_,k)):(u8,u8);k=11;check(n+m+k==27);}

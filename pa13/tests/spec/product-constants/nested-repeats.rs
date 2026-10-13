@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=failure(0);}}fn failure(x:i32)->i32{1/x}
+const C:[[u8;2];3]=[[7;2];3];fn f(x:[[u8;2];3])->u8{match x{C=>1,_=>2}}fn main(){check(f([[7;2];3])==1&&f([[7,7],[0,7],[7,7]])==2&&f([[7,7],[7,7],[7,0]])==2);}

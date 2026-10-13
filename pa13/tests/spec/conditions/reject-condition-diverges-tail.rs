@@ -1,0 +1,1 @@
+fn f()->!{if let _=loop{} {}}fn main(){}

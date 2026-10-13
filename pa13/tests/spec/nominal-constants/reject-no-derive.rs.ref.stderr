@@ -1,0 +1,1 @@
+ERROR: file 0: 46: constant pattern type must implement PartialEq

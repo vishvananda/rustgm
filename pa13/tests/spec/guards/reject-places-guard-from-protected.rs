@@ -1,0 +1,1 @@
+struct N(u8);struct S(N);fn entry()->u64{let y=S(N(7));match y{x if let S(n)=x=>n.0 as u64,_=>99}}fn main(){}

@@ -1,0 +1,1 @@
+fn main(){let x=let n=1u8;let _=x;}

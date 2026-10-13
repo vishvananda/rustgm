@@ -1,0 +1,1 @@
+struct N;fn take(_:N){}fn main(){let x=N;if let _=0u8{}else{take(x);}take(x);}

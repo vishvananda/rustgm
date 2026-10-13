@@ -1,0 +1,1 @@
+struct N;fn f(x:(N,bool),ok:bool){if let (n,true)=x&&ok{let _=n;}else{let y=x.0;let _=y;}}fn main(){}

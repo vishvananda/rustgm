@@ -1,0 +1,1 @@
+fn f(x:&[bool]){let[a,rest@..]=x else{return;};let _=a;let _=rest;}

@@ -1,0 +1,1 @@
+fn f(xs:(&mut u8,&mut[u8;1])){let((x,_)|(_,[x]))=xs;}

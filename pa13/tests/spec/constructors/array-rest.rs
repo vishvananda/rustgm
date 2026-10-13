@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=failure(0);}}fn failure(x:i32)->i32{1/x}
+fn f(x:[u8;4])->u8{match x{[0,middle@..,last]=>middle[0]+middle[1]+last,[first,..]=>first}}fn main(){check(f([0,2,3,4])==9&&f([8,2,3,4])==8);}

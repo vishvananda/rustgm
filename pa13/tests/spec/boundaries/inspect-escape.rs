@@ -1,0 +1,1 @@
+fn f(value:u8)->&'static u8{let ref x=value;x}

@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=failure(0);}}fn failure(x:i32)->i32{1/x}
+#[derive(PartialEq)]struct S{a:u8,b:bool}const C:S=S{#[cfg(any())]a:0,#[cfg(all())]b:true,a:7};fn f(x:S)->u8{match x{C=>1,_=>2}}fn main(){check(f(S{a:7,b:true})==1&&f(S{a:0,b:true})==2);}

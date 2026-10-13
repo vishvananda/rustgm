@@ -1,0 +1,1 @@
+ERROR: file 0: 49: non-exhaustive match; missing { $ = E::A }

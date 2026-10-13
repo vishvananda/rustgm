@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=failure(0);}}fn failure(x:i32)->i32{1/x}
+#[derive(PartialEq)]enum E{A(u8),B{b:bool},C}const A:E=E::A(7);const B:E=E::B{b:true};const C:E=E::C;fn f(x:E)->u8{match x{A=>1,B=>2,C=>3,_=>4}}fn main(){check(f(E::A(7))==1&&f(E::A(0))==4&&f(E::B{b:true})==2&&f(E::B{b:false})==4&&f(E::C)==3);}

@@ -1,0 +1,1 @@
+#[derive(PartialEq)]struct S(&'static [u8;1]);const C:S=S(b"a");fn f(x:S){match x{C=>(),S(b"b")=>(),_=>()}}

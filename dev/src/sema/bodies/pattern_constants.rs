@@ -19,7 +19,7 @@ pub(super) struct Pending {
     )>,
     scopes: Vec<Scope>,
     ranges: Vec<RangeWork>,
-    roots: Vec<PatternId>,
+    roots: Vec<(PatternId, bool)>,
     matches: Vec<u32>,
 }
 struct Scope {

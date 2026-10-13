@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=failure(0);}}fn failure(x:i32)->i32{1/x}
+mod m{#[derive(PartialEq)]pub struct S{a:u8}pub const C:S=S{a:7};pub fn new(a:u8)->S{S{a}}}fn f(x:m::S)->u8{match x{m::C=>1,_=>2}}fn main(){check(f(m::new(7))==1&&f(m::new(0))==2);}

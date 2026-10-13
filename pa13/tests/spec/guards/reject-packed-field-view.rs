@@ -1,0 +1,1 @@
+#[repr(packed)]struct P{a:u8,b:u64}fn main(){let p=P{a:0,b:7};match p{P{b:n,..} if n==7=>(),_=>()}}

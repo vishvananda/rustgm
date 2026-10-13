@@ -1,0 +1,1 @@
+const C:&bool=&true;fn f(x:&bool){match x{C=>()}}

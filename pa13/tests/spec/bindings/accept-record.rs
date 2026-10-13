@@ -1,0 +1,1 @@
+struct S{a:u8,b:u16}fn f(xs:&S){let S{a,b}=xs;}

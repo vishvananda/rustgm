@@ -1,0 +1,1 @@
+enum Void{}struct S{v:Void}fn f(x:S){match x{}}

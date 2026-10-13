@@ -1,0 +1,177 @@
+function @rg.19() -> void {
+  slot $s0 : i1
+  slot $s1 : i1
+  slot $s2 : i1
+  slot $s3 : i1
+  slot $s4 : i1
+  slot $s5 : i1
+  block ^b0:
+    %t0 = unary neg f32 1.00000000000000000e0
+    %t1 = binary div f32 %t0, 0.00000000000000000e0
+    %t2 = call u8 @rg.18(%t1)
+    %t3 = cmp eq u8 %t2, 1
+    %t4 = convert trunc i1 i64 %t3
+    branch %t4, ^b16, ^b17
+  block ^b17:
+    store i1 %t4, $s5
+    jump ^b18
+  block ^b16:
+    %t5 = unary neg f32 1.00000000000000000e0
+    %t6 = call u8 @rg.18(%t5)
+    %t7 = cmp eq u8 %t6, 1
+    %t8 = convert trunc i1 i64 %t7
+    store i1 %t8, $s5
+    jump ^b18
+  block ^b18:
+    %t9 = load i1 $s5
+    branch %t9, ^b13, ^b14
+  block ^b14:
+    store i1 %t9, $s4
+    jump ^b15
+  block ^b13:
+    %t10 = unary neg f32 0.00000000000000000e0
+    %t11 = call u8 @rg.18(%t10)
+    %t12 = cmp eq u8 %t11, 2
+    %t13 = convert trunc i1 i64 %t12
+    store i1 %t13, $s4
+    jump ^b15
+  block ^b15:
+    %t14 = load i1 $s4
+    branch %t14, ^b10, ^b11
+  block ^b11:
+    store i1 %t14, $s3
+    jump ^b12
+  block ^b10:
+    %t15 = call u8 @rg.18(0.00000000000000000e0)
+    %t16 = cmp eq u8 %t15, 2
+    %t17 = convert trunc i1 i64 %t16
+    store i1 %t17, $s3
+    jump ^b12
+  block ^b12:
+    %t18 = load i1 $s3
+    branch %t18, ^b7, ^b8
+  block ^b8:
+    store i1 %t18, $s2
+    jump ^b9
+  block ^b7:
+    %t19 = call u8 @rg.18(1.00000000000000000e0)
+    %t20 = cmp eq u8 %t19, 3
+    %t21 = convert trunc i1 i64 %t20
+    store i1 %t21, $s2
+    jump ^b9
+  block ^b9:
+    %t22 = load i1 $s2
+    branch %t22, ^b4, ^b5
+  block ^b5:
+    store i1 %t22, $s1
+    jump ^b6
+  block ^b4:
+    %t23 = binary div f32 1.00000000000000000e0, 0.00000000000000000e0
+    %t24 = call u8 @rg.18(%t23)
+    %t25 = cmp eq u8 %t24, 3
+    %t26 = convert trunc i1 i64 %t25
+    store i1 %t26, $s1
+    jump ^b6
+  block ^b6:
+    %t27 = load i1 $s1
+    branch %t27, ^b1, ^b2
+  block ^b2:
+    store i1 %t27, $s0
+    jump ^b3
+  block ^b1:
+    %t28 = binary div f32 0.00000000000000000e0, 0.00000000000000000e0
+    %t29 = call u8 @rg.18(%t28)
+    %t30 = cmp eq u8 %t29, 4
+    %t31 = convert trunc i1 i64 %t30
+    store i1 %t31, $s0
+    jump ^b3
+  block ^b3:
+    %t32 = load i1 $s0
+    call void @rg.13(%t32)
+    return void
+}
+function @rg.18(%p0 : f32) -> u8 {
+  slot $s0 : f32
+  slot $s1 : u8
+  block ^b0:
+    store f32 %p0, $s0
+    %t0 = load f32 $s0
+    %t1 = cmp ge f32 %t0, -inf
+    %t2 = convert trunc i1 i64 %t1
+    %t3 = cmp le f32 %t0, -1.40129846432481707e-45
+    %t4 = convert trunc i1 i64 %t3
+    %t5 = binary and i1 %t2, %t4
+    branch %t5, ^b2, ^b3
+  block ^b3:
+    %t6 = load f32 $s0
+    %t7 = cmp eq f32 %t6, 0.00000000000000000e0
+    %t8 = convert trunc i1 i64 %t7
+    branch %t8, ^b4, ^b5
+  block ^b5:
+    %t9 = load f32 $s0
+    %t10 = cmp ge f32 %t9, 0.00000000000000000e0
+    %t11 = convert trunc i1 i64 %t10
+    %t12 = cmp le f32 %t9, inf
+    %t13 = convert trunc i1 i64 %t12
+    %t14 = binary and i1 %t11, %t13
+    branch %t14, ^b6, ^b7
+  block ^b7:
+    jump ^b8
+  block ^b8:
+    store u8 4, $s1
+    jump ^b1
+  block ^b6:
+    store u8 3, $s1
+    jump ^b1
+  block ^b4:
+    store u8 2, $s1
+    jump ^b1
+  block ^b2:
+    store u8 1, $s1
+    jump ^b1
+  block ^b1:
+    %t15 = load u8 $s1
+    return u8 %t15
+  block ^b9:
+    unreachable
+}
+function @rg.13(%p0 : i1) -> void {
+  slot $s0 : i1
+  block ^b0:
+    store i1 %p0, $s0
+    %t0 = load i1 $s0
+    %t1 = unary not i1 %t0
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    jump ^b3
+  block ^b1:
+    %t2 = call i32 @rg.14(0)
+    jump ^b3
+  block ^b3:
+    return void
+}
+function @rg.14(%p0 : i32) -> i32 {
+  slot $s0 : i32
+  block ^b0:
+    store i32 %p0, $s0
+    %t0 = load i32 $s0
+    %t1 = cmp eq i32 %t0, 0
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    %t2 = cmp eq i32 1, 2147483648
+    %t3 = cmp eq i32 %t0, 4294967295
+    %t4 = binary and i64 %t2, %t3
+    branch %t4, ^b1, ^b3
+  block ^b3:
+    %t5 = binary div i32 1, %t0
+    return i32 %t5
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+declare function @abort() -> void [return=noreturn]
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.19()
+    return i64 0
+}

@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=failure(0);}}fn failure(x:i32)->i32{1/x}
+#[derive(PartialEq)]struct S(u8);macro_rules! make{($x:expr)=>{S($x)}}const C:S=make!(7);macro_rules! choose{($x:expr,$p:pat)=>{match $x{$p=>1,_=>2}}}fn main(){check(choose!(S(7),C)==1&&choose!(S(0),C)==2);}

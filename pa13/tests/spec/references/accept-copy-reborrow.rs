@@ -1,0 +1,1 @@
+const P:&[u8;2]=&[2,7];const A:[u8;2]=*P;const C:&[u8]=&A;fn f(x:&[u8]){match x{C=>(),_=>()}}
