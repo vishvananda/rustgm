@@ -33,20 +33,6 @@ use std::collections::HashMap;
 /// # Errors
 /// Diagnoses missing typed facts, exhausted identities and unsupported body forms.
 pub fn build(report: &Report, facts: &Declarations) -> Result<Program, Error> {
-    if let Some(implementation) = facts.destructors.implementations().first() {
-        return Err(Error::at(
-            implementation.source.file,
-            report
-                .package
-                .unit(implementation.source.file)
-                .configured
-                .ast
-                .node(implementation.source.node)
-                .span
-                .start,
-            "Drop implementations require destructor elaboration",
-        ));
-    }
     let mut scratch = Scratch {
         scopes: scopes::Scratch::default(),
         unadjusted: Vec::new(),
@@ -67,6 +53,7 @@ pub fn build(report: &Report, facts: &Declarations) -> Result<Program, Error> {
         conditional_live: Vec::new(),
     };
     let mut program = Program {
+        drops: None,
         bodies: Vec::new(),
         region_equalities: facts.region_equalities.clone(),
         coercions: facts.coercions.clone(),
@@ -122,6 +109,20 @@ pub fn build(report: &Report, facts: &Declarations) -> Result<Program, Error> {
             .push(builder.run(None).map_err(|e| report.diagnostic(e))?);
     }
     aggregates::constructors(report, facts, &mut program)?;
+    program.drops = super::drops::collect(facts, &program).map_err(|(source, message)| {
+        report.diagnostic(Error::at(
+            source.file,
+            report
+                .package
+                .unit(source.file)
+                .configured
+                .ast
+                .node(source.node)
+                .span
+                .start,
+            message,
+        ))
+    })?;
     Ok(program)
 }
 impl Body {
@@ -515,6 +516,20 @@ impl<'a> Builder<'a> {
             let Kind::Parameter { pattern, .. } = self.kind(parameter) else {
                 return Err(self.error(parameter, "missing parameter syntax"));
             };
+            if let Some(receiver) = self.facts.destructors.receivers.get(&NodeKey {
+                file: self.body.source.file,
+                node: parameter,
+            }) {
+                self.local(
+                    receiver.binding.node,
+                    receiver.ty,
+                    LocalKind::Parameter(index),
+                    Some(receiver.definition),
+                    receiver.mutable,
+                )?;
+                index += 1;
+                continue;
+            }
             if let Some(id) = self
                 .facts
                 .patterns

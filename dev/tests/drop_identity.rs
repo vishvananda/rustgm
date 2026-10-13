@@ -217,6 +217,9 @@ fn ordinary_programs_do_not_allocate_language_trait_metadata() -> Result<(), Str
                 .any(|d| d.kind == DefKind::BuiltinTrait)
         );
     }
+    let (report, facts) = semantic::analyze("struct S;fn f(s:S)->S{s}")?;
+    let program = rustgm::body::build(&report, &facts).map_err(|e| e.to_string())?;
+    assert!(program.drops.is_none());
     Ok(())
 }
 
@@ -227,13 +230,21 @@ fn executable_typing_cannot_silently_erase_a_drop_implementation() -> Result<(),
         "struct S;impl Drop for S{fn drop(self:&mut S){}}fn main(){let _s=S;}",
         "use core::ops::Drop as D;struct S;impl D for S{fn drop(self:&mut S){}}fn main(){let _s=S;}",
     ] {
-        let (report, facts) = semantic::analyze(source)?;
-        let error = rustgm::body::build(&report, &facts)
-            .err()
-            .ok_or_else(|| format!("destructor was accepted without elaboration: {source}"))?;
+        let (report, mut facts) = semantic::analyze(source)?;
+        let program = rustgm::body::build(&report, &facts).map_err(|e| e.to_string())?;
+        let error = rustgm::borrow::ownership::verify(
+            &facts.types,
+            &facts.aggregates,
+            &facts.derives,
+            &mut facts.copies,
+            &program,
+        )
+        .err()
+        .ok_or_else(|| format!("destructor was accepted without elaboration: {source}"))?;
         assert!(
-            error.to_string().contains("require destructor elaboration"),
-            "{error}"
+            error.message.contains("require destructor elaboration"),
+            "{}",
+            error.message
         );
     }
     Ok(())

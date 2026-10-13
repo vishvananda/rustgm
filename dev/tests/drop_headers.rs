@@ -399,13 +399,18 @@ fn destructor_headers_match_independent_language_contracts()
             matches!(name, "mutable-binding" | "mutable-receiver-assignment"),
             "{name}"
         );
-        let error = rustgm::body::build(&report, &facts)
-            .err()
-            .ok_or("missing cleanup boundary")?;
-        assert!(
-            error.to_string().contains("require destructor elaboration"),
-            "{name}: {error}"
-        );
+        let program = rustgm::body::build(&report, &facts).map_err(|e| format!("{name}: {e}"))?;
+        let pending = program.drops.as_ref().ok_or("missing pending destructor")?;
+        assert_eq!(pending.methods.len(), 1, "{name}");
+        let local = program
+            .bodies
+            .iter()
+            .flat_map(|body| &body.locals)
+            .find(|local| local.definition == Some(receiver.definition))
+            .ok_or("missing receiver local")?;
+        assert_eq!(local.ty, receiver.ty, "{name}");
+        assert_eq!(local.mutable, receiver.mutable, "{name}");
+        assert_eq!(local.scope.0, 0, "{name}");
     }
     Ok(())
 }
@@ -440,9 +445,15 @@ fn typed_drop_inspection_does_not_authorize_executable_or_borrow_proofs()
     let counts = run("--count-types")?;
     assert_eq!(counts.status.code(), Some(0));
     assert!(String::from_utf8(counts.stdout)?.contains("destructors=1 receivers=1"));
+    for mode in ["--emit-body-ir", "--count-body-ir"] {
+        let output = run(mode)?;
+        assert_eq!(output.status.code(), Some(0), "{mode}");
+        assert!(
+            String::from_utf8(output.stdout)?.contains("pending-destructor"),
+            "{mode}"
+        );
+    }
     for mode in [
-        "--emit-body-ir",
-        "--count-body-ir",
         "--emit-ownership",
         "--emit-regions",
         "--count-regions",
@@ -458,5 +469,37 @@ fn typed_drop_inspection_does_not_authorize_executable_or_borrow_proofs()
             "{mode}"
         );
     }
+    Ok(())
+}
+
+#[test]
+fn wide_impl_binders_preserve_named_method_slots_and_diagnose_region_capacity()
+-> Result<(), Box<dyn std::error::Error>> {
+    let source = |count| {
+        let names = (0..count)
+            .map(|i| format!("'a{i}"))
+            .collect::<Vec<_>>()
+            .join(",");
+        format!("struct S;impl<{names}> Drop for S{{fn drop<'r>(&'r mut self){{}}}}")
+    };
+    let input = source(4096);
+    rustc::qualify("wide-method-binder", &input, true)?;
+    let (_, facts) = semantic::analyze(&input)?;
+    let implementation = &facts.destructors.implementations()[0];
+    assert_eq!(implementation.parameters, 4096);
+    let scheme = facts
+        .lifetimes
+        .functions
+        .get(&implementation.method)
+        .ok_or("missing method environment")?;
+    assert_eq!(scheme.total, 4097);
+    assert_eq!(scheme.late, [4096]);
+    let error = semantic::analyze(&source(65_536))
+        .err()
+        .ok_or("region capacity was not diagnosed")?;
+    assert!(
+        error.contains("signature has too many lifetime parameters"),
+        "{error}"
+    );
     Ok(())
 }

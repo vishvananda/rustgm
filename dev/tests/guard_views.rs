@@ -167,6 +167,7 @@ impl Fixture {
             self.block(Terminator::Unreachable)?;
         }
         let program = Program {
+            drops: None,
             bodies: vec![self.body],
             region_equalities: Vec::new(),
             coercions: Vec::new(),

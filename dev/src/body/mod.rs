@@ -2,6 +2,7 @@
 pub mod body_view;
 mod build;
 pub mod constants;
+pub mod drops;
 pub mod ir;
 pub mod promote;
 pub mod regions;

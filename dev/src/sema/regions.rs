@@ -30,7 +30,8 @@ struct Binder {
     parent: Option<BinderId>,
     captured: Option<BinderId>,
     declared: Vec<DefId>,
-    named: HashMap<DefId, u16>,
+    /// Membership is indexed before slot assignment; slots retain first-use order.
+    named: HashMap<DefId, Option<u16>>,
     count: u32,
     output: Option<RegionId>,
     candidates: HashSet<RegionId>,
@@ -46,8 +47,8 @@ impl Regions {
         self.binders.push(Binder {
             parent,
             captured: None,
+            named: declared.iter().copied().map(|id| (id, None)).collect(),
             declared,
-            named: HashMap::new(),
             count: 0,
             output: None,
             candidates: HashSet::new(),
@@ -61,7 +62,9 @@ impl Regions {
         let (existing, added) = self.binders.split_at_mut(id.0);
         let captured = &existing[source.0];
         let method = &mut added[0];
-        method.named.clone_from(&captured.named);
+        method
+            .named
+            .extend(captured.named.iter().map(|(&id, &slot)| (id, slot)));
         method.count = captured.count;
         let mut names = captured.declared.clone();
         names.append(&mut method.declared);
@@ -99,7 +102,9 @@ impl Regions {
                 binder
                     .named
                     .get(definition)
-                    .map(|index| RegionId::bound(0, *index).map(|region| (*definition, region)))
+                    .copied()
+                    .flatten()
+                    .map(|index| RegionId::bound(0, index).map(|region| (*definition, region)))
             })
             .collect()
     }
@@ -131,12 +136,12 @@ impl Regions {
     ) -> Result<RegionId, &'static str> {
         let mut depth = 0;
         while let Some(id) = binder {
-            if self.binders[id.0].declared.contains(&definition) {
-                let index = if let Some(index) = self.binders[id.0].named.get(&definition) {
-                    *index
+            if let Some(slot) = self.binders[id.0].named.get(&definition).copied() {
+                let index = if let Some(index) = slot {
+                    index
                 } else {
                     let index = self.fresh(id)?;
-                    self.binders[id.0].named.insert(definition, index);
+                    self.binders[id.0].named.insert(definition, Some(index));
                     index
                 };
                 return RegionId::bound(depth, index);

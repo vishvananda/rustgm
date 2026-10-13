@@ -76,6 +76,8 @@ field-implied bounds, using the shared directed outlives graph. A receiver has a
 independent late lifetime; reference mutability and binding mutability are
 separate facts. A typed destructor is not an ordinary callable function value
 and is not evidence that cleanup has been proved or emitted.
+Index declared lifetime membership separately from first-use slot assignment;
+capturing a wide impl binder must not scan all its declarations per parameter.
 
 Analyze generic bodies without reparsing syntax. A monomorphization key must
 include all type/const arguments and semantic context affecting its result.
@@ -183,6 +185,21 @@ statement at every failure branch. Preserve reverse lifetime order and skip
 already-closed nested scopes. Storage compaction is distinct from ownership
 proof complexity: charge the paths/words actually visited and retain explicit
 dataflow memory and work budgets.
+
+Compute destruction requirements from canonical types with a bounded iterative
+query, memoizing shared shapes and errors. References do not own their referents;
+zero-length arrays do not require element destruction. Array length must not
+expand query work. Programs without custom destructors need no pending-drop
+metadata in the current closed type profile.
+
+Pending body facts retain destructor identities, type requirements and candidate
+store/storage exits. Reuse persistent live-stack ranges and existing exit IDs;
+do not copy every local at every exit. These candidates can overlap and are not
+an execution plan: initialization, moves, owned rvalue scopes, ordering and
+destructor-induced liveness still need proof. Complete ownership, region and
+loan proofs and executable lowering reject pending elaboration. Raw body views
+may expose it explicitly. A value needing destruction cannot be promoted to
+permanent storage, even while its cleanup plan remains pending.
 
 Internal match-guard views retain selected place identity and delay owning
 captures until success. Protect tested places without runtime loads or address

@@ -1,6 +1,23 @@
 //! Statement boundaries, conditional bindings, and explicit pattern ownership.
 use super::{Context, Error, Kind, List, NodeId, Punctuation, Syntax, Walker, Work};
 impl Walker<'_> {
+    pub(super) fn bind_scope(
+        &mut self,
+        node: NodeId,
+        definition: crate::resolve::model::DefId,
+        scope: super::Id,
+    ) -> Result<(), Error> {
+        if self
+            .facts
+            .scratch
+            .bindings
+            .insert(definition, scope)
+            .is_some_and(|old| old != scope)
+        {
+            return Err(self.error(node, "binding has inconsistent storage scope"));
+        }
+        Ok(())
+    }
     pub(super) fn statements(&mut self, list: List, context: Context) -> Result<(), Error> {
         for index in (list.start..list.end).rev() {
             self.push(Work::Statement(self.child(index), context))?;
@@ -65,15 +82,7 @@ impl Walker<'_> {
                     .node(key)
                     .and_then(|n| n.binding)
                     .ok_or_else(|| self.error(node, "pattern lacks selected binding"))?;
-                if self
-                    .facts
-                    .scratch
-                    .bindings
-                    .insert(definition, scope)
-                    .is_some_and(|old| old != scope)
-                {
-                    return Err(self.error(node, "binding has inconsistent storage scope"));
-                }
+                self.bind_scope(node, definition, scope)?;
                 if let Some(pattern) = subpattern {
                     self.push(Work::Pattern(pattern, scope))?;
                 }

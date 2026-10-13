@@ -57,6 +57,12 @@ pub fn check_bodies(
     contracts: &Contracts<'_>,
     program: &crate::body::ir::Program,
 ) -> Result<Analysis, Error> {
+    if let Some(pending) = &program.drops {
+        return Err(Error {
+            source: Some(pending.source),
+            message: crate::body::drops::PENDING_MESSAGE.into(),
+        });
+    }
     run(types, definitions, variances, contracts, Some(program))
 }
 fn run(

@@ -110,6 +110,12 @@ fn run<'a, const RECORD: bool, S: BuildHasher>(
     program: &'a Program,
     mut record: impl FnMut(ownership::BodyFacts, loans::Report),
 ) -> Result<Checked<'a>, Error> {
+    if let Some(pending) = &program.drops {
+        return Err(Error {
+            node: Some(pending.source),
+            message: crate::body::drops::PENDING_MESSAGE.into(),
+        });
+    }
     let by_source: HashMap<_, _> = contracts.bodies.iter().map(|b| (b.source, b)).collect();
     let mut components = LiveRegions::default();
     for body in &program.bodies {

@@ -3,6 +3,7 @@ pub mod aggregate;
 pub mod bound_uses;
 pub mod callable;
 pub mod copy;
+pub mod destruction;
 pub mod equality;
 pub mod infer;
 pub mod outlives;

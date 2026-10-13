@@ -103,6 +103,12 @@ fn visit<'a, S: BuildHasher>(
     program: &'a Program,
     mut record: impl FnMut(BodyFacts),
 ) -> Result<Checked<'a>, Error> {
+    if let Some(pending) = &program.drops {
+        return Err(Error {
+            node: pending.source,
+            message: crate::body::drops::PENDING_MESSAGE,
+        });
+    }
     let mut pending = None;
     for body in &program.bodies {
         let facts = analyze_body(types, definitions, derives, copies, body)?;

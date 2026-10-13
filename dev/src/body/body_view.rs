@@ -17,6 +17,9 @@ pub fn write(program: &Program, types: &Store, out: &mut impl Write) -> io::Resu
     type_view::body_regions(&program.body_regions, out)?;
     type_view::coercions(&program.coercions, out)?;
     type_view::outlives(&program.outlives, out)?;
+    if let Some(pending) = &program.drops {
+        super::drops::view::write(program, pending, out)?;
+    }
     for (index, body) in program.bodies.iter().enumerate() {
         write!(out, "body {index} ")?;
         match body.owner {
@@ -61,11 +64,21 @@ pub fn count(program: &Program, out: &mut impl Write) -> io::Result<()> {
         statements += body.statements.len();
         blocks += body.blocks.len();
     }
-    writeln!(
+    write!(
         out,
         "bodies={} locals={locals} values={values} statements={statements} blocks={blocks}",
         program.bodies.len()
-    )
+    )?;
+    if let Some(pending) = &program.drops {
+        write!(
+            out,
+            " pending-destructors={} drop-sites={} drop-query-steps={}",
+            pending.methods.len(),
+            pending.bodies.iter().map(|b| b.sites.len()).sum::<usize>(),
+            pending.query_steps
+        )?;
+    }
+    writeln!(out)
 }
 fn contents(body: &Body, out: &mut impl Write) -> io::Result<()> {
     for (id, local) in body.locals.iter().enumerate() {
@@ -183,7 +196,7 @@ fn blocks(body: &Body, out: &mut impl Write) -> io::Result<()> {
     }
     Ok(())
 }
-fn place(value: Place, out: &mut impl Write) -> io::Result<()> {
+pub(super) fn place(value: Place, out: &mut impl Write) -> io::Result<()> {
     match value {
         Place::Local(id) => write!(out, "l{}", id.0),
         Place::Static(id) => write!(out, "static:{}", id.0),

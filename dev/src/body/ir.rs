@@ -322,6 +322,7 @@ impl Iterator for StorageRange<'_> {
     }
 }
 pub struct Program {
+    pub drops: Option<super::drops::Pending>,
     pub bodies: Vec<Body>,
     pub region_equalities: Vec<RegionEquality>,
     pub coercions: Vec<crate::sema::model::Coercion>,

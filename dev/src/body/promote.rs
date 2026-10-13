@@ -49,11 +49,16 @@ pub fn analyze(
         return Ok(());
     }
     let mut evaluator = Evaluator::new(report, facts);
-    for body in &mut program.bodies {
+    for (index, body) in program.bodies.iter_mut().enumerate() {
         if body.promotions.is_some() {
             continue;
         }
-        let mut engine = Engine::new(report, body, &mut evaluator);
+        let drop_values = program
+            .drops
+            .as_ref()
+            .and_then(|p| p.bodies.get(index))
+            .map(|b| b.values.as_slice());
+        let mut engine = Engine::new(report, body, &mut evaluator, drop_values);
         let output = engine.collect().map_err(|error| match error {
             Error::Constant(error) => error,
             Error::Evaluation(error) => {
@@ -107,6 +112,7 @@ impl From<&'static str> for Error {
     }
 }
 struct Engine<'a, 'b> {
+    drop_values: Option<&'a [bool]>,
     report: &'a Report,
     sources: Vec<Option<crate::syntax::ast::NodeId>>,
     body: &'a Body,
@@ -118,8 +124,14 @@ struct Engine<'a, 'b> {
     limit: usize,
 }
 impl<'a, 'b> Engine<'a, 'b> {
-    fn new(report: &'a Report, body: &'a Body, evaluator: &'a mut Evaluator<'b>) -> Self {
+    fn new(
+        report: &'a Report,
+        body: &'a Body,
+        evaluator: &'a mut Evaluator<'b>,
+        drop_values: Option<&'a [bool]>,
+    ) -> Self {
         Self {
+            drop_values,
             report,
             sources: Vec::new(),
             body,
@@ -153,6 +165,14 @@ impl<'a, 'b> Engine<'a, 'b> {
             let Some(root) = self.root(place)? else {
                 continue;
             };
+            if self
+                .drop_values
+                .and_then(|values| values.get(root.0 as usize))
+                .copied()
+                == Some(true)
+            {
+                continue;
+            }
             if facts.index.contains_key(&root) {
                 continue;
             }

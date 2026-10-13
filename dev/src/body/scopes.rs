@@ -208,6 +208,13 @@ fn analyze(
             let Syntax::Parameter { pattern, .. } = walker.kind(parameter) else {
                 return Err(walker.error(parameter, "missing parameter pattern"));
             };
+            if let Some(receiver) = types.destructors.receivers.get(&NodeKey {
+                file: source.file,
+                node: parameter,
+            }) {
+                walker.bind_scope(receiver.binding.node, receiver.definition, Id(0))?;
+                continue;
+            }
             walker.push(Work::Pattern(pattern, Id(0)))?;
         }
     } else {
