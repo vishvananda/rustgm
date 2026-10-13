@@ -1,0 +1,1 @@
+#[derive(Copy)] struct N;

@@ -208,8 +208,9 @@
       "path": "pa14",
       "title": "Moves and initialization",
       "mode": "--emit-ownership",
-      "status": "planned",
-      "scope": "Move paths, Copy rules and definite/maybe initialization",
+      "additional_modes": ["--emit-lowir"],
+      "status": "implemented-draft",
+      "scope": "Owned move paths, Copy/Clone obligations, definite initialization and maybe-written joins; user-reference loans, outlives and destruction remain separate proofs",
       "test_families": [
         "partial moves",
         "disjoint fields",

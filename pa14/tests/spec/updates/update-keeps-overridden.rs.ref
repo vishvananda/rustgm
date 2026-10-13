@@ -1,0 +1,12 @@
+ownership-crate 1
+body 0 source=0:36
+  path m0 type=20 root=l0 subtree=0..3
+  path m1 type=20 root=l1 subtree=3..4
+  path m2 type=19 root=l2 subtree=4..5
+  path m3 type=19 root=l0 parent=m0 nominal-field=1 subtree=1..2
+  path m4 type=19 root=l0 parent=m0 nominal-field=0 subtree=2..3
+  use v1 move
+  use v4 move
+  block b0 reachable=true
+end-body
+eof bodies=1 paths=5 copies=0 moves=2

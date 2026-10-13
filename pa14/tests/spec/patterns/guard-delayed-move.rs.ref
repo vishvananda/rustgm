@@ -1,0 +1,36 @@
+ownership-crate 1
+body 0 source=0:37
+  path m0 type=19 root=l0 subtree=0..1
+  path m1 type=11 root=l1 subtree=1..2
+  path m2 type=19 root=l2 subtree=2..4
+  path m3 type=19 root=l3 subtree=4..6
+  path m4 type=19 root=l4 subtree=6..8
+  path m5 type=11 root=l2 parent=m2 nominal-field=0 subtree=3..4
+  path m6 type=11 root=l3 parent=m3 nominal-field=0 subtree=5..6
+  path m7 type=11 root=l4 parent=m4 nominal-field=0 subtree=7..8
+  use v0 copy
+  use v3 move
+  use v4 copy
+  use v5 move
+  use v6 copy
+  use v7 copy
+  block b0 reachable=true
+  block b1 reachable=true
+  block b2 reachable=true
+  block b3 reachable=true
+  block b4 reachable=true
+  block b5 reachable=true
+  block b6 reachable=true
+  block b7 reachable=true
+  block b8 reachable=true
+  block b9 reachable=true
+  block b10 reachable=true
+  block b11 reachable=false
+  block b12 reachable=false
+end-body
+body 1 source=0:4
+  path m0 type=11 root=l0 subtree=0..1
+  use v0 copy
+  block b0 reachable=true
+end-body
+eof bodies=2 paths=9 copies=5 moves=2

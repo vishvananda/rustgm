@@ -1,0 +1,1551 @@
+{
+  "schema": 1,
+  "mode": "--emit-ownership",
+  "additional_modes": [
+    "--emit-lowir"
+  ],
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "panic": "abort",
+  "overflow_checks": true,
+  "debug_assertions": false,
+  "cases": [
+    {
+      "path": "tests/spec/arrays/array-copy.rs",
+      "exit_status": 0,
+      "features": [
+        "pa14.arrays"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/arrays/array-noncopy.rs",
+      "exit_status": 1,
+      "features": [
+        "pa14.arrays"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/arrays/empty-array-noncopy.rs",
+      "exit_status": 1,
+      "features": [
+        "pa14.arrays"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/arrays/empty-index-move.rs",
+      "exit_status": 1,
+      "features": [
+        "pa14.arrays"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/arrays/immutable-index-write.rs",
+      "exit_status": 1,
+      "features": [
+        "pa14.arrays"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/arrays/index-copy-field.rs",
+      "exit_status": 0,
+      "features": [
+        "pa14.arrays"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/arrays/index-move-field.rs",
+      "exit_status": 1,
+      "features": [
+        "pa14.arrays"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/arrays/index-move.rs",
+      "exit_status": 1,
+      "features": [
+        "pa14.arrays"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/arrays/index-wildcard.rs",
+      "exit_status": 0,
+      "features": [
+        "pa14.arrays"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/arrays/index-write-field.rs",
+      "exit_status": 0,
+      "features": [
+        "pa14.arrays"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/arrays/index-write.rs",
+      "exit_status": 0,
+      "features": [
+        "pa14.arrays"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/arrays/repeat-constant.rs",
+      "exit_status": 0,
+      "features": [
+        "pa14.arrays"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/arrays/repeat-expression.rs",
+      "exit_status": 1,
+      "features": [
+        "pa14.arrays"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/arrays/repeat-one.rs",
+      "exit_status": 0,
+      "features": [
+        "pa14.arrays"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/arrays/repeat-two.rs",
+      "exit_status": 1,
+      "features": [
+        "pa14.arrays"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/arrays/repeat-zero-moves.rs",
+      "exit_status": 1,
+      "features": [
+        "pa14.arrays"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/arrays/repeat-zero.rs",
+      "exit_status": 0,
+      "features": [
+        "pa14.arrays"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/arrays/uninitialized-index.rs",
+      "exit_status": 1,
+      "features": [
+        "pa14.arrays"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/copy/clone-not-copy.rs",
+      "exit_status": 1,
+      "features": [
+        "pa14.copy"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/copy/configured-derive.rs",
+      "exit_status": 0,
+      "features": [
+        "pa14.copy"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/copy/copy-alias.rs",
+      "exit_status": 0,
+      "features": [
+        "pa14.copy"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/copy/copy-function-pointer.rs",
+      "exit_status": 0,
+      "features": [
+        "pa14.copy"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/copy/copy-needs-clone.rs",
+      "exit_status": 1,
+      "features": [
+        "pa14.copy"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/copy/derive-clone-field.rs",
+      "exit_status": 0,
+      "features": [
+        "pa14.copy"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/copy/derive-empty-enum.rs",
+      "exit_status": 0,
+      "features": [
+        "pa14.copy"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/copy/derive-enum.rs",
+      "exit_status": 0,
+      "features": [
+        "pa14.copy"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/copy/derive-nonclone-field.rs",
+      "exit_status": 1,
+      "features": [
+        "pa14.copy"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/copy/derive-noncopy-field.rs",
+      "exit_status": 1,
+      "features": [
+        "pa14.copy"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/copy/derive-tuple.rs",
+      "exit_status": 0,
+      "features": [
+        "pa14.copy"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/copy/derive-unit-repeat.rs",
+      "exit_status": 0,
+      "features": [
+        "pa14.copy"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/copy/duplicate-clone.rs",
+      "exit_status": 1,
+      "features": [
+        "pa14.copy"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/copy/duplicate-copy.rs",
+      "exit_status": 1,
+      "features": [
+        "pa14.copy"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/copy/empty-array-derive-needs-element.rs",
+      "exit_status": 1,
+      "features": [
+        "pa14.copy"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/copy/function-pointer-array.rs",
+      "exit_status": 0,
+      "features": [
+        "pa14.copy"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/copy/macro-derive.rs",
+      "exit_status": 0,
+      "features": [
+        "pa14.copy"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/copy/mut-ref-clone.rs",
+      "exit_status": 1,
+      "features": [
+        "pa14.copy"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/copy/mutable-reference-noncopy.rs",
+      "exit_status": 1,
+      "features": [
+        "pa14.copy"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/copy/nested-noncopy-array.rs",
+      "exit_status": 1,
+      "features": [
+        "pa14.copy"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/copy/packed-clone-copy.rs",
+      "exit_status": 0,
+      "features": [
+        "pa14.copy"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/copy/packed-clone-noncopy.rs",
+      "exit_status": 1,
+      "features": [
+        "pa14.copy"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/copy/packed-two-clone-noncopy.rs",
+      "exit_status": 1,
+      "features": [
+        "pa14.copy"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/copy/pointer-recursive-copy.rs",
+      "exit_status": 0,
+      "features": [
+        "pa14.copy"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/copy/primitive-tuple.rs",
+      "exit_status": 0,
+      "features": [
+        "pa14.copy"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/copy/shared-reference-copy.rs",
+      "exit_status": 0,
+      "features": [
+        "pa14.copy"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/copy/shared-referent-noncopy.rs",
+      "exit_status": 0,
+      "features": [
+        "pa14.copy"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/copy/zero-size-nominal.rs",
+      "exit_status": 1,
+      "features": [
+        "pa14.copy"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/execution/branch-reinitialize.rs",
+      "exit_status": 0,
+      "features": [
+        "pa14.execution"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/execution/delayed-guard.rs",
+      "exit_status": 0,
+      "features": [
+        "pa14.execution"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/execution/derived-copy.rs",
+      "exit_status": 0,
+      "features": [
+        "pa14.execution"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/execution/disjoint-array.rs",
+      "exit_status": 0,
+      "features": [
+        "pa14.execution"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/execution/immutable-join.rs",
+      "exit_status": 0,
+      "features": [
+        "pa14.execution"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/execution/loop-move-reinitialize.rs",
+      "exit_status": 0,
+      "features": [
+        "pa14.execution"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/execution/nested-reinitialize.rs",
+      "exit_status": 0,
+      "features": [
+        "pa14.execution"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/execution/partial-reinitialize.rs",
+      "exit_status": 0,
+      "features": [
+        "pa14.execution"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/execution/single-variant.rs",
+      "exit_status": 0,
+      "features": [
+        "pa14.execution"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/execution/storage-continue.rs",
+      "exit_status": 0,
+      "features": [
+        "pa14.execution"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/execution/temporary-move.rs",
+      "exit_status": 0,
+      "features": [
+        "pa14.execution"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/execution/update-disjoint.rs",
+      "exit_status": 0,
+      "features": [
+        "pa14.execution"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/initialization/both-branches-init.rs",
+      "exit_status": 0,
+      "features": [
+        "pa14.initialization"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/initialization/break-before-reuse.rs",
+      "exit_status": 0,
+      "features": [
+        "pa14.initialization"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/initialization/break-definite-init.rs",
+      "exit_status": 0,
+      "features": [
+        "pa14.initialization"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/initialization/break-maybe-init.rs",
+      "exit_status": 1,
+      "features": [
+        "pa14.initialization"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/initialization/conditional-move.rs",
+      "exit_status": 1,
+      "features": [
+        "pa14.initialization"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/initialization/conditional-reinitialize.rs",
+      "exit_status": 0,
+      "features": [
+        "pa14.initialization"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/initialization/continue-after-move.rs",
+      "exit_status": 1,
+      "features": [
+        "pa14.initialization"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/initialization/continue-fresh-local.rs",
+      "exit_status": 0,
+      "features": [
+        "pa14.initialization"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/initialization/diverging-predecessor.rs",
+      "exit_status": 0,
+      "features": [
+        "pa14.initialization"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/initialization/immutable-join-once.rs",
+      "exit_status": 0,
+      "features": [
+        "pa14.initialization"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/initialization/immutable-loop-local.rs",
+      "exit_status": 0,
+      "features": [
+        "pa14.initialization"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/initialization/immutable-loop-repeated.rs",
+      "exit_status": 1,
+      "features": [
+        "pa14.initialization"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/initialization/immutable-maybe-write.rs",
+      "exit_status": 1,
+      "features": [
+        "pa14.initialization"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/initialization/labeled-init-join.rs",
+      "exit_status": 0,
+      "features": [
+        "pa14.initialization"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/initialization/lhs-index-after-rhs-move.rs",
+      "exit_status": 1,
+      "features": [
+        "pa14.initialization"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/initialization/loop-break-move.rs",
+      "exit_status": 0,
+      "features": [
+        "pa14.initialization"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/initialization/loop-exit-moved.rs",
+      "exit_status": 1,
+      "features": [
+        "pa14.initialization"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/initialization/loop-fresh-storage.rs",
+      "exit_status": 0,
+      "features": [
+        "pa14.initialization"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/initialization/loop-reinitialize.rs",
+      "exit_status": 0,
+      "features": [
+        "pa14.initialization"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/initialization/loop-repeated-move.rs",
+      "exit_status": 1,
+      "features": [
+        "pa14.initialization"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/initialization/maybe-parent-init.rs",
+      "exit_status": 1,
+      "features": [
+        "pa14.initialization"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/initialization/noncopy-static-move.rs",
+      "exit_status": 1,
+      "features": [
+        "pa14.initialization"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/initialization/one-branch-init.rs",
+      "exit_status": 1,
+      "features": [
+        "pa14.initialization"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/initialization/readonly-static-read.rs",
+      "exit_status": 0,
+      "features": [
+        "pa14.initialization"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/initialization/return-read-after-move.rs",
+      "exit_status": 1,
+      "features": [
+        "pa14.initialization"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/initialization/rhs-before-store.rs",
+      "exit_status": 0,
+      "features": [
+        "pa14.initialization"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/initialization/shadow-storage.rs",
+      "exit_status": 0,
+      "features": [
+        "pa14.initialization"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/initialization/static-copy-field.rs",
+      "exit_status": 0,
+      "features": [
+        "pa14.initialization"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/moves/block-result-move.rs",
+      "exit_status": 0,
+      "features": [
+        "pa14.moves"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/moves/copy-field-after-move.rs",
+      "exit_status": 0,
+      "features": [
+        "pa14.moves"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/moves/disjoint-fields.rs",
+      "exit_status": 0,
+      "features": [
+        "pa14.moves"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/moves/function-item-copy.rs",
+      "exit_status": 0,
+      "features": [
+        "pa14.moves"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/moves/immutable-field-write.rs",
+      "exit_status": 1,
+      "features": [
+        "pa14.moves"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/moves/immutable-reassignment.rs",
+      "exit_status": 1,
+      "features": [
+        "pa14.moves"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/moves/move-twice.rs",
+      "exit_status": 1,
+      "features": [
+        "pa14.moves"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/moves/mutable-reassignment.rs",
+      "exit_status": 0,
+      "features": [
+        "pa14.moves"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/moves/mutable-reference-move.rs",
+      "exit_status": 1,
+      "features": [
+        "pa14.moves"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/moves/nested-field-reinit.rs",
+      "exit_status": 0,
+      "features": [
+        "pa14.moves"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/moves/nested-parent-moved.rs",
+      "exit_status": 1,
+      "features": [
+        "pa14.moves"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/moves/nested-partial-parent.rs",
+      "exit_status": 1,
+      "features": [
+        "pa14.moves"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/moves/partial-whole-read.rs",
+      "exit_status": 1,
+      "features": [
+        "pa14.moves"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/moves/project-after-whole-move.rs",
+      "exit_status": 1,
+      "features": [
+        "pa14.moves"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/moves/project-before-whole-init.rs",
+      "exit_status": 1,
+      "features": [
+        "pa14.moves"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/moves/reinitialize-all-fields.rs",
+      "exit_status": 0,
+      "features": [
+        "pa14.moves"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/moves/reinitialize-field.rs",
+      "exit_status": 0,
+      "features": [
+        "pa14.moves"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/moves/shared-reference-reuse.rs",
+      "exit_status": 0,
+      "features": [
+        "pa14.moves"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/moves/temporary-field-move.rs",
+      "exit_status": 0,
+      "features": [
+        "pa14.moves"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/moves/wildcard-not-move.rs",
+      "exit_status": 0,
+      "features": [
+        "pa14.moves"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/moves/wildcard-uninitialized-field.rs",
+      "exit_status": 0,
+      "features": [
+        "pa14.moves"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/patterns/array-disjoint-elements.rs",
+      "exit_status": 0,
+      "features": [
+        "pa14.patterns"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/patterns/array-empty-pattern.rs",
+      "exit_status": 0,
+      "features": [
+        "pa14.patterns"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/patterns/array-overlapping-elements.rs",
+      "exit_status": 1,
+      "features": [
+        "pa14.patterns"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/patterns/enum-partial-whole.rs",
+      "exit_status": 1,
+      "features": [
+        "pa14.patterns"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/patterns/guard-delayed-move.rs",
+      "exit_status": 0,
+      "features": [
+        "pa14.patterns"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/patterns/guard-moving-view.rs",
+      "exit_status": 1,
+      "features": [
+        "pa14.patterns"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/patterns/guard-readonly-binding.rs",
+      "exit_status": 1,
+      "features": [
+        "pa14.patterns"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/patterns/late-arm-imaginary.rs",
+      "exit_status": 1,
+      "features": [
+        "pa14.patterns"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/patterns/let-else-imaginary.rs",
+      "exit_status": 1,
+      "features": [
+        "pa14.patterns"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/patterns/nested-rest-reinit.rs",
+      "exit_status": 1,
+      "features": [
+        "pa14.patterns"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/patterns/or-capture-join.rs",
+      "exit_status": 1,
+      "features": [
+        "pa14.patterns"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/patterns/single-variant-disjoint.rs",
+      "exit_status": 0,
+      "features": [
+        "pa14.patterns"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/updates/record-field-reinit.rs",
+      "exit_status": 0,
+      "features": [
+        "pa14.updates"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/updates/update-keeps-overridden.rs",
+      "exit_status": 0,
+      "features": [
+        "pa14.updates"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/updates/update-overrides-moved.rs",
+      "exit_status": 0,
+      "features": [
+        "pa14.updates"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/updates/update-partial-source.rs",
+      "exit_status": 1,
+      "features": [
+        "pa14.updates"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/updates/update-reads-moved.rs",
+      "exit_status": 1,
+      "features": [
+        "pa14.updates"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    }
+  ]
+}

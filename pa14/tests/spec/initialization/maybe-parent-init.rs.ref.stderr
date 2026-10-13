@@ -1,0 +1,1 @@
+ERROR: file 0: 53: cannot assign a field of an uninitialized or wholly moved value

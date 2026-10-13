@@ -1,0 +1,7 @@
+ownership-crate 1
+body 0 source=0:7
+  path m0 type=21 root=l0 subtree=0..1
+  use v0 copy
+  block b0 reachable=true
+end-body
+eof bodies=1 paths=1 copies=1 moves=0

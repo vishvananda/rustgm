@@ -38,7 +38,9 @@ repository with pinned reference tools. It has not been built yet.
 - PA13 adds selected patterns, coverage, owned decisions, conditional bindings,
   guard retries and constant patterns, with 803 text-oracle cases. Borrowed,
   text and dynamic-slice inspections retain explicit pending execution proofs.
-- PA14–PA38 have buildout briefs and Makefiles. Their suites and implementation
+- PA14 publishes move/initialization and Copy/Clone proofs through ownership
+  views, with 124 course cases and independent native controls.
+- PA15–PA38 have buildout briefs and Makefiles. Their suites and implementation
   are not complete; invoking an unbuilt assignment fails explicitly.
 
 Read [ROADMAP.md](ROADMAP.md), [spec.md](spec.md),

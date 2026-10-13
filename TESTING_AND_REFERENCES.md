@@ -138,6 +138,13 @@ signals, exit 86, timeouts and unqualified aborts still fail. Receipts and summa
 report these runtime differences explicitly. No inspection case counts as native
 execution. See `docs/pa13-validation.md`.
 
+PA14 adds 124 cases: 112 ownership views and twelve executable LowIR controls.
+The independent acceptance and runtime expectations agree with pinned rustc
+without exceptions. `--emit-ownership` and `--count-ownership` expose the same
+move/initialization proof already required for LowIR; this is not a lifetime or
+loan proof. Root independent/native targets include PA14. See
+`docs/pa14-validation.md` for the sparse path/bitset contract and scaling evidence.
+
 ## Placement and provenance
 
 Every `.rs` fixture under an active assignment's tests directory must be in its
