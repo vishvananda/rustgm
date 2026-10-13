@@ -60,9 +60,10 @@ def main():
     workloads.add_argument("--conditional-pattern-input", action="store_true", help="exercise let-else, conditional chains and while-let at 1000/4000/16000 procedures")
     workloads.add_argument("--storage-width-input", choices=("chain", "let-else"), help="exercise persistent cleanup at 128/512/2048 bindings in one procedure")
     workloads.add_argument("--guard-input", choices=("boolean", "let-chain", "retry"), help="exercise guard scopes or execution at 1000/4000/16000 procedures")
+    workloads.add_argument("--constant-pattern-input", choices=("shared", "unique", "chain"), help="exercise cached or independent constant patterns at 1000/4000/16000 procedures")
     parser.add_argument("--stage", choices=("tokens", "literals", "token-trees", "ast", "crate-ast", "names", "expanded", "expanded-crate", "types", "patterns", "layouts", "body-ir", "ownership", "lowir"), default="tokens")
     args = parser.parse_args()
-    if (args.aggregate_input or args.discriminant_input or args.product_input or args.array_pattern_input or args.scalar_match_input or args.constructor_match_input or args.conditional_pattern_input or args.storage_width_input) and args.stage != "lowir":
+    if (args.aggregate_input or args.discriminant_input or args.product_input or args.array_pattern_input or args.scalar_match_input or args.constructor_match_input or args.conditional_pattern_input or args.storage_width_input or args.constant_pattern_input) and args.stage != "lowir":
         parser.error("aggregate, discriminant and owned-pattern workloads require --stage lowir")
     if args.pattern_input and args.stage != "names":
         parser.error("pattern identity workloads require --stage names")
@@ -95,17 +96,30 @@ def main():
                "conditional_pattern_input": args.conditional_pattern_input,
                "storage_width_input": args.storage_width_input,
                "guard_input": args.guard_input,
+               "constant_pattern_input": args.constant_pattern_input,
                "binary_sha256": {name: hashlib.sha256(p.read_bytes()).hexdigest() for name, p in binaries.items()},
                "samples": [], "full_output_sha256": {}}
     scales = (4000, 16000, 64000) if args.stage in ("token-trees", "ast", "crate-ast", "names", "expanded", "expanded-crate", "types", "body-ir", "ownership", "lowir") else (16000, 64000, 256000)
-    if args.aggregate_input or args.discriminant_input or args.pattern_input or args.product_input or args.array_pattern_input or args.borrowed_pattern_input or args.scalar_match_input or args.constructor_pattern_input or args.constructor_match_input or args.conditional_pattern_input or args.guard_input or args.stage == "layouts":
+    if args.aggregate_input or args.discriminant_input or args.pattern_input or args.product_input or args.array_pattern_input or args.borrowed_pattern_input or args.scalar_match_input or args.constructor_pattern_input or args.constructor_match_input or args.conditional_pattern_input or args.guard_input or args.constant_pattern_input or args.stage == "layouts":
         scales = (1000, 4000, 16000)
     if args.storage_width_input:
         scales = (128, 512, 2048)
     line = {"tokens": LINE, "literals": LITERAL_LINE, "token-trees": TREE_LINE, "ast": AST_LINE, "crate-ast": CRATE_LINE, "names": b"", "expanded": b"", "expanded-crate": b"", "types": b"", "patterns": b"", "layouts": b"", "body-ir": b"", "ownership": b"", "lowir": b""}[args.stage]
     for lines in scales:
         source = directory / f"input-{lines}.rs"
-        if args.guard_input:
+        if args.constant_pattern_input:
+            constants = "const ROOT:u64=7;\n"
+            if args.constant_pattern_input != "shared":
+                for i in range(lines):
+                    value = f"N{i+1}+1" if args.constant_pattern_input == "chain" and i + 1 < lines else f"ROOT+{i}"
+                    constants += f"const N{i}:u64={value};\n"
+            functions = []
+            for i in range(lines):
+                name = "ROOT" if args.constant_pattern_input == "shared" else f"N{i}"
+                functions.append(f"fn measured_{i}(x:u64)->u64{{match x{{{name}=>1,0=>2,_=>3}}}}\n")
+            source.write_text(constants + "".join(functions) + "fn main(){" + "".join(
+                f"measured_{i}(7);" for i in range(lines)) + "}\n")
+        elif args.guard_input:
             guard = "n>0&&n<10" if args.guard_input == "boolean" else "let n=n&&n>0&&let m=n+1"
             value = "m" if args.guard_input == "let-chain" else "n"
             prefix, pattern = "", "n"

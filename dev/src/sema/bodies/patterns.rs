@@ -188,6 +188,9 @@ impl Checker<'_> {
                 }
                 Ok(PatternKind::Or(Alternatives { start, end }))
             }
+            Kind::Binding { .. } | Kind::Path { .. } if self.pattern_constant(node).is_some() => {
+                self.scalar_pattern(node, term)
+            }
             Kind::Binding { .. } | Kind::Path { .. } => {
                 let variant = self.pattern_constructor(node, node, term)?;
                 if self.facts.members.variants[variant.0 as usize].shape != Shape::Unit {
@@ -254,7 +257,16 @@ impl Checker<'_> {
                 .facts
                 .node(self.key(node))
                 .is_some_and(|fact| fact.binding.is_none());
-        if structural {
+        let reference_constant = self
+            .pattern_constant(node)
+            .and_then(|definition| self.facts.definitions[definition.0 as usize])
+            .is_some_and(|ty| {
+                matches!(
+                    self.facts.types.kind(ty),
+                    Some(crate::types::Kind::Reference { .. })
+                )
+            });
+        if structural && !reference_constant {
             while let Some(Constructor::Reference { mutable, .. }) = self.head(node, term)? {
                 *steps += 1;
                 if *steps > 1_000_000 {

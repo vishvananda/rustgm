@@ -3,6 +3,7 @@ mod aggregates;
 mod conditions;
 mod divergence;
 mod matches;
+mod pattern_constants;
 mod patterns;
 use super::{
     declarations,
@@ -45,6 +46,9 @@ pub fn analyze(report: &Report, mut facts: Declarations) -> Result<Declarations,
                 .map_err(|e| report.diagnostic(e))?;
         }
     }
+    checker
+        .complete_constant_patterns()
+        .map_err(|e| report.diagnostic(e))?;
     Ok(facts)
 }
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -113,6 +117,8 @@ pub(super) struct Checker<'a> {
     pattern_work: Vec<patterns::Work>,
     pattern_types: Vec<(super::patterns::PatternId, TermId)>,
     pattern_refutable: bool,
+    pending_patterns: Option<Box<pattern_constants::Pending>>,
+    pattern_constants: bool,
     coverage_cache: super::patterns::coverage::Cache,
     range_work: Vec<matches::RangeWork>,
     pattern_requirements: Vec<super::patterns::PatternId>,
@@ -136,7 +142,7 @@ impl<'a> Checker<'a> {
             report,
             terms: facts.nodes.iter().map(|_| Vec::new()).collect(),
             diverges: Vec::new(),
-            locals: vec![None; facts.definitions.len()],
+            locals: Vec::new(),
             facts,
             file: FileId(0),
             body: NodeKey {
@@ -153,6 +159,8 @@ impl<'a> Checker<'a> {
             pattern_work: Vec::new(),
             pattern_types: Vec::new(),
             pattern_refutable: false,
+            pending_patterns: None,
+            pattern_constants: false,
             coverage_cache: super::patterns::coverage::Cache::default(),
             range_work: Vec::new(),
             pattern_requirements: Vec::new(),
@@ -170,6 +178,9 @@ impl<'a> Checker<'a> {
             assignments: Vec::new(),
             breaks: Vec::new(),
         }
+    }
+    pub(super) fn has_pending_patterns(&self) -> bool {
+        self.pending_patterns.is_some()
     }
     pub(super) fn constant(&mut self, key: NodeKey, ty: TypeId, owner: DefId) -> Result<(), Error> {
         self.body = key;
@@ -189,6 +200,7 @@ impl<'a> Checker<'a> {
 }
 impl Checker<'_> {
     fn prepare_file(&mut self, file: FileId) {
+        self.locals.resize(self.facts.definitions.len(), None);
         self.file = file;
         self.terms[file.0 as usize].resize(self.facts.nodes[file.0 as usize].len(), None);
         self.diverges

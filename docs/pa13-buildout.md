@@ -1237,3 +1237,116 @@ Both guard workloads show roughly proportional memory growth across these
 scales. Reproduce with `scripts/measure_lexer.py --stage lowir --guard-input
 let-chain` or `--guard-input retry`. The earlier name-stage guard workloads
 remain available. Raw records are `obj/perf/RUN/samples.json`.
+
+
+## Named scalar constant patterns
+
+Boolean, integer and character constant paths now select exact declared types
+and participate in the existing interval, constructor and ownership machinery.
+Constants also supply open, exclusive and inclusive range endpoints. This
+implements the scalar portion of the Reference's
+[constant translation rule](../doc/rust-reference/src/patterns.md), including
+exhaustiveness and whole-arm usefulness. It does not complete structural constant
+expansion or claim general CTFE support.
+
+The evaluator previously used for enum discriminants now has one shared
+post-typing query session for all pattern requests. A sparse declaration-value
+cache preserves evaluated dependencies across the declaration/body boundary.
+Completed enum layouts supply discriminants when there is no active declaration
+query. Source expressions and types are consumed as selected facts; no source
+is parsed again and initializers already checked for a discriminant are not
+checked again for a pattern use. Scalar arithmetic, casts, lazy conditions,
+cycle checks and the existing work budget remain shared.
+
+Ordinary body inference still constrains each pattern immediately. Only the
+constant value, normalized range and dependent coverage work are delayed.
+Requests and deferred ranges/roots/matches use flat arenas with per-body counts
+and file/module provenance. One reused coverage checker finishes those scopes
+after initializer typing. Constant-free bodies retain immediate coverage and no
+pending arena allocation. A query checker allocates local inference scratch only
+when it actually types a body; post-typing pattern queries do not allocate a
+second dense local table. `NodeFacts` remains 80 bytes.
+
+The new source matrix declares 30 successful scalar programs, one successful
+two-file package, 23 rejected programs and eight accepted Rust programs that
+remain explicit implementation boundaries. Pinned rustc checks every declared
+language outcome and executes all 31 successful programs. The independent
+resource tests cover shared discriminant dependencies, normalized signed ranks,
+redundant arms, fixed-width node facts, 4,096 repeated/distinct demands and an
+8,192-step forward dependency chain. Their retained range/arm/decision counts
+stay proportional to source requests. Privacy controls distinguish a private
+empty field in its owning module from the same type outside that module.
+
+Float domains, structural and reference constants, refutable dynamic slices and
+the final PA13 contract/fixtures remain open. Expression-position constants,
+text/reference values and general CTFE retain their earlier boundaries. A named
+pattern inside declaration-time CTFE is diagnosed explicitly before it can
+leave an unfinished coverage record. PA13 remains planned; PA14/PA15 remain
+in the active goal.
+
+
+The immutable candidate is `obj/pa13-work/constant-pattern-candidate`, SHA-256
+`30f7ea6d2490fee11569333a56a2c0257e7f8dcb0de8770b722f71a71c4f4109`.
+All 31 new programs pass CPPGM LowIR validation and native execution, with
+independent rustc executions retained in
+`obj/pa13-work/constant-qualified-1791851849512271660/evidence.json`.
+The same candidate requalifies the 61 guard/stress programs and the prior 150
+scalar/product/array/constructor/conditional/storage programs, respectively:
+`obj/pa13-work/constant-guards-qualified-1791851854487753521/evidence.json` and
+`obj/pa13-work/constant-previous-native-1791851862184764479/evidence.json`.
+The four larger guard stress cases retain their constructed attempt-count
+invariants; the other 207 earlier programs also execute independently with rustc.
+
+Debug and release each pass 307 Rust tests. All 1,695 active assignment cases
+pass. Clippy all/pedantic, rustfmt, the 196-file audit, 24 harness tests, 38-stage
+placement, 24 upstream fixtures, 126 Reference files and backend qualification
+pass. Full `make test-rustc` passes with the previously documented stage
+boundaries retained. Explicit `make ref-test` updates the twelve source receipts;
+no existing oracle stdout, stderr or status changes. The frozen executable
+passes PA11's 194 checks/180 native comparisons and PA12's 97 checks/48 native
+comparisons; the receipts in `obj/native/pa11/evidence.json` and
+`obj/native/pa12/evidence.json` identify its binary hash, not the CLI wrapper.
+Logs are `obj/pa13-work/constant-{full-debug,full-release,quality,harness,
+rustc-course,refs-native,frozen-native}.log`; the final debug query tests are in
+`constant-query-invariants.log`.
+
+
+CPU-10 measurements retain all 324 observations from six workloads: immutable
+binaries, identical frozen inputs, A/A calibration, three paired ABBA blocks
+at each scale, and complete rendered-output/count equality. No build or test
+from this task overlapped timing. The three existing workloads compare with
+`guard-execution-candidate` (`936cdce4801c6895a4930c2d687b68f7cea80540b9ef605533848f5f7583b8dd`).
+
+| Existing workload | Run | Largest scale | Baseline/candidate median ms | Baseline/candidate median peak KiB |
+| --- | --- | ---: | ---: | ---: |
+| ordinary | 1791852191478956423 | 64,000 | 3645.96 / 3641.91 | 715144 / 715172 |
+| discriminants | 1791852290023687168 | 16,000 | 836.10 / 826.32 | 147940 / 147920 |
+| guard-retries | 1791852312977751324 | 16,000 | 1256.64 / 1240.58 | 275878 / 275876 |
+
+These observations show similar medians and memory, not an established speedup.
+Ordinary largest-scale A/A spans 3.55–3.78 seconds; discriminant calibration
+also has a transient slowdown at 4,000 functions. Complete LowIR bytes agree
+with the baseline in every existing workload.
+
+The newly accepted constant workloads use candidate A/A scaling. Reproduce
+with `scripts/measure_lexer.py --stage lowir --constant-pattern-input MODE`,
+where MODE is `shared`, `unique` or `chain`.
+
+| Constant workload | Run | Functions | Candidate median ms | Candidate median peak KiB |
+| --- | --- | ---: | ---: | ---: |
+| shared | 1791852346777834045 | 1,000 | 36.52 | 12074 |
+| shared | 1791852346777834045 | 4,000 | 153.71 | 37910 |
+| shared | 1791852346777834045 | 16,000 | 642.87 | 142054 |
+| unique | 1791852364000714198 | 1,000 | 47.54 | 14186 |
+| unique | 1791852364000714198 | 4,000 | 200.69 | 47114 |
+| unique | 1791852364000714198 | 16,000 | 824.93 | 178688 |
+| chain | 1791852386321036084 | 1,000 | 48.66 | 14188 |
+| chain | 1791852386321036084 | 4,000 | 202.78 | 47130 |
+| chain | 1791852386321036084 | 16,000 | 957.05 | 178706 |
+
+Memory scales roughly with source size. The largest forward-chain calibration
+spans 0.97–1.43 seconds, so its elapsed growth includes host noise; this is not
+a universal timing guarantee. The shared session and bounded-worklist tests
+provide the algorithmic checks against per-use retyping or recursive dependency
+traversal. Raw records are `obj/perf/RUN/samples.json`; the command/receipt index
+is `obj/pa13-work/constant-perf-receipts.json`.

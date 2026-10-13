@@ -32,7 +32,21 @@ enum, fixed-array and reference patterns for exhaustiveness and whole-arm
 usefulness. Dynamic slices currently support only irrefutable rests. Owned matches, including
 boolean and conditional guards, and irrefutable constructor bindings can execute.
 Owned let-else, if-let, while-let and condition chains also execute. Named
-constants and refutable dynamic slices remain unfinished.
+boolean, integer and character constants work as patterns and range endpoints.
+Structural/reference constants, floating-point pattern domains and refutable
+dynamic slices remain unfinished.
+
+Named constants use resolved declaration identities and their canonical types;
+pattern endpoints do not coerce between integer types. The shared typed constant
+query engine supports scalar literals, dependencies, arithmetic, casts, block
+tails and lazy boolean/if expressions, including casts of completed fieldless
+enum discriminants. It diagnoses dependency cycles and evaluated overflow.
+Constant-backed ranges, irrefutability and match coverage finish after initializer
+typing, retaining each body's file and module context. The resulting intervals
+use the ordinary decision and ownership paths, including guard retries.
+A static cannot be named directly as a constant pattern. General CTFE, structural
+constant expansion, text/reference values and expression-position constant
+execution retain their explicit later-stage boundaries.
 
 The current vocabulary is `selected-patterns 1`, the canonical type table,
 `root FILE:NODE pattern=ID`, and arena-ordered `pattern ID source=FILE:NODE
@@ -41,7 +55,7 @@ follow deterministic source traversal. A pattern's input type remains distinct
 from a binding's local type. Kinds are:
 
 - `wildcard` (including a selected rest with no binding operation).
-- `range=ID` for a scalar literal or interval in the separate range arena.
+- `range=ID` for a scalar literal, named constant or interval in the separate range arena.
 - `bind def=ID local=TYPE mutable=BOOL capture=value|ref|ref-mut`, followed by
   `region=REGION loan=pending` for borrowed captures, then `subpattern=ID|-`.
 - `deref mutable=BOOL implicit=BOOL pattern=ID` for each reference adjustment.

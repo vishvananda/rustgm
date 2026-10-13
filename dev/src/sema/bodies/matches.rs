@@ -70,10 +70,18 @@ impl Checker<'_> {
         } else {
             (node, false)
         };
-        let Kind::Literal(index) = self.kind(literal) else {
-            return Err(self.error(node, "pattern constants require selected constant values"));
+        let value = if let Kind::Literal(index) = self.kind(literal) {
+            self.literal(literal, index)?
+        } else if !negative && let Some(definition) = self.pattern_constant(literal) {
+            let ty = self.pattern_constant_type(literal, definition)?;
+            self.request_pattern_constant(literal, definition);
+            self.known(literal, ty)?
+        } else {
+            return Err(self.error(
+                node,
+                "pattern endpoints require literals or named constants",
+            ));
         };
-        let value = self.literal(literal, index)?;
         self.equate(node, term, value)?;
         self.save(literal, value);
         self.save(node, value);
@@ -191,6 +199,9 @@ impl Checker<'_> {
         }
     }
     pub(super) fn finish_patterns(&mut self) -> Result<(), Error> {
+        if std::mem::take(&mut self.pattern_constants) {
+            return self.defer_pattern_checks();
+        }
         // Solved node facts were published before scalar literal validation.
         for work in std::mem::take(&mut self.range_work) {
             let ty = work

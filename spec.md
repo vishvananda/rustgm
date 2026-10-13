@@ -70,6 +70,16 @@ Record selected methods, adjustments, casts, layouts and obligations where
 later phases consume them. Lowering cannot repeat lookup or inference. Missing
 facts are invariant failures, never a reason to fall back to text or rustc.
 
+Constant patterns constrain types during ordinary body inference. Retain pending
+value/range/coverage work in flat arenas with the originating file, module and
+body; finish it after initializer typing in one shared query session. Reuse
+resolved dependencies, selected operations and already computed discriminants.
+Cache demanded constant-definition values across these phases in the current
+monomorphic profile; leave ordinary node facts compact and allocate no query
+storage for bodies without constant-backed patterns. Do not instantiate a
+whole-crate checker per use, repeat initializer typing, or interpret pattern
+views. Deferred checks must retain the matching module's visibility context.
+
 ## Rust body representation
 
 A typed control-flow IR retains places, projections, moves, borrows, storage

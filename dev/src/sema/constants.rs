@@ -1,4 +1,4 @@
-//! Discriminant queries retain typed scalar facts and solve dependency cycles iteratively.
+//! Shared typed constant queries solve discriminants and pattern values iteratively.
 mod arithmetic;
 use super::{
     bodies,
@@ -25,7 +25,7 @@ pub(super) struct Discriminant {
     pub previous: Option<VariantId>,
 }
 #[derive(Clone, Copy)]
-enum Value {
+pub(super) enum Value {
     Scalar(Scalar),
     Variant(VariantId),
 }
@@ -139,41 +139,7 @@ pub(super) fn discriminants(
         }
         return Ok(());
     }
-    let mut variants = vec![None; facts.members.variants.len()];
-    for (index, spec) in specs.iter().enumerate() {
-        variants[spec.variant.0 as usize] = Some(index);
-    }
-    let mut constants = vec![None; facts.definitions.len()];
-    for (index, initializer) in facts.initializers.iter().enumerate() {
-        if matches!(
-            initializer.kind,
-            InitializerKind::Const | InitializerKind::Static { mutable: false }
-        ) {
-            constants[initializer.definition.0 as usize] = Some(index);
-        }
-    }
-    let limit = report
-        .package
-        .units
-        .iter()
-        .fold(specs.len(), |n, unit| {
-            n.saturating_add(unit.configured.ast.nodes.len())
-                .saturating_add(unit.configured.ast.edges.len())
-        })
-        .saturating_mul(16);
-    let mut queries = Queries {
-        report,
-        typing: bodies::Checker::new(report, facts),
-        specs,
-        variants,
-        constants,
-        expressions: HashMap::new(),
-        states: HashMap::new(),
-        work: Vec::new(),
-        scan: Vec::new(),
-        steps: 0,
-        limit,
-    };
+    let mut queries = Queries::new(report, facts, specs);
     let mut used = HashSet::new();
     for spec in specs {
         let query = Query::Variant(spec.variant);
@@ -195,6 +161,94 @@ pub(super) fn discriminants(
             .map_err(|e| queries.error(query, e))?;
     }
     Ok(())
+}
+/// Resolve pattern uses after their initializer bodies have published typed facts.
+pub(super) fn pattern_values(
+    report: &Report,
+    facts: &mut Declarations,
+    requests: &[(NodeKey, DefId)],
+) -> Result<(), Error> {
+    let mut queries = Queries::new(report, facts, &[]);
+    for &(key, definition) in requests {
+        let index = queries
+            .constants
+            .get(definition.0 as usize)
+            .copied()
+            .flatten()
+            .ok_or_else(|| {
+                Declarations::error(report, key, "pattern path requires a named constant")
+            })?;
+        if !matches!(
+            queries.typing.facts.initializers[index].kind,
+            InitializerKind::Const
+        ) {
+            return Err(Declarations::error(
+                report,
+                key,
+                "a static is not a constant pattern",
+            ));
+        }
+        let query = Query::Constant(index);
+        queries.work.push(Work::Enter(query));
+        queries.drain()?;
+        let value = queries
+            .value(query)?
+            .scalar()
+            .map_err(|e| Declarations::error(report, key, e))?;
+        queries
+            .typing
+            .facts
+            .node_mut(key)
+            .ok_or_else(|| Declarations::error(report, key, "missing constant pattern node"))?
+            .scalar = Some(value);
+    }
+    Ok(())
+}
+impl<'a> Queries<'a> {
+    fn new(report: &'a Report, facts: &'a mut Declarations, specs: &'a [Discriminant]) -> Self {
+        let mut variants = vec![
+            None;
+            if specs.is_empty() {
+                0
+            } else {
+                facts.members.variants.len()
+            }
+        ];
+        for (index, spec) in specs.iter().enumerate() {
+            variants[spec.variant.0 as usize] = Some(index);
+        }
+        let mut constants = vec![None; facts.definitions.len()];
+        for (index, initializer) in facts.initializers.iter().enumerate() {
+            if matches!(
+                initializer.kind,
+                InitializerKind::Const | InitializerKind::Static { mutable: false }
+            ) {
+                constants[initializer.definition.0 as usize] = Some(index);
+            }
+        }
+        let limit = report
+            .package
+            .units
+            .iter()
+            .fold(specs.len(), |n, unit| {
+                n.saturating_add(unit.configured.ast.nodes.len())
+                    .saturating_add(unit.configured.ast.edges.len())
+            })
+            .saturating_mul(16);
+        Self {
+            report,
+            typing: bodies::Checker::new(report, facts),
+            specs,
+            variants,
+            constants,
+            expressions: HashMap::new(),
+            states: HashMap::new(),
+            work: Vec::new(),
+            scan: Vec::new(),
+            steps: 0,
+            limit,
+        }
+    }
 }
 impl Queries<'_> {
     fn error(&self, query: Query, message: impl Into<String>) -> Error {
@@ -218,6 +272,39 @@ impl Queries<'_> {
             .flatten()
             .and_then(|i| self.specs.get(i))
             .ok_or_else(|| self.error(Query::Variant(variant), "missing discriminant query"))
+    }
+    fn known_variant(&self, variant: VariantId) -> bool {
+        if !self.specs.is_empty() {
+            return self
+                .variants
+                .get(variant.0 as usize)
+                .is_some_and(Option::is_some);
+        }
+        self.typing
+            .facts
+            .members
+            .variants
+            .get(variant.0 as usize)
+            .and_then(|v| self.typing.facts.aggregates.get(v.owner))
+            .is_some_and(|d| d.kind == crate::types::aggregate::Kind::Enum)
+    }
+    fn variant_tag(&self, variant: VariantId) -> Result<Primitive, Error> {
+        if !self.specs.is_empty() {
+            return Ok(self.spec(variant)?.tag);
+        }
+        let member = self.typing.facts.members.variants[variant.0 as usize];
+        self.typing
+            .facts
+            .aggregates
+            .get(member.owner)
+            .map(|shape| shape.repr.tag.unwrap_or(Primitive::Isize))
+            .ok_or_else(|| self.error(Query::Variant(variant), "missing enum representation"))
+    }
+    fn require_complete_patterns(&self, query: Query) -> Result<(), Error> {
+        if self.typing.has_pending_patterns() {
+            return Err(self.error(query, "constant expressions containing named patterns require general constant evaluation"));
+        }
+        Ok(())
     }
     fn primitive(&self, key: NodeKey, ty: TypeId) -> Result<Primitive, Error> {
         if let Some(Type::Primitive(ty)) = self.typing.facts.types.kind(ty) {
@@ -245,6 +332,10 @@ impl Queries<'_> {
                 Work::Forward(query, dependency) => {
                     let value = self.value(dependency)?;
                     self.states.insert(query, State::Ready(value));
+                    if let Query::Constant(index) = query {
+                        let definition = self.typing.facts.initializers[index].definition;
+                        self.typing.facts.constant_values.insert(definition, value);
+                    }
                 }
                 Work::Successor(query, dependency, tag) => {
                     let bits = self
@@ -263,7 +354,7 @@ impl Queries<'_> {
                 Work::Finish(key) => self.finish(key)?,
                 Work::Select(key) => self.select(key)?,
                 Work::EnumCast(key, variant, target) => {
-                    let source = self.spec(variant)?.tag;
+                    let source = self.variant_tag(variant)?;
                     let value = self
                         .value(Query::Variant(variant))?
                         .scalar()
@@ -291,29 +382,16 @@ impl Queries<'_> {
             }
             None => {}
         }
+        if let Query::Constant(index) = query {
+            let definition = self.typing.facts.initializers[index].definition;
+            if let Some(&value) = self.typing.facts.constant_values.get(&definition) {
+                self.states.insert(query, State::Ready(value));
+                return Ok(());
+            }
+        }
         self.states.insert(query, State::Active);
         match query {
-            Query::Variant(variant) => {
-                let spec = self.spec(variant)?;
-                if let Some(key) = spec.value {
-                    let ty = TypeId::primitive(spec.tag);
-                    let owner = DefId(
-                        self.typing.facts.members.variants[variant.0 as usize]
-                            .owner
-                            .0,
-                    );
-                    self.typing.constant(key, ty, owner)?;
-                    self.prepare(key)?;
-                    self.forward(query, Query::Node(key));
-                } else if let Some(previous) = spec.previous {
-                    self.work
-                        .push(Work::Successor(query, Query::Variant(previous), spec.tag));
-                    self.work.push(Work::Enter(Query::Variant(previous)));
-                } else {
-                    self.states
-                        .insert(query, State::Ready(Value::Scalar(Scalar::Integer(0))));
-                }
-            }
+            Query::Variant(variant) => self.enter_variant(variant)?,
             Query::Constant(index) => {
                 let initializer = self.typing.facts.initializers[index];
                 if matches!(initializer.kind, InitializerKind::Static { .. }) {
@@ -336,6 +414,7 @@ impl Queries<'_> {
                 }
                 if !self.typing.facts.initializers[index].type_checked {
                     self.typing.initializer(index)?;
+                    self.require_complete_patterns(query)?;
                 }
                 let key = self.typing.facts.initializers[index].value;
                 self.prepare(key)?;
@@ -366,6 +445,50 @@ impl Queries<'_> {
                     self.work.push(Work::Enter(Query::Node(left)));
                 }
             },
+        }
+        Ok(())
+    }
+    fn enter_variant(&mut self, variant: VariantId) -> Result<(), Error> {
+        let query = Query::Variant(variant);
+        if self.specs.is_empty() {
+            let member = self.typing.facts.members.variants[variant.0 as usize];
+            let shape = self
+                .typing
+                .facts
+                .aggregates
+                .get(member.owner)
+                .ok_or_else(|| self.error(query, "missing completed enum definition"))?;
+            let value = self
+                .typing
+                .facts
+                .aggregates
+                .variants(shape)
+                .get(member.ordinal as usize)
+                .ok_or_else(|| self.error(query, "missing completed enum discriminant"))?
+                .discriminant;
+            self.states
+                .insert(query, State::Ready(Value::Scalar(Scalar::Integer(value))));
+            return Ok(());
+        }
+        let spec = self.spec(variant)?;
+        if let Some(key) = spec.value {
+            let ty = TypeId::primitive(spec.tag);
+            let owner = DefId(
+                self.typing.facts.members.variants[variant.0 as usize]
+                    .owner
+                    .0,
+            );
+            self.typing.constant(key, ty, owner)?;
+            self.require_complete_patterns(query)?;
+            self.prepare(key)?;
+            self.forward(query, Query::Node(key));
+        } else if let Some(previous) = spec.previous {
+            self.work
+                .push(Work::Successor(query, Query::Variant(previous), spec.tag));
+            self.work.push(Work::Enter(Query::Variant(previous)));
+        } else {
+            self.states
+                .insert(query, State::Ready(Value::Scalar(Scalar::Integer(0))));
         }
         Ok(())
     }
@@ -510,7 +633,7 @@ impl Queries<'_> {
         }
         if let Some(Operation::Construct { variant }) = facts.operation {
             let member = self.typing.facts.members.variants[variant.0 as usize];
-            if member.start == member.end && self.variants[variant.0 as usize].is_some() {
+            if member.start == member.end && self.known_variant(variant) {
                 return Ok(Expression::Value(Value::Variant(variant)));
             }
         }
@@ -530,7 +653,7 @@ impl Queries<'_> {
                 .and_then(|f| f.ty)
                 .and_then(|ty| self.typing.facts.types.kind(ty))
             && let Some(variant) = self.typing.facts.members.constructors.get(&DefId(item.0))
-            && self.variants[variant.0 as usize].is_some()
+            && self.known_variant(*variant)
             && self
                 .typing
                 .facts
