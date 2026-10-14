@@ -1,6 +1,7 @@
 //! Iterative construction visits executable syntax once and consumes PA9 selections.
 mod aggregates;
 mod conditions;
+mod constructors;
 mod decisions;
 mod drops;
 mod guards;
@@ -118,7 +119,7 @@ pub fn concrete(report: &Report, facts: &Declarations) -> Result<Program, Error>
             .map_err(|e| report.diagnostic(e))?,
         );
     }
-    aggregates::constructors(report, facts, &mut program, drop_query.as_mut())?;
+    constructors::concrete(report, facts, &mut program, drop_query.as_mut())?;
     drops::finish(report, facts, &mut program, drop_query.as_mut())?;
     Ok(program)
 }

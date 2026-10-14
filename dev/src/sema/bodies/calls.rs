@@ -10,6 +10,7 @@ use std::collections::HashMap;
 pub(super) struct CallTypes {
     pub obligations: Vec<(NodeId, crate::types::parameters::predicates::Bound, TermId)>,
     pub generic: Vec<(NodeId, DefId, TermId)>,
+    pub generic_constructors: bool,
     pub active: HashMap<NodeId, TermId>,
     pub nominal_receivers: HashMap<TermId, super::nominals::Fields>,
     pub nominal_order: Vec<TermId>,
@@ -29,6 +30,7 @@ impl CallTypes {
     pub fn clear(&mut self) {
         self.obligations.clear();
         self.generic.clear();
+        self.generic_constructors = false;
         self.active.clear();
         self.nominal_receivers.clear();
         self.nominal_order.clear();

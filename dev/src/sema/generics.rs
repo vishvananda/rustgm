@@ -102,6 +102,9 @@ pub struct Generics {
     pub(super) body_environments: HashMap<DefId, Arc<Environment>>,
     pub item_uses: HashMap<crate::resolve::unit::NodeKey, ItemUse>,
     pub constructor_uses: HashMap<crate::resolve::unit::NodeKey, crate::resolve::unit::NodeKey>,
+    /// Implicit callable factories selected while checking expressions. Nominal
+    /// declarations alone do not require synthetic field-transfer bodies.
+    pub(crate) referenced_constructors: std::collections::HashSet<ItemId>,
     pub annotation_uses: HashMap<crate::resolve::unit::NodeKey, AnnotationUse>,
     substitutions: HashMap<(DefId, GenericArgs), Bound>,
 }
@@ -200,6 +203,24 @@ impl Generics {
         {
             return Ok(());
         }
+        let environment = self.parameter_environment(store, owner)?;
+        match self.environments.entry(owner) {
+            Entry::Occupied(_) => Err("generic body environment already completed"),
+            Entry::Vacant(entry) => {
+                entry.insert(Arc::new(environment));
+                Ok(())
+            }
+        }
+    }
+    /// Build assumptions from completed declaration parameters and predicates.
+    /// Consumers may share this immutable environment across implicit bodies.
+    /// # Errors
+    /// Rejects malformed parameter identities and predicate subjects.
+    pub fn parameter_environment(
+        &self,
+        store: &Store,
+        owner: DefId,
+    ) -> Result<Environment, &'static str> {
         let mut assumptions = Vec::new();
         for parameter in self.parameters_in_scope(owner) {
             if let Argument::Type(ty) = parameter.argument {
@@ -213,15 +234,7 @@ impl Generics {
             .predicates_in_scope(owner)
             .map(|p| p.value)
             .collect::<Vec<_>>();
-        match self.environments.entry(owner) {
-            Entry::Occupied(_) => Err("generic body environment already completed"),
-            Entry::Vacant(entry) => {
-                entry.insert(Arc::new(
-                    Environment::new(store, &assumptions)?.with_predicates(store, &predicates)?,
-                ));
-                Ok(())
-            }
-        }
+        Environment::new(store, &assumptions)?.with_predicates(store, &predicates)
     }
     fn substitution(
         &mut self,

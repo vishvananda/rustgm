@@ -2221,3 +2221,69 @@ samples under `obj/perf/`. The separate `demanded-dead-paths-v1` probe retained 
 disproved hypothesis: pinned rustc still rejects growing instantiation in both a
 literal-false and a const-false branch; this implementation also rejects those
 programs. Earlier failed compile/lint attempts remain excluded from pass claims.
+
+## Generic constructor instances
+
+The demanded-instance API now includes tuple-struct and enum-variant constructor
+factories. Type checking retains referenced constructor identities, avoiding
+synthetic bodies for unused declarations. Ordinary and generic constructors use
+the same field-move CFG builder.
+Implicit generic bodies retain the nominal declaration's parameter assumptions,
+lifetime contract and owned-value scopes; enum variants share one immutable
+parameter environment. Their original proofs precede ordinary demanded
+materialization and the separate instance proofs.
+
+The maintainer suite declares eighteen clean constructor executions covering
+inferred and explicit items, direct calls, local/constant/static/promoted/returned
+function pointers, const arrays, enum variants, nested generic calls, borrowed
+fields, owned field transfers and zero-sized results. Four independent rejection
+controls cover borrowed-storage escape, duplicate moves and unsatisfied Copy
+bounds. A typed test checks shared nominal assumptions, field transfers and
+return scopes before specialization.
+
+These cases exposed constructor inference capturing a caller lifetime beneath a
+callable binder, and declaration-context generic return types lacking prepared
+field facts after expression types acquired free lifetime aliases. Constructor
+inference now follows the same alias discipline as generic functions. Return
+field preparation retains both contexts for subsequent immutable ownership
+queries. Earlier assignment oracles remain unchanged. The course CLI still
+retains the PA18 boundary; concrete generic destructor selection and cleanup
+integration remain required before release.
+
+The final constructor revision passes 735 frontend tests in debug and release,
+all 3,350 PA1–PA17 course cases, fourteen explicit maintainer native tests and
+858 course executable comparisons, with the same sixteen documented PA13
+runtime differences. All active independent checks, Clippy all/pedantic with
+denied warnings, rustfmt, the 465-file audit with zero findings, harness checks
+and upstream provenance checks pass. The unused-factory invariant separately
+checks that unreferenced implicit constructors create no synthetic bodies.
+
+The first measured implementation built factories for all declarations. At
+2,048 unused generic enums this took 193.20 ms versus the parent's 63.75 ms.
+That evidence prompted the sparse referenced-constructor set described above.
+The initial frozen sources, binaries and 252 raw observations remain retained;
+the final revision is compared against both that version and the parent.
+
+The final run retains 306 more observations across seventeen jobs, including
+three direct comparisons with the first candidate. At 2,048 unused enums that
+comparison measures 193.26 ms before and 62.67 ms after, with median RSS reduced
+from 28,918 to 17,718 KiB. The separate parent comparison measures 63.82 versus
+64.82 ms; all eight parent comparisons range from -0.9% to +1.6%. These are
+shared-host wall-time observations, with A/A calibration and every sample
+retained, rather than a fixed performance guarantee.
+
+| Final constructor workload | 128 median, ms | 512 median, ms | 2048 median, ms | 2048 RSS, KiB |
+| --- | ---: | ---: | ---: | ---: |
+| repeated factory calls | 5.80 | 10.23 | 27.51 | 9906 |
+| distinct const factories | 8.09 | 19.27 | 79.04 | 14976 |
+| unused generic enums | 7.78 | 18.13 | 64.82 | 17670 |
+
+Both runs retain 558 observations in total. Full and count outputs agree;
+nine new inputs pass pinned-rustc code generation. No RustGM build or test
+process overlapped either measurement run. The final snapshot contains 316
+production/configuration files and CLI SHA256
+`1652eb675d5e07a84d84d096b757020db0567b7e937dbfd20f1f825a39215c19`.
+Receipts, immutable inputs/binaries and independent evidence remain under
+`obj/pa18-work/constructor-instances-*`, with raw samples under `obj/perf/`.
+Earlier failed implementation attempts and the superseded candidate are retained
+separately from the final validation claims.

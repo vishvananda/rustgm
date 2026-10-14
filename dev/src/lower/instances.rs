@@ -25,9 +25,16 @@ pub fn build(
     entry: DefId,
 ) -> Result<crate::lowir::program::Program, Error> {
     let mut templates = body::templates::build(report, facts)?;
+    let mut inputs = body::regions::collect(facts)
+        .map_err(|e| diagnostic(report, None, e.into()))?
+        .bodies;
+    body::templates::constructors(report, facts, &mut templates, &mut inputs)?;
     body::promote::analyze_templates(report, facts, &mut templates)?;
-    let contracts =
-        body::regions::collect(facts).map_err(|e| diagnostic(report, None, e.into()))?;
+    let contracts = Contracts {
+        bodies: inputs,
+        callables: &facts.lifetimes.callables,
+        nominal_requirements: &facts.lifetimes.nominal_requirements,
+    };
     let custom = facts
         .destructors
         .implementations()

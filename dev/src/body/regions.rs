@@ -188,22 +188,10 @@ fn constructors(
             continue;
         }
         let source = variant.node;
-        let Some(crate::types::Kind::Function { bound_regions, .. }) = facts.types.kind(signature)
-        else {
-            return Err("constructor has no lifetime signature");
-        };
         if index.insert(source, bodies.len()).is_some() {
             return Err("duplicate constructor lifetime owner");
         }
-        bodies.push(Contract {
-            source,
-            signature: Some(signature),
-            universals: bound_regions,
-            assumptions: Vec::new(),
-            parameters: Vec::new(),
-            type_assumptions: Vec::new(),
-            obligations: Vec::new(),
-        });
+        bodies.push(constructor(facts, variant, signature)?);
     }
     Ok(())
 }
@@ -214,6 +202,36 @@ fn function_contract(
 ) -> Result<Contract, &'static str> {
     let owner = function.definition;
     let scheme = facts.lifetimes.functions.get(&owner);
+    let mut contract = parameter_contract(facts, owner, source, function.signature)?;
+    contract.universals = scheme.map_or(0, |s| s.total);
+    contract.assumptions = scheme.map_or_else(Vec::new, |s| s.bounds.clone());
+    Ok(contract)
+}
+pub(super) fn constructor(
+    facts: &Declarations,
+    variant: crate::sema::members::Variant,
+    signature: TypeId,
+) -> Result<Contract, &'static str> {
+    let Some(crate::types::Kind::Function { bound_regions, .. }) = facts.types.kind(signature)
+    else {
+        return Err("constructor has no lifetime signature");
+    };
+    let mut contract = parameter_contract(
+        facts,
+        crate::resolve::model::DefId(variant.owner.0),
+        variant.node,
+        signature,
+    )?;
+    contract.universals = bound_regions;
+    // Signature well-formedness contributes the completed nominal requirements.
+    Ok(contract)
+}
+fn parameter_contract(
+    facts: &Declarations,
+    owner: crate::resolve::model::DefId,
+    source: NodeKey,
+    signature: TypeId,
+) -> Result<Contract, &'static str> {
     let mut parameters = Vec::new();
     for parameter in facts.generics.parameters_in_scope(owner) {
         if let crate::types::arguments::Argument::Type(ty) = parameter.argument {
@@ -236,9 +254,9 @@ fn function_contract(
         .collect();
     Ok(Contract {
         source,
-        signature: Some(function.signature),
-        universals: scheme.map_or(0, |s| s.total),
-        assumptions: scheme.map_or_else(Vec::new, |s| s.bounds.clone()),
+        signature: Some(signature),
+        universals: 0,
+        assumptions: Vec::new(),
         parameters,
         type_assumptions,
         obligations: Vec::new(),

@@ -1,4 +1,5 @@
 //! Generic CFGs retain possible destruction; they are not executable programs.
+pub use super::constructors::templates as constructors;
 use super::{Declarations, Error, Report, Scratch, function_body};
 use crate::{
     body::{drops::Requirements, ir::Body},

@@ -216,6 +216,14 @@ constant allocations; a discarded zero-sized function item does not require its
 body. Key promoted backing storage by concrete body identity, and preserve
 runtime overflow and bounds checks when materializing its values.
 
+Retain selected implicit tuple/variant constructors during type checking and
+build their factory bodies only when referenced. These factories share the
+ordinary field-transfer CFG builder. Their generic proof uses the nominal declaration's assumptions and
+lifetime contract, with one shared immutable parameter environment per nominal.
+Retain owned field transfers and returned-value scopes before specialization.
+Prepare generic return fields in the original declaration context as well as
+any expression context using free lifetime aliases.
+
 Derived abilities constrain type arguments even behind raw/function pointers;
 packed Clone and equality derives impose Copy bounds as well. Owned destruction follows
 instantiated fields and skips zero-length arrays. Custom Drop instead retains

@@ -221,6 +221,8 @@ impl Checker<'_> {
         let Some(Type::FunctionItem { item, .. }) = self.facts.types.kind(ty) else {
             return Ok(nominal);
         };
+        self.call_types.generic_constructors = true;
+        self.facts.generics.referenced_constructors.insert(item);
         let mut children = Vec::with_capacity((variant.end - variant.start) as usize + 1);
         for index in variant.start..variant.end {
             children.push(self.instance_field(node, nominal, FieldId(index))?);

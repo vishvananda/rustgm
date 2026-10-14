@@ -352,7 +352,9 @@ impl Checker<'_> {
         // Generic holes also occur beneath callable binders. Once an argument
         // solves such a hole, caller universals must remain free there rather
         // than becoming lifetimes owned by the nested callable.
-        let (left, right) = if self.body_binders != 0 && !self.call_types.generic.is_empty() {
+        let (left, right) = if self.body_binders != 0
+            && (!self.call_types.generic.is_empty() || self.call_types.generic_constructors)
+        {
             (
                 self.alias_argument(node, left)?,
                 self.alias_argument(node, right)?,
@@ -591,6 +593,14 @@ impl Checker<'_> {
         let body_key = self.key(body);
         let mut well_formed = HashSet::new();
         let mut nominal_types = HashSet::new();
+        // A generic result retains declaration lifetimes even when its expression
+        // uses free aliases. Ownership queries need both canonical field contexts.
+        if self.facts.types.contains_parameters(self.result) == Some(true) {
+            self.facts
+                .aggregates
+                .prepare(&mut self.facts.types, self.result)
+                .map_err(|e| self.error(body, e))?;
+        }
         // An implicit dereference need not have an AST node among `touched`.
         // Its selected field receiver still supplies a concrete type query key.
         // Retain discovery order so appended canonical types are deterministic.
