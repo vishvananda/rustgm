@@ -34,6 +34,9 @@ use std::collections::HashMap;
 /// # Errors
 /// Diagnoses missing typed facts, exhausted identities and unsupported body forms.
 pub fn build(report: &Report, facts: &Declarations) -> Result<Program, Error> {
+    facts
+        .generics
+        .require_concrete_bodies(report, &facts.functions)?;
     let mut drop_query = (!facts.destructors.implementations().is_empty()).then(|| {
         crate::types::destruction::NeedsDrop::new(
             facts.destructors.implementations().iter().map(|i| i.item),

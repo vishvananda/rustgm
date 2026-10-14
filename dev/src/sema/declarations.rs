@@ -357,7 +357,7 @@ impl Checker<'_> {
                 ItemKind::TypeAlias { ty: Some(ty), .. } => {
                     let context = self.template_context(id, key)?;
                     self.node_work(key.file, ty, context);
-                    self.alias_parameters(id, key, context)?;
+                    self.declaration_parameters(id, key, context)?;
                 }
                 ItemKind::Const { ty, .. } | ItemKind::Static { ty, .. } => {
                     self.node_work(key.file, ty, regions::Context::STATIC);
@@ -607,7 +607,10 @@ impl Checker<'_> {
             };
             let parameter = unit.configured.ast.generics[index as usize];
             if parameter.flavor != GenericFlavor::Lifetime
-                && matches!(self.item(key)?.kind, ItemKind::TypeAlias { .. })
+                && matches!(
+                    self.item(key)?.kind,
+                    ItemKind::TypeAlias { .. } | ItemKind::Function { .. }
+                )
             {
                 continue;
             }
@@ -690,6 +693,14 @@ impl Checker<'_> {
                 if let Some(owner) = owner
                     && self.facts.destructors.method(owner).is_some()
                 {
+                    self.declaration_parameters(
+                        owner,
+                        key,
+                        regions::Context {
+                            binder: Some(binder),
+                            position: Position::Input,
+                        },
+                    )?;
                     self.schedule_receiver(key, owner, binder, signature.parameters)?;
                     return Ok(());
                 }
@@ -722,6 +733,16 @@ impl Checker<'_> {
                         },
                     );
                     self.work.push(Work::Parameter(binder, false));
+                }
+                if let Some(owner) = owner {
+                    self.declaration_parameters(
+                        owner,
+                        key,
+                        regions::Context {
+                            binder: Some(binder),
+                            position: Position::Input,
+                        },
+                    )?;
                 }
             }
             SignaturePhase::Output(binder) => {
@@ -789,6 +810,10 @@ impl Checker<'_> {
                         .map_err(|e| self.error(key, e))?;
                 }
                 if let Some(id) = owner {
+                    self.facts
+                        .generics
+                        .complete_environment(&self.facts.types, id)
+                        .map_err(|e| self.error(key, e))?;
                     self.function_regions(key, id, binder, signature.binders, ty, bounds)?;
                     self.facts.lifetimes.named.extend(
                         self.regions

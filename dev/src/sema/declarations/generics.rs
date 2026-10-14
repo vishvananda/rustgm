@@ -1,4 +1,4 @@
-//! Alias declaration environments are elaborated once by the declaration worklist.
+//! Generic declaration environments are elaborated once by the declaration worklist.
 mod arguments;
 mod constants;
 use super::{
@@ -28,13 +28,14 @@ pub(super) struct Declaration {
     phase: Phase,
 }
 impl Checker<'_> {
-    pub(super) fn alias_parameters(
+    pub(super) fn declaration_parameters(
         &mut self,
         owner: DefId,
         key: NodeKey,
         context: regions::Context,
     ) -> Result<(), Error> {
         let item = self.item(key)?;
+        let function = matches!(item.kind, crate::syntax::item::ItemKind::Function { .. });
         let unit = self.report.package.unit(key.file);
         let nodes: Vec<_> = unit
             .configured
@@ -50,6 +51,12 @@ impl Checker<'_> {
                 .is_ok_and(|p| p.flavor != GenericFlavor::Lifetime)
         }) {
             return Ok(());
+        }
+        if self.facts.destructors.method(owner).is_some() {
+            return Err(self.error(
+                key,
+                "type/const parameters and lifetime bounds require later semantic assignments",
+            ));
         }
         let mut names = std::collections::HashSet::new();
         let mut non_lifetime = false;
@@ -69,6 +76,9 @@ impl Checker<'_> {
                 ));
             }
             non_lifetime |= !lifetime;
+            if function && parameter.default.is_some() {
+                return Err(self.error(*node, "function generic parameters cannot have defaults"));
+            }
             if !lifetime && parameter.bounds.start != parameter.bounds.end {
                 return Err(self.error(*node, "type parameter bounds require generic obligations"));
             }
@@ -82,6 +92,11 @@ impl Checker<'_> {
             .parameters
             .insert(owner, Vec::with_capacity(nodes.len()));
         for (index, key) in nodes.into_iter().enumerate().rev() {
+            // Function lifetime slots are assigned by signature first use, then
+            // classified as early/late. Do not preassign them in source order.
+            if function && self.generic_syntax(key)?.flavor == GenericFlavor::Lifetime {
+                continue;
+            }
             self.work.push(Work::Generic(Declaration {
                 owner,
                 key,

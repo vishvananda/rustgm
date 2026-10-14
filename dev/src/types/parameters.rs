@@ -1,4 +1,5 @@
 //! Immutable generic parameter declarations; inference variables have separate identities.
+pub mod environment;
 pub mod uses;
 use super::{ItemId, Kind, Primitive, Store, TypeId};
 use std::collections::HashMap;

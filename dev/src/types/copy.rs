@@ -1,6 +1,7 @@
-//! Closed-profile Copy/Clone obligations, cached independently of storage layout.
+//! Copy/Clone obligations under fixed assumptions, independent of storage layout.
+use super::parameters::environment::Environment;
 use super::{ItemId, Kind, Primitive, Store, TypeId, aggregate::Definitions};
-use std::{collections::HashMap, hash::BuildHasher};
+use std::{collections::HashMap, hash::BuildHasher, sync::Arc};
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct Properties {
@@ -27,15 +28,33 @@ enum State {
     Ready(Properties),
     Failed(&'static str),
 }
+struct Scope {
+    environment: Arc<Environment>,
+    // A body typically touches only a few types in the whole crate's store.
+    states: HashMap<TypeId, State>,
+}
 /// One canonical store and immutable completed definitions/derive selections.
 /// Appending canonical types is permitted. Nominal types never gain Copy from layout.
+/// A symbolic session also owns one immutable parameter environment. Neither
+/// positive nor negative results can be reused under different assumptions.
 #[derive(Default)]
 pub struct Copies {
+    scope: Option<Box<Scope>>,
     states: Vec<State>,
     work: Vec<(TypeId, bool)>,
     pub steps: usize,
 }
 impl Copies {
+    #[must_use]
+    pub fn in_environment(environment: Arc<Environment>) -> Self {
+        Self {
+            scope: Some(Box::new(Scope {
+                environment,
+                states: HashMap::new(),
+            })),
+            ..Self::default()
+        }
+    }
     /// # Errors
     /// Rejects invalid type graphs and by-value cycles; caches failed queries too.
     pub fn demand<S: BuildHasher>(
@@ -45,32 +64,59 @@ impl Copies {
         selected: &HashMap<ItemId, Properties, S>,
         ty: TypeId,
     ) -> Result<Properties, &'static str> {
-        match self.states.get(ty.0 as usize) {
-            Some(State::Ready(value)) => return Ok(*value),
-            Some(State::Failed(message)) => return Err(message),
+        match self.state(ty) {
+            State::Ready(value) => return Ok(value),
+            State::Failed(message) => return Err(message),
             _ => {}
         }
-        self.states.resize(types.len(), State::Unseen);
+        if self.scope.is_none() {
+            self.states.resize(types.len(), State::Unseen);
+        }
         self.work.clear();
         self.work.push((ty, false));
         let result = self.run(types, definitions, selected);
         if let Err(message) = result {
             // A failed dependency also fails every suspended parent, without
             // leaving active entries that poison independent later queries.
-            for state in &mut self.states {
-                if matches!(state, State::Active) {
-                    *state = State::Failed(message);
-                }
-            }
+            self.fail_active(message);
             self.work.clear();
             return Err(message);
         }
         self.get(ty)
     }
+    fn state(&self, ty: TypeId) -> State {
+        self.scope
+            .as_ref()
+            .map_or_else(
+                || self.states.get(ty.0 as usize),
+                |scope| scope.states.get(&ty),
+            )
+            .copied()
+            .unwrap_or_default()
+    }
+    fn record(&mut self, ty: TypeId, state: State) {
+        if let Some(scope) = &mut self.scope {
+            scope.states.insert(ty, state);
+        } else {
+            self.states[ty.0 as usize] = state;
+        }
+    }
+    fn fail_active(&mut self, message: &'static str) {
+        let fail = |state: &mut State| {
+            if matches!(state, State::Active) {
+                *state = State::Failed(message);
+            }
+        };
+        if let Some(scope) = &mut self.scope {
+            scope.states.values_mut().for_each(fail);
+        } else {
+            self.states.iter_mut().for_each(fail);
+        }
+    }
     fn get(&self, ty: TypeId) -> Result<Properties, &'static str> {
-        match self.states.get(ty.0 as usize) {
-            Some(State::Ready(value)) => Ok(*value),
-            Some(State::Failed(message)) => Err(message),
+        match self.state(ty) {
+            State::Ready(value) => Ok(value),
+            State::Failed(message) => Err(message),
             _ => Err("missing completed Copy obligation"),
         }
     }
@@ -81,21 +127,36 @@ impl Copies {
         selected: &HashMap<ItemId, Properties, S>,
     ) -> Result<(), &'static str> {
         while let Some((ty, finish)) = self.work.pop() {
-            let state = self.states.get(ty.0 as usize).ok_or("invalid Copy type")?;
+            let kind = types.kind(ty).ok_or("invalid Copy type")?;
+            let state = self.state(ty);
             match state {
                 State::Ready(_) => continue,
                 State::Failed(message) => return Err(message),
                 State::Active if !finish => return Err("recursive by-value Copy obligation"),
                 _ => {}
             }
-            let kind = types.kind(ty).ok_or("invalid Copy type")?;
-            if matches!(kind, Kind::Parameter(_)) {
-                return Err("generic Copy checking requires a parameter environment");
+            if !finish {
+                self.record(ty, State::Active);
+                self.work.push((ty, true));
+                self.steps += 1;
             }
             if matches!(kind, Kind::Adt(_, args) if types.region_args(args).is_none()) {
                 return Err("generic Copy checking requires instantiated fields and bounds");
             }
             let initial = match kind {
+                Kind::Parameter(id) => {
+                    let abilities = self
+                        .scope
+                        .as_ref()
+                        .ok_or("generic Copy checking requires a parameter environment")?
+                        .environment
+                        .abilities(id)
+                        .ok_or("Copy parameter is outside the current environment")?;
+                    Properties {
+                        copy: abilities.copy,
+                        clone_: abilities.clone_,
+                    }
+                }
                 Kind::Adt(item, _) => selected.get(&item).copied().unwrap_or_default(),
                 Kind::Primitive(Primitive::Str)
                 | Kind::Slice(_)
@@ -105,11 +166,6 @@ impl Copies {
             let mut result = initial;
             let packed = matches!(kind, Kind::Adt(item, _)
                 if definitions.get(item).is_some_and(|d| d.repr.packed.is_some()));
-            if !finish {
-                self.states[ty.0 as usize] = State::Active;
-                self.work.push((ty, true));
-                self.steps += 1;
-            }
             if initial != Properties::default() {
                 children(types, definitions, kind, |child| {
                     if finish {
@@ -125,7 +181,7 @@ impl Copies {
                 })?;
             }
             if finish {
-                self.states[ty.0 as usize] = State::Ready(result);
+                self.record(ty, State::Ready(result));
             }
         }
         Ok(())

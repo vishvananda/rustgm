@@ -221,6 +221,9 @@ impl Checker<'_> {
         else {
             return Ok(ty);
         };
+        if self.facts.generics.parameters.contains_key(&owner) {
+            return Err(self.error(node, "generic function values require instance inference"));
+        }
         let explicit = crate::sema::lifetimes::arguments(self.report, self.key(node), false)?;
         let Some(scheme) = self.facts.lifetimes.functions.get(&owner) else {
             if explicit.is_some_and(|args| args.start != args.end) {

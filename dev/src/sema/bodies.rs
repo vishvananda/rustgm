@@ -158,6 +158,7 @@ pub(super) struct Checker<'a> {
     discarded_adjustments: std::collections::HashMap<usize, (TermId, TermId)>,
     calls: Vec<(NodeId, TermId)>,
     call_types: calls::CallTypes,
+    parameter_copies: Option<crate::types::copy::Copies>,
     body_binders: u32,
     annotation_work: Vec<(NodeId, bool)>,
     annotation_checks: Vec<NodeId>,
@@ -219,6 +220,7 @@ impl<'a> Checker<'a> {
             discarded_adjustments: std::collections::HashMap::new(),
             calls: Vec::new(),
             call_types: calls::CallTypes::default(),
+            parameter_copies: None,
             body_binders: 0,
             annotation_work: Vec::new(),
             annotation_checks: Vec::new(),
@@ -257,6 +259,7 @@ impl<'a> Checker<'a> {
     ) -> Result<(), Error> {
         self.call_types.clear();
         self.body_binders = 0;
+        self.parameter_copies = None;
         self.body = key;
         self.prepare_file(key.file);
         self.module = module;
@@ -336,6 +339,14 @@ impl Checker<'_> {
     }
     fn function(&mut self, function: Function) -> Result<(), Error> {
         self.call_types.clear();
+        self.parameter_copies = self
+            .facts
+            .generics
+            .environments
+            .get(&function.definition)
+            .map(|environment| {
+                crate::types::copy::Copies::in_environment(std::sync::Arc::clone(environment))
+            });
         self.body_binders = self
             .facts
             .lifetimes
@@ -979,7 +990,8 @@ impl Checker<'_> {
                         | DefKind::Static
                         | DefKind::Constructor
                         | DefKind::Variant
-                ) {
+                ) && !self.facts.generics.constants.contains_key(&id)
+                {
                     return Err(self.error(node, "unsupported value declaration"));
                 }
                 let ty = self.facts.definitions[id.0 as usize]

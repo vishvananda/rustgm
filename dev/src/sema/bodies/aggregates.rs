@@ -188,8 +188,9 @@ impl Checker<'_> {
         if length > 1
             && !constant
             && !self
-                .facts
-                .copies
+                .parameter_copies
+                .as_mut()
+                .unwrap_or(&mut self.facts.copies)
                 .demand(
                     &self.facts.types,
                     &self.facts.aggregates,

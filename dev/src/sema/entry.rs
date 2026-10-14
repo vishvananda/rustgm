@@ -33,6 +33,9 @@ pub fn select(report: &mut Report, facts: &Declarations) -> Result<DefId, Error>
     if definition.kind != DefKind::Function {
         return Err(error("main must name a function"));
     }
+    if facts.generics.parameters.contains_key(&binding.target) {
+        return Err(error("main cannot have type or const parameters"));
+    }
     let ty =
         facts.definitions[binding.target.0 as usize].ok_or_else(|| error("main has no type"))?;
     let Some(Kind::FunctionItem { signature, .. }) = facts.types.kind(ty) else {

@@ -384,3 +384,79 @@ Local final logs are `aliases-full-v4.log`, `aliases-release-v3.log`,
 sources and generated PA6 receipt are checked against the final worktree before
 publication. PA18–PA21 remain planned and the complete four-assignment goal
 remains active.
+
+### Symbolic function type checking and parameter environments
+
+The declaration worklist now registers free-function type and const parameters
+before elaborating their signatures. Their identities retain the owner and full
+declaration slot, including gaps for lifetime declarations. Lifetime-only work
+continues to assign signature slots on first use; registering a type parameter
+does not change early/late lifetime classification. Function generic defaults
+are rejected. Const parameters retain their declared scalar type in body
+expressions and their symbolic identity in array lengths.
+
+Body type checking visits every function once, including unused generic
+functions. Rigid parameters support identity, tuple construction, branches,
+local annotations, references, symbolic array types and function-pointer
+arguments. They cannot unify with unrelated parameters or concrete numeric
+types. Generic `main` entry points are rejected even when their signatures do
+not mention their parameters. Destructor methods continue to reject type/const
+parameters; allowing generic free functions must not relax the Drop contract.
+
+`types::parameters::environment::Environment` freezes an explicit parameter
+scope and its Copy/Clone assumptions. An unbounded parameter is present with no
+abilities; a parameter from outside the scope is an error. Copy entails Clone,
+while Clone alone does not permit copying. `Copies::in_environment` owns a
+fixed environment and separate positive/negative caches. Scoped caches contain
+only queried types, avoiding allocation and initialization proportional to the
+whole crate for every small body. Closed queries retain their existing dense
+cache and continue to reject unresolved parameters. Generic array-repeat
+checking uses the body's scoped query; reference abilities remain independent
+of referent abilities, and zero-length arrays still require Copy elements to
+be Copy types.
+
+This checkpoint supports **unbounded source type/const parameters**. Source
+trait bounds, inferred/explicit generic function values, demanded instances,
+and symbolic ownership/lifetime/destruction proofs remain unfinished. The
+typed environment API has direct bounded-query tests, but this does not claim
+that source `T: Copy` bounds are already elaborated. CFG construction explicitly
+rejects generic function bodies until move/drop planning can preserve their
+symbolic work. A successful type inspection is not an executable proof. No
+assignment is activated and no earlier text oracle is regenerated here.
+
+The maintainer tests independently qualify 21 accepted and 18 rejected source
+templates with pinned rustc, check lifetime slot ordering and owner identity,
+and exercise 512 independent generic bodies. Query tests cover unbounded,
+Clone-only and Copy environments, foreign parameters, cached failures, closed
+query isolation, reference/callable rules, zero-length arrays and a shared
+4,096-level type graph. Existing Drop-header controls caught a missing method
+restriction during development; that restriction is restored, with an added
+const-parameter method control.
+
+The final checkpoint passes 554 frontend tests (nine native tests ignored by
+default), all 3,297 active course cases, 37 focused generic tests in release,
+the full independent rustc checks and all nine native maintainer tests.
+Rustfmt, Clippy all/pedantic, the 368-file audit, 25 harness tests, assignment
+discovery and upstream/reference checksum verification pass. Final logs in
+`obj/pa18-work/` are `function-environments-full-v2.log`,
+`function-environments-release-v2.log` and
+`function-environments-independent-v2.log`.
+
+Performance uses frozen binaries and inputs, CPU 2, two warmups, four A/A
+calibration observations and three paired ABBA blocks per input. Fifteen inputs
+at 256/1,024/4,096 functions cover existing thin-reference, wide-reference and
+destructor LowIR plus new generic identity and repeated-shared-reference type
+checking. The 270 observations retain wall/CPU time, RSS, context switches and
+full/count output equality; no own builds/tests overlapped measurement. Ordinary
+programs compare against the preceding alias checkpoint. New generic programs
+compare against the first implementation with dense per-body Copy caches.
+
+At 4,096 functions, repeated-shared-reference checking improves from 213.94 to
+94.89 ms (paired ranges 209.37–221.10 and 91.02–101.97 ms). Generic identity
+checking is 76.18 versus 75.43 ms with overlapping ranges. Ordinary thin/wide
+reference LowIR is 490.08/866.06 versus 489.42/849.34 ms, likewise with
+overlapping ranges; this does not establish a general speedup. RSS remains
+similar. Receipts and immutable input/binary/source hashes are recorded in
+`functions-v2-perf-results.json`, `functions-v2-perf-jobs.json`,
+`functions-v2-source-sha256.json` and the linked per-input `obj/perf/` records.
+The production source hashes and release binary are rechecked before publication.
