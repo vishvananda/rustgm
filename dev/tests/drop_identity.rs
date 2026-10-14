@@ -1,48 +1,19 @@
 use rustgm::{
-    expand::config::Config,
-    resolve::{
-        self,
-        expansion::Report,
-        load::{InputFile, Sources},
-        model::{DefKind, Target},
-    },
-    support::source::SourceFile,
+    resolve::model::{DefKind, Target},
     syntax::{
         ast::{Kind, TypeFlavor},
         item::ItemKind,
     },
 };
-use std::path::Path;
 #[path = "helpers/qualify.rs"]
 mod rustc;
 use rustc::qualify;
 #[path = "support/semantic.rs"]
 mod semantic;
 
-struct NoFiles;
-impl Sources for NoFiles {
-    fn read(&mut self, _: &Path) -> Result<Option<InputFile>, String> {
-        Ok(None)
-    }
-}
-fn resolve(source: &str, expanded: bool) -> Result<Report, String> {
-    let mut report = resolve::expansion::analyze(
-        InputFile {
-            identity: "lib.rs".into(),
-            path: "lib.rs".into(),
-            source: SourceFile::new(source.as_bytes().to_vec())?,
-        },
-        &mut NoFiles,
-        &Config::default(),
-    )
-    .map_err(|error| error.to_string())?;
-    if expanded {
-        resolve::analyze_expanded(report).map_err(|error| error.to_string())
-    } else {
-        report.resolution = resolve::analyze(&mut report.package).map_err(|e| e.to_string())?;
-        Ok(report)
-    }
-}
+#[path = "helpers/resolve.rs"]
+mod names;
+use names::resolve;
 
 const CASES: &[(&str, &str, bool)] = &[
     (

@@ -1,6 +1,7 @@
 //! Scalar body constraints consume resolved identities; fallback occurs once per body.
 mod aggregates;
 mod alignment;
+mod bounds;
 mod calls;
 mod conditions;
 mod divergence;
@@ -160,6 +161,7 @@ pub(super) struct Checker<'a> {
     calls: Vec<(NodeId, TermId)>,
     call_types: calls::CallTypes,
     parameter_copies: Option<crate::types::copy::Copies>,
+    parameter_shapes: Option<crate::types::parameters::shape::Shapes>,
     body_binders: u32,
     annotation_work: Vec<(NodeId, bool)>,
     annotation_checks: Vec<NodeId>,
@@ -222,6 +224,7 @@ impl<'a> Checker<'a> {
             calls: Vec::new(),
             call_types: calls::CallTypes::default(),
             parameter_copies: None,
+            parameter_shapes: None,
             body_binders: 0,
             annotation_work: Vec::new(),
             annotation_checks: Vec::new(),
@@ -261,6 +264,7 @@ impl<'a> Checker<'a> {
         self.call_types.clear();
         self.body_binders = 0;
         self.parameter_copies = None;
+        self.parameter_shapes = None;
         self.body = key;
         self.prepare_file(key.file);
         self.module = module;
@@ -340,14 +344,6 @@ impl Checker<'_> {
     }
     fn function(&mut self, function: Function) -> Result<(), Error> {
         self.call_types.clear();
-        self.parameter_copies = self
-            .facts
-            .generics
-            .environments
-            .get(&function.definition)
-            .map(|environment| {
-                crate::types::copy::Copies::in_environment(std::sync::Arc::clone(environment))
-            });
         self.body_binders = self
             .facts
             .lifetimes
@@ -364,6 +360,7 @@ impl Checker<'_> {
         };
         self.prepare_file(body.file);
         self.body = body;
+        self.prepare_bound_environment(body.node, function.definition)?;
         let scope = self.report.resolution.definitions[function.definition.0 as usize].scope;
         self.module = self.report.resolution.scopes[scope.0 as usize].module;
         let Some(Type::Function { result, .. }) = self.facts.types.kind(function.signature) else {
@@ -510,15 +507,16 @@ impl Checker<'_> {
                     }),
             );
         let mut well_formed = HashSet::new();
-        for node in &self.touched {
-            let term = self.term(*node)?;
-            let key = self.key(*node);
+        for index in 0..self.touched.len() {
+            let node = self.touched[index];
+            let term = self.term(node)?;
+            let key = self.key(node);
             let ty = solved.types[term.0 as usize];
-            if self.facts.types.is_well_formed(ty) != Some(true) {
-                return Err(self.error(*node, "body uses an ill-formed type"));
+            if !self.body_shape(body, ty)?.well_formed {
+                return Err(self.error(node, "body uses an ill-formed type"));
             }
             if self.facts.types.contains_regions(ty) == Some(true)
-                && !self.annotation_children.contains(node)
+                && !self.annotation_children.contains(&node)
                 && well_formed.insert(ty)
             {
                 self.facts.well_formed.push(super::model::WellFormed {
@@ -532,10 +530,11 @@ impl Checker<'_> {
                 .ok_or_else(|| Declarations::error(self.report, key, "invalid body node"))?
                 .ty = Some(ty);
         }
-        for id in &self.bindings {
+        for index in 0..self.bindings.len() {
+            let id = self.bindings[index];
             if let Some(term) = self.locals[id.0 as usize].take() {
                 let ty = solved.types[term.0 as usize];
-                if self.facts.types.is_sized(ty) != Some(true) {
+                if !self.body_shape(body, ty)?.sized {
                     return Err(self.error(body, "local bindings must be sized"));
                 }
                 self.facts.definitions[id.0 as usize] = Some(ty);
@@ -1003,6 +1002,7 @@ impl Checker<'_> {
                     return self.generic_function(node, id, ty);
                 }
                 let ty = self.function_item(node, id, ty)?;
+                self.ordinary_bound_obligations(node, id, ty)?;
                 self.known(node, ty)
             }
             Kind::Group(value) | Kind::Attributed { value, .. } | Kind::Label { value, .. } => {

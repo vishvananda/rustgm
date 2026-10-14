@@ -140,6 +140,14 @@ impl Copies {
                 self.work.push((ty, true));
                 self.steps += 1;
             }
+            let assumed = self
+                .scope
+                .as_ref()
+                .map(|scope| scope.environment.assumed(ty));
+            if assumed.is_some_and(|p| p.copy) {
+                self.record(ty, State::Ready(Properties::BOTH));
+                continue;
+            }
             if matches!(kind, Kind::Adt(_, args) if types.region_args(args).is_none()) {
                 return Err("generic Copy checking requires instantiated fields and bounds");
             }
@@ -181,6 +189,7 @@ impl Copies {
                 })?;
             }
             if finish {
+                result.clone_ |= assumed.is_some_and(|p| p.clone_);
                 self.record(ty, State::Ready(result));
             }
         }

@@ -1,4 +1,5 @@
 //! Stable name-resolution facts; lexical bindings point directly at definitions.
+pub use super::builtins::{BuiltinTrait, Traits as BuiltinTraits};
 use super::{names::NameId, package::ModuleId, unit::NodeKey};
 use crate::syntax::ast::NodeId;
 use std::collections::HashMap;
@@ -200,6 +201,7 @@ impl Introductions {
 }
 #[derive(Default)]
 pub struct Resolution {
+    pub builtin_traits: BuiltinTraits,
     /// Language-owned identity, distinct from any user declaration named `Drop`.
     pub drop_trait: Option<DefId>,
     /// Supported external crate metadata, separate from the crate's lexical root.

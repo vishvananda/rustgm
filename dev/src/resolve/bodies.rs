@@ -358,7 +358,7 @@ impl Resolver<'_> {
         }
         let (absolute, path) = self.path_names(c, node)?;
         if ns == Namespace::Type {
-            self.prepare_builtin_path(c, node, &path)?;
+            self.prepare_builtin_path(c, node, absolute, &path)?;
         }
         if ns == Namespace::Type && path.len() == 1 {
             // Syntactically ambiguous const generic arguments are typed after lookup.

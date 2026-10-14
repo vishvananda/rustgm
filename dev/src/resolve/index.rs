@@ -640,7 +640,7 @@ impl Resolver<'_> {
             .unwrap_or_default();
         let mut path = prefix.to_vec();
         path.extend(local);
-        self.prepare_builtin_path(c, node, &path)?;
+        self.prepare_builtin_path(c, node, absolute || local_absolute, &path)?;
         if tree.children.start == tree.children.end {
             let alias = tree
                 .rename

@@ -99,6 +99,7 @@ impl Checker<'_> {
             .infer
             .instantiate(&self.facts.types, signature, &bindings)
             .map_err(|e| self.error(node, e))?;
+        self.bound_obligations(node, owner, &arguments, &bindings)?;
         let term = self
             .infer
             .function_item(item, signature, &arguments)
@@ -159,8 +160,9 @@ impl Checker<'_> {
             )
             .map_err(|e| self.error(node, e))
     }
-    pub(super) fn validate_generic_uses(&self, solved: &infer::Solved) -> Result<(), Error> {
-        for &(node, owner, term) in &self.call_types.generic {
+    pub(super) fn validate_generic_uses(&mut self, solved: &infer::Solved) -> Result<(), Error> {
+        for index in 0..self.call_types.generic.len() {
+            let (node, owner, term) = self.call_types.generic[index];
             let ty = *solved
                 .types
                 .get(term.0 as usize)
@@ -168,13 +170,16 @@ impl Checker<'_> {
             let Some(Type::FunctionItem { arguments, .. }) = self.facts.types.kind(ty) else {
                 return Err(self.error(node, "missing inferred item arguments"));
             };
-            let mut arguments = self
+            let arguments = self
                 .facts
                 .types
                 .arguments(arguments)
                 .ok_or_else(|| self.error(node, "invalid inferred arguments"))?
-                .filter(|a| !matches!(a, Canonical::Lifetime(_)));
-            for parameter in &self.facts.generics.parameters[&owner] {
+                .filter(|a| !matches!(a, Canonical::Lifetime(_)))
+                .collect::<Vec<_>>();
+            let mut arguments = arguments.into_iter();
+            let parameters = self.facts.generics.parameters[&owner].clone();
+            for parameter in &parameters {
                 let argument = arguments
                     .next()
                     .ok_or_else(|| self.error(node, "missing inferred generic argument"))?;
@@ -193,7 +198,7 @@ impl Checker<'_> {
                         .types
                         .parameter(id)
                         .is_some_and(|p| matches!(p.kind, ParameterKind::Type { sized: true }))
-                    && self.facts.types.is_sized(actual) != Some(true)
+                    && !self.body_shape(node, actual)?.sized
                 {
                     return Err(self.error(node, "generic type argument must be sized"));
                 }
@@ -201,6 +206,14 @@ impl Checker<'_> {
             if arguments.next().is_some() {
                 return Err(self.error(node, "unexpected inferred generic argument"));
             }
+        }
+        for index in 0..self.call_types.obligations.len() {
+            let (node, bound, term) = self.call_types.obligations[index];
+            let ty = *solved
+                .types
+                .get(term.0 as usize)
+                .ok_or_else(|| self.error(node, "missing inferred bound subject"))?;
+            self.prove_bound(node, ty, bound)?;
         }
         Ok(())
     }

@@ -570,3 +570,101 @@ Raw receipts, frozen hashes and all observations are linked from
 `inference-candidate-v2`. Source and binary hashes are checked again before
 publication. These local measurements supplement the committed semantic tests;
 they do not activate PA18 or replace its still-required execution contract.
+
+### Built-in bounds and fixed body assumptions
+
+The frontend now elaborates inline and where-clause `Copy`, `Clone`, `Sized`
+and `?Sized` bounds for generic function checking. Trait identity comes from
+resolved definitions. Small external `core`/`std` trait modules are loaded on
+demand; forward aliases wake the existing import dependency worklist. Prelude,
+external-crate, namespace and shadowing rules remain ordinary resolution rules.
+PA6 owns 23 new name fixtures and generated text oracles. Their outcomes were
+independently qualified before generation; no previous oracle changed. Expansion
+and definition-identity tests additionally cover generated imports and shadows.
+
+Each function owns an immutable parameter environment before body queries begin.
+Copy entails Clone and Sized, and Clone entails Sized. Composite assumptions
+remain attached to their complete typed subject: `(T,U): Copy` permits copying
+that tuple, without deriving `T: Copy` or `U: Copy`. Likewise, assumed sizedness
+cannot hide an ill-formed array element or non-final tuple element. Canonical
+Store properties remain unchanged. Scoped shape and Copy queries use separate
+caches, shared-graph worklists and bounded work; no query result moves between
+functions with different assumptions. Extra assumption maps are allocated only
+when predicates exist. Relaxed-bound membership uses an indexed parameter set.
+
+Function-item uses retain typed obligations alongside type/const inference.
+After inference, each substituted subject must satisfy its bound in the caller's
+environment, even when the item is never called or the constrained argument is
+absent from its signature. Closed false function bounds fail at declaration;
+parameter-dependent impossible bounds are checked at use. Ordinary type-alias
+bounds retain pinned rustc's unenforced behavior, including closed false bounds.
+The source syntax restriction on relaxed bounds is deliberate: `T: ?Sized` is
+allowed, but `(T): ?Sized` is rejected by pinned rustc. Built-in traits take no
+generic arguments, and optional bounds other than Sized are rejected.
+
+Lifetime uses in predicates participate in early/late classification. Body
+queries retain assumptions in the declaration context and, when needed, their
+capture-safe substitution into the caller's free universal aliases. Both forms
+are frozen before constructing the caches. This permits forwarding an explicit
+lifetime-dependent assumption without erasing regions or mutating cached proof
+contexts. Bound references require named lifetimes except inside their own
+nested callable binder.
+
+There are 82 declared source controls (44 accepted, 38 rejected), independently
+checked against pinned rustc, plus typed invariants for environment isolation,
+foreign parameters, structural well-formedness, supertraits, exact composite
+assumptions and a shared 4,096-level graph. Resolver tests verify module demand,
+unique builtin identities, macros, aliases, namespace errors and prelude policy.
+The source and typed controls pass in debug and release modes.
+
+This is another **type-checking checkpoint**, not a complete bound solver or
+released PA18. Explicit symbolic type-outlives predicates and their implied
+proofs remain required. A bound subject whose well-formedness depends on those
+proofs reports that boundary instead of silently accepting it. General matching
+of region-related predicates, user traits, higher-ranked trait/where bounds,
+generic nominal fields and symbolic ownership/destruction remain open. The
+existing CFG boundary still rejects parameterized bodies. Demanded instances,
+native generic lowering and the remaining PA19–PA21 contracts are still part of
+the active goal; the assignments remain planned.
+
+Validation passes 583 frontend tests, all 3,320 active course cases, 40 focused
+release tests, the full independent rustc checks and nine explicit native
+maintainer tests. The default frontend run reports those nine native tests as
+ignored. Rustfmt, Clippy all/pedantic, the 388-file architecture audit, 25 harness
+tests, manifest discovery and all pinned upstream/Reference checks pass. Evidence
+is retained in `obj/pa18-work/bounds-{full,independent,release,harness}-v1.log`,
+`bounds-audits-v3.log` and `bounds-pa6-{independent,bless}-v1.log`.
+
+The frozen release binary `bounds-candidate-v1` has SHA-256
+`32a520b422e5cd84d4e4dfdafefbc664e65a28aac31e139a693b8c7dbc1ac64e`.
+Measurements retain 756 observations across 42 workloads at 256/1,024/4,096
+functions or parameters. Each uses CPU 2, two warmups, four A/A calibration
+observations and three paired ABBA blocks. Existing workloads compare against
+`2a77baf` (`inference-candidate-v2`); new bounds workloads use identical candidate
+binaries for calibration and scaling. Full rendered and count outputs agree for
+every pair. No own builds or tests overlap the measurements; all frozen source,
+input and binary hashes were rechecked afterward.
+
+The existing workloads at 4,096 functions are:
+
+| Workload | Previous ms | Bounds ms | Previous RSS KiB | Bounds RSS KiB |
+| --- | ---: | ---: | ---: | ---: |
+| Thin-reference LowIR | 453.35 | 441.12 | 76244 | 76908 |
+| Wide-reference LowIR | 760.54 | 800.84 | 124988 | 124990 |
+| Destruction LowIR | 2523.39 | 2553.69 | 291184 | 291280 |
+| Generic identity bodies | 57.63 | 59.49 | 19814 | 19814 |
+| Generic shared-reference bodies | 91.33 | 92.22 | 24002 | 24020 |
+| Inferred type calls | 89.82 | 86.79 | 20534 | 20538 |
+| Inferred const calls | 83.38 | 85.34 | 22616 | 22620 |
+| Borrowed generic calls | 231.24 | 229.31 | 40914 | 40940 |
+
+All reported A/B timing ranges overlap. Medians include both decreases and
+increases (up to 5.3% for wide-reference LowIR), so this noisy shared-host run
+establishes no general speedup. Peak memory stays close to the preceding
+checkpoint. New workloads exercise Copy bodies/calls, tuple and const-array
+assumptions, forward trait-module aliases and one wide relaxed parameter list.
+At 4,096, their candidate B medians are respectively 106.95, 85.45, 153.87,
+176.39, 174.05 and 31.24 ms. The wide-bound measurements show no quadratic
+increase over the measured sizes. Every raw observation, including calibration,
+is retained through `bounds-v1-perf-results.json` and `bounds-v1-perf-jobs.json`;
+`bounds-v1-source-sha256.json` records the source freeze.

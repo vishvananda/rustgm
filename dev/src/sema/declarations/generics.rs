@@ -1,7 +1,9 @@
 //! Generic declaration environments are elaborated once by the declaration worklist.
 mod arguments;
+pub(super) mod bounds;
 mod constants;
 mod functions;
+mod validation;
 use super::{
     Checker, DefId, Error, GenericFlavor, ItemId, Kind, NodeKey, State, Type, TypeId, Work, regions,
 };
@@ -47,10 +49,14 @@ impl Checker<'_> {
             .filter(|node| unit.configured.active[node.0 as usize])
             .map(|node| self.unattributed(NodeKey { node, ..key }))
             .collect();
+        self.prepare_bounds(owner, key, &nodes)?;
         if !nodes.iter().any(|key| {
             self.generic_syntax(*key)
                 .is_ok_and(|p| p.flavor != GenericFlavor::Lifetime)
         }) {
+            if !function {
+                self.schedule_bounds(owner, context)?;
+            }
             return Ok(());
         }
         if self.facts.destructors.method(owner).is_some() {
@@ -80,9 +86,6 @@ impl Checker<'_> {
             if function && parameter.default.is_some() {
                 return Err(self.error(*node, "function generic parameters cannot have defaults"));
             }
-            if !lifetime && parameter.bounds.start != parameter.bounds.end {
-                return Err(self.error(*node, "type parameter bounds require generic obligations"));
-            }
             if !lifetime && defaulted && parameter.default.is_none() {
                 return Err(self.error(*node, "generic parameters with defaults must be trailing"));
             }
@@ -92,6 +95,9 @@ impl Checker<'_> {
             .generics
             .parameters
             .insert(owner, Vec::with_capacity(nodes.len()));
+        if !function {
+            self.schedule_bounds(owner, context)?;
+        }
         for (index, key) in nodes.into_iter().enumerate().rev() {
             // Function lifetime slots are assigned by signature first use, then
             // classified as early/late. Do not preassign them in source order.
@@ -156,7 +162,9 @@ impl Checker<'_> {
             )
         } else {
             let kind = if syntax.flavor == GenericFlavor::Type {
-                ParameterKind::Type { sized: true }
+                ParameterKind::Type {
+                    sized: !self.relaxed.contains(&binding),
+                }
             } else {
                 ParameterKind::Const {
                     ty: self.ty(NodeKey {

@@ -93,7 +93,7 @@ Emit sections in that order. Bindings follow scope order, then first insertion
 order; references follow semantic traversal. Name strings use Rust debug-string
 escaping. Namespaces are `type`, `value`, `macro`, `lifetime`, `label`. Kinds are
 `primitive`, `module`, `function`, `struct`, `constructor`, `enum`, `variant`,
-`trait`, `alias`, `const`, `static`, `generic`, `local`, `parameter`, `self-type`,
+`trait`, `builtin-trait`, `alias`, `const`, `static`, `generic`, `local`, `parameter`, `self-type`,
 `macro`, `extern-crate`, `label`, `lifetime`. Access is `public` or `module:ID`.
 Origins are `Direct`, `Import(ID)`, `Glob(ID)`; import IDs follow flattened use
 leaf order. Targets are `def=ID`, `associated=ID`, `pending-expansion=SCOPE`.
@@ -119,9 +119,15 @@ Field/method selection, type inhabitation, callable validity, pattern usefulness
 and borrow validity are later contracts. A variant can resolve in the type
 namespace while failing PA9's requirement to denote a type; the manifest records
 that deliberate rustc-acceptance difference. Lifetimes `'static` and `'_` keep
-their built-in meaning. Primitive scalar names are available; external crate
-metadata and the standard-library prelude are not fabricated here. External
-qualified paths report unavailable metadata until the corresponding later stages.
+their built-in meaning. Primitive scalar names are available. The supported
+external metadata is deliberately small: `core`/`std` provide `ops::Drop`,
+`marker::{Copy, Sized}` and `clone::Clone`. Trait modules are loaded on demand;
+ordinary programs do not allocate this metadata. Their definition identities
+survive aliases, reexports and globs. Prelude lookup respects `no_std` and
+`no_implicit_prelude`, explicit external declarations and lexical shadowing.
+User declarations with the same spelling remain distinct. These name facts
+do not prove a bound or implement a trait; later semantic assignments own that
+behavior. Other external paths still report unavailable metadata.
 
 The manifest declares every primary input and auxiliary module file. File cases
 run with their source path; stdin cases retain earlier harness behavior. Receipts

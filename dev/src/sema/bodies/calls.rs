@@ -8,6 +8,7 @@ use std::collections::HashMap;
 
 #[derive(Default)]
 pub(super) struct CallTypes {
+    pub obligations: Vec<(NodeId, crate::types::parameters::predicates::Bound, TermId)>,
     pub generic: Vec<(NodeId, DefId, TermId)>,
     pub active: HashMap<NodeId, TermId>,
     signatures: HashMap<TermId, TypeId>,
@@ -19,6 +20,7 @@ impl CallTypes {
         self.universal_regions.clone()
     }
     pub fn clear(&mut self) {
+        self.obligations.clear();
         self.generic.clear();
         self.active.clear();
         self.signatures.clear();

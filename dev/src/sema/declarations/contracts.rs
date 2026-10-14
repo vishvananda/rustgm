@@ -57,6 +57,9 @@ impl Checker<'_> {
                     "higher-ranked where-clauses require advanced generic relationships",
                 ));
             }
+            if !self.lifetime_argument(NodeKey { node: ty, ..key }) {
+                continue;
+            }
             let longer = self.bound_region(NodeKey { node: ty, ..key }, binder)?;
             self.lifetime_bounds(key, binder, longer, list, &mut bounds)?;
         }
@@ -156,7 +159,7 @@ impl Checker<'_> {
         outputs
             .collect(&self.facts.types, result)
             .map_err(|e| self.error(key, e))?;
-        let bounded: HashSet<_> = bounds
+        let mut bounded: HashSet<_> = bounds
             .iter()
             .flat_map(|(a, b)| [a, b])
             .filter_map(|r| {
@@ -165,6 +168,12 @@ impl Checker<'_> {
                     .map(|(_, index)| index)
             })
             .collect();
+        bounded.extend(
+            self.facts
+                .generics
+                .bound_lifetimes(&self.facts.types, owner)
+                .map_err(|e| self.error(key, e))?,
+        );
         // An unused declared lifetime is late, even when an erased alias once
         // mentioned it. An unconstrained lifetime occurring in the output is early.
         let declared = self.declared_regions(key, declared)?;

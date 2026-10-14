@@ -29,8 +29,14 @@ pub struct FunctionUse {
     pub lifetimes: Option<crate::syntax::ast::List>,
     pub arguments: Vec<SourceArgument>,
 }
+#[derive(Clone, Copy)]
+pub struct Predicate {
+    pub source: crate::resolve::unit::NodeKey,
+    pub value: crate::types::parameters::predicates::Predicate,
+}
 #[derive(Default)]
 pub struct Generics {
+    pub predicates: HashMap<DefId, Vec<Predicate>>,
     pub parameters: HashMap<DefId, Vec<Parameter>>,
     pub constants: HashMap<DefId, ConstId>,
     pub environments: HashMap<DefId, Arc<Environment>>,
@@ -38,6 +44,17 @@ pub struct Generics {
     substitutions: HashMap<(DefId, GenericArgs), Bound>,
 }
 impl Generics {
+    pub(super) fn bound_lifetimes(
+        &self,
+        types: &Store,
+        owner: DefId,
+    ) -> Result<std::collections::HashSet<u16>, &'static str> {
+        let mut uses = crate::types::bound_uses::Uses::default();
+        for predicate in self.predicates.get(&owner).into_iter().flatten() {
+            uses.collect(types, predicate.value.ty)?;
+        }
+        Ok(uses.indices)
+    }
     pub(super) fn parameter_ids(
         &self,
         store: &Store,
@@ -91,11 +108,11 @@ impl Generics {
         store: &Store,
         owner: DefId,
     ) -> Result<(), &'static str> {
-        let Some(parameters) = self.parameters.get(&owner) else {
+        if !self.parameters.contains_key(&owner) && !self.predicates.contains_key(&owner) {
             return Ok(());
-        };
+        }
         let mut assumptions = Vec::new();
-        for parameter in parameters {
+        for parameter in self.parameters.get(&owner).into_iter().flatten() {
             if let Argument::Type(ty) = parameter.argument {
                 let Some(Kind::Parameter(id)) = store.kind(ty) else {
                     return Err("generic declaration requires a rigid type parameter");
@@ -106,7 +123,16 @@ impl Generics {
         match self.environments.entry(owner) {
             Entry::Occupied(_) => Err("generic body environment already completed"),
             Entry::Vacant(entry) => {
-                entry.insert(Arc::new(Environment::new(store, &assumptions)?));
+                let predicates = self
+                    .predicates
+                    .get(&owner)
+                    .into_iter()
+                    .flatten()
+                    .map(|p| p.value)
+                    .collect::<Vec<_>>();
+                entry.insert(Arc::new(
+                    Environment::new(store, &assumptions)?.with_predicates(store, &predicates)?,
+                ));
                 Ok(())
             }
         }

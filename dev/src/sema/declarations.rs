@@ -36,6 +36,7 @@ enum SignaturePhase {
 }
 #[derive(Clone, Copy)]
 enum Work {
+    Bounds(DefId),
     FunctionArguments(NodeKey, DefId),
     Generic(generics::Declaration),
     PathArguments(NodeKey, DefId, regions::Context),
@@ -53,6 +54,8 @@ struct Signature {
     unsafe_: bool,
 }
 struct Checker<'a> {
+    bound_syntax: std::collections::HashMap<DefId, Vec<generics::bounds::Syntax>>,
+    relaxed: std::collections::HashSet<DefId>,
     constant_modules:
         Option<std::collections::HashMap<NodeKey, Option<crate::resolve::package::ModuleId>>>,
     constant_scratch: super::constants::Scratch,
@@ -82,6 +85,8 @@ pub fn analyze(report: &Report) -> Result<Declarations, Error> {
         ));
     }
     let mut checker = Checker {
+        bound_syntax: std::collections::HashMap::new(),
+        relaxed: std::collections::HashSet::new(),
         constant_modules: None,
         constant_scratch: super::constants::Scratch::default(),
         constant_dependencies: std::collections::HashSet::new(),
@@ -154,6 +159,7 @@ impl Checker<'_> {
                 ));
             }
             match work {
+                Work::Bounds(owner) => self.complete_bounds(owner)?,
                 Work::FunctionArguments(key, owner) => {
                     self.complete_function_arguments(key, owner)?;
                 }
@@ -271,8 +277,17 @@ impl Checker<'_> {
         }
         Ok(())
     }
-    fn validate_signatures(&self) -> Result<(), Error> {
-        for function in &self.facts.functions {
+    fn validate_signatures(&mut self) -> Result<(), Error> {
+        for index in 0..self.facts.functions.len() {
+            let function = self.facts.functions[index];
+            let mut shapes = self
+                .facts
+                .generics
+                .environments
+                .get(&function.definition)
+                .filter(|e| e.has_shape_assumptions())
+                .map(|e| crate::types::parameters::shape::Shapes::new(std::sync::Arc::clone(e)));
+            self.validate_bounds(function.definition, &mut shapes)?;
             let Some(Type::Function {
                 parameters, result, ..
             }) = self.facts.types.kind(function.signature)
@@ -288,13 +303,23 @@ impl Checker<'_> {
                 .copied()
                 .chain(std::iter::once(result))
             {
-                if self.facts.types.is_well_formed(ty) != Some(true) {
+                let shape = if let Some(shapes) = &mut shapes {
+                    shapes
+                        .demand(&self.facts.types, ty)
+                        .map_err(|e| self.error(function.node, e))?
+                } else {
+                    crate::types::parameters::shape::Properties {
+                        sized: self.facts.types.is_sized(ty) == Some(true),
+                        well_formed: self.facts.types.is_well_formed(ty) == Some(true),
+                    }
+                };
+                if !shape.well_formed {
                     return Err(self.error(
                         function.node,
                         "function signature contains an ill-formed type",
                     ));
                 }
-                if self.facts.types.is_sized(ty) != Some(true) {
+                if !shape.sized {
                     return Err(self.error(
                         function.node,
                         "function parameters and result must be sized",
@@ -782,6 +807,15 @@ impl Checker<'_> {
                     owner,
                     SignaturePhase::Finish(binder, self.regions.count(binder)),
                 ));
+                if let Some(owner) = owner {
+                    self.schedule_bounds(
+                        owner,
+                        regions::Context {
+                            binder: Some(binder),
+                            position: Position::Output,
+                        },
+                    )?;
+                }
                 if let Some(result) = signature.result {
                     self.node_work(
                         key.file,

@@ -1,4 +1,5 @@
 //! Demand-created language trait metadata, resolved through ordinary namespaces.
+mod traits;
 use super::{
     index::{Context, Resolver},
     model::{Access, Binding, DefId, DefKind, Definition, Namespace, ScopeId},
@@ -9,6 +10,7 @@ use crate::syntax::{
     ast::NodeId,
     item::{Item, ItemKind},
 };
+pub use traits::{BuiltinTrait, Traits};
 
 impl Resolver<'_> {
     pub(super) fn builtin_crate(
@@ -27,7 +29,7 @@ impl Resolver<'_> {
         if !matches!(self.package.names.get(name), "core" | "std") {
             return Ok(None);
         }
-        self.prepare_builtin_path(c, node, &[name])?;
+        self.prepare_builtin_path(c, node, false, &[name])?;
         let external = self
             .facts
             .extern_scope
@@ -73,15 +75,22 @@ impl Resolver<'_> {
         &mut self,
         c: Context,
         node: NodeId,
+        absolute: bool,
         path: &[NameId],
     ) -> Result<(), Error> {
-        if self.facts.drop_trait.is_some()
-            || !path.first().is_some_and(|name| {
-                matches!(self.package.names.get(*name), "Drop" | "core" | "std")
+        if self.facts.drop_trait.is_none()
+            && path.first().is_some_and(|name| {
+                matches!(
+                    self.package.names.get(*name),
+                    "Drop" | "core" | "std" | "Copy" | "Clone" | "Sized"
+                )
             })
         {
-            return Ok(());
+            self.prepare_external_traits(c, node)?;
         }
+        self.prepare_trait_metadata(c, node, absolute, path)
+    }
+    fn prepare_external_traits(&mut self, c: Context, node: NodeId) -> Result<(), Error> {
         let external = self.new_scope(None, ModuleId(0), true)?;
         let library = self.new_scope(None, ModuleId(0), true)?;
         let ops = self.new_scope(None, ModuleId(0), true)?;
@@ -119,6 +128,7 @@ impl Resolver<'_> {
         }
         self.facts.drop_trait = Some(drop);
         self.facts.extern_scope = Some(external);
+        self.facts.builtin_traits.library = Some(library);
         Ok(())
     }
 
@@ -174,16 +184,13 @@ impl Resolver<'_> {
             return None;
         }
         let external = self.facts.extern_scope?;
-        let scope = if self
+        let builtin = self
             .facts
             .drop_trait
-            .is_some_and(|id| self.facts.definitions[id.0 as usize].name == name)
-        {
-            let id = self.facts.drop_trait?;
-            self.facts.definitions[id.0 as usize].scope
-        } else {
-            external
-        };
+            .into_iter()
+            .chain(self.facts.builtin_traits.identities())
+            .find(|id| self.facts.definitions[id.0 as usize].name == name);
+        let scope = builtin.map_or(external, |id| self.facts.definitions[id.0 as usize].scope);
         self.facts.scopes[scope.0 as usize]
             .bindings
             .get(&(name, Namespace::Type))

@@ -2107,6 +2107,259 @@
         "kind": "program",
         "status": 0
       }
+    },
+    {
+      "path": "tests/spec/names/builtin-traits-prelude.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/builtin-traits-qualified.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/builtin-traits-alias-forward.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/builtin-traits-module-forward.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/builtin-traits-globs.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/builtin-traits-reexport.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/builtin-traits-module-self.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/builtin-traits-no-std.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/builtin-traits-explicit-std.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/builtin-traits-explicit-core.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/builtin-traits-shadow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/builtin-traits-import-shadow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/builtin-traits-core-shadow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/builtin-traits-absolute.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/builtin-traits-root.rs",
+      "exit_status": 1,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/names/builtin-traits-absolute-root.rs",
+      "exit_status": 1,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/names/builtin-traits-value.rs",
+      "exit_status": 1,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/names/builtin-traits-wrong-module.rs",
+      "exit_status": 1,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/names/builtin-traits-missing.rs",
+      "exit_status": 1,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/names/builtin-traits-missing-std.rs",
+      "exit_status": 1,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/names/builtin-traits-no-prelude.rs",
+      "exit_status": 1,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/names/builtin-traits-nested-no-prelude.rs",
+      "exit_status": 1,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/names/builtin-traits-module-missing.rs",
+      "exit_status": 1,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
     }
   ]
 }

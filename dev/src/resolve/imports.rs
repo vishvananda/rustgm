@@ -225,7 +225,7 @@ impl Resolver<'_> {
         )
     }
     fn import_lookup(
-        &self,
+        &mut self,
         index: usize,
         import: &Import,
         path: &[NameId],
@@ -269,6 +269,16 @@ impl Resolver<'_> {
             self.facts.scopes[import.scope.0 as usize].module,
             import.scope,
         );
+        if ns == Namespace::Type {
+            let before = self.facts.definitions.len();
+            self.prepare_builtin_path(c, import.node.node, import.absolute, path)?;
+            if self.facts.definitions.len() != before {
+                work.extend(self.facts);
+                for definition in &self.facts.definitions[before..] {
+                    work.declared((definition.scope, definition.name, definition.namespace));
+                }
+            }
+        }
         let mut observed = Observations {
             selected: Some(std::mem::take(&mut work.selections)),
             ..Observations::default()
