@@ -5,12 +5,13 @@ use std::collections::HashSet;
 #[derive(Default)]
 pub struct Uses {
     pub parameters: HashSet<ParameterId>,
+    pub constants: HashSet<ParameterId>,
     seen: HashSet<TypeId>,
     work: Vec<TypeId>,
     pub steps: usize,
 }
 impl Uses {
-    /// Accumulate type parameter occurrences from completed types in one store.
+    /// Accumulate type and const parameter occurrences from completed types in one store.
     /// # Errors
     /// Rejects malformed canonical identities and exhausted traversal resources.
     pub fn collect(&mut self, store: &Store, root: TypeId) -> Result<(), &'static str> {
@@ -32,8 +33,12 @@ impl Uses {
                     self.parameters.insert(id);
                     None
                 }
+                Kind::ArrayTerm { element, length } => {
+                    self.constant(store, length)?;
+                    self.work.push(element);
+                    None
+                }
                 Kind::Array { element, .. }
-                | Kind::ArrayTerm { element, .. }
                 | Kind::Slice(element)
                 | Kind::Reference {
                     referent: element, ..
@@ -59,9 +64,12 @@ impl Uses {
                         .arguments(arguments)
                         .ok_or("invalid parameter use arguments")?;
                     self.capacity(arguments.len())?;
+                    self.steps += arguments.len();
                     for argument in arguments {
-                        if let Argument::Type(ty) = argument {
-                            self.work.push(ty);
+                        match argument {
+                            Argument::Type(ty) => self.work.push(ty),
+                            Argument::Const(id) => self.constant(store, id)?,
+                            Argument::Lifetime(_) => {}
                         }
                     }
                     None
@@ -73,6 +81,19 @@ impl Uses {
                 self.capacity(children.len())?;
                 self.work.extend_from_slice(children);
             }
+        }
+        Ok(())
+    }
+    fn constant(
+        &mut self,
+        store: &Store,
+        id: crate::types::arguments::ConstId,
+    ) -> Result<(), &'static str> {
+        if let crate::types::arguments::ConstKind::Parameter(id) = store
+            .const_kind(id)
+            .ok_or("invalid parameter use constant")?
+        {
+            self.constants.insert(id);
         }
         Ok(())
     }

@@ -1,1 +1,1 @@
-ERROR: file 0: 17: function parameter requires an explicit type
+ERROR: file 0: 17: trait method receivers require trait semantics

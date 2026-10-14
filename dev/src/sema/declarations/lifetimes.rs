@@ -154,8 +154,11 @@ impl Checker<'_> {
         id: DefId,
         context: regions::Context,
     ) -> Result<TypeId, Error> {
-        if self.facts.destructors.self_type(id).is_some() {
-            return self.drop_self_type(key, id, context);
+        if self.facts.associated.schema(id).is_some()
+            && self.report.resolution.definitions[id.0 as usize].kind
+                == crate::resolve::model::DefKind::SelfType
+        {
+            return self.associated_self_type(key, id, context);
         }
         if self.facts.generics.parameters.contains_key(&id) {
             return self.generic_path(key, id, context);

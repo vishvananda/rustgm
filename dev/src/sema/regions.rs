@@ -35,6 +35,7 @@ struct Binder {
     named: HashMap<DefId, Option<u16>>,
     count: u32,
     output: Option<RegionId>,
+    receiver: Option<RegionId>,
     candidates: HashSet<RegionId>,
     candidate_count: usize,
 }
@@ -52,6 +53,7 @@ impl Regions {
             declared,
             count: 0,
             output: None,
+            receiver: None,
             candidates: HashSet::new(),
             candidate_count: 0,
         });
@@ -128,7 +130,8 @@ impl Regions {
             Position::Static => Ok(RegionId::STATIC),
             Position::Input | Position::Impl => RegionId::bound(0, self.fresh(id)?),
             Position::Output => self.binders[id.0]
-                .output
+                .receiver
+                .or(self.binders[id.0].output)
                 .ok_or("cannot infer an output lifetime from these parameters"),
         }
     }
@@ -155,6 +158,9 @@ impl Regions {
                 .ok_or("lifetime binder depth overflow")?;
         }
         Err("lifetime is outside the signature's binders")
+    }
+    pub fn prefer_receiver(&mut self, id: BinderId, region: RegionId) {
+        self.binders[id.0].receiver = Some(region);
     }
     pub fn begin_parameter(&mut self, id: BinderId) {
         self.binders[id.0].candidates.clear();

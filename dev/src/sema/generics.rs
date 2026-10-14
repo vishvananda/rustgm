@@ -171,6 +171,22 @@ impl Generics {
         }
         Ok(ids)
     }
+    pub(super) fn callable_parameters(
+        &self,
+        store: &Store,
+        owner: DefId,
+    ) -> Result<(Vec<ItemId>, Vec<crate::types::parameters::ParameterId>), &'static str> {
+        let mut owners: Vec<_> = self.scopes(owner).collect();
+        owners.reverse();
+        let mut parameters = Vec::new();
+        for &owner in &owners {
+            parameters.extend(self.parameter_ids(store, owner)?);
+        }
+        Ok((
+            owners.into_iter().map(|id| ItemId(id.0)).collect(),
+            parameters,
+        ))
+    }
     /// Until generic move/drop plans exist, symbolic bodies must not enter the
     /// concrete CFG builder, which can discard temporaries that appear dropless.
     /// # Errors

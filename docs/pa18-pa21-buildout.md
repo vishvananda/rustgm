@@ -2540,3 +2540,66 @@ rejected signature rules for the next implementation: required versus default
 methods with unsized Self, Sized bounds, receiver elision, explicit receivers,
 unconstrained impl parameters and safe/unsafe trait impl mismatches. The full
 PA19–PA21 contracts above remain required.
+
+## PA19 inherent owner environments and method headers
+
+Inherent impl targets now elaborate under their original type/const parameter
+identities. Unconstrained type/const parameters, primitive targets and unsafe or
+negative inherent impls are rejected. Methods inherit the owner environment and
+capture all owner lifetime slots separately from their own early/late slots.
+Callable templates validate ordered owner scopes without renaming inherited
+parameters. Const occurrences in arrays and nominal arguments participate in
+the target constraint check.
+
+Shared receiver elaboration supports value, mutable binding, shared/mutable
+reference, named-lifetime and explicit nested-reference forms. The receiver binds
+the whole value. A direct reference to Self supplies output lifetime elision;
+nested references retain ordinary input-elision rules. Explicit receiver targets
+prove equality with Self using declared and implied lifetime assumptions. The
+existing directed type relation engine now lives in `types/relations.rs`, shared
+by declaration and body proofs. Drop keeps its stricter independent `&mut Self`
+contract. Unused method bodies pass the ordinary ownership/region pipeline.
+
+Six new integration invariants independently qualify positive and negative Rust
+programs before checking these retained facts and body proofs. All 762 frontend
+tests pass in debug and release; all 3,773 PA1–PA18 text cases pass. Fifteen native
+maintainer tests, 1,117 course executable comparisons and three codegen-only
+comparisons pass, with the sixteen existing PA13 runtime differences. Rustfmt,
+Clippy all/pedantic with warnings denied, the 481-file audit with zero findings,
+27 harness tests and upstream/reference checks pass.
+
+Three boundary diagnostics changed because checking now reaches the unsupported
+call or trait-receiver stage. Their inputs and rejection outcomes are unchanged.
+All three were independently checked before the official PA17/PA18 reference
+regeneration; every other sidecar remained byte-identical. Full independent PA17
+and PA18 checks also pass, retaining their declared course-profile differences.
+
+Fourteen immutable timing jobs retain 252 observations: two warmups, four A/A
+samples and three ABBA blocks each on CPU 2. Eight compare the published inventory
+binary against this candidate; six measure new method workloads with identical
+candidate binaries as noise controls. All full LowIR and count outputs match.
+The six new inputs were independently rustc-qualified. RustGM builds/tests did
+not overlap timing; unrelated workspace jobs were active.
+
+Existing-workload median wall changes range from -3.6% to +3.4%. At 2,048 distinct
+Drop owners, the candidate takes 291.78 ms versus 282.25 ms, with all three paired
+blocks 3.0–3.9% slower and a 288 KiB median RSS increase. This is a measured cost,
+not evidence of zero overhead. New method-owner medians at 64/256/1,024 owners
+are approximately 21/74/301 ms. A shared impl with 32 type parameters and
+128/512/2,048 methods measures approximately 20/68/465 ms in the B lane. The
+512-method identical-binary control differs by 26% between lanes; shared-impl
+scaling is therefore not evidence of a linear bound or a speedup. These programs
+check unused headers and bodies, and do not execute method calls.
+
+The candidate SHA256 is
+`3f6f34102ba128ac38a5f5c48a9452c4f104fca4fc67246be5b838059aec7a2f`.
+All 484 frozen source/config/test hashes, binary/input hashes, raw observations
+and validation logs were reverified. Local receipts are
+`obj/pa19-work/headers-{freeze,validation,reverified}-v1.json`; all timing rows
+remain under `obj/perf/`. The native log contains terminal PASS records for every
+requested suite; its original shell-session status was unavailable after context
+continuation and is not represented as an independently observed exit status.
+
+PA19 remains planned. General method calls, qualified selection, trait owner
+environments, required/default method handling, impl conformance and the public
+semantic contract remain required before release, followed by all PA20/PA21 work.

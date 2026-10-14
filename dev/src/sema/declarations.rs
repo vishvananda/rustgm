@@ -6,6 +6,8 @@ mod contracts;
 mod destructors;
 mod generics;
 mod lifetimes;
+mod methods;
+mod receivers;
 mod validation;
 use super::{
     model::{Declarations, Function, Initializer, InitializerKind},
@@ -56,7 +58,7 @@ enum Work {
     Reference(NodeKey, RegionId),
     Parameter(BinderId, bool),
     Signature(NodeKey, Option<DefId>, SignaturePhase),
-    DropReceiver(NodeKey, DefId, BinderId),
+    Receiver(NodeKey, DefId, BinderId),
 }
 struct Signature {
     parameters: List,
@@ -85,7 +87,7 @@ struct Checker<'a> {
     discriminants: super::constants::Discriminants,
     nominal_regions: std::collections::HashMap<ItemId, regions::Context>,
     function_binders: std::collections::HashMap<NodeKey, BinderId>,
-    drop_binders: std::collections::HashMap<DefId, BinderId>,
+    owner_binders: std::collections::HashMap<DefId, BinderId>,
 }
 /// Resolve declaration types and shape-affecting constants without reparsing source.
 ///
@@ -119,7 +121,7 @@ pub fn analyze(report: &Report) -> Result<Declarations, Error> {
         discriminants: super::constants::Discriminants::default(),
         nominal_regions: std::collections::HashMap::new(),
         function_binders: std::collections::HashMap::new(),
-        drop_binders: std::collections::HashMap::new(),
+        owner_binders: std::collections::HashMap::new(),
     };
     checker.run().map_err(|error| report.diagnostic(error))?;
     Ok(checker.facts)
@@ -144,6 +146,7 @@ impl Checker<'_> {
         let destructors = self.reserve_destructors()?;
         self.complete_nominal_headers(&mut steps, work_limit)?;
         self.prepare_destructors(destructors, &mut steps, work_limit)?;
+        self.prepare_inherent_owners(&mut steps, work_limit)?;
         for index in 0..self.report.resolution.definitions.len() {
             let id = DefId(
                 u32::try_from(index)
@@ -217,7 +220,7 @@ impl Checker<'_> {
                     }
                 }
                 Work::Signature(key, owner, phase) => self.signature(key, owner, phase)?,
-                Work::DropReceiver(key, owner, binder) => {
+                Work::Receiver(key, owner, binder) => {
                     self.complete_receiver(key, owner, binder)?;
                 }
             }
@@ -547,14 +550,14 @@ impl Checker<'_> {
         {
             return Err(self.error(key, "const parameter cannot be used as a type"));
         }
-        if !matches!(
+        if !(matches!(
             kind,
             DefKind::Primitive
                 | DefKind::TypeAlias
                 | DefKind::Struct
                 | DefKind::Enum
                 | DefKind::Generic
-        ) && self.facts.destructors.self_type(id).is_none()
+        ) || (kind == DefKind::SelfType && self.facts.associated.schema(id).is_some()))
         {
             return Err(self.error(
                 key,
@@ -747,10 +750,17 @@ impl Checker<'_> {
                             position: Position::Input,
                         },
                     )?;
-                    self.schedule_receiver(key, owner, binder, signature.parameters)?;
+                    self.schedule_drop_receiver(key, owner, binder, signature.parameters)?;
                     return Ok(());
                 }
                 let unit = self.report.package.unit(key.file);
+                let first = unit
+                    .configured
+                    .ast
+                    .list(signature.parameters)
+                    .iter()
+                    .copied()
+                    .find(|node| unit.configured.active[node.0 as usize]);
                 for node in unit
                     .configured
                     .ast
@@ -759,26 +769,14 @@ impl Checker<'_> {
                     .rev()
                     .copied()
                 {
-                    if !unit.configured.active[node.0 as usize] {
-                        continue;
+                    if unit.configured.active[node.0 as usize] {
+                        self.schedule_parameter(
+                            NodeKey { node, ..key },
+                            owner,
+                            binder,
+                            Some(node) == first,
+                        )?;
                     }
-                    let ty = parameter_type(
-                        self.report,
-                        NodeKey {
-                            file: key.file,
-                            node,
-                        },
-                    )?;
-                    self.work.push(Work::Parameter(binder, true));
-                    self.node_work(
-                        key.file,
-                        ty,
-                        regions::Context {
-                            binder: Some(binder),
-                            position: Position::Input,
-                        },
-                    );
-                    self.work.push(Work::Parameter(binder, false));
                 }
                 if let Some(owner) = owner {
                     self.declaration_parameters(

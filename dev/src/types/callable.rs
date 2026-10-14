@@ -49,7 +49,14 @@ impl Templates {
         bounds: &[Pair],
         generics: &[ParameterId],
     ) -> Result<(), &'static str> {
-        self.insert_owned(types, (item, item), signature, parameters, bounds, generics)
+        self.insert_owned(
+            types,
+            (item, &[item]),
+            signature,
+            parameters,
+            bounds,
+            generics,
+        )
     }
     /// A tuple constructor has its own value identity and the nominal's parameters.
     /// # Errors
@@ -63,7 +70,14 @@ impl Templates {
         parameters: u32,
         generics: &[ParameterId],
     ) -> Result<(), &'static str> {
-        self.insert_owned(types, (item, nominal), signature, parameters, &[], generics)
+        self.insert_owned(
+            types,
+            (item, &[nominal]),
+            signature,
+            parameters,
+            &[],
+            generics,
+        )
     }
     /// Publish an implicit method using its impl's inherited type/const parameters.
     /// The signature's captured slots contain only target lifetimes; the original
@@ -79,19 +93,50 @@ impl Templates {
         parameters: u32,
         generics: &[ParameterId],
     ) -> Result<(), &'static str> {
-        self.insert_owned(types, (item, owner), signature, parameters, &[], generics)
+        self.insert_owned(
+            types,
+            (item, &[owner]),
+            signature,
+            parameters,
+            &[],
+            generics,
+        )
     }
-    fn insert_owned(
+    /// Publish a callable whose parameter owners form an outer-to-inner declaration path.
+    /// The last owner is the callable; every parameter keeps its original identity.
+    /// # Errors
+    /// Rejects repeated owners, foreign or reordered parameters and invalid templates.
+    pub fn insert_scoped(
         &mut self,
         types: &Store,
-        owners: (ItemId, ItemId),
+        owners: &[ItemId],
         signature: TypeId,
         parameters: u32,
         bounds: &[Pair],
         generics: &[ParameterId],
     ) -> Result<(), &'static str> {
-        let (item, parameter_owner) = owners;
+        let item = *owners.last().ok_or("missing callable declaration owner")?;
+        self.insert_owned(
+            types,
+            (item, owners),
+            signature,
+            parameters,
+            bounds,
+            generics,
+        )
+    }
+    fn insert_owned(
+        &mut self,
+        types: &Store,
+        owners: (ItemId, &[ItemId]),
+        signature: TypeId,
+        parameters: u32,
+        bounds: &[Pair],
+        generics: &[ParameterId],
+    ) -> Result<(), &'static str> {
+        let (item, parameter_owners) = owners;
         if self.entries.contains_key(&item)
+            || parameter_owners.len() > 1_000_000
             || (parameters == 0 && generics.is_empty())
             || parameters > 65_536
             || !matches!(types.kind(signature), Some(Kind::Function { .. }))
@@ -130,12 +175,26 @@ impl Templates {
         if bounds.iter().any(|(a, b)| !valid(*a) || !valid(*b)) {
             return Err("invalid callable template bound");
         }
+        if parameter_owners.len() > 1 {
+            let unique: std::collections::HashSet<_> = parameter_owners.iter().copied().collect();
+            if unique.len() != parameter_owners.len() {
+                return Err("repeated callable parameter owner");
+            }
+        }
         let mut previous = None;
+        let mut owner_index = 0;
         for parameter in generics {
             let parameter = types
                 .parameter(*parameter)
                 .ok_or("invalid callable generic parameter")?;
-            if parameter.owner != parameter_owner
+            while parameter_owners
+                .get(owner_index)
+                .is_some_and(|owner| *owner != parameter.owner)
+            {
+                owner_index += 1;
+                previous = None;
+            }
+            if parameter_owners.get(owner_index) != Some(&parameter.owner)
                 || previous.is_some_and(|index| index >= parameter.index)
             {
                 return Err(

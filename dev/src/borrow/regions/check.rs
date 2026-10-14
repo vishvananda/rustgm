@@ -5,7 +5,7 @@ use crate::{
         ir::NodeKey,
         regions::{Contract, Contracts, Kind as Obligation},
     },
-    types::{Kind, Store, TypeId, outlives::Queries, variance::Variances},
+    types::{Store, outlives::Queries, variance::Variances},
 };
 
 pub struct Body {
@@ -203,34 +203,7 @@ fn prove<'a>(
     }
     Ok(Analysis { bodies })
 }
-fn signature_requirements(
-    constraints: &mut Constraints<'_>,
-    queries: &mut Queries<'_>,
-    types: &Store,
-    signature: TypeId,
-) -> Result<(), String> {
-    let Some(Kind::Function {
-        parameters, result, ..
-    }) = types.kind(signature)
-    else {
-        return Err("missing lifetime function signature".into());
-    };
-    let parameters = types
-        .list(parameters)
-        .ok_or("missing lifetime function parameters")?;
-    for ty in parameters.iter().copied().chain(std::iter::once(result)) {
-        let requirements = queries.symbolic_requirements(ty)?;
-        for &(a, b) in requirements.regions {
-            constraints.assume(a, b).map_err(|e| e.to_string())?;
-        }
-        for &(id, shorter) in requirements.parameters {
-            constraints
-                .assume_parameter(id, shorter)
-                .map_err(|e| e.to_string())?;
-        }
-    }
-    Ok(())
-}
+
 fn body(
     types: &Store,
     variances: &Variances,
@@ -253,20 +226,14 @@ fn body(
         constraints.assume(a, b).map_err(|e| error(e.to_string()))?;
     }
     if let Some(signature) = input.signature {
-        signature_requirements(&mut constraints, queries, types, signature).map_err(error)?;
+        constraints
+            .assume_signature(queries, signature)
+            .map_err(error)?;
     }
     for &(ty, shorter) in &input.type_assumptions {
-        let parts = queries.components(ty).map_err(|e| error(e.into()))?;
-        for longer in parts.regions {
-            constraints
-                .assume(*longer, shorter)
-                .map_err(|e| error(e.to_string()))?;
-        }
-        for parameter in parts.parameters {
-            constraints
-                .assume_parameter(*parameter, shorter)
-                .map_err(|e| error(e.to_string()))?;
-        }
+        constraints
+            .assume_type_outlives(queries, ty, shorter)
+            .map_err(error)?;
     }
     let provenance = cfg
         .map(|cfg| super::places::bounds(types, cfg))

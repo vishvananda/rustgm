@@ -42,8 +42,17 @@ pub struct Receiver {
     pub binding: NodeKey,
     pub definition: DefId,
     pub ty: TypeId,
+    /// Terminal Self-shaped type after the receiver's reference wrappers.
+    pub base: TypeId,
     /// Binding mutability, independent of the reference's referent mutability.
     pub mutable: bool,
+}
+
+/// An elaborated owner environment, separate from method conformance and selection.
+pub struct Schema {
+    pub self_type: TypeId,
+    pub captures: u32,
+    pub bounds: Vec<crate::types::outlives::Pair>,
 }
 
 #[derive(Default)]
@@ -51,6 +60,7 @@ pub struct Inventory {
     owners: Vec<Owner>,
     members: Vec<Member>,
     declarations: HashMap<DefId, OwnerId>,
+    schemas: HashMap<OwnerId, Schema>,
 }
 impl Inventory {
     #[must_use]
@@ -69,6 +79,31 @@ impl Inventory {
     #[must_use]
     pub fn get(&self, id: OwnerId) -> Option<&Owner> {
         self.owners.get(id.0 as usize)
+    }
+    #[must_use]
+    pub fn schema(&self, definition: DefId) -> Option<&Schema> {
+        self.schemas.get(&self.owner(definition)?)
+    }
+    pub(super) fn declare(
+        &mut self,
+        self_definition: DefId,
+        schema: Schema,
+    ) -> Result<(), &'static str> {
+        let owner = self
+            .owner(self_definition)
+            .ok_or("missing associated owner")?;
+        if self.owners[owner.0 as usize].self_definition != self_definition {
+            return Err("associated schema requires its Self identity");
+        }
+        match self.schemas.entry(owner) {
+            std::collections::hash_map::Entry::Vacant(entry) => {
+                entry.insert(schema);
+                Ok(())
+            }
+            std::collections::hash_map::Entry::Occupied(_) => {
+                Err("associated owner environment already completed")
+            }
+        }
     }
 }
 

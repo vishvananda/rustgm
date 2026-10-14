@@ -13,6 +13,7 @@ pub mod outlives;
 pub mod parameters;
 mod properties;
 pub mod region_graph;
+pub mod relations;
 pub mod specialize;
 pub mod substitute;
 pub mod variance;

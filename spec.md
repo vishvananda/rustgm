@@ -75,6 +75,21 @@ than rescanning all definitions. Receiver storage is shared by declaration check
 body checking, scopes and CFG construction. Ownership alone is not evidence of
 an elaborated signature, valid impl, selected method or executable body.
 
+Elaborate each inherent impl target under its original type/const parameter
+identities. Method environments inherit those identities and capture owner
+lifetimes in a separate prefix before the method's own early and late slots.
+Callable parameter lists validate an ordered declaration-owner path, including
+foreign, repeated and reordered parameter rejection. Keep anonymous and unused
+impl lifetime slots in the source proof environment.
+
+Receiver syntax binds the whole value or reference. A reference directly to Self
+supplies the output-elision lifetime; nested reference receivers use ordinary
+input elision. Explicit receivers retain their terminal type and prove equality
+with Self under declared and implied lifetime assumptions. Canonically identical
+targets take the direct path. Other targets use the shared directed type-relation
+engine in `types`, also consumed by body lifetime checking. Method bodies pass the
+ordinary ownership/region pipeline even when no call demands their code.
+
 Resolve a destructor's impl target and receiver once. Retain the nominal item,
 method identity, whole-reference receiver binding and captured lifetime slots.
 Anonymous impl lifetimes are real slots, not fabricated declaration IDs. A

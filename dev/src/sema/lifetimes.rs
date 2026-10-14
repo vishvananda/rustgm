@@ -11,6 +11,8 @@ use std::collections::{HashMap, hash_map::Entry};
 pub struct FunctionRegions {
     /// All source/body parameter slots; the callable type may omit unused slots.
     pub total: u32,
+    /// Owner lifetime slots precede the method's own early and late parameters.
+    pub captures: u32,
     /// Early arguments are supplied in declaration order when naming the item.
     pub early: Vec<(DefId, u16)>,
     /// Used late slots, in canonical first-use order, instantiated at each call.

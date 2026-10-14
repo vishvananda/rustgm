@@ -122,10 +122,18 @@ impl Checker<'_> {
         binder: BinderId,
         declared: List,
         signature: TypeId,
-        bounds: Vec<(RegionId, RegionId)>,
+        mut bounds: Vec<(RegionId, RegionId)>,
     ) -> Result<(), Error> {
         if self.facts.destructors.method(owner).is_some() {
             return self.drop_method_regions(key, owner, binder, declared, signature, &bounds);
+        }
+        let captures = self
+            .facts
+            .associated
+            .schema(owner)
+            .map_or(0, |schema| schema.captures);
+        if let Some(schema) = self.facts.associated.schema(owner) {
+            bounds.splice(0..0, schema.bounds.iter().copied());
         }
         let Type::Function {
             bound_regions,
@@ -140,25 +148,15 @@ impl Checker<'_> {
         else {
             return Err(self.error(key, "invalid lifetime signature"));
         };
-        if bound_regions == 0 && declared.start == declared.end && bounds.is_empty() {
+        if bound_regions == 0
+            && declared.start == declared.end
+            && bounds.is_empty()
+            && !self.facts.generics.has_parameters(owner)
+        {
             return Ok(());
         }
         self.function_binders.insert(key, binder);
-        let mut inputs = Uses::default();
-        for ty in self
-            .facts
-            .types
-            .list(parameters)
-            .ok_or_else(|| self.error(key, "missing lifetime parameter types"))?
-        {
-            inputs
-                .collect(&self.facts.types, *ty)
-                .map_err(|e| self.error(key, e))?;
-        }
-        let mut outputs = Uses::default();
-        outputs
-            .collect(&self.facts.types, result)
-            .map_err(|e| self.error(key, e))?;
+        let (inputs, outputs) = self.signature_occurrences(key, parameters, result)?;
         let mut bounded: HashSet<_> = bounds
             .iter()
             .flat_map(|(a, b)| [a, b])
@@ -192,6 +190,9 @@ impl Checker<'_> {
             let (_, index) = region
                 .bound_parts()
                 .ok_or_else(|| self.error(key, "invalid named lifetime slot"))?;
+            if u32::from(index) < captures {
+                continue;
+            }
             if bounded.contains(&index)
                 || (outputs.indices.contains(&index) && !inputs.indices.contains(&index))
             {
@@ -205,21 +206,50 @@ impl Checker<'_> {
             .indices
             .union(&outputs.indices)
             .copied()
-            .filter(|index| !early_indices.contains(index))
+            .filter(|index| u32::from(*index) >= captures && !early_indices.contains(index))
             .collect();
         late.sort_unstable();
         let scheme = FunctionRegions {
             total: self.regions.count(binder),
+            captures,
             early,
             late,
             has_declared_late,
             bounds,
         };
-        if !scheme.early.is_empty() {
+        if !scheme.early.is_empty()
+            || captures != 0
+            || (self.facts.associated.schema(owner).is_some()
+                && self.facts.generics.has_parameters(owner))
+        {
             self.callable_template(key, owner, signature, &scheme)?;
         }
         self.facts.lifetimes.functions.insert(owner, scheme);
         Ok(())
+    }
+
+    fn signature_occurrences(
+        &self,
+        key: NodeKey,
+        parameters: crate::types::ListId,
+        result: TypeId,
+    ) -> Result<(Uses, Uses), Error> {
+        let mut inputs = Uses::default();
+        for ty in self
+            .facts
+            .types
+            .list(parameters)
+            .ok_or_else(|| self.error(key, "missing lifetime parameter types"))?
+        {
+            inputs
+                .collect(&self.facts.types, *ty)
+                .map_err(|e| self.error(key, e))?;
+        }
+        let mut outputs = Uses::default();
+        outputs
+            .collect(&self.facts.types, result)
+            .map_err(|e| self.error(key, e))?;
+        Ok((inputs, outputs))
     }
 
     pub(super) fn callable_template(
@@ -229,15 +259,25 @@ impl Checker<'_> {
         signature: TypeId,
         scheme: &FunctionRegions,
     ) -> Result<(), Error> {
-        if scheme.early.is_empty() && !self.facts.generics.parameters.contains_key(&owner) {
+        if scheme.early.is_empty()
+            && scheme.captures == 0
+            && !self.facts.generics.has_parameters(owner)
+        {
             return Ok(());
         }
         let mut mapping = vec![RegionId::STATIC; scheme.total as usize];
-        for (depth, indices) in [
-            (0, scheme.late.clone()),
-            (1, scheme.early.iter().map(|(_, index)| *index).collect()),
-        ] {
-            for (ordinal, index) in indices.into_iter().enumerate() {
+        let captured = (0..scheme.captures)
+            .map(|index| {
+                u16::try_from(index)
+                    .map_err(|_| self.error(key, "too many captured lifetime parameters"))
+            })
+            .collect::<Result<Vec<_>, _>>()?;
+        let early_slots = captured
+            .into_iter()
+            .chain(scheme.early.iter().map(|(_, index)| *index))
+            .collect::<Vec<_>>();
+        for (depth, indices) in [(0, scheme.late.as_slice()), (1, early_slots.as_slice())] {
+            for (ordinal, &index) in indices.iter().enumerate() {
                 mapping[usize::from(index)] = RegionId::bound(
                     depth,
                     u16::try_from(ordinal)
@@ -268,25 +308,26 @@ impl Checker<'_> {
             .collect::<Result<Vec<_>, Error>>()?;
         let late = u32::try_from(scheme.late.len())
             .map_err(|_| self.error(key, "too many late parameters"))?;
-        let early = u32::try_from(scheme.early.len())
+        let early = u32::try_from(early_slots.len())
             .map_err(|_| self.error(key, "too many early parameters"))?;
         let signature = crate::types::substitute::Bound::new(mapping)
             .signature(&mut self.facts.types, signature, late)
             .map_err(|e| self.error(key, e))?;
+        let (owners, parameters) = self
+            .facts
+            .generics
+            .callable_parameters(&self.facts.types, owner)
+            .map_err(|e| self.error(key, e))?;
         self.facts
             .lifetimes
             .callables
-            .insert_generic(
+            .insert_scoped(
                 &self.facts.types,
-                crate::types::ItemId(owner.0),
+                &owners,
                 signature,
                 early,
                 &bounds,
-                &self
-                    .facts
-                    .generics
-                    .parameter_ids(&self.facts.types, owner)
-                    .map_err(|e| self.error(key, e))?,
+                &parameters,
             )
             .map_err(|e| self.error(key, e))
     }

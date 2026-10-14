@@ -3,7 +3,7 @@ mod coverage;
 mod headers;
 mod heads;
 mod receivers;
-use super::{BinderId, Checker, DefId, Error, NodeKey, Type, TypeId, regions};
+use super::{Checker, Error, Type, regions};
 use crate::{sema::destructors::Implementation, types::outlives::Queries};
 
 pub(super) struct Pending {
@@ -84,7 +84,24 @@ impl Checker<'_> {
                     coverage,
                 })
                 .map_err(|e| self.error(key, e))?;
-            self.drop_binders.insert(header.self_definition, binder);
+            self.facts
+                .associated
+                .declare(
+                    header.self_definition,
+                    crate::sema::associated::Schema {
+                        self_type: target,
+                        captures: self.regions.count(binder),
+                        bounds: self
+                            .facts
+                            .destructors
+                            .self_type(header.self_definition)
+                            .ok_or_else(|| self.error(key, "missing Drop owner environment"))?
+                            .bounds
+                            .clone(),
+                    },
+                )
+                .map_err(|e| self.error(key, e))?;
+            self.owner_binders.insert(header.self_definition, binder);
             self.complete(header.self_definition, key, target)?;
             self.schedule_bounds(header.self_definition, context)?;
             self.drain(steps, limit)?;
@@ -152,54 +169,5 @@ impl Checker<'_> {
             .map_err(|e| self.error(key, e))?;
         }
         Ok(())
-    }
-    pub(super) fn signature_binder(
-        &mut self,
-        owner: Option<DefId>,
-        parent: Option<BinderId>,
-        declared: Vec<DefId>,
-    ) -> BinderId {
-        if let Some(implementation) = owner.and_then(|id| self.facts.destructors.method(id)) {
-            self.regions
-                .capture(self.drop_binders[&implementation.self_definition], declared)
-        } else {
-            self.regions.binder(parent, declared)
-        }
-    }
-    pub(super) fn drop_self_type(
-        &mut self,
-        key: NodeKey,
-        id: DefId,
-        context: regions::Context,
-    ) -> Result<TypeId, Error> {
-        if crate::sema::lifetimes::arguments(self.report, key, false)?.is_some() {
-            return Err(self.error(key, "Self cannot take lifetime arguments"));
-        }
-        let implementation = self
-            .facts
-            .destructors
-            .self_type(id)
-            .ok_or_else(|| self.error(key, "missing Drop Self type"))?;
-        let target = implementation.target;
-        let binder = self.drop_binders[&id];
-        let mut mapping = Vec::with_capacity(implementation.parameters as usize);
-        for index in 0..implementation.parameters {
-            let slot = u16::try_from(index)
-                .map_err(|_| self.error(key, "too many impl lifetime slots"))?;
-            mapping.push(
-                self.regions
-                    .captured_region(context.binder, binder, slot)
-                    .map_err(|e| self.error(key, e))?,
-            );
-        }
-        let args = self
-            .facts
-            .types
-            .intern_regions(&mapping)
-            .map_err(|e| self.error(key, e))?;
-        self.facts
-            .lifetimes
-            .substitute(&mut self.facts.types, args, target)
-            .map_err(|e| self.error(key, e))
     }
 }

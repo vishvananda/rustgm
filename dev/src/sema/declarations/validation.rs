@@ -6,6 +6,7 @@ impl Checker<'_> {
     pub(super) fn validate_signatures(&mut self) -> Result<(), Error> {
         for index in 0..self.facts.functions.len() {
             let function = self.facts.functions[index];
+            self.validate_method_receiver(&function)?;
             let environment = self
                 .facts
                 .generics

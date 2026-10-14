@@ -283,7 +283,7 @@ pub fn count(facts: &Declarations, out: &mut impl Write) -> io::Result<()> {
         facts.functions.len(),
         facts.initializers.len()
     )?;
-    if !facts.destructors.implementations().is_empty() {
+    if !facts.destructors.implementations().is_empty() || !facts.receivers.is_empty() {
         write!(
             out,
             " destructors={} receivers={}",

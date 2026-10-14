@@ -1,5 +1,5 @@
 //! Directed type relations use actual region arguments and explicit binder scopes.
-use super::graph::{Error, Graph, Kind as RegionKind, Region, Solution};
+use super::region_graph::{Error, Graph, Kind as RegionKind, Region, Solution};
 use crate::types::{
     Kind, RegionId, Store, TypeId,
     arguments::Argument,
@@ -65,7 +65,7 @@ pub struct Proof {
     pub solution: Solution,
     pub identities: Identities,
 }
-/// One body, one immutable type store and one completed nominal variance table.
+/// One contract, one immutable type store and one completed nominal variance table.
 pub struct Constraints<'a> {
     types: &'a Store,
     variances: &'a Variances,
@@ -81,6 +81,55 @@ pub struct Constraints<'a> {
     limit: usize,
 }
 impl<'a> Constraints<'a> {
+    /// Assume the well-formedness requirements of a declared function signature.
+    /// # Errors
+    /// Rejects missing type/parameter identities and exhausted query resources.
+    pub fn assume_signature(
+        &mut self,
+        queries: &mut super::outlives::Queries<'_>,
+        signature: TypeId,
+    ) -> Result<(), String> {
+        let Some(Kind::Function {
+            parameters, result, ..
+        }) = self.types.kind(signature)
+        else {
+            return Err("missing lifetime function signature".into());
+        };
+        let parameters = self
+            .types
+            .list(parameters)
+            .ok_or("missing lifetime function parameters")?;
+        for ty in parameters.iter().copied().chain(std::iter::once(result)) {
+            let requirements = queries.symbolic_requirements(ty)?;
+            for &(a, b) in requirements.regions {
+                self.assume(a, b).map_err(|e| e.to_string())?;
+            }
+            for &(id, shorter) in requirements.parameters {
+                self.assume_parameter(id, shorter)
+                    .map_err(|e| e.to_string())?;
+            }
+        }
+        Ok(())
+    }
+    /// Add the components of an explicit type-outlives assumption to this environment.
+    /// # Errors
+    /// Rejects missing type/parameter identities and exhausted query resources.
+    pub fn assume_type_outlives(
+        &mut self,
+        queries: &mut super::outlives::Queries<'_>,
+        ty: TypeId,
+        shorter: RegionId,
+    ) -> Result<(), String> {
+        let parts = queries.components(ty).map_err(str::to_owned)?;
+        for &longer in parts.regions {
+            self.assume(longer, shorter).map_err(|e| e.to_string())?;
+        }
+        for &parameter in parts.parameters {
+            self.assume_parameter(parameter, shorter)
+                .map_err(|e| e.to_string())?;
+        }
+        Ok(())
+    }
     /// # Errors
     /// Rejects an oversized body parameter environment.
     pub fn new(
