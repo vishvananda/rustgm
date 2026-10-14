@@ -1298,3 +1298,90 @@ the rebuilt template-cleanup driver is
 The 287-file source manifest, job definitions, preflight, results and raw receipt
 paths are `nominal-instances-v2-*` under `obj/pa18-work/`, with the timing logs
 `nominal-instances-perf-v2.log` and `nominal-instances-perf-recheck-v2.log`.
+
+### Nominal type-parameter variance and directed region relations
+
+The variance table now uses every nominal declaration slot: lifetime, type and
+const parameters retain their declaration order and rigid owner/index identities.
+Const slots are invariant even when unused. Type/lifetime occurrences are
+inferred from completed field templates; bounds do not invent occurrences.
+Source declarations obtain the schema from their canonical nominal identity.
+The existing unused-lifetime diagnostic and course output remain unchanged.
+
+Nested nominal arguments require products of unknown variances. A shared
+expression graph interns those products and propagates changes through reverse
+dependencies over the four-element lattice. It simplifies literal constants,
+never a variable whose present value happens to be bivariant. Recursive-only
+parameters remain bivariant; a direct occurrence can propagate through mutual
+recursion, and opposed recursive uses reach invariance. The traversal visits
+finite declaration templates, without instantiating or expanding fields.
+Function binder depth keeps locally quantified lifetimes separate from captured
+nominal lifetimes. All registration, traversal, graph and propagation work is
+bounded, including wide shared inputs and const-only argument comparisons.
+
+Directed region relations now traverse type arguments with their inferred
+variance as well as lifetime arguments. Const arguments require canonical
+identity equality. Existing inference can retain distinct actual/expected
+nominal type arguments while solving their structural shape; a new integration
+test passes those completed types to the region proof and checks both covariant
+acceptance and invariant rejection. No equality of storage lifetimes is silently
+introduced by structural inference.
+
+Eleven maintainer tests cover nested products under different declaration orders,
+mutual/expanding/recursive-only templates, mixed and interleaved parameter slots,
+higher-ranked binders, exact const compatibility, inference-to-region handoff,
+a 10,000-level shared product graph, budget exhaustion and malformed identities.
+Thirteen independently declared source controls are checked with pinned rustc:
+eight acceptances and five rejections. Their expected outcomes were recorded
+before this implementation in `obj/pa18-work/nominal-variance-next-v1/declared.json`.
+The pinned Reference's `subtyping.variance.builtin-types` and
+`subtyping.variance.user-composite-types` rules are the specification baseline.
+
+This completes the nominal variance query and its region consumer. Generic
+nominal source declarations remain gated on header/default readiness, scoped
+field well-formedness and implied bounds, declaration storage-cycle checks,
+conditional derives and constructor/pattern inference. Generic Drop selection,
+deferred const promotion and concrete body specialization also remain required.
+PA18–PA21 retain their full scope and planned status. Course fixtures, manifests
+and text oracles are unchanged.
+
+Final local validation passes 643 frontend tests, all 3,334 PA1–PA17 cases,
+28 focused release tests and nine explicit native maintainer tests. Rustfmt,
+Clippy all/pedantic, the 407-file audit (zero findings) and 25 harness tests pass.
+The final logs are `nominal-variance-full-v3.log`,
+`nominal-variance-validation-final.log`, `nominal-variance-release-v1.log` and
+`nominal-variance-native-v1.log` under `obj/pa18-work/`. Earlier logs remain as
+history; the final full run follows the const-argument budget correction.
+
+Performance retains 270 observations across 15 jobs on CPU 2. Each job has two
+warmups, four A/A observations and three ABBA blocks. Six jobs compare the
+published parent `0246a20` on identical closed CLI inputs at 1,024/4,096 units.
+Nine new typed-query jobs use two identical candidate binaries at
+1,024/4,096/16,384 units because the parent cannot infer type-parameter variance.
+They include construction of the typed input, variance inference and positive
+and negative directed region checks. All full/count outputs agree; all 284
+source hashes, frozen binary hashes and input hashes verify before and after.
+No own builds or tests overlap timing. No sample is discarded.
+
+| Existing 4,096-unit workload | Parent ms | Candidate ms | Candidate RSS KiB |
+| --- | ---: | ---: | ---: |
+| thinrefs | 480.82 | 480.07 | 77354 |
+| native-destructors | 2730.08 | 2767.43 | 291492 |
+| lifetime-variance | 206.29 | 209.27 | 52254 |
+
+The latter two median increases are about 1.4%, with overlapping observed
+ranges; these measurements do not establish a speedup or zero overhead.
+
+| New 16,384-unit query | Candidate ms | Candidate RSS KiB | Variance work |
+| --- | ---: | ---: | --- |
+| deep shared products | 30.88 | 12760 | `14n + 14` |
+| mutual recursive declarations | 83.60 | 14866 | `15n + 3` |
+| mixed lifetime/type/const slots | 101.39 | 18950 | `18n` |
+
+The work formulas hold at all three scales. No query instantiates aggregate
+fields. The frozen CLI SHA-256 is
+`331ff7f0e726a102375ee728a7985d051119d3b4d417a6124e0d0b5ecf2324f4`;
+the typed driver is
+`3dbc595311fb15d5cc3ad41ea2697b1fac4f9d4f54e0e4d1ae8b82d6ee0e4f0b`.
+Receipts, source hashes, preflights, job definitions and raw observation paths
+are `nominal-variance-v2-*`; the timing log is `nominal-variance-perf-v2.log`.

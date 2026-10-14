@@ -85,6 +85,16 @@ Trait solver caches include parameter environment, binder universe and mode;
 negative results need equally complete keys. Each demanded fact is computed
 once; cycle detection and explicit solver budgets are part of the contract.
 
+Infer nominal variance over completed declaration templates, with distinct
+lifetime, type and const slots in declaration order. Compose variance variables
+through nested nominal arguments using shared product expressions and reverse
+dependencies; solve the finite lattice with bounded monotone propagation.
+Never expand recursive field instances to infer variance. Callable binders
+retain their own lifetimes. Recursive-only type/lifetime parameters remain
+unused; const slots require exact equality even when no field uses them.
+Directed region checking consumes the completed table for both lifetime and
+type arguments, after structural inference retains the actual/expected types.
+
 Generic nominal fields are instantiated from completed typed declarations, keyed
 by the canonical nominal type including every type, const and lifetime argument.
 Reuse one capture-safe substitution across an instance's fields. Share the

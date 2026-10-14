@@ -34,21 +34,17 @@ impl Checker<'_> {
             .facts
             .aggregates
             .into_iter()
-            .filter_map(|definition| {
-                self.facts
-                    .lifetimes
-                    .parameters
-                    .get(&DefId(definition.item.0))
-                    .map(|params| u32::try_from(params.len()).map(|count| (definition.item, count)))
+            .map(|definition| {
+                let ty = self.facts.definitions[definition.item.0 as usize]
+                    .ok_or("missing nominal variance identity")?;
+                let Some(crate::types::Kind::Adt(item, arguments)) = self.facts.types.kind(ty)
+                else {
+                    return Err("invalid nominal variance identity");
+                };
+                Ok((item, arguments))
             })
             .collect::<Result<Vec<_>, _>>()
-            .map_err(|_| {
-                Error::at(
-                    crate::resolve::unit::FileId(0),
-                    0,
-                    "too many lifetime parameters",
-                )
-            })?;
+            .map_err(|e| Error::at(crate::resolve::unit::FileId(0), 0, e))?;
         self.facts.lifetimes.variances = crate::types::variance::Variances::infer(
             &self.facts.types,
             &self.facts.aggregates,

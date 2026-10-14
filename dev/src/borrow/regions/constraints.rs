@@ -2,6 +2,7 @@
 use super::graph::{Error, Graph, Kind as RegionKind, Region, Solution};
 use crate::types::{
     Kind, RegionId, Store, TypeId,
+    arguments::Argument,
     parameters::{ParameterId, ParameterKind},
     variance::{Variance, Variances},
 };
@@ -481,18 +482,31 @@ impl<'a> Constraints<'a> {
                 }
             }
             (Kind::Adt(x, left), Kind::Adt(y, right)) if x == y => {
-                let a = self.types.region_args(left).ok_or(Error::Identity)?;
-                let b = self.types.region_args(right).ok_or(Error::Identity)?;
+                let a = self.types.arguments(left).ok_or(Error::Identity)?;
+                let b = self.types.arguments(right).ok_or(Error::Identity)?;
                 if a.len() != b.len() {
                     return Err(Error::Identity);
                 }
-                if !a.is_empty() {
+                if a.len() != 0 {
                     let variances = self.variances.get(x).ok_or(Error::Identity)?;
                     if a.len() != variances.len() {
                         return Err(Error::Identity);
                     }
-                    for ((&a, &b), &variance) in a.iter().zip(b).zip(variances) {
-                        self.regions(relation, a, b, variance, source)?;
+                    for ((a, b), &variance) in a.zip(b).zip(variances) {
+                        if self.steps >= self.limit {
+                            return Err(Error::Budget);
+                        }
+                        self.steps += 1;
+                        match (a, b) {
+                            (Argument::Lifetime(a), Argument::Lifetime(b)) => {
+                                self.regions(relation, a, b, variance, source)?;
+                            }
+                            (Argument::Type(a), Argument::Type(b)) => {
+                                self.child(relation, a, b, variance)?;
+                            }
+                            (Argument::Const(a), Argument::Const(b)) if a == b => {}
+                            _ => return Err(Error::Identity),
+                        }
                     }
                 }
             }

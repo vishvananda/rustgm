@@ -1,5 +1,12 @@
-//! Lifetime variance is a finite monotone graph over nominal parameter identities.
-use super::{ItemId, Kind, RegionId, Store, TypeId, aggregate::Definitions};
+//! Variance of lifetime/type parameters from completed nominal field templates.
+mod solver;
+use super::{
+    GenericArgs, ItemId, Kind, RegionId, Store, TypeId,
+    aggregate::Definitions,
+    arguments::{Argument, ConstId, ConstKind},
+    parameters::{ParameterId, ParameterKind},
+};
+use solver::{Solver, Term};
 use std::collections::{HashMap, HashSet};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -43,153 +50,226 @@ impl Variances {
         self.values.get(start..end)
     }
 
-    /// Infer parameters from completed field templates. Bounds do not create
-    /// occurrences: recursive-only parameters remain bivariant and are unused.
+    /// Infer all declaration slots from completed field templates. Arguments are
+    /// the declaration's own rigid parameters, in full declaration order.
+    /// Bounds do not create occurrences: recursive-only type/lifetime parameters
+    /// remain bivariant. Const slots are invariant, including unused ones.
     ///
     /// # Errors
-    /// Rejects inconsistent templates/parameter counts and exhausted graph work.
+    /// Rejects inconsistent templates/parameter identities and exhausted graph work.
     pub fn infer(
         types: &Store,
         definitions: &Definitions,
-        parameters: &[(ItemId, u32)],
+        parameters: &[(ItemId, GenericArgs)],
     ) -> Result<Self, &'static str> {
         let mut graph = Graph::default();
-        for &(item, count) in parameters {
-            let start = graph.result.values.len();
-            let end = start
-                .checked_add(count as usize)
-                .filter(|end| *end <= LIMIT)
-                .ok_or("lifetime variance parameter budget exceeded")?;
-            if graph.result.ranges.insert(item, (start, end)).is_some() {
-                return Err("duplicate variance parameter declaration");
-            }
-            graph.result.values.resize(end, Variance::Bivariant);
+        for &(item, arguments) in parameters {
+            graph.declaration(types, item, arguments)?;
         }
-        graph.heads.resize(graph.result.values.len(), None);
-        graph.pending.resize(graph.result.values.len(), false);
         for &(item, _) in parameters {
             let definition = definitions
                 .get(item)
                 .ok_or("missing variance aggregate definition")?;
-            let range = graph.result.ranges[&item];
             graph.seen.clear();
             for variant in definitions.variants(definition) {
+                graph.solver.charge()?;
                 for ty in types
                     .list(variant.fields)
                     .ok_or("missing variance field types")?
                 {
-                    graph.visit(types, range, *ty)?;
+                    graph.visit(types, item, *ty)?;
                 }
             }
         }
-        graph.propagate()?;
+        graph.solver.solve()?;
+        graph.result.values = graph
+            .variables
+            .iter()
+            .map(|&id| graph.solver.value(id))
+            .collect();
+        graph.result.steps = graph.solver.steps;
         Ok(graph.result)
     }
 }
 
-const LIMIT: usize = 1_000_000;
-#[derive(Clone, Copy)]
-struct Edge {
-    target: usize,
-    variance: Variance,
-    next: Option<usize>,
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum Slot {
+    Lifetime,
+    Type,
+    Const(TypeId),
 }
 #[derive(Default)]
 struct Graph {
     result: Variances,
-    heads: Vec<Option<usize>>,
-    edges: Vec<Edge>,
-    pending: Vec<bool>,
-    queue: Vec<usize>,
-    work: Vec<(TypeId, Variance, u16)>,
-    seen: HashSet<(TypeId, Variance, u16)>,
+    slots: Vec<Slot>,
+    variables: Vec<Term>,
+    solver: Solver,
+    work: Vec<(TypeId, Term, u16)>,
+    seen: HashSet<(TypeId, Term, u16)>,
 }
 impl Graph {
-    fn charge(&mut self) -> Result<(), &'static str> {
-        self.result.steps += 1;
-        if self.result.steps.saturating_add(self.work.len()) > LIMIT {
-            return Err("lifetime variance work budget exceeded");
-        }
-        Ok(())
-    }
-    fn constrain(&mut self, target: usize, variance: Variance) {
-        let prior = self.result.values[target];
-        let value = prior.join(variance);
-        if prior != value {
-            self.result.values[target] = value;
-            if !std::mem::replace(&mut self.pending[target], true) {
-                self.queue.push(target);
-            }
-        }
-    }
-    fn parameter(
-        range: (usize, usize),
-        region: RegionId,
-        depth: u16,
-    ) -> Result<Option<usize>, &'static str> {
-        let Some((binder, index)) = region.bound_parts() else {
-            return Ok(None);
-        };
-        if binder != depth {
-            return Ok(None);
-        }
-        let index = range.0 + usize::from(index);
-        if index >= range.1 {
-            return Err("variance parameter outside its declaration");
-        }
-        Ok(Some(index))
-    }
-    fn queue_type(
-        &mut self,
-        ty: TypeId,
-        variance: Variance,
-        depth: u16,
-    ) -> Result<(), &'static str> {
-        self.charge()?;
-        self.work.push((ty, variance, depth));
-        Ok(())
-    }
-    fn visit(
+    fn declaration(
         &mut self,
         types: &Store,
-        range: (usize, usize),
-        ty: TypeId,
+        item: ItemId,
+        args: GenericArgs,
     ) -> Result<(), &'static str> {
-        self.queue_type(ty, Variance::Covariant, 0)?;
+        self.solver.charge()?;
+        let start = self.slots.len();
+        let arguments = types
+            .arguments(args)
+            .ok_or("invalid variance declaration arguments")?;
+        let mut non_lifetime = false;
+        for (index, argument) in arguments.enumerate() {
+            self.solver.charge()?;
+            let (slot, parameter) = match argument {
+                Argument::Lifetime(region) if !non_lifetime => {
+                    if region.bound_parts().map(|(d, i)| (d, usize::from(i))) != Some((0, index)) {
+                        return Err("invalid variance lifetime declaration");
+                    }
+                    (Slot::Lifetime, None)
+                }
+                Argument::Type(ty) => {
+                    let Some(Kind::Parameter(id)) = types.kind(ty) else {
+                        return Err("variance declaration requires a rigid type parameter");
+                    };
+                    (Slot::Type, Some(id))
+                }
+                Argument::Const(id) => {
+                    let Some(ConstKind::Parameter(parameter)) = types.const_kind(id) else {
+                        return Err("variance declaration requires a rigid const parameter");
+                    };
+                    (
+                        Slot::Const(types.const_type(id).ok_or("invalid variance const type")?),
+                        Some(parameter),
+                    )
+                }
+                Argument::Lifetime(_) => {
+                    return Err("variance lifetimes must precede type and const slots");
+                }
+            };
+            if let Some(id) = parameter {
+                non_lifetime = true;
+                let parameter = types.parameter(id).ok_or("missing variance parameter")?;
+                if parameter.owner != item || parameter.index as usize != index {
+                    return Err("variance parameter outside its declaration");
+                }
+            }
+            self.slots.push(slot);
+            self.variables
+                .push(self.solver.variable(if matches!(slot, Slot::Const(_)) {
+                    Variance::Invariant
+                } else {
+                    Variance::Bivariant
+                })?);
+        }
+        if self
+            .result
+            .ranges
+            .insert(item, (start, self.slots.len()))
+            .is_some()
+        {
+            return Err("duplicate variance parameter declaration");
+        }
+        Ok(())
+    }
+    fn region(
+        &self,
+        owner: ItemId,
+        region: RegionId,
+        depth: u16,
+    ) -> Result<Option<Term>, &'static str> {
+        let Some((binder, index)) = region.bound_parts() else {
+            return if region == RegionId::STATIC {
+                Ok(None)
+            } else {
+                Err("inference lifetime in variance template")
+            };
+        };
+        if binder < depth {
+            return Ok(None);
+        }
+        let (start, end) = self.result.ranges[&owner];
+        let slot = start + usize::from(index);
+        if binder != depth || slot >= end || self.slots[slot] != Slot::Lifetime {
+            return Err("variance lifetime outside its declaration");
+        }
+        Ok(Some(self.variables[slot]))
+    }
+    fn parameter(
+        &self,
+        types: &Store,
+        owner: ItemId,
+        id: ParameterId,
+    ) -> Result<Term, &'static str> {
+        let parameter = types.parameter(id).ok_or("missing variance parameter")?;
+        let (start, end) = self.result.ranges[&owner];
+        let slot = start + parameter.index as usize;
+        let expected = match parameter.kind {
+            ParameterKind::Type { .. } => Slot::Type,
+            ParameterKind::Const { ty } => Slot::Const(ty),
+        };
+        if parameter.owner != owner || slot >= end || self.slots[slot] != expected {
+            return Err("variance parameter outside its declaration");
+        }
+        Ok(self.variables[slot])
+    }
+    fn constant(&self, types: &Store, owner: ItemId, id: ConstId) -> Result<(), &'static str> {
+        if let ConstKind::Parameter(id) = types.const_kind(id).ok_or("invalid variance constant")? {
+            self.parameter(types, owner, id)?;
+        }
+        Ok(())
+    }
+    fn queue_type(&mut self, ty: TypeId, position: Term, depth: u16) -> Result<(), &'static str> {
+        self.solver.charge()?;
+        self.work.push((ty, position, depth));
+        Ok(())
+    }
+    fn referent(&mut self, position: Term, mutable: bool) -> Result<Term, &'static str> {
+        if mutable {
+            self.solver
+                .compose(position, Term::constant(Variance::Invariant))
+        } else {
+            Ok(position)
+        }
+    }
+    fn visit(&mut self, types: &Store, owner: ItemId, ty: TypeId) -> Result<(), &'static str> {
+        self.queue_type(ty, Term::constant(Variance::Covariant), 0)?;
         while let Some((ty, position, depth)) = self.work.pop() {
-            self.charge()?;
-            if types.escaping_binders(ty).ok_or("invalid variance type")? <= depth
+            self.solver.charge()?;
+            if (types.escaping_binders(ty).ok_or("invalid variance type")? <= depth
+                && !types
+                    .contains_parameters(ty)
+                    .ok_or("invalid variance type")?)
                 || !self.seen.insert((ty, position, depth))
             {
                 continue;
             }
             match types.kind(ty).ok_or("invalid variance type")? {
+                Kind::Parameter(id) => {
+                    let target = self.parameter(types, owner, id)?;
+                    self.solver.constrain(target, position)?;
+                }
                 Kind::Reference {
                     mutable,
                     region,
                     referent,
                 } => {
-                    if let Some(target) = Self::parameter(range, region, depth)? {
-                        self.constrain(target, position);
+                    if let Some(target) = self.region(owner, region, depth)? {
+                        self.solver.constrain(target, position)?;
                     }
-                    let variance = if mutable {
-                        position.compose(Variance::Invariant)
-                    } else {
-                        position
-                    };
-                    self.queue_type(referent, variance, depth)?;
+                    let position = self.referent(position, mutable)?;
+                    self.queue_type(referent, position, depth)?;
                 }
                 Kind::Pointer { mutable, pointee } => {
-                    let variance = if mutable {
-                        position.compose(Variance::Invariant)
-                    } else {
-                        position
-                    };
-                    self.queue_type(pointee, variance, depth)?;
+                    let position = self.referent(position, mutable)?;
+                    self.queue_type(pointee, position, depth)?;
                 }
-                Kind::Array { element, .. }
-                | Kind::ArrayTerm { element, .. }
-                | Kind::Slice(element) => {
+                Kind::ArrayTerm { element, length } => {
+                    self.constant(types, owner, length)?;
+                    self.queue_type(element, position, depth)?;
+                }
+                Kind::Array { element, .. } | Kind::Slice(element) => {
                     self.queue_type(element, position, depth)?;
                 }
                 Kind::Tuple(fields) => {
@@ -203,12 +283,11 @@ impl Graph {
                     let depth = depth
                         .checked_add(1)
                         .ok_or("variance binder depth overflow")?;
+                    let input = self
+                        .solver
+                        .compose(position, Term::constant(Variance::Contravariant))?;
                     for parameter in types.list(parameters).ok_or("invalid variance signature")? {
-                        self.queue_type(
-                            *parameter,
-                            position.compose(Variance::Contravariant),
-                            depth,
-                        )?;
+                        self.queue_type(*parameter, input, depth)?;
                     }
                     self.queue_type(result, position, depth)?;
                 }
@@ -216,9 +295,9 @@ impl Graph {
                     self.queue_type(signature, position, depth)?;
                 }
                 Kind::Adt(item, args) => {
-                    self.nominal(types, range, (item, args), position, depth)?;
+                    self.nominal(types, owner, (item, args), position, depth)?;
                 }
-                Kind::Never | Kind::Primitive(_) | Kind::Parameter(_) => {}
+                Kind::Never | Kind::Primitive(_) => {}
             }
         }
         Ok(())
@@ -226,17 +305,14 @@ impl Graph {
     fn nominal(
         &mut self,
         types: &Store,
-        range: (usize, usize),
-        nominal: (ItemId, super::GenericArgs),
-        position: Variance,
+        owner: ItemId,
+        nominal: (ItemId, GenericArgs),
+        position: Term,
         depth: u16,
     ) -> Result<(), &'static str> {
         let arguments = types
-            .region_args(nominal.1)
+            .arguments(nominal.1)
             .ok_or("invalid variance arguments")?;
-        if arguments.is_empty() {
-            return Ok(());
-        }
         let &(start, end) = self
             .result
             .ranges
@@ -245,30 +321,25 @@ impl Graph {
         if arguments.len() != end - start {
             return Err("incorrect nominal variance arity");
         }
-        for (source, region) in (start..end).zip(arguments) {
-            self.charge()?;
-            if let Some(target) = Self::parameter(range, *region, depth)? {
-                let edge = self.edges.len();
-                self.edges.push(Edge {
-                    target,
-                    variance: position,
-                    next: self.heads[source],
-                });
-                self.heads[source] = Some(edge);
-            }
-        }
-        Ok(())
-    }
-    fn propagate(&mut self) -> Result<(), &'static str> {
-        while let Some(source) = self.queue.pop() {
-            self.pending[source] = false;
-            let variance = self.result.values[source];
-            let mut next = self.heads[source];
-            while let Some(index) = next {
-                self.charge()?;
-                let edge = self.edges[index];
-                self.constrain(edge.target, edge.variance.compose(variance));
-                next = edge.next;
+        for (source, argument) in (start..end).zip(arguments) {
+            self.solver.charge()?;
+            match (self.slots[source], argument) {
+                (Slot::Lifetime, Argument::Lifetime(region)) => {
+                    if let Some(target) = self.region(owner, region, depth)? {
+                        let value = self.solver.compose(position, self.variables[source])?;
+                        self.solver.constrain(target, value)?;
+                    }
+                }
+                (Slot::Type, Argument::Type(ty)) => {
+                    let value = self.solver.compose(position, self.variables[source])?;
+                    self.queue_type(ty, value, depth)?;
+                }
+                (Slot::Const(expected), Argument::Const(id))
+                    if types.const_type(id) == Some(expected) =>
+                {
+                    self.constant(types, owner, id)?;
+                }
+                _ => return Err("incorrect nominal variance argument kind"),
             }
         }
         Ok(())
