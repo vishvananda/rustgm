@@ -89,11 +89,11 @@ fn shared_recipes_preserve_custom_methods_and_declared_field_order()
         matches!(array.kind, Shape::Array { element, length: 1_000_000_000 } if Some(element)==ids[0])
     );
     assert_eq!(catalog.recipes().len(), 4);
-    let steps = catalog.steps;
+    let steps = catalog.steps();
     for &ty in parameters {
         catalog.demand(ty)?;
     }
-    assert_eq!(catalog.steps, steps);
+    assert_eq!(catalog.steps(), steps);
     Ok(())
 }
 
@@ -112,10 +112,10 @@ fn deeply_shared_recipes_use_a_worklist_and_memoize_failures()
     let mut catalog = Catalog::new(&facts.types, &facts.aggregates, &facts.members, methods)?;
     let recipe = catalog.demand(root)?.ok_or("root recipe")?;
     assert_eq!(catalog.recipes().len(), 20_001);
-    assert!(catalog.steps < 200_000);
-    let steps = catalog.steps;
+    assert!(catalog.steps() < 200_000);
+    let steps = catalog.steps();
     assert_eq!(catalog.demand(root)?, Some(recipe));
-    assert_eq!(catalog.steps, steps);
+    assert_eq!(catalog.steps(), steps);
 
     let (report, mut facts) =
         semantic::analyze("struct D(u8);impl Drop for D{fn drop(&mut self){}}fn f(d:D){}")?;
@@ -139,11 +139,11 @@ fn deeply_shared_recipes_use_a_worklist_and_memoize_failures()
         catalog.demand(method.target),
         Err("recursive by-value destruction recipe")
     );
-    let steps = catalog.steps;
+    let steps = catalog.steps();
     assert_eq!(
         catalog.demand(method.target),
         Err("recursive by-value destruction recipe")
     );
-    assert_eq!(catalog.steps, steps);
+    assert_eq!(catalog.steps(), steps);
     Ok(())
 }

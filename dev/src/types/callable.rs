@@ -65,6 +65,22 @@ impl Templates {
     ) -> Result<(), &'static str> {
         self.insert_owned(types, (item, nominal), signature, parameters, &[], generics)
     }
+    /// Publish an implicit method using its impl's inherited type/const parameters.
+    /// The signature's captured slots contain only target lifetimes; the original
+    /// method proof retains all impl lifetimes and their declared constraints.
+    /// # Errors
+    /// Rejects invalid templates, foreign parameters and repeated publication.
+    pub fn insert_inherited(
+        &mut self,
+        types: &Store,
+        item: ItemId,
+        owner: ItemId,
+        signature: TypeId,
+        parameters: u32,
+        generics: &[ParameterId],
+    ) -> Result<(), &'static str> {
+        self.insert_owned(types, (item, owner), signature, parameters, &[], generics)
+    }
     fn insert_owned(
         &mut self,
         types: &Store,

@@ -288,7 +288,7 @@ fn constant_and_lifetime_arguments_separate_drop_queries_and_storage()
 }
 
 #[test]
-fn executable_recipes_cannot_reuse_the_lifetime_only_key_for_generic_uses()
+fn generic_recipes_require_fields_even_when_the_lifetime_only_key_is_cached()
 -> Result<(), &'static str> {
     use rustgm::{body::drops::glue::Catalog, sema::members::Members};
     let mut types = Store::default();
@@ -297,13 +297,12 @@ fn executable_recipes_cannot_reuse_the_lifetime_only_key_for_generic_uses()
     define(&mut types, &mut definitions, item, &[])?;
     let ordinary = nominal(&mut types, item, &[])?;
     let generic = nominal(&mut types, item, &[Argument::Type(TypeId::UNIT)])?;
-    definitions.prepare(&mut types, generic)?;
     let members = Members::default();
     let mut catalog = Catalog::new(&types, &definitions, &members, &[])?;
     assert_eq!(catalog.demand(ordinary)?, None);
     assert_eq!(
         catalog.demand(generic),
-        Err("generic destruction recipes require selected instances")
+        Err("generic aggregate requires instantiated fields")
     );
     assert_eq!(catalog.demand(ordinary)?, None);
     Ok(())

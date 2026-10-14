@@ -6,10 +6,7 @@ use crate::types::{
 };
 use std::collections::HashSet;
 
-pub(in super::super) struct Coverage {
-    pub(super) arguments: GenericArgs,
-    pub(super) regions: Vec<RegionId>,
-}
+use crate::sema::destructors::Coverage;
 
 impl Checker<'_> {
     pub(super) fn drop_target_coverage(
@@ -148,15 +145,12 @@ impl Checker<'_> {
         {
             return Err(self.error(key, "a type cannot implement both Copy and Drop"));
         }
-        let coverage = self
-            .drop_coverage
-            .remove(&owner)
-            .ok_or_else(|| self.error(key, "missing Drop coverage mapping"))?;
+        let coverage = &implementation.coverage;
         let mut substitution = crate::types::substitute::Bound::joint_captured(
             &self.facts.types,
             ItemId(owner.0),
             coverage.arguments,
-            coverage.regions,
+            coverage.regions.clone(),
         )
         .map_err(|e| self.error(key, e))?;
         let mut requirements = self

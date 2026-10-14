@@ -96,6 +96,24 @@ unused impl lifetimes remain existential. Inherited method environments retain
 each parameter's original declaration identity. Classify such bodies as templates
 until demanded concrete instances and their destruction plans are available.
 
+Keep the checked inverse impl-to-nominal argument mapping on the completed Drop
+implementation. Selecting a method for a concrete target consumes that mapping;
+it does not repeat source matching. A runtime callable retains only target
+lifetime captures and an independent late receiver binder. Unused impl lifetimes
+and their bounds remain in the original method proof, rather than receiving an
+arbitrary concrete witness. Validate that the selected receiver matches its
+concrete nominal target, including reordered type/const arguments and nested
+reference binders.
+
+Destruction recipes for type/const instances use full canonical type identities
+and prepared concrete fields, while retaining declaration field/variant order.
+Lifetime-only recipes may retain their existing shared representation. An
+unresolved generic destructor is distinct from a selected callable instance.
+Separate retained recipe/query state from short-lived semantic borrows so new
+instances can be discovered without rebuilding completed recipes. Actual cleanup
+selection, original template proofs and instance ownership/lifetime/loan proofs
+remain separate requirements before executable generic destruction.
+
 Analyze generic bodies without reparsing syntax. A monomorphization key must
 include all type/const arguments and semantic context affecting its result.
 Trait solver caches include parameter environment, binder universe and mode;

@@ -5,7 +5,6 @@ mod heads;
 mod receivers;
 use super::{BinderId, Checker, DefId, Error, NodeKey, Type, TypeId, regions};
 use crate::{sema::destructors::Implementation, types::outlives::Queries};
-pub(super) use coverage::Coverage;
 
 pub(super) struct Pending {
     header: headers::Header,
@@ -72,7 +71,6 @@ impl Checker<'_> {
                     self.regions.count(binder),
                 )
                 .map_err(|e| self.error(key, e))?;
-            self.drop_coverage.insert(header.self_definition, coverage);
             self.facts
                 .destructors
                 .insert(Implementation {
@@ -83,6 +81,7 @@ impl Checker<'_> {
                     item,
                     parameters: self.regions.count(binder),
                     bounds,
+                    coverage,
                 })
                 .map_err(|e| self.error(key, e))?;
             self.drop_binders.insert(header.self_definition, binder);

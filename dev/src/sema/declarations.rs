@@ -86,7 +86,6 @@ struct Checker<'a> {
     nominal_regions: std::collections::HashMap<ItemId, regions::Context>,
     function_binders: std::collections::HashMap<NodeKey, BinderId>,
     drop_binders: std::collections::HashMap<DefId, BinderId>,
-    drop_coverage: std::collections::HashMap<DefId, destructors::Coverage>,
 }
 /// Resolve declaration types and shape-affecting constants without reparsing source.
 ///
@@ -121,7 +120,6 @@ pub fn analyze(report: &Report) -> Result<Declarations, Error> {
         nominal_regions: std::collections::HashMap::new(),
         function_binders: std::collections::HashMap::new(),
         drop_binders: std::collections::HashMap::new(),
-        drop_coverage: std::collections::HashMap::new(),
     };
     checker.run().map_err(|error| report.diagnostic(error))?;
     Ok(checker.facts)

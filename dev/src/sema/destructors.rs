@@ -1,9 +1,18 @@
 //! Resolved destructor contracts, independent of cleanup scheduling and code emission.
+mod instances;
 use crate::{
     resolve::{model::DefId, unit::NodeKey},
     types::{ItemId, RegionId, TypeId, outlives::Pair, region_graph},
 };
+pub use instances::select;
 use std::collections::{HashMap, HashSet};
+
+pub struct Coverage {
+    /// Impl arguments expressed using the nominal declaration's parameters.
+    pub arguments: crate::types::GenericArgs,
+    /// Captured impl lifetime slots mapped to nominal slots or extra existential slots.
+    pub regions: Vec<RegionId>,
+}
 
 pub struct Implementation {
     pub source: NodeKey,
@@ -14,6 +23,7 @@ pub struct Implementation {
     /// Named and anonymous impl slots captured by the method's body environment.
     pub parameters: u32,
     pub bounds: Vec<Pair>,
+    pub coverage: Coverage,
 }
 
 #[derive(Clone, Copy)]
@@ -33,6 +43,7 @@ pub struct Destructors {
     self_types: HashMap<DefId, usize>,
     items: HashMap<ItemId, usize>,
     pub receivers: HashMap<NodeKey, Receiver>,
+    instances: HashMap<TypeId, crate::types::instance::Instance>,
 }
 impl Destructors {
     pub(in crate::sema) fn declare(&mut self, item: ItemId) {

@@ -2287,3 +2287,79 @@ Receipts, immutable inputs/binaries and independent evidence remain under
 `obj/pa18-work/constructor-instances-*`, with raw samples under `obj/perf/`.
 Earlier failed implementation attempts and the superseded candidate are retained
 separately from the final validation claims.
+
+
+## Concrete destructor selection and recipes
+
+Completed Drop implementations now retain their checked inverse mapping from
+impl parameters to the nominal schema. The maintainer selection API uses it to
+form a canonical method instance for a concrete target, including permuted type
+arguments and bool, char and signed const arguments. Callable captures preserve
+the target's lifetime order and an independent late receiver. Unused impl
+lifetimes remain in the original proof with their bounds; a separate check
+prevents erasing any lifetime that occurs in the callable signature.
+
+Recipe construction consumes prepared concrete field lists and uses the complete
+canonical type as the key for type/const instances. Declaration member identities
+and order remain checked. Ordinary lifetime-only recipes keep their shared key.
+The retained cache can release its semantic borrows and resume after append-only
+type discovery, preserving recipes, successful/failed query states and budgets.
+Generic method recipes remain explicitly unresolved until a method instance is
+selected for emission.
+
+Four new independently qualified typed tests cover argument permutations,
+distinct captured and nested reference lifetimes, preservation of unused method
+proof lifetimes, concrete field/array recipe selection and cache reuse. The
+existing preparation invariant now verifies that a cached lifetime-only result
+cannot bypass missing generic field facts. The distinct-lifetime test initially
+assumed declaration-order slots; its final assertions use the canonical target
+identities, which are assigned by first use.
+
+This is an intermediate PA18 implementation. Actual cleanup-driven method demand
+and combined instance/destruction proofs still need integration into the
+scheduler. The maintainer generic execution API and the course CLI retain their
+existing pending-Drop and PA18 boundaries. Assignment statuses, fixtures,
+manifests and text oracles remain unchanged.
+
+A frozen planning probe checks eleven previously rustc-qualified inputs. Seven
+select a runtime cleanup, including the demanded growing-destructor case; unused
+Drop and three diverging cases select none. Two diverging cases nevertheless
+retain an unresolved generic recipe after planning. This directly confirms that
+future method demand must traverse selected cleanup roots rather than every
+cached recipe. These are initialization/planning observations, not claims of
+completed generic destructor execution.
+
+Validation passes 739 frontend tests in debug and release, all 3,350 PA1–PA17
+course cases, fourteen maintainer native tests and 858 course executable
+comparisons, preserving the sixteen documented PA13 differences. All active
+independent checks, rustfmt, Clippy all/pedantic with denied warnings, the
+468-file audit with zero findings, 25 harness tests and upstream provenance
+verification pass. Earlier failed test/lint attempts remain separately recorded.
+
+Performance freezes 318 production/configuration files and candidate SHA256
+`903b03bcf29be213f3773ff7edf82b85bdf446c61deba6b80c05a233d2941e6c`.
+Eighteen jobs retain 324 observations on CPU 2, with two warmups, four A/A samples
+and three ABBA blocks per job. Fifteen new inputs pass pinned-rustc code
+generation. No RustGM builds or tests overlap measurement. Full and count output
+equality and all frozen source, binary and input hashes verify.
+
+Nine parent comparisons exercise ordinary shared/distinct cleanup and generic
+Drop declarations. Median wall-time differences range from -3.9% to +3.0%, with
+overlapping ranges; these shared-host measurements do not establish a consistent
+speed change. At 2,048 distinct ordinary destructors, median RSS is 47,074 KiB
+versus the parent's 46,560 KiB. All observations, including wider wall-time
+outliers in that workload, are retained.
+
+The new API workload measures parsing, semantics, concrete CFG construction,
+recipe construction, method selection and cached repeat queries. It does not yet
+measure executable generic cleanup or original template proof:
+
+| Selection workload | 128 median, ms | 512 median, ms | 2048 median, ms | 2048 RSS, KiB |
+| --- | ---: | ---: | ---: | ---: |
+| repeated concrete target | 10.30 | 15.75 | 51.43 | 12760 |
+| distinct const targets | 12.63 | 20.84 | 71.91 | 16254 |
+| generic fields and arrays | 15.87 | 29.09 | 105.36 | 19762 |
+
+Frozen inputs, sources, drivers, binaries and verification receipts are under
+`obj/pa18-work/drop-recipes-*`; raw observations are under `obj/perf/`.
+`drop-plans-probe-v1` retains the separate planning observations described above.

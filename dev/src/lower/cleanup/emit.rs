@@ -76,7 +76,13 @@ impl Emitter<'_, '_> {
             align: layout.align,
         };
         if let Some(method) = recipe.method {
-            let symbol = self.context.demand_definition(method)?;
+            let symbol = match method {
+                glue::Method::Definition(method) => self.context.demand_definition(method)?,
+                glue::Method::Instance(instance) => self.context.demand(instance)?,
+                glue::Method::Unresolved(_) => {
+                    return Err("generic destructor requires a selected instance");
+                }
+            };
             let signature = self.context.output.symbols[symbol.0 as usize].signature;
             let pointer = base.pointer(self.builder)?;
             self.builder
