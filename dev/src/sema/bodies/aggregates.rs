@@ -171,9 +171,6 @@ impl Checker<'_> {
         let Some(Type::Array { element, length }) = self.facts.types.kind(self.ty(node)?) else {
             return Err(self.error(node, "repeat has no solved array type"));
         };
-        if length <= 1 {
-            return Ok(());
-        }
         while let Kind::Group(child) = self.kind(value) {
             value = child;
         }
@@ -185,7 +182,11 @@ impl Checker<'_> {
                 matches!(reference, Target::Definition(id)
                 if self.report.resolution.definitions[id.0 as usize].kind == super::DefKind::Const)
             });
-        if !constant
+        if constant {
+            self.facts.constant_repeats.insert(self.key(node));
+        }
+        if length > 1
+            && !constant
             && !self
                 .facts
                 .copies

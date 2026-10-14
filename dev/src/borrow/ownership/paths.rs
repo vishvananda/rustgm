@@ -65,7 +65,7 @@ impl Paths {
     pub(super) fn build(
         body: &Body,
         types: &Store,
-        retain_arrays: bool,
+        retain_initialization: bool,
     ) -> Result<Self, &'static str> {
         let mut paths = Self {
             partitions: None,
@@ -150,12 +150,22 @@ impl Paths {
         if !body.guards.is_empty() {
             paths.guard_views(body, types, &mut fields, &mut arrays)?;
         }
+        if retain_initialization && let Some(owned) = &body.owned {
+            for value in &owned.created {
+                paths.temporary(body, value.value)?;
+            }
+        }
         if arrays.is_empty() {
             paths.number()?;
         } else {
-            arrays.number(&mut paths, retain_arrays)?;
+            arrays.number(&mut paths, retain_initialization)?;
         }
         Ok(paths)
+    }
+    /// A materialized place or destructible rvalue retained by this analysis.
+    #[must_use]
+    pub fn temporary_path(&self, value: ValueId) -> Option<PathId> {
+        self.temporaries.get(&value).copied()
     }
     /// Sparse element/gap intervals retained by initialization analysis.
     #[must_use]

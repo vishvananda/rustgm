@@ -212,7 +212,7 @@ impl<'a> Flow<'a> {
             }
             Rvalue::Reify(value)
             | Rvalue::Constrain(value)
-            | Rvalue::Repeat { value }
+            | Rvalue::Repeat { value, .. }
             | Rvalue::Unary { operand: value, .. }
             | Rvalue::Cast { operand: value, .. } => self.use_value(value, live)?,
             Rvalue::Binary { left, right, .. } => {

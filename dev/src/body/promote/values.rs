@@ -112,7 +112,7 @@ impl Engine<'_, '_> {
             Rvalue::Repeat { .. } if self.empty_repeat(id)? => {
                 Some(self.evaluator.fields(&[], None)?)
             }
-            Rvalue::Repeat { value } => {
+            Rvalue::Repeat { value, .. } => {
                 let Some(value) = self.ready(Key::Value(value))? else {
                     return Ok(None);
                 };

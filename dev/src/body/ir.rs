@@ -98,6 +98,13 @@ pub struct Local {
     pub mutable: bool,
     pub source: NodeId,
 }
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum RepeatMode {
+    /// Evaluate an ordinary operand once, even when the array is empty.
+    Once,
+    /// Instantiate a selected constant path independently for each element.
+    Constant,
+}
 #[derive(Clone, Copy, Debug)]
 pub enum Rvalue {
     Unit,
@@ -107,6 +114,7 @@ pub enum Rvalue {
     },
     Repeat {
         value: ValueId,
+        mode: RepeatMode,
     },
     Scalar(ScalarId),
     Text(crate::sema::text::Id),

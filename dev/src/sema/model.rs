@@ -206,6 +206,8 @@ pub struct ReferenceAlignment {
     pub guard: bool,
 }
 pub struct Declarations {
+    /// Repeat operands selected as constant paths before runtime coercion wrappers.
+    pub constant_repeats: std::collections::HashSet<NodeKey>,
     pub destructors: super::destructors::Destructors,
     /// Packed source places remain checked even when their CFG is unreachable.
     pub reference_alignment: Vec<ReferenceAlignment>,
@@ -253,6 +255,7 @@ impl Declarations {
     }
     pub(super) fn new(report: &Report) -> Result<Self, Error> {
         let mut value = Self {
+            constant_repeats: std::collections::HashSet::new(),
             destructors: super::destructors::Destructors::default(),
             reference_alignment: Vec::new(),
             reference_adjustments: std::collections::HashMap::new(),

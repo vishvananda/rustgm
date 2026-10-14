@@ -216,6 +216,17 @@ analysis requests them; never reconstruct these mappings from output or expand
 unselected array elements. A whole-path mixed state can include partial moves
 and does not authorize dropping the entire object behind one flag.
 
+Retained initialization also tracks destructible rvalues that never become
+places. Derive their consumption once from typed aggregate/call operands,
+constraints, stores and recorded returns. Share the existing solver and inspect
+each consumed source before clearing its state. Preserve immediate disposal of
+an ordinary zero-length repeat operand separately from transfer and constant
+repeat instantiation. Retain the constant-path selection from type checking:
+runtime coercions can wrap a constant, and blocks can forward its value without
+being constant repeat operands. Neither array length nor text reconstruction
+may expand this work. These consumption facts do not substitute for scope cleanup or its
+destructor-induced loan and region uses.
+
 Internal match-guard views retain selected place identity and delay owning
 captures until success. Protect tested places without runtime loads or address
 formation for inactive variants. Track guard protection liveness across control

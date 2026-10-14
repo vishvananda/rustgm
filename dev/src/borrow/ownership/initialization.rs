@@ -1,4 +1,5 @@
 //! Retained owned initialization, distinct from whether an immutable binding was written.
+pub use super::consumption::{Consumption, Disposition, Effects, Moment};
 use super::{BodyFacts, Error, Path, state};
 use crate::{
     body::{
@@ -28,6 +29,7 @@ pub enum Status {
 pub struct Facts<'a> {
     body: &'a Body,
     pub ownership: BodyFacts,
+    pub consumption: Effects,
     incoming: Vec<state::Word<u64>>,
     words: usize,
 }
@@ -69,7 +71,9 @@ impl Facts<'_> {
             .ok_or("invalid initialization block extent")
     }
     /// Replay the proved transfers once, exposing bounded queries before each
-    /// statement and at block end. The callback cannot mutate initialization.
+    /// statement and at block end. Return transfers precede the callback; a
+    /// statement consumes its operands after it. Implicit cleanup is still pending.
+    /// The callback cannot mutate initialization.
     /// # Errors
     /// Reports query/transfer budget exhaustion or a callback error.
     pub fn visit(
@@ -79,6 +83,7 @@ impl Facts<'_> {
         state::replay(
             self.body,
             &self.ownership,
+            &self.consumption,
             &self.incoming,
             self.words,
             |location, state| {
@@ -135,26 +140,34 @@ pub fn analyze<'a, S: BuildHasher>(
     body: &'a Body,
 ) -> Result<Facts<'a>, Error> {
     let mut ownership = super::prepare(types, definitions, derives, copies, body, true)?;
-    let incoming = state::verify::<u64>(body, &mut ownership, types)?;
+    let consumption = Effects::build(body, types, &ownership.paths).map_err(|message| Error {
+        node: body.source,
+        message,
+    })?;
+    let incoming = state::verify::<u64>(body, &mut ownership, types, &consumption)?;
     super::guards::verify(body, &ownership, types)?;
     let words = (ownership.paths.bits as usize).div_ceil(64);
     Ok(Facts {
         body,
         ownership,
+        consumption,
         incoming,
         words,
     })
 }
 
 pub(super) trait Maybe: Copy + Default + PartialEq {
+    const TRACK_VALUES: bool;
     fn assign(&mut self, mask: u64, initialized: bool);
     fn join(self, other: Self) -> Self;
 }
 impl Maybe for () {
+    const TRACK_VALUES: bool = false;
     fn assign(&mut self, _: u64, _: bool) {}
     fn join(self, (): Self) -> Self {}
 }
 impl Maybe for u64 {
+    const TRACK_VALUES: bool = true;
     fn assign(&mut self, mask: u64, initialized: bool) {
         if initialized {
             *self |= mask;

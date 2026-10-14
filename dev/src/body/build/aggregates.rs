@@ -347,6 +347,14 @@ impl Builder<'_> {
             ty,
             Rvalue::Repeat {
                 value: self.value(value)?,
+                mode: if self.facts.constant_repeats.contains(&super::NodeKey {
+                    node,
+                    ..self.body.source
+                }) {
+                    crate::body::ir::RepeatMode::Constant
+                } else {
+                    crate::body::ir::RepeatMode::Once
+                },
             },
         )
     }

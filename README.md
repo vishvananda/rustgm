@@ -43,7 +43,7 @@ repository with pinned reference tools. It has not been built yet.
 - PA15 proves lifetime contracts and exposes region identities, assumptions and
   requirements, with 191 independently checked text-oracle cases.
 - PA16 checks loans, storage and non-lexical lifetimes and lowers checked
-  references, with 292 cases including 112 native executions.
+  references, with 293 cases including 113 native executions.
 - PA17–PA38 have buildout briefs and Makefiles. Their suites and implementation
   are not complete; invoking an unbuilt assignment fails explicitly.
 

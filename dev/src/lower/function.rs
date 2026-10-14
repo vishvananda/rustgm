@@ -421,7 +421,7 @@ impl Lower<'_, '_> {
             Rvalue::Aggregate { variant, fields } => {
                 return self.aggregate(value.ty, variant, fields);
             }
-            Rvalue::Repeat { value: operand } => return self.repeat(value.ty, operand),
+            Rvalue::Repeat { value: operand, .. } => return self.repeat(value.ty, operand),
             Rvalue::Function(definition) => return Ok(Selected::Item(definition)),
             Rvalue::Scalar(scalar) => self.scalar(self.body.scalars[scalar.0 as usize], ty)?,
             Rvalue::Length(place) => self.slice_length(place)?,

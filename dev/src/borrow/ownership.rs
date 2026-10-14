@@ -1,4 +1,5 @@
 //! Move/initialization proof for owned values. Loans and regions remain separate proofs.
+mod consumption;
 mod destructors;
 mod guards;
 pub mod initialization;
@@ -149,7 +150,7 @@ pub fn analyze_body<S: BuildHasher>(
     body: &Body,
 ) -> Result<BodyFacts, Error> {
     let mut facts = prepare(types, definitions, derives, copies, body, false)?;
-    state::verify::<()>(body, &mut facts, types)?;
+    state::verify::<()>(body, &mut facts, types, &consumption::Effects::default())?;
     guards::verify(body, &facts, types)?;
     Ok(facts)
 }
@@ -159,7 +160,7 @@ fn prepare<S: BuildHasher>(
     derives: &HashMap<ItemId, Properties, S>,
     copies: &mut Copies,
     body: &Body,
-    retain_arrays: bool,
+    retain_initialization: bool,
 ) -> Result<BodyFacts, Error> {
     let error = |message| Error {
         node: body.source,
@@ -178,14 +179,14 @@ fn prepare<S: BuildHasher>(
                 Use::Move
             };
         }
-        if let Rvalue::Repeat { value: operand } = value.kind {
+        if let Rvalue::Repeat { mode, .. } = value.kind {
             let Some(Kind::Array { element, length }) = types.kind(value.ty) else {
                 return Err(error("repeat has no canonical array type"));
             };
             // A constant operand is evaluated independently for each element;
             // an ordinary value is evaluated once, including lengths zero/one.
             if length > 1
-                && !matches!(body.values[operand.0 as usize].kind, Rvalue::Constant(_))
+                && mode == crate::body::ir::RepeatMode::Once
                 && !copies
                     .demand(types, definitions, derives, element)
                     .map_err(error)?
@@ -196,7 +197,7 @@ fn prepare<S: BuildHasher>(
         }
     }
     let facts = BodyFacts {
-        paths: Paths::build(body, types, retain_arrays).map_err(error)?,
+        paths: Paths::build(body, types, retain_initialization).map_err(error)?,
         uses,
         reachable: Vec::new(),
     };

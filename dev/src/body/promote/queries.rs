@@ -83,7 +83,7 @@ impl Engine<'_, '_> {
                     self.arguments(arguments)
                 }
                 Rvalue::Repeat { .. } if self.empty_repeat(id)? => Ok(true),
-                Rvalue::Repeat { value: operand }
+                Rvalue::Repeat { value: operand, .. }
                 | Rvalue::Constrain(operand)
                 | Rvalue::Reify(operand)
                 | Rvalue::Unary { operand, .. }

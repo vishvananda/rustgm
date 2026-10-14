@@ -220,7 +220,7 @@ fn rvalue(body: &Body, value: Rvalue, out: &mut impl Write) -> io::Result<()> {
             }
             write!(out, "]")
         }
-        Rvalue::Repeat { value } => write!(out, "repeat v{}", value.0),
+        Rvalue::Repeat { value, .. } => write!(out, "repeat v{}", value.0),
         Rvalue::Unit => write!(out, "unit"),
         Rvalue::Scalar(id) => type_view::scalar(body.scalars[id.0 as usize], out),
         Rvalue::Length(value) => {

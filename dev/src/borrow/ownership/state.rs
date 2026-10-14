@@ -1,7 +1,10 @@
 //! Must-initialized / may-written fixed point over sparse path intervals.
 use super::initialization::{Maybe, Status};
-use super::{BodyFacts, Error, Path};
-use crate::body::ir::{Body, Terminator};
+use super::{BodyFacts, Error, Path, consumption::Effects};
+use crate::body::{
+    ir::{BlockId, Body, Terminator},
+    storage::Location,
+};
 use std::collections::VecDeque;
 
 #[derive(Clone, Copy, Default)]
@@ -77,6 +80,7 @@ pub(super) fn verify<I: Maybe>(
     body: &Body,
     facts: &mut BodyFacts,
     types: &crate::types::Store,
+    consumption: &Effects,
 ) -> Result<Vec<Word<I>>, Error> {
     let error = |message| Error {
         node: body.source,
@@ -111,11 +115,7 @@ pub(super) fn verify<I: Maybe>(
         state
             .words
             .copy_from_slice(&incoming[index * words..(index + 1) * words]);
-        for statement in body.statements(block) {
-            facts
-                .transfer(body, &mut state, statement.action)
-                .map_err(error)?;
-        }
+        transfer_block(body, facts, &mut state, index, None, consumption)?;
         let successors = match block.terminator {
             Terminator::Jump(target) => [Some(target), None],
             Terminator::Branch { yes, no, .. }
@@ -161,22 +161,60 @@ pub(super) fn verify<I: Maybe>(
         state
             .words
             .copy_from_slice(&incoming[index * words..(index + 1) * words]);
-        for statement in body.statements(block) {
-            let error = |message| {
-                let mut node = body.source;
-                node.node = statement.source;
-                Error { node, message }
-            };
-            facts
-                .inspect(body, types, &mut state, statement.action)
-                .map_err(error)?;
-            facts
-                .transfer(body, &mut state, statement.action)
-                .map_err(error)?;
-        }
+        transfer_block(body, facts, &mut state, index, Some(types), consumption)?;
     }
     facts.reachable = reached;
     Ok(incoming)
+}
+
+fn transfer_block<I: Maybe>(
+    body: &Body,
+    facts: &BodyFacts,
+    state: &mut State<I>,
+    index: usize,
+    types: Option<&crate::types::Store>,
+    consumption: &Effects,
+) -> Result<(), Error> {
+    let block = &body.blocks[index];
+    let error = |source, message| {
+        let mut node = body.source;
+        node.node = source;
+        Error { node, message }
+    };
+    let block_id = BlockId(
+        u32::try_from(index).map_err(|_| error(block.source, "too many ownership blocks"))?,
+    );
+    for before in block.start..=block.end {
+        let source = if before < block.end {
+            body.statements[before as usize].source
+        } else {
+            block.source
+        };
+        let error = |message| error(source, message);
+        let location = Location::At {
+            block: block_id,
+            before,
+        };
+        if I::TRACK_VALUES {
+            consumption
+                .transfer(&facts.paths, state, location, true, types.is_some())
+                .map_err(error)?;
+        }
+        if before == block.end {
+            break;
+        }
+        let action = body.statements[before as usize].action;
+        if let Some(types) = types {
+            facts.inspect(body, types, state, action).map_err(error)?;
+        }
+        if I::TRACK_VALUES {
+            consumption
+                .transfer(&facts.paths, state, location, false, types.is_some())
+                .map_err(error)?;
+        }
+        facts.transfer(body, state, action).map_err(error)?;
+    }
+    Ok(())
 }
 
 pub(super) fn status(words: &[Word<u64>], path: &Path) -> Status {
@@ -225,6 +263,7 @@ pub(super) fn bit_status(words: &[Word<u64>], bit: u32) -> Result<Status, &'stat
 pub(super) fn replay(
     body: &Body,
     facts: &BodyFacts,
+    consumption: &Effects,
     incoming: &[Word<u64>],
     words: usize,
     mut visitor: impl FnMut(crate::body::storage::Location, &mut State<u64>) -> Result<(), &'static str>,
@@ -245,14 +284,14 @@ pub(super) fn replay(
             u32::try_from(index).map_err(|_| "too many initialization blocks")?,
         );
         for before in block.start..=block.end {
-            visitor(
-                crate::body::storage::Location::At {
-                    block: block_id,
-                    before,
-                },
-                &mut state,
-            )?;
+            let location = Location::At {
+                block: block_id,
+                before,
+            };
+            consumption.transfer(&facts.paths, &mut state, location, true, false)?;
+            visitor(location, &mut state)?;
             if before < block.end {
+                consumption.transfer(&facts.paths, &mut state, location, false, false)?;
                 facts.transfer(body, &mut state, body.statements[before as usize].action)?;
             }
         }

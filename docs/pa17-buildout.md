@@ -125,8 +125,8 @@ drop scopes, replacement, partial moves, temporaries and early exits into typed
 plans consumed by LowIR.
 
 Ownership's existing `Word.may` records whether storage has ever been written;
-the new optional initialized plane is separate. Integrate these place facts with
-owned-rvalue operand consumption and cleanup endpoints. The custom-destructor
+the new optional initialized plane is separate. Integrate the place and retained
+owned-rvalue consumption facts with cleanup endpoints. The custom-destructor
 field-move checker must be required by completed destruction proofs. Replacement
 must evaluate the incoming value, destroy the initialized old destination and
 then store the replacement.
@@ -172,9 +172,48 @@ patterns and field replacement remain eligible. This check is available to the
 destruction phase; completed proof entrypoints still reject pending elaboration.
 
 These are not executable drop flags or a finished cleanup plan. Initialization
-currently models the existing explicit move/access transfers; owned-rvalue
-consumption, implicit destruction and its loan/region effects must still be
-integrated before removing the pending-proof boundary.
+models explicit move/access transfers and owned-rvalue consumption. Implicit
+scope cleanup and its loan/region effects must still be integrated before
+removing the pending-proof boundary.
+
+## Owned operand consumption
+
+Initialization analysis retains a sparse path for each destructible rvalue,
+including values with no borrowed-place materialization. Ordinary ownership
+analysis keeps its existing path set and state layout. The bounded fixed-point
+solver and replay share the consumption transfers; inspection checks that each
+owned source is initialized before consuming it. A replay callback observes
+return transfers before cleanup statements and ordinary operands before the
+statement consumes them.
+
+The analysis collects consumption from typed aggregate and call argument lists,
+constraint adjustments, stores and retained return records. Its deterministic
+effect table preserves the value, path, CFG point, return/storage-exit ordering
+and disposition. It bounds collection and sorting work without expanding array
+elements. Callers can distinguish transfers, immediate disposal and constant
+instantiation when constructing the eventual cleanup plan.
+
+An ordinary `[expression; 0]` still evaluates its operand. Pinned rustc destroys
+that value before the next sibling expression or callee runs; the effect table
+records disposal at the repeat statement. A repeat of a constant path instead
+instantiates elements and has no prototype destructor, including when length is
+zero. Inline const evaluation remains a later capability. The independent trace
+probes under `obj/pa15-work/drop-repeat-probes-v1/` retain ten matching declared
+outcomes and two rejected ordering predictions alongside rustc's actual output.
+The latter refuted delaying ordinary zero-repeat destruction until statement end.
+
+Repeat mode now comes from the type checker's resolved constant-path selection,
+including parenthesized paths, rather than guessing from the final rvalue kind.
+The sparse selected-node set survives runtime lifetime adjustments. Blocks that
+forward a constant remain ordinary operands. This also repairs PA16 execution:
+the new `thin-native/constant-repeat-lifetimes.rs` exercises zero, one and two
+non-Copy constant elements with narrowed lifetimes. The preceding compiler
+rejects its two-element case with an incorrect Copy requirement; pinned rustc
+accepts and executes it. Its independently declared outcome precedes generation
+of its LowIR oracle.
+
+These facts do not execute destruction. Scope and forced-initializer cleanup,
+runtime flags, destructor glue and the induced loan/region uses remain pending.
 
 Required assignment fixtures must establish destructor/field/local order,
 conditional flags, partial initialization and every cleanup path with independent
@@ -451,3 +490,79 @@ including every wall-time, RSS, child CPU-time and context-switch observation.
 Source hashes, binary identities, input qualifications and validation receipts
 are stored beside it. The driver's dependency versions/checksums match the
 maintainer lockfile, and its source is included in the frozen source receipt.
+
+## Operand-consumption checkpoint validation
+
+All 3,094 PA1–PA16 course cases pass. The existing 3,093 cases retain their
+byte-exact output; only the new PA16 constant-repeat regression adds oracle
+sidecars. Its expected success was declared and checked by rustc before reference
+generation. All 113 PA16 native cases execute successfully through both rustc
+and the qualified CPPGM backend, including this regression. The preceding frozen
+RustGM binary rejects that source with an incorrect Copy requirement.
+
+Debug and release frontend suites each pass 489 tests; all six explicitly
+selected maintainer native tests pass. Five new tests cover 22 independently
+rustc-qualified sources, plus the ordinary/retained path distinction. They check
+stores, calls, aggregates, constructors, branch joins, loops, returns, lifetime
+adjustments and the three repeat dispositions. Adjusted constant paths retain
+constant mode; a block forwarding the same constant remains an ordinary operand.
+
+Formatting, Clippy all/pedantic with warnings denied, all 25 harness tests and
+upstream verification pass. The file/architecture audit reports 326 files and
+zero findings; no lint exceptions were introduced. Final logs under
+`obj/pa15-work/` are `drop-consumption-full2.log`,
+`drop-consumption-release2.log`, `drop-consumption-native2.log` and
+`drop-consumption-pa16-native1.log`. The validation receipt hashes each log.
+Earlier logs retain the first implementation's checks and the lifetime-repeat
+probe that exposed the mode-selection defect. Final checks reran after that fix.
+
+PA17 remains planned: these tests prove retained operand consumption and the
+PA16 regression, not completed cleanup, destructor liveness or runtime Drop.
+
+Performance measurements retain 162 observations on CPU 2, with A/A calibration
+and three ABBA blocks per workload/scale. All 334 source/configuration hashes,
+binary identities and frozen input hashes were verified afterward. Full views
+and count bytes match between the old/new ownership binaries; both analysis
+workloads use two identical copies of the new driver because their retained
+facts have changed. The driver invokes the frontend library directly, including
+custom-destructor field-move checks and bounded state queries. It does not run
+rustc or CPPGM to implement any phase.
+
+| Ownership pipeline | Baseline median | Candidate median | Candidate median RSS |
+| ---: | ---: | ---: | ---: |
+| 4,000 functions | 335.94 ms | 337.68 ms | 63,364 KiB |
+| 16,000 functions | 1,366.98 ms | 1,363.09 ms | 241,456 KiB |
+| 64,000 functions | 5,731.68 ms | 5,750.14 ms | 951,150 KiB |
+
+Median changes range from -0.28% to +0.52%; the largest input changes +0.32%
+wall / +0.36% child CPU time, with 260 KiB additional median RSS. Its candidate
+range is 5,562–7,574 ms, including the retained high outlier; baseline is
+5,708–5,777 ms. No observations were discarded. This agent ran no builds or tests
+during timing, but unrelated builds continued on the shared host. These are
+shared-host observations, not an isolated hardware-counter gate.
+
+The existing initialization workload at 256/1,024/4,096 functions now retains
+the owned operand paths and consumption effects. Candidate medians are
+21.19/77.05/314.22 ms, with median RSS 7,152/16,314/55,524 KiB. At its largest
+scale it retains 16,384 effects, 45,057 paths, 49,153 bits and 12,288 sparse array
+segments, and makes 1,622,020 state queries.
+
+The added workload combines conditional first/last moves from billion-element
+arrays, local replacement, calls, tuples, ordinary and constant zero-length
+repeats, and branch returns. Pinned rustc accepts all frozen sources. At
+256/1,024/4,096 functions, candidate medians are 39.49/153.96/651.07 ms and median
+RSS is 9,266/26,164/92,550 KiB. The largest input retains 57,346 effects (`14N + 2`),
+102,404 paths (`25N + 4`) and 106,500 bits (`26N + 4`), making 6,602,766 queries
+(`1612N + 14`). Its 4,096 disposals and 4,096 constant instantiations remain
+distinct. These counters grow linearly without expanding array elements.
+
+Baseline SHA-256 is
+`162dbe3490723e334ed5a5a1286ea4c4f187388e14e457702979623bb62c98fc`;
+candidate SHA-256 is
+`1a733dfe5239a122d3d79464c04dcca31aa9980a81026be4d6e4349b81f47ef9`;
+driver SHA-256 is
+`a3fb13c016935f71bffdec3134ac5840577c916b140ccb45b264b812033323b3`.
+`obj/pa15-work/drop-consumption-v1-perf-results.json` indexes all raw receipts,
+including wall time, RSS, child CPU time and context switches. Matching source,
+identity and validation receipts are stored beside it. The frozen driver's
+dependency versions and checksums match the maintainer lockfile.

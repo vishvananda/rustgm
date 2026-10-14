@@ -3665,6 +3665,22 @@
       "maintainer_origin": "dev/tests/thin_references.rs"
     },
     {
+      "path": "tests/spec/thin-native/constant-repeat-lifetimes.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.thin-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
       "path": "tests/spec/wide-native/bytes-constant.rs",
       "exit_status": 0,
       "features": [
