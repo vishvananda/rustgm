@@ -10,7 +10,7 @@ use crate::{
     body::{
         ir::{Action, Body, LocalId, LocalKind, Place, Temporary},
         scopes::{self, Lifetime},
-        storage::{End, Location},
+        storage::{End, Location, Range},
     },
     borrow::storage::{Analysis, Event as StorageEvent, EventKind},
 };
@@ -212,13 +212,21 @@ impl Flow<'_> {
                         )?;
                     }
                     next = scopes[scope.0 as usize].parent;
+                    visitor(
+                        Transition::StorageEnd {
+                            location,
+                            end: End::Scopes(Range {
+                                inner: scope,
+                                outer: next,
+                            }),
+                        },
+                        state,
+                    )?;
                 }
             }
             End::Temporaries { start, end } => {
-                for temporary in self.body.temporaries[start as usize..end as usize]
-                    .iter()
-                    .rev()
-                {
+                for index in (start..end).rev() {
+                    let temporary = &self.body.temporaries[index as usize];
                     state.charge(1)?;
                     if self.storage.temporary(temporary.value).is_some()
                         && let Some(path) = paths.temporary_path(temporary.value)
@@ -232,6 +240,16 @@ impl Flow<'_> {
                             &mut visitor,
                         )?;
                     }
+                    visitor(
+                        Transition::StorageEnd {
+                            location,
+                            end: End::Temporaries {
+                                start: index,
+                                end: index + 1,
+                            },
+                        },
+                        state,
+                    )?;
                 }
             }
         }
@@ -358,6 +376,7 @@ impl Cursor<'_> {
             EventKind::End(end) => self.flow.end(paths, state, location, end, visitor),
             EventKind::Birth(index) => {
                 let value = self.flow.body.temporaries[index as usize].value;
+                visitor(Transition::Birth { location, value }, state)?;
                 // Materializing a borrowed place can follow another scope's end
                 // at this same point. An already-owned value must never be revived.
                 if self

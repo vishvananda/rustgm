@@ -49,7 +49,10 @@ fn execute(
             Effect::Flags { range, initialized } => state[range.start as usize..range.end as usize]
                 .fill(if initialized { 2 } else { 1 }),
             Effect::Point | Effect::Cleanup(_) => observe(index, state),
-            Effect::Statement => {}
+            Effect::Statement
+            | Effect::Birth(_)
+            | Effect::StorageEnd(_)
+            | Effect::Deinitialize { .. } => {}
         }
     }
 }
@@ -140,37 +143,46 @@ fn check(source: &str) -> Result<(usize, usize), Box<dyn std::error::Error>> {
         .map_err(|e| e.message)?;
         let plan = destruction::select(&mut catalog, &init).map_err(|e| e.message)?;
         counts.0 += plan.flags.len();
-        let observed = simulate(body, &plan)?;
-        let mut events = plan
-            .events
-            .iter()
-            .enumerate()
-            .filter(|(_, e)| matches!(e.effect, Effect::Point | Effect::Cleanup(_)));
-        init.visit_events(|event, point| {
-            let (index, selected) = events.next().ok_or("missing plan event")?;
-            match (event, selected.effect) {
-                (Event::Point(location), Effect::Point) => assert_eq!(selected.location, location),
-                (Event::Cleanup(candidate), Effect::Cleanup(id)) => {
-                    assert_eq!(selected.location, candidate.location);
-                    assert_eq!(plan.cleanups[id as usize].candidate.place, candidate.place);
-                }
-                _ => return Err("plan observation order differs"),
-            }
-            let actual = observed.get(&index).ok_or("missing flag observation")?;
-            for (&state, flag) in actual.iter().zip(&plan.flags) {
-                let expected = match point.bit(flag.0)? {
-                    Status::Never => 1,
-                    Status::Always => 2,
-                    Status::Conditional => 3,
-                };
-                assert_eq!(state, expected, "flag {} at {event:?}", flag.0);
-                counts.1 += 1;
-            }
-            Ok(())
-        })?;
-        assert!(events.next().is_none());
+        counts.1 += verify(body, &init, &plan)?;
     }
     Ok(counts)
+}
+fn verify(
+    body: &Body,
+    init: &initialization::Facts<'_>,
+    plan: &Plan,
+) -> Result<usize, Box<dyn std::error::Error>> {
+    let mut count = 0;
+    let observed = simulate(body, plan)?;
+    let mut events = plan
+        .events
+        .iter()
+        .enumerate()
+        .filter(|(_, e)| matches!(e.effect, Effect::Point | Effect::Cleanup(_)));
+    init.visit_events(|event, point| {
+        let (index, selected) = events.next().ok_or("missing plan event")?;
+        match (event, selected.effect) {
+            (Event::Point(location), Effect::Point) => assert_eq!(selected.location, location),
+            (Event::Cleanup(candidate), Effect::Cleanup(id)) => {
+                assert_eq!(selected.location, candidate.location);
+                assert_eq!(plan.cleanups[id as usize].candidate.place, candidate.place);
+            }
+            _ => return Err("plan observation order differs"),
+        }
+        let actual = observed.get(&index).ok_or("missing flag observation")?;
+        for (&state, flag) in actual.iter().zip(&plan.flags) {
+            let expected = match point.bit(flag.0)? {
+                Status::Never => 1,
+                Status::Always => 2,
+                Status::Conditional => 3,
+            };
+            assert_eq!(state, expected, "flag {} at {event:?}", flag.0);
+            count += 1;
+        }
+        Ok(())
+    })?;
+    assert!(events.next().is_none());
+    Ok(count)
 }
 #[test]
 fn emitted_flag_writes_match_initialization_on_branches_loops_and_replacements()
@@ -193,5 +205,81 @@ fn emitted_flag_writes_match_initialization_on_branches_loops_and_replacements()
         assert!(flags > 0, "no conditional cleanup in {case}");
         assert!(observations > 10, "insufficient observations in {case}");
     }
+    Ok(())
+}
+
+#[test]
+fn edge_flag_clear_preserves_the_other_successor() -> Result<(), Box<dyn std::error::Error>> {
+    use body::ir::{Action, Owner, Rvalue};
+    let source = "struct D;impl Drop for D{fn drop(&mut self){}}fn f(flag:bool,branch:bool){let d:D;if flag{d=D;}if branch{return;}}";
+    rustc::qualify("drop-flag-edge", source, true)?;
+    let (report, mut facts) = semantic::analyze(source)?;
+    let mut program = body::build(&report, &facts)?;
+    let methods = &program.drops.as_ref().ok_or("methods")?.methods;
+    let mut catalog = Catalog::new(&facts.types, &facts.aggregates, &facts.members, methods)?;
+    let cfg = program.bodies.iter_mut().find(|b| matches!(b.owner, Owner::Function { definition, .. }
+        if report.package.names.get(report.resolution.definitions[definition.0 as usize].name) == "f"))
+        .ok_or("function")?;
+    let (parent, target, other) = cfg
+        .blocks
+        .iter()
+        .enumerate()
+        .find_map(|(i, b)| {
+            if let Terminator::Branch { yes, no, .. } = b.terminator
+                && matches!(cfg.blocks[yes.0 as usize].terminator, Terminator::Return(_))
+            {
+                Some((i, yes, no))
+            } else {
+                None
+            }
+        })
+        .ok_or("return branch")?;
+    let parent = BlockId(u32::try_from(parent)?);
+    let block = &cfg.blocks[target.0 as usize];
+    // Unit return preparation has no owned effects. Its exits can equivalently
+    // run on the unique incoming branch edge, before the remaining StorageEnd.
+    let mut relocated = 0;
+    for exit in &mut cfg.storage.as_mut().ok_or("storage")?.exits {
+        if let Location::At { block: id, before } = exit.location
+            && id == target
+        {
+            assert!(cfg.statements[block.start as usize..before as usize].iter().all(|s|
+                matches!(s.action, Action::Evaluate(v) if matches!(cfg.values[v.0 as usize].kind, Rvalue::Unit))
+                || matches!(s.action, Action::StorageEnd { .. })
+            ));
+            exit.location = Location::Edge {
+                block: parent,
+                target,
+            };
+            relocated += 1;
+        }
+    }
+    assert!(relocated > 0);
+    let init = initialization::analyze(
+        &facts.types,
+        &facts.aggregates,
+        &facts.derives,
+        &mut facts.copies,
+        cfg,
+    )
+    .map_err(|e| e.message)?;
+    let plan = destruction::select(&mut catalog, &init).map_err(|e| e.message)?;
+    assert_eq!(plan.flags.len(), 1);
+    let flag = plan.flags[0];
+    assert_eq!(init.bit_at_entry(target, flag.0)?, Status::Never);
+    assert_eq!(init.bit_at_entry(other, flag.0)?, Status::Conditional);
+    assert!(plan.events.iter().any(|e| e.location
+        == (Location::Edge {
+            block: parent,
+            target
+        })
+        && matches!(
+            e.effect,
+            Effect::Flags {
+                initialized: false,
+                ..
+            }
+        )));
+    assert!(verify(cfg, &init, &plan)? > 10);
     Ok(())
 }

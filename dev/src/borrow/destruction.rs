@@ -2,6 +2,7 @@
 mod flags;
 pub use crate::body::drops::glue;
 mod select;
+pub(crate) mod timeline;
 use crate::{body::ir::Selection, borrow::ownership::initialization::Candidate, types::TypeId};
 pub use select::select;
 
@@ -54,6 +55,13 @@ pub enum Effect {
     Point,
     /// Execute the existing body statement at this location.
     Statement,
+    /// Materialized storage, including places with no owned initialization path.
+    Birth(crate::body::ir::ValueId),
+    /// One scope or initializer temporary, after its cleanup and before the next.
+    StorageEnd(crate::body::storage::End),
+    /// Ownership ends for this sparse bit interval. Borrow analysis consumes this
+    /// even when no runtime conditional flag is needed; lowering emits no code.
+    Deinitialize { start: u32, end: u32 },
     /// Index into `Plan::cleanups`, including storage endpoints without a call.
     Cleanup(u32),
     /// Assign the selected flag indices in this half-open range.

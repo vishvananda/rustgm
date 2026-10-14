@@ -8,8 +8,8 @@ use super::{
 };
 use crate::{
     body::{
-        ir::{BlockId, Body},
-        storage::Location,
+        ir::{BlockId, Body, ValueId},
+        storage::{End, Location},
     },
     types::{
         ItemId, Store,
@@ -38,6 +38,16 @@ pub enum Status {
 pub enum Transition {
     Observe(Event),
     Statement(Location),
+    /// Materialized storage exists, even when it needs no ownership path.
+    Birth {
+        location: Location,
+        value: ValueId,
+    },
+    /// A single scope or initializer temporary ends after its own cleanup.
+    StorageEnd {
+        location: Location,
+        end: End,
+    },
     Initialize {
         location: Location,
         start: u32,

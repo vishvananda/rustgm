@@ -788,3 +788,71 @@ the initialization driver is
 `147fbf3275729804dd7bf7cebf7c0c5ccb43aa28a0c21aa7ff8f552df920af08`;
 the planning driver is
 `4b1bfa40eaf8eff02e77faf496f174be6483228f47524a0550b5b64e020706db`.
+
+
+## Ordered destructor lifetimes and loan checking
+
+A pending destruction plan now supports a separate lifetime/loan analysis.
+`types::destruction::regions::Regions` selects the actual non-static lifetime
+arguments needed by custom destructors and recursively owned fields. Nominal
+field templates are cached in bound-slot form and substituted at each use;
+references do not own their referents. Iterative query work, canonical result
+slices and memoized failures bound deep and repeated requests. The runtime glue
+representative never supplies lifetime arguments for this query.
+
+Initialization replay now exposes individual storage births and endpoints,
+including each scope in an exit range and each initializer temporary. The plan
+also retains sparse deinitialization intervals independently of whether a
+runtime flag exists. One ordered point index supplies block/edge lanes to both
+backward liveness and forward loans. Drop entities remain distinct from ordinary
+use entities. Whole moves and defining stores kill the corresponding Drop use;
+field moves preserve the containing aggregate's obligation. Destructor access
+checks and temporary storage checks occur in their actual cleanup order.
+
+The lifetime proof for replacement exposed an operand/consumer distinction.
+A coercion temporary previously seeded the destination binding's region before
+the store, keeping the old borrow alive across replacement. The pending-drop
+analysis retains canonical operand requirements through coercions, aggregate
+construction and repetition, while preserving separate definition/liveness bits.
+Destination locals retain their own type requirements after the store. This
+permits replacing a whole value and then using its old referent, without losing
+loans held by copied aliases, moved owners or the new value. Partial-field
+replacement still retains the parent's obligation. The pinned rustc NLL dump
+for the minimal replacement probe independently identifies the old borrow's gap
+at the defining store; the dump and diagnostic driver are retained under
+`obj/pa15-work/destructor-diagnostic-v1/`.
+
+This follows the distinction between ordinary use requirements and destructor
+requirements described in the [Rust compiler development guide](https://rustc-dev-guide.rust-lang.org/borrow-check/drop-check.html).
+Behavioral decisions are checked against the repository's Rust 1.98.0 compiler
+and pinned Reference. In particular, tuple-struct constructor arguments can
+receive temporary lifetime extension in this profile. An ordinary function call
+returning the same type remains the negative control; the local Reference's
+`destructors.md` documents that distinction.
+
+Eight new maintainer tests add query invariants, 49 independently classified
+loan/temporary/counter programs, and an explicit conditional flag clear on one
+CFG edge. Replacement controls include old-owner moves, live and ended shared
+aliases, borrowing the slot, both/one branch replacement, loop exits, reborrowing
+the old field, indirect calls, projected stores and whole-tuple replacement.
+The flag interpreter still executes only emitted flag stores, and checks every
+observed state against retained initialization; the other successor remains
+conditional after the cleanup edge clears its own flag.
+
+Validation for this checkpoint:
+
+- All 3,094 PA1–PA16 text cases pass with unchanged committed oracles.
+- All 513 frontend tests pass in debug and release; six backend-dependent tests
+  remain explicitly ignored there and all six pass via `make test-maintainer-native`.
+- Clippy all/pedantic, rustfmt and the architecture/file audit pass: 342 files,
+  zero findings. All 25 harness tests and pinned upstream/Reference checks pass.
+- The largest new scaling input is independently accepted by Rust 1.98.0.
+- Logs are `destructor-liveness-full1.log`, `-release1.log`, `-native1.log`,
+  `-audits5.log`, and `-focused8.log` under `obj/pa15-work/`.
+
+These APIs deliberately retain the pending-drop execution boundary. PA17 still
+needs the completed plan attached to checked bodies, selected destructor calls
+and cleanup flags lowered to LowIR, native counter/order comparisons, and the
+released handout, manifests and text oracles. The new operand-lifetime table is
+currently used by the ordered destruction analysis; integrating it with the
+published ordinary-loan path needs separate PA16 regression/oracle review.

@@ -1,4 +1,5 @@
 //! Destruction requirements for the closed, lifetime-parameterized type vocabulary.
+pub mod regions;
 use super::{ItemId, Kind, Store, TypeId, aggregate::Definitions};
 use std::collections::HashSet;
 

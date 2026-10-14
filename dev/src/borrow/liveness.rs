@@ -1,4 +1,6 @@
 //! Backward use liveness for typed locals and values, before loan generation.
+pub mod cleanup;
+mod operands;
 use super::regions::points::Point;
 use crate::{
     body::ir::{Action, BlockId, Body, LocalId, Place, Rvalue, Terminator, ValueId},
@@ -14,11 +16,21 @@ pub struct Analysis {
     pub reachable: Vec<bool>,
     pub steps: usize,
     locations: Vec<(u32, u32, u32)>,
+    pub(super) ordered: Option<super::destruction::timeline::Index>,
 }
 impl Analysis {
     /// Translate a global statement index (or block end) to this CFG's point.
     #[must_use]
     pub fn point_before(&self, block: BlockId, statement: u32) -> Option<Point> {
+        if let Some(points) = &self.ordered {
+            return points
+                .points
+                .get(&crate::body::storage::Location::At {
+                    block,
+                    before: statement,
+                })
+                .copied();
+        }
         let &(start, end, base) = self.locations.get(block.0 as usize)?;
         (start..=end)
             .contains(&statement)
@@ -68,6 +80,7 @@ impl<'a> Flow<'a> {
                 reachable: vec![false; body.blocks.len()],
                 steps: 0,
                 locations: Vec::new(),
+                ordered: None,
             },
         };
         for local in &body.locals {

@@ -42,28 +42,50 @@ pub(super) fn elaborate(
                 location,
                 effect: Effect::Statement,
             },
+            Transition::Birth { location, value } => Event {
+                location,
+                effect: Effect::Birth(value),
+            },
+            Transition::StorageEnd { location, end } => Event {
+                location,
+                effect: Effect::StorageEnd(end),
+            },
             Transition::Initialize {
                 location,
                 start,
                 end,
                 initialized,
             } => {
+                if !initialized && start != end {
+                    push(
+                        plan,
+                        &mut retained,
+                        Event {
+                            location,
+                            effect: Effect::Deinitialize { start, end },
+                        },
+                    )?;
+                }
                 let Some(event) = update(plan, location, start, end, initialized)? else {
                     return Ok(());
                 };
                 event
             }
         };
-        retained = retained
-            .checked_add(size_of::<Event>())
-            .filter(|n| *n <= 64_000_000)
-            .ok_or("destruction plan exceeds 64 MB budget")?;
-        plan.events.push(event);
+        push(plan, &mut retained, event)?;
         Ok(())
     })?;
     if cleanup != plan.cleanups.len() {
         return Err("selected cleanup was not elaborated");
     }
+    Ok(())
+}
+fn push(plan: &mut Plan, retained: &mut usize, event: Event) -> Result<(), &'static str> {
+    *retained = retained
+        .checked_add(size_of::<Event>())
+        .filter(|n| *n <= 64_000_000)
+        .ok_or("destruction plan exceeds 64 MB budget")?;
+    plan.events.push(event);
     Ok(())
 }
 fn update(

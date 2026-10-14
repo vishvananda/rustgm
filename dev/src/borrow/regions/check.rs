@@ -65,6 +65,25 @@ pub fn check_bodies(
     }
     run(types, definitions, variances, contracts, Some(program))
 }
+/// Prove contracts for pending destruction before its separate loan proof.
+/// The ordinary assignment views keep their explicit pending-drop boundary.
+/// # Errors
+/// Rejects absent destruction work, invalid contracts and resource limits.
+pub fn prepare_destruction(
+    types: &Store,
+    definitions: &Definitions,
+    variances: &Variances,
+    contracts: &Contracts<'_>,
+    program: &crate::body::ir::Program,
+) -> Result<Analysis, Error> {
+    if program.drops.is_none() {
+        return Err(Error {
+            source: None,
+            message: "destruction contracts require a pending plan".into(),
+        });
+    }
+    run(types, definitions, variances, contracts, Some(program))
+}
 fn run(
     types: &Store,
     definitions: &Definitions,

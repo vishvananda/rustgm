@@ -1,4 +1,5 @@
 //! Forward loan reachability constrained by inferred use regions.
+mod cleanup;
 mod inspection;
 pub mod view;
 use super::places::{Depth, Id, Index};
@@ -62,6 +63,7 @@ struct State {
 }
 struct Flow<'a> {
     body: &'a Body,
+    destruction: Option<&'a super::destruction::Plan>,
     owned: &'a BodyFacts,
     storage: &'a storage::Analysis,
     places: Index,
@@ -351,6 +353,19 @@ impl Flow<'_> {
         state: &mut [State],
         inspect: bool,
     ) -> Result<(), Error> {
+        if let Some(plan) = self.destruction {
+            let range = self
+                .uses
+                .ordered
+                .as_ref()
+                .ok_or(Error {
+                    node: self.body.source,
+                    message: "missing cleanup loan timeline",
+                })?
+                .blocks[block]
+                .clone();
+            return self.cleanup_events::<RECORD>(plan, range, state, inspect);
+        }
         let data = &self.body.blocks[block];
         let mut ends = self.storage.ends(block).peekable();
         for at in data.start..=data.end {
@@ -413,6 +428,7 @@ impl Flow<'_> {
         let empty = State { live: 0, active: 0 };
         let mut incoming = vec![empty; count];
         let mut state = vec![empty; words];
+        let mut outgoing = vec![empty; if self.destruction.is_some() { words } else { 0 }];
         let mut reached = vec![false; self.body.blocks.len()];
         let mut queued = reached.clone();
         reached[0] = true;
@@ -423,10 +439,19 @@ impl Flow<'_> {
             self.charge(words).map_err(error)?;
             state.copy_from_slice(&incoming[block * words..(block + 1) * words]);
             self.transfer::<false>(block, &mut state, false)?;
+            if self.destruction.is_some() {
+                self.charge(words).map_err(error)?;
+                outgoing.copy_from_slice(&state);
+            }
             for next in successors(self.body.blocks[block].terminator)
                 .into_iter()
                 .flatten()
             {
+                if self.destruction.is_some() {
+                    self.charge(words).map_err(error)?;
+                    state.copy_from_slice(&outgoing);
+                    self.cleanup_edge::<false>(block, next, &mut state, false)?;
+                }
                 let next = next.0 as usize;
                 self.charge(words).map_err(error)?;
                 let mut changed = !reached[next];
@@ -453,10 +478,20 @@ impl Flow<'_> {
             self.charge(words).map_err(error)?;
             state.copy_from_slice(&incoming[block * words..(block + 1) * words]);
             self.transfer::<RECORD>(block, &mut state, true)?;
+            if self.destruction.is_some() {
+                self.charge(words).map_err(error)?;
+                outgoing.copy_from_slice(&state);
+            }
             for target in successors(self.body.blocks[block].terminator)
                 .into_iter()
                 .flatten()
             {
+                if self.destruction.is_some() {
+                    self.charge(words).map_err(error)?;
+                    state.copy_from_slice(&outgoing);
+                    self.cleanup_edge::<RECORD>(block, target, &mut state, true)?;
+                    continue;
+                }
                 for end in self.storage.edge_ends(block, target) {
                     let point = self
                         .point(target.0 as usize, self.body.blocks[target.0 as usize].start)
@@ -494,6 +529,40 @@ pub fn check(
     storage: &storage::Analysis,
 ) -> Result<Analysis, Error> {
     Ok(analyze::<false>(types, components, body, contract, owned, storage)?.analysis)
+}
+/// Check loans at ordered destructor and storage points. This still does not
+/// grant an executable token or prove that native cleanup has been emitted.
+/// # Errors
+/// Rejects conflicting destructor accesses, dangling loans and resource limits.
+pub fn check_destruction(
+    types: &Store,
+    definitions: &crate::types::aggregate::Definitions,
+    components: &mut LiveRegions,
+    drops: &mut crate::types::destruction::regions::Regions,
+    facts: &super::ownership::initialization::Facts<'_>,
+    contract: &regions::Body,
+    plan: &super::destruction::Plan,
+) -> Result<Analysis, Error> {
+    let body = facts.body();
+    let error = |message| Error {
+        node: body.source,
+        message,
+    };
+    if contract.source != body.source {
+        return Err(error("drop loan contract belongs to another body"));
+    }
+    let uses = liveness::cleanup::analyze(types, definitions, components, drops, facts, plan)
+        .map_err(error)?;
+    Ok(finish::<false>(
+        types,
+        body,
+        contract,
+        &facts.ownership,
+        &facts.storage,
+        uses,
+        Some(plan),
+    )?
+    .analysis)
 }
 pub(super) struct Report {
     pub analysis: Analysis,
@@ -533,6 +602,21 @@ pub(super) fn analyze<const RECORD: bool>(
         });
     }
     let uses = liveness::analyze(types, components, body).map_err(error)?;
+    finish::<RECORD>(types, body, contract, owned, storage, uses, None)
+}
+fn finish<const RECORD: bool>(
+    types: &Store,
+    body: &Body,
+    contract: &regions::Body,
+    owned: &BodyFacts,
+    storage: &storage::Analysis,
+    uses: liveness::Analysis,
+    destruction: Option<&super::destruction::Plan>,
+) -> Result<Report, Error> {
+    let error = |message| Error {
+        node: body.source,
+        message,
+    };
     let mut seeds = Vec::with_capacity(uses.seeds.len());
     for &(region, point) in &uses.seeds {
         seeds.push((
@@ -554,6 +638,7 @@ pub(super) fn analyze<const RECORD: bool>(
     .map_err(error)?;
     let mut flow = Flow {
         body,
+        destruction,
         owned,
         storage,
         places: Index::new(body).map_err(error)?,
