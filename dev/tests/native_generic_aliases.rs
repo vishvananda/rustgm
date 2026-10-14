@@ -1,8 +1,30 @@
 //! Source generic aliases must survive ownership, region checking, lowering and execution.
 #[path = "harness/native_references.rs"]
 mod native;
+#[path = "helpers/qualify.rs"]
+mod rustc;
 use std::{path::Path, process::Command};
 const CASES: &[(&str, &str, bool)] = &[
+    (
+        "enum-argument",
+        "enum E{A=7,B}type A<const N:usize>=[u8;N];fn main(){let x:A<{E::B as usize}>=[3;8];check(x[7]==3);}",
+        false,
+    ),
+    (
+        "signed-enum-argument",
+        "#[repr(i8)]enum E{A=-3,B}type A<const N:usize>=[u8;N];fn main(){let x:A<{(E::B as isize+3) as usize}>=[17;1];check(x[0]==17);}",
+        false,
+    ),
+    (
+        "extended-drop-reference",
+        "struct S{n:usize}impl Drop for S{fn drop(&mut self){check(false);}}const R:&S=&S{n:5};type A<const N:usize>=[u8;N];fn main(){let x:A<{R.n}>=[2;5];check(x[4]==2);check(R.n==5);}",
+        false,
+    ),
+    (
+        "returned-drop-constant",
+        "struct S(u8);impl Drop for S{fn drop(&mut self){check(false);}}const C:S=S(7);fn consume(_:S){}fn main(){consume(C);}",
+        true,
+    ),
     (
         "self-dependent-default",
         "type A<T=A<u16>,U=T>=(T,U);fn sum(x:A)->u16{x.0.0+x.0.1+x.1.0+x.1.1}fn main(){check(sum(((1,2),(3,4)))==10);}",
@@ -103,4 +125,27 @@ fn generic_alias_programs_complete_the_lowir_pipeline() -> Result<(), Box<dyn st
 fn generic_alias_programs_match_independent_native_execution()
 -> Result<(), Box<dyn std::error::Error>> {
     native::check_cases("generic-alias-native", CASES)
+}
+
+#[test]
+fn ordinary_drop_temporaries_cannot_acquire_static_storage()
+-> Result<(), Box<dyn std::error::Error>> {
+    let source =
+        "struct S(u8);impl Drop for S{fn drop(&mut self){}}fn bad()->&'static S{&S(3)}fn main(){}";
+    rustc::qualify("drop-static-provenance-negative", source, false)?;
+    let folder = Path::new(env!("CARGO_MANIFEST_DIR")).join(format!(
+        "../obj/drop-static-provenance-{}",
+        std::process::id()
+    ));
+    std::fs::create_dir_all(&folder)?;
+    let input = folder.join("input.rs");
+    std::fs::write(&input, source)?;
+    let output = Command::new(env!("CARGO_BIN_EXE_rustgm"))
+        .arg("--emit-lowir")
+        .arg(input)
+        .output()?;
+    assert_eq!(output.status.code(), Some(1));
+    assert!(output.stdout.is_empty());
+    assert!(!output.stderr.is_empty());
+    Ok(())
 }

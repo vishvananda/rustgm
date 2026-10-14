@@ -32,6 +32,15 @@ its referent. A zero-length array owns no elements, but an evaluated nonconstant
 repeat operand still has its own cleanup obligation. An enclosing custom
 `Drop` implementation forbids moving non-Copy fields out of that object;
 whole-object moves, Copy reads, borrows and valid field replacement remain valid.
+Enums implementing `Drop` cannot be cast to integers, even when fieldless.
+
+Constant expressions must not destroy owned temporaries, including through
+projection, update or an ordinary zero-length repeat. Check unexecuted branches
+and preserve the pinned stable compiler's restriction on partially moved
+constant temporaries. A constant can transfer a Drop value to its result.
+Immutable static reads and references with static lifetime extension remain
+valid; static extension is distinct from promotion. These rules apply to the
+existing constant-expression subset, without enabling general const functions.
 
 ## Scopes, evaluation and loans
 
@@ -116,11 +125,11 @@ cleanup emission at 32,000,000 work units, and selected plan/recipe storage at
 points; PA16's storage/loan limits still apply. Release per-body proof scratch
 promptly. Bodies with no runtime cleanup retain no execution event tape.
 
-The suite declares 199 cases: 132 accepted programs and 67 rejections. One
-accepted program declares runtime panic; the other 131 require clean execution.
+The suite declares 207 cases: 135 accepted programs and 72 rejections. Two
+accepted programs declare runtime panic; the other 133 require clean execution.
 Two rejections are documented later-stage boundaries accepted by rustc. All
 other acceptance outcomes agree. Required families cover identity, headers,
-field moves, destructor loans, replacement, temporaries, counters and ordering.
+field moves, destructor loans, replacement, temporaries, constants, counters and ordering.
 The 33 `order/` sources define a no-op `trace(u8)` observer. Their course oracles
 remain uninstrumented LowIR. The explicit maintainer native suite independently
 checks actual callback order: rustc uses a printing observer, while the completed

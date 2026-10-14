@@ -45,7 +45,7 @@ repository with pinned reference tools. It has not been built yet.
 - PA16 checks loans, storage and non-lexical lifetimes and lowers checked
   references, with 293 cases including 113 native executions.
 - PA17 proves destructor lifetimes and lowers ordered conditional cleanup, with
-  199 course cases, 132 native programs and 33 independently observed drop-order
+  207 course cases, 135 native programs and 33 independently observed drop-order
   traces.
 - PA18–PA38 have buildout briefs and Makefiles. Their suites and implementation
   are not complete; invoking an unbuilt assignment fails explicitly.

@@ -134,6 +134,27 @@ Record selected methods, adjustments, casts, layouts and obligations where
 later phases consume them. Lowering cannot repeat lookup or inference. Missing
 facts are invariant failures, never a reason to fall back to text or rustc.
 
+Declaration-time enum values have an explicit pending query registry, distinct
+from finalized aggregate discriminants. Shape constants must demand those queries;
+an empty pending registry never means a provisional zero is final. Reuse completed
+values and the variant index across argument evaluations. Check all enum values,
+including unused duplicates and overflows, before publishing final layouts.
+
+Constant eligibility and body construction share lexical temporary-scope analysis.
+Keep that analysis below body construction so declaration queries do not depend
+on a later phase. Transferred results, static reads and references with static
+lifetime extension do not imply destruction. Owned projection bases, update bases
+and ordinary zero-length repeat operands retain cleanup obligations. The pinned
+stable profile rejects cleanup of partially moved temporaries as well. Qualify
+unexecuted branches too. Memoize resolved place roots and destruction requirements;
+demand scope analysis only when a temporary may need destruction. Invalidate
+absence-of-destruction results if the impl registry grows during declaration work.
+Anonymous constants that emit lifetime obligations retain a typed proof body;
+the ordinary region, loan and destruction checks must consume those obligations.
+They are never emitted as native functions. Scalar constants without lifetime
+facts need no additional body. Static lifetime extension supplies permanent
+storage provenance independently of promotion, including for a value with Drop.
+
 Constant patterns constrain types during ordinary body inference. Retain pending
 value/range/coverage work in flat arenas with the originating file, module and
 body; finish it after initializer typing in one shared query session. Reuse

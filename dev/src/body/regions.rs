@@ -42,6 +42,19 @@ pub struct Contract {
     pub type_assumptions: Vec<(TypeId, RegionId)>,
     pub obligations: Vec<Obligation>,
 }
+impl Contract {
+    fn constant(source: NodeKey) -> Self {
+        Self {
+            source,
+            signature: None,
+            universals: 0,
+            assumptions: Vec::new(),
+            parameters: Vec::new(),
+            type_assumptions: Vec::new(),
+            obligations: Vec::new(),
+        }
+    }
+}
 pub struct Contracts<'a> {
     pub callables: &'a crate::types::callable::Templates,
     pub nominal_bounds: &'a [(crate::types::ItemId, Pair)],
@@ -63,15 +76,13 @@ pub fn collect(facts: &Declarations) -> Result<Contracts<'_>, &'static str> {
     }
     for initializer in &facts.initializers {
         index.insert(initializer.value, bodies.len());
-        bodies.push(Contract {
-            source: initializer.value,
-            signature: None,
-            universals: 0,
-            assumptions: Vec::new(),
-            parameters: Vec::new(),
-            type_assumptions: Vec::new(),
-            obligations: Vec::new(),
-        });
+        bodies.push(Contract::constant(initializer.value));
+    }
+    for (source, _) in facts.constant_bodies() {
+        if index.insert(source, bodies.len()).is_some() {
+            return Err("duplicate anonymous constant lifetime owner");
+        }
+        bodies.push(Contract::constant(source));
     }
     constructors(facts, &mut bodies, &mut index)?;
     let mut add = |body, source, kind| -> Result<(), &'static str> {

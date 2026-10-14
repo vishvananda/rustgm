@@ -92,6 +92,7 @@ impl<'a> Context<'a> {
             .bodies
             .iter()
             .map(|body| match body.owner {
+                Owner::AnonymousConstant => 0,
                 Owner::Function { definition, .. } | Owner::Initializer { definition, .. } => {
                     definition.0 as usize + 1
                 }

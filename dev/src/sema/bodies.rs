@@ -272,6 +272,26 @@ impl<'a> Checker<'a> {
         self.in_function = false;
         self.body(key.node)
     }
+    pub(super) fn anonymous_constant(
+        &mut self,
+        key: NodeKey,
+        ty: TypeId,
+        module: ModuleId,
+    ) -> Result<(), Error> {
+        if let Some(&prior) = self.facts.anonymous_constants.get(&key) {
+            return if prior == ty {
+                Ok(())
+            } else {
+                Err(self.error(key.node, "anonymous constant changed its result type"))
+            };
+        }
+        let before = self.facts.lifetime_fact_count();
+        self.constant_in_module(key, ty, module)?;
+        if self.facts.lifetime_fact_count() != before {
+            self.facts.anonymous_constants.insert(key, ty);
+        }
+        Ok(())
+    }
     pub(super) fn initializer(&mut self, index: usize) -> Result<(), Error> {
         let initializer = self.facts.initializers[index];
         self.constant(initializer.value, initializer.ty, initializer.definition)?;
@@ -1802,6 +1822,7 @@ impl Checker<'_> {
                     } else if let Some(Type::Adt(item, _)) = self.facts.types.kind(self.ty(value)?)
                     {
                         if !self.facts.enum_casts.contains(&item)
+                            || self.facts.destructors.item(item).is_some()
                             || self.primitive(ty)?.integer().is_none()
                         {
                             return Err(self.error(

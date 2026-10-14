@@ -281,8 +281,13 @@ impl Lower<'_, '_> {
             Place::Temporary(id) => {
                 let selected = self.value(id)?;
                 if let Some(value) = self.body.promotions.as_ref().and_then(|p| p.get(id)) {
-                    let (ir::Owner::Function { definition, .. }
-                    | ir::Owner::Initializer { definition, .. }) = self.body.owner;
+                    let definition = match self.body.owner {
+                        ir::Owner::Function { definition, .. }
+                        | ir::Owner::Initializer { definition, .. } => definition,
+                        ir::Owner::AnonymousConstant => {
+                            return Err("anonymous constant cannot become a native function");
+                        }
+                    };
                     let ty = self.body.values[id.0 as usize].ty;
                     let global = self.context.constant_data(
                         super::data::Key::Temporary(definition, id),

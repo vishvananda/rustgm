@@ -91,6 +91,27 @@ pub fn build(report: &Report, facts: &Declarations) -> Result<Program, Error> {
             .bodies
             .push(builder.run(None).map_err(|e| report.diagnostic(e))?);
     }
+    for (source, ty) in facts.constant_bodies() {
+        let scope_plan = scopes::constant_with_scratch(
+            report,
+            facts,
+            source,
+            std::mem::take(&mut scratch.scopes),
+        )?;
+        let body = Body::new(Owner::AnonymousConstant, source, ty);
+        program.bodies.push(
+            Builder::new(
+                report,
+                facts,
+                &mut scratch,
+                body,
+                scope_plan,
+                drop_query.as_mut(),
+            )
+            .run(None)
+            .map_err(|e| report.diagnostic(e))?,
+        );
+    }
     aggregates::constructors(report, facts, &mut program, drop_query.as_mut())?;
     drops::finish(report, facts, &mut program, drop_query.as_mut())?;
     Ok(program)

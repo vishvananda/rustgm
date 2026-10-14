@@ -113,7 +113,8 @@ impl Checker<'_> {
                             value: group.discriminant.map(|node| NodeKey { node, ..group.key }),
                             tag,
                             previous,
-                        });
+                        })
+                        .map_err(|e| self.error(group.key, e))?;
                     previous = Some(variant);
                 }
             }

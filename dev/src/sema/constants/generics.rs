@@ -5,12 +5,14 @@ pub(in crate::sema) fn argument(
     report: &Report,
     facts: &mut Declarations,
     scratch: &mut super::Scratch,
+    discriminants: &mut super::Discriminants,
     key: NodeKey,
     ty: TypeId,
     module: ModuleId,
 ) -> Result<u128, Error> {
-    let mut queries = Queries::with_scratch(report, facts, &[], std::mem::take(scratch));
-    queries.typing.constant_in_module(key, ty, module)?;
+    let mut queries =
+        Queries::with_scratch(report, facts, Some(discriminants), std::mem::take(scratch));
+    queries.typing.anonymous_constant(key, ty, module)?;
     queries.require_complete_patterns(Query::Node(key))?;
     queries.prepare(key)?;
     queries.work.push(Work::Enter(Query::Node(key)));

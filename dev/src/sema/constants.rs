@@ -2,6 +2,11 @@
 mod arithmetic;
 mod constructors;
 mod contents;
+mod discriminants;
+mod drops;
+pub(super) use discriminants::{
+    Discriminant, Pending as Discriminants, finish as finish_discriminants,
+};
 mod generics;
 pub(super) use generics::argument as generic_argument;
 mod patterns;
@@ -27,12 +32,6 @@ use crate::{
 };
 use std::collections::{HashMap, HashSet};
 
-pub(super) struct Discriminant {
-    pub variant: VariantId,
-    pub value: Option<NodeKey>,
-    pub tag: Primitive,
-    pub previous: Option<VariantId>,
-}
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub(super) enum Value {
     Scalar(Scalar),
@@ -129,8 +128,7 @@ enum Work {
 struct Queries<'a> {
     report: &'a Report,
     typing: bodies::Checker<'a>,
-    specs: &'a [Discriminant],
-    variants: Vec<Option<usize>>,
+    discriminants: Option<&'a mut Discriminants>,
     constants: Vec<Option<usize>>,
     expressions: HashMap<NodeKey, Expression>,
     states: HashMap<Query, State>,
@@ -139,6 +137,7 @@ struct Queries<'a> {
     steps: usize,
     limit: usize,
     pattern_values: HashSet<Value>,
+    drop_scratch: Option<Box<drops::Scratch>>,
 }
 /// Declaration checking owns this cache; it never survives into lowering.
 #[derive(Default)]
@@ -146,59 +145,9 @@ pub(super) struct Scratch {
     typing: bodies::Scratch,
     constants: Vec<Option<usize>>,
     indexed: usize,
+    drops: Option<Box<drops::Scratch>>,
 }
 
-pub(super) fn discriminants(
-    report: &Report,
-    facts: &mut Declarations,
-    specs: &[Discriminant],
-) -> Result<(), Error> {
-    if specs.is_empty() {
-        return Ok(());
-    }
-    if specs.iter().all(|spec| spec.value.is_none()) {
-        let mut previous = 0;
-        for spec in specs {
-            let member = facts.members.variants[spec.variant.0 as usize];
-            let error = |message| Declarations::error(report, member.node, message);
-            let value = if spec.previous.is_none() {
-                0
-            } else {
-                arithmetic::successor(spec.tag, previous).ok_or_else(|| {
-                    error("implicit enum discriminant overflows its representation")
-                })?
-            };
-            facts
-                .aggregates
-                .set_discriminant(member.owner, member.ordinal, value)
-                .map_err(error)?;
-            previous = value;
-        }
-        return Ok(());
-    }
-    let mut queries = Queries::new(report, facts, specs);
-    let mut used = HashSet::new();
-    for spec in specs {
-        let query = Query::Variant(spec.variant);
-        queries.work.push(Work::Enter(query));
-        queries.drain()?;
-        let value = queries
-            .value(query)?
-            .integer()
-            .map_err(|e| queries.error(query, e))?;
-        let member = queries.typing.facts.members.variants[spec.variant.0 as usize];
-        if !used.insert((member.owner, value)) {
-            return Err(queries.error(query, "duplicate enum discriminant"));
-        }
-        queries
-            .typing
-            .facts
-            .aggregates
-            .set_discriminant(member.owner, member.ordinal, value)
-            .map_err(|e| queries.error(query, e))?;
-    }
-    Ok(())
-}
 #[derive(Clone, Copy)]
 pub(super) enum PatternValue {
     Definition(DefId),
@@ -210,7 +159,7 @@ pub(super) fn pattern_values(
     facts: &mut Declarations,
     requests: &[(NodeKey, PatternValue, Option<super::patterns::PatternId>)],
 ) -> Result<(), Error> {
-    let mut queries = Queries::new(report, facts, &[]);
+    let mut queries = Queries::new(report, facts);
     for &(key, definition, pattern) in requests {
         let query = match definition {
             PatternValue::Definition(definition) => {
@@ -260,26 +209,15 @@ pub(super) fn pattern_values(
     Ok(())
 }
 impl<'a> Queries<'a> {
-    fn new(report: &'a Report, facts: &'a mut Declarations, specs: &'a [Discriminant]) -> Self {
-        Self::with_scratch(report, facts, specs, Scratch::default())
+    fn new(report: &'a Report, facts: &'a mut Declarations) -> Self {
+        Self::with_scratch(report, facts, None, Scratch::default())
     }
     fn with_scratch(
         report: &'a Report,
         facts: &'a mut Declarations,
-        specs: &'a [Discriminant],
+        discriminants: Option<&'a mut Discriminants>,
         mut scratch: Scratch,
     ) -> Self {
-        let mut variants = vec![
-            None;
-            if specs.is_empty() {
-                0
-            } else {
-                facts.members.variants.len()
-            }
-        ];
-        for (index, spec) in specs.iter().enumerate() {
-            variants[spec.variant.0 as usize] = Some(index);
-        }
         scratch.constants.resize(facts.definitions.len(), None);
         for (index, initializer) in facts.initializers.iter().enumerate().skip(scratch.indexed) {
             if matches!(
@@ -293,7 +231,7 @@ impl<'a> Queries<'a> {
             .package
             .units
             .iter()
-            .fold(specs.len(), |n, unit| {
+            .fold(discriminants.as_ref().map_or(0, |d| d.len()), |n, unit| {
                 n.saturating_add(unit.configured.ast.nodes.len())
                     .saturating_add(unit.configured.ast.edges.len())
             })
@@ -301,8 +239,7 @@ impl<'a> Queries<'a> {
         Self {
             report,
             typing: bodies::Checker::with_scratch(report, facts, scratch.typing),
-            specs,
-            variants,
+            discriminants,
             constants: scratch.constants,
             expressions: HashMap::new(),
             states: HashMap::new(),
@@ -311,6 +248,7 @@ impl<'a> Queries<'a> {
             steps: 0,
             limit,
             pattern_values: HashSet::new(),
+            drop_scratch: scratch.drops,
         }
     }
     fn into_scratch(self) -> Scratch {
@@ -319,6 +257,7 @@ impl<'a> Queries<'a> {
             indexed,
             constants: self.constants,
             typing: self.typing.into_scratch(),
+            drops: self.drop_scratch,
         }
     }
 }
@@ -338,26 +277,6 @@ impl Queries<'_> {
             Some(State::Ready(value)) => Ok(*value),
             _ => Err(self.error(query, "missing completed constant dependency")),
         }
-    }
-    fn spec(&self, variant: VariantId) -> Result<&Discriminant, Error> {
-        self.variants
-            .get(variant.0 as usize)
-            .copied()
-            .flatten()
-            .and_then(|i| self.specs.get(i))
-            .ok_or_else(|| self.error(Query::Variant(variant), "missing discriminant query"))
-    }
-    fn variant_tag(&self, variant: VariantId) -> Result<Primitive, Error> {
-        if !self.specs.is_empty() {
-            return Ok(self.spec(variant)?.tag);
-        }
-        let member = self.typing.facts.members.variants[variant.0 as usize];
-        self.typing
-            .facts
-            .aggregates
-            .get(member.owner)
-            .map(|shape| shape.repr.tag.unwrap_or(Primitive::Isize))
-            .ok_or_else(|| self.error(Query::Variant(variant), "missing enum representation"))
     }
     fn require_complete_patterns(&self, query: Query) -> Result<(), Error> {
         if self.typing.has_pending_patterns() {
@@ -390,7 +309,7 @@ impl Queries<'_> {
                 Work::Enter(query) => self.enter(query)?,
                 Work::Forward(query, dependency) => {
                     let value = self.value(dependency)?;
-                    self.states.insert(query, State::Ready(value));
+                    self.complete_query(query, value)?;
                     if let Query::Contents(_, id) = query {
                         self.typing
                             .facts
@@ -414,8 +333,7 @@ impl Queries<'_> {
                             "implicit enum discriminant overflows its representation",
                         )
                     })?;
-                    self.states
-                        .insert(query, State::Ready(Value::Scalar(Scalar::Integer(bits))));
+                    self.complete_query(query, Value::Scalar(Scalar::Integer(bits)))?;
                 }
                 Work::Reference(work) => self.finish_reference(work)?,
                 Work::Contents(work) => self.finish_contents(work)?,
@@ -512,50 +430,6 @@ impl Queries<'_> {
                     self.work.push(Work::Enter(Query::Node(left)));
                 }
             },
-        }
-        Ok(())
-    }
-    fn enter_variant(&mut self, variant: VariantId) -> Result<(), Error> {
-        let query = Query::Variant(variant);
-        if self.specs.is_empty() {
-            let member = self.typing.facts.members.variants[variant.0 as usize];
-            let shape = self
-                .typing
-                .facts
-                .aggregates
-                .get(member.owner)
-                .ok_or_else(|| self.error(query, "missing completed enum definition"))?;
-            let value = self
-                .typing
-                .facts
-                .aggregates
-                .variants(shape)
-                .get(member.ordinal as usize)
-                .ok_or_else(|| self.error(query, "missing completed enum discriminant"))?
-                .discriminant;
-            self.states
-                .insert(query, State::Ready(Value::Scalar(Scalar::Integer(value))));
-            return Ok(());
-        }
-        let spec = self.spec(variant)?;
-        if let Some(key) = spec.value {
-            let ty = TypeId::primitive(spec.tag);
-            let owner = DefId(
-                self.typing.facts.members.variants[variant.0 as usize]
-                    .owner
-                    .0,
-            );
-            self.typing.constant(key, ty, owner)?;
-            self.require_complete_patterns(query)?;
-            self.prepare(key)?;
-            self.forward(query, Query::Node(key));
-        } else if let Some(previous) = spec.previous {
-            self.work
-                .push(Work::Successor(query, Query::Variant(previous), spec.tag));
-            self.work.push(Work::Enter(Query::Variant(previous)));
-        } else {
-            self.states
-                .insert(query, State::Ready(Value::Scalar(Scalar::Integer(0))));
         }
         Ok(())
     }
@@ -675,6 +549,7 @@ impl Queries<'_> {
     fn prepare(&mut self, root: NodeKey) -> Result<(), Error> {
         // Validate all branches, including ones evaluation will skip. Inference
         // has already selected their operations; this is constant eligibility.
+        let mut drops = drops::Check::new(self.typing.facts, root, self.drop_scratch.take());
         self.scan.push(root);
         while let Some(key) = self.scan.pop() {
             self.budget()?;
@@ -682,6 +557,9 @@ impl Queries<'_> {
                 continue;
             }
             let expression = self.classify(key)?;
+            if let Some(check) = &mut drops {
+                check.expression(self.report, self.typing.facts, key, expression)?;
+            }
             match expression {
                 Expression::Forward(value)
                 | Expression::Unary { operand: value, .. }
@@ -712,6 +590,7 @@ impl Queries<'_> {
             }
             self.expressions.insert(key, expression);
         }
+        self.drop_scratch = drops.map(drops::Check::finish);
         Ok(())
     }
     #[expect(

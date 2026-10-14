@@ -9,8 +9,8 @@ immutable recipes authorize lowering; candidates alone never do.
 
 ## Feature and fixture census
 
-The 199 required fixtures declare 132 accepted programs and 67 rejections.
-Accepted cases require 131 clean executions and one explicit panic-abort. Two
+The 207 required fixtures declare 135 accepted programs and 72 rejections.
+Accepted cases require 133 clean executions and two explicit panic-aborts. Two
 rejections name later-stage boundaries accepted by rustc: type-generic destructor
 instantiation (PA18) and general inherent methods (PA19). There are no other
 acceptance exceptions. Every fixture is original RustGM material, either
@@ -149,3 +149,16 @@ Source, binary and input hashes were verified after measurement. Binary hashes:
 - `drop-native-candidate-v1`: `4c1503906b98310473546971658c11c8216d28ee1cecbb86f8dd8342566e81de`.
 - `drop-native-driver-bin-v2`: `bb3e6c85227602d59e4a2daf74eba96904f7e1f08b1111270737948873438181`.
 - `pa17-release-candidate-v1`: `77719e8870b9018274272cd3c889443d64fab4ec1a2ecdfc7e74cc6b3e2ac97c`.
+
+
+## Constant eligibility regression expansion
+
+Eight required `constants/` cases were added during PA18 readiness work. Five
+reject owned constant projection, destruction in a dead branch, constant/runtime
+casts of Drop enums and an ordinary zero-length repeat that destroys its operand.
+Two execute cleanly: an extended constant reference must not destroy its backing,
+and a zero-length constant-path repeat must not instantiate an element. The
+third executable case must panic when a returned Drop constant is consumed.
+All outcomes were declared and checked with pinned rustc before reference
+generation. Existing 199 fixtures retain their text oracles. Maintainer evidence
+is recorded with the declaration-readiness work in `docs/pa18-pa21-buildout.md`.

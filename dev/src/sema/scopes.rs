@@ -156,6 +156,16 @@ pub(crate) fn initializer_with_scratch(
     analyze(report, facts, initializer.value, None, scratch)
 }
 
+/// Reuse the initializer scope rules for an anonymous constant expression.
+pub(crate) fn constant_with_scratch(
+    report: &Report,
+    facts: &Declarations,
+    source: NodeKey,
+    scratch: Scratch,
+) -> Result<Facts, Error> {
+    analyze(report, facts, source, None, scratch)
+}
+
 #[derive(Clone, Copy)]
 struct Context {
     scope: Id,

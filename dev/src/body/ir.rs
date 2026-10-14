@@ -253,6 +253,8 @@ pub struct Block {
 }
 #[derive(Clone, Copy)]
 pub enum Owner {
+    /// A declaration-time constant requiring lifetime/loan proof, never a native function.
+    AnonymousConstant,
     Function {
         definition: DefId,
         signature: TypeId,

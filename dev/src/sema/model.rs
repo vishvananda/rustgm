@@ -213,6 +213,7 @@ pub struct ReferenceAlignment {
     pub guard: bool,
 }
 pub struct Declarations {
+    pub(super) anonymous_constants: std::collections::HashMap<NodeKey, TypeId>,
     pub generics: super::generics::Generics,
     /// Repeat operands selected as constant paths before runtime coercion wrappers.
     pub constant_repeats: std::collections::HashSet<NodeKey>,
@@ -251,6 +252,26 @@ pub struct Declarations {
     pub functions: Vec<Function>,
 }
 impl Declarations {
+    /// Constant expressions with lifetime obligations retain their own proof body.
+    /// Sorting is confined to consumers that publish a deterministic body order.
+    #[must_use]
+    pub fn constant_bodies(&self) -> Vec<(NodeKey, TypeId)> {
+        let mut bodies: Vec<_> = self
+            .anonymous_constants
+            .iter()
+            .map(|(&key, &ty)| (key, ty))
+            .collect();
+        bodies.sort_unstable_by_key(|(key, _)| (key.file.0, key.node.0));
+        bodies
+    }
+    pub(super) fn lifetime_fact_count(&self) -> usize {
+        self.body_regions.len()
+            + self.region_equalities.len()
+            + self.coercions.len()
+            + self.outlives.len()
+            + self.type_outlives.len()
+            + self.well_formed.len()
+    }
     /// Retain the directed lifetime relation independently of runtime adjustment
     /// selection. In particular an explicit cast must not reify its operand twice.
     pub(super) fn retain_coercion(&mut self, coercion: Coercion) {
@@ -264,6 +285,7 @@ impl Declarations {
     }
     pub(super) fn new(report: &Report) -> Result<Self, Error> {
         let mut value = Self {
+            anonymous_constants: std::collections::HashMap::new(),
             generics: super::generics::Generics::default(),
             constant_repeats: std::collections::HashSet::new(),
             destructors: super::destructors::Destructors::default(),

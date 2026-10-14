@@ -23,6 +23,7 @@ pub fn write(program: &Program, types: &Store, out: &mut impl Write) -> io::Resu
     for (index, body) in program.bodies.iter().enumerate() {
         write!(out, "body {index} ")?;
         match body.owner {
+            Owner::AnonymousConstant => write!(out, "anonymous-const")?,
             Owner::Function {
                 definition,
                 signature,

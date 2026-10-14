@@ -206,7 +206,7 @@ impl<'a> Evaluator<'a> {
     #[must_use]
     pub fn new(report: &'a Report, facts: &'a mut Declarations) -> Self {
         Self {
-            queries: Queries::new(report, facts, &[]),
+            queries: Queries::new(report, facts),
         }
     }
     #[must_use]

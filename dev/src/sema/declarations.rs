@@ -70,7 +70,7 @@ struct Checker<'a> {
     work: Vec<Work>,
     children: Vec<TypeId>,
     regions: Regions,
-    discriminants: Vec<super::constants::Discriminant>,
+    discriminants: super::constants::Discriminants,
     nominal_regions: std::collections::HashMap<ItemId, regions::Context>,
     function_binders: std::collections::HashMap<NodeKey, BinderId>,
     drop_binders: std::collections::HashMap<DefId, BinderId>,
@@ -102,7 +102,7 @@ pub fn analyze(report: &Report) -> Result<Declarations, Error> {
         work: Vec::new(),
         children: Vec::new(),
         regions: Regions::default(),
-        discriminants: Vec::new(),
+        discriminants: super::constants::Discriminants::default(),
         nominal_regions: std::collections::HashMap::new(),
         function_binders: std::collections::HashMap::new(),
         drop_binders: std::collections::HashMap::new(),
@@ -151,7 +151,12 @@ impl Checker<'_> {
         self.validate_destructors()?;
         self.validate_signatures()?;
         self.local_annotations(&mut steps, work_limit)?;
-        super::constants::discriminants(self.report, &mut self.facts, &self.discriminants)?;
+        super::constants::finish_discriminants(
+            self.report,
+            &mut self.facts,
+            &mut self.discriminants,
+            &mut self.constant_scratch,
+        )?;
         self.complete_layouts()
     }
     fn drain(&mut self, steps: &mut usize, limit: usize) -> Result<(), Error> {

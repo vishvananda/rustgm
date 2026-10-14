@@ -6,7 +6,7 @@ pub mod drops;
 pub mod ir;
 pub mod promote;
 pub mod regions;
-pub mod scopes;
+pub use crate::sema::scopes;
 pub mod storage;
 
 pub use build::build;

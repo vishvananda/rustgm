@@ -44,6 +44,7 @@ impl Checker<'_> {
             self.report,
             &mut self.facts,
             &mut self.constant_scratch,
+            &mut self.discriminants,
             key,
             ty,
             module,

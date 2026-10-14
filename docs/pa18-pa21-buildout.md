@@ -1475,3 +1475,94 @@ The frozen CLI SHA-256 is
 Source hashes, preflights, jobs, validation and raw observation paths are the
 `generic-defaults-v1-*` receipts; the timing log is
 `generic-defaults-perf-v1.log`.
+
+
+### Declaration-time enum values and constant destruction
+
+Const arguments now use an explicit pending discriminant registry. The prior
+local-annotation path treated an empty query specification as proof that enum
+values were final, reading the field table's provisional zero. It consequently
+accepted a zero-length array where an enum tag required length eight. Pending
+and finalized values are now distinct. The registry retains the variant index
+and completed values across argument queries, including long predecessor chains;
+final declaration checks still visit unused values, duplicates and overflows.
+
+Constant eligibility now checks the owned temporary bases of projections,
+updates and ordinary zero-length repeats. This includes unexecuted branches and
+the pinned stable compiler's conservative rejection of partially moved Drop
+temporaries. It preserves transferred results, immutable static reads, named
+constant repeat operands and references with static lifetime extension. The
+existing lexical-scope analyzer moved from `body::scopes` to `sema::scopes` and
+remains reexported by `body`; constant checking and body construction share it.
+Scope analysis is demanded only when a temporary may need destruction. Place
+roots and destruction requirements are cached; extending the destructor registry
+invalidates cached absence of destruction. Enums implementing Drop are also
+excluded from integer casts in both constant and ordinary expressions.
+
+Reference-bearing anonymous constants retain a typed body when inference emits
+lifetime obligations. These bodies enter ordinary region, loan and destruction
+proof and never become native functions. Pure scalar arguments need no additional
+body. Static lifetime extension now supplies permanent provenance independently
+of promotion, allowing a borrowed Drop value in a constant without permitting an
+ordinary function to return a reference to such a temporary. No obligation is
+discarded or assigned a fabricated declaration identity.
+
+The maintainer tests include 20 independent enum acceptance/rejection controls,
+a 2,048-variant/2,048-use chain, 31 independently qualified destruction controls,
+anonymous-body ownership invariants, and an independent negative control for
+ordinary temporary provenance. Four new alias execution programs cover enum
+arguments, signed tags, extended constant references and a returned Drop constant
+whose destructor must panic. The native-alias suite has 18 programs: 16 clean
+executions and two declared panics. Generated LowIR and native execution are
+validated separately. Eight regressions belong to PA17 and extend its course
+manifest to 207 cases (135 accepted, 72 rejected; 133 clean executions and two
+panics). Their expected outcomes were independently checked before generating
+text oracles. Earlier fixture outputs remain unchanged.
+
+This completes the two correctness repairs found while investigating nominal
+readiness; it does not complete PA18–PA21. General nominal field demand, mixed
+parameter headers, declaration bounds and storage validity, constructor/pattern
+inference, generic destructor selection, concrete specialization and the full
+PA19–PA21 responsibilities remain. Nominal construction in an early default or
+signature argument still needs the forthcoming field-readiness query.
+
+Validation passes 662 frontend tests (nine native tests explicitly ignored in
+that default run), all 3,342 active course cases, 33 focused release tests, all
+nine explicit native maintainer tests and PA17's 135 executable comparisons.
+Rustfmt and Clippy all/pedantic pass; the 413-file architecture audit has zero
+findings; the 25 harness tests and upstream provenance checks pass. Logs are
+`constant-readiness-full-v2.log`, `constant-readiness-release-v2.log`,
+`constant-readiness-native-v2.log`, `constant-readiness-validation-v3.log`,
+`constant-readiness-course-v1.log` and `constant-readiness-pa17-native-v1.log`
+under `obj/pa18-work/`. The initial full run exposed the missing anonymous
+constant proof owner; the final run includes the fix and native qualification.
+
+Performance retains 216 observations in twelve jobs on CPU 2: two warmups, four
+A/A observations and three ABBA blocks per job. Nine jobs compare frozen parent
+`66113e4` with the candidate; three newly accepted enum-argument workloads use
+identical candidate copies. Full/count outputs match for every pair. All 284
+source hashes and frozen binary/input hashes verify before and after timing.
+No local builds or tests overlap timing.
+
+| Existing workload | Units | Parent ms | Candidate ms | Parent RSS KiB | Candidate RSS KiB |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| implicit-enums | 4096 | 24.22 | 24.85 | 7152 | 7166 |
+| explicit-enums | 4096 | 17.75 | 18.78 | 7824 | 8610 |
+| drop-scalar-arguments | 4096 | 66.48 | 66.33 | 13454 | 13830 |
+| drop-static-arguments | 4096 | 65.70 | 67.58 | 14204 | 14220 |
+| thinrefs | 4096 | 516.43 | 516.80 | 77364 | 77374 |
+
+The explicit-enum inventory has a measured cost of roughly 1 ms and 0.8 MiB at
+4,096 variants from retaining pending value/index state. Scalar const arguments
+and the lowering control have overlapping timing ranges. The newly accepted
+1,024/4,096/16,384 variant-and-use workloads have candidate medians near
+26/97/700 ms and peak RSS near 8/19/65 MiB. The largest workload varies from
+398 to 712 ms between observations of identical binaries; retain that variation
+and do not infer an exact whole-frontend scaling law. The source/query structure
+shares completed discriminants; timing alone is not a query-work proof.
+
+The frozen candidate SHA-256 is
+`cfa73fcf504d508125037d031b6c89895a6345b5b14a63c30f0423d754c06c4d`.
+Source hashes, preflight comparisons, job definitions and raw sample receipt paths
+are recorded in `constant-readiness-v1-*`; the measurement log is
+`constant-readiness-perf-v1.log`.

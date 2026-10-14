@@ -42,6 +42,7 @@ impl Machine<'_> {
             .bodies
             .iter()
             .find(|body| match body.owner {
+                Owner::AnonymousConstant => false,
                 Owner::Function { definition: id, .. }
                 | Owner::Initializer { definition: id, .. } => id == definition,
             })

@@ -21,6 +21,7 @@ struct Link {
 }
 struct Places<'a> {
     promotions: Option<&'a crate::body::promote::Facts>,
+    extended: std::collections::HashSet<ValueId>,
     projections: Vec<Origin>,
     links: Vec<Link>,
     work: usize,
@@ -29,10 +30,17 @@ impl<'a> Places<'a> {
     fn new(body: &'a Body) -> Result<Self, &'static str> {
         let mut this = Self {
             promotions: body.promotions.as_ref(),
+            extended: std::collections::HashSet::new(),
             projections: Vec::new(),
             links: Vec::new(),
             work: 0,
         };
+        for temporary in &body.temporaries {
+            this.step()?;
+            if temporary.lifetime == crate::body::scopes::Lifetime::Static {
+                this.extended.insert(temporary.value);
+            }
+        }
         for projection in &body.projections {
             this.step()?;
             let base = this.origin(projection.base)?;
@@ -55,6 +63,7 @@ impl<'a> Places<'a> {
         Ok(match place {
             Place::Local(_) => Origin::Local,
             Place::Static(_) => Origin::Static,
+            Place::Temporary(id) if self.extended.contains(&id) => Origin::Static,
             Place::Temporary(id) => Origin::Temporary(id),
             Place::Projection(id) => *self
                 .projections

@@ -15,6 +15,7 @@ pub mod patterns;
 mod regions;
 mod representation;
 mod scalar;
+pub mod scopes;
 pub mod type_view;
 
 pub mod text;

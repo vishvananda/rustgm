@@ -51,6 +51,114 @@
       "maintainer_origin": "new PA17 contract"
     },
     {
+      "path": "tests/spec/constants/dead-branch.rs",
+      "exit_status": 1,
+      "features": [
+        "pa17.constants"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "constant eligibility and static extension regressions"
+    },
+    {
+      "path": "tests/spec/constants/enum-cast-constant.rs",
+      "exit_status": 1,
+      "features": [
+        "pa17.constants"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "constant eligibility and static extension regressions"
+    },
+    {
+      "path": "tests/spec/constants/enum-cast-runtime.rs",
+      "exit_status": 1,
+      "features": [
+        "pa17.constants"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "constant eligibility and static extension regressions"
+    },
+    {
+      "path": "tests/spec/constants/extended-reference.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.constants"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "constant eligibility and static extension regressions",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/constants/owned-projection.rs",
+      "exit_status": 1,
+      "features": [
+        "pa17.constants"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "constant eligibility and static extension regressions"
+    },
+    {
+      "path": "tests/spec/constants/returned-value.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.constants"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "constant eligibility and static extension regressions",
+      "native": {
+        "kind": "execute",
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/constants/zero-repeat-constant.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.constants"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "constant eligibility and static extension regressions",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/constants/zero-repeat-expression.rs",
+      "exit_status": 1,
+      "features": [
+        "pa17.constants"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "constant eligibility and static extension regressions"
+    },
+    {
       "path": "tests/spec/counters/borrowed-owner-order.rs",
       "exit_status": 0,
       "features": [

@@ -166,8 +166,8 @@ facts; independently reviewed oracles reflect those facts.
 116 execution cases. The root native target includes PA16 and the explicit
 maintainer native tests. See `docs/pa15-pa16-validation.md` for the release review.
 
-PA17 adds 199 LowIR fixtures: 132 accepted programs and 67 rejections. One
-accepted program declares panic-abort; the other 131 require clean execution.
+PA17 has 207 LowIR fixtures: 135 accepted programs and 72 rejections. Two
+accepted programs declare panic-abort; the other 133 require clean execution.
 Two rejection cases document PA18/PA19 boundaries accepted by rustc. The root
 independent and native targets include PA17. `make test-native-pa17` selects its
 course executions. Its counter fixtures and 33 order fixtures are also read
