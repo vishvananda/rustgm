@@ -73,3 +73,35 @@ fn type_errors_and_occurs_checks_emit_no_partial_view() -> std::io::Result<()> {
     );
     Ok(())
 }
+
+#[test]
+fn inferred_function_items_render_all_argument_kinds() -> Result<(), Box<dyn std::error::Error>> {
+    use rustgm::types::{Primitive, TypeId};
+    let source = "fn f<T,const N:usize>(x:[T;N])->[T;N]{x}fn run()->[u8;3]{f([1,2,3])}";
+    let output = run("--emit-types", source)?;
+    assert_eq!(
+        output.status.code(),
+        Some(0),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let view = String::from_utf8(output.stdout)?;
+    let expected = format!(
+        "arguments=[type:{},const:{}:0x00000000000000000000000000000003]",
+        TypeId::primitive(Primitive::U8).0,
+        TypeId::primitive(Primitive::Usize).0
+    );
+    assert!(view.contains(&expected), "{view}");
+    let repeat = run("--emit-types", source)?;
+    assert_eq!(repeat.stdout, view.as_bytes());
+    assert_eq!(repeat.status.code(), Some(0));
+    let counts = run("--count-types", source)?;
+    assert_eq!(counts.status.code(), Some(0));
+    let footer = view
+        .lines()
+        .last()
+        .and_then(|s| s.strip_prefix("eof "))
+        .ok_or("missing type footer")?;
+    assert_eq!(String::from_utf8(counts.stdout)?, format!("{footer}\n"));
+    Ok(())
+}

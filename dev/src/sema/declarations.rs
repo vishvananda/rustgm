@@ -36,6 +36,7 @@ enum SignaturePhase {
 }
 #[derive(Clone, Copy)]
 enum Work {
+    FunctionArguments(NodeKey, DefId),
     Generic(generics::Declaration),
     PathArguments(NodeKey, DefId, regions::Context),
     Definition(DefId, bool),
@@ -153,6 +154,9 @@ impl Checker<'_> {
                 ));
             }
             match work {
+                Work::FunctionArguments(key, owner) => {
+                    self.complete_function_arguments(key, owner)?;
+                }
                 Work::Generic(declaration) => self.generic_declaration(declaration)?,
                 Work::PathArguments(key, id, context) => self.path_arguments(key, id, context)?,
                 Work::Definition(id, finish) => self.definition(id, finish)?,
@@ -209,6 +213,25 @@ impl Checker<'_> {
                 unit.configured.ast.push_children(node, &mut nodes);
                 nodes[mark..].reverse();
                 contexts.resize(nodes.len(), context);
+                if matches!(unit.configured.ast.node(node).kind, Kind::Path { .. })
+                    && let Some(Target::Definition(owner)) = self
+                        .facts
+                        .node(NodeKey { file, node })
+                        .and_then(|f| f.reference)
+                    && self.report.resolution.definitions[owner.0 as usize].kind
+                        == DefKind::Function
+                    && self.facts.generics.parameters.contains_key(&owner)
+                {
+                    self.schedule_function_arguments(
+                        NodeKey { file, node },
+                        owner,
+                        context,
+                        steps,
+                        limit,
+                        &mut scan,
+                    )?;
+                    self.drain(steps, limit)?;
+                }
                 let (Kind::Let { ty: Some(ty), .. } | Kind::Cast { ty, .. }) =
                     unit.configured.ast.node(node).kind
                 else {
@@ -216,27 +239,35 @@ impl Checker<'_> {
                 };
                 // Holes stay in the owning body, while the ordinary elaborator
                 // resolves every written lifetime and nested callable binder.
-                scan.clear();
-                scan.push(ty);
-                while let Some(child) = scan.pop() {
-                    *steps += 1;
-                    if *steps > limit {
-                        return Err(self.error(
-                            NodeKey { file, node: ty },
-                            "annotation work budget exceeded",
-                        ));
-                    }
-                    if matches!(unit.configured.ast.node(child).kind, Kind::InferType) {
-                        self.facts.partial_annotations.insert(
-                            NodeKey { file, node: child },
-                            super::model::PartialAnnotation::Hole,
-                        );
-                    }
-                    unit.configured.ast.push_children(child, &mut scan);
-                }
+                self.annotation_holes(NodeKey { file, node: ty }, steps, limit, &mut scan)?;
                 self.node_work(file, ty, context);
                 self.drain(steps, limit)?;
             }
+        }
+        Ok(())
+    }
+    fn annotation_holes(
+        &mut self,
+        key: NodeKey,
+        steps: &mut usize,
+        limit: usize,
+        scan: &mut Vec<NodeId>,
+    ) -> Result<(), Error> {
+        scan.clear();
+        scan.push(key.node);
+        let ast = &self.report.package.unit(key.file).configured.ast;
+        while let Some(node) = scan.pop() {
+            *steps += 1;
+            if *steps > limit {
+                return Err(self.error(key, "annotation work budget exceeded"));
+            }
+            if matches!(ast.node(node).kind, Kind::InferType) {
+                self.facts.partial_annotations.insert(
+                    NodeKey { node, ..key },
+                    super::model::PartialAnnotation::Hole,
+                );
+            }
+            ast.push_children(node, scan);
         }
         Ok(())
     }

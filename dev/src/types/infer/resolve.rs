@@ -1,5 +1,5 @@
 //! Demand a fully determined inference subtree without applying numeric fallback.
-use super::{Context, Error, Store, TermId, TypeId, Value, canonical};
+use super::{Context, Error, Store, TermId, TypeId, Value};
 use std::collections::{HashMap, HashSet};
 
 impl Context {
@@ -32,7 +32,7 @@ impl Context {
                         let child = self.root(self.edges[offset as usize])?;
                         children.push(*results.get(&child).ok_or(Error::InvalidIdentity)?);
                     }
-                    results.insert(id, canonical(store, kind, &children)?);
+                    results.insert(id, self.canonical(store, kind, &children)?);
                     active.remove(&id);
                 }
                 Value::Construct(_) => {

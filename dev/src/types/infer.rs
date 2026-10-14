@@ -1,7 +1,12 @@
 //! Per-body constraints over flat terms, with path-compressed variable identities.
 //! A failed constraint may retain prior progress; callers discard that body context.
+pub mod arguments;
+mod compare;
+pub mod constants;
 mod freshen;
+mod regions;
 mod resolve;
+mod substitute;
 use super::{GenericArgs, ItemId, Kind, Primitive, RegionId, Store, TypeId};
 use std::collections::{HashMap, HashSet};
 
@@ -22,6 +27,9 @@ pub enum Constructor {
     Tuple,
     Array(u64),
     ArrayTerm(super::arguments::ConstId),
+    ArrayInfer(constants::ConstTermId),
+    AdtArgs(ItemId, arguments::ArgumentsId),
+    FunctionItemArgs(ItemId, arguments::ArgumentsId),
     Slice,
     Reference {
         mutable: bool,
@@ -75,6 +83,7 @@ impl std::fmt::Display for Error {
 impl std::error::Error for Error {}
 #[derive(Default)]
 pub struct Context {
+    arguments: Option<Box<arguments::Storage>>,
     generalization: freshen::Scratch,
     terms: Vec<Term>,
     edges: Vec<TermId>,
@@ -135,6 +144,20 @@ impl Context {
     /// Rejects invalid arity, child identities and compact arena overflow.
     pub fn construct(&mut self, kind: Constructor, children: &[TermId]) -> Result<TermId, Error> {
         let valid = match kind {
+            Constructor::AdtArgs(_, id) => children.len() == self.argument_arity(id)?,
+            Constructor::FunctionItemArgs(_, id) => {
+                children.len().checked_sub(1) == Some(self.argument_arity(id)?)
+            }
+            Constructor::ArrayInfer(id) => {
+                children.len() == 1
+                    && self
+                        .arguments
+                        .as_ref()
+                        .ok_or(Error::InvalidIdentity)?
+                        .constants
+                        .ty(id)?
+                        == TypeId::primitive(Primitive::Usize)
+            }
             Constructor::Primitive(_)
             | Constructor::Parameter(_)
             | Constructor::Adt(..)
@@ -352,7 +375,16 @@ impl Context {
         if matches!(self.terms[id.0 as usize].value, Value::Variable(_)) {
             return Ok(None);
         }
-        self.materialize(store, id).map(Some)
+        let kind = self.materialize(store, id)?;
+        if let Constructor::ArrayInfer(length) = kind
+            && let Some(crate::types::arguments::ConstKind::Value(value)) =
+                self.constants().value(length)?
+        {
+            return Ok(Some(Constructor::Array(
+                u64::try_from(value.bits).map_err(|_| Error::InvalidIdentity)?,
+            )));
+        }
+        Ok(Some(kind))
     }
     /// # Errors
     /// Rejects invalid identities, missing children and arena overflow.
@@ -403,6 +435,32 @@ impl Context {
         let left = self.materialize(store, a)?;
         let right = self.materialize(store, b)?;
         match (left, right) {
+            (Constructor::Adt(x, known), Constructor::AdtArgs(y, inferred))
+            | (Constructor::AdtArgs(y, inferred), Constructor::Adt(x, known))
+            | (Constructor::FunctionItem(x, known), Constructor::FunctionItemArgs(y, inferred))
+            | (Constructor::FunctionItemArgs(y, inferred), Constructor::FunctionItem(x, known))
+                if x == y =>
+            {
+                let known = self.materialize_arguments(store, known, &mut Vec::new())?;
+                self.equate_arguments(known, inferred, record_regions)?;
+            }
+            (Constructor::AdtArgs(x, a), Constructor::AdtArgs(y, b))
+            | (Constructor::FunctionItemArgs(x, a), Constructor::FunctionItemArgs(y, b))
+                if x == y =>
+            {
+                self.equate_arguments(a, b, record_regions)?;
+            }
+            (Constructor::ArrayInfer(a), Constructor::ArrayInfer(b)) => self.equate_consts(a, b)?,
+            (Constructor::ArrayInfer(a), Constructor::Array(length))
+            | (Constructor::Array(length), Constructor::ArrayInfer(a)) => {
+                let b = self.const_length(length)?;
+                self.equate_consts(a, b)?;
+            }
+            (Constructor::ArrayInfer(a), Constructor::ArrayTerm(id))
+            | (Constructor::ArrayTerm(id), Constructor::ArrayInfer(a)) => {
+                let b = self.known_const(store, id)?;
+                self.equate_consts(a, b)?;
+            }
             (
                 Constructor::Reference {
                     mutable: x,
@@ -479,7 +537,16 @@ impl Context {
             Kind::Never => Constructor::Never,
             Kind::Primitive(p) => Constructor::Primitive(p),
             Kind::Parameter(id) => Constructor::Parameter(id),
-            Kind::Adt(item, args) => Constructor::Adt(item, args),
+            Kind::Adt(item, args) => {
+                if store.region_args(args).is_some() {
+                    Constructor::Adt(item, args)
+                } else {
+                    Constructor::AdtArgs(
+                        item,
+                        self.materialize_arguments(store, args, &mut children)?,
+                    )
+                }
+            }
             Kind::Tuple(list) => {
                 for ty in store.list(list).ok_or(Error::InvalidIdentity)? {
                     children.push(self.known(store, *ty)?);
@@ -533,7 +600,14 @@ impl Context {
                 arguments,
             } => {
                 children.push(self.known(store, signature)?);
-                Constructor::FunctionItem(item, arguments)
+                if store.region_args(arguments).is_some() {
+                    Constructor::FunctionItem(item, arguments)
+                } else {
+                    Constructor::FunctionItemArgs(
+                        item,
+                        self.materialize_arguments(store, arguments, &mut children)?,
+                    )
+                }
             }
         };
         let start = u32::try_from(self.edges.len()).map_err(|_| Error::Overflow)?;
@@ -589,7 +663,7 @@ impl Context {
                     let Value::Construct(kind) = term.value else {
                         return Err(Error::InvalidIdentity);
                     };
-                    let canonical = canonical(store, kind, &children)?;
+                    let canonical = self.canonical(store, kind, &children)?;
                     resolved[id.0 as usize] = Some(canonical);
                     state[id.0 as usize] = 2;
                 } else {
@@ -639,6 +713,9 @@ fn canonical(
 ) -> Result<TypeId, Error> {
     let first = || children.first().copied().ok_or(Error::InvalidIdentity);
     let kind = match constructor {
+        Constructor::ArrayInfer(_)
+        | Constructor::AdtArgs(..)
+        | Constructor::FunctionItemArgs(..) => return Err(Error::InvalidIdentity),
         Constructor::Primitive(p) => Kind::Primitive(p),
         Constructor::Parameter(id) => Kind::Parameter(id),
         Constructor::Adt(item, args) => Kind::Adt(item, args),

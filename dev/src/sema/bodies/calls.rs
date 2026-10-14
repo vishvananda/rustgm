@@ -8,13 +8,18 @@ use std::collections::HashMap;
 
 #[derive(Default)]
 pub(super) struct CallTypes {
+    pub generic: Vec<(NodeId, DefId, TermId)>,
     pub active: HashMap<NodeId, TermId>,
     signatures: HashMap<TermId, TypeId>,
     universal_regions: Vec<RegionId>,
     universals: Option<Bound>,
 }
 impl CallTypes {
+    pub fn universal_arguments(&self) -> Vec<RegionId> {
+        self.universal_regions.clone()
+    }
     pub fn clear(&mut self) {
+        self.generic.clear();
         self.active.clear();
         self.signatures.clear();
         self.universal_regions.clear();
@@ -75,7 +80,7 @@ impl Checker<'_> {
             .extend(std::iter::repeat_n(region, specialized.regions as usize));
         self.known(node, specialized.ty)
     }
-    fn prepare_universals(&mut self, node: NodeId) -> Result<(), Error> {
+    pub(super) fn prepare_universals(&mut self, node: NodeId) -> Result<(), Error> {
         if self.call_types.universals.is_some() {
             return Ok(());
         }
@@ -110,7 +115,7 @@ impl Checker<'_> {
             .copied()
             .ok_or_else(|| self.error(node, "missing body lifetime parameter"))
     }
-    fn alias_type(&mut self, node: NodeId, ty: TypeId) -> Result<TypeId, Error> {
+    pub(super) fn alias_type(&mut self, node: NodeId, ty: TypeId) -> Result<TypeId, Error> {
         if self.facts.types.escaping_binders(ty) == Some(0) {
             return Ok(ty);
         }
@@ -133,9 +138,10 @@ impl Checker<'_> {
         } else {
             let ty = match self.infer.resolved(&mut self.facts.types, root) {
                 Ok(ty) => ty,
-                // Ordinary inference holes stay in the original graph until
-                // argument checking. No polymorphic signature may use this path.
+                // Without a late binder, argument checking can retain the graph.
+                // Otherwise instantiate its regions without solving type holes.
                 Err(infer::Error::Unresolved) if bound_regions == 0 => return Ok(term),
+                Err(infer::Error::Unresolved) => return self.instantiate_call_term(node, term),
                 Err(error) => return Err(self.error(node, error)),
             };
             self.call_types.signatures.insert(root, ty);
@@ -221,10 +227,15 @@ impl Checker<'_> {
         else {
             return Ok(ty);
         };
-        if self.facts.generics.parameters.contains_key(&owner) {
-            return Err(self.error(node, "generic function values require instance inference"));
-        }
-        let explicit = crate::sema::lifetimes::arguments(self.report, self.key(node), false)?;
+        let explicit = if self.facts.generics.parameters.contains_key(&owner) {
+            self.facts
+                .generics
+                .function_uses
+                .get(&self.key(node))
+                .and_then(|u| u.lifetimes)
+        } else {
+            crate::sema::lifetimes::arguments(self.report, self.key(node), false)?
+        };
         let Some(scheme) = self.facts.lifetimes.functions.get(&owner) else {
             if explicit.is_some_and(|args| args.start != args.end) {
                 return Err(self.error(node, "function does not accept lifetime arguments"));

@@ -4,6 +4,7 @@ mod alignment;
 mod calls;
 mod conditions;
 mod divergence;
+mod generics;
 mod lifetimes;
 mod matches;
 mod pattern_constants;
@@ -493,6 +494,7 @@ impl Checker<'_> {
         let solved = std::mem::take(&mut self.infer)
             .finish(&mut self.facts.types)
             .map_err(|e| self.error(body, e))?;
+        self.validate_generic_uses(&solved)?;
         let body_key = self.key(body);
         self.publish_pattern_types(&solved)?;
         self.facts
@@ -997,6 +999,9 @@ impl Checker<'_> {
                 let ty = self.facts.definitions[id.0 as usize]
                     .ok_or_else(|| self.error(node, "missing value type"))?;
                 self.select_unit_constructor(node, id)?;
+                if self.facts.generics.parameters.contains_key(&id) {
+                    return self.generic_function(node, id, ty);
+                }
                 let ty = self.function_item(node, id, ty)?;
                 self.known(node, ty)
             }
@@ -1147,7 +1152,7 @@ impl Checker<'_> {
                 let target = self.term(ty)?;
                 if matches!(
                     self.head(node, source)?,
-                    Some(Constructor::FunctionItem(..))
+                    Some(Constructor::FunctionItem(..) | Constructor::FunctionItemArgs(..))
                 ) && matches!(self.head(node, target)?, Some(Constructor::Function { .. }))
                 {
                     let signature = self.child(node, source, 0)?;
@@ -1228,8 +1233,10 @@ impl Checker<'_> {
             self.record_adjustment(source, expected, AdjustmentKind::Never)?;
             return Ok(());
         }
-        if matches!(actual_head, Some(Constructor::FunctionItem(..)))
-            && matches!(expected_head, Some(Constructor::Function { .. }))
+        if matches!(
+            actual_head,
+            Some(Constructor::FunctionItem(..) | Constructor::FunctionItemArgs(..))
+        ) && matches!(expected_head, Some(Constructor::Function { .. }))
         {
             let signature = self.child(source, actual, 0)?;
             self.callable_shape(source, signature, expected)?;
@@ -1278,10 +1285,27 @@ impl Checker<'_> {
         {
             return self.reference_join(node, a, b);
         }
-        let a_item = matches!(ah, Some(Constructor::FunctionItem(..)));
-        let b_item = matches!(bh, Some(Constructor::FunctionItem(..)));
-        let distinct_items = matches!((ah, bh),
-            (Some(Constructor::FunctionItem(a, _)), Some(Constructor::FunctionItem(b, _))) if a != b);
+        let a_item = matches!(
+            ah,
+            Some(Constructor::FunctionItem(..) | Constructor::FunctionItemArgs(..))
+        );
+        let b_item = matches!(
+            bh,
+            Some(Constructor::FunctionItem(..) | Constructor::FunctionItemArgs(..))
+        );
+        let distinct_items = match (ah, bh) {
+            (Some(Constructor::FunctionItem(a, _)), Some(Constructor::FunctionItem(b, _))) => {
+                a != b
+            }
+            _ => {
+                a_item
+                    && b_item
+                    && self
+                        .infer
+                        .incompatible(&self.facts.types, a, b)
+                        .map_err(|e| self.error(node, e))?
+            }
+        };
         if distinct_items
             || (a_item && matches!(bh, Some(Constructor::Function { .. })))
             || (b_item && matches!(ah, Some(Constructor::Function { .. })))
@@ -1562,7 +1586,10 @@ impl Checker<'_> {
             return Err(self.error(node, "invalid call work"));
         };
         let mut term = self.term(callee)?;
-        if matches!(self.head(node, term)?, Some(Constructor::FunctionItem(..))) {
+        if matches!(
+            self.head(node, term)?,
+            Some(Constructor::FunctionItem(..) | Constructor::FunctionItemArgs(..))
+        ) {
             term = self.child(node, term, 0)?;
         }
         term = self.call_signature(node, term)?;

@@ -206,19 +206,21 @@ impl Checker<'_> {
             has_declared_late,
             bounds,
         };
-        self.callable_template(key, owner, signature, &scheme)?;
+        if !scheme.early.is_empty() {
+            self.callable_template(key, owner, signature, &scheme)?;
+        }
         self.facts.lifetimes.functions.insert(owner, scheme);
         Ok(())
     }
 
-    fn callable_template(
+    pub(super) fn callable_template(
         &mut self,
         key: NodeKey,
         owner: DefId,
         signature: TypeId,
         scheme: &FunctionRegions,
     ) -> Result<(), Error> {
-        if scheme.early.is_empty() {
+        if scheme.early.is_empty() && !self.facts.generics.parameters.contains_key(&owner) {
             return Ok(());
         }
         let mut mapping = vec![RegionId::STATIC; scheme.total as usize];
@@ -265,12 +267,17 @@ impl Checker<'_> {
         self.facts
             .lifetimes
             .callables
-            .insert(
+            .insert_generic(
                 &self.facts.types,
                 crate::types::ItemId(owner.0),
                 signature,
                 early,
                 &bounds,
+                &self
+                    .facts
+                    .generics
+                    .parameter_ids(&self.facts.types, owner)
+                    .map_err(|e| self.error(key, e))?,
             )
             .map_err(|e| self.error(key, e))
     }

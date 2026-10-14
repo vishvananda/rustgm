@@ -47,7 +47,15 @@ impl Bound {
     /// # Errors
     /// Rejects missing arguments, invalid IDs, compact overflow and exhausted work.
     pub fn apply(&mut self, store: &mut Store, ty: TypeId) -> Result<TypeId, &'static str> {
-        let key = (ty, 0);
+        self.apply_inside(store, ty, 0)
+    }
+    pub(crate) fn apply_inside(
+        &mut self,
+        store: &mut Store,
+        ty: TypeId,
+        depth: u16,
+    ) -> Result<TypeId, &'static str> {
+        let key = (ty, depth);
         if let Some(result) = self.result(store, key)? {
             return Ok(result);
         }
@@ -211,7 +219,7 @@ impl Bound {
         Ok(())
     }
 
-    fn region(&self, region: RegionId, depth: u16) -> Result<RegionId, &'static str> {
+    pub(crate) fn region(&self, region: RegionId, depth: u16) -> Result<RegionId, &'static str> {
         let Some((binder, index)) = region.bound_parts() else {
             return Ok(region);
         };

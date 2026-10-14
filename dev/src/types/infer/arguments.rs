@@ -1,0 +1,210 @@
+//! Inferred argument layouts keep type edges in the ordinary occurs-check graph.
+use super::constants::{ConstTermId, Constants};
+use super::{Constructor, Context, Error, ItemId, RegionId, Store, TermId, TypeId};
+use crate::{
+    support::intern_slice::Slices,
+    types::{GenericArgs, Kind, arguments::Argument as Canonical},
+};
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Argument {
+    Lifetime(RegionId),
+    Type(TermId),
+    Const(ConstTermId),
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct ArgumentsId(pub u32);
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+pub(super) enum Slot {
+    Lifetime(RegionId),
+    Type,
+    Const(ConstTermId),
+}
+#[derive(Default)]
+pub(super) struct Storage {
+    pub(super) constants: Constants,
+    slots: Slices<Slot>,
+}
+impl Context {
+    pub(super) fn argument_regions(
+        &mut self,
+        id: ArgumentsId,
+        mut replace: impl FnMut(RegionId) -> Result<RegionId, Error>,
+    ) -> Result<ArgumentsId, Error> {
+        self.account_work(self.slots(id)?.len())?;
+        let slots = self
+            .slots(id)?
+            .iter()
+            .map(|slot| match slot {
+                Slot::Lifetime(region) => replace(*region).map(Slot::Lifetime),
+                other => Ok(*other),
+            })
+            .collect::<Result<Vec<_>, _>>()?;
+        self.arguments
+            .get_or_insert_with(Default::default)
+            .slots
+            .intern(&slots)
+            .map(ArgumentsId)
+            .map_err(|_| Error::Overflow)
+    }
+    pub(super) fn slots(&self, id: ArgumentsId) -> Result<&[Slot], Error> {
+        self.arguments
+            .as_ref()
+            .and_then(|s| s.slots.get(id.0))
+            .ok_or(Error::InvalidIdentity)
+    }
+    pub(super) fn argument_arity(&self, id: ArgumentsId) -> Result<usize, Error> {
+        Ok(self
+            .slots(id)?
+            .iter()
+            .filter(|s| matches!(s, Slot::Type))
+            .count())
+    }
+    fn argument_layout(
+        &mut self,
+        arguments: &[Argument],
+        children: &mut Vec<TermId>,
+    ) -> Result<ArgumentsId, Error> {
+        self.account_work(arguments.len())?;
+        let mut slots = Vec::with_capacity(arguments.len());
+        for argument in arguments {
+            slots.push(match *argument {
+                Argument::Lifetime(r) => Slot::Lifetime(r),
+                Argument::Type(term) => {
+                    self.root(term)?;
+                    children.push(term);
+                    Slot::Type
+                }
+                Argument::Const(id) => {
+                    self.arguments
+                        .as_ref()
+                        .ok_or(Error::InvalidIdentity)?
+                        .constants
+                        .ty(id)?;
+                    Slot::Const(id)
+                }
+            });
+        }
+        self.arguments
+            .get_or_insert_with(Default::default)
+            .slots
+            .intern(&slots)
+            .map(ArgumentsId)
+            .map_err(|_| Error::Overflow)
+    }
+    /// Retain all arguments, including parameters erased from the signature.
+    /// Signature is child zero; type arguments are additional graph edges.
+    /// # Errors
+    /// Rejects invalid arguments/terms and exhausted inference resources.
+    pub fn function_item(
+        &mut self,
+        item: ItemId,
+        signature: TermId,
+        arguments: &[Argument],
+    ) -> Result<TermId, Error> {
+        let mut children = vec![signature];
+        let args = self.argument_layout(arguments, &mut children)?;
+        self.construct(Constructor::FunctionItemArgs(item, args), &children)
+    }
+    /// # Errors
+    /// Rejects invalid arguments/terms and exhausted inference resources.
+    pub fn nominal(&mut self, item: ItemId, arguments: &[Argument]) -> Result<TermId, Error> {
+        let mut children = Vec::new();
+        let args = self.argument_layout(arguments, &mut children)?;
+        self.construct(Constructor::AdtArgs(item, args), &children)
+    }
+    pub(super) fn materialize_arguments(
+        &mut self,
+        store: &Store,
+        args: GenericArgs,
+        children: &mut Vec<TermId>,
+    ) -> Result<ArgumentsId, Error> {
+        let args = store.arguments(args).ok_or(Error::InvalidIdentity)?;
+        self.account_work(args.len())?;
+        let mut values = Vec::with_capacity(args.len());
+        for arg in args {
+            values.push(match arg {
+                Canonical::Lifetime(r) => Argument::Lifetime(r),
+                Canonical::Type(ty) => Argument::Type(self.known(store, ty)?),
+                Canonical::Const(id) => Argument::Const(self.known_const(store, id)?),
+            });
+        }
+        self.argument_layout(&values, children)
+    }
+    pub(super) fn equate_arguments(
+        &mut self,
+        a: ArgumentsId,
+        b: ArgumentsId,
+        regions: bool,
+    ) -> Result<(), Error> {
+        let count = self.slots(a)?.len();
+        if count != self.slots(b)?.len() {
+            return Err(Error::Mismatch);
+        }
+        for index in 0..count {
+            self.step()?;
+            match (self.slots(a)?[index], self.slots(b)?[index]) {
+                (Slot::Lifetime(a), Slot::Lifetime(b)) => {
+                    if regions && a != b {
+                        self.region_equalities.push((a, b));
+                    }
+                }
+                (Slot::Type, Slot::Type) => {}
+                (Slot::Const(a), Slot::Const(b)) => self.equate_consts(a, b)?,
+                _ => return Err(Error::Mismatch),
+            }
+        }
+        Ok(())
+    }
+    fn canonical_arguments(
+        &mut self,
+        store: &mut Store,
+        id: ArgumentsId,
+        children: &[TypeId],
+    ) -> Result<GenericArgs, Error> {
+        let count = self.slots(id)?.len();
+        self.account_work(count)?;
+        let mut values = Vec::with_capacity(count);
+        let mut types = children.iter();
+        for index in 0..count {
+            values.push(match self.slots(id)?[index] {
+                Slot::Lifetime(r) => Canonical::Lifetime(r),
+                Slot::Type => Canonical::Type(*types.next().ok_or(Error::InvalidIdentity)?),
+                Slot::Const(id) => Canonical::Const(self.resolved_const(store, id)?),
+            });
+        }
+        if types.next().is_some() {
+            return Err(Error::InvalidIdentity);
+        }
+        store
+            .intern_arguments(&values)
+            .map_err(|_| Error::InvalidIdentity)
+    }
+    pub(super) fn canonical(
+        &mut self,
+        store: &mut Store,
+        kind: Constructor,
+        children: &[TypeId],
+    ) -> Result<TypeId, Error> {
+        let kind = match kind {
+            Constructor::ArrayInfer(id) => Kind::ArrayTerm {
+                element: *children.first().ok_or(Error::InvalidIdentity)?,
+                length: self.resolved_const(store, id)?,
+            },
+            Constructor::AdtArgs(item, args) => {
+                Kind::Adt(item, self.canonical_arguments(store, args, children)?)
+            }
+            Constructor::FunctionItemArgs(item, args) => {
+                let (signature, arguments) =
+                    children.split_first().ok_or(Error::InvalidIdentity)?;
+                Kind::FunctionItem {
+                    item,
+                    signature: *signature,
+                    arguments: self.canonical_arguments(store, args, arguments)?,
+                }
+            }
+            _ => return super::canonical(store, kind, children),
+        };
+        store.intern(kind).map_err(|_| Error::InvalidIdentity)
+    }
+}

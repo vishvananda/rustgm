@@ -401,9 +401,9 @@ fn region_arguments(
     arguments: crate::types::GenericArgs,
     out: &mut impl Write,
 ) -> io::Result<()> {
-    let args = store
-        .region_args(arguments)
-        .ok_or_else(|| io::Error::other("invalid lifetime arguments"))?;
+    let Some(args) = store.region_args(arguments) else {
+        return generic_arguments(store, arguments, out);
+    };
     if !args.is_empty() {
         write!(out, " regions=[")?;
         for (ordinal, id) in args.iter().copied().enumerate() {
@@ -415,6 +415,48 @@ fn region_arguments(
         write!(out, "]")?;
     }
     Ok(())
+}
+fn generic_arguments(
+    store: &Store,
+    arguments: crate::types::GenericArgs,
+    out: &mut impl Write,
+) -> io::Result<()> {
+    use crate::types::arguments::{Argument, ConstKind};
+    let arguments = store
+        .arguments(arguments)
+        .ok_or_else(|| io::Error::other("invalid generic arguments"))?;
+    write!(out, " arguments=[")?;
+    for (index, argument) in arguments.enumerate() {
+        if index != 0 {
+            write!(out, ",")?;
+        }
+        match argument {
+            Argument::Lifetime(id) => {
+                write!(out, "region:")?;
+                region(id, out)?;
+            }
+            Argument::Type(id) => write!(out, "type:{}", id.0)?,
+            Argument::Const(id) => match store
+                .const_kind(id)
+                .ok_or_else(|| io::Error::other("invalid generic constant"))?
+            {
+                ConstKind::Value(value) => {
+                    write!(out, "const:{}:0x{:032x}", value.ty.0, value.bits)?;
+                }
+                ConstKind::Parameter(id) => {
+                    let parameter = store
+                        .parameter(id)
+                        .ok_or_else(|| io::Error::other("missing const parameter"))?;
+                    write!(
+                        out,
+                        "const-parameter:{}:{}",
+                        parameter.owner.0, parameter.index
+                    )?;
+                }
+            },
+        }
+    }
+    write!(out, "]")
 }
 /// Write the common canonical type table for semantic and body views.
 ///

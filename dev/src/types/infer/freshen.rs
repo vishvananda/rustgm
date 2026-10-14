@@ -1,4 +1,5 @@
 //! Fresh free-region slots at inferred type boundaries; late binders stay shared.
+use super::arguments::{Argument, ArgumentsId, Slot};
 use super::{Constructor, Context, Error, RegionId, Store, TermId, Value};
 use crate::types::{GenericArgs, ItemId, Kind, callable::Templates, substitute::Bound};
 use std::collections::HashSet;
@@ -6,6 +7,13 @@ use std::collections::HashSet;
 enum Work {
     Enter(TermId, u16),
     Finish(TermId, Constructor, usize, u16),
+    Item(GenericItem, usize),
+}
+#[derive(Clone, Copy)]
+struct GenericItem {
+    item: ItemId,
+    arguments: ArgumentsId,
+    depth: u16,
 }
 #[derive(Default)]
 pub(super) struct Scratch {
@@ -66,6 +74,10 @@ impl Context {
             Value::Construct(_) => false,
         })
     }
+    #[expect(
+        clippy::too_many_lines,
+        reason = "one worklist dispatch preserves binder depth and couples fresh item arguments to their rebuilt signatures"
+    )]
     fn fresh_walk(
         &mut self,
         store: &mut Store,
@@ -86,6 +98,25 @@ impl Context {
                         continue;
                     }
                     let original = self.materialize(store, id)?;
+                    if let Constructor::FunctionItemArgs(item, args) = original {
+                        let term = self.terms[id.0 as usize];
+                        scratch.work.push(Work::Item(
+                            GenericItem {
+                                item,
+                                arguments: args,
+                                depth,
+                            },
+                            scratch.values.len(),
+                        ));
+                        self.account_work((term.end - term.start) as usize)?;
+                        scratch.work.extend(
+                            self.edges[term.start as usize + 1..term.end as usize]
+                                .iter()
+                                .rev()
+                                .map(|id| Work::Enter(*id, depth)),
+                        );
+                        continue;
+                    }
                     if let Constructor::FunctionItem(item, args) = original {
                         scratch.arguments.clear();
                         for region in store.region_args(args).ok_or(Error::InvalidIdentity)? {
@@ -98,6 +129,10 @@ impl Context {
                     }
                     let term = self.terms[id.0 as usize];
                     let kind = match original {
+                        Constructor::AdtArgs(item, args) => Constructor::AdtArgs(
+                            item,
+                            self.argument_regions(args, |r| fresh(r, depth, &mut next))?,
+                        ),
                         Constructor::Reference { mutable, region } => Constructor::Reference {
                             mutable,
                             region: fresh(region, depth, &mut next)?,
@@ -152,6 +187,17 @@ impl Context {
                     scratch.values.truncate(mark);
                     scratch.values.push(result);
                 }
+                Work::Item(item, mark) => {
+                    let term = self.fresh_generic_item(
+                        store,
+                        templates,
+                        item,
+                        &scratch.values[mark..],
+                        &mut next,
+                    )?;
+                    scratch.values.truncate(mark);
+                    scratch.values.push(term);
+                }
             }
         }
         let result = scratch.values.pop().ok_or(Error::InvalidIdentity)?;
@@ -188,6 +234,61 @@ impl Context {
             })
             .map_err(|_| Error::Overflow)?;
         self.known(store, ty)
+    }
+    fn fresh_generic_item(
+        &mut self,
+        store: &mut Store,
+        templates: &Templates,
+        item: GenericItem,
+        children: &[TermId],
+        next: &mut u32,
+    ) -> Result<TermId, Error> {
+        let GenericItem {
+            item,
+            arguments: args,
+            depth,
+        } = item;
+        let template = templates.get(item).ok_or(Error::InvalidIdentity)?;
+        let parameters = templates
+            .generic_parameters(item)
+            .ok_or(Error::InvalidIdentity)?;
+        let mut types = children.iter();
+        let mut arguments = Vec::new();
+        let mut regions = Vec::new();
+        let mut bindings = Vec::new();
+        let count = self.slots(args)?.len();
+        self.account_work(count)?;
+        for index in 0..count {
+            let argument = match self.slots(args)?[index] {
+                Slot::Lifetime(region) => {
+                    let region = fresh(region, depth, next)?;
+                    regions.push(region);
+                    Argument::Lifetime(region)
+                }
+                Slot::Type => Argument::Type(*types.next().ok_or(Error::InvalidIdentity)?),
+                Slot::Const(id) => Argument::Const(id),
+            };
+            if !matches!(argument, Argument::Lifetime(_)) {
+                let parameter = *parameters
+                    .get(bindings.len())
+                    .ok_or(Error::InvalidIdentity)?;
+                bindings.push((parameter, argument));
+            }
+            arguments.push(argument);
+        }
+        if regions.len() != template.parameters as usize
+            || bindings.len() != parameters.len()
+            || types.next().is_some()
+        {
+            return Err(Error::InvalidIdentity);
+        }
+        let mut bound = Bound::new(regions);
+        let signature = bound
+            .apply(store, template.signature)
+            .map_err(|_| Error::InvalidIdentity)?;
+        self.account_work(bound.steps)?;
+        let signature = self.instantiate(store, signature, &bindings)?;
+        self.function_item(item, signature, &arguments)
     }
 }
 

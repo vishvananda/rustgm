@@ -122,15 +122,13 @@ fn lifetime_binding_does_not_renumber_rigid_parameter_declarations() -> Result<(
 }
 
 #[test]
-fn unfinished_instantiation_and_body_proofs_remain_explicit_boundaries() -> Result<(), String> {
-    for source in ["fn f<T>(){}fn g(){f::<u8>();}", "fn f<T>(){}fn g(){f();}"] {
-        let Err(message) = semantic::analyze(source) else {
-            return Err("accepted an uninstantiated generic function".into());
-        };
-        assert!(message.contains("instance inference"), "{message}");
-    }
+fn unsolved_arguments_and_body_proofs_remain_explicit_boundaries() -> Result<(), String> {
+    let Err(message) = semantic::analyze("fn f<T>(){}fn g(){f();}") else {
+        return Err("accepted an unconstrained generic argument".into());
+    };
+    assert!(message.contains("type annotations needed"), "{message}");
     // Type inspection is not permission to erase a generic body or its drop work.
-    let (report, facts) = semantic::analyze("fn f<T>(x:T)->T{x}")?;
+    let (report, facts) = semantic::analyze("fn f<T>(x:T)->T{x}fn run()->u8{f::<u8>(3)}")?;
     let Err(error) = rustgm::body::build(&report, &facts) else {
         return Err("constructed an unproved generic body".into());
     };

@@ -1,6 +1,7 @@
 //! Generic declaration environments are elaborated once by the declaration worklist.
 mod arguments;
 mod constants;
+mod functions;
 use super::{
     Checker, DefId, Error, GenericFlavor, ItemId, Kind, NodeKey, State, Type, TypeId, Work, regions,
 };

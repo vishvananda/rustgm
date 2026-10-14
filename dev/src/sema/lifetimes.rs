@@ -7,6 +7,7 @@ use crate::{
 };
 use std::collections::{HashMap, hash_map::Entry};
 
+#[derive(Clone)]
 pub struct FunctionRegions {
     /// All source/body parameter slots; the callable type may omit unused slots.
     pub total: u32,

@@ -460,3 +460,113 @@ similar. Receipts and immutable input/binary/source hashes are recorded in
 `functions-v2-perf-results.json`, `functions-v2-perf-jobs.json`,
 `functions-v2-source-sha256.json` and the linked per-input `obj/perf/` records.
 The production source hashes and release binary are rechecked before publication.
+
+### Function-call type and const inference
+
+Function value paths now consume arguments elaborated by the declaration
+worklist. Omitted slots and `_` introduce body-local inference variables;
+explicit arguments reuse typed annotations and scalar constant facts. Type
+holes inside an argument remain in the same inference graph. Function signatures
+are instantiated from their checked templates, using rigid parameter identities
+rather than assuming compact argument positions equal declaration indices.
+The existing argument traversal publishes a generic callable template at its
+first function-value use and reuses it afterward. Unused generic declarations
+still have their bodies checked; they do not pay for an unneeded callable
+catalog entry. Existing early-lifetime template publication is preserved.
+Early lifetime arguments precede the compact type/const arguments in function
+item identity; late lifetimes belong only to the callable binder.
+
+The inference context allocates generic argument and const storage on demand.
+Const variables retain a fixed scalar type, use path-compressed union/find,
+and have no numeric fallback. Array constraints can infer their lengths while
+preserving a caller's rigid const parameter. A known length exposes the existing
+fixed-array shape for indexing and unsizing. Mixed nominal/item argument lists
+retain type arguments as graph edges, so occurs checks and final resolution
+also visit parameters erased from a signature. All arguments contribute to
+canonical function-item identity.
+
+Region substitution over unresolved graphs preserves type and const variables
+and respects nested callable binders. Instantiation receives arguments already
+expressed in the destination body context; caller universals are normalized to
+free region identities first. Freshening an inferred function item freshens each
+argument position once and rebuilds its signature from the template. It cannot
+freshen the signature independently and lose its connection to those arguments.
+Distinct formal parameters remain distinct positions even if their written
+types share one canonical identity. Const inference variables remain shared
+across freshened uses of the same local item.
+
+A non-binding graph comparison detects forced differences before joining
+function items. Different instances can reify to one compatible function pointer,
+including instances whose differing type/const arguments are absent from their
+signatures. Unknown arguments remain unconstrained by this inspection; a
+non-mismatch is not a proof of equality. Ordinary lifetime-only item joins retain
+their existing path. Final argument checks enforce implicit Sized requirements,
+including erased arguments. Type views render mixed argument kinds and scalar
+bits deterministically; the old lifetime-only vocabulary remains unchanged.
+
+Source controls cover argument/result inference, later calls through locals,
+explicit and partial arguments, expected function pointers, independent uses,
+recursive generic calls, const forwarding, early/late lifetimes, borrowed type
+arguments, returned function items, array lengths, indexing, unsizing and erased
+instance coercions. They independently qualify 30 accepted and 14 rejected
+programs against pinned rustc. Typed tests additionally exercise occurs checks,
+const type/value conflicts, unresolved consts, catalog owner/order validation,
+unknown-preserving binder substitution, signature/argument coupling, and a
+shared 4,096-level template graph. The CLI test checks mixed-argument output,
+determinism and agreement with count mode.
+
+This remains a **type-checking checkpoint**. Source trait bounds, generic nominal
+fields, symbolic ownership/lifetime/destruction proofs, demanded instances and
+executable generic lowering remain required. The CFG boundary still rejects
+parameterized bodies, even when unused, until those proofs and transformations
+exist. Const-expression evaluation retains the alias checkpoint's limitations;
+symbolic array indexing still needs later body support. PA18–PA21 remain planned,
+and no course oracle is regenerated for these maintainer-only controls.
+
+The final validation passes 572 frontend tests (nine native tests explicitly
+ignored by the default suite), all 3,297 active course cases, 57 focused release
+invariants, the full independent rustc checks and all nine explicit native
+maintainer tests. Rustfmt, Clippy all/pedantic, the 378-file architecture audit,
+25 harness tests, assignment discovery and pinned upstream/reference verification
+pass. Logs in `obj/pa18-work/` are `inference-full-v3.log`,
+`inference-independent-v2.log` and `inference-release-v2.log`.
+
+The first inference candidate retained 432 performance observations. A focused
+60-observation repeat confirmed roughly 5–6% extra checking time for two large
+unused-generic workloads. That exposed eager callable-catalog construction;
+the final implementation defers the new entries until an actual function-value
+use. The final comparison retains another 540 observations, including direct
+prototype/final comparisons. All earlier observations remain available.
+
+Final measurements use immutable binaries and inputs at 256/1,024/4,096
+functions, CPU 2, two warmups, four A/A observations and three paired ABBA
+blocks per input. Existing LowIR and generic-body programs compare with
+`caa7cc4`. New generic-call workloads and the catalog-demand comparisons use
+the first inference candidate. Every pair has matching full views and count
+outputs. No own builds or tests overlap these measurements.
+
+At 4,096 functions, the final comparisons with `caa7cc4` are:
+
+| Workload | Baseline ms | Final ms | Baseline RSS KiB | Final RSS KiB |
+| --- | ---: | ---: | ---: | ---: |
+| Thin-reference LowIR | 500.42 | 505.06 | 76456 | 76838 |
+| Wide-reference LowIR | 880.03 | 906.41 | 124596 | 124578 |
+| Destruction LowIR | 2608.16 | 2695.12 | 290606 | 290968 |
+| Generic identity bodies | 67.04 | 70.19 | 19846 | 19820 |
+| Generic shared-reference bodies | 91.95 | 93.89 | 24028 | 24060 |
+
+These wall-time ranges overlap and include small median increases; the shared
+host varies substantially between blocks. They do not establish a general
+speedup. Deferred catalog construction removes the unnecessary allocations:
+unused-function RSS returns near the preceding checkpoint's level. The final
+new type-call, const-call and borrowed-call workloads take 95.46, 101.05 and
+227.77 ms respectively at 4,096 functions, with approximately linear scaling
+across the measured sizes. Their prototype/final timing ranges also overlap.
+
+Raw receipts, frozen hashes and all observations are linked from
+`inference-v1-perf-results.json`, `inference-followup-v1-perf-results.json` and
+`inference-v2-perf-results.json` in `obj/pa18-work/`. The final source manifest is
+`inference-v2-source-sha256.json`; the release binary is
+`inference-candidate-v2`. Source and binary hashes are checked again before
+publication. These local measurements supplement the committed semantic tests;
+they do not activate PA18 or replace its still-required execution contract.

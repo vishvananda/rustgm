@@ -19,14 +19,49 @@ pub struct Parameter {
     pub argument: Argument,
     pub default: Option<Argument>,
 }
+#[derive(Clone, Copy)]
+pub enum SourceArgument {
+    Type(crate::resolve::unit::NodeKey),
+    Const(ConstId),
+    Infer,
+}
+pub struct FunctionUse {
+    pub lifetimes: Option<crate::syntax::ast::List>,
+    pub arguments: Vec<SourceArgument>,
+}
 #[derive(Default)]
 pub struct Generics {
     pub parameters: HashMap<DefId, Vec<Parameter>>,
     pub constants: HashMap<DefId, ConstId>,
     pub environments: HashMap<DefId, Arc<Environment>>,
+    pub function_uses: HashMap<crate::resolve::unit::NodeKey, FunctionUse>,
     substitutions: HashMap<(DefId, GenericArgs), Bound>,
 }
 impl Generics {
+    pub(super) fn parameter_ids(
+        &self,
+        store: &Store,
+        owner: DefId,
+    ) -> Result<Vec<crate::types::parameters::ParameterId>, &'static str> {
+        let mut ids = Vec::new();
+        for parameter in self.parameters.get(&owner).into_iter().flatten() {
+            let id = match parameter.argument {
+                Argument::Type(ty) => match store.kind(ty) {
+                    Some(Kind::Parameter(id)) => id,
+                    _ => return Err("missing rigid type parameter"),
+                },
+                Argument::Const(id) => match store.const_kind(id) {
+                    Some(crate::types::arguments::ConstKind::Parameter(id)) => id,
+                    _ => return Err("missing rigid const parameter"),
+                },
+                Argument::Lifetime(_) => {
+                    return Err("callable metadata contains a late lifetime slot");
+                }
+            };
+            ids.push(id);
+        }
+        Ok(ids)
+    }
     /// Until generic move/drop plans exist, symbolic bodies must not enter the
     /// concrete CFG builder, which can discard temporaries that appear dropless.
     /// # Errors
