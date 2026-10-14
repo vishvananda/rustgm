@@ -7,6 +7,7 @@ use crate::body::{
 use std::collections::HashMap;
 
 /// Returning transfers the result before the callee's local cleanup starts.
+#[derive(Clone, Copy)]
 pub struct Release {
     pub value: ValueId,
     pub location: Location,

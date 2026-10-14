@@ -87,7 +87,7 @@ fn analyze<'a, const RECORD: bool, S: BuildHasher>(
     let mut bodies = Vec::with_capacity(program.bodies.len());
     let mut loans = Vec::with_capacity(program.bodies.len());
     let mut inspection = Vec::new();
-    let checked = run::<RECORD, _>(environment, contracts, program, |owned, proof| {
+    let checked = run::<RECORD, _>(environment, contracts, program, None, |owned, proof| {
         bodies.push(owned);
         loans.push(proof.analysis);
         inspection.extend(proof.inspection);
@@ -107,12 +107,32 @@ pub fn verify<'a, S: BuildHasher>(
     contracts: &regions::Analysis,
     program: &'a Program,
 ) -> Result<Checked<'a>, Error> {
-    run::<false, _>(environment, contracts, program, |_, _| {})
+    run::<false, _>(environment, contracts, program, None, |_, _| {})
+}
+/// Verify concrete instances against the exact templates proved before substitution.
+/// Contracts must be proved in program order, each in its own substituted lifetime
+/// context. Every instance also requires its original template's complete proof.
+/// # Errors
+/// Rejects incomplete or foreign specializations and all ordinary executable proof errors.
+pub fn verify_instances<'a, S: BuildHasher>(
+    environment: &mut Environment<'_, S>,
+    contracts: &regions::Analysis,
+    program: &'a Program,
+    templates: &super::templates::Checked<'_>,
+) -> Result<Checked<'a>, Error> {
+    if contracts.bodies.len() != program.bodies.len() {
+        return Err(Error {
+            node: None,
+            message: "instance proofs have different body coverage".into(),
+        });
+    }
+    run::<false, _>(environment, contracts, program, Some(templates), |_, _| {})
 }
 fn run<'a, const RECORD: bool, S: BuildHasher>(
     environment: &mut Environment<'_, S>,
     contracts: &regions::Analysis,
     program: &'a Program,
+    templates: Option<&super::templates::Checked<'_>>,
     mut record: impl FnMut(ownership::BodyFacts, loans::Report),
 ) -> Result<Checked<'a>, Error> {
     require_resolved_promotions(program)?;
@@ -122,10 +142,30 @@ fn run<'a, const RECORD: bool, S: BuildHasher>(
             message: crate::body::drops::PENDING_MESSAGE.into(),
         });
     }
-    let by_source: HashMap<_, _> = contracts.bodies.iter().map(|b| (b.source, b)).collect();
+    let by_source: HashMap<_, _> = if templates.is_none() {
+        contracts.bodies.iter().map(|b| (b.source, b)).collect()
+    } else {
+        HashMap::new()
+    };
     let mut components = LiveRegions::default();
-    for body in &program.bodies {
-        let contract = by_source.get(&body.source).ok_or_else(|| Error {
+    for (ordinal, body) in program.bodies.iter().enumerate() {
+        let contract = if let Some(templates) = templates {
+            if body.instance.is_some() && templates.contract(body).is_none() {
+                return Err(Error {
+                    node: Some(body.source),
+                    message: "instance has no checked original template".into(),
+                });
+            }
+            contracts
+                .bodies
+                .get(ordinal)
+                .filter(|c| c.source == body.source && c.instance == body.instance)
+        } else if body.instance.is_some() {
+            None
+        } else {
+            by_source.get(&body.source).copied()
+        }
+        .ok_or_else(|| Error {
             node: Some(body.source),
             message: "body has no lifetime proof".into(),
         })?;
@@ -191,6 +231,12 @@ pub fn verify_destruction<'a, S: BuildHasher>(
     let by_source: HashMap<_, _> = contracts.bodies.iter().map(|b| (b.source, b)).collect();
     let mut plans = Vec::with_capacity(program.bodies.len());
     for body in &program.bodies {
+        if body.instance.is_some() {
+            return Err(error(
+                Some(body.source),
+                "specialized destruction requires checked instance contracts",
+            ));
+        }
         let contract = by_source
             .get(&body.source)
             .ok_or_else(|| error(Some(body.source), "body has no lifetime proof"))?;

@@ -22,6 +22,7 @@ pub struct ProjectionId(pub u32);
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct GuardId(pub u32);
 /// A guard protects tested places shallowly and its selected binding views deeply.
+#[derive(Clone, Copy)]
 pub struct Guard {
     pub tested_start: u32,
     pub tested_end: u32,
@@ -78,6 +79,7 @@ pub enum ProjectionKind {
         end: u64,
     },
 }
+#[derive(Clone, Copy)]
 pub struct Projection {
     pub base: Place,
     pub kind: ProjectionKind,
@@ -91,6 +93,7 @@ pub enum LocalKind {
     /// Internal shared view; native storage holds an address, never an owned snapshot.
     Guard(GuardId),
 }
+#[derive(Clone, Copy)]
 pub struct Local {
     /// Lexical endpoint; explicit `StorageEnd` can additionally close synthetic locals.
     pub scope: super::scopes::Id,
@@ -174,12 +177,14 @@ pub enum BorrowKind {
     Immediate,
     TwoPhase,
 }
+#[derive(Clone, Copy)]
 pub struct Value {
     pub ty: TypeId,
     pub kind: Rvalue,
 }
 /// A value used as a temporary place. Its scope belongs to this use's syntax,
 /// which can differ from the expression that originally produced the value.
+#[derive(Clone, Copy)]
 pub struct Temporary {
     pub lifetime: super::scopes::Lifetime,
     pub value: ValueId,
@@ -231,6 +236,7 @@ impl Action {
         }
     }
 }
+#[derive(Clone, Copy)]
 pub struct Statement {
     pub source: NodeId,
     pub action: Action,
@@ -251,6 +257,7 @@ pub enum Terminator {
     Return(ValueId),
     Unreachable,
 }
+#[derive(Clone, Copy)]
 pub struct Block {
     pub start: u32,
     pub end: u32,
@@ -271,6 +278,8 @@ pub enum Owner {
     },
 }
 pub struct Body {
+    /// Concrete specialization identity; diagnostics keep the original source owner.
+    pub instance: Option<crate::types::instance::Instance>,
     /// Destructible rvalues, including values never materialized as borrowed places.
     pub owned: Option<Box<super::drops::values::Facts>>,
     pub storage: Option<super::storage::Facts>,

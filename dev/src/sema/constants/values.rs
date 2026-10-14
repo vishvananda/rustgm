@@ -33,7 +33,7 @@ pub struct Location {
 #[derive(Clone, Copy)]
 pub enum View {
     Scalar(Scalar),
-    Function(DefId),
+    Function(crate::types::instance::Instance),
     Reference(LocationId),
     Text(crate::sema::text::Id),
     Bytes(crate::sema::text::Id),
@@ -61,7 +61,7 @@ impl<'a> Reader<'a> {
         self.facts.constant_values.get(&id).copied().map(Constant)
     }
     /// # Errors
-    /// Rejects missing arena entries or a constructor without an evaluated value.
+    /// Rejects missing or malformed constant arena entries.
     pub fn view(self, constant: Constant) -> Result<View, &'static str> {
         Ok(match constant.0 {
             Value::Scalar(value) => View::Scalar(value),
@@ -86,7 +86,6 @@ impl<'a> Reader<'a> {
                     }
                 }
             }
-            Value::Constructor(_) => return Err("unevaluated constant constructor"),
         })
     }
     /// A projected location retains its original base; equal values are not
@@ -175,11 +174,11 @@ impl Constant {
         Self(Value::Scalar(value))
     }
     #[must_use]
-    pub const fn function(id: DefId) -> Self {
+    pub const fn function(id: crate::types::instance::Instance) -> Self {
         Self(Value::Function(id))
     }
     #[must_use]
-    pub const fn as_function(self) -> Option<DefId> {
+    pub const fn as_function(self) -> Option<crate::types::instance::Instance> {
         if let Value::Function(id) = self.0 {
             Some(id)
         } else {

@@ -8,15 +8,62 @@ use crate::types::{
 use std::collections::HashMap;
 
 enum Arguments {
-    All(Vec<Argument>),
+    All {
+        owner: ItemId,
+        values: Vec<Argument>,
+    },
+    Mapped(HashMap<ParameterId, Argument>),
     Single(ParameterId, Argument),
 }
 pub(super) struct Bindings {
-    owner: ItemId,
     arguments: Arguments,
     shifts: HashMap<u16, Bound>,
 }
 impl Bound {
+    /// Replace explicit parameter identities simultaneously, preserving lifetime binders.
+    /// Callable argument order need not match declaration slots containing late lifetimes.
+    /// # Errors
+    /// Rejects duplicate/invalid parameters, argument kind mismatches and excessive work.
+    pub fn parameters(
+        store: &Store,
+        arguments: &[(ParameterId, Argument)],
+    ) -> Result<Self, &'static str> {
+        let mut bound = Self::parameters_captured(store, arguments, Vec::new())?;
+        bound.action = Action::Shift(0);
+        Ok(bound)
+    }
+    /// Replace explicit parameters while removing a separately supplied captured binder.
+    /// # Errors
+    /// Reports the same invalid mappings as `parameters` and oversized lifetime mappings.
+    pub fn parameters_captured(
+        store: &Store,
+        arguments: &[(ParameterId, Argument)],
+        regions: Vec<crate::types::RegionId>,
+    ) -> Result<Self, &'static str> {
+        let mut bound = Self::new(regions);
+        bound.account_arguments(arguments.len().saturating_add(bound.arguments.len()))?;
+        let mut mappings = HashMap::with_capacity(arguments.len());
+        for &(id, argument) in arguments {
+            let parameter = store
+                .parameter(id)
+                .ok_or("invalid substitution parameter")?;
+            let valid = match (parameter.kind, argument) {
+                (ParameterKind::Type { .. }, Argument::Type(ty)) => store.kind(ty).is_some(),
+                (ParameterKind::Const { ty }, Argument::Const(id)) => {
+                    store.const_type(id) == Some(ty)
+                }
+                _ => false,
+            };
+            if !valid || mappings.insert(id, argument).is_some() {
+                return Err("invalid or duplicate parameter substitution");
+            }
+        }
+        bound.parameters = Some(Box::new(Bindings {
+            arguments: Arguments::Mapped(mappings),
+            shifts: HashMap::new(),
+        }));
+        Ok(bound)
+    }
     /// Start an append-only argument environment for resolving declaration defaults.
     /// Successful substitutions depend only on existing slots, so their cached
     /// results remain valid when later slots are appended. Inserted arguments are
@@ -25,8 +72,10 @@ impl Bound {
     pub fn prefix(owner: ItemId) -> Self {
         let mut substitution = Self::new(Vec::new());
         substitution.parameters = Some(Box::new(Bindings {
-            owner,
-            arguments: Arguments::All(Vec::new()),
+            arguments: Arguments::All {
+                owner,
+                values: Vec::new(),
+            },
             shifts: HashMap::new(),
         }));
         substitution
@@ -41,7 +90,10 @@ impl Bound {
             .parameters
             .as_ref()
             .ok_or("missing parameter substitution")?;
-        let Arguments::All(arguments) = &bindings.arguments else {
+        let Arguments::All {
+            values: arguments, ..
+        } = &bindings.arguments
+        else {
             return Err("single-parameter substitution cannot be extended");
         };
         let valid = match argument {
@@ -57,7 +109,10 @@ impl Bound {
             .parameters
             .as_mut()
             .ok_or("missing parameter substitution")?;
-        let Arguments::All(arguments) = &mut bindings.arguments else {
+        let Arguments::All {
+            values: arguments, ..
+        } = &mut bindings.arguments
+        else {
             return Err("single-parameter substitution cannot be extended");
         };
         arguments.push(argument);
@@ -109,8 +164,10 @@ impl Bound {
             .collect();
         let mut substitution = Self::new(regions);
         substitution.parameters = Some(Box::new(Bindings {
-            owner,
-            arguments: Arguments::All(arguments),
+            arguments: Arguments::All {
+                owner,
+                values: arguments,
+            },
             shifts: HashMap::new(),
         }));
         Ok(substitution)
@@ -156,7 +213,6 @@ impl Bound {
         let mut substitution = Self::new(Vec::new());
         substitution.action = Action::Shift(0);
         substitution.parameters = Some(Box::new(Bindings {
-            owner: parameter.owner,
             arguments: Arguments::Single(id, argument),
             shifts: HashMap::new(),
         }));
@@ -205,16 +261,17 @@ impl Bound {
         let Some(bindings) = &self.parameters else {
             return Ok(None);
         };
-        let arguments = match &bindings.arguments {
+        let (owner, arguments) = match &bindings.arguments {
             Arguments::Single(parameter, argument) => {
                 return Ok((*parameter == id).then_some(*argument));
             }
-            Arguments::All(arguments) => arguments,
+            Arguments::Mapped(arguments) => return Ok(arguments.get(&id).copied()),
+            Arguments::All { owner, values } => (*owner, values),
         };
         let parameter = store
             .parameter(id)
             .ok_or("invalid substitution parameter")?;
-        if parameter.owner != bindings.owner {
+        if parameter.owner != owner {
             return Ok(None);
         }
         let argument = *arguments

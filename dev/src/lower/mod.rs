@@ -7,6 +7,7 @@ mod cleanup;
 mod context;
 mod data;
 mod function;
+pub mod instances;
 mod remainder;
 
 use crate::{

@@ -349,6 +349,17 @@ impl Checker<'_> {
             .map_err(|e| self.error(node, e))
     }
     fn shape_equation(&mut self, node: NodeId, left: TermId, right: TermId) -> Result<(), Error> {
+        // Generic holes also occur beneath callable binders. Once an argument
+        // solves such a hole, caller universals must remain free there rather
+        // than becoming lifetimes owned by the nested callable.
+        let (left, right) = if self.body_binders != 0 && !self.call_types.generic.is_empty() {
+            (
+                self.alias_argument(node, left)?,
+                self.alias_argument(node, right)?,
+            )
+        } else {
+            (left, right)
+        };
         self.infer
             .equate_shape(&self.facts.types, left, right)
             .map_err(|e| self.error(node, e))

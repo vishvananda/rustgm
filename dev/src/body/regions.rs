@@ -33,6 +33,7 @@ pub struct Obligation {
     pub source: NodeKey,
     pub kind: Kind,
 }
+#[derive(Clone)]
 pub struct Contract {
     pub source: NodeKey,
     pub signature: Option<TypeId>,

@@ -94,8 +94,22 @@ impl Queries<'_> {
                 callee,
                 arguments,
             } => {
-                if !matches!(self.value(Query::Node(callee))?, Value::Constructor(selected) if selected == variant)
-                {
+                let selected = match self.value(Query::Node(callee))? {
+                    Value::Function(instance) => {
+                        match self.typing.facts.types.kind(instance.ty()) {
+                            Some(Type::FunctionItem { item, .. }) => self
+                                .typing
+                                .facts
+                                .members
+                                .constructors
+                                .get(&DefId(item.0))
+                                .copied(),
+                            _ => None,
+                        }
+                    }
+                    _ => None,
+                };
+                if selected != Some(variant) {
                     return Err(self.error(
                         Query::Node(key),
                         "constant callee differs from its selected constructor",

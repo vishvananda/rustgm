@@ -100,6 +100,25 @@ fn needs_analysis(body: &Body) -> bool {
             .iter()
             .any(|v| matches!(v.kind, Rvalue::Borrow { .. }))
 }
+/// Complete one new instance without rescanning previously prepared bodies.
+/// # Errors
+/// Reports the same constant, eligibility and work-limit failures as `analyze`.
+pub fn instance(
+    report: &Report,
+    facts: &mut Declarations,
+    body: &mut Body,
+    destruction: &super::drops::Requirements,
+) -> Result<(), Diagnostic> {
+    if !needs_analysis(body) {
+        return Ok(());
+    }
+    analyze_body(
+        report,
+        &mut Evaluator::new(report, facts),
+        body,
+        Some(&destruction.values),
+    )
+}
 fn analyze_body(
     report: &Report,
     evaluator: &mut Evaluator<'_>,

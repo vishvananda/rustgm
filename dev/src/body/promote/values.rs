@@ -95,7 +95,15 @@ impl Engine<'_, '_> {
                     .get(id.0 as usize)
                     .ok_or("missing promotion scalar")?,
             ),
-            Rvalue::Function(definition) => Constant::function(definition),
+            Rvalue::Function(definition) => {
+                let store = &self.evaluator.facts().types;
+                let instance = crate::types::instance::Instance::new(store, ty)?;
+                if !matches!(store.kind(ty), Some(Type::FunctionItem { item, .. }) if item.0 == definition.0)
+                {
+                    return Err("promotion function differs from selected item".into());
+                }
+                Constant::function(instance)
+            }
             Rvalue::Constant(definition) => self
                 .evaluator
                 .definition(definition)
@@ -216,7 +224,9 @@ impl Engine<'_, '_> {
         let Some(value) = self.ready(Key::Value(callee))? else {
             return Ok(None);
         };
-        if value.value.constant().and_then(Constant::as_function) != Some(definition) {
+        let selected = value.value.constant().and_then(Constant::as_function);
+        if !matches!(selected.and_then(|i| self.evaluator.facts().types.kind(i.ty())), Some(Type::FunctionItem { item, .. }) if item.0 == definition.0)
+        {
             return Err("promotion callee differs from selected constructor".into());
         }
         self.fields(arguments, Some(variant))

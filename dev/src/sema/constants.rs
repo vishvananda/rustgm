@@ -36,12 +36,11 @@ use std::collections::{HashMap, HashSet};
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub(super) enum Value {
     Scalar(Scalar),
-    Function(DefId),
+    Function(crate::types::instance::Instance),
     Reference(references::Id),
     Text(super::text::Id),
     Bytes(super::text::Id),
     Variant(VariantId),
-    Constructor(VariantId),
     Product(products::Id),
 }
 impl Value {
@@ -51,7 +50,6 @@ impl Value {
             Self::Reference(_)
             | Self::Function(_)
             | Self::Variant(_)
-            | Self::Constructor(_)
             | Self::Product(_)
             | Self::Text(_)
             | Self::Bytes(_) => Err("constant requires a scalar value"),
@@ -660,20 +658,13 @@ impl Queries<'_> {
         if matches!(
             Declarations::kind(self.report, key),
             Kind::Name(_) | Kind::Path { .. }
-        ) && let Some(Type::FunctionItem { item, .. }) =
-            facts.ty.and_then(|ty| self.typing.facts.types.kind(ty))
+        ) && let Some(ty) = facts.ty
+            && let Some(Type::FunctionItem { item, .. }) = self.typing.facts.types.kind(ty)
             && facts.reference == Some(Target::Definition(DefId(item.0)))
         {
-            let value = self
-                .typing
-                .facts
-                .members
-                .constructors
-                .get(&DefId(item.0))
-                .map_or(Value::Function(DefId(item.0)), |&variant| {
-                    Value::Constructor(variant)
-                });
-            return Ok(Expression::Value(value));
+            let instance = crate::types::instance::Instance::new(&self.typing.facts.types, ty)
+                .map_err(|e| self.error(Query::Node(key), e))?;
+            return Ok(Expression::Value(Value::Function(instance)));
         }
         if let Some(expression) = self.constructor_expression(key)? {
             return Ok(Expression::Constructor(expression));

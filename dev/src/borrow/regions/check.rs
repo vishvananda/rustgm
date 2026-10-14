@@ -10,6 +10,7 @@ use crate::{
 
 pub struct Body {
     pub source: NodeKey,
+    pub instance: Option<crate::types::instance::Instance>,
     pub solution: graph::Solution,
     pub identities: super::constraints::Identities,
 }
@@ -108,12 +109,50 @@ pub fn check_templates(
     });
     prove(types, variances, contracts, inputs)
 }
+/// Prove an explicitly paired contract per body. Instances may share source keys,
+/// but every pair has its own universal/variable context and solved constraints.
+/// This remains a region proof; ownership, storage and loans are checked separately.
+/// # Errors
+/// Rejects mismatched coverage, invalid contracts/provenance and resource limits.
+pub fn check_ordered(
+    types: &Store,
+    variances: &Variances,
+    contracts: &Contracts<'_>,
+    program: &crate::body::ir::Program,
+) -> Result<Analysis, Error> {
+    if contracts.bodies.len() != program.bodies.len() {
+        return Err(Error {
+            source: None,
+            message: "instance contracts have different body coverage".into(),
+        });
+    }
+    let inputs = contracts
+        .bodies
+        .iter()
+        .zip(&program.bodies)
+        .map(|(input, cfg)| {
+            if input.source != cfg.source {
+                return Err(Error {
+                    source: Some(cfg.source),
+                    message: "instance contract does not match its body".into(),
+                });
+            }
+            Ok((input, Some(cfg)))
+        });
+    prove(types, variances, contracts, inputs)
+}
 fn run(
     types: &Store,
     variances: &Variances,
     contracts: &Contracts<'_>,
     program: Option<&crate::body::ir::Program>,
 ) -> Result<Analysis, Error> {
+    if let Some(body) = program.and_then(|p| p.bodies.iter().find(|b| b.instance.is_some())) {
+        return Err(Error {
+            source: Some(body.source),
+            message: "specialized bodies require ordered instance contracts".into(),
+        });
+    }
     let cfgs: std::collections::HashMap<_, _> = program
         .into_iter()
         .flat_map(|p| &p.bodies)
@@ -250,6 +289,7 @@ fn body(
     })?;
     Ok(Body {
         source: input.source,
+        instance: cfg.and_then(|body| body.instance),
         solution: proof.solution,
         identities: proof.identities,
     })

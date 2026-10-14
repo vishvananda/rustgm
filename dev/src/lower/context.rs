@@ -18,7 +18,7 @@ use crate::{
         values::Reader,
     },
     syntax::ast::NodeId,
-    types::{Kind, Primitive, Store, TypeId, aggregate::Definitions},
+    types::{Kind, Primitive, Store, TypeId, aggregate::Definitions, instance::Instance},
 };
 use std::collections::HashMap;
 
@@ -35,9 +35,10 @@ pub(super) struct Context<'a> {
     pub output: Program,
     pub data: data::Storage,
     body_indices: Vec<Option<usize>>,
+    instance_indices: HashMap<Instance, usize>,
     symbols: Vec<Option<SymbolId>>,
     signatures: HashMap<TypeId, SignatureId>,
-    queue: Vec<DefId>,
+    queue: Vec<usize>,
     pub drop_queue: Vec<crate::body::drops::glue::Id>,
     pub drop_symbols: Vec<Option<SymbolId>>,
     abort: Option<SymbolId>,
@@ -112,7 +113,8 @@ impl<'a> Context<'a> {
             output: Program::default(),
             data: data::Storage::default(),
             body_indices: vec![None; size],
-            symbols: vec![None; size],
+            instance_indices: HashMap::new(),
+            symbols: vec![None; bodies.bodies.len()],
             signatures: HashMap::new(),
             queue: Vec::new(),
             drop_queue: Vec::new(),
@@ -120,12 +122,11 @@ impl<'a> Context<'a> {
             abort: None,
             remainders: [None; 2],
         };
-        for (index, body) in bodies.bodies.iter().enumerate() {
-            if let Owner::Function { definition, .. } = body.owner {
-                context.body_indices[definition.0 as usize] = Some(index);
-            }
-        }
-        let root = context.demand(entry).map_err(|message| Error {
+        context.index_bodies().map_err(|message| Error {
+            node: source,
+            message,
+        })?;
+        let root = context.demand_definition(entry).map_err(|message| Error {
             node: source,
             message,
         })?;
@@ -159,18 +160,14 @@ impl<'a> Context<'a> {
                 next_data += 1;
                 continue;
             }
-            let definition = context.queue[next];
-            let index = context.body_indices[definition.0 as usize].ok_or(Error {
-                node: source,
-                message: "missing demanded body",
-            })?;
-            let symbol = context.symbols[definition.0 as usize].ok_or(Error {
+            let index = context.queue[next];
+            let symbol = context.symbols[index].ok_or(Error {
                 node: source,
                 message: "missing demanded symbol",
             })?;
             let body = &bodies.bodies[index];
             let plan = destruction.and_then(|proof| proof.plan(index));
-            let lowered = function::lower(&mut context, body, plan)?;
+            let lowered = function::lower(&mut context, index, body, plan)?;
             context.output.symbols[symbol.0 as usize].body = Some(lowered);
             next += 1;
         }
@@ -179,6 +176,35 @@ impl<'a> Context<'a> {
             message,
         })?;
         Ok(context.output)
+    }
+    fn index_bodies(&mut self) -> Result<(), &'static str> {
+        for (index, body) in self.bodies.bodies.iter().enumerate() {
+            let Owner::Function {
+                definition,
+                signature,
+            } = body.owner
+            else {
+                if body.instance.is_some() {
+                    return Err("non-function body has a callable instance");
+                }
+                continue;
+            };
+            if let Some(instance) = body.instance {
+                if !matches!(self.types.kind(instance.ty()), Some(Kind::FunctionItem { item, signature: selected, .. }) if item.0 == definition.0 && selected == signature)
+                {
+                    return Err("specialized body differs from its callable instance");
+                }
+                if self.instance_indices.insert(instance, index).is_some() {
+                    return Err("duplicate specialized callable body");
+                }
+            } else if self.body_indices[definition.0 as usize]
+                .replace(index)
+                .is_some()
+            {
+                return Err("duplicate function body");
+            }
+        }
+        Ok(())
     }
     pub fn signature(&mut self, ty: TypeId) -> Result<SignatureId, &'static str> {
         if let Some(id) = self.signatures.get(&ty) {
@@ -262,16 +288,23 @@ impl<'a> Context<'a> {
         }
         representation(self.types, ty).map(Representation::Scalar)
     }
-    pub fn demand(&mut self, definition: DefId) -> Result<SymbolId, &'static str> {
-        if let Some(Some(symbol)) = self.symbols.get(definition.0 as usize) {
-            return Ok(*symbol);
-        }
-        let index = self
-            .body_indices
+    pub fn demand_definition(&mut self, definition: DefId) -> Result<SymbolId, &'static str> {
+        let ty = self
+            .definitions
             .get(definition.0 as usize)
             .copied()
-            .flatten();
-        let Some(index) = index else {
+            .flatten()
+            .ok_or("missing demanded function definition")?;
+        self.demand(Instance::new(self.types, ty)?)
+    }
+    pub fn demand(&mut self, instance: Instance) -> Result<SymbolId, &'static str> {
+        let Some(Kind::FunctionItem { item, .. }) = self.types.kind(instance.ty()) else {
+            return Err("invalid demanded callable instance");
+        };
+        let definition = DefId(item.0);
+        let index = if let Some(&index) = self.instance_indices.get(&instance) {
+            index
+        } else {
             if self
                 .definitions
                 .get(definition.0 as usize)
@@ -281,17 +314,27 @@ impl<'a> Context<'a> {
             {
                 return Err("generic callable execution requires demanded instances");
             }
-            return Err("missing called function body");
+            self.body_indices
+                .get(definition.0 as usize)
+                .copied()
+                .flatten()
+                .ok_or("missing called function body")?
         };
+        if let Some(symbol) = self.symbols[index] {
+            return Ok(symbol);
+        }
         let Owner::Function { signature, .. } = self.bodies.bodies[index].owner else {
             return Err("call target is not a function");
         };
         let signature = self.signature(signature)?;
-        let symbol = self
-            .output
-            .declare(format!("rg.{}", definition.0), signature, false)?;
-        self.symbols[definition.0 as usize] = Some(symbol);
-        self.queue.push(definition);
+        let name = if self.bodies.bodies[index].instance.is_some() {
+            format!("rg.{}.i{index}", definition.0)
+        } else {
+            format!("rg.{}", definition.0)
+        };
+        let symbol = self.output.declare(name, signature, false)?;
+        self.symbols[index] = Some(symbol);
+        self.queue.push(index);
         Ok(symbol)
     }
     pub fn abort(&mut self) -> Result<SymbolId, &'static str> {

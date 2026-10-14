@@ -61,6 +61,21 @@ pub fn check_cases(
     suite: &str,
     cases: &[(&str, &str, bool)],
 ) -> Result<(), Box<dyn std::error::Error>> {
+    check_cases_with(suite, cases, |_, path| {
+        compile(
+            "frontend",
+            Command::new(env!("CARGO_BIN_EXE_rustgm"))
+                .arg("--emit-lowir")
+                .arg(path)
+                .output()?,
+        )
+    })
+}
+pub fn check_cases_with(
+    suite: &str,
+    cases: &[(&str, &str, bool)],
+    frontend: impl Fn(&str, &Path) -> Result<Vec<u8>, Box<dyn std::error::Error>>,
+) -> Result<(), Box<dyn std::error::Error>> {
     let root = Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()
         .ok_or("root")?;
@@ -68,7 +83,8 @@ pub fn check_cases(
     std::fs::create_dir_all(&folder)?;
     for &(name, body, panic) in cases {
         let path = folder.join(format!("{name}.rs"));
-        std::fs::write(&path, format!("{CHECK}{body}"))?;
+        let source = format!("{CHECK}{body}");
+        std::fs::write(&path, &source)?;
         let independent = folder.join(format!("{name}.rustc"));
         compile(
             name,
@@ -89,20 +105,8 @@ pub fn check_cases(
                 .output()?,
         )?;
         execute(name, &independent, panic, true)?;
-        let bytes = compile(
-            name,
-            Command::new(env!("CARGO_BIN_EXE_rustgm"))
-                .arg("--emit-lowir")
-                .arg(&path)
-                .output()?,
-        )?;
-        let again = compile(
-            name,
-            Command::new(env!("CARGO_BIN_EXE_rustgm"))
-                .arg("--emit-lowir")
-                .arg(&path)
-                .output()?,
-        )?;
+        let bytes = frontend(&source, &path)?;
+        let again = frontend(&source, &path)?;
         assert_eq!(bytes, again, "{name}");
         let lowir = folder.join(format!("{name}.lowir"));
         std::fs::write(&lowir, bytes)?;

@@ -1,5 +1,6 @@
 //! Substitute a template binder and its parameters without capturing nested binders.
 mod parameters;
+mod universals;
 use super::{Kind, ListId, RegionId, Store, TypeId, arguments::Argument};
 use std::collections::HashMap;
 
@@ -9,6 +10,7 @@ const WORK_LIMIT: usize = 1_000_000;
 enum Action {
     Remove,
     Shift(u16),
+    Universals(Box<universals::Mapping>),
 }
 
 /// A substitution cache belongs to one store and one argument environment.
@@ -117,8 +119,12 @@ impl Bound {
         let escaping = store
             .escaping_binders(key.0)
             .ok_or("invalid substitution type")?;
-        if escaping <= key.1
-            && !(self.parameters.is_some() && store.contains_parameters(key.0) == Some(true))
+        let closed = if matches!(self.action, Action::Universals(_)) {
+            store.has_free_regions(key.0, key.1) == Some(false)
+        } else {
+            escaping <= key.1
+        };
+        if closed && !(self.parameters.is_some() && store.contains_parameters(key.0) == Some(true))
         {
             return Ok(Some(key.0));
         }
@@ -225,7 +231,14 @@ impl Bound {
         Ok(())
     }
 
-    pub(crate) fn region(&self, region: RegionId, depth: u16) -> Result<RegionId, &'static str> {
+    pub(crate) fn region(
+        &mut self,
+        region: RegionId,
+        depth: u16,
+    ) -> Result<RegionId, &'static str> {
+        if let Action::Universals(mapping) = &mut self.action {
+            return mapping.region(region, depth);
+        }
         let Some((binder, index)) = region.bound_parts() else {
             return Ok(region);
         };
@@ -334,7 +347,8 @@ impl Bound {
             self.account_arguments(arguments.len())?;
             self.regions.clear();
             for region in arguments {
-                self.regions.push(self.region(*region, depth)?);
+                let region = self.region(*region, depth)?;
+                self.regions.push(region);
             }
             return store.intern_regions(&self.regions);
         }
@@ -342,11 +356,12 @@ impl Bound {
         self.account_arguments(arguments.len())?;
         self.generic.clear();
         for argument in arguments {
-            self.generic.push(match argument {
+            let argument = match argument {
                 Argument::Lifetime(region) => Argument::Lifetime(self.region(region, depth)?),
                 Argument::Type(ty) => Argument::Type(self.child(store, ty, depth)?),
                 Argument::Const(id) => Argument::Const(self.constant(store, id)?),
-            });
+            };
+            self.generic.push(argument);
         }
         store.intern_arguments(&self.generic)
     }

@@ -199,6 +199,23 @@ separate numerical query. A generic callable template is never an executable
 body merely because its declaration exists. Concrete lowering requires a
 demanded instance with its complete arguments and proofs.
 
+Preserve complete callable identities through function values, constants and
+promoted data. Check every generic template, including unused bodies, before
+specializing its retained CFG. Substitute parameters by their declaration
+identities; callable argument positions need not include late lifetime slots.
+Abstract lifetimes inside actual type arguments into a fresh instance proof
+context while preserving nested binders and the template's own variables.
+Pair each specialized body with its own region proof and complete instance
+identity, even when multiple bodies share an original source location.
+
+Schedule demanded instances iteratively, registering an instance before following
+its dependencies so finite recursion terminates. Bound active recursive growth
+separately from independent uses of one function. Check retained storage before
+cloning a body. Follow actual calls, function-pointer reification and typed
+constant allocations; a discarded zero-sized function item does not require its
+body. Key promoted backing storage by concrete body identity, and preserve
+runtime overflow and bounds checks when materializing its values.
+
 Derived abilities constrain type arguments even behind raw/function pointers;
 packed Clone and equality derives impose Copy bounds as well. Owned destruction follows
 instantiated fields and skips zero-length arrays. Custom Drop instead retains

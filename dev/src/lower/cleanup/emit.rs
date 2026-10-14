@@ -76,7 +76,7 @@ impl Emitter<'_, '_> {
             align: layout.align,
         };
         if let Some(method) = recipe.method {
-            let symbol = self.context.demand(method)?;
+            let symbol = self.context.demand_definition(method)?;
             let signature = self.context.output.symbols[symbol.0 as usize].signature;
             let pointer = base.pointer(self.builder)?;
             self.builder

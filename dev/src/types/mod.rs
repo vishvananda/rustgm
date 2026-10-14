@@ -7,6 +7,7 @@ pub mod copy;
 pub mod destruction;
 pub mod equality;
 pub mod infer;
+pub mod instance;
 pub mod length;
 pub mod outlives;
 pub mod parameters;

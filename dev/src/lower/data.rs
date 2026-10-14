@@ -24,7 +24,7 @@ use std::collections::HashMap;
 pub(super) enum Key {
     Definition(DefId),
     Location(LocationId),
-    Temporary(DefId, ValueId),
+    Temporary(usize, ValueId),
     Bytes(crate::sema::text::Id),
 }
 #[derive(Clone, Copy)]

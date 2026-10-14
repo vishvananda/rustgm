@@ -38,6 +38,12 @@ pub fn build(report: &Report, facts: &Declarations) -> Result<Program, Error> {
     facts
         .generics
         .require_concrete_bodies(report, &facts.functions)?;
+    concrete(report, facts)
+}
+/// Build ordinary bodies beside separately checked generic templates.
+/// # Errors
+/// Reports ordinary CFG construction and destruction errors.
+pub fn concrete(report: &Report, facts: &Declarations) -> Result<Program, Error> {
     let mut drop_query = (!facts.destructors.implementations().is_empty()).then(|| {
         crate::types::destruction::NeedsDrop::new(
             facts.destructors.implementations().iter().map(|i| i.item),
@@ -53,7 +59,7 @@ pub fn build(report: &Report, facts: &Declarations) -> Result<Program, Error> {
         body_regions: facts.body_regions.clone(),
     };
     for function in &facts.functions {
-        if function.body.is_none() {
+        if function.body.is_none() || facts.generics.has_parameters(function.definition) {
             continue;
         }
         program.bodies.push(function_body(
@@ -150,6 +156,7 @@ fn function_body(
 impl Body {
     fn new(owner: Owner, source: NodeKey, result: TypeId) -> Self {
         Self {
+            instance: None,
             owned: None,
             storage: None,
             promotions: None,

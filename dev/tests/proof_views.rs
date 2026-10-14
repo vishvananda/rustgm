@@ -36,6 +36,7 @@ fn contract_view_distinguishes_assumptions_variables_and_retained_requirements()
                 node: NodeId(1),
             },
             solution: proof.solution,
+            instance: None,
             identities: proof.identities,
         }],
     };

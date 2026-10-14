@@ -2137,3 +2137,87 @@ Frozen source, drivers, binaries, declarations, preflight results, qualification
 validation and reverify receipts remain under `obj/pa18-work/deferred-promotions-*`.
 Each performance receipt links its complete raw `observations.jsonl`. Exploratory
 compile/lint failures remain retained and are excluded from passing results.
+
+## Demanded execution through the maintainer API
+
+`lower::instances::build` now checks every generic template and specializes
+demanded type/const function bodies from their retained CFGs. It handles direct,
+recursive and mutually recursive calls, inferred function values, function
+pointers in constants/statics and promoted allocations, symbolic array lengths,
+const operands and deferred promotions. The course CLI still retains its PA18
+boundary. Generic constructor factories and concrete generic destructor selection
+remain necessary before that boundary can be released; PA18–PA21 stay planned.
+
+Callable values retain their full function-item type and argument identity.
+Lowering caches code by the selected instance and promoted storage by concrete
+body index. Different const instances therefore retain different backing values.
+Ordinary functions keep their existing symbols and behavior.
+
+Template verification returns a token borrowing the immutable original bodies.
+Materialization substitutes explicit parameter identities, preserving source
+keys, control flow, effects and cleanup scopes. A separate instance contract
+abstracts free lifetimes inside actual type arguments into fresh universals;
+nested callable binders and original template variables remain distinct. Region
+proofs carry the selected instance and are paired in body order. Swapping proofs
+for two instances of one source is rejected. Ordinary proof entry points cannot
+authorize specialized bodies.
+
+The new lifetime tests exposed inferred caller lifetimes being captured under
+late callable binders. Generic shape inference now uses free aliases for caller
+universals, with explicit equalities retaining their original meaning. Selected
+signatures are still validated against the substituted declaration template.
+
+The demand worklist registers an instance before following its dependencies and
+bounds active recursion per definition independently of the number of separate
+uses. Retained body storage is checked before cloning. Dependency traversal
+follows typed constant graphs, including projected allocations; it neither
+expands repeat values element by element nor demands discarded function-item
+values merely because their type exists.
+
+The execution suite declares 25 programs: twenty-one clean runs and four runtime
+panics for overflow or invalid indexes. Each runs through this API and the
+qualified CPPGM backend against pinned rustc. Three additional non-generic
+constructor-pointer cases exercise the ordinary CLI. Typed tests cover sparse
+parameter identities, capture avoidance, separate instance proofs, preserved
+cleanup scopes, unused invalid templates, recursion limits and 160 independent
+instances of one function. Full regression and performance evidence is recorded
+with this checkpoint below.
+
+Validation passed all 731 frontend tests in debug and release, 3,350 active
+PA1–PA17 course cases, thirteen explicit maintainer native tests and all six
+course native suites (858 executable comparisons, including the sixteen already
+documented PA13 differences). Every active independent rustc suite passed.
+Rustfmt, Clippy all/pedantic with denied warnings, the 463-file audit with zero
+findings, 25 harness tests and upstream provenance checks passed. Course fixtures,
+manifests, expected outcomes and text oracles are unchanged.
+
+Performance froze 315 production/configuration files and candidate SHA256
+`27bb5d154840fd128de581d4a073c11c26cec455af33875992dde9c7eb640209`.
+Twenty-nine jobs retained 522 observations on CPU 2 with two warmups, four A/A
+samples and three ABBA blocks each. Twelve new inputs were independently accepted
+by pinned rustc. They measure parsing through checked generic LowIR construction
+using immutable candidate copies; the parent has no such executable path.
+Seventeen parent comparisons cover ordinary LowIR, declarations and complete
+symbolic proofs. Full/count outputs agree. No RustGM builds or tests overlapped
+measurements.
+
+Parent comparisons ranged from -0.7% to +5.0% in median wall time. The largest
+difference, symbolic indexing at 2,048 functions, was within its A/A variation;
+a targeted repeat retained eighteen additional observations and measured -3.1%,
+with broad overlapping ranges. Both runs are retained (540 observations total).
+These shared-host timings do not establish a speedup or a consistent change for
+that workload.
+
+| New executable workload | 128 median, ms | 512 median, ms | 2048 median, ms | 2048 RSS, KiB |
+| --- | ---: | ---: | ---: | ---: |
+| repeated instance | 5.15 | 8.66 | 22.17 | 8578 |
+| distinct const instances | 5.78 | 12.85 | 44.37 | 12074 |
+| promoted instance values | 8.11 | 19.04 | 77.15 | 17664 |
+| reference argument instances | 16.00 | 55.33 | 265.40 | 38082 |
+
+Frozen source, three drivers, binaries, inputs, qualification, validation and
+reverification receipts are under `obj/pa18-work/demanded-execution-*`, with raw
+samples under `obj/perf/`. The separate `demanded-dead-paths-v1` probe retained a
+disproved hypothesis: pinned rustc still rejects growing instantiation in both a
+literal-false and a const-false branch; this implementation also rejects those
+programs. Earlier failed compile/lint attempts remain excluded from pass claims.

@@ -27,13 +27,13 @@ use crate::{
         values::View,
     },
     syntax::ast::NodeId,
-    types::{Kind, Primitive, TypeId},
+    types::{Kind, Primitive, TypeId, instance::Instance},
 };
 
 #[derive(Clone, Copy)]
 enum Selected {
     Unit,
-    Item(DefId),
+    Item(Instance),
     Runtime(Value),
     Object(Address),
 }
@@ -52,6 +52,7 @@ impl Selected {
     }
 }
 struct Lower<'a, 'b> {
+    body_index: usize,
     context: &'a mut Context<'b>,
     body: &'b ir::Body,
     cleanup: Option<Box<cleanup::Pending<'b>>>,
@@ -73,6 +74,7 @@ struct Lower<'a, 'b> {
 }
 pub(super) fn lower<'a>(
     context: &mut Context<'a>,
+    body_index: usize,
     body: &'a ir::Body,
     plan: Option<&'a crate::borrow::destruction::Plan>,
 ) -> Result<Function, Error> {
@@ -84,6 +86,7 @@ pub(super) fn lower<'a>(
             message,
         })?;
     let mut lower = Lower {
+        body_index,
         context,
         body,
         cleanup,
@@ -281,16 +284,9 @@ impl Lower<'_, '_> {
             Place::Temporary(id) => {
                 let selected = self.value(id)?;
                 if let Some(value) = self.body.promotions.as_ref().and_then(|p| p.get(id)) {
-                    let definition = match self.body.owner {
-                        ir::Owner::Function { definition, .. }
-                        | ir::Owner::Initializer { definition, .. } => definition,
-                        ir::Owner::AnonymousConstant => {
-                            return Err("anonymous constant cannot become a native function");
-                        }
-                    };
                     let ty = self.body.values[id.0 as usize].ty;
                     let global = self.context.constant_data(
-                        super::data::Key::Temporary(definition, id),
+                        super::data::Key::Temporary(self.body_index, id),
                         value,
                         ty,
                         true,
@@ -460,7 +456,13 @@ impl Lower<'_, '_> {
                 return self.aggregate(value.ty, variant, fields);
             }
             Rvalue::Repeat { value: operand, .. } => return self.repeat(value.ty, operand),
-            Rvalue::Function(definition) => return Ok(Selected::Item(definition)),
+            Rvalue::Function(definition) => {
+                if !matches!(self.context.types.kind(value.ty), Some(Kind::FunctionItem { item, .. }) if item.0 == definition.0)
+                {
+                    return Err("function operand differs from its selected item");
+                }
+                return Ok(Selected::Item(Instance::new(self.context.types, value.ty)?));
+            }
             Rvalue::Scalar(scalar) => self.scalar(self.body.scalars[scalar.0 as usize], ty)?,
             Rvalue::Length(place) => self.slice_length(place)?,
             Rvalue::TextEquals { place, text } => self.text_equals(place, text)?,
@@ -469,10 +471,8 @@ impl Lower<'_, '_> {
             Rvalue::Read(place) => {
                 if matches!(representation, Representation::Scalar(Type::Void)) {
                     return Ok(
-                        if let Some(Kind::FunctionItem { item, .. }) =
-                            self.context.types.kind(value.ty)
-                        {
-                            Selected::Item(DefId(item.0))
+                        if let Some(Kind::FunctionItem { .. }) = self.context.types.kind(value.ty) {
+                            Selected::Item(Instance::new(self.context.types, value.ty)?)
                         } else {
                             Selected::Unit
                         },
@@ -497,10 +497,8 @@ impl Lower<'_, '_> {
                     self.builder.load(ty, address.operand)?
                 } else {
                     return Ok(
-                        if let Some(Kind::FunctionItem { item, .. }) =
-                            self.context.types.kind(value.ty)
-                        {
-                            Selected::Item(DefId(item.0))
+                        if let Some(Kind::FunctionItem { .. }) = self.context.types.kind(value.ty) {
+                            Selected::Item(Instance::new(self.context.types, value.ty)?)
                         } else {
                             Selected::Unit
                         },

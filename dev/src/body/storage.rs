@@ -30,6 +30,7 @@ pub struct Exit {
     pub location: Location,
     pub end: End,
 }
+#[derive(Clone)]
 pub struct Facts {
     pub scope_work: usize,
     pub scopes: Vec<scopes::Scope>,

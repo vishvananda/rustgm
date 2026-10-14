@@ -87,7 +87,7 @@ impl Context {
                         .ok_or(Error::InvalidIdentity)?,
                 );
             }
-            let value = self.region_constructor(store, kind, &children, &bound, depth)?;
+            let value = self.region_constructor(store, kind, &children, &mut bound, depth)?;
             results.insert((id, depth), value);
         }
         results
@@ -100,10 +100,10 @@ impl Context {
         store: &mut Store,
         kind: Constructor,
         children: &[TermId],
-        bound: &Bound,
+        bound: &mut Bound,
         depth: u16,
     ) -> Result<TermId, Error> {
-        let replace = |region| {
+        let mut replace = |region| {
             bound
                 .region(region, depth)
                 .map_err(|_| Error::InvalidIdentity)
