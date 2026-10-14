@@ -1,7 +1,7 @@
 # PA12 fixture ownership
 
-The manifest declares 107 cases before reference generation: 40 clean native
-programs, eight native bounds panics, 12 layout vectors and 47 source rejections
+The manifest declares 106 cases before reference generation: 40 clean native
+programs, eight native bounds panics, 12 layout vectors and 46 source rejections
 or explicit later-stage boundaries. Every input is discovered; no fixture uses
 implicit stdout, status or runtime expectations.
 
@@ -16,3 +16,6 @@ Required partial-move/pattern/lifetime tests belong to PA14/PA13/PA15, respectiv
 
 Nominal lifetime and nested-reference executable boundary cases moved to PA15
 and PA16 when those contracts became independently testable.
+
+The generic constructor boundary moved to PA18, where its unchanged source now
+has an independently checked accepted LowIR oracle.

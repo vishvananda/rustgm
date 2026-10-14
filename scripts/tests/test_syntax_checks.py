@@ -3,7 +3,7 @@ from pathlib import Path
 import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from check_syntax import check_classification, expression_source, check_configured_owners, rustc_arguments
+from check_syntax import check_classification, expression_source, check_configured_owners, rustc_arguments, rustc_emission
 
 
 class IndependentSyntaxTests(unittest.TestCase):
@@ -34,3 +34,11 @@ class IndependentSyntaxTests(unittest.TestCase):
         self.assertEqual(expression_source(data, {}), b'fn main() { let _ = ' + data + b'; }\n')
         self.assertEqual(expression_source(data, {"prefix": "prefix\n", "suffix": "\nsuffix"}),
                          b"prefix\n" + data + b"\nsuffix")
+
+    def test_monomorphization_requires_object_emission(self):
+        self.assertEqual(rustc_emission({"kind": "program"}), "--emit=metadata")
+        self.assertEqual(rustc_emission({"kind": "program", "emit": "obj"}), "--emit=obj")
+        for metadata in ({"kind": "expression", "emit": "obj"},
+                         {"kind": "program", "emit": "invalid"}):
+            with self.assertRaises(ValueError):
+                rustc_emission(metadata)

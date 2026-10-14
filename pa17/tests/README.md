@@ -13,10 +13,11 @@ for accepted programs, native outcomes. These are original RustGM tests;
 - `order/`: declared callback order, independently observed by rustc and by a
   test-only native LowIR observer after successful frontend compilation.
 - `abort/`: explicitly declared panic-abort behavior.
-- `boundaries/`: the type-generic and general-method capabilities owned later.
+- `boundaries/`: the general inherent-method capability owned by PA19.
+  The type-generic destructor source has moved unchanged to PA18.
 
-There are 199 cases: 132 accepted native programs (131 pass, one panic) and 67
-rejections. Two documented boundary rejections are accepted by rustc. The order
+There are 206 cases: 135 accepted native programs (133 pass, two panics) and 71
+rejections. One documented boundary rejection is accepted by rustc. The order
 fixtures' no-op observer stays unchanged in course text/native checks; the
 separate maintainer native suite checks all 33 exact callback sequences. The
 shared counter and order fixtures are read directly by maintainer tests.

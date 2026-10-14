@@ -1,0 +1,87 @@
+global @rg.data.0 : obj<1x1> [storage=readonly] = {
+  u8 7
+}
+global @rg.data.1 : obj<8x8> [storage=readonly] = {
+  ptr addr @rg.data.4
+}
+global @rg.data.2 : obj<1x1> [storage=readonly] = {
+  u8 9
+}
+global @rg.data.3 : obj<8x8> [storage=readonly] = {
+  ptr addr @rg.data.5
+}
+global @rg.data.4 : obj<1x1> [storage=readonly] = {
+  u8 7
+}
+global @rg.data.5 : obj<1x1> [storage=readonly] = {
+  u8 9
+}
+function @rg.16() -> void {
+  slot $s0 : ptr
+  slot $s1 : ptr
+  block ^b0:
+    %t0 = call ptr @rg.15.i3()
+    store ptr %t0, $s0
+    %t1 = load ptr $s0
+    %t2 = load ptr %t1
+    %t3 = load u8 %t2
+    %t4 = cmp eq u8 %t3, 7
+    %t5 = convert trunc i1 i64 %t4
+    call void @rg.13(%t5)
+    %t6 = call ptr @rg.15.i4()
+    store ptr %t6, $s1
+    %t7 = load ptr $s1
+    %t8 = load ptr %t7
+    %t9 = load u8 %t8
+    %t10 = cmp eq u8 %t9, 9
+    %t11 = convert trunc i1 i64 %t10
+    call void @rg.13(%t11)
+    return void
+}
+function @rg.15.i3() -> ptr {
+  block ^b0:
+    %t0 = addr @rg.data.0
+    %t1 = addr @rg.data.1
+    return ptr %t1
+}
+function @rg.13(%p0 : i1) -> void {
+  slot $s0 : i1
+  block ^b0:
+    store i1 %p0, $s0
+    %t0 = load i1 $s0
+    %t1 = unary not i1 %t0
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    jump ^b3
+  block ^b1:
+    %t2 = call u8 @rg.14(0)
+    jump ^b3
+  block ^b3:
+    return void
+}
+function @rg.15.i4() -> ptr {
+  block ^b0:
+    %t0 = addr @rg.data.2
+    %t1 = addr @rg.data.3
+    return ptr %t1
+}
+function @rg.14(%p0 : u8) -> u8 {
+  slot $s0 : u8
+  block ^b0:
+    store u8 %p0, $s0
+    %t0 = load u8 $s0
+    %t1 = cmp eq u8 %t0, 0
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    %t2 = binary udiv u8 1, %t0
+    return u8 %t2
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+declare function @abort() -> void [return=noreturn]
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.16()
+    return i64 0
+}

@@ -53,6 +53,12 @@ pub(super) fn prepare(
     inputs: Vec<Contract>,
 ) -> Result<proof::Builder, Error> {
     let (mut program, ordinary) = prepare_ordinary(report, facts, templates, inputs)?;
+    // Discovery includes implicit constructor factories. With no templates,
+    // ordinary lowering already follows calls and selected cleanup dependencies.
+    // All source bodies have still been checked before taking this path.
+    if templates.is_empty() {
+        return Ok(program);
+    }
     let source = ordinary
         .get(&ItemId(entry.0))
         .and_then(|&i| program.body(i).ok().map(|body| body.source))

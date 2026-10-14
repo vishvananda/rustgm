@@ -125,9 +125,9 @@ cleanup emission at 32,000,000 work units, and selected plan/recipe storage at
 points; PA16's storage/loan limits still apply. Release per-body proof scratch
 promptly. Bodies with no runtime cleanup retain no execution event tape.
 
-The suite declares 207 cases: 135 accepted programs and 72 rejections. Two
+The suite declares 206 cases: 135 accepted programs and 71 rejections. Two
 accepted programs declare runtime panic; the other 133 require clean execution.
-Two rejections are documented later-stage boundaries accepted by rustc. All
+One rejection documents the PA19 inherent-method boundary accepted by rustc. All
 other acceptance outcomes agree. Required families cover identity, headers,
 field moves, destructor loans, replacement, temporaries, constants, counters and ordering.
 The 33 `order/` sources define a no-op `trace(u8)` observer. Their course oracles
@@ -142,3 +142,6 @@ Run `make test-pa17`, `make test-rustc`, `make test-native-pa17`,
 `make ref-test-pa17` regenerates the text, diagnostic and status sidecars. Review
 those outputs together with independent acceptance, execution and performance
 evidence before accepting a reference update.
+
+The earlier type-generic destructor boundary is now owned by PA18, where its
+unchanged source has an independently checked accepted LowIR oracle.

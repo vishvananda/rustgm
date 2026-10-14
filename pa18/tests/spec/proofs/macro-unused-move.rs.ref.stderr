@@ -1,0 +1,2 @@
+ERROR: file 0: 54: local may be uninitialized or moved at this read
+  in macro bad at file 0: 59; defined at file 0: 0

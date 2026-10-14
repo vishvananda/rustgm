@@ -1,7 +1,8 @@
 # PA18–PA21 implementation and validation
 
-The active goal is to implement all four assignments. PA18–PA21 remain planned;
-none has a grading manifest or a released reference yet. PA17 at `8e33000` is
+The active goal is to implement all four assignments. PA18 now has its public
+CLI, handout and grading manifest; its release evidence is recorded in
+[pa18-validation.md](pa18-validation.md). PA19–PA21 remain planned and required. PA17 at `8e33000` is
 the regression baseline. This document records the sequence and remaining work,
 not a reduced completion contract.
 
@@ -2465,3 +2466,26 @@ Frozen production/test sources, binaries, independent execution receipts and all
 540 performance observations are reverified after the checks. Final evidence is
 recorded in `drop-integration-v3-validation.json` and
 `drop-integration-v3-reverified.json` under `obj/pa18-work/`.
+
+
+## PA18 public execution and course release
+
+The CLI now enters the checked template/instance pipeline before ordinary body
+inspection, preserving earlier inspection contracts and macro diagnostics. All
+ordinary bodies are proved even when unused. After explicit and implicit
+constructor template discovery, an empty sealed template set skips the redundant
+generic demand traversal; ordinary lowering already discovers ordinary uses.
+
+The public suite declares 425 cases, independently checked with pinned rustc:
+262 accepted and 163 rejected. Of the accepted programs, 253 execute cleanly,
+six produce qualified panic-aborts and three intentionally divergent programs
+undergo native code generation without execution. Four documented rejections
+reserve PA19–PA21 features. Growing generic-demand checks require rustc object
+generation instead of metadata-only emission. The native harness validates and
+reports compilation-only controls separately, and its tests prohibit running them.
+
+PA12's generic constructor and PA17's generic destructor boundary sources move
+unchanged to PA18. Earlier remaining sidecar bytes are unchanged. The source-to-
+feature ledger, public contract and complete validation receipts are summarized
+in the release review; earlier checkpoints in this journal remain historical
+records of their narrower implementation surfaces.

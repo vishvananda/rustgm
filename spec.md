@@ -137,6 +137,14 @@ Forward loan states use the same index for pruning, conflict checks and optional
 inspection. Rebuild the occupied-word index after dense CFG copies, clear it when
 the last loan in a word expires, and preserve two-phase activation separately.
 
+The executable CLI enters this template/instance pipeline before the ordinary
+inspection-only body builder. It must not duplicate promotion, constant or proof
+passes. Earlier inspection modes retain their own contracts. Once explicit and
+referenced implicit constructor templates have been discovered and original
+proofs completed, an empty sealed template set permits skipping the generic
+dependency walk: ordinary lowering already follows ordinary call/cleanup uses.
+All ordinary source bodies must still be proved before this fast path.
+
 Analyze generic bodies without reparsing syntax. A monomorphization key must
 include all type/const arguments and semantic context affecting its result.
 Trait solver caches include parameter environment, binder universe and mode;

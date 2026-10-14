@@ -121,8 +121,8 @@ not grade LLVM IR or assume Rust's unspecified layout matches rustc. Test exact
 layouts where guaranteed or where the course contract deliberately specifies
 them. Keep runtime evidence separate from the raw LowIR text comparison.
 
-PA12 has 107 fixtures: 40 clean native executions, eight expected bounds panics,
-12 layout cases and 47 rejection or explicit stage-boundary cases. The manifest
+PA12 has 106 fixtures: 40 clean native executions, eight expected bounds panics,
+12 layout cases and 46 rejection or explicit stage-boundary cases. The manifest
 declares `--emit-layouts` as a supplementary mode; a case's mode must be one of
 the assignment's declared modes. `make test-layouts` checks declared size,
 alignment and field-offset vectors against candidate/committed text and rustc
@@ -166,9 +166,9 @@ facts; independently reviewed oracles reflect those facts.
 119 execution cases. The root native target includes PA16 and the explicit
 maintainer native tests. See `docs/pa15-pa16-validation.md` for the release review.
 
-PA17 has 207 LowIR fixtures: 135 accepted programs and 72 rejections. Two
+PA17 has 206 LowIR fixtures: 135 accepted programs and 71 rejections. Two
 accepted programs declare panic-abort; the other 133 require clean execution.
-Two rejection cases document PA18/PA19 boundaries accepted by rustc. The root
+One rejection case documents the PA19 method boundary accepted by rustc. The root
 independent and native targets include PA17. `make test-native-pa17` selects its
 course executions. Its counter fixtures and 33 order fixtures are also read
 directly by the maintainer suite.
@@ -182,6 +182,22 @@ and source control flow remain compiler-generated. This separate observer test
 is not counted as an unchanged-source native comparison. Course text oracles
 remain uninstrumented; 22 accepted counter programs check unchanged-source
 cleanup effects through both compilers. See `docs/pa17-validation.md`.
+
+PA18 adds 425 generic LowIR cases: 262 accepted and 163 rejected. There are
+259 executable comparisons and three deliberately divergent codegen-only
+controls. Their `native.kind: "codegen"` requires a nonempty reason and forbids
+runtime outcome fields; both compilers produce native code, but neither binary
+is executed. Counts report these separately. All other accepted LowIR cases
+retain the mandatory execution/outcome contract.
+
+An explicit `rustc.emit: "obj"` selects object generation in the independent
+acceptance checker. Growing-instance rejection and demand-only controls need
+that stronger check because metadata emission does not monomorphize bodies.
+It is valid only for complete programs. Four PA18 rejection fixtures declare
+later PA19–PA21 boundaries accepted by rustc; there are no new runtime differences.
+The generic constructor/destructor boundaries moved from PA12/PA17 with unchanged
+input bytes and newly qualified accepted oracles. Root independent/native targets
+include PA18. See `docs/pa18-validation.md` for the feature ledger and release gates.
 
 ## Placement and provenance
 
@@ -200,8 +216,8 @@ our oracle: their representation and diagnostic contracts belong to upstream.
 
 ## Release discipline
 
-PA1–PA17 are implemented drafts, not a claim of full Rust frontend conformance.
-Planned PA18–PA38 fail on invocation and are excluded from pass counts. Promote
+PA1–PA18 are implemented drafts, not a claim of full Rust frontend conformance.
+Planned PA19–PA38 fail on invocation and are excluded from pass counts. Promote
 a stage only after handout/reference/fixtures are coherent, independent checks
 pass, the source-to-feature ledger is reviewed and all prior stages remain green.
 Keep maintainer measurements and logs in ignored `obj/`; keep student handout

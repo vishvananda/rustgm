@@ -1,0 +1,6596 @@
+{
+  "schema": 1,
+  "mode": "--emit-lowir",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "panic": "abort",
+  "overflow_checks": true,
+  "debug_assertions": false,
+  "cases": [
+    {
+      "path": "tests/spec/aggregates/derive-requires-argument.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.aggregates"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "PA18 public generic contract"
+    },
+    {
+      "path": "tests/spec/aggregates/derived-copy.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.aggregates"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "PA18 public generic contract",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aggregates/empty-array-alignment.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.aggregates"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "PA18 public generic contract",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aggregates/nested-record.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.aggregates"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "PA18 public generic contract",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aggregates/recursive-by-value.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.aggregates"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "PA18 public generic contract"
+    },
+    {
+      "path": "tests/spec/aliases-runtime/alias-index-panic.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.aliases-runtime"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/native_generic_aliases.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/aliases-runtime/aligned-dead-arithmetic.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.aliases-runtime"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/native_generic_aliases.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aliases-runtime/aligned-large-enum-argument.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.aliases-runtime"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/native_generic_aliases.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aliases-runtime/aligned-zero-array-argument.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.aliases-runtime"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/native_generic_aliases.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aliases-runtime/array-default.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.aliases-runtime"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/native_generic_aliases.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aliases-runtime/callback.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.aliases-runtime"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/native_generic_aliases.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aliases-runtime/default-forward.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.aliases-runtime"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/native_generic_aliases.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aliases-runtime/distinct-lengths.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.aliases-runtime"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/native_generic_aliases.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aliases-runtime/early-drop-static-target.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.aliases-runtime"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/native_generic_aliases.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/aliases-runtime/early-drop-target-default.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.aliases-runtime"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/native_generic_aliases.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aliases-runtime/early-enum-cast-default.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.aliases-runtime"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/native_generic_aliases.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aliases-runtime/early-field-default.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.aliases-runtime"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/native_generic_aliases.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aliases-runtime/early-packed-default.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.aliases-runtime"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/native_generic_aliases.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aliases-runtime/early-reference-default.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.aliases-runtime"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/native_generic_aliases.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aliases-runtime/enum-argument.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.aliases-runtime"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/native_generic_aliases.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aliases-runtime/extended-drop-reference.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.aliases-runtime"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/native_generic_aliases.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aliases-runtime/mutual-defaults.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.aliases-runtime"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/native_generic_aliases.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aliases-runtime/nested-reference-binder.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.aliases-runtime"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/native_generic_aliases.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aliases-runtime/owned-drop.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.aliases-runtime"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/native_generic_aliases.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aliases-runtime/reference-default.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.aliases-runtime"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/native_generic_aliases.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aliases-runtime/self-default-owned-drop.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.aliases-runtime"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/native_generic_aliases.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aliases-runtime/self-dependent-default.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.aliases-runtime"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/native_generic_aliases.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aliases-runtime/self-later-const-default.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.aliases-runtime"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/native_generic_aliases.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aliases-runtime/self-lifetime-default.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.aliases-runtime"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/native_generic_aliases.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aliases-runtime/signed-enum-argument.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.aliases-runtime"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/native_generic_aliases.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aliases-runtime/zero-sized.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.aliases-runtime"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/native_generic_aliases.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aliases/accept-array.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.aliases"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_aliases.rs::ACCEPTED",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aliases/accept-bare-const-name.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.aliases"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_aliases.rs::ACCEPTED",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aliases/accept-callable.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.aliases"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_aliases.rs::ACCEPTED",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aliases/accept-configured.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.aliases"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_aliases.rs::ACCEPTED",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aliases/accept-const-block.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.aliases"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_aliases.rs::ACCEPTED",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aliases/accept-const-default.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.aliases"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_aliases.rs::ACCEPTED",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aliases/accept-const-dependent-default.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.aliases"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_aliases.rs::ACCEPTED",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aliases/accept-const-evaluation.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.aliases"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_aliases.rs::ACCEPTED",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aliases/accept-const-forward.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.aliases"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_aliases.rs::ACCEPTED",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aliases/accept-const-name.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.aliases"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_aliases.rs::ACCEPTED",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aliases/accept-const-query-modules.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.aliases"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_aliases.rs::ACCEPTED",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aliases/accept-const-query-storage.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.aliases"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_aliases.rs::ACCEPTED",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aliases/accept-const-type-ambiguity-block.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.aliases"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_aliases.rs::ACCEPTED",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aliases/accept-dependent-default.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.aliases"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_aliases.rs::ACCEPTED",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aliases/accept-forward-const-name.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.aliases"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_aliases.rs::ACCEPTED",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aliases/accept-identity.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.aliases"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_aliases.rs::ACCEPTED",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aliases/accept-lifetime-default.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.aliases"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_aliases.rs::ACCEPTED",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aliases/accept-lifetime-elision.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.aliases"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_aliases.rs::ACCEPTED",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aliases/accept-lifetime.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.aliases"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_aliases.rs::ACCEPTED",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aliases/accept-module.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.aliases"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_aliases.rs::ACCEPTED",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aliases/accept-nested-binder.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.aliases"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_aliases.rs::ACCEPTED",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aliases/accept-nested.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.aliases"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_aliases.rs::ACCEPTED",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aliases/accept-private-field-in-caller.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.aliases"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_aliases.rs::ACCEPTED",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aliases/accept-scalar-unused-const.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.aliases"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_aliases.rs::ACCEPTED",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aliases/accept-type-default.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.aliases"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_aliases.rs::ACCEPTED",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aliases/accept-unsized-alias.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.aliases"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_aliases.rs::ACCEPTED",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aliases/accept-unsized-default.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.aliases"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_aliases.rs::ACCEPTED",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aliases/accept-unused-array-shape.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.aliases"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_aliases.rs::ACCEPTED",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aliases/accept-unused-default-shape.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.aliases"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_aliases.rs::ACCEPTED",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aliases/accept-unused-lifetime.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.aliases"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_aliases.rs::ACCEPTED",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aliases/accept-unused-nested-shape.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.aliases"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_aliases.rs::ACCEPTED",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aliases/reject-alias-cannot-grant-const-field-access.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.aliases"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_aliases.rs::REJECTED"
+    },
+    {
+      "path": "tests/spec/aliases/reject-alias-cannot-grant-field-access.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.aliases"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_aliases.rs::REJECTED"
+    },
+    {
+      "path": "tests/spec/aliases/reject-const-arithmetic-parameter.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.aliases"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_aliases.rs::REJECTED"
+    },
+    {
+      "path": "tests/spec/aliases/reject-const-as-type.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.aliases"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_aliases.rs::REJECTED"
+    },
+    {
+      "path": "tests/spec/aliases/reject-const-overflow.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.aliases"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_aliases.rs::REJECTED"
+    },
+    {
+      "path": "tests/spec/aliases/reject-const-type-ambiguity.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.aliases"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_aliases.rs::REJECTED"
+    },
+    {
+      "path": "tests/spec/aliases/reject-cycle.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.aliases"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_aliases.rs::REJECTED"
+    },
+    {
+      "path": "tests/spec/aliases/reject-default-forward.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.aliases"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_aliases.rs::REJECTED"
+    },
+    {
+      "path": "tests/spec/aliases/reject-default-order.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.aliases"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_aliases.rs::REJECTED"
+    },
+    {
+      "path": "tests/spec/aliases/reject-default-self.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.aliases"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_aliases.rs::REJECTED"
+    },
+    {
+      "path": "tests/spec/aliases/reject-duplicate.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.aliases"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_aliases.rs::REJECTED"
+    },
+    {
+      "path": "tests/spec/aliases/reject-extra.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.aliases"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_aliases.rs::REJECTED"
+    },
+    {
+      "path": "tests/spec/aliases/reject-generic-const-type.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.aliases"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_aliases.rs::REJECTED"
+    },
+    {
+      "path": "tests/spec/aliases/reject-grouped-const-parameter.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.aliases"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_aliases.rs::REJECTED"
+    },
+    {
+      "path": "tests/spec/aliases/reject-ill-formed-expansion.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.aliases"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_aliases.rs::REJECTED"
+    },
+    {
+      "path": "tests/spec/aliases/reject-invalid-const-type.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.aliases"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_aliases.rs::REJECTED"
+    },
+    {
+      "path": "tests/spec/aliases/reject-invalid-unused-default.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.aliases"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_aliases.rs::REJECTED"
+    },
+    {
+      "path": "tests/spec/aliases/reject-lifetime-order.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.aliases"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_aliases.rs::REJECTED"
+    },
+    {
+      "path": "tests/spec/aliases/reject-missing.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.aliases"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_aliases.rs::REJECTED"
+    },
+    {
+      "path": "tests/spec/aliases/reject-nested-const-block.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.aliases"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_aliases.rs::REJECTED"
+    },
+    {
+      "path": "tests/spec/aliases/reject-unsigned-negative.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.aliases"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_aliases.rs::REJECTED"
+    },
+    {
+      "path": "tests/spec/aliases/reject-unused-through-alias.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.aliases"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_aliases.rs::REJECTED"
+    },
+    {
+      "path": "tests/spec/aliases/reject-unused-type.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.aliases"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_aliases.rs::REJECTED"
+    },
+    {
+      "path": "tests/spec/aliases/reject-used-array-shape.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.aliases"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_aliases.rs::REJECTED"
+    },
+    {
+      "path": "tests/spec/aliases/reject-used-default-shape.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.aliases"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_aliases.rs::REJECTED"
+    },
+    {
+      "path": "tests/spec/aliases/reject-wrong-array-const.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.aliases"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_aliases.rs::REJECTED"
+    },
+    {
+      "path": "tests/spec/aliases/reject-wrong-const-kind.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.aliases"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_aliases.rs::REJECTED"
+    },
+    {
+      "path": "tests/spec/aliases/reject-wrong-const-type.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.aliases"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_aliases.rs::REJECTED"
+    },
+    {
+      "path": "tests/spec/aliases/reject-wrong-kind.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.aliases"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_aliases.rs::REJECTED"
+    },
+    {
+      "path": "tests/spec/arguments/const-kind.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.arguments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "PA18 public generic contract"
+    },
+    {
+      "path": "tests/spec/arguments/const-type.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.arguments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "PA18 public generic contract"
+    },
+    {
+      "path": "tests/spec/arguments/erased-const-identity.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.arguments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "PA18 public generic contract"
+    },
+    {
+      "path": "tests/spec/arguments/erased-identity.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.arguments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "PA18 public generic contract"
+    },
+    {
+      "path": "tests/spec/arguments/infer-const-length.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.arguments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "PA18 public generic contract",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/arguments/infer-result.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.arguments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "PA18 public generic contract",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/arguments/late-lifetime.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.arguments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "PA18 public generic contract"
+    },
+    {
+      "path": "tests/spec/arguments/partial-turbofish.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.arguments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "PA18 public generic contract",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/arguments/too-many.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.arguments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "PA18 public generic contract"
+    },
+    {
+      "path": "tests/spec/arguments/unconstrained.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.arguments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "PA18 public generic contract"
+    },
+    {
+      "path": "tests/spec/boundaries/associated-type.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.boundaries"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "reason": "Associated items and normalization belong to PA20."
+      },
+      "maintainer_origin": "PA18 later-stage ownership"
+    },
+    {
+      "path": "tests/spec/boundaries/inherent-method.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.boundaries"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "reason": "General inherent method selection belongs to PA19."
+      },
+      "maintainer_origin": "PA18 later-stage ownership"
+    },
+    {
+      "path": "tests/spec/boundaries/opaque-return.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.boundaries"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "reason": "Opaque identities and hidden types belong to PA21."
+      },
+      "maintainer_origin": "PA18 later-stage ownership"
+    },
+    {
+      "path": "tests/spec/boundaries/trait-method.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.boundaries"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "reason": "General trait and method selection belongs to PA19."
+      },
+      "maintainer_origin": "PA18 later-stage ownership"
+    },
+    {
+      "path": "tests/spec/bounds/alias-bound-not-proof.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.bounds"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/bounds_source.rs::CASES"
+    },
+    {
+      "path": "tests/spec/bounds/alias-not-proof.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.bounds"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "PA18 public generic contract"
+    },
+    {
+      "path": "tests/spec/bounds/anonymous-bound-reference.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.bounds"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/bounds_source.rs::CASES"
+    },
+    {
+      "path": "tests/spec/bounds/clone-does-not-leak.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.bounds"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/bounds_source.rs::CASES"
+    },
+    {
+      "path": "tests/spec/bounds/clone-missing-use.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.bounds"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/bounds_source.rs::CASES"
+    },
+    {
+      "path": "tests/spec/bounds/clone-not-copy.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.bounds"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "PA18 public generic contract"
+    },
+    {
+      "path": "tests/spec/bounds/copy-does-not-leak.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.bounds"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/bounds_source.rs::CASES"
+    },
+    {
+      "path": "tests/spec/bounds/copy-forward-missing.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.bounds"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/bounds_source.rs::CASES"
+    },
+    {
+      "path": "tests/spec/bounds/copy-forward.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.bounds"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/bounds_source.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/bounds/copy-runtime.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.bounds"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "PA18 public generic contract",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/bounds/copy-trait-arguments.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.bounds"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/bounds_source.rs::CASES"
+    },
+    {
+      "path": "tests/spec/bounds/forward-core-alias.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.bounds"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/bounds_source.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/bounds/identity-import.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.bounds"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "PA18 public generic contract",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/bounds/ill-formed-array-assumption.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.bounds"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/bounds_source.rs::CASES"
+    },
+    {
+      "path": "tests/spec/bounds/missing-copy.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.bounds"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "PA18 public generic contract"
+    },
+    {
+      "path": "tests/spec/bounds/reexport-copy.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.bounds"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/bounds_source.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/bounds/relaxed-value.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.bounds"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/bounds_source.rs::CASES"
+    },
+    {
+      "path": "tests/spec/bounds/repeated-relaxation.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.bounds"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/bounds_source.rs::CASES"
+    },
+    {
+      "path": "tests/spec/bounds/scoped-array-well-formed.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.bounds"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/bounds_source.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/bounds/special-slice-called.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.bounds"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/bounds_source.rs::CASES"
+    },
+    {
+      "path": "tests/spec/bounds/special-slice-unused.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.bounds"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/bounds_source.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/bounds/trivial-copy-false.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.bounds"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/bounds_source.rs::CASES"
+    },
+    {
+      "path": "tests/spec/bounds/tuple-sized-assumption.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.bounds"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/bounds_source.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/callables/borrowed-empty.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.callables"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/instance_values.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/callables/borrowed-index.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.callables"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/instance_values.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/callables/borrowed-past-end.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.callables"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/instance_values.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/callables/borrowed-type.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.callables"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/instance_values.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/callables/const-repeat.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.callables"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/instance_values.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/callables/constant-pointers.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.callables"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/instance_values.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/callables/deferred-overflow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.callables"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/instance_values.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/callables/deferred-sum.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.callables"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/instance_values.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/callables/identity.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.callables"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/instance_values.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/callables/inferred-item.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.callables"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/instance_values.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/callables/known-divisor.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.callables"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/instance_values.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/callables/late-binder.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.callables"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/instance_values.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/callables/mutual.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.callables"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/instance_values.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/callables/negate-overflow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.callables"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/instance_values.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/callables/nested-reference.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.callables"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/instance_values.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/callables/nested.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.callables"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/instance_values.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/callables/pointer-backing.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.callables"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/instance_values.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/callables/promoted-backing.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.callables"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/instance_values.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/callables/promoted-pointers.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.callables"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/instance_values.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/callables/recursive.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.callables"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/instance_values.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/callables/returned-pointer.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.callables"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/instance_values.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/callables/scalar-const-kinds.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.callables"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/instance_values.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/callables/static-pointers.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.callables"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/instance_values.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/callables/unused-growing.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.callables"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/instance_values.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/callables/widening.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.callables"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/instance_values.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/constructors/bounded-parameter.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.constructors"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/instance_constructors.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/constructors/const-array.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.constructors"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/instance_constructors.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/constructors/constant-pointer.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.constructors"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/instance_constructors.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/constructors/constructor-pointer.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.constructors"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/instance_constructors.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/constructors/declared-lifetime.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.constructors"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/instance_constructors.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/constructors/empty-const-array.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.constructors"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/instance_constructors.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/constructors/enum-variants.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.constructors"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/instance_constructors.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/constructors/explicit-reference-type.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.constructors"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/instance_constructors.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/constructors/inferred-item.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.constructors"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/instance_constructors.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/constructors/moved-pa12.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.constructors"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "Moved from pa12/tests/spec/boundary/generic.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/constructors/nested-demand.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.constructors"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/instance_constructors.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/constructors/nested-lifetimes.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.constructors"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/instance_constructors.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/constructors/owned-transfer.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.constructors"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/instance_constructors.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/constructors/promoted-pointer.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.constructors"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/instance_constructors.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/constructors/reference-argument.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.constructors"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/instance_constructors.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/constructors/returned-pointer.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.constructors"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/instance_constructors.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/constructors/static-pointer.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.constructors"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/instance_constructors.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/constructors/tuple-types.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.constructors"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/instance_constructors.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/constructors/zero-sized-constructor.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.constructors"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/instance_constructors.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/default-queries/body-before-default.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.default-queries"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/default_readiness.rs::ACCEPTED",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/default-queries/body-cycle.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.default-queries"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/default_readiness.rs::REJECTED"
+    },
+    {
+      "path": "tests/spec/default-queries/configured-default.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.default-queries"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/default_readiness.rs::ACCEPTED",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/default-queries/const-expression-default.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.default-queries"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/default_readiness.rs::ACCEPTED",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/default-queries/default-body-cycle.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.default-queries"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/default_readiness.rs::REJECTED"
+    },
+    {
+      "path": "tests/spec/default-queries/default-bound-unknown.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.default-queries"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/default_readiness.rs::REJECTED"
+    },
+    {
+      "path": "tests/spec/default-queries/default-cycle.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.default-queries"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/default_readiness.rs::REJECTED"
+    },
+    {
+      "path": "tests/spec/default-queries/default-through-body.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.default-queries"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/default_readiness.rs::ACCEPTED",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/default-queries/forward-const.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.default-queries"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/default_readiness.rs::REJECTED"
+    },
+    {
+      "path": "tests/spec/default-queries/forward-through-self.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.default-queries"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/default_readiness.rs::REJECTED"
+    },
+    {
+      "path": "tests/spec/default-queries/higher-ranked-self.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.default-queries"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/default_readiness.rs::ACCEPTED",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/default-queries/independent-owner-default.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.default-queries"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/default_readiness.rs::ACCEPTED",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/default-queries/late-const-name.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.default-queries"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/default_readiness.rs::ACCEPTED",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/default-queries/lifetime-self.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.default-queries"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/default_readiness.rs::ACCEPTED",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/default-queries/macro-default.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.default-queries"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/default_readiness.rs::ACCEPTED",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/default-queries/mutual-body-cycle.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.default-queries"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/default_readiness.rs::REJECTED"
+    },
+    {
+      "path": "tests/spec/default-queries/mutual-bounds.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.default-queries"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/default_readiness.rs::ACCEPTED",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/default-queries/mutual-default-cycle.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.default-queries"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/default_readiness.rs::REJECTED"
+    },
+    {
+      "path": "tests/spec/default-queries/mutual-explicit.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.default-queries"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/default_readiness.rs::ACCEPTED",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/default-queries/self-bound-default.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.default-queries"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/default_readiness.rs::ACCEPTED",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/default-queries/self-bound.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.default-queries"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/default_readiness.rs::ACCEPTED",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/default-queries/self-const.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.default-queries"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/default_readiness.rs::REJECTED"
+    },
+    {
+      "path": "tests/spec/default-queries/self-dependent-later.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.default-queries"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/default_readiness.rs::ACCEPTED",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/default-queries/self-explicit-later.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.default-queries"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/default_readiness.rs::ACCEPTED",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/default-queries/self-explicit.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.default-queries"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/default_readiness.rs::ACCEPTED",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/default-queries/self-fixed-later.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.default-queries"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/default_readiness.rs::ACCEPTED",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/default-queries/type-and-const-alias.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.default-queries"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/default_readiness.rs::ACCEPTED",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/default-queries/unused-invalid-const.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.default-queries"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/default_readiness.rs::REJECTED"
+    },
+    {
+      "path": "tests/spec/default-queries/unused-kind-mismatch.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.default-queries"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/default_readiness.rs::REJECTED"
+    },
+    {
+      "path": "tests/spec/default-queries/unused-missing-default-argument.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.default-queries"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/default_readiness.rs::REJECTED"
+    },
+    {
+      "path": "tests/spec/defaults/const-dependent.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.defaults"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "PA18 public generic contract",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/defaults/forward.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.defaults"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "PA18 public generic contract"
+    },
+    {
+      "path": "tests/spec/defaults/nominal-dependent.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.defaults"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "PA18 public generic contract",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/defaults/overflow-unused.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.defaults"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "PA18 public generic contract"
+    },
+    {
+      "path": "tests/spec/defaults/self.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.defaults"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "PA18 public generic contract"
+    },
+    {
+      "path": "tests/spec/demand/diverging-local.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.demand"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/demanded_cleanup.rs; linear growth adaptation",
+      "native": {
+        "kind": "codegen",
+        "reason": "The entry deliberately diverges; neither compiler output may be executed."
+      }
+    },
+    {
+      "path": "tests/spec/demand/diverging-owned-call.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.demand"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/demanded_cleanup.rs; linear growth adaptation",
+      "native": {
+        "kind": "codegen",
+        "reason": "The entry deliberately diverges; neither compiler output may be executed."
+      }
+    },
+    {
+      "path": "tests/spec/demand/growing-drop-from-drop.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.demand"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/demanded_cleanup.rs"
+    },
+    {
+      "path": "tests/spec/demand/growing-drop.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.demand"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/demanded_cleanup.rs; linear growth adaptation"
+    },
+    {
+      "path": "tests/spec/demand/growing-function.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.demand"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "PA18 demanded function recursion"
+    },
+    {
+      "path": "tests/spec/demand/transferred-then-diverge.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.demand"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/demanded_cleanup.rs; linear growth adaptation",
+      "native": {
+        "kind": "codegen",
+        "reason": "The entry deliberately diverges; neither compiler output may be executed."
+      }
+    },
+    {
+      "path": "tests/spec/demand/unused-ordinary-owner.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.demand"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/demanded_cleanup.rs; linear growth adaptation",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/destructors/conditional-generic-drop.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.destructors"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/instance_destructors.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/destructors/drop-const-lengths.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.destructors"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/instance_destructors.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/destructors/generic-array-cleanup.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.destructors"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/instance_destructors.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/destructors/generic-drop-two-types.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.destructors"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/instance_destructors.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/destructors/generic-enum-fields.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.destructors"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/instance_destructors.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/destructors/identity-owned-value.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.destructors"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/instance_destructors.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/destructors/moved-pa17.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.destructors"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "Moved from pa17/tests/spec/boundaries/type-generic.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/destructors/nested-reference-argument.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.destructors"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/instance_destructors.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/destructors/outer-before-generic-fields.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.destructors"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/instance_destructors.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/destructors/partly-moved-generic-wrapper.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.destructors"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/instance_destructors.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/destructors/permuted-const-kinds.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.destructors"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/instance_destructors.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/destructors/permuted-const-values.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.destructors"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/instance_destructors.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/destructors/permuted-drop-arguments.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.destructors"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/instance_destructors.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/destructors/permuted-lifetimes.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.destructors"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/instance_destructors.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/destructors/unused-growing-drop.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.destructors"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/instance_destructors.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/destructors/unused-impl-lifetime.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.destructors"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/instance_destructors.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/destructors/unused-lifetime-chain.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.destructors"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/instance_destructors.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/destructors/zero-array-generic-prototype.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.destructors"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/instance_destructors.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/destructors/zero-array-prototype.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.destructors"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/instance_destructors.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/drop-headers/alias-permuted.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.drop-headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/destructor_conformance.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/drop-headers/anonymous-impl.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.drop-headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/destructor_conformance.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/drop-headers/anonymous-mixed-copy.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.drop-headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/destructor_conformance.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/drop-headers/anonymous-self-bound.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.drop-headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/destructor_conformance.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/drop-headers/block-const.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.drop-headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/destructor_conformance.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/drop-headers/body-const-repeat.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.drop-headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/destructor_conformance.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/drop-headers/body-forbidden-move.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.drop-headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/destructor_conformance.rs::CASES"
+    },
+    {
+      "path": "tests/spec/drop-headers/bool-const.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.drop-headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/destructor_conformance.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/drop-headers/callable-bound-local-lifetime.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.drop-headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/destructor_conformance.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/drop-headers/callable-self-annotation.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.drop-headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/destructor_conformance.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/drop-headers/char-const.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.drop-headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/destructor_conformance.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/drop-headers/clone-implied.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.drop-headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/destructor_conformance.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/drop-headers/closed-const.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.drop-headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/destructor_conformance.rs::CASES"
+    },
+    {
+      "path": "tests/spec/drop-headers/closed-type.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.drop-headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/destructor_conformance.rs::CASES"
+    },
+    {
+      "path": "tests/spec/drop-headers/composite-extra-parameter.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.drop-headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/destructor_conformance.rs::CASES"
+    },
+    {
+      "path": "tests/spec/drop-headers/const.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.drop-headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/destructor_conformance.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/drop-headers/copy-exact.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.drop-headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/destructor_conformance.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/drop-headers/copy-extra.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.drop-headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/destructor_conformance.rs::CASES"
+    },
+    {
+      "path": "tests/spec/drop-headers/copy-missing.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.drop-headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/destructor_conformance.rs::CASES"
+    },
+    {
+      "path": "tests/spec/drop-headers/derived-copy.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.drop-headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/destructor_conformance.rs::CASES"
+    },
+    {
+      "path": "tests/spec/drop-headers/duplicate-const.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.drop-headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/destructor_conformance.rs::CASES"
+    },
+    {
+      "path": "tests/spec/drop-headers/duplicate-impl.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.drop-headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/destructor_conformance.rs::CASES"
+    },
+    {
+      "path": "tests/spec/drop-headers/duplicate-type.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.drop-headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/destructor_conformance.rs::CASES"
+    },
+    {
+      "path": "tests/spec/drop-headers/explicit-receiver.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.drop-headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/destructor_conformance.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/drop-headers/impl-default.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.drop-headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/destructor_conformance.rs::CASES"
+    },
+    {
+      "path": "tests/spec/drop-headers/impl-implied-type-sized.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.drop-headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/destructor_conformance.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/drop-headers/method-extra-bound.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.drop-headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/destructor_conformance.rs::CASES"
+    },
+    {
+      "path": "tests/spec/drop-headers/method-implied-clone.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.drop-headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/destructor_conformance.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/drop-headers/method-implied-copy.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.drop-headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/destructor_conformance.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/drop-headers/method-outlives-extra.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.drop-headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/destructor_conformance.rs::CASES"
+    },
+    {
+      "path": "tests/spec/drop-headers/method-receiver-bound.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.drop-headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/destructor_conformance.rs::CASES"
+    },
+    {
+      "path": "tests/spec/drop-headers/method-receiver-copy.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.drop-headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/destructor_conformance.rs::CASES"
+    },
+    {
+      "path": "tests/spec/drop-headers/method-type.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.drop-headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/destructor_conformance.rs::CASES"
+    },
+    {
+      "path": "tests/spec/drop-headers/mixed-permutation.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.drop-headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/destructor_conformance.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/drop-headers/mixed.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.drop-headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/destructor_conformance.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/drop-headers/nested-function-capture.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.drop-headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/destructor_conformance.rs::CASES"
+    },
+    {
+      "path": "tests/spec/drop-headers/nominal-composite.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.drop-headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/destructor_conformance.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/drop-headers/nominal-outlives-static.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.drop-headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/destructor_conformance.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/drop-headers/outlives-explicit.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.drop-headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/destructor_conformance.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/drop-headers/outlives-extra.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.drop-headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/destructor_conformance.rs::CASES"
+    },
+    {
+      "path": "tests/spec/drop-headers/outlives-implied.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.drop-headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/destructor_conformance.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/drop-headers/permuted-outlives-identity.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.drop-headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/destructor_conformance.rs::CASES"
+    },
+    {
+      "path": "tests/spec/drop-headers/permuted.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.drop-headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/destructor_conformance.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/drop-headers/receiver-local-lifetime.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.drop-headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/destructor_conformance.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/drop-headers/sized-function-extra.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.drop-headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/destructor_conformance.rs::CASES"
+    },
+    {
+      "path": "tests/spec/drop-headers/sized-pointer-extra.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.drop-headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/destructor_conformance.rs::CASES"
+    },
+    {
+      "path": "tests/spec/drop-headers/swapped-consts.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.drop-headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/destructor_conformance.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/drop-headers/type.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.drop-headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/destructor_conformance.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/drop-headers/unsized-function.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.drop-headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/destructor_conformance.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/drop-headers/unsized-pointer.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.drop-headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/destructor_conformance.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/drop-headers/unused-const.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.drop-headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/destructor_conformance.rs::CASES"
+    },
+    {
+      "path": "tests/spec/drop-headers/unused-lifetime-outlives-path.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.drop-headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/destructor_conformance.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/drop-headers/unused-lifetime-strengthening.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.drop-headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/destructor_conformance.rs::CASES"
+    },
+    {
+      "path": "tests/spec/drop-headers/unused-lifetime.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.drop-headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/destructor_conformance.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/drop-headers/unused-type.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.drop-headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/destructor_conformance.rs::CASES"
+    },
+    {
+      "path": "tests/spec/drop-headers/wrapped-type.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.drop-headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/destructor_conformance.rs::CASES"
+    },
+    {
+      "path": "tests/spec/entry/const-parameter.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.entry"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "PA18 public generic contract"
+    },
+    {
+      "path": "tests/spec/entry/type-parameter.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.entry"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "PA18 public generic contract"
+    },
+    {
+      "path": "tests/spec/functions/accept-alias.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.functions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_functions.rs::ACCEPTED",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/functions/accept-annotation.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.functions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_functions.rs::ACCEPTED",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/functions/accept-array.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.functions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_functions.rs::ACCEPTED",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/functions/accept-branch.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.functions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_functions.rs::ACCEPTED",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/functions/accept-const-arithmetic.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.functions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_functions.rs::ACCEPTED",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/functions/accept-const-bool.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.functions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_functions.rs::ACCEPTED",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/functions/accept-const-char.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.functions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_functions.rs::ACCEPTED",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/functions/accept-const-order.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.functions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_functions.rs::ACCEPTED",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/functions/accept-const-value.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.functions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_functions.rs::ACCEPTED",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/functions/accept-early-lifetime.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.functions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_functions.rs::ACCEPTED",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/functions/accept-fn-pointer.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.functions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_functions.rs::ACCEPTED",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/functions/accept-identity.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.functions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_functions.rs::ACCEPTED",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/functions/accept-late-order.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.functions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_functions.rs::ACCEPTED",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/functions/accept-mutable-local.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.functions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_functions.rs::ACCEPTED",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/functions/accept-mutable-reference.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.functions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_functions.rs::ACCEPTED",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/functions/accept-reference.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.functions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_functions.rs::ACCEPTED",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/functions/accept-repeat-once.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.functions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_functions.rs::ACCEPTED",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/functions/accept-repeat-shared.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.functions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_functions.rs::ACCEPTED",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/functions/accept-separate-owners.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.functions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_functions.rs::ACCEPTED",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/functions/accept-swap.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.functions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_functions.rs::ACCEPTED",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/functions/accept-unused.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.functions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_functions.rs::ACCEPTED",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/functions/reject-annotation.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.functions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_functions.rs::REJECTED"
+    },
+    {
+      "path": "tests/spec/functions/reject-arithmetic.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.functions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_functions.rs::REJECTED"
+    },
+    {
+      "path": "tests/spec/functions/reject-array-length-type.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.functions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_functions.rs::REJECTED"
+    },
+    {
+      "path": "tests/spec/functions/reject-const-condition.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.functions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_functions.rs::REJECTED"
+    },
+    {
+      "path": "tests/spec/functions/reject-const-default.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.functions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_functions.rs::REJECTED"
+    },
+    {
+      "path": "tests/spec/functions/reject-const-in-type.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.functions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_functions.rs::REJECTED"
+    },
+    {
+      "path": "tests/spec/functions/reject-const-result.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.functions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_functions.rs::REJECTED"
+    },
+    {
+      "path": "tests/spec/functions/reject-const-type.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.functions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_functions.rs::REJECTED"
+    },
+    {
+      "path": "tests/spec/functions/reject-dependent-const-type.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.functions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_functions.rs::REJECTED"
+    },
+    {
+      "path": "tests/spec/functions/reject-distinct.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.functions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_functions.rs::REJECTED"
+    },
+    {
+      "path": "tests/spec/functions/reject-drop-const-parameter.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.functions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_functions.rs::REJECTED"
+    },
+    {
+      "path": "tests/spec/functions/reject-duplicate.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.functions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_functions.rs::REJECTED"
+    },
+    {
+      "path": "tests/spec/functions/reject-lifetime-order.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.functions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_functions.rs::REJECTED"
+    },
+    {
+      "path": "tests/spec/functions/reject-numeric-default.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.functions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_functions.rs::REJECTED"
+    },
+    {
+      "path": "tests/spec/functions/reject-repeat-unbounded.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.functions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_functions.rs::REJECTED"
+    },
+    {
+      "path": "tests/spec/functions/reject-rigid.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.functions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_functions.rs::REJECTED"
+    },
+    {
+      "path": "tests/spec/functions/reject-type-default.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.functions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_functions.rs::REJECTED"
+    },
+    {
+      "path": "tests/spec/functions/reject-unused-invalid-body.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.functions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/generic_functions.rs::REJECTED"
+    },
+    {
+      "path": "tests/spec/loans/array-reborrow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_loans.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/loans/bound-is-directed.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_loans.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/loans/branch-exclusive.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_loans.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/loans/constant-promotion.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_loans.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/loans/copy-local-escape.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_loans.rs::CASES"
+    },
+    {
+      "path": "tests/spec/loans/copy-reference-calls.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_loans.rs::CASES"
+    },
+    {
+      "path": "tests/spec/loans/copy-reference-pair.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_loans.rs::CASES"
+    },
+    {
+      "path": "tests/spec/loans/empty-mutable-promotion.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_loans.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/loans/empty-promotion.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_loans.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/loans/generic-call-mutable.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_loans.rs::CASES"
+    },
+    {
+      "path": "tests/spec/loans/generic-call-shared.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_loans.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/loans/identity.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_loans.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/loans/loop-conflict.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_loans.rs::CASES"
+    },
+    {
+      "path": "tests/spec/loans/loop-last-use.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_loans.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/loans/mutable-pair.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_loans.rs::CASES"
+    },
+    {
+      "path": "tests/spec/loans/mutable-reborrow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_loans.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/loans/read-after-use.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_loans.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/loans/read-mutable.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_loans.rs::CASES"
+    },
+    {
+      "path": "tests/spec/loans/read-shared.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_loans.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/loans/reborrow-conflict.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_loans.rs::CASES"
+    },
+    {
+      "path": "tests/spec/loans/reborrow-last-use.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_loans.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/loans/replace-ended.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_loans.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/loans/replace-live.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_loans.rs::CASES"
+    },
+    {
+      "path": "tests/spec/loans/scope-ended.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_loans.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/loans/separate-owners.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_loans.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/loans/shared-reborrow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_loans.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/loans/static-bound-is-directed.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_loans.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/operands/bool-operand.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.operands"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/symbolic_operands.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/operands/const-index.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.operands"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/symbolic_operands.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/operands/immutable-write.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.operands"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/symbolic_operands.rs::CASES"
+    },
+    {
+      "path": "tests/spec/operands/inferred-bound.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.operands"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/symbolic_operands.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/operands/nested.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.operands"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/symbolic_operands.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/operands/noncopy-move.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.operands"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/symbolic_operands.rs::CASES"
+    },
+    {
+      "path": "tests/spec/operands/overlapping-borrow.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.operands"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/symbolic_operands.rs::CASES"
+    },
+    {
+      "path": "tests/spec/operands/read.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.operands"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/symbolic_operands.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/operands/reference.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.operands"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/symbolic_operands.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/operands/signed-operand.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.operands"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/symbolic_operands.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/operands/write.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.operands"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/symbolic_operands.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/ownership/borrowed-copy.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.ownership"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_ownership.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/ownership/borrowed-move.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.ownership"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_ownership.rs::CASES"
+    },
+    {
+      "path": "tests/spec/ownership/both-branches.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.ownership"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_ownership.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/ownership/branch-move.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.ownership"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_ownership.rs::CASES"
+    },
+    {
+      "path": "tests/spec/ownership/clone.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.ownership"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_ownership.rs::CASES"
+    },
+    {
+      "path": "tests/spec/ownership/conditional-init.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.ownership"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_ownership.rs::CASES"
+    },
+    {
+      "path": "tests/spec/ownership/copy.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.ownership"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_ownership.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/ownership/discard-call.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.ownership"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_ownership.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/ownership/drop-copy-field.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.ownership"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_ownership.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/ownership/drop-field.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.ownership"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_ownership.rs::CASES"
+    },
+    {
+      "path": "tests/spec/ownership/identity.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.ownership"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_ownership.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/ownership/immutable-write.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.ownership"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_ownership.rs::CASES"
+    },
+    {
+      "path": "tests/spec/ownership/loop-break.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.ownership"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_ownership.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/ownership/loop-move.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.ownership"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_ownership.rs::CASES"
+    },
+    {
+      "path": "tests/spec/ownership/loop-restore.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.ownership"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_ownership.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/ownership/partial-fields.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.ownership"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_ownership.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/ownership/partial-whole.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.ownership"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_ownership.rs::CASES"
+    },
+    {
+      "path": "tests/spec/ownership/reference-assumption.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.ownership"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_ownership.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/ownership/reinitialize.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.ownership"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_ownership.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/ownership/repeat-block-parameter.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.ownership"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_ownership.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/ownership/repeat-const-expression.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.ownership"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_ownership.rs::CASES"
+    },
+    {
+      "path": "tests/spec/ownership/repeat-constant-owned.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.ownership"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_ownership.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/ownership/repeat-local-shadow.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.ownership"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_ownership.rs::CASES"
+    },
+    {
+      "path": "tests/spec/ownership/repeat-rvalue-owned.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.ownership"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_ownership.rs::CASES"
+    },
+    {
+      "path": "tests/spec/ownership/repeat-symbolic-unbounded.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.ownership"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_ownership.rs::CASES"
+    },
+    {
+      "path": "tests/spec/ownership/repeat-symbolic.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.ownership"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_ownership.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/ownership/repeat-wrong-const-type.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.ownership"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_ownership.rs::CASES"
+    },
+    {
+      "path": "tests/spec/ownership/repeat-zero.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.ownership"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_ownership.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/ownership/shared.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.ownership"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_ownership.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/ownership/tuple-copy.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.ownership"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_ownership.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/ownership/tuple-element.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.ownership"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_ownership.rs::CASES"
+    },
+    {
+      "path": "tests/spec/ownership/twice.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.ownership"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_ownership.rs::CASES"
+    },
+    {
+      "path": "tests/spec/ownership/unused-invalid.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.ownership"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_ownership.rs::CASES"
+    },
+    {
+      "path": "tests/spec/ownership/wildcard.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.ownership"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_ownership.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/proofs/drop-active-loan.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.proofs"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "PA18 public generic contract"
+    },
+    {
+      "path": "tests/spec/proofs/drop-local-reference.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.proofs"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "PA18 public generic contract"
+    },
+    {
+      "path": "tests/spec/proofs/macro-unused-move.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.proofs"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "PA18 public generic contract"
+    },
+    {
+      "path": "tests/spec/proofs/unused-drop-field-move.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.proofs"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "PA18 public generic contract"
+    },
+    {
+      "path": "tests/spec/regions/array-distinct-lengths.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.regions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_regions.rs::CASES"
+    },
+    {
+      "path": "tests/spec/regions/array-invariant.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.regions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_regions.rs::CASES"
+    },
+    {
+      "path": "tests/spec/regions/array-lengthening.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.regions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_regions.rs::CASES"
+    },
+    {
+      "path": "tests/spec/regions/array-shortening.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.regions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_regions.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/regions/constant-promotion.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.regions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_regions.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/regions/copy-temporary.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.regions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_regions.rs::CASES"
+    },
+    {
+      "path": "tests/spec/regions/drop-constant.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.regions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_regions.rs::CASES"
+    },
+    {
+      "path": "tests/spec/regions/drop-empty.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.regions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_regions.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/regions/drop-promotion.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.regions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_regions.rs::CASES"
+    },
+    {
+      "path": "tests/spec/regions/empty-promotion.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.regions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_regions.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/regions/forward-call.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.regions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_regions.rs::CASES"
+    },
+    {
+      "path": "tests/spec/regions/forward-reference.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.regions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_regions.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/regions/generic-mutable-empty.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.regions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_regions.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/regions/generic-nested-empty.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.regions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_regions.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/regions/lengthening.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.regions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_regions.rs::CASES"
+    },
+    {
+      "path": "tests/spec/regions/local-return.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.regions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_regions.rs::CASES"
+    },
+    {
+      "path": "tests/spec/regions/nonzero-repeat.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.regions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_regions.rs::CASES"
+    },
+    {
+      "path": "tests/spec/regions/temporary-return.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.regions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_regions.rs::CASES"
+    },
+    {
+      "path": "tests/spec/regions/zero-repeat.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.regions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/template_regions.rs::CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    }
+  ]
+}

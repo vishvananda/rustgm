@@ -21,15 +21,25 @@ def classification(case):
     if metadata["status"] != case["exit_status"] and not metadata.get("reason"):
         raise ValueError("acceptance differences require a phase-boundary reason")
     if case["exit_status"] == 0:
-        if metadata["status"] != 0 or case.get("native", {}).get("outcome") not in ("pass", "panic"):
-            raise ValueError("every accepted native fixture needs a rustc executable and declared outcome")
-        native = case["native"]
-        independent = native.get("rustc_outcome", native["outcome"])
-        if independent not in ("pass", "panic"):
-            raise ValueError("rustc runtime outcomes must be pass or qualified panic")
-        if independent != native["outcome"] and (
-                not isinstance(native.get("reason"), str) or not native["reason"].strip()):
-            raise ValueError("runtime differences require an explicit Reference/rustc reason")
+        native = case.get("native", {})
+        if metadata["status"] != 0:
+            raise ValueError("accepted native fixtures require successful rustc code generation")
+        kind = native.get("kind", "execute")
+        if kind == "codegen":
+            if (not isinstance(native.get("reason"), str) or not native["reason"].strip()
+                    or "outcome" in native or "rustc_outcome" in native):
+                raise ValueError("codegen-only fixtures require a reason and cannot declare runtime outcomes")
+        elif kind == "execute":
+            if native.get("outcome") not in ("pass", "panic"):
+                raise ValueError("every executed native fixture needs a declared outcome")
+            independent = native.get("rustc_outcome", native["outcome"])
+            if independent not in ("pass", "panic"):
+                raise ValueError("rustc runtime outcomes must be pass or qualified panic")
+            if independent != native["outcome"] and (
+                    not isinstance(native.get("reason"), str) or not native["reason"].strip()):
+                raise ValueError("runtime differences require an explicit Reference/rustc reason")
+        else:
+            raise ValueError("unknown native check kind")
     elif "native" in case:
         raise ValueError("rejected sources cannot declare native execution")
 
@@ -48,6 +58,16 @@ def execution(result, outcome, compiler):
             raise ValueError(f"cppgm: expected qualified abort exit 134, got {result.returncode}")
     elif result.returncode != -signal.SIGABRT or b"panicked at" not in result.stderr:
         raise ValueError(f"rustc: expected a runtime panic with abort, got {result.returncode}")
+
+
+def run_executables(metadata, rustexe, native, run):
+    """Compilation-only controls can diverge; never execute either produced binary."""
+    if metadata.get("kind", "execute") == "codegen":
+        return
+    outcome = metadata["outcome"]
+    independent = metadata.get("rustc_outcome", outcome)
+    execution(run([str(rustexe)], "rustc-run", 10), independent, "rustc")
+    execution(run([str(native)], "native-run", 10), outcome, "cppgm")
 
 
 def native_cases(manifest, cases):
@@ -121,11 +141,8 @@ def check(app, jobs, stage="pa11"):
                     result = run(command, label)
                     if result.returncode:
                         raise ValueError(f"{label} failed ({result.returncode}): {result.stderr.decode(errors='replace')}")
-                outcome = case["native"]["outcome"]
-                independent = case["native"].get("rustc_outcome", outcome)
                 evidence["native"] = case["native"]
-                execution(run([str(rustexe)], "rustc-run", 10), independent, "rustc")
-                execution(run([str(native)], "native-run", 10), outcome, "cppgm")
+                run_executables(case["native"], rustexe, native, run)
             evidence["passed"] = True
         except (ValueError, OSError, subprocess.SubprocessError) as error:
             evidence["error"] = str(error)
@@ -143,7 +160,9 @@ def check(app, jobs, stage="pa11"):
         print(f"FAIL {item['path']}: {item['error']}")
     if failures:
         raise ValueError(f"{len(failures)}/{len(cases)} independent native checks failed")
-    print(f"PASS: {stage.upper()}: {len(cases)} independent checks; {sum('native' in c for c in cases)} executable comparisons")
+    accepted = [c["native"] for c in cases if "native" in c]
+    compiled = sum(n.get("kind", "execute") == "codegen" for n in accepted)
+    print(f"PASS: {stage.upper()}: {len(cases)} independent checks; {len(accepted) - compiled} executable comparisons; {compiled} codegen-only comparisons")
     differences = sum(c.get("native", {}).get("rustc_outcome", c.get("native", {}).get("outcome"))
                       != c.get("native", {}).get("outcome") for c in cases)
     if differences:

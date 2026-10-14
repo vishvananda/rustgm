@@ -13,10 +13,20 @@ from course import ROOT, load_cases, run_case, case_environment
 
 def check_classification(case):
     metadata = case["rustc"]
+    rustc_emission(metadata)
     if metadata["kind"] == "fragment":
         return
     if metadata.get("status", 0) != case["exit_status"] and not metadata.get("reason"):
         raise ValueError(f"independent outcome mismatch requires an explicit reason: {case['path']}")
+
+
+def rustc_emission(metadata):
+    emit = metadata.get("emit", "metadata")
+    if emit not in ("metadata", "obj"):
+        raise ValueError("independent emission must be metadata or obj")
+    if emit == "obj" and metadata["kind"] != "program":
+        raise ValueError("object generation requires a complete program")
+    return "--emit=" + emit
 
 
 def expression_source(data, metadata):
@@ -87,7 +97,7 @@ def check(stage, app):
         if kind != "predicate":
             mode = case.get("mode", manifest["mode"])
             command += ["--crate-type=bin" if mode == "--emit-lowir" else "--crate-type=lib",
-                        "--emit=metadata"]
+                        rustc_emission(metadata)]
         result = subprocess.run(command, capture_output=True, timeout=30, env=case_environment(case))
         (case_directory / "rustc.stderr").write_bytes(result.stderr)
         wanted = 0 if kind == "predicate" else metadata["status"]

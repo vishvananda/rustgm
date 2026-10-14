@@ -19,7 +19,7 @@ use crate::{
 /// identities, never keys that combine different instances' lifetime contexts.
 /// # Errors
 /// Rejects invalid unused templates, unsupported demanded bodies, proof failures
-/// and bounded instance growth. This maintainer path does not activate PA18.
+/// and bounded instance growth.
 pub fn build(
     report: &Report,
     facts: &mut Declarations,

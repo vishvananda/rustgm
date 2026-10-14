@@ -6,7 +6,7 @@ import unittest
 
 SCRIPTS = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SCRIPTS))
-from check_native import classification, execution, native_cases
+from check_native import classification, execution, native_cases, run_executables
 
 
 class NativeContract(unittest.TestCase):
@@ -60,3 +60,18 @@ class NativeContract(unittest.TestCase):
                                           ("rustc", -signal.SIGABRT, b""), ("rustc", -signal.SIGSEGV, b"panicked at x")]:
             with self.assertRaises(ValueError):
                 execution(subprocess.CompletedProcess([], status, b"", stderr), "panic", compiler)
+
+    def test_codegen_controls_are_qualified_but_never_executed(self):
+        case = {"exit_status": 0, "rustc": {"kind": "program", "status": 0},
+                "native": {"kind": "codegen", "reason": "main intentionally diverges"}}
+        classification(case)
+        def forbidden(*args):
+            self.fail("codegen-only binaries must not execute")
+        run_executables(case["native"], Path("rustc"), Path("cppgm"), forbidden)
+        for extra in ({"outcome": "pass"}, {"rustc_outcome": "panic"}, {"reason": " "},
+                      {"kind": "skip"}):
+            invalid = dict(case, native=case["native"] | extra)
+            with self.assertRaises(ValueError):
+                classification(invalid)
+        with self.assertRaises(ValueError):
+            classification(dict(case, exit_status=1))

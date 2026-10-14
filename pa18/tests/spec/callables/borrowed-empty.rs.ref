@@ -1,0 +1,27 @@
+global @rg.data.0 : obj<1x1> [storage=readonly] = {
+  zero 1
+}
+function @rg.16() -> void {
+  block ^b0:
+    %t0 = call ptr @rg.15.i3()
+    return void
+}
+function @rg.15.i3() -> ptr {
+  block ^b0:
+    %t0 = cmp uge i64 0, 0
+    branch %t0, ^b1, ^b2
+  block ^b2:
+    %t1 = binary mul i64 0, 1
+    %t2 = addr @rg.data.0
+    %t3 = index u8 %t2, %t1
+    return ptr %t3
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+declare function @abort() -> void [return=noreturn]
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.16()
+    return i64 0
+}

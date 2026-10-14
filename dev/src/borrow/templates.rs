@@ -18,6 +18,9 @@ pub struct Checked<'a> {
     contracts: Vec<Contract>,
 }
 impl Checked<'_> {
+    pub(crate) fn is_empty(&self) -> bool {
+        self.templates.bodies.is_empty()
+    }
     #[must_use]
     pub fn get(&self, item: ItemId) -> Option<&Template> {
         self.index

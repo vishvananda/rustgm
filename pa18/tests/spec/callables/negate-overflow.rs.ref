@@ -1,0 +1,26 @@
+global @rg.data.0 : obj<1x1> [storage=readonly] = {
+  u8 128
+}
+function @rg.16() -> void {
+  block ^b0:
+    %t0 = call ptr @rg.15.i3()
+    return void
+}
+function @rg.15.i3() -> ptr {
+  block ^b0:
+    %t0 = cmp eq i8 128, 128
+    branch %t0, ^b1, ^b2
+  block ^b2:
+    %t1 = unary neg i8 128
+    %t2 = addr @rg.data.0
+    return ptr %t2
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+declare function @abort() -> void [return=noreturn]
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.16()
+    return i64 0
+}

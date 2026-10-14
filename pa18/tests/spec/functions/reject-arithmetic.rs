@@ -1,0 +1,2 @@
+fn f<T>(x:T)->T{x+1}
+fn main(){}

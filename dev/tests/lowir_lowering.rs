@@ -211,3 +211,66 @@ fn deep_scalar_lowering_is_iterative_and_deterministic() -> Result<(), Box<dyn s
     assert!(!text.contains(" typed "));
     Ok(())
 }
+
+#[test]
+fn public_lowir_demands_generic_functions_factories_and_cleanup()
+-> Result<(), Box<dyn std::error::Error>> {
+    for source in [
+        "fn id<T>(x:T)->T{x}fn main(){let _=id(7u8);let _=id(300u16);let _=id(9u8);}",
+        "struct S<T>(T);fn main(){let f:fn(u8)->S<u8>=S;let _=f(7);}",
+        "struct D<T>(T);impl<T> Drop for D<T>{fn drop(&mut self){}}fn main(){let _d=D(7u8);}",
+        "fn unused<T>(x:T)->T{x}fn main(){}",
+    ] {
+        let full = compile(source)?;
+        assert_eq!(full.status.code(), Some(0), "{:?}", full.stderr);
+        assert!(full.stderr.is_empty());
+        let again = compile(source)?;
+        assert_eq!(again.status.code(), Some(0));
+        assert_eq!(again.stdout, full.stdout);
+        assert!(again.stderr.is_empty());
+        let count = mode(source, "--count-lowir")?;
+        assert_eq!(count.status.code(), Some(0), "{:?}", count.stderr);
+        assert!(count.stderr.is_empty());
+        let text = String::from_utf8(full.stdout)?;
+        let counts = String::from_utf8(count.stdout)?;
+        let counts: Vec<_> = counts.split_whitespace().collect();
+        assert_eq!(
+            counts[3].parse::<usize>()?,
+            text.lines().filter(|s| s.starts_with("function @")).count()
+        );
+        assert_eq!(
+            counts[5].parse::<usize>()?,
+            text.matches("  block ^").count()
+        );
+        if source.starts_with("fn id") {
+            // Two concrete identities share the repeated u8 demand.
+            assert_eq!(counts[3], "4");
+        }
+        if source.starts_with("fn unused") {
+            assert_eq!(counts[3], "2");
+        }
+    }
+    Ok(())
+}
+
+#[test]
+fn public_lowir_rejects_unused_generic_proof_failures_without_partial_output()
+-> Result<(), Box<dyn std::error::Error>> {
+    for source in [
+        "fn bad<T>(x:T){let a=x;let b=x;}fn main(){}",
+        "macro_rules! bad{()=>{fn unused<T>(x:T){let a=x;let b=x;}}}bad!();fn main(){}",
+        "fn bad<T>(x:T)->&'static T{&x}fn main(){}",
+    ] {
+        for view in ["--emit-lowir", "--count-lowir"] {
+            let result = mode(source, view)?;
+            assert_eq!(result.status.code(), Some(1), "{source}");
+            assert!(result.stdout.is_empty());
+            let diagnostic = String::from_utf8(result.stderr)?;
+            assert!(diagnostic.starts_with("ERROR: file "), "{diagnostic}");
+            if source.starts_with("macro_rules!") {
+                assert!(diagnostic.contains("in macro bad"), "{diagnostic}");
+            }
+        }
+    }
+    Ok(())
+}

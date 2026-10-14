@@ -1233,19 +1233,6 @@
       }
     },
     {
-      "path": "tests/spec/boundary/generic.rs",
-      "exit_status": 1,
-      "features": [
-        "pa12.boundary"
-      ],
-      "rustc": {
-        "kind": "program",
-        "status": 0,
-        "default_lints": true,
-        "reason": "PA18 owns type-parameterized aggregates and instantiation."
-      }
-    },
-    {
       "path": "tests/spec/boundary/constant-function.rs",
       "exit_status": 1,
       "features": [

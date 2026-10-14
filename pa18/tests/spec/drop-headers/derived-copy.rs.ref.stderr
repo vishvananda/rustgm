@@ -1,0 +1,1 @@
+ERROR: file 0: 36: a type cannot implement both Copy and Drop
