@@ -1,0 +1,1 @@
+struct D<'a>(&'a mut u8);impl Drop for D<'_>{fn drop(&mut self){*self.0+=1;}}fn observe(_:u8){}enum E<'a>{None,Full(&'a u8)}impl Drop for E<'_>{fn drop(&mut self){}}fn f(){let mut p=(0u8,E::None);p.1=E::Full(&p.0);}fn main(){}

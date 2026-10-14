@@ -173,9 +173,10 @@ fn extended_temporary_storage_ends_after_the_destructor_that_uses_it()
 #[test]
 fn counter_programs_qualify_the_destructor_loan_proof() -> Result<(), Box<dyn std::error::Error>> {
     let cases = destructor_cases::CASES;
-    for &(name, source, accepted) in cases {
-        rustc::qualify(&format!("destructor-counter-{name}"), source, accepted)?;
-        let result = check(source);
+    for &(name, path, accepted) in cases {
+        let source = destructor_cases::source(path)?;
+        rustc::qualify(&format!("destructor-counter-{name}"), &source, accepted)?;
+        let result = check(&source);
         assert_eq!(result.is_ok(), accepted, "{name}: {result:?}");
     }
     Ok(())

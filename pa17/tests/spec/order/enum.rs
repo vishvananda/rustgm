@@ -1,0 +1,1 @@
+fn trace(_:u8){}struct D(u8);impl Drop for D{fn drop(&mut self){trace(self.0);}}enum E{A(D,D),B{first:D,last:D},C}fn f(e:E){trace(9);}fn main(){f(E::A(D(1),D(2)));f(E::B{last:D(4),first:D(3)});f(E::C);}

@@ -16,7 +16,7 @@ fn build(
     if name != "edge-conditional" {
         return lowering::build(source);
     }
-    lowering::build_with(source, |program| {
+    lowering::build_with(source, |_, program| {
         use rustgm::body::{
             ir::{Action, BlockId, LocalKind, Rvalue, Terminator},
             storage::Location,
@@ -72,10 +72,51 @@ fn build(
 #[test]
 fn checked_cleanup_programs_lower_without_reopening_invalid_borrows()
 -> Result<(), Box<dyn std::error::Error>> {
-    for &(name, source, accepted) in cases::CASES {
-        rustc::qualify(&format!("lower-cleanup-{name}"), source, accepted)?;
-        let result = build(name, source);
+    for &(name, path, accepted) in cases::CASES {
+        let source = cases::source(path)?;
+        rustc::qualify(&format!("lower-cleanup-{name}"), &source, accepted)?;
+        let result = build(name, &source);
         assert_eq!(result.is_ok(), accepted, "{name}: {:?}", result.err());
+    }
+    Ok(())
+}
+
+#[test]
+fn cli_requires_completed_destructor_proofs_and_matches_library_lowering()
+-> Result<(), Box<dyn std::error::Error>> {
+    let folder = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join(format!("../obj/cleanup-cli-{}", std::process::id()));
+    std::fs::create_dir_all(&folder)?;
+    for &(name, path, accepted) in cases::CASES {
+        let source = cases::source(path)?;
+        let input = folder.join(format!("{name}.rs"));
+        std::fs::write(&input, &source)?;
+        let program = lowering::build(&source);
+        for (mode, count) in [("--emit-lowir", false), ("--count-lowir", true)] {
+            let output = Command::new(env!("CARGO_BIN_EXE_rustgm"))
+                .arg(mode)
+                .arg(&input)
+                .output()?;
+            assert_eq!(
+                output.status.code(),
+                Some(i32::from(!accepted)),
+                "{name}: {mode}: {}",
+                String::from_utf8_lossy(&output.stderr)
+            );
+            if accepted {
+                assert!(output.stderr.is_empty(), "{name}: {mode}");
+                let mut expected = Vec::new();
+                let program = program.as_ref().map_err(|e| format!("{name}: {e}"))?;
+                if count {
+                    rustgm::lowir::writer::count(program, &mut expected)?;
+                } else {
+                    rustgm::lowir::writer::write(program, &mut expected)?;
+                }
+                assert_eq!(output.stdout, expected, "{name}: {mode}");
+            } else {
+                assert!(output.stdout.is_empty(), "{name}: {mode}");
+            }
+        }
     }
     Ok(())
 }
@@ -125,12 +166,13 @@ fn destructor_counters_execute_like_rustc() -> Result<(), Box<dyn std::error::Er
         .ok_or("root")?;
     let folder = root.join(format!("obj/native-destructors-{}", std::process::id()));
     std::fs::create_dir_all(&folder)?;
-    for &(name, source, accepted) in cases::CASES {
+    for &(name, path, accepted) in cases::CASES {
+        let source = cases::source(path)?;
         if !accepted {
             continue;
         }
         let input = folder.join(format!("{name}.rs"));
-        std::fs::write(&input, source)?;
+        std::fs::write(&input, &source)?;
         let oracle = folder.join(format!("{name}.rustc"));
         success(
             name,
@@ -151,10 +193,10 @@ fn destructor_counters_execute_like_rustc() -> Result<(), Box<dyn std::error::Er
                 .output()?,
         )?;
         let expected = success(name, Command::new(&oracle).output()?)?;
-        let program = build(name, source).map_err(|e| format!("{name}: {e}"))?;
+        let program = build(name, &source).map_err(|e| format!("{name}: {e}"))?;
         let mut bytes = Vec::new();
         rustgm::lowir::writer::write(&program, &mut bytes)?;
-        let again = build(name, source)?;
+        let again = build(name, &source)?;
         let mut repeated = Vec::new();
         rustgm::lowir::writer::write(&again, &mut repeated)?;
         assert_eq!(bytes, repeated, "{name}: nondeterministic lowering");

@@ -1,0 +1,1 @@
+fn trace(_:u8){}struct D(u8);impl Drop for D{fn drop(&mut self){trace(self.0);}}#[repr(align(32))]struct Z;impl Drop for Z{fn drop(&mut self){trace(7);}}const ZED:Z=Z;fn main(){let z=[ZED;3];trace(9);}

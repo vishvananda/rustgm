@@ -1,18 +1,21 @@
-//! Test adapter for the staged destruction proof, before the PA17 CLI contract.
+//! Test adapter for completed destruction proofs and typed body probes.
 #[path = "../support/semantic.rs"]
 mod semantic;
 use rustgm::{body, borrow, lower, lowir, sema};
 pub fn build(source: &str) -> Result<lowir::program::Program, Box<dyn std::error::Error>> {
-    build_with(source, |_| Ok(()))
+    build_with(source, |_, _| Ok(()))
 }
 pub fn build_with(
     source: &str,
-    amend: impl FnOnce(&mut body::ir::Program) -> Result<(), Box<dyn std::error::Error>>,
+    amend: impl FnOnce(
+        &rustgm::resolve::expansion::Report,
+        &mut body::ir::Program,
+    ) -> Result<(), Box<dyn std::error::Error>>,
 ) -> Result<lowir::program::Program, Box<dyn std::error::Error>> {
     let (mut report, mut facts) = semantic::analyze(source)?;
     let mut program = body::build(&report, &facts)?;
     body::promote::analyze(&report, &mut facts, &mut program)?;
-    amend(&mut program)?;
+    amend(&report, &mut program)?;
     body::constants::analyze(&report, &mut facts, &program)?;
     let contracts = body::regions::collect(&facts)?;
     let proof = borrow::regions::prepare_destruction(

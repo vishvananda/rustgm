@@ -1,0 +1,1 @@
+ERROR: file 0: 139: cannot move a non-Copy field out of a type that implements Drop

@@ -1,0 +1,2930 @@
+{
+  "schema": 1,
+  "mode": "--emit-lowir",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "panic": "abort",
+  "overflow_checks": true,
+  "debug_assertions": false,
+  "cases": [
+    {
+      "path": "tests/spec/abort/division.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.abort"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "new PA17 contract",
+      "native": {
+        "kind": "execute",
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/boundaries/inherent-method.rs",
+      "exit_status": 1,
+      "features": [
+        "pa17.boundaries"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "reason": "General inherent methods belong to PA19."
+      },
+      "maintainer_origin": "new PA17 contract"
+    },
+    {
+      "path": "tests/spec/boundaries/type-generic.rs",
+      "exit_status": 1,
+      "features": [
+        "pa17.boundaries"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "reason": "Type-generic destructor instantiation belongs to PA18."
+      },
+      "maintainer_origin": "new PA17 contract"
+    },
+    {
+      "path": "tests/spec/counters/borrowed-owner-order.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.counters"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/helpers/destructor_cases.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/counters/conditional-array-gaps.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.counters"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/helpers/destructor_cases.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/counters/conditional.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.counters"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/helpers/destructor_cases.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/counters/counted-array.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.counters"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/helpers/destructor_cases.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/counters/custom-and-fields.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.counters"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/helpers/destructor_cases.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/counters/custom-before-fields.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.counters"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/helpers/destructor_cases.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/counters/early-return.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.counters"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/helpers/destructor_cases.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/counters/edge-conditional.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.counters"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/helpers/destructor_cases.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/counters/enum-partial.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.counters"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/helpers/destructor_cases.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/counters/extended-owner-order.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.counters"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/helpers/destructor_cases.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/counters/indirect-replacement.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.counters"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/helpers/destructor_cases.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/counters/let-else.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.counters"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/helpers/destructor_cases.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/counters/loop.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.counters"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/helpers/destructor_cases.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/counters/move.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.counters"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/helpers/destructor_cases.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/counters/owned-index-replacement.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.counters"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/helpers/destructor_cases.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/counters/packed-field.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.counters"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/helpers/destructor_cases.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/counters/partial-array-borrow-live.rs",
+      "exit_status": 1,
+      "features": [
+        "pa17.counters"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/helpers/destructor_cases.rs"
+    },
+    {
+      "path": "tests/spec/counters/partial-array.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.counters"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/helpers/destructor_cases.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/counters/partial-tuple-borrow-live.rs",
+      "exit_status": 1,
+      "features": [
+        "pa17.counters"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/helpers/destructor_cases.rs"
+    },
+    {
+      "path": "tests/spec/counters/partial-tuple.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.counters"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/helpers/destructor_cases.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/counters/replacement.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.counters"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/helpers/destructor_cases.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/counters/return.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.counters"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/helpers/destructor_cases.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/counters/scope.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.counters"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/helpers/destructor_cases.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/counters/zero-repeat.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.counters"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/helpers/destructor_cases.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/field-moves/array-pattern.rs",
+      "exit_status": 1,
+      "features": [
+        "pa17.field-moves"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/drop_field_moves.rs"
+    },
+    {
+      "path": "tests/spec/field-moves/array-whole-element.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.field-moves"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/drop_field_moves.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/field-moves/borrow-field.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.field-moves"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/drop_field_moves.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/field-moves/copy-field.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.field-moves"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/drop_field_moves.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/field-moves/empty-array.rs",
+      "exit_status": 1,
+      "features": [
+        "pa17.field-moves"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/drop_field_moves.rs"
+    },
+    {
+      "path": "tests/spec/field-moves/enum-borrow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.field-moves"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/drop_field_moves.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/field-moves/enum-payload.rs",
+      "exit_status": 1,
+      "features": [
+        "pa17.field-moves"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/drop_field_moves.rs"
+    },
+    {
+      "path": "tests/spec/field-moves/field.rs",
+      "exit_status": 1,
+      "features": [
+        "pa17.field-moves"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/drop_field_moves.rs"
+    },
+    {
+      "path": "tests/spec/field-moves/mutable-reference.rs",
+      "exit_status": 1,
+      "features": [
+        "pa17.field-moves"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/drop_field_moves.rs"
+    },
+    {
+      "path": "tests/spec/field-moves/nested.rs",
+      "exit_status": 1,
+      "features": [
+        "pa17.field-moves"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/drop_field_moves.rs"
+    },
+    {
+      "path": "tests/spec/field-moves/non-drop-parent.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.field-moves"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/drop_field_moves.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/field-moves/pattern.rs",
+      "exit_status": 1,
+      "features": [
+        "pa17.field-moves"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/drop_field_moves.rs"
+    },
+    {
+      "path": "tests/spec/field-moves/replace-field.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.field-moves"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/drop_field_moves.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/field-moves/temporary.rs",
+      "exit_status": 1,
+      "features": [
+        "pa17.field-moves"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/drop_field_moves.rs"
+    },
+    {
+      "path": "tests/spec/field-moves/whole.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.field-moves"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/drop_field_moves.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/headers/alias-target.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/drop_headers.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/headers/aliased-duplicate.rs",
+      "exit_status": 1,
+      "features": [
+        "pa17.headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/drop_headers.rs"
+    },
+    {
+      "path": "tests/spec/headers/anonymous-target.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/drop_headers.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/headers/async-method.rs",
+      "exit_status": 1,
+      "features": [
+        "pa17.headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/drop_headers.rs"
+    },
+    {
+      "path": "tests/spec/headers/cfg-method.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/drop_headers.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/headers/const-method.rs",
+      "exit_status": 1,
+      "features": [
+        "pa17.headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/drop_headers.rs"
+    },
+    {
+      "path": "tests/spec/headers/copy-drop.rs",
+      "exit_status": 1,
+      "features": [
+        "pa17.headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/drop_headers.rs"
+    },
+    {
+      "path": "tests/spec/headers/different-receiver-type.rs",
+      "exit_status": 1,
+      "features": [
+        "pa17.headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/drop_headers.rs"
+    },
+    {
+      "path": "tests/spec/headers/duplicate-impl.rs",
+      "exit_status": 1,
+      "features": [
+        "pa17.headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/drop_headers.rs"
+    },
+    {
+      "path": "tests/spec/headers/elided-target.rs",
+      "exit_status": 1,
+      "features": [
+        "pa17.headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/drop_headers.rs"
+    },
+    {
+      "path": "tests/spec/headers/enum-lifetime-receiver.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/drop_headers.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/headers/enum-target.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/drop_headers.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/headers/erased-alias.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/drop_headers.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/headers/explicit-destructor-call.rs",
+      "exit_status": 1,
+      "features": [
+        "pa17.headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/drop_headers.rs"
+    },
+    {
+      "path": "tests/spec/headers/explicit-destructor-value.rs",
+      "exit_status": 1,
+      "features": [
+        "pa17.headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/drop_headers.rs"
+    },
+    {
+      "path": "tests/spec/headers/explicit-nominal.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/drop_headers.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/headers/explicit-placeholder.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/drop_headers.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/headers/explicit-rust-convention.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/drop_headers.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/headers/explicit-self.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/drop_headers.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/headers/extern-rust.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/drop_headers.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/headers/extra-constant.rs",
+      "exit_status": 1,
+      "features": [
+        "pa17.headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/drop_headers.rs"
+    },
+    {
+      "path": "tests/spec/headers/extra-method.rs",
+      "exit_status": 1,
+      "features": [
+        "pa17.headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/drop_headers.rs"
+    },
+    {
+      "path": "tests/spec/headers/extra-parameter.rs",
+      "exit_status": 1,
+      "features": [
+        "pa17.headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/drop_headers.rs"
+    },
+    {
+      "path": "tests/spec/headers/extra-unused-bound-from-used.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/drop_headers.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/headers/extra-unused-bound-to-used.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/drop_headers.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/headers/foreign-method.rs",
+      "exit_status": 1,
+      "features": [
+        "pa17.headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/drop_headers.rs"
+    },
+    {
+      "path": "tests/spec/headers/generic-method.rs",
+      "exit_status": 1,
+      "features": [
+        "pa17.headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/drop_headers.rs"
+    },
+    {
+      "path": "tests/spec/headers/impl-lifetime.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/drop_headers.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/headers/implied-bound.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/drop_headers.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/headers/implied-field-bound.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/drop_headers.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/headers/method-impl-bound.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/drop_headers.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/headers/method-stronger-impl-bound.rs",
+      "exit_status": 1,
+      "features": [
+        "pa17.headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/drop_headers.rs"
+    },
+    {
+      "path": "tests/spec/headers/method-tautological-bound.rs",
+      "exit_status": 1,
+      "features": [
+        "pa17.headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/drop_headers.rs"
+    },
+    {
+      "path": "tests/spec/headers/method-unused-bound.rs",
+      "exit_status": 1,
+      "features": [
+        "pa17.headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/drop_headers.rs"
+    },
+    {
+      "path": "tests/spec/headers/missing-method.rs",
+      "exit_status": 1,
+      "features": [
+        "pa17.headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/drop_headers.rs"
+    },
+    {
+      "path": "tests/spec/headers/mixed-target.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/drop_headers.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/headers/mutable-binding.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/drop_headers.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/headers/mutable-receiver-assignment.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/drop_headers.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/headers/named-impl-explicit-receiver.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/drop_headers.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/headers/named-receiver.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/drop_headers.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/headers/negative-impl.rs",
+      "exit_status": 1,
+      "features": [
+        "pa17.headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/drop_headers.rs"
+    },
+    {
+      "path": "tests/spec/headers/not-a-method.rs",
+      "exit_status": 1,
+      "features": [
+        "pa17.headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/drop_headers.rs"
+    },
+    {
+      "path": "tests/spec/headers/ordinary.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/drop_headers.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/headers/owned-self.rs",
+      "exit_status": 1,
+      "features": [
+        "pa17.headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/drop_headers.rs"
+    },
+    {
+      "path": "tests/spec/headers/permuted-lifetime.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/drop_headers.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/headers/placeholder-helper-call.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/drop_headers.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/headers/primitive-target.rs",
+      "exit_status": 1,
+      "features": [
+        "pa17.headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/drop_headers.rs"
+    },
+    {
+      "path": "tests/spec/headers/private-method-body-error.rs",
+      "exit_status": 1,
+      "features": [
+        "pa17.headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/drop_headers.rs"
+    },
+    {
+      "path": "tests/spec/headers/receiver-alias.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/drop_headers.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/headers/receiver-bounded.rs",
+      "exit_status": 1,
+      "features": [
+        "pa17.headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/drop_headers.rs"
+    },
+    {
+      "path": "tests/spec/headers/receiver-placeholder.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/drop_headers.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/headers/receiver-static.rs",
+      "exit_status": 1,
+      "features": [
+        "pa17.headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/drop_headers.rs"
+    },
+    {
+      "path": "tests/spec/headers/receiver-tied-to-impl.rs",
+      "exit_status": 1,
+      "features": [
+        "pa17.headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/drop_headers.rs"
+    },
+    {
+      "path": "tests/spec/headers/reference-result.rs",
+      "exit_status": 1,
+      "features": [
+        "pa17.headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/drop_headers.rs"
+    },
+    {
+      "path": "tests/spec/headers/renamed-lifetime.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/drop_headers.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/headers/repeated-lifetime.rs",
+      "exit_status": 1,
+      "features": [
+        "pa17.headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/drop_headers.rs"
+    },
+    {
+      "path": "tests/spec/headers/required-bound.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/drop_headers.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/headers/return-type.rs",
+      "exit_status": 1,
+      "features": [
+        "pa17.headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/drop_headers.rs"
+    },
+    {
+      "path": "tests/spec/headers/self-nested-callable.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/drop_headers.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/headers/shared-self.rs",
+      "exit_status": 1,
+      "features": [
+        "pa17.headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/drop_headers.rs"
+    },
+    {
+      "path": "tests/spec/headers/specialized-static.rs",
+      "exit_status": 1,
+      "features": [
+        "pa17.headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/drop_headers.rs"
+    },
+    {
+      "path": "tests/spec/headers/strengthened-bound.rs",
+      "exit_status": 1,
+      "features": [
+        "pa17.headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/drop_headers.rs"
+    },
+    {
+      "path": "tests/spec/headers/tuple-target.rs",
+      "exit_status": 1,
+      "features": [
+        "pa17.headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/drop_headers.rs"
+    },
+    {
+      "path": "tests/spec/headers/two-anonymous.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/drop_headers.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/headers/unsafe-impl.rs",
+      "exit_status": 1,
+      "features": [
+        "pa17.headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/drop_headers.rs"
+    },
+    {
+      "path": "tests/spec/headers/unsafe-method.rs",
+      "exit_status": 1,
+      "features": [
+        "pa17.headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/drop_headers.rs"
+    },
+    {
+      "path": "tests/spec/headers/unused-bound.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/drop_headers.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/headers/unused-common-shorter.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/drop_headers.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/headers/unused-impl-lifetime.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/drop_headers.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/headers/unused-method-lifetime.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/drop_headers.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/headers/unused-static-bound.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/drop_headers.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/headers/unused-static-chain.rs",
+      "exit_status": 1,
+      "features": [
+        "pa17.headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/drop_headers.rs"
+    },
+    {
+      "path": "tests/spec/headers/unused-transitive.rs",
+      "exit_status": 1,
+      "features": [
+        "pa17.headers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/drop_headers.rs"
+    },
+    {
+      "path": "tests/spec/identity/absolute-shadow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.identity"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/drop_identity.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/identity/absolute.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.identity"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/drop_identity.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/identity/alias.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.identity"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/drop_identity.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/identity/core.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.identity"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/drop_identity.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/identity/crate-alias.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.identity"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/drop_identity.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/identity/disabled-absolute.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.identity"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/drop_identity.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/identity/disabled-explicit.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.identity"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/drop_identity.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/identity/disabled-module.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.identity"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/drop_identity.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/identity/disabled-nested.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.identity"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/drop_identity.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/identity/forward-extern.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.identity"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/drop_identity.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/identity/glob.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.identity"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/drop_identity.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/identity/group.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.identity"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/drop_identity.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/identity/macro-glob.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.identity"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/drop_identity.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/identity/macro.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.identity"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/drop_identity.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/identity/prelude.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.identity"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/drop_identity.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/identity/reexport.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.identity"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/drop_identity.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/identity/std.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.identity"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/drop_identity.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/loans/custom-wrapper-field.rs",
+      "exit_status": 1,
+      "features": [
+        "pa17.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/destructor_loans.rs"
+    },
+    {
+      "path": "tests/spec/loans/declaration-order.rs",
+      "exit_status": 1,
+      "features": [
+        "pa17.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/destructor_loans.rs"
+    },
+    {
+      "path": "tests/spec/loans/field-moves.rs",
+      "exit_status": 1,
+      "features": [
+        "pa17.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/destructor_loans.rs"
+    },
+    {
+      "path": "tests/spec/loans/loop.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/destructor_loans.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/loans/ordinary-borrow.rs",
+      "exit_status": 1,
+      "features": [
+        "pa17.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/destructor_loans.rs"
+    },
+    {
+      "path": "tests/spec/loans/partial-move.rs",
+      "exit_status": 1,
+      "features": [
+        "pa17.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/destructor_loans.rs"
+    },
+    {
+      "path": "tests/spec/loans/plain-wrapper-field.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/destructor_loans.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/loans/replacement.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/destructor_loans.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/loans/scope-early.rs",
+      "exit_status": 1,
+      "features": [
+        "pa17.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/destructor_loans.rs"
+    },
+    {
+      "path": "tests/spec/loans/scope-ended.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/destructor_loans.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/loans/self-borrow.rs",
+      "exit_status": 1,
+      "features": [
+        "pa17.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/destructor_loans.rs"
+    },
+    {
+      "path": "tests/spec/loans/whole-move.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/destructor_loans.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/order/argument-return.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.order"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "new PA17 order qualification"
+    },
+    {
+      "path": "tests/spec/order/array.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.order"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/native_drop_order.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/order/break-value.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.order"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "new PA17 order qualification"
+    },
+    {
+      "path": "tests/spec/order/conditional-fields.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.order"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/native_drop_order.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/order/conditional-local.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.order"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "new PA17 order qualification"
+    },
+    {
+      "path": "tests/spec/order/custom-fields.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.order"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/native_drop_order.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/order/enum.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.order"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/native_drop_order.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/order/fields.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.order"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/native_drop_order.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/order/guard-retry.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.order"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/native_drop_order.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/order/guard-temporaries.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.order"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/native_drop_order.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/order/if-let.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.order"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/native_drop_order.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/order/labeled-break.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.order"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "new PA17 order qualification"
+    },
+    {
+      "path": "tests/spec/order/let-else.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.order"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/native_drop_order.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/order/local-temporary.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.order"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/native_drop_order.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/order/locals.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.order"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/native_drop_order.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/order/loop.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.order"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/native_drop_order.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/order/match-scrutinee.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.order"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "new PA17 order qualification"
+    },
+    {
+      "path": "tests/spec/order/moved-binding-order.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.order"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "new PA17 order qualification"
+    },
+    {
+      "path": "tests/spec/order/nested-array.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.order"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "new PA17 order qualification"
+    },
+    {
+      "path": "tests/spec/order/or-patterns.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.order"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "new PA17 order qualification"
+    },
+    {
+      "path": "tests/spec/order/packed-fields.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.order"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/native_drop_order.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/order/parameters.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.order"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/native_drop_order.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/order/partial-array.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.order"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/native_drop_order.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/order/partial-field.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.order"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/native_drop_order.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/order/replacement.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.order"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/native_drop_order.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/order/return.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.order"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/native_drop_order.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/order/self-field-replacement.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.order"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/native_drop_order.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/order/short-circuit.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.order"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "new PA17 order qualification"
+    },
+    {
+      "path": "tests/spec/order/tuple.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.order"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/native_drop_order.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/order/two-temporaries.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.order"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/native_drop_order.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/order/wildcard.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.order"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/native_drop_order.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/order/zero-repeat.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.order"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/native_drop_order.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/order/zero-sized.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.order"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/native_drop_order.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/replacement-loans/borrowed-slot.rs",
+      "exit_status": 1,
+      "features": [
+        "pa17.replacement-loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/destructor_loans.rs"
+    },
+    {
+      "path": "tests/spec/replacement-loans/both-branches.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.replacement-loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/destructor_loans.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/replacement-loans/breaking-loop.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.replacement-loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/destructor_loans.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/replacement-loans/copied-alias.rs",
+      "exit_status": 1,
+      "features": [
+        "pa17.replacement-loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/destructor_loans.rs"
+    },
+    {
+      "path": "tests/spec/replacement-loans/direct.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.replacement-loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/destructor_loans.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/replacement-loans/ended-alias.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.replacement-loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/destructor_loans.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/replacement-loans/indirect-conservative.rs",
+      "exit_status": 1,
+      "features": [
+        "pa17.replacement-loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/destructor_loans.rs"
+    },
+    {
+      "path": "tests/spec/replacement-loans/moved-ended.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.replacement-loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/destructor_loans.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/replacement-loans/moved-old.rs",
+      "exit_status": 1,
+      "features": [
+        "pa17.replacement-loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/destructor_loans.rs"
+    },
+    {
+      "path": "tests/spec/replacement-loans/new-loan.rs",
+      "exit_status": 1,
+      "features": [
+        "pa17.replacement-loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/destructor_loans.rs"
+    },
+    {
+      "path": "tests/spec/replacement-loans/one-branch.rs",
+      "exit_status": 1,
+      "features": [
+        "pa17.replacement-loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/destructor_loans.rs"
+    },
+    {
+      "path": "tests/spec/replacement-loans/projected-conservative.rs",
+      "exit_status": 1,
+      "features": [
+        "pa17.replacement-loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/destructor_loans.rs"
+    },
+    {
+      "path": "tests/spec/replacement-loans/rhs-reborrow.rs",
+      "exit_status": 1,
+      "features": [
+        "pa17.replacement-loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/destructor_loans.rs"
+    },
+    {
+      "path": "tests/spec/replacement-loans/same-referent.rs",
+      "exit_status": 1,
+      "features": [
+        "pa17.replacement-loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/destructor_loans.rs"
+    },
+    {
+      "path": "tests/spec/replacement-loans/whole-product.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.replacement-loans"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/destructor_loans.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/temporaries/bound-reference.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.temporaries"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/destructor_loans.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/temporaries/inner-scope.rs",
+      "exit_status": 1,
+      "features": [
+        "pa17.temporaries"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/destructor_loans.rs"
+    },
+    {
+      "path": "tests/spec/temporaries/nested-return.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.temporaries"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/destructor_loans.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/temporaries/ordinary-call.rs",
+      "exit_status": 1,
+      "features": [
+        "pa17.temporaries"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "maintainer_origin": "dev/tests/destructor_loans.rs"
+    },
+    {
+      "path": "tests/spec/temporaries/record-extended.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.temporaries"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/destructor_loans.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/temporaries/tuple-constructor.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.temporaries"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/destructor_loans.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/temporaries/tuple-extended.rs",
+      "exit_status": 0,
+      "features": [
+        "pa17.temporaries"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "maintainer_origin": "dev/tests/destructor_loans.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    }
+  ]
+}

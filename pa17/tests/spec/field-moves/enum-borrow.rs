@@ -1,0 +1,1 @@
+struct Leaf;impl Drop for Leaf{fn drop(&mut self){}}struct Outer(Leaf,u8);impl Drop for Outer{fn drop(&mut self){}}enum E{A(Leaf),B}impl Drop for E{fn drop(&mut self){}}fn f(x:E){match x{E::A(ref y)=>(),E::B=>()}}fn main(){}

@@ -998,3 +998,14 @@ The ordinary candidate SHA-256 is
 `4c1503906b98310473546971658c11c8216d28ee1cecbb86f8dd8342566e81de`;
 the staged lowering driver is
 `bb3e6c85227602d59e4a2daf74eba96904f7e1f08b1111270737948873438181`.
+
+
+## Assignment release
+
+The CLI now requests the completed destruction proof for LowIR while preserving
+the earlier inspection boundaries. PA17 publishes 199 required cases with
+independent acceptance/native expectations and generated text oracles. The
+maintainer tests share the required counter/order sources through ordinary file
+reads. Native observation checks 33 exact cleanup traces without adding source
+language I/O or interior mutability. See [the release review](pa17-validation.md)
+for the feature census, limits, validation and measured CLI integration.

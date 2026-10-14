@@ -1,0 +1,1 @@
+ERROR: file 0: 31: Drop impl adds lifetime requirements to its nominal type

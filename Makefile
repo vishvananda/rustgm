@@ -2,7 +2,7 @@ PYTHON ?= python3
 CARGO ?= cargo
 ROOT := $(CURDIR)
 export CARGO_TARGET_DIR := $(ROOT)/obj/rust
-ACTIVE_PAS := pa1 pa2 pa3 pa4 pa5 pa6 pa7 pa8 pa9 pa10 pa11 pa12 pa13 pa14 pa15 pa16
+ACTIVE_PAS := pa1 pa2 pa3 pa4 pa5 pa6 pa7 pa8 pa9 pa10 pa11 pa12 pa13 pa14 pa15 pa16 pa17
 RUSTGM_TEST_APP ?= $(ROOT)/dev/rustgm
 REF_TEST_APP ?= $(ROOT)/dev/rustgm-ref
 
@@ -14,7 +14,7 @@ test: all
 	@status=0; for stage in $(ACTIVE_PAS); do $(PYTHON) scripts/course.py $$stage --app "$(RUSTGM_TEST_APP)" || status=1; done; exit $$status
 test-report: all
 	@status=0; for stage in $(ACTIVE_PAS); do $(PYTHON) scripts/course.py $$stage --app "$(RUSTGM_TEST_APP)" || status=1; done; exit $$status
-	@echo 'PA17-PA38: planned, not included in acceptance totals'
+	@echo 'PA18-PA38: planned, not included in acceptance totals'
 test-pa%: all
 	$(PYTHON) scripts/course.py pa$* --app "$(RUSTGM_TEST_APP)"
 ref-test: all
@@ -43,6 +43,7 @@ test-native: all test-maintainer-native
 	$(PYTHON) scripts/check_native.py pa13 --app "$(RUSTGM_TEST_APP)"
 	$(PYTHON) scripts/check_native.py pa14 --app "$(RUSTGM_TEST_APP)"
 	$(PYTHON) scripts/check_native.py pa16 --app "$(RUSTGM_TEST_APP)"
+	$(PYTHON) scripts/check_native.py pa17 --app "$(RUSTGM_TEST_APP)"
 test-native-pa%: all
 	$(PYTHON) scripts/check_native.py pa$* --app "$(RUSTGM_TEST_APP)"
 test-layouts: all
@@ -66,6 +67,7 @@ test-rustc: all test-layouts
 	$(PYTHON) scripts/check_syntax.py pa14 --app "$(RUSTGM_TEST_APP)"
 	$(PYTHON) scripts/check_syntax.py pa15 --app "$(RUSTGM_TEST_APP)"
 	$(PYTHON) scripts/check_syntax.py pa16 --app "$(RUSTGM_TEST_APP)"
+	$(PYTHON) scripts/check_syntax.py pa17 --app "$(RUSTGM_TEST_APP)"
 perf: all
 	$(PYTHON) scripts/measure_lexer.py
 perf-literals: all

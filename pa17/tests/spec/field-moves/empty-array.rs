@@ -1,0 +1,1 @@
+struct Leaf;impl Drop for Leaf{fn drop(&mut self){}}struct Outer(Leaf,u8);impl Drop for Outer{fn drop(&mut self){}}struct Z([Leaf;0]);impl Drop for Z{fn drop(&mut self){}}fn f(x:Z){let y=x.0;}fn main(){}

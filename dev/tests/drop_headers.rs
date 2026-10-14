@@ -416,7 +416,7 @@ fn destructor_headers_match_independent_language_contracts()
 }
 
 #[test]
-fn typed_drop_inspection_does_not_authorize_executable_or_borrow_proofs()
+fn typed_drop_inspection_keeps_borrow_boundaries_and_lowir_proves_cleanup()
 -> Result<(), Box<dyn std::error::Error>> {
     use std::{path::Path, process::Command};
     let folder = Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -459,7 +459,6 @@ fn typed_drop_inspection_does_not_authorize_executable_or_borrow_proofs()
         "--count-regions",
         "--emit-loans",
         "--count-loans",
-        "--emit-lowir",
     ] {
         let result = run(mode)?;
         assert_eq!(result.status.code(), Some(1), "{mode}");
@@ -468,6 +467,12 @@ fn typed_drop_inspection_does_not_authorize_executable_or_borrow_proofs()
             String::from_utf8(result.stderr)?.contains("require destructor elaboration"),
             "{mode}"
         );
+    }
+    for mode in ["--emit-lowir", "--count-lowir"] {
+        let result = run(mode)?;
+        assert_eq!(result.status.code(), Some(0), "{mode}");
+        assert!(result.stderr.is_empty(), "{mode}");
+        assert!(!result.stdout.is_empty(), "{mode}");
     }
     Ok(())
 }

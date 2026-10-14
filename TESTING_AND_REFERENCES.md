@@ -166,6 +166,23 @@ facts; independently reviewed oracles reflect those facts.
 113 execution cases. The root native target includes PA16 and the explicit
 maintainer native tests. See `docs/pa15-pa16-validation.md` for the release review.
 
+PA17 adds 199 LowIR fixtures: 132 accepted programs and 67 rejections. One
+accepted program declares panic-abort; the other 131 require clean execution.
+Two rejection cases document PA18/PA19 boundaries accepted by rustc. The root
+independent and native targets include PA17. `make test-native-pa17` selects its
+course executions. Its counter fixtures and 33 order fixtures are also read
+directly by the maintainer suite.
+
+The explicit `native_drop_order` test instruments only a named no-op observer
+and an entry count check after successful RustGM lowering. Rustc uses a printing
+observer on the same program; each result must match a previously declared trace.
+The native observer checks every callback value and final count, with negative
+controls for wrong values and missing callbacks. Cleanup, flags, field addresses
+and source control flow remain compiler-generated. This separate observer test
+is not counted as an unchanged-source native comparison. Course text oracles
+remain uninstrumented; 22 accepted counter programs check unchanged-source
+cleanup effects through both compilers. See `docs/pa17-validation.md`.
+
 ## Placement and provenance
 
 Every `.rs` fixture under an active assignment's tests directory must be in its
@@ -183,8 +200,8 @@ our oracle: their representation and diagnostic contracts belong to upstream.
 
 ## Release discipline
 
-PA1–PA16 are implemented drafts, not a claim of full Rust frontend conformance.
-Planned PA17–PA38 fail on invocation and are excluded from pass counts. Promote
+PA1–PA17 are implemented drafts, not a claim of full Rust frontend conformance.
+Planned PA18–PA38 fail on invocation and are excluded from pass counts. Promote
 a stage only after handout/reference/fixtures are coherent, independent checks
 pass, the source-to-feature ledger is reviewed and all prior stages remain green.
 Keep maintainer measurements and logs in ignored `obj/`; keep student handout

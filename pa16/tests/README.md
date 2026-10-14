@@ -9,7 +9,7 @@ records their source. No upstream reference text is copied.
 storage, guards and persistent provenance. `thin-native/`, `wide-native/`,
 `pattern-native/` and `persistent-native/` run declared executable outcomes through
 rustc and CPPGM. `former-boundaries/` preserves the earlier executable boundary
-inputs under their owning proof stage. The 292 cases include 112 LowIR executions;
+inputs under their owning proof stage. The 293 cases include 113 LowIR executions;
 inspection and rejection cases do not count as native runs.
 
 Only the explicit `ref-test` target regenerates sidecars. Review exact output,

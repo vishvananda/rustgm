@@ -1,0 +1,1 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}struct D<'a>(&'a mut u8);impl Drop for D<'_>{fn drop(&mut self){*self.0+=1;}}fn run(index:usize){let mut a=0;let mut b=0;let mut c=0;let mut d=0;{let mut items=[D(&mut a),D(&mut b),D(&mut c)];items[index]=D(&mut d);}check(a==1&&b==1&&c==1&&d==1);}fn main(){run(0);run(1);run(2);}

@@ -1,0 +1,1 @@
+struct D<'a>(&'a mut u8);impl Drop for D<'_>{fn drop(&mut self){*self.0+=1;}}fn observe(_:u8){}struct S<'a>(&'a u8);impl Drop for S<'_>{fn drop(&mut self){observe(*self.0);}}fn f(flag:bool){let mut a=0;let mut b=0;let mut c=0;let mut d=D(&mut a);if flag{d=D(&mut b);}else{d=D(&mut c);}observe(a);}fn main(){}

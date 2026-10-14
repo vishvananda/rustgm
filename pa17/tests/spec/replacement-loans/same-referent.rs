@@ -1,0 +1,1 @@
+struct D<'a>(&'a mut u8);impl Drop for D<'_>{fn drop(&mut self){*self.0+=1;}}fn observe(_:u8){}struct S<'a>(&'a u8);impl Drop for S<'_>{fn drop(&mut self){observe(*self.0);}}fn f(){let mut a=0;let mut d=S(&a);d=S(&a);a=1;}fn main(){}

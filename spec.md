@@ -197,7 +197,7 @@ store/storage exits. Reuse persistent live-stack ranges and existing exit IDs;
 do not copy every local at every exit. These candidates can overlap and are not
 an execution plan: initialization, moves, owned rvalue scopes, ordering and
 destructor-induced liveness still need proof. The ordinary ownership, region
-and loan entry points reject pending elaboration. The staged destruction
+and loan entry points reject pending elaboration. The destruction
 verifier discharges those obligations and attaches immutable selected plans and
 glue recipes to checked bodies; only that completed proof can authorize cleanup
 lowering. Raw body views may expose pending work explicitly. A value needing

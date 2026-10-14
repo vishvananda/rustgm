@@ -1,0 +1,1 @@
+ERROR: file 0: 53: Drop receiver requires an independent lifetime and the exact Self type

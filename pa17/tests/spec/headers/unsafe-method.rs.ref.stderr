@@ -1,0 +1,1 @@
+ERROR: file 0: 25: Drop method must be a safe, non-const, non-async Rust method with an inherited visibility and a body

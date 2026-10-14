@@ -1,0 +1,1 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}struct D<'a>(&'a mut u8);impl Drop for D<'_>{fn drop(&mut self){*self.0+=1;}}fn f(n:&mut u8,flag:bool,branch:bool){let d:D<'_>;if flag{d=D(n);}if branch{return;}}fn main(){let mut n=0;f(&mut n,false,false);f(&mut n,false,true);check(n==0);f(&mut n,true,false);check(n==1);f(&mut n,true,true);check(n==2);}

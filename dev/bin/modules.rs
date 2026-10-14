@@ -153,17 +153,25 @@ fn lower(
 ) -> Result<rustgm::lowir::program::Program, String> {
     let entry =
         rustgm::sema::entry::select(report, facts).map_err(|e| report.diagnostic(e).to_string())?;
-    let contracts = region_proofs(report, facts, program)?;
-    let checked = rustgm::borrow::verify(
-        &mut rustgm::borrow::Environment {
-            types: &facts.types,
-            definitions: &facts.aggregates,
-            derives: &facts.derives,
-            copies: &mut facts.copies,
-        },
-        &contracts,
-        program,
-    )
+    let contracts = region_proofs(report, facts, program, true)?;
+    let mut environment = rustgm::borrow::Environment {
+        types: &facts.types,
+        definitions: &facts.aggregates,
+        derives: &facts.derives,
+        copies: &mut facts.copies,
+    };
+    let checked = if let Some(pending) = &program.drops {
+        let catalog = rustgm::borrow::destruction::glue::Catalog::new(
+            &facts.types,
+            &facts.aggregates,
+            &facts.members,
+            &pending.methods,
+        )
+        .map_err(|e| phase_error(report, pending.source, e))?;
+        rustgm::borrow::verify_destruction(&mut environment, &contracts, program, catalog)
+    } else {
+        rustgm::borrow::verify(&mut environment, &contracts, program)
+    }
     .map_err(|e| borrow_error(report, e))?;
     rustgm::lower::build(facts, &checked, entry).map_err(|e| phase_error(report, e.node, e.message))
 }
@@ -172,9 +180,15 @@ fn region_proofs(
     report: &resolve::expansion::Report,
     facts: &rustgm::sema::model::Declarations,
     program: &rustgm::body::ir::Program,
+    destruction: bool,
 ) -> Result<rustgm::borrow::regions::Analysis, String> {
     let contracts = rustgm::body::regions::collect(facts).map_err(str::to_owned)?;
-    rustgm::borrow::regions::check_bodies(
+    let check = if destruction && program.drops.is_some() {
+        rustgm::borrow::regions::prepare_destruction
+    } else {
+        rustgm::borrow::regions::check_bodies
+    };
+    check(
         &facts.types,
         &facts.aggregates,
         &facts.lifetimes.variances,
@@ -205,7 +219,7 @@ fn ownership_view(
     count: bool,
     out: &mut impl Write,
 ) -> Result<(), String> {
-    let contracts = region_proofs(report, facts, program)?;
+    let contracts = region_proofs(report, facts, program, false)?;
     let check = if matches!(mode, Mode::Loans) {
         rustgm::borrow::inspect
     } else {
@@ -281,7 +295,7 @@ fn semantic(
         // Ownership and lowering consume those actions, so release this arena.
         drop(std::mem::take(&mut facts.patterns));
         if matches!(mode, Mode::Regions) {
-            let contracts = region_proofs(&report, &facts, &program)?;
+            let contracts = region_proofs(&report, &facts, &program, false)?;
             return if count {
                 rustgm::borrow::regions::view::count(&contracts, out)
             } else {

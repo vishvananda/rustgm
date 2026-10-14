@@ -252,7 +252,7 @@
       "path": "pa17",
       "title": "Destruction",
       "mode": "--emit-lowir",
-      "status": "planned",
+      "status": "implemented-draft",
       "scope": "Drop scopes, conditional drop flags and cleanup elaboration",
       "test_families": [
         "drop order",
