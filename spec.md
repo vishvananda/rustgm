@@ -78,6 +78,13 @@ separate facts. A typed destructor is not an ordinary callable function value
 and is not evidence that cleanup has been proved or emitted.
 Index declared lifetime membership separately from first-use slot assignment;
 capturing a wide impl binder must not scan all its declarations per parameter.
+Reserve each actual Drop owner before evaluating any impl-target constants.
+An exact outer-constructor query follows resolved alias heads, parameter forwarding
+and only the defaults needed for that head; it does not evaluate const arguments
+or stand in for complete target elaboration. Supplied arguments substitute once,
+simultaneously. Finite self applications in defaults remain valid, while genuine
+head/default cycles fail. Constant eligibility consumes these owner identities;
+method bodies and cleanup still require completed implementations.
 
 Analyze generic bodies without reparsing syntax. A monomorphization key must
 include all type/const arguments and semantic context affecting its result.
@@ -93,6 +100,17 @@ on an already supplied parameter. Detect actual default cycles independently
 of alias-body cycles, and check every unused default before publishing facts.
 Elaborate alias bound subjects after their bodies are available; parsing those
 bounds does not make them enforced requirements at alias uses.
+
+Reserve nominal identities separately from complete field templates. Demand fields
+on the same bounded declaration worklist, publish a complete group only after its
+annotations finish, and distinguish field/default cycles from pointer recursion.
+Index constructor owners once; initialize tuple-callable facts only when demanded
+or during final completion. Register representation and derive selections before
+early semantic queries can cache absence. Constant dependencies include referenced
+aliases, constructors, immutable statics and named initializers, by-value shapes,
+enum discriminant expressions and local cast annotations in their lexical contexts.
+These prerequisites make values available; final unused-declaration, variance,
+derive, lifetime and layout checks remain mandatory.
 
 Resolve a use's defaults with one append-only substitution environment. Earlier
 arguments never change, and inserted replacements are simultaneous. Successful

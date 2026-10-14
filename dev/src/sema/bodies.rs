@@ -1822,7 +1822,7 @@ impl Checker<'_> {
                     } else if let Some(Type::Adt(item, _)) = self.facts.types.kind(self.ty(value)?)
                     {
                         if !self.facts.enum_casts.contains(&item)
-                            || self.facts.destructors.item(item).is_some()
+                            || self.facts.destructors.has_declared(item)
                             || self.primitive(ty)?.integer().is_none()
                         {
                             return Err(self.error(

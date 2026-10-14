@@ -27,6 +27,7 @@ pub struct Receiver {
 
 #[derive(Default)]
 pub struct Destructors {
+    declared: HashSet<ItemId>,
     implementations: Vec<Implementation>,
     methods: HashMap<DefId, usize>,
     self_types: HashMap<DefId, usize>,
@@ -34,6 +35,15 @@ pub struct Destructors {
     pub receivers: HashMap<NodeKey, Receiver>,
 }
 impl Destructors {
+    pub(in crate::sema) fn declare(&mut self, item: ItemId) {
+        self.declared.insert(item);
+    }
+    pub(in crate::sema) fn declared(&self) -> impl ExactSizeIterator<Item = ItemId> + '_ {
+        self.declared.iter().copied()
+    }
+    pub(in crate::sema) fn has_declared(&self, item: ItemId) -> bool {
+        self.declared.contains(&item)
+    }
     pub(super) fn extend_bounds(&mut self, method: DefId, bounds: &[Pair]) {
         if let Some(&index) = self.methods.get(&method) {
             self.implementations[index].bounds.extend_from_slice(bounds);
@@ -60,6 +70,7 @@ impl Destructors {
             return Err("conflicting Drop implementations for the same nominal type");
         }
         let index = self.implementations.len();
+        self.declare(implementation.item);
         self.methods.insert(implementation.method, index);
         self.self_types
             .insert(implementation.self_definition, index);

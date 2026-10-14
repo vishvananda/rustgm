@@ -1648,3 +1648,113 @@ validation and raw receipt paths; `alignment-perf-v1.log` retains the measuremen
 The parent miscompilation is retained as `alignment-large-parent.lowir`: it emits
 four zero bytes and a u32 load for the large enum. The new PA16 oracle emits the
 correct eight-byte value and i64 load.
+
+### Nominal fields and destructor owners before early constants
+
+Nominal identities and field availability now have separate declaration states.
+A field demand schedules annotations on the existing bounded worklist, then
+publishes complete field groups, constructor mappings and pending discriminants.
+Ordinary type annotations still need only the nominal identity, so pointer
+recursion remains legal. An actual field/default dependency cycle diagnoses.
+The final pass completes unused declarations and retains all existing variance,
+derive, destructor, signature and layout checks. Representation and derive
+selections are registered before early consumers can cache their absence.
+
+Constant dependency discovery follows resolved constructors, aliases, named
+constants and immutable statics, and walks owned field shapes once per TypeId.
+It follows explicit enum discriminant dependencies once per owner. Cast and local
+annotations reuse the declaration elaborator with their lexical context; a cast
+through `I<u8>` must select `u8`, not the alias's symbolic template. Inactive syntax
+is excluded. Tuple constructors retain real callable metadata, initialized once;
+no provisional empty field lists or fabricated TypeIds are used.
+
+All actual Drop owners are reserved before any impl target is fully elaborated.
+The separate head query yields a nominal item, a symbolic type parameter, or a
+nonnominal head from resolved syntax. It follows alias applications and only the
+defaults needed for that head, substitutes supplied arguments simultaneously
+once, and uses iterative memoized queries with explicit active states. This
+preserves finite self/mutual defaults and rejects real head/default cycles.
+Full target argument validity and destructor conformance still use ordinary
+elaboration. No incomplete destructor implementation is manufactured. Early
+constant cleanup and enum-cast eligibility consume the reserved owner set, so
+an owned temporary cannot evade Drop just because its impl occurs later or its
+own target contains the constant. Reading immutable static storage remains valid.
+
+The maintainer readiness tests independently qualify 78 distinct source cases
+against pinned rustc. Additional invariants check 512 defaults sharing one field
+template and the exact array length, finite versus cyclic field dependencies,
+and a 1,024-link generic alias chain selecting the actual destructor owner.
+Six new native alias programs exercise early tuple/reference defaults, named enum
+casts, wide packed enum storage, destructor target defaults with an observed drop
+count, and a declared destructor panic after an immutable static read.
+
+This resolves the field/header prerequisite described in the preceding
+checkpoints. It does not activate PA18–PA21. Mixed nominal source parameters,
+scoped field obligations, conditional derives, constructor/pattern inference,
+generic Drop coverage/instance selection, deferred const-length promotion and
+demanded native body specialization remain part of the full PA18 contract.
+PA19–PA21 retain their complete trait, solver and advanced lifetime scope.
+No assignment manifest or course oracle is changed by this checkpoint.
+
+Validation passed 676 frontend tests (nine backend tests explicitly ignored in
+that default run), all 3,350 active PA1–PA17 text cases, 35 focused release tests
+and all nine explicitly selected native maintainer tests. The alias execution
+suite now contains 27 programs: 24 clean executions and three declared panics,
+compared independently through rustc and the qualified CPPGM backend. Rustfmt,
+Clippy all/pedantic with warnings denied, the 419-file audit (zero findings) and
+25 harness checks passed. The logs are `nominal-readiness-full-v2.log`,
+`nominal-readiness-release-v1.log`, `nominal-readiness-native-v1.log` and
+`nominal-readiness-validation-v5.log` under `obj/pa18-work/`.
+
+The initial readiness probes preserved one newly investigated wrong expectation:
+an impl-target constant constructing its own lifetime-bearing Drop type is
+rejected by rustc because the temporary is destroyed. The committed regression
+correctly declares rejection. The earlier-slot unused type parameter hypothesis
+from the previous checkpoint remains excluded from positive tests. Early failed
+lint/audit runs and exploratory probe outputs remain retained, not overwritten.
+
+The performance comparison froze 289 production/configuration files and the
+previous `d815346` binary against candidate SHA256
+`efcbf4ae278e59e92cfb401115afe61e87401d9527d5ea46bf49152332cf4557`.
+Seventeen workloads retained 306 observations on CPU 2, each with two warmups,
+four A/A calibration samples and three ABBA blocks. A targeted repeat retained
+54 further observations for enum controls and a noisy packed-scalar case. No
+local builds or tests overlapped timing. Every source, binary and input hash,
+full output and count output was checked. New early-field cases compare two
+immutable copies of the candidate because the parent rejects those inputs.
+
+Paired wall-time medians in milliseconds:
+
+| Workload | Scale | Parent | Candidate |
+| --- | ---: | ---: | ---: |
+| implicit-enums | 4096 | 13.28 | 15.24 |
+| explicit-enums | 4096 | 16.35 | 18.11 |
+| drop-scalar-arguments | 4096 | 58.52 | 58.34 |
+| drop-static-arguments | 4096 | 59.81 | 59.99 |
+| thinrefs | 4096 | 478.84 | 480.95 |
+| packed-scalar | 1024 | 31.95 | 31.11 |
+| wide-enum-borrows | 1024 | 36.77 | 37.93 |
+| packed-scalar | 4096 | 217.74 | 242.37 |
+| wide-enum-borrows | 4096 | 134.06 | 136.79 |
+| packed-scalar | 16384 | 513.48 | 518.24 |
+| wide-enum-borrows | 16384 | 599.19 | 620.91 |
+| drop-alias-chain | 1024 | 14.25 | 16.33 |
+| early-fields | 1024 | — | 43.05 |
+| drop-alias-chain | 4096 | 59.81 | 66.14 |
+| early-fields | 4096 | — | 180.40 |
+| drop-alias-chain | 16384 | 242.43 | 280.62 |
+| early-fields | 16384 | — | 737.71 |
+
+The first packed-scalar 4,096 run varied from roughly 101–258 ms across the
+pair. Its retained repeat measured 112.38 → 115.21 ms with overlapping ranges
+109.69–120.32 / 110.96–124.25 ms. Repeated implicit/explicit enum controls measured
+14.00 → 15.28 / 17.15 → 19.34 ms. The field/constructor indexes and exact owner
+query have measurable cost: the 16,384-alias control increased 242.43 → 280.62 ms,
+with roughly 59 → 61 MiB RSS. These are added correctness prerequisites, not a
+claimed speedup. Newly supported early fields used approximately 11/33/117 MiB
+at 1,024/4,096/16,384 declarations. Both noisy and repeated observations remain.
+
+Evidence is in `nominal-readiness-v1-{freeze,source-sha256,preflight,perf-jobs,
+perf-results,repeat-jobs,repeat-results,validation,reverify}.json`, the per-job
+`obj/perf/*/samples.json` and `observations.jsonl`, and
+`nominal-readiness-{perf,repeat}-v1.log`. No observations were discarded.

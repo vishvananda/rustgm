@@ -36,6 +36,10 @@ enum SignaturePhase {
 }
 #[derive(Clone, Copy)]
 enum Work {
+    Fields(ItemId, bool),
+    Constructor(DefId),
+    ValueType(DefId),
+    ValueShape(TypeId),
     Bounds(DefId, regions::Context),
     FunctionArguments(NodeKey, DefId),
     Generic(generics::Declaration),
@@ -55,6 +59,7 @@ struct Signature {
     unsafe_: bool,
 }
 struct Checker<'a> {
+    nominals: aggregates::Pending,
     defaults: generics::Defaults,
     deferred_bounds: Vec<(DefId, regions::Context)>,
     bound_syntax: std::collections::HashMap<DefId, Vec<generics::bounds::Syntax>>,
@@ -88,6 +93,7 @@ pub fn analyze(report: &Report) -> Result<Declarations, Error> {
         ));
     }
     let mut checker = Checker {
+        nominals: aggregates::Pending::default(),
         defaults: generics::Defaults::default(),
         deferred_bounds: Vec::new(),
         bound_syntax: std::collections::HashMap::new(),
@@ -170,6 +176,10 @@ impl Checker<'_> {
                 ));
             }
             match work {
+                Work::Fields(item, finish) => self.nominal_fields(item, finish)?,
+                Work::Constructor(id) => self.constructor(id)?,
+                Work::ValueType(id) => self.constant_value_type(id)?,
+                Work::ValueShape(ty) => self.constant_value_shape(ty)?,
                 Work::Bounds(owner, context) => self.complete_bounds(owner, context)?,
                 Work::FunctionArguments(key, owner) => {
                     self.complete_function_arguments(key, owner)?;

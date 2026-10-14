@@ -1,5 +1,6 @@
 //! Elaborate destructor targets once and retain their lifetime environments.
 mod headers;
+mod heads;
 mod receivers;
 use super::{BinderId, Checker, DefId, Error, NodeKey, Type, TypeId, regions};
 use crate::{
@@ -14,7 +15,18 @@ impl Checker<'_> {
         steps: &mut usize,
         limit: usize,
     ) -> Result<(), Error> {
-        for header in headers::collect(self.report, &self.facts)? {
+        let headers = headers::collect(self.report, &self.facts)?;
+        let owners = {
+            let mut heads = heads::Heads::new(self.report, &self.facts);
+            headers
+                .iter()
+                .map(|h| heads.target(h.target))
+                .collect::<Result<Vec<_>, _>>()?
+        };
+        for &owner in owners.iter().flatten() {
+            self.facts.destructors.declare(owner);
+        }
+        for (header, owner) in headers.into_iter().zip(owners) {
             let key = header.source;
             let method = header
                 .method
@@ -40,6 +52,9 @@ impl Checker<'_> {
             let Some(Type::Adt(item, arguments)) = self.facts.types.kind(target) else {
                 return Err(self.error(key, "Drop requires a local struct or enum target"));
             };
+            if owner != Some(item) {
+                return Err(self.error(key, "Drop target disagrees with its declared nominal head"));
+            }
             let arguments = self
                 .facts
                 .types

@@ -1,5 +1,5 @@
 //! Const arguments share the typed constant evaluator; symbolic terms stay unevaluated.
-use super::{Checker, DefId, Error, Kind, NodeKey, TypeId, Work};
+use super::{Checker, DefId, Error, Kind, NodeKey, TypeId, Work, regions};
 use crate::{
     resolve::{
         model::{DefKind, Target},
@@ -82,32 +82,70 @@ impl Checker<'_> {
             .flatten()
             .ok_or_else(|| self.error(key, "shape constant requires an unambiguous lexical module"))
     }
-    pub(super) fn constant_dependencies(&mut self, root: NodeKey) -> Result<(), Error> {
-        let mut work = vec![root];
+    pub(in super::super) fn constant_dependencies(
+        &mut self,
+        root: NodeKey,
+        context: regions::Context,
+    ) -> Result<(), Error> {
+        let mut work = vec![(root, context)];
         let mut children = Vec::new();
-        while let Some(key) = work.pop() {
-            if !self.constant_dependencies.insert(key) {
+        while let Some((key, context)) = work.pop() {
+            if !self.report.package.unit(key.file).configured.active[key.node.0 as usize]
+                || !self.constant_dependencies.insert(key)
+            {
                 continue;
             }
             if self.constant_dependencies.len() > 1_000_000 {
                 return Err(self.error(root, "const argument dependency budget exceeded"));
             }
-            if let Some(Target::Definition(id)) = self.facts.node(key).and_then(|f| f.reference)
-                && self.report.resolution.definitions[id.0 as usize].kind == DefKind::Const
-            {
-                self.work.push(Work::Definition(id, false));
-                if let Some(item_key) = self.report.resolution.definitions[id.0 as usize].node
-                    && let crate::syntax::item::ItemKind::Const {
-                        value: Some(node), ..
-                    } = self.item(item_key)?.kind
-                {
-                    work.push(NodeKey { node, ..item_key });
+            match self.kind(key) {
+                Kind::Cast { ty, .. } | Kind::Let { ty: Some(ty), .. } => {
+                    self.node_work(key.file, ty, context);
+                }
+                Kind::InferType => {
+                    self.facts
+                        .partial_annotations
+                        .insert(key, crate::sema::model::PartialAnnotation::Hole);
+                }
+                _ => {}
+            }
+            if let Some(Target::Definition(id)) = self.facts.node(key).and_then(|f| f.reference) {
+                match self.report.resolution.definitions[id.0 as usize].kind {
+                    DefKind::Primitive => self.work.push(Work::Definition(id, false)),
+                    DefKind::Constructor | DefKind::Variant | DefKind::Struct => {
+                        self.constant_constructor(id)?;
+                    }
+                    DefKind::Enum => self.work.push(Work::ValueType(id)),
+                    DefKind::TypeAlias | DefKind::Const | DefKind::Static => {
+                        self.work.push(Work::ValueType(id));
+                        self.work.push(Work::Definition(id, false));
+                        if let Some(item_key) =
+                            self.report.resolution.definitions[id.0 as usize].node
+                            && let crate::syntax::item::ItemKind::Const {
+                                value: Some(node), ..
+                            }
+                            | crate::syntax::item::ItemKind::Static {
+                                value: Some(node), ..
+                            } = self.item(item_key)?.kind
+                        {
+                            work.push((
+                                NodeKey { node, ..item_key },
+                                self.local_context(item_key, regions::Context::ALIAS),
+                            ));
+                        }
+                    }
+                    _ => {}
                 }
             }
             let ast = &self.report.package.unit(key.file).configured.ast;
             children.clear();
             ast.push_children(key.node, &mut children);
-            work.extend(children.iter().copied().map(|node| NodeKey { node, ..key }));
+            work.extend(
+                children
+                    .iter()
+                    .copied()
+                    .map(|node| (NodeKey { node, ..key }, context)),
+            );
         }
         Ok(())
     }

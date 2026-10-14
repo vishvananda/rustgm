@@ -72,7 +72,7 @@ impl Checker<'_> {
                     self.annotation_holes(key, steps, limit, scan)?;
                     self.node_work(key.file, node, context);
                 }
-                Argument::Const(_) => self.constant_dependencies(key)?,
+                Argument::Const(_) => self.constant_dependencies(key, context)?,
                 Argument::Lifetime(_) => {
                     return Err(
                         self.error(key, "function parameter metadata contains a lifetime slot")

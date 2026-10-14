@@ -20,7 +20,7 @@ pub(super) struct Header {
     pub target: NodeKey,
     pub method: Option<DefId>,
 }
-fn item(report: &Report, key: NodeKey) -> Result<Item, Error> {
+pub(super) fn item(report: &Report, key: NodeKey) -> Result<Item, Error> {
     let ast = &report.package.unit(key.file).configured.ast;
     let Kind::Item(index) = ast.node(key.node).kind else {
         return Err(Declarations::error(report, key, "missing Drop item syntax"));

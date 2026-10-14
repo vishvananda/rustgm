@@ -64,7 +64,7 @@ impl Checker<'_> {
             if syntax.flavor == crate::syntax::item::GenericFlavor::Type {
                 self.node_work(key.file, node, context);
             } else {
-                self.constant_dependencies(NodeKey { node, ..key })?;
+                self.constant_dependencies(NodeKey { node, ..key }, context)?;
             }
             return Ok(());
         }

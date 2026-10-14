@@ -1,5 +1,9 @@
 //! Complete nominal declarations after reserving their recursive identities.
-use super::{Checker, DefId, DefKind, Error, ItemId, ItemKind, Kind, List, NodeKey, Type, regions};
+mod readiness;
+use super::{
+    Checker, DefId, DefKind, Error, ItemId, ItemKind, Kind, List, NodeKey, State, Type, Work,
+    regions,
+};
 use crate::{
     resolve::{
         model::{Access, Namespace},
@@ -15,7 +19,9 @@ use crate::{
         aggregate::{self, Repr},
     },
 };
+pub(super) use readiness::Pending;
 
+#[derive(Clone, Copy)]
 struct Group {
     key: NodeKey,
     shape: Shape,
@@ -24,6 +30,7 @@ struct Group {
 }
 impl Checker<'_> {
     pub(super) fn reserve_nominals(&mut self) -> Result<(), Error> {
+        let representations = representation::analyze(self.report)?;
         for index in 0..self.report.resolution.definitions.len() {
             let definition = &self.report.resolution.definitions[index];
             if !matches!(definition.kind, DefKind::Struct | DefKind::Enum) {
@@ -50,7 +57,10 @@ impl Checker<'_> {
             // Resolving an annotation needs the identity, not a completed field
             // graph. Layout later rejects by-value cycles but permits pointers.
             self.complete(DefId(id), key, ty)?;
+            let attributes = representations.get(&key).copied().unwrap_or_default();
+            self.reserve_fields(ItemId(id), key, attributes)?;
         }
+        self.index_constructors()?;
         Ok(())
     }
     pub(super) fn complete_nominals(
@@ -58,89 +68,92 @@ impl Checker<'_> {
         steps: &mut usize,
         limit: usize,
     ) -> Result<(), Error> {
-        let representations = representation::analyze(self.report)?;
-        for index in 0..self.report.resolution.definitions.len() {
-            let definition = &self.report.resolution.definitions[index];
-            if !matches!(definition.kind, DefKind::Struct | DefKind::Enum) {
-                continue;
-            }
-            let key = definition
-                .node
-                .ok_or_else(|| Error::at(FileId(0), 0, "missing nominal syntax"))?;
-            let item = ItemId(
-                u32::try_from(index)
-                    .map_err(|_| self.error(key, "too many nominal declarations"))?,
-            );
-            let attributes = representations.get(&key).copied().unwrap_or_default();
-            if attributes.derives != crate::types::copy::Properties::default() {
-                self.facts.derives.insert(item, attributes.derives);
-            }
-            if attributes.equality != crate::types::equality::Properties::default() {
-                self.facts
-                    .equality_derives
-                    .insert(item, attributes.equality);
-            }
-            let repr = attributes.repr;
-            let (kind, groups) = self.groups(key)?;
-            let tag = repr.tag.unwrap_or(Primitive::Isize);
-            let mut previous = None;
-            let mut variants = Vec::with_capacity(groups.len());
-            for (ordinal, group) in groups.iter().enumerate() {
-                self.field_annotations(group, self.nominal_context(item), steps, limit)?;
-                let fields = self.fields(group, kind == aggregate::Kind::Enum)?;
-                self.children.clear();
-                self.children.extend(fields.iter().map(|field| field.ty));
-                let list = self
-                    .facts
-                    .types
-                    .intern_list(&self.children)
-                    .map_err(|e| self.error(group.key, e))?;
-                variants.push(aggregate::Variant {
-                    fields: list,
-                    discriminant: 0,
-                });
-                let ordinal = u32::try_from(ordinal)
-                    .map_err(|_| self.error(group.key, "too many variants"))?;
-                let variant = self
-                    .facts
-                    .members
-                    .insert(item, ordinal, group.key, group.shape, &fields)
-                    .map_err(|e| self.error(group.key, e))?;
-                if kind == aggregate::Kind::Enum {
-                    self.discriminants
-                        .push(super::super::constants::Discriminant {
-                            variant,
-                            value: group.discriminant.map(|node| NodeKey { node, ..group.key }),
-                            tag,
-                            previous,
-                        })
-                        .map_err(|e| self.error(group.key, e))?;
-                    previous = Some(variant);
-                }
-            }
-            self.check_discriminant_forms(key, repr, &groups)?;
-            if kind == aggregate::Kind::Enum
-                && variants.iter().all(|v| {
-                    self.facts
-                        .types
-                        .list(v.fields)
-                        .is_some_and(<[TypeId]>::is_empty)
-                })
-                && groups
-                    .iter()
-                    .all(|g| g.discriminant.is_none() || g.shape == Shape::Unit)
-            {
-                self.facts.enum_casts.insert(item);
-            }
-            self.facts
-                .aggregates
-                .insert(item, kind, repr, &variants)
-                .map_err(|e| self.error(key, e))?;
+        for index in 0..self.nominals.entries.len() {
+            let item = self.nominals.entries[index].item;
+            self.work.push(Work::Fields(item, false));
+            self.drain(steps, limit)?;
         }
         self.lifetime_variances()?;
         self.copy_obligations()?;
         self.equality_obligations()?;
         self.constructors()
+    }
+    pub(super) fn nominal_fields(&mut self, item: ItemId, finish: bool) -> Result<(), Error> {
+        let index = self.nominals.index[&item];
+        let entry = &self.nominals.entries[index];
+        let (key, kind, repr, state) = (entry.key, entry.kind, entry.repr, entry.state);
+        if state == State::Complete {
+            return Ok(());
+        }
+        if !finish {
+            if state == State::Active {
+                return Err(self.error(key, "cycle in nominal field dependencies"));
+            }
+            self.nominals.entries[index].state = State::Active;
+            self.work.push(Work::Fields(item, true));
+            for group in (0..self.nominals.entries[index].groups.len()).rev() {
+                let group = self.nominals.entries[index].groups[group];
+                self.field_annotations(&group, self.nominal_context(item))?;
+            }
+            return Ok(());
+        }
+        let tag = repr.tag.unwrap_or(Primitive::Isize);
+        let mut previous = None;
+        let mut variants = Vec::with_capacity(self.nominals.entries[index].groups.len());
+        for ordinal in 0..self.nominals.entries[index].groups.len() {
+            let group = self.nominals.entries[index].groups[ordinal];
+            let fields = self.fields(&group, kind == aggregate::Kind::Enum)?;
+            self.children.clear();
+            self.children.extend(fields.iter().map(|field| field.ty));
+            let list = self
+                .facts
+                .types
+                .intern_list(&self.children)
+                .map_err(|e| self.error(group.key, e))?;
+            variants.push(aggregate::Variant {
+                fields: list,
+                discriminant: 0,
+            });
+            let ordinal =
+                u32::try_from(ordinal).map_err(|_| self.error(group.key, "too many variants"))?;
+            let variant = self
+                .facts
+                .members
+                .insert(item, ordinal, group.key, group.shape, &fields)
+                .map_err(|e| self.error(group.key, e))?;
+            if kind == aggregate::Kind::Enum {
+                self.discriminants
+                    .push(super::super::constants::Discriminant {
+                        variant,
+                        value: group.discriminant.map(|node| NodeKey { node, ..group.key }),
+                        tag,
+                        previous,
+                    })
+                    .map_err(|e| self.error(group.key, e))?;
+                previous = Some(variant);
+            }
+        }
+        let groups = &self.nominals.entries[index].groups;
+        self.check_discriminant_forms(key, repr, groups)?;
+        if kind == aggregate::Kind::Enum
+            && variants.iter().all(|v| {
+                self.facts
+                    .types
+                    .list(v.fields)
+                    .is_some_and(<[TypeId]>::is_empty)
+            })
+            && groups
+                .iter()
+                .all(|g| g.discriminant.is_none() || g.shape == Shape::Unit)
+        {
+            self.facts.enum_casts.insert(item);
+        }
+        self.facts
+            .aggregates
+            .insert(item, kind, repr, &variants)
+            .map_err(|e| self.error(key, e))?;
+        self.nominals.entries[index].state = State::Complete;
+        self.publish_constructors(item)
     }
     pub(super) fn complete_layouts(&mut self) -> Result<(), Error> {
         // Values are final before any layout is cached. Every declaration is checked.
@@ -310,13 +323,7 @@ impl Checker<'_> {
         }
         key
     }
-    fn field_annotations(
-        &mut self,
-        group: &Group,
-        context: regions::Context,
-        steps: &mut usize,
-        limit: usize,
-    ) -> Result<(), Error> {
+    fn field_annotations(&mut self, group: &Group, context: regions::Context) -> Result<(), Error> {
         let unit = self.report.package.unit(group.key.file);
         for node in unit.configured.ast.list(group.fields).iter().copied() {
             if !unit.configured.active[node.0 as usize] {
@@ -328,7 +335,7 @@ impl Checker<'_> {
             };
             self.node_work(key.file, ty, context);
         }
-        self.drain(steps, limit)
+        Ok(())
     }
     fn fields(&mut self, group: &Group, enum_: bool) -> Result<Vec<Field>, Error> {
         let unit = self.report.package.unit(group.key.file);
@@ -405,64 +412,72 @@ impl Checker<'_> {
     }
     fn constructors(&mut self) -> Result<(), Error> {
         for (index, definition) in self.report.resolution.definitions.iter().enumerate() {
-            if !matches!(
+            if matches!(
                 definition.kind,
                 DefKind::Constructor | DefKind::Variant | DefKind::Struct
             ) {
-                continue;
+                let id = DefId(
+                    u32::try_from(index)
+                        .map_err(|_| Error::at(FileId(0), 0, "too many constructors"))?,
+                );
+                self.constructor(id)?;
             }
-            let Some(key) = definition.node else {
-                continue;
-            };
-            let Some(variant_id) = self.facts.members.at_node(key) else {
-                continue;
-            };
-            let variant = self.facts.members.variants[variant_id.0 as usize];
-            let id =
-                DefId(u32::try_from(index).map_err(|_| self.error(key, "too many constructors"))?);
-            self.facts.members.constructors.insert(id, variant_id);
-            if definition.namespace != Namespace::Value {
-                continue;
-            }
-            let owner = self.facts.definitions[variant.owner.0 as usize]
-                .ok_or_else(|| self.error(key, "missing constructor result"))?;
-            let ty = if variant.shape == Shape::Tuple {
-                let def = self
-                    .facts
-                    .aggregates
-                    .get(variant.owner)
-                    .ok_or_else(|| self.error(key, "missing constructor definition"))?;
-                let fields = self.facts.aggregates.variants(def)[variant.ordinal as usize].fields;
-                let signature = self.intern(
-                    key,
-                    Type::Function {
-                        bound_regions: u32::try_from(
-                            self.facts
-                                .lifetimes
-                                .parameters
-                                .get(&DefId(variant.owner.0))
-                                .map_or(0, Vec::len),
-                        )
-                        .map_err(|_| self.error(key, "too many constructor lifetimes"))?,
-                        parameters: fields,
-                        result: owner,
-                        unsafe_: false,
-                    },
-                )?;
-                self.constructor_template(key, ItemId(id.0), signature)?;
-                self.intern(
-                    key,
-                    Type::FunctionItem {
-                        arguments: crate::types::GenericArgs::EMPTY,
-                        item: ItemId(id.0),
-                        signature,
-                    },
-                )?
-            } else {
-                owner
-            };
-            self.facts.definitions[index] = Some(ty);
         }
+        Ok(())
+    }
+    pub(super) fn constructor(&mut self, id: DefId) -> Result<(), Error> {
+        let definition = &self.report.resolution.definitions[id.0 as usize];
+        let Some(key) = definition.node else {
+            return Ok(());
+        };
+        let Some(variant_id) = self.facts.members.at_node(key) else {
+            return Ok(());
+        };
+        let variant = self.facts.members.variants[variant_id.0 as usize];
+        self.facts.members.constructors.insert(id, variant_id);
+        if definition.namespace != Namespace::Value
+            || self.facts.definitions[id.0 as usize].is_some()
+        {
+            return Ok(());
+        }
+        let owner = self.facts.definitions[variant.owner.0 as usize]
+            .ok_or_else(|| self.error(key, "missing constructor result"))?;
+        let ty = if variant.shape == Shape::Tuple {
+            let def = self
+                .facts
+                .aggregates
+                .get(variant.owner)
+                .ok_or_else(|| self.error(key, "missing constructor definition"))?;
+            let fields = self.facts.aggregates.variants(def)[variant.ordinal as usize].fields;
+            let signature = self.intern(
+                key,
+                Type::Function {
+                    bound_regions: u32::try_from(
+                        self.facts
+                            .lifetimes
+                            .parameters
+                            .get(&DefId(variant.owner.0))
+                            .map_or(0, Vec::len),
+                    )
+                    .map_err(|_| self.error(key, "too many constructor lifetimes"))?,
+                    parameters: fields,
+                    result: owner,
+                    unsafe_: false,
+                },
+            )?;
+            self.constructor_template(key, ItemId(id.0), signature)?;
+            self.intern(
+                key,
+                Type::FunctionItem {
+                    arguments: crate::types::GenericArgs::EMPTY,
+                    item: ItemId(id.0),
+                    signature,
+                },
+            )?
+        } else {
+            owner
+        };
+        self.facts.definitions[id.0 as usize] = Some(ty);
         Ok(())
     }
 

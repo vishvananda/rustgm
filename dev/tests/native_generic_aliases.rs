@@ -6,6 +6,36 @@ mod rustc;
 use std::{path::Path, process::Command};
 const CASES: &[(&str, &str, bool)] = &[
     (
+        "early-field-default",
+        "struct S(usize);type A<const N:usize={S(3).0}>=[u8;N];fn read(x:A)->u8{x[2]}fn main(){check(read([2,5,9])==9);}",
+        false,
+    ),
+    (
+        "early-reference-default",
+        "struct S<'a>(&'a usize);type A<const N:usize={*S(&3).0}>=[u8;N];fn read(x:A)->u8{x[2]}fn main(){check(read([1,2,7])==7);}",
+        false,
+    ),
+    (
+        "early-enum-cast-default",
+        "type I<T>=T;enum E{A=C as I<isize>,B}const C:u8=7;type A<const N:usize={E::B as usize}>=[u8;N];fn read(x:A)->u8{x[7]}fn main(){check(read([13;8])==13);}",
+        false,
+    ),
+    (
+        "early-packed-default",
+        "#[repr(C)]#[derive(Copy,Clone)]enum E{A=0,B=4294967297}#[repr(packed(8))]struct S{e:E}type A<const N:usize={*(&S{e:E::B}.e) as u8 as usize}>=[u8;N];static V:S=S{e:E::B};fn read(x:A)->u8{x[0]}fn main(){check(read([19])==19);check(V.e as u64==4294967297);}",
+        false,
+    ),
+    (
+        "early-drop-target-default",
+        "struct Count<'a>(&'a mut u8);struct Size(usize);type D<'a,T=Count<'a>,const N:usize={Size(3).0}>=T;impl<'a> Drop for D<'a>{fn drop(&mut self){*self.0+=1;}}fn consume<'a>(_:Count<'a>){}fn main(){let mut n=0;consume(Count(&mut n));check(n==1);}",
+        false,
+    ),
+    (
+        "early-drop-static-target",
+        "struct S{n:usize}static V:S=S{n:3};type A<T=S,const N:usize={V.n}>=T;impl Drop for A{fn drop(&mut self){check(false);}}fn consume(_:S){}fn main(){consume(S{n:V.n});}",
+        true,
+    ),
+    (
         "aligned-large-enum-argument",
         "#[repr(C)]#[derive(Copy,Clone)]enum E{A=0,B=4294967297}#[repr(packed(8))]struct S{e:E}type A<const N:usize>=[u8;N];static V:S=S{e:E::B};fn main(){let x:A<{*(&S{e:E::B}.e) as u8 as usize}>=[9;1];check(x[0]==9);check(V.e as u64==4294967297);}",
         false,

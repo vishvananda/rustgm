@@ -84,7 +84,9 @@ impl Checker<'_> {
         for (index, node) in ast.list(list).iter().copied().enumerate().rev() {
             match self.facts.generics.parameters[&owner][index + omitted].argument {
                 Argument::Type(_) => self.node_work(key.file, node, context),
-                Argument::Const(_) => self.constant_dependencies(NodeKey { node, ..key })?,
+                Argument::Const(_) => {
+                    self.constant_dependencies(NodeKey { node, ..key }, context)?;
+                }
                 Argument::Lifetime(_) => {}
             }
         }

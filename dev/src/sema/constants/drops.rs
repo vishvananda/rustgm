@@ -12,7 +12,7 @@ use std::collections::HashMap;
 pub(super) struct Scratch {
     scopes: scopes::Scratch,
     needs_drop: NeedsDrop,
-    implementations: usize,
+    declared_owners: usize,
     places: HashMap<NodeKey, Option<NodeKey>>,
 }
 pub(super) struct Check {
@@ -27,23 +27,23 @@ impl Check {
         root: NodeKey,
         scratch: Option<Box<Scratch>>,
     ) -> Option<Self> {
-        let implementations = facts.destructors.implementations();
-        if implementations.is_empty() {
+        let count = facts.destructors.declared().len();
+        if count == 0 {
             return None;
         }
         let mut scratch = scratch.unwrap_or_else(|| {
             Box::new(Scratch {
                 scopes: scopes::Scratch::default(),
-                needs_drop: NeedsDrop::new(implementations.iter().map(|i| i.item)),
-                implementations: implementations.len(),
+                needs_drop: NeedsDrop::new(facts.destructors.declared()),
+                declared_owners: count,
                 places: HashMap::new(),
             })
         });
-        // Impl targets may themselves demand shape constants while headers grow.
-        // Absence of a destructor must never survive a registry extension.
-        if scratch.implementations != implementations.len() {
-            scratch.needs_drop = NeedsDrop::new(implementations.iter().map(|i| i.item));
-            scratch.implementations = implementations.len();
+        // Early impl-target constants already see all reserved owners. Keep the
+        // reusable scratch valid if a caller extends the declaration registry.
+        if scratch.declared_owners != count {
+            scratch.needs_drop = NeedsDrop::new(facts.destructors.declared());
+            scratch.declared_owners = count;
         }
         Some(Self {
             scopes: None,
