@@ -770,5 +770,74 @@ The frozen CLI `outlives-candidate-v1` has SHA-256
 `outlives-proof-candidate-v1` has SHA-256
 `266a6c4a3d7e056f533c9c242c7453dc78a25dd0f32d44c36026562820f23067`.
 The source freeze includes the driver. Raw observations, receipt paths and job
-definitions are retained in `obj/pa18-work/outlives-v1-{perf-results,perf-jobs,
-source-sha256}.json` and `outlives-perf-v1.log`.
+definitions are retained in `obj/pa18-work/`: `outlives-v1-perf-results.json`,
+`outlives-v1-perf-jobs.json`, `outlives-v1-source-sha256.json` and
+`outlives-perf-v1.log`.
+
+### Symbolic destruction requirements
+
+The shared destruction query now accepts an immutable parameter environment.
+An unconstrained type parameter may need cleanup; a Copy assumption proves that
+its value needs none. Clone, Sized and outlives bounds do not supply that proof.
+A composite Copy assumption applies to the whole subject without deriving the
+same property for its elements. References, raw pointers and function values
+do not own their referenced or signature types.
+
+Fixed zero-length arrays still need no element cleanup. An unknown const length
+preserves the element's possible requirement without enumerating elements or
+guessing a length. A billion-element fixed array takes the same structural work
+as a one-element array. Closed queries retain their explicit generic boundary,
+and mixed nominal field queries remain pending instantiated-field support.
+
+Scoped caches are sparse and own their fixed assumption context. Ordinary closed
+queries retain dense storage. Successful and failed results cannot leak between
+different environments; failed dependencies do not poison independent types.
+Five maintainer tests cover these distinctions, source environments, closed-query
+boundaries, a shared 20,000-level graph and repeated cached demands. Fourteen
+source controls and fourteen concrete `needs_drop` witnesses are independently
+qualified with pinned rustc. A concrete witness shows that possible cleanup can
+occur; it does not claim every substitution needs destruction.
+
+This is the query needed to preserve generic owned temporaries when constructing
+template CFGs. It does not yet enable those CFGs, select generic glue or authorize
+execution. The existing constructor and executable boundaries remain in place;
+symbolic move/loan checks and demanded body specialization are still required.
+
+Validation passes 596 frontend tests, all 3,334 active course cases, 22 focused
+release tests, the independent rustc suites, nine explicit native maintainer
+tests and all 132 PA17 native comparisons. Rustfmt, Clippy all/pedantic, the
+391-file architecture audit and 25 harness tests pass. No course fixture or
+oracle changes. Evidence is retained in `obj/pa18-work/` as
+`symbolic-drops-{full,release,focused}-v1.log` and `symbolic-drops-audits-v2.log`.
+
+Measurements retain 486 observations across 27 jobs, using CPU 2, immutable
+binaries/inputs, two warmups, four A/A observations and three ABBA blocks. The
+nine existing LowIR jobs compare with `58223f2`; 18 scoped-query jobs use the
+same candidate on both sides for calibration and scaling. All pairs have equal
+full/count outputs. All frozen hashes were rechecked, and no own builds or tests
+overlapped timing. The 18 generated generic inputs also passed rustc and query
+preflight checks before measurement.
+
+| 4,096-function workload | Previous ms | Candidate ms | Previous RSS KiB | Candidate RSS KiB |
+| --- | ---: | ---: | ---: | ---: |
+| Thin-reference LowIR | 482.79 | 480.22 | 77566 | 77344 |
+| Wide-reference LowIR | 889.83 | 847.99 | 125068 | 125128 |
+| Destruction LowIR | 2352.32 | 2289.48 | 291376 | 291320 |
+
+All three timing ranges overlap. The lower medians do not establish a speedup;
+memory remains close to the preceding checkpoint. The frozen maintainer driver
+measures source analysis and scoped destruction queries separately from native
+lowering. At 4,096 functions, unknown, Copy, Clone, const-array and composite-bound
+workloads take 57.08, 98.60, 70.44, 102.24 and 134.79 ms respectively. One wide
+4,096-parameter tuple takes 15.97 ms. Growth over 256/1,024/4,096 is approximately
+linear; per-function caches do not allocate the whole crate's type-store size.
+
+The frozen CLI `symbolic-drops-candidate-v1` has SHA-256
+`09c4dc47d5deb8d02e48c65650b340ca596bdee4befb2b88942b4e96b0daf3ee`;
+`symbolic-drops-driver-candidate-v1` has SHA-256
+`1ef0c972ab109c8f611314d2b6bba958b5753d58f614d973c21f5c9715dcd4fe`.
+The driver's dependency versions/checksums match the frontend lockfile. Its
+source is included in `symbolic-drops-v1-source-sha256.json`; measurements and
+receipt paths are retained in `symbolic-drops-v1-perf-results.json`,
+`symbolic-drops-v1-perf-jobs.json` and `symbolic-drops-perf-v1.log` under
+`obj/pa18-work/`.
