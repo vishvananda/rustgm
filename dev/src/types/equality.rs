@@ -52,12 +52,29 @@ impl Equality {
         selected: &HashMap<ItemId, Properties, S>,
         ty: TypeId,
     ) -> Result<Properties, &'static str> {
+        self.demand_with_copy(types, definitions, selected, ty, |_| {
+            Err("generic packed equality requires Copy obligations")
+        })
+    }
+    /// Packed generic derives also impose Copy predicates on fields and type
+    /// arguments. The Copy query must use the same immutable implementation
+    /// selections throughout this equality session, including cached results.
+    /// # Errors
+    /// Rejects incomplete type graphs, failed Copy queries and exhausted work.
+    pub fn demand_with_copy<S: BuildHasher>(
+        &mut self,
+        types: &Store,
+        definitions: &Definitions,
+        selected: &HashMap<ItemId, Properties, S>,
+        ty: TypeId,
+        mut copy: impl FnMut(TypeId) -> Result<bool, &'static str>,
+    ) -> Result<Properties, &'static str> {
         if let Some(value) = self.values.get(&ty) {
             return Ok(*value);
         }
         let mut query = Query::default();
         query.node(ty);
-        query.collect(types, definitions, selected, &self.values)?;
+        query.collect(types, definitions, selected, &self.values, &mut copy)?;
         query.propagate()?;
         self.work = self.work.saturating_add(query.work);
         for node in query.nodes {
@@ -116,20 +133,28 @@ impl Query {
         definitions: &Definitions,
         selected: &HashMap<ItemId, Properties, S>,
         known: &HashMap<TypeId, Properties>,
+        copy: &mut impl FnMut(TypeId) -> Result<bool, &'static str>,
     ) -> Result<(), &'static str> {
         let mut index = 0;
         while index < self.nodes.len() {
             self.charge()?;
-            let kind = types
-                .kind(self.nodes[index].ty)
-                .ok_or("missing equality type")?;
+            let ty = self.nodes[index].ty;
+            let kind = types.kind(ty).ok_or("missing equality type")?;
             if matches!(kind, Kind::Parameter(_)) {
                 return Err("generic equality checking requires a parameter environment");
             }
-            if matches!(kind, Kind::Adt(_, args) if types.region_args(args).is_none()) {
-                return Err("generic equality checking requires instantiated fields and bounds");
-            }
-            let initial = match kind {
+            let packed = if matches!(kind, Kind::Adt(_, args) if types.region_args(args).is_none())
+            {
+                definitions
+                    .shape(types, ty)?
+                    .definition
+                    .repr
+                    .packed
+                    .is_some()
+            } else {
+                false
+            };
+            let mut initial = match kind {
                 Kind::Adt(item, _) => selected.get(&item).copied().unwrap_or_default(),
                 Kind::Primitive(Primitive::F32 | Primitive::F64) => Properties {
                     partial_eq: true,
@@ -138,6 +163,12 @@ impl Query {
                 Kind::FunctionItem { .. } => Properties::default(),
                 _ => Properties::BOTH,
             };
+            if packed
+                && initial != Properties::default()
+                && !self.packed_copy(types, definitions, ty, copy)?
+            {
+                initial = Properties::default();
+            }
             self.nodes[index].value = initial;
             if initial != Properties::default() {
                 let mut visit = |child| self.dependency(index, child, known);
@@ -151,14 +182,22 @@ impl Query {
                             visit(ty)?;
                         }
                     }
-                    Kind::Adt(item, _) => {
-                        let definition =
-                            definitions.get(item).ok_or("missing equality aggregate")?;
-                        for variant in definitions.variants(definition) {
+                    Kind::Adt(_, arguments) => {
+                        for variant in definitions.shape(types, ty)?.variants() {
                             for &ty in types
                                 .list(variant.fields)
                                 .ok_or("missing equality fields")?
                             {
+                                visit(ty)?;
+                            }
+                        }
+                        // The compiler's supported derives constrain each type
+                        // parameter, including parameters behind raw pointers.
+                        for argument in types
+                            .arguments(arguments)
+                            .ok_or("invalid equality arguments")?
+                        {
+                            if let super::arguments::Argument::Type(ty) = argument {
                                 visit(ty)?;
                             }
                         }
@@ -170,6 +209,37 @@ impl Query {
             index += 1;
         }
         Ok(())
+    }
+    fn packed_copy(
+        &mut self,
+        types: &Store,
+        definitions: &Definitions,
+        ty: TypeId,
+        copy: &mut impl FnMut(TypeId) -> Result<bool, &'static str>,
+    ) -> Result<bool, &'static str> {
+        let Some(Kind::Adt(_, args)) = types.kind(ty) else {
+            return Err("packed equality requires a nominal type");
+        };
+        for argument in types.arguments(args).ok_or("invalid equality arguments")? {
+            self.charge()?;
+            if let super::arguments::Argument::Type(ty) = argument
+                && !copy(ty)?
+            {
+                return Ok(false);
+            }
+        }
+        for variant in definitions.shape(types, ty)?.variants() {
+            for &field in types
+                .list(variant.fields)
+                .ok_or("invalid equality fields")?
+            {
+                self.charge()?;
+                if !copy(field)? {
+                    return Ok(false);
+                }
+            }
+        }
+        Ok(true)
     }
     fn propagate(&mut self) -> Result<(), &'static str> {
         let mut pending: Vec<_> = self

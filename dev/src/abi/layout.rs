@@ -195,13 +195,10 @@ impl Layouts {
             _ => {}
         }
         let kind = types.kind(ty).ok_or("invalid layout type")?;
-        if matches!(kind, Kind::Adt(_, args) if types.region_args(args).is_none()) {
-            return Err("generic aggregate layout requires instantiated fields");
-        }
         if finish {
             let variant_mark = self.variants.len();
             let offset_mark = self.offsets.len();
-            let result = self.construct(types, definitions, kind);
+            let result = self.construct(types, definitions, ty, kind);
             let layout = match result {
                 Ok(layout) => layout,
                 Err(error) => {
@@ -220,11 +217,8 @@ impl Layouts {
         match kind {
             Kind::Tuple(fields) => self.dependencies(types, fields)?,
             Kind::Array { element, .. } => self.work.push((element, false)),
-            Kind::Adt(item, _) => {
-                let definition = definitions
-                    .get(item)
-                    .ok_or("missing completed aggregate definition")?;
-                for variant in definitions.variants(definition).iter().rev() {
+            Kind::Adt(_, _) => {
+                for variant in definitions.shape(types, ty)?.variants().rev() {
                     self.dependencies(types, variant.fields)?;
                 }
             }
@@ -247,6 +241,7 @@ impl Layouts {
         &mut self,
         types: &Store,
         definitions: &Definitions,
+        ty: TypeId,
         kind: Kind,
     ) -> Result<Layout, &'static str> {
         match kind {
@@ -319,10 +314,7 @@ impl Layouts {
                     ..layout
                 })
             }
-            Kind::Adt(item, _) => {
-                let definition = definitions.get(item).ok_or("missing aggregate shape")?;
-                self.aggregate(types, definition, definitions.variants(definition))
-            }
+            Kind::Adt(_, _) => self.aggregate(types, definitions.shape(types, ty)?),
         }
     }
     fn fields(
@@ -395,9 +387,10 @@ impl Layouts {
     fn aggregate(
         &mut self,
         types: &Store,
-        definition: &aggregate::Definition,
-        variants: &[aggregate::Variant],
+        shape: aggregate::Shape<'_>,
     ) -> Result<Layout, &'static str> {
+        let definition = shape.definition;
+        let variants = shape.variants();
         let repr = definition.repr;
         validate_repr(definition, variants.len())?;
         let range = Range {
@@ -407,7 +400,7 @@ impl Layouts {
         if definition.kind == aggregate::Kind::Struct
             || repr.representation == Representation::Transparent
         {
-            let variant = variants.first().ok_or("aggregate has no field group")?;
+            let variant = shape.variant(0).ok_or("aggregate has no field group")?;
             let layout = self.fields(types, variant.fields, repr, 0, variant.discriminant)?;
             return Ok(Layout {
                 shape: Shape::Aggregate {
@@ -421,7 +414,7 @@ impl Layouts {
             && repr.tag.is_none()
             && variants.len() <= 1;
         let tag = (!no_tag).then_some(Tag {
-            ty: enum_tag(repr, variants)?,
+            ty: enum_tag(repr, shape.variants())?,
             offset: 0,
         });
         let tag_layout = tag.map_or(Ok(scalar(0, 1)), |tag| primitive(tag.ty))?;
@@ -543,7 +536,10 @@ fn validate_repr(definition: &aggregate::Definition, variants: usize) -> Result<
     }
 }
 
-fn enum_tag(repr: Repr, variants: &[aggregate::Variant]) -> Result<Primitive, &'static str> {
+fn enum_tag(
+    repr: Repr,
+    variants: impl Iterator<Item = aggregate::Variant>,
+) -> Result<Primitive, &'static str> {
     if let Some(tag) = repr.tag {
         return Ok(tag);
     }

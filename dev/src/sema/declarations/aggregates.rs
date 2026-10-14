@@ -211,11 +211,22 @@ impl Checker<'_> {
             let properties = self
                 .facts
                 .equality
-                .demand(
+                .demand_with_copy(
                     &self.facts.types,
                     &self.facts.aggregates,
                     &self.facts.equality_derives,
                     ty,
+                    |ty| {
+                        self.facts
+                            .copies
+                            .demand(
+                                &self.facts.types,
+                                &self.facts.aggregates,
+                                &self.facts.derives,
+                                ty,
+                            )
+                            .map(|p| p.copy)
+                    },
                 )
                 .map_err(|e| self.error(key, e))?;
             if selected.partial_eq && !properties.partial_eq {

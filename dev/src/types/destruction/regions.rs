@@ -3,7 +3,7 @@ use crate::types::{
     ItemId, Kind, RegionId, Store, TypeId,
     aggregate::Definitions,
     outlives::{
-        Parts,
+        Parts, TypeComponents,
         storage::{Lists, Values},
     },
     parameters::environment::Environment,
@@ -35,6 +35,7 @@ pub struct Regions {
     lists: Lists,
     work: Vec<(Key, bool)>,
     retained: usize,
+    components: Option<Box<TypeComponents>>,
     pub steps: usize,
 }
 impl Regions {
@@ -48,6 +49,7 @@ impl Regions {
             lists: Lists::default(),
             work: Vec::new(),
             retained: 0,
+            components: None,
             steps: 0,
         };
         for item in custom {
@@ -67,6 +69,7 @@ impl Regions {
             lists: Lists::default(),
             work: Vec::new(),
             retained: 0,
+            components: None,
             steps: 0,
         }
     }
@@ -207,6 +210,28 @@ impl Regions {
         if let Key::Type(ty) = key
             && let Some(Kind::Adt(item, args)) = types.kind(ty)
         {
+            if types.region_args(args).is_none() {
+                if self.custom.contains(&item) {
+                    let components = self.components.get_or_insert_with(Default::default);
+                    let parts = components.get(types, ty)?;
+                    if let Some(environment) = &self.environment {
+                        if parts
+                            .parameters
+                            .iter()
+                            .any(|p| environment.abilities(*p).is_none())
+                        {
+                            return Err("drop parameter is outside its environment");
+                        }
+                    } else if !parts.parameters.is_empty() {
+                        return Err("generic drop checking requires a parameter environment");
+                    }
+                    values.extend(parts);
+                    self.charge(values.parts().len())?;
+                } else {
+                    self.collect(types, definitions, key, &mut values)?;
+                }
+                return Ok(values);
+            }
             let arguments = types
                 .region_args(args)
                 .ok_or("invalid drop region arguments")?;
@@ -291,25 +316,29 @@ fn dependencies(
             let definition = definitions
                 .get(item)
                 .ok_or("missing drop region definition")?;
-            for variant in definitions.variants(definition) {
-                for &ty in types
-                    .list(variant.fields)
-                    .ok_or("invalid drop region fields")?
-                {
-                    visit(Key::Type(ty))?;
-                }
-            }
+            fields(
+                types,
+                definitions.variants(definition).iter().copied(),
+                &mut visit,
+            )?;
         }
         Key::Type(ty) => match types.kind(ty).ok_or("invalid drop region type")? {
             Kind::Parameter(_) => {
                 return Err("generic drop checking requires a parameter environment");
             }
-            Kind::Adt(item, _) => {
+            Kind::Adt(item, args) => {
                 definitions
                     .get(item)
                     .ok_or("missing drop region definition")?;
+                if types.region_args(args).is_none() {
+                    definitions.shape(types, ty)?;
+                }
                 if !custom.contains(&item) {
-                    visit(Key::Nominal(item))?;
+                    if types.region_args(args).is_some() {
+                        visit(Key::Nominal(item))?;
+                    } else {
+                        fields(types, definitions.shape(types, ty)?.variants(), &mut visit)?;
+                    }
                 }
             }
             Kind::Array { length: 0, .. } => {}
@@ -323,6 +352,22 @@ fn dependencies(
             }
             _ => {}
         },
+    }
+    Ok(())
+}
+
+fn fields(
+    types: &Store,
+    variants: impl Iterator<Item = crate::types::aggregate::Variant>,
+    visit: &mut impl FnMut(Key) -> Result<(), &'static str>,
+) -> Result<(), &'static str> {
+    for variant in variants {
+        for &ty in types
+            .list(variant.fields)
+            .ok_or("invalid drop region fields")?
+        {
+            visit(Key::Type(ty))?;
+        }
     }
     Ok(())
 }

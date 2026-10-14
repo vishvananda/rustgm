@@ -127,6 +127,19 @@ enum ComponentKind {
     TypeBound,
     LiveValue,
 }
+/// All components a type bound can constrain, including nested referents and
+/// zero-length element types. Unlike owned-drop queries, Copy removes nothing.
+#[derive(Default)]
+pub(crate) struct TypeComponents {
+    components: Components,
+    budget: Budget,
+}
+impl TypeComponents {
+    pub(crate) fn get(&mut self, types: &Store, ty: TypeId) -> Result<Parts<'_>, &'static str> {
+        self.components
+            .get(types, ty, 0, ComponentKind::TypeBound, &mut self.budget)
+    }
+}
 /// Cached runtime components, including nested referents and opaque type parameters.
 /// Zero-length arrays contain no runtime reference values. Type well-formedness
 /// still checks their element types independently through `Queries`.

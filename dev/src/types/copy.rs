@@ -149,7 +149,7 @@ impl Copies {
                 continue;
             }
             if matches!(kind, Kind::Adt(_, args) if types.region_args(args).is_none()) {
-                return Err("generic Copy checking requires instantiated fields and bounds");
+                definitions.shape(types, ty)?;
             }
             let initial = match kind {
                 Kind::Parameter(id) => {
@@ -175,7 +175,7 @@ impl Copies {
             let packed = matches!(kind, Kind::Adt(item, _)
                 if definitions.get(item).is_some_and(|d| d.repr.packed.is_some()));
             if initial != Properties::default() {
-                children(types, definitions, kind, |child| {
+                children(types, definitions, ty, |child| {
                     if finish {
                         let properties = self.get(child)?;
                         result = result.intersect(properties);
@@ -199,21 +199,27 @@ impl Copies {
 fn children(
     types: &Store,
     definitions: &Definitions,
-    kind: Kind,
+    ty: TypeId,
     mut visit: impl FnMut(TypeId) -> Result<(), &'static str>,
 ) -> Result<(), &'static str> {
-    match kind {
+    match types.kind(ty).ok_or("invalid Copy type")? {
         Kind::Array { element, .. } | Kind::ArrayTerm { element, .. } => visit(element)?,
         Kind::Tuple(list) => {
             for ty in types.list(list).ok_or("invalid Copy tuple")? {
                 visit(*ty)?;
             }
         }
-        Kind::Adt(item, _) => {
-            let definition = definitions.get(item).ok_or("missing Copy aggregate")?;
-            for variant in definitions.variants(definition) {
+        Kind::Adt(_, arguments) => {
+            for variant in definitions.shape(types, ty)?.variants() {
                 for ty in types.list(variant.fields).ok_or("invalid Copy fields")? {
                     visit(*ty)?;
+                }
+            }
+            // Derives impose bounds on type parameters even in pointer fields.
+            // Packed Clone derives strengthen these bounds to Copy too.
+            for argument in types.arguments(arguments).ok_or("invalid Copy arguments")? {
+                if let super::arguments::Argument::Type(ty) = argument {
+                    visit(ty)?;
                 }
             }
         }

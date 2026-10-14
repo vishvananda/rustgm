@@ -175,6 +175,12 @@ impl<'a> Catalog<'a> {
         self.result(ty)
     }
     fn key(&self, ty: TypeId) -> Result<Key, &'static str> {
+        if matches!(self.types.kind(ty), Some(Kind::Adt(_, args)) if self.types.region_args(args).is_none())
+        {
+            // The lifetime-only key below cannot identify type/const instances,
+            // and method DefIds do not yet select specialized destructor bodies.
+            return Err("generic destruction recipes require selected instances");
+        }
         self.types
             .kind(ty)
             .map(|kind| match kind {

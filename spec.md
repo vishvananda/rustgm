@@ -85,6 +85,25 @@ Trait solver caches include parameter environment, binder universe and mode;
 negative results need equally complete keys. Each demanded fact is computed
 once; cycle detection and explicit solver budgets are part of the contract.
 
+Generic nominal fields are instantiated from completed typed declarations, keyed
+by the canonical nominal type including every type, const and lifetime argument.
+Reuse one capture-safe substitution across an instance's fields. Share the
+declaration's variant order, representation and final discriminants; retain only
+substituted field lists per instance. Prepare demanded fields before immutable
+layout and ownership queries. Follow owned fields and derive argument obligations
+iteratively, stopping at pointer/reference referents; equality separately demands
+reference referents. Do not expand growing recursive pointer instantiations.
+Failed preparation cannot publish unfinished descendants as prepared. This
+availability check does not prove declaration validity, bounds or finite layout.
+
+Derived abilities constrain type arguments even behind raw/function pointers;
+packed Clone and equality derives impose Copy bounds as well. Owned destruction follows
+instantiated fields and skips zero-length arrays. Custom Drop instead retains
+every argument's full outlives components, including Copy type parameters and
+their reference lifetimes. Symbolic cleanup consumes the same field instances;
+it never substitutes for selected concrete destructor methods and executable
+recipes keyed by all relevant instance arguments.
+
 Record selected methods, adjustments, casts, layouts and obligations where
 later phases consume them. Lowering cannot repeat lookup or inference. Missing
 facts are invariant failures, never a reason to fall back to text or rustc.

@@ -204,13 +204,12 @@ impl<C: Fn(ItemId) -> bool> Builder<'_, C> {
             }
             match kind {
                 Kind::Tuple(list) => self.fields(path, 0, list)?,
-                Kind::Adt(item, _) => {
-                    let definition = self
+                Kind::Adt(_, _) => {
+                    for (ordinal, variant) in self
                         .definitions
-                        .get(item)
-                        .ok_or("missing abstract cleanup definition")?;
-                    for (ordinal, variant) in
-                        self.definitions.variants(definition).iter().enumerate()
+                        .shape(self.types, ty)?
+                        .variants()
+                        .enumerate()
                     {
                         self.fields(
                             path,

@@ -1,5 +1,8 @@
 //! Completed nominal shapes are separate from canonical, potentially recursive identity.
-use super::{ItemId, ListId, Primitive};
+mod instances;
+mod preparation;
+use super::{ItemId, ListId, Primitive, Store, TypeId};
+pub use instances::Shape;
 use std::collections::HashMap;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -40,8 +43,56 @@ pub struct Definitions {
     entries: Vec<Definition>,
     index: HashMap<ItemId, u32>,
     variants: Vec<Variant>,
+    instances: Option<Box<instances::Instances>>,
 }
 impl Definitions {
+    /// Instantiate immediate fields from completed templates, keyed by the full
+    /// canonical nominal type. This does not expand referents or prove layout.
+    /// Parameter/default/bound validation belongs to declaration semantics.
+    /// # Errors
+    /// Rejects missing templates, invalid arguments and bounded substitution work.
+    pub fn instantiate(&mut self, types: &mut Store, ty: TypeId) -> Result<(), &'static str> {
+        let Some(super::Kind::Adt(item, arguments)) = types.kind(ty) else {
+            return Err("field instantiation requires a nominal type");
+        };
+        let definition = *self.get(item).ok_or("missing aggregate field template")?;
+        if types.region_args(arguments).is_some() {
+            return Ok(());
+        }
+        let templates = &self.variants[definition.start as usize..definition.end as usize];
+        self.instances
+            .get_or_insert_with(Default::default)
+            .demand(types, ty, templates)
+    }
+    /// Read structural fields without allocating or repeating substitution.
+    /// Lifetime-only shapes retain the established declaration-template path.
+    /// # Errors
+    /// Rejects missing nominal identities or undemanded type/const field instances.
+    pub fn shape(&self, types: &Store, ty: TypeId) -> Result<Shape<'_>, &'static str> {
+        let Some(super::Kind::Adt(item, arguments)) = types.kind(ty) else {
+            return Err("aggregate shape requires a nominal type");
+        };
+        let definition = self
+            .get(item)
+            .ok_or("missing completed aggregate definition")?;
+        let fields = if types.region_args(arguments).is_some() {
+            None
+        } else {
+            Some(
+                self.instances
+                    .as_ref()
+                    .ok_or("generic aggregate requires instantiated fields")?
+                    .get(ty)?,
+            )
+        };
+        Shape::new(definition, self.variants(definition), fields)
+    }
+    #[must_use]
+    pub fn instantiation_steps(&self) -> usize {
+        self.instances
+            .as_ref()
+            .map_or(0, |instances| instances.steps)
+    }
     /// Publish a completed shape once, retaining declaration/variant ordering.
     ///
     /// # Errors

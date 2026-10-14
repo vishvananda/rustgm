@@ -161,7 +161,7 @@ impl NeedsDrop {
                 return Err("generic destruction checking requires a parameter environment");
             }
             if matches!(kind, Kind::Adt(_, args) if types.region_args(args).is_none()) {
-                return Err("generic destruction checking requires instantiated fields");
+                definitions.shape(types, ty)?;
             }
             if let Kind::Adt(item, _) = kind {
                 definitions
@@ -177,7 +177,7 @@ impl NeedsDrop {
                 self.record(ty, State::Active);
                 self.work.push((ty, true));
             }
-            children(types, definitions, kind, |child| {
+            children(types, definitions, ty, |child| {
                 self.charge()?;
                 if finish {
                     needed |= self.get(child)?;
@@ -196,10 +196,10 @@ impl NeedsDrop {
 fn children(
     types: &Store,
     definitions: &Definitions,
-    kind: Kind,
+    ty: TypeId,
     mut visit: impl FnMut(TypeId) -> Result<(), &'static str>,
 ) -> Result<(), &'static str> {
-    match kind {
+    match types.kind(ty).ok_or("invalid destruction type")? {
         Kind::Array { length: 0, .. } => {}
         Kind::Array { element, .. } | Kind::ArrayTerm { element, .. } | Kind::Slice(element) => {
             visit(element)?;
@@ -209,11 +209,8 @@ fn children(
                 visit(ty)?;
             }
         }
-        Kind::Adt(item, _) => {
-            let definition = definitions
-                .get(item)
-                .ok_or("missing destruction aggregate")?;
-            for variant in definitions.variants(definition) {
+        Kind::Adt(_, _) => {
+            for variant in definitions.shape(types, ty)?.variants() {
                 for &ty in types
                     .list(variant.fields)
                     .ok_or("invalid destruction fields")?

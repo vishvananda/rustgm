@@ -41,7 +41,18 @@ pub(super) fn expand(
     let facts = &mut *expansion.facts;
     let equality = facts
         .equality
-        .demand(&facts.types, &facts.aggregates, &facts.equality_derives, ty)
+        .demand_with_copy(
+            &facts.types,
+            &facts.aggregates,
+            &facts.equality_derives,
+            ty,
+            |ty| {
+                facts
+                    .copies
+                    .demand(&facts.types, &facts.aggregates, &facts.derives, ty)
+                    .map(|p| p.copy)
+            },
+        )
         .map_err(error)?;
     if !equality.partial_eq {
         return Err(error("constant pattern type must implement PartialEq"));

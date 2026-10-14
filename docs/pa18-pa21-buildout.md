@@ -1188,3 +1188,113 @@ and manifests are included in the 282-file `template-cleanup-v1-source-sha256.js
 Job definitions, results, preflight checks and raw receipt paths are retained in
 `template-cleanup-v1-perf-jobs.json`, `template-cleanup-v1-perf-results.json`,
 `template-cleanup-v1-perf-preflight.json` and `template-cleanup-perf-v1.log`.
+
+## Generic nominal field queries
+
+Nominal field instantiation now has a shared typed boundary. `Definitions`
+retains a lazy cache keyed by the full canonical nominal type, including type,
+const and lifetime arguments. A single capture-safe joint substitution serves
+all fields of one instance. The borrowed shape combines substituted field lists
+with the declaration's variant order, representation and final discriminants.
+It does not clone syntax or duplicate representation facts.
+
+Preparation follows owned fields and type arguments with a bounded worklist;
+equality preparation additionally follows reference referents. Pointer targets
+and function signatures remain outside these preparation graphs. Consequently,
+`Node<T>` containing a pointer to `Node<(T,)>` does not cause infinite expansion.
+Repeated roots reuse completed work. Failures cannot publish unfinished
+children as prepared, and preparation itself does not prove sizedness, finite
+layout, declaration validity or bounds.
+
+Layouts, Copy/Clone, equality, destruction requirements, drop-lifetime queries
+and abstract cleanup now consume these field instances. Derived abilities also
+constrain type arguments behind pointers. Packed Clone strengthens those bounds
+to Copy. Packed equality receives the ordinary Copy query through
+`Equality::demand_with_copy`; the declaration and constant-pattern callers
+supply the same immutable selections. The simpler equality API reports the
+missing Copy proof explicitly for a packed generic type. Rustc's
+[PartialEq derive implementation](https://doc.rust-lang.org/stable/nightly-rustc/src/rustc_builtin_macros/deriving/cmp/partial_eq.rs.html)
+records the extra packed Copy requirement; pinned 1.98 controls qualify the
+actual behavior used here.
+
+Custom Drop retains every argument's full type-outlives components, including
+Copy parameters and nested reference lifetimes. Ordinary owned destruction
+instead follows actual fields and skips zero-length arrays. Lifetime-only
+nominal queries retain their shared template path. Concrete cleanup still rejects
+mixed nominal arguments before looking up its lifetime-only cache key: an item
+identity cannot select a type/const destructor instance.
+
+Thirteen maintainer tests exercise different layouts, const/lifetime cache keys,
+invalid const kinds, final discriminants, nested instances, expanding pointer
+recursion, a shared 10,000-level graph, failed preparation, by-value cycles,
+conditional derives, exact Copy assumptions, custom Drop components and the
+concrete cleanup boundary. Eighteen source controls declare eleven acceptances
+and seven rejections before independent rustc checks. The first packed Clone
+hypothesis was wrong: Clone alone does not suffice for the argument of a packed
+pointer wrapper. Its failed receipt is retained; packed and ordinary controls
+now distinguish the correct conditions.
+
+This integrates nominal field queries, not nominal source elaboration or
+monomorphization. Header/default/bound scheduling, constructor inference,
+generic variance and field-implied outlives requirements, conditional derive
+validation, and generic Drop body/instance selection remain required. Deferred
+const-length promotion and concrete body specialization remain required too.
+PA18–PA21 remain planned and the generic executable gate stays closed. No course
+fixture, manifest or oracle changed.
+
+Final local validation passes 632 frontend tests, all 3,334 active course cases,
+22 focused release tests, nine native maintainer tests, rustfmt, Clippy
+all/pedantic, the 405-file audit and 25 harness tests. Authoritative logs are
+`nominal-instances-full-v2.log`, `nominal-instances-validation-v2.log`,
+`nominal-instances-release-v2.log` and `nominal-instances-native-v2.log` under
+`obj/pa18-work/`. The first full run's formatting check encountered an incomplete
+additional test edit; the completed test and full final run pass. No production
+source changed after the final frozen builds.
+
+Performance retains 306 observations across 17 final jobs, plus 162 observations
+from nine targeted paired rechecks. Each job uses CPU 2, two warmups, four A/A
+observations and three ABBA blocks. Eight jobs compare the published parent
+`2747ef8` on closed reference/destruction workloads and abstract cleanup. Nine
+new jobs measure field preparation plus layout, Copy, equality and drop queries
+at 1,024/4,096/16,384 instances. They use identical candidate binaries because
+the parent lacks this field-query boundary. The scratch driver's external
+locked dependencies match the frontend's. All nine typed-query preflights pass;
+full/count output matches in every measurement. Sources, binaries and inputs
+remain frozen and hashes verify before/after. No own builds or tests overlap
+timing.
+
+| Existing 4,096-unit workload | Parent ms | Candidate ms | Candidate RSS KiB |
+| --- | ---: | ---: | ---: |
+| thinrefs | 498.89 | 506.66 | 77338 |
+| fatrefs | 934.24 | 931.60 | 125254 |
+| native-destructors | 2766.77 | 2770.32 | 291500 |
+| partial-reference | 1097.35 | 1085.16 | 83432 |
+
+These overlapping ranges establish no general speedup or zero-cost claim.
+During the final new-workload run, timings increased partway through the scale
+ladder. The recheck compares the pre-packed-equality binary with the final
+binary on identical inputs. Both return to lower, overlapping ranges; this
+supports machine variability rather than a regression caused by that change,
+without identifying its physical cause. All slower observations are retained.
+
+| New 16,384-instance query (paired recheck) | Earlier candidate ms | Final ms | Final RSS KiB |
+| --- | ---: | ---: | ---: |
+| deep | 85.43 | 85.12 | 17000 |
+| mixed | 141.60 | 142.06 | 25436 |
+| pointer | 131.88 | 131.24 | 24628 |
+
+Preparation work is exactly 12/16/24 steps per instance in the deep shared,
+mixed const/lifetime and expanding-pointer cases respectively. Array lengths
+and repeated queries do not expand that work. The original measurements before
+packed equality integration remain available as v1 evidence, superseded by v2
+for the final compiler source.
+
+The final frozen CLI SHA-256 is
+`8add4e0a0a8f05f5f8be1d5860b427b98d7b994702c5e88adbc695b3622da534`;
+the typed-query driver is
+`d5811dd2d890a63246e227104bb41e9926eb5782901fa706eed011a55c5aad65`;
+the rebuilt template-cleanup driver is
+`bb38ec33ac9ca7c15b5577ead0557f2c896c4a30f771d51b25e0d49fbf1863d5`.
+The 287-file source manifest, job definitions, preflight, results and raw receipt
+paths are `nominal-instances-v2-*` under `obj/pa18-work/`, with the timing logs
+`nominal-instances-perf-v2.log` and `nominal-instances-perf-recheck-v2.log`.
