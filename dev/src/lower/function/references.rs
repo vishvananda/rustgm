@@ -37,7 +37,7 @@ impl Storage {
         }
         Ok(result)
     }
-    fn mark(&mut self, body: &ir::Body, mut place: Place) -> Result<(), &'static str> {
+    pub(super) fn mark(&mut self, body: &ir::Body, mut place: Place) -> Result<(), &'static str> {
         while self.places.insert(place) {
             let Place::Projection(id) = place else {
                 break;

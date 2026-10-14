@@ -129,18 +129,9 @@ impl Lower<'_, '_> {
         }))
     }
     pub(super) fn pointer(&mut self, address: Address) -> Result<Value, &'static str> {
-        if matches!(
-            address.operand,
-            Operand::Slot(_) | Operand::Symbol(_) | Operand::Global(_)
-        ) {
-            self.builder.address(address.operand)
-        } else {
-            Ok(Value {
-                ty: Type::Ptr,
-                operand: address.operand,
-            })
-        }
+        address.pointer(&mut self.builder)
     }
+
     pub(super) fn write(
         &mut self,
         destination: Option<Address>,
@@ -171,14 +162,7 @@ impl Lower<'_, '_> {
         }
     }
     pub(super) fn offset(&mut self, base: Address, offset: u64) -> Result<Address, &'static str> {
-        if offset == 0 {
-            return Ok(base);
-        }
-        let pointer = self.pointer(base)?;
-        let value = self.builder.integer(Type::I64, u128::from(offset))?;
-        let operand = self.builder.index(Type::U8, pointer, value)?.operand;
-        let align = base.align.min(1_u32 << offset.trailing_zeros().min(29));
-        Ok(Address { operand, align })
+        base.offset(&mut self.builder, offset)
     }
     pub(super) fn indexed(
         &mut self,
@@ -187,14 +171,7 @@ impl Lower<'_, '_> {
         stride: u64,
         align: u32,
     ) -> Result<Address, &'static str> {
-        let stride = self.builder.integer(Type::I64, u128::from(stride))?;
-        let offset = self.builder.binary(Binary::Mul, index, stride)?;
-        let base_pointer = self.pointer(base)?;
-        let operand = self.builder.index(Type::U8, base_pointer, offset)?.operand;
-        Ok(Address {
-            operand,
-            align: base.align.min(align),
-        })
+        base.indexed(&mut self.builder, index, stride, align)
     }
     pub(super) fn place_type(&self, place: Place) -> Result<TypeId, &'static str> {
         match place {
@@ -292,26 +269,9 @@ impl Lower<'_, '_> {
         layout: &Layout,
         field: Selection,
     ) -> Result<u64, &'static str> {
-        let variant_ordinal = match field {
-            Selection::Tuple(_) => 0,
-            Selection::Nominal(id) => {
-                self.context
-                    .members
-                    .variant(id)
-                    .and_then(|v| self.context.members.variants.get(v.0 as usize))
-                    .ok_or("missing selected field variant")?
-                    .ordinal
-            }
-        };
-        let ordinal = match field {
-            Selection::Tuple(index) => index,
-            Selection::Nominal(id) => self
-                .context
-                .members
-                .ordinal(id)
-                .ok_or("missing selected field ordinal")?,
-        };
-        self.field_offset(layout, variant_ordinal, ordinal as usize)
+        self.context
+            .selected_field(layout, field)
+            .map(|(_, offset)| offset)
     }
     fn pattern_offset(
         &mut self,

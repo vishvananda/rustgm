@@ -899,3 +899,102 @@ the initialization driver is
 `c4bae6ea300101a892a645702819b2edcffffe3a6bebbd4ea3826edb265b3547`;
 the destructor proof driver is
 `56c864120b14c828c2414e75615e023144030cef437eb177af986897f90978a2`.
+
+
+## Native cleanup lowering from completed destruction proofs
+
+The staged `borrow::verify_destruction` entry point now combines initialization,
+selected cleanup, lifetime contracts and ordered loan checking into a `Checked`
+value. It owns immutable recipe arenas and selected plans in body order. The
+ordinary PA14–PA16 entry points retain their existing pending-drop boundary;
+the CLI is not yet switched to the staged verifier. Bodies with no runtime
+cleanup discard their event tape after proof and use ordinary lowering.
+
+LowIR consumes the same ordered events used by the proof. Statement evaluation,
+old-value cleanup and conditional flag writes remain in their selected order.
+Real edges with cleanup receive deterministic extra blocks; imaginary proof
+edges do not become runtime branches. Each demanded glue recipe has one stable
+`rg.drop.ID` identity and is emitted through the existing demand queue, which
+also demands custom destructor bodies. Field/variant traversal is iterative;
+array intervals produce counted loops rather than unrolled element calls.
+Custom `Drop` runs before automatic field cleanup. Tag dispatch visits only the
+active enum variant. Packed fields move into aligned backing for glue calls,
+and zero-sized receivers receive stable aligned addresses.
+
+`native_destructors.rs` checks 24 classified programs against pinned rustc
+acceptance, then lowers every accepted program through the staged library API.
+Its explicit native suite executes 22 accepted programs through both rustc and
+CPPGM, with counters and source assertions checking replacement, moves, partial
+arrays/tuples/enums, conditional initialization, loops, return, let-else,
+zero-length repeats, packed fields, custom-before-field destruction and extended
+borrowed owner ordering. Both partial-move live-borrow negative controls remain
+rejected. The edge case relocates an equivalent return cleanup onto its incoming
+CFG edge before proof; runtime checks cover both successors and initialization
+states. Repeated lowering must produce identical text.
+
+A separate default test compares an aligned zero-sized destructor array of
+length eight with length one billion. Both pass pinned-rustc acceptance, retain
+aligned backing, and produce the same instruction count with under 12 KB of
+LowIR. This is a compile-time bound, not a claim that executing one billion
+destructor calls is constant time. Field traversal order is retained in typed
+recipes; broader observable sibling-order tests remain part of PA17 release
+qualification. No timeout or unavailable backend counts as a passed execution.
+
+PA17 remains planned until the CLI, assignment handout, manifests and independently
+qualified text/native fixtures are published together. This checkpoint provides
+the executable library path required for that release.
+
+
+Validation for native cleanup lowering:
+
+- All 3,094 PA1–PA16 text cases pass with unchanged committed oracles.
+- All 515 frontend tests pass in debug and release. The seven explicitly
+  backend-dependent tests pass through `make test-maintainer-native`.
+- Clippy all/pedantic, rustfmt and the file/architecture audit pass: 349 files,
+  zero findings. All 25 harness tests, 24 upstream fixture checks and 126 pinned
+  Reference file checks pass.
+- The largest scaling input passes independent Rust 1.98.0 acceptance. The
+  256-function input also validates, compiles and executes through CPPGM.
+- Logs and their hashes are indexed in
+  `obj/pa15-work/drop-native-v1-validation.json`.
+
+Performance uses immutable binaries and frozen inputs, CPU 2, two warmups,
+four A/A calibration samples and three paired ABBA blocks per workload/size.
+All 162 observations are retained. No own builds or tests ran during timing.
+The shared host continued running unrelated work. Old/new ordinary LowIR output
+matches byte-for-byte, as do counts; destructor lowering compares identical
+candidate copies for scaling because the baseline had no executable cleanup.
+The staged driver uses the exact dependency versions in the course lockfile.
+
+| Workload / functions | Baseline median | Candidate median | Candidate RSS |
+| --- | ---: | ---: | ---: |
+| ordinary thin references / 256 | 30.48 ms | 30.89 ms | 9,220 KiB |
+| ordinary thin references / 1,024 | 116.82 ms | 116.32 ms | 22,638 KiB |
+| ordinary thin references / 4,096 | 488.52 ms | 490.60 ms | 76,362 KiB |
+| ordinary wide references / 256 | 54.32 ms | 54.09 ms | 12,058 KiB |
+| ordinary wide references / 1,024 | 206.80 ms | 204.90 ms | 34,418 KiB |
+| ordinary wide references / 4,096 | 877.35 ms | 854.18 ms | 124,512 KiB |
+| destructor lowering / 256 | same candidate | 162.93 ms | 22,636 KiB |
+| destructor lowering / 1,024 | same candidate | 608.66 ms | 78,278 KiB |
+| destructor lowering / 4,096 | same candidate | 2596.68 ms | 299,208 KiB |
+
+At 4,096 ordinary functions, thin-reference wall time changes +0.42% and
+wide-reference time -2.64%; paired ranges overlap in both cases. Median RSS
+changes by 48 KiB and 66 KiB respectively. These observations show no material
+regression in these workloads, rather than proving a universal performance
+bound. The same-binary destructor measurements also retain scheduling outliers.
+
+Destructor output scales as `3N+9` functions, `18N+11` blocks, `90N+31`
+instructions, `18N+7` slots and `2N` globals. At 4,096 functions this is 368,671
+instructions and 299,208 KiB median peak RSS. Nominal recipes erase lifetimes
+and share code; structural tuples/arrays currently share by canonical type ID,
+so lifetime-distinct structural types can still demand separate glue. Further
+sharing must preserve layout distinctions and deserves a separate measured
+change before type-generic destruction.
+
+`obj/pa15-work/drop-native-v1-perf-results.json` indexes every raw receipt.
+Frozen source, driver, binary and input hashes were checked after measurement.
+The ordinary candidate SHA-256 is
+`4c1503906b98310473546971658c11c8216d28ee1cecbb86f8dd8342566e81de`;
+the staged lowering driver is
+`bb3e6c85227602d59e4a2daf74eba96904f7e1f08b1111270737948873438181`.

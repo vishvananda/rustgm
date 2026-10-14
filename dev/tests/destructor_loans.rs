@@ -1,3 +1,5 @@
+#[path = "helpers/destructor_cases.rs"]
+mod destructor_cases;
 use rustgm::{
     body,
     borrow::{
@@ -170,84 +172,8 @@ fn extended_temporary_storage_ends_after_the_destructor_that_uses_it()
 
 #[test]
 fn counter_programs_qualify_the_destructor_loan_proof() -> Result<(), Box<dyn std::error::Error>> {
-    let cases = [
-        (
-            "partial-array",
-            "fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}\nstruct D<'a>(&'a mut u8);impl Drop for D<'_>{fn drop(&mut self){*self.0+=1;}}\nfn main(){let mut a=0;let mut b=0;{let [first,..]=[D(&mut a),D(&mut b)];let _moved=first;}check(a==1&&b==1);}\n",
-            true,
-        ),
-        (
-            "conditional",
-            "fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}\nstruct D<'a>(&'a mut u8);impl Drop for D<'_>{fn drop(&mut self){*self.0+=1;}}\nfn run(flag:bool)->u8{let mut n=0;{let d:D<'_>;if flag{d=D(&mut n);}}n}fn main(){check(run(false)==0);check(run(true)==1);}\n",
-            true,
-        ),
-        (
-            "move",
-            "fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}\nstruct D<'a>(&'a mut u8);impl Drop for D<'_>{fn drop(&mut self){*self.0+=1;}}\nfn main(){let mut n=0;{let a=D(&mut n);let b=a;let _c=b;}check(n==1);}\n",
-            true,
-        ),
-        (
-            "loop",
-            "fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}\nstruct D<'a>(&'a mut u8);impl Drop for D<'_>{fn drop(&mut self){*self.0+=1;}}\nfn main(){let mut n=0;let mut i=0;while i<3{let _d=D(&mut n);i+=1;if i<3{continue;}break;}check(n==3);}\n",
-            true,
-        ),
-        (
-            "return",
-            "fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}\nstruct D<'a>(&'a mut u8);impl Drop for D<'_>{fn drop(&mut self){*self.0+=1;}}\nfn pass<'a>(value:D<'a>)->D<'a>{value}fn main(){let mut n=0;{let _d=pass(D(&mut n));}check(n==1);}\n",
-            true,
-        ),
-        (
-            "let-else",
-            "fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}\nstruct D<'a>(&'a mut u8);impl Drop for D<'_>{fn drop(&mut self){*self.0+=1;}}\nenum E<'a>{A(D<'a>),B(D<'a>)}fn f(n:&mut u8){let E::A(ref _a)=E::B(D(n))else{check(*n==1);return;};}fn main(){let mut n=0;f(&mut n);check(n==1);}\n",
-            true,
-        ),
-        (
-            "indirect-replacement",
-            "fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}\nstruct D<'a>(&'a mut u8);impl Drop for D<'_>{fn drop(&mut self){*self.0+=1;}}\nfn replace<'a>(slot:&mut D<'a>,value:D<'a>){*slot=value;}fn main(){let mut a=0;let mut b=0;{let mut d=D(&mut a);replace(&mut d,D(&mut b));}check(a==1&&b==1);}\n",
-            true,
-        ),
-        (
-            "partial-tuple",
-            "fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}\nstruct D<'a>(&'a mut u8);impl Drop for D<'_>{fn drop(&mut self){*self.0+=1;}}\nfn main(){let mut a=0;let mut b=0;{let pair=(D(&mut a),D(&mut b));{let _first=pair.0;}}check(a==1&&b==1);}\n",
-            true,
-        ),
-        (
-            "scope",
-            "fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}\nstruct D<'a>(&'a mut u8);impl Drop for D<'_>{fn drop(&mut self){*self.0+=1;}}\nfn main(){let mut n=0;{let _d=D(&mut n);}check(n==1);}\n",
-            true,
-        ),
-        (
-            "custom-and-fields",
-            "fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}\nstruct D<'a>(&'a mut u8);impl Drop for D<'_>{fn drop(&mut self){*self.0+=1;}}\nstruct Outer<'a>{own:&'a mut u8,field:D<'a>}impl Drop for Outer<'_>{fn drop(&mut self){*self.own+=10;}}fn main(){let mut a=0;let mut b=0;{let _o=Outer{own:&mut a,field:D(&mut b)};}check(a==10&&b==1);}\n",
-            true,
-        ),
-        (
-            "zero-repeat",
-            "fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}\nstruct D<'a>(&'a mut u8);impl Drop for D<'_>{fn drop(&mut self){*self.0+=1;}}\nfn main(){let mut n=0;let _empty=[D(&mut n);0];check(n==1);}\n",
-            true,
-        ),
-        (
-            "early-return",
-            "fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}\nstruct D<'a>(&'a mut u8);impl Drop for D<'_>{fn drop(&mut self){*self.0+=1;}}\nfn f(n:&mut u8){let _d=D(n);return;}fn main(){let mut n=0;f(&mut n);check(n==1);}\n",
-            true,
-        ),
-        (
-            "replacement",
-            "fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}\nstruct D<'a>(&'a mut u8);impl Drop for D<'_>{fn drop(&mut self){*self.0+=1;}}\nfn main(){let mut a=0;let mut b=0;{let mut d=D(&mut a);d=D(&mut b);check(a==1);}check(a==1&&b==1);}\n",
-            true,
-        ),
-        (
-            "partial-tuple-borrow-live",
-            "fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}\nstruct D<'a>(&'a mut u8);impl Drop for D<'_>{fn drop(&mut self){*self.0+=1;}}\nfn main(){let mut a=0;let mut b=0;{let pair=(D(&mut a),D(&mut b));{let _first=pair.0;}check(a==1);check(b==0);}check(a==1&&b==1);}\n",
-            false,
-        ),
-        (
-            "partial-array-borrow-live",
-            "fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}\nstruct D<'a>(&'a mut u8);impl Drop for D<'_>{fn drop(&mut self){*self.0+=1;}}\nfn main(){let mut a=0;let mut b=0;{let [first,..]=[D(&mut a),D(&mut b)];check(b==1);let _moved=first;}check(a==1&&b==1);}\n",
-            false,
-        ),
-    ];
-    for (name, source, accepted) in cases {
+    let cases = destructor_cases::CASES;
+    for &(name, source, accepted) in cases {
         rustc::qualify(&format!("destructor-counter-{name}"), source, accepted)?;
         let result = check(source);
         assert_eq!(result.is_ok(), accepted, "{name}: {result:?}");

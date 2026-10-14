@@ -1,7 +1,9 @@
 //! Mechanical lowering consumes typed body selections and emits each demanded function once.
+mod address;
 pub mod alignment;
 mod arithmetic;
 mod casts;
+mod cleanup;
 mod context;
 mod data;
 mod function;
@@ -29,5 +31,5 @@ pub fn build(
 ) -> Result<program::Program, Error> {
     let program = bodies.program();
     alignment::check(facts, program)?;
-    context::build(facts, program, entry)
+    context::build(facts, bodies, entry)
 }

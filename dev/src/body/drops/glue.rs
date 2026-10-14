@@ -23,6 +23,7 @@ pub enum Shape {
     /// Iterate in ascending index order, including zero-sized elements.
     Array { element: Id, length: u64 },
 }
+#[derive(Clone, Copy)]
 pub struct Recipe {
     /// A layout representative. Nominal recipes erase lifetime arguments only.
     pub ty: TypeId,
@@ -51,6 +52,31 @@ enum State {
     Ready(Option<Id>),
     Failed(&'static str),
 }
+/// Immutable recipes retained by the completed destruction proof.
+#[derive(Default)]
+pub struct Recipes {
+    entries: Vec<Recipe>,
+    fields: Vec<Field>,
+    variants: Vec<Variant>,
+}
+impl Recipes {
+    #[must_use]
+    pub fn recipes(&self) -> &[Recipe] {
+        &self.entries
+    }
+    #[must_use]
+    pub fn get(&self, id: Id) -> Option<&Recipe> {
+        self.entries.get(id.0 as usize)
+    }
+    #[must_use]
+    pub fn fields(&self, range: Range) -> Option<&[Field]> {
+        self.fields.get(range.start as usize..range.end as usize)
+    }
+    #[must_use]
+    pub fn variants(&self, range: Range) -> Option<&[Variant]> {
+        self.variants.get(range.start as usize..range.end as usize)
+    }
+}
 /// One immutable semantic environment and custom-destructor set. Completed
 /// recipes are shared across every cleanup site and every function in the crate.
 pub struct Catalog<'a> {
@@ -60,9 +86,7 @@ pub struct Catalog<'a> {
     methods: HashMap<ItemId, DefId>,
     needs: NeedsDrop,
     states: HashMap<Key, State>,
-    recipes: Vec<Recipe>,
-    fields: Vec<Field>,
-    variants: Vec<Variant>,
+    storage: Recipes,
     work: Vec<(TypeId, bool)>,
     retained: usize,
     pub steps: usize,
@@ -95,17 +119,19 @@ impl<'a> Catalog<'a> {
             methods: selected,
             needs,
             states: HashMap::new(),
-            recipes: Vec::new(),
-            fields: Vec::new(),
-            variants: Vec::new(),
+            storage: Recipes::default(),
             work: Vec::new(),
             retained,
             steps: 0,
         })
     }
     #[must_use]
+    pub fn into_recipes(self) -> Recipes {
+        self.storage
+    }
+    #[must_use]
     pub fn recipes(&self) -> &[Recipe] {
-        &self.recipes
+        self.storage.recipes()
     }
     pub(crate) const fn types(&self) -> &Store {
         self.types
@@ -115,15 +141,15 @@ impl<'a> Catalog<'a> {
     }
     #[must_use]
     pub fn get(&self, id: Id) -> Option<&Recipe> {
-        self.recipes.get(id.0 as usize)
+        self.storage.get(id)
     }
     #[must_use]
     pub fn fields(&self, range: Range) -> Option<&[Field]> {
-        self.fields.get(range.start as usize..range.end as usize)
+        self.storage.fields(range)
     }
     #[must_use]
     pub fn variants(&self, range: Range) -> Option<&[Variant]> {
-        self.variants.get(range.start as usize..range.end as usize)
+        self.storage.variants(range)
     }
     /// Demand a complete, bounded recipe. None means the type needs no destruction.
     /// Nominal lifetime instantiations share code; references own no referent.
@@ -250,7 +276,7 @@ impl<'a> Catalog<'a> {
         self.charge(1)?;
         if let Some(recipe) = self.result(ty)? {
             self.retain::<Field>(1)?;
-            self.fields.push(Field { selection, recipe });
+            self.storage.fields.push(Field { selection, recipe });
         }
         Ok(())
     }
@@ -268,7 +294,7 @@ impl<'a> Catalog<'a> {
                 length,
             },
             Kind::Tuple(list) => {
-                let start = compact(self.fields.len())?;
+                let start = compact(self.storage.fields.len())?;
                 for (index, &child) in self
                     .types
                     .list(list)
@@ -280,7 +306,7 @@ impl<'a> Catalog<'a> {
                 }
                 Shape::Fields(Range {
                     start,
-                    end: compact(self.fields.len())?,
+                    end: compact(self.storage.fields.len())?,
                 })
             }
             Kind::Adt(item, _) => {
@@ -290,8 +316,8 @@ impl<'a> Catalog<'a> {
             _ => return Err("invalid completed destruction type"),
         };
         self.retain::<Recipe>(1)?;
-        let id = Id(compact(self.recipes.len())?);
-        self.recipes.push(Recipe { ty, method, kind });
+        let id = Id(compact(self.storage.entries.len())?);
+        self.storage.entries.push(Recipe { ty, method, kind });
         Ok(id)
     }
     fn nominal(&mut self, item: ItemId) -> Result<Shape, &'static str> {
@@ -303,7 +329,7 @@ impl<'a> Catalog<'a> {
         if ids.len() != self.definitions.variants(definition).len() {
             return Err("destruction variant facts disagree");
         }
-        let start = compact(self.variants.len())?;
+        let start = compact(self.storage.variants.len())?;
         for (ordinal, &id) in ids.iter().enumerate() {
             self.charge(1)?;
             let variant = self
@@ -321,7 +347,7 @@ impl<'a> Catalog<'a> {
             if variant.end.checked_sub(variant.start).map(|n| n as usize) != Some(expected.len()) {
                 return Err("destruction field facts disagree");
             }
-            let from = compact(self.fields.len())?;
+            let from = compact(self.storage.fields.len())?;
             for index in variant.start..variant.end {
                 let field = self
                     .members
@@ -335,16 +361,17 @@ impl<'a> Catalog<'a> {
             }
             let fields = Range {
                 start: from,
-                end: compact(self.fields.len())?,
+                end: compact(self.storage.fields.len())?,
             };
             self.retain::<Variant>(1)?;
-            self.variants.push(Variant {
+            self.storage.variants.push(Variant {
                 selection: id,
                 fields,
             });
         }
         if definition.kind == crate::types::aggregate::Kind::Struct {
             let variant = self
+                .storage
                 .variants
                 .get(start as usize)
                 .ok_or("missing struct destruction fields")?;
@@ -352,7 +379,7 @@ impl<'a> Catalog<'a> {
         } else {
             Ok(Shape::Variants(Range {
                 start,
-                end: compact(self.variants.len())?,
+                end: compact(self.storage.variants.len())?,
             }))
         }
     }

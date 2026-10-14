@@ -196,10 +196,13 @@ Pending body facts retain destructor identities, type requirements and candidate
 store/storage exits. Reuse persistent live-stack ranges and existing exit IDs;
 do not copy every local at every exit. These candidates can overlap and are not
 an execution plan: initialization, moves, owned rvalue scopes, ordering and
-destructor-induced liveness still need proof. Complete ownership, region and
-loan proofs and executable lowering reject pending elaboration. Raw body views
-may expose it explicitly. A value needing destruction cannot be promoted to
-permanent storage, even while its cleanup plan remains pending.
+destructor-induced liveness still need proof. The ordinary ownership, region
+and loan entry points reject pending elaboration. The staged destruction
+verifier discharges those obligations and attaches immutable selected plans and
+glue recipes to checked bodies; only that completed proof can authorize cleanup
+lowering. Raw body views may expose pending work explicitly. A value needing
+destruction cannot be promoted to permanent storage, even while its cleanup
+plan remains pending.
 
 Retain destructible rvalue creation scopes while building the body, including
 discarded values that never become borrowed places. Forwarding a block result
@@ -317,6 +320,18 @@ closure and coroutine a stable emission identity and emit it once. Rust signed
 overflow, saturating casts, zero-sized types, fat pointers and panic behavior
 must not inherit C++ assumptions. In particular, do not blindly emit C++
 `nowrap`, `typed` or alias facts. State only what Rust analysis proves.
+
+Cleanup lowering consumes the proof's ordered statement, cleanup and flag-write
+events. Preserve successor-specific cleanup on real CFG edges; imaginary proof
+edges never generate runtime code. Retain no event tape for bodies with no
+runtime cleanup. Share demand-emitted glue by canonical recipe identity, and
+emit custom destructor calls before automatic field destruction. Variant tags
+select only active fields. Array intervals use counted loops, including
+zero-sized elements; array length must not expand emitted instructions. Use
+bounded iterative emission, with field cursors preserving declaration order.
+Give zero-sized destructor receivers stable aligned storage, and copy packed
+fields into aligned backing before invoking their glue. Ordinary expressions
+and cleanup share the same typed layout and address operations.
 
 Use the shared LowIR model contract; serialized text is an output view. The
 temporary backend adapter accepts LowIR only, validates it with CPPGM and then

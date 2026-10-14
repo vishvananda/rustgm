@@ -1,11 +1,13 @@
 //! Function-local slots, snapshots and control flow consume the PA10 typed body.
 mod aggregate;
+mod cleanup;
 mod references;
 mod selections;
 mod slices;
 mod text;
 use super::{
     Error,
+    address::Address,
     arithmetic::Arithmetic,
     casts,
     context::{Context, Representation},
@@ -36,11 +38,6 @@ enum Selected {
     Object(Address),
 }
 #[derive(Clone, Copy)]
-struct Address {
-    operand: Operand,
-    align: u32,
-}
-#[derive(Clone, Copy)]
 enum Projected {
     Pending,
     Ready(Option<Address>),
@@ -57,6 +54,7 @@ impl Selected {
 struct Lower<'a, 'b> {
     context: &'a mut Context<'b>,
     body: &'b ir::Body,
+    cleanup: Option<Box<cleanup::Pending<'b>>>,
     builder: Builder,
     locals: Vec<Option<Address>>,
     addresses: references::Storage,
@@ -73,10 +71,22 @@ struct Lower<'a, 'b> {
     source: NodeId,
     arguments: Vec<Value>,
 }
-pub(super) fn lower<'a>(context: &mut Context<'a>, body: &'a ir::Body) -> Result<Function, Error> {
+pub(super) fn lower<'a>(
+    context: &mut Context<'a>,
+    body: &'a ir::Body,
+    plan: Option<&'a crate::borrow::destruction::Plan>,
+) -> Result<Function, Error> {
+    let cleanup = plan
+        .map(|p| cleanup::Pending::new(body, p).map(Box::new))
+        .transpose()
+        .map_err(|message| Error {
+            node: body.source,
+            message,
+        })?;
     let mut lower = Lower {
         context,
         body,
+        cleanup,
         builder: Builder::default(),
         locals: Vec::new(),
         addresses: references::Storage::default(),
@@ -112,44 +122,36 @@ impl Lower<'_, '_> {
         for _ in &self.body.blocks {
             self.blocks.push(self.builder.block()?);
         }
+        if let Some(cleanup) = &mut self.cleanup {
+            cleanup.allocate(&mut self.builder, self.body, &seen)?;
+        }
         for (position, id) in order.into_iter().enumerate() {
             self.builder.enter(self.blocks[id])?;
             if position == 0 {
                 self.parameters()?;
+                if let Some(cleanup) = &mut self.cleanup {
+                    cleanup.state.initialize(&mut self.builder)?;
+                }
             }
             let block = &self.body.blocks[id];
-            for statement in &self.body.statements[block.start as usize..block.end as usize] {
-                self.source = statement.source;
-                match statement.action {
-                    Action::BindView { view, place } => self.bind_view(view, place)?,
-                    Action::Project(id) => self.project(id)?,
-                    Action::Select { projection, anchor } => self.select(projection, anchor)?,
-                    Action::GuardStart(_)
-                    | Action::GuardUse(_)
-                    | Action::StorageLive(_)
-                    | Action::StorageDead(_)
-                    | Action::StorageEnd { .. } => {}
-                    Action::Evaluate(value) => {
-                        let result = self.evaluate(value)?;
-                        self.materialize(value, result)?;
-                        self.values[value.0 as usize] = Some(result);
-                    }
-                    Action::Store { place, value } => {
-                        let address = self.place(place)?;
-                        let selected = self.value(value)?;
-                        self.write(address, selected, self.body.values[value.0 as usize].ty)?;
-                    }
+            if let Some(cleanup) = &self.cleanup {
+                let range = cleanup.timeline.blocks[id].clone();
+                self.cleanup_events(range)?;
+            } else {
+                for statement in &self.body.statements[block.start as usize..block.end as usize] {
+                    self.source = statement.source;
+                    self.statement(statement.action)?;
                 }
             }
             self.source = block.source;
             let terminator = match block.terminator {
                 ir::Terminator::Jump(target) | ir::Terminator::FalseEdge { real: target, .. } => {
-                    Terminator::Jump(self.blocks[target.0 as usize])
+                    Terminator::Jump(self.target(id, target)?)
                 }
                 ir::Terminator::Branch { condition, yes, no } => Terminator::Branch {
                     condition: self.value(condition)?.runtime()?.operand,
-                    yes: self.blocks[yes.0 as usize],
-                    no: self.blocks[no.0 as usize],
+                    yes: self.target(id, yes)?,
+                    no: self.target(id, no)?,
                 },
                 ir::Terminator::Return(value) => Terminator::Return(match self.value(value)? {
                     Selected::Runtime(value) => Some(value),
@@ -177,6 +179,7 @@ impl Lower<'_, '_> {
                 self.builder.terminate(Terminator::Unreachable)?;
             }
         }
+        self.cleanup_edges()?;
         if let Some(panic) = self.panic {
             self.builder.enter(panic)?;
             let symbol = self.context.abort()?;
@@ -187,12 +190,42 @@ impl Lower<'_, '_> {
         }
         Ok(())
     }
+    fn statement(&mut self, action: Action) -> Result<(), &'static str> {
+        match action {
+            Action::BindView { view, place } => self.bind_view(view, place)?,
+            Action::Project(id) => self.project(id)?,
+            Action::Select { projection, anchor } => self.select(projection, anchor)?,
+            Action::GuardStart(_)
+            | Action::GuardUse(_)
+            | Action::StorageLive(_)
+            | Action::StorageDead(_)
+            | Action::StorageEnd { .. } => {}
+            Action::Evaluate(value) => {
+                let result = self.evaluate(value)?;
+                self.materialize(value, result)?;
+                self.values[value.0 as usize] = Some(result);
+            }
+            Action::Store { place, value } => {
+                let address = self.place(place)?;
+                let selected = self.value(value)?;
+                self.write(address, selected, self.body.values[value.0 as usize].ty)?;
+            }
+        }
+        Ok(())
+    }
     fn initialize_storage(
         &mut self,
         order: &[usize],
         checked_edges: bool,
     ) -> Result<(), &'static str> {
         self.addresses = references::Storage::collect(self.body)?;
+        if let Some(cleanup) = &self.cleanup {
+            for entry in &cleanup.plan.cleanups {
+                if entry.node.is_some() {
+                    self.addresses.mark(self.body, entry.candidate.place)?;
+                }
+            }
+        }
         let live = if checked_edges {
             let mut live = vec![false; self.body.locals.len()];
             for &index in order {

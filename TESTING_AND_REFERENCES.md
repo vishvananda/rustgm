@@ -110,7 +110,7 @@ from a text-oracle match. See `docs/pa11-validation.md`.
 
 Maintainer Cargo tests that execute CPPGM are explicitly ignored in the default
 frontend suite. Run `make test-maintainer-native` to qualify the backend and run
-all six backend-dependent tests; `make test-native` includes this target before
+all backend-dependent tests; `make test-native` includes this target before
 the course native suites. Missing configuration or changed backend bytes fails
 that target. No test silently treats an unavailable backend as successful native
 execution. Hosted CI runs the frontend suite and reports these tests as ignored.
@@ -163,7 +163,7 @@ rejections. The earlier type/body/pattern views retain pending directed region
 facts; independently reviewed oracles reflect those facts.
 
 `make test-rustc` includes both stages; `make test-native-pa16` selects PA16's
-113 execution cases. The root native target includes PA16 and the six explicit
+113 execution cases. The root native target includes PA16 and the explicit
 maintainer native tests. See `docs/pa15-pa16-validation.md` for the release review.
 
 ## Placement and provenance

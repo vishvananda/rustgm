@@ -31,18 +31,21 @@ pub(super) struct Context<'a> {
     pub initializers: &'a [Initializer],
     pub layouts: &'a mut Layouts,
     pub bodies: &'a ir::Program,
+    pub destruction: Option<&'a crate::borrow::destruction::Proof>,
     pub output: Program,
     pub data: data::Storage,
     body_indices: Vec<Option<usize>>,
     symbols: Vec<Option<SymbolId>>,
     signatures: HashMap<TypeId, SignatureId>,
     queue: Vec<DefId>,
+    pub drop_queue: Vec<crate::body::drops::glue::Id>,
+    pub drop_symbols: Vec<Option<SymbolId>>,
     abort: Option<SymbolId>,
     remainders: [Option<SymbolId>; 2],
 }
 pub(super) fn build(
     facts: &mut Declarations,
-    bodies: &ir::Program,
+    bodies: &crate::borrow::Checked<'_>,
     entry: DefId,
 ) -> Result<Program, Error> {
     let mut layouts = std::mem::take(&mut facts.layouts);
@@ -73,9 +76,11 @@ impl<'a> Context<'a> {
     pub fn build(
         facts: &'a Declarations,
         layouts: &'a mut Layouts,
-        bodies: &'a ir::Program,
+        checked: &'a crate::borrow::Checked<'_>,
         entry: DefId,
     ) -> Result<Program, Error> {
+        let bodies = checked.program();
+        let destruction = checked.destruction();
         let source = bodies.bodies.first().map_or(
             NodeKey {
                 file: FileId(0),
@@ -102,12 +107,15 @@ impl<'a> Context<'a> {
             initializers: &facts.initializers,
             layouts,
             bodies,
+            destruction,
             output: Program::default(),
             data: data::Storage::default(),
             body_indices: vec![None; size],
             symbols: vec![None; size],
             signatures: HashMap::new(),
             queue: Vec::new(),
+            drop_queue: Vec::new(),
+            drop_symbols: vec![None; destruction.map_or(0, |d| d.recipes().recipes().len())],
             abort: None,
             remainders: [None; 2],
         };
@@ -120,9 +128,27 @@ impl<'a> Context<'a> {
             node: source,
             message,
         })?;
-        let (mut next, mut next_data) = (0, 0);
-        while next < context.queue.len() || next_data < context.data.pending.len() {
+        let (mut next, mut next_data, mut next_drop) = (0, 0, 0);
+        while next < context.queue.len()
+            || next_data < context.data.pending.len()
+            || next_drop < context.drop_queue.len()
+        {
             if next == context.queue.len() {
+                if next_drop < context.drop_queue.len() {
+                    let id = context.drop_queue[next_drop];
+                    let lowered =
+                        super::cleanup::glue(&mut context, id).map_err(|message| Error {
+                            node: source,
+                            message,
+                        })?;
+                    let symbol = context.drop_symbols[id.0 as usize].ok_or(Error {
+                        node: source,
+                        message: "missing demanded cleanup symbol",
+                    })?;
+                    context.output.symbols[symbol.0 as usize].body = Some(lowered);
+                    next_drop += 1;
+                    continue;
+                }
                 context
                     .initialize_data(next_data)
                     .map_err(|message| Error {
@@ -142,7 +168,8 @@ impl<'a> Context<'a> {
                 message: "missing demanded symbol",
             })?;
             let body = &bodies.bodies[index];
-            let lowered = function::lower(&mut context, body)?;
+            let plan = destruction.and_then(|proof| proof.plan(index));
+            let lowered = function::lower(&mut context, body, plan)?;
             context.output.symbols[symbol.0 as usize].body = Some(lowered);
             next += 1;
         }

@@ -90,3 +90,20 @@ pub struct Plan {
     pub events: Vec<Event>,
     pub steps: usize,
 }
+
+/// Proved plans in body order, with their immutable shared glue recipes.
+/// Construction is restricted to the combined ownership/lifetime/loan boundary.
+pub struct Proof {
+    pub(super) plans: Vec<Option<Plan>>,
+    pub(super) recipes: glue::Recipes,
+}
+impl Proof {
+    #[must_use]
+    pub fn plan(&self, body: usize) -> Option<&Plan> {
+        self.plans.get(body).and_then(Option::as_ref)
+    }
+    #[must_use]
+    pub const fn recipes(&self) -> &glue::Recipes {
+        &self.recipes
+    }
+}

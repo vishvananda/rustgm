@@ -13,11 +13,16 @@ use std::{collections::HashMap, hash::BuildHasher};
 
 pub struct Checked<'a> {
     program: &'a Program,
+    destruction: Option<Box<super::destruction::Proof>>,
 }
 impl Checked<'_> {
     #[must_use]
     pub const fn program(&self) -> &Program {
         self.program
+    }
+    #[must_use]
+    pub fn destruction(&self) -> Option<&super::destruction::Proof> {
+        self.destruction.as_deref()
     }
 }
 pub struct Analysis<'a> {
@@ -152,5 +157,75 @@ fn run<'a, const RECORD: bool, S: BuildHasher>(
         })?;
         record(owned, proof);
     }
-    Ok(Checked { program })
+    Ok(Checked {
+        program,
+        destruction: None,
+    })
+}
+
+/// Verify pending destruction and retain its selected recipes and body plans.
+/// Ordinary assignment views keep their existing pending-elaboration boundary.
+/// # Errors
+/// Rejects invalid moves, lifetime contracts, destructor loans and resource limits.
+pub fn verify_destruction<'a, S: BuildHasher>(
+    environment: &mut Environment<'_, S>,
+    contracts: &regions::Analysis,
+    program: &'a Program,
+    mut catalog: super::destruction::glue::Catalog<'_>,
+) -> Result<Checked<'a>, Error> {
+    use super::{destruction, ownership::initialization};
+    let error = |node, message: &str| Error {
+        node,
+        message: message.into(),
+    };
+    let pending = program
+        .drops
+        .as_ref()
+        .ok_or_else(|| error(None, "missing destruction work"))?;
+    let mut drop_regions =
+        crate::types::destruction::regions::Regions::new(pending.methods.iter().map(|m| m.item))
+            .map_err(|e| error(Some(pending.source), e))?;
+    let mut components = LiveRegions::default();
+    let by_source: HashMap<_, _> = contracts.bodies.iter().map(|b| (b.source, b)).collect();
+    let mut plans = Vec::with_capacity(program.bodies.len());
+    for body in &program.bodies {
+        let contract = by_source
+            .get(&body.source)
+            .ok_or_else(|| error(Some(body.source), "body has no lifetime proof"))?;
+        let init = initialization::analyze(
+            environment.types,
+            environment.definitions,
+            environment.derives,
+            environment.copies,
+            body,
+        )
+        .map_err(|e| error(Some(e.node), e.message))?;
+        let plan =
+            destruction::select(&mut catalog, &init).map_err(|e| error(Some(e.node), e.message))?;
+        loans::check_destruction(
+            environment.types,
+            environment.definitions,
+            &mut components,
+            &mut drop_regions,
+            &init,
+            contract,
+            &plan,
+        )
+        .map_err(|e| error(Some(e.node), e.message))?;
+        // Bodies with no runtime cleanup keep no event tape after their proof.
+        // They lower through the ordinary statement path, even in a Drop crate.
+        plans.push(
+            plan.cleanups
+                .iter()
+                .any(|c| c.node.is_some())
+                .then_some(plan),
+        );
+    }
+    Ok(Checked {
+        program,
+        destruction: Some(Box::new(destruction::Proof {
+            plans,
+            recipes: catalog.into_recipes(),
+        })),
+    })
 }
