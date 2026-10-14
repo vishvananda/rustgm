@@ -5,4 +5,4 @@ pub use crate::types::region_graph as graph;
 mod places;
 pub mod points;
 pub mod view;
-pub use check::{Analysis, Body, Error, check, check_bodies, prepare_destruction};
+pub use check::{Analysis, Body, Error, check, check_bodies, check_templates, prepare_destruction};

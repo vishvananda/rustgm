@@ -453,6 +453,16 @@ impl<'a> Constraints<'a> {
                     length: b,
                 },
             ) if a == b => self.child(relation, left, right, covariant)?,
+            (
+                Kind::ArrayTerm {
+                    element: left,
+                    length: a,
+                },
+                Kind::ArrayTerm {
+                    element: right,
+                    length: b,
+                },
+            ) if a == b => self.child(relation, left, right, covariant)?,
             (Kind::Slice(left), Kind::Slice(right)) => {
                 self.child(relation, left, right, covariant)?;
             }

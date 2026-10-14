@@ -928,3 +928,85 @@ is included in `template-cfg-v1-source-sha256.json`; job definitions, observatio
 and raw receipt paths are retained in `template-cfg-v1-perf-jobs.json`,
 `template-cfg-v1-perf-results.json` and `template-cfg-perf-v1.log` under
 `obj/pa18-work/`.
+
+### Template promotion and lifetime provenance
+
+Generic templates now share the ordinary demanded promotion engine and its
+constant evaluator. Each body supplies its scoped possible-destruction facts,
+so an unknown owned type cannot accidentally be promoted simply because the
+crate declares no custom destructor. Completed facts are reused; bodies without
+borrow demand do not allocate a constant evaluator.
+
+The template region entrypoint maps actual CFG bodies to unique lifetime
+contracts and invokes the existing directed prover. It proves only the supplied
+templates, leaving concrete functions, initializers and constructors to their
+own pipeline. Missing or duplicate mappings fail. The concrete program entrypoint
+continues to require CFG coverage for every contract. Neither result proves
+runtime loans or destructor-induced liveness.
+
+Const-parameter array relations now compare the retained length identities and
+relate element lifetimes with the usual variance. They do not guess lengths or
+equate distinct const parameters. Shared shortening is valid; mutable referents
+still enforce invariance.
+
+The source controls include local and temporary escapes, forwarded references,
+shared/mutable reborrows, type-outlives bounds and unused generic bodies. Empty
+generic arrays can promote without knowing their element layout, including
+mutable and nested shared borrows. An ordinary zero-repeat operand still retains
+its possible cleanup even when the resulting empty array promotes. Custom Drop
+values and runtime parameter values remain ineligible for permanent storage.
+
+Unknown-length repeat promotion has an explicit deferred-constant boundary.
+The tests independently distinguish rustc's acceptance of `&[1u8; N]` from its
+rejection of a runtime parameter repeat; this checkpoint does not claim either
+template has completed promotion. Three further rustc-rejected loan controls
+intentionally pass provenance alone. All remain behind the concrete generic-body
+gate, pending symbolic liveness, ordered abstract cleanup and loan checking.
+
+Six new maintainer tests include 25 declared source controls (14 accepted,
+11 rejected), independently qualified with pinned rustc, plus mapping, promotion
+cache and phase-boundary invariants. Validation passes 607 frontend tests, all
+3,334 active course cases, 26 focused release tests, all independent rustc checks,
+nine explicit native maintainer tests and 132 PA17 executable comparisons.
+Rustfmt, Clippy all/pedantic, the 395-file audit and 25 harness tests pass. No
+course fixture or text oracle changed. Logs are
+`obj/pa18-work/template-provenance-full-v1.log`,
+`template-provenance-release-v1.log` and
+`template-provenance-focused-v2.log` in the same directory.
+
+Performance retains 468 observations: 24 initial jobs at 256/1,024/4,096
+functions, followed by two targeted repeats of noisy closed 4,096-function jobs.
+The nine initial closed jobs compare with `10d6f04`; the 15 new jobs measure
+semantic analysis, template CFG construction, scoped moves, promotion and actual
+provenance proofs using identical candidate binaries. All 15 new inputs passed
+independent rustc and proof-driver preflight checks. Each job uses CPU 2, two
+warmups, four A/A observations and three ABBA blocks. Every comparison has equal
+full/count output. No own builds or tests overlapped measurements; all frozen
+source, binary and input hashes were rechecked. Both timing runs are retained.
+
+| Closed 4,096-function workload | Previous ms | Candidate ms | Previous RSS KiB | Candidate RSS KiB |
+| --- | ---: | ---: | ---: | ---: |
+| Thin references | 467.02 | 470.11 | 77336 | 77556 |
+| Wide references, initial | 1363.92 | 1452.39 | 125006 | 125226 |
+| Wide references, repeat | 918.65 | 931.20 | 125382 | 125188 |
+| Destruction, initial | 2773.47 | 2976.97 | 291492 | 291430 |
+| Destruction, repeat | 2699.17 | 2701.24 | 291490 | 291520 |
+
+The initial wide-reference A/A calibration ranged from 923 to 1,663 ms, and
+both binaries varied substantially during the initial destruction comparison.
+The targeted repeats put wide references 1.4% higher and destruction 0.1% higher,
+with overlapping sample ranges; this is not a claim of zero cost or a speedup.
+The new identity, reborrow, zero-array promotion, nested promotion and
+const-array shortening workloads take 126.82, 217.61, 177.35, 176.07 and 219.80 ms
+respectively at 4,096 functions. Measurements across the three sizes retain
+approximately linear growth, without a per-function whole-crate query rebuild.
+
+The frozen CLI `template-provenance-candidate-v1` has SHA-256
+`c1abd651476b082cca7c5250abe6ff194bc2e486b43c8f7e0233a7d1873cc03b`;
+`template-provenance-driver-candidate-v1` has SHA-256
+`bc1e0e091b619e7fc3ce6922c43bf33b96d05254b01849cb8750bd65c4704334`.
+The driver's dependency versions/checksums match the frontend lockfile. Its
+source is included in `template-provenance-v1-source-sha256.json`; the job,
+result and raw receipt indexes are `template-provenance-v1-perf-jobs.json`,
+`template-provenance-v1-perf-results.json` and their `perf-recheck` counterparts
+under `obj/pa18-work/`.

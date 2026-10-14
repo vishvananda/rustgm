@@ -39,13 +39,7 @@ pub fn analyze(
     facts: &mut Declarations,
     program: &mut Program,
 ) -> Result<(), Diagnostic> {
-    if !program.bodies.iter().any(|body| {
-        body.promotions.is_none()
-            && body
-                .values
-                .iter()
-                .any(|v| matches!(v.kind, Rvalue::Borrow { .. }))
-    }) {
+    if !program.bodies.iter().any(needs_analysis) {
         return Ok(());
     }
     let mut evaluator = Evaluator::new(report, facts);
@@ -58,26 +52,68 @@ pub fn analyze(
             .as_ref()
             .and_then(|p| p.bodies.get(index))
             .map(|b| b.values.as_slice());
-        let mut engine = Engine::new(report, body, &mut evaluator, drop_values);
-        let output = engine.collect().map_err(|error| match error {
-            Error::Constant(error) => error,
-            Error::Evaluation(error) => {
-                let span = report
-                    .package
-                    .unit(body.source.file)
-                    .configured
-                    .ast
-                    .node(body.source.node)
-                    .span;
-                report.diagnostic(Diagnostic::at(
-                    body.source.file,
-                    span.start,
-                    error.message(),
-                ))
-            }
-        })?;
-        body.promotions = Some(output);
+        analyze_body(report, &mut evaluator, body, drop_values)?;
     }
+    Ok(())
+}
+/// Evaluate demanded promotions using each template's scoped destruction facts.
+/// This supplies provenance, not loan checking or an executable specialization.
+/// # Errors
+/// Reports invalid constants, unsupported symbolic evaluation and query limits.
+pub fn analyze_templates(
+    report: &Report,
+    facts: &mut Declarations,
+    templates: &mut super::templates::Templates,
+) -> Result<(), Diagnostic> {
+    if !templates.bodies.iter().any(|t| needs_analysis(&t.body)) {
+        return Ok(());
+    }
+    let mut evaluator = Evaluator::new(report, facts);
+    for template in &mut templates.bodies {
+        analyze_body(
+            report,
+            &mut evaluator,
+            &mut template.body,
+            Some(&template.destruction.values),
+        )?;
+    }
+    Ok(())
+}
+fn needs_analysis(body: &Body) -> bool {
+    body.promotions.is_none()
+        && body
+            .values
+            .iter()
+            .any(|v| matches!(v.kind, Rvalue::Borrow { .. }))
+}
+fn analyze_body(
+    report: &Report,
+    evaluator: &mut Evaluator<'_>,
+    body: &mut Body,
+    drop_values: Option<&[bool]>,
+) -> Result<(), Diagnostic> {
+    if body.promotions.is_some() {
+        return Ok(());
+    }
+    let mut engine = Engine::new(report, body, evaluator, drop_values);
+    let output = engine.collect().map_err(|error| match error {
+        Error::Constant(error) => error,
+        Error::Evaluation(error) => {
+            let span = report
+                .package
+                .unit(body.source.file)
+                .configured
+                .ast
+                .node(body.source.node)
+                .span;
+            report.diagnostic(Diagnostic::at(
+                body.source.file,
+                span.start,
+                error.message(),
+            ))
+        }
+    })?;
+    body.promotions = Some(output);
     Ok(())
 }
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]

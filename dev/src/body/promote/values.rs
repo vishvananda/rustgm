@@ -30,6 +30,9 @@ impl Engine<'_, '_> {
     pub(super) fn empty_repeat(&self, id: ValueId) -> Result<bool, Error> {
         match self.evaluator.facts().types.kind(self.value(id)?.ty) {
             Some(Type::Array { length, .. }) => Ok(length == 0),
+            Some(Type::ArrayTerm { .. }) => {
+                Err("generic repeat promotion requires deferred constant evaluation".into())
+            }
             _ => Err("promotion repeat is not an array".into()),
         }
     }

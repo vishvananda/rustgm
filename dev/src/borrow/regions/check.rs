@@ -84,6 +84,39 @@ pub fn prepare_destruction(
     }
     run(types, definitions, variances, contracts, Some(program))
 }
+/// Prove only the supplied generic templates, with their actual borrow places.
+/// Other contracts (including concrete functions and initializers) remain unproved.
+/// Possible destruction still requires its separate lifetime and loan analysis.
+/// # Errors
+/// Rejects missing/duplicate body contracts, invalid provenance and query limits.
+pub fn check_templates(
+    types: &Store,
+    definitions: &Definitions,
+    variances: &Variances,
+    contracts: &Contracts<'_>,
+    templates: &crate::body::templates::Templates,
+) -> Result<Analysis, Error> {
+    let mut index = std::collections::HashMap::with_capacity(contracts.bodies.len());
+    for input in &contracts.bodies {
+        if index.insert(input.source, input).is_some() {
+            return Err(Error {
+                source: Some(input.source),
+                message: "duplicate lifetime body contract".into(),
+            });
+        }
+    }
+    let inputs = templates.bodies.iter().map(|template| {
+        let cfg = &template.body;
+        index
+            .remove(&cfg.source)
+            .map(|input| (input, Some(cfg)))
+            .ok_or_else(|| Error {
+                source: Some(cfg.source),
+                message: "template requires a unique lifetime body contract".into(),
+            })
+    });
+    prove(types, definitions, variances, contracts, inputs)
+}
 fn run(
     types: &Store,
     definitions: &Definitions,
@@ -96,14 +129,7 @@ fn run(
         .flat_map(|p| &p.bodies)
         .map(|b| (b.source, b))
         .collect();
-    let bounds =
-        Bounds::infer(types, definitions, contracts.nominal_bounds).map_err(|e| Error {
-            source: None,
-            message: e.into(),
-        })?;
-    let mut queries = Queries::new(types, &bounds, contracts.callables);
-    let mut bodies = Vec::with_capacity(contracts.bodies.len());
-    for input in &contracts.bodies {
+    let inputs = contracts.bodies.iter().map(|input| {
         let cfg = cfgs.get(&input.source).copied();
         if program.is_some() && cfg.is_none() {
             return Err(Error {
@@ -111,6 +137,26 @@ fn run(
                 message: "lifetime contract has no typed body".into(),
             });
         }
+        Ok((input, cfg))
+    });
+    prove(types, definitions, variances, contracts, inputs)
+}
+fn prove<'a>(
+    types: &Store,
+    definitions: &Definitions,
+    variances: &Variances,
+    contracts: &Contracts<'_>,
+    inputs: impl Iterator<Item = Result<(&'a Contract, Option<&'a crate::body::ir::Body>), Error>>,
+) -> Result<Analysis, Error> {
+    let bounds =
+        Bounds::infer(types, definitions, contracts.nominal_bounds).map_err(|e| Error {
+            source: None,
+            message: e.into(),
+        })?;
+    let mut queries = Queries::new(types, &bounds, contracts.callables);
+    let mut bodies = Vec::with_capacity(inputs.size_hint().0);
+    for input in inputs {
+        let (input, cfg) = input?;
         bodies.push(body(types, variances, &mut queries, input, cfg)?);
     }
     Ok(Analysis { bodies })
