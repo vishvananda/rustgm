@@ -21,6 +21,14 @@ impl Checker<'_> {
             let target = solved.types[adjustment.expected.0 as usize];
             let actual = solved.types[adjustment.actual.0 as usize];
             let kind = adjustment.kind;
+            // A coercion can create a distinct nominal lifetime instance with
+            // no expression node of its own. Its runtime value needs fields too.
+            if target != actual && self.facts.generics.has_nominal_requirements {
+                self.facts
+                    .aggregates
+                    .prepare(&mut self.facts.types, target)
+                    .map_err(|e| self.error(adjustment.node, e))?;
+            }
             let (proof_actual, proof_expected) = self
                 .discarded_adjustments
                 .get(&index)

@@ -1,6 +1,8 @@
 //! Forward loan reachability constrained by inferred use regions.
 mod cleanup;
 mod inspection;
+mod state;
+use state::Set;
 pub mod templates;
 pub mod view;
 use super::places::{Depth, Id, Index};
@@ -141,10 +143,13 @@ impl Flow<'_> {
             )
             .ok_or("missing loan point")
     }
-    fn prune(&mut self, state: &mut [State], point: Point) -> Result<(), &'static str> {
-        self.charge(state.len())?;
-        for (word, state) in state.iter_mut().enumerate() {
-            let mut bits = state.live;
+    fn prune(&mut self, state: &mut Set, point: Point) -> Result<(), &'static str> {
+        self.charge(1)?;
+        let mut from = 0;
+        while let Some(word) = state.next(from) {
+            self.charge(state.depth())?;
+            let mut bits = state.words()[word].live;
+            let mut retained = bits;
             while bits != 0 {
                 self.charge(1)?;
                 let bit = bits.trailing_zeros() as usize;
@@ -153,23 +158,26 @@ impl Flow<'_> {
                     .regions
                     .contains(self.loans[word * 64 + bit].region, point)?
                 {
-                    state.live &= !(1 << bit);
-                    state.active &= !(1 << bit);
+                    retained &= !(1 << bit);
                 }
             }
+            state.retain(word, retained);
+            from = word + 1;
         }
         Ok(())
     }
     fn access(
         &mut self,
-        state: &[State],
+        state: &Set,
         place: Place,
         mode: Mode,
         depth: Depth,
         own: Option<ValueId>,
     ) -> Result<(), &'static str> {
-        self.charge(state.len())?;
-        for (word, state) in state.iter().enumerate() {
+        self.charge(1)?;
+        let depth_cost = state.depth();
+        for (word, state) in state.iter() {
+            self.charge(depth_cost)?;
             let mut bits = state.live;
             while bits != 0 {
                 self.charge(1)?;
@@ -192,14 +200,11 @@ impl Flow<'_> {
         }
         Ok(())
     }
-    fn ending(
-        &mut self,
-        state: &[State],
-        end: End,
-        target: Option<Point>,
-    ) -> Result<(), &'static str> {
-        self.charge(state.len())?;
-        for (word, state) in state.iter().enumerate() {
+    fn ending(&mut self, state: &Set, end: End, target: Option<Point>) -> Result<(), &'static str> {
+        self.charge(1)?;
+        let depth_cost = state.depth();
+        for (word, state) in state.iter() {
+            self.charge(depth_cost)?;
             let mut bits = state.live;
             while bits != 0 {
                 self.charge(1)?;
@@ -255,7 +260,7 @@ impl Flow<'_> {
         }
         Ok(())
     }
-    fn inspect(&mut self, state: &[State], action: Action) -> Result<(), &'static str> {
+    fn inspect(&mut self, state: &Set, action: Action) -> Result<(), &'static str> {
         match action {
             Action::Evaluate(id) => match self.body.values[id.0 as usize].kind {
                 Rvalue::Read(place) => self.access(
@@ -316,7 +321,7 @@ impl Flow<'_> {
     }
     fn activation(
         &mut self,
-        state: &mut [State],
+        state: &mut Set,
         id: ValueId,
         inspect: bool,
     ) -> Result<(), &'static str> {
@@ -341,9 +346,7 @@ impl Flow<'_> {
             let (start, end) = self.generated[origin.0 as usize];
             for loan in start..end {
                 self.charge(1)?;
-                if state[loan / 64].live & (1 << (loan % 64)) != 0 {
-                    state[loan / 64].active |= 1 << (loan % 64);
-                }
+                state.activate(loan);
             }
         }
         Ok(())
@@ -351,7 +354,7 @@ impl Flow<'_> {
     fn transfer<const RECORD: bool>(
         &mut self,
         block: usize,
-        state: &mut [State],
+        state: &mut Set,
         inspect: bool,
     ) -> Result<(), Error> {
         if let Some(plan) = self.destruction {
@@ -409,8 +412,7 @@ impl Flow<'_> {
                 let (start, end) = self.generated[id.0 as usize];
                 for loan in start..end {
                     self.charge(1).map_err(error)?;
-                    state[loan / 64].live |= 1 << (loan % 64);
-                    state[loan / 64].active &= !(1 << (loan % 64));
+                    state.generate(loan);
                 }
             }
         }
@@ -428,7 +430,7 @@ impl Flow<'_> {
             .ok_or_else(|| error("loan block states exceed 64 MB budget"))?;
         let empty = State { live: 0, active: 0 };
         let mut incoming = vec![empty; count];
-        let mut state = vec![empty; words];
+        let mut state = Set::new(words);
         let mut outgoing = vec![empty; if self.destruction.is_some() { words } else { 0 }];
         let mut reached = vec![false; self.body.blocks.len()];
         let mut queued = reached.clone();
@@ -437,20 +439,20 @@ impl Flow<'_> {
         let mut work = VecDeque::from([0]);
         while let Some(block) = work.pop_front() {
             queued[block] = false;
-            self.charge(words).map_err(error)?;
-            state.copy_from_slice(&incoming[block * words..(block + 1) * words]);
+            self.charge(words.saturating_mul(3)).map_err(error)?;
+            state.copy_from(&incoming[block * words..(block + 1) * words]);
             self.transfer::<false>(block, &mut state, false)?;
             if self.destruction.is_some() {
                 self.charge(words).map_err(error)?;
-                outgoing.copy_from_slice(&state);
+                outgoing.copy_from_slice(state.words());
             }
             for next in successors(self.body.blocks[block].terminator)
                 .into_iter()
                 .flatten()
             {
                 if self.destruction.is_some() {
-                    self.charge(words).map_err(error)?;
-                    state.copy_from_slice(&outgoing);
+                    self.charge(words.saturating_mul(3)).map_err(error)?;
+                    state.copy_from(&outgoing);
                     self.cleanup_edge::<false>(block, next, &mut state, false)?;
                 }
                 let next = next.0 as usize;
@@ -459,7 +461,7 @@ impl Flow<'_> {
                 reached[next] = true;
                 for (target, source) in incoming[next * words..(next + 1) * words]
                     .iter_mut()
-                    .zip(&state)
+                    .zip(state.words())
                 {
                     changed |=
                         source.live & !target.live != 0 || source.active & !target.active != 0;
@@ -476,20 +478,20 @@ impl Flow<'_> {
             if !reachable {
                 continue;
             }
-            self.charge(words).map_err(error)?;
-            state.copy_from_slice(&incoming[block * words..(block + 1) * words]);
+            self.charge(words.saturating_mul(3)).map_err(error)?;
+            state.copy_from(&incoming[block * words..(block + 1) * words]);
             self.transfer::<RECORD>(block, &mut state, true)?;
             if self.destruction.is_some() {
                 self.charge(words).map_err(error)?;
-                outgoing.copy_from_slice(&state);
+                outgoing.copy_from_slice(state.words());
             }
             for target in successors(self.body.blocks[block].terminator)
                 .into_iter()
                 .flatten()
             {
                 if self.destruction.is_some() {
-                    self.charge(words).map_err(error)?;
-                    state.copy_from_slice(&outgoing);
+                    self.charge(words.saturating_mul(3)).map_err(error)?;
+                    state.copy_from(&outgoing);
                     self.cleanup_edge::<RECORD>(block, target, &mut state, true)?;
                     continue;
                 }

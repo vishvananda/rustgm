@@ -1,6 +1,7 @@
 //! Demand concrete CFGs from checked templates before ordinary executable lowering.
 mod demand;
 mod dependencies;
+mod proof;
 use crate::{
     body::{
         self,
@@ -58,28 +59,10 @@ pub fn build(
     )
     .map_err(|e| diagnostic(report, e.node, e.message))?;
     let inputs = contracts.bodies;
-    let (program, inputs) = demand::prepare(report, facts, entry, &checked, inputs)?;
-    let contracts = Contracts {
-        bodies: inputs,
-        callables: &facts.lifetimes.callables,
-        nominal_requirements: &facts.lifetimes.nominal_requirements,
-    };
-    let regions = borrow::regions::check_ordered(
-        &facts.types,
-        &facts.lifetimes.variances,
-        &contracts,
-        &program,
-    )
-    .map_err(|e| diagnostic(report, e.source, e.message))?;
-    let mut environment = borrow::Environment {
-        types: &facts.types,
-        definitions: &facts.aggregates,
-        derives: &facts.derives,
-        copies: &mut facts.copies,
-    };
-    let bodies = borrow::verify_instances(&mut environment, &regions, &program, &checked)
-        .map_err(|e| diagnostic(report, e.node, e.message))?;
-    super::build(facts, &bodies, entry)
+    let program = demand::prepare(report, facts, entry, &checked, inputs)?;
+    program
+        .with_checked(|checked| super::build(facts, checked, entry))
+        .map_err(|e| diagnostic(report, e.node, e.message))?
         .map_err(|e| diagnostic(report, Some(e.node), e.message.into()))
 }
 

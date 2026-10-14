@@ -224,3 +224,46 @@ fn children(
     }
     Ok(())
 }
+
+pub(crate) fn validate_method(
+    types: &mut Store,
+    instance: super::instance::Instance,
+    owner: ItemId,
+    target: TypeId,
+) -> Result<(), &'static str> {
+    let Some(Kind::FunctionItem {
+        item, signature, ..
+    }) = types.kind(instance.ty())
+    else {
+        return Err("destructor requires a selected callable");
+    };
+    if item != owner {
+        return Err("destructor instance belongs to another method");
+    }
+    let Some(Kind::Function {
+        parameters,
+        result: TypeId::UNIT,
+        bound_regions: 1,
+        unsafe_: false,
+    }) = types.kind(signature)
+    else {
+        return Err("selected destructor has an invalid signature");
+    };
+    let Some([receiver]) = types.list(parameters) else {
+        return Err("selected destructor has an invalid parameter list");
+    };
+    let Some(Kind::Reference {
+        mutable: true,
+        region,
+        referent,
+    }) = types.kind(*receiver)
+    else {
+        return Err("selected destructor receiver must borrow its target mutably");
+    };
+    if region != super::RegionId::bound(0, 0)?
+        || referent != super::substitute::Bound::shift(1).apply(types, target)?
+    {
+        return Err("selected destructor receiver disagrees with its concrete target");
+    }
+    Ok(())
+}

@@ -6,6 +6,7 @@ use crate::{
         storage::Location,
     },
     borrow::{
+        active::Live,
         destruction::{Effect, Plan, schedule::Schedule},
         ownership::{PathId, Paths, initialization::Facts},
         regions::points::Point,
@@ -82,7 +83,7 @@ impl<'a> Flow<'a> {
         flow.intervals.sort_unstable();
         Ok(flow)
     }
-    fn kill(&mut self, start: u32, end: u32, live: &mut [u64]) -> Result<(), &'static str> {
+    fn kill(&mut self, start: u32, end: u32, live: &mut Live) -> Result<(), &'static str> {
         if self.intervals.is_empty() {
             return Ok(());
         }
@@ -96,11 +97,11 @@ impl<'a> Flow<'a> {
         }
         Ok(())
     }
-    fn define(&mut self, path: PathId, live: &mut [u64]) -> Result<(), &'static str> {
+    fn define(&mut self, path: PathId, live: &mut Live) -> Result<(), &'static str> {
         let path = &self.paths.entries[path.0 as usize];
         self.kill(path.start, path.end, live)
     }
-    fn statement(&mut self, action: Action, live: &mut [u64]) -> Result<(), &'static str> {
+    fn statement(&mut self, action: Action, live: &mut Live) -> Result<(), &'static str> {
         match action {
             Action::Evaluate(value) => {
                 if let Some(path) = self.paths.temporary_path(value) {
@@ -128,7 +129,7 @@ impl<'a> Flow<'a> {
         }
         self.uses.action(action, live)
     }
-    fn transfer(&mut self, index: usize, live: &mut [u64]) -> Result<(), &'static str> {
+    fn transfer(&mut self, index: usize, live: &mut Live) -> Result<(), &'static str> {
         self.uses.charge(1)?;
         let event = &self.plan.events[index];
         match event.effect {
@@ -169,16 +170,17 @@ impl<'a> Flow<'a> {
         &mut self,
         block: usize,
         incoming: &[u64],
-        live: &mut [u64],
-        edge: &mut [u64],
+        live: &mut Live,
+        edge: &mut Live,
     ) -> Result<(), &'static str> {
-        live.fill(0);
+        self.uses.charge(live.len().saturating_mul(2) + 1)?;
+        live.clear();
         for next in successors(self.uses.body.blocks[block].terminator)
             .into_iter()
             .flatten()
         {
-            self.uses.charge(live.len() * 2 + 1)?;
-            edge.copy_from_slice(
+            self.uses.charge(live.len() * 6 + 1)?;
+            edge.copy_from(
                 &incoming[next.0 as usize * live.len()..(next.0 as usize + 1) * live.len()],
             );
             let id = BlockId(u32::try_from(block).map_err(|_| "invalid drop liveness block")?);
@@ -196,9 +198,7 @@ impl<'a> Flow<'a> {
                     self.transfer(index, edge)?;
                 }
             }
-            for (target, &source) in live.iter_mut().zip(edge.iter()) {
-                *target |= source;
-            }
+            live.union(edge.words());
         }
         if let Terminator::Return(value)
         | Terminator::Branch {
@@ -216,7 +216,7 @@ impl<'a> Flow<'a> {
             .filter(|n| *n <= 8_000_000)
             .ok_or("drop liveness states exceed 64 MB budget")?;
         let mut incoming = vec![0; count];
-        let mut live = vec![0; words];
+        let mut live = Live::new(words);
         let mut edge = live.clone();
         let mut queued = self.uses.result.reachable.clone();
         let mut work: VecDeque<_> = (0..queued.len()).rev().filter(|i| queued[*i]).collect();
@@ -237,8 +237,8 @@ impl<'a> Flow<'a> {
             }
             self.uses.charge(words)?;
             let target = &mut incoming[block * words..(block + 1) * words];
-            if target != live {
-                target.copy_from_slice(&live);
+            if target != live.words() {
+                target.copy_from_slice(live.words());
                 self.uses
                     .charge(self.uses.starts[block + 1] - self.uses.starts[block])?;
                 for &parent in
@@ -259,11 +259,12 @@ impl<'a> Flow<'a> {
         definitions: &Definitions,
         regions: &mut LiveRegions,
         drops: &mut Regions,
-        live: &[u64],
+        live: &Live,
         point: Point,
     ) -> Result<(), &'static str> {
-        self.uses.charge(live.len())?;
-        for (word, &bits) in live.iter().enumerate() {
+        self.uses.charge(1)?;
+        for (word, bits) in live.active() {
+            self.uses.charge(live.depth())?;
             let mut bits = bits;
             while bits != 0 {
                 let entity = word * 64 + bits.trailing_zeros() as usize;
@@ -309,7 +310,7 @@ impl<'a> Flow<'a> {
         regions: &mut LiveRegions,
         drops: &mut Regions,
         index: usize,
-        live: &mut [u64],
+        live: &mut Live,
     ) -> Result<(), &'static str> {
         self.transfer(index, live)?;
         let point = Point(u32::try_from(index).map_err(|_| "too many drop points")?);
@@ -365,7 +366,7 @@ pub(crate) fn analyze_schedule(
     let mut flow = Flow::new(types, definitions, regions, drops, facts, plan)?;
     let incoming = flow.solve()?;
     let words = flow.uses.entities.len().div_ceil(64);
-    let mut live = vec![0; words];
+    let mut live = Live::new(words);
     let mut edge = live.clone();
     for block in 0..flow.uses.body.blocks.len() {
         if !flow.uses.result.reachable[block] {
@@ -399,8 +400,8 @@ pub(crate) fn analyze_schedule(
                 .get(&(id, target))
                 .cloned()
             {
-                flow.uses.charge(words)?;
-                edge.copy_from_slice(
+                flow.uses.charge(words.saturating_mul(3))?;
+                edge.copy_from(
                     &incoming[target.0 as usize * words..(target.0 as usize + 1) * words],
                 );
                 for index in range.rev() {

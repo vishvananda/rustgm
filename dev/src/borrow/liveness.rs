@@ -1,5 +1,6 @@
 //! Backward use liveness for typed locals and values, before loan generation.
 pub mod cleanup;
+use super::active::Live;
 mod operands;
 use super::regions::points::Point;
 use crate::{
@@ -176,7 +177,7 @@ impl<'a> Flow<'a> {
         }
         .ok_or("invalid value liveness place")
     }
-    fn use_value(&self, id: ValueId, live: &mut [u64]) -> Result<(), &'static str> {
+    fn use_value(&self, id: ValueId, live: &mut Live) -> Result<(), &'static str> {
         mark(
             *self.values.get(id.0 as usize).ok_or("invalid live value")?,
             live,
@@ -184,11 +185,11 @@ impl<'a> Flow<'a> {
         );
         Ok(())
     }
-    fn use_place(&self, place: Place, live: &mut [u64]) -> Result<(), &'static str> {
+    fn use_place(&self, place: Place, live: &mut Live) -> Result<(), &'static str> {
         mark(self.place(place)?, live, true);
         Ok(())
     }
-    fn local(&self, id: LocalId, live: &mut [u64], used: bool) -> Result<(), &'static str> {
+    fn local(&self, id: LocalId, live: &mut Live, used: bool) -> Result<(), &'static str> {
         mark(
             *self.locals.get(id.0 as usize).ok_or("invalid live local")?,
             live,
@@ -196,7 +197,7 @@ impl<'a> Flow<'a> {
         );
         Ok(())
     }
-    fn value(&mut self, id: ValueId, live: &mut [u64]) -> Result<(), &'static str> {
+    fn value(&mut self, id: ValueId, live: &mut Live) -> Result<(), &'static str> {
         let value = self
             .body
             .values
@@ -245,7 +246,7 @@ impl<'a> Flow<'a> {
         }
         Ok(())
     }
-    fn action(&mut self, action: Action, live: &mut [u64]) -> Result<(), &'static str> {
+    fn action(&mut self, action: Action, live: &mut Live) -> Result<(), &'static str> {
         self.charge(1)?;
         match action {
             Action::Evaluate(id) => self.value(id, live)?,
@@ -290,16 +291,14 @@ impl<'a> Flow<'a> {
         &mut self,
         block: usize,
         incoming: &[u64],
-        live: &mut [u64],
+        live: &mut Live,
     ) -> Result<(), &'static str> {
-        self.charge(live.len().saturating_mul(3).saturating_add(1))?;
-        live.fill(0);
+        self.charge(live.len().saturating_mul(6).saturating_add(1))?;
+        live.clear();
         let terminator = self.body.blocks[block].terminator;
         for next in successors(terminator).into_iter().flatten() {
             let start = next.0 as usize * live.len();
-            for (word, bits) in live.iter_mut().zip(&incoming[start..]) {
-                *word |= bits;
-            }
+            live.union(&incoming[start..start + live.len()]);
         }
         if let Terminator::Return(value)
         | Terminator::Branch {
@@ -310,14 +309,14 @@ impl<'a> Flow<'a> {
         }
         Ok(())
     }
-    fn solve(&mut self) -> Result<(Vec<u64>, Vec<u64>), &'static str> {
+    fn solve(&mut self) -> Result<(Vec<u64>, Live), &'static str> {
         let words = self.entities.len().div_ceil(64);
         let count = words
             .checked_mul(self.body.blocks.len())
             .filter(|n| *n <= 8_000_000)
             .ok_or("value liveness states exceed 64 MB budget")?;
         let mut incoming = vec![0; count];
-        let mut live = vec![0; words];
+        let mut live = Live::new(words);
         let mut queued = self.result.reachable.clone();
         let mut work: VecDeque<_> = (0..self.body.blocks.len())
             .rev()
@@ -331,8 +330,8 @@ impl<'a> Flow<'a> {
             }
             self.charge(words)?;
             let target = &mut incoming[block * words..(block + 1) * words];
-            if target != live {
-                target.copy_from_slice(&live);
+            if target != live.words() {
+                target.copy_from_slice(live.words());
                 self.charge(self.starts[block + 1] - self.starts[block])?;
                 for &parent in &self.predecessors[self.starts[block]..self.starts[block + 1]] {
                     if self.result.reachable[parent] && !queued[parent] {
@@ -376,11 +375,12 @@ impl<'a> Flow<'a> {
         &mut self,
         types: &Store,
         regions: &mut LiveRegions,
-        live: &[u64],
+        live: &Live,
         point: Point,
     ) -> Result<(), &'static str> {
-        self.charge(live.len())?;
-        for (word, &bits) in live.iter().enumerate() {
+        self.charge(1)?;
+        for (word, bits) in live.active() {
+            self.charge(live.depth())?;
             let mut bits = bits;
             while bits != 0 {
                 let entity = word * 64 + bits.trailing_zeros() as usize;
@@ -391,16 +391,12 @@ impl<'a> Flow<'a> {
         Ok(())
     }
 }
-fn mark(entity: Option<usize>, live: &mut [u64], used: bool) {
+fn mark(entity: Option<usize>, live: &mut Live, used: bool) {
     if let Some(id) = entity {
-        let mask = 1 << (id % 64);
-        if used {
-            live[id / 64] |= mask;
-        } else {
-            live[id / 64] &= !mask;
-        }
+        live.mark(id, used);
     }
 }
+
 fn successors(terminator: Terminator) -> [Option<BlockId>; 2] {
     match terminator {
         Terminator::Jump(next) => [Some(next), None],

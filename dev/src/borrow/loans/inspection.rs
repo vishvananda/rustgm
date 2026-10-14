@@ -1,5 +1,5 @@
 //! Optional retained proof records; executable verification does not allocate traces.
-use super::{Index, Loan, NodeKey, Point, State, liveness, points};
+use super::{Index, Loan, NodeKey, Point, Set, liveness, points};
 
 pub struct Inspection {
     pub(super) source: NodeKey,
@@ -21,9 +21,10 @@ pub(super) struct Snapshot {
 pub(super) fn record(
     snapshots: &mut Vec<Snapshot>,
     point: Point,
-    state: &[State],
+    state: &Set,
 ) -> Result<(), &'static str> {
-    for (word, state) in (0_u32..).zip(state) {
+    for (word, state) in state.iter() {
+        let word = u32::try_from(word).map_err(|_| "too many loan inspection words")?;
         if state.live != 0 {
             if snapshots.len() >= 2_000_000 {
                 return Err("loan inspection exceeds 48 MB snapshot budget");

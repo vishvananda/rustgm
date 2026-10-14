@@ -392,9 +392,31 @@ pub struct Queries<'a> {
     types: &'a Store,
     bounds: &'a Bounds,
     callables: &'a super::callable::Templates,
+    state: QueryCache,
+}
+/// Successful requirements in one append-only semantic environment. Missing
+/// declarations never publish a cache entry; completed declarations cannot change.
+#[derive(Default)]
+pub struct QueryCache {
     scan: Scan,
-    cache: HashMap<TypeId, Vec<Pair>>,
+    regions: HashMap<TypeId, Vec<Pair>>,
     parameters: HashMap<TypeId, Vec<ParameterPair>>,
+}
+impl QueryCache {
+    #[must_use]
+    pub fn attach<'a>(
+        self,
+        types: &'a Store,
+        bounds: &'a Bounds,
+        callables: &'a super::callable::Templates,
+    ) -> Queries<'a> {
+        Queries {
+            types,
+            bounds,
+            callables,
+            state: self,
+        }
+    }
 }
 impl<'a> Queries<'a> {
     #[must_use]
@@ -403,14 +425,12 @@ impl<'a> Queries<'a> {
         bounds: &'a Bounds,
         callables: &'a super::callable::Templates,
     ) -> Self {
-        Self {
-            types,
-            bounds,
-            callables,
-            scan: Scan::default(),
-            cache: HashMap::new(),
-            parameters: HashMap::new(),
-        }
+        QueryCache::default().attach(types, bounds, callables)
+    }
+    /// Release semantic borrows without discarding completed queries or budgets.
+    #[must_use]
+    pub fn into_cache(self) -> QueryCache {
+        self.state
     }
     /// # Errors
     /// Rejects inconsistent nominal facts and exhausted type traversal work.
@@ -425,23 +445,23 @@ impl<'a> Queries<'a> {
     /// # Errors
     /// Rejects invalid identities, escaping binder overflow and exhausted work.
     pub fn components(&mut self, ty: TypeId) -> Result<Parts<'_>, &'static str> {
-        self.scan.components.get(
+        self.state.scan.components.get(
             self.types,
             ty,
             0,
             ComponentKind::TypeBound,
-            &mut self.scan.budget,
+            &mut self.state.scan.budget,
         )
     }
     /// Generic requirements retain rigid parameter identities for a scoped proof.
     /// # Errors
     /// Rejects malformed templates, unsupported nominal fields and exhausted work.
     pub fn symbolic_requirements(&mut self, ty: TypeId) -> Result<Requirements<'_>, &'static str> {
-        if !self.cache.contains_key(&ty) {
-            self.scan.clear();
-            self.scan.visit(self.types, ty)?;
-            for index in 0..self.scan.uses.len() {
-                let use_ = self.scan.uses[index];
+        if !self.state.regions.contains_key(&ty) {
+            self.state.scan.clear();
+            self.state.scan.visit(self.types, ty)?;
+            for index in 0..self.state.scan.uses.len() {
+                let use_ = self.state.scan.uses[index];
                 let pairs = if use_.callable {
                     let template = self
                         .callables
@@ -463,9 +483,9 @@ impl<'a> Queries<'a> {
                         .ok_or("missing nominal outlives facts")?
                 };
                 for pair in pairs {
-                    self.scan.budget.charge()?;
+                    self.state.scan.budget.charge()?;
                     if let Some(pair) = contracts::instantiate(self.types, use_, *pair)? {
-                        self.scan.record(pair);
+                        self.state.scan.record(pair);
                     }
                 }
                 if !use_.callable {
@@ -474,24 +494,26 @@ impl<'a> Queries<'a> {
                         .parameters(use_.item)
                         .ok_or("missing nominal parameter requirements")?
                     {
-                        self.scan.apply_parameter(self.types, use_, pair)?;
+                        self.state.scan.apply_parameter(self.types, use_, pair)?;
                     }
                 }
             }
-            self.cache.insert(ty, self.scan.pairs.clone());
-            if !self.scan.parameter_pairs.is_empty() {
-                self.parameters
-                    .insert(ty, self.scan.parameter_pairs.clone());
+            self.state.regions.insert(ty, self.state.scan.pairs.clone());
+            if !self.state.scan.parameter_pairs.is_empty() {
+                self.state
+                    .parameters
+                    .insert(ty, self.state.scan.parameter_pairs.clone());
             }
         }
         let regions = self
-            .cache
+            .state
+            .regions
             .get(&ty)
             .map(Vec::as_slice)
             .ok_or("missing well-formedness requirements")?;
         Ok(Requirements {
             regions,
-            parameters: self.parameters.get(&ty).map_or(&[], Vec::as_slice),
+            parameters: self.state.parameters.get(&ty).map_or(&[], Vec::as_slice),
         })
     }
 }

@@ -1,4 +1,5 @@
 //! Ownership and region proofs retain source semantics before executable erasure.
+mod active;
 mod check;
 pub use check::{
     Analysis, Checked, Environment, Error, check, inspect, verify, verify_destruction,
@@ -12,3 +13,5 @@ mod places;
 pub mod regions;
 pub mod storage;
 pub mod templates;
+
+pub(crate) use check::incremental;

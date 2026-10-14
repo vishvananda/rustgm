@@ -2363,3 +2363,105 @@ measure executable generic cleanup or original template proof:
 Frozen inputs, sources, drivers, binaries and verification receipts are under
 `obj/pa18-work/drop-recipes-*`; raw observations are under `obj/perf/`.
 `drop-plans-probe-v1` retains the separate planning observations described above.
+
+## Executable generic destructor instances
+
+The maintainer generic execution API now follows selected cleanup roots into
+concrete Drop method instances. Those methods share the ordinary depth-first
+instance worklist and its recursive-growth limits. Merely cached recipes, unused
+functions and diverging ownership paths do not force destructor code generation.
+Fields, enum variants and nonempty array intervals contribute method dependencies
+without expanding arrays element by element.
+
+Each body receives its region, initialization, ownership and destructor-loan proof
+before its executable dependencies are followed. An opaque token owns the body
+and optional cleanup plan, keeping them immutable until final assembly. Assembly
+checks cleanup coverage and rejects erasing a completed destruction proof. Original
+generic templates, including unused bodies and preserved impl lifetimes, remain
+separately mandatory. Structural region queries and recipe state survive short
+semantic borrows; their caches and work budgets are not rebuilt for each method.
+
+The partial-move tests exposed a missing semantic prerequisite: coercion can
+produce a nominal lifetime instance that has no expression node of its own.
+Adjustment publication now prepares that destination's concrete fields. A test
+that read a counter while a surviving wrapper field retained its mutable borrow
+was independently rejected by rustc; it is retained as a negative control, with
+the positive counter assertions after the scope closes.
+
+Eighteen native counter programs cover reordered type, lifetime and const
+arguments, unused/intermediate impl lifetimes, nested reference arguments,
+multiple instances, custom Drop before fields, enum fields, partial moves,
+conditional initialization, generic arrays and evaluated zero-array prototypes.
+Separate controls check both ordinary-call and destructor-to-destructor recursive
+growth, codegen-only diverging programs, unused owners, invalid field moves,
+double moves, dead referents and active loans. Proof-boundary tests reject swapped
+instances, foreign owners, missing original templates, unproved assembly bodies
+and erased cleanup authorization.
+
+PA18 is still planned: this checkpoint enables the maintainer API, while CLI
+activation, its assignment contract, course fixtures/oracles and release evidence
+remain required. PA19–PA21 remain planned as well.
+
+The first scaling candidate rejected 2,048 sequential borrowed cleanup scopes
+with `value liveness work budget exceeded`; 128 and 512 scopes executed correctly.
+Point recording scanned every dense liveness word, including inactive words, at
+every cleanup event. Liveness now keeps a compact summary tree of nonzero words,
+updates it on zero/nonzero transitions, and rebuilds it after dense CFG joins.
+Point seeds still enumerate identities in ascending order. The single-word case
+needs no summary allocation. The work limit is unchanged, and dense join work
+remains charged. A retained 2,048-scope regression and boundary tests across
+multiple summary levels exercise this change. The first immutable candidate and
+its failed qualification remain available for comparison.
+
+The second candidate executed repeated and distinct-const cleanup at 2,048 scopes,
+but partial-field cleanup then reached the same inactive-word scanning problem in
+forward loan checking. Loan state now uses the shared summary index for pruning,
+access checks, storage endings and optional inspection. Dense CFG joins and
+independent two-phase activation bits remain intact. Copying incoming state
+rebuilds its occupied-word index; pruning and regeneration update it directly.
+A state-transition test and a second 2,048-scope regression cover that change.
+Both intermediate full-check runs were cancelled after their quality checks when
+these scaling failures required implementation changes; they are not final
+validation evidence.
+
+Final performance qualification executes nine declared counter programs through
+pinned rustc and CPPGM before timing. Thirty jobs retain 540 observations on CPU 2,
+with two warmups, four A/A samples and three ABBA blocks each. Full LowIR and count
+outputs match byte for byte in every comparison. No RustGM build or test process
+overlaps measurement. The final snapshot contains 324 production/configuration
+files; CLI SHA256 is
+`d9881b1ff44a0974ee2114217faa41aafe58123f05d03dca229d923206c4072b`.
+
+| Executable cleanup workload | 128 median, ms | 512 median, ms | 2048 median, ms | 2048 RSS, KiB |
+| --- | ---: | ---: | ---: | ---: |
+| repeated generic transfers | 27.46 | 103.49 | 534.51 | 39316 |
+| distinct const destructors | 26.43 | 100.34 | 502.22 | 36772 |
+| partially moved generic fields | 67.14 | 287.09 | 1666.03 | 78464 |
+
+Nine direct comparisons with the first integration candidate isolate the sparse
+state changes where that candidate succeeds. At 512 scopes, median wall times
+change by -6.4% for repeated cleanup, -2.6% for const cleanup and -7.2% for partial
+fields. Reference-instance controls range from -0.7% to +0.9%, with overlapping
+ranges. The larger failed inputs are acceptance improvements under unchanged
+budgets; they are not paired speedup measurements against successful old runs.
+
+Twelve comparisons with earlier functionality range from -3.2% to +12.2% in median
+wall time. These include shared-host variation and additional required proof and
+demand work; this checkpoint does not claim a general speedup or zero regression.
+For ordinary cleanup at 2,048 functions, the existing CLI takes 86.96 ms and the
+new maintainer API takes 94.38 ms (+8.5%). That comparison crosses entrypoints;
+the existing CLI still uses its earlier path. All samples, including outliers,
+remain in `obj/perf/`. Inputs, source snapshots, drivers, failure receipts,
+independent executions and verification scripts remain under
+`obj/pa18-work/drop-integration-*`.
+
+Final validation passes 748 frontend tests in both debug and release and all
+3,350 PA1–PA17 text-oracle cases without reference changes. Fifteen maintainer
+native tests and 858 course executable comparisons pass, preserving the sixteen
+previously documented PA13 runtime differences. Independent rustc checks,
+upstream provenance, rustfmt, Clippy all/pedantic with denied warnings, the
+476-file architecture audit with zero findings and all 25 harness tests pass.
+Frozen production/test sources, binaries, independent execution receipts and all
+540 performance observations are reverified after the checks. Final evidence is
+recorded in `drop-integration-v3-validation.json` and
+`drop-integration-v3-reverified.json` under `obj/pa18-work/`.

@@ -114,6 +114,29 @@ instances can be discovered without rebuilding completed recipes. Actual cleanup
 selection, original template proofs and instance ownership/lifetime/loan proofs
 remain separate requirements before executable generic destruction.
 
+Prove each concrete body once as demand discovers it. Keep the immutable owned
+body with its selected cleanup plan until executable assembly; match its source,
+complete instance and original template proof. Assembly cannot discard cleanup
+authorization or insert unproved bodies. Retain completed structural outlives
+queries and recipe caches across append-only semantic discovery, including their
+work budgets. Prove unused ordinary bodies without demanding their callees.
+
+Discover destructor code from selected cleanup roots, following fields, variants
+and nonempty array intervals with shared visited state. A cached recipe by itself
+does not demand executable code. Enqueue selected methods on the ordinary instance
+DFS stack before leaving their owner, so recursive destructor growth shares the
+existing depth and storage limits. Prepare coercion destinations as well as
+expression types: a distinct nominal lifetime instance needs its own field facts.
+
+Keep dense liveness words for CFG joins, but enumerate only nonzero words when
+recording point seeds. A compact summary tree preserves ascending identity order
+without scanning every inactive entity at every cleanup event. Update summaries
+on zero/nonzero transitions and rebuild them after dense joins; retain the same
+work limits and charge enumeration and join work explicitly.
+Forward loan states use the same index for pruning, conflict checks and optional
+inspection. Rebuild the occupied-word index after dense CFG copies, clear it when
+the last loan in a word expires, and preserve two-phase activation separately.
+
 Analyze generic bodies without reparsing syntax. A monomorphization key must
 include all type/const arguments and semantic context affecting its result.
 Trait solver caches include parameter environment, binder universe and mode;

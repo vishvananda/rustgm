@@ -1,4 +1,5 @@
 //! Typed destruction recipes. A recipe is not a completed borrow proof or executable token.
+pub(crate) mod dependencies;
 mod flags;
 pub use crate::body::drops::glue;
 pub(crate) mod schedule;

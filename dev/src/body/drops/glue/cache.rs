@@ -75,6 +75,31 @@ impl Cache {
     pub fn into_recipes(self) -> Recipes {
         self.storage
     }
+    pub(crate) const fn recipes(&self) -> &Recipes {
+        &self.storage
+    }
+    pub(crate) fn resolve(
+        &mut self,
+        types: &mut Store,
+        id: super::Id,
+        instance: crate::types::instance::Instance,
+    ) -> Result<(), &'static str> {
+        let recipe = self
+            .storage
+            .entries
+            .get_mut(id.0 as usize)
+            .ok_or("invalid destructor selection recipe")?;
+        let Some(super::Method::Unresolved(method)) = recipe.method else {
+            return if recipe.method == Some(super::Method::Instance(instance)) {
+                Ok(())
+            } else {
+                Err("destructor recipe is not awaiting this instance")
+            };
+        };
+        crate::types::destruction::validate_method(types, instance, ItemId(method.0), recipe.ty)?;
+        recipe.method = Some(super::Method::Instance(instance));
+        Ok(())
+    }
     pub(super) fn charge(&mut self, count: usize) -> Result<(), &'static str> {
         self.steps = self
             .steps

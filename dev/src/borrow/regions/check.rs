@@ -141,6 +141,25 @@ pub fn check_ordered(
         });
     prove(types, variances, contracts, inputs)
 }
+/// Prove one explicitly paired body using retained structural requirement queries.
+/// Its source and selected instance remain separate from every other body context.
+/// # Errors
+/// Rejects mismatched contracts, invalid provenance and unentailed requirements.
+pub(crate) fn check_one(
+    types: &Store,
+    variances: &Variances,
+    queries: &mut Queries<'_>,
+    input: &Contract,
+    cfg: &crate::body::ir::Body,
+) -> Result<Body, Error> {
+    if input.source != cfg.source {
+        return Err(Error {
+            source: Some(cfg.source),
+            message: "instance contract does not match its body".into(),
+        });
+    }
+    body(types, variances, queries, input, Some(cfg))
+}
 fn run(
     types: &Store,
     variances: &Variances,

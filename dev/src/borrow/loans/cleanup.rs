@@ -1,5 +1,5 @@
 //! Destructor access and storage endpoints use the same ordered points as liveness.
-use super::{Depth, Error, Flow, Mode, Point, State, inspection};
+use super::{Depth, Error, Flow, Mode, Point, Set, inspection};
 use crate::{
     body::{
         ir::{Action, BlockId, Place},
@@ -16,7 +16,7 @@ impl Flow<'_> {
         &mut self,
         block: usize,
         target: BlockId,
-        state: &mut [State],
+        state: &mut Set,
         inspect: bool,
     ) -> Result<(), Error> {
         let error = |message| Error {
@@ -41,7 +41,7 @@ impl Flow<'_> {
         &mut self,
         plan: Schedule<'_>,
         range: std::ops::Range<usize>,
-        state: &mut [State],
+        state: &mut Set,
         inspect: bool,
     ) -> Result<(), Error> {
         for index in range {
@@ -79,8 +79,7 @@ impl Flow<'_> {
                         let (start, end) = self.generated[id.0 as usize];
                         for loan in start..end {
                             self.charge(1).map_err(error)?;
-                            state[loan / 64].live |= 1 << (loan % 64);
-                            state[loan / 64].active &= !(1 << (loan % 64));
+                            state.generate(loan);
                         }
                     }
                 }

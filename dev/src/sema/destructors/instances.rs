@@ -89,13 +89,18 @@ pub fn select(facts: &mut Declarations, target: TypeId) -> Result<Option<Instanc
         .ok_or("missing destructor callable")?;
     let signature = Bound::parameters_captured(&facts.types, &bindings, regions)?
         .apply(&mut facts.types, template.signature)?;
-    validate_receiver(facts, signature, target)?;
     let selected = facts.types.intern(Kind::FunctionItem {
         item: ItemId(method.0),
         signature,
         arguments,
     })?;
     let instance = Instance::new(&facts.types, selected)?;
+    crate::types::destruction::validate_method(
+        &mut facts.types,
+        instance,
+        ItemId(method.0),
+        target,
+    )?;
     facts.destructors.instances.insert(target, instance);
     Ok(Some(instance))
 }
@@ -215,37 +220,4 @@ fn lifetime_count(
         .take_while(|a| matches!(a, Argument::Lifetime(_)))
         .count();
     u32::try_from(count).map_err(|_| "too many destructor target lifetimes")
-}
-
-fn validate_receiver(
-    facts: &mut Declarations,
-    signature: TypeId,
-    target: TypeId,
-) -> Result<(), &'static str> {
-    let Some(Kind::Function {
-        parameters,
-        result: TypeId::UNIT,
-        bound_regions: 1,
-        unsafe_: false,
-    }) = facts.types.kind(signature)
-    else {
-        return Err("selected destructor has an invalid signature");
-    };
-    let Some([receiver]) = facts.types.list(parameters) else {
-        return Err("selected destructor has an invalid parameter list");
-    };
-    let Some(Kind::Reference {
-        mutable: true,
-        region,
-        referent,
-    }) = facts.types.kind(*receiver)
-    else {
-        return Err("selected destructor receiver must borrow its target mutably");
-    };
-    if region != RegionId::bound(0, 0)?
-        || referent != Bound::shift(1).apply(&mut facts.types, target)?
-    {
-        return Err("selected destructor receiver disagrees with its concrete target");
-    }
-    Ok(())
 }

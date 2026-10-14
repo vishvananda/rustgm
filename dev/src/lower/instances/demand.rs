@@ -1,9 +1,9 @@
 //! Iterative depth-first demand distinguishes recursion from unbounded instance growth.
-use super::{dependencies::Dependencies, diagnostic};
+use super::{dependencies::Dependencies, diagnostic, proof};
 use crate::{
     body::{
         self,
-        ir::{Body, NodeKey, Owner, Program},
+        ir::{Body, NodeKey, Owner},
         regions::Contract,
     },
     borrow::templates::Checked,
@@ -51,28 +51,11 @@ pub(super) fn prepare(
     entry: DefId,
     templates: &Checked<'_>,
     inputs: Vec<Contract>,
-) -> Result<(Program, Vec<Contract>), Error> {
-    let mut program = body::build_concrete(report, facts)?;
-    body::promote::analyze(report, facts, &mut program)?;
-    body::constants::analyze(report, facts, &program)?;
-    let mut inputs: HashMap<_, _> = inputs.into_iter().map(|c| (c.source, c)).collect();
-    let mut contracts = Vec::with_capacity(program.bodies.len());
-    let mut ordinary = HashMap::new();
-    for (index, body) in program.bodies.iter().enumerate() {
-        if let Owner::Function { definition, .. } = body.owner {
-            ordinary.insert(ItemId(definition.0), index);
-        }
-        contracts.push(inputs.remove(&body.source).ok_or_else(|| {
-            diagnostic(
-                report,
-                Some(body.source),
-                "missing ordinary body contract".into(),
-            )
-        })?);
-    }
+) -> Result<proof::Builder, Error> {
+    let (mut program, ordinary) = prepare_ordinary(report, facts, templates, inputs)?;
     let source = ordinary
         .get(&ItemId(entry.0))
-        .map(|&i| program.bodies[i].source)
+        .and_then(|&i| program.body(i).ok().map(|body| body.source))
         .ok_or_else(|| diagnostic(report, None, "missing entry body".into()))?;
     let entry_type = facts
         .definitions
@@ -121,14 +104,16 @@ pub(super) fn prepare(
                 &materialized.destruction,
             )?;
             body::constants::instance(report, facts, &materialized.body)?;
-            if let Some(pending) = &mut program.drops {
-                pending.bodies.push(materialized.destruction);
-            }
             work.push(Work::Leave(item));
-            let index = program.bodies.len();
-            program.bodies.push(materialized.body);
-            contracts.push(materialized.contract);
-            index
+            program
+                .push(
+                    facts,
+                    templates,
+                    materialized.body,
+                    &materialized.contract,
+                    Some(materialized.destruction),
+                )
+                .map_err(|e| diagnostic(report, e.node, e.message))?
         } else {
             let &index = ordinary.get(&item).ok_or_else(|| {
                 error("demanded callable has no concrete body or checked template")
@@ -138,11 +123,50 @@ pub(super) fn prepare(
             }
             index
         };
-        let body = &program.bodies[index];
-        let next = dependencies.collect(facts, body).map_err(error)?;
-        work.extend(next.into_iter().rev().map(|i| Work::Enter(i, body.source)));
+        let body = program.body(index).map_err(error)?;
+        let source = body.source;
+        let mut next = dependencies.collect(facts, body).map_err(error)?;
+        next.extend(program.cleanup_dependencies(facts, index).map_err(error)?);
+        work.extend(next.into_iter().rev().map(|i| Work::Enter(i, source)));
     }
-    Ok((program, contracts))
+    Ok(program)
+}
+
+fn prepare_ordinary(
+    report: &Report,
+    facts: &mut Declarations,
+    templates: &Checked<'_>,
+    inputs: Vec<Contract>,
+) -> Result<(proof::Builder, HashMap<ItemId, usize>), Error> {
+    let mut program = body::build_concrete(report, facts)?;
+    body::promote::analyze(report, facts, &mut program)?;
+    body::constants::analyze(report, facts, &program)?;
+    let mut inputs: HashMap<_, _> = inputs.into_iter().map(|c| (c.source, c)).collect();
+    let (mut program, bodies) =
+        proof::Builder::new(program).map_err(|e| diagnostic(report, None, e.into()))?;
+    let mut ordinary = HashMap::new();
+    for body in bodies {
+        let source = body.source;
+        let definition = if let Owner::Function { definition, .. } = body.owner {
+            Some(definition)
+        } else {
+            None
+        };
+        let input = inputs.remove(&source).ok_or_else(|| {
+            diagnostic(
+                report,
+                Some(source),
+                "missing ordinary body contract".into(),
+            )
+        })?;
+        let index = program
+            .push(facts, templates, body, &input, None)
+            .map_err(|e| diagnostic(report, e.node, e.message))?;
+        if let Some(definition) = definition {
+            ordinary.insert(ItemId(definition.0), index);
+        }
+    }
+    Ok((program, ordinary))
 }
 
 fn body_bytes(body: &Body) -> usize {

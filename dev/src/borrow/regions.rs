@@ -8,3 +8,5 @@ pub mod view;
 pub use check::{
     Analysis, Body, Error, check, check_bodies, check_ordered, check_templates, prepare_destruction,
 };
+
+pub(crate) use check::check_one;

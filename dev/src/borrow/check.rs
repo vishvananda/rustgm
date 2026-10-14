@@ -1,7 +1,8 @@
 //! The executable boundary combines owned access, storage, contracts and loans.
+pub(crate) mod incremental;
 use super::{loans, ownership, regions, storage};
 use crate::{
-    body::ir::{NodeKey, Program},
+    body::ir::{Body, NodeKey, Program},
     types::{
         ItemId, Store,
         aggregate::Definitions,
@@ -169,33 +170,7 @@ fn run<'a, const RECORD: bool, S: BuildHasher>(
             node: Some(body.source),
             message: "body has no lifetime proof".into(),
         })?;
-        let storage = storage::check(body).map_err(|e| Error {
-            node: Some(e.node),
-            message: e.message.into(),
-        })?;
-        let owned = ownership::analyze_body(
-            environment.types,
-            environment.definitions,
-            environment.derives,
-            environment.copies,
-            body,
-        )
-        .map_err(|e| Error {
-            node: Some(e.node),
-            message: e.message.into(),
-        })?;
-        let proof = loans::analyze::<RECORD>(
-            environment.types,
-            &mut components,
-            body,
-            contract,
-            &owned,
-            &storage,
-        )
-        .map_err(|e| Error {
-            node: Some(e.node),
-            message: e.message.into(),
-        })?;
+        let (owned, proof) = prove_body::<RECORD, _>(environment, &mut components, body, contract)?;
         record(owned, proof);
     }
     Ok(Checked {
@@ -214,7 +189,7 @@ pub fn verify_destruction<'a, S: BuildHasher>(
     program: &'a Program,
     mut catalog: super::destruction::glue::Catalog<'_>,
 ) -> Result<Checked<'a>, Error> {
-    use super::{destruction, ownership::initialization};
+    use super::destruction;
     require_resolved_promotions(program)?;
     let error = |node, message: &str| Error {
         node,
@@ -240,34 +215,14 @@ pub fn verify_destruction<'a, S: BuildHasher>(
         let contract = by_source
             .get(&body.source)
             .ok_or_else(|| error(Some(body.source), "body has no lifetime proof"))?;
-        let init = initialization::analyze(
-            environment.types,
-            environment.definitions,
-            environment.derives,
-            environment.copies,
-            body,
-        )
-        .map_err(|e| error(Some(e.node), e.message))?;
-        let plan =
-            destruction::select(&mut catalog, &init).map_err(|e| error(Some(e.node), e.message))?;
-        loans::check_destruction(
-            environment.types,
-            environment.definitions,
+        plans.push(prove_cleanup(
+            environment,
             &mut components,
             &mut drop_regions,
-            &init,
+            body,
             contract,
-            &plan,
-        )
-        .map_err(|e| error(Some(e.node), e.message))?;
-        // Bodies with no runtime cleanup keep no event tape after their proof.
-        // They lower through the ordinary statement path, even in a Drop crate.
-        plans.push(
-            plan.cleanups
-                .iter()
-                .any(|c| c.node.is_some())
-                .then_some(plan),
-        );
+            &mut catalog,
+        )?);
     }
     Ok(Checked {
         program,
@@ -279,15 +234,97 @@ pub fn verify_destruction<'a, S: BuildHasher>(
 }
 
 fn require_resolved_promotions(program: &Program) -> Result<(), Error> {
-    if let Some(body) = program.bodies.iter().find(|body| {
-        body.promotions
-            .as_ref()
-            .is_some_and(|p| p.deferred().next().is_some())
-    }) {
+    for body in &program.bodies {
+        require_body_promotions(body)?;
+    }
+    Ok(())
+}
+fn require_body_promotions(body: &Body) -> Result<(), Error> {
+    if body
+        .promotions
+        .as_ref()
+        .is_some_and(|p| p.deferred().next().is_some())
+    {
         return Err(Error {
             node: Some(body.source),
             message: "deferred promotion values require concrete instantiation".into(),
         });
     }
     Ok(())
+}
+
+fn prove_body<const RECORD: bool, S: BuildHasher>(
+    environment: &mut Environment<'_, S>,
+    components: &mut LiveRegions,
+    body: &Body,
+    contract: &regions::Body,
+) -> Result<(ownership::BodyFacts, loans::Report), Error> {
+    let storage = storage::check(body).map_err(|e| Error {
+        node: Some(e.node),
+        message: e.message.into(),
+    })?;
+    let owned = ownership::analyze_body(
+        environment.types,
+        environment.definitions,
+        environment.derives,
+        environment.copies,
+        body,
+    )
+    .map_err(|e| Error {
+        node: Some(e.node),
+        message: e.message.into(),
+    })?;
+    let proof = loans::analyze::<RECORD>(
+        environment.types,
+        components,
+        body,
+        contract,
+        &owned,
+        &storage,
+    )
+    .map_err(|e| Error {
+        node: Some(e.node),
+        message: e.message.into(),
+    })?;
+    Ok((owned, proof))
+}
+
+fn prove_cleanup<S: BuildHasher>(
+    environment: &mut Environment<'_, S>,
+    components: &mut LiveRegions,
+    drop_regions: &mut crate::types::destruction::regions::Regions,
+    body: &Body,
+    contract: &regions::Body,
+    catalog: &mut super::destruction::glue::Catalog<'_>,
+) -> Result<Option<super::destruction::Plan>, Error> {
+    use super::{destruction, ownership::initialization};
+    let error = |node, message: &str| Error {
+        node,
+        message: message.into(),
+    };
+    let init = initialization::analyze(
+        environment.types,
+        environment.definitions,
+        environment.derives,
+        environment.copies,
+        body,
+    )
+    .map_err(|e| error(Some(e.node), e.message))?;
+    let plan = destruction::select(catalog, &init).map_err(|e| error(Some(e.node), e.message))?;
+    loans::check_destruction(
+        environment.types,
+        environment.definitions,
+        components,
+        drop_regions,
+        &init,
+        contract,
+        &plan,
+    )
+    .map_err(|e| error(Some(e.node), e.message))?;
+    // Keep no event tape when no runtime cleanup remains, after proving liveness.
+    Ok(plan
+        .cleanups
+        .iter()
+        .any(|c| c.node.is_some())
+        .then_some(plan))
 }
