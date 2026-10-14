@@ -46,6 +46,12 @@ impl Checker<'_> {
                     .with_predicates(&self.facts.types, &predicates)
                     .map_err(|e| self.error(node, e))?,
             ));
+            if let Some(environment) = &environment {
+                self.facts
+                    .generics
+                    .body_environments
+                    .insert(owner, std::sync::Arc::clone(environment));
+            }
         }
         self.parameter_shapes = environment
             .as_ref()

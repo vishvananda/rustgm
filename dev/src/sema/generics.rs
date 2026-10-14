@@ -13,6 +13,46 @@ use std::{
     sync::Arc,
 };
 
+impl super::model::Declarations {
+    /// Read a resolved const parameter through the permitted argument wrappers.
+    pub(super) fn const_parameter(
+        &self,
+        report: &crate::resolve::expansion::Report,
+        mut key: crate::resolve::unit::NodeKey,
+    ) -> Option<ConstId> {
+        use crate::syntax::ast::{BlockFlavor, Kind, TypeFlavor};
+        let mut block = false;
+        loop {
+            let ast = &report.package.unit(key.file).configured.ast;
+            match ast.node(key.node).kind {
+                Kind::Block {
+                    flavor: BlockFlavor::Plain,
+                    statements,
+                    tail: Some(node),
+                } if statements.start == statements.end && !block => {
+                    block = true;
+                    key.node = node;
+                }
+                Kind::Type {
+                    flavor: TypeFlavor::Path,
+                    elements,
+                } => {
+                    let nodes = ast.list(elements);
+                    if nodes.len() != 1 {
+                        return None;
+                    }
+                    key.node = nodes[0];
+                }
+                _ => break,
+            }
+        }
+        let crate::resolve::model::Target::Definition(id) = self.node(key)?.reference? else {
+            return None;
+        };
+        self.generics.constants.get(&id).copied()
+    }
+}
+
 #[derive(Clone, Copy)]
 pub struct Parameter {
     pub binding: DefId,
@@ -40,10 +80,18 @@ pub struct Generics {
     pub parameters: HashMap<DefId, Vec<Parameter>>,
     pub constants: HashMap<DefId, ConstId>,
     pub environments: HashMap<DefId, Arc<Environment>>,
+    /// Sparse overrides for free universal aliases used by completed body facts.
+    pub(super) body_environments: HashMap<DefId, Arc<Environment>>,
     pub function_uses: HashMap<crate::resolve::unit::NodeKey, FunctionUse>,
     substitutions: HashMap<(DefId, GenericArgs), Bound>,
 }
 impl Generics {
+    #[must_use]
+    pub fn body_environment(&self, owner: DefId) -> Option<&Arc<Environment>> {
+        self.body_environments
+            .get(&owner)
+            .or_else(|| self.environments.get(&owner))
+    }
     pub(super) fn bound_lifetimes(
         &self,
         types: &Store,

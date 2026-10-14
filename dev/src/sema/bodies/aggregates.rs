@@ -138,11 +138,20 @@ impl Checker<'_> {
         count: NodeId,
         expected: Option<TermId>,
     ) -> Result<(), Error> {
-        let length = declarations::array_length(self.report, self.key(count))?;
+        let constructor = if let Some(length) =
+            self.facts.const_parameter(self.report, self.key(count))
+        {
+            if self.facts.types.const_type(length) != Some(TypeId::primitive(Primitive::Usize)) {
+                return Err(self.error(count, "array length must be usize"));
+            }
+            Constructor::ArrayTerm(length)
+        } else {
+            Constructor::Array(declarations::array_length(self.report, self.key(count))?)
+        };
         let element = self.variable(node, Domain::Any)?;
         self.type_children.clear();
         self.type_children.push(element);
-        let term = self.shape(node, Constructor::Array(length), expected)?;
+        let term = self.shape(node, constructor, expected)?;
         let expected = self.child(node, term, 0)?;
         self.work.push(Work::Enter(value, Some(expected)));
         Ok(())
@@ -168,8 +177,10 @@ impl Checker<'_> {
         Ok(term)
     }
     pub(super) fn validate_repeat(&mut self, node: NodeId, mut value: NodeId) -> Result<(), Error> {
-        let Some(Type::Array { element, length }) = self.facts.types.kind(self.ty(node)?) else {
-            return Err(self.error(node, "repeat has no solved array type"));
+        let (element, repeats) = match self.facts.types.kind(self.ty(node)?) {
+            Some(Type::Array { element, length }) => (element, length > 1),
+            Some(Type::ArrayTerm { element, .. }) => (element, true),
+            _ => return Err(self.error(node, "repeat has no solved array type")),
         };
         while let Kind::Group(child) = self.kind(value) {
             value = child;
@@ -185,7 +196,7 @@ impl Checker<'_> {
         if constant {
             self.facts.constant_repeats.insert(self.key(node));
         }
-        if length > 1
+        if repeats
             && !constant
             && !self
                 .parameter_copies

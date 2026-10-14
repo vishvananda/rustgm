@@ -10,3 +10,4 @@ pub mod scopes;
 pub mod storage;
 
 pub use build::build;
+pub use build::templates;

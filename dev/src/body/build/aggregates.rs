@@ -339,7 +339,7 @@ impl Builder<'_> {
     }
     pub(super) fn repeat(&mut self, node: NodeId, value: NodeId) -> Result<ValueId, Error> {
         let ty = self.ty(node)?;
-        let Some(Type::Array { .. }) = self.facts.types.kind(ty) else {
+        let Some(Type::Array { .. } | Type::ArrayTerm { .. }) = self.facts.types.kind(ty) else {
             return Err(self.error(node, "missing repeat array type"));
         };
         self.evaluate(

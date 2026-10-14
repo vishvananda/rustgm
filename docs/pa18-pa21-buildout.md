@@ -841,3 +841,90 @@ source is included in `symbolic-drops-v1-source-sha256.json`; measurements and
 receipt paths are retained in `symbolic-drops-v1-perf-results.json`,
 `symbolic-drops-v1-perf-jobs.json` and `symbolic-drops-perf-v1.log` under
 `obj/pa18-work/`.
+
+### Template CFGs and scoped move checking
+
+Generic function templates now use the ordinary function CFG builder and its
+scope scratch. A distinct `body::templates::Templates` result retains each body,
+its fixed environment and possible destruction requirements. It is not a concrete
+`Program` or an executable proof. Construction includes unused generic functions
+and preserves owned temporary creation, block forwarding, return transfers and
+discarded call results even when no custom destructor exists in the crate.
+
+The ordinary move/initialization engine checks these templates under scoped Copy
+assumptions. It diagnoses repeated moves, uninitialized reads, immutable writes,
+invalid loop reuse and non-Copy field moves out of objects with custom Drop.
+Composite Copy assumptions apply only to their whole subject. The borrow module
+consumes typed types, definitions, derive selections and a destructor-identity
+lookup; it acquires no dependency on semantic analysis.
+
+Body environments retain the existing substitution of lifetime-dependent
+assumptions into free caller universals. Only changed environments get a sparse
+override; other bodies share their declaration environment. Scoped destruction
+queries share one immutable destructor registry instead of rebuilding that set
+for every function. Their caches remain independent.
+
+Const-parameter repeat lengths now use the same resolved-parameter reader as
+generic arguments and array annotations. `[x; N]` and `[x; {N}]` retain an
+`ArrayTerm` through inference, repeat validation and CFG construction. An unknown
+length requires Copy for an ordinary repeated operand. A selected constant path
+keeps independent constant instantiation semantics; the zero-length ordinary
+operand still retains its own possible cleanup. Wrong const types, local shadows
+and unsupported generic arithmetic remain diagnosed rather than inventing a
+concrete length.
+
+Five maintainer tests include 36 declared move/repeat controls (19 accepted,
+17 rejected), independently checked with rustc, plus scoped-environment identity
+and owned-temporary invariants. Three additional rustc-rejected mutable-reference
+programs deliberately pass the move-only proof: their automatically inserted
+reborrows still need loan checking. The tests assert the concrete CFG gate stays
+closed, so a template move proof cannot authorize those programs' execution.
+
+This checkpoint supplies symbolic CFGs, pending cleanup and move facts through
+typed maintainer APIs. The CLI still requires the complete generic pipeline.
+Symbolic loan/liveness and destruction proof, const-length projection handling,
+instantiated nominal fields, demanded body specialization and native generic
+lowering remain required for PA18. PA19–PA21 remain part of the active goal.
+
+Validation passes 601 frontend tests, all 3,334 active course cases, 47 focused
+release tests, all independent rustc checks, nine explicit native maintainer
+tests and 132 PA17 native comparisons. Final repeat controls also pass in debug
+and release after qualification. Rustfmt, Clippy all/pedantic, the 394-file
+architecture audit and 25 harness tests pass. No existing course fixture or
+oracle changed. Logs in `obj/pa18-work/` include `template-cfg-full-v1.log`,
+`template-cfg-release-v2.log`, `template-cfg-final-report-v1.log`,
+`template-cfg-focused-v7.log`, `template-cfg-release-final-controls-v1.log` and
+`template-cfg-audits-final-v1.log`.
+
+Performance retains 486 observations across 27 jobs at 256/1,024/4,096 functions.
+The nine existing LowIR jobs compare with `4ca8e09`; 18 new jobs measure source
+analysis, actual template CFG construction and the scoped move proof with
+identical candidate binaries. Every pair has matching full/count output. Each
+job uses CPU 2, two warmups, four A/A observations and three ABBA blocks. Source,
+binary and input hashes were rechecked, and no own builds/tests overlapped timing.
+All 18 new inputs passed independent rustc and template-proof preflight checks.
+
+| 4,096-function workload | Previous ms | Candidate ms | Previous RSS KiB | Candidate RSS KiB |
+| --- | ---: | ---: | ---: | ---: |
+| Thin-reference LowIR | 465.08 | 464.30 | 77326 | 77364 |
+| Wide-reference LowIR | 844.35 | 836.71 | 125052 | 125070 |
+| Destruction LowIR | 2637.34 | 2704.49 | 291528 | 291552 |
+
+Ranges overlap for these comparisons. The destruction median is 2.5% higher;
+this is not a claim of zero cost. Memory remains close to the preceding checkpoint.
+New move, Copy, repeat, discarded-call, loop-restoration and shared-registry
+workloads take 79.24, 127.29, 179.93, 116.56, 183.29 and 149.75 ms respectively
+at 4,096 functions. The registry workload also declares 4,096 custom destructors.
+Growth over the measured sizes shows no quadratic per-function registry rebuild.
+The identical repeat-workload binaries differ by about 20% in paired medians,
+underscoring shared-host noise; these measurements establish no general speedup.
+
+The frozen CLI `template-cfg-candidate-v1` has SHA-256
+`dfa10b03448060ee7c7292aeb4413d49a289d74592acffca4998c7cfd09b5a48`;
+`template-cfg-driver-candidate-v1` has SHA-256
+`4116230b1e0236827d08d3f7ee83261ba8d1297acd759658bd1f95a42a5f622c`.
+The driver uses the frontend's locked dependency versions/checksums. Its source
+is included in `template-cfg-v1-source-sha256.json`; job definitions, observations
+and raw receipt paths are retained in `template-cfg-v1-perf-jobs.json`,
+`template-cfg-v1-perf-results.json` and `template-cfg-perf-v1.log` under
+`obj/pa18-work/`.

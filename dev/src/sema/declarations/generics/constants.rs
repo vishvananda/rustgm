@@ -5,45 +5,12 @@ use crate::{
         model::{DefKind, Target},
         package::ModuleId,
     },
-    syntax::ast::{BlockFlavor, TypeFlavor},
+    syntax::ast::TypeFlavor,
     types::arguments::{ConstId, Constant},
 };
 impl Checker<'_> {
-    pub(super) fn const_parameter(&self, mut key: NodeKey) -> Option<ConstId> {
-        let mut block = false;
-        loop {
-            match self.kind(key) {
-                Kind::Block {
-                    flavor: BlockFlavor::Plain,
-                    statements,
-                    tail: Some(node),
-                } if statements.start == statements.end && !block => {
-                    block = true;
-                    key.node = node;
-                }
-                Kind::Type {
-                    flavor: TypeFlavor::Path,
-                    elements,
-                } => {
-                    let nodes = self
-                        .report
-                        .package
-                        .unit(key.file)
-                        .configured
-                        .ast
-                        .list(elements);
-                    if nodes.len() != 1 {
-                        return None;
-                    }
-                    key.node = nodes[0];
-                }
-                _ => break,
-            }
-        }
-        let Target::Definition(id) = self.facts.node(key)?.reference? else {
-            return None;
-        };
-        self.facts.generics.constants.get(&id).copied()
+    pub(super) fn const_parameter(&self, key: NodeKey) -> Option<ConstId> {
+        self.facts.const_parameter(self.report, key)
     }
     pub(super) fn generic_constant(
         &mut self,

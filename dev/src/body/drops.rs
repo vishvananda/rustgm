@@ -135,7 +135,7 @@ fn classify(
         sites: Vec::new(),
     })
 }
-fn requirements(
+pub(crate) fn requirements(
     facts: &Declarations,
     body: &Body,
     query: &mut NeedsDrop,

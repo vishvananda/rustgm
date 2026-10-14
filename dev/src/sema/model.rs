@@ -360,7 +360,7 @@ impl Declarations {
             .get_mut(key.file.0 as usize)?
             .get_mut(key.node.0 as usize)
     }
-    pub(super) fn error(report: &Report, key: NodeKey, message: impl Into<String>) -> Error {
+    pub(crate) fn error(report: &Report, key: NodeKey, message: impl Into<String>) -> Error {
         Error::at(
             key.file,
             report

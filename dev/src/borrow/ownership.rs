@@ -6,6 +6,7 @@ mod guards;
 pub mod initialization;
 mod paths;
 mod state;
+pub mod templates;
 pub mod view;
 pub struct Error {
     pub node: crate::body::ir::NodeKey,
@@ -181,12 +182,14 @@ fn prepare<S: BuildHasher>(
             };
         }
         if let Rvalue::Repeat { mode, .. } = value.kind {
-            let Some(Kind::Array { element, length }) = types.kind(value.ty) else {
-                return Err(error("repeat has no canonical array type"));
+            let (element, repeats) = match types.kind(value.ty) {
+                Some(Kind::Array { element, length }) => (element, length > 1),
+                Some(Kind::ArrayTerm { element, .. }) => (element, true),
+                _ => return Err(error("repeat has no canonical array type")),
             };
             // A constant operand is evaluated independently for each element;
             // an ordinary value is evaluated once, including lengths zero/one.
-            if length > 1
+            if repeats
                 && mode == crate::body::ir::RepeatMode::Once
                 && !copies
                     .demand(types, definitions, derives, element)

@@ -24,7 +24,7 @@ struct Scope {
 /// means an instantiation may need destruction, not that it has selected drop glue.
 pub struct NeedsDrop {
     scope: Option<Box<Scope>>,
-    custom: HashSet<ItemId>,
+    custom: Arc<HashSet<ItemId>>,
     states: Vec<State>,
     work: Vec<(TypeId, bool)>,
     pub steps: usize,
@@ -34,7 +34,7 @@ impl NeedsDrop {
     pub fn new(custom: impl IntoIterator<Item = ItemId>) -> Self {
         Self {
             scope: None,
-            custom: custom.into_iter().collect(),
+            custom: Arc::new(custom.into_iter().collect()),
             states: Vec::new(),
             work: Vec::new(),
             steps: 0,
@@ -47,12 +47,20 @@ impl NeedsDrop {
         custom: impl IntoIterator<Item = ItemId>,
         environment: Arc<Environment>,
     ) -> Self {
+        Self::new(custom).scoped(environment)
+    }
+    /// Start independent caches while sharing the immutable destructor registry.
+    #[must_use]
+    pub fn scoped(&self, environment: Arc<Environment>) -> Self {
         Self {
             scope: Some(Box::new(Scope {
                 environment,
                 states: HashMap::new(),
             })),
-            ..Self::new(custom)
+            custom: Arc::clone(&self.custom),
+            states: Vec::new(),
+            work: Vec::new(),
+            steps: 0,
         }
     }
     /// # Errors

@@ -10,6 +10,7 @@ mod patterns;
 mod references;
 mod retries;
 mod storage;
+pub mod templates;
 use super::ir::{
     Action, Block, BlockId, Body, Local, LocalId, LocalKind, Owner, Place, Program, Rvalue,
     ScalarId, Statement, Terminator, Value, ValueId, ValueList,
@@ -42,25 +43,7 @@ pub fn build(report: &Report, facts: &Declarations) -> Result<Program, Error> {
             facts.destructors.implementations().iter().map(|i| i.item),
         )
     });
-    let mut scratch = Scratch {
-        scopes: scopes::Scratch::default(),
-        unadjusted: Vec::new(),
-        values: facts.nodes.iter().map(|n| vec![None; n.len()]).collect(),
-        definitions: vec![None; facts.definitions.len()],
-        touched: Vec::new(),
-        bindings: Vec::new(),
-        work: Vec::new(),
-        live: Vec::new(),
-        controls: HashMap::new(),
-        reach: Vec::new(),
-        places: Vec::new(),
-        field_values: Vec::new(),
-        pattern_work: Vec::new(),
-        match_frames: Vec::new(),
-        guard_frames: Vec::new(),
-        match_patterns: Vec::new(),
-        conditional_live: Vec::new(),
-    };
+    let mut scratch = Scratch::new(facts);
     let mut program = Program {
         drops: None,
         bodies: Vec::new(),
@@ -70,39 +53,16 @@ pub fn build(report: &Report, facts: &Declarations) -> Result<Program, Error> {
         body_regions: facts.body_regions.clone(),
     };
     for function in &facts.functions {
-        let Some(source) = function.body else {
+        if function.body.is_none() {
             continue;
-        };
-        let Some(Type::Function { result, .. }) = facts.types.kind(function.signature) else {
-            return Err(Error::at(source.file, 0, "missing function signature"));
-        };
-        let body = Body::new(
-            Owner::Function {
-                definition: function.definition,
-                signature: function.signature,
-            },
-            source,
-            result,
-        );
-        let scope_plan = scopes::function_with_scratch(
-            report,
-            facts,
-            function,
-            std::mem::take(&mut scratch.scopes),
-        )?;
-        let builder = Builder::new(
+        }
+        program.bodies.push(function_body(
             report,
             facts,
             &mut scratch,
-            body,
-            scope_plan,
+            function,
             drop_query.as_mut(),
-        );
-        program.bodies.push(
-            builder
-                .run(Some(function.parameters))
-                .map_err(|e| report.diagnostic(e))?,
-        );
+        )?);
     }
     for initializer in &facts.initializers {
         let body = Body::new(
@@ -134,6 +94,37 @@ pub fn build(report: &Report, facts: &Declarations) -> Result<Program, Error> {
     aggregates::constructors(report, facts, &mut program, drop_query.as_mut())?;
     drops::finish(report, facts, &mut program, drop_query.as_mut())?;
     Ok(program)
+}
+fn function_body(
+    report: &Report,
+    facts: &Declarations,
+    scratch: &mut Scratch,
+    function: &crate::sema::model::Function,
+    query: Option<&mut crate::types::destruction::NeedsDrop>,
+) -> Result<Body, Error> {
+    let source = function
+        .body
+        .ok_or_else(|| Declarations::error(report, function.node, "missing function body"))?;
+    let Some(Type::Function { result, .. }) = facts.types.kind(function.signature) else {
+        return Err(Error::at(source.file, 0, "missing function signature"));
+    };
+    let body = Body::new(
+        Owner::Function {
+            definition: function.definition,
+            signature: function.signature,
+        },
+        source,
+        result,
+    );
+    let scope_plan = scopes::function_with_scratch(
+        report,
+        facts,
+        function,
+        std::mem::take(&mut scratch.scopes),
+    )?;
+    Builder::new(report, facts, scratch, body, scope_plan, query)
+        .run(Some(function.parameters))
+        .map_err(|e| report.diagnostic(e))
 }
 impl Body {
     fn new(owner: Owner, source: NodeKey, result: TypeId) -> Self {
@@ -256,6 +247,29 @@ struct Builder<'a> {
     current: Option<BlockId>,
     scope_plan: scopes::Facts,
     scope_exits: Vec<super::storage::Exit>,
+}
+impl Scratch {
+    fn new(facts: &Declarations) -> Self {
+        Self {
+            scopes: scopes::Scratch::default(),
+            unadjusted: Vec::new(),
+            values: facts.nodes.iter().map(|n| vec![None; n.len()]).collect(),
+            definitions: vec![None; facts.definitions.len()],
+            touched: Vec::new(),
+            bindings: Vec::new(),
+            work: Vec::new(),
+            live: Vec::new(),
+            controls: HashMap::new(),
+            reach: Vec::new(),
+            places: Vec::new(),
+            field_values: Vec::new(),
+            pattern_work: Vec::new(),
+            match_frames: Vec::new(),
+            guard_frames: Vec::new(),
+            match_patterns: Vec::new(),
+            conditional_live: Vec::new(),
+        }
+    }
 }
 impl<'a> Builder<'a> {
     fn new(
