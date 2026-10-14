@@ -22,6 +22,58 @@ fn prove(source: &str) -> Result<(), Box<dyn std::error::Error>> {
 }
 
 #[test]
+fn trait_methods_validate_visibility_and_safety_after_configuration()
+-> Result<(), Box<dyn std::error::Error>> {
+    for (name, source, accepted) in [
+        (
+            "trait-public-required",
+            "trait A{pub fn f(&self);}fn main(){}",
+            false,
+        ),
+        (
+            "trait-restricted-default",
+            "trait A{pub(crate) fn f(&self){}}fn main(){}",
+            false,
+        ),
+        (
+            "trait-safe-required",
+            "trait A{safe fn f(&self);}fn main(){}",
+            false,
+        ),
+        (
+            "trait-safe-default",
+            "trait A{safe fn f(&self){}}fn main(){}",
+            false,
+        ),
+        (
+            "public-trait-inherited-method",
+            "pub trait A{fn f(&self){}}fn main(){}",
+            true,
+        ),
+        (
+            "unsafe-trait-unsafe-method",
+            "unsafe trait A{unsafe fn f(&self){}}fn main(){}",
+            true,
+        ),
+        (
+            "configured-out-public-method",
+            "trait A{#[cfg(any())]pub fn f(&self);}fn main(){}",
+            true,
+        ),
+        (
+            "configured-out-safe-method",
+            "trait A{#[cfg(any())]safe fn f(&self);}fn main(){}",
+            true,
+        ),
+    ] {
+        rustc::qualify(name, source, accepted)?;
+        let result = prove(source);
+        assert_eq!(result.is_ok(), accepted, "{name}: {result:?}");
+    }
+    Ok(())
+}
+
+#[test]
 fn trait_implementations_cannot_bypass_pending_conformance_checks()
 -> Result<(), Box<dyn std::error::Error>> {
     for (name, source, accepted) in [

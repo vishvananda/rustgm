@@ -6,7 +6,7 @@ use crate::{
         generics::Parameter,
         model::Function,
     },
-    syntax::item::ItemKind,
+    syntax::item::{ItemKind, Safety, Visibility},
     types::{
         arguments::Argument,
         parameters::{Parameter as TypeParameter, ParameterKind},
@@ -111,9 +111,16 @@ impl Checker<'_> {
         {
             return Ok(());
         }
-        let ItemKind::Function { flags, .. } = self.item(function.node)?.kind else {
+        let item = self.item(function.node)?;
+        let ItemKind::Function { flags, .. } = item.kind else {
             return Err(self.error(function.node, "missing trait method syntax"));
         };
+        if item.visibility != Visibility::Private || flags.safety == Safety::Safe {
+            return Err(self.error(
+                function.node,
+                "trait methods require inherited visibility and cannot be explicitly safe",
+            ));
+        }
         if flags.constant {
             return Err(self.error(function.node, "trait methods cannot be const"));
         }

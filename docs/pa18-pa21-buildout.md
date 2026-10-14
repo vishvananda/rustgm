@@ -2678,3 +2678,37 @@ and `trait-headers-reverified-v2.json`; per-sample files remain in `obj/perf/`.
 Earlier failed checks and source snapshots are retained rather than overwritten.
 Method selection, actual calls, user trait bounds and impl conformance are next;
 the full PA19 release contract and PA20/PA21 requirements remain unchanged.
+
+## Trait method qualifier review
+
+Independent review found that the header implementation accepted explicit
+visibility and `safe fn` on trait methods. Four predeclared rustc controls reject
+these forms. Trait method validation now requires inherited visibility and
+rejects the explicit `safe` qualifier. A new invariant covers those rejections,
+public traits with inherited method visibility, unsafe traits/methods, and
+configured-out declarations. The check consumes the existing item flags after
+configuration; ordinary inherent method visibility is unchanged.
+
+All 770 frontend tests pass in debug and release, along with all 3,773 PA1–PA18
+text cases, fifteen maintainer native tests, 1,117 executable comparisons and
+three codegen-only comparisons. The sixteen documented PA13 runtime differences
+remain. Clippy all/pedantic, formatting, the 483-file audit, 27 harness tests and
+provenance checks pass. No course sidecar changes were needed.
+
+Three immutable comparisons against the trait-header binary retain 54 timing
+observations, with A/A calibration and three paired ABBA blocks each, CPU 2,
+identical full/count outputs and no overlapping RustGM builds/tests. Median wall
+changes are -0.2% for 4,096 ordinary functions, -1.7% for 1,024 trait owners and
++0.5% for a shared trait with 2,048 methods. Ranges overlap; these observations do
+not establish a speedup or zero overhead. All 486 source/config/test hashes,
+binaries, inputs, validation logs and raw samples were reverified. The candidate
+SHA256 is `8d6efd98c964b048eb48b336d4c70b535d18a130b8ad827b5dc550b16c260ea5`;
+receipts are under `obj/pa19-work/trait-qualifiers-*` and `obj/perf/`.
+
+The next selection work has 56 predeclared, independently qualified lookup and
+visibility cases: 34 execute successfully with rustc and 22 reject. A separate
+qualified-call probe identifies a resolver prerequisite: public trait methods
+currently receive private default access. Correct inherited trait-member access
+and retained anonymous trait imports must accompany method selection. The caller
+must also bind owner captures and inherited generic parameters rather than using
+the free-function-only argument path. These remain required PA19 work.
