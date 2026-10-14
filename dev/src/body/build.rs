@@ -325,6 +325,9 @@ impl<'a> Builder<'a> {
             .ok_or_else(|| self.error(node, "missing evaluated value"))
     }
     fn save(&mut self, node: NodeId, mut value: ValueId) -> Result<(), Error> {
+        // A transparent wrapper can add a coercion after the tail scope closed.
+        // Its input is the forwarded result until that coercion consumes it.
+        self.forward_owned(node, value);
         if self.scratch.unadjusted.last() != Some(&node)
             && let Some(adjustment) = self.fact(node)?.adjustment
         {

@@ -227,6 +227,21 @@ being constant repeat operands. Neither array length nor text reconstruction
 may expand this work. These consumption facts do not substitute for scope cleanup or its
 destructor-induced loan and region uses.
 
+Scope-aware initialization reuses the validated storage event index. Retain one
+ordered owner list per scope, merging local declaration and temporary creation
+order; traverse shared ancestor ranges at exits instead of copying live lists.
+Merge return transfers with storage events at equal CFG points. Each successor's
+cleanup starts from the same outgoing state. Scope and initializer endpoints
+clear owned initialization, so loop reentry cannot resurrect an earlier value.
+Materializing an already-owned value must not initialize it again.
+
+Expose ordered cleanup candidates before their state changes, including scope
+exits, explicit storage ends, replacement and discarded repeat operands. Overlapping
+endpoints observe the state left by earlier ones. Borrowed and dynamically indexed
+replacement destinations do not claim their containing pointer or array's move
+path. These candidates still require field/array glue, conditional flags and
+destructor-induced liveness before they become executable cleanup.
+
 Internal match-guard views retain selected place identity and delay owning
 captures until success. Protect tested places without runtime loads or address
 formation for inactive variants. Track guard protection liveness across control

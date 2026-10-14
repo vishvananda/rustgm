@@ -142,25 +142,19 @@ impl Effects {
         });
         Ok(())
     }
+}
+impl Consumption {
     pub(super) fn transfer<I: Maybe>(
         &self,
         paths: &Paths,
         state: &mut State<I>,
-        location: Location,
-        returns: bool,
         inspect: bool,
     ) -> Result<(), &'static str> {
-        for effect in self.at(location) {
-            if matches!(effect.moment, Moment::Return(_)) != returns {
-                continue;
-            }
-            let path = &paths.entries[effect.path.0 as usize];
-            if inspect && !state.initialized(path)? {
-                return Err("owned operand may be uninitialized or already consumed");
-            }
-            state.fill(path, false)?;
+        let path = &paths.entries[self.path.0 as usize];
+        if inspect && !state.initialized(path)? {
+            return Err("owned operand may be uninitialized or already consumed");
         }
-        Ok(())
+        state.fill(path, false)
     }
 }
 

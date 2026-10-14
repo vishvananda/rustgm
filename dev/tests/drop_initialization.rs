@@ -253,7 +253,19 @@ fn statement_queries_distinguish_replacement_from_first_initialization()
     assert_eq!(stores.len(), 2);
     assert!(stores.contains(&Status::Never));
     assert!(stores.contains(&Status::Conditional));
-    assert_eq!(cleanup, vec![Status::Always]);
+    // The lexical endpoint runs before its overlapping explicit storage end.
+    assert_eq!(cleanup, vec![Status::Never]);
+    let mut scopes = Vec::new();
+    init.visit_events(|event, point| {
+        if let initialization::Event::Cleanup(candidate) = event
+            && matches!(candidate.cause, initialization::Cause::Scope(_))
+            && matches!(candidate.place, Place::Local(id) if id.0 as usize == local)
+        {
+            scopes.push(point.status(path)?);
+        }
+        Ok(())
+    })?;
+    assert_eq!(scopes, vec![Status::Always]);
     assert_eq!(
         init.at_entry(BlockId(u32::MAX), path),
         Err("initialization block is unreachable")

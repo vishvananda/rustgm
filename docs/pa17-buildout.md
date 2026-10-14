@@ -125,8 +125,9 @@ drop scopes, replacement, partial moves, temporaries and early exits into typed
 plans consumed by LowIR.
 
 Ownership's existing `Word.may` records whether storage has ever been written;
-the new optional initialized plane is separate. Integrate the place and retained
-owned-rvalue consumption facts with cleanup endpoints. The custom-destructor
+the new optional initialized plane is separate. The scope-aware analysis now
+integrates place/rvalue consumption with ordered cleanup endpoints. Select
+conditional flags and field/array operations from that replay. The custom-destructor
 field-move checker must be required by completed destruction proofs. Replacement
 must evaluate the incoming value, destroy the initialized old destination and
 then store the replacement.
@@ -212,8 +213,9 @@ rejects its two-element case with an incorrect Copy requirement; pinned rustc
 accepts and executes it. Its independently declared outcome precedes generation
 of its LowIR oracle.
 
-These facts do not execute destruction. Scope and forced-initializer cleanup,
-runtime flags, destructor glue and the induced loan/region uses remain pending.
+These consumption facts do not execute destruction. The later scope-aware
+checkpoint adds scope and forced-initializer state cleanup; runtime flags,
+destructor glue and the induced loan/region uses remain pending.
 
 Required assignment fixtures must establish destructor/field/local order,
 conditional flags, partial initialization and every cleanup path with independent
@@ -566,3 +568,111 @@ driver SHA-256 is
 including wall time, RSS, child CPU time and context switches. Matching source,
 identity and validation receipts are stored beside it. The frozen driver's
 dependency versions and checksums match the maintainer lockfile.
+
+## Scope-aware initialization
+
+Initialization now retains the existing validated storage analysis and shares its
+ordered events. The cleanup index stores each local or tracked temporary once,
+in reverse creation/declaration order within its scope. Locals and extended
+temporaries share this ordering. Scope exits walk the existing ancestor ranges;
+they do not retain a copy of every live owner. Index memory is capped at 64 MB
+and index work at 32 million steps; transfers and replay use the existing bounded
+word accounting and also charge scope/member dispatch.
+
+The fixed point and checked replay consume the same return/storage timeline.
+Each outgoing edge starts from the unmodified block result before applying that
+edge's exits. Scope and let-else initializer cleanup clear owned initialization;
+explicit local storage ends subsequently observe those values as uninitialized.
+Loop entry cannot retain a discarded temporary from an earlier iteration.
+Borrow-only materialization may start a place after another scope's endpoint at
+the same point; it cannot revive an already-owned, consumed value. Unused unit
+and empty-pattern places need no invented ownership path.
+
+`initialization::Facts::visit_events` exposes cleanup candidates together with
+ordinary statement points. Each candidate identifies its place, cause, location
+and optional owned path, before clearing or replacing that value. Never state
+suppresses a runtime drop; Conditional aggregates still require field/segment
+selection. Borrowed and dynamically indexed replacement destinations have no
+owned path: the containing reference/array is not the replaced value.
+
+Scope-aware checking exposed a body-builder defect in a returned lifetime
+coercion. A block's tail value retained the tail scope while the newly constrained
+value inherited the block scope. The tail could therefore end before the
+constraint consumed its input. Transparent forwarding now extends the input's
+owned scope before applying the constraint, as well as forwarding the result.
+The existing adjusted-operand regression now runs through scope-aware checking.
+
+Seven new integration tests retain independently declared rustc destructor
+traces for thirteen programs and qualify eight more sources for acceptance.
+They inspect interleaved extended temporaries/locals, parameter captures and
+remaining fields, partial temporary moves, wildcard disposal, replacement,
+zero-length repeat disposal, returns, let-else, loops, guard views, empty patterns
+and borrowed/dynamic-index replacement. The edge-isolation test moves a
+let-chain failure block's initial cleanup to its unique incoming edge, an
+equivalent CFG, and checks both successor entry states. This exercises a live
+owner on an edge rather than claiming a candidate with Never state proves it.
+
+The rustc ordering sources use a println observer. The frontend variants remove
+only that observer and inspect typed facts; they are not native RustGM Drop
+execution comparisons. All executable pending-drop guards remain. Next work
+must select field/array glue and conditional flags, add destructor-induced
+region/loan uses, retain the completed plan in the checked program, and lower
+actual cleanup calls before PA17 can be released.
+
+Validation passes all 3,094 PA1–PA16 course cases without oracle changes, 496
+frontend tests in each of debug and release, and all six explicit maintainer
+native tests through the qualified CPPGM backend. Formatting, Clippy all/pedantic
+with warnings denied, all 25 harness tests and the architecture/file audit pass;
+the audit reports 328 files and zero findings. No lint exceptions were added.
+`obj/pa15-work/scope-cleanup-v1-validation.json` hashes the full, release, native,
+audit and focused ordering logs. Earlier failing logs retain the coercion and
+unused-pattern defects found while integrating scope-aware checking.
+
+Performance evidence retains 162 observations on CPU 2: A/A calibration and
+three ABBA blocks for each of nine workloads/scales. All 335 frozen source and
+configuration hashes, binary identities and input hashes were verified afterward.
+The unchanged ownership pipeline compares old/new binaries with matching full
+and count output. The two initialization workloads compare identical copies of
+the new analysis driver because ordered cleanup changes the exposed states.
+No own builds or tests ran during timing; unrelated work continued on the shared
+host, so these observations are not an isolated hardware-counter gate.
+
+| Ownership pipeline | Baseline median | Candidate median | Candidate median RSS |
+| ---: | ---: | ---: | ---: |
+| 4,000 functions | 347.50 ms | 348.15 ms | 63,342 KiB |
+| 16,000 functions | 1,394.63 ms | 1,388.18 ms | 241,192 KiB |
+| 64,000 functions | 5,645.04 ms | 5,680.25 ms | 951,054 KiB |
+
+Median changes range from -0.46% to +0.62%; the largest input changes +0.62%
+wall / +0.61% child CPU time, with 150 KiB less median RSS. Its baseline range is
+5,167–5,767 ms and candidate range 5,367–5,791 ms. No observations were discarded;
+these measurements do not establish a material throughput regression.
+
+The owned-consumption workload at 256/1,024/4,096 functions now replays cleanup
+candidates as well as every statement bit. Candidate medians are
+38.12/140.19/672.98 ms, with median RSS 9,296/26,178/93,034 KiB. At the largest
+scale it exposes 176,134 candidates (`43N + 6`), retaining the same 102,404 paths,
+106,500 bits and 12,288 sparse array segments as before.
+
+The new scope workload combines interleaved extended temporaries and locals,
+conditional moves from billion-element arrays, loops with continue/break,
+replacement, let-else failure and returned values. Pinned rustc accepts all
+frozen sources. Candidate medians at 256/1,024/4,096 functions are
+70.90/292.77/1,082.17 ms, with median RSS 13,496/43,130/162,622 KiB. The largest
+input exposes 286,733 candidates (`70N + 13`), 4,096 edge candidates, 122,889
+paths (`30N + 9`), 126,985 bits (`31N + 9`) and 12,288 array segments. It makes
+14,983,212 statement-bit queries (`3658N + 44`) plus candidate-path queries.
+All counters grow linearly without enumerating array elements. Candidate counts
+include Never state and are not runtime destructor counts.
+
+Baseline SHA-256 is
+`1a733dfe5239a122d3d79464c04dcca31aa9980a81026be4d6e4349b81f47ef9`;
+candidate SHA-256 is
+`6374bc948a8c5bc046a3f6a4da42ba1e766decad356cca409d9b79be251efe12`;
+the analysis driver is
+`de083804e94c719c5fe666b9d58781e9e9ebb4a835368015c58377c40d2ea300`.
+`obj/pa15-work/scope-cleanup-v1-perf-results.json` indexes every raw receipt,
+including wall time, RSS, child CPU time and context switches. Its versioned
+driver project preserves the previous driver's source and uses the maintainer's
+locked dependency versions/checksums. It invokes the frontend library directly;
+rustc and CPPGM do not implement any frontend phase.

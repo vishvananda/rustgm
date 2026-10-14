@@ -1,6 +1,11 @@
 //! Retained owned initialization, distinct from whether an immutable binding was written.
+pub use super::cleanup::{Candidate, Cause, Event};
 pub use super::consumption::{Consumption, Disposition, Effects, Moment};
-use super::{BodyFacts, Error, Path, state};
+use super::{
+    BodyFacts, Error, Path,
+    cleanup::{Flow, Owners},
+    state,
+};
 use crate::{
     body::{
         ir::{BlockId, Body},
@@ -30,6 +35,8 @@ pub struct Facts<'a> {
     body: &'a Body,
     pub ownership: BodyFacts,
     pub consumption: Effects,
+    pub storage: crate::borrow::storage::Analysis,
+    owners: Owners,
     incoming: Vec<state::Word<u64>>,
     words: usize,
 }
@@ -71,8 +78,8 @@ impl Facts<'_> {
             .ok_or("invalid initialization block extent")
     }
     /// Replay the proved transfers once, exposing bounded queries before each
-    /// statement and at block end. Return transfers precede the callback; a
-    /// statement consumes its operands after it. Implicit cleanup is still pending.
+    /// statement and at block end. Ordered scope exits and returns precede the
+    /// callback; a statement consumes its operands after it.
     /// The callback cannot mutate initialization.
     /// # Errors
     /// Reports query/transfer budget exhaustion or a callback error.
@@ -80,15 +87,30 @@ impl Facts<'_> {
         &self,
         mut visitor: impl FnMut(Location, &mut Point<'_>) -> Result<(), &'static str>,
     ) -> Result<(), &'static str> {
+        self.visit_events(|event, point| match event {
+            Event::Point(location) => visitor(location, point),
+            Event::Cleanup(_) => Ok(()),
+        })
+    }
+    /// Inspect ordered cleanup candidates immediately before their state is
+    /// cleared, together with ordinary statement points. CFG edges are replayed
+    /// independently. Candidates can have Never state and need no runtime action.
+    /// This does not prove destructor-induced loans or select aggregate drop glue.
+    /// # Errors
+    /// Reports query/transfer budget exhaustion or a callback error.
+    pub fn visit_events(
+        &self,
+        mut visitor: impl FnMut(Event, &mut Point<'_>) -> Result<(), &'static str>,
+    ) -> Result<(), &'static str> {
         state::replay(
             self.body,
             &self.ownership,
-            &self.consumption,
+            &self.flow(),
             &self.incoming,
             self.words,
-            |location, state| {
+            |event, state| {
                 visitor(
-                    location,
+                    event,
                     &mut Point {
                         state,
                         bits: self.ownership.paths.bits,
@@ -97,6 +119,14 @@ impl Facts<'_> {
                 )
             },
         )
+    }
+    fn flow(&self) -> Flow<'_> {
+        Flow {
+            body: self.body,
+            storage: &self.storage,
+            owners: &self.owners,
+            consumption: &self.consumption,
+        }
     }
 }
 
@@ -144,13 +174,29 @@ pub fn analyze<'a, S: BuildHasher>(
         node: body.source,
         message,
     })?;
-    let incoming = state::verify::<u64>(body, &mut ownership, types, &consumption)?;
+    let storage = crate::borrow::storage::check(body).map_err(|error| Error {
+        node: error.node,
+        message: error.message,
+    })?;
+    let owners = Owners::build(body, &ownership.paths).map_err(|message| Error {
+        node: body.source,
+        message,
+    })?;
+    let flow = Flow {
+        body,
+        storage: &storage,
+        owners: &owners,
+        consumption: &consumption,
+    };
+    let incoming = state::verify::<u64>(body, &mut ownership, types, Some(&flow))?;
     super::guards::verify(body, &ownership, types)?;
     let words = (ownership.paths.bits as usize).div_ceil(64);
     Ok(Facts {
         body,
         ownership,
         consumption,
+        storage,
+        owners,
         incoming,
         words,
     })

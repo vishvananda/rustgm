@@ -1,6 +1,9 @@
 //! Must-initialized / may-written fixed point over sparse path intervals.
 use super::initialization::{Maybe, Status};
-use super::{BodyFacts, Error, Path, consumption::Effects};
+use super::{
+    BodyFacts, Error, Path,
+    cleanup::{Event, Flow},
+};
 use crate::body::{
     ir::{BlockId, Body, Terminator},
     storage::Location,
@@ -18,7 +21,7 @@ pub(super) struct State<I: Maybe> {
     remaining: usize,
 }
 impl<I: Maybe> State<I> {
-    fn charge(&mut self, cost: usize) -> Result<(), &'static str> {
+    pub(super) fn charge(&mut self, cost: usize) -> Result<(), &'static str> {
         self.remaining = self
             .remaining
             .checked_sub(cost)
@@ -80,8 +83,9 @@ pub(super) fn verify<I: Maybe>(
     body: &Body,
     facts: &mut BodyFacts,
     types: &crate::types::Store,
-    consumption: &Effects,
+    flow: Option<&Flow<'_>>,
 ) -> Result<Vec<Word<I>>, Error> {
+    let flow = if I::TRACK_VALUES { flow } else { None };
     let error = |message| Error {
         node: body.source,
         message,
@@ -95,6 +99,7 @@ pub(super) fn verify<I: Maybe>(
         .filter(|n| *n <= 64_000_000 / std::mem::size_of::<Word<I>>())
         .ok_or_else(|| error("ownership state exceeds 64 MB budget"))?;
     let mut incoming = vec![Word::<I>::default(); size];
+    let mut outgoing = vec![Word::<I>::default(); if flow.is_some() { words } else { 0 }];
     let mut state = State {
         words: vec![Word::default(); words],
         remaining: 32_000_000,
@@ -115,17 +120,29 @@ pub(super) fn verify<I: Maybe>(
         state
             .words
             .copy_from_slice(&incoming[index * words..(index + 1) * words]);
-        transfer_block(body, facts, &mut state, index, None, consumption)?;
-        let successors = match block.terminator {
-            Terminator::Jump(target) => [Some(target), None],
-            Terminator::Branch { yes, no, .. }
-            | Terminator::FalseEdge {
-                real: yes,
-                imaginary: no,
-            } => [Some(yes), Some(no)],
-            _ => [None, None],
-        };
-        for target in successors.into_iter().flatten() {
+        transfer_block(body, facts, &mut state, index, None, flow)?;
+        let edges = flow.filter(|f| f.storage.has_edge_ends(index));
+        if edges.is_some() {
+            state.charge(words).map_err(error)?;
+            outgoing.copy_from_slice(&state.words);
+        }
+        for target in successors(block.terminator).into_iter().flatten() {
+            if let Some(flow) = edges {
+                state.charge(words).map_err(error)?;
+                state.words.copy_from_slice(&outgoing);
+                flow.edge(
+                    &facts.paths,
+                    &mut state,
+                    Location::Edge {
+                        block: BlockId(
+                            u32::try_from(index).map_err(|_| error("too many ownership blocks"))?,
+                        ),
+                        target,
+                    },
+                    |_, _| Ok(()),
+                )
+                .map_err(error)?;
+            }
             let next = target.0 as usize;
             let target = &mut incoming[next * words..(next + 1) * words];
             let mut changed = !reached[next];
@@ -161,7 +178,7 @@ pub(super) fn verify<I: Maybe>(
         state
             .words
             .copy_from_slice(&incoming[index * words..(index + 1) * words]);
-        transfer_block(body, facts, &mut state, index, Some(types), consumption)?;
+        transfer_block(body, facts, &mut state, index, Some(types), flow)?;
     }
     facts.reachable = reached;
     Ok(incoming)
@@ -173,7 +190,7 @@ fn transfer_block<I: Maybe>(
     state: &mut State<I>,
     index: usize,
     types: Option<&crate::types::Store>,
-    consumption: &Effects,
+    flow: Option<&Flow<'_>>,
 ) -> Result<(), Error> {
     let block = &body.blocks[index];
     let error = |source, message| {
@@ -184,6 +201,7 @@ fn transfer_block<I: Maybe>(
     let block_id = BlockId(
         u32::try_from(index).map_err(|_| error(block.source, "too many ownership blocks"))?,
     );
+    let mut cursor = flow.map(|flow| flow.cursor(index));
     for before in block.start..=block.end {
         let source = if before < block.end {
             body.statements[before as usize].source
@@ -195,9 +213,15 @@ fn transfer_block<I: Maybe>(
             block: block_id,
             before,
         };
-        if I::TRACK_VALUES {
-            consumption
-                .transfer(&facts.paths, state, location, true, types.is_some())
+        if let Some(cursor) = &mut cursor {
+            cursor
+                .point(
+                    &facts.paths,
+                    state,
+                    location,
+                    types.is_some(),
+                    |_, _| Ok(()),
+                )
                 .map_err(error)?;
         }
         if before == block.end {
@@ -207,10 +231,15 @@ fn transfer_block<I: Maybe>(
         if let Some(types) = types {
             facts.inspect(body, types, state, action).map_err(error)?;
         }
-        if I::TRACK_VALUES {
-            consumption
-                .transfer(&facts.paths, state, location, false, types.is_some())
-                .map_err(error)?;
+        if let Some(flow) = flow {
+            flow.statement(
+                &facts.paths,
+                state,
+                location,
+                types.is_some(),
+                |_, _| Ok(()),
+            )
+            .map_err(error)?;
         }
         facts.transfer(body, state, action).map_err(error)?;
     }
@@ -263,15 +292,16 @@ pub(super) fn bit_status(words: &[Word<u64>], bit: u32) -> Result<Status, &'stat
 pub(super) fn replay(
     body: &Body,
     facts: &BodyFacts,
-    consumption: &Effects,
+    flow: &Flow<'_>,
     incoming: &[Word<u64>],
     words: usize,
-    mut visitor: impl FnMut(crate::body::storage::Location, &mut State<u64>) -> Result<(), &'static str>,
+    mut visitor: impl FnMut(Event, &mut State<u64>) -> Result<(), &'static str>,
 ) -> Result<(), &'static str> {
     let mut state = State {
         words: vec![Word::default(); words],
         remaining: 32_000_000,
     };
+    let mut outgoing = vec![Word::default(); words];
     for (index, block) in body.blocks.iter().enumerate() {
         if !facts.reachable[index] {
             continue;
@@ -283,18 +313,60 @@ pub(super) fn replay(
         let block_id = crate::body::ir::BlockId(
             u32::try_from(index).map_err(|_| "too many initialization blocks")?,
         );
+        let mut cursor = flow.cursor(index);
         for before in block.start..=block.end {
             let location = Location::At {
                 block: block_id,
                 before,
             };
-            consumption.transfer(&facts.paths, &mut state, location, true, false)?;
-            visitor(location, &mut state)?;
+            cursor.point(
+                &facts.paths,
+                &mut state,
+                location,
+                false,
+                |candidate, state| visitor(Event::Cleanup(candidate), state),
+            )?;
+            visitor(Event::Point(location), &mut state)?;
             if before < block.end {
-                consumption.transfer(&facts.paths, &mut state, location, false, false)?;
+                flow.statement(
+                    &facts.paths,
+                    &mut state,
+                    location,
+                    false,
+                    |candidate, state| visitor(Event::Cleanup(candidate), state),
+                )?;
                 facts.transfer(body, &mut state, body.statements[before as usize].action)?;
+            }
+        }
+        if flow.storage.has_edge_ends(index) {
+            state.charge(words)?;
+            outgoing.copy_from_slice(&state.words);
+            for target in successors(block.terminator).into_iter().flatten() {
+                state.charge(words)?;
+                state.words.copy_from_slice(&outgoing);
+                flow.edge(
+                    &facts.paths,
+                    &mut state,
+                    Location::Edge {
+                        block: block_id,
+                        target,
+                    },
+                    |candidate, state| visitor(Event::Cleanup(candidate), state),
+                )?;
             }
         }
     }
     Ok(())
+}
+
+fn successors(terminator: Terminator) -> [Option<BlockId>; 2] {
+    match terminator {
+        Terminator::Jump(target) => [Some(target), None],
+        Terminator::Branch { yes, no, .. }
+        | Terminator::FalseEdge {
+            real: yes,
+            imaginary: no,
+        } => [Some(yes), Some(no)],
+        Terminator::Return(_) | Terminator::Unreachable => [None, None],
+    }
 }

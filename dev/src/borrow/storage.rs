@@ -5,7 +5,8 @@ use crate::body::{
     ir::{Action, BlockId, Body, NodeKey, Place, Rvalue, ValueId},
     storage::End,
 };
-use index::{EventKind, Index};
+use index::Index;
+pub(crate) use index::{Event, EventKind};
 use state::State;
 
 #[derive(Debug)]
@@ -21,6 +22,12 @@ pub struct Analysis {
     words: usize,
 }
 impl Analysis {
+    pub(crate) fn events(&self, block: usize) -> &[Event] {
+        self.index.events(block)
+    }
+    pub(crate) fn has_edge_ends(&self, block: usize) -> bool {
+        !self.index.edges(block).is_empty()
+    }
     pub(crate) fn ends(&self, block: usize) -> impl Iterator<Item = (u32, End)> + '_ {
         self.index
             .events(block)

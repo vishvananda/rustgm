@@ -8,11 +8,11 @@ use crate::body::{
 use std::collections::HashSet;
 
 #[derive(Clone, Copy)]
-pub(super) enum EventKind {
+pub(crate) enum EventKind {
     Birth(u32),
     End(End),
 }
-pub(super) struct Event {
+pub(crate) struct Event {
     pub block: BlockId,
     pub position: u32,
     pub order: u64,

@@ -1,4 +1,5 @@
 //! Move/initialization proof for owned values. Loans and regions remain separate proofs.
+mod cleanup;
 mod consumption;
 mod destructors;
 mod guards;
@@ -150,7 +151,7 @@ pub fn analyze_body<S: BuildHasher>(
     body: &Body,
 ) -> Result<BodyFacts, Error> {
     let mut facts = prepare(types, definitions, derives, copies, body, false)?;
-    state::verify::<()>(body, &mut facts, types, &consumption::Effects::default())?;
+    state::verify::<()>(body, &mut facts, types, None)?;
     guards::verify(body, &facts, types)?;
     Ok(facts)
 }
