@@ -2,6 +2,7 @@
 use super::graph::{Error, Graph, Kind as RegionKind, Region, Solution};
 use crate::types::{
     Kind, RegionId, Store, TypeId,
+    parameters::{ParameterId, ParameterKind},
     variance::{Variance, Variances},
 };
 use std::collections::{HashMap, HashSet};
@@ -27,8 +28,13 @@ struct Relation {
 pub struct Identities {
     variables: HashMap<RegionId, Region>,
     universals: Vec<Region>,
+    parameters: HashMap<ParameterId, Region>,
 }
 impl Identities {
+    #[must_use]
+    pub fn parameters(&self) -> impl ExactSizeIterator<Item = (ParameterId, Region)> + '_ {
+        self.parameters.iter().map(|(&id, &region)| (id, region))
+    }
     #[must_use]
     pub fn universals(&self) -> impl ExactSizeIterator<Item = Region> + '_ {
         self.universals.iter().copied()
@@ -60,6 +66,7 @@ pub struct Constraints<'a> {
     variances: &'a Variances,
     graph: Graph,
     variables: HashMap<RegionId, Region>,
+    parameters: HashMap<ParameterId, Region>,
     binders: Vec<Binder>,
     arguments: Vec<Region>,
     universe: u32,
@@ -82,6 +89,7 @@ impl<'a> Constraints<'a> {
             variances,
             graph: Graph::new(limit),
             variables: HashMap::new(),
+            parameters: HashMap::new(),
             binders: Vec::new(),
             arguments: Vec::new(),
             universe: 0,
@@ -92,6 +100,45 @@ impl<'a> Constraints<'a> {
         };
         this.binder(None, universals, true)?;
         Ok(this)
+    }
+    /// A rigid type parameter's lifetime components are opaque to this body.
+    /// Their common outlives extent can only be constrained by stated assumptions.
+    /// # Errors
+    /// Rejects duplicate, unknown or const parameters and exhausted storage.
+    pub fn parameter(&mut self, id: ParameterId) -> Result<(), Error> {
+        if self.parameters.contains_key(&id)
+            || !matches!(
+                self.types.parameter(id).map(|p| p.kind),
+                Some(ParameterKind::Type { .. })
+            )
+        {
+            return Err(Error::Identity);
+        }
+        let region = self.graph.region(RegionKind::Universal { universe: 0 })?;
+        self.parameters.insert(id, region);
+        Ok(())
+    }
+    /// # Errors
+    /// Rejects foreign parameters, nonuniversal bounds and exhausted storage.
+    pub fn assume_parameter(&mut self, id: ParameterId, shorter: RegionId) -> Result<(), Error> {
+        self.graph.assume(
+            *self.parameters.get(&id).ok_or(Error::Identity)?,
+            self.region(shorter, Scope(0))?,
+        )
+    }
+    /// # Errors
+    /// Rejects foreign parameters, missing regions and exhausted storage.
+    pub fn parameter_outlives(
+        &mut self,
+        id: ParameterId,
+        shorter: RegionId,
+        source: u32,
+    ) -> Result<(), Error> {
+        self.graph.require(
+            *self.parameters.get(&id).ok_or(Error::Identity)?,
+            self.region(shorter, Scope(0))?,
+            source,
+        )
     }
     /// Register only the inference variables owned by this body.
     ///
@@ -513,6 +560,7 @@ impl<'a> Constraints<'a> {
             identities: Identities {
                 variables: self.variables,
                 universals: self.arguments,
+                parameters: self.parameters,
             },
         })
     }

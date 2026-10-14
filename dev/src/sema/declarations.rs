@@ -36,7 +36,7 @@ enum SignaturePhase {
 }
 #[derive(Clone, Copy)]
 enum Work {
-    Bounds(DefId),
+    Bounds(DefId, regions::Context),
     FunctionArguments(NodeKey, DefId),
     Generic(generics::Declaration),
     PathArguments(NodeKey, DefId, regions::Context),
@@ -159,7 +159,7 @@ impl Checker<'_> {
                 ));
             }
             match work {
-                Work::Bounds(owner) => self.complete_bounds(owner)?,
+                Work::Bounds(owner, context) => self.complete_bounds(owner, context)?,
                 Work::FunctionArguments(key, owner) => {
                     self.complete_function_arguments(key, owner)?;
                 }

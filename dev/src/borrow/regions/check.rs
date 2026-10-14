@@ -131,8 +131,14 @@ fn signature_requirements(
         .list(parameters)
         .ok_or("missing lifetime function parameters")?;
     for ty in parameters.iter().copied().chain(std::iter::once(result)) {
-        for &(a, b) in queries.requirements(ty)? {
+        let requirements = queries.symbolic_requirements(ty)?;
+        for &(a, b) in requirements.regions {
             constraints.assume(a, b).map_err(|e| e.to_string())?;
+        }
+        for &(id, shorter) in requirements.parameters {
+            constraints
+                .assume_parameter(id, shorter)
+                .map_err(|e| e.to_string())?;
         }
     }
     Ok(())
@@ -150,11 +156,29 @@ fn body(
     };
     let mut constraints = Constraints::new(types, variances, input.universals, 1_000_000)
         .map_err(|e| error(e.to_string()))?;
+    for id in &input.parameters {
+        constraints
+            .parameter(*id)
+            .map_err(|e| error(e.to_string()))?;
+    }
     for &(a, b) in &input.assumptions {
         constraints.assume(a, b).map_err(|e| error(e.to_string()))?;
     }
     if let Some(signature) = input.signature {
         signature_requirements(&mut constraints, queries, types, signature).map_err(error)?;
+    }
+    for &(ty, shorter) in &input.type_assumptions {
+        let parts = queries.components(ty).map_err(|e| error(e.into()))?;
+        for longer in parts.regions {
+            constraints
+                .assume(*longer, shorter)
+                .map_err(|e| error(e.to_string()))?;
+        }
+        for parameter in parts.parameters {
+            constraints
+                .assume_parameter(*parameter, shorter)
+                .map_err(|e| error(e.to_string()))?;
+        }
     }
     let provenance = cfg
         .map(|cfg| super::places::bounds(types, cfg))
@@ -253,9 +277,28 @@ fn apply(
             .map_err(|e| e.to_string())?;
         }
         Obligation::WellFormed(ty) => {
-            for &(a, b) in queries.requirements(ty)? {
+            let requirements = queries.symbolic_requirements(ty)?;
+            for &(a, b) in requirements.regions {
                 constraints
                     .outlives(a, b, source)
+                    .map_err(|e| e.to_string())?;
+            }
+            for &(id, shorter) in requirements.parameters {
+                constraints
+                    .parameter_outlives(id, shorter, source)
+                    .map_err(|e| e.to_string())?;
+            }
+        }
+        Obligation::TypeOutlives { ty, shorter } => {
+            let parts = queries.components(ty)?;
+            for longer in parts.regions {
+                constraints
+                    .outlives(*longer, shorter, source)
+                    .map_err(|e| e.to_string())?;
+            }
+            for parameter in parts.parameters {
+                constraints
+                    .parameter_outlives(*parameter, shorter, source)
                     .map_err(|e| e.to_string())?;
             }
         }

@@ -7,6 +7,7 @@ use std::io::{self, Write};
 pub fn write(analysis: &Analysis, out: &mut impl Write) -> io::Result<()> {
     writeln!(out, "regions-crate 1")?;
     let mut variables = Vec::new();
+    let mut parameters = Vec::new();
     let mut assumptions = Vec::new();
     let mut requirements = Vec::new();
     for (index, body) in analysis.bodies.iter().enumerate() {
@@ -17,6 +18,12 @@ pub fn write(analysis: &Analysis, out: &mut impl Write) -> io::Result<()> {
         )?;
         for (id, region) in body.identities.universals().enumerate() {
             writeln!(out, "  universal b{id}=g{}", region.0)?;
+        }
+        parameters.clear();
+        parameters.extend(body.identities.parameters());
+        parameters.sort_unstable_by_key(|&(id, _)| id.0);
+        for &(id, region) in &parameters {
+            writeln!(out, "  type-parameter p{}=g{}", id.0, region.0)?;
         }
         variables.clear();
         variables.extend(body.identities.variables());

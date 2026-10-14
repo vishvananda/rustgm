@@ -668,3 +668,107 @@ At 4,096, their candidate B medians are respectively 106.95, 85.45, 153.87,
 increase over the measured sizes. Every raw observation, including calibration,
 is retained through `bounds-v1-perf-results.json` and `bounds-v1-perf-jobs.json`;
 `bounds-v1-source-sha256.json` records the source freeze.
+
+### Symbolic type-outlives proofs
+
+Inline and where-clause type-outlives predicates now retain their typed subject
+and lifetime. Lifetime classification includes the bound's right-hand side;
+function-item uses substitute both the subject and that lifetime before retaining
+the obligation. Inference completes before the existing region proof discharges
+it. Alias bounds keep the pinned language's unenforced behavior.
+
+The shared outlives query returns separate lifetime and rigid type-parameter
+components. Parameter identities are registered in each function's existing
+directed region graph. Signature well-formedness and explicit predicates supply
+assumptions; local annotations, where-clause subject well-formedness and call-site
+obligations supply requirements. Thus `&'a T` in a signature implies `T: 'a`,
+but mentioning `&'a T: Copy` in a where-clause does not. Another function's
+parameter or a previously failed query cannot acquire the current assumptions.
+Const parameter terms are not type-parameter lifetime components.
+
+Explicit type bounds traverse every referent and structural component, including
+zero-length array elements. For example, `&'a T: 'a` establishes the component
+bound needed to make its own subject well-formed. Minimal reference
+well-formedness components and runtime live-value components retain their
+different rules. Nested callable binders export only their free lifetimes.
+An inferred `fn(&'a u8)` argument can be widened contravariantly to satisfy a
+`'static` type bound; explicitly fixing that same type argument cannot. Source
+controls independently qualify both outcomes.
+
+Traversal remains iterative, bounded and cached by typed identity and component
+mode. Parameter vectors are retained only for queries that find parameters;
+membership scratch is reused. Leading lifetime argument substitution uses direct
+slice indexing through the argument iterator instead of rescanning mixed lists.
+Closed-type and runtime live-region consumers still reject symbolic values,
+preventing them from silently discarding a pending generic proof.
+
+Five typed invariants cover component distinctions, nested binders, graph scope
+and direction, negative-result isolation, diagnostics and shared 10,000-level
+types. There are 67 declared source controls (40 accepted, 27 rejected), checked
+against pinned rustc and the complete typed contract-proof path. The preceding
+82 built-in-bound controls now run that proof as well. A separate rustc-accepted
+higher-ranked where-predicate control retains the explicit PA21 boundary.
+
+PA15 gains 11 lifetime-only type-bound fixtures; PA16 gains three unchanged-source
+native programs covering shared, mutable and static references. Outcomes were
+declared and independently checked before generating their sidecars. No previous
+oracle bytes changed. These owning stages now contain 202 and 296 cases,
+respectively, with 116 executable PA16 comparisons.
+
+This checkpoint proves symbolic lifetime contracts through the typed maintainer
+interface. The CLI region view still requires a CFG and rejects type/const
+generic bodies. Symbolic ownership, loans and destruction, instantiated nominal
+fields, demanded instances and native generic lowering remain required for PA18.
+General region-related built-in predicate matching and the PA19–PA21 contracts
+remain open. All four assignments remain planned under the original active goal.
+
+Validation passes 591 frontend tests, all 3,334 active course cases, 46 focused
+release tests, the full independent rustc checks, nine explicit native maintainer
+tests and all 116 PA16 native comparisons. Rustfmt, Clippy all/pedantic, the
+390-file architecture audit, 25 harness tests, assignment discovery and pinned
+upstream/Reference verification pass. Logs are retained in `obj/pa18-work/` as
+`outlives-{full,independent,release,harness}-v1.log`, with independent fixture
+qualification and reference-generation logs for PA15 and PA16.
+
+Performance retains 1,134 observations across 63 jobs at 256/1,024/4,096
+functions or parameters. The 42 existing jobs compare the preceding `e8dddc2`
+binary with the frozen candidate; the 21 new jobs use identical candidate
+binaries for calibration and scaling. Each job uses CPU 2, two warmups, four A/A
+observations and three ABBA blocks. Full and count outputs agree for every pair,
+and source, binary and input hashes remain unchanged. No own builds or tests
+overlap the measurements.
+
+At 4,096 functions, the existing workloads are:
+
+| Workload | Previous ms | Candidate ms | Previous RSS KiB | Candidate RSS KiB |
+| --- | ---: | ---: | ---: | ---: |
+| Thin-reference LowIR | 491.85 | 493.41 | 76908 | 77358 |
+| Wide-reference LowIR | 924.96 | 934.38 | 125026 | 125256 |
+| Destruction LowIR | 2727.37 | 2776.90 | 291296 | 291428 |
+| Generic identity bodies | 73.47 | 75.31 | 19792 | 19854 |
+| Generic shared-reference bodies | 109.08 | 111.77 | 24012 | 24050 |
+| Inferred type calls | 102.63 | 103.74 | 20520 | 20524 |
+| Inferred const calls | 116.40 | 118.42 | 22610 | 22668 |
+| Borrowed generic calls | 456.53 | 454.11 | 40948 | 40980 |
+
+All A/B ranges for the 14 existing workload families at 4,096 overlap. Median
+changes range from -1.3% to +2.5%; this shared-host run establishes no general
+speedup. Memory remains close to the preceding checkpoint.
+
+The new generic workloads use a frozen maintainer driver that invokes source
+analysis, typed contract collection and the completed region proof, then emits
+that proof's full or count view. Its dependency versions/checksums match the
+frontend lockfile. This avoids measuring only elaboration while leaving the
+new proof pending. At 4,096, implied-reference, static-parameter, forwarding,
+tuple-bound and reference-bound proofs take 113.65, 97.85, 179.30, 187.78 and
+198.67 ms respectively. One 4,096-parameter bound list takes 22.61 ms. The
+lifetime-only CLI region workload takes 166.59 ms. Scaling stays approximately
+linear over the measured sizes; the wide list shows no quadratic increase.
+
+The frozen CLI `outlives-candidate-v1` has SHA-256
+`27d3a1a76f759f9cede7802a286e954a9e008a67f642e11d114bc2288e9c670e`;
+`outlives-proof-candidate-v1` has SHA-256
+`266a6c4a3d7e056f533c9c242c7453dc78a25dd0f32d44c36026562820f23067`.
+The source freeze includes the driver. Raw observations, receipt paths and job
+definitions are retained in `obj/pa18-work/outlives-v1-{perf-results,perf-jobs,
+source-sha256}.json` and `outlives-perf-v1.log`.

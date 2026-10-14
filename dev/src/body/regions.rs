@@ -23,6 +23,10 @@ pub enum Kind {
         reference: Option<crate::sema::model::ReferenceConversion>,
     },
     WellFormed(TypeId),
+    TypeOutlives {
+        ty: TypeId,
+        shorter: RegionId,
+    },
 }
 #[derive(Clone, Copy)]
 pub struct Obligation {
@@ -34,6 +38,8 @@ pub struct Contract {
     pub signature: Option<TypeId>,
     pub universals: u32,
     pub assumptions: Vec<Pair>,
+    pub parameters: Vec<crate::types::parameters::ParameterId>,
+    pub type_assumptions: Vec<(TypeId, RegionId)>,
     pub obligations: Vec<Obligation>,
 }
 pub struct Contracts<'a> {
@@ -51,15 +57,8 @@ pub fn collect(facts: &Declarations) -> Result<Contracts<'_>, &'static str> {
     let mut index = HashMap::new();
     for function in &facts.functions {
         if let Some(source) = function.body {
-            let scheme = facts.lifetimes.functions.get(&function.definition);
             index.insert(source, bodies.len());
-            bodies.push(Contract {
-                source,
-                signature: Some(function.signature),
-                universals: scheme.map_or(0, |s| s.total),
-                assumptions: scheme.map_or_else(Vec::new, |s| s.bounds.clone()),
-                obligations: Vec::new(),
-            });
+            bodies.push(function_contract(facts, function, source)?);
         }
     }
     for initializer in &facts.initializers {
@@ -69,6 +68,8 @@ pub fn collect(facts: &Declarations) -> Result<Contracts<'_>, &'static str> {
             signature: None,
             universals: 0,
             assumptions: Vec::new(),
+            parameters: Vec::new(),
+            type_assumptions: Vec::new(),
             obligations: Vec::new(),
         });
     }
@@ -115,6 +116,29 @@ pub fn collect(facts: &Declarations) -> Result<Contracts<'_>, &'static str> {
     for w in &facts.well_formed {
         add(w.body, w.source, Kind::WellFormed(w.ty))?;
     }
+    for bound in &facts.type_outlives {
+        add(
+            bound.body,
+            bound.source,
+            Kind::TypeOutlives {
+                ty: bound.ty,
+                shorter: bound.shorter,
+            },
+        )?;
+    }
+    for function in &facts.functions {
+        if let Some(body) = function.body {
+            for predicate in facts
+                .generics
+                .predicates
+                .get(&function.definition)
+                .into_iter()
+                .flatten()
+            {
+                add(body, predicate.source, Kind::WellFormed(predicate.value.ty))?;
+            }
+        }
+    }
     Ok(Contracts {
         bodies,
         callables: &facts.lifetimes.callables,
@@ -156,8 +180,50 @@ fn constructors(
             signature: Some(signature),
             universals: bound_regions,
             assumptions: Vec::new(),
+            parameters: Vec::new(),
+            type_assumptions: Vec::new(),
             obligations: Vec::new(),
         });
     }
     Ok(())
+}
+fn function_contract(
+    facts: &Declarations,
+    function: &crate::sema::model::Function,
+    source: NodeKey,
+) -> Result<Contract, &'static str> {
+    let owner = function.definition;
+    let scheme = facts.lifetimes.functions.get(&owner);
+    let mut parameters = Vec::new();
+    for parameter in facts.generics.parameters.get(&owner).into_iter().flatten() {
+        if let crate::types::arguments::Argument::Type(ty) = parameter.argument {
+            let Some(crate::types::Kind::Parameter(id)) = facts.types.kind(ty) else {
+                return Err("body parameter must have a rigid identity");
+            };
+            parameters.push(id);
+        }
+    }
+    let type_assumptions = facts
+        .generics
+        .predicates
+        .get(&owner)
+        .into_iter()
+        .flatten()
+        .filter_map(|p| {
+            if let crate::types::parameters::predicates::Bound::Outlives(region) = p.value.bound {
+                Some((p.value.ty, region))
+            } else {
+                None
+            }
+        })
+        .collect();
+    Ok(Contract {
+        source,
+        signature: Some(function.signature),
+        universals: scheme.map_or(0, |s| s.total),
+        assumptions: scheme.map_or_else(Vec::new, |s| s.bounds.clone()),
+        parameters,
+        type_assumptions,
+        obligations: Vec::new(),
+    })
 }

@@ -152,9 +152,9 @@ move/initialization proof already required for LowIR; this is not a lifetime or
 loan proof. Root independent/native targets include PA14. See
 `docs/pa14-validation.md` for the sparse path/bitset contract and scaling evidence.
 
-PA15 has 191 region-contract inspections: declarations, elision, variance,
+PA15 has 202 region-contract inspections: declarations, elision, variance,
 explicit/implied bounds, callable universes and borrow-place provenance. PA16
-has 293 cases: 180 loan inspections/rejections and 113 LowIR executions. All
+has 296 cases: 180 loan inspections/rejections and 116 LowIR executions. All
 acceptance outcomes agree with pinned rustc without exceptions. Their separate
 `--emit-regions` and `--emit-loans` views expose actual typed proof facts; the
 contract view alone cannot authorize execution. Twelve earlier executable
@@ -163,7 +163,7 @@ rejections. The earlier type/body/pattern views retain pending directed region
 facts; independently reviewed oracles reflect those facts.
 
 `make test-rustc` includes both stages; `make test-native-pa16` selects PA16's
-113 execution cases. The root native target includes PA16 and the explicit
+116 execution cases. The root native target includes PA16 and the explicit
 maintainer native tests. See `docs/pa15-pa16-validation.md` for the release review.
 
 PA17 adds 199 LowIR fixtures: 132 accepted programs and 67 rejections. One

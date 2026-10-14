@@ -17,7 +17,12 @@ pub(in super::super) enum Subject {
 pub(in super::super) struct Syntax {
     source: NodeKey,
     subject: Subject,
-    bound: Bound,
+    bound: Written,
+}
+#[derive(Clone, Copy)]
+enum Written {
+    Trait(Bound),
+    Outlives(NodeKey),
 }
 impl Checker<'_> {
     pub(in super::super) fn prepare_bounds(
@@ -106,6 +111,14 @@ impl Checker<'_> {
             .to_vec();
         for node in nodes {
             let key = NodeKey { node, ..key };
+            if self.lifetime_argument(key) {
+                output.push(Syntax {
+                    source: key,
+                    subject,
+                    bound: Written::Outlives(key),
+                });
+                continue;
+            }
             let Kind::Bound {
                 optional,
                 binders,
@@ -123,7 +136,19 @@ impl Checker<'_> {
                     "higher-ranked trait bounds require advanced generic relationships",
                 ));
             }
-            let bound = self.builtin_bound(NodeKey { node: value, ..key })?;
+            let value = NodeKey { node: value, ..key };
+            if self.lifetime_argument(value) {
+                if optional {
+                    return Err(self.error(key, "lifetime bounds cannot be relaxed"));
+                }
+                output.push(Syntax {
+                    source: key,
+                    subject,
+                    bound: Written::Outlives(value),
+                });
+                continue;
+            }
+            let bound = self.builtin_bound(value)?;
             if optional {
                 if bound != Bound::Sized {
                     return Err(self.error(key, "only Sized bounds can be relaxed"));
@@ -147,7 +172,7 @@ impl Checker<'_> {
                 output.push(Syntax {
                     source: key,
                     subject,
-                    bound,
+                    bound: Written::Trait(bound),
                 });
             }
         }
@@ -222,7 +247,7 @@ impl Checker<'_> {
         let Some(bounds) = self.bound_syntax.get(&owner) else {
             return Ok(());
         };
-        self.work.push(Work::Bounds(owner));
+        self.work.push(Work::Bounds(owner, context));
         for bound in bounds.iter().rev() {
             if let Subject::Type(key) = bound.subject {
                 self.bound_subject_lifetimes(key)?;
@@ -264,12 +289,34 @@ impl Checker<'_> {
         }
         Ok(())
     }
-    pub(in super::super) fn complete_bounds(&mut self, owner: DefId) -> Result<(), Error> {
+    pub(in super::super) fn complete_bounds(
+        &mut self,
+        owner: DefId,
+        context: regions::Context,
+    ) -> Result<(), Error> {
         let bounds = self.bound_syntax.remove(&owner).ok_or_else(|| {
             Error::at(crate::resolve::unit::FileId(0), 0, "missing pending bounds")
         })?;
         let mut completed = Vec::with_capacity(bounds.len());
         for bound in bounds {
+            let value = match bound.bound {
+                Written::Trait(bound) => bound,
+                Written::Outlives(key) => {
+                    let Kind::Name(span) = self.kind(key) else {
+                        return Err(self.error(key, "outlives bound requires a named lifetime"));
+                    };
+                    if self
+                        .report
+                        .package
+                        .unit(key.file)
+                        .spelling(span)
+                        .is_ok_and(|name| name == "'_")
+                    {
+                        return Err(self.error(key, "outlives bound requires a named lifetime"));
+                    }
+                    Bound::Outlives(self.region(key, Some(key.node), context)?)
+                }
+            };
             let ty = match bound.subject {
                 Subject::Parameter(id) => self.facts.definitions[id.0 as usize]
                     .ok_or_else(|| self.error(bound.source, "missing bounded parameter type"))?,
@@ -282,10 +329,7 @@ impl Checker<'_> {
             }
             completed.push(crate::sema::generics::Predicate {
                 source: bound.source,
-                value: Predicate {
-                    ty,
-                    bound: bound.bound,
-                },
+                value: Predicate { ty, bound: value },
             });
         }
         self.facts.generics.predicates.insert(owner, completed);

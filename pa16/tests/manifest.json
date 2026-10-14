@@ -4087,6 +4087,54 @@
         "outcome": "pass"
       },
       "maintainer_origin": "dev/tests/wide_references.rs"
+    },
+    {
+      "path": "tests/spec/thin-native/type-bound-shared.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.references"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/thin-native/type-bound-mutable.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.references"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/thin-native/type-bound-static.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.references"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
     }
   ],
   "additional_modes": [

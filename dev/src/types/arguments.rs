@@ -39,6 +39,12 @@ impl Iterator for Arguments<'_> {
             Self::Mixed(values) => values.next().copied(),
         }
     }
+    fn nth(&mut self, n: usize) -> Option<Self::Item> {
+        match self {
+            Self::Lifetimes(values) => values.nth(n).copied().map(Argument::Lifetime),
+            Self::Mixed(values) => values.nth(n).copied(),
+        }
+    }
     fn size_hint(&self) -> (usize, Option<usize>) {
         let len = self.len();
         (len, Some(len))

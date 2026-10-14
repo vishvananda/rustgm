@@ -1,8 +1,20 @@
 //! Well-formedness requirements over typed templates, with bounded recursive propagation.
 use super::{GenericArgs, ItemId, Kind, RegionId, Store, TypeId, aggregate::Definitions};
+use super::{arguments::Argument, parameters::ParameterId};
 use std::collections::{HashMap, HashSet};
 
 pub type Pair = (RegionId, RegionId);
+pub type ParameterPair = (ParameterId, RegionId);
+/// Components of a type-outlives predicate, independent of an assumption scope.
+pub struct Parts<'a> {
+    pub regions: &'a [RegionId],
+    pub parameters: &'a [ParameterId],
+}
+/// Well-formedness requirements; the caller chooses whether to assume or prove.
+pub struct Requirements<'a> {
+    pub regions: &'a [Pair],
+    pub parameters: &'a [ParameterPair],
+}
 const LIMIT: usize = 1_000_000;
 #[derive(Default)]
 struct Budget(usize);
@@ -41,9 +53,6 @@ fn children(
     budget: &mut Budget,
 ) -> Result<(), &'static str> {
     match types.kind(ty).ok_or("invalid well-formed type identity")? {
-        Kind::Parameter(_) => {
-            return Err("generic outlives checking requires a parameter environment");
-        }
         Kind::Reference { referent, .. } => work.push((referent, depth)),
         Kind::Pointer { pointee, .. } => work.push((pointee, depth)),
         Kind::Slice(element) | Kind::Array { element, .. } | Kind::ArrayTerm { element, .. } => {
@@ -67,21 +76,43 @@ fn children(
             work.push((result, depth));
             work.extend(children.iter().rev().map(|ty| (*ty, depth)));
         }
-        Kind::FunctionItem { signature, .. } => work.push((signature, depth)),
-        Kind::Never | Kind::Primitive(_) | Kind::Adt(..) => {}
+        Kind::FunctionItem {
+            signature,
+            arguments,
+            ..
+        } => {
+            work.push((signature, depth));
+            if types.region_args(arguments).is_none() {
+                let arguments = types
+                    .arguments(arguments)
+                    .ok_or("invalid outlives item arguments")?;
+                budget.pending(work.len().saturating_add(arguments.len()))?;
+                for argument in arguments {
+                    if let Argument::Type(ty) = argument {
+                        work.push((ty, depth));
+                    }
+                }
+            }
+        }
+        Kind::Never | Kind::Primitive(_) | Kind::Adt(..) | Kind::Parameter(_) => {}
     }
     budget.pending(work.len())
 }
 #[derive(Default)]
 struct Components {
     cache: HashMap<(TypeId, u16, ComponentKind), Vec<RegionId>>,
+    parameters: HashMap<(TypeId, u16, ComponentKind), Vec<ParameterId>>,
     work: Vec<(TypeId, u16)>,
     seen: HashSet<(TypeId, u16)>,
     regions: HashSet<RegionId>,
+    parameter_seen: HashSet<ParameterId>,
 }
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 enum ComponentKind {
+    /// Minimal components, under separately required reference well-formedness.
     Outlives,
+    /// Explicit type bounds include every referent component, even in assumptions.
+    TypeBound,
     LiveValue,
 }
 /// Cached non-static free lifetimes of live values, including nested referents.
@@ -98,8 +129,12 @@ impl LiveRegions {
     /// # Errors
     /// Rejects malformed types, binder overflow and bounded traversal exhaustion.
     pub fn get(&mut self, types: &Store, ty: TypeId) -> Result<&[RegionId], &'static str> {
+        if types.contains_parameters(ty) == Some(true) {
+            return Err("generic live-region checking requires instantiated value facts");
+        }
         self.components
             .get(types, ty, 0, ComponentKind::LiveValue, &mut self.budget)
+            .map(|parts| parts.regions)
     }
     #[must_use]
     pub const fn steps(&self) -> usize {
@@ -114,64 +149,99 @@ impl Components {
         depth: u16,
         kind: ComponentKind,
         budget: &mut Budget,
-    ) -> Result<&[RegionId], &'static str> {
-        if types.contains_regions(root) == Some(false) {
-            return Ok(&[]);
+    ) -> Result<Parts<'_>, &'static str> {
+        if types.contains_regions(root) == Some(false)
+            && types.contains_parameters(root) == Some(false)
+        {
+            return Ok(Parts {
+                regions: &[],
+                parameters: &[],
+            });
         }
         let key = (root, depth, kind);
         if !self.cache.contains_key(&key) {
-            self.work.clear();
-            self.seen.clear();
-            self.regions.clear();
-            self.work.push((root, depth));
-            let mut values = Vec::new();
-            while let Some((ty, depth)) = self.work.pop() {
-                budget.charge()?;
-                if !self.seen.insert((ty, depth)) {
-                    continue;
-                }
-                let mut record = |region| -> Result<(), &'static str> {
-                    if let Some(region) = free(region, depth)?
-                        && region != RegionId::STATIC
-                        && self.regions.insert(region)
-                    {
-                        values.push(region);
-                    }
-                    Ok(())
-                };
-                match types.kind(ty).ok_or("invalid outlives component type")? {
-                    // Its referent's lifetime requirements follow transitively
-                    // from this reference's own well-formedness requirements.
-                    Kind::Reference {
-                        region, referent, ..
-                    } => {
-                        record(region)?;
-                        if kind == ComponentKind::LiveValue {
-                            self.work.push((referent, depth));
-                        }
-                    }
-                    Kind::Array { length: 0, .. } if kind == ComponentKind::LiveValue => {}
-                    Kind::Adt(_, args)
-                    | Kind::FunctionItem {
-                        arguments: args, ..
-                    } => {
-                        for region in types
-                            .region_args(args)
-                            .ok_or("missing outlives arguments")?
-                        {
-                            budget.charge()?;
-                            record(*region)?;
-                        }
-                    }
-                    _ => children(types, ty, depth, &mut self.work, budget)?,
-                }
-            }
+            let (values, parameters) = self.collect(types, root, depth, kind, budget)?;
             self.cache.insert(key, values);
+            if !parameters.is_empty() {
+                self.parameters.insert(key, parameters);
+            }
         }
-        self.cache
+        let regions = self
+            .cache
             .get(&key)
             .map(Vec::as_slice)
-            .ok_or("missing outlives component cache")
+            .ok_or("missing outlives component cache")?;
+        Ok(Parts {
+            regions,
+            parameters: self.parameters.get(&key).map_or(&[], Vec::as_slice),
+        })
+    }
+    fn collect(
+        &mut self,
+        types: &Store,
+        root: TypeId,
+        depth: u16,
+        kind: ComponentKind,
+        budget: &mut Budget,
+    ) -> Result<(Vec<RegionId>, Vec<ParameterId>), &'static str> {
+        self.work.clear();
+        self.seen.clear();
+        self.regions.clear();
+        self.parameter_seen.clear();
+        self.work.push((root, depth));
+        let mut values = Vec::new();
+        let mut parameters = Vec::new();
+        while let Some((ty, depth)) = self.work.pop() {
+            budget.charge()?;
+            if !self.seen.insert((ty, depth)) {
+                continue;
+            }
+            let mut record = |region| -> Result<(), &'static str> {
+                if let Some(region) = free(region, depth)?
+                    && region != RegionId::STATIC
+                    && self.regions.insert(region)
+                {
+                    values.push(region);
+                }
+                Ok(())
+            };
+            match types.kind(ty).ok_or("invalid outlives component type")? {
+                Kind::Parameter(id) => {
+                    if self.parameter_seen.insert(id) {
+                        parameters.push(id);
+                    }
+                }
+                // Its referent's lifetime requirements follow transitively
+                // from this reference's own well-formedness requirements.
+                Kind::Reference {
+                    region, referent, ..
+                } => {
+                    record(region)?;
+                    if kind != ComponentKind::Outlives {
+                        self.work.push((referent, depth));
+                    }
+                }
+                Kind::Array { length: 0, .. } if kind == ComponentKind::LiveValue => {}
+                Kind::Adt(_, args)
+                | Kind::FunctionItem {
+                    arguments: args, ..
+                } => {
+                    for argument in types.arguments(args).ok_or("missing outlives arguments")? {
+                        budget.charge()?;
+                        match argument {
+                            Argument::Lifetime(region) => record(region)?,
+                            Argument::Type(ty) => {
+                                budget.pending(self.work.len().saturating_add(1))?;
+                                self.work.push((ty, depth));
+                            }
+                            Argument::Const(_) => {}
+                        }
+                    }
+                }
+                _ => children(types, ty, depth, &mut self.work, budget)?,
+            }
+        }
+        Ok((values, parameters))
     }
 }
 #[derive(Clone, Copy)]
@@ -189,6 +259,8 @@ struct Scan {
     seen: HashSet<(TypeId, u16)>,
     pairs: Vec<Pair>,
     unique: HashSet<Pair>,
+    parameter_pairs: Vec<ParameterPair>,
+    unique_parameters: HashSet<ParameterPair>,
     uses: Vec<Use>,
 }
 impl Scan {
@@ -196,6 +268,8 @@ impl Scan {
         self.work.clear();
         self.pairs.clear();
         self.unique.clear();
+        self.parameter_pairs.clear();
+        self.unique_parameters.clear();
         self.uses.clear();
         self.seen.clear();
     }
@@ -205,13 +279,13 @@ impl Scan {
         }
     }
     fn visit(&mut self, types: &Store, root: TypeId) -> Result<(), &'static str> {
-        if types.contains_parameters(root) == Some(true) {
-            return Err("generic outlives checking requires a parameter environment");
-        }
         self.work.push((root, 0));
         while let Some((ty, depth)) = self.work.pop() {
             self.budget.charge()?;
-            if !self.seen.insert((ty, depth)) || types.contains_regions(ty) == Some(false) {
+            if !self.seen.insert((ty, depth))
+                || (types.contains_regions(ty) == Some(false)
+                    && types.contains_parameters(ty) == Some(false))
+            {
                 continue;
             }
             match types.kind(ty).ok_or("invalid well-formedness type")? {
@@ -226,16 +300,28 @@ impl Scan {
                             ComponentKind::Outlives,
                             &mut self.budget,
                         )?;
-                        for longer in components {
+                        for longer in components.regions {
                             self.budget.charge()?;
                             let pair = (*longer, shorter);
                             if useful(pair) && self.unique.insert(pair) {
                                 self.pairs.push(pair);
                             }
                         }
+                        for parameter in components.parameters {
+                            self.budget.charge()?;
+                            let pair = (*parameter, shorter);
+                            if self.unique_parameters.insert(pair) {
+                                self.parameter_pairs.push(pair);
+                            }
+                        }
                     }
                 }
                 Kind::Adt(item, arguments) if arguments != GenericArgs::EMPTY => {
+                    if types.region_args(arguments).is_none() {
+                        return Err(
+                            "generic nominal outlives checking requires instantiated field bounds",
+                        );
+                    }
                     self.uses.push(Use {
                         item,
                         arguments,
@@ -261,9 +347,6 @@ impl Scan {
     }
 }
 fn instantiate(types: &Store, use_: Use, pair: Pair) -> Result<Option<Pair>, &'static str> {
-    let args = types
-        .region_args(use_.arguments)
-        .ok_or("missing outlives instance arguments")?;
     let argument = |region: RegionId| -> Result<Option<RegionId>, &'static str> {
         if region == RegionId::STATIC {
             return Ok(Some(region));
@@ -271,12 +354,14 @@ fn instantiate(types: &Store, use_: Use, pair: Pair) -> Result<Option<Pair>, &'s
         let Some((0, index)) = region.bound_parts() else {
             return Err("invalid outlives template region");
         };
-        free(
-            *args
-                .get(usize::from(index))
-                .ok_or("outlives template argument arity mismatch")?,
-            use_.depth,
-        )
+        let argument = types
+            .arguments(use_.arguments)
+            .ok_or("missing outlives instance arguments")?
+            .nth(usize::from(index));
+        let Some(Argument::Lifetime(region)) = argument else {
+            return Err("outlives template argument arity mismatch");
+        };
+        free(region, use_.depth)
     };
     Ok(argument(pair.0)?.zip(argument(pair.1)?))
 }
@@ -309,6 +394,9 @@ impl Bounds {
                     .list(variant.fields)
                     .ok_or("missing outlives field templates")?
                 {
+                    if types.contains_parameters(*ty) == Some(true) {
+                        return Err("generic outlives checking requires a parameter environment");
+                    }
                     scan.visit(types, *ty)?;
                 }
             }
@@ -373,6 +461,7 @@ pub struct Queries<'a> {
     callables: &'a super::callable::Templates,
     scan: Scan,
     cache: HashMap<TypeId, Vec<Pair>>,
+    parameters: HashMap<TypeId, Vec<ParameterPair>>,
 }
 impl<'a> Queries<'a> {
     #[must_use]
@@ -387,11 +476,34 @@ impl<'a> Queries<'a> {
             callables,
             scan: Scan::default(),
             cache: HashMap::new(),
+            parameters: HashMap::new(),
         }
     }
     /// # Errors
     /// Rejects inconsistent nominal facts and exhausted type traversal work.
     pub fn requirements(&mut self, ty: TypeId) -> Result<&[Pair], &'static str> {
+        if self.types.contains_parameters(ty) == Some(true) {
+            return Err("generic outlives checking requires a parameter environment");
+        }
+        self.symbolic_requirements(ty)
+            .map(|requirements| requirements.regions)
+    }
+    /// Decompose a type-outlives subject without assuming any of its components.
+    /// # Errors
+    /// Rejects invalid identities, escaping binder overflow and exhausted work.
+    pub fn components(&mut self, ty: TypeId) -> Result<Parts<'_>, &'static str> {
+        self.scan.components.get(
+            self.types,
+            ty,
+            0,
+            ComponentKind::TypeBound,
+            &mut self.scan.budget,
+        )
+    }
+    /// Generic requirements retain rigid parameter identities for a scoped proof.
+    /// # Errors
+    /// Rejects malformed templates, unsupported nominal fields and exhausted work.
+    pub fn symbolic_requirements(&mut self, ty: TypeId) -> Result<Requirements<'_>, &'static str> {
         if !self.cache.contains_key(&ty) {
             self.scan.clear();
             self.scan.visit(self.types, ty)?;
@@ -402,11 +514,11 @@ impl<'a> Queries<'a> {
                         .callables
                         .get(use_.item)
                         .ok_or("missing callable lifetime template")?;
-                    if self
-                        .types
-                        .region_args(use_.arguments)
-                        .is_none_or(|args| args.len() != template.parameters as usize)
-                    {
+                    if self.types.arguments(use_.arguments).is_none_or(|args| {
+                        args.filter(|arg| matches!(arg, Argument::Lifetime(_)))
+                            .count()
+                            != template.parameters as usize
+                    }) {
                         return Err("callable lifetime argument arity mismatch");
                     }
                     self.callables
@@ -425,10 +537,19 @@ impl<'a> Queries<'a> {
                 }
             }
             self.cache.insert(ty, self.scan.pairs.clone());
+            if !self.scan.parameter_pairs.is_empty() {
+                self.parameters
+                    .insert(ty, self.scan.parameter_pairs.clone());
+            }
         }
-        self.cache
+        let regions = self
+            .cache
             .get(&ty)
             .map(Vec::as_slice)
-            .ok_or("missing well-formedness requirements")
+            .ok_or("missing well-formedness requirements")?;
+        Ok(Requirements {
+            regions,
+            parameters: self.parameters.get(&ty).map_or(&[], Vec::as_slice),
+        })
     }
 }

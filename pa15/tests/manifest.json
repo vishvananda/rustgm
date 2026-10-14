@@ -2299,6 +2299,127 @@
         "status": 0
       },
       "maintainer_origin": "dev/tests/borrow_places.rs"
+    },
+    {
+      "path": "tests/spec/contracts/type-bound-shortening.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/contracts/type-bound-reverse.rs",
+      "exit_status": 1,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/contracts/type-bound-tuple.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/contracts/type-bound-zero-array.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/contracts/type-bound-pointer.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/contracts/type-bound-callable.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/contracts/type-bound-nested-static.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/contracts/type-bound-call-forward.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/contracts/type-bound-call-missing.rs",
+      "exit_status": 1,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/contracts/type-bound-alias-unenforced.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/contracts/type-bound-trivial.rs",
+      "exit_status": 0,
+      "features": [
+        "pa15.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
     }
   ]
 }

@@ -23,6 +23,7 @@ impl Checker<'_> {
             .get(&owner)
             .into_iter()
             .flatten()
+            .filter(|p| !matches!(p.value.bound, Bound::Outlives(_)))
             .filter(|p| {
                 self.facts
                     .types
@@ -87,6 +88,17 @@ impl Checker<'_> {
         ty: TypeId,
         bound: Bound,
     ) -> Result<(), Error> {
+        if let Bound::Outlives(shorter) = bound {
+            self.facts
+                .type_outlives
+                .push(crate::sema::model::TypeOutlives {
+                    body: self.body,
+                    source: self.key(node),
+                    ty,
+                    shorter,
+                });
+            return Ok(());
+        }
         let valid = if bound == Bound::Sized {
             self.body_shape(node, ty)?.sized
         } else {
@@ -116,6 +128,7 @@ impl Checker<'_> {
                     Bound::Copy => "generic argument must implement Copy",
                     Bound::Clone => "generic argument must implement Clone",
                     Bound::Sized => "generic argument must be sized",
+                    Bound::Outlives(_) => "generic argument must outlive its bound",
                 },
             ))
         }
@@ -164,8 +177,21 @@ impl Checker<'_> {
                 regions[usize::from(*index)] = *region;
             }
         }
-        let mut substitution = substitute::Bound::new(regions);
+        let mut substitution = substitute::Bound::new(regions.clone());
         for predicate in predicates {
+            let bound = match predicate.value.bound {
+                Bound::Outlives(region) if region != crate::types::RegionId::STATIC => {
+                    let Some((0, index)) = region.bound_parts() else {
+                        return Err(self.error(node, "invalid outlives bound lifetime"));
+                    };
+                    Bound::Outlives(
+                        *regions
+                            .get(usize::from(index))
+                            .ok_or_else(|| self.error(node, "missing outlives bound lifetime"))?,
+                    )
+                }
+                bound => bound,
+            };
             let ty = substitution
                 .apply(&mut self.facts.types, predicate.value.ty)
                 .map_err(|e| self.error(node, e))?;
@@ -173,9 +199,7 @@ impl Checker<'_> {
                 .infer
                 .instantiate(&self.facts.types, ty, bindings)
                 .map_err(|e| self.error(node, e))?;
-            self.call_types
-                .obligations
-                .push((node, predicate.value.bound, term));
+            self.call_types.obligations.push((node, bound, term));
         }
         Ok(())
     }

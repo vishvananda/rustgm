@@ -152,6 +152,13 @@ pub struct Outlives {
     pub longer: RegionId,
     pub shorter: RegionId,
 }
+#[derive(Clone, Copy)]
+pub struct TypeOutlives {
+    pub body: NodeKey,
+    pub source: NodeKey,
+    pub ty: TypeId,
+    pub shorter: RegionId,
+}
 /// A selected conversion awaiting variance-aware region checking. Keep all
 /// coercion sites: one syntax node can constrain several inferred targets.
 #[derive(Clone, Copy)]
@@ -217,6 +224,7 @@ pub struct Declarations {
     pub well_formed: Vec<WellFormed>,
     pub coercions: Vec<Coercion>,
     pub outlives: Vec<Outlives>,
+    pub type_outlives: Vec<TypeOutlives>,
     pub lifetimes: super::lifetimes::Lifetimes,
     pub(super) constant_values: std::collections::HashMap<DefId, super::constants::Value>,
     pub(super) constant_products: super::constants::products::Products,
@@ -263,6 +271,7 @@ impl Declarations {
             reference_adjustments: std::collections::HashMap::new(),
             partial_annotations: std::collections::HashMap::new(),
             well_formed: Vec::new(),
+            type_outlives: Vec::new(),
             coercions: Vec::new(),
             outlives: Vec::new(),
             lifetimes: super::lifetimes::Lifetimes::default(),

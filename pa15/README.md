@@ -20,6 +20,13 @@ enums retain their declared identities. Type/const generics and general traits
 remain later assignments.
 
 Collect declared outlives bounds and well-formedness assumptions from signatures.
+Function bounds may constrain a lifetime-only type, such as `&'a u8: 'b` or
+`[&'a u8; 0]: 'b`. Decompose explicit type bounds through every referent and
+structural component, including zero-length array elements. The subject must
+also be well-formed; merely mentioning a type in a where-clause does not supply
+its well-formedness assumptions. These predicates participate in early/late
+lifetime classification and are checked when naming a function item, even when
+the item is never called. Symbolic type parameters such as `T: 'a` remain PA18.
 A local annotation creates requirements, not new assumptions. Enforce nominal
 bounds at uses; a type alias's own declared bounds are not enforced by the pinned
 language profile. Infer nominal lifetime variance from typed fields. Shared
@@ -91,7 +98,7 @@ avoid repeated walks. The contract graph caps retained nodes and edges at
 1,000,000 per body and charges bounded propagation work. Inspection sorts edge
 records; count mode reads retained counts without materializing those records.
 
-The release suite declares 191 cases covering declarations/elision, explicit and
+The release suite declares 202 cases covering declarations/elision, explicit and
 implied bounds, variance, reference returns, callable binders, casts and nominal
 constraints. Each expected result is declared before oracle generation and
 independently checked with pinned rustc. Structural maintainer controls also

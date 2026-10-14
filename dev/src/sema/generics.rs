@@ -52,6 +52,12 @@ impl Generics {
         let mut uses = crate::types::bound_uses::Uses::default();
         for predicate in self.predicates.get(&owner).into_iter().flatten() {
             uses.collect(types, predicate.value.ty)?;
+            if let crate::types::parameters::predicates::Bound::Outlives(region) =
+                predicate.value.bound
+                && let Some((0, index)) = region.bound_parts()
+            {
+                uses.indices.insert(index);
+            }
         }
         Ok(uses.indices)
     }

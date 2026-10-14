@@ -86,6 +86,9 @@ impl Environment {
         let mut uses = super::uses::Uses::default();
         for predicate in predicates {
             uses.collect(types, predicate.ty)?;
+            if matches!(predicate.bound, Bound::Outlives(_)) {
+                continue;
+            }
             let assumptions = self.assumptions.get_or_insert_with(Default::default);
             assumptions.sized.insert(predicate.ty);
             let properties = assumptions.predicates.entry(predicate.ty).or_default();
@@ -95,7 +98,7 @@ impl Environment {
                     properties.clone_ = true;
                 }
                 Bound::Clone => properties.clone_ = true,
-                Bound::Sized => {}
+                Bound::Sized | Bound::Outlives(_) => {}
             }
             if let Some(Kind::Parameter(id)) = types.kind(predicate.ty) {
                 let parameter = self

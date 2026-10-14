@@ -5,6 +5,7 @@ pub enum Bound {
     Copy,
     Clone,
     Sized,
+    Outlives(crate::types::RegionId),
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct Predicate {
