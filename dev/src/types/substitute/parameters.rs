@@ -13,6 +13,50 @@ pub(super) struct Bindings {
     shifts: HashMap<u16, Bound>,
 }
 impl Bound {
+    /// Start an append-only argument environment for resolving declaration defaults.
+    /// Successful substitutions depend only on existing slots, so their cached
+    /// results remain valid when later slots are appended. Inserted arguments are
+    /// simultaneous replacements and are never substituted a second time.
+    #[must_use]
+    pub fn prefix(owner: ItemId) -> Self {
+        let mut substitution = Self::new(Vec::new());
+        substitution.parameters = Some(Box::new(Bindings {
+            owner,
+            arguments: Vec::new(),
+            shifts: HashMap::new(),
+        }));
+        substitution
+    }
+    /// Extend the fixed prefix without changing any previous argument or cache key.
+    /// The caller validates declaration arity, defaults and bounds.
+    /// # Errors
+    /// Rejects missing parameter environments, invalid identities, nonleading
+    /// lifetime arguments and exhausted work. Existing slots are never replaced.
+    pub fn push_argument(&mut self, store: &Store, argument: Argument) -> Result<(), &'static str> {
+        let bindings = self
+            .parameters
+            .as_ref()
+            .ok_or("missing parameter substitution")?;
+        let valid = match argument {
+            Argument::Lifetime(_) => bindings.arguments.len() == self.arguments.len(),
+            Argument::Type(ty) => store.kind(ty).is_some(),
+            Argument::Const(id) => store.const_kind(id).is_some(),
+        };
+        if !valid {
+            return Err("invalid appended generic argument");
+        }
+        self.account_arguments(1)?;
+        let bindings = self
+            .parameters
+            .as_mut()
+            .ok_or("missing parameter substitution")?;
+        bindings.arguments.push(argument);
+        if let Argument::Lifetime(region) = argument {
+            self.arguments.push(region);
+        }
+        Ok(())
+    }
+
     /// Substitute a single argument in this template's outermost binder.
     /// # Errors
     /// Rejects invalid identities, mismatches, missing arguments and work limits.

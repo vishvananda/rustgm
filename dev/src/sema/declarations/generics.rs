@@ -2,6 +2,8 @@
 mod arguments;
 pub(super) mod bounds;
 mod constants;
+mod defaults;
+pub(super) use defaults::{DefaultId, Defaults};
 mod functions;
 mod validation;
 use super::{
@@ -20,7 +22,6 @@ use crate::{
 pub(super) enum Phase {
     Begin,
     Declare,
-    Default,
 }
 #[derive(Clone, Copy)]
 pub(super) struct Declaration {
@@ -54,8 +55,8 @@ impl Checker<'_> {
             self.generic_syntax(*key)
                 .is_ok_and(|p| p.flavor != GenericFlavor::Lifetime)
         }) {
-            if !function {
-                self.schedule_bounds(owner, context)?;
+            if !function && self.bound_syntax.contains_key(&owner) {
+                self.deferred_bounds.push((owner, context));
             }
             return Ok(());
         }
@@ -95,8 +96,8 @@ impl Checker<'_> {
             .generics
             .parameters
             .insert(owner, Vec::with_capacity(nodes.len()));
-        if !function {
-            self.schedule_bounds(owner, context)?;
+        if !function && self.bound_syntax.contains_key(&owner) {
+            self.deferred_bounds.push((owner, context));
         }
         for (index, key) in nodes.into_iter().enumerate().rev() {
             // Function lifetime slots are assigned by signature first use, then
@@ -149,9 +150,6 @@ impl Checker<'_> {
                 regions::Context::ALIAS,
             );
             return Ok(());
-        }
-        if matches!(phase, Phase::Default) {
-            return self.generic_default(declaration, syntax);
         }
         let binding = self.generic_binding(key)?;
         let argument = if syntax.flavor == GenericFlavor::Lifetime {
@@ -213,52 +211,11 @@ impl Checker<'_> {
                 argument,
                 default: None,
             });
-        if let Some(node) = syntax.default {
-            self.work.push(Work::Generic(Declaration {
-                phase: Phase::Default,
-                ..declaration
-            }));
-            if syntax.flavor == GenericFlavor::Type {
-                self.node_work(key.file, node, context);
-            } else {
-                self.constant_dependencies(NodeKey { node, ..key })?;
-            }
+        if syntax.default.is_some() {
+            self.defaults
+                .insert(binding, declaration)
+                .map_err(|e| self.error(key, e))?;
         }
-        Ok(())
-    }
-    fn generic_default(
-        &mut self,
-        declaration: Declaration,
-        syntax: GenericParameter,
-    ) -> Result<(), Error> {
-        let Declaration {
-            owner, key, index, ..
-        } = declaration;
-        let node = syntax
-            .default
-            .ok_or_else(|| self.error(key, "missing generic default"))?;
-        let key = NodeKey { node, ..key };
-        let argument = self.facts.generics.parameters[&owner][index as usize].argument;
-        let default = match argument {
-            Argument::Type(_) => Argument::Type(self.ty(key)?),
-            Argument::Const(id) => {
-                let ty = self
-                    .facts
-                    .types
-                    .const_type(id)
-                    .ok_or_else(|| self.error(key, "missing const parameter type"))?;
-                Argument::Const(self.generic_constant(key, ty, owner)?)
-            }
-            Argument::Lifetime(_) => {
-                return Err(self.error(key, "lifetimes cannot have defaults"));
-            }
-        };
-        self.facts
-            .generics
-            .parameters
-            .get_mut(&owner)
-            .ok_or_else(|| Error::at(key.file, 0, "missing generic owner"))?[index as usize]
-            .default = Some(default);
         Ok(())
     }
     pub(super) fn validate_alias(

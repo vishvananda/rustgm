@@ -85,6 +85,22 @@ Trait solver caches include parameter environment, binder universe and mode;
 negative results need equally complete keys. Each demanded fact is computed
 once; cycle detection and explicit solver budgets are part of the contract.
 
+Separate generic parameter identity, alias expansion and default-template
+readiness. Explicit arguments demand no unrelated defaults. Omitted arguments
+demand each needed template through the bounded declaration worklist; a default
+can use an explicit self application or a later default whose template depends
+on an already supplied parameter. Detect actual default cycles independently
+of alias-body cycles, and check every unused default before publishing facts.
+Elaborate alias bound subjects after their bodies are available; parsing those
+bounds does not make them enforced requirements at alias uses.
+
+Resolve a use's defaults with one append-only substitution environment. Earlier
+arguments never change, and inserted replacements are simultaneous. Successful
+cached results therefore remain valid as later slots are appended, including
+binder shifts. Intern the completed argument list once and retain that same
+environment for the expanded body. Do not copy and intern every argument prefix
+or create a separate cached substitution for each omitted parameter.
+
 Infer nominal variance over completed declaration templates, with distinct
 lifetime, type and const slots in declaration order. Compose variance variables
 through nested nominal arguments using shared product expressions and reverse

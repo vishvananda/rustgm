@@ -252,3 +252,103 @@ fn generic_substitution_is_linear_in_shared_structural_nodes() -> Result<(), &'s
     assert_eq!(substitution.steps, steps);
     Ok(())
 }
+
+#[test]
+fn extending_a_prefix_preserves_simultaneous_substitutions_and_cached_binder_shifts()
+-> Result<(), &'static str> {
+    let mut store = Store::default();
+    let owner = ItemId(9);
+    let t = parameter(&mut store, owner, 1)?;
+    let u = parameter(&mut store, owner, 2)?;
+    let byte = TypeId::primitive(Primitive::U8);
+    let mut prefix = Bound::prefix(owner);
+    assert!(prefix.apply(&mut store, t).is_err());
+    prefix.push_argument(&store, Argument::Lifetime(RegionId::bound(0, 3)?))?;
+    let argument = reference(&mut store, RegionId::bound(0, 5)?, u)?;
+    prefix.push_argument(&store, Argument::Type(argument))?;
+    let local = reference(&mut store, RegionId::bound(0, 0)?, t)?;
+    let parameters = store.intern_list(&[local])?;
+    let function = store.intern(Kind::Function {
+        parameters,
+        result: t,
+        bound_regions: 1,
+        unsafe_: false,
+    })?;
+    let shifted = reference(&mut store, RegionId::bound(1, 5)?, u)?;
+    let local = reference(&mut store, RegionId::bound(0, 0)?, shifted)?;
+    let parameters = store.intern_list(&[local])?;
+    let expected = store.intern(Kind::Function {
+        parameters,
+        result: shifted,
+        bound_regions: 1,
+        unsafe_: false,
+    })?;
+    assert_eq!(prefix.apply(&mut store, function)?, expected);
+    assert!(
+        prefix
+            .push_argument(&store, Argument::Lifetime(RegionId::STATIC))
+            .is_err()
+    );
+    assert!(
+        prefix
+            .push_argument(&store, Argument::Type(TypeId(u32::MAX)))
+            .is_err()
+    );
+    prefix.push_argument(&store, Argument::Type(byte))?;
+    let steps = prefix.steps;
+    assert_eq!(prefix.apply(&mut store, function)?, expected);
+    assert_eq!(prefix.steps, steps);
+    // Appending U does not reinterpret the U already inserted as part of T.
+    assert_eq!(prefix.apply(&mut store, t)?, argument);
+    assert_eq!(prefix.apply(&mut store, u)?, byte);
+    let arguments = store.intern_arguments(&[
+        Argument::Lifetime(RegionId::bound(0, 3)?),
+        Argument::Type(argument),
+        Argument::Type(byte),
+    ])?;
+    assert_eq!(
+        Bound::joint(&store, owner, arguments)?.apply(&mut store, function)?,
+        expected
+    );
+    Ok(())
+}
+
+#[test]
+fn dependent_default_prefixes_charge_linear_work_and_keep_const_kinds_exact()
+-> Result<(), &'static str> {
+    let mut store = Store::default();
+    let owner = ItemId(8);
+    let mut prefix = Bound::prefix(owner);
+    let byte = TypeId::primitive(Primitive::U8);
+    let mut parameters = Vec::new();
+    let mut previous = byte;
+    for index in 0..10_000 {
+        let ty = parameter(&mut store, owner, index)?;
+        let value = prefix.apply_argument(&mut store, Argument::Type(previous))?;
+        assert_eq!(value, Argument::Type(byte));
+        prefix.push_argument(&store, value)?;
+        parameters.push(ty);
+        previous = ty;
+    }
+    let list = store.intern_list(&parameters)?;
+    let tuple = store.intern(Kind::Tuple(list))?;
+    let value = prefix.apply(&mut store, tuple)?;
+    let fields = store.intern_list(&vec![byte; 10_000])?;
+    assert_eq!(store.kind(value), Some(Kind::Tuple(fields)));
+    assert!(prefix.steps < 50_000);
+    let usize_ = TypeId::primitive(Primitive::Usize);
+    let n = store.intern_parameter(Parameter {
+        owner,
+        index: 10_000,
+        kind: ParameterKind::Const { ty: usize_ },
+    })?;
+    let n = store.intern_const(ConstKind::Parameter(n))?;
+    let wrong = store.intern_constant(Constant { ty: byte, bits: 3 })?;
+    prefix.push_argument(&store, Argument::Const(wrong))?;
+    assert!(
+        prefix
+            .apply_argument(&mut store, Argument::Const(n))
+            .is_err()
+    );
+    Ok(())
+}

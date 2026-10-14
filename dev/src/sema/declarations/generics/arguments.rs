@@ -2,7 +2,7 @@
 use super::{Argument, Checker, DefId, Error, Kind, NodeKey, TypeId, regions};
 use crate::{
     syntax::ast::{List, NodeId},
-    types::GenericArgs,
+    types::{GenericArgs, ItemId, substitute::Bound},
 };
 impl Checker<'_> {
     fn supplied_arguments(
@@ -41,7 +41,7 @@ impl Checker<'_> {
         if parameters
             .iter()
             .skip(supplied.len() + omitted)
-            .any(|p| p.default.is_none())
+            .any(|p| p.default.is_none() && self.defaults.get(p.binding).is_none())
         {
             return Err(self.error(key, "missing required generic argument"));
         }
@@ -60,6 +60,25 @@ impl Checker<'_> {
             return Ok(());
         }
         let (list, omitted) = self.supplied_arguments(key, owner)?;
+        let supplied = list.map_or(0, |list| {
+            self.report
+                .package
+                .unit(key.file)
+                .configured
+                .ast
+                .list(list)
+                .len()
+        });
+        for parameter in self.facts.generics.parameters[&owner]
+            .iter()
+            .skip(supplied + omitted)
+            .filter(|parameter| parameter.default.is_none())
+            .rev()
+        {
+            if let Some(id) = self.defaults.get(parameter.binding) {
+                self.work.push(super::Work::Default(id, false));
+            }
+        }
         let Some(list) = list else { return Ok(()) };
         let ast = &self.report.package.unit(key.file).configured.ast;
         for (index, node) in ast.list(list).iter().copied().enumerate().rev() {
@@ -80,6 +99,7 @@ impl Checker<'_> {
         let (supplied, omitted) = self.supplied_arguments(key, owner)?;
         let count = self.facts.generics.parameters[&owner].len();
         let mut arguments = Vec::with_capacity(count);
+        let mut defaults = None;
         for index in 0..count {
             let parameter = self.facts.generics.parameters[&owner][index];
             let node = index.checked_sub(omitted).and_then(|i| {
@@ -104,16 +124,26 @@ impl Checker<'_> {
                 let default = parameter
                     .default
                     .ok_or_else(|| self.error(key, "missing generic default"))?;
-                let prefix = self
-                    .facts
-                    .types
-                    .intern_arguments(&arguments)
-                    .map_err(|e| self.error(key, e))?;
-                self.facts
-                    .generics
-                    .default_argument(&mut self.facts.types, owner, prefix, default)
+                if defaults.is_none() {
+                    let mut prefix = Bound::prefix(ItemId(owner.0));
+                    for &argument in &arguments {
+                        prefix
+                            .push_argument(&self.facts.types, argument)
+                            .map_err(|e| self.error(key, e))?;
+                    }
+                    defaults = Some(prefix);
+                }
+                defaults
+                    .as_mut()
+                    .ok_or_else(|| self.error(key, "missing default substitution"))?
+                    .apply_argument(&mut self.facts.types, default)
                     .map_err(|e| self.error(key, e))?
             };
+            if let Some(prefix) = &mut defaults {
+                prefix
+                    .push_argument(&self.facts.types, argument)
+                    .map_err(|e| self.error(key, e))?;
+            }
             arguments.push(argument);
         }
         let args: GenericArgs = self
@@ -123,6 +153,9 @@ impl Checker<'_> {
             .map_err(|e| self.error(key, e))?;
         let template = self.facts.definitions[owner.0 as usize]
             .ok_or_else(|| self.error(key, "missing alias template"))?;
+        if let Some(prefix) = defaults {
+            self.facts.generics.retain_arguments(owner, args, prefix);
+        }
         let result = self
             .facts
             .generics

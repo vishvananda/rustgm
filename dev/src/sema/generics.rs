@@ -213,17 +213,16 @@ impl Generics {
     ) -> Result<TypeId, &'static str> {
         self.substitution(store, owner, args)?.apply(store, ty)
     }
-    /// Defaults are templates in the same declaration environment as their owner.
-    /// # Errors
-    /// Rejects invalid earlier arguments and exhausted substitution resources.
-    pub fn default_argument(
+    /// Retain the completed append-only environment built from these exact
+    /// arguments. Subsequent body expansion reuses it just like an explicit use.
+    pub(super) fn retain_arguments(
         &mut self,
-        store: &mut Store,
         owner: DefId,
         args: GenericArgs,
-        argument: Argument,
-    ) -> Result<Argument, &'static str> {
-        self.substitution(store, owner, args)?
-            .apply_argument(store, argument)
+        substitution: Bound,
+    ) {
+        self.substitutions
+            .entry((owner, args))
+            .or_insert(substitution);
     }
 }

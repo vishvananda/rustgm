@@ -1385,3 +1385,93 @@ the typed driver is
 `3dbc595311fb15d5cc3ad41ea2697b1fac4f9d4f54e0e4d1ae8b82d6ee0e4f0b`.
 Receipts, source hashes, preflights, job definitions and raw observation paths
 are `nominal-variance-v2-*`; the timing log is `nominal-variance-perf-v2.log`.
+
+### Alias-body and generic-default readiness
+
+Generic parameter identities now precede default evaluation. Defaults have
+separate unseen/active/complete query states keyed by their parameter binding;
+alias expansion retains its independent cycle states. A written argument never
+demands an unrelated default. An omitted argument schedules only the required
+template through the ordinary bounded declaration worklist. Every unused default
+is still checked before declaration facts are published. Direct self/forward
+parameter references remain rejected by name resolution.
+
+This accepts finite self and mutual applications such as `type A<T=A<u8>>=T`
+and `type A<T=A<u8>,U=T>=(T,U)`. In the latter, the inner application supplies
+`T=u8`; the later default template `U=T` therefore yields `u8`, without demanding
+T's default again. Actual omitted-default cycles report `recursive generic
+default`; recursive alias bodies retain their existing diagnostic. Alias bound
+subjects are elaborated after their bodies become available, permitting finite
+self/mutual subjects without treating alias bounds as enforced use-site traits.
+
+Default substitution now uses one append-only environment per use. Existing
+arguments never change and replacements remain simultaneous, so successful
+substitution and binder-shift caches remain valid when later slots are appended.
+The completed argument list is interned once; its environment is retained for
+ordinary expanded-body substitution. The prior implementation copied and
+interned every prefix and retained a separate environment for each omitted
+argument, requiring quadratic storage on wide parameter lists.
+
+Seven maintainer readiness tests cover 18 accepted and 14 rejected source
+controls, independently qualified with pinned rustc; exact canonical argument
+results; separate cycle diagnostics; a 2,048-link dependency chain; and 2,048
+dependent parameters in one declaration. Two further substitution tests check
+capture-safe prefix extension, error recovery, simultaneous replacements, const
+kind validation and linear work across 10,000 slots. Five new programs exercise
+self-dependent type/const/lifetime defaults, mutual defaults and owned Drop in
+the existing native-alias suite. They also pass the ordinary LowIR generation
+check; native execution is qualified separately.
+
+This fixes shared alias/default readiness needed by PA18; it does not enable
+generic nominal declarations or complete PA18–PA21. Nominal fields, implied
+bounds, storage cycles, derives, constructors and generic Drop selection still
+need integration, followed by concrete specialization and the remaining trait
+assignments. A separate independently qualified next-stage probe also exposes
+an existing field-readiness gap: nominal construction in a const default or a
+signature's const argument can reach `missing struct member facts`. Tuple and
+array constants succeed. Resolving that gap needs demanded nominal field facts,
+not treating all defaults as completed or silently accepting a missing proof.
+The five probes are retained under `obj/pa18-work/default-fields-next-v1`.
+No course manifest, fixture or oracle changes in this checkpoint.
+
+Final validation passes 652 frontend tests, all 3,334 active course cases,
+28 focused release tests, nine native maintainer tests, rustfmt, Clippy
+all/pedantic, the 409-file audit (zero findings) and 25 harness tests. The native
+alias suite now has 14 programs: 13 clean executions and one declared panic.
+After the full run, the new owned-Drop program was strengthened to increment an
+observable borrowed counter; both its LowIR and native suite were rerun and pass.
+Compiler source remained unchanged. Logs are `generic-defaults-full-v1.log`,
+`generic-defaults-release-v1.log`, `generic-defaults-native-v1.log`,
+`generic-defaults-native-counter-v1.log` and
+`generic-defaults-validation-final.log` under `obj/pa18-work/`.
+
+Performance retains 180 observations across ten jobs on CPU 2, each with two
+warmups, four A/A observations and three paired ABBA blocks. Seven jobs compare
+parent `4ac7274` with the final candidate on identical existing inputs. Three
+new self/default-dependent workloads use identical candidate copies because the
+parent rejects their source. Every full/count output matches, and all 282
+source hashes, binary hashes and input hashes verify before and after timing.
+No own builds or tests overlap timing; all observations, including slow samples
+on both sides of the thin-reference comparisons, remain in the receipts.
+
+| Existing workload | Units | Parent ms | Candidate ms | Parent RSS KiB | Candidate RSS KiB |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| wide dependent defaults | 512 | 15.77 | 9.34 | 7156 | 5390 |
+| wide dependent defaults | 1024 | 38.54 | 14.09 | 14886 | 5744 |
+| wide dependent defaults | 2048 | 117.19 | 23.90 | 41658 | 7142 |
+| forward default chain | 4096 | 83.31 | 78.26 | 20502 | 17680 |
+| thinrefs | 4096 | 500.82 | 499.43 | 77362 | 77358 |
+
+The wide-list reduction matches the removal of cumulative prefix copying.
+The ordinary thin-reference ranges overlap, with large slow observations on
+both binaries; this is not evidence of a general frontend speedup. New finite
+self-default workloads measure 35.79/144.25/653.04 ms and
+12068/36012/129986 KiB at 1,024/4,096/16,384 declarations. The typed substitution
+test independently bounds 10,000 dependent slots and final tuple expansion to
+fewer than 50,000 charged steps.
+
+The frozen CLI SHA-256 is
+`93046f9a9de7579cdbca9d4d7221b2fd51b28d0d2176b1ea6785c3542dc80603`.
+Source hashes, preflights, jobs, validation and raw observation paths are the
+`generic-defaults-v1-*` receipts; the timing log is
+`generic-defaults-perf-v1.log`.

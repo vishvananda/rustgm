@@ -39,6 +39,7 @@ enum Work {
     Bounds(DefId, regions::Context),
     FunctionArguments(NodeKey, DefId),
     Generic(generics::Declaration),
+    Default(generics::DefaultId, bool),
     PathArguments(NodeKey, DefId, regions::Context),
     Definition(DefId, bool),
     Node(NodeKey, bool, regions::Context),
@@ -54,6 +55,8 @@ struct Signature {
     unsafe_: bool,
 }
 struct Checker<'a> {
+    defaults: generics::Defaults,
+    deferred_bounds: Vec<(DefId, regions::Context)>,
     bound_syntax: std::collections::HashMap<DefId, Vec<generics::bounds::Syntax>>,
     relaxed: std::collections::HashSet<DefId>,
     constant_modules:
@@ -85,6 +88,8 @@ pub fn analyze(report: &Report) -> Result<Declarations, Error> {
         ));
     }
     let mut checker = Checker {
+        defaults: generics::Defaults::default(),
+        deferred_bounds: Vec::new(),
         bound_syntax: std::collections::HashMap::new(),
         relaxed: std::collections::HashSet::new(),
         constant_modules: None,
@@ -141,6 +146,7 @@ impl Checker<'_> {
             self.work.push(Work::Definition(id, false));
             self.drain(&mut steps, work_limit)?;
         }
+        self.complete_deferred_declarations(&mut steps, work_limit)?;
         self.complete_nominals(&mut steps, work_limit)?;
         self.validate_destructors()?;
         self.validate_signatures()?;
@@ -164,6 +170,7 @@ impl Checker<'_> {
                     self.complete_function_arguments(key, owner)?;
                 }
                 Work::Generic(declaration) => self.generic_declaration(declaration)?,
+                Work::Default(id, finish) => self.generic_default(id, finish)?,
                 Work::PathArguments(key, id, context) => self.path_arguments(key, id, context)?,
                 Work::Definition(id, finish) => self.definition(id, finish)?,
                 Work::Node(key, finish, context) => self.annotation(key, finish, context)?,
@@ -573,9 +580,7 @@ impl Checker<'_> {
                 "nominal or associated types require later semantic assignments",
             ));
         }
-        if kind == DefKind::TypeAlias
-            && crate::sema::lifetimes::arguments(self.report, key, false)?.is_some()
-        {
+        if kind == DefKind::TypeAlias {
             self.work.push(Work::PathArguments(key, id, context));
         }
         self.work.push(Work::Definition(id, false));

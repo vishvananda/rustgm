@@ -4,6 +4,31 @@ mod native;
 use std::{path::Path, process::Command};
 const CASES: &[(&str, &str, bool)] = &[
     (
+        "self-dependent-default",
+        "type A<T=A<u16>,U=T>=(T,U);fn sum(x:A)->u16{x.0.0+x.0.1+x.1.0+x.1.1}fn main(){check(sum(((1,2),(3,4)))==10);}",
+        false,
+    ),
+    (
+        "self-later-const-default",
+        "type A<T=A<u8>,const N:usize=3>=(T,[u8;N]);fn f(x:A)->u8{x.0.0+x.0.1[2]+x.1[1]}fn main(){check(f(((7,[1,2,3]),[4,5,6]))==15);}",
+        false,
+    ),
+    (
+        "self-lifetime-default",
+        "type A<'a,T=A<'a,&'a u16>>=T;fn f<'a>(x:A<'a>)->&'a u16{x}fn main(){let x=517;check(*f(&x)==517);}",
+        false,
+    ),
+    (
+        "self-default-owned-drop",
+        "struct S<'a>(&'a mut u8);impl<'a> Drop for S<'a>{fn drop(&mut self){*self.0+=1;}}type A<'a,T=A<'a,S<'a>>>=T;fn consume<'a>(_:A<'a>){}fn main(){let mut n=0;consume(S(&mut n));check(n==1);}",
+        false,
+    ),
+    (
+        "mutual-defaults",
+        "type A<T=B<u16>>=T;type B<U=A<u16>>=U;fn f(x:A)->B{x}fn main(){check(f(500)==500);}",
+        false,
+    ),
+    (
         "nested-reference-binder",
         "type A<T>=for<'a> fn(&'a u8,T)->T;fn keep<'a,'b>(_:&'a u8,x:&'b u8)->&'b u8{x}fn apply<'b>(f:A<&'b u8>,x:&'b u8)->&'b u8{let y=7;f(&y,x)}fn main(){let z=31;check(*apply(keep,&z)==31);}",
         false,
