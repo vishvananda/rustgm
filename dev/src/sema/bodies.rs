@@ -389,6 +389,14 @@ impl Checker<'_> {
             .map_or(0, |f| f.total);
         self.in_function = true;
         let Some(body) = function.body else {
+            if self
+                .facts
+                .associated
+                .trait_owner(function.definition)
+                .is_some()
+            {
+                return Ok(());
+            }
             return Err(Declarations::error(
                 self.report,
                 function.node,

@@ -84,6 +84,13 @@ impl Inventory {
     pub fn schema(&self, definition: DefId) -> Option<&Schema> {
         self.schemas.get(&self.owner(definition)?)
     }
+    #[must_use]
+    pub fn trait_owner(&self, member: DefId) -> Option<DefId> {
+        match self.get(self.owner(member)?)?.kind {
+            OwnerKind::Trait { definition, .. } => Some(definition),
+            OwnerKind::Impl { .. } => None,
+        }
+    }
     pub(super) fn declare(
         &mut self,
         self_definition: DefId,

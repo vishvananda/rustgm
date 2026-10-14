@@ -3,9 +3,34 @@ use super::{Checker, Error, Type};
 use crate::sema::nominals::Proof;
 
 impl Checker<'_> {
+    pub(super) fn validate_owner_bounds(&mut self) -> Result<(), Error> {
+        for index in 0..self.facts.associated.owners().len() {
+            let owner = self.facts.associated.owners()[index];
+            if self
+                .facts
+                .associated
+                .schema(owner.self_definition)
+                .is_none()
+            {
+                continue;
+            }
+            let definition = self
+                .facts
+                .associated
+                .trait_owner(owner.self_definition)
+                .unwrap_or(owner.self_definition);
+            if !self.facts.generics.predicates.contains_key(&definition) {
+                continue;
+            }
+            let environment = self.facts.generics.environments.get(&definition).cloned();
+            self.validate_bounds(definition, &mut Proof::new(environment))?;
+        }
+        Ok(())
+    }
     pub(super) fn validate_signatures(&mut self) -> Result<(), Error> {
         for index in 0..self.facts.functions.len() {
             let function = self.facts.functions[index];
+            self.validate_trait_method(&function)?;
             self.validate_method_receiver(&function)?;
             let environment = self
                 .facts
@@ -45,7 +70,14 @@ impl Checker<'_> {
                         "function signature contains an ill-formed type",
                     ));
                 }
-                if !shape.sized {
+                if !(shape.sized
+                    || (function.body.is_none()
+                        && self
+                            .facts
+                            .associated
+                            .trait_owner(function.definition)
+                            .is_some()))
+                {
                     return Err(self.error(
                         function.node,
                         "function parameters and result must be sized",

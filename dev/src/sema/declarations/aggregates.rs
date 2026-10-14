@@ -1,5 +1,4 @@
 //! Complete nominal declarations after reserving their recursive identities.
-mod defaults;
 mod derives;
 mod headers;
 mod outlives;
@@ -31,6 +30,15 @@ struct Group {
     discriminant: Option<NodeId>,
 }
 impl Checker<'_> {
+    fn nominal_defaults(&mut self) -> Result<(), Error> {
+        let mut proof = crate::sema::nominals::Proof::new(None);
+        for index in 0..self.nominals.entries.len() {
+            let item = self.nominals.entries[index].item;
+            let key = self.nominals.entries[index].key;
+            self.parameter_defaults(DefId(item.0), key, &mut proof)?;
+        }
+        Ok(())
+    }
     pub(super) fn complete_nominals(
         &mut self,
         steps: &mut usize,

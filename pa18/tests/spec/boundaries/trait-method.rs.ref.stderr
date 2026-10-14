@@ -1,1 +1,1 @@
-ERROR: file 0: 17: trait method receivers require trait semantics
+ERROR: file 0: 38: trait implementation requires conformance and selection semantics

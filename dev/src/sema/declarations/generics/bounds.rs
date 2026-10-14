@@ -52,6 +52,22 @@ impl Checker<'_> {
                 &mut syntax,
             )?;
         }
+        if let crate::syntax::item::ItemKind::Trait { bounds, .. } = item.kind {
+            let self_definition = self
+                .facts
+                .associated
+                .owner(owner)
+                .and_then(|id| self.facts.associated.get(id))
+                .ok_or_else(|| self.error(key, "missing trait Self declaration"))?
+                .self_definition;
+            self.bound_list(
+                key,
+                Subject::Parameter(self_definition),
+                bounds,
+                &type_parameters,
+                &mut syntax,
+            )?;
+        }
         let clauses = self
             .report
             .package

@@ -135,11 +135,11 @@ fn drop_uses_shared_ownership_and_receivers_without_granting_user_traits_languag
         ("mut self:&mut Self", true),
     ] {
         let source = format!(
-            "mod shadow{{pub trait Drop{{}}pub struct S;impl Drop for S{{}}}}struct D;impl ::core::ops::Drop for D{{fn drop({receiver}){{}}}}fn main(){{let _d=D;}}"
+            "mod shadow{{pub trait Drop{{}}pub struct S;}}struct D;impl ::core::ops::Drop for D{{fn drop({receiver}){{}}}}fn main(){{let _d=D;}}"
         );
         rustc::qualify("associated-drop-receiver", &source, true)?;
         let (_, facts) = semantic::analyze(&source)?;
-        assert_eq!(facts.associated.owners().len(), 3);
+        assert_eq!(facts.associated.owners().len(), 2);
         assert_eq!(facts.destructors.implementations().len(), 1);
         assert_eq!(facts.receivers.len(), 1);
         let implementation = &facts.destructors.implementations()[0];
@@ -157,6 +157,18 @@ fn drop_uses_shared_ownership_and_receivers_without_granting_user_traits_languag
             matches!(facts.types.kind(receiver.ty),Some(Kind::Reference{mutable:true,referent,..}) if referent==implementation.target)
         );
     }
+    let source = "mod shadow{pub trait Drop{}pub struct S;impl Drop for S{}}struct D;impl ::core::ops::Drop for D{fn drop(&mut self){}}fn main(){}";
+    rustc::qualify("associated-shadow-drop-impl", source, true)?;
+    let report = semantic::resolve(source)?;
+    let inventory = associated::collect(&report)?;
+    assert_eq!(inventory.owners().len(), 3);
+    let Err(error) = semantic::analyze(source) else {
+        return Err("user impl passed without conformance".into());
+    };
+    assert!(
+        error.contains("trait implementation requires conformance"),
+        "{error}"
+    );
     Ok(())
 }
 

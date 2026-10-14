@@ -90,6 +90,15 @@ targets take the direct path. Other targets use the shared directed type-relatio
 engine in `types`, also consumed by body lifetime checking. Method bodies pass the
 ordinary ownership/region pipeline even when no call demands their code.
 
+Trait Self is an implicit possibly-unsized type parameter with its own owner.
+Explicit trait parameters retain their source indices; method environments inherit
+both owners. Required method signatures check well-formedness while permitting
+unsized parameters and results. Default bodies require ordinary sizedness and
+ownership proofs under their declared bounds. Required signatures never create
+CFG templates or executable symbols. Validate owner bounds and closed parameter
+defaults even when a trait or impl has no methods; unchecked trait implementations
+must not pass merely because required methods have no bodies.
+
 Resolve a destructor's impl target and receiver once. Retain the nominal item,
 method identity, whole-reference receiver binding and captured lifetime slots.
 Anonymous impl lifetimes are real slots, not fabricated declaration IDs. A

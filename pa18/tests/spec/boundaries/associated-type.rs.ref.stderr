@@ -1,1 +1,1 @@
-ERROR: file 0: 10: unsupported type declaration
+ERROR: file 0: 30: trait implementation requires conformance and selection semantics

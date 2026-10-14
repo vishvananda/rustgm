@@ -8,6 +8,7 @@ mod generics;
 mod lifetimes;
 mod methods;
 mod receivers;
+mod traits;
 mod validation;
 use super::{
     model::{Declarations, Function, Initializer, InitializerKind},
@@ -146,6 +147,7 @@ impl Checker<'_> {
         let destructors = self.reserve_destructors()?;
         self.complete_nominal_headers(&mut steps, work_limit)?;
         self.prepare_destructors(destructors, &mut steps, work_limit)?;
+        self.prepare_trait_owners(&mut steps, work_limit)?;
         self.prepare_inherent_owners(&mut steps, work_limit)?;
         for index in 0..self.report.resolution.definitions.len() {
             let id = DefId(
@@ -167,7 +169,9 @@ impl Checker<'_> {
         }
         self.complete_deferred_declarations(&mut steps, work_limit)?;
         self.complete_nominals(&mut steps, work_limit)?;
+        self.trait_defaults()?;
         self.validate_destructors()?;
+        self.validate_owner_bounds()?;
         self.validate_signatures()?;
         self.local_annotations(&mut steps, work_limit)?;
         super::constants::finish_discriminants(
@@ -659,6 +663,7 @@ impl Checker<'_> {
                         | ItemKind::Struct { .. }
                         | ItemKind::Enum { .. }
                         | ItemKind::Impl { .. }
+                        | ItemKind::Trait { .. }
                 )
             {
                 continue;
@@ -671,7 +676,8 @@ impl Checker<'_> {
                             | ItemKind::TypeAlias { .. }
                             | ItemKind::Struct { .. }
                             | ItemKind::Enum { .. }
-                            | ItemKind::Impl { .. })
+                            | ItemKind::Impl { .. }
+                            | ItemKind::Trait { .. })
                     ))
             {
                 let message = match self.item(key).map(|item| item.kind) {

@@ -150,10 +150,13 @@ impl Checker<'_> {
                 && self.report.resolution.definitions[member.definition.0 as usize].kind
                     == DefKind::Function
             {
-                self.facts
-                    .generics
-                    .parents
-                    .insert(member.definition, owner.self_definition);
+                self.facts.generics.parents.insert(
+                    member.definition,
+                    self.facts
+                        .associated
+                        .trait_owner(member.definition)
+                        .unwrap_or(owner.self_definition),
+                );
             }
         }
         Ok(())

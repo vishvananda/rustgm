@@ -2603,3 +2603,78 @@ continuation and is not represented as an independently observed exit status.
 PA19 remains planned. General method calls, qualified selection, trait owner
 environments, required/default method handling, impl conformance and the public
 semantic contract remain required before release, followed by all PA20/PA21 work.
+
+## PA19 trait schemas and required/default method validation
+
+Trait Self now has its own rigid parameter owner and is implicitly possibly
+unsized. Explicit trait parameters retain their original declaration indices;
+method environments inherit the Self, trait and method owners in order. Trait
+lifetime captures, builtin supertrait bounds, where-bounds and parameter defaults
+use the existing declaration machinery. Shared closed-default validation now
+lives in `generics/default_validation.rs` and serves both nominal and trait
+declarations. Invalid owner bounds are checked even when no method uses them.
+
+Required method signatures allow unsized arguments/results while checking their
+well-formedness and permitted parameter patterns. They do not produce CFG
+templates. Default methods receive ordinary sizedness, ownership and region
+proofs under their declared assumptions, even when unused. Const trait methods,
+mutable required parameter bindings, invalid receivers and invalid defaults are
+rejected. Seven new integration invariants include a separately declared and
+rustc-qualified corpus of 38 header controls, plus identity and pending-impl
+controls. They check inherited parameter ownership, unused default-body failures
+and the absence of required signatures from executable templates.
+
+User trait implementations now fail explicitly until conformance and selection
+are implemented; genuine builtin Drop retains its implementation. This tightens
+the earlier inventory-only acceptance of empty user impls. The shadow-Drop test
+still checks distinct raw owners and genuine destructor receiver facts, and now
+checks the explicit boundary for the unchecked user impl. It does not treat a
+user item named Drop as the language destructor trait.
+
+All 769 frontend tests pass in debug and release. The final test-only Clippy
+rewrite also passes the 13 focused associated/header tests. All 3,773 PA1–PA18
+text cases, fifteen native maintainer tests, 1,117 course executable comparisons
+and three codegen-only comparisons pass. The sixteen existing PA13 runtime
+differences remain documented. Rustfmt, Clippy all/pedantic with warnings denied,
+the 483-file audit with zero findings, 27 harness tests and provenance checks pass.
+
+Only PA18's associated-type and trait-method boundary diagnostics changed. Their
+sources and rejection outcomes are unchanged. All 425 PA18 cases were checked
+independently before official oracle regeneration; the four declared phase
+differences remain explicit. Every other sidecar is byte-identical. Regeneration
+was repeated after the final test-only lint rewrite to keep compiler/test source
+provenance current. PA19 remains planned: these are declaration and unused-body
+proofs, not executable method selection or completed trait conformance.
+
+Twenty immutable performance jobs retain 360 observations on CPU 2: two warmups,
+four A/A samples and three ABBA blocks each. Fourteen compare the published
+inherent-header binary with this candidate; six measure independently qualified
+new trait workloads using identical candidate binaries. Full LowIR and count
+outputs match throughout. Existing-workload median wall changes range from -5.3%
+to +3.2%; the generic-drop workload has three slower paired blocks, but its A/A
+spread is 10.7%. The identical-binary 512-method trait control differs by 16.6%
+between lanes. These noisy observations do not establish a speedup or zero cost.
+
+A focused repeat of generic Drop, ordinary functions and the 512-method trait
+control retains another 90 observations, using six ABBA blocks each with the
+same frozen binaries/inputs. Generic Drop measures 496.12 versus 497.09 ms
+(-0.2%); five of its six paired blocks remain 0.5–3.5% slower, with one at -0.1%.
+The pooled medians therefore do not rule out a small cost. The same-binary trait
+control differs by 0.4%. Both runs, including all outliers,
+remain in the evidence. No RustGM builds or tests overlapped either timing run;
+other workspace jobs were active.
+
+New trait-owner medians at 64/256/1,024 owners are 13.93/45.51/183.99 ms in the
+initial B lane. A shared trait with 32 type parameters and 128/512/2,048 methods
+measures 14.47/56.46/183.39 ms. These are unused declaration/body proof workloads,
+not method dispatch benchmarks or evidence of a linear algorithmic bound.
+
+The frozen candidate SHA256 is
+`a44c9ebf9f849ec997c56f521bbeb8078e4554791704bba1ed946ef7a1ae10e2`.
+All 486 source/config/test hashes, immutable binary/input hashes, validation logs
+and 450 raw observations were reverified. Local receipts include
+`obj/pa19-work/trait-headers-freeze-v3.json`, `trait-headers-validation-v4.json`
+and `trait-headers-reverified-v2.json`; per-sample files remain in `obj/perf/`.
+Earlier failed checks and source snapshots are retained rather than overwritten.
+Method selection, actual calls, user trait bounds and impl conformance are next;
+the full PA19 release contract and PA20/PA21 requirements remain unchanged.
