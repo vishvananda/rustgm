@@ -152,8 +152,18 @@ fn children(
                 }
             }
         }
-        Kind::Adt(_, args) if types.region_args(args).is_none() => {
-            return Err("generic shape checking requires instantiated fields");
+        Kind::Adt(_, args) => {
+            // Field declarations prove the nominal's storage shape once. Uses
+            // separately prove its substituted bounds; structural WF includes
+            // every written type argument even when it is stored indirectly.
+            for argument in types
+                .arguments(args)
+                .ok_or("invalid nominal shape arguments")?
+            {
+                if let crate::types::arguments::Argument::Type(ty) = argument {
+                    visit(ty)?;
+                }
+            }
         }
         _ => {}
     }

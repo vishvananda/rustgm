@@ -9,6 +9,7 @@ mod resolve;
 mod substitute;
 use super::{GenericArgs, ItemId, Kind, Primitive, RegionId, Store, TypeId};
 use std::collections::{HashMap, HashSet};
+pub use substitute::Instantiation;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct TermId(pub u32);

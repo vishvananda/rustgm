@@ -1,10 +1,12 @@
 //! Demand aliases and function signatures through an iterative dependency graph.
 mod aggregates;
 mod annotations;
+mod associated;
 mod contracts;
 mod destructors;
 mod generics;
 mod lifetimes;
+mod validation;
 use super::{
     model::{Declarations, Function, Initializer, InitializerKind},
     regions::{self, BinderId, Position, Regions},
@@ -36,12 +38,14 @@ enum SignaturePhase {
 }
 #[derive(Clone, Copy)]
 enum Work {
+    NominalContract(ItemId, bool),
     Fields(ItemId, bool),
     Constructor(DefId),
     ValueType(DefId),
     ValueShape(TypeId),
     Bounds(DefId, regions::Context),
-    FunctionArguments(NodeKey, DefId),
+    ItemArguments(NodeKey, DefId),
+    AliasVariant(NodeKey, DefId, regions::Context),
     Generic(generics::Declaration),
     Default(generics::DefaultId, bool),
     PathArguments(NodeKey, DefId, regions::Context),
@@ -133,7 +137,9 @@ impl Checker<'_> {
                     .saturating_add(unit.configured.ast.edges.len())
             })
             .saturating_mul(16);
-        self.prepare_destructors(&mut steps, work_limit)?;
+        let destructors = self.reserve_destructors()?;
+        self.complete_nominal_headers(&mut steps, work_limit)?;
+        self.prepare_destructors(destructors, &mut steps, work_limit)?;
         for index in 0..self.report.resolution.definitions.len() {
             let id = DefId(
                 u32::try_from(index)
@@ -176,13 +182,17 @@ impl Checker<'_> {
                 ));
             }
             match work {
+                Work::NominalContract(item, finish) => self.nominal_contract(item, finish)?,
                 Work::Fields(item, finish) => self.nominal_fields(item, finish)?,
                 Work::Constructor(id) => self.constructor(id)?,
-                Work::ValueType(id) => self.constant_value_type(id)?,
+                Work::ValueType(id) => self.constant_value_type(id),
                 Work::ValueShape(ty) => self.constant_value_shape(ty)?,
                 Work::Bounds(owner, context) => self.complete_bounds(owner, context)?,
-                Work::FunctionArguments(key, owner) => {
-                    self.complete_function_arguments(key, owner)?;
+                Work::AliasVariant(key, owner, context) => {
+                    self.complete_alias_variant(key, owner, context)?;
+                }
+                Work::ItemArguments(key, owner) => {
+                    self.complete_item_arguments(key, owner)?;
                 }
                 Work::Generic(declaration) => self.generic_declaration(declaration)?,
                 Work::Default(id, finish) => self.generic_default(id, finish)?,
@@ -241,16 +251,19 @@ impl Checker<'_> {
                 unit.configured.ast.push_children(node, &mut nodes);
                 nodes[mark..].reverse();
                 contexts.resize(nodes.len(), context);
+                if self.schedule_alias_variant(
+                    NodeKey { file, node },
+                    context,
+                    steps,
+                    limit,
+                    &mut scan,
+                )? {
+                    self.drain(steps, limit)?;
+                }
                 if matches!(unit.configured.ast.node(node).kind, Kind::Path { .. })
-                    && let Some(Target::Definition(owner)) = self
-                        .facts
-                        .node(NodeKey { file, node })
-                        .and_then(|f| f.reference)
-                    && self.report.resolution.definitions[owner.0 as usize].kind
-                        == DefKind::Function
-                    && self.facts.generics.parameters.contains_key(&owner)
+                    && let Some(owner) = self.generic_use_owner(NodeKey { file, node })
                 {
-                    self.schedule_function_arguments(
+                    self.schedule_item_arguments(
                         NodeKey { file, node },
                         owner,
                         context,
@@ -296,68 +309,6 @@ impl Checker<'_> {
                 );
             }
             ast.push_children(node, scan);
-        }
-        Ok(())
-    }
-    fn validate_signatures(&mut self) -> Result<(), Error> {
-        for index in 0..self.facts.functions.len() {
-            let function = self.facts.functions[index];
-            let mut shapes = self
-                .facts
-                .generics
-                .environments
-                .get(&function.definition)
-                .filter(|e| e.has_shape_assumptions())
-                .map(|e| crate::types::parameters::shape::Shapes::new(std::sync::Arc::clone(e)));
-            self.validate_bounds(function.definition, &mut shapes)?;
-            let Some(Type::Function {
-                parameters, result, ..
-            }) = self.facts.types.kind(function.signature)
-            else {
-                return Err(self.error(function.node, "invalid function signature"));
-            };
-            for ty in self
-                .facts
-                .types
-                .list(parameters)
-                .ok_or_else(|| self.error(function.node, "invalid parameters"))?
-                .iter()
-                .copied()
-                .chain(std::iter::once(result))
-            {
-                let shape = if let Some(shapes) = &mut shapes {
-                    shapes
-                        .demand(&self.facts.types, ty)
-                        .map_err(|e| self.error(function.node, e))?
-                } else {
-                    crate::types::parameters::shape::Properties {
-                        sized: self.facts.types.is_sized(ty) == Some(true),
-                        well_formed: self.facts.types.is_well_formed(ty) == Some(true),
-                    }
-                };
-                if !shape.well_formed {
-                    return Err(self.error(
-                        function.node,
-                        "function signature contains an ill-formed type",
-                    ));
-                }
-                if !shape.sized {
-                    return Err(self.error(
-                        function.node,
-                        "function parameters and result must be sized",
-                    ));
-                }
-            }
-        }
-        for initializer in &self.facts.initializers {
-            if self.facts.types.is_well_formed(initializer.ty) != Some(true)
-                || self.facts.types.is_sized(initializer.ty) != Some(true)
-            {
-                return Err(self.error(
-                    initializer.node,
-                    "constant and static types must be well-formed and sized",
-                ));
-            }
         }
         Ok(())
     }
@@ -415,6 +366,9 @@ impl Checker<'_> {
             .node
             .ok_or_else(|| Error::at(FileId(0), 0, "type declaration has no syntax"))?;
         let item = self.item(key)?;
+        if matches!(item.kind, ItemKind::Struct { .. } | ItemKind::Enum { .. }) {
+            return self.nominal_header(id, key, finish);
+        }
         if !finish {
             if self.states[id.0 as usize] == State::Active {
                 return Err(self.error(key, "recursive type alias"));
@@ -562,6 +516,9 @@ impl Checker<'_> {
                 else {
                     return Err(self.error(key, "missing type path resolution"));
                 };
+                if self.partial_generic_path(key, id, context)? {
+                    return Ok(());
+                }
                 self.path_type(key, id, context)?
             }
             Kind::Type { flavor, elements } => self.compound(key, flavor, elements)?,
@@ -595,7 +552,7 @@ impl Checker<'_> {
                 "nominal or associated types require later semantic assignments",
             ));
         }
-        if kind == DefKind::TypeAlias {
+        if matches!(kind, DefKind::TypeAlias | DefKind::Struct | DefKind::Enum) {
             self.work.push(Work::PathArguments(key, id, context));
         }
         self.work.push(Work::Definition(id, false));
@@ -685,7 +642,10 @@ impl Checker<'_> {
             if parameter.flavor != GenericFlavor::Lifetime
                 && matches!(
                     self.item(key)?.kind,
-                    ItemKind::TypeAlias { .. } | ItemKind::Function { .. }
+                    ItemKind::TypeAlias { .. }
+                        | ItemKind::Function { .. }
+                        | ItemKind::Struct { .. }
+                        | ItemKind::Enum { .. }
                 )
             {
                 continue;

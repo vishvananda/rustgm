@@ -229,7 +229,6 @@ fn check(source: &str) -> Result<Vec<borrow::loans::Analysis>, Box<dyn std::erro
     let contracts = body::regions::collect(&facts)?;
     let contracts = borrow::regions::check_templates(
         &facts.types,
-        &facts.aggregates,
         &facts.lifetimes.variances,
         &contracts,
         &templates,
@@ -334,7 +333,6 @@ fn cleanup_verification_requires_complete_matching_contracts()
     let provenance = || {
         borrow::regions::check_templates(
             &facts.types,
-            &facts.aggregates,
             &facts.lifetimes.variances,
             &collected,
             &templates,

@@ -283,7 +283,7 @@ fn typed_template_instantiation_shares_constraints_without_mutating_the_template
         let type_argument = context.variable(Domain::Any)?;
         let const_argument = context.const_variable(&types, TypeId::primitive(Primitive::Usize))?;
         let term = context.instantiate(
-            &types,
+            &mut types,
             template,
             &[
                 (t, Argument::Type(type_argument)),

@@ -140,14 +140,9 @@ fn callable_inputs_are_contravariant_and_captured_lifetimes_use_parent_scopes()
 fn contract(source: &str) -> Result<(), String> {
     let (_, facts) = semantic::analyze(source)?;
     let contracts = rustgm::body::regions::collect(&facts)?;
-    rustgm::borrow::regions::check(
-        &facts.types,
-        &facts.aggregates,
-        &facts.lifetimes.variances,
-        &contracts,
-    )
-    .map(|_| ())
-    .map_err(|e| e.to_string())
+    rustgm::borrow::regions::check(&facts.types, &facts.lifetimes.variances, &contracts)
+        .map(|_| ())
+        .map_err(|e| e.to_string())
 }
 
 fn check_contracts(cases: &[(&str, bool)]) -> Result<(), Box<dyn std::error::Error>> {

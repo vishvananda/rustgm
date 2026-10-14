@@ -1,5 +1,7 @@
 //! Completed nominal shapes are separate from canonical, potentially recursive identity.
+pub mod finiteness;
 mod instances;
+mod packing;
 mod preparation;
 use super::{ItemId, ListId, Primitive, Store, TypeId};
 pub use instances::Shape;
@@ -40,6 +42,7 @@ pub struct Definition {
 }
 #[derive(Default)]
 pub struct Definitions {
+    packing_checked: bool,
     entries: Vec<Definition>,
     index: HashMap<ItemId, u32>,
     variants: Vec<Variant>,
@@ -120,6 +123,7 @@ impl Definitions {
             .and_then(|n| u32::try_from(n).ok())
             .ok_or("too many aggregate variants")?;
         self.variants.extend_from_slice(variants);
+        self.packing_checked = false;
         self.entries.push(Definition {
             item,
             kind,

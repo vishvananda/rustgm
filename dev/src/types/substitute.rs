@@ -41,6 +41,12 @@ impl Bound {
         }
     }
 
+    pub(crate) fn shift(amount: u16) -> Self {
+        let mut bound = Self::new(Vec::new());
+        bound.action = Action::Shift(amount);
+        bound
+    }
+
     /// Substitute a type written inside the removed binder. Bound arguments are
     /// interpreted in the destination context and shifted beneath nested binders.
     ///

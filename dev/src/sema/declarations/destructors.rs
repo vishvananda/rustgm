@@ -3,18 +3,15 @@ mod headers;
 mod heads;
 mod receivers;
 use super::{BinderId, Checker, DefId, Error, NodeKey, Type, TypeId, regions};
-use crate::{
-    sema::destructors::Implementation,
-    types::outlives::{Bounds, Queries},
-};
+use crate::{sema::destructors::Implementation, types::outlives::Queries};
 use std::collections::HashSet;
 
+pub(super) struct Pending {
+    header: headers::Header,
+    owner: Option<crate::types::ItemId>,
+}
 impl Checker<'_> {
-    pub(super) fn prepare_destructors(
-        &mut self,
-        steps: &mut usize,
-        limit: usize,
-    ) -> Result<(), Error> {
+    pub(super) fn reserve_destructors(&mut self) -> Result<Vec<Pending>, Error> {
         let headers = headers::collect(self.report, &self.facts)?;
         let owners = {
             let mut heads = heads::Heads::new(self.report, &self.facts);
@@ -26,7 +23,19 @@ impl Checker<'_> {
         for &owner in owners.iter().flatten() {
             self.facts.destructors.declare(owner);
         }
-        for (header, owner) in headers.into_iter().zip(owners) {
+        Ok(headers
+            .into_iter()
+            .zip(owners)
+            .map(|(header, owner)| Pending { header, owner })
+            .collect())
+    }
+    pub(super) fn prepare_destructors(
+        &mut self,
+        pending: Vec<Pending>,
+        steps: &mut usize,
+        limit: usize,
+    ) -> Result<(), Error> {
+        for Pending { header, owner } in pending {
             let key = header.source;
             let method = header
                 .method
@@ -92,13 +101,11 @@ impl Checker<'_> {
         if self.facts.destructors.implementations().is_empty() {
             return Ok(());
         }
-        let bounds = Bounds::infer(
+        let mut queries = Queries::new(
             &self.facts.types,
-            &self.facts.aggregates,
-            &self.facts.lifetimes.nominal_bounds,
-        )
-        .map_err(|e| Error::at(crate::resolve::unit::FileId(0), 0, e))?;
-        let mut queries = Queries::new(&self.facts.types, &bounds, &self.facts.lifetimes.callables);
+            &self.facts.lifetimes.nominal_requirements,
+            &self.facts.lifetimes.callables,
+        );
         for implementation in self.facts.destructors.implementations() {
             let key = implementation.source;
             if self

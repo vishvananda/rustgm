@@ -190,7 +190,6 @@ fn region_proofs(
     };
     check(
         &facts.types,
-        &facts.aggregates,
         &facts.lifetimes.variances,
         &contracts,
         program,

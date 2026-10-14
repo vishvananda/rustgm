@@ -5,12 +5,7 @@ use crate::{
         ir::NodeKey,
         regions::{Contract, Contracts, Kind as Obligation},
     },
-    types::{
-        Kind, Store, TypeId,
-        aggregate::Definitions,
-        outlives::{Bounds, Queries},
-        variance::Variances,
-    },
+    types::{Kind, Store, TypeId, outlives::Queries, variance::Variances},
 };
 
 pub struct Body {
@@ -39,11 +34,10 @@ impl std::error::Error for Error {}
 /// Rejects unentailed requirements, missing borrow provenance and budgets.
 pub fn check(
     types: &Store,
-    definitions: &Definitions,
     variances: &Variances,
     contracts: &Contracts<'_>,
 ) -> Result<Analysis, Error> {
-    run(types, definitions, variances, contracts, None)
+    run(types, variances, contracts, None)
 }
 /// Prove contracts with explicit borrow-place provenance from the typed CFG.
 /// This still does not authorize execution: loans and storage liveness are separate.
@@ -52,7 +46,6 @@ pub fn check(
 /// Rejects unentailed bounds, unsupported provenance, malformed CFG facts and budgets.
 pub fn check_bodies(
     types: &Store,
-    definitions: &Definitions,
     variances: &Variances,
     contracts: &Contracts<'_>,
     program: &crate::body::ir::Program,
@@ -63,7 +56,7 @@ pub fn check_bodies(
             message: crate::body::drops::PENDING_MESSAGE.into(),
         });
     }
-    run(types, definitions, variances, contracts, Some(program))
+    run(types, variances, contracts, Some(program))
 }
 /// Prove contracts for pending destruction before its separate loan proof.
 /// The ordinary assignment views keep their explicit pending-drop boundary.
@@ -71,7 +64,6 @@ pub fn check_bodies(
 /// Rejects absent destruction work, invalid contracts and resource limits.
 pub fn prepare_destruction(
     types: &Store,
-    definitions: &Definitions,
     variances: &Variances,
     contracts: &Contracts<'_>,
     program: &crate::body::ir::Program,
@@ -82,7 +74,7 @@ pub fn prepare_destruction(
             message: "destruction contracts require a pending plan".into(),
         });
     }
-    run(types, definitions, variances, contracts, Some(program))
+    run(types, variances, contracts, Some(program))
 }
 /// Prove only the supplied generic templates, with their actual borrow places.
 /// Other contracts (including concrete functions and initializers) remain unproved.
@@ -91,7 +83,6 @@ pub fn prepare_destruction(
 /// Rejects missing/duplicate body contracts, invalid provenance and query limits.
 pub fn check_templates(
     types: &Store,
-    definitions: &Definitions,
     variances: &Variances,
     contracts: &Contracts<'_>,
     templates: &crate::body::templates::Templates,
@@ -115,11 +106,10 @@ pub fn check_templates(
                 message: "template requires a unique lifetime body contract".into(),
             })
     });
-    prove(types, definitions, variances, contracts, inputs)
+    prove(types, variances, contracts, inputs)
 }
 fn run(
     types: &Store,
-    definitions: &Definitions,
     variances: &Variances,
     contracts: &Contracts<'_>,
     program: Option<&crate::body::ir::Program>,
@@ -139,21 +129,15 @@ fn run(
         }
         Ok((input, cfg))
     });
-    prove(types, definitions, variances, contracts, inputs)
+    prove(types, variances, contracts, inputs)
 }
 fn prove<'a>(
     types: &Store,
-    definitions: &Definitions,
     variances: &Variances,
     contracts: &Contracts<'_>,
     inputs: impl Iterator<Item = Result<(&'a Contract, Option<&'a crate::body::ir::Body>), Error>>,
 ) -> Result<Analysis, Error> {
-    let bounds =
-        Bounds::infer(types, definitions, contracts.nominal_bounds).map_err(|e| Error {
-            source: None,
-            message: e.into(),
-        })?;
-    let mut queries = Queries::new(types, &bounds, contracts.callables);
+    let mut queries = Queries::new(types, contracts.nominal_requirements, contracts.callables);
     let mut bodies = Vec::with_capacity(inputs.size_hint().0);
     for input in inputs {
         let (input, cfg) = input?;

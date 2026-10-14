@@ -19,7 +19,7 @@ impl Checker<'_> {
         let supplied = self
             .facts
             .generics
-            .function_uses
+            .item_uses
             .get(&self.key(node))
             .ok_or_else(|| self.error(node, "generic function arguments were not elaborated"))?
             .arguments
@@ -49,55 +49,13 @@ impl Checker<'_> {
                 .get(index)
                 .copied()
                 .unwrap_or(SourceArgument::Infer);
-            let (id, argument) = match parameter.argument {
-                Canonical::Type(ty) => {
-                    let Some(Type::Parameter(id)) = self.facts.types.kind(ty) else {
-                        return Err(self.error(node, "missing rigid type parameter"));
-                    };
-                    let term = match supplied {
-                        SourceArgument::Type(key) => {
-                            let term = self.annotation(key.node)?;
-                            self.alias_argument(node, term)?
-                        }
-                        SourceArgument::Infer => self.variable(node, infer::Domain::Any)?,
-                        SourceArgument::Const(_) => {
-                            return Err(self.error(node, "type parameter requires a type argument"));
-                        }
-                    };
-                    (id, Argument::Type(term))
-                }
-                Canonical::Const(constant) => {
-                    let Some(ConstKind::Parameter(id)) = self.facts.types.const_kind(constant)
-                    else {
-                        return Err(self.error(node, "missing rigid const parameter"));
-                    };
-                    let ty = self
-                        .facts
-                        .types
-                        .const_type(constant)
-                        .ok_or_else(|| self.error(node, "missing const parameter type"))?;
-                    let term = match supplied {
-                        SourceArgument::Const(id) => self.infer.known_const(&self.facts.types, id),
-                        SourceArgument::Infer => self.infer.const_variable(&self.facts.types, ty),
-                        SourceArgument::Type(_) => {
-                            return Err(
-                                self.error(node, "const parameter requires a const argument")
-                            );
-                        }
-                    }
-                    .map_err(|e| self.error(node, e))?;
-                    (id, Argument::Const(term))
-                }
-                Canonical::Lifetime(_) => {
-                    return Err(self.error(node, "late lifetime was retained as a type argument"));
-                }
-            };
+            let (id, argument) = self.inferred_argument(node, parameter.argument, supplied)?;
             arguments.push(argument);
             bindings.push((id, argument));
         }
         let signature = self
             .infer
-            .instantiate(&self.facts.types, signature, &bindings)
+            .instantiate(&mut self.facts.types, signature, &bindings)
             .map_err(|e| self.error(node, e))?;
         self.bound_obligations(node, owner, &arguments, &bindings)?;
         let term = self
@@ -107,7 +65,54 @@ impl Checker<'_> {
         self.call_types.generic.push((node, owner, term));
         Ok(term)
     }
-    fn alias_argument(&mut self, node: NodeId, term: TermId) -> Result<TermId, Error> {
+    pub(super) fn inferred_argument(
+        &mut self,
+        node: NodeId,
+        formal: Canonical,
+        supplied: SourceArgument,
+    ) -> Result<(crate::types::parameters::ParameterId, Argument), Error> {
+        Ok(match formal {
+            Canonical::Type(ty) => {
+                let Some(Type::Parameter(id)) = self.facts.types.kind(ty) else {
+                    return Err(self.error(node, "missing rigid type parameter"));
+                };
+                let term = match supplied {
+                    SourceArgument::Type(key) => {
+                        let term = self.annotation(key.node)?;
+                        self.alias_argument(node, term)?
+                    }
+                    SourceArgument::Infer => self.variable(node, infer::Domain::Any)?,
+                    SourceArgument::Const(_) => {
+                        return Err(self.error(node, "type parameter requires a type argument"));
+                    }
+                };
+                (id, Argument::Type(term))
+            }
+            Canonical::Const(constant) => {
+                let Some(ConstKind::Parameter(id)) = self.facts.types.const_kind(constant) else {
+                    return Err(self.error(node, "missing rigid const parameter"));
+                };
+                let ty = self
+                    .facts
+                    .types
+                    .const_type(constant)
+                    .ok_or_else(|| self.error(node, "missing const parameter type"))?;
+                let term = match supplied {
+                    SourceArgument::Const(id) => self.infer.known_const(&self.facts.types, id),
+                    SourceArgument::Infer => self.infer.const_variable(&self.facts.types, ty),
+                    SourceArgument::Type(_) => {
+                        return Err(self.error(node, "const parameter requires a const argument"));
+                    }
+                }
+                .map_err(|e| self.error(node, e))?;
+                (id, Argument::Const(term))
+            }
+            Canonical::Lifetime(_) => {
+                return Err(self.error(node, "late lifetime was retained as a type argument"));
+            }
+        })
+    }
+    pub(super) fn alias_argument(&mut self, node: NodeId, term: TermId) -> Result<TermId, Error> {
         match self.infer.resolved(&mut self.facts.types, term) {
             Ok(ty) => {
                 let ty = self.alias_type(node, ty)?;

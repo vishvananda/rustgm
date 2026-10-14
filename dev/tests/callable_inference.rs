@@ -175,7 +175,7 @@ fn fresh_function_items_rebuild_signatures_and_share_unresolved_const_arguments(
     let element = context.known(&types, reference)?;
     let length = context.const_variable(&types, TypeId::primitive(Primitive::Usize))?;
     let signature = context.instantiate(
-        &types,
+        &mut types,
         signature,
         &[
             (type_id, Argument::Type(element)),
@@ -255,15 +255,18 @@ fn template_instantiation_visits_a_shared_deep_graph_once() -> Result<(), Box<dy
     }
     let mut context = Context::default();
     let argument = context.variable(Domain::Any)?;
-    let inferred =
-        context.instantiate(&types, template, &[(parameter, Argument::Type(argument))])?;
+    let inferred = context.instantiate(
+        &mut types,
+        template,
+        &[(parameter, Argument::Type(argument))],
+    )?;
     let known = context.known(&types, TypeId::primitive(Primitive::U8))?;
     context.equate(&types, argument, known)?;
     assert_eq!(context.resolved(&mut types, inferred)?, expected);
     assert!(
         context
             .instantiate(
-                &types,
+                &mut types,
                 template,
                 &[
                     (parameter, Argument::Type(argument)),

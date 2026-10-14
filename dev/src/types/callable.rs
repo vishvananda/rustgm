@@ -49,6 +49,32 @@ impl Templates {
         bounds: &[Pair],
         generics: &[ParameterId],
     ) -> Result<(), &'static str> {
+        self.insert_owned(types, (item, item), signature, parameters, bounds, generics)
+    }
+    /// A tuple constructor has its own value identity and the nominal's parameters.
+    /// # Errors
+    /// Rejects invalid templates, foreign parameters and repeated publication.
+    pub fn insert_constructor(
+        &mut self,
+        types: &Store,
+        item: ItemId,
+        nominal: ItemId,
+        signature: TypeId,
+        parameters: u32,
+        generics: &[ParameterId],
+    ) -> Result<(), &'static str> {
+        self.insert_owned(types, (item, nominal), signature, parameters, &[], generics)
+    }
+    fn insert_owned(
+        &mut self,
+        types: &Store,
+        owners: (ItemId, ItemId),
+        signature: TypeId,
+        parameters: u32,
+        bounds: &[Pair],
+        generics: &[ParameterId],
+    ) -> Result<(), &'static str> {
+        let (item, parameter_owner) = owners;
         if self.entries.contains_key(&item)
             || (parameters == 0 && generics.is_empty())
             || parameters > 65_536
@@ -93,7 +119,9 @@ impl Templates {
             let parameter = types
                 .parameter(*parameter)
                 .ok_or("invalid callable generic parameter")?;
-            if parameter.owner != item || previous.is_some_and(|index| index >= parameter.index) {
+            if parameter.owner != parameter_owner
+                || previous.is_some_and(|index| index >= parameter.index)
+            {
                 return Err(
                     "callable generic parameters must belong to this owner in declaration order",
                 );

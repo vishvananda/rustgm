@@ -12,6 +12,7 @@ pub(super) struct Entry {
     pub repr: Repr,
     pub groups: Vec<Group>,
     pub state: State,
+    pub contract: State,
     constructors: Vec<DefId>,
 }
 #[derive(Default)]
@@ -48,6 +49,7 @@ impl Checker<'_> {
             groups,
             repr: attributes.repr,
             state: State::Unseen,
+            contract: State::Unseen,
             constructors: Vec::new(),
         });
         Ok(())
@@ -108,16 +110,13 @@ impl Checker<'_> {
         self.work.push(Work::ValueType(DefId(owner.0)));
         Ok(())
     }
-    pub(in super::super) fn constant_value_type(&mut self, id: DefId) -> Result<(), Error> {
-        let ty = self.facts.definitions[id.0 as usize].ok_or_else(|| {
-            Error::at(
-                crate::resolve::unit::FileId(0),
-                0,
-                "missing constant dependency type",
-            )
-        })?;
+    pub(in super::super) fn constant_value_type(&mut self, id: DefId) {
+        let Some(ty) = self.facts.definitions[id.0 as usize] else {
+            self.work.push(Work::ValueType(id));
+            self.work.push(Work::Definition(id, false));
+            return;
+        };
         self.work.push(Work::ValueShape(ty));
-        Ok(())
     }
     pub(in super::super) fn constant_value_shape(&mut self, ty: TypeId) -> Result<(), Error> {
         if self.nominals.shapes.contains(&ty) {
@@ -132,6 +131,12 @@ impl Checker<'_> {
             }
         }
         self.nominals.shapes.insert(ty);
+        if matches!(self.facts.types.kind(ty), Some(Type::Adt(..))) {
+            self.facts
+                .aggregates
+                .instantiate(&mut self.facts.types, ty)
+                .map_err(|e| Error::at(crate::resolve::unit::FileId(0), 0, e))?;
+        }
         match self.facts.types.kind(ty) {
             Some(Type::Tuple(fields)) => {
                 let fields = self.facts.types.list(fields).ok_or_else(|| {
@@ -147,7 +152,7 @@ impl Checker<'_> {
             Some(Type::Array { element, .. } | Type::ArrayTerm { element, .. }) => {
                 self.work.push(Work::ValueShape(element));
             }
-            Some(Type::Adt(item, _)) => {
+            Some(Type::Adt(item, arguments)) => {
                 let index = self.nominals.index[&item];
                 let key = self.nominals.entries[index].key;
                 let shape = self
@@ -163,6 +168,16 @@ impl Checker<'_> {
                         .ok_or_else(|| self.error(key, "missing nominal value fields"))?;
                     self.work
                         .extend(fields.iter().rev().map(|&ty| Work::ValueShape(ty)));
+                }
+                for argument in self
+                    .facts
+                    .types
+                    .arguments(arguments)
+                    .ok_or_else(|| self.error(key, "missing nominal value arguments"))?
+                {
+                    if let crate::types::arguments::Argument::Type(ty) = argument {
+                        self.work.push(Work::ValueShape(ty));
+                    }
                 }
                 if self.nominals.discriminants.insert(item) {
                     for group in 0..self.nominals.entries[index].groups.len() {

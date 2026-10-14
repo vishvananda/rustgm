@@ -8,6 +8,7 @@ mod divergence;
 mod generics;
 mod lifetimes;
 mod matches;
+mod nominals;
 mod pattern_constants;
 mod patterns;
 mod references;
@@ -110,7 +111,7 @@ enum Work {
     },
     Enter(NodeId, Option<TermId>),
     Exit(NodeId),
-    CallArguments(NodeId),
+    CallArguments(NodeId, Option<TermId>),
     AssignmentValue(NodeId),
 }
 /// Dense, cleared slots can be reused between short declaration-time constants.
@@ -467,7 +468,7 @@ impl Checker<'_> {
                 }
                 Work::Enter(node, expected) if self.active(node) => self.enter(node, expected)?,
                 Work::Enter(..) => {}
-                Work::CallArguments(node) => self.call_arguments(node)?,
+                Work::CallArguments(node, expected) => self.call_arguments(node, expected)?,
                 Work::AssignmentValue(node) => {
                     let Kind::Binary { left, right, .. } = self.kind(node) else {
                         return Err(self.error(node, "invalid assignment work"));
@@ -526,40 +527,7 @@ impl Checker<'_> {
                         right: *right,
                     }),
             );
-        let mut well_formed = HashSet::new();
-        for index in 0..self.touched.len() {
-            let node = self.touched[index];
-            let term = self.term(node)?;
-            let key = self.key(node);
-            let ty = solved.types[term.0 as usize];
-            if !self.body_shape(body, ty)?.well_formed {
-                return Err(self.error(node, "body uses an ill-formed type"));
-            }
-            if self.facts.types.contains_regions(ty) == Some(true)
-                && !self.annotation_children.contains(&node)
-                && well_formed.insert(ty)
-            {
-                self.facts.well_formed.push(super::model::WellFormed {
-                    body: body_key,
-                    source: key,
-                    ty,
-                });
-            }
-            self.facts
-                .node_mut(key)
-                .ok_or_else(|| Declarations::error(self.report, key, "invalid body node"))?
-                .ty = Some(ty);
-        }
-        for index in 0..self.bindings.len() {
-            let id = self.bindings[index];
-            if let Some(term) = self.locals[id.0 as usize].take() {
-                let ty = solved.types[term.0 as usize];
-                if !self.body_shape(body, ty)?.sized {
-                    return Err(self.error(body, "local bindings must be sized"));
-                }
-                self.facts.definitions[id.0 as usize] = Some(ty);
-            }
-        }
+        self.publish_body_types(body, &solved)?;
         self.publish_adjustments(&solved, body_key)?;
         for (node, term) in &self.calls {
             let key = self.key(*node);
@@ -598,6 +566,57 @@ impl Checker<'_> {
         self.calls.clear();
         self.assignments.clear();
         self.breaks.clear();
+        Ok(())
+    }
+    fn publish_body_types(
+        &mut self,
+        body: NodeId,
+        solved: &crate::types::infer::Solved,
+    ) -> Result<(), Error> {
+        let body_key = self.key(body);
+        let mut well_formed = HashSet::new();
+        let mut nominal_types = HashSet::new();
+        for index in 0..self.touched.len() {
+            let node = self.touched[index];
+            let term = self.term(node)?;
+            let key = self.key(node);
+            let ty = solved.types[term.0 as usize];
+            self.nominal_requirements(node, ty, &mut nominal_types)?;
+            if self.facts.generics.has_nominal_requirements {
+                self.facts
+                    .aggregates
+                    .prepare(&mut self.facts.types, ty)
+                    .map_err(|e| self.error(node, e))?;
+            }
+            if !self.body_shape(body, ty)?.well_formed {
+                return Err(self.error(node, "body uses an ill-formed type"));
+            }
+            if (self.facts.types.contains_regions(ty) == Some(true)
+                || self.facts.types.contains_parameters(ty) == Some(true))
+                && !self.annotation_children.contains(&node)
+                && well_formed.insert(ty)
+            {
+                self.facts.well_formed.push(super::model::WellFormed {
+                    body: body_key,
+                    source: key,
+                    ty,
+                });
+            }
+            self.facts
+                .node_mut(key)
+                .ok_or_else(|| Declarations::error(self.report, key, "invalid body node"))?
+                .ty = Some(ty);
+        }
+        for index in 0..self.bindings.len() {
+            let id = self.bindings[index];
+            if let Some(term) = self.locals[id.0 as usize].take() {
+                let ty = solved.types[term.0 as usize];
+                if !self.body_shape(body, ty)?.sized {
+                    return Err(self.error(body, "local bindings must be sized"));
+                }
+                self.facts.definitions[id.0 as usize] = Some(ty);
+            }
+        }
         Ok(())
     }
     fn binding(
@@ -698,7 +717,10 @@ impl Checker<'_> {
                             }
                         }
                     }
-                    Kind::InferType | Kind::NeverType | Kind::Path { .. } | Kind::Name(_) => {}
+                    Kind::Path { .. } | Kind::Name(_) | Kind::Applied { .. } => {
+                        self.annotation_arguments(node);
+                    }
+                    Kind::InferType | Kind::NeverType => {}
                     _ => return Err(self.error(node, "unsupported local type annotation")),
                 }
             }
@@ -709,12 +731,32 @@ impl Checker<'_> {
             .extend(self.touched[first..].iter().copied().filter(|n| *n != root));
         self.term(root)
     }
+    fn annotation_arguments(&mut self, node: NodeId) {
+        if let Some(use_) = self.facts.generics.annotation_uses.get(&self.key(node)) {
+            self.annotation_work
+                .extend(use_.arguments.iter().rev().filter_map(|arg| {
+                    if let super::generics::AnnotationArgument::Type(key) = arg {
+                        Some((key.node, false))
+                    } else {
+                        None
+                    }
+                }));
+        }
+    }
     fn annotation_finish(&mut self, node: NodeId) -> Result<TermId, Error> {
         let constructor = match self.kind(node) {
             Kind::InferType => return self.variable(node, Domain::Any),
             Kind::NeverType => return self.known(node, TypeId::NEVER),
             Kind::Group(value) | Kind::Attributed { value, .. } => return self.term(value),
-            Kind::Path { .. } | Kind::Name(_) => {
+            Kind::Path { .. } | Kind::Name(_) | Kind::Applied { .. } => {
+                if self
+                    .facts
+                    .generics
+                    .annotation_uses
+                    .contains_key(&self.key(node))
+                {
+                    return self.annotation_application(node);
+                }
                 let Some(Target::Definition(id)) =
                     self.facts.node(self.key(node)).and_then(|f| f.reference)
                 else {
@@ -963,7 +1005,7 @@ impl Checker<'_> {
                 return Ok(());
             }
             Kind::Call { callee, .. } => {
-                self.work.push(Work::CallArguments(node));
+                self.work.push(Work::CallArguments(node, expected));
                 self.work.push(Work::Enter(callee, None));
                 return Ok(());
             }
@@ -1018,6 +1060,13 @@ impl Checker<'_> {
                 let ty = self.facts.definitions[id.0 as usize]
                     .ok_or_else(|| self.error(node, "missing value type"))?;
                 self.select_unit_constructor(node, id)?;
+                if let Some(&variant) = self.facts.members.constructors.get(&id)
+                    && self.facts.generics.parameters.contains_key(&DefId(
+                        self.facts.members.variants[variant.0 as usize].owner.0,
+                    ))
+                {
+                    return self.generic_constructor(node, ty, variant);
+                }
                 if self.facts.generics.parameters.contains_key(&id) {
                     return self.generic_function(node, id, ty);
                 }
@@ -1601,11 +1650,17 @@ impl Checker<'_> {
         }
         Ok(None)
     }
-    fn call_arguments(&mut self, node: NodeId) -> Result<(), Error> {
+    fn call_arguments(&mut self, node: NodeId, expected: Option<TermId>) -> Result<(), Error> {
         let Kind::Call { callee, arguments } = self.kind(node) else {
             return Err(self.error(node, "invalid call work"));
         };
         let mut term = self.term(callee)?;
+        let constructor = matches!(self.head(node, term)?,
+        Some(Constructor::FunctionItem(item, _) | Constructor::FunctionItemArgs(item, _))
+            if self.facts.members.constructors.get(&DefId(item.0)).is_some_and(|variant| {
+                let owner = self.facts.members.variants[variant.0 as usize].owner;
+                self.facts.generics.parameters.contains_key(&DefId(owner.0))
+            }));
         if matches!(
             self.head(node, term)?,
             Some(Constructor::FunctionItem(..) | Constructor::FunctionItemArgs(..))
@@ -1617,6 +1672,10 @@ impl Checker<'_> {
         let Some(Constructor::Function { parameters, .. }) = self.head(node, term)? else {
             return Err(self.error(node, "call requires a known function type"));
         };
+        if constructor && let Some(expected) = expected {
+            let result = self.child(node, term, parameters as usize)?;
+            self.shape_equation(node, result, expected)?;
+        }
         let unit = self.report.package.unit(self.file);
         let count = unit
             .configured

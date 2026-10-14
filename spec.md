@@ -140,6 +140,32 @@ reference referents. Do not expand growing recursive pointer instantiations.
 Failed preparation cannot publish unfinished descendants as prepared. This
 availability check does not prove declaration validity, bounds or finite layout.
 
+Complete nominal parameter schemas and declaration contracts independently of
+field instances. Prove field and use-site predicates in their owning immutable
+parameter environment; a cached predicate list is not a cached proof across
+environments. Generated Copy, Clone and equality implementations have separate
+assumptions. Propagate by-value parameter requirements over declaration templates
+to reject infinite storage without expanding growing recursive instances.
+Zero-length arrays still require their element alignment. Infer field-implied
+outlives requirements over the same symbolic arguments, retaining type-parameter
+requirements as well as lifetime pairs.
+
+Constructor and pattern inference retain unresolved mixed arguments. Reuse one
+substitution session across the selected receiver's field templates; do not
+resolve the receiver before its fields have constrained it. Substitution under
+callable binders shifts inserted outer lifetimes without capturing inner ones.
+Written partial arguments, omitted arguments and omitted trailing defaults are
+distinct inputs. Alias-qualified variants retain their resolved namespace prefix
+and selected member rather than repeating path lookup in body checking.
+
+Validate symbolic representation constraints without inventing concrete layouts
+for rigid parameters. Keep failed symbolic queries failed and permit unrelated
+queries afterward. The pinned packed-declaration restriction follows direct
+named struct fields before substitution; instance size/alignment remains a
+separate numerical query. A generic callable template is never an executable
+body merely because its declaration exists. Concrete lowering requires a
+demanded instance with its complete arguments and proofs.
+
 Derived abilities constrain type arguments even behind raw/function pointers;
 packed Clone and equality derives impose Copy bounds as well. Owned destruction follows
 instantiated fields and skips zero-length arrays. Custom Drop instead retains

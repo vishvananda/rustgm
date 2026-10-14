@@ -491,14 +491,17 @@ impl Checker<'_> {
         if definition.end - definition.start != 1 {
             self.pattern_refutable = true;
         }
-        if let Some(Constructor::Adt(owner, _)) = self.head(node, term)?
+        if let Some(Constructor::Adt(owner, _) | Constructor::AdtArgs(owner, _)) =
+            self.head(node, term)?
             && owner == variant.owner
             && self.nominal_arguments(path, variant.owner)?.is_none()
+            && !self.facts.generics.constructor_uses.contains_key(&self.key(path))
+            && !self.facts.node(self.key(path)).and_then(|f| f.reference).is_some_and(|r| matches!(r,
+                super::Target::Definition(id) if self.report.resolution.definitions[id.0 as usize].kind == super::DefKind::TypeAlias))
         {
             return Ok(id);
         }
-        let ty = self.nominal_type(node, path, variant.owner)?;
-        let expected = self.known(node, ty)?;
+        let expected = self.nominal_term(node, path, variant.owner)?;
         self.equate(node, term, expected)?;
         Ok(id)
     }

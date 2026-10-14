@@ -1758,3 +1758,113 @@ Evidence is in `nominal-readiness-v1-{freeze,source-sha256,preflight,perf-jobs,
 perf-results,repeat-jobs,repeat-results,validation,reverify}.json`, the per-job
 `obj/perf/*/samples.json` and `observations.jsonl`, and
 `nominal-readiness-{perf,repeat}-v1.log`. No observations were discarded.
+
+### Nominal contracts and unresolved constructor inference
+
+Source structs and enums now retain mixed lifetime/type/const parameter schemas,
+defaults and immutable declaration environments. Fields, signatures and nominal
+uses prove Sized/Copy/Clone requirements in their own environment. Copy, Clone
+and equality derives use separate generated assumptions, including packed Copy
+requirements. Finite-storage inference propagates by-value parameter requirements
+without expanding recursive instances; zero arrays still require alignment.
+Symbolic outlives contracts retain type-parameter requirements, and explicit
+static requirements remain obligations. Closed type defaults are validated one
+slot at a time, without composing unrelated defaults into a stronger requirement.
+
+Generic representation checks retain symbolic layouts as unknown. A declaration
+still validates its own representation and concrete sublayouts. Transparent side
+fields use cached symbolic queries with retained failures; unrelated queries can
+continue after failure. The packed containment check follows pinned rustc's
+direct struct-field graph before substitution, independently of physical layout.
+
+Constructors, records, variants, fields and patterns share unresolved type/const
+arguments and one substitution session per receiver. Repeated field templates
+reuse completed subgraphs. Explicit partial argument lists apply trailing defaults;
+omitted, empty and lifetime-only argument lists permit inference. Partial local
+annotations reuse these same arguments, including alias applications. Expected
+constructor result types constrain field arguments before function-item coercion.
+Alias-qualified enum variants use retained resolution-prefix facts and canonical
+member identities. Callable constructor metadata keeps its value identity separate
+from the nominal owner of its parameters.
+
+Unused generic constructors are excluded from concrete executable CFGs and their
+contracts. Closed record literals already lower and execute with actual layouts.
+Demanding a callable generic constructor still diagnoses the missing demanded
+instance stage. The PA12 generic boundary now reports that precise limitation;
+PA17's type-generic Drop boundary reaches its remaining impl-header restriction.
+Pinned rustc accepts both programs, as already declared in their manifests. Only
+these two diagnostic sidecars and their generated source-hash receipts change;
+no expected outcome or fixture is weakened.
+
+PA18–PA21 remain planned. Generic Drop conformance and inherited method
+environments, generic constructors in early shape constants, deferred promotion,
+and demanded executable body specialization remain required PA18 work. PA19–PA21
+retain their complete trait, solver and advanced lifetime responsibilities.
+
+Validation passed all 699 frontend tests in both debug and release builds, all
+3,350 active PA1–PA17 text cases and all ten explicitly selected native maintainer
+tests. A final narrowing of expected-result inference to mixed generic constructors
+preserves the existing PA15 region oracle; 29 targeted tests passed in each build
+mode afterward, as did the new native record checks. Rustfmt, Clippy all/pedantic
+with warnings denied, the 442-file audit with zero findings, all 25 harness tests
+and upstream provenance checks passed. The complete run logs and earlier failed
+attempts remain under `obj/pa18-work/constructor-*`.
+
+Independent source probes qualify nominal declarations, defaults, derives,
+constructor inference, partial annotations and higher-ranked alias cases against
+pinned rustc. The probes retain rejected hypotheses as evidence: an inferred
+higher-ranked annotation is valid in one direct form, while three nested alias or
+default forms are insufficiently general. Regression expectations follow the
+independent outcomes. Additional typed invariants cover 4,096 shared field
+subgraphs, finite storage propagation, scoped derive assumptions, binder-safe
+parameter insertion and failed representation-query caching.
+
+Performance froze 304 production/configuration files and baseline `eb821615`
+against candidate SHA256
+`7ec1508aa96c03fe2b8bcdf5033dfe00c3026fd5efca448586874b769652afe2`.
+Twenty-one workloads retained 378 observations on CPU 2: two warmups, four A/A
+calibration samples and three ABBA blocks per job. No RustGM builds or tests
+overlapped timing. Full/count outputs and every source, binary and input hash
+verified. The nine newly supported inputs were independently accepted by rustc;
+they compare two immutable candidate copies because the parent rejects them.
+
+Paired wall-time medians in milliseconds:
+
+| Workload | Scale | Parent | Candidate |
+| --- | ---: | ---: | ---: |
+| implicit-enums | 4096 | 27.58 | 28.13 |
+| explicit-enums | 4096 | 20.02 | 20.40 |
+| drop-scalar-arguments | 4096 | 64.55 | 65.46 |
+| drop-static-arguments | 4096 | 68.26 | 68.96 |
+| thinrefs | 4096 | 505.22 | 507.82 |
+| packed-scalar | 1024 | 34.71 | 35.31 |
+| wide-enum-borrows | 1024 | 39.58 | 40.84 |
+| packed-scalar | 4096 | 129.41 | 132.62 |
+| wide-enum-borrows | 4096 | 152.96 | 158.54 |
+| packed-scalar | 16384 | 516.19 | 548.68 |
+| wide-enum-borrows | 16384 | 635.09 | 644.32 |
+| drop-alias-chain | 4096 | 65.36 | 66.23 |
+| nominal-chain | 256 | — | 8.24 |
+| record-functions | 256 | — | 10.60 |
+| wide-record | 256 | — | 4.90 |
+| nominal-chain | 1024 | — | 23.00 |
+| record-functions | 1024 | — | 30.87 |
+| wide-record | 1024 | — | 8.81 |
+| nominal-chain | 4096 | — | 96.00 |
+| record-functions | 4096 | — | 115.95 |
+| wide-record | 4096 | — | 24.76 |
+
+Existing controls mostly increase by a few percent. The 16,384 packed-scalar
+case increases 516.19 → 548.68 ms, with paired ranges 512.59–539.85 and
+521.78–584.54 ms. These observations include the cost of the new declaration
+contracts and are not a speedup claim. At 4,096 units the new nominal chain,
+record-function and wide-record cases use about 23, 21 and 9 MiB peak RSS.
+Their measurements support bounded growth over these input sizes, not a general
+complexity guarantee. Typed work-count invariants separately guard against
+re-expanding shared field templates and recursive storage instances.
+
+Evidence is in `constructor-v2-{freeze,source-sha256,preflight,perf-jobs,
+perf-results,reverify}.json`, `constructor-perf-v2.log` and each retained
+`obj/perf/*/{samples.json,observations.jsonl}`. The earlier preflight candidate,
+pre-fix PA15 mismatch, boundary qualification attempts and source probes remain
+retained. No timing observations were discarded and no unrelated oracle changed.

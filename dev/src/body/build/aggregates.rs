@@ -30,6 +30,15 @@ pub(super) fn constructors(
         if item.0 as usize != index {
             continue;
         }
+        // These bodies require selected type/const arguments. Their templates
+        // cannot enter the concrete ownership verifier as executable functions.
+        if facts
+            .generics
+            .parameters
+            .contains_key(&crate::resolve::model::DefId(variant.owner.0))
+        {
+            continue;
+        }
         let offset = report
             .package
             .unit(variant.node.file)

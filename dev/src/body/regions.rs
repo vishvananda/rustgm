@@ -57,7 +57,7 @@ impl Contract {
 }
 pub struct Contracts<'a> {
     pub callables: &'a crate::types::callable::Templates,
-    pub nominal_bounds: &'a [(crate::types::ItemId, Pair)],
+    pub nominal_requirements: &'a crate::types::outlives::Bounds,
     pub bodies: Vec<Contract>,
 }
 /// All variables precede obligations that use them. Indices remain the globally
@@ -153,7 +153,7 @@ pub fn collect(facts: &Declarations) -> Result<Contracts<'_>, &'static str> {
     Ok(Contracts {
         bodies,
         callables: &facts.lifetimes.callables,
-        nominal_bounds: &facts.lifetimes.nominal_bounds,
+        nominal_requirements: &facts.lifetimes.nominal_requirements,
     })
 }
 fn constructors(
@@ -178,7 +178,15 @@ fn constructors(
         else {
             continue;
         };
-        let source = facts.members.variants[variant.0 as usize].node;
+        let variant = facts.members.variants[variant.0 as usize];
+        if facts
+            .generics
+            .parameters
+            .contains_key(&crate::resolve::model::DefId(variant.owner.0))
+        {
+            continue;
+        }
+        let source = variant.node;
         let Some(crate::types::Kind::Function { bound_regions, .. }) = facts.types.kind(signature)
         else {
             return Err("constructor has no lifetime signature");

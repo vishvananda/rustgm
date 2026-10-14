@@ -155,7 +155,6 @@ fn provenance(
     let contracts = body::regions::collect(facts)?;
     Ok(borrow::regions::check_templates(
         &facts.types,
-        &facts.aggregates,
         &facts.lifetimes.variances,
         &contracts,
         templates,
@@ -235,7 +234,6 @@ fn opaque_components_are_retained_and_must_belong_to_the_contract()
         .retain(|o| !matches!(o.kind, body::regions::Kind::WellFormed(_)));
     let missing = borrow::regions::check_templates(
         &facts.types,
-        &facts.aggregates,
         &facts.lifetimes.variances,
         &contracts,
         &templates,

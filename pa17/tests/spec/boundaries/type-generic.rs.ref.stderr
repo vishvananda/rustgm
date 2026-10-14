@@ -1,1 +1,1 @@
-ERROR: file 0: 0: parameterized aggregates require lifetime or generic assignments
+ERROR: file 0: 15: type/const parameters and lifetime bounds require later semantic assignments

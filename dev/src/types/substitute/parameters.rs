@@ -7,9 +7,13 @@ use crate::types::{
 };
 use std::collections::HashMap;
 
+enum Arguments {
+    All(Vec<Argument>),
+    Single(ParameterId, Argument),
+}
 pub(super) struct Bindings {
     owner: ItemId,
-    arguments: Vec<Argument>,
+    arguments: Arguments,
     shifts: HashMap<u16, Bound>,
 }
 impl Bound {
@@ -22,7 +26,7 @@ impl Bound {
         let mut substitution = Self::new(Vec::new());
         substitution.parameters = Some(Box::new(Bindings {
             owner,
-            arguments: Vec::new(),
+            arguments: Arguments::All(Vec::new()),
             shifts: HashMap::new(),
         }));
         substitution
@@ -37,8 +41,11 @@ impl Bound {
             .parameters
             .as_ref()
             .ok_or("missing parameter substitution")?;
+        let Arguments::All(arguments) = &bindings.arguments else {
+            return Err("single-parameter substitution cannot be extended");
+        };
         let valid = match argument {
-            Argument::Lifetime(_) => bindings.arguments.len() == self.arguments.len(),
+            Argument::Lifetime(_) => arguments.len() == self.arguments.len(),
             Argument::Type(ty) => store.kind(ty).is_some(),
             Argument::Const(id) => store.const_kind(id).is_some(),
         };
@@ -50,7 +57,10 @@ impl Bound {
             .parameters
             .as_mut()
             .ok_or("missing parameter substitution")?;
-        bindings.arguments.push(argument);
+        let Arguments::All(arguments) = &mut bindings.arguments else {
+            return Err("single-parameter substitution cannot be extended");
+        };
+        arguments.push(argument);
         if let Argument::Lifetime(region) = argument {
             self.arguments.push(region);
         }
@@ -100,7 +110,38 @@ impl Bound {
         let mut substitution = Self::new(regions);
         substitution.parameters = Some(Box::new(Bindings {
             owner,
-            arguments,
+            arguments: Arguments::All(arguments),
+            shifts: HashMap::new(),
+        }));
+        Ok(substitution)
+    }
+
+    /// Replace exactly one rigid parameter while preserving every lifetime binder
+    /// and other parameter. Closed default checks must not compose defaults from
+    /// different slots, which would strengthen the declaration's requirements.
+    /// # Errors
+    /// Rejects unknown identities and mismatched parameter/argument kinds.
+    pub fn parameter_only(
+        store: &Store,
+        id: ParameterId,
+        argument: Argument,
+    ) -> Result<Self, &'static str> {
+        let parameter = store
+            .parameter(id)
+            .ok_or("invalid substitution parameter")?;
+        let valid = match (parameter.kind, argument) {
+            (ParameterKind::Type { .. }, Argument::Type(ty)) => store.kind(ty).is_some(),
+            (ParameterKind::Const { ty }, Argument::Const(id)) => store.const_type(id) == Some(ty),
+            _ => false,
+        };
+        if !valid {
+            return Err("generic argument kind or const type mismatch");
+        }
+        let mut substitution = Self::new(Vec::new());
+        substitution.action = Action::Shift(0);
+        substitution.parameters = Some(Box::new(Bindings {
+            owner: parameter.owner,
+            arguments: Arguments::Single(id, argument),
             shifts: HashMap::new(),
         }));
         Ok(substitution)
@@ -148,14 +189,19 @@ impl Bound {
         let Some(bindings) = &self.parameters else {
             return Ok(None);
         };
+        let arguments = match &bindings.arguments {
+            Arguments::Single(parameter, argument) => {
+                return Ok((*parameter == id).then_some(*argument));
+            }
+            Arguments::All(arguments) => arguments,
+        };
         let parameter = store
             .parameter(id)
             .ok_or("invalid substitution parameter")?;
         if parameter.owner != bindings.owner {
             return Ok(None);
         }
-        let argument = *bindings
-            .arguments
+        let argument = *arguments
             .get(parameter.index as usize)
             .ok_or("missing generic argument")?;
         let valid = match (parameter.kind, argument) {

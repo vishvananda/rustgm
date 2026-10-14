@@ -298,8 +298,7 @@ impl Checker<'_> {
     ) -> Result<(), Error> {
         let variant_id = self.constructor(path)?;
         let variant = self.facts.members.variants[variant_id.0 as usize];
-        let ty = self.nominal_type(node, path, variant.owner)?;
-        let term = self.known(node, ty)?;
+        let term = self.nominal_term(node, path, variant.owner)?;
         if let Some(expected) = expected {
             self.shape_equation(node, term, expected)?;
         }
@@ -403,7 +402,7 @@ impl Checker<'_> {
                 let ty = self.child(node, receiver, index as usize)?;
                 (Selection::Tuple(index), ty)
             }
-            Some(Constructor::Adt(item, _)) => {
+            Some(Constructor::Adt(item, _) | Constructor::AdtArgs(item, _)) => {
                 let variant = self.struct_variant(node, item)?;
                 let field = self
                     .facts

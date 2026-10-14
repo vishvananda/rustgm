@@ -24,7 +24,7 @@ pub(crate) struct Observations {
 }
 pub(crate) enum Lookup {
     Found(Binding),
-    Associated(DefId),
+    Associated(DefId, usize),
     Missing,
 }
 impl Resolver<'_> {
@@ -318,7 +318,7 @@ impl Resolver<'_> {
                 Some(found) => found,
                 None if associated.is_some() => {
                     if let Some(target) = associated {
-                        return Ok(Lookup::Associated(target));
+                        return Ok(Lookup::Associated(target, index));
                     }
                     return Ok(Lookup::Missing);
                 }
@@ -376,7 +376,7 @@ impl Resolver<'_> {
                 return Ok(if namespace == Namespace::Macro {
                     Lookup::Missing
                 } else {
-                    Lookup::Associated(binding.target)
+                    Lookup::Associated(binding.target, index)
                 });
             }
         }
@@ -390,7 +390,7 @@ impl Resolver<'_> {
     ) -> Result<Target, Error> {
         match found {
             Lookup::Found(binding) => Ok(Target::Definition(binding.target)),
-            Lookup::Associated(def) => Ok(Target::Associated(*def)),
+            Lookup::Associated(def, _) => Ok(Target::Associated(*def)),
             Lookup::Missing => {
                 let mut current = Some(c.scope);
                 while let Some(scope) = current {

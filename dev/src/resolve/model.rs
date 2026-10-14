@@ -154,6 +154,14 @@ pub enum Target {
     Associated(DefId),
     Expansion(ScopeId),
 }
+/// The namespace-resolved prefix and canonical names of the remaining segments.
+/// Semantic member selection consumes these facts without repeating path lookup.
+pub struct AssociatedPath {
+    pub namespace: Namespace,
+    pub scope: ScopeId,
+    pub prefix: crate::syntax::ast::NodeId,
+    pub suffix: Vec<(crate::syntax::ast::NodeId, NameId)>,
+}
 pub struct Reference {
     pub scope: ScopeId,
     pub node: NodeKey,
@@ -217,6 +225,7 @@ pub struct Resolution {
     pub scopes: Vec<Scope>,
     pub definitions: Vec<Definition>,
     pub references: Vec<Reference>,
+    pub associated_paths: HashMap<NodeKey, AssociatedPath>,
     pub imports: Vec<Import>,
     pub module_scopes: Vec<ScopeId>,
     pub node_scopes: HashMap<(ModuleId, NodeId), ScopeId>,

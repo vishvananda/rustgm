@@ -184,7 +184,6 @@ fn body_candidates_preserve_conditional_stores_and_storage_ranges()
     let contracts = body::regions::collect(&facts)?;
     let error = rustgm::borrow::regions::check_bodies(
         &facts.types,
-        &facts.aggregates,
         &facts.lifetimes.variances,
         &contracts,
         &program,

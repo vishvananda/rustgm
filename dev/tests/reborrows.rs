@@ -299,7 +299,6 @@ fn reference_coercion_contracts_match_pinned_rustc() -> Result<(), Box<dyn std::
             let contracts = body::regions::collect(&facts).map_err(str::to_owned)?;
             borrow::regions::check_bodies(
                 &facts.types,
-                &facts.aggregates,
                 &facts.lifetimes.variances,
                 &contracts,
                 &program,

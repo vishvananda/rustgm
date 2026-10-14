@@ -200,7 +200,6 @@ fn promotion_contracts_match_pinned_rustc() -> Result<(), Box<dyn std::error::Er
         let contracts = body::regions::collect(&facts)?;
         let result = borrow::regions::check_bodies(
             &facts.types,
-            &facts.aggregates,
             &facts.lifetimes.variances,
             &contracts,
             &program,

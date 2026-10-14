@@ -18,7 +18,6 @@ fn compile(source: &str) -> Result<Program, String> {
     let contracts = body::regions::collect(&facts)?;
     let regions = borrow::regions::check_bodies(
         &facts.types,
-        &facts.aggregates,
         &facts.lifetimes.variances,
         &contracts,
         &program,

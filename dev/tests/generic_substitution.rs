@@ -90,6 +90,50 @@ fn parameter_replacement_is_simultaneous_and_owner_scoped() -> Result<(), &'stat
 }
 
 #[test]
+fn isolated_default_substitution_preserves_other_slots_and_every_binder() -> Result<(), &'static str>
+{
+    let mut store = Store::default();
+    let owner = ItemId(3);
+    let target = parameter(&mut store, owner, 10_000)?;
+    let other = parameter(&mut store, owner, 10_001)?;
+    let Some(Kind::Parameter(id)) = store.kind(target) else {
+        return Err("missing parameter");
+    };
+    let late = reference(&mut store, RegionId::bound(0, 0)?, target)?;
+    let early = reference(&mut store, RegionId::bound(1, 7)?, other)?;
+    let parameters = store.intern_list(&[late, early])?;
+    let signature = store.intern(Kind::Function {
+        bound_regions: 1,
+        parameters,
+        result: target,
+        unsafe_: false,
+    })?;
+    let argument = reference(&mut store, RegionId::bound(0, 3)?, TypeId::UNIT)?;
+    let mut substitution = Bound::parameter_only(&store, id, Argument::Type(argument))?;
+    let result = substitution.apply(&mut store, signature)?;
+    let shifted = reference(&mut store, RegionId::bound(1, 3)?, TypeId::UNIT)?;
+    let late = reference(&mut store, RegionId::bound(0, 0)?, shifted)?;
+    let parameters = store.intern_list(&[late, early])?;
+    let expected = store.intern(Kind::Function {
+        bound_regions: 1,
+        parameters,
+        result: shifted,
+        unsafe_: false,
+    })?;
+    assert_eq!(result, expected);
+    let steps = substitution.steps;
+    assert_eq!(substitution.apply(&mut store, signature)?, expected);
+    assert_eq!(steps, substitution.steps);
+    assert!(steps < 40, "{steps}");
+    assert!(
+        substitution
+            .push_argument(&store, Argument::Type(TypeId::UNIT))
+            .is_err()
+    );
+    Ok(())
+}
+
+#[test]
 fn const_substitution_normalizes_symbolic_arrays_and_preserves_type_identity()
 -> Result<(), &'static str> {
     let mut store = Store::default();

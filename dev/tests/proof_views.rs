@@ -190,7 +190,6 @@ fn loan_inspection_preserves_proof_counts_and_records_call_activation()
     let contracts = body::regions::collect(&facts)?;
     let regions = regions::check_bodies(
         &facts.types,
-        &facts.aggregates,
         &facts.lifetimes.variances,
         &contracts,
         &program,

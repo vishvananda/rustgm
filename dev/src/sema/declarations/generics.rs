@@ -1,4 +1,5 @@
 //! Generic declaration environments are elaborated once by the declaration worklist.
+mod annotations;
 mod arguments;
 pub(super) mod bounds;
 mod constants;

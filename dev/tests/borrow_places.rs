@@ -167,7 +167,6 @@ fn borrow_contracts_distinguish_storage_from_referents_and_shared_from_exclusive
         let contracts = body::regions::collect(&facts)?;
         let result = rustgm::borrow::regions::check_bodies(
             &facts.types,
-            &facts.aggregates,
             &facts.lifetimes.variances,
             &contracts,
             &program,

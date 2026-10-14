@@ -65,9 +65,21 @@ pub enum SourceArgument {
     Const(ConstId),
     Infer,
 }
-pub struct FunctionUse {
+pub struct ItemUse {
     pub lifetimes: Option<crate::syntax::ast::List>,
     pub arguments: Vec<SourceArgument>,
+}
+#[derive(Clone, Copy)]
+pub enum AnnotationArgument {
+    Lifetime(crate::types::RegionId),
+    Type(crate::resolve::unit::NodeKey),
+    Const(ConstId),
+    Infer,
+    Default(Argument),
+}
+pub struct AnnotationUse {
+    pub owner: DefId,
+    pub arguments: Vec<AnnotationArgument>,
 }
 #[derive(Clone, Copy)]
 pub struct Predicate {
@@ -76,13 +88,20 @@ pub struct Predicate {
 }
 #[derive(Default)]
 pub struct Generics {
+    pub storage: Option<crate::types::aggregate::finiteness::Storage>,
+    pub(super) nominal_contracts: std::collections::HashSet<DefId>,
+    pub(super) nominal_requirements:
+        HashMap<TypeId, Arc<[crate::types::parameters::predicates::Predicate]>>,
+    pub(super) has_nominal_requirements: bool,
     pub predicates: HashMap<DefId, Vec<Predicate>>,
     pub parameters: HashMap<DefId, Vec<Parameter>>,
     pub constants: HashMap<DefId, ConstId>,
     pub environments: HashMap<DefId, Arc<Environment>>,
     /// Sparse overrides for free universal aliases used by completed body facts.
     pub(super) body_environments: HashMap<DefId, Arc<Environment>>,
-    pub function_uses: HashMap<crate::resolve::unit::NodeKey, FunctionUse>,
+    pub item_uses: HashMap<crate::resolve::unit::NodeKey, ItemUse>,
+    pub constructor_uses: HashMap<crate::resolve::unit::NodeKey, crate::resolve::unit::NodeKey>,
+    pub annotation_uses: HashMap<crate::resolve::unit::NodeKey, AnnotationUse>,
     substitutions: HashMap<(DefId, GenericArgs), Bound>,
 }
 impl Generics {
@@ -125,9 +144,7 @@ impl Generics {
                     Some(crate::types::arguments::ConstKind::Parameter(id)) => id,
                     _ => return Err("missing rigid const parameter"),
                 },
-                Argument::Lifetime(_) => {
-                    return Err("callable metadata contains a late lifetime slot");
-                }
+                Argument::Lifetime(_) => continue,
             };
             ids.push(id);
         }

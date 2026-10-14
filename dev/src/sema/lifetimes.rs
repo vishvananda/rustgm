@@ -23,6 +23,8 @@ pub struct FunctionRegions {
 pub struct Lifetimes {
     pub callables: crate::types::callable::Templates,
     pub nominal_bounds: Vec<(crate::types::ItemId, crate::types::outlives::Pair)>,
+    /// Completed field and declared requirements; all consumers share this result.
+    pub nominal_requirements: crate::types::outlives::Bounds,
     pub functions: HashMap<DefId, FunctionRegions>,
     pub variances: crate::types::variance::Variances,
     /// Declaration order, independent of a particular use's argument lifetimes.

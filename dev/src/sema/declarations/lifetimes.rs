@@ -121,6 +121,14 @@ impl Checker<'_> {
         id: DefId,
         key: NodeKey,
     ) -> Result<GenericArgs, Error> {
+        if let Some(parameters) = self.facts.generics.parameters.get(&id) {
+            let arguments: Vec<_> = parameters.iter().map(|p| p.argument).collect();
+            return self
+                .facts
+                .types
+                .intern_arguments(&arguments)
+                .map_err(|e| self.error(key, e));
+        }
         let count = self.facts.lifetimes.parameters.get(&id).map_or(0, Vec::len);
         if count == 0 {
             return Ok(GenericArgs::EMPTY);

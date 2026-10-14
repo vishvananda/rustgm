@@ -11,6 +11,7 @@ pub(super) struct CallTypes {
     pub obligations: Vec<(NodeId, crate::types::parameters::predicates::Bound, TermId)>,
     pub generic: Vec<(NodeId, DefId, TermId)>,
     pub active: HashMap<NodeId, TermId>,
+    pub nominal_receivers: HashMap<TermId, super::nominals::Fields>,
     signatures: HashMap<TermId, TypeId>,
     universal_regions: Vec<RegionId>,
     universals: Option<Bound>,
@@ -23,6 +24,7 @@ impl CallTypes {
         self.obligations.clear();
         self.generic.clear();
         self.active.clear();
+        self.nominal_receivers.clear();
         self.signatures.clear();
         self.universal_regions.clear();
         self.universals = None;
@@ -100,7 +102,11 @@ impl Checker<'_> {
         self.call_types.universals = Some(Bound::new(self.call_types.universal_regions.clone()));
         Ok(())
     }
-    fn alias_region(&mut self, node: NodeId, region: RegionId) -> Result<RegionId, Error> {
+    pub(super) fn alias_region(
+        &mut self,
+        node: NodeId,
+        region: RegionId,
+    ) -> Result<RegionId, Error> {
         let Some((depth, index)) = region.bound_parts() else {
             return Ok(region);
         };
@@ -232,7 +238,7 @@ impl Checker<'_> {
         let explicit = if self.facts.generics.parameters.contains_key(&owner) {
             self.facts
                 .generics
-                .function_uses
+                .item_uses
                 .get(&self.key(node))
                 .and_then(|u| u.lifetimes)
         } else {

@@ -10,6 +10,7 @@ pub mod layout_view;
 pub mod lifetimes;
 pub mod members;
 pub mod model;
+mod nominals;
 pub mod pattern_view;
 pub mod patterns;
 mod regions;

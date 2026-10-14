@@ -21,6 +21,8 @@ impl Properties {
 }
 #[derive(Default)]
 pub struct Equality {
+    /// Generated derive assumptions belong only to this declaration's parameters.
+    scope: Option<(ItemId, Properties)>,
     values: HashMap<TypeId, Properties>,
     pub work: u64,
 }
@@ -41,6 +43,15 @@ struct Query {
     work: u64,
 }
 impl Equality {
+    /// Check field templates using nested nominal implementation contracts.
+    /// Every selected derive must be validated separately before publication.
+    #[must_use]
+    pub fn for_derive(owner: ItemId, assumptions: Properties) -> Self {
+        Self {
+            scope: Some((owner, assumptions)),
+            ..Self::default()
+        }
+    }
     /// Canonical types and selected implementations must remain immutable.
     ///
     /// # Errors
@@ -74,7 +85,14 @@ impl Equality {
         }
         let mut query = Query::default();
         query.node(ty);
-        query.collect(types, definitions, selected, &self.values, &mut copy)?;
+        query.collect(
+            types,
+            definitions,
+            selected,
+            &self.values,
+            &mut copy,
+            self.scope,
+        )?;
         query.propagate()?;
         self.work = self.work.saturating_add(query.work);
         for node in query.nodes {
@@ -134,27 +152,43 @@ impl Query {
         selected: &HashMap<ItemId, Properties, S>,
         known: &HashMap<TypeId, Properties>,
         copy: &mut impl FnMut(TypeId) -> Result<bool, &'static str>,
+        scope: Option<(ItemId, Properties)>,
     ) -> Result<(), &'static str> {
         let mut index = 0;
         while index < self.nodes.len() {
             self.charge()?;
             let ty = self.nodes[index].ty;
             let kind = types.kind(ty).ok_or("missing equality type")?;
-            if matches!(kind, Kind::Parameter(_)) {
-                return Err("generic equality checking requires a parameter environment");
-            }
-            let packed = if matches!(kind, Kind::Adt(_, args) if types.region_args(args).is_none())
-            {
-                definitions
-                    .shape(types, ty)?
-                    .definition
-                    .repr
-                    .packed
-                    .is_some()
+            let packed = if let Kind::Adt(item, args) = kind {
+                if scope.is_some() {
+                    definitions
+                        .get(item)
+                        .ok_or("missing nominal derive contract")?
+                        .repr
+                        .packed
+                        .is_some()
+                } else if types.region_args(args).is_none() {
+                    definitions
+                        .shape(types, ty)?
+                        .definition
+                        .repr
+                        .packed
+                        .is_some()
+                } else {
+                    false
+                }
             } else {
                 false
             };
             let mut initial = match kind {
+                Kind::Parameter(id) => {
+                    let (owner, abilities) = scope
+                        .ok_or("generic equality checking requires a parameter environment")?;
+                    if types.parameter(id).is_none_or(|p| p.owner != owner) {
+                        return Err("equality parameter is outside the current environment");
+                    }
+                    abilities
+                }
                 Kind::Adt(item, _) => selected.get(&item).copied().unwrap_or_default(),
                 Kind::Primitive(Primitive::F32 | Primitive::F64) => Properties {
                     partial_eq: true,
@@ -165,46 +199,15 @@ impl Query {
             };
             if packed
                 && initial != Properties::default()
-                && !self.packed_copy(types, definitions, ty, copy)?
+                && !self.packed_copy(types, definitions, ty, copy, scope.is_none())?
             {
                 initial = Properties::default();
             }
             self.nodes[index].value = initial;
             if initial != Properties::default() {
-                let mut visit = |child| self.dependency(index, child, known);
-                match kind {
-                    Kind::Array { element, .. }
-                    | Kind::ArrayTerm { element, .. }
-                    | Kind::Slice(element) => visit(element)?,
-                    Kind::Reference { referent, .. } => visit(referent)?,
-                    Kind::Tuple(fields) => {
-                        for &ty in types.list(fields).ok_or("missing equality tuple")? {
-                            visit(ty)?;
-                        }
-                    }
-                    Kind::Adt(_, arguments) => {
-                        for variant in definitions.shape(types, ty)?.variants() {
-                            for &ty in types
-                                .list(variant.fields)
-                                .ok_or("missing equality fields")?
-                            {
-                                visit(ty)?;
-                            }
-                        }
-                        // The compiler's supported derives constrain each type
-                        // parameter, including parameters behind raw pointers.
-                        for argument in types
-                            .arguments(arguments)
-                            .ok_or("invalid equality arguments")?
-                        {
-                            if let super::arguments::Argument::Type(ty) = argument {
-                                visit(ty)?;
-                            }
-                        }
-                    }
-                    // Raw/function pointer equality does not inspect the referent.
-                    _ => {}
-                }
+                children(types, definitions, ty, scope.is_none(), |child| {
+                    self.dependency(index, child, known)
+                })?;
             }
             index += 1;
         }
@@ -216,6 +219,7 @@ impl Query {
         definitions: &Definitions,
         ty: TypeId,
         copy: &mut impl FnMut(TypeId) -> Result<bool, &'static str>,
+        fields: bool,
     ) -> Result<bool, &'static str> {
         let Some(Kind::Adt(_, args)) = types.kind(ty) else {
             return Err("packed equality requires a nominal type");
@@ -228,14 +232,16 @@ impl Query {
                 return Ok(false);
             }
         }
-        for variant in definitions.shape(types, ty)?.variants() {
-            for &field in types
-                .list(variant.fields)
-                .ok_or("invalid equality fields")?
-            {
-                self.charge()?;
-                if !copy(field)? {
-                    return Ok(false);
+        if fields {
+            for variant in definitions.shape(types, ty)?.variants() {
+                for &field in types
+                    .list(variant.fields)
+                    .ok_or("invalid equality fields")?
+                {
+                    self.charge()?;
+                    if !copy(field)? {
+                        return Ok(false);
+                    }
                 }
             }
         }
@@ -265,4 +271,49 @@ impl Query {
         }
         Ok(())
     }
+}
+
+// Declaration proofs use each nested nominal's selected conditional contract.
+// Concrete queries still verify instantiated fields and reference cycles.
+fn children(
+    types: &Store,
+    definitions: &Definitions,
+    ty: TypeId,
+    fields: bool,
+    mut visit: impl FnMut(TypeId) -> Result<(), &'static str>,
+) -> Result<(), &'static str> {
+    match types.kind(ty).ok_or("missing equality type")? {
+        Kind::Array { element, .. } | Kind::ArrayTerm { element, .. } | Kind::Slice(element) => {
+            visit(element)?;
+        }
+        Kind::Reference { referent, .. } => visit(referent)?,
+        Kind::Tuple(fields) => {
+            for &ty in types.list(fields).ok_or("missing equality tuple")? {
+                visit(ty)?;
+            }
+        }
+        Kind::Adt(_, arguments) => {
+            if fields {
+                for variant in definitions.shape(types, ty)?.variants() {
+                    for &ty in types
+                        .list(variant.fields)
+                        .ok_or("missing equality fields")?
+                    {
+                        visit(ty)?;
+                    }
+                }
+            }
+            // Derives constrain type parameters even behind raw pointers.
+            for argument in types
+                .arguments(arguments)
+                .ok_or("invalid equality arguments")?
+            {
+                if let super::arguments::Argument::Type(ty) = argument {
+                    visit(ty)?;
+                }
+            }
+        }
+        _ => {}
+    }
+    Ok(())
 }

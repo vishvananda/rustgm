@@ -9,77 +9,151 @@ use crate::types::{
 };
 use std::collections::HashMap;
 
-impl Context {
-    /// Replace rigid parameters simultaneously with type/const inference terms.
-    /// Arguments must already live in the destination body context; references
-    /// to the caller's universals are represented by free region identities.
-    ///
+/// A simultaneous binding environment for several templates in the same body.
+/// Cached results retain inference terms, so later equations refine every use.
+/// Construct and use this only with its original inference context and store.
+pub struct Instantiation {
+    parameters: HashMap<ParameterId, Argument>,
+    completed: HashMap<(TermId, u16), TermId>,
+    shifted: HashMap<(TermId, u16), TermId>,
+}
+impl Instantiation {
     /// # Errors
     /// Rejects duplicate/mismatched bindings, invalid identities and work limits.
-    pub fn instantiate(
-        &mut self,
+    pub fn new(
+        context: &mut Context,
         store: &Store,
-        template: TypeId,
         bindings: &[(ParameterId, Argument)],
-    ) -> Result<TermId, Error> {
-        self.account_work(bindings.len())?;
+    ) -> Result<Self, Error> {
+        context.account_work(bindings.len())?;
         let mut parameters = HashMap::with_capacity(bindings.len());
         for &(id, argument) in bindings {
             let declaration = store.parameter(id).ok_or(Error::InvalidIdentity)?;
             match (declaration.kind, argument) {
                 (ParameterKind::Type { .. }, Argument::Type(term)) => {
-                    self.root(term)?;
+                    context.root(term)?;
                 }
                 (ParameterKind::Const { ty }, Argument::Const(term))
-                    if self.constants().ty(term)? == ty => {}
+                    if context.constants().ty(term)? == ty => {}
                 _ => return Err(Error::Mismatch),
             }
             if parameters.insert(id, argument).is_some() {
                 return Err(Error::InvalidIdentity);
             }
         }
+        Ok(Self {
+            parameters,
+            completed: HashMap::new(),
+            shifted: HashMap::new(),
+        })
+    }
+}
+
+impl Context {
+    /// Substitute one constant using the same environment as its enclosing types.
+    /// # Errors
+    /// Rejects invalid constant identities and exhausted inference resources.
+    pub fn instantiate_const(
+        &mut self,
+        store: &Store,
+        constant: crate::types::arguments::ConstId,
+        substitution: &Instantiation,
+    ) -> Result<super::constants::ConstTermId, Error> {
+        self.step()?;
+        if let Some(ConstKind::Parameter(id)) = store.const_kind(constant)
+            && let Some(Argument::Const(value)) = substitution.parameters.get(&id)
+        {
+            return Ok(*value);
+        }
+        self.known_const(store, constant)
+    }
+    /// Replace rigid parameters simultaneously with type/const inference terms.
+    /// Arguments already belong to this body; caller universals must be free.
+    /// # Errors
+    /// Rejects duplicate/mismatched bindings, invalid identities and work limits.
+    pub fn instantiate(
+        &mut self,
+        store: &mut Store,
+        template: TypeId,
+        bindings: &[(ParameterId, Argument)],
+    ) -> Result<TermId, Error> {
+        let mut substitution = Instantiation::new(self, store, bindings)?;
+        self.instantiate_with(store, template, &mut substitution)
+    }
+    /// Reuse a fixed parameter environment across field, signature or bound types.
+    /// Lifetime substitution precedes this operation to avoid capturing arguments.
+    /// # Errors
+    /// Rejects invalid identities and exhausted inference resources.
+    pub fn instantiate_with(
+        &mut self,
+        store: &mut Store,
+        template: TypeId,
+        substitution: &mut Instantiation,
+    ) -> Result<TermId, Error> {
         let root = self.known(store, template)?;
-        let mut completed = HashMap::new();
-        let mut work = vec![(root, false)];
+        let mut work = vec![((root, 0_u16), false)];
         let mut children = Vec::new();
-        while let Some((term, finish)) = work.pop() {
+        while let Some(((term, depth), finish)) = work.pop() {
             self.step()?;
-            if completed.contains_key(&term) {
+            if substitution.completed.contains_key(&(term, depth)) {
                 continue;
             }
             if let Value::Known(ty) = self.terms[term.0 as usize].value
                 && store.contains_parameters(ty) == Some(false)
             {
-                completed.insert(term, term);
+                substitution.completed.insert((term, depth), term);
                 continue;
             }
             let kind = self.materialize(store, term)?;
             if let Constructor::Parameter(id) = kind
-                && let Some(Argument::Type(value)) = parameters.get(&id)
+                && let Some(Argument::Type(value)) = substitution.parameters.get(&id)
             {
-                completed.insert(term, *value);
+                let value = *value;
+                let value = if let Some(&shifted) = substitution.shifted.get(&(value, depth)) {
+                    shifted
+                } else {
+                    let shifted = self.shift_regions(store, value, depth)?;
+                    substitution.shifted.insert((value, depth), shifted);
+                    shifted
+                };
+                substitution.completed.insert((term, depth), value);
                 continue;
             }
             let entry = self.terms[term.0 as usize];
+            let child_depth = if matches!(kind, Constructor::Function { .. }) {
+                depth.checked_add(1).ok_or(Error::Overflow)?
+            } else {
+                depth
+            };
             if !finish {
-                work.push((term, true));
+                work.push(((term, depth), true));
                 self.account_work((entry.end - entry.start) as usize)?;
                 work.extend(
                     self.edges[entry.start as usize..entry.end as usize]
                         .iter()
                         .rev()
-                        .map(|id| (*id, false)),
+                        .map(|id| ((*id, child_depth), false)),
                 );
                 continue;
             }
             children.clear();
             for child in &self.edges[entry.start as usize..entry.end as usize] {
-                children.push(*completed.get(child).ok_or(Error::InvalidIdentity)?);
+                children.push(
+                    *substitution
+                        .completed
+                        .get(&(*child, child_depth))
+                        .ok_or(Error::InvalidIdentity)?,
+                );
             }
-            let result = self.replace_parameters(store, kind, &children, &parameters)?;
-            completed.insert(term, result);
+            let result =
+                self.replace_parameters(store, kind, &children, &substitution.parameters)?;
+            substitution.completed.insert((term, depth), result);
         }
-        completed.get(&root).copied().ok_or(Error::InvalidIdentity)
+        substitution
+            .completed
+            .get(&(root, 0))
+            .copied()
+            .ok_or(Error::InvalidIdentity)
     }
     fn replace_parameters(
         &mut self,

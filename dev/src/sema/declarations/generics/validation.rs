@@ -1,29 +1,25 @@
 //! Definition-time checks use no assumed proof for closed, non-generic bounds.
 use super::{Checker, DefId, Error};
-use crate::types::parameters::{predicates::Bound, shape::Shapes};
+use crate::{sema::nominals::Proof, types::parameters::predicates::Bound};
 impl Checker<'_> {
     pub(in super::super) fn validate_bounds(
         &mut self,
         owner: DefId,
-        shapes: &mut Option<Shapes>,
+        proof: &mut Proof,
     ) -> Result<(), Error> {
-        for predicate in self
+        for index in 0..self
             .facts
             .generics
             .predicates
             .get(&owner)
-            .into_iter()
-            .flatten()
+            .map_or(0, Vec::len)
         {
+            let predicate = self.facts.generics.predicates[&owner][index];
             let ty = predicate.value.ty;
-            let well_formed = if let Some(shapes) = shapes {
-                shapes
-                    .demand(&self.facts.types, ty)
-                    .map_err(|e| self.error(predicate.source, e))?
-                    .well_formed
-            } else {
-                self.facts.types.is_well_formed(ty) == Some(true)
-            };
+            let well_formed = proof
+                .check(&mut self.facts, ty)
+                .map_err(|e| self.error(predicate.source, e))?
+                .well_formed;
             if !well_formed {
                 return Err(self.error(predicate.source, "bound subject must be well-formed"));
             }
@@ -38,6 +34,12 @@ impl Checker<'_> {
             let valid = if predicate.value.bound == Bound::Sized {
                 self.facts.types.is_sized(ty) == Some(true)
             } else {
+                if self.facts.generics.has_nominal_requirements {
+                    self.facts
+                        .aggregates
+                        .prepare(&mut self.facts.types, ty)
+                        .map_err(|e| self.error(predicate.source, e))?;
+                }
                 let properties = self
                     .facts
                     .copies

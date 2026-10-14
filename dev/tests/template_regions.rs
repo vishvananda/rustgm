@@ -106,7 +106,6 @@ fn prove(
     let contracts = rustgm::body::regions::collect(facts)?;
     Ok(rustgm::borrow::regions::check_templates(
         &facts.types,
-        &facts.aggregates,
         &facts.lifetimes.variances,
         &contracts,
         templates,
@@ -163,7 +162,6 @@ fn template_provenance_covers_only_selected_bodies_and_rejects_missing_or_duplic
          templates: &rustgm::body::templates::Templates| {
             rustgm::borrow::regions::check_templates(
                 &facts.types,
-                &facts.aggregates,
                 &facts.lifetimes.variances,
                 contracts,
                 templates,

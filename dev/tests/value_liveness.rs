@@ -21,7 +21,6 @@ fn check_write(source: &str, expected: bool) -> Result<(), Box<dyn std::error::E
     let contracts = body::regions::collect(&facts)?;
     let proof = regions::check_bodies(
         &facts.types,
-        &facts.aggregates,
         &facts.lifetimes.variances,
         &contracts,
         &program,
@@ -184,7 +183,6 @@ fn fresh_implicit_reborrows_inherit_destination_use_points()
         let contracts = body::regions::collect(&facts)?;
         let proof = regions::check_bodies(
             &facts.types,
-            &facts.aggregates,
             &facts.lifetimes.variances,
             &contracts,
             &program,

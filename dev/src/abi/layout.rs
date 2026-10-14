@@ -305,7 +305,7 @@ impl Layouts {
                     start: index(self.variants.len())?,
                     end: index(self.variants.len() + 1)?,
                 };
-                let layout = self.fields(types, fields, Repr::default(), 0, 0)?;
+                let layout = self.fields(types, fields, Repr::default(), 0, 0, false)?;
                 Ok(Layout {
                     shape: Shape::Aggregate {
                         variants,
@@ -314,7 +314,11 @@ impl Layouts {
                     ..layout
                 })
             }
-            Kind::Adt(_, _) => self.aggregate(types, definitions.shape(types, ty)?),
+            Kind::Adt(_, _) => self.aggregate(
+                types,
+                definitions.shape(types, ty)?,
+                definitions.packing_checked(),
+            ),
         }
     }
     fn fields(
@@ -324,6 +328,7 @@ impl Layouts {
         repr: Repr,
         base: u64,
         discriminant: u128,
+        packing_checked: bool,
     ) -> Result<Layout, &'static str> {
         let start = index(self.offsets.len())?;
         let mut size = base;
@@ -334,7 +339,7 @@ impl Layouts {
         let mut transparent = None;
         for ty in types.list(fields).ok_or("missing aggregate fields")? {
             let field = *self.get(*ty).ok_or("missing aggregate field layout")?;
-            if repr.packed.is_some() && field.contains_explicit_align {
+            if !packing_checked && repr.packed.is_some() && field.contains_explicit_align {
                 return Err("packed aggregate transitively contains an explicitly aligned type");
             }
             contains_explicit_align |= field.contains_explicit_align;
@@ -388,6 +393,7 @@ impl Layouts {
         &mut self,
         types: &Store,
         shape: aggregate::Shape<'_>,
+        packing_checked: bool,
     ) -> Result<Layout, &'static str> {
         let definition = shape.definition;
         let variants = shape.variants();
@@ -401,7 +407,14 @@ impl Layouts {
             || repr.representation == Representation::Transparent
         {
             let variant = shape.variant(0).ok_or("aggregate has no field group")?;
-            let layout = self.fields(types, variant.fields, repr, 0, variant.discriminant)?;
+            let layout = self.fields(
+                types,
+                variant.fields,
+                repr,
+                0,
+                variant.discriminant,
+                packing_checked,
+            )?;
             return Ok(Layout {
                 shape: Shape::Aggregate {
                     variants: range,
@@ -432,6 +445,7 @@ impl Layouts {
                 Repr::default(),
                 if inline_tag { tag_layout.size } else { 0 },
                 variant.discriminant,
+                packing_checked,
             )?;
             size = size.max(layout.size);
             align = align.max(layout.align);
@@ -501,7 +515,10 @@ fn padded(size: u64, align: u32) -> Result<u64, &'static str> {
 fn index(size: usize) -> Result<u32, &'static str> {
     u32::try_from(size).map_err(|_| "layout identity space exhausted")
 }
-fn validate_repr(definition: &aggregate::Definition, variants: usize) -> Result<(), &'static str> {
+pub(crate) fn validate_repr(
+    definition: &aggregate::Definition,
+    variants: usize,
+) -> Result<(), &'static str> {
     let repr = definition.repr;
     for align in [repr.align, repr.packed].into_iter().flatten() {
         if !align.is_power_of_two() || align > (1 << 29) {

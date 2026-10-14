@@ -1,17 +1,56 @@
-//! Elaborate written function arguments once; body inference owns omitted slots.
+//! Elaborate written item arguments once; body inference owns omitted slots.
 use super::{Argument, Checker, DefId, Error, Kind, NodeKey, Work, regions};
 use crate::{
-    sema::generics::{FunctionUse, SourceArgument},
+    sema::generics::{ItemUse, SourceArgument},
     syntax::ast::{List, NodeId},
 };
 
 impl Checker<'_> {
-    fn function_argument_lists(
+    fn item_lifetime_count(&self, owner: DefId) -> usize {
+        self.facts.generics.parameters[&owner]
+            .iter()
+            .take_while(|p| matches!(p.argument, Argument::Lifetime(_)))
+            .count()
+    }
+    pub(in super::super) fn generic_use_owner(&self, key: NodeKey) -> Option<DefId> {
+        // Completed type annotations already consumed their written arguments.
+        let fact = self.facts.node(key)?;
+        if fact.ty.is_some() || self.facts.generics.constructor_uses.contains_key(&key) {
+            return None;
+        }
+        let crate::resolve::model::Target::Definition(mut owner) = fact.reference? else {
+            return None;
+        };
+        if let Some(&variant) = self.facts.members.constructors.get(&owner) {
+            owner = DefId(self.facts.members.variants[variant.0 as usize].owner.0);
+        }
+        matches!(
+            self.report.resolution.definitions[owner.0 as usize].kind,
+            crate::resolve::model::DefKind::Function
+                | crate::resolve::model::DefKind::Struct
+                | crate::resolve::model::DefKind::Enum
+                | crate::resolve::model::DefKind::TypeAlias
+        )
+        .then_some(owner)
+        .filter(|id| {
+            self.facts.generics.parameters.contains_key(id)
+                || self.report.resolution.definitions[id.0 as usize].kind
+                    == crate::resolve::model::DefKind::TypeAlias
+        })
+    }
+
+    fn item_argument_lists(
         &self,
         key: NodeKey,
         owner: DefId,
     ) -> Result<(Option<List>, Option<List>), Error> {
-        let Some(list) = crate::sema::lifetimes::arguments(self.report, key, false)? else {
+        let Some(list) = crate::sema::lifetimes::arguments(
+            self.report,
+            key,
+            self.report.resolution.definitions[owner.0 as usize].kind
+                == crate::resolve::model::DefKind::Enum,
+        )?
+        else {
             return Ok((None, None));
         };
         let nodes = self.report.package.unit(key.file).configured.ast.list(list);
@@ -25,7 +64,15 @@ impl Checker<'_> {
             })
             .count();
         let count = nodes.len() - lifetimes;
-        if count != 0 && count != self.facts.generics.parameters[&owner].len() {
+        let parameters = &self.facts.generics.parameters[&owner];
+        let offset = self.item_lifetime_count(owner);
+        if count != 0
+            && (count + offset > parameters.len()
+                || parameters
+                    .iter()
+                    .skip(count + offset)
+                    .any(|p| p.default.is_none()))
+        {
             return Err(self.error(key, "incorrect number of type and const arguments"));
         }
         let middle = list
@@ -46,7 +93,7 @@ impl Checker<'_> {
             }),
         ))
     }
-    pub(in super::super) fn schedule_function_arguments(
+    pub(in super::super) fn schedule_item_arguments(
         &mut self,
         key: NodeKey,
         owner: DefId,
@@ -55,19 +102,31 @@ impl Checker<'_> {
         limit: usize,
         scan: &mut Vec<NodeId>,
     ) -> Result<(), Error> {
-        self.demand_function_template(key, owner)?;
-        let (_, supplied) = self.function_argument_lists(key, owner)?;
-        self.work.push(Work::FunctionArguments(key, owner));
+        if self.report.resolution.definitions[owner.0 as usize].kind
+            == crate::resolve::model::DefKind::TypeAlias
+        {
+            self.annotation_holes(key, steps, limit, scan)?;
+            self.node_work(key.file, key.node, context);
+            return Ok(());
+        }
+        if self.report.resolution.definitions[owner.0 as usize].kind
+            == crate::resolve::model::DefKind::Function
+        {
+            self.demand_function_template(key, owner)?;
+        }
+        let (_, supplied) = self.item_argument_lists(key, owner)?;
+        self.work.push(Work::ItemArguments(key, owner));
         let Some(list) = supplied else {
             return Ok(());
         };
+        let offset = self.item_lifetime_count(owner);
         let ast = &self.report.package.unit(key.file).configured.ast;
         for (index, node) in ast.list(list).iter().copied().enumerate().rev() {
             let key = NodeKey { node, ..key };
             if matches!(self.kind(key), Kind::InferType) {
                 continue;
             }
-            match self.facts.generics.parameters[&owner][index].argument {
+            match self.facts.generics.parameters[&owner][index + offset].argument {
                 Argument::Type(_) => {
                     self.annotation_holes(key, steps, limit, scan)?;
                     self.node_work(key.file, node, context);
@@ -107,13 +166,14 @@ impl Checker<'_> {
             .ok_or_else(|| self.error(key, "missing generic function lifetime scheme"))?;
         self.callable_template(key, owner, signature, &scheme)
     }
-    pub(in super::super) fn complete_function_arguments(
+    pub(in super::super) fn complete_item_arguments(
         &mut self,
         key: NodeKey,
         owner: DefId,
     ) -> Result<(), Error> {
-        let (lifetimes, supplied) = self.function_argument_lists(key, owner)?;
+        let (lifetimes, supplied) = self.item_argument_lists(key, owner)?;
         let mut arguments = Vec::new();
+        let offset = self.item_lifetime_count(owner);
         if let Some(list) = supplied {
             let count = self
                 .report
@@ -129,7 +189,7 @@ impl Checker<'_> {
                 arguments.push(if matches!(self.kind(key), Kind::InferType) {
                     SourceArgument::Infer
                 } else {
-                    match self.facts.generics.parameters[&owner][index].argument {
+                    match self.facts.generics.parameters[&owner][index + offset].argument {
                         Argument::Type(_) => SourceArgument::Type(key),
                         Argument::Const(id) => {
                             let ty =
@@ -145,9 +205,9 @@ impl Checker<'_> {
                 });
             }
         }
-        self.facts.generics.function_uses.insert(
+        self.facts.generics.item_uses.insert(
             key,
-            FunctionUse {
+            ItemUse {
                 lifetimes,
                 arguments,
             },

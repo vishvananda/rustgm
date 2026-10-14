@@ -105,6 +105,13 @@ impl Checker<'_> {
         path: NodeId,
         owner: ItemId,
     ) -> Result<TypeId, Error> {
+        if let Some(&prefix) = self.facts.generics.constructor_uses.get(&self.key(path)) {
+            return self
+                .facts
+                .node(prefix)
+                .and_then(|f| f.ty)
+                .ok_or_else(|| self.error(node, "missing alias constructor type"));
+        }
         let template = self.facts.definitions[owner.0 as usize]
             .ok_or_else(|| self.error(node, "missing nominal template"))?;
         let count = self
@@ -188,15 +195,18 @@ impl Checker<'_> {
         receiver: TermId,
         field: FieldId,
     ) -> Result<TermId, Error> {
-        let Some(Constructor::Adt(_, arguments)) = self.head(node, receiver)? else {
-            return Err(self.error(node, "missing nominal field receiver"));
-        };
         let template = self.facts.members.fields[field.0 as usize].ty;
-        let ty = self
-            .facts
-            .lifetimes
-            .substitute(&mut self.facts.types, arguments, template)
-            .map_err(|e| self.error(node, e))?;
+        let ty = match self.head(node, receiver)? {
+            Some(Constructor::Adt(_, arguments)) => self
+                .facts
+                .lifetimes
+                .substitute(&mut self.facts.types, arguments, template)
+                .map_err(|e| self.error(node, e))?,
+            Some(Constructor::AdtArgs(owner, _)) => {
+                return self.inferred_field(node, receiver, owner, template);
+            }
+            _ => return Err(self.error(node, "missing nominal field receiver")),
+        };
         self.known(node, ty)
     }
 }

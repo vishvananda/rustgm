@@ -186,7 +186,6 @@ fn reference_pattern_lifetime_contracts_match_rustc() -> Result<(), Box<dyn std:
         let contracts = body::regions::collect(&facts)?;
         let checked = borrow::regions::check_bodies(
             &facts.types,
-            &facts.aggregates,
             &facts.lifetimes.variances,
             &contracts,
             &program,

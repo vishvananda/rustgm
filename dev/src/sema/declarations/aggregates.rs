@@ -1,5 +1,10 @@
 //! Complete nominal declarations after reserving their recursive identities.
+mod defaults;
+mod derives;
+mod headers;
+mod outlives;
 mod readiness;
+mod validation;
 use super::{
     Checker, DefId, DefKind, Error, ItemId, ItemKind, Kind, List, NodeKey, State, Type, Work,
     regions,
@@ -9,10 +14,7 @@ use crate::{
         model::{Access, Namespace},
         unit::FileId,
     },
-    sema::{
-        members::{Field, Name},
-        representation,
-    },
+    sema::members::{Field, Name},
     syntax::{ast::NodeId, item::Shape},
     types::{
         Primitive, TypeId,
@@ -29,40 +31,6 @@ struct Group {
     discriminant: Option<NodeId>,
 }
 impl Checker<'_> {
-    pub(super) fn reserve_nominals(&mut self) -> Result<(), Error> {
-        let representations = representation::analyze(self.report)?;
-        for index in 0..self.report.resolution.definitions.len() {
-            let definition = &self.report.resolution.definitions[index];
-            if !matches!(definition.kind, DefKind::Struct | DefKind::Enum) {
-                continue;
-            }
-            let key = definition
-                .node
-                .ok_or_else(|| Error::at(FileId(0), 0, "nominal declaration has no syntax"))?;
-            let item = self.item(key)?;
-            if !matches!(item.kind, ItemKind::Struct { .. } | ItemKind::Enum { .. }) {
-                return Err(self.error(
-                    key,
-                    "union semantics require the unsafe language assignment",
-                ));
-            }
-            let id = u32::try_from(index)
-                .map_err(|_| self.error(key, "too many nominal declarations"))?;
-            let context = self.template_context(DefId(id), key)?;
-            if context.binder.is_some() {
-                self.nominal_regions.insert(ItemId(id), context);
-            }
-            let arguments = self.template_arguments(DefId(id), key)?;
-            let ty = self.intern(key, Type::Adt(ItemId(id), arguments))?;
-            // Resolving an annotation needs the identity, not a completed field
-            // graph. Layout later rejects by-value cycles but permits pointers.
-            self.complete(DefId(id), key, ty)?;
-            let attributes = representations.get(&key).copied().unwrap_or_default();
-            self.reserve_fields(ItemId(id), key, attributes)?;
-        }
-        self.index_constructors()?;
-        Ok(())
-    }
     pub(super) fn complete_nominals(
         &mut self,
         steps: &mut usize,
@@ -73,7 +41,11 @@ impl Checker<'_> {
             self.work.push(Work::Fields(item, false));
             self.drain(steps, limit)?;
         }
+        self.validate_storage()?;
+        self.validate_fields()?;
+        self.nominal_defaults()?;
         self.lifetime_variances()?;
+        self.nominal_outlives()?;
         self.copy_obligations()?;
         self.equality_obligations()?;
         self.constructors()
@@ -95,6 +67,7 @@ impl Checker<'_> {
                 let group = self.nominals.entries[index].groups[group];
                 self.field_annotations(&group, self.nominal_context(item))?;
             }
+            self.work.push(Work::NominalContract(item, false));
             return Ok(());
         }
         let tag = repr.tag.unwrap_or(Primitive::Isize);
@@ -156,131 +129,58 @@ impl Checker<'_> {
         self.publish_constructors(item)
     }
     pub(super) fn complete_layouts(&mut self) -> Result<(), Error> {
-        // Values are final before any layout is cached. Every declaration is checked.
-        for definition in &self.facts.aggregates {
-            let ty = self.facts.definitions[definition.item.0 as usize]
+        // Concrete discriminants are final. Symbolic declarations still prove
+        // storage, field requirements and representation without a fake layout.
+        let items: Vec<_> = self.facts.aggregates.iter().map(|d| d.item).collect();
+        for &item in &items {
+            let definition = self
+                .facts
+                .aggregates
+                .get(item)
+                .ok_or_else(|| Error::at(FileId(0), 0, "missing representation definition"))?;
+            crate::abi::layout::validate_repr(
+                definition,
+                self.facts.aggregates.variants(definition).len(),
+            )
+            .map_err(|message| self.nominal_layout_error(item, message))?;
+        }
+        self.facts
+            .aggregates
+            .validate_packing(&self.facts.types)
+            .map_err(|(item, message)| self.nominal_layout_error(item, message))?;
+        let mut templates = crate::abi::templates::Templates::default();
+        for item in items {
+            let ty = self.facts.definitions[item.0 as usize]
                 .ok_or_else(|| Error::at(FileId(0), 0, "missing aggregate type"))?;
-            self.facts
-                .layouts
-                .demand(&self.facts.types, &self.facts.aggregates, ty)
-                .map_err(|error| {
-                    let key = self.report.resolution.definitions[definition.item.0 as usize].node;
-                    key.map_or_else(
-                        || Error::at(FileId(0), 0, error.message),
-                        |key| self.error(key, error.message),
-                    )
-                })?;
-        }
-        Ok(())
-    }
-    fn copy_obligations(&mut self) -> Result<(), Error> {
-        for definition in &self.facts.aggregates {
-            let key = self.report.resolution.definitions[definition.item.0 as usize]
-                .node
-                .ok_or_else(|| Error::at(FileId(0), 0, "missing derive syntax"))?;
-            let ty = self.facts.definitions[definition.item.0 as usize]
-                .ok_or_else(|| self.error(key, "missing derive type"))?;
-            let properties = self
-                .facts
-                .copies
-                .demand(
-                    &self.facts.types,
-                    &self.facts.aggregates,
-                    &self.facts.derives,
-                    ty,
-                )
-                .map_err(|e| self.error(key, e))?;
-            let selected = self
-                .facts
-                .derives
-                .get(&definition.item)
-                .copied()
-                .unwrap_or_default();
-            if selected.copy && !properties.copy {
-                return Err(self.error(key, "derived Copy requires every field to implement Copy"));
-            }
-            if selected.clone_ && !properties.clone_ {
-                if definition.repr.packed.is_some() {
-                    return Err(
-                        self.error(key, "derived Clone on a packed struct requires Copy fields")
-                    );
-                }
-                return Err(
-                    self.error(key, "derived Clone requires every field to implement Clone")
-                );
-            }
-        }
-        Ok(())
-    }
-    fn equality_obligations(&mut self) -> Result<(), Error> {
-        for definition in &self.facts.aggregates {
-            let Some(&selected) = self.facts.equality_derives.get(&definition.item) else {
+            let transparent =
+                self.facts.aggregates.get(item).is_some_and(|d| {
+                    d.repr.representation == aggregate::Representation::Transparent
+                });
+            if self.facts.generics.storage.is_none() && !transparent {
+                self.facts
+                    .layouts
+                    .demand(&self.facts.types, &self.facts.aggregates, ty)
+                    .map_err(|error| self.nominal_layout_error(item, error.message))?;
                 continue;
-            };
-            let key = self.report.resolution.definitions[definition.item.0 as usize]
-                .node
-                .ok_or_else(|| Error::at(FileId(0), 0, "missing equality derive syntax"))?;
-            let ty = self.facts.definitions[definition.item.0 as usize]
-                .ok_or_else(|| self.error(key, "missing equality derive type"))?;
-            let properties = self
-                .facts
-                .equality
-                .demand_with_copy(
-                    &self.facts.types,
-                    &self.facts.aggregates,
-                    &self.facts.equality_derives,
+            }
+            templates
+                .declaration(
+                    &mut self.facts.types,
+                    &mut self.facts.aggregates,
+                    &mut self.facts.layouts,
                     ty,
-                    |ty| {
-                        self.facts
-                            .copies
-                            .demand(
-                                &self.facts.types,
-                                &self.facts.aggregates,
-                                &self.facts.derives,
-                                ty,
-                            )
-                            .map(|p| p.copy)
-                    },
                 )
-                .map_err(|e| self.error(key, e))?;
-            if selected.partial_eq && !properties.partial_eq {
-                return Err(self.error(
-                    key,
-                    "derived PartialEq requires every field to implement PartialEq",
-                ));
-            }
-            if selected.eq && !properties.eq {
-                return Err(self.error(key, "derived Eq requires every field to implement Eq"));
-            }
-            if selected.partial_eq && definition.repr.packed.is_some() {
-                for variant in self.facts.aggregates.variants(definition) {
-                    for &field in self
-                        .facts
-                        .types
-                        .list(variant.fields)
-                        .ok_or_else(|| self.error(key, "missing packed equality fields"))?
-                    {
-                        let copy = self
-                            .facts
-                            .copies
-                            .demand(
-                                &self.facts.types,
-                                &self.facts.aggregates,
-                                &self.facts.derives,
-                                field,
-                            )
-                            .map_err(|e| self.error(key, e))?;
-                        if !copy.copy {
-                            return Err(self.error(
-                                key,
-                                "derived PartialEq on a packed struct requires Copy fields",
-                            ));
-                        }
-                    }
-                }
-            }
+                .map_err(|error| self.nominal_layout_error(item, error.message))?;
         }
         Ok(())
+    }
+    fn nominal_layout_error(&self, item: ItemId, message: &'static str) -> Error {
+        self.report.resolution.definitions[item.0 as usize]
+            .node
+            .map_or_else(
+                || Error::at(FileId(0), 0, message),
+                |key| self.error(key, message),
+            )
     }
     fn groups(&self, key: NodeKey) -> Result<(aggregate::Kind, Vec<Group>), Error> {
         match self.item(key)?.kind {
@@ -365,14 +265,6 @@ impl Checker<'_> {
                 )
             };
             let ty = self.ty(NodeKey { node: ty, ..key })?;
-            if self.facts.types.is_well_formed(ty) != Some(true)
-                || self.facts.types.is_sized(ty) != Some(true)
-            {
-                return Err(self.error(
-                    key,
-                    "aggregate fields must be well-formed and sized in this profile",
-                ));
-            }
             let access = if enum_ {
                 Access::Public
             } else {
@@ -465,7 +357,7 @@ impl Checker<'_> {
                     unsafe_: false,
                 },
             )?;
-            self.constructor_template(key, ItemId(id.0), signature)?;
+            self.constructor_template(key, ItemId(id.0), variant.owner, signature)?;
             self.intern(
                 key,
                 Type::FunctionItem {
@@ -485,12 +377,18 @@ impl Checker<'_> {
         &mut self,
         key: NodeKey,
         item: ItemId,
+        owner: ItemId,
         signature: TypeId,
     ) -> Result<(), Error> {
         let Some(Type::Function { bound_regions, .. }) = self.facts.types.kind(signature) else {
             return Err(self.error(key, "missing constructor signature"));
         };
-        if bound_regions == 0 {
+        let generics = self
+            .facts
+            .generics
+            .parameter_ids(&self.facts.types, DefId(owner.0))
+            .map_err(|e| self.error(key, e))?;
+        if bound_regions == 0 && generics.is_empty() {
             return Ok(());
         }
         let mapping = (0..bound_regions)
@@ -508,7 +406,14 @@ impl Checker<'_> {
         self.facts
             .lifetimes
             .callables
-            .insert(&self.facts.types, item, template, bound_regions, &[])
+            .insert_constructor(
+                &self.facts.types,
+                item,
+                owner,
+                template,
+                bound_regions,
+                &generics,
+            )
             .map_err(|e| self.error(key, e))
     }
 }

@@ -371,14 +371,9 @@ fn builtin_bounds_use_scoped_assumptions_and_check_instantiations() -> Result<()
         .filter_map(|(name, source, accepted)| {
             let result = semantic::analyze(source).and_then(|(_, facts)| {
                 let contracts = rustgm::body::regions::collect(&facts).map_err(str::to_owned)?;
-                rustgm::borrow::regions::check(
-                    &facts.types,
-                    &facts.aggregates,
-                    &facts.lifetimes.variances,
-                    &contracts,
-                )
-                .map(|_| ())
-                .map_err(|e| e.to_string())
+                rustgm::borrow::regions::check(&facts.types, &facts.lifetimes.variances, &contracts)
+                    .map(|_| ())
+                    .map_err(|e| e.to_string())
             });
             (result.is_ok() != *accepted).then(|| {
                 format!(

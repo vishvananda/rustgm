@@ -1,0 +1,81 @@
+//! Local generic annotation holes retain written binders and argument provenance.
+use super::{Argument, Checker, DefId, Error, NodeKey, regions};
+use crate::sema::{
+    generics::{AnnotationArgument, AnnotationUse},
+    model::PartialAnnotation,
+};
+
+impl Checker<'_> {
+    pub(in super::super) fn partial_generic_path(
+        &mut self,
+        key: NodeKey,
+        owner: DefId,
+        context: regions::Context,
+    ) -> Result<bool, Error> {
+        if !self.facts.generics.parameters.contains_key(&owner) {
+            return Ok(false);
+        }
+        let (supplied, omitted) = self.supplied_arguments(key, owner)?;
+        let ast = &self.report.package.unit(key.file).configured.ast;
+        let nodes = supplied.map_or(&[][..], |list| ast.list(list));
+        if !nodes.iter().any(|node| {
+            self.facts
+                .partial_annotations
+                .contains_key(&NodeKey { node: *node, ..key })
+        }) {
+            return Ok(false);
+        }
+        let parameters = self.facts.generics.parameters[&owner].clone();
+        let mut arguments = Vec::with_capacity(parameters.len());
+        for (index, parameter) in parameters.iter().enumerate() {
+            let node = index
+                .checked_sub(omitted)
+                .and_then(|index| nodes.get(index))
+                .copied();
+            let argument = match (parameter.argument, node) {
+                (Argument::Lifetime(_), node) => {
+                    let region = self.region(key, node, context)?;
+                    self.regions.record(context, region);
+                    AnnotationArgument::Lifetime(region)
+                }
+                (_, Some(node))
+                    if matches!(
+                        self.facts.partial_annotations.get(&NodeKey { node, ..key }),
+                        Some(PartialAnnotation::Hole)
+                    ) =>
+                {
+                    AnnotationArgument::Infer
+                }
+                (Argument::Type(_), Some(node)) => {
+                    AnnotationArgument::Type(NodeKey { node, ..key })
+                }
+                (Argument::Const(id), Some(node)) => {
+                    let ty = self
+                        .facts
+                        .types
+                        .const_type(id)
+                        .ok_or_else(|| self.error(key, "missing const argument type"))?;
+                    AnnotationArgument::Const(self.generic_constant(
+                        NodeKey { node, ..key },
+                        ty,
+                        owner,
+                    )?)
+                }
+                (_, None) => AnnotationArgument::Default(
+                    parameter
+                        .default
+                        .ok_or_else(|| self.error(key, "missing generic default"))?,
+                ),
+            };
+            arguments.push(argument);
+        }
+        self.facts
+            .generics
+            .annotation_uses
+            .insert(key, AnnotationUse { owner, arguments });
+        self.facts
+            .partial_annotations
+            .insert(key, PartialAnnotation::Shape);
+        Ok(true)
+    }
+}

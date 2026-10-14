@@ -20,7 +20,6 @@ pub fn build_with(
     let contracts = body::regions::collect(&facts)?;
     let proof = borrow::regions::prepare_destruction(
         &facts.types,
-        &facts.aggregates,
         &facts.lifetimes.variances,
         &contracts,
         &program,

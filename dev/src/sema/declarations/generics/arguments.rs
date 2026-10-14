@@ -5,7 +5,7 @@ use crate::{
     types::{GenericArgs, ItemId, substitute::Bound},
 };
 impl Checker<'_> {
-    fn supplied_arguments(
+    pub(super) fn supplied_arguments(
         &self,
         key: NodeKey,
         owner: DefId,
@@ -82,6 +82,13 @@ impl Checker<'_> {
         let Some(list) = list else { return Ok(()) };
         let ast = &self.report.package.unit(key.file).configured.ast;
         for (index, node) in ast.list(list).iter().copied().enumerate().rev() {
+            if self
+                .facts
+                .partial_annotations
+                .contains_key(&NodeKey { node, ..key })
+            {
+                continue;
+            }
             match self.facts.generics.parameters[&owner][index + omitted].argument {
                 Argument::Type(_) => self.node_work(key.file, node, context),
                 Argument::Const(_) => {

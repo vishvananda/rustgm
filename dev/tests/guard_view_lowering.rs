@@ -225,7 +225,6 @@ fn lower(source: &str) -> Result<Vec<u8>, String> {
     let contracts = rustgm::body::regions::collect(&facts)?;
     let contracts = rustgm::borrow::regions::check_bodies(
         &facts.types,
-        &facts.aggregates,
         &facts.lifetimes.variances,
         &contracts,
         &program,

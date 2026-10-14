@@ -113,6 +113,31 @@ impl Context {
         let args = self.argument_layout(arguments, &mut children)?;
         self.construct(Constructor::AdtArgs(item, args), &children)
     }
+    /// Read mixed nominal/callable arguments without resolving inference holes.
+    /// # Errors
+    /// Rejects a non-item term, malformed argument layout or exhausted resources.
+    pub fn item_arguments(&mut self, store: &Store, term: TermId) -> Result<Vec<Argument>, Error> {
+        let term = self.root(term)?;
+        let (args, offset) = match self.materialize(store, term)? {
+            Constructor::AdtArgs(_, args) => (args, 0),
+            Constructor::FunctionItemArgs(_, args) => (args, 1),
+            _ => return Err(Error::InvalidIdentity),
+        };
+        let count = self.slots(args)?.len();
+        self.account_work(count)?;
+        let entry = self.terms[term.0 as usize];
+        let mut types = self.edges[entry.start as usize + offset..entry.end as usize].iter();
+        self.slots(args)?
+            .iter()
+            .map(|slot| {
+                Ok(match *slot {
+                    Slot::Lifetime(region) => Argument::Lifetime(region),
+                    Slot::Type => Argument::Type(*types.next().ok_or(Error::InvalidIdentity)?),
+                    Slot::Const(id) => Argument::Const(id),
+                })
+            })
+            .collect()
+    }
     pub(super) fn materialize_arguments(
         &mut self,
         store: &Store,

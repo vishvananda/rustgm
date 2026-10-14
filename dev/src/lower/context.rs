@@ -270,8 +270,19 @@ impl<'a> Context<'a> {
             .body_indices
             .get(definition.0 as usize)
             .copied()
-            .flatten()
-            .ok_or("missing called function body")?;
+            .flatten();
+        let Some(index) = index else {
+            if self
+                .definitions
+                .get(definition.0 as usize)
+                .copied()
+                .flatten()
+                .is_some_and(|ty| self.types.contains_parameters(ty) == Some(true))
+            {
+                return Err("generic callable execution requires demanded instances");
+            }
+            return Err("missing called function body");
+        };
         let Owner::Function { signature, .. } = self.bodies.bodies[index].owner else {
             return Err("call target is not a function");
         };

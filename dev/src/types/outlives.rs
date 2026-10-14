@@ -1,7 +1,9 @@
 //! Well-formedness requirements over typed templates, with bounded recursive propagation.
+mod contracts;
 pub(crate) mod storage;
-use super::{GenericArgs, ItemId, Kind, RegionId, Store, TypeId, aggregate::Definitions};
+use super::{GenericArgs, ItemId, Kind, RegionId, Store, TypeId};
 use super::{arguments::Argument, parameters::ParameterId};
+pub use contracts::Bounds;
 use std::collections::{HashMap, HashSet};
 
 pub type Pair = (RegionId, RegionId);
@@ -106,7 +108,18 @@ fn children(
                 }
             }
         }
-        Kind::Never | Kind::Primitive(_) | Kind::Adt(..) | Kind::Parameter(_) => {}
+        Kind::Adt(_, arguments) => {
+            let arguments = types
+                .arguments(arguments)
+                .ok_or("invalid nominal outlives arguments")?;
+            budget.pending(work.len().saturating_add(arguments.len()))?;
+            for argument in arguments {
+                if let Argument::Type(ty) = argument {
+                    work.push((ty, depth));
+                }
+            }
+        }
+        Kind::Never | Kind::Primitive(_) | Kind::Parameter(_) => {}
     }
     budget.pending(work.len())
 }
@@ -349,11 +362,6 @@ impl Scan {
                     }
                 }
                 Kind::Adt(item, arguments) if arguments != GenericArgs::EMPTY => {
-                    if types.region_args(arguments).is_none() {
-                        return Err(
-                            "generic nominal outlives checking requires instantiated field bounds",
-                        );
-                    }
                     self.uses.push(Use {
                         item,
                         arguments,
@@ -376,113 +384,6 @@ impl Scan {
             children(types, ty, depth, &mut self.work, &mut self.budget)?;
         }
         Ok(())
-    }
-}
-fn instantiate(types: &Store, use_: Use, pair: Pair) -> Result<Option<Pair>, &'static str> {
-    let argument = |region: RegionId| -> Result<Option<RegionId>, &'static str> {
-        if region == RegionId::STATIC {
-            return Ok(Some(region));
-        }
-        let Some((0, index)) = region.bound_parts() else {
-            return Err("invalid outlives template region");
-        };
-        let argument = types
-            .arguments(use_.arguments)
-            .ok_or("missing outlives instance arguments")?
-            .nth(usize::from(index));
-        let Some(Argument::Lifetime(region)) = argument else {
-            return Err("outlives template argument arity mismatch");
-        };
-        free(region, use_.depth)
-    };
-    Ok(argument(pair.0)?.zip(argument(pair.1)?))
-}
-#[derive(Default)]
-pub struct Bounds {
-    pairs: HashMap<ItemId, Vec<Pair>>,
-    pub steps: usize,
-}
-impl Bounds {
-    /// Infer nominal requirements once from all fields, including inactive enum
-    /// variants. Recursive dependencies propagate only newly discovered pairs.
-    ///
-    /// # Errors
-    /// Rejects malformed templates and exhausted finite propagation work.
-    pub fn infer(
-        types: &Store,
-        definitions: &Definitions,
-        explicit: &[(ItemId, Pair)],
-    ) -> Result<Self, &'static str> {
-        let mut result = Self::default();
-        let mut unique = HashSet::new();
-        let mut work = Vec::new();
-        let mut reverse: HashMap<ItemId, Vec<(ItemId, Use)>> = HashMap::new();
-        let mut scan = Scan::default();
-        for definition in definitions {
-            result.pairs.insert(definition.item, Vec::new());
-            scan.clear();
-            for variant in definitions.variants(definition) {
-                for ty in types
-                    .list(variant.fields)
-                    .ok_or("missing outlives field templates")?
-                {
-                    if types.contains_parameters(*ty) == Some(true) {
-                        return Err("generic outlives checking requires a parameter environment");
-                    }
-                    scan.visit(types, *ty)?;
-                }
-            }
-            for pair in &scan.pairs {
-                scan.budget.charge()?;
-                if unique.insert((definition.item, *pair)) {
-                    scan.budget.pending(work.len().saturating_add(1))?;
-                    work.push((definition.item, *pair));
-                }
-            }
-            for use_ in &scan.uses {
-                scan.budget.charge()?;
-                if use_.callable {
-                    return Err("nominal field template contains an unnameable function item");
-                }
-                reverse
-                    .entry(use_.item)
-                    .or_default()
-                    .push((definition.item, *use_));
-            }
-        }
-        for &(item, pair) in explicit {
-            scan.budget.charge()?;
-            if useful(pair) && unique.insert((item, pair)) {
-                scan.budget.pending(work.len().saturating_add(1))?;
-                work.push((item, pair));
-            }
-        }
-        while let Some((item, pair)) = work.pop() {
-            scan.budget.charge()?;
-            result
-                .pairs
-                .get_mut(&item)
-                .ok_or("missing outlives nominal definition")?
-                .push(pair);
-            if let Some(dependents) = reverse.get(&item) {
-                for (owner, use_) in dependents {
-                    scan.budget.charge()?;
-                    if let Some(pair) = instantiate(types, *use_, pair)?
-                        && useful(pair)
-                        && unique.insert((*owner, pair))
-                    {
-                        scan.budget.pending(work.len().saturating_add(1))?;
-                        work.push((*owner, pair));
-                    }
-                }
-            }
-        }
-        result.steps = scan.budget.0;
-        Ok(result)
-    }
-    #[must_use]
-    pub fn get(&self, item: ItemId) -> Option<&[Pair]> {
-        self.pairs.get(&item).map(Vec::as_slice)
     }
 }
 /// Cached requirements depend only on completed typed definitions, not on a
@@ -563,8 +464,17 @@ impl<'a> Queries<'a> {
                 };
                 for pair in pairs {
                     self.scan.budget.charge()?;
-                    if let Some(pair) = instantiate(self.types, use_, *pair)? {
+                    if let Some(pair) = contracts::instantiate(self.types, use_, *pair)? {
                         self.scan.record(pair);
+                    }
+                }
+                if !use_.callable {
+                    for &pair in self
+                        .bounds
+                        .parameters(use_.item)
+                        .ok_or("missing nominal parameter requirements")?
+                    {
+                        self.scan.apply_parameter(self.types, use_, pair)?;
                     }
                 }
             }

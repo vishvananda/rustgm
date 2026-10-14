@@ -29,7 +29,7 @@ enum State {
     Failed(&'static str),
 }
 struct Scope {
-    environment: Arc<Environment>,
+    environment: Option<Arc<Environment>>,
     // A body typically touches only a few types in the whole crate's store.
     states: HashMap<TypeId, State>,
 }
@@ -40,6 +40,7 @@ struct Scope {
 #[derive(Default)]
 pub struct Copies {
     scope: Option<Box<Scope>>,
+    declaration: bool,
     states: Vec<State>,
     work: Vec<(TypeId, bool)>,
     pub steps: usize,
@@ -49,9 +50,23 @@ impl Copies {
     pub fn in_environment(environment: Arc<Environment>) -> Self {
         Self {
             scope: Some(Box::new(Scope {
+                environment: Some(environment),
+                states: HashMap::new(),
+            })),
+            ..Self::default()
+        }
+    }
+    /// Check a derive's field templates under its generated bounds. Nested
+    /// nominals use their conditional implementation contracts; the caller
+    /// must separately validate every selected derive before publishing facts.
+    #[must_use]
+    pub fn for_derive(environment: Option<Arc<Environment>>) -> Self {
+        Self {
+            scope: Some(Box::new(Scope {
                 environment,
                 states: HashMap::new(),
             })),
+            declaration: true,
             ..Self::default()
         }
     }
@@ -143,12 +158,15 @@ impl Copies {
             let assumed = self
                 .scope
                 .as_ref()
-                .map(|scope| scope.environment.assumed(ty));
+                .and_then(|scope| scope.environment.as_ref())
+                .map(|environment| environment.assumed(ty));
             if assumed.is_some_and(|p| p.copy) {
                 self.record(ty, State::Ready(Properties::BOTH));
                 continue;
             }
-            if matches!(kind, Kind::Adt(_, args) if types.region_args(args).is_none()) {
+            if !self.declaration
+                && matches!(kind, Kind::Adt(_, args) if types.region_args(args).is_none())
+            {
                 definitions.shape(types, ty)?;
             }
             let initial = match kind {
@@ -156,8 +174,8 @@ impl Copies {
                     let abilities = self
                         .scope
                         .as_ref()
+                        .and_then(|scope| scope.environment.as_ref())
                         .ok_or("generic Copy checking requires a parameter environment")?
-                        .environment
                         .abilities(id)
                         .ok_or("Copy parameter is outside the current environment")?;
                     Properties {
@@ -175,7 +193,7 @@ impl Copies {
             let packed = matches!(kind, Kind::Adt(item, _)
                 if definitions.get(item).is_some_and(|d| d.repr.packed.is_some()));
             if initial != Properties::default() {
-                children(types, definitions, ty, |child| {
+                children(types, definitions, ty, !self.declaration, |child| {
                     if finish {
                         let properties = self.get(child)?;
                         result = result.intersect(properties);
@@ -200,6 +218,7 @@ fn children(
     types: &Store,
     definitions: &Definitions,
     ty: TypeId,
+    fields: bool,
     mut visit: impl FnMut(TypeId) -> Result<(), &'static str>,
 ) -> Result<(), &'static str> {
     match types.kind(ty).ok_or("invalid Copy type")? {
@@ -210,9 +229,11 @@ fn children(
             }
         }
         Kind::Adt(_, arguments) => {
-            for variant in definitions.shape(types, ty)?.variants() {
-                for ty in types.list(variant.fields).ok_or("invalid Copy fields")? {
-                    visit(*ty)?;
+            if fields {
+                for variant in definitions.shape(types, ty)?.variants() {
+                    for ty in types.list(variant.fields).ok_or("invalid Copy fields")? {
+                        visit(*ty)?;
+                    }
                 }
             }
             // Derives impose bounds on type parameters even in pointer fields.

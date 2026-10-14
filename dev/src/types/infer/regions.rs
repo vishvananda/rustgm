@@ -15,7 +15,25 @@ impl Context {
         regions: &[RegionId],
     ) -> Result<TermId, Error> {
         self.account_work(regions.len())?;
-        let mut bound = Bound::new(regions.to_vec());
+        self.map_regions(store, root, Bound::new(regions.to_vec()))
+    }
+    pub(super) fn shift_regions(
+        &mut self,
+        store: &mut Store,
+        root: TermId,
+        amount: u16,
+    ) -> Result<TermId, Error> {
+        if amount == 0 {
+            return Ok(root);
+        }
+        self.map_regions(store, root, Bound::shift(amount))
+    }
+    fn map_regions(
+        &mut self,
+        store: &mut Store,
+        root: TermId,
+        mut bound: Bound,
+    ) -> Result<TermId, Error> {
         let root = self.root(root)?;
         let mut work = vec![((root, 0_u16), false)];
         let mut results = HashMap::new();

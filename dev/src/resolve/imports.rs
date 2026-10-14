@@ -387,7 +387,7 @@ impl Resolver<'_> {
                     );
                 }
                 Lookup::Missing => self.withdraw_single((import.scope, name, ns), origin, work),
-                Lookup::Associated(_) => {
+                Lookup::Associated(..) => {
                     return Err(self.import_error(import, "associated items cannot be imported"));
                 }
             }
@@ -429,7 +429,7 @@ impl Resolver<'_> {
                 self.disconnect_glob(index, import, work);
                 return Ok(());
             }
-            Lookup::Associated(_) => {
+            Lookup::Associated(..) => {
                 return Err(self.import_error(import, "glob target is not a module or enum"));
             }
         };

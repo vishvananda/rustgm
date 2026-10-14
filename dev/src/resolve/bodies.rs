@@ -374,6 +374,9 @@ impl Resolver<'_> {
         }
         let found = self.lookup_path(c, node, absolute, &path, LookupMode::Use(ns), None)?;
         let target = self.target(c, node, &found, ns)?;
+        if let Lookup::Associated(_, start) = found {
+            self.associated_path(c, node, start, &path, ns)?;
+        }
         self.facts.references.push(Reference {
             scope: c.scope,
             node: NodeKey { file: c.file, node },
@@ -381,6 +384,41 @@ impl Resolver<'_> {
             target,
         });
         self.path_arguments(c, node)
+    }
+    fn associated_path(
+        &mut self,
+        c: Context,
+        node: NodeId,
+        start: usize,
+        names: &[crate::support::names::NameId],
+        namespace: Namespace,
+    ) -> Result<(), Error> {
+        let Kind::Path { segments, .. } = self.kind(c, node) else {
+            return Err(self.error(c, node, "associated path requires parsed segments"));
+        };
+        let segments = self.package.unit(c.file).configured.ast.list(segments);
+        let prefix = start
+            .checked_sub(1)
+            .and_then(|i| segments.get(i))
+            .copied()
+            .ok_or_else(|| self.error(c, node, "missing associated path prefix"))?;
+        if segments.len() != names.len() || start >= names.len() {
+            return Err(self.error(c, node, "invalid associated path suffix"));
+        }
+        self.facts.associated_paths.insert(
+            NodeKey { file: c.file, node },
+            super::model::AssociatedPath {
+                namespace,
+                scope: c.scope,
+                prefix,
+                suffix: segments[start..]
+                    .iter()
+                    .copied()
+                    .zip(names[start..].iter().copied())
+                    .collect(),
+            },
+        );
+        Ok(())
     }
     pub(super) fn lifetime(
         &mut self,

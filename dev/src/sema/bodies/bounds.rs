@@ -7,6 +7,22 @@ use crate::types::{
     substitute,
 };
 impl Checker<'_> {
+    pub(super) fn nominal_requirements(
+        &mut self,
+        node: NodeId,
+        ty: TypeId,
+        checked: &mut std::collections::HashSet<TypeId>,
+    ) -> Result<(), Error> {
+        if !self.facts.generics.has_nominal_requirements {
+            return Ok(());
+        }
+        let requirements = crate::sema::nominals::requirements(self.facts, ty, checked)
+            .map_err(|e| self.error(node, e))?;
+        for requirement in requirements {
+            self.prove_bound(node, requirement.ty, requirement.bound)?;
+        }
+        Ok(())
+    }
     pub(super) fn prepare_bound_environment(
         &mut self,
         node: NodeId,
@@ -108,6 +124,12 @@ impl Checker<'_> {
         let valid = if bound == Bound::Sized {
             self.body_shape(node, ty)?.sized
         } else {
+            if self.facts.generics.has_nominal_requirements {
+                self.facts
+                    .aggregates
+                    .prepare(&mut self.facts.types, ty)
+                    .map_err(|e| self.error(node, e))?;
+            }
             let properties = self
                 .parameter_copies
                 .as_mut()
@@ -203,7 +225,7 @@ impl Checker<'_> {
                 .map_err(|e| self.error(node, e))?;
             let term = self
                 .infer
-                .instantiate(&self.facts.types, ty, bindings)
+                .instantiate(&mut self.facts.types, ty, bindings)
                 .map_err(|e| self.error(node, e))?;
             self.call_types.obligations.push((node, bound, term));
         }

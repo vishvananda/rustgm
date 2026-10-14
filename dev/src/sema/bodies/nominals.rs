@@ -1,0 +1,327 @@
+//! Nominal uses retain shared inference variables across constructors and fields.
+use super::{Checker, Constructor, DefId, Error, NodeId, TermId, Type, TypeId};
+use crate::{
+    sema::{
+        generics::SourceArgument,
+        members::{FieldId, VariantId},
+        model::BodyRegionOrigin,
+    },
+    types::{
+        ItemId,
+        arguments::{Argument as Canonical, ConstKind},
+        infer::{Instantiation, arguments::Argument},
+        substitute::Bound,
+    },
+};
+
+pub(super) struct Fields {
+    regions: Bound,
+    parameters: Instantiation,
+}
+impl Checker<'_> {
+    pub(super) fn annotation_application(&mut self, node: NodeId) -> Result<TermId, Error> {
+        use crate::sema::generics::AnnotationArgument as Written;
+        let use_ = self
+            .facts
+            .generics
+            .annotation_uses
+            .get(&self.key(node))
+            .ok_or_else(|| self.error(node, "missing partial generic annotation"))?;
+        let (owner, supplied) = (use_.owner, use_.arguments.clone());
+        let parameters = self.facts.generics.parameters[&owner].clone();
+        let mut regions = Vec::new();
+        let mut arguments = Vec::with_capacity(parameters.len());
+        let mut bindings = Vec::new();
+        for (parameter, source) in parameters.iter().zip(&supplied) {
+            if let Written::Lifetime(region) = *source {
+                regions.push(region);
+                arguments.push(Argument::Lifetime(region));
+                continue;
+            }
+            let binding =
+                self.inferred_argument(node, parameter.argument, SourceArgument::Infer)?;
+            match (*source, binding.1) {
+                (Written::Type(key), Argument::Type(term)) => {
+                    self.equate(node, term, self.term(key.node)?)?;
+                }
+                (Written::Const(id), Argument::Const(term)) => {
+                    let known = self
+                        .infer
+                        .known_const(&self.facts.types, id)
+                        .map_err(|e| self.error(node, e))?;
+                    self.infer
+                        .equate_consts(term, known)
+                        .map_err(|e| self.error(node, e))?;
+                }
+                (Written::Infer | Written::Default(_), _) => {}
+                _ => return Err(self.error(node, "partial annotation argument kind mismatch")),
+            }
+            arguments.push(binding.1);
+            bindings.push(binding);
+        }
+        let mut fields = Fields {
+            regions: Bound::new(regions),
+            parameters: Instantiation::new(&mut self.infer, &self.facts.types, &bindings)
+                .map_err(|e| self.error(node, e))?,
+        };
+        for (index, source) in supplied.iter().enumerate() {
+            if let Written::Default(default) = *source {
+                self.nominal_default(node, default, arguments[index], &mut fields)?;
+            }
+        }
+        let term = if self.report.resolution.definitions[owner.0 as usize].kind
+            == crate::resolve::model::DefKind::TypeAlias
+        {
+            let template = self.facts.definitions[owner.0 as usize]
+                .ok_or_else(|| self.error(node, "missing alias template"))?;
+            let template = fields
+                .regions
+                .apply(&mut self.facts.types, template)
+                .map_err(|e| self.error(node, e))?;
+            self.infer
+                .instantiate_with(&mut self.facts.types, template, &mut fields.parameters)
+                .map_err(|e| self.error(node, e))?
+        } else {
+            let term = self
+                .infer
+                .nominal(ItemId(owner.0), &arguments)
+                .map_err(|e| self.error(node, e))?;
+            self.call_types.nominal_receivers.insert(term, fields);
+            term
+        };
+        Ok(term)
+    }
+    pub(super) fn nominal_term(
+        &mut self,
+        node: NodeId,
+        path: NodeId,
+        owner: ItemId,
+    ) -> Result<TermId, Error> {
+        if let Some(&prefix) = self.facts.generics.constructor_uses.get(&self.key(path)) {
+            return self.annotation(prefix.node);
+        }
+        if let Some(super::Target::Definition(id)) =
+            self.facts.node(self.key(path)).and_then(|f| f.reference)
+            && self.report.resolution.definitions[id.0 as usize].kind
+                == crate::resolve::model::DefKind::TypeAlias
+        {
+            return self.annotation(path);
+        }
+        let Some(parameters) = self.facts.generics.parameters.get(&DefId(owner.0)).cloned() else {
+            let ty = self.nominal_type(node, path, owner)?;
+            return self.known(node, ty);
+        };
+        let written = self
+            .facts
+            .generics
+            .item_uses
+            .get(&self.key(path))
+            .ok_or_else(|| self.error(node, "nominal arguments were not elaborated"))?;
+        let supplied = written.arguments.clone();
+        let lifetimes = written.lifetimes;
+        let count = parameters
+            .iter()
+            .take_while(|p| matches!(p.argument, Canonical::Lifetime(_)))
+            .count();
+        let mut regions = Vec::with_capacity(count);
+        if let Some(list) = lifetimes {
+            let nodes = self
+                .report
+                .package
+                .unit(self.file)
+                .configured
+                .ast
+                .list(list);
+            if nodes.len() != count {
+                return Err(self.error(node, "incorrect number of lifetime arguments"));
+            }
+            for &argument in nodes {
+                let region = self.local_region(argument)?;
+                regions.push(self.alias_region(argument, region)?);
+            }
+        } else {
+            for _ in 0..count {
+                regions.push(self.body_region(node, BodyRegionOrigin::ItemArgument)?);
+            }
+        }
+        let mut arguments = regions
+            .iter()
+            .copied()
+            .map(Argument::Lifetime)
+            .collect::<Vec<_>>();
+        let mut bindings = Vec::with_capacity(parameters.len() - count);
+        for (index, parameter) in parameters.iter().skip(count).enumerate() {
+            let source = supplied
+                .get(index)
+                .copied()
+                .unwrap_or(SourceArgument::Infer);
+            let binding = self.inferred_argument(node, parameter.argument, source)?;
+            arguments.push(binding.1);
+            bindings.push(binding);
+        }
+        let mut fields = Fields {
+            regions: Bound::new(regions),
+            parameters: Instantiation::new(&mut self.infer, &self.facts.types, &bindings)
+                .map_err(|e| self.error(node, e))?,
+        };
+        if !supplied.is_empty() {
+            for index in count + supplied.len()..parameters.len() {
+                let default = parameters[index]
+                    .default
+                    .ok_or_else(|| self.error(node, "missing generic default"))?;
+                self.nominal_default(node, default, arguments[index], &mut fields)?;
+            }
+        }
+        let term = self
+            .infer
+            .nominal(owner, &arguments)
+            .map_err(|e| self.error(node, e))?;
+        self.call_types.nominal_receivers.insert(term, fields);
+        Ok(term)
+    }
+    fn nominal_default(
+        &mut self,
+        node: NodeId,
+        default: Canonical,
+        argument: Argument,
+        fields: &mut Fields,
+    ) -> Result<(), Error> {
+        match (default, argument) {
+            (Canonical::Type(ty), Argument::Type(term)) => {
+                let ty = fields
+                    .regions
+                    .apply(&mut self.facts.types, ty)
+                    .map_err(|e| self.error(node, e))?;
+                let expected = self
+                    .infer
+                    .instantiate_with(&mut self.facts.types, ty, &mut fields.parameters)
+                    .map_err(|e| self.error(node, e))?;
+                self.equate(node, term, expected)
+            }
+            (Canonical::Const(id), Argument::Const(term)) => {
+                let value = self
+                    .infer
+                    .instantiate_const(&self.facts.types, id, &fields.parameters)
+                    .map_err(|e| self.error(node, e))?;
+                self.infer
+                    .equate_consts(term, value)
+                    .map_err(|e| self.error(node, e))
+            }
+            _ => Err(self.error(node, "generic default argument kind mismatch")),
+        }
+    }
+    pub(super) fn generic_constructor(
+        &mut self,
+        node: NodeId,
+        ty: TypeId,
+        variant: VariantId,
+    ) -> Result<TermId, Error> {
+        let variant = self.facts.members.variants[variant.0 as usize];
+        let nominal = self.nominal_term(node, node, variant.owner)?;
+        let Some(Type::FunctionItem { item, .. }) = self.facts.types.kind(ty) else {
+            return Ok(nominal);
+        };
+        let mut children = Vec::with_capacity((variant.end - variant.start) as usize + 1);
+        for index in variant.start..variant.end {
+            children.push(self.instance_field(node, nominal, FieldId(index))?);
+        }
+        children.push(nominal);
+        let signature = self
+            .infer
+            .construct(
+                Constructor::Function {
+                    bound_regions: 0,
+                    parameters: variant.end - variant.start,
+                    unsafe_: false,
+                },
+                &children,
+            )
+            .map_err(|e| self.error(node, e))?;
+        let arguments = self
+            .infer
+            .item_arguments(&self.facts.types, nominal)
+            .map_err(|e| self.error(node, e))?;
+        self.infer
+            .function_item(item, signature, &arguments)
+            .map_err(|e| self.error(node, e))
+    }
+    pub(super) fn inferred_field(
+        &mut self,
+        node: NodeId,
+        receiver: TermId,
+        owner: ItemId,
+        template: TypeId,
+    ) -> Result<TermId, Error> {
+        let root = self.infer.root(receiver).map_err(|e| self.error(node, e))?;
+        if !self.call_types.nominal_receivers.contains_key(&root) {
+            let fields = self.receiver_fields(node, root, owner)?;
+            self.call_types.nominal_receivers.insert(root, fields);
+        }
+        let key = self.key(node);
+        let report = self.report;
+        let fields = self
+            .call_types
+            .nominal_receivers
+            .get_mut(&root)
+            .ok_or_else(|| {
+                super::Declarations::error(report, key, "missing nominal inference environment")
+            })?;
+        let ty = fields
+            .regions
+            .apply(&mut self.facts.types, template)
+            .map_err(|e| super::Declarations::error(report, key, e))?;
+        let term = self
+            .infer
+            .instantiate_with(&mut self.facts.types, ty, &mut fields.parameters);
+        term.map_err(|e| self.error(node, e))
+    }
+    fn receiver_fields(
+        &mut self,
+        node: NodeId,
+        receiver: TermId,
+        owner: ItemId,
+    ) -> Result<Fields, Error> {
+        let arguments = self
+            .infer
+            .item_arguments(&self.facts.types, receiver)
+            .map_err(|e| self.error(node, e))?;
+        let parameters = self
+            .facts
+            .generics
+            .parameters
+            .get(&DefId(owner.0))
+            .ok_or_else(|| self.error(node, "missing nominal argument schema"))?;
+        if parameters.len() != arguments.len() {
+            return Err(self.error(node, "invalid nominal argument count"));
+        }
+        let mut regions = Vec::new();
+        let mut bindings = Vec::new();
+        for (parameter, argument) in parameters.iter().zip(arguments) {
+            let id = match (parameter.argument, argument) {
+                (Canonical::Lifetime(_), Argument::Lifetime(region)) => {
+                    regions.push(region);
+                    continue;
+                }
+                (Canonical::Type(ty), Argument::Type(_)) => {
+                    let Some(Type::Parameter(id)) = self.facts.types.kind(ty) else {
+                        return Err(self.error(node, "missing nominal type parameter"));
+                    };
+                    id
+                }
+                (Canonical::Const(id), Argument::Const(_)) => {
+                    let Some(ConstKind::Parameter(id)) = self.facts.types.const_kind(id) else {
+                        return Err(self.error(node, "missing nominal const parameter"));
+                    };
+                    id
+                }
+                _ => return Err(self.error(node, "nominal argument kind mismatch")),
+            };
+            bindings.push((id, argument));
+        }
+        Ok(Fields {
+            regions: Bound::new(regions),
+            parameters: Instantiation::new(&mut self.infer, &self.facts.types, &bindings)
+                .map_err(|e| self.error(node, e))?,
+        })
+    }
+}

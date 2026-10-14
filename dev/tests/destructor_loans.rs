@@ -22,7 +22,6 @@ fn check(source: &str) -> Result<(), Box<dyn std::error::Error>> {
     let contracts = body::regions::collect(&facts)?;
     let proof = regions::prepare_destruction(
         &facts.types,
-        &facts.aggregates,
         &facts.lifetimes.variances,
         &contracts,
         &program,
