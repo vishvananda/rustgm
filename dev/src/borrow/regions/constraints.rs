@@ -36,6 +36,10 @@ impl Identities {
         self.parameters.iter().map(|(&id, &region)| (id, region))
     }
     #[must_use]
+    pub fn parameter(&self, id: ParameterId) -> Option<Region> {
+        self.parameters.get(&id).copied()
+    }
+    #[must_use]
     pub fn universals(&self) -> impl ExactSizeIterator<Item = Region> + '_ {
         self.universals.iter().copied()
     }

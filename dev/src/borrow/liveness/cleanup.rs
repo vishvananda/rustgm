@@ -277,7 +277,15 @@ impl<'a> Flow<'a> {
                 };
                 if let Some(ids) = components {
                     self.uses.charge(ids.len())?;
-                    if self.uses.result.seeds.len().saturating_add(ids.len()) > 2_000_000 {
+                    if self
+                        .uses
+                        .result
+                        .seeds
+                        .len()
+                        .saturating_add(self.uses.result.parameter_seeds.len())
+                        .saturating_add(ids.len())
+                        > 2_000_000
+                    {
                         return Err("drop liveness seed budget exceeded");
                     }
                     self.uses

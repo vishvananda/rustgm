@@ -4,7 +4,7 @@ mod operands;
 use super::regions::points::Point;
 use crate::{
     body::ir::{Action, BlockId, Body, LocalId, Place, Rvalue, Terminator, ValueId},
-    types::{RegionId, Store, TypeId, outlives::LiveRegions},
+    types::{RegionId, Store, TypeId, outlives::LiveRegions, parameters::ParameterId},
 };
 use std::collections::VecDeque;
 
@@ -12,6 +12,8 @@ const LIMIT: usize = 32_000_000;
 
 pub struct Analysis {
     pub seeds: Vec<(RegionId, Point)>,
+    /// Opaque components retain their own identities, never fabricated lifetimes.
+    pub parameter_seeds: Vec<(ParameterId, Point)>,
     pub points: u32,
     pub reachable: Vec<bool>,
     pub steps: usize,
@@ -76,6 +78,7 @@ impl<'a> Flow<'a> {
             starts: vec![0; body.blocks.len() + 1],
             result: Analysis {
                 seeds: Vec::new(),
+                parameter_seeds: Vec::new(),
                 points: 0,
                 reachable: vec![false; body.blocks.len()],
                 steps: 0,
@@ -105,7 +108,8 @@ impl<'a> Flow<'a> {
         ty: TypeId,
     ) -> Result<Option<usize>, &'static str> {
         self.charge(1)?;
-        if regions.get(types, ty)?.is_empty() {
+        let parts = regions.symbolic(types, ty)?;
+        if parts.regions.is_empty() && parts.parameters.is_empty() {
             return Ok(None);
         }
         let id = self.entities.len();
@@ -346,12 +350,25 @@ impl<'a> Flow<'a> {
         ty: TypeId,
         point: Point,
     ) -> Result<(), &'static str> {
-        let ids = regions.get(types, ty)?;
-        self.charge(ids.len())?;
-        if self.result.seeds.len().saturating_add(ids.len()) > 2_000_000 {
+        let parts = regions.symbolic(types, ty)?;
+        let count = parts.regions.len().saturating_add(parts.parameters.len());
+        self.charge(count)?;
+        if self
+            .result
+            .seeds
+            .len()
+            .saturating_add(self.result.parameter_seeds.len())
+            .saturating_add(count)
+            > 2_000_000
+        {
             return Err("value liveness seed budget exceeded");
         }
-        self.result.seeds.extend(ids.iter().map(|id| (*id, point)));
+        self.result
+            .seeds
+            .extend(parts.regions.iter().map(|id| (*id, point)));
+        self.result
+            .parameter_seeds
+            .extend(parts.parameters.iter().map(|id| (*id, point)));
         Ok(())
     }
     fn seed(

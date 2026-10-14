@@ -1,6 +1,7 @@
 //! Forward loan reachability constrained by inferred use regions.
 mod cleanup;
 mod inspection;
+pub mod templates;
 pub mod view;
 use super::places::{Depth, Id, Index};
 use super::{
@@ -617,7 +618,7 @@ fn finish<const RECORD: bool>(
         node: body.source,
         message,
     };
-    let mut seeds = Vec::with_capacity(uses.seeds.len());
+    let mut seeds = Vec::with_capacity(uses.seeds.len().saturating_add(uses.parameter_seeds.len()));
     for &(region, point) in &uses.seeds {
         seeds.push((
             contract
@@ -627,7 +628,18 @@ fn finish<const RECORD: bool>(
             point,
         ));
     }
-    let external = std::iter::once(Region::STATIC).chain(contract.identities.universals());
+    for &(parameter, point) in &uses.parameter_seeds {
+        seeds.push((
+            contract
+                .identities
+                .parameter(parameter)
+                .ok_or_else(|| error("missing live type-parameter identity"))?,
+            point,
+        ));
+    }
+    let external = std::iter::once(Region::STATIC)
+        .chain(contract.identities.universals())
+        .chain(contract.identities.parameters().map(|(_, region)| region));
     let extents = external.flat_map(|region| (0..uses.points).map(move |p| (region, Point(p))));
     let regions = points::infer(
         &contract.solution,

@@ -1010,3 +1010,83 @@ source is included in `template-provenance-v1-source-sha256.json`; the job,
 result and raw receipt indexes are `template-provenance-v1-perf-jobs.json`,
 `template-provenance-v1-perf-results.json` and their `perf-recheck` counterparts
 under `obj/pa18-work/`.
+
+### Symbolic live components and template loans without cleanup
+
+Live-value queries now expose named regions and opaque type-parameter components
+separately. The closed `LiveRegions::get` API still rejects symbolic types;
+`symbolic` shares the same bounded structural cache while retaining both kinds.
+Zero-length arrays have no runtime components, const-parameter arrays retain
+possible element components, and nested callable binders export only free named
+lifetimes. Repeated shared shapes are visited once per query and cached.
+
+Backward liveness retains parameter use seeds alongside named lifetime seeds.
+Loan inference resolves those parameter identities through the actual body
+contract and gives rigid parameter universals the body-wide extent of caller
+inputs. Missing parameter identities fail. A bound such as `T: 'a` remains
+one-way; making `T` live cannot make every shorter reference loan live. Directed
+bound, last-use and replacement controls exercise that distinction.
+
+`borrow::loans::templates::check` combines the selected provenance, scoped move
+facts, actual storage and ordinary loan dataflow for templates without possible
+cleanup. It checks complete unique body coverage and destruction-fact dimensions.
+Unknown owned values, destructible temporaries and potential replacement cleanup
+retain an explicit abstract-cleanup boundary, even when no custom Drop is
+actually declared. A projection through `&mut T` alone does not destroy `T`.
+No fake cleanup operation, concrete specialization or executable token is created.
+
+The new source controls reject overlapping mutable reborrows, reading through a
+live mutable borrow, and writes through a live shared borrow. They allow reuse
+after last use, mutually exclusive branches, repeated loop reborrows, scoped
+Copy operations and independently instantiated generic calls. The three mutable
+loan controls that intentionally pass the separate move/provenance APIs now fail
+this combined template loan check. Empty shared/mutable array promotions also
+pass storage and loan checking.
+
+Abstract destructor liveness and ordered cleanup still need integration, as do
+symbolic repeat promotion, generic nominal fields and demanded concrete instances.
+PA18–PA21 remain planned and the generic executable gate remains closed.
+
+Six maintainer tests include 28 declared source controls (19 accepted, nine
+rejected), three explicit pending-cleanup controls, malformed-identity/coverage
+checks and a cached 20,000-level shared type graph. Pinned rustc independently
+confirms every declared language outcome. Validation passes 613 frontend tests,
+all 3,334 active course cases, 32 focused release tests, all independent rustc
+checks, nine native maintainer tests and 132 PA17 executable comparisons. The
+final loan-conflict assertions also pass in debug and release. Rustfmt, Clippy
+all/pedantic, the 397-file audit and 25 harness tests pass. No course fixture or
+oracle changed. Logs under `obj/pa18-work/` include `template-loans-full-v1.log`,
+`template-loans-release-v1.log`, `template-loans-focused-final-v1.log`,
+`template-loans-release-final-v1.log` and `template-loans-audits-final-v1.log`.
+
+Performance retains 432 observations across 24 jobs at 256/1,024/4,096 units.
+Nine closed jobs compare with `e186dd0`; 15 new jobs use identical candidate
+binaries and include the actual template loan proof after semantic analysis,
+CFG construction, scoped moves, promotion and provenance. Each job uses CPU 2,
+two warmups, four A/A observations and three ABBA blocks. All full/count output
+matches. All new inputs passed pinned rustc and proof-driver preflight checks.
+No own builds/tests overlapped measurements, and source, binary and input hashes
+were verified before and after timing.
+
+| Closed 4,096-function workload | Previous ms | Candidate ms | Previous RSS KiB | Candidate RSS KiB |
+| --- | ---: | ---: | ---: | ---: |
+| Thin references | 454.67 | 447.00 | 76998 | 77272 |
+| Wide references | 843.80 | 839.27 | 124968 | 125260 |
+| Destruction | 2379.96 | 2381.75 | 291480 | 291508 |
+
+The sample ranges overlap; these measurements establish no general speedup or
+zero-cost claim. New reborrow, loop last-use, Copy replacement, generic call and
+const-repeat workloads take 135.00, 480.99, 233.30, 428.59 and 275.36 ms respectively
+at 4,096 units. The call workload contains two functions per unit, or 8,192
+generic functions at that size. Growth is approximately linear across the three
+sizes; loop and call timings retain shared-host variability.
+
+The frozen CLI `template-loans-candidate-v1` has SHA-256
+`f73094aa6cb1e73b46aa0c51d8a39e56ce711f611dd20e0a0907088f377a52ce`;
+`template-loans-driver-candidate-v1` has SHA-256
+`48be83ede2755b2e4931715ef758525743acc3247ef62eb2450e98a44a4771a7`.
+The driver uses the frontend's locked dependency versions/checksums. Its source
+is included in `template-loans-v1-source-sha256.json`; job definitions, results
+and raw receipt paths are retained in `template-loans-v1-perf-jobs.json`,
+`template-loans-v1-perf-results.json` and `template-loans-perf-v1.log` under
+`obj/pa18-work/`.

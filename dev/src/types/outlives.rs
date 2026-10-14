@@ -115,7 +115,7 @@ enum ComponentKind {
     TypeBound,
     LiveValue,
 }
-/// Cached non-static free lifetimes of live values, including nested referents.
+/// Cached runtime components, including nested referents and opaque type parameters.
 /// Zero-length arrays contain no runtime reference values. Type well-formedness
 /// still checks their element types independently through `Queries`.
 #[derive(Default)]
@@ -132,9 +132,16 @@ impl LiveRegions {
         if types.contains_parameters(ty) == Some(true) {
             return Err("generic live-region checking requires instantiated value facts");
         }
+        self.symbolic(types, ty).map(|parts| parts.regions)
+    }
+    /// Retain opaque type-parameter components alongside named lifetimes. The
+    /// caller must resolve both kinds in the current body's rigid environment.
+    /// This structural cache depends only on the immutable canonical type store.
+    /// # Errors
+    /// Rejects malformed types, binder overflow and bounded traversal exhaustion.
+    pub fn symbolic(&mut self, types: &Store, ty: TypeId) -> Result<Parts<'_>, &'static str> {
         self.components
             .get(types, ty, 0, ComponentKind::LiveValue, &mut self.budget)
-            .map(|parts| parts.regions)
     }
     #[must_use]
     pub const fn steps(&self) -> usize {
