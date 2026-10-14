@@ -2062,6 +2062,51 @@
         "kind": "program",
         "status": 1
       }
+    },
+    {
+      "path": "tests/spec/names/generic-const-name.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/generic-const-block.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/generic-type-priority.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "reason": "The argument resolves to the type namespace; checking the expected const argument kind belongs to PA18."
+      }
+    },
+    {
+      "path": "tests/spec/names/generic-block-value.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
     }
   ]
 }

@@ -111,6 +111,14 @@ enum Work {
     CallArguments(NodeId),
     AssignmentValue(NodeId),
 }
+/// Dense, cleared slots can be reused between short declaration-time constants.
+/// Successful body checking clears only touched nodes and bindings.
+#[derive(Default)]
+pub(super) struct Scratch {
+    terms: Vec<Vec<Option<TermId>>>,
+    diverges: Vec<bool>,
+    locals: Vec<Option<TermId>>,
+}
 pub(super) struct Checker<'a> {
     alignment: alignment::Pending,
     report: &'a Report,
@@ -162,12 +170,20 @@ pub(super) struct Checker<'a> {
 }
 impl<'a> Checker<'a> {
     pub(super) fn new(report: &'a Report, facts: &'a mut Declarations) -> Self {
+        Self::with_scratch(report, facts, Scratch::default())
+    }
+    pub(super) fn with_scratch(
+        report: &'a Report,
+        facts: &'a mut Declarations,
+        mut scratch: Scratch,
+    ) -> Self {
+        scratch.terms.resize_with(facts.nodes.len(), Vec::new);
         Self {
             alignment: alignment::Pending::default(),
             report,
-            terms: facts.nodes.iter().map(|_| Vec::new()).collect(),
-            diverges: Vec::new(),
-            locals: Vec::new(),
+            terms: scratch.terms,
+            diverges: scratch.diverges,
+            locals: scratch.locals,
             facts,
             file: FileId(0),
             body: NodeKey {
@@ -217,13 +233,33 @@ impl<'a> Checker<'a> {
     pub(super) fn has_pending_patterns(&self) -> bool {
         self.pending_patterns.is_some()
     }
+    /// Consume only after successful checking; failed checks discard their slots.
+    pub(super) fn into_scratch(self) -> Scratch {
+        Scratch {
+            terms: self.terms,
+            diverges: self.diverges,
+            locals: self.locals,
+        }
+    }
     pub(super) fn constant(&mut self, key: NodeKey, ty: TypeId, owner: DefId) -> Result<(), Error> {
+        let scope = self.report.resolution.definitions[owner.0 as usize].scope;
+        self.constant_in_module(
+            key,
+            ty,
+            self.report.resolution.scopes[scope.0 as usize].module,
+        )
+    }
+    pub(super) fn constant_in_module(
+        &mut self,
+        key: NodeKey,
+        ty: TypeId,
+        module: ModuleId,
+    ) -> Result<(), Error> {
         self.call_types.clear();
         self.body_binders = 0;
         self.body = key;
         self.prepare_file(key.file);
-        let scope = self.report.resolution.definitions[owner.0 as usize].scope;
-        self.module = self.report.resolution.scopes[scope.0 as usize].module;
+        self.module = module;
         self.result = ty;
         self.in_function = false;
         self.body(key.node)

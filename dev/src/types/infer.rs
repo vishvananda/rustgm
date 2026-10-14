@@ -21,6 +21,7 @@ pub enum Constructor {
     Never,
     Tuple,
     Array(u64),
+    ArrayTerm(super::arguments::ConstId),
     Slice,
     Reference {
         mutable: bool,
@@ -489,6 +490,10 @@ impl Context {
                 children.push(self.known(store, element)?);
                 Constructor::Array(length)
             }
+            Kind::ArrayTerm { element, length } => {
+                children.push(self.known(store, element)?);
+                Constructor::ArrayTerm(length)
+            }
             Kind::Slice(element) => {
                 children.push(self.known(store, element)?);
                 Constructor::Slice
@@ -642,6 +647,10 @@ fn canonical(
             Kind::Tuple(store.intern_list(children).map_err(|_| Error::Overflow)?)
         }
         Constructor::Array(length) => Kind::Array {
+            element: first()?,
+            length,
+        },
+        Constructor::ArrayTerm(length) => Kind::ArrayTerm {
             element: first()?,
             length,
         },

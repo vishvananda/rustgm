@@ -5,7 +5,7 @@ use std::{
     process::{Command, Output},
 };
 
-const CHECK: &str = "fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}\n";
+pub const CHECK: &str = "fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}\n";
 fn compile(name: &str, output: Output) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
     if !output.status.success() || !output.stderr.is_empty() {
         return Err(format!(

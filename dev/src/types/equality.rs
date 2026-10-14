@@ -142,7 +142,9 @@ impl Query {
             if initial != Properties::default() {
                 let mut visit = |child| self.dependency(index, child, known);
                 match kind {
-                    Kind::Array { element, .. } | Kind::Slice(element) => visit(element)?,
+                    Kind::Array { element, .. }
+                    | Kind::ArrayTerm { element, .. }
+                    | Kind::Slice(element) => visit(element)?,
                     Kind::Reference { referent, .. } => visit(referent)?,
                     Kind::Tuple(fields) => {
                         for &ty in types.list(fields).ok_or("missing equality tuple")? {

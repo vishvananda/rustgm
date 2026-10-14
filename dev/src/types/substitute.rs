@@ -1,14 +1,22 @@
-//! Remove one lifetime binder using typed arguments, without capturing nested binders.
+//! Substitute a template binder and its parameters without capturing nested binders.
+mod parameters;
 use super::{Kind, ListId, RegionId, Store, TypeId, arguments::Argument};
 use std::collections::HashMap;
 
 type Key = (TypeId, u16);
 const WORK_LIMIT: usize = 1_000_000;
 
+enum Action {
+    Remove,
+    Shift(u16),
+}
+
 /// A substitution cache belongs to one store and one argument environment.
 /// Reuse it across the parameters/result/fields of that same instantiation.
 pub struct Bound {
     arguments: Vec<RegionId>,
+    action: Action,
+    parameters: Option<Box<parameters::Bindings>>,
     completed: HashMap<Key, TypeId>,
     work: Vec<(Key, bool)>,
     children: Vec<TypeId>,
@@ -22,6 +30,8 @@ impl Bound {
     pub fn new(arguments: Vec<RegionId>) -> Self {
         Self {
             arguments,
+            action: Action::Remove,
+            parameters: None,
             completed: HashMap::new(),
             work: Vec::new(),
             children: Vec::new(),
@@ -93,7 +103,9 @@ impl Bound {
         let escaping = store
             .escaping_binders(key.0)
             .ok_or("invalid substitution type")?;
-        if escaping <= key.1 {
+        if escaping <= key.1
+            && !(self.parameters.is_some() && store.contains_parameters(key.0) == Some(true))
+        {
             return Ok(Some(key.0));
         }
         Ok(self.completed.get(&key).copied())
@@ -114,6 +126,12 @@ impl Bound {
                 continue;
             }
             let kind = store.kind(key.0).ok_or("invalid substitution type")?;
+            if let Kind::Parameter(id) = kind
+                && let Some(replacement) = self.parameter(store, id, key.1)?
+            {
+                self.completed.insert(key, replacement);
+                continue;
+            }
             if finish {
                 let kind = self.rebuild(store, kind, key.1)?;
                 self.completed.insert(key, store.intern(kind)?);
@@ -144,6 +162,7 @@ impl Bound {
                 Some((parameters, depth))
             }
             Kind::Array { element: ty, .. }
+            | Kind::ArrayTerm { element: ty, .. }
             | Kind::Slice(ty)
             | Kind::Reference { referent: ty, .. }
             | Kind::Pointer { pointee: ty, .. } => {
@@ -199,6 +218,14 @@ impl Bound {
         if binder < depth {
             return Ok(region);
         }
+        if let Action::Shift(amount) = self.action {
+            return RegionId::bound(
+                binder
+                    .checked_add(amount)
+                    .ok_or("lifetime binder depth overflow")?,
+                index,
+            );
+        }
         if binder > depth {
             return RegionId::bound(binder - 1, index);
         }
@@ -239,6 +266,10 @@ impl Bound {
             Kind::Array { element, length } => Kind::Array {
                 element: self.child(store, element, depth)?,
                 length,
+            },
+            Kind::ArrayTerm { element, length } => Kind::ArrayTerm {
+                element: self.child(store, element, depth)?,
+                length: self.constant(store, length)?,
             },
             Kind::Slice(element) => Kind::Slice(self.child(store, element, depth)?),
             Kind::Reference {
@@ -300,7 +331,7 @@ impl Bound {
             self.generic.push(match argument {
                 Argument::Lifetime(region) => Argument::Lifetime(self.region(region, depth)?),
                 Argument::Type(ty) => Argument::Type(self.child(store, ty, depth)?),
-                Argument::Const(id) => Argument::Const(id),
+                Argument::Const(id) => Argument::Const(self.constant(store, id)?),
             });
         }
         store.intern_arguments(&self.generic)

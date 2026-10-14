@@ -3,6 +3,7 @@ mod aggregates;
 mod annotations;
 mod contracts;
 mod destructors;
+mod generics;
 mod lifetimes;
 use super::{
     model::{Declarations, Function, Initializer, InitializerKind},
@@ -35,6 +36,8 @@ enum SignaturePhase {
 }
 #[derive(Clone, Copy)]
 enum Work {
+    Generic(generics::Declaration),
+    PathArguments(NodeKey, DefId, regions::Context),
     Definition(DefId, bool),
     Node(NodeKey, bool, regions::Context),
     Reference(NodeKey, RegionId),
@@ -49,6 +52,11 @@ struct Signature {
     unsafe_: bool,
 }
 struct Checker<'a> {
+    constant_modules:
+        Option<std::collections::HashMap<NodeKey, Option<crate::resolve::package::ModuleId>>>,
+    constant_scratch: super::constants::Scratch,
+    constant_dependencies: std::collections::HashSet<NodeKey>,
+    parameter_uses: crate::types::parameters::uses::Uses,
     report: &'a Report,
     facts: Declarations,
     states: Vec<State>,
@@ -73,6 +81,10 @@ pub fn analyze(report: &Report) -> Result<Declarations, Error> {
         ));
     }
     let mut checker = Checker {
+        constant_modules: None,
+        constant_scratch: super::constants::Scratch::default(),
+        constant_dependencies: std::collections::HashSet::new(),
+        parameter_uses: crate::types::parameters::uses::Uses::default(),
         report,
         facts: Declarations::new(report)?,
         states: vec![State::Unseen; report.resolution.definitions.len()],
@@ -141,6 +153,8 @@ impl Checker<'_> {
                 ));
             }
             match work {
+                Work::Generic(declaration) => self.generic_declaration(declaration)?,
+                Work::PathArguments(key, id, context) => self.path_arguments(key, id, context)?,
                 Work::Definition(id, finish) => self.definition(id, finish)?,
                 Work::Node(key, finish, context) => self.annotation(key, finish, context)?,
                 Work::Reference(key, region) => self.reference_type(key, region)?,
@@ -343,6 +357,7 @@ impl Checker<'_> {
                 ItemKind::TypeAlias { ty: Some(ty), .. } => {
                     let context = self.template_context(id, key)?;
                     self.node_work(key.file, ty, context);
+                    self.alias_parameters(id, key, context)?;
                 }
                 ItemKind::Const { ty, .. } | ItemKind::Static { ty, .. } => {
                     self.node_work(key.file, ty, regions::Context::STATIC);
@@ -361,6 +376,9 @@ impl Checker<'_> {
             _ => return Err(self.error(key, "invalid completed declaration")),
         };
         self.complete(id, key, ty)?;
+        if matches!(item.kind, ItemKind::TypeAlias { .. }) {
+            self.validate_alias(id, key, ty)?;
+        }
         let (value, kind) = match item.kind {
             ItemKind::Const { value, .. } => (value, InitializerKind::Const),
             ItemKind::Static { value, mutable, .. } => (value, InitializerKind::Static { mutable }),
@@ -426,22 +444,7 @@ impl Checker<'_> {
                     self.node_work(key.file, node, context);
                 }
                 Kind::Path { .. } | Kind::Name(_) => {
-                    let Some(Target::Definition(id)) =
-                        self.facts.node(key).and_then(|facts| facts.reference)
-                    else {
-                        return Err(self.error(key, "type path needs a resolved declaration"));
-                    };
-                    if !matches!(
-                        self.report.resolution.definitions[id.0 as usize].kind,
-                        DefKind::Primitive | DefKind::TypeAlias | DefKind::Struct | DefKind::Enum
-                    ) && self.facts.destructors.self_type(id).is_none()
-                    {
-                        return Err(self.error(
-                            key,
-                            "nominal or associated types require later semantic assignments",
-                        ));
-                    }
-                    self.work.push(Work::Definition(id, false));
+                    self.schedule_type_path(key, context)?;
                 }
                 Kind::Type { flavor, elements } => {
                     let unit = self.report.package.unit(key.file);
@@ -487,6 +490,40 @@ impl Checker<'_> {
             _ => return Err(self.error(key, "invalid completed annotation")),
         };
         self.store(key, ty)
+    }
+    fn schedule_type_path(&mut self, key: NodeKey, context: regions::Context) -> Result<(), Error> {
+        let Some(Target::Definition(id)) = self.facts.node(key).and_then(|facts| facts.reference)
+        else {
+            return Err(self.error(key, "type path needs a resolved declaration"));
+        };
+        let kind = self.report.resolution.definitions[id.0 as usize].kind;
+        if kind == DefKind::Generic
+            && !self.facts.definitions[id.0 as usize]
+                .is_some_and(|ty| matches!(self.facts.types.kind(ty), Some(Type::Parameter(_))))
+        {
+            return Err(self.error(key, "const parameter cannot be used as a type"));
+        }
+        if !matches!(
+            kind,
+            DefKind::Primitive
+                | DefKind::TypeAlias
+                | DefKind::Struct
+                | DefKind::Enum
+                | DefKind::Generic
+        ) && self.facts.destructors.self_type(id).is_none()
+        {
+            return Err(self.error(
+                key,
+                "nominal or associated types require later semantic assignments",
+            ));
+        }
+        if kind == DefKind::TypeAlias
+            && crate::sema::lifetimes::arguments(self.report, key, false)?.is_some()
+        {
+            self.work.push(Work::PathArguments(key, id, context));
+        }
+        self.work.push(Work::Definition(id, false));
+        Ok(())
     }
     fn schedule_reference(
         &mut self,
@@ -569,6 +606,11 @@ impl Checker<'_> {
                 return Err(self.error(key, "expected lifetime parameter"));
             };
             let parameter = unit.configured.ast.generics[index as usize];
+            if parameter.flavor != GenericFlavor::Lifetime
+                && matches!(self.item(key)?.kind, ItemKind::TypeAlias { .. })
+            {
+                continue;
+            }
             if parameter.flavor != GenericFlavor::Lifetime
                 || (parameter.bounds.start != parameter.bounds.end
                     && !matches!(
@@ -911,16 +953,7 @@ impl Checker<'_> {
                 let length = *elements
                     .get(1)
                     .ok_or_else(|| self.error(key, "missing array length"))?;
-                Type::Array {
-                    element,
-                    length: array_length(
-                        self.report,
-                        NodeKey {
-                            file: key.file,
-                            node: length,
-                        },
-                    )?,
-                }
+                self.array_type(key, element, length)?
             }
             _ => return Err(self.error(key, "unsupported compound annotation")),
         };

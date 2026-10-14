@@ -76,6 +76,7 @@ pub fn callables(store: &mut Store, root: TypeId, first: u32) -> Result<Speciali
                     Kind::Reference { referent: ty, .. }
                     | Kind::Pointer { pointee: ty, .. }
                     | Kind::Array { element: ty, .. }
+                    | Kind::ArrayTerm { element: ty, .. }
                     | Kind::Slice(ty) => work.push(Work::Enter(ty)),
                     _ => return Err("unexpected specialized callable shape"),
                 }
@@ -141,9 +142,11 @@ fn arity(store: &Store, kind: Kind) -> Result<usize, &'static str> {
             .list(list)
             .ok_or("missing specialization tuple")?
             .len()),
-        Kind::Reference { .. } | Kind::Pointer { .. } | Kind::Array { .. } | Kind::Slice(_) => {
-            Ok(1)
-        }
+        Kind::Reference { .. }
+        | Kind::Pointer { .. }
+        | Kind::Array { .. }
+        | Kind::ArrayTerm { .. }
+        | Kind::Slice(_) => Ok(1),
         _ => Err("invalid specialization constructor"),
     }
 }
@@ -157,6 +160,10 @@ fn rebuild(store: &mut Store, kind: Kind, children: &[TypeId]) -> Result<Kind, &
     Ok(match kind {
         Kind::Tuple(_) => Kind::Tuple(store.intern_list(children)?),
         Kind::Array { length, .. } => Kind::Array {
+            length,
+            element: first()?,
+        },
+        Kind::ArrayTerm { length, .. } => Kind::ArrayTerm {
             length,
             element: first()?,
         },

@@ -25,11 +25,11 @@ same binder depth as their owner. Shared type DAGs use the existing memoized,
 bounded worklists. Nested callable binders remain capture-safe. Const arguments
 distinguish evaluated scalar values from rigid const parameter terms.
 
-Source type/const generics are still rejected at the existing semantic boundary.
-The new representation alone does not instantiate field definitions, prove
-generic bounds or produce native code. Layout, Copy/equality and destruction
-queries reject mixed-argument nominal types until instantiated fields and
-obligations are supplied. No course references are regenerated for this change.
+Source type/const aliases now exercise joint substitution through the complete
+frontend and native bridge. Generic functions and aggregates retain their
+semantic boundaries. Layout, Copy/equality and destruction queries reject
+mixed-argument nominal types until instantiated fields and obligations are
+supplied. The alias checkpoint below records its exact scope and open work.
 
 ## PA18: generic templates and demanded instances
 
@@ -263,3 +263,124 @@ Final local evidence in `obj/pa18-work/`: `parameters-full-v3.log`,
 referenced raw receipts. The preceding candidate's observations are in
 `parameters-v1-perf-results.json`. No generic source execution or completed PA18
 grading contract is claimed by these typed representation tests.
+
+## Joint substitution and source alias checkpoint
+
+`Bound::joint` substitutes one owner's type/const parameters and early lifetimes
+in one bounded traversal. Inserted type arguments belong to the destination
+context and are shifted beneath nested callable binders. Replacements are
+simultaneous: substituting `T -> U, U -> T` swaps the parameters; it does not
+chase substitutions recursively. Cache keys include binder depth, and semantic
+substitution caches include the declaration owner and full argument identity.
+Six invariants cover capture, nested callable arguments, foreign owners, const
+types, overflow, shared DAG work and repeat-query reuse.
+
+An array length can now be a typed const parameter. Instantiation normalizes a
+known length to the existing concrete array identity, preserving layout and
+earlier LowIR behavior. Unresolved terms cannot acquire a fabricated storage
+layout or destruction proof. Type-parameter use collection visits shared nodes
+once across completed aliases, so erased type parameters are diagnosed without
+repeated source scans.
+
+The declaration worklist now elaborates alias type/const parameters, declaration
+order, trailing defaults, dependent defaults, arity and argument kinds. It checks
+unused declarations, alias cycles and unused type parameters. Source aliases
+support scalar const parameters, standalone parameter forwarding, closed scalar
+expressions supported by the existing evaluator, named constants, lifetime
+arguments/elision and type arguments under callable binders. Alias expansion
+retains Rust's deferred underlying well-formedness: an unused ill-formed alias
+can be declared, while a function signature or body requiring it is rejected.
+Alias bounds and generic body obligations remain separate responsibilities.
+
+Name resolution prefers the type namespace for ambiguous bare arguments, falls
+back to named constants when no type exists, and resolves explicit const blocks
+as expressions. Four new PA6 fixtures own this resolver behavior. Outcomes were
+declared before generating their references. The ambiguity fixture records that
+PA6 resolves the type successfully while PA18 must reject its use as a const
+argument. Existing PA6 text oracles are unchanged; its generated receipt now
+records the current source hashes and the four new fixtures.
+
+The maintainer suite independently qualifies 60 accepted/rejected alias programs
+with the pinned rustc. Qualification retains default lints, including overflowing
+literals; suppressing every lint previously hid that class of error. An additional
+2048-link generic alias chain exercises the iterative dependency graph. Nine
+programs pass the complete frontend and match rustc/native execution through
+CPPGM, including different array layouts, defaults, function pointers, references,
+custom destruction, zero-sized elements, nested callable reference binders and
+a bounds panic.
+
+Const argument checking reuses cleared dense body slots and an append-only
+initializer index across the declaration phase. It keeps the existing scalar
+typing and constant evaluator. Only touched nodes/bindings are cleared after a
+successful query; failed checking discards its scratch. This avoids initializing
+whole-file vectors separately for each small argument expression. The scratch
+belongs to declaration checking and is released before later phases.
+
+This is an incremental PA18 implementation, not a release. Remaining alias work
+includes type/const inference holes, type parameter bounds, deferred evaluation
+of unused const arguments/defaults, and broader shape-constant scheduling. In
+particular, the current evaluator can reject an unused faulting const expression
+that rustc never demands. Blocks with constant statements retain the existing
+general-constant-evaluation boundary. Aggregate expressions used in shape
+constants still need completed member facts when demanded in item signatures.
+Const blocks use their resolved lexical module for privacy; the alias's defining
+module cannot grant access to private fields or remove the caller's access.
+Generic functions/aggregates, symbolic-body proofs, demanded instances and all
+PA19–PA21 contracts remain required. No PA18 manifest is published prematurely.
+
+### Alias performance measurements
+
+The first alias prototype and the final scratch-reuse implementation are frozen
+as separate binaries. Nine generic workloads vary type-only aliases, literal
+const arguments and closed const expressions at 256/1024/4096 functions. Initial
+A/A scaling retains 162 observations. The final comparison retains 324 more
+observations: nine ordinary LowIR workloads against `61fa2af`, and the nine generic
+workloads against the initial alias prototype. Every job has two warmups, four
+A/A observations and three ABBA blocks on CPU 2. Full views and count outputs
+match exactly within every comparison; all source/input/binary hashes are checked.
+No builds or tests from this run overlap timing.
+
+At 4096 functions, paired median wall times were:
+
+| Workload | Baseline ms | Final ms | Baseline RSS KiB | Final RSS KiB |
+| --- | ---: | ---: | ---: | ---: |
+| Ordinary thin references | 486.160 | 477.482 | 77306 | 76208 |
+| Ordinary wide references | 891.899 | 867.775 | 124080 | 124434 |
+| Ordinary destruction | 2706.684 | 2684.530 | 290096 | 290616 |
+| Type-only aliases | 59.744 | 56.697 | 17004 | 16984 |
+| Literal const arguments | 290.904 | 77.343 | 19110 | 18392 |
+| Closed const expressions | 344.031 | 96.585 | 21204 | 21228 |
+
+The ordinary comparisons have overlapping ranges and show host variation; they
+do not establish a general speedup. Both const workloads have separated paired
+ranges after scratch reuse. Retained local evidence is
+`obj/pa18-work/aliases-v1-perf-results.json`, `aliases-v3-perf-results.json`, their
+referenced raw receipts, and `aliases-v3-source-sha256.json`. The intermediate
+scratch-only candidate's complete `aliases-v2-*` measurements are also retained.
+
+An additional 54-sample names comparison covers 4000/16000/64000 generated
+functions against `61fa2af`, with full output equality. At 64000 functions the
+paired medians are 905.773 ms baseline and 899.315 ms final; candidate peak RSS
+is 140108 KiB. The evidence is `aliases-v3-names-perf.log` and
+`obj/perf/1791956432623523018/samples.json`.
+
+### Alias checkpoint validation
+
+The final debug run passes 542 frontend tests; nine backend-dependent maintainer
+tests are explicitly ignored by the default suite. All 3,297 active course cases
+pass, including the four new PA6 cases; the previous 3,293 oracles are unchanged.
+All 27 focused generic tests pass in release with native execution enabled.
+Rustfmt, Clippy all/pedantic, the 365-file architecture audit, 25 harness tests,
+assignment discovery and pinned upstream/reference verification pass. The full
+independent rustc/layout checks and all nine explicit native maintainer tests
+also passed before the privacy correction; final privacy controls are separately
+qualified against rustc, and the final nine alias native programs pass in both
+debug and release. The final compiler still matches every earlier text oracle.
+
+Local final logs are `aliases-full-v4.log`, `aliases-release-v3.log`,
+`aliases-native-final.log`, `aliases-audits-v7.log`,
+`aliases-pa6-reference-v3.log` and the preceding broad independent qualification
+`aliases-independent-v2.log`, all under `obj/pa18-work/`. The measured compiler
+sources and generated PA6 receipt are checked against the final worktree before
+publication. PA18–PA21 remain planned and the complete four-assignment goal
+remains active.

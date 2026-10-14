@@ -41,6 +41,12 @@ the match can see them. Guard bindings can shadow the arm's pattern bindings.
 Or-patterns must agree on binding names/modes. Constants and constructors in
 patterns are references rather than invented local variables.
 
+For a bare generic argument, prefer an available type name; if no type exists,
+resolve a single-segment const parameter or named constant in the value namespace.
+An explicit const block resolves its contents as expressions, so `{N}` selects
+the value even when a type also has that name. Checking whether the selected
+argument has the declaration's required kind belongs to PA18.
+
 Resolve nested use trees, aliases, underscore imports, self imports, globs,
 reexports and import cycles. Direct/explicit bindings take precedence over globs;
 different glob targets are ambiguous on use. Repeated paths to the same target

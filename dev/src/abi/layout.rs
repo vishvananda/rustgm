@@ -251,6 +251,7 @@ impl Layouts {
     ) -> Result<Layout, &'static str> {
         match kind {
             Kind::Parameter(_) => Err("generic type parameter has no concrete layout"),
+            Kind::ArrayTerm { .. } => Err("generic array length has no concrete layout"),
             Kind::Never => Ok(Layout {
                 size: 0,
                 align: 1,

@@ -88,7 +88,7 @@ impl NeedsDrop {
                 _ => {}
             }
             let kind = types.kind(ty).ok_or("invalid destruction type")?;
-            if matches!(kind, Kind::Parameter(_)) {
+            if matches!(kind, Kind::Parameter(_) | Kind::ArrayTerm { .. }) {
                 return Err("generic destruction checking requires a parameter environment");
             }
             if matches!(kind, Kind::Adt(_, args) if types.region_args(args).is_none()) {

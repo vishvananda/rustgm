@@ -1,0 +1,127 @@
+//! Joint parameter replacement shares the lifetime folder and its capture rules.
+use super::{Action, Bound};
+use crate::types::{
+    GenericArgs, ItemId, Store, TypeId,
+    arguments::{Argument, ConstId, ConstKind},
+    parameters::{ParameterId, ParameterKind},
+};
+use std::collections::HashMap;
+
+pub(super) struct Bindings {
+    owner: ItemId,
+    arguments: Vec<Argument>,
+    shifts: HashMap<u16, Bound>,
+}
+impl Bound {
+    /// Substitute a single argument in this template's outermost binder.
+    /// # Errors
+    /// Rejects invalid identities, mismatches, missing arguments and work limits.
+    pub fn apply_argument(
+        &mut self,
+        store: &mut Store,
+        argument: Argument,
+    ) -> Result<Argument, &'static str> {
+        Ok(match argument {
+            Argument::Lifetime(region) => Argument::Lifetime(self.region(region, 0)?),
+            Argument::Type(ty) => Argument::Type(self.apply(store, ty)?),
+            Argument::Const(id) => Argument::Const(self.constant(store, id)?),
+        })
+    }
+    /// Replace this owner's type/const parameters and remove its lifetime binder
+    /// in one traversal. Arguments live in the destination context. The declaration
+    /// checker owns full arity/default/bound validation, including unused parameters.
+    ///
+    /// # Errors
+    /// Rejects invalid argument identities. Applying the substitution also rejects
+    /// missing used arguments, kind/type mismatches, binder overflow and work limits.
+    pub fn joint(
+        store: &Store,
+        owner: ItemId,
+        arguments: GenericArgs,
+    ) -> Result<Self, &'static str> {
+        let arguments = store
+            .arguments(arguments)
+            .ok_or("invalid substitution arguments")?;
+        if arguments.len() > super::WORK_LIMIT {
+            return Err("generic substitution argument budget exceeded");
+        }
+        let arguments: Vec<_> = arguments.collect();
+        let regions = arguments
+            .iter()
+            .filter_map(|argument| match argument {
+                Argument::Lifetime(region) => Some(*region),
+                _ => None,
+            })
+            .collect();
+        let mut substitution = Self::new(regions);
+        substitution.parameters = Some(Box::new(Bindings {
+            owner,
+            arguments,
+            shifts: HashMap::new(),
+        }));
+        Ok(substitution)
+    }
+
+    pub(super) fn parameter(
+        &mut self,
+        store: &mut Store,
+        id: ParameterId,
+        depth: u16,
+    ) -> Result<Option<TypeId>, &'static str> {
+        let Some(Argument::Type(ty)) = self.argument(store, id)? else {
+            return Ok(None);
+        };
+        if depth == 0 || store.escaping_binders(ty) == Some(0) {
+            return Ok(Some(ty));
+        }
+        let bindings = self
+            .parameters
+            .as_mut()
+            .ok_or("missing parameter substitution")?;
+        let shift = bindings.shifts.entry(depth).or_insert_with(|| {
+            let mut shift = Self::new(Vec::new());
+            shift.action = Action::Shift(depth);
+            shift
+        });
+        let before = shift.steps;
+        let result = shift.apply(store, ty);
+        let work = shift.steps.saturating_sub(before);
+        self.account_arguments(work)?;
+        result.map(Some)
+    }
+    pub(super) fn constant(&self, store: &Store, id: ConstId) -> Result<ConstId, &'static str> {
+        let kind = store
+            .const_kind(id)
+            .ok_or("invalid substitution constant")?;
+        if let ConstKind::Parameter(parameter) = kind
+            && let Some(Argument::Const(argument)) = self.argument(store, parameter)?
+        {
+            return Ok(argument);
+        }
+        Ok(id)
+    }
+    fn argument(&self, store: &Store, id: ParameterId) -> Result<Option<Argument>, &'static str> {
+        let Some(bindings) = &self.parameters else {
+            return Ok(None);
+        };
+        let parameter = store
+            .parameter(id)
+            .ok_or("invalid substitution parameter")?;
+        if parameter.owner != bindings.owner {
+            return Ok(None);
+        }
+        let argument = *bindings
+            .arguments
+            .get(parameter.index as usize)
+            .ok_or("missing generic argument")?;
+        let valid = match (parameter.kind, argument) {
+            (ParameterKind::Type { .. }, Argument::Type(_)) => true,
+            (ParameterKind::Const { ty }, Argument::Const(id)) => store.const_type(id) == Some(ty),
+            _ => false,
+        };
+        if !valid {
+            return Err("generic argument kind or const type mismatch");
+        }
+        Ok(Some(argument))
+    }
+}

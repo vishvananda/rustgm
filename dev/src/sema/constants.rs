@@ -2,6 +2,8 @@
 mod arithmetic;
 mod constructors;
 mod contents;
+mod generics;
+pub(super) use generics::argument as generic_argument;
 mod patterns;
 mod places;
 pub(super) mod products;
@@ -138,6 +140,13 @@ struct Queries<'a> {
     limit: usize,
     pattern_values: HashSet<Value>,
 }
+/// Declaration checking owns this cache; it never survives into lowering.
+#[derive(Default)]
+pub(super) struct Scratch {
+    typing: bodies::Scratch,
+    constants: Vec<Option<usize>>,
+    indexed: usize,
+}
 
 pub(super) fn discriminants(
     report: &Report,
@@ -252,6 +261,14 @@ pub(super) fn pattern_values(
 }
 impl<'a> Queries<'a> {
     fn new(report: &'a Report, facts: &'a mut Declarations, specs: &'a [Discriminant]) -> Self {
+        Self::with_scratch(report, facts, specs, Scratch::default())
+    }
+    fn with_scratch(
+        report: &'a Report,
+        facts: &'a mut Declarations,
+        specs: &'a [Discriminant],
+        mut scratch: Scratch,
+    ) -> Self {
         let mut variants = vec![
             None;
             if specs.is_empty() {
@@ -263,13 +280,13 @@ impl<'a> Queries<'a> {
         for (index, spec) in specs.iter().enumerate() {
             variants[spec.variant.0 as usize] = Some(index);
         }
-        let mut constants = vec![None; facts.definitions.len()];
-        for (index, initializer) in facts.initializers.iter().enumerate() {
+        scratch.constants.resize(facts.definitions.len(), None);
+        for (index, initializer) in facts.initializers.iter().enumerate().skip(scratch.indexed) {
             if matches!(
                 initializer.kind,
                 InitializerKind::Const | InitializerKind::Static { mutable: false }
             ) {
-                constants[initializer.definition.0 as usize] = Some(index);
+                scratch.constants[initializer.definition.0 as usize] = Some(index);
             }
         }
         let limit = report
@@ -283,10 +300,10 @@ impl<'a> Queries<'a> {
             .saturating_mul(16);
         Self {
             report,
-            typing: bodies::Checker::new(report, facts),
+            typing: bodies::Checker::with_scratch(report, facts, scratch.typing),
             specs,
             variants,
-            constants,
+            constants: scratch.constants,
             expressions: HashMap::new(),
             states: HashMap::new(),
             work: Vec::new(),
@@ -294,6 +311,14 @@ impl<'a> Queries<'a> {
             steps: 0,
             limit,
             pattern_values: HashSet::new(),
+        }
+    }
+    fn into_scratch(self) -> Scratch {
+        let indexed = self.typing.facts.initializers.len();
+        Scratch {
+            indexed,
+            constants: self.constants,
+            typing: self.typing.into_scratch(),
         }
     }
 }

@@ -345,6 +345,20 @@ fn ty(store: &Store, id: TypeId, out: &mut impl Write) -> io::Result<()> {
         Kind::Array { element, length } => {
             write!(out, "array element={} length={length}", element.0)
         }
+        Kind::ArrayTerm { element, length } => {
+            let Some(crate::types::arguments::ConstKind::Parameter(id)) = store.const_kind(length)
+            else {
+                return Err(io::Error::other("invalid symbolic array length"));
+            };
+            let parameter = store
+                .parameter(id)
+                .ok_or_else(|| io::Error::other("missing array length parameter"))?;
+            write!(
+                out,
+                "array element={} length=parameter:{}:{}",
+                element.0, parameter.owner.0, parameter.index
+            )
+        }
         Kind::Slice(element) => write!(out, "slice element={}", element.0),
         Kind::Pointer { mutable, pointee } => {
             write!(out, "pointer mutable={mutable} pointee={}", pointee.0)

@@ -187,7 +187,9 @@ impl Graph {
                     };
                     self.queue_type(pointee, variance, depth)?;
                 }
-                Kind::Array { element, .. } | Kind::Slice(element) => {
+                Kind::Array { element, .. }
+                | Kind::ArrayTerm { element, .. }
+                | Kind::Slice(element) => {
                     self.queue_type(element, position, depth)?;
                 }
                 Kind::Tuple(fields) => {

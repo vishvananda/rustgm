@@ -5,6 +5,7 @@ pub use constants::values;
 pub mod declarations;
 pub mod destructors;
 pub mod entry;
+pub mod generics;
 pub mod layout_view;
 pub mod lifetimes;
 pub mod members;

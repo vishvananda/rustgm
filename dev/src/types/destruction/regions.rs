@@ -235,7 +235,7 @@ fn dependencies(
             }
         }
         Key::Type(ty) => match types.kind(ty).ok_or("invalid drop region type")? {
-            Kind::Parameter(_) => {
+            Kind::Parameter(_) | Kind::ArrayTerm { .. } => {
                 return Err("generic drop checking requires a parameter environment");
             }
             Kind::Adt(item, _) => {

@@ -12,7 +12,6 @@ pub fn qualify(name: &str, source: &str, accepted: bool) -> Result<(), Box<dyn s
             "--crate-type=lib",
             "--crate-name=drop_identity",
             "--emit=metadata",
-            "--cap-lints=allow",
             "-o",
         ])
         .arg(folder.join(format!("{name}.rmeta")))

@@ -153,6 +153,9 @@ impl Checker<'_> {
         if self.facts.destructors.self_type(id).is_some() {
             return self.drop_self_type(key, id, context);
         }
+        if self.facts.generics.parameters.contains_key(&id) {
+            return self.generic_path(key, id, context);
+        }
         let ty = self.facts.definitions[id.0 as usize]
             .ok_or_else(|| self.error(key, "missing resolved declaration type"))?;
         let arguments = crate::sema::lifetimes::arguments(self.report, key, false)?;

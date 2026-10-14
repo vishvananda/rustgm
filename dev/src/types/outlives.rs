@@ -46,7 +46,9 @@ fn children(
         }
         Kind::Reference { referent, .. } => work.push((referent, depth)),
         Kind::Pointer { pointee, .. } => work.push((pointee, depth)),
-        Kind::Slice(element) | Kind::Array { element, .. } => work.push((element, depth)),
+        Kind::Slice(element) | Kind::Array { element, .. } | Kind::ArrayTerm { element, .. } => {
+            work.push((element, depth));
+        }
         Kind::Tuple(list) => {
             let children = types.list(list).ok_or("missing outlives tuple children")?;
             budget.pending(work.len().saturating_add(children.len()))?;

@@ -138,7 +138,7 @@ fn children(
     mut visit: impl FnMut(TypeId) -> Result<(), &'static str>,
 ) -> Result<(), &'static str> {
     match kind {
-        Kind::Array { element, .. } => visit(element)?,
+        Kind::Array { element, .. } | Kind::ArrayTerm { element, .. } => visit(element)?,
         Kind::Tuple(list) => {
             for ty in types.list(list).ok_or("invalid Copy tuple")? {
                 visit(*ty)?;

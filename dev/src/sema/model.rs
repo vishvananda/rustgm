@@ -206,6 +206,7 @@ pub struct ReferenceAlignment {
     pub guard: bool,
 }
 pub struct Declarations {
+    pub generics: super::generics::Generics,
     /// Repeat operands selected as constant paths before runtime coercion wrappers.
     pub constant_repeats: std::collections::HashSet<NodeKey>,
     pub destructors: super::destructors::Destructors,
@@ -255,6 +256,7 @@ impl Declarations {
     }
     pub(super) fn new(report: &Report) -> Result<Self, Error> {
         let mut value = Self {
+            generics: super::generics::Generics::default(),
             constant_repeats: std::collections::HashSet::new(),
             destructors: super::destructors::Destructors::default(),
             reference_alignment: Vec::new(),
@@ -316,7 +318,7 @@ impl Declarations {
         for (index, definition) in report.resolution.definitions.iter().enumerate() {
             if (matches!(
                 definition.kind,
-                DefKind::Local | DefKind::Parameter | DefKind::Label
+                DefKind::Local | DefKind::Parameter | DefKind::Label | DefKind::Generic
             ) || definition.namespace == Namespace::Lifetime)
                 && let Some(key) = definition.node
             {

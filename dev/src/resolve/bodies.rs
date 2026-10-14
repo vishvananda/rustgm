@@ -151,7 +151,7 @@ impl Resolver<'_> {
                 output,
             } => {
                 self.visit(c, base, ns)?;
-                self.visit_list(c, arguments, Namespace::Type)?;
+                self.generic_arguments(c, arguments)?;
                 self.optional(c, output, Namespace::Type)
             }
             Kind::Qualified {
@@ -336,7 +336,16 @@ impl Resolver<'_> {
             e
         })
     }
-    pub fn reference(&mut self, c: Context, node: NodeId, mut ns: Namespace) -> Result<(), Error> {
+    pub fn reference(&mut self, c: Context, node: NodeId, ns: Namespace) -> Result<(), Error> {
+        self.argument_reference(c, node, ns, false)
+    }
+    fn argument_reference(
+        &mut self,
+        c: Context,
+        node: NodeId,
+        mut ns: Namespace,
+        const_argument: bool,
+    ) -> Result<(), Error> {
         if let Kind::Name(span) = self.kind(c, node)
             && self
                 .package
@@ -355,7 +364,10 @@ impl Resolver<'_> {
             // Syntactically ambiguous const generic arguments are typed after lookup.
             if let Lookup::Missing = self.lexical(c.scope, path[0], ns)
                 && let Lookup::Found(binding) = self.lexical(c.scope, path[0], Namespace::Value)
-                && self.facts.definitions[binding.target.0 as usize].kind == DefKind::Generic
+                && (self.facts.definitions[binding.target.0 as usize].kind == DefKind::Generic
+                    || (const_argument
+                        && self.facts.definitions[binding.target.0 as usize].kind
+                            == DefKind::Const))
             {
                 ns = Namespace::Value;
             }
@@ -424,10 +436,45 @@ impl Resolver<'_> {
             Kind::Applied {
                 arguments, output, ..
             } => {
-                self.visit_list(c, arguments, Namespace::Type)?;
+                self.generic_arguments(c, arguments)?;
                 self.optional(c, output, Namespace::Type)?;
             }
             _ => {}
+        }
+        Ok(())
+    }
+    fn generic_arguments(&mut self, c: Context, arguments: List) -> Result<(), Error> {
+        for offset in arguments.start..arguments.end {
+            let node = self.package.unit(c.file).configured.ast.edges[offset as usize];
+            let path = if let Kind::Type {
+                flavor: TypeFlavor::Path,
+                elements,
+            } = self.kind(c, node)
+            {
+                self.package
+                    .unit(c.file)
+                    .configured
+                    .ast
+                    .list(elements)
+                    .first()
+                    .copied()
+                    .unwrap_or(node)
+            } else {
+                node
+            };
+            if matches!(self.kind(c, path), Kind::Path { .. } | Kind::Name(_)) {
+                self.argument_reference(c, path, Namespace::Type, true)?;
+            } else {
+                let ns = if matches!(
+                    self.kind(c, node),
+                    Kind::Block { .. } | Kind::Literal(_) | Kind::Unary { .. }
+                ) {
+                    Namespace::Value
+                } else {
+                    Namespace::Type
+                };
+                self.visit(c, node, ns)?;
+            }
         }
         Ok(())
     }

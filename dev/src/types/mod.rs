@@ -163,6 +163,10 @@ pub enum Kind {
         element: TypeId,
         length: u64,
     },
+    ArrayTerm {
+        element: TypeId,
+        length: arguments::ConstId,
+    },
     Slice(TypeId),
     Reference {
         mutable: bool,
@@ -300,7 +304,19 @@ impl Store {
     ///
     /// # Errors
     /// Rejects invalid children, non-function item signatures and identity overflow.
-    pub fn intern(&mut self, kind: Kind) -> Result<TypeId, &'static str> {
+    pub fn intern(&mut self, mut kind: Kind) -> Result<TypeId, &'static str> {
+        if let Kind::ArrayTerm { element, length } = kind {
+            if self.const_type(length) != Some(TypeId::primitive(Primitive::Usize)) {
+                return Err("array length term must have type usize");
+            }
+            if let Some(value) = self.constant(length) {
+                kind = Kind::Array {
+                    element,
+                    length: u64::try_from(value.bits)
+                        .map_err(|_| "array length exceeds target usize")?,
+                };
+            }
+        }
         if let Some(id) = self.index.get(&kind) {
             return Ok(*id);
         }
@@ -312,7 +328,9 @@ impl Store {
                 .is_some_and(|p| matches!(p.kind, parameters::ParameterKind::Type { .. })),
             Kind::Adt(_, args) => self.arguments(args).is_some(),
             Kind::Tuple(list) => self.list(list).is_some(),
-            Kind::Slice(element) | Kind::Array { element, .. } => valid_type(element),
+            Kind::Slice(element)
+            | Kind::Array { element, .. }
+            | Kind::ArrayTerm { element, .. } => valid_type(element),
             Kind::Reference { referent, .. } => valid_type(referent),
             Kind::Pointer { pointee, .. } => valid_type(pointee),
             Kind::Function {
@@ -361,7 +379,9 @@ impl Store {
                 self.argument_properties(args, &mut result)?;
             }
             Kind::Primitive(p) => result.set(Property::Sized, p != Primitive::Str),
-            Kind::Array { element, .. } | Kind::Slice(element) => {
+            Kind::Array { element, .. }
+            | Kind::ArrayTerm { element, .. }
+            | Kind::Slice(element) => {
                 let element = child(element)?;
                 result.include(element);
                 result.set(
@@ -370,8 +390,11 @@ impl Store {
                 );
                 result.set(
                     Property::Sized,
-                    matches!(kind, Kind::Array { .. }) && element.has(Property::Sized),
+                    !matches!(kind, Kind::Slice(_)) && element.has(Property::Sized),
                 );
+                if matches!(kind, Kind::ArrayTerm { .. }) {
+                    result.set(Property::Parameters, true);
+                }
             }
             Kind::Tuple(list) => {
                 let elements = self.list(list).ok_or("invalid structural tuple list")?;

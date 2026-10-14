@@ -25,6 +25,9 @@ impl Checker<'_> {
                 return Err(self.error(key, "invalid lifetime parameter syntax"));
             };
             let parameter = ast.generics[index as usize];
+            if parameter.flavor != crate::syntax::item::GenericFlavor::Lifetime {
+                continue;
+            }
             if parameter.bounds.start == parameter.bounds.end {
                 continue;
             }

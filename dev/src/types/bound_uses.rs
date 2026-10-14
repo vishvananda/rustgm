@@ -87,6 +87,7 @@ impl Uses {
                     }
                 }
                 Kind::Array { element: ty, .. }
+                | Kind::ArrayTerm { element: ty, .. }
                 | Kind::Slice(ty)
                 | Kind::Pointer { pointee: ty, .. } => self.push(ty, depth)?,
                 Kind::FunctionItem {
