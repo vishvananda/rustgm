@@ -1,6 +1,6 @@
 //! Fresh free-region slots at inferred type boundaries; late binders stay shared.
 use super::{Constructor, Context, Error, RegionId, Store, TermId, Value};
-use crate::types::{ItemId, Kind, RegionArgs, callable::Templates, substitute::Bound};
+use crate::types::{GenericArgs, ItemId, Kind, callable::Templates, substitute::Bound};
 use std::collections::HashSet;
 
 enum Work {
@@ -48,7 +48,7 @@ impl Context {
                     || matches!(
                         store.kind(ty),
                         Some(Kind::FunctionItem {
-                            arguments: RegionArgs::EMPTY,
+                            arguments: GenericArgs::EMPTY,
                             ..
                         })
                     )

@@ -27,12 +27,12 @@ fn canonical_shapes_share_lists_but_preserve_semantic_identity() -> Result<(), &
         unsafe_: false,
     })?;
     let a = store.intern(Kind::FunctionItem {
-        arguments: rustgm::types::RegionArgs::EMPTY,
+        arguments: rustgm::types::GenericArgs::EMPTY,
         item: ItemId(0),
         signature,
     })?;
     let b = store.intern(Kind::FunctionItem {
-        arguments: rustgm::types::RegionArgs::EMPTY,
+        arguments: rustgm::types::GenericArgs::EMPTY,
         item: ItemId(1),
         signature,
     })?;
@@ -54,7 +54,7 @@ fn canonical_shapes_share_lists_but_preserve_semantic_identity() -> Result<(), &
     assert!(
         store
             .intern(Kind::FunctionItem {
-                arguments: rustgm::types::RegionArgs::EMPTY,
+                arguments: rustgm::types::GenericArgs::EMPTY,
                 item: ItemId(2),
                 signature: i32_
             })

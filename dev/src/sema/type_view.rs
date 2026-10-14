@@ -374,7 +374,7 @@ fn ty(store: &Store, id: TypeId, out: &mut impl Write) -> io::Result<()> {
 }
 fn region_arguments(
     store: &Store,
-    arguments: crate::types::RegionArgs,
+    arguments: crate::types::GenericArgs,
     out: &mut impl Write,
 ) -> io::Result<()> {
     let args = store

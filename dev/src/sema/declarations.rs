@@ -769,7 +769,7 @@ impl Checker<'_> {
                     let item = self.intern(
                         key,
                         Type::FunctionItem {
-                            arguments: crate::types::RegionArgs::EMPTY,
+                            arguments: crate::types::GenericArgs::EMPTY,
                             item: ItemId(id.0),
                             signature: ty,
                         },

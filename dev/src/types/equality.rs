@@ -123,6 +123,9 @@ impl Query {
             let kind = types
                 .kind(self.nodes[index].ty)
                 .ok_or("missing equality type")?;
+            if matches!(kind, Kind::Adt(_, args) if types.region_args(args).is_none()) {
+                return Err("generic equality checking requires instantiated fields and bounds");
+            }
             let initial = match kind {
                 Kind::Adt(item, _) => selected.get(&item).copied().unwrap_or_default(),
                 Kind::Primitive(Primitive::F32 | Primitive::F64) => Properties {

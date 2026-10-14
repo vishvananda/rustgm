@@ -88,6 +88,9 @@ impl NeedsDrop {
                 _ => {}
             }
             let kind = types.kind(ty).ok_or("invalid destruction type")?;
+            if matches!(kind, Kind::Adt(_, args) if types.region_args(args).is_none()) {
+                return Err("generic destruction checking requires instantiated fields");
+            }
             if let Kind::Adt(item, _) = kind {
                 definitions
                     .get(item)

@@ -88,7 +88,7 @@ impl Fixture {
             }],
         )?;
         self.types
-            .intern(Kind::Adt(item, rustgm::types::RegionArgs::EMPTY))
+            .intern(Kind::Adt(item, rustgm::types::GenericArgs::EMPTY))
     }
     fn project(
         &mut self,

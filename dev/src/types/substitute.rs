@@ -1,5 +1,5 @@
 //! Remove one lifetime binder using typed arguments, without capturing nested binders.
-use super::{Kind, ListId, RegionId, Store, TypeId};
+use super::{Kind, ListId, RegionId, Store, TypeId, arguments::Argument};
 use std::collections::HashMap;
 
 type Key = (TypeId, u16);
@@ -13,6 +13,7 @@ pub struct Bound {
     work: Vec<(Key, bool)>,
     children: Vec<TypeId>,
     regions: Vec<RegionId>,
+    generic: Vec<Argument>,
     pub steps: usize,
 }
 
@@ -25,6 +26,7 @@ impl Bound {
             work: Vec::new(),
             children: Vec::new(),
             regions: Vec::new(),
+            generic: Vec::new(),
             steps: 0,
         }
     }
@@ -144,16 +146,47 @@ impl Bound {
             Kind::Array { element: ty, .. }
             | Kind::Slice(ty)
             | Kind::Reference { referent: ty, .. }
-            | Kind::Pointer { pointee: ty, .. }
-            | Kind::FunctionItem { signature: ty, .. } => {
+            | Kind::Pointer { pointee: ty, .. } => {
                 self.queue(ty, depth)?;
                 None
             }
-            Kind::Never | Kind::Primitive(_) | Kind::Adt(..) => None,
+            Kind::FunctionItem {
+                signature,
+                arguments,
+                ..
+            } => {
+                self.queue(signature, depth)?;
+                self.argument_dependencies(store, arguments, depth)?;
+                None
+            }
+            Kind::Adt(_, arguments) => {
+                self.argument_dependencies(store, arguments, depth)?;
+                None
+            }
+            Kind::Never | Kind::Primitive(_) => None,
         };
         if let Some((list, depth)) = list {
             for ty in store.list(list).ok_or("invalid substitution child list")? {
                 self.queue(*ty, depth)?;
+            }
+        }
+        Ok(())
+    }
+
+    fn argument_dependencies(
+        &mut self,
+        store: &Store,
+        args: super::GenericArgs,
+        depth: u16,
+    ) -> Result<(), &'static str> {
+        if store.region_args(args).is_some() {
+            return Ok(());
+        }
+        let arguments = store.arguments(args).ok_or("invalid generic arguments")?;
+        self.account_arguments(arguments.len())?;
+        for argument in arguments {
+            if let Argument::Type(ty) = argument {
+                self.queue(ty, depth)?;
             }
         }
         Ok(())
@@ -249,21 +282,36 @@ impl Bound {
     fn arguments(
         &mut self,
         store: &mut Store,
-        args: super::RegionArgs,
+        args: super::GenericArgs,
         depth: u16,
-    ) -> Result<super::RegionArgs, &'static str> {
-        let arguments = store
-            .region_args(args)
-            .ok_or("invalid lifetime arguments")?;
-        self.steps = self.steps.saturating_add(arguments.len());
+    ) -> Result<super::GenericArgs, &'static str> {
+        if let Some(arguments) = store.region_args(args) {
+            self.account_arguments(arguments.len())?;
+            self.regions.clear();
+            for region in arguments {
+                self.regions.push(self.region(*region, depth)?);
+            }
+            return store.intern_regions(&self.regions);
+        }
+        let arguments = store.arguments(args).ok_or("invalid generic arguments")?;
+        self.account_arguments(arguments.len())?;
+        self.generic.clear();
+        for argument in arguments {
+            self.generic.push(match argument {
+                Argument::Lifetime(region) => Argument::Lifetime(self.region(region, depth)?),
+                Argument::Type(ty) => Argument::Type(self.child(store, ty, depth)?),
+                Argument::Const(id) => Argument::Const(id),
+            });
+        }
+        store.intern_arguments(&self.generic)
+    }
+
+    fn account_arguments(&mut self, count: usize) -> Result<(), &'static str> {
+        self.steps = self.steps.saturating_add(count);
         if self.steps.saturating_add(self.work.len()) > WORK_LIMIT {
             return Err("lifetime substitution work budget exceeded");
         }
-        self.regions.clear();
-        for region in arguments {
-            self.regions.push(self.region(*region, depth)?);
-        }
-        store.intern_regions(&self.regions)
+        Ok(())
     }
 }
 

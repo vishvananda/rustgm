@@ -2,7 +2,7 @@
 //! A failed constraint may retain prior progress; callers discard that body context.
 mod freshen;
 mod resolve;
-use super::{ItemId, Kind, Primitive, RegionArgs, RegionId, Store, TypeId};
+use super::{GenericArgs, ItemId, Kind, Primitive, RegionId, Store, TypeId};
 use std::collections::{HashMap, HashSet};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -16,7 +16,7 @@ pub enum Domain {
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Constructor {
     Primitive(Primitive),
-    Adt(ItemId, RegionArgs),
+    Adt(ItemId, GenericArgs),
     Never,
     Tuple,
     Array(u64),
@@ -33,7 +33,7 @@ pub enum Constructor {
         parameters: u32,
         unsafe_: bool,
     },
-    FunctionItem(ItemId, RegionArgs),
+    FunctionItem(ItemId, GenericArgs),
 }
 #[derive(Clone, Copy)]
 enum Value {

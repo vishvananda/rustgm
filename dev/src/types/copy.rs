@@ -89,6 +89,9 @@ impl Copies {
                 _ => {}
             }
             let kind = types.kind(ty).ok_or("invalid Copy type")?;
+            if matches!(kind, Kind::Adt(_, args) if types.region_args(args).is_none()) {
+                return Err("generic Copy checking requires instantiated fields and bounds");
+            }
             let initial = match kind {
                 Kind::Adt(item, _) => selected.get(&item).copied().unwrap_or_default(),
                 Kind::Primitive(Primitive::Str)

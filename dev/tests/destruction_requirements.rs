@@ -1,6 +1,6 @@
 use rustgm::{
     body::{self, drops::Trigger, ir::Owner},
-    types::{ItemId, Kind, RegionArgs, Store, aggregate, destruction::NeedsDrop},
+    types::{GenericArgs, ItemId, Kind, Store, aggregate, destruction::NeedsDrop},
 };
 #[path = "helpers/qualify.rs"]
 mod rustc;
@@ -85,7 +85,7 @@ fn closed_type_requirements_agree_with_rustc_and_cache_shared_shapes()
 fn destruction_queries_are_iterative_and_diagnose_by_value_cycles() -> Result<(), &'static str> {
     let mut types = Store::default();
     let item = ItemId(1);
-    let nominal = types.intern(Kind::Adt(item, RegionArgs::EMPTY))?;
+    let nominal = types.intern(Kind::Adt(item, GenericArgs::EMPTY))?;
     let mut definitions = aggregate::Definitions::default();
     let fields = types.intern_list(&[])?;
     definitions.insert(

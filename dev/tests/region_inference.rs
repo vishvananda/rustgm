@@ -1,5 +1,5 @@
 use rustgm::types::{
-    ItemId, Kind, Primitive, RegionArgs, RegionId, Store, TypeId,
+    GenericArgs, ItemId, Kind, Primitive, RegionId, Store, TypeId,
     infer::{Constructor, Context, Domain, Error},
 };
 #[path = "support/semantic.rs"]
@@ -264,7 +264,7 @@ fn arrays_nominal_parameters_and_function_item_identity_keep_their_structure()
     })?;
     let item = store.intern(Kind::FunctionItem {
         item,
-        arguments: RegionArgs::EMPTY,
+        arguments: GenericArgs::EMPTY,
         signature,
     })?;
     let item = cx.known(&store, item)?;
@@ -425,7 +425,7 @@ fn deep_freshening_and_closed_dags_are_bounded_and_iterative()
         ),
         Err(Error::Budget)
     );
-    let closed = store.intern(Kind::Adt(ItemId(4), RegionArgs::EMPTY))?;
+    let closed = store.intern(Kind::Adt(ItemId(4), GenericArgs::EMPTY))?;
     assert_eq!(store.contains_regions(closed), Some(false));
     Ok(())
 }

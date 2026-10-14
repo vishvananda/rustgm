@@ -1,6 +1,6 @@
 //! Elaboration of lifetime-only nominal and alias parameters and path arguments.
 use super::{Checker, DefId, Error, ItemId, NodeKey, RegionId, TypeId, regions};
-use crate::types::RegionArgs;
+use crate::types::GenericArgs;
 
 impl Checker<'_> {
     pub(super) fn local_context(
@@ -124,10 +124,10 @@ impl Checker<'_> {
         &mut self,
         id: DefId,
         key: NodeKey,
-    ) -> Result<RegionArgs, Error> {
+    ) -> Result<GenericArgs, Error> {
         let count = self.facts.lifetimes.parameters.get(&id).map_or(0, Vec::len);
         if count == 0 {
-            return Ok(RegionArgs::EMPTY);
+            return Ok(GenericArgs::EMPTY);
         }
         let arguments = (0..count)
             .map(|index| {

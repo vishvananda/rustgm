@@ -1,5 +1,6 @@
 use rustgm::types::{
-    ItemId, Kind, Primitive, RegionArgs, RegionId, Store, TypeId, infer::Context, substitute::Bound,
+    GenericArgs, ItemId, Kind, Primitive, RegionId, Store, TypeId, infer::Context,
+    substitute::Bound,
 };
 
 fn reference(
@@ -21,7 +22,7 @@ fn canonical_nominal_arguments_preserve_identity_and_pending_equalities()
     let left_args = store.intern_regions(&[RegionId(11), RegionId::STATIC])?;
     let right_args = store.intern_regions(&[RegionId(12), RegionId::STATIC])?;
     assert_ne!(left_args, right_args);
-    assert_eq!(store.intern_regions(&[])?, RegionArgs::EMPTY);
+    assert_eq!(store.intern_regions(&[])?, GenericArgs::EMPTY);
     for _ in 0..1000 {
         assert_eq!(
             store.intern_regions(&[RegionId(11), RegionId::STATIC])?,
@@ -42,7 +43,7 @@ fn canonical_nominal_arguments_preserve_identity_and_pending_equalities()
     assert!(infer.equate(&store, left, other).is_err());
     assert!(
         store
-            .intern(Kind::Adt(ItemId(0), RegionArgs(u32::MAX)))
+            .intern(Kind::Adt(ItemId(0), GenericArgs(u32::MAX)))
             .is_err()
     );
     Ok(())
@@ -131,7 +132,7 @@ fn nested_nominal_arguments_and_function_items_substitute_without_changing_owner
         unsafe_: false,
     })?;
     let item = store.intern(Kind::FunctionItem {
-        arguments: rustgm::types::RegionArgs::EMPTY,
+        arguments: rustgm::types::GenericArgs::EMPTY,
         item: ItemId(12),
         signature,
     })?;

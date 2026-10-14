@@ -66,7 +66,7 @@ impl World {
         }
         self.definitions.insert(ItemId(id), kind, repr, &variants)?;
         self.types
-            .intern(Kind::Adt(ItemId(id), rustgm::types::RegionArgs::EMPTY))
+            .intern(Kind::Adt(ItemId(id), rustgm::types::GenericArgs::EMPTY))
     }
 }
 
@@ -239,7 +239,7 @@ fn recursive_identity_does_not_imply_recursive_storage() -> Result<(), Box<dyn s
     let mut world = World::default();
     let node = world
         .types
-        .intern(Kind::Adt(ItemId(0), rustgm::types::RegionArgs::EMPTY))?;
+        .intern(Kind::Adt(ItemId(0), rustgm::types::GenericArgs::EMPTY))?;
     let pointer = world.types.intern(Kind::Pointer {
         mutable: false,
         pointee: node,
@@ -253,7 +253,7 @@ fn recursive_identity_does_not_imply_recursive_storage() -> Result<(), Box<dyn s
     )?;
     let bad = world
         .types
-        .intern(Kind::Adt(ItemId(1), rustgm::types::RegionArgs::EMPTY))?;
+        .intern(Kind::Adt(ItemId(1), rustgm::types::GenericArgs::EMPTY))?;
     world.adt(1, aggregate::Kind::Struct, Repr::default(), &[&[bad]], &[])?;
     let mut layouts = Layouts::default();
     layouts.demand(&world.types, &world.definitions, node)?;
@@ -423,7 +423,7 @@ fn nominal_identity_remains_distinct_during_inference() -> Result<(), Box<dyn st
     let mut inference = Context::default();
     let left = inference.known(&world.types, a)?;
     let same = inference.construct(
-        Constructor::Adt(ItemId(0), rustgm::types::RegionArgs::EMPTY),
+        Constructor::Adt(ItemId(0), rustgm::types::GenericArgs::EMPTY),
         &[],
     )?;
     inference.equate(&world.types, left, same)?;

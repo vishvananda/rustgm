@@ -2,7 +2,7 @@
 use super::{Checker, Constructor, DefId, Error, NodeId, TermId, Type, TypeId};
 use crate::{
     sema::model::{BodyRegionOrigin, Outlives},
-    types::{RegionArgs, RegionId, infer, substitute::Bound},
+    types::{GenericArgs, RegionId, infer, substitute::Bound},
 };
 use std::collections::HashMap;
 
@@ -340,7 +340,7 @@ impl Checker<'_> {
         let Some(Type::Adt(_, arguments)) = self.facts.types.kind(nominal) else {
             return Err(self.error(node, "missing constructor instance"));
         };
-        if arguments == RegionArgs::EMPTY {
+        if arguments == GenericArgs::EMPTY {
             return Ok(ty);
         }
         let regions = self

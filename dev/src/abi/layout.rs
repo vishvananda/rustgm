@@ -195,6 +195,9 @@ impl Layouts {
             _ => {}
         }
         let kind = types.kind(ty).ok_or("invalid layout type")?;
+        if matches!(kind, Kind::Adt(_, args) if types.region_args(args).is_none()) {
+            return Err("generic aggregate layout requires instantiated fields");
+        }
         if finish {
             let variant_mark = self.variants.len();
             let offset_mark = self.offsets.len();

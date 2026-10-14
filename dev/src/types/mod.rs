@@ -1,5 +1,6 @@
 //! Immutable canonical type shapes and interned child lists; no source/text keys.
 pub mod aggregate;
+pub mod arguments;
 pub mod bound_uses;
 pub mod callable;
 pub mod copy;
@@ -19,10 +20,10 @@ use std::collections::HashMap;
 pub struct TypeId(pub u32);
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct ListId(pub u32);
-/// Canonical lifetime arguments; empty arguments preserve ordinary nominal types.
+/// Canonical lifetime/type/const arguments, in declaration order.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
-pub struct RegionArgs(pub u32);
-impl RegionArgs {
+pub struct GenericArgs(pub u32);
+impl GenericArgs {
     pub const EMPTY: Self = Self(0);
 }
 /// Semantic declaration identity supplied by the owning type-checking context.
@@ -152,7 +153,7 @@ pub enum Kind {
     Never,
     Primitive(Primitive),
     /// Nominal identity; field definitions and by-value cycles are checked separately.
-    Adt(ItemId, RegionArgs),
+    Adt(ItemId, GenericArgs),
     Tuple(ListId),
     Array {
         element: TypeId,
@@ -176,7 +177,7 @@ pub enum Kind {
     },
     FunctionItem {
         item: ItemId,
-        arguments: RegionArgs,
+        arguments: GenericArgs,
         signature: TypeId,
     },
 }
@@ -211,6 +212,7 @@ pub struct Store {
     index: HashMap<Kind, TypeId>,
     children: Slices<TypeId>,
     regions: Slices<RegionId>,
+    arguments: Option<Box<arguments::Storage>>,
 }
 impl Default for Store {
     fn default() -> Self {
@@ -238,6 +240,7 @@ impl Default for Store {
             index,
             children: Slices::default(),
             regions: Slices::default(),
+            arguments: None,
         }
     }
 }
@@ -302,16 +305,6 @@ impl Store {
         }
         self.children.intern(values).map(ListId)
     }
-    #[must_use]
-    pub fn region_args(&self, id: RegionArgs) -> Option<&[RegionId]> {
-        self.regions.get(id.0)
-    }
-    /// # Errors
-    /// Rejects compact argument arena overflow.
-    pub fn intern_regions(&mut self, values: &[RegionId]) -> Result<RegionArgs, &'static str> {
-        self.regions.intern(values).map(RegionArgs)
-    }
-
     /// Intern only types whose children already exist: canonical ownership is acyclic.
     ///
     /// # Errors
@@ -323,7 +316,7 @@ impl Store {
         let valid_type = |id: TypeId| self.kind(id).is_some();
         let valid = match kind {
             Kind::Never | Kind::Primitive(_) => true,
-            Kind::Adt(_, args) => self.region_args(args).is_some(),
+            Kind::Adt(_, args) => self.arguments(args).is_some(),
             Kind::Tuple(list) => self.list(list).is_some(),
             Kind::Slice(element) | Kind::Array { element, .. } => valid_type(element),
             Kind::Reference { referent, .. } => valid_type(referent),
@@ -336,7 +329,7 @@ impl Store {
                 arguments,
                 ..
             } => {
-                self.region_args(arguments).is_some()
+                self.arguments(arguments).is_some()
                     && matches!(self.kind(signature), Some(Kind::Function { .. }))
             }
         };
@@ -369,13 +362,7 @@ impl Store {
             // declaration completion. Nominal recursion is not a structural child edge.
             Kind::Never => {}
             Kind::Adt(_, args) => {
-                for region in self
-                    .region_args(args)
-                    .ok_or("invalid nominal lifetime arguments")?
-                {
-                    result.escaping = result.escaping.max(escaping_region(*region));
-                    result.regions = result.regions.max(RegionPresence::of(*region));
-                }
+                self.argument_properties(args, &mut result)?;
             }
             Kind::Primitive(p) => result.sized = p != Primitive::Str,
             Kind::Array { element, .. } | Kind::Slice(element) => {
@@ -431,14 +418,8 @@ impl Store {
         match kind {
             Kind::FunctionItem { arguments, .. } => {
                 // Item identity is inferred atomically; reification selects its signature.
+                self.argument_properties(arguments, &mut result)?;
                 result.late_callables = false;
-                for region in self
-                    .region_args(arguments)
-                    .ok_or("invalid function item arguments")?
-                {
-                    result.escaping = result.escaping.max(escaping_region(*region));
-                    result.regions = result.regions.max(RegionPresence::of(*region));
-                }
             }
             Kind::Reference { region, .. } => {
                 result.escaping = result.escaping.max(escaping_region(region));

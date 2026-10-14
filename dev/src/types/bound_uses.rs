@@ -1,5 +1,5 @@
 //! Collect occurrences of one enclosing binder from already elaborated types.
-use super::{Kind, RegionId, Store, TypeId};
+use super::{GenericArgs, Kind, RegionId, Store, TypeId, arguments::Argument};
 use std::collections::HashSet;
 
 /// Validate the completed signature, including references introduced by local
@@ -79,14 +79,7 @@ impl Uses {
                     self.push(referent, depth)?;
                 }
                 Kind::Adt(_, arguments) => {
-                    let arguments = store
-                        .region_args(arguments)
-                        .ok_or("invalid bound-use arguments")?;
-                    self.reserve(arguments.len())?;
-                    self.steps += arguments.len();
-                    for region in arguments {
-                        self.region(*region, depth);
-                    }
+                    self.arguments(store, arguments, depth)?;
                 }
                 Kind::Tuple(list) => {
                     for ty in store.list(list).ok_or("invalid bound-use tuple")? {
@@ -101,14 +94,7 @@ impl Uses {
                     arguments,
                     ..
                 } => {
-                    let arguments = store
-                        .region_args(arguments)
-                        .ok_or("invalid item lifetime arguments")?;
-                    self.reserve(arguments.len())?;
-                    self.steps += arguments.len();
-                    for region in arguments {
-                        self.region(*region, depth);
-                    }
+                    self.arguments(store, arguments, depth)?;
                     self.push(signature, depth)?;
                 }
                 Kind::Function {
@@ -126,6 +112,24 @@ impl Uses {
                     self.push(result, depth)?;
                 }
                 Kind::Never | Kind::Primitive(_) => {}
+            }
+        }
+        Ok(())
+    }
+    fn arguments(
+        &mut self,
+        store: &Store,
+        args: GenericArgs,
+        depth: u16,
+    ) -> Result<(), &'static str> {
+        let arguments = store.arguments(args).ok_or("invalid bound-use arguments")?;
+        self.reserve(arguments.len())?;
+        self.steps += arguments.len();
+        for argument in arguments {
+            match argument {
+                Argument::Lifetime(region) => self.region(region, depth),
+                Argument::Type(ty) => self.push(ty, depth)?,
+                Argument::Const(_) => {}
             }
         }
         Ok(())

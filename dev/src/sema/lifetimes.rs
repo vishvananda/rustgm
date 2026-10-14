@@ -3,7 +3,7 @@ use super::model::Declarations;
 use crate::{
     resolve::{expansion::Report, model::DefId, package::Error, unit::NodeKey},
     syntax::ast::{Kind, List},
-    types::{RegionArgs, Store, TypeId, substitute::Bound},
+    types::{GenericArgs, Store, TypeId, substitute::Bound},
 };
 use std::collections::{HashMap, hash_map::Entry};
 
@@ -27,7 +27,7 @@ pub struct Lifetimes {
     /// Declaration order, independent of a particular use's argument lifetimes.
     pub parameters: HashMap<DefId, Vec<DefId>>,
     pub named: HashMap<DefId, crate::types::RegionId>,
-    substitutions: HashMap<RegionArgs, Bound>,
+    substitutions: HashMap<GenericArgs, Bound>,
 }
 
 impl Lifetimes {
@@ -38,11 +38,11 @@ impl Lifetimes {
     pub fn substitute(
         &mut self,
         types: &mut Store,
-        args: RegionArgs,
+        args: GenericArgs,
         ty: TypeId,
     ) -> Result<TypeId, &'static str> {
         types.kind(ty).ok_or("invalid lifetime template type")?;
-        if args == RegionArgs::EMPTY {
+        if args == GenericArgs::EMPTY {
             return Ok(ty);
         }
         let substitution = match self.substitutions.entry(args) {

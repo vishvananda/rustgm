@@ -1,5 +1,5 @@
 //! Well-formedness requirements over typed templates, with bounded recursive propagation.
-use super::{ItemId, Kind, RegionArgs, RegionId, Store, TypeId, aggregate::Definitions};
+use super::{GenericArgs, ItemId, Kind, RegionId, Store, TypeId, aggregate::Definitions};
 use std::collections::{HashMap, HashSet};
 
 pub type Pair = (RegionId, RegionId);
@@ -172,7 +172,7 @@ impl Components {
 #[derive(Clone, Copy)]
 struct Use {
     item: ItemId,
-    arguments: RegionArgs,
+    arguments: GenericArgs,
     depth: u16,
     callable: bool,
 }
@@ -227,7 +227,7 @@ impl Scan {
                         }
                     }
                 }
-                Kind::Adt(item, arguments) if arguments != RegionArgs::EMPTY => {
+                Kind::Adt(item, arguments) if arguments != GenericArgs::EMPTY => {
                     self.uses.push(Use {
                         item,
                         arguments,
@@ -237,7 +237,7 @@ impl Scan {
                 }
                 Kind::FunctionItem {
                     item, arguments, ..
-                } if arguments != RegionArgs::EMPTY => {
+                } if arguments != GenericArgs::EMPTY => {
                     self.uses.push(Use {
                         item,
                         arguments,

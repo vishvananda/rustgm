@@ -225,7 +225,7 @@ impl Graph {
         &mut self,
         types: &Store,
         range: (usize, usize),
-        nominal: (ItemId, super::RegionArgs),
+        nominal: (ItemId, super::GenericArgs),
         position: Variance,
         depth: u16,
     ) -> Result<(), &'static str> {
