@@ -16,8 +16,8 @@ impl Sources for NoFiles {
         Ok(None)
     }
 }
-pub fn analyze(source: &str) -> Result<(Report, Declarations), String> {
-    let report = resolve::expansion::analyze(
+pub fn expand(source: &str) -> Result<Report, String> {
+    resolve::expansion::analyze(
         InputFile {
             identity: "lib.rs".into(),
             path: "lib.rs".into(),
@@ -26,8 +26,13 @@ pub fn analyze(source: &str) -> Result<(Report, Declarations), String> {
         &mut NoFiles,
         &Config::default(),
     )
-    .and_then(resolve::analyze_expanded)
-    .map_err(|e| e.to_string())?;
+    .map_err(|e| e.to_string())
+}
+pub fn resolve(source: &str) -> Result<Report, String> {
+    resolve::analyze_expanded(expand(source)?).map_err(|e| e.to_string())
+}
+pub fn analyze(source: &str) -> Result<(Report, Declarations), String> {
+    let report = resolve(source)?;
     let facts = sema::declarations::analyze(&report)
         .and_then(|f| sema::bodies::analyze(&report, f))
         .map_err(|e| e.to_string())?;

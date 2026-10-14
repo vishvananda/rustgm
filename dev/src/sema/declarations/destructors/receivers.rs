@@ -4,7 +4,7 @@ use super::super::{
 };
 use crate::{
     resolve::model::Target,
-    sema::{destructors::Receiver, lifetimes::FunctionRegions},
+    sema::{associated::Receiver, lifetimes::FunctionRegions},
     syntax::token_tree::Span,
     types::outlives::Pair,
 };
@@ -179,7 +179,7 @@ impl Checker<'_> {
             .and_then(|f| f.binding)
             .ok_or_else(|| self.error(key, "missing receiver binding definition"))?;
         let mutable = matches!(self.kind(binding), Kind::Binding { mutable: true, .. });
-        self.facts.destructors.receivers.insert(
+        self.facts.receivers.insert(
             key,
             Receiver {
                 binding,

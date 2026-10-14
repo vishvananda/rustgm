@@ -66,6 +66,15 @@ qualified paths through ordinary typed namespace facts. Demand external metadata
 only when used, keep it separate from the crate root, and retain configured
 prelude policy per module so lookup does not rescan attributes.
 
+Retain trait/impl owners and their direct associated declarations in one shared
+inventory after name resolution. Keep owner, Self and member identities separate;
+generic parameters and nested method-body items are not direct members. Preserve
+resolver declaration order, including appended expansion definitions, independently
+of hash-table iteration. Destructor discovery consumes this inventory rather
+than rescanning all definitions. Receiver storage is shared by declaration checks,
+body checking, scopes and CFG construction. Ownership alone is not evidence of
+an elaborated signature, valid impl, selected method or executable body.
+
 Resolve a destructor's impl target and receiver once. Retain the nominal item,
 method identity, whole-reference receiver binding and captured lifetime slots.
 Anonymous impl lifetimes are real slots, not fabricated declaration IDs. A

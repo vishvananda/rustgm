@@ -45,7 +45,7 @@ pub fn write(report: &Report, facts: &Declarations, out: &mut impl Write) -> io:
         }
         writeln!(out)?;
     }
-    destructors(&facts.destructors, out)?;
+    destructors(facts, out)?;
     for initializer in &facts.initializers {
         let kind = match initializer.kind {
             InitializerKind::Const => "const",
@@ -72,8 +72,8 @@ pub fn write(report: &Report, facts: &Declarations, out: &mut impl Write) -> io:
     count(facts, out)
 }
 
-fn destructors(facts: &super::destructors::Destructors, out: &mut impl Write) -> io::Result<()> {
-    for implementation in facts.implementations() {
+fn destructors(facts: &Declarations, out: &mut impl Write) -> io::Result<()> {
+    for implementation in facts.destructors.implementations() {
         writeln!(
             out,
             "destructor item={} self={} method={} target={} captures={} source={}:{} cleanup=pending",
@@ -288,7 +288,7 @@ pub fn count(facts: &Declarations, out: &mut impl Write) -> io::Result<()> {
             out,
             " destructors={} receivers={}",
             facts.destructors.implementations().len(),
-            facts.destructors.receivers.len()
+            facts.receivers.len()
         )?;
     }
     writeln!(out)

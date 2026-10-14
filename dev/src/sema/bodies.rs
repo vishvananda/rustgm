@@ -418,13 +418,7 @@ impl Checker<'_> {
             while let Kind::Attributed { value, .. } = self.kind(node) {
                 node = value;
             }
-            if let Some(receiver) = self
-                .facts
-                .destructors
-                .receivers
-                .get(&self.key(node))
-                .copied()
-            {
+            if let Some(receiver) = self.facts.receivers.get(&self.key(node)).copied() {
                 let term = self.known(node, receiver.ty)?;
                 self.locals[receiver.definition.0 as usize] = Some(term);
                 self.bindings.push(receiver.definition);

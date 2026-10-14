@@ -6,13 +6,12 @@ use crate::{
         package::Error,
         unit::NodeKey,
     },
-    sema::model::Declarations,
+    sema::{associated::OwnerKind, model::Declarations},
     syntax::{
         ast::{Kind, TypeFlavor},
         item::{Item, ItemKind, Safety, Visibility},
     },
 };
-use std::collections::HashMap;
 
 pub(super) struct Header {
     pub source: NodeKey,
@@ -32,29 +31,23 @@ pub(super) fn collect(report: &Report, facts: &Declarations) -> Result<Vec<Heade
         return Ok(Vec::new());
     };
     let mut headers = Vec::new();
-    let mut scopes = HashMap::new();
-    for (index, definition) in report.resolution.definitions.iter().enumerate() {
-        if definition.kind != DefKind::SelfType {
-            continue;
-        }
-        let Some(source) = definition.node else {
-            continue;
-        };
-        let ItemKind::Impl {
+    let mut owners = vec![None; facts.associated.owners().len()];
+    for (index, owner) in facts.associated.owners().iter().enumerate() {
+        let OwnerKind::Impl {
             unsafe_,
             negative,
-            trait_path: Some(path),
-            ty,
-            ..
-        } = item(report, source)?.kind
+            trait_type: Some(path),
+            target,
+        } = owner.kind
         else {
             continue;
         };
+        let source = owner.source;
         let ast = &report.package.unit(source.file).configured.ast;
         let Kind::Type {
             flavor: TypeFlavor::Path,
             elements,
-        } = ast.node(path).kind
+        } = ast.node(path.node).kind
         else {
             continue;
         };
@@ -76,28 +69,19 @@ pub(super) fn collect(report: &Report, facts: &Declarations) -> Result<Vec<Heade
                 "Drop requires a positive safe impl without trait arguments",
             ));
         }
-        let self_definition = DefId(
-            u32::try_from(index)
-                .map_err(|_| Declarations::error(report, source, "too many Drop declarations"))?,
-        );
-        scopes.insert(definition.scope, headers.len());
+        owners[index] = Some(headers.len());
         headers.push(Header {
             source,
-            self_definition,
-            target: NodeKey { node: ty, ..source },
+            self_definition: owner.self_definition,
+            target,
             method: None,
         });
     }
-    for (index, definition) in report.resolution.definitions.iter().enumerate() {
-        let Some(&header) = scopes.get(&definition.scope) else {
+    for member in facts.associated.members() {
+        let Some(header) = owners[member.owner.0 as usize] else {
             continue;
         };
-        if matches!(
-            definition.kind,
-            DefKind::SelfType | DefKind::Lifetime | DefKind::Generic
-        ) {
-            continue;
-        }
+        let definition = &report.resolution.definitions[member.definition.0 as usize];
         let header = &mut headers[header];
         if definition.kind != DefKind::Function
             || report.package.names.get(definition.name) != "drop"
@@ -113,10 +97,7 @@ pub(super) fn collect(report: &Report, facts: &Declarations) -> Result<Vec<Heade
             Declarations::error(report, header.source, "missing Drop method source")
         })?;
         validate_method(report, key)?;
-        header.method =
-            Some(DefId(u32::try_from(index).map_err(|_| {
-                Declarations::error(report, key, "too many Drop methods")
-            })?));
+        header.method = Some(member.definition);
     }
     Ok(headers)
 }

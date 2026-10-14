@@ -221,6 +221,8 @@ pub struct Declarations {
     pub generics: super::generics::Generics,
     /// Repeat operands selected as constant paths before runtime coercion wrappers.
     pub constant_repeats: std::collections::HashSet<NodeKey>,
+    pub associated: super::associated::Inventory,
+    pub receivers: std::collections::HashMap<NodeKey, super::associated::Receiver>,
     pub destructors: super::destructors::Destructors,
     /// Packed source places remain checked even when their CFG is unreachable.
     pub reference_alignment: Vec<ReferenceAlignment>,
@@ -293,6 +295,8 @@ impl Declarations {
             constant_annotation_bodies: std::collections::HashSet::new(),
             generics: super::generics::Generics::default(),
             constant_repeats: std::collections::HashSet::new(),
+            associated: super::associated::collect(report)?,
+            receivers: std::collections::HashMap::new(),
             destructors: super::destructors::Destructors::default(),
             reference_alignment: Vec::new(),
             reference_adjustments: std::collections::HashMap::new(),

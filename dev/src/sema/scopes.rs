@@ -218,7 +218,7 @@ fn analyze(
             let Syntax::Parameter { pattern, .. } = walker.kind(parameter) else {
                 return Err(walker.error(parameter, "missing parameter pattern"));
             };
-            if let Some(receiver) = types.destructors.receivers.get(&NodeKey {
+            if let Some(receiver) = types.receivers.get(&NodeKey {
                 file: source.file,
                 node: parameter,
             }) {

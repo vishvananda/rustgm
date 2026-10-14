@@ -2489,3 +2489,54 @@ unchanged to PA18. Earlier remaining sidecar bytes are unchanged. The source-to-
 feature ledger, public contract and complete validation receipts are summarized
 in the release review; earlier checkpoints in this journal remain historical
 records of their narrower implementation surfaces.
+
+## PA19 shared associated declarations
+
+The declaration model now retains trait/impl owners, their Self identities and
+direct associated members in one inventory built from completed resolution.
+Members preserve resolver declaration order, including appended macro expansions.
+Generic parameters and items nested inside method bodies are excluded from the
+enclosing owner's members. Drop header discovery consumes this index, replacing
+its separate scans of the complete definition table. Receiver facts now live in
+shared declaration storage used by signature checking, bodies, scopes and CFG
+construction; Drop-specific conformance remains in the destructor checker.
+
+Six new invariants, with independent rustc checks for accepted trait/impl programs,
+cover direct ownership, nested items, configured/generated declarations, generated traits in distinct modules,
+real versus shadowed Drop identities, receiver binding mutability, 256 generic
+impl owners and rejection of unresolved input. Two initial test failures were
+test mistakes: attempting to mutate a private phase flag and assuming generated
+definitions preceded original crate declarations. The final tests use the actual
+expansion/resolution APIs and assert resolver order.
+
+All 756 frontend tests pass in debug and release. All 3,773 PA1–PA18 text cases
+match their existing oracles; no sidecars change. Fifteen maintainer native tests,
+1,117 course executable comparisons and three codegen-only comparisons pass,
+preserving the sixteen documented PA13 runtime differences. Rustfmt, Clippy
+all/pedantic with warnings denied, the 478-file audit with zero findings, all
+27 harness tests and upstream/reference provenance checks pass.
+
+Eight immutable comparisons against the published PA18 CLI retain 144 observations:
+two warmups, four A/A samples and three paired ABBA blocks each, on CPU 2, with no
+RustGM builds/tests during timing. Full LowIR and count outputs are identical.
+Distinct Drop owner workloads at 128, 512 and 2,048 owners take candidate medians
+of 33.65, 63.92 and 277.30 ms, versus 33.46, 63.63 and 273.44 ms for the baseline.
+At 2,048 owners median peak RSS is 44,684 versus 44,544 KiB. Across all workloads,
+median wall-time changes range from -0.5% to +3.7%; sample ranges overlap and A/A
+spreads range from 1.7% to 5.8%. These observations do not establish zero overhead.
+The other controls cover shared Drop ownership, ordinary functions, generic
+records, generic cleanup and const-generic cleanup.
+
+The frozen candidate SHA256 is
+`a88a3fbef24a89eb469de68d35e12d5c016a1db93a4c1c7542e19b243afaba84`.
+All 481 source/config/test hashes, binary/input hashes, validation logs and raw
+observations were reverified. Receipts and scripts live under
+`obj/pa19-work/inventory-*`; raw observations remain in `obj/perf/`.
+
+This inventory records ownership, not completed general method signatures or
+impl proofs. PA19 remains planned. Sixteen additional frozen header probes,
+declared before independent rustc checks, establish eight accepted and eight
+rejected signature rules for the next implementation: required versus default
+methods with unsized Self, Sized bounds, receiver elision, explicit receivers,
+unconstrained impl parameters and safe/unsafe trait impl mismatches. The full
+PA19–PA21 contracts above remain required.

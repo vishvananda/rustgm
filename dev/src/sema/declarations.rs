@@ -707,7 +707,7 @@ impl Checker<'_> {
                 file: key.file,
                 node,
             });
-            if let Some(receiver) = self.facts.destructors.receivers.get(&key) {
+            if let Some(receiver) = self.facts.receivers.get(&key) {
                 self.children.push(receiver.ty);
                 continue;
             }

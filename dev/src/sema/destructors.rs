@@ -26,15 +26,6 @@ pub struct Implementation {
     pub coverage: Coverage,
 }
 
-#[derive(Clone, Copy)]
-pub struct Receiver {
-    pub binding: NodeKey,
-    pub definition: DefId,
-    pub ty: TypeId,
-    /// Binding mutability, independent of the reference's referent mutability.
-    pub mutable: bool,
-}
-
 #[derive(Default)]
 pub struct Destructors {
     declared: HashSet<ItemId>,
@@ -42,7 +33,6 @@ pub struct Destructors {
     methods: HashMap<DefId, usize>,
     self_types: HashMap<DefId, usize>,
     items: HashMap<ItemId, usize>,
-    pub receivers: HashMap<NodeKey, Receiver>,
     instances: HashMap<TypeId, crate::types::instance::Instance>,
 }
 impl Destructors {

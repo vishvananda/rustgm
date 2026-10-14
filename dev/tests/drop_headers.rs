@@ -377,14 +377,9 @@ fn destructor_headers_match_independent_language_contracts()
         }
         let (report, facts) = result.map_err(|e| format!("{name}: {e}"))?;
         assert_eq!(facts.destructors.implementations().len(), 1, "{name}");
-        assert_eq!(facts.destructors.receivers.len(), 1, "{name}");
+        assert_eq!(facts.receivers.len(), 1, "{name}");
         let implementation = &facts.destructors.implementations()[0];
-        let receiver = facts
-            .destructors
-            .receivers
-            .values()
-            .next()
-            .ok_or("missing receiver")?;
+        let receiver = facts.receivers.values().next().ok_or("missing receiver")?;
         assert!(
             matches!(facts.types.kind(receiver.ty), Some(Kind::Reference { mutable: true, referent, .. }) if referent == implementation.target),
             "{name}"

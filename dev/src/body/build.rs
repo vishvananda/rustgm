@@ -578,7 +578,7 @@ impl<'a> Builder<'a> {
             let Kind::Parameter { pattern, .. } = self.kind(parameter) else {
                 return Err(self.error(parameter, "missing parameter syntax"));
             };
-            if let Some(receiver) = self.facts.destructors.receivers.get(&NodeKey {
+            if let Some(receiver) = self.facts.receivers.get(&NodeKey {
                 file: self.body.source.file,
                 node: parameter,
             }) {
