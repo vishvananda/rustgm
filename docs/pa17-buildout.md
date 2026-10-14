@@ -856,3 +856,46 @@ and cleanup flags lowered to LowIR, native counter/order comparisons, and the
 released handout, manifests and text oracles. The new operand-lifetime table is
 currently used by the ordered destruction analysis; integrating it with the
 published ordinary-loan path needs separate PA16 regression/oracle review.
+
+Performance uses immutable binaries, frozen inputs, CPU 2, two warmups, four
+A/A calibration observations and three paired ABBA blocks per workload/size.
+Every observation is retained (162 total); full rendered output and count output
+match across old/new ordinary-loan and initialization binaries. New destructor
+proof measurements compare two copies of the same binary for scaling, not a
+before/after speedup. No own builds or tests ran during timing; unrelated work
+continued on the shared host.
+
+| Workload / functions | Baseline median | Candidate median | Candidate RSS |
+| --- | ---: | ---: | ---: |
+| ordinary-loans / 256 | 30.23 ms | 30.41 ms | 9,276 KiB |
+| ordinary-loans / 1,024 | 102.06 ms | 106.93 ms | 24,766 KiB |
+| ordinary-loans / 4,096 | 396.29 ms | 405.76 ms | 85,634 KiB |
+| initialization / 256 | 58.51 ms | 58.66 ms | 13,496 KiB |
+| initialization / 1,024 | 300.91 ms | 300.89 ms | 43,098 KiB |
+| initialization / 4,096 | 1169.01 ms | 1143.49 ms | 163,176 KiB |
+| destructor-proof / 256 | same candidate | 133.76 ms | 16,298 KiB |
+| destructor-proof / 1,024 | same candidate | 484.94 ms | 51,094 KiB |
+| destructor-proof / 4,096 | same candidate | 2309.54 ms | 190,210 KiB |
+
+The largest ordinary-loan workload changes +2.39% wall time and +2.40% CPU,
+with 740 KiB more median RSS. The paired wall ranges overlap, but this small
+observed cost is recorded rather than called a speedup or hidden. Initialization
+changes -2.18% at the largest size, also with overlapping ranges. The new proof
+workload includes nested whole-value replacement, conditional initialization,
+loop/continue/break cleanup and extended borrowed temporaries.
+
+At 4,096 generated functions, the new pass checks 32,768 source loans and
+1,351,794 ordered points. Retained region words are 131,083; summed proof work is
+39,736,942 steps. These follow `8N`, `330N+114`, `32N+11` and `9701N+1646`.
+Drop-component query work is `33N+2`, with cached template substitution.
+Planning retains `37N+13` cleanup candidates and `N` flags. Counts describe the
+staged proof, not generated or executed native destructors.
+
+`obj/pa15-work/destructor-liveness-v1-perf-results.json` indexes the raw receipts;
+source, driver, binary and input hashes were verified after measurement. The
+ordinary candidate SHA-256 is
+`96e18eb4577eb6850566d22292622bf4cbc927878ee03772af8f8bb1261e372d`;
+the initialization driver is
+`c4bae6ea300101a892a645702819b2edcffffe3a6bebbd4ea3826edb265b3547`;
+the destructor proof driver is
+`56c864120b14c828c2414e75615e023144030cef437eb177af986897f90978a2`.
