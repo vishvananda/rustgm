@@ -288,7 +288,8 @@ impl<'a> Checker<'a> {
         }
         let before = self.facts.lifetime_fact_count();
         self.constant_in_module(key, ty, module)?;
-        if self.facts.lifetime_fact_count() != before {
+        let annotations = self.facts.constant_annotation_bodies.remove(&key);
+        if self.facts.lifetime_fact_count() != before || annotations {
             self.facts.anonymous_constants.insert(key, ty);
         }
         Ok(())

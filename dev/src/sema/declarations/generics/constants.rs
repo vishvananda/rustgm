@@ -5,10 +5,108 @@ use crate::{
         model::{DefKind, Target},
         package::ModuleId,
     },
-    syntax::ast::TypeFlavor,
+    syntax::ast::{NodeId, TypeFlavor},
     types::arguments::{ConstId, Constant},
 };
 impl Checker<'_> {
+    pub(in super::super) fn constant_use(
+        &mut self,
+        key: NodeKey,
+        context: regions::Context,
+        steps: &mut usize,
+        limit: usize,
+        scan: &mut Vec<NodeId>,
+    ) -> Result<(), Error> {
+        self.work.push(Work::ConstantArguments(key));
+        if self.schedule_alias_variant(key, context, steps, limit, scan)? {
+            return Ok(());
+        }
+        if matches!(self.kind(key), Kind::Path { .. })
+            && let Some(owner) = self.generic_use_owner(key)
+        {
+            self.schedule_item_arguments(key, owner, context, steps, limit, scan)?;
+        }
+        Ok(())
+    }
+    pub(in super::super) fn constant_arguments(&mut self, key: NodeKey) -> Result<(), Error> {
+        use crate::{sema::generics::SourceArgument, types::arguments::Argument};
+        let prefix = self
+            .facts
+            .generics
+            .constructor_uses
+            .get(&key)
+            .copied()
+            .unwrap_or(key);
+        self.constant_annotation(prefix)?;
+        let Some(owner) = self.generic_use_owner(key) else {
+            return Ok(());
+        };
+        let Some(use_) = self.facts.generics.item_uses.get(&key) else {
+            return Ok(());
+        };
+        let supplied = use_.arguments.len();
+        let annotations = use_
+            .arguments
+            .iter()
+            .filter_map(|arg| {
+                if let SourceArgument::Type(key) = arg {
+                    Some(*key)
+                } else {
+                    None
+                }
+            })
+            .collect::<Vec<_>>();
+        for annotation in annotations {
+            self.constant_annotation(annotation)?;
+        }
+        if supplied != 0 {
+            let defaults = self.facts.generics.parameters[&owner]
+                .iter()
+                .skip_while(|p| matches!(p.argument, Argument::Lifetime(_)))
+                .skip(supplied)
+                .filter_map(|p| {
+                    if let Some(Argument::Type(ty)) = p.default {
+                        Some(ty)
+                    } else {
+                        None
+                    }
+                });
+            self.work.extend(defaults.map(Work::ValueShape));
+        }
+        Ok(())
+    }
+    fn constant_annotation(&mut self, root: NodeKey) -> Result<(), Error> {
+        use crate::{sema::generics::AnnotationArgument, types::arguments::Argument};
+        let mut work = vec![root];
+        let mut children = Vec::new();
+        let mut steps = 0_usize;
+        while let Some(key) = work.pop() {
+            steps += 1;
+            if steps.saturating_add(work.len()) > 1_000_000 {
+                return Err(self.error(root, "constant annotation dependency work budget exceeded"));
+            }
+            if let Some(ty) = self.facts.node(key).and_then(|f| f.ty) {
+                self.work.push(Work::ValueShape(ty));
+            } else if let Some(use_) = self.facts.generics.annotation_uses.get(&key) {
+                self.work.push(Work::ValueType(use_.owner));
+                for argument in &use_.arguments {
+                    match *argument {
+                        AnnotationArgument::Type(key) => work.push(key),
+                        AnnotationArgument::Default(Argument::Type(ty)) => {
+                            self.work.push(Work::ValueShape(ty));
+                        }
+                        _ => {}
+                    }
+                }
+            } else if self.facts.partial_annotations.contains_key(&key) {
+                let ast = &self.report.package.unit(key.file).configured.ast;
+                children.clear();
+                ast.push_children(key.node, &mut children);
+                work.extend(children.iter().map(|&node| NodeKey { node, ..key }));
+            }
+        }
+        Ok(())
+    }
     pub(super) fn const_parameter(&self, key: NodeKey) -> Option<ConstId> {
         self.facts.const_parameter(self.report, key)
     }
@@ -40,6 +138,8 @@ impl Checker<'_> {
             key.node = *node;
         }
         let module = self.constant_module(key, owner)?;
+        self.constant_captures
+            .check(self.report, &self.facts, key, module)?;
         let value = crate::sema::constants::generic_argument(
             self.report,
             &mut self.facts,
@@ -87,6 +187,10 @@ impl Checker<'_> {
         root: NodeKey,
         context: regions::Context,
     ) -> Result<(), Error> {
+        let context = regions::Context {
+            position: regions::Position::Constant(root.node),
+            ..context
+        };
         let mut work = vec![(root, context)];
         let mut children = Vec::new();
         while let Some((key, context)) = work.pop() {
@@ -112,11 +216,24 @@ impl Checker<'_> {
             if let Some(Target::Definition(id)) = self.facts.node(key).and_then(|f| f.reference) {
                 match self.report.resolution.definitions[id.0 as usize].kind {
                     DefKind::Primitive => self.work.push(Work::Definition(id, false)),
+                    DefKind::Function => {
+                        self.work.push(Work::ConstantUse(key, context));
+                        self.work.push(Work::Definition(id, false));
+                    }
                     DefKind::Constructor | DefKind::Variant | DefKind::Struct => {
+                        self.work.push(Work::ConstantUse(key, context));
                         self.constant_constructor(id)?;
                     }
-                    DefKind::Enum => self.work.push(Work::ValueType(id)),
+                    DefKind::Enum => {
+                        self.work.push(Work::ConstantUse(key, context));
+                        self.work.push(Work::ValueType(id));
+                    }
                     DefKind::TypeAlias | DefKind::Const | DefKind::Static => {
+                        if self.report.resolution.definitions[id.0 as usize].kind
+                            == DefKind::TypeAlias
+                        {
+                            self.work.push(Work::ConstantUse(key, context));
+                        }
                         self.work.push(Work::ValueType(id));
                         self.work.push(Work::Definition(id, false));
                         if let Some(item_key) =
@@ -136,8 +253,20 @@ impl Checker<'_> {
                     }
                     _ => {}
                 }
+            } else if let Some(Target::Associated(owner)) =
+                self.facts.node(key).and_then(|f| f.reference)
+                && self.report.resolution.definitions[owner.0 as usize].kind == DefKind::TypeAlias
+            {
+                self.work.push(Work::ConstantUse(key, context));
+                self.work.push(Work::ValueType(owner));
+                self.work.push(Work::Definition(owner, false));
             }
             let ast = &self.report.package.unit(key.file).configured.ast;
+            if matches!(self.kind(key), Kind::Path { .. }) {
+                // The selected item's argument schema schedules type and const
+                // arguments separately. Nested constants own separate regions.
+                continue;
+            }
             children.clear();
             ast.push_children(key.node, &mut children);
             work.extend(

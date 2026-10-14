@@ -112,6 +112,19 @@ enum discriminant expressions and local cast annotations in their lexical contex
 These prerequisites make values available; final unused-declaration, variance,
 derive, lifetime and layout checks remain mandatory.
 
+Early expression paths use the ordinary argument scheduler, including alias
+variant selection, function values, partial annotations and consumed trailing
+defaults. Nested const arguments own their dependency work and lifetime context.
+Determine value readiness from each nominal declaration's field templates once;
+follow actual type arguments separately. Do not expand symbolic field instances
+to discover these prerequisites. Instantiate concrete fields after inference.
+Before evaluating a const argument, reject references to enclosing generic
+parameters while allowing lifetimes bound inside the constant. Cache syntax
+capture summaries using scope ancestry, preserving syntactic captures even when
+type aliases erase them. Use compact node-indexed completion flags and sparse
+capture records, so capture-free syntax needs no per-node hash entry. Standalone
+const parameters retain their symbolic identity.
+
 Resolve a use's defaults with one append-only substitution environment. Earlier
 arguments never change, and inserted replacements are simultaneous. Successful
 cached results therefore remain valid as later slots are appended, including
@@ -204,6 +217,9 @@ the ordinary region, loan and destruction checks must consume those obligations.
 They are never emitted as native functions. Scalar constants without lifetime
 facts need no additional body. Static lifetime extension supplies permanent
 storage provenance independently of promotion, including for a value with Drop.
+Annotations elaborated before constant-body inference already belong to that
+constant's proof body, including inferred lifetimes subsequently erased by aliases.
+Retain this ownership even when inference adds no new lifetime facts.
 
 Constant patterns constrain types during ordinary body inference. Retain pending
 value/range/coverage work in flat arenas with the originating file, module and

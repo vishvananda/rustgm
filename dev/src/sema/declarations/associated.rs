@@ -100,6 +100,6 @@ impl Checker<'_> {
             .ok_or_else(|| Error::at(key.file, 0, "missing alias variant fact"))?
             .reference = Some(Target::Definition(target));
         self.facts.generics.constructor_uses.insert(key, prefix);
-        Ok(())
+        self.constructor(target)
     }
 }

@@ -1868,3 +1868,109 @@ perf-results,reverify}.json`, `constructor-perf-v2.log` and each retained
 `obj/perf/*/{samples.json,observations.jsonl}`. The earlier preflight candidate,
 pre-fix PA15 mismatch, boundary qualification attempts and source probes remain
 retained. No timing observations were discarded and no unrelated oracle changed.
+
+## Early mixed arguments in shape constants
+
+Early shape constants now use the same type/const argument scheduler as ordinary
+expression paths. Constructor and function values can refer forward to their
+headers, alias-qualified variants publish their callable facts, and explicitly
+partial argument lists demand their consumed trailing defaults. Readiness also
+follows types introduced by those defaults and partial annotations. Omitted,
+empty and lifetime-only lists retain inference behavior. These changes extend
+PA18 declaration support; they do not implement general constant statements,
+const function calls or executable generic function instances.
+
+Value-readiness traversal follows each nominal declaration's fields once and
+actual argument types separately. It no longer substitutes every intermediate
+symbolic field graph. The 512-owner shared-chain regression originally performed
+1,062,407 field-instantiation steps; the corrected test requires fewer than
+32,768 steps and 16,384 canonical types. A separate 512-use repeated-default
+case requires fewer than 64 field-instantiation steps.
+
+Const arguments reject syntactic references to enclosing type, const and lifetime
+parameters. A permitted standalone const parameter remains symbolic. Lifetimes
+bound by a higher-ranked function type inside the constant remain valid, including
+macro-generated types. Cached minimum/maximum scope-preorder positions summarize
+captures without copying free-variable sets into each enclosing expression.
+Aliases cannot erase an otherwise forbidden syntactic capture.
+Completion flags use compact node-indexed tables; only actual captures allocate
+hash-map records. This avoids storing empty capture summaries for ordinary syntax.
+
+Nested constants elaborate annotations in their own body contexts. An inferred
+annotation lifetime allocated before body inference still registers a proof body,
+even if an alias subsequently erases that lifetime and inference adds no new facts.
+This prevents orphaned body-region identities and preserves the ordinary region,
+loan and destruction proof requirements.
+
+The new maintainer regressions contain 35 constructor cases and 37 argument/scope
+cases. Positive concrete array lengths are independently checked with both an
+exact-length and an off-by-one rustc call. Argument/scope cases also collect and
+prove the resulting region contracts. Seven native programs compare CPPGM-backed
+execution with rustc, including an intentional value-failure control. The original
+probe receipts retain a rejected hypothesis: `{(N)}` is not a permitted standalone
+const parameter in this pinned stable profile; the regression expects rejection.
+
+PA18–PA21 remain planned. The next PA18 work includes generic Drop conformance,
+inherited method environments, deferred const lengths/promotions and demanded
+executable instances of retained generic body templates.
+
+Performance froze 305 production/configuration files and compared parent
+`ae49bc4` with candidate SHA256
+`35bbe024d8221399b7cc7fccab817a330ea79f5524235bc626d838fad5b460df`.
+Thirty workloads retained 540 observations on CPU 2: two warmups, four A/A
+calibration samples and three ABBA blocks per job. No RustGM builds or tests
+overlapped timing. All full/count outputs and frozen source, binary and input
+hashes verified. Nine newly supported inputs were independently accepted by
+rustc, with exact-length acceptance and off-by-one rejection controls; these
+compare two immutable candidate copies because the parent rejects them.
+
+The first complete run also retained 540 observations. Its empty capture-summary
+hash entries increased several existing workload medians by 13–19%. Compact
+completion flags removed most of that overhead. The final run still measures
+cost: drop-scalar-arguments increases 64.80 → 69.96 ms (+7.9%), and packed-scalar
+at 16,384 increases 530.60 → 563.76 ms (+6.2%). Most other existing comparisons
+are within a few percent in either direction. No speedup is claimed from these
+short, noisy measurements; every observation from both candidates is retained.
+
+Selected paired medians in milliseconds (— means candidate-only qualification):
+
+| Workload | Scale | Parent | Candidate | Candidate RSS, KiB |
+| --- | ---: | ---: | ---: | ---: |
+| drop-scalar-arguments | 4096 | 64.80 | 69.96 | 14194 |
+| drop-static-arguments | 4096 | 68.95 | 65.56 | 13948 |
+| thinrefs | 4096 | 484.56 | 500.51 | 77764 |
+| packed-scalar | 4096 | 127.51 | 131.49 | 21198 |
+| wide-enum-borrows | 4096 | 154.12 | 156.91 | 26034 |
+| packed-scalar | 16384 | 530.60 | 563.76 | 70652 |
+| wide-enum-borrows | 16384 | 611.80 | 618.22 | 91534 |
+| shared-early-fields | 128 | — | 14.94 | 7194 |
+| shared-early-fields | 512 | — | 47.81 | 12794 |
+| shared-early-fields | 2048 | — | 197.99 | 35204 |
+| repeated-early-defaults | 256 | — | 18.54 | 7130 |
+| repeated-early-defaults | 1024 | — | 67.69 | 13472 |
+| repeated-early-defaults | 4096 | — | 260.15 | 39604 |
+| local-constant-binders | 256 | — | 22.07 | 8544 |
+| local-constant-binders | 1024 | — | 84.43 | 17692 |
+| local-constant-binders | 4096 | — | 357.63 | 56548 |
+
+The shared-field, repeated-default and local-binder families show bounded growth
+across these measured sizes. The typed instantiation-count invariants provide
+separate evidence against repeated symbolic field expansion; timings alone do
+not establish an asymptotic complexity bound.
+
+Evidence is retained in `early-uses-v{1,2}-{freeze,source-sha256,preflight,
+perf-jobs,perf-results}.json`, the read-only source snapshots and candidate
+binaries, both `early-uses-perf-v*.log` files, and each retained
+`obj/perf/*/{samples.json,observations.jsonl}`. Independent source and rejected
+hypothesis receipts are under `early-uses-v{3,4,5}/`; the initial quadratic
+field-instantiation failure remains in `early-uses-sharing-v1.log`.
+
+Final local validation passed all 703 frontend tests, all 3,350 active PA1–PA17
+text cases and all eleven explicitly selected native maintainer tests. The final
+cache change also passed twenty focused tests, Rustfmt, Clippy all/pedantic with
+warnings denied and the 445-file audit with zero findings. All 25 harness tests
+and upstream provenance checks passed. The initial candidate also passed all
+703 release tests; hosted CI repeats release validation for the final commit.
+No existing oracle or declared course outcome changed. Validation and final
+source/binary/input verification receipts are in `early-uses-v2-validation.json`
+and `early-uses-v2-reverify.json`.

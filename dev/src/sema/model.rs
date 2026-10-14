@@ -214,6 +214,7 @@ pub struct ReferenceAlignment {
 }
 pub struct Declarations {
     pub(super) anonymous_constants: std::collections::HashMap<NodeKey, TypeId>,
+    pub(super) constant_annotation_bodies: std::collections::HashSet<NodeKey>,
     pub generics: super::generics::Generics,
     /// Repeat operands selected as constant paths before runtime coercion wrappers.
     pub constant_repeats: std::collections::HashSet<NodeKey>,
@@ -286,6 +287,7 @@ impl Declarations {
     pub(super) fn new(report: &Report) -> Result<Self, Error> {
         let mut value = Self {
             anonymous_constants: std::collections::HashMap::new(),
+            constant_annotation_bodies: std::collections::HashSet::new(),
             generics: super::generics::Generics::default(),
             constant_repeats: std::collections::HashSet::new(),
             destructors: super::destructors::Destructors::default(),

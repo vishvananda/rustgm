@@ -21,7 +21,7 @@ pub(in super::super) struct Pending {
     pub(super) index: HashMap<ItemId, usize>,
     constructors: HashMap<DefId, ItemId>,
     shapes: HashSet<TypeId>,
-    discriminants: HashSet<ItemId>,
+    value_templates: HashSet<ItemId>,
 }
 impl Checker<'_> {
     pub(super) fn reserve_fields(
@@ -131,12 +131,6 @@ impl Checker<'_> {
             }
         }
         self.nominals.shapes.insert(ty);
-        if matches!(self.facts.types.kind(ty), Some(Type::Adt(..))) {
-            self.facts
-                .aggregates
-                .instantiate(&mut self.facts.types, ty)
-                .map_err(|e| Error::at(crate::resolve::unit::FileId(0), 0, e))?;
-        }
         match self.facts.types.kind(ty) {
             Some(Type::Tuple(fields)) => {
                 let fields = self.facts.types.list(fields).ok_or_else(|| {
@@ -155,20 +149,6 @@ impl Checker<'_> {
             Some(Type::Adt(item, arguments)) => {
                 let index = self.nominals.index[&item];
                 let key = self.nominals.entries[index].key;
-                let shape = self
-                    .facts
-                    .aggregates
-                    .shape(&self.facts.types, ty)
-                    .map_err(|e| self.error(key, e))?;
-                for variant in shape.variants().rev() {
-                    let fields = self
-                        .facts
-                        .types
-                        .list(variant.fields)
-                        .ok_or_else(|| self.error(key, "missing nominal value fields"))?;
-                    self.work
-                        .extend(fields.iter().rev().map(|&ty| Work::ValueShape(ty)));
-                }
                 for argument in self
                     .facts
                     .types
@@ -179,7 +159,24 @@ impl Checker<'_> {
                         self.work.push(Work::ValueShape(ty));
                     }
                 }
-                if self.nominals.discriminants.insert(item) {
+                if self.nominals.value_templates.insert(item) {
+                    // Readiness belongs to the declaration. Concrete field
+                    // substitution happens after inference, keyed by the actual
+                    // arguments; expanding each symbolic owner here is quadratic.
+                    let definition = self
+                        .facts
+                        .aggregates
+                        .get(item)
+                        .ok_or_else(|| self.error(key, "missing nominal value template"))?;
+                    for variant in self.facts.aggregates.variants(definition).iter().rev() {
+                        let fields = self
+                            .facts
+                            .types
+                            .list(variant.fields)
+                            .ok_or_else(|| self.error(key, "missing nominal value fields"))?;
+                        self.work
+                            .extend(fields.iter().rev().map(|&ty| Work::ValueShape(ty)));
+                    }
                     for group in 0..self.nominals.entries[index].groups.len() {
                         let group = self.nominals.entries[index].groups[group];
                         if let Some(node) = group.discriminant {

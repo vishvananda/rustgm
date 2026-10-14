@@ -43,6 +43,8 @@ enum Work {
     Constructor(DefId),
     ValueType(DefId),
     ValueShape(TypeId),
+    ConstantUse(NodeKey, regions::Context),
+    ConstantArguments(NodeKey),
     Bounds(DefId, regions::Context),
     ItemArguments(NodeKey, DefId),
     AliasVariant(NodeKey, DefId, regions::Context),
@@ -72,6 +74,7 @@ struct Checker<'a> {
         Option<std::collections::HashMap<NodeKey, Option<crate::resolve::package::ModuleId>>>,
     constant_scratch: super::constants::Scratch,
     constant_dependencies: std::collections::HashSet<NodeKey>,
+    constant_captures: generics::Captures,
     parameter_uses: crate::types::parameters::uses::Uses,
     report: &'a Report,
     facts: Declarations,
@@ -105,6 +108,7 @@ pub fn analyze(report: &Report) -> Result<Declarations, Error> {
         constant_modules: None,
         constant_scratch: super::constants::Scratch::default(),
         constant_dependencies: std::collections::HashSet::new(),
+        constant_captures: generics::Captures::default(),
         parameter_uses: crate::types::parameters::uses::Uses::default(),
         report,
         facts: Declarations::new(report)?,
@@ -172,6 +176,7 @@ impl Checker<'_> {
         self.complete_layouts()
     }
     fn drain(&mut self, steps: &mut usize, limit: usize) -> Result<(), Error> {
+        let mut scan = Vec::new();
         while let Some(work) = self.work.pop() {
             *steps += 1;
             if *steps > limit {
@@ -187,6 +192,10 @@ impl Checker<'_> {
                 Work::Constructor(id) => self.constructor(id)?,
                 Work::ValueType(id) => self.constant_value_type(id),
                 Work::ValueShape(ty) => self.constant_value_shape(ty)?,
+                Work::ConstantUse(key, context) => {
+                    self.constant_use(key, context, steps, limit, &mut scan)?;
+                }
+                Work::ConstantArguments(key) => self.constant_arguments(key)?,
                 Work::Bounds(owner, context) => self.complete_bounds(owner, context)?,
                 Work::AliasVariant(key, owner, context) => {
                     self.complete_alias_variant(key, owner, context)?;
@@ -929,7 +938,12 @@ impl Checker<'_> {
                     .map_err(|e| self.error(lifetime, e));
             }
         }
-        if let Position::Local(body) = context.position {
+        if let Position::Local(body) | Position::Constant(body) = context.position {
+            if matches!(context.position, Position::Constant(_)) {
+                self.facts
+                    .constant_annotation_bodies
+                    .insert(NodeKey { node: body, ..key });
+            }
             let ordinal = u32::try_from(self.facts.body_regions.len())
                 .ok()
                 .and_then(|n| n.checked_add(1))

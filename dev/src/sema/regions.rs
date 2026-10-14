@@ -10,6 +10,7 @@ pub(super) enum Position {
     Output,
     Static,
     Local(crate::syntax::ast::NodeId),
+    Constant(crate::syntax::ast::NodeId),
 }
 #[derive(Clone, Copy)]
 pub(super) struct Context {
@@ -121,7 +122,9 @@ impl Regions {
         }
         let id = context.binder.ok_or("missing lifetime specifier")?;
         match context.position {
-            Position::Local(_) => Err("local region requires body inference identity"),
+            Position::Local(_) | Position::Constant(_) => {
+                Err("local region requires body inference identity")
+            }
             Position::Static => Ok(RegionId::STATIC),
             Position::Input | Position::Impl => RegionId::bound(0, self.fresh(id)?),
             Position::Output => self.binders[id.0]

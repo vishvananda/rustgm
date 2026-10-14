@@ -71,7 +71,7 @@ impl Checker<'_> {
                 || parameters
                     .iter()
                     .skip(count + offset)
-                    .any(|p| p.default.is_none()))
+                    .any(|p| p.default.is_none() && self.defaults.get(p.binding).is_none()))
         {
             return Err(self.error(key, "incorrect number of type and const arguments"));
         }
@@ -121,6 +121,16 @@ impl Checker<'_> {
         };
         let offset = self.item_lifetime_count(owner);
         let ast = &self.report.package.unit(key.file).configured.ast;
+        for parameter in self.facts.generics.parameters[&owner]
+            .iter()
+            .skip(ast.list(list).len() + offset)
+            .filter(|p| p.default.is_none())
+            .rev()
+        {
+            if let Some(id) = self.defaults.get(parameter.binding) {
+                self.work.push(Work::Default(id, false));
+            }
+        }
         for (index, node) in ast.list(list).iter().copied().enumerate().rev() {
             let key = NodeKey { node, ..key };
             if matches!(self.kind(key), Kind::InferType) {

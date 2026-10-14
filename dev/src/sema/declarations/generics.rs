@@ -2,6 +2,8 @@
 mod annotations;
 mod arguments;
 pub(super) mod bounds;
+mod captures;
+pub(super) use captures::Captures;
 mod constants;
 mod defaults;
 pub(super) use defaults::{DefaultId, Defaults};
