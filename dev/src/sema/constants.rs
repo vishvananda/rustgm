@@ -9,6 +9,7 @@ pub(super) use discriminants::{
 };
 mod generics;
 pub(super) use generics::argument as generic_argument;
+mod layouts;
 mod patterns;
 mod places;
 pub(super) mod products;
@@ -116,6 +117,8 @@ enum Expression {
     },
 }
 enum Work {
+    Layout(NodeKey, TypeId, bool),
+    Alignment(super::model::ReferenceAlignment),
     Reference(places::Work),
     Contents(contents::Work),
     Enter(Query),
@@ -138,6 +141,7 @@ struct Queries<'a> {
     limit: usize,
     pattern_values: HashSet<Value>,
     drop_scratch: Option<Box<drops::Scratch>>,
+    layout_scratch: layouts::Scratch,
 }
 /// Declaration checking owns this cache; it never survives into lowering.
 #[derive(Default)]
@@ -146,6 +150,7 @@ pub(super) struct Scratch {
     constants: Vec<Option<usize>>,
     indexed: usize,
     drops: Option<Box<drops::Scratch>>,
+    layouts: layouts::Scratch,
 }
 
 #[derive(Clone, Copy)]
@@ -183,12 +188,12 @@ pub(super) fn pattern_values(
                 }
                 Query::Constant(index)
             }
-            PatternValue::Literal(source) => {
-                queries.prepare(source)?;
-                Query::Node(source)
-            }
+            PatternValue::Literal(source) => Query::Node(source),
         };
         queries.work.push(Work::Enter(query));
+        if let Query::Node(source) = query {
+            queries.prepare(source)?;
+        }
         queries.drain()?;
         let value = queries.value(query)?;
         if let Some(pattern) = pattern {
@@ -249,6 +254,7 @@ impl<'a> Queries<'a> {
             limit,
             pattern_values: HashSet::new(),
             drop_scratch: scratch.drops,
+            layout_scratch: scratch.layouts,
         }
     }
     fn into_scratch(self) -> Scratch {
@@ -258,6 +264,7 @@ impl<'a> Queries<'a> {
             constants: self.constants,
             typing: self.typing.into_scratch(),
             drops: self.drop_scratch,
+            layouts: self.layout_scratch,
         }
     }
 }
@@ -306,6 +313,8 @@ impl Queries<'_> {
         while let Some(work) = self.work.pop() {
             self.budget()?;
             match work {
+                Work::Layout(key, ty, finish) => self.layout(key, ty, finish)?,
+                Work::Alignment(obligation) => self.check_alignment(obligation)?,
                 Work::Enter(query) => self.enter(query)?,
                 Work::Forward(query, dependency) => {
                     let value = self.value(dependency)?;
@@ -387,8 +396,8 @@ impl Queries<'_> {
                     self.require_complete_patterns(query)?;
                 }
                 let key = self.typing.facts.initializers[index].value;
-                self.prepare(key)?;
                 self.forward(query, Query::Node(key));
+                self.prepare(key)?;
             }
             Query::Place(key) => self.enter_place(key)?,
             Query::Contents(key, id) => self.enter_contents(key, id)?,
@@ -549,6 +558,7 @@ impl Queries<'_> {
     fn prepare(&mut self, root: NodeKey) -> Result<(), Error> {
         // Validate all branches, including ones evaluation will skip. Inference
         // has already selected their operations; this is constant eligibility.
+        // Push value continuations first: preparation schedules prerequisite work.
         let mut drops = drops::Check::new(self.typing.facts, root, self.drop_scratch.take());
         self.scan.push(root);
         while let Some(key) = self.scan.pop() {
@@ -557,6 +567,12 @@ impl Queries<'_> {
                 continue;
             }
             let expression = self.classify(key)?;
+            if matches!(
+                expression,
+                Expression::Reference(references::Expression::Borrow(_))
+            ) {
+                self.prepare_alignment(key)?;
+            }
             if let Some(check) = &mut drops {
                 check.expression(self.report, self.typing.facts, key, expression)?;
             }

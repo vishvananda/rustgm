@@ -139,6 +139,12 @@ from finalized aggregate discriminants. Shape constants must demand those querie
 an empty pending registry never means a provisional zero is final. Reuse completed
 values and the variant index across argument evaluations. Check all enum values,
 including unused duplicates and overflows, before publishing final layouts.
+Constant borrows consume retained typed alignment obligations, including dead
+branches, without evaluating their places. Layout readiness shares the constant
+work stack: complete required enum tags and by-value field layouts before caching
+the layout, retaining zero-array alignment and stopping at pointers. Detect genuine
+layout/value cycles. Reuse completed layouts and index appended borrow obligations
+once; an unrelated enum inventory must not be rescanned for each argument.
 
 Constant eligibility and body construction share lexical temporary-scope analysis.
 Keep that analysis below body construction so declaration queries do not depend

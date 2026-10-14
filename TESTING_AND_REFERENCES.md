@@ -154,7 +154,7 @@ loan proof. Root independent/native targets include PA14. See
 
 PA15 has 202 region-contract inspections: declarations, elision, variance,
 explicit/implied bounds, callable universes and borrow-place provenance. PA16
-has 296 cases: 180 loan inspections/rejections and 116 LowIR executions. All
+has 304 cases: 185 inspections/rejections and 119 LowIR executions. All
 acceptance outcomes agree with pinned rustc without exceptions. Their separate
 `--emit-regions` and `--emit-loans` views expose actual typed proof facts; the
 contract view alone cannot authorize execution. Twelve earlier executable
@@ -163,7 +163,7 @@ rejections. The earlier type/body/pattern views retain pending directed region
 facts; independently reviewed oracles reflect those facts.
 
 `make test-rustc` includes both stages; `make test-native-pa16` selects PA16's
-116 execution cases. The root native target includes PA16 and the explicit
+119 execution cases. The root native target includes PA16 and the explicit
 maintainer native tests. See `docs/pa15-pa16-validation.md` for the release review.
 
 PA17 has 207 LowIR fixtures: 135 accepted programs and 72 rejections. Two

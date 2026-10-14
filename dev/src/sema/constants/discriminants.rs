@@ -115,12 +115,6 @@ pub(in crate::sema) fn finish(
         if !used.insert((member.owner, value)) {
             return Err(queries.error(query, "duplicate enum discriminant"));
         }
-        queries
-            .typing
-            .facts
-            .aggregates
-            .set_discriminant(member.owner, member.ordinal, value)
-            .map_err(|e| queries.error(query, e))?;
     }
     *scratch = queries.into_scratch();
     Ok(())
@@ -131,10 +125,17 @@ impl Queries<'_> {
         if let Query::Variant(variant) = query
             && let Some(pending) = &mut self.discriminants
         {
-            let result = value
-                .integer()
-                .and_then(|bits| pending.complete(variant, bits));
-            result.map_err(|e| self.error(query, e))?;
+            let result = value.integer().and_then(|bits| {
+                pending.complete(variant, bits)?;
+                Ok(bits)
+            });
+            let bits = result.map_err(|e| self.error(query, e))?;
+            let member = self.typing.facts.members.variants[variant.0 as usize];
+            self.typing
+                .facts
+                .aggregates
+                .set_discriminant(member.owner, member.ordinal, bits)
+                .map_err(|e| self.error(query, e))?;
         }
         self.states.insert(query, State::Ready(value));
         Ok(())
@@ -190,8 +191,8 @@ impl Queries<'_> {
             let module = self.report.resolution.scopes[scope.0 as usize].module;
             self.typing.anonymous_constant(key, ty, module)?;
             self.require_complete_patterns(query)?;
-            self.prepare(key)?;
             self.forward(query, Query::Node(key));
+            self.prepare(key)?;
         } else if let Some(previous) = spec.previous {
             self.work
                 .push(Work::Successor(query, Query::Variant(previous), spec.tag));

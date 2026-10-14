@@ -14,8 +14,8 @@ pub(in crate::sema) fn argument(
         Queries::with_scratch(report, facts, Some(discriminants), std::mem::take(scratch));
     queries.typing.anonymous_constant(key, ty, module)?;
     queries.require_complete_patterns(Query::Node(key))?;
-    queries.prepare(key)?;
     queries.work.push(Work::Enter(Query::Node(key)));
+    queries.prepare(key)?;
     queries.drain()?;
     let scalar = queries
         .value(Query::Node(key))?

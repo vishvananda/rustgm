@@ -6,6 +6,21 @@ mod rustc;
 use std::{path::Path, process::Command};
 const CASES: &[(&str, &str, bool)] = &[
     (
+        "aligned-large-enum-argument",
+        "#[repr(C)]#[derive(Copy,Clone)]enum E{A=0,B=4294967297}#[repr(packed(8))]struct S{e:E}type A<const N:usize>=[u8;N];static V:S=S{e:E::B};fn main(){let x:A<{*(&S{e:E::B}.e) as u8 as usize}>=[9;1];check(x[0]==9);check(V.e as u64==4294967297);}",
+        false,
+    ),
+    (
+        "aligned-zero-array-argument",
+        "#[repr(C)]#[derive(Copy,Clone)]enum E{A=0,B=4294967296}#[repr(packed(8))]struct S{e:[E;0]}type A<const N:usize>=[u8;N];fn main(){let x:A<{(&S{e:[]}.e,1).1}>=[7;1];check(x[0]==7);check(E::B as u64==4294967296);}",
+        false,
+    ),
+    (
+        "aligned-dead-arithmetic",
+        "#[repr(C)]#[derive(Copy,Clone)]enum E{A=0,B=4294967296}#[repr(packed(8))]struct S{e:E}type A<const N:usize>=[u8;N];fn main(){let x:A<{if true{1}else{(*(&S{e:E::B}.e) as u8 as usize)/(E::A as usize)}}>=[5;1];check(x[0]==5);}",
+        false,
+    ),
+    (
         "enum-argument",
         "enum E{A=7,B}type A<const N:usize>=[u8;N];fn main(){let x:A<{E::B as usize}>=[3;8];check(x[7]==3);}",
         false,

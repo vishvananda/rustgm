@@ -53,7 +53,10 @@ zero-sized values. Preserve snapshots when arguments, returns or assignments
 copy aggregates containing references. Persistent constants and readonly statics
 retain typed data identity and relocations. Static addresses do not read static
 initializer values. Packed fields retain their declared offsets; taking an
-unaligned reference is rejected even in an unused function. Eligible promotions
+unaligned reference is rejected even in an unused function or an unevaluated
+constant branch. A packed constant borrow demands complete enum discriminants
+before caching its referent layout, including nested and zero-length array fields;
+real layout/discriminant cycles are rejected. Eligible promotions
 share backing while preserving source effects and checks.
 
 PA17 owns user destruction and destructor liveness. General trait methods,
@@ -118,7 +121,7 @@ Runtime regions cap retained sparse words/pending deltas at 500,000. Optional
 inspection snapshots cap at 2,000,000 nonzero words (48 MB). Executable
 verification runs the same proof without allocating inspection traces.
 
-The release suite declares 296 cases, including 116 LowIR executions. It covers
+The release suite declares 304 cases, including 119 LowIR executions. It covers
 last-use and conflicting access, reborrows/two-phase activation, disjoint fields
 and patterns, loops, guards, temporary extension, promotion, thin/wide reference
 execution and persistent backing. Outcomes are declared before oracle generation

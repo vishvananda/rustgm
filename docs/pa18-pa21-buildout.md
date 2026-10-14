@@ -1566,3 +1566,85 @@ The frozen candidate SHA-256 is
 Source hashes, preflight comparisons, job definitions and raw sample receipt paths
 are recorded in `constant-readiness-v1-*`; the measurement log is
 `constant-readiness-perf-v1.log`.
+
+### Constant layout prerequisites
+
+Packed constant borrows now demand complete enum discriminants before constructing
+their referent layouts. The previous path could cache a four-byte `repr(C)` tag
+from provisional zeros, then accept a borrow that actually required eight-byte
+alignment. The same stale layout could truncate a later persistent enum value.
+Signed tags, forward named constants, nested products and zero-length arrays all
+retain their genuine dependencies.
+
+Layout begin/finish work shares the existing iterative constant stack. Completed
+layouts provide the cache; active layout queries detect storage/value cycles.
+Each completed discriminant is published to the aggregate facts immediately,
+while the final pass still checks every unused value, duplicate and overflow.
+Pointers stop the by-value walk. Field traversal consumes full-TypeId aggregate
+shapes, preserving the existing instantiated-field boundary. No recursive query
+calls, global layout resets or repeated whole-enum inventory scans are introduced.
+
+Constant preparation consumes the packed-borrow obligations already retained by
+body typing, including unexecuted branches. An append-only source index makes
+those obligations available without rewalking places or evaluating a dead index
+or arithmetic expression. Prerequisites run before value continuations. Pinned
+rustc rejects self/cross enum layout cycles even when the enum has an explicit
+integer representation; those cycles remain errors here too.
+
+Five new maintainer tests cover 28 independently qualified outcomes, cached tag
+width/discriminant invariants and 1,024 repeated borrows with fewer than 64 ABI
+layout visits. Three additional alias execution programs cover large C tags,
+zero-array alignment and a dead division whose value must remain unevaluated.
+PA16 owns eight new regressions: five required rejections and three executable
+programs. Their outcomes were declared and independently checked before reference
+generation; all 296 existing PA16 oracle outputs remain unchanged. The new native
+oracle for a large C enum retains an eight-byte readonly value and eight-byte
+loads, including the high discriminant bits.
+
+This is another prerequisite repair for PA18 field/header readiness. PA18–PA21
+remain planned. The full nominal generics, constructor/pattern inference, scoped
+bounds, specialization, trait and advanced relationship responsibilities above
+are unchanged. Pending Drop-owner availability during impl-header constants is
+still a required part of the forthcoming nominal query design.
+
+Validation passes 667 frontend tests (nine explicit native tests ignored in that
+default run), all 3,350 active PA1–PA17 cases, 24 focused release tests, all nine
+explicit native maintainer tests and 119 PA16 executable comparisons. The alias
+native suite now has 21 programs: 19 clean executions and two declared panics.
+All 304 PA16 outcomes independently match pinned rustc. Rustfmt/Clippy all/pedantic,
+the 415-file audit with zero findings, all 25 harness tests and upstream provenance
+pass. Logs are `alignment-full-v1.log`, `alignment-release-v1.log`,
+`alignment-native-v1.log` and `alignment-pa16-independent-v1.log`. The first build
+caught a borrow-checker error, fixed before tests; an early harness run detected the
+intentionally pending reference receipt, which was generated before the final run.
+
+Eleven frozen performance jobs retain 198 observations on CPU 2: two warmups, four
+A/A observations and three ABBA blocks per job. All full/count outputs match; all
+285 source hashes and immutable binaries/inputs verify. No local build or test
+jobs overlap timing. Eight jobs compare parent `2ebe00e` with the candidate;
+three corrected enum-borrow workloads compare identical candidate copies.
+
+| Workload | Units | Parent ms | Candidate ms | Parent RSS KiB | Candidate RSS KiB |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| implicit-enums | 4096 | 14.71 | 14.98 | 7170 | 7156 |
+| explicit-enums | 4096 | 17.97 | 17.54 | 9224 | 8564 |
+| drop-scalar-arguments | 4096 | 63.79 | 63.44 | 13520 | 14186 |
+| drop-static-arguments | 4096 | 64.32 | 64.36 | 14154 | 13460 |
+| thinrefs lowering | 4096 | 493.39 | 493.41 | 77694 | 77400 |
+| packed-scalar arguments | 1024 | 32.70 | 33.26 | 8614 | 8562 |
+| packed-scalar arguments | 4096 | 119.10 | 121.86 | 20858 | 20530 |
+| packed-scalar arguments | 16384 | 499.96 | 500.86 | 69150 | 67792 |
+
+The packed-borrow workload includes the new obligation lookup/check, with a roughly
+2.8 ms median increase at 4,096 uses and overlapping paired ranges. Its 16,384-use
+ranges also overlap. The corrected wide-enum workloads scale from about 37 to 146
+to 608 ms at 1,024/4,096/16,384 variants and borrows, with roughly 10/25/87 MiB RSS.
+These are observations, not an exact scaling law or a general speedup claim.
+
+The candidate SHA-256 is
+`37806b2556f36ae968a59b700c977fa97ef73e331263ac97e6c357582b465dec`.
+`alignment-v1-*` records source hashes, job definitions, preflight comparisons,
+validation and raw receipt paths; `alignment-perf-v1.log` retains the measurements.
+The parent miscompilation is retained as `alignment-large-parent.lowir`: it emits
+four zero bytes and a u32 load for the large enum. The new PA16 oracle emits the
+correct eight-byte value and i64 load.

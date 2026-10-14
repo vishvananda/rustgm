@@ -4135,6 +4135,114 @@
         "kind": "execute",
         "outcome": "pass"
       }
+    },
+    {
+      "path": "tests/spec/constant-layouts/large-packed.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.constant-layouts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/constant-layouts/dead-packed.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.constant-layouts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/constant-layouts/zero-array-packed.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.constant-layouts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/constant-layouts/self-layout-cycle.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.constant-layouts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/constant-layouts/cross-layout-cycle.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.constant-layouts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/constant-layouts/large-aligned.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.constant-layouts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/constant-layouts/nested-aligned.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.constant-layouts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/constant-layouts/zero-array-aligned.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.constant-layouts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
     }
   ],
   "additional_modes": [
