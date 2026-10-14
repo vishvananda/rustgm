@@ -89,6 +89,9 @@ impl Copies {
                 _ => {}
             }
             let kind = types.kind(ty).ok_or("invalid Copy type")?;
+            if matches!(kind, Kind::Parameter(_)) {
+                return Err("generic Copy checking requires a parameter environment");
+            }
             if matches!(kind, Kind::Adt(_, args) if types.region_args(args).is_none()) {
                 return Err("generic Copy checking requires instantiated fields and bounds");
             }

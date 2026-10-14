@@ -23,7 +23,7 @@ Canonical argument equality never uses source spelling or rendered text.
 Lifetime substitution and bound-use collection traverse type arguments with the
 same binder depth as their owner. Shared type DAGs use the existing memoized,
 bounded worklists. Nested callable binders remain capture-safe. Const arguments
-are evaluated values at this checkpoint; const parameter terms are still needed.
+distinguish evaluated scalar values from rigid const parameter terms.
 
 Source type/const generics are still rejected at the existing semantic boundary.
 The new representation alone does not instantiate field definitions, prove
@@ -41,6 +41,11 @@ obligations are supplied. No course references are regenerated for this change.
 2. Elaborate type and const parameter terms and substitute them through types,
    signatures and aggregate field templates. Cache substitution in one argument
    environment. Keep lifetime shifting correct through nested callable binders.
+   Substitute early lifetimes and type/const terms jointly when removing a
+   template binder. Inserted type arguments belong to the destination context:
+   shift them beneath nested callable binders, and never process their lifetimes
+   again as if they belonged to the source template. Preserve parameters from
+   other owners unless the immutable binding environment explicitly binds them.
    Generic array lengths must remain typed terms until known, then become the
    existing fixed array shape. Retain all types, including zero-sized fields.
 3. Check generic bodies once against their parameter environment. Type-check
@@ -190,3 +195,71 @@ Local evidence: `arguments-full-v1.log`, `arguments-focused-v2.log`,
 debug/release runs include the two added argument-depth/budget controls. Together
 they cover 524 distinct frontend tests. Generated logs and binaries are not
 committed. No PA18–PA21 assignment is activated by this checkpoint.
+
+## Rigid parameter representation
+
+The next checkpoint adds immutable type/const parameter declarations keyed by
+owner and argument slot. Repeating a declaration shares its identity; changing
+its kind, const type or Sized requirement is rejected. These records use the
+same lazily allocated generic storage as argument lists. Type parameters are
+canonical type constructors and rigid inference atoms, distinct from inference
+variables. An inference variable may resolve to a parameter, but two different
+parameters cannot unify and a numeric literal cannot choose a parameter's type.
+
+Const parameter terms retain their declared scalar type and cannot be read as
+evaluated values. Type/const kind confusion and invalid scalar parameter types
+are diagnosed. Canonical properties retain generic presence through every type
+constructor, including zero-length arrays and function-item arguments. Lifetime
+substitution preserves parameter identity and declared requirements.
+
+The type-property cache stores six independent flags in one byte beside the
+16-bit escaping-binder count. The record occupies four bytes on the pinned host,
+compared with six at the canonical-argument checkpoint. Combining a child unions
+its dependencies and intersects well-formedness; each constructor retains control
+of sizedness. This avoids growing the property table for every ordinary type just
+to add the generic-presence flag, without adding lint exemptions.
+
+Closed-profile layout, ownership, equality, outlives and destruction queries
+reject a parameter when its answer requires a generic environment. Universal
+facts such as copying a shared reference and not dropping its referent remain
+available. The outlives scan checks generic presence before its region-free fast
+path, preventing an unresolved type parameter from becoming an empty proof.
+
+This is still typed representation and inference groundwork. Declaration
+elaboration, type/const substitution, generic array lengths, generic body proofs
+and demanded source instances remain to be connected before PA18 can be released.
+
+### Parameter checkpoint validation
+
+Six additional invariants check immutable declaration ownership, rigid inference,
+const terms versus evaluated values, generic presence through all constructors,
+lifetime substitution and the closed-proof boundaries. The complete debug suite
+passes 530 frontend tests, with eight explicit native tests ignored. All fourteen
+generic argument/parameter invariants also pass in release. All 3,293 earlier
+course cases remain byte-identical to their committed oracles. Rustfmt, Clippy,
+the 355-file architecture audit and all 25 harness tests pass without exemptions.
+
+The performance baseline is `6fa24df`'s actual CLI. The final candidate uses the
+four-byte property record. Nine jobs use the same frozen inputs, sizes, CPU,
+warmups, A/A calibration and ABBA pairing as above; all 162 observations and
+full/count output equality checks are retained. No local builds/tests ran during
+timing. At 4096 procedures:
+
+| Input | Baseline median ms | Candidate median ms | Baseline RSS KiB | Candidate RSS KiB |
+| --- | ---: | ---: | ---: | ---: |
+| Thin references | 454.499 | 453.010 | 76296 | 77318 |
+| Wide references | 862.694 | 868.509 | 123316 | 124156 |
+| Destruction | 2598.148 | 2493.326 | 290394 | 290150 |
+
+Ranges overlap and calibration shows host variation. These results do not
+establish a general speedup, and the smaller property record does not imply
+lower whole-process peak RSS in every workload. The earlier uncompressed
+parameter candidate and its complete measurements remain retained separately;
+they are not the final measured implementation.
+
+Final local evidence in `obj/pa18-work/`: `parameters-full-v3.log`,
+`parameters-release-v3.log`, `property-size-probe.log`,
+`parameters-v2-source-sha256.json`, `parameters-v2-perf-results.json` and its
+referenced raw receipts. The preceding candidate's observations are in
+`parameters-v1-perf-results.json`. No generic source execution or completed PA18
+grading contract is claimed by these typed representation tests.

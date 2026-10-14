@@ -54,7 +54,9 @@ impl Context {
                     )
             }
             Value::Variable(_)
-            | Value::Construct(Constructor::Primitive(_) | Constructor::Never) => true,
+            | Value::Construct(
+                Constructor::Primitive(_) | Constructor::Parameter(_) | Constructor::Never,
+            ) => true,
             Value::Construct(Constructor::Adt(_, args) | Constructor::FunctionItem(_, args)) => {
                 store
                     .region_args(args)

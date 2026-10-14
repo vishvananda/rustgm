@@ -41,6 +41,9 @@ fn children(
     budget: &mut Budget,
 ) -> Result<(), &'static str> {
     match types.kind(ty).ok_or("invalid well-formed type identity")? {
+        Kind::Parameter(_) => {
+            return Err("generic outlives checking requires a parameter environment");
+        }
         Kind::Reference { referent, .. } => work.push((referent, depth)),
         Kind::Pointer { pointee, .. } => work.push((pointee, depth)),
         Kind::Slice(element) | Kind::Array { element, .. } => work.push((element, depth)),
@@ -200,6 +203,9 @@ impl Scan {
         }
     }
     fn visit(&mut self, types: &Store, root: TypeId) -> Result<(), &'static str> {
+        if types.contains_parameters(root) == Some(true) {
+            return Err("generic outlives checking requires a parameter environment");
+        }
         self.work.push((root, 0));
         while let Some((ty, depth)) = self.work.pop() {
             self.budget.charge()?;

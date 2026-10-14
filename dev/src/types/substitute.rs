@@ -163,7 +163,7 @@ impl Bound {
                 self.argument_dependencies(store, arguments, depth)?;
                 None
             }
-            Kind::Never | Kind::Primitive(_) => None,
+            Kind::Never | Kind::Primitive(_) | Kind::Parameter(_) => None,
         };
         if let Some((list, depth)) = list {
             for ty in store.list(list).ok_or("invalid substitution child list")? {
@@ -233,7 +233,7 @@ impl Bound {
 
     fn rebuild(&mut self, store: &mut Store, kind: Kind, depth: u16) -> Result<Kind, &'static str> {
         Ok(match kind {
-            Kind::Never | Kind::Primitive(_) => kind,
+            Kind::Never | Kind::Primitive(_) | Kind::Parameter(_) => kind,
             Kind::Adt(item, args) => Kind::Adt(item, self.arguments(store, args, depth)?),
             Kind::Tuple(list) => Kind::Tuple(self.list(store, list, depth)?),
             Kind::Array { element, length } => Kind::Array {

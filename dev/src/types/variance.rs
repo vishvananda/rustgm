@@ -216,7 +216,7 @@ impl Graph {
                 Kind::Adt(item, args) => {
                     self.nominal(types, range, (item, args), position, depth)?;
                 }
-                Kind::Never | Kind::Primitive(_) => {}
+                Kind::Never | Kind::Primitive(_) | Kind::Parameter(_) => {}
             }
         }
         Ok(())

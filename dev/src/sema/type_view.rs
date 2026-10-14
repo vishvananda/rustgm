@@ -324,6 +324,16 @@ fn ty(store: &Store, id: TypeId, out: &mut impl Write) -> io::Result<()> {
     {
         Kind::Never => write!(out, "never"),
         Kind::Primitive(p) => write!(out, "primitive {}", p.name()),
+        Kind::Parameter(id) => {
+            let parameter = store
+                .parameter(id)
+                .ok_or_else(|| io::Error::other("invalid type parameter"))?;
+            write!(
+                out,
+                "parameter def={} index={}",
+                parameter.owner.0, parameter.index
+            )
+        }
         Kind::Adt(item, args) => {
             write!(out, "aggregate def={}", item.0)?;
             region_arguments(store, args, out)
