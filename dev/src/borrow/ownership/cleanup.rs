@@ -2,9 +2,9 @@
 use super::{
     PathId, Paths, Root,
     consumption::{Disposition, Effects, Moment},
-    initialization::Maybe,
+    initialization::{Maybe, Transition},
     paths::Access,
-    state::State,
+    state::{self, State},
 };
 use crate::{
     body::{
@@ -171,7 +171,7 @@ impl Flow<'_> {
         paths: &Paths,
         state: &mut State<I>,
         location: Location,
-        mut visitor: impl FnMut(Candidate, &mut State<I>) -> Result<(), &'static str>,
+        mut visitor: impl FnMut(Transition, &mut State<I>) -> Result<(), &'static str>,
     ) -> Result<(), &'static str> {
         let Location::Edge { block, target } = location else {
             return Err("cleanup edge requires a successor");
@@ -187,7 +187,7 @@ impl Flow<'_> {
         state: &mut State<I>,
         location: Location,
         end: End,
-        mut visitor: impl FnMut(Candidate, &mut State<I>) -> Result<(), &'static str>,
+        mut visitor: impl FnMut(Transition, &mut State<I>) -> Result<(), &'static str>,
     ) -> Result<(), &'static str> {
         match end {
             End::Scopes(range) => {
@@ -243,7 +243,7 @@ impl Flow<'_> {
         state: &mut State<I>,
         location: Location,
         inspect: bool,
-        mut visitor: impl FnMut(Candidate, &mut State<I>) -> Result<(), &'static str>,
+        mut visitor: impl FnMut(Transition, &mut State<I>) -> Result<(), &'static str>,
     ) -> Result<(), &'static str> {
         let Location::At { before, .. } = location else {
             return Err("cleanup statement requires a point");
@@ -277,12 +277,12 @@ impl Flow<'_> {
                 };
                 state.charge(1)?;
                 visitor(
-                    Candidate {
+                    Transition::Observe(Event::Cleanup(Candidate {
                         location,
                         cause: Cause::Replacement,
                         place,
                         path,
-                    },
+                    })),
                     state,
                 )?;
             }
@@ -295,16 +295,16 @@ impl Flow<'_> {
             state.charge(1)?;
             if effect.disposition == Disposition::Discard {
                 visitor(
-                    Candidate {
+                    Transition::Observe(Event::Cleanup(Candidate {
                         location,
                         cause: Cause::Discard,
                         place: Place::Temporary(effect.value),
                         path: Some(effect.path),
-                    },
+                    })),
                     state,
                 )?;
             }
-            effect.transfer(paths, state, inspect)?;
+            effect.transfer(paths, state, inspect, &mut visitor)?;
         }
         Ok(())
     }
@@ -321,7 +321,7 @@ impl Cursor<'_> {
         state: &mut State<I>,
         location: Location,
         inspect: bool,
-        mut visitor: impl FnMut(Candidate, &mut State<I>) -> Result<(), &'static str>,
+        mut visitor: impl FnMut(Transition, &mut State<I>) -> Result<(), &'static str>,
     ) -> Result<(), &'static str> {
         let Location::At { before, .. } = location else {
             return Err("cleanup cursor requires a point");
@@ -338,7 +338,7 @@ impl Cursor<'_> {
                 self.event(paths, state, location, &mut visitor)?;
             }
             state.charge(1)?;
-            effect.transfer(paths, state, inspect)?;
+            effect.transfer(paths, state, inspect, &mut visitor)?;
         }
         while self.events.peek().is_some_and(|e| e.position == before) {
             self.event(paths, state, location, &mut visitor)?;
@@ -350,7 +350,7 @@ impl Cursor<'_> {
         paths: &Paths,
         state: &mut State<I>,
         location: Location,
-        visitor: impl FnMut(Candidate, &mut State<I>) -> Result<(), &'static str>,
+        mut visitor: impl FnMut(Transition, &mut State<I>) -> Result<(), &'static str>,
     ) -> Result<(), &'static str> {
         state.charge(1)?;
         let event = self.events.next().ok_or("missing cleanup storage event")?;
@@ -368,7 +368,13 @@ impl Cursor<'_> {
                     .is_none_or(|o| o.creation(value).is_none())
                     && let Some(path) = paths.temporary_path(value)
                 {
-                    state.fill(&paths.entries[path.0 as usize], true)?;
+                    state::change(
+                        state,
+                        location,
+                        &paths.entries[path.0 as usize],
+                        true,
+                        &mut visitor,
+                    )?;
                 }
                 Ok(())
             }
@@ -381,7 +387,7 @@ fn clear<I: Maybe>(
     location: Location,
     cause: Cause,
     path: PathId,
-    mut visitor: impl FnMut(Candidate, &mut State<I>) -> Result<(), &'static str>,
+    mut visitor: impl FnMut(Transition, &mut State<I>) -> Result<(), &'static str>,
 ) -> Result<(), &'static str> {
     state.charge(1)?;
     let entry = &paths.entries[path.0 as usize];
@@ -390,15 +396,15 @@ fn clear<I: Maybe>(
         Root::Temporary(id) => Place::Temporary(id),
     };
     visitor(
-        Candidate {
+        Transition::Observe(Event::Cleanup(Candidate {
             location,
             cause,
             place,
             path: Some(path),
-        },
+        })),
         state,
     )?;
-    state.fill(entry, false)?;
+    state::change(state, location, entry, false, &mut visitor)?;
     if matches!(entry.root, Root::Local(_)) {
         state.written(entry.start, false);
     }

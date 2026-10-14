@@ -1,5 +1,5 @@
 //! Must-initialized / may-written fixed point over sparse path intervals.
-use super::initialization::{Maybe, Status};
+use super::initialization::{Maybe, Status, Transition};
 use super::{
     BodyFacts, Error, Path,
     cleanup::{Event, Flow},
@@ -19,6 +19,57 @@ pub(super) struct Word<I: Maybe> {
 pub(super) struct State<I: Maybe> {
     words: Vec<Word<I>>,
     remaining: usize,
+}
+pub(super) trait Mutations {
+    fn fill(&mut self, path: &Path, initialized: bool) -> Result<(), &'static str>;
+    fn written(&mut self, bit: u32, value: bool);
+}
+impl<I: Maybe> Mutations for State<I> {
+    fn fill(&mut self, path: &Path, initialized: bool) -> Result<(), &'static str> {
+        Self::fill(self, path, initialized)
+    }
+    fn written(&mut self, bit: u32, value: bool) {
+        Self::written(self, bit, value);
+    }
+}
+pub(super) fn change<I: Maybe>(
+    state: &mut State<I>,
+    location: Location,
+    path: &Path,
+    initialized: bool,
+    mut visitor: impl FnMut(Transition, &mut State<I>) -> Result<(), &'static str>,
+) -> Result<(), &'static str> {
+    visitor(
+        Transition::Initialize {
+            location,
+            start: path.start,
+            end: path.end,
+            initialized,
+        },
+        state,
+    )?;
+    state.fill(path, initialized)
+}
+struct Replay<'a, V> {
+    state: &'a mut State<u64>,
+    location: Location,
+    visitor: V,
+}
+impl<V: FnMut(Transition, &mut State<u64>) -> Result<(), &'static str>> Mutations
+    for Replay<'_, V>
+{
+    fn fill(&mut self, path: &Path, initialized: bool) -> Result<(), &'static str> {
+        change(
+            self.state,
+            self.location,
+            path,
+            initialized,
+            &mut self.visitor,
+        )
+    }
+    fn written(&mut self, bit: u32, value: bool) {
+        self.state.written(bit, value);
+    }
 }
 impl<I: Maybe> State<I> {
     pub(super) fn charge(&mut self, cost: usize) -> Result<(), &'static str> {
@@ -295,7 +346,7 @@ pub(super) fn replay(
     flow: &Flow<'_>,
     incoming: &[Word<u64>],
     words: usize,
-    mut visitor: impl FnMut(Event, &mut State<u64>) -> Result<(), &'static str>,
+    mut visitor: impl FnMut(Transition, &mut State<u64>) -> Result<(), &'static str>,
 ) -> Result<(), &'static str> {
     let mut state = State {
         words: vec![Word::default(); words],
@@ -319,23 +370,20 @@ pub(super) fn replay(
                 block: block_id,
                 before,
             };
-            cursor.point(
-                &facts.paths,
-                &mut state,
-                location,
-                false,
-                |candidate, state| visitor(Event::Cleanup(candidate), state),
-            )?;
-            visitor(Event::Point(location), &mut state)?;
+            cursor.point(&facts.paths, &mut state, location, false, &mut visitor)?;
+            visitor(Transition::Observe(Event::Point(location)), &mut state)?;
             if before < block.end {
-                flow.statement(
-                    &facts.paths,
-                    &mut state,
-                    location,
-                    false,
-                    |candidate, state| visitor(Event::Cleanup(candidate), state),
+                flow.statement(&facts.paths, &mut state, location, false, &mut visitor)?;
+                visitor(Transition::Statement(location), &mut state)?;
+                facts.transfer(
+                    body,
+                    &mut Replay {
+                        state: &mut state,
+                        location,
+                        visitor: &mut visitor,
+                    },
+                    body.statements[before as usize].action,
                 )?;
-                facts.transfer(body, &mut state, body.statements[before as usize].action)?;
             }
         }
         if flow.storage.has_edge_ends(index) {
@@ -351,7 +399,7 @@ pub(super) fn replay(
                         block: block_id,
                         target,
                     },
-                    |candidate, state| visitor(Event::Cleanup(candidate), state),
+                    &mut visitor,
                 )?;
             }
         }

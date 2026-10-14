@@ -31,6 +31,20 @@ pub enum Status {
     /// Every bit is initialized on every incoming path.
     Always,
 }
+/// The ordered state transitions used for runtime flag elaboration. Observation
+/// happens before mutation; Statement is the actual body action, after operand
+/// consumption and replacement cleanup. Its initialization writes follow it.
+#[derive(Clone, Copy, Debug)]
+pub enum Transition {
+    Observe(Event),
+    Statement(Location),
+    Initialize {
+        location: Location,
+        start: u32,
+        end: u32,
+        initialized: bool,
+    },
+}
 pub struct Facts<'a> {
     body: &'a Body,
     pub ownership: BodyFacts,
@@ -49,6 +63,16 @@ impl Facts<'_> {
         &self,
         types: &Store,
         custom: &HashSet<ItemId, S>,
+    ) -> Result<(), Error> {
+        self.destructor_moves(types, |item| custom.contains(&item))
+    }
+    pub(crate) const fn body(&self) -> &Body {
+        self.body
+    }
+    pub(crate) fn destructor_moves(
+        &self,
+        types: &Store,
+        custom: impl Fn(ItemId) -> bool,
     ) -> Result<(), Error> {
         super::destructors::check(types, custom, self.body, &self.ownership)
     }
@@ -101,6 +125,20 @@ impl Facts<'_> {
     pub fn visit_events(
         &self,
         mut visitor: impl FnMut(Event, &mut Point<'_>) -> Result<(), &'static str>,
+    ) -> Result<(), &'static str> {
+        self.visit_transfers(|transition, point| match transition {
+            Transition::Observe(event) => visitor(event, point),
+            _ => Ok(()),
+        })
+    }
+    /// Replay exact initialization writes, including scope exits, materialized
+    /// births and ownership transfers, in their evaluation order. Intervals use
+    /// sparse path bits; array lengths do not expand them. CFG edges are independent.
+    /// # Errors
+    /// Reports query/transfer budget exhaustion or a callback error.
+    pub fn visit_transfers(
+        &self,
+        mut visitor: impl FnMut(Transition, &mut Point<'_>) -> Result<(), &'static str>,
     ) -> Result<(), &'static str> {
         state::replay(
             self.body,

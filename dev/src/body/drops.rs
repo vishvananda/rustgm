@@ -1,4 +1,5 @@
 //! Pending destruction requirements; initialization and cleanup order are not proved here.
+pub mod glue;
 pub mod values;
 pub(crate) mod view;
 use super::{

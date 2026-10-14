@@ -676,3 +676,115 @@ including wall time, RSS, child CPU time and context switches. Its versioned
 driver project preserves the previous driver's source and uses the maintainer's
 locked dependency versions/checksums. It invokes the frontend library directly;
 rustc and CPPGM do not implement any frontend phase.
+
+## Shared recipes and ordered conditional flag writes
+
+The typed-body layer now owns `body::drops::glue::Catalog`: an iterative,
+memoized recipe query over completed types, members and selected methods.
+A custom destructor precedes its fields; struct/tuple fields and active enum
+variant fields retain declaration order. Arrays retain one element recipe and
+a length, including zero-sized element types, rather than expanding elements.
+References and empty arrays require no destruction. Nominal lifetime
+instantiations share recipes; structural query keys remain canonical type IDs.
+The query diagnoses cycles, inconsistent field facts and work/storage limits.
+
+`borrow::destruction::select` requires the custom-destructor field-move rule,
+then selects operations from retained initialization. Whole initialized values
+use shared glue. Partially moved products select fields, enums dispatch before
+accessing variant fields, and arrays reuse the sparse physical segments from
+ownership. Gap conditions sit outside element loops. Never state suppresses
+runtime operations. Original cleanup types remain available for destructor
+borrow checking even after every runtime field call has been pruned: moving all
+fields individually does not have the same lifetime effect as moving the whole
+aggregate.
+
+Initialization replay additionally exposes the exact ordered writes used by the
+proof. Ordinary statement transfers share one mutation interface with the
+fixed-point solver; scope ends, materialized births and operand/return consumption
+use the same observed write primitive. Existing point/candidate inspection APIs
+preserve their order and answers. The destruction plan retains statement markers,
+cleanup identities and only the flag writes required by selected conditional
+operations. Flags start false. Each write selects a half-open interval in the
+sorted sparse flag table using binary search; it never enumerates array elements.
+Edges replay independently from their predecessor's outgoing state.
+
+Nine new maintainer tests cover shared nominal lifetime recipes, method/field
+ordering, enum dispatch, zero-length and billion-element arrays, 20,000 nested
+shared types, memoized cycle rejection, conditional whole/field drops, array
+subfields, required custom-destructor move rejection and the difference between
+runtime pruning and lifetime obligations. A separate test-only flag interpreter
+executes only the plan's emitted stores over the CFG. Its joins are compared with
+retained initialization at every statement/cleanup observation for eight
+independently rustc-qualified branching, loop, return and replacement programs.
+It does not reconstruct missing writes from body statements or move paths.
+
+All 3,094 PA1–PA16 course cases pass with unchanged text oracles. Debug and release
+each pass 505 frontend tests with six explicitly backend-dependent tests ignored;
+all six pass in `make test-maintainer-native`. Formatting, Clippy all/pedantic with
+warnings denied, the 335-file architecture/file audit, all 25 harness tests and
+upstream provenance checks pass. No lint exceptions were introduced. The initial
+audit caught recipe construction importing semantic members directly into borrow;
+construction now belongs to the typed-body layer and borrowing consumes its typed
+interface. `obj/pa15-work/drop-plan-v1-validation.json` hashes the validation logs.
+
+Four additional pinned-rustc probes in
+`obj/pa15-work/drop-region-selection-probes-v1/qualification.json` establish the
+next borrow-checking requirement. For a noncustom wrapper containing a Drop field
+and an unrelated plain reference, only the Drop field keeps its borrowed region
+live at destruction. A custom wrapper requires both. Moving the Drop field alone
+still leaves the wrapper's drop-check obligation. Consequently, blindly using
+all free regions of a cleanup type, or only regions of emitted runtime calls,
+would each be incorrect.
+
+This remains an intermediate typed plan. Pending-drop proof and execution guards
+are still in place. PA17 requires a query for Drop-relevant lifetime components,
+ordered destructor/storage points in liveness and loan checking, retention of the
+proved plan at the executable boundary, actual LowIR destructor/glue calls, native
+comparisons and the released handout/manifests/oracles. In particular, existing
+statement-level loan points cannot distinguish a destructor using an extended
+temporary from the temporary's later endpoint at the same statement position.
+
+Performance evidence uses 342 frozen source/configuration hashes, separately
+hashed versioned driver sources, immutable binaries, frozen inputs and CPU 2.
+A/A calibration plus three ABBA blocks at each of nine workload/scale pairs retain
+162 observations. Ordinary ownership and the existing initialization inspection
+compare old/new binaries with identical full and count output. The new planning
+workload compares identical candidate copies; it is scaling evidence, not a
+before/after speedup. No own builds/tests ran during timing; unrelated activity
+continued on the shared host. Every observation is retained.
+
+| Workload / size | Baseline median | Candidate median | Candidate RSS |
+| --- | ---: | ---: | ---: |
+| Ownership / 4,000 functions | 329.46 ms | 342.67 ms | 63,360 KiB |
+| Ownership / 16,000 functions | 1,390.41 ms | 1,395.28 ms | 241,442 KiB |
+| Ownership / 64,000 functions | 5,701.17 ms | 5,689.79 ms | 951,000 KiB |
+| Initialization / 256 functions | 65.60 ms | 65.26 ms | 13,488 KiB |
+| Initialization / 1,024 functions | 298.34 ms | 299.51 ms | 43,084 KiB |
+| Initialization / 4,096 functions | 1,213.93 ms | 1,237.07 ms | 163,170 KiB |
+| Planning / 256 functions | same candidate | 75.82 ms | 14,168 KiB |
+| Planning / 1,024 functions | same candidate | 300.69 ms | 43,140 KiB |
+| Planning / 4,096 functions | same candidate | 1,187.59 ms | 163,348 KiB |
+
+Ownership medians change +4.01% / +0.35% / -0.20%; the smallest A/A calibration
+ranges 336.62–609.59 ms, so its small regression does not establish a stable cost.
+At the largest size, CPU time changes -0.21% and median RSS decreases 148 KiB.
+Retained initialization changes -0.51% / +0.39% / +1.91%; the largest CPU change
+is +1.89% with 270 KiB more median RSS. This small observed replay cost is retained
+rather than described as a speedup or hidden by dropping samples.
+
+At 4,096 functions, planning retains 286,733 cleanup candidates, 94,208 nodes,
+24,576 array intervals, 12,288 flags and 1,261,615 ordered events. These counts
+follow `70N+13`, `23N`, `6N`, `3N`, and `308N+47`, respectively. Planning work is
+`1255N+121` steps. The recipe query retains `N+3` recipes and takes `9N+25` steps;
+structural tuple types with distinct reference regions still have distinct query
+keys. No measured operation enumerates the billion-element array. Counts describe
+typed planning, not executed destructor calls.
+
+`obj/pa15-work/drop-plan-v1-perf-results.json` indexes every raw receipt; all
+frozen source, driver, binary and input hashes were checked after measurement.
+The ordinary candidate SHA-256 is
+`44c7a8231c36ebcc34bbd68ce2f9e298d1a0b50e5b2595d1a8854d271cf8fa0c`;
+the initialization driver is
+`147fbf3275729804dd7bf7cebf7c0c5ccb43aa28a0c21aa7ff8f552df920af08`;
+the planning driver is
+`4b1bfa40eaf8eff02e77faf496f174be6483228f47524a0550b5b64e020706db`.

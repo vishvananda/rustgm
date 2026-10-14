@@ -4,11 +4,9 @@ use crate::{
     body::ir::{Action, Body, Rvalue},
     types::{ItemId, Kind, Store},
 };
-use std::{collections::HashSet, hash::BuildHasher};
-
-pub(super) fn check<S: BuildHasher>(
+pub(super) fn check(
     types: &Store,
-    custom: &HashSet<ItemId, S>,
+    custom: impl Fn(ItemId) -> bool,
     body: &Body,
     facts: &BodyFacts,
 ) -> Result<(), Error> {
@@ -24,8 +22,7 @@ pub(super) fn check<S: BuildHasher>(
                 .copied()
                 .ok_or_else(|| error("destruction path precedes its parent"))?;
             let ty = facts.paths.entries[parent.0 as usize].ty;
-            inherited
-                || matches!(types.kind(ty), Some(Kind::Adt(item, _)) if custom.contains(&item))
+            inherited || matches!(types.kind(ty), Some(Kind::Adt(item, _)) if custom(item))
         } else {
             false
         };

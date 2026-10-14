@@ -205,10 +205,10 @@ fn prepare<S: BuildHasher>(
     Ok(facts)
 }
 impl BodyFacts {
-    fn transfer<I: initialization::Maybe>(
+    fn transfer(
         &self,
         body: &Body,
-        state: &mut State<I>,
+        state: &mut impl state::Mutations,
         action: Action,
     ) -> Result<(), &'static str> {
         match action {

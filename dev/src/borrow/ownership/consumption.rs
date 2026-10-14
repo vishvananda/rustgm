@@ -1,5 +1,9 @@
 //! Owned rvalues leave the caller through typed operands, stores and returns.
-use super::{PathId, Paths, initialization::Maybe, state::State};
+use super::{
+    PathId, Paths,
+    initialization::{Maybe, Transition},
+    state::{self, State},
+};
 use crate::{
     body::{
         ir::{Action, BlockId, Body, Rvalue, ValueId},
@@ -149,12 +153,13 @@ impl Consumption {
         paths: &Paths,
         state: &mut State<I>,
         inspect: bool,
+        visitor: impl FnMut(Transition, &mut State<I>) -> Result<(), &'static str>,
     ) -> Result<(), &'static str> {
         let path = &paths.entries[self.path.0 as usize];
         if inspect && !state.initialized(path)? {
             return Err("owned operand may be uninitialized or already consumed");
         }
-        state.fill(path, false)
+        state::change(state, self.location, path, false, visitor)
     }
 }
 

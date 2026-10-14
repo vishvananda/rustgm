@@ -1,6 +1,6 @@
 //! Function-owned flat control-flow storage. Values snapshot reads before later effects.
 pub use crate::resolve::unit::NodeKey;
-pub use crate::sema::members::Selection;
+pub use crate::sema::members::{Selection, VariantId};
 use crate::{
     lex::token::Punctuation,
     resolve::model::DefId,
@@ -109,7 +109,7 @@ pub enum RepeatMode {
 pub enum Rvalue {
     Unit,
     Aggregate {
-        variant: Option<crate::sema::members::VariantId>,
+        variant: Option<VariantId>,
         fields: ValueList,
     },
     Repeat {
@@ -135,7 +135,7 @@ pub enum Rvalue {
     /// Non-moving constructor test; the owned input must be fully initialized.
     IsVariant {
         place: Place,
-        variant: crate::sema::members::VariantId,
+        variant: VariantId,
     },
     /// Prove an impossible match's input is initialized before ending its CFG.
     Validate(Place),
