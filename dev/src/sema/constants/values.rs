@@ -135,6 +135,33 @@ impl<'a> Reader<'a> {
     }
 }
 impl Constant {
+    /// Read an evaluated generic scalar without confusing a rigid parameter with a definition.
+    /// # Errors
+    /// Rejects unknown constants, invalid scalar kinds or malformed character bits.
+    pub fn argument(
+        store: &crate::types::Store,
+        id: crate::types::arguments::ConstId,
+    ) -> Result<Option<Self>, &'static str> {
+        let value = match store.const_kind(id) {
+            Some(crate::types::arguments::ConstKind::Value(value)) => value,
+            Some(crate::types::arguments::ConstKind::Parameter(_)) => return Ok(None),
+            None => return Err("missing canonical const argument"),
+        };
+        let scalar = match store.kind(value.ty) {
+            Some(Type::Primitive(Primitive::Bool)) => Scalar::Boolean(value.bits != 0),
+            Some(Type::Primitive(Primitive::Char)) => Scalar::Character(
+                u32::try_from(value.bits)
+                    .ok()
+                    .and_then(char::from_u32)
+                    .ok_or("invalid canonical char argument")?,
+            ),
+            Some(Type::Primitive(primitive)) if primitive.integer().is_some() => {
+                Scalar::Integer(value.bits)
+            }
+            _ => return Err("invalid canonical scalar argument type"),
+        };
+        Ok(Some(Self::scalar(scalar)))
+    }
     #[must_use]
     pub const fn string(id: crate::sema::text::Id) -> Self {
         Self(Value::Text(id))

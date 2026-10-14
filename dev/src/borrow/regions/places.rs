@@ -100,7 +100,7 @@ impl<'a> Places<'a> {
                 let facts = self
                     .promotions
                     .ok_or("temporary borrow requires promotion facts")?;
-                if facts.get(id).is_none() {
+                if !facts.contains(id) {
                     // This is only the body-extent upper bound. Precise storage
                     // liveness remains a separate mandatory execution proof.
                     output.push(Obligation {

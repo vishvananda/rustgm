@@ -164,7 +164,11 @@ impl Queries<'_> {
                 }
                 (
                     Kind::Index { value, index },
-                    Some(Operation::Index { .. } | Operation::IndexSlice),
+                    Some(
+                        Operation::Index { .. }
+                        | Operation::IndexParameter { .. }
+                        | Operation::IndexSlice,
+                    ),
                 ) => Some(Expression::Index {
                     value: child(value),
                     index: child(index),

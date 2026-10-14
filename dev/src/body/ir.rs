@@ -52,6 +52,10 @@ pub enum ProjectionKind {
         index: ValueId,
         length: u64,
     },
+    IndexParameter {
+        index: ValueId,
+        length: crate::types::arguments::ConstId,
+    },
     /// Bounds come from the slice place's retained pointer metadata.
     SliceIndex {
         index: ValueId,
@@ -141,6 +145,8 @@ pub enum Rvalue {
     Validate(Place),
     Function(DefId),
     Constant(DefId),
+    /// A canonical scalar const argument; rigid parameters remain unevaluated.
+    ConstArgument(crate::types::arguments::ConstId),
     Reify(ValueId),
     Constrain(ValueId),
     Unary {

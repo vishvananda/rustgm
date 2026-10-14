@@ -83,9 +83,9 @@ impl Index {
                 ProjectionKind::Subarray { start, end } => Step::Range(start, end),
                 ProjectionKind::FromEnd { offset, minimum } => Step::FromEnd { offset, minimum },
                 ProjectionKind::Subslice { prefix, suffix } => Step::Subslice { prefix, suffix },
-                ProjectionKind::Index { index, .. } | ProjectionKind::SliceIndex { index } => {
-                    Step::Dynamic(index)
-                }
+                ProjectionKind::Index { index, .. }
+                | ProjectionKind::IndexParameter { index, .. }
+                | ProjectionKind::SliceIndex { index } => Step::Dynamic(index),
             };
             let path = this.child(base, step)?;
             this.projections.push(path);

@@ -218,8 +218,8 @@ fn promotion_is_demanded_cached_and_keeps_possible_cleanup()
 }
 
 #[test]
-fn symbolic_repeat_promotion_has_an_explicit_pending_boundary()
--> Result<(), Box<dyn std::error::Error>> {
+fn symbolic_repeat_promotion_requires_eligible_operands() -> Result<(), Box<dyn std::error::Error>>
+{
     let cases = [
         ("fn f<const N:usize>()->&'static[u8;N]{&[1u8;N]}", true),
         (
@@ -235,14 +235,15 @@ fn symbolic_repeat_promotion_has_an_explicit_pending_boundary()
         )?;
         let (report, mut facts) = semantic::analyze(source)?;
         let mut templates = rustgm::body::templates::build(&report, &facts)?;
-        let error = rustgm::body::promote::analyze_templates(&report, &mut facts, &mut templates)
-            .err()
-            .ok_or("symbolic repeat received fabricated promotion facts")?;
-        assert!(
-            error
-                .to_string()
-                .contains("generic repeat promotion requires deferred constant evaluation")
-        );
+        rustgm::body::promote::analyze_templates(&report, &mut facts, &mut templates)?;
+        let promotion = templates.bodies[0]
+            .body
+            .promotions
+            .as_ref()
+            .ok_or("missing promotion analysis")?;
+        assert_eq!(promotion.deferred().count(), usize::from(*accepted));
+        assert_eq!(promotion.entries().count(), 0);
+        assert_eq!(prove(&facts, &templates).is_ok(), *accepted);
     }
     Ok(())
 }

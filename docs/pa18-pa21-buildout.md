@@ -2060,3 +2060,80 @@ Evidence remains under `obj/pa18-work/generic-drop-*`, including freeze,
 preflight, independent source qualification, validation and reverify receipts,
 and each retained `obj/perf/*/{samples.json,observations.jsonl}`. Earlier failed
 exploratory runs remain retained and are not counted as passing validation.
+
+## Symbolic index bounds, const operands and deferred promotion
+
+Fixed-array indexing now retains the canonical const parameter when its length
+is symbolic. The checker publishes the selection after inference, so a length
+hole that later resolves to a concrete argument becomes an ordinary numeric
+bound. Separate compact selection variants preserve the 80-byte semantic node
+layout. Symbolic indexes use the existing conservative indexed-place rules for
+moves and overlapping loans; executable lowering still requires a concrete bound.
+
+Runtime const-parameter uses have their own typed operand, distinct from named
+constant definitions. Joint substitution preserves the owner and scalar kind;
+evaluated bool, char and integer arguments enter the shared value engine without
+losing their bits. Unresolved operands cannot silently become runtime constants.
+
+Promotion records eligibility independently of an evaluated value. Borrows of
+`N`, `N + 1` and `[3; N]` may supply permanent storage provenance while retaining
+the original typed DAG for later instantiation. A repeat of unknown length still
+requires an eligible operand. Division/remainder eligibility requires a known
+safe divisor; signed division by negative one additionally needs a safe dividend.
+An unknown array bound cannot justify promoting a value-level index operation,
+although the array backing a borrowed element can itself be promoted. Original
+calls, arithmetic and bounds checks remain in the body.
+
+Storage, region and abstract cleanup checks consume proved eligibility. Concrete
+borrow verification rejects any unresolved promoted value before it can mint an
+executable proof. Demanded instantiation must substitute operands/bounds and
+materialize deferred values; this checkpoint does not implement that stage.
+PA18–PA21 remain planned.
+
+The new operand suite independently qualifies thirteen language cases and checks
+nested const identities, inference-resolved bounds, kind-preserving substitution,
+and symbolic ownership/loan outcomes. The promotion suite independently qualifies
+28 positive/negative language cases plus cache, effect-preservation and scaling
+inputs. It checks full symbolic proofs, rejects attempts to authorize concrete
+execution, and bounds promotion work for 128, 512 and 2,048 retained repeat roots.
+The existing concrete-promotion and generic-region suites remain active.
+
+Local validation passed 719 frontend tests in both debug and release, all 3,350
+active PA1–PA17 course cases, all eleven explicit maintainer native tests, every
+active independent rustc suite and PA17's 135 executable comparisons. Rustfmt,
+Clippy all/pedantic with warnings denied, the 451-file audit with zero findings,
+25 harness tests and upstream provenance checks passed. No course fixture,
+manifest, outcome or text oracle changed.
+
+Performance froze 307 production/configuration files and candidate SHA256
+`6b949520b0341c1970ee5072c340214c00379566615508705a1979b27b7d9b1f`.
+Identical symbolic-proof drivers were built against separate frozen parent and
+candidate libraries. Thirty-two jobs retained 576 observations on CPU 2, with
+two warmups, four A/A calibration samples and three ABBA blocks each. No RustGM
+build or test overlapped measurement. All full/count outputs agreed. Twenty-three
+parent comparisons stayed within 2.7% in median wall time; these measurements do
+not establish a speedup. They include concrete LowIR, declaration analysis,
+ordinary generic promotions and complete template borrow/cleanup proofs.
+
+Twelve new scaling inputs were independently accepted by pinned rustc. Nine
+require the new functionality and therefore compare immutable candidate copies;
+the three literal-promotion controls also run against the parent. The following
+medians pool both candidate copies' paired samples and cover parsing through
+complete symbolic proofs, not executable generic lowering.
+
+| Workload | Scale | Median, ms | RSS, KiB |
+| --- | ---: | ---: | ---: |
+| symbolic-index | 128 | 12.71 | 6412 |
+| symbolic-index | 512 | 38.51 | 9252 |
+| symbolic-index | 2048 | 133.70 | 22624 |
+| const-arithmetic | 128 | 7.21 | 5716 |
+| const-arithmetic | 512 | 17.79 | 7140 |
+| const-arithmetic | 2048 | 54.77 | 14914 |
+| deferred-promotion | 128 | 10.32 | 5734 |
+| deferred-promotion | 512 | 29.89 | 8536 |
+| deferred-promotion | 2048 | 111.96 | 19804 |
+
+Frozen source, drivers, binaries, declarations, preflight results, qualification,
+validation and reverify receipts remain under `obj/pa18-work/deferred-promotions-*`.
+Each performance receipt links its complete raw `observations.jsonl`. Exploratory
+compile/lint failures remain retained and are excluded from passing results.

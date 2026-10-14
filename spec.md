@@ -135,6 +135,13 @@ type aliases erase them. Use compact node-indexed completion flags and sparse
 capture records, so capture-free syntax needs no per-node hash entry. Standalone
 const parameters retain their symbolic identity.
 
+Retain runtime const operands as canonical const arguments, separately from
+named constant definitions. Publish array index bounds after inference resolves
+the receiver: a bound is either a target `usize` value or the original rigid
+const parameter. A symbolic fixed array does not become a slice or a zero-length
+array. Place overlap and move checks use the same conservative indexed-place
+rules while the actual bound awaits substitution. Keep concrete node facts compact.
+
 Resolve a use's defaults with one append-only substitution environment. Earlier
 arguments never change, and inserted replacements are simultaneous. Successful
 cached results therefore remain valid as later slots are appended, including
@@ -348,6 +355,16 @@ glue recipes to checked bodies; only that completed proof can authorize cleanup
 lowering. Raw body views may expose pending work explicitly. A value needing
 destruction cannot be promoted to permanent storage, even while its cleanup
 plan remains pending.
+
+Promotion eligibility and evaluated values are distinct facts. A generic
+temporary can qualify for permanent storage while its value awaits concrete
+arguments. Retain that eligibility against the original typed value DAG;
+storage, region and cleanup proofs consume it without inventing bytes. Unknown
+repeat lengths still require eligible operands, and potentially failing division
+or value-level indexing cannot become eligible merely because an operand is
+symbolic. Preserve runtime effects and checks around promoted roots. Concrete
+verification rejects unresolved promotion values; demanded instantiation must
+evaluate them before executable lowering.
 
 Retain destructible rvalue creation scopes while building the body, including
 discarded values that never become borrowed places. Forwarding a block result

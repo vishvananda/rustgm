@@ -160,6 +160,7 @@ pub(super) struct Checker<'a> {
     break_roots: std::collections::HashMap<NodeId, usize>,
     discarded_adjustments: std::collections::HashMap<usize, (TermId, TermId)>,
     calls: Vec<(NodeId, TermId)>,
+    pending_indexes: std::collections::HashMap<NodeId, TermId>,
     call_types: calls::CallTypes,
     parameter_copies: Option<crate::types::copy::Copies>,
     parameter_shapes: Option<crate::types::parameters::shape::Shapes>,
@@ -223,6 +224,7 @@ impl<'a> Checker<'a> {
             break_roots: std::collections::HashMap::new(),
             discarded_adjustments: std::collections::HashMap::new(),
             calls: Vec::new(),
+            pending_indexes: std::collections::HashMap::new(),
             call_types: calls::CallTypes::default(),
             parameter_copies: None,
             parameter_shapes: None,
@@ -529,6 +531,7 @@ impl Checker<'_> {
                     }),
             );
         self.publish_body_types(body, &solved)?;
+        self.publish_index_bounds(&solved)?;
         self.publish_adjustments(&solved, body_key)?;
         for (node, term) in &self.calls {
             let key = self.key(*node);

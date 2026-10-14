@@ -17,17 +17,31 @@ use std::collections::HashMap;
 /// Completed promotion facts, distinct from storage-liveness and loan proofs.
 #[derive(Default)]
 pub struct Facts {
-    entries: Vec<(ValueId, Constant)>,
+    entries: Vec<(ValueId, Evaluated)>,
     index: HashMap<ValueId, usize>,
     pub steps: usize,
 }
 impl Facts {
     #[must_use]
     pub fn get(&self, root: ValueId) -> Option<Constant> {
-        self.index.get(&root).map(|&index| self.entries[index].1)
+        self.index
+            .get(&root)
+            .and_then(|&index| self.entries[index].1.constant())
+    }
+    /// Eligibility proves permanent storage even when the value awaits instantiation.
+    #[must_use]
+    pub fn contains(&self, root: ValueId) -> bool {
+        self.index.contains_key(&root)
     }
     pub fn entries(&self) -> impl Iterator<Item = (ValueId, Constant)> + '_ {
-        self.entries.iter().copied()
+        self.entries
+            .iter()
+            .filter_map(|&(id, value)| value.constant().map(|value| (id, value)))
+    }
+    pub fn deferred(&self) -> impl Iterator<Item = ValueId> + '_ {
+        self.entries
+            .iter()
+            .filter_map(|&(id, value)| matches!(value, Evaluated::Deferred).then_some(id))
     }
 }
 /// Evaluate only demanded temporary DAGs with the shared constant value engine.
@@ -59,7 +73,7 @@ pub fn analyze(
 /// Evaluate demanded promotions using each template's scoped destruction facts.
 /// This supplies provenance, not loan checking or an executable specialization.
 /// # Errors
-/// Reports invalid constants, unsupported symbolic evaluation and query limits.
+/// Reports invalid constants and query limits. Deferred values authorize no execution.
 pub fn analyze_templates(
     report: &Report,
     facts: &mut Declarations,
@@ -122,8 +136,21 @@ enum Key {
     Projection(ProjectionId),
 }
 #[derive(Clone, Copy)]
+enum Evaluated {
+    Constant(Constant),
+    Deferred,
+}
+impl Evaluated {
+    const fn constant(self) -> Option<Constant> {
+        match self {
+            Self::Constant(value) => Some(value),
+            Self::Deferred => None,
+        }
+    }
+}
+#[derive(Clone, Copy)]
 struct Ready {
-    value: Constant,
+    value: Evaluated,
     immediate: bool,
     constant_assignment: bool,
 }

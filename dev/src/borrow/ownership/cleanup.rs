@@ -143,7 +143,7 @@ impl Owners {
             && body
                 .promotions
                 .as_ref()
-                .is_none_or(|p| p.get(temporary.value).is_none())
+                .is_none_or(|p| !p.contains(temporary.value))
         {
             members.push((scope.0, Reverse(u64::from(temporary.before) * 2), path));
         }

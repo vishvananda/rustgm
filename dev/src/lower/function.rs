@@ -510,6 +510,16 @@ impl Lower<'_, '_> {
             Rvalue::Constant(definition) => {
                 return self.constant(definition, value.ty, representation);
             }
+            Rvalue::ConstArgument(id) => {
+                let constant = crate::sema::values::Constant::argument(self.context.types, id)?
+                    .ok_or("generic const execution requires concrete instantiation")?;
+                self.scalar(
+                    constant
+                        .as_scalar()
+                        .map_err(crate::sema::values::Failure::message)?,
+                    ty,
+                )?
+            }
             Rvalue::Reify(operand)
             | Rvalue::Cast {
                 kind: Cast::FunctionPointer,

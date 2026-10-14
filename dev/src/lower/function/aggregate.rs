@@ -223,6 +223,9 @@ impl Lower<'_, '_> {
                     None
                 }
             }
+            ProjectionKind::IndexParameter { .. } => {
+                return Err("symbolic array bound requires concrete instantiation");
+            }
             ProjectionKind::Index { index, length } => {
                 let index = self.value(index)?.runtime()?;
                 let limit = self.builder.integer(Type::I64, u128::from(length))?;

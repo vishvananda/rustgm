@@ -47,6 +47,9 @@ pub enum Operation {
     Index {
         length: u64,
     },
+    IndexParameter {
+        length: crate::types::arguments::ConstId,
+    },
     AssignPlace {
         operator: Option<Punctuation>,
         left: TypeId,

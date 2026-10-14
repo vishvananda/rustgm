@@ -1,8 +1,8 @@
 //! Promotion roots stop at dereferences; evaluated projections demand their inputs.
-use super::{Engine, Error, Key, Ready, Type};
+use super::{Engine, Error, Evaluated, Key, Ready, Type};
 use crate::{
     body::ir::{Place, Projection, ProjectionId, ProjectionKind, ValueId},
-    sema::{members::Selection, model::Scalar, values::Constant},
+    sema::{members::Selection, model::Scalar},
 };
 impl Engine<'_, '_> {
     pub(super) fn index_roots(&mut self) -> Result<(), Error> {
@@ -57,7 +57,7 @@ impl Engine<'_, '_> {
         &mut self,
         place: Place,
         ty: crate::types::TypeId,
-    ) -> Result<Option<Constant>, Error> {
+    ) -> Result<Option<Evaluated>, Error> {
         let base = self.reborrow_base(place)?;
         let Some(value) = self.place_value(base)? else {
             return Ok(None);
@@ -67,12 +67,17 @@ impl Engine<'_, '_> {
             else {
                 return Err("promotion borrow lacks a reference type".into());
             };
-            Ok(Some(self.evaluator.borrow(value.value, referent)?))
+            Ok(Some(match value.value {
+                Evaluated::Constant(value) => {
+                    Evaluated::Constant(self.evaluator.borrow(value, referent)?)
+                }
+                Evaluated::Deferred => Evaluated::Deferred,
+            }))
         } else {
             Ok(Some(value.value))
         }
     }
-    pub(super) fn finish_projection(&self, id: ProjectionId) -> Result<Option<Constant>, Error> {
+    pub(super) fn finish_projection(&self, id: ProjectionId) -> Result<Option<Evaluated>, Error> {
         let projection = self.projection(id)?;
         let Some(base) = self.place_value(projection.base)? else {
             return Ok(None);
@@ -94,7 +99,10 @@ impl Engine<'_, '_> {
                 else {
                     return Ok(None);
                 };
-                let Scalar::Integer(index) = index.value.as_scalar()? else {
+                let Some(index) = index.value.constant() else {
+                    return Ok(None);
+                };
+                let Scalar::Integer(index) = index.as_scalar()? else {
                     return Err("promotion index is not an integer".into());
                 };
                 if index >= u128::from(length) {
@@ -102,7 +110,8 @@ impl Engine<'_, '_> {
                 }
                 u64::try_from(index).map_err(|_| "promotion index exceeds target usize")?
             }
-            ProjectionKind::Dereference { .. }
+            ProjectionKind::IndexParameter { .. }
+            | ProjectionKind::Dereference { .. }
             | ProjectionKind::Subarray { .. }
             | ProjectionKind::Subslice { .. }
             | ProjectionKind::FromEnd { .. }
@@ -110,9 +119,12 @@ impl Engine<'_, '_> {
                 return Ok(None);
             }
         };
+        let Some(base) = base.value.constant() else {
+            return Ok(Some(Evaluated::Deferred));
+        };
         self.evaluator
-            .field(base.value, index)
-            .map(Some)
+            .field(base, index)
+            .map(|value| Some(Evaluated::Constant(value)))
             // Dynamic bounds have already been proved above. A missing fixed
             // field now indicates inconsistent typed facts, not a runtime fault.
             .map_err(|error| Error::from(super::Failure::Invalid(error.message())))

@@ -426,31 +426,64 @@ impl Checker<'_> {
     ) -> Result<TermId, Error> {
         let array = self.autoderef(node, self.term(value)?)?;
         let operation = match self.head(node, array)? {
-            Some(Constructor::Array(length)) => Operation::Index { length },
-            Some(Constructor::Slice) => Operation::IndexSlice,
+            Some(Constructor::Array(length)) => Some(Operation::Index { length }),
+            Some(Constructor::ArrayTerm(_)) => {
+                self.pending_indexes.insert(node, array);
+                None
+            }
+            Some(Constructor::Slice) => Some(Operation::IndexSlice),
             _ => return Err(self.error(node, "indexing requires a known array type")),
         };
         let usize = self.known(node, TypeId::primitive(Primitive::Usize))?;
         self.coerce(index, usize)?;
-        self.selected(node, operation)?;
+        if let Some(operation) = operation {
+            self.selected(node, operation)?;
+        }
         self.child(node, array, 0)
+    }
+    pub(super) fn publish_index_bounds(
+        &mut self,
+        solved: &crate::types::infer::Solved,
+    ) -> Result<(), Error> {
+        for (&node, &array) in &self.pending_indexes {
+            let length =
+                crate::types::length::Length::of(&self.facts.types, solved.types[array.0 as usize])
+                    .map_err(|e| self.error(node, e))?;
+            let key = self.key(node);
+            self.facts
+                .node_mut(key)
+                .ok_or_else(|| {
+                    super::Declarations::error(self.report, key, "missing index selection")
+                })?
+                .operation = Some(match length {
+                crate::types::length::Length::Known(length) => Operation::Index { length },
+                crate::types::length::Length::Parameter(length) => {
+                    Operation::IndexParameter { length }
+                }
+            });
+        }
+        self.pending_indexes.clear();
+        Ok(())
     }
     pub(super) fn assignment_target(
         &self,
         node: NodeId,
         left: NodeId,
     ) -> Result<Option<DefId>, Error> {
-        if self.facts.node(self.key(left)).is_some_and(|f| {
-            matches!(
-                f.operation,
-                Some(
-                    Operation::Field { .. }
-                        | Operation::Index { .. }
-                        | Operation::IndexSlice
-                        | Operation::Dereference
+        if self.pending_indexes.contains_key(&left)
+            || self.facts.node(self.key(left)).is_some_and(|f| {
+                matches!(
+                    f.operation,
+                    Some(
+                        Operation::Field { .. }
+                            | Operation::Index { .. }
+                            | Operation::IndexParameter { .. }
+                            | Operation::IndexSlice
+                            | Operation::Dereference
+                    )
                 )
-            )
-        }) {
+            })
+        {
             return Ok(None);
         }
         let Some(Target::Definition(target)) =

@@ -1189,6 +1189,14 @@ impl<'a> Builder<'a> {
                     Rvalue::Function(definition)
                 }
                 DefKind::Const => Rvalue::Constant(definition),
+                DefKind::Generic => Rvalue::ConstArgument(
+                    *self
+                        .facts
+                        .generics
+                        .constants
+                        .get(&definition)
+                        .ok_or_else(|| self.error(node, "missing const parameter value"))?,
+                ),
                 DefKind::Static => Rvalue::Read(Place::Static(definition)),
                 _ => return Err(self.error(node, "unsupported resolved body value")),
             },

@@ -104,6 +104,7 @@ impl Engine<'_, '_> {
                 | Rvalue::Scalar(_)
                 | Rvalue::Text(_)
                 | Rvalue::Constant(_)
+                | Rvalue::ConstArgument(_)
                 | Rvalue::Function(_) => Ok(true),
             },
             Key::Projection(id) => {
@@ -113,7 +114,9 @@ impl Engine<'_, '_> {
                     | ProjectionKind::Subarray { .. }
                     | ProjectionKind::Subslice { .. }
                     | ProjectionKind::FromEnd { .. } => Ok(false),
-                    ProjectionKind::Index { index, .. } | ProjectionKind::SliceIndex { index } => {
+                    ProjectionKind::Index { index, .. }
+                    | ProjectionKind::IndexParameter { index, .. }
+                    | ProjectionKind::SliceIndex { index } => {
                         self.push(Key::Value(index))?;
                         self.place_dependency(self.projection(id)?.base)
                     }

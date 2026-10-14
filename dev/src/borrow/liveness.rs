@@ -240,6 +240,7 @@ impl<'a> Flow<'a> {
             | Rvalue::Scalar(_)
             | Rvalue::Text(_)
             | Rvalue::Constant(_)
+            | Rvalue::ConstArgument(_)
             | Rvalue::Function(_) => {}
         }
         Ok(())

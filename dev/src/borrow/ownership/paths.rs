@@ -105,6 +105,7 @@ impl Paths {
                     Some(Component::Subarray { start, end })
                 }
                 ProjectionKind::Index { .. }
+                | ProjectionKind::IndexParameter { .. }
                 | ProjectionKind::SliceIndex { .. }
                 | ProjectionKind::FromEnd { .. }
                 | ProjectionKind::Subslice { .. } => {

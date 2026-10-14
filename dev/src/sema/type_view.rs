@@ -495,6 +495,7 @@ fn operation(value: Operation, out: &mut impl Write) -> io::Result<()> {
         Operation::IndexSlice => write!(out, "index length=dynamic"),
         Operation::Field { field } => write!(out, "field {field:?}"),
         Operation::Index { length } => write!(out, "index length={length}"),
+        Operation::IndexParameter { length } => write!(out, "index length=const:{}", length.0),
         Operation::AssignPlace {
             operator,
             left,

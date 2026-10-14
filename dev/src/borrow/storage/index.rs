@@ -139,7 +139,7 @@ impl Index {
             let promoted = body
                 .promotions
                 .as_ref()
-                .is_some_and(|p| p.get(temporary.value).is_some());
+                .is_some_and(|p| p.contains(temporary.value));
             self.permanent
                 .push(promoted || temporary.lifetime == scopes::Lifetime::Static);
             if self.permanent[bit as usize] {

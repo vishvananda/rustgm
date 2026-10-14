@@ -155,6 +155,12 @@ impl Machine<'_> {
                 Scalar::Float(_) => return Err("test executor has no floating arithmetic".into()),
             },
             Rvalue::Function(definition) => Data::Function(definition),
+            Rvalue::ConstArgument(id) => Data::Bits(
+                self.types
+                    .constant(id)
+                    .ok_or("test executor requires an evaluated const argument")?
+                    .bits,
+            ),
             Rvalue::Read(Place::Local(local)) => {
                 let local = local.0 as usize;
                 if !frame.live[local] {

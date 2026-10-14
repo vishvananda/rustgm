@@ -294,6 +294,15 @@ impl Builder<'_> {
                         length,
                     }
                 }
+                Some(Operation::IndexParameter { length }) => {
+                    let Kind::Index { index, .. } = self.kind(node) else {
+                        return Err(self.error(node, "invalid symbolic index selection"));
+                    };
+                    ProjectionKind::IndexParameter {
+                        index: self.value(index)?,
+                        length,
+                    }
+                }
                 Some(Operation::IndexSlice) => {
                     let Kind::Index { index, .. } = self.kind(node) else {
                         return Err(self.error(node, "invalid slice index selection"));

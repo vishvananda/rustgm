@@ -112,6 +112,9 @@ fn contents(body: &Body, out: &mut impl Write) -> io::Result<()> {
             ProjectionKind::Index { index, length } => {
                 write!(out, " index=v{} length={length}", index.0)?;
             }
+            ProjectionKind::IndexParameter { index, length } => {
+                write!(out, " index=v{} length=const:{}", index.0, length.0)?;
+            }
             ProjectionKind::SliceIndex { index } => write!(out, " slice-index=v{}", index.0)?,
             ProjectionKind::FromEnd { offset, minimum } => {
                 write!(out, " from-end={offset} minimum={minimum}")?;
@@ -262,6 +265,7 @@ fn rvalue(body: &Body, value: Rvalue, out: &mut impl Write) -> io::Result<()> {
         }
         Rvalue::Function(id) => write!(out, "function def={}", id.0),
         Rvalue::Constant(id) => write!(out, "constant def={}", id.0),
+        Rvalue::ConstArgument(id) => write!(out, "const-argument const={}", id.0),
         Rvalue::Reify(value) => write!(out, "reify v{}", value.0),
         Rvalue::Constrain(value) => write!(out, "constrain v{}", value.0),
         Rvalue::Unary {

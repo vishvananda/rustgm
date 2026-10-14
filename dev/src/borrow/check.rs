@@ -115,6 +115,7 @@ fn run<'a, const RECORD: bool, S: BuildHasher>(
     program: &'a Program,
     mut record: impl FnMut(ownership::BodyFacts, loans::Report),
 ) -> Result<Checked<'a>, Error> {
+    require_resolved_promotions(program)?;
     if let Some(pending) = &program.drops {
         return Err(Error {
             node: Some(pending.source),
@@ -174,6 +175,7 @@ pub fn verify_destruction<'a, S: BuildHasher>(
     mut catalog: super::destruction::glue::Catalog<'_>,
 ) -> Result<Checked<'a>, Error> {
     use super::{destruction, ownership::initialization};
+    require_resolved_promotions(program)?;
     let error = |node, message: &str| Error {
         node,
         message: message.into(),
@@ -228,4 +230,18 @@ pub fn verify_destruction<'a, S: BuildHasher>(
             recipes: catalog.into_recipes(),
         })),
     })
+}
+
+fn require_resolved_promotions(program: &Program) -> Result<(), Error> {
+    if let Some(body) = program.bodies.iter().find(|body| {
+        body.promotions
+            .as_ref()
+            .is_some_and(|p| p.deferred().next().is_some())
+    }) {
+        return Err(Error {
+            node: Some(body.source),
+            message: "deferred promotion values require concrete instantiation".into(),
+        });
+    }
+    Ok(())
 }

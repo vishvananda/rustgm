@@ -55,7 +55,9 @@ impl Lower<'_, '_> {
                     Some(end),
                 )?))
             }
-            ProjectionKind::Index { .. } | ProjectionKind::SliceIndex { .. } => {
+            ProjectionKind::Index { .. }
+            | ProjectionKind::IndexParameter { .. }
+            | ProjectionKind::SliceIndex { .. } => {
                 Err("dynamic indexing must precede the pattern path")
             }
         }

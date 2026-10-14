@@ -1,5 +1,5 @@
 //! Selected value operations reuse the constant engine and MIR-compatible eligibility.
-use super::{Engine, Error, Key, Ready, Type};
+use super::{Engine, Error, Evaluated, Key, Ready, Type};
 use crate::{
     body::ir::{Rvalue, ValueId, ValueList},
     lex::token::Punctuation as Op,
@@ -30,9 +30,7 @@ impl Engine<'_, '_> {
     pub(super) fn empty_repeat(&self, id: ValueId) -> Result<bool, Error> {
         match self.evaluator.facts().types.kind(self.value(id)?.ty) {
             Some(Type::Array { length, .. }) => Ok(length == 0),
-            Some(Type::ArrayTerm { .. }) => {
-                Err("generic repeat promotion requires deferred constant evaluation".into())
-            }
+            Some(Type::ArrayTerm { .. }) => Ok(false),
             _ => Err("promotion repeat is not an array".into()),
         }
     }
@@ -40,7 +38,7 @@ impl Engine<'_, '_> {
         &mut self,
         fields: ValueList,
         variant: Option<VariantId>,
-    ) -> Result<Option<Constant>, Error> {
+    ) -> Result<Option<Evaluated>, Error> {
         let ids = self
             .body
             .arguments
@@ -48,15 +46,23 @@ impl Engine<'_, '_> {
             .ok_or("invalid promotion field range")?;
         self.charge(ids.len())?;
         let mut fields = Vec::with_capacity(ids.len());
+        let mut deferred = false;
         for &id in ids {
             let Some(value) = self.ready(Key::Value(id))? else {
                 return Ok(None);
             };
-            fields.push(value.value);
+            match value.value {
+                Evaluated::Constant(value) if !deferred => fields.push(value),
+                Evaluated::Deferred => deferred = true,
+                Evaluated::Constant(_) => {}
+            }
+        }
+        if deferred {
+            return Ok(Some(Evaluated::Deferred));
         }
         self.evaluator
             .fields(&fields, variant)
-            .map(Some)
+            .map(|value| Some(Evaluated::Constant(value)))
             .map_err(Error::from)
     }
     fn text_value(
@@ -75,55 +81,54 @@ impl Engine<'_, '_> {
             },
         )
     }
+    fn immediate_value(
+        &mut self,
+        kind: Rvalue,
+        ty: crate::types::TypeId,
+    ) -> Result<Option<Evaluated>, Error> {
+        let value = match kind {
+            Rvalue::Text(id) => self.text_value(id, ty)?,
+            Rvalue::Scalar(id) => Constant::scalar(
+                *self
+                    .body
+                    .scalars
+                    .get(id.0 as usize)
+                    .ok_or("missing promotion scalar")?,
+            ),
+            Rvalue::Function(definition) => Constant::function(definition),
+            Rvalue::Constant(definition) => self
+                .evaluator
+                .definition(definition)
+                .map_err(Error::Constant)?,
+            Rvalue::ConstArgument(id) => {
+                return Ok(Some(
+                    Constant::argument(&self.evaluator.facts().types, id)?
+                        .map_or(Evaluated::Deferred, Evaluated::Constant),
+                ));
+            }
+            Rvalue::Unit => self.evaluator.fields(&[], None)?,
+            _ => return Ok(None),
+        };
+        Ok(Some(Evaluated::Constant(value)))
+    }
     pub(super) fn finish_value(&mut self, id: ValueId) -> Result<Option<Ready>, Error> {
         let value = self.value(id)?;
         let (ty, kind) = (value.ty, value.kind);
+        if let Some(value) = self.immediate_value(kind, ty)? {
+            return Ok(Some(Ready {
+                value,
+                immediate: true,
+                constant_assignment: true,
+            }));
+        }
         let mut immediate = false;
         let mut constant_assignment = false;
         let value = match kind {
-            Rvalue::Text(id) => {
-                immediate = true;
-                Some(self.text_value(id, ty)?)
-            }
-            Rvalue::Scalar(id) => {
-                immediate = true;
-                Some(Constant::scalar(
-                    *self
-                        .body
-                        .scalars
-                        .get(id.0 as usize)
-                        .ok_or("missing promotion scalar")?,
-                ))
-            }
-            Rvalue::Function(definition) => {
-                immediate = true;
-                Some(Constant::function(definition))
-            }
-            Rvalue::Constant(definition) => {
-                immediate = true;
-                Some(
-                    self.evaluator
-                        .definition(definition)
-                        .map_err(Error::Constant)?,
-                )
-            }
-            Rvalue::Unit => {
-                immediate = true;
-                Some(self.evaluator.fields(&[], None)?)
-            }
             Rvalue::Aggregate { variant, fields } => self.fields(fields, variant)?,
             Rvalue::Repeat { .. } if self.empty_repeat(id)? => {
-                Some(self.evaluator.fields(&[], None)?)
+                Some(Evaluated::Constant(self.evaluator.fields(&[], None)?))
             }
-            Rvalue::Repeat { value, .. } => {
-                let Some(value) = self.ready(Key::Value(value))? else {
-                    return Ok(None);
-                };
-                let Some(Type::Array { length, .. }) = self.evaluator.facts().types.kind(ty) else {
-                    return Err("promotion repeat is not an array".into());
-                };
-                Some(self.evaluator.repeat(value.value, length)?)
-            }
+            Rvalue::Repeat { value, .. } => self.repeat(ty, value)?,
             Rvalue::Read(place) => self.place_value(place)?.map(|v| v.value),
             Rvalue::Borrow { place, .. } => self.borrow_value(place, ty)?,
             Rvalue::Constrain(operand) => return self.ready(Key::Value(operand)),
@@ -137,13 +142,16 @@ impl Engine<'_, '_> {
                     return Ok(None);
                 };
                 immediate = literal && operator == Unary::Negate;
-                Some(self.evaluator.unary(
-                    operator,
-                    self.value(operand)?.ty,
-                    value.value,
-                    literal,
-                    Overflow::Wrapping,
-                )?)
+                Some(match value.value {
+                    Evaluated::Constant(value) => Evaluated::Constant(self.evaluator.unary(
+                        operator,
+                        self.value(operand)?.ty,
+                        value,
+                        literal,
+                        Overflow::Wrapping,
+                    )?),
+                    Evaluated::Deferred => Evaluated::Deferred,
+                })
             }
             Rvalue::Binary {
                 operator,
@@ -156,7 +164,12 @@ impl Engine<'_, '_> {
                 };
                 let source = self.value(operand)?.ty;
                 constant_assignment = source == ty && value.constant_assignment;
-                Some(self.evaluator.cast(kind, source, ty, value.value)?)
+                Some(match value.value {
+                    Evaluated::Constant(value) => {
+                        Evaluated::Constant(self.evaluator.cast(kind, source, ty, value)?)
+                    }
+                    Evaluated::Deferred => Evaluated::Deferred,
+                })
             }
             Rvalue::Call {
                 callee, arguments, ..
@@ -165,6 +178,12 @@ impl Engine<'_, '_> {
             | Rvalue::Length(_)
             | Rvalue::TextEquals { .. }
             | Rvalue::Validate(_) => None,
+            Rvalue::Unit
+            | Rvalue::Text(_)
+            | Rvalue::Scalar(_)
+            | Rvalue::Constant(_)
+            | Rvalue::ConstArgument(_)
+            | Rvalue::Function(_) => return Err("missing immediate promotion value".into()),
         };
         Ok(value.map(|value| Ready {
             value,
@@ -172,14 +191,32 @@ impl Engine<'_, '_> {
             constant_assignment: constant_assignment || immediate,
         }))
     }
-    fn call(&mut self, callee: ValueId, arguments: ValueList) -> Result<Option<Constant>, Error> {
+    fn repeat(
+        &mut self,
+        ty: crate::types::TypeId,
+        operand: ValueId,
+    ) -> Result<Option<Evaluated>, Error> {
+        let Some(value) = self.ready(Key::Value(operand))? else {
+            return Ok(None);
+        };
+        Ok(Some(
+            match (self.evaluator.facts().types.kind(ty), value.value) {
+                (Some(Type::Array { length, .. }), Evaluated::Constant(value)) => {
+                    Evaluated::Constant(self.evaluator.repeat(value, length)?)
+                }
+                (Some(Type::Array { .. } | Type::ArrayTerm { .. }), _) => Evaluated::Deferred,
+                _ => return Err("promotion repeat is not an array".into()),
+            },
+        ))
+    }
+    fn call(&mut self, callee: ValueId, arguments: ValueList) -> Result<Option<Evaluated>, Error> {
         let Some((definition, variant)) = self.constructor(callee)? else {
             return Ok(None);
         };
         let Some(value) = self.ready(Key::Value(callee))? else {
             return Ok(None);
         };
-        if value.value.as_function() != Some(definition) {
+        if value.value.constant().and_then(Constant::as_function) != Some(definition) {
             return Err("promotion callee differs from selected constructor".into());
         }
         self.fields(arguments, Some(variant))
@@ -190,7 +227,7 @@ impl Engine<'_, '_> {
         op: Op,
         left: ValueId,
         right: ValueId,
-    ) -> Result<Option<Constant>, Error> {
+    ) -> Result<Option<Evaluated>, Error> {
         let (Some(lhs), Some(rhs)) = (
             self.ready(Key::Value(left))?,
             self.ready(Key::Value(right))?,
@@ -202,15 +239,22 @@ impl Engine<'_, '_> {
             && let Some(Type::Primitive(primitive)) = self.evaluator.facts().types.kind(ty)
             && let Some((signed, width)) = primitive.integer()
         {
-            // rustc requires immediate operands here, not arbitrary foldable DAGs.
-            let Scalar::Integer(divisor) = rhs.value.as_scalar()? else {
+            // The divisor must be known nonzero; signed MIN / -1 must be impossible.
+            // Immediate syntax is required independently of a foldable value DAG.
+            let Some(divisor) = rhs.value.constant() else {
+                return Ok(None);
+            };
+            let Scalar::Integer(divisor) = divisor.as_scalar()? else {
                 return Err("promotion divisor is not an integer".into());
             };
             if !rhs.immediate || divisor == 0 || !self.immediate_operand(source, false)? {
                 return Ok(None);
             }
             if signed && divisor == u128::MAX >> (128 - width) {
-                let Scalar::Integer(dividend) = lhs.value.as_scalar()? else {
+                let Some(dividend) = lhs.value.constant() else {
+                    return Ok(None);
+                };
+                let Scalar::Integer(dividend) = dividend.as_scalar()? else {
                     return Err("promotion dividend is not an integer".into());
                 };
                 if !lhs.immediate
@@ -221,9 +265,13 @@ impl Engine<'_, '_> {
                 }
             }
         }
-        self.evaluator
-            .binary(op, ty, lhs.value, rhs.value, Overflow::Wrapping)
-            .map(Some)
-            .map_err(Error::from)
+        match (lhs.value, rhs.value) {
+            (Evaluated::Constant(lhs), Evaluated::Constant(rhs)) => self
+                .evaluator
+                .binary(op, ty, lhs, rhs, Overflow::Wrapping)
+                .map(|value| Some(Evaluated::Constant(value)))
+                .map_err(Error::from),
+            _ => Ok(Some(Evaluated::Deferred)),
+        }
     }
 }
