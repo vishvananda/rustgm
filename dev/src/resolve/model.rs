@@ -133,6 +133,8 @@ pub struct Scope {
     pub module: ModuleId,
     pub barrier: bool,
     pub associated: bool,
+    /// Direct trait members inherit the trait's access; nested items do not.
+    pub trait_access: Option<Access>,
     pub nominal_self: Option<DefId>,
     pub label_barrier: bool,
     pub bindings: HashMap<(NameId, Namespace), Binding>,
@@ -221,6 +223,9 @@ pub struct Resolution {
     pub macro_prelude: HashMap<NameId, DefId>,
     pub introductions: Introductions,
     pub textual_imports: HashMap<usize, Binding>,
+    /// Anonymous imports have no lexical binding. Retain their final type target
+    /// by import identity for trait lookup, including its scope and hygiene.
+    pub anonymous_types: HashMap<usize, Binding>,
     pub crate_root: Option<DefId>,
     pub scopes: Vec<Scope>,
     pub definitions: Vec<Definition>,

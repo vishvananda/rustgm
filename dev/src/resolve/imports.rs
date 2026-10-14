@@ -200,6 +200,7 @@ impl Resolver<'_> {
             work.attempts += 1;
             work.queued[index] = false;
             work.resolved[index] = false;
+            self.facts.anonymous_types.remove(&index);
             let import = self.facts.imports[index].clone();
             if work.attempts > 1_000_000 + count.saturating_mul(128) {
                 return Err(self.import_error(&import, "import work budget exceeded"));
@@ -358,6 +359,16 @@ impl Resolver<'_> {
                     }
                     work.resolved[index] = true;
                     if self.package.names.get(name) == "_" {
+                        if ns == Namespace::Type {
+                            self.facts.anonymous_types.insert(
+                                index,
+                                Binding {
+                                    access: import.access,
+                                    origin,
+                                    ..binding
+                                },
+                            );
+                        }
                         continue;
                     }
                     let key = (import.scope, name, ns);

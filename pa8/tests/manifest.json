@@ -1156,6 +1156,17 @@
         "kind": "program",
         "status": 1
       }
+    },
+    {
+      "path": "tests/spec/expansion/generated-trait-member-access.rs",
+      "exit_status": 0,
+      "features": [
+        "pa8.expansion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
     }
   ]
 }

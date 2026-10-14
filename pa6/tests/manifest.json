@@ -2360,6 +2360,61 @@
         "kind": "program",
         "status": 1
       }
+    },
+    {
+      "path": "tests/spec/names/trait_member_public.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/trait_member_reexport.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/trait_member_restricted.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/names/trait_member_private.rs",
+      "exit_status": 1,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/names/trait_member_restricted_outside.rs",
+      "exit_status": 1,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
     }
   ]
 }

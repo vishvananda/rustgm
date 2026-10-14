@@ -2712,3 +2712,71 @@ currently receive private default access. Correct inherited trait-member access
 and retained anonymous trait imports must accompany method selection. The caller
 must also bind owner captures and inherited generic parameters rather than using
 the free-function-only argument path. These remain required PA19 work.
+
+## Associated visibility and anonymous import prerequisites
+
+The resolver now assigns direct trait members their trait's access. Public and
+restricted traits therefore permit qualified member paths wherever the trait
+itself is accessible; nested default-body items and inherent methods retain their
+own access. Generated members use the same declaration path. A macro invocation
+shares its parent's scope and no longer clears that scope's associated-item
+metadata while being registered.
+
+Anonymous type imports now retain their final binding by import identity.
+Ordinary scope and expansion-hygiene records supply the import's provenance;
+there is still no lexical name `_`. Retrying an import first withdraws its old
+target, so a stronger explicit import replacing a provisional glob cannot leave
+a stale trait identity behind. The record also preserves non-trait type targets;
+method selection can filter by the resolved declaration kind.
+
+Five typed invariants cover direct/generated members, nested visibility,
+restricted access, reexports, repeated anonymous imports, distinct block scopes,
+replacement imports and generated-import hygiene. Five new PA6 fixtures and one
+PA8 fixture were independently qualified against the pinned rustc before text
+reference generation. Existing course oracle bytes are unchanged.
+
+Additional independently qualified controls distinguish impl predicates from
+method predicates. An unsatisfied impl bound excludes that candidate and allows
+a visible trait method; failure of a selected method's own bound does not retry
+lookup. Inherent overlap checking also needs predicate reasoning: `S<T>` under
+`T: Sized` can coexist with `S<str>`, and `S<T>` under `T: Copy` can coexist with a
+concrete local non-Copy target. Generic Copy-bound and Clone-bound implementations
+with the same method overlap. All five predeclared controls match rustc; three
+accepted programs also execute successfully. Sources, commands, stderr and runtime
+results remain in `obj/pa19-work/method-owner-bounds-v1`.
+
+PA19 remains planned. These resolver facts prepare qualified and trait method
+selection; they do not implement method dispatch, user trait bounds or impl
+conformance. The complete PA19–PA21 responsibilities above remain required.
+
+All 775 frontend tests pass in debug and release, together with 3,779 PA1–PA18
+text cases, fifteen maintainer native tests, 1,117 executable comparisons and
+three codegen-only comparisons. The sixteen documented PA13 runtime differences
+remain. Clippy all/pedantic, formatting, the 484-file audit, 27 harness tests and
+provenance checks pass. Independent checks cover all 210 PA6 and 94 PA8 fixtures;
+PA6 retains its two documented name-versus-type-checking differences.
+
+Ten immutable measurement jobs retain 180 observations: ordinary-function LowIR,
+anonymous-import name resolution, replacement imports, qualified trait-member
+paths and generated trait members. Each uses A/A calibration and three paired
+ABBA blocks on CPU 2, with full/count output equality and no overlapping RustGM
+builds or tests. The newly accepted qualified/generated paths use identical
+candidate binaries in both lanes. A focused repeat retains another 54 observations.
+
+The initial 4,096 ordinary-function comparison differs by -1.3%. Anonymous-import
+results are noisy in the first run; the focused 4,096-import repeat has a +2.5%
+median change and all three paired blocks are +2.3% to +2.7%. The 1,024-import
+replacement workload changes by +4.5% initially and +1.5% on repeat, with all six
+blocks positive. These measurements retain evidence of a small cost for the
+additional import facts. The identical-binary qualified-path control differs by
+13.0% initially and -0.6% on repeat; absolute times shift substantially between
+runs, so the measurements do not support a zero-overhead or speedup claim.
+Initial candidate medians at 64/256/1,024 qualified paths are 5.07/9.40/30.09 ms;
+generated members measure 8.34/19.05/38.34 ms. These exercise name resolution and
+expansion, not method dispatch.
+
+The 487 frozen source/config/test files and all binaries, inputs and observations
+were reverified. The candidate SHA256 is
+`45d7fb588e59e9dfda91f0dd884135c9bc2a8c8f96bd495c86bd6888be7e8ec3`.
+Validation, qualification, frozen sources and measurement receipts are under
+`obj/pa19-work/associated-resolution-*`; raw per-sample files are under `obj/perf/`.

@@ -66,6 +66,15 @@ qualified paths through ordinary typed namespace facts. Demand external metadata
 only when used, keep it separate from the crate root, and retain configured
 prelude policy per module so lookup does not rescan attributes.
 
+Trait member access is inherited in the resolver's owning scope, including
+members installed by expansion. A macro invocation that shares its enclosing
+scope must not reset that scope's associated-item metadata. Nested method-body
+items retain their ordinary access. Anonymous type imports retain the final
+binding by import identity, with scope and hygiene available through the existing
+import records. Reprocessing an import withdraws its old anonymous target before
+resolving the replacement; method lookup must consume these facts rather than
+resolve source paths again.
+
 Retain trait/impl owners and their direct associated declarations in one shared
 inventory after name resolution. Keep owner, Self and member identities separate;
 generic parameters and nested method-body items are not direct members. Preserve

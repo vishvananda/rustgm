@@ -52,6 +52,9 @@ reexports and import cycles. Direct/explicit bindings take precedence over globs
 different glob targets are ambiguous on use. Repeated paths to the same target
 retain one definition identity. Imports follow namespace and privacy rules,
 including ancestor-restricted visibility and tuple-constructor field visibility.
+Direct trait members inherit the trait's visibility; items nested inside a
+default method retain their own visibility. Anonymous imports retain their final
+resolved type target and import identity without creating a binding named `_`.
 An explicit import cannot widen its target's visibility. A dependency worklist
 must wake affected paths and propagate changed glob bindings; do not rescan the
 whole crate. Provisional ambiguity is not a final error while a stronger import

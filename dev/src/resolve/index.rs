@@ -120,6 +120,7 @@ impl Resolver<'_> {
             module,
             barrier,
             associated: false,
+            trait_access: None,
             nominal_self: None,
             label_barrier: barrier,
             bindings: HashMap::new(),
@@ -378,6 +379,9 @@ impl Resolver<'_> {
         item: Item,
         access: Access,
     ) -> Result<Context, Error> {
+        let access = self.facts.scopes[c.scope.0 as usize]
+            .trait_access
+            .unwrap_or(access);
         let owned = matches!(
             item.kind,
             ItemKind::Function { .. }
@@ -395,8 +399,12 @@ impl Resolver<'_> {
         } else {
             c.scope
         };
-        self.facts.scopes[body.0 as usize].associated =
-            matches!(item.kind, ItemKind::Trait { .. } | ItemKind::Impl { .. });
+        if owned {
+            self.facts.scopes[body.0 as usize].associated =
+                matches!(item.kind, ItemKind::Trait { .. } | ItemKind::Impl { .. });
+            self.facts.scopes[body.0 as usize].trait_access =
+                matches!(item.kind, ItemKind::Trait { .. }).then_some(access);
+        }
         self.facts.node_scopes.insert((c.module, node), body);
         let member = matches!(
             item.kind,
