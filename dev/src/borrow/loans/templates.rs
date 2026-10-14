@@ -1,4 +1,4 @@
-//! Generic loans without possible cleanup use the ordinary liveness/dataflow proof.
+//! Generic bodies share ordinary proofs with scoped moves and abstract cleanup.
 use super::Analysis;
 use crate::{
     body::templates::Templates,
@@ -6,6 +6,114 @@ use crate::{
     types::{Store, outlives::LiveRegions},
 };
 use std::collections::HashMap;
+
+/// Prove moves, initialization, abstract destruction and loans in every template.
+/// Provenance and promotion must already be checked on these retained bodies.
+/// This result authorizes no specialization or native execution.
+/// # Errors
+/// Rejects missing contracts, invalid moves, destructor/loan conflicts and budgets.
+pub fn verify<S: std::hash::BuildHasher>(
+    environment: &mut crate::borrow::Environment<'_, S>,
+    templates: &Templates,
+    contracts: &regions::Analysis,
+    custom: &[crate::types::ItemId],
+    position: impl Fn(
+        crate::types::TypeId,
+        crate::body::ir::Selection,
+    ) -> Result<(u32, u32), &'static str>,
+) -> Result<Vec<Analysis>, Error> {
+    use crate::{
+        borrow::{destruction::symbolic, ownership::initialization},
+        types::{
+            copy::Copies,
+            destruction::{NeedsDrop, regions::Regions},
+        },
+    };
+    let error = |message: &str| Error {
+        node: None,
+        message: message.into(),
+    };
+    if contracts.bodies.len() != templates.bodies.len() {
+        return Err(error(
+            "template cleanup contracts have different body coverage",
+        ));
+    }
+    let mut index = HashMap::with_capacity(contracts.bodies.len());
+    for contract in &contracts.bodies {
+        if index.insert(contract.source, contract).is_some() {
+            return Err(error("duplicate template cleanup contract"));
+        }
+    }
+    let custom: std::collections::HashSet<_> = custom.iter().copied().collect();
+    let needed = NeedsDrop::new(custom.iter().copied());
+    let drops = Regions::new(custom.iter().copied()).map_err(error)?;
+    let mut components = LiveRegions::default();
+    let mut results = Vec::with_capacity(templates.bodies.len());
+    for template in &templates.bodies {
+        let body = &template.body;
+        let error = |message: &str| Error {
+            node: Some(body.source),
+            message: message.into(),
+        };
+        validate(template).map_err(error)?;
+        let contract = index
+            .remove(&body.source)
+            .ok_or_else(|| error("template cleanup contract is missing or repeated"))?;
+        let mut copies = Copies::in_environment(std::sync::Arc::clone(&template.environment));
+        let facts = initialization::analyze(
+            environment.types,
+            environment.definitions,
+            environment.derives,
+            &mut copies,
+            body,
+        )
+        .map_err(|e| Error {
+            node: Some(e.node),
+            message: e.message.into(),
+        })?;
+        let mut needed = needed.scoped(std::sync::Arc::clone(&template.environment));
+        let mut drops = drops.scoped(std::sync::Arc::clone(&template.environment));
+        let plan = symbolic::select(
+            environment.types,
+            environment.definitions,
+            &mut needed,
+            &facts,
+            |item| custom.contains(&item),
+            &position,
+        )
+        .map_err(|e| Error {
+            node: Some(e.node),
+            message: e.message.into(),
+        })?;
+        results.push(
+            super::check_schedule(
+                environment.types,
+                environment.definitions,
+                &mut components,
+                &mut drops,
+                &facts,
+                contract,
+                plan.schedule(),
+            )
+            .map_err(|e| Error {
+                node: Some(e.node),
+                message: e.message.into(),
+            })?,
+        );
+    }
+    Ok(results)
+}
+
+fn validate(template: &crate::body::templates::Template) -> Result<(), &'static str> {
+    let body = &template.body;
+    if template.destruction.locals.len() != body.locals.len()
+        || template.destruction.values.len() != body.values.len()
+        || template.destruction.projections.len() != body.projections.len()
+    {
+        return Err("template loan destruction facts have different body coverage");
+    }
+    Ok(())
+}
 
 /// Check each selected template using its scoped moves and proved provenance.
 /// Possible destruction still requires the separate abstract cleanup timeline.
@@ -42,14 +150,7 @@ pub fn check(
             node: Some(body.source),
             message: message.into(),
         };
-        if template.destruction.locals.len() != body.locals.len()
-            || template.destruction.values.len() != body.values.len()
-            || template.destruction.projections.len() != body.projections.len()
-        {
-            return Err(error(
-                "template loan destruction facts have different body coverage",
-            ));
-        }
+        validate(template).map_err(error)?;
         if template.destruction.locals.contains(&true)
             || template.destruction.values.contains(&true)
             || template

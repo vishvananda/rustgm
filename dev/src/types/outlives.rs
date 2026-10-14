@@ -1,4 +1,5 @@
 //! Well-formedness requirements over typed templates, with bounded recursive propagation.
+pub(crate) mod storage;
 use super::{GenericArgs, ItemId, Kind, RegionId, Store, TypeId, aggregate::Definitions};
 use super::{arguments::Argument, parameters::ParameterId};
 use std::collections::{HashMap, HashSet};
@@ -6,9 +7,20 @@ use std::collections::{HashMap, HashSet};
 pub type Pair = (RegionId, RegionId);
 pub type ParameterPair = (ParameterId, RegionId);
 /// Components of a type-outlives predicate, independent of an assumption scope.
+#[derive(Clone, Copy)]
 pub struct Parts<'a> {
     pub regions: &'a [RegionId],
     pub parameters: &'a [ParameterId],
+}
+impl Parts<'_> {
+    #[must_use]
+    pub const fn is_empty(&self) -> bool {
+        self.regions.is_empty() && self.parameters.is_empty()
+    }
+    #[must_use]
+    pub const fn len(&self) -> usize {
+        self.regions.len().saturating_add(self.parameters.len())
+    }
 }
 /// Well-formedness requirements; the caller chooses whether to assume or prove.
 pub struct Requirements<'a> {

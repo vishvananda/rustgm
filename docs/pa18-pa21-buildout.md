@@ -1090,3 +1090,101 @@ is included in `template-loans-v1-source-sha256.json`; job definitions, results
 and raw receipt paths are retained in `template-loans-v1-perf-jobs.json`,
 `template-loans-v1-perf-results.json` and `template-loans-perf-v1.log` under
 `obj/pa18-work/`.
+
+## PA18 abstract cleanup and destructor-aware template loans
+
+Generic bodies now have a combined initialization, cleanup and loan verifier in
+`borrow::loans::templates::verify`. It checks every selected body under its fixed
+parameter environment after promotion and provenance. It validates unique total
+contract coverage, repeats the ordinary scoped ownership proof with retained
+may-initialization, enforces custom-destructor field-move rules, selects abstract
+cleanup and runs the existing ordered liveness/loan analysis. The older `check`
+entry point still explicitly requires bodies without possible cleanup.
+
+Concrete and abstract plans share an event schedule and the initialization
+transfer recorder. The concrete plan keeps its native recipes and flags; the
+abstract plan contains only possible accesses, original-type lifetime needs and
+ordered events. It cannot construct an executable destruction proof. Partial
+moves use the existing sparse field/array paths. They can remove every possible
+runtime destructor access while preserving the original aggregate's drop-check
+obligation. Whole moves and storage ends remove that obligation at the existing
+ordered transfer points. Nominal field coordinates come from retained member
+identities through a typed callback; borrow analysis has no semantic-phase
+lookup dependency.
+
+Drop-region queries now have fixed environment scopes and preserve opaque owned
+parameters separately from named lifetimes. References do not own their
+referents, zero arrays have no element cleanup, unknown lengths preserve possible
+element cleanup and exact Copy assumptions suppress only their own subject.
+Coerced/aggregate operand liveness also preserves both kinds of component.
+Canonical component lists keep ordinary lifetime-only identities compact and
+allocate parameter-list storage only when demanded. Iterative caches, work and
+storage budgets remain explicit.
+
+Consumption distinguishes symbolic repeat modes without guessing their lengths:
+a constant repeat instantiates elements; an ordinary unknown-length repeat must
+have no destructible prototype because typing requires Copy. A fixed zero-length
+ordinary repeat still disposes of its evaluated operand immediately.
+
+Six added maintainer tests cover 44 independently qualified programs (26 accepted,
+18 rejected), malformed contract coverage, assumption isolation, cached failures,
+non-owning references, zero/unknown/huge arrays and a shared 20,000-level type graph.
+The source controls include replacement, branches, loop cleanup, lifetime
+substitution, wildcard temporaries, whole versus partial moves, references that
+outlive a moved sibling field, and sparse moves from billion-element arrays.
+Loan-negative controls check an actual live-loan conflict, separately from the
+non-Copy repeat and forbidden custom-destructor field move.
+
+This completes the abstract cleanup integration for the currently supported
+symbolic body profile. Generic nominal field instantiation, deferred const
+promotion/projections and demanded concrete specialization remain required.
+PA18–PA21 remain planned; the generic executable gate remains closed.
+
+Validation passes 619 frontend tests, all 3,334 active course cases, 46 focused
+release tests, every independent rustc check, nine native maintainer tests and
+132 PA17 executable comparisons. The final source-control assertions also pass
+in debug/release. Rustfmt, Clippy all/pedantic, the 402-file audit and 25 harness
+tests pass. No course fixture or oracle changed. The initial full run stopped at
+the audit after frontend/course success because tree-sitter misparsed a test's
+`&raw` identifier; renaming it to `collected` fixed the audit, and the remaining
+validation completed. Retained logs include `template-cleanup-full-v1.log`,
+`template-cleanup-validation-v2.log`, `template-cleanup-release-v1.log`,
+`template-cleanup-focused-final-v2.log`, `template-cleanup-release-final-v2.log`
+and `template-cleanup-audits-final-v1.log` under `obj/pa18-work/`.
+
+Performance retains 378 observations across 21 jobs at 256/1,024/4,096 generic
+functions or closed comparison units. Each job uses CPU 2, two warmups, four A/A
+observations and three ABBA blocks. Nine closed jobs compare against `291d72f`;
+12 new jobs use identical candidate binaries and exercise the full abstract
+cleanup verifier after typing, body construction, promotion and provenance.
+All new inputs pass pinned rustc and driver preflight checks. Full/count output
+matches for every job. No own builds/tests overlap timing; source, binary and
+input hashes are checked before and after measurement.
+
+| Closed 4,096-unit workload | Previous ms | Candidate ms | Previous RSS KiB | Candidate RSS KiB |
+| --- | ---: | ---: | ---: | ---: |
+| Thin references | 496.56 | 497.98 | 77164 | 77882 |
+| Wide references | 894.92 | 919.39 | 125034 | 125024 |
+| Destruction | 2621.55 | 2589.34 | 291530 | 291494 |
+
+These ranges overlap; they establish no general speedup or zero-cost claim.
+The new workload medians grow roughly with function count, with noticeable
+shared-host variability retained in the middle partial-reference run and the
+largest replacement run.
+
+| New template proof | 256 ms | 1,024 ms | 4,096 ms | 4,096 RSS KiB |
+| --- | ---: | ---: | ---: | ---: |
+| Owned replacement | 35.43 | 131.97 | 535.55 | 53988 |
+| Reference after partial nominal move | 71.51 | 399.68 | 1104.70 | 83226 |
+| Constant Drop repeat | 17.81 | 57.53 | 227.88 | 38070 |
+| Sparse billion-element array moves | 26.34 | 91.89 | 370.74 | 38156 |
+
+The frozen CLI `template-cleanup-candidate-v1` has SHA-256
+`7200f31f9c140c4e182cbfee5de4ecb6ab89e1c3aba06facb222b6f4a4d56b86`;
+`template-cleanup-driver-candidate-v1` has SHA-256
+`8f8843ffcdab3143a0c911caa2d2e94555b4531e68c6291b590f6350c87eb611`.
+The driver uses the frontend's locked dependency versions/checksums. Its source
+and manifests are included in the 282-file `template-cleanup-v1-source-sha256.json`.
+Job definitions, results, preflight checks and raw receipt paths are retained in
+`template-cleanup-v1-perf-jobs.json`, `template-cleanup-v1-perf-results.json`,
+`template-cleanup-v1-perf-preflight.json` and `template-cleanup-perf-v1.log`.

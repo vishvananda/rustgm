@@ -1,8 +1,13 @@
 //! Coerced operands keep their input lifetime needs until a consumer stores them.
 use crate::{
     body::ir::{Body, Rvalue, ValueId},
-    support::intern_slice::Slices,
-    types::{RegionId, Store, outlives::LiveRegions},
+    types::{
+        RegionId, Store,
+        outlives::{
+            LiveRegions, Parts,
+            storage::{Lists, Values},
+        },
+    },
 };
 
 /// Values have separate liveness bits even when their requirements are shared.
@@ -11,7 +16,7 @@ use crate::{
 /// Aggregate/repeat construction composes its operands, including nested coercions.
 pub(super) struct Requirements {
     entities: Vec<Option<u32>>,
-    lists: Slices<RegionId>,
+    lists: Lists,
     pub steps: usize,
 }
 impl Requirements {
@@ -24,11 +29,11 @@ impl Requirements {
     ) -> Result<Self, &'static str> {
         let mut this = Self {
             entities: vec![None; count],
-            lists: Slices::default(),
+            lists: Lists::default(),
             steps: 0,
         };
         let mut values = Vec::with_capacity(body.values.len());
-        let mut components = Vec::new();
+        let mut components = Values::default();
         let mut retained = count
             .saturating_mul(size_of::<Option<u32>>())
             .saturating_add(body.values.len().saturating_mul(size_of::<u32>()));
@@ -52,18 +57,18 @@ impl Requirements {
                         if this.steps > 32_000_000 {
                             return Err("operand lifetime work budget exceeded");
                         }
-                        components.extend_from_slice(ids);
+                        components.extend(ids);
                     }
                     this.charge(
                         components
+                            .parts()
                             .len()
-                            .saturating_mul(components.len().max(1).ilog2() as usize + 1),
+                            .saturating_mul(components.parts().len().max(1).ilog2() as usize + 1),
                     )?;
-                    components.sort_unstable_by_key(|r| r.0);
-                    components.dedup();
-                    this.intern(&components, &mut retained)?
+                    components.canonicalize();
+                    this.intern(components.parts(), &mut retained)?
                 }
-                _ => this.intern(regions.get(types, value.ty)?, &mut retained)?,
+                _ => this.intern(regions.symbolic(types, value.ty)?, &mut retained)?,
             };
             values.push(id);
             if let Some(entity) = entities[index] {
@@ -80,19 +85,19 @@ impl Requirements {
             .ok_or("operand lifetime work budget exceeded")?;
         Ok(())
     }
-    fn intern(&mut self, ids: &[RegionId], retained: &mut usize) -> Result<u32, &'static str> {
+    fn intern(&mut self, ids: Parts<'_>, retained: &mut usize) -> Result<u32, &'static str> {
         self.charge(ids.len() + 1)?;
         *retained = retained
             .checked_add(
                 ids.len()
                     .saturating_mul(size_of::<RegionId>())
-                    .saturating_add(64),
+                    .saturating_add(if ids.parameters.is_empty() { 64 } else { 192 }),
             )
             .filter(|n| *n <= 64_000_000)
             .ok_or("operand lifetime storage exceeds 64 MB budget")?;
         self.lists.intern(ids)
     }
-    pub fn get(&self, entity: usize) -> Result<Option<&[RegionId]>, &'static str> {
+    pub fn get(&self, entity: usize) -> Result<Option<Parts<'_>>, &'static str> {
         self.entities
             .get(entity)
             .copied()

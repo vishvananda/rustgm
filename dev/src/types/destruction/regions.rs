@@ -1,9 +1,17 @@
 //! Drop checking follows owned fields; references do not own their referents.
-use crate::{
-    support::intern_slice::Slices,
-    types::{ItemId, Kind, RegionId, Store, TypeId, aggregate::Definitions},
+use crate::types::{
+    ItemId, Kind, RegionId, Store, TypeId,
+    aggregate::Definitions,
+    outlives::{
+        Parts,
+        storage::{Lists, Values},
+    },
+    parameters::environment::Environment,
 };
-use std::collections::{HashMap, HashSet};
+use std::{
+    collections::{HashMap, HashSet},
+    sync::Arc,
+};
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 enum Key {
@@ -21,9 +29,10 @@ enum State {
 /// templates are analyzed once; uses substitute only their required lifetime slots.
 /// This profile has no may-dangle opt-out: custom Drop requires every argument.
 pub struct Regions {
-    custom: HashSet<ItemId>,
+    custom: Arc<HashSet<ItemId>>,
+    environment: Option<Arc<Environment>>,
     states: HashMap<Key, State>,
-    lists: Slices<RegionId>,
+    lists: Lists,
     work: Vec<(Key, bool)>,
     retained: usize,
     pub steps: usize,
@@ -33,9 +42,10 @@ impl Regions {
     /// Rejects an oversized selected-destructor set.
     pub fn new(custom: impl IntoIterator<Item = ItemId>) -> Result<Self, &'static str> {
         let mut query = Self {
-            custom: HashSet::new(),
+            custom: Arc::default(),
+            environment: None,
             states: HashMap::new(),
-            lists: Slices::default(),
+            lists: Lists::default(),
             work: Vec::new(),
             retained: 0,
             steps: 0,
@@ -43,9 +53,22 @@ impl Regions {
         for item in custom {
             query.charge(1)?;
             query.retain(2 * size_of::<ItemId>())?;
-            query.custom.insert(item);
+            Arc::make_mut(&mut query.custom).insert(item);
         }
         Ok(query)
+    }
+    /// Fresh query caches for one immutable parameter environment.
+    #[must_use]
+    pub fn scoped(&self, environment: Arc<Environment>) -> Self {
+        Self {
+            custom: Arc::clone(&self.custom),
+            environment: Some(environment),
+            states: HashMap::new(),
+            lists: Lists::default(),
+            work: Vec::new(),
+            retained: 0,
+            steps: 0,
+        }
     }
     /// Non-static regions needed to destroy this type, independent of runtime
     /// field pruning. The original type supplies actual arguments, never an erased
@@ -58,6 +81,24 @@ impl Regions {
         definitions: &Definitions,
         ty: TypeId,
     ) -> Result<&[RegionId], &'static str> {
+        if types.contains_parameters(ty) == Some(true) {
+            return Err("generic drop checking requires symbolic components");
+        }
+        let parts = self.symbolic(types, definitions, ty)?;
+        if !parts.parameters.is_empty() {
+            return Err("closed drop type contains opaque field components");
+        }
+        Ok(parts.regions)
+    }
+    /// Preserve opaque owned parameters alongside named destructor lifetimes.
+    /// # Errors
+    /// Rejects foreign parameters, unsupported nominal fields, cycles and budgets.
+    pub fn symbolic(
+        &mut self,
+        types: &Store,
+        definitions: &Definitions,
+        ty: TypeId,
+    ) -> Result<Parts<'_>, &'static str> {
         let key = Key::Type(ty);
         if !matches!(
             self.states.get(&key),
@@ -77,7 +118,7 @@ impl Regions {
         }
         self.result(key)
     }
-    fn result(&self, key: Key) -> Result<&[RegionId], &'static str> {
+    fn result(&self, key: Key) -> Result<Parts<'_>, &'static str> {
         match self.states.get(&key) {
             Some(State::Ready(id)) => self.lists.get(*id).ok_or("invalid drop region list"),
             Some(State::Failed(message)) => Err(message),
@@ -111,6 +152,31 @@ impl Regions {
                 }
                 _ => {}
             }
+            if let Key::Type(ty) = key {
+                let kind = types.kind(ty).ok_or("invalid drop region type")?;
+                if let Some(environment) = &self.environment {
+                    let copy = if let Kind::Parameter(id) = kind {
+                        environment
+                            .abilities(id)
+                            .ok_or("drop parameter is outside its environment")?
+                            .copy
+                            || environment.assumed(ty).copy
+                    } else {
+                        environment.assumed(ty).copy
+                    };
+                    if copy || matches!(kind, Kind::Parameter(_)) {
+                        let mut values = Values::default();
+                        if !copy && let Kind::Parameter(id) = kind {
+                            values.parameters.push(id);
+                        }
+                        self.retain(2 * size_of::<(Key, State)>())?;
+                        self.publish(key, &mut values)?;
+                        continue;
+                    }
+                } else if matches!(kind, Kind::Parameter(_) | Kind::ArrayTerm { .. }) {
+                    return Err("generic drop checking requires a parameter environment");
+                }
+            }
             if finish {
                 let mut values = self.finish(types, definitions, key)?;
                 self.publish(key, &mut values)?;
@@ -136,8 +202,8 @@ impl Regions {
         types: &Store,
         definitions: &Definitions,
         key: Key,
-    ) -> Result<Vec<RegionId>, &'static str> {
-        let mut values = Vec::new();
+    ) -> Result<Values, &'static str> {
+        let mut values = Values::default();
         if let Key::Type(ty) = key
             && let Some(Kind::Adt(item, args)) = types.kind(ty)
         {
@@ -145,16 +211,21 @@ impl Regions {
                 .region_args(args)
                 .ok_or("invalid drop region arguments")?;
             if self.custom.contains(&item) {
-                self.append(&mut values, arguments)?;
+                self.charge(arguments.len())?;
+                values.regions.extend_from_slice(arguments);
                 return Ok(values);
             }
             let count = self.result(Key::Nominal(item))?.len();
             self.charge(count)?;
-            for slot in self.result(Key::Nominal(item))? {
+            let parts = self.result(Key::Nominal(item))?;
+            if !parts.parameters.is_empty() {
+                return Err("generic drop checking requires instantiated fields");
+            }
+            for slot in parts.regions {
                 let Some((0, index)) = slot.bound_parts() else {
                     return Err("drop field template has a foreign lifetime");
                 };
-                values.push(
+                values.regions.push(
                     *arguments
                         .get(index as usize)
                         .ok_or("missing drop lifetime argument")?,
@@ -165,21 +236,12 @@ impl Regions {
         }
         Ok(values)
     }
-    fn append(
-        &mut self,
-        values: &mut Vec<RegionId>,
-        regions: &[RegionId],
-    ) -> Result<(), &'static str> {
-        self.charge(regions.len())?;
-        values.extend_from_slice(regions);
-        Ok(())
-    }
     fn collect(
         &mut self,
         types: &Store,
         definitions: &Definitions,
         key: Key,
-        values: &mut Vec<RegionId>,
+        values: &mut Values,
     ) -> Result<(), &'static str> {
         let mut cost = 0_usize;
         dependencies(types, definitions, &self.custom, key, |child| {
@@ -188,27 +250,31 @@ impl Regions {
                 .checked_add(regions.len() + 1)
                 .filter(|n| *n <= 1_000_000)
                 .ok_or("drop region union work budget exceeded")?;
-            values.extend_from_slice(regions);
+            values.extend(regions);
             Ok(())
         })?;
         self.charge(cost)
     }
-    fn publish(&mut self, key: Key, values: &mut Vec<RegionId>) -> Result<(), &'static str> {
+    fn publish(&mut self, key: Key, values: &mut Values) -> Result<(), &'static str> {
         self.charge(
             values
+                .parts()
                 .len()
-                .saturating_mul(values.len().max(1).ilog2() as usize + 2),
+                .saturating_mul(values.parts().len().max(1).ilog2() as usize + 2),
         )?;
-        values.retain(|r| *r != RegionId::STATIC);
-        values.sort_unstable_by_key(|r| r.0);
-        values.dedup();
+        values.canonicalize();
         self.retain(
             values
+                .parts()
                 .len()
                 .saturating_mul(size_of::<RegionId>())
-                .saturating_add(64),
+                .saturating_add(if values.parameters.is_empty() {
+                    64
+                } else {
+                    192
+                }),
         )?;
-        let list = self.lists.intern(values)?;
+        let list = self.lists.intern(values.parts())?;
         self.states.insert(key, State::Ready(list));
         Ok(())
     }
@@ -235,7 +301,7 @@ fn dependencies(
             }
         }
         Key::Type(ty) => match types.kind(ty).ok_or("invalid drop region type")? {
-            Kind::Parameter(_) | Kind::ArrayTerm { .. } => {
+            Kind::Parameter(_) => {
                 return Err("generic drop checking requires a parameter environment");
             }
             Kind::Adt(item, _) => {
@@ -247,7 +313,9 @@ fn dependencies(
                 }
             }
             Kind::Array { length: 0, .. } => {}
-            Kind::Array { element, .. } | Kind::Slice(element) => visit(Key::Type(element))?,
+            Kind::Array { element, .. }
+            | Kind::ArrayTerm { element, .. }
+            | Kind::Slice(element) => visit(Key::Type(element))?,
             Kind::Tuple(list) => {
                 for &ty in types.list(list).ok_or("invalid drop region tuple")? {
                     visit(Key::Type(ty))?;

@@ -1,5 +1,5 @@
 //! Shared indices for ordered cleanup, statement and edge points.
-use super::{Effect, Plan};
+use super::{Effect, Event};
 use crate::{
     body::{
         ir::{BlockId, Body},
@@ -16,8 +16,8 @@ pub(crate) struct Index {
     pub(crate) count: u32,
 }
 impl Index {
-    pub(crate) fn new(body: &Body, plan: &Plan) -> Result<Self, &'static str> {
-        let count = u32::try_from(plan.events.len())
+    pub(crate) fn new(body: &Body, events: &[Event]) -> Result<Self, &'static str> {
+        let count = u32::try_from(events.len())
             .ok()
             .filter(|n| *n <= 4_000_000)
             .ok_or("too many destruction liveness points")?;
@@ -27,7 +27,7 @@ impl Index {
             points: HashMap::new(),
             count,
         };
-        for (index, event) in plan.events.iter().enumerate() {
+        for (index, event) in events.iter().enumerate() {
             let range = match event.location {
                 Location::At { block, .. } => result
                     .blocks

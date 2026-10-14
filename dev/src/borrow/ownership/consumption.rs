@@ -169,43 +169,52 @@ fn operands<'a>(
     action: &'a Action,
 ) -> Result<(&'a [ValueId], Disposition), &'static str> {
     let one = |id| (std::slice::from_ref(id), Disposition::Transfer);
-    match action {
-        Action::Store { value, .. } => Ok(one(value)),
-        Action::Evaluate(id) => {
-            let value = body
-                .values
-                .get(id.0 as usize)
-                .ok_or("invalid owned evaluation")?;
-            match &value.kind {
-                Rvalue::Aggregate { fields, .. }
-                | Rvalue::Call {
-                    arguments: fields, ..
-                } => {
-                    let values = body
-                        .arguments
-                        .get(fields.start as usize..fields.end as usize)
-                        .ok_or("invalid owned operand list")?;
-                    Ok((values, Disposition::Transfer))
+    if let Action::Store { value, .. } = action {
+        return Ok(one(value));
+    }
+    let Action::Evaluate(id) = action else {
+        return Ok((&[], Disposition::Transfer));
+    };
+    let value = body
+        .values
+        .get(id.0 as usize)
+        .ok_or("invalid owned evaluation")?;
+    match &value.kind {
+        Rvalue::Aggregate { fields, .. }
+        | Rvalue::Call {
+            arguments: fields, ..
+        } => {
+            let values = body
+                .arguments
+                .get(fields.start as usize..fields.end as usize)
+                .ok_or("invalid owned operand list")?;
+            Ok((values, Disposition::Transfer))
+        }
+        Rvalue::Constrain(id) => Ok(one(id)),
+        Rvalue::Repeat {
+            value: operand,
+            mode,
+        } => {
+            let disposition = match (types.kind(value.ty), *mode) {
+                (
+                    Some(Kind::Array { .. } | Kind::ArrayTerm { .. }),
+                    crate::body::ir::RepeatMode::Constant,
+                ) => Disposition::Instantiate,
+                (Some(Kind::Array { length: 0, .. }), _) => Disposition::Discard,
+                (Some(Kind::Array { .. }), _) => Disposition::Transfer,
+                (Some(Kind::ArrayTerm { .. }), _) => {
+                    if body
+                        .owned
+                        .as_ref()
+                        .is_some_and(|o| o.creation(*operand).is_some())
+                    {
+                        return Err("unknown-length ordinary repeat owns a non-Copy operand");
+                    }
+                    return Ok((&[], Disposition::Transfer));
                 }
-                Rvalue::Constrain(id) => Ok(one(id)),
-                Rvalue::Repeat {
-                    value: operand,
-                    mode,
-                } => {
-                    let Some(Kind::Array { length, .. }) = types.kind(value.ty) else {
-                        return Err("owned repeat has no array type");
-                    };
-                    let disposition = if *mode == crate::body::ir::RepeatMode::Constant {
-                        Disposition::Instantiate
-                    } else if length == 0 {
-                        Disposition::Discard
-                    } else {
-                        Disposition::Transfer
-                    };
-                    Ok((std::slice::from_ref(operand), disposition))
-                }
-                _ => Ok((&[], Disposition::Transfer)),
-            }
+                _ => return Err("owned repeat has no array type"),
+            };
+            Ok((std::slice::from_ref(operand), disposition))
         }
         _ => Ok((&[], Disposition::Transfer)),
     }

@@ -245,6 +245,18 @@ replacement destinations do not claim their containing pointer or array's move
 path. These candidates still require field/array glue, conditional flags and
 destructor-induced liveness before they become executable cleanup.
 
+Generic cleanup reuses the initialization replay and ordered event schedule.
+Select possible destructor access separately from original-type drop liveness:
+field moves can remove every runtime call while retaining an aggregate's lifetime
+obligation. Abstract plans contain no native glue and cannot authorize lowering.
+Scoped drop queries preserve opaque owned type parameters as well as named
+lifetimes; Copy assumptions suppress only the exact proved subject. Ordinary
+coerced operands retain their input components until consumption. Unknown-length
+constant repeats instantiate elements; ordinary repeats require Copy and cannot
+supply an owned destructible prototype. Do not guess whether a symbolic length
+is zero. Sparse move partitions, bounded iterative queries and shared component
+lists apply to these proofs as they do to concrete cleanup.
+
 Internal match-guard views retain selected place identity and delay owning
 captures until success. Protect tested places without runtime loads or address
 formation for inactive variants. Track guard protection liveness across control

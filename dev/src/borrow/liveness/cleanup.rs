@@ -6,7 +6,7 @@ use crate::{
         storage::Location,
     },
     borrow::{
-        destruction::{Effect, Plan},
+        destruction::{Effect, Plan, schedule::Schedule},
         ownership::{PathId, Paths, initialization::Facts},
         regions::points::Point,
     },
@@ -16,7 +16,7 @@ use std::collections::{HashMap, VecDeque};
 
 struct Flow<'a> {
     uses: Uses<'a>,
-    plan: &'a Plan,
+    plan: Schedule<'a>,
     paths: &'a Paths,
     ordinary: usize,
     operands: super::operands::Requirements,
@@ -30,7 +30,7 @@ impl<'a> Flow<'a> {
         regions: &mut LiveRegions,
         drops: &mut Regions,
         facts: &'a Facts<'_>,
-        plan: &'a Plan,
+        plan: Schedule<'a>,
     ) -> Result<Self, &'static str> {
         let mut uses = Uses::new(facts.body(), types, regions)?;
         let operands = super::operands::Requirements::new(
@@ -41,7 +41,7 @@ impl<'a> Flow<'a> {
             uses.entities.len(),
         )?;
         uses.charge(operands.steps)?;
-        let timeline = crate::borrow::destruction::timeline::Index::new(facts.body(), plan)?;
+        let timeline = crate::borrow::destruction::timeline::Index::new(facts.body(), plan.events)?;
         uses.result.points = timeline.count;
         uses.result.ordered = Some(timeline);
         let ordinary = uses.entities.len();
@@ -54,13 +54,13 @@ impl<'a> Flow<'a> {
             drop_entities: HashMap::new(),
             intervals: Vec::new(),
         };
-        for cleanup in &plan.cleanups {
+        for cleanup in plan.cleanups() {
             flow.uses.charge(1)?;
             let (Some(ty), Some(path)) = (cleanup.live_type, cleanup.candidate.path) else {
                 continue;
             };
             if flow.drop_entities.contains_key(&path)
-                || drops.get(types, definitions, ty)?.is_empty()
+                || drops.symbolic(types, definitions, ty)?.is_empty()
             {
                 continue;
             }
@@ -148,8 +148,7 @@ impl<'a> Flow<'a> {
             Effect::Cleanup(id) => {
                 let cleanup = self
                     .plan
-                    .cleanups
-                    .get(id as usize)
+                    .cleanup(id as usize)
                     .ok_or("invalid cleanup liveness identity")?;
                 if cleanup.live_type.is_some() {
                     if let Some(path) = cleanup.candidate.path {
@@ -273,7 +272,7 @@ impl<'a> Flow<'a> {
                 let components = if entity < self.ordinary {
                     self.operands.get(entity)?
                 } else {
-                    Some(drops.get(types, definitions, ty)?)
+                    Some(drops.symbolic(types, definitions, ty)?)
                 };
                 if let Some(ids) = components {
                     self.uses.charge(ids.len())?;
@@ -291,7 +290,11 @@ impl<'a> Flow<'a> {
                     self.uses
                         .result
                         .seeds
-                        .extend(ids.iter().map(|r| (*r, point)));
+                        .extend(ids.regions.iter().map(|r| (*r, point)));
+                    self.uses
+                        .result
+                        .parameter_seeds
+                        .extend(ids.parameters.iter().map(|p| (*p, point)));
                 } else {
                     self.uses.seed_type(types, regions, ty, point)?;
                 }
@@ -341,6 +344,23 @@ pub fn analyze(
     drops: &mut Regions,
     facts: &Facts<'_>,
     plan: &Plan,
+) -> Result<Analysis, &'static str> {
+    analyze_schedule(
+        types,
+        definitions,
+        regions,
+        drops,
+        facts,
+        Schedule::concrete(plan),
+    )
+}
+pub(crate) fn analyze_schedule(
+    types: &Store,
+    definitions: &Definitions,
+    regions: &mut LiveRegions,
+    drops: &mut Regions,
+    facts: &Facts<'_>,
+    plan: Schedule<'_>,
 ) -> Result<Analysis, &'static str> {
     let mut flow = Flow::new(types, definitions, regions, drops, facts, plan)?;
     let incoming = flow.solve()?;

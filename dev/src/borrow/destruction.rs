@@ -1,7 +1,9 @@
 //! Typed destruction recipes. A recipe is not a completed borrow proof or executable token.
 mod flags;
 pub use crate::body::drops::glue;
+pub(crate) mod schedule;
 mod select;
+pub mod symbolic;
 pub(crate) mod timeline;
 use crate::{body::ir::Selection, borrow::ownership::initialization::Candidate, types::TypeId};
 pub use select::select;

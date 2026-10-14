@@ -64,7 +64,7 @@ struct State {
 }
 struct Flow<'a> {
     body: &'a Body,
-    destruction: Option<&'a super::destruction::Plan>,
+    destruction: Option<super::destruction::schedule::Schedule<'a>>,
     owned: &'a BodyFacts,
     storage: &'a storage::Analysis,
     places: Index,
@@ -544,6 +544,25 @@ pub fn check_destruction(
     contract: &regions::Body,
     plan: &super::destruction::Plan,
 ) -> Result<Analysis, Error> {
+    check_schedule(
+        types,
+        definitions,
+        components,
+        drops,
+        facts,
+        contract,
+        super::destruction::schedule::Schedule::concrete(plan),
+    )
+}
+pub(crate) fn check_schedule(
+    types: &Store,
+    definitions: &crate::types::aggregate::Definitions,
+    components: &mut LiveRegions,
+    drops: &mut crate::types::destruction::regions::Regions,
+    facts: &super::ownership::initialization::Facts<'_>,
+    contract: &regions::Body,
+    plan: super::destruction::schedule::Schedule<'_>,
+) -> Result<Analysis, Error> {
     let body = facts.body();
     let error = |message| Error {
         node: body.source,
@@ -552,8 +571,9 @@ pub fn check_destruction(
     if contract.source != body.source {
         return Err(error("drop loan contract belongs to another body"));
     }
-    let uses = liveness::cleanup::analyze(types, definitions, components, drops, facts, plan)
-        .map_err(error)?;
+    let uses =
+        liveness::cleanup::analyze_schedule(types, definitions, components, drops, facts, plan)
+            .map_err(error)?;
     Ok(finish::<false>(
         types,
         body,
@@ -612,7 +632,7 @@ fn finish<const RECORD: bool>(
     owned: &BodyFacts,
     storage: &storage::Analysis,
     uses: liveness::Analysis,
-    destruction: Option<&super::destruction::Plan>,
+    destruction: Option<super::destruction::schedule::Schedule<'_>>,
 ) -> Result<Report, Error> {
     let error = |message| Error {
         node: body.source,

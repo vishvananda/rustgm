@@ -6,7 +6,7 @@ use crate::{
         storage::Location,
     },
     borrow::{
-        destruction::{Effect, Plan},
+        destruction::{Effect, schedule::Schedule},
         ownership::initialization::Cause,
     },
 };
@@ -39,7 +39,7 @@ impl Flow<'_> {
     }
     pub(super) fn cleanup_events<const RECORD: bool>(
         &mut self,
-        plan: &Plan,
+        plan: Schedule<'_>,
         range: std::ops::Range<usize>,
         state: &mut [State],
         inspect: bool,
@@ -86,10 +86,9 @@ impl Flow<'_> {
                 }
                 Effect::Cleanup(id) if inspect => {
                     let cleanup = plan
-                        .cleanups
-                        .get(id as usize)
+                        .cleanup(id as usize)
                         .ok_or_else(|| error("invalid cleanup loan identity"))?;
-                    if cleanup.node.is_some() {
+                    if cleanup.access {
                         self.access(
                             state,
                             cleanup.candidate.place,

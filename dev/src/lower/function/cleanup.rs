@@ -21,7 +21,7 @@ impl<'a> Pending<'a> {
     pub fn new(body: &ir::Body, plan: &'a Plan) -> Result<Self, &'static str> {
         Ok(Self {
             plan,
-            timeline: Index::new(body, plan)?,
+            timeline: Index::new(body, &plan.events)?,
             state: super::super::cleanup::State::default(),
             edges: HashMap::new(),
             lanes: Vec::new(),
