@@ -1,1 +1,1 @@
-ERROR: file 0: 15: type/const parameters and lifetime bounds require later semantic assignments
+ERROR: file 0: 37: generic body construction requires parameterized ownership and destruction

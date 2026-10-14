@@ -88,6 +88,7 @@ pub struct Predicate {
 }
 #[derive(Default)]
 pub struct Generics {
+    pub(super) parents: HashMap<DefId, DefId>,
     pub storage: Option<crate::types::aggregate::finiteness::Storage>,
     pub(super) nominal_contracts: std::collections::HashSet<DefId>,
     pub(super) nominal_requirements:
@@ -105,6 +106,23 @@ pub struct Generics {
     substitutions: HashMap<(DefId, GenericArgs), Bound>,
 }
 impl Generics {
+    fn scopes(&self, owner: DefId) -> impl Iterator<Item = DefId> + '_ {
+        std::iter::successors(Some(owner), |id| self.parents.get(id).copied())
+    }
+    /// Parameters retain their declaration identities when inherited by a method.
+    pub fn parameters_in_scope(&self, owner: DefId) -> impl Iterator<Item = &Parameter> {
+        self.scopes(owner)
+            .flat_map(|id| self.parameters.get(&id).into_iter().flatten())
+    }
+    pub fn predicates_in_scope(&self, owner: DefId) -> impl Iterator<Item = &Predicate> {
+        self.scopes(owner)
+            .flat_map(|id| self.predicates.get(&id).into_iter().flatten())
+    }
+    #[must_use]
+    pub fn has_parameters(&self, owner: DefId) -> bool {
+        self.scopes(owner)
+            .any(|id| self.parameters.contains_key(&id))
+    }
     #[must_use]
     pub fn body_environment(&self, owner: DefId) -> Option<&Arc<Environment>> {
         self.body_environments
@@ -159,10 +177,7 @@ impl Generics {
         report: &crate::resolve::expansion::Report,
         functions: &[super::model::Function],
     ) -> Result<(), crate::resolve::package::Error> {
-        if let Some(function) = functions
-            .iter()
-            .find(|f| self.parameters.contains_key(&f.definition))
-        {
+        if let Some(function) = functions.iter().find(|f| self.has_parameters(f.definition)) {
             return Err(super::model::Declarations::error(
                 report,
                 function.node,
@@ -179,11 +194,14 @@ impl Generics {
         store: &Store,
         owner: DefId,
     ) -> Result<(), &'static str> {
-        if !self.parameters.contains_key(&owner) && !self.predicates.contains_key(&owner) {
+        if !self
+            .scopes(owner)
+            .any(|id| self.parameters.contains_key(&id) || self.predicates.contains_key(&id))
+        {
             return Ok(());
         }
         let mut assumptions = Vec::new();
-        for parameter in self.parameters.get(&owner).into_iter().flatten() {
+        for parameter in self.parameters_in_scope(owner) {
             if let Argument::Type(ty) = parameter.argument {
                 let Some(Kind::Parameter(id)) = store.kind(ty) else {
                     return Err("generic declaration requires a rigid type parameter");
@@ -191,16 +209,13 @@ impl Generics {
                 assumptions.push((id, Abilities::default()));
             }
         }
+        let predicates = self
+            .predicates_in_scope(owner)
+            .map(|p| p.value)
+            .collect::<Vec<_>>();
         match self.environments.entry(owner) {
             Entry::Occupied(_) => Err("generic body environment already completed"),
             Entry::Vacant(entry) => {
-                let predicates = self
-                    .predicates
-                    .get(&owner)
-                    .into_iter()
-                    .flatten()
-                    .map(|p| p.value)
-                    .collect::<Vec<_>>();
                 entry.insert(Arc::new(
                     Environment::new(store, &assumptions)?.with_predicates(store, &predicates)?,
                 ));

@@ -2,10 +2,10 @@
 mod rustc;
 #[path = "support/semantic.rs"]
 mod semantic;
-use rustgm::{
-    body, borrow,
-    types::{Kind, copy::Copies},
-};
+#[path = "helpers/template_check.rs"]
+mod template;
+use rustgm::{body, borrow};
+use template::{check, verify};
 
 const CASES: &[(&str, &str, bool)] = &[
     (
@@ -221,71 +221,6 @@ const CASES: &[(&str, &str, bool)] = &[
         true,
     ),
 ];
-
-fn check(source: &str) -> Result<Vec<borrow::loans::Analysis>, Box<dyn std::error::Error>> {
-    let (report, mut facts) = semantic::analyze(source)?;
-    let mut templates = body::templates::build(&report, &facts)?;
-    body::promote::analyze_templates(&report, &mut facts, &mut templates)?;
-    let contracts = body::regions::collect(&facts)?;
-    let contracts = borrow::regions::check_templates(
-        &facts.types,
-        &facts.lifetimes.variances,
-        &contracts,
-        &templates,
-    )?;
-    verify(&facts, &templates, &contracts)
-}
-fn verify(
-    facts: &rustgm::sema::model::Declarations,
-    templates: &body::templates::Templates,
-    contracts: &borrow::regions::Analysis,
-) -> Result<Vec<borrow::loans::Analysis>, Box<dyn std::error::Error>> {
-    let mut copies = Copies::default();
-    let mut environment = borrow::Environment {
-        types: &facts.types,
-        definitions: &facts.aggregates,
-        derives: &facts.derives,
-        copies: &mut copies,
-    };
-    let custom: Vec<_> = facts
-        .destructors
-        .implementations()
-        .iter()
-        .map(|d| d.item)
-        .collect();
-    Ok(borrow::loans::templates::verify(
-        &mut environment,
-        templates,
-        contracts,
-        &custom,
-        |ty, selected| {
-            let (Some(Kind::Adt(owner, _)), body::ir::Selection::Nominal(field)) =
-                (facts.types.kind(ty), selected)
-            else {
-                return Err("invalid selected nominal field");
-            };
-            let variant = facts
-                .members
-                .variant(field)
-                .ok_or("missing field variant")?;
-            let variant = facts
-                .members
-                .variants
-                .get(variant.0 as usize)
-                .ok_or("missing variant")?;
-            if variant.owner != owner {
-                return Err("foreign selected field");
-            }
-            Ok((
-                variant.ordinal,
-                facts
-                    .members
-                    .ordinal(field)
-                    .ok_or("missing field ordinal")?,
-            ))
-        },
-    )?)
-}
 
 #[test]
 fn declared_cleanup_outcomes_match_rustc() -> Result<(), Box<dyn std::error::Error>> {

@@ -1974,3 +1974,89 @@ and upstream provenance checks passed. The initial candidate also passed all
 No existing oracle or declared course outcome changed. Validation and final
 source/binary/input verification receipts are in `early-uses-v2-validation.json`
 and `early-uses-v2-reverify.json`.
+
+## Generic Drop conformance and inherited method environments
+
+Generic Drop headers now elaborate type, const and lifetime parameters. The
+canonical target must cover every nominal argument with a distinct direct impl
+parameter; type/const parameters cannot remain unconstrained. Canonical aliases
+and reordered arguments are supported. Impl defaults, specialized targets,
+repeated arguments and extra requirements remain errors.
+
+Conformance inverts the target mapping into the original nominal parameter
+environment. It proves builtin requirements there, including implicitly Sized
+impl parameters, before the method body can assume them. This distinguishes a
+nominal `T: ?Sized` from an impl that silently requires `T: Sized`. The shared
+outlives graph proves lifetime and type-parameter requirements, treating unused
+impl lifetime slots existentially. Anonymous impl lifetimes have separate binder
+slots and never renumber declared type/const argument indices.
+
+Methods inherit the impl's completed parameter environment while retaining each
+parameter's original owner/index. Region contracts, symbolic CFG classification,
+Copy/shape queries and cleanup proofs consume that inherited environment. Method
+bounds may repeat requirements already implied by the nominal; they cannot add
+requirements or make the receiver lifetime early-bound. Explicit `Self`
+annotations consume the completed target without demanding written impl arguments.
+
+The destructor conformance suite qualifies 56 declared language cases with pinned
+rustc before checking their symbolic ownership, lifetime, loan and cleanup
+results. Additional invariants check reordered field identities, a 256-parameter
+schema, separate captured-binder substitution, cache reuse and ordinary generic
+functions using implicit field dereferences. The two original probes with unsized
+by-value tail fields remain a PA22 boundary; sized pointer/function-field controls
+exercise the Drop `?Sized` conformance rule without claiming unsized aggregates.
+Higher-ranked where-clause binders remain PA21 work; nested callable type binders
+are included in the current checks.
+
+Field inference already retained the selected nominal receiver, but an implicit
+dereference did not necessarily have its own syntax node. Publishing solved body
+types now prepares those receivers' fields in recorded discovery order. This
+makes the completed field types available to immutable template construction and
+keeps canonical type identities independent of hash-map iteration. A repeated
+analysis test checks the resulting type order across fresh randomized maps.
+
+This is semantic and symbolic-body support. Demanded executable instances,
+generic destructor recipes and specialization of deferred const/promotion facts
+remain required PA18 work. PA18–PA21 remain planned.
+
+Local validation passed 709 frontend tests in both debug and release, all 3,350
+active PA1–PA17 course cases, all eleven explicit maintainer native tests, the
+independent rustc suites and PA17's 135 executable comparisons. Rustfmt, Clippy
+all/pedantic with warnings denied, the 448-file audit, all 25 harness tests and
+upstream provenance checks passed. The only course oracle change is PA17's
+existing generic boundary diagnostic: header elaboration now succeeds, then
+concrete body construction reports its missing instantiation/destruction stage.
+Its source is independently accepted by rustc; its course outcome remains the
+explicitly documented rejection. The generator refreshed PA17's source receipt.
+
+Performance compared baseline `c729b4e` with candidate SHA256
+`49a1848144316adc55bcc83f9b501e34853c1d3987f2dc43dc58ff85ddb4095a`,
+with 306 frozen production/configuration files. Thirty-six jobs retained 648
+observations on CPU 2, using two warmups, four A/A calibration samples and three
+ABBA blocks per job. No RustGM builds or tests overlapped timing. All binary,
+source and input hashes and full/count output equality verified. Twenty-nine of
+thirty existing workload medians remained within 3.3% of the parent in either
+direction. Repeated early defaults at scale 256 measured 24.15 → 20.88 ms
+(-13.6%); these short, noisy measurements do not establish a speedup.
+
+Six newly supported type-stage inputs were independently accepted by rustc.
+They compare immutable candidate copies, since the parent rejects generic Drop.
+These timings cover declaration/body type analysis, not generic native execution.
+The wide schema reverses its type parameters; the many-method family exercises
+inherited Copy requirements, implicit field access and symbolic const arrays.
+
+| Workload | Scale | Candidate median, ms | Candidate RSS, KiB |
+| --- | ---: | ---: | ---: |
+| wide-drop-schema | 128 | 4.93 | 5056 |
+| wide-drop-schema | 512 | 8.88 | 6468 |
+| wide-drop-schema | 2048 | 25.56 | 9248 |
+| many-drop-methods | 128 | 15.86 | 7134 |
+| many-drop-methods | 512 | 56.86 | 14168 |
+| many-drop-methods | 2048 | 242.41 | 42206 |
+
+The new families show bounded growth over these measured sizes. Separate typed
+storage/work invariants guard against repeated schema and field expansion.
+Evidence remains under `obj/pa18-work/generic-drop-*`, including freeze,
+preflight, independent source qualification, validation and reverify receipts,
+and each retained `obj/perf/*/{samples.json,observations.jsonl}`. Earlier failed
+exploratory runs remain retained and are not counted as passing validation.

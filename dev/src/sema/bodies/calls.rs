@@ -12,11 +12,17 @@ pub(super) struct CallTypes {
     pub generic: Vec<(NodeId, DefId, TermId)>,
     pub active: HashMap<NodeId, TermId>,
     pub nominal_receivers: HashMap<TermId, super::nominals::Fields>,
+    pub nominal_order: Vec<TermId>,
     signatures: HashMap<TermId, TypeId>,
     universal_regions: Vec<RegionId>,
     universals: Option<Bound>,
 }
 impl CallTypes {
+    pub fn insert_nominal(&mut self, term: TermId, fields: super::nominals::Fields) {
+        if self.nominal_receivers.insert(term, fields).is_none() {
+            self.nominal_order.push(term);
+        }
+    }
     pub fn universal_arguments(&self) -> Vec<RegionId> {
         self.universal_regions.clone()
     }
@@ -25,6 +31,7 @@ impl CallTypes {
         self.generic.clear();
         self.active.clear();
         self.nominal_receivers.clear();
+        self.nominal_order.clear();
         self.signatures.clear();
         self.universal_regions.clear();
         self.universals = None;

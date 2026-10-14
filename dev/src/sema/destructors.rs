@@ -86,7 +86,9 @@ impl Destructors {
 pub(super) fn check_bounds(
     implementation: &Implementation,
     arguments: &[RegionId],
-    assumptions: &[Pair],
+    assumptions: &crate::types::outlives::Requirements<'_>,
+    types: &crate::types::Store,
+    predicates: impl Iterator<Item = crate::types::parameters::predicates::Predicate>,
 ) -> Result<(), String> {
     let mut graph = region_graph::Graph::new(1_000_000);
     let universals: HashSet<_> = arguments.iter().copied().collect();
@@ -113,7 +115,7 @@ pub(super) fn check_bounds(
             .copied()
             .ok_or_else(|| "missing impl lifetime slot".into())
     };
-    for &(a, b) in assumptions {
+    for &(a, b) in assumptions.regions {
         graph
             .assume(resolve(a)?, resolve(b)?)
             .map_err(|e| e.to_string())?;
@@ -123,6 +125,32 @@ pub(super) fn check_bounds(
             .require(resolve(a)?, resolve(b)?, 0)
             .map_err(|e| e.to_string())?;
     }
+    let mut parameters = HashMap::new();
+    for &(id, shorter) in assumptions.parameters {
+        let longer = parameter_region(&mut graph, &mut parameters, id)?;
+        graph
+            .assume(longer, resolve(shorter)?)
+            .map_err(|e| e.to_string())?;
+    }
+    let mut components = crate::types::outlives::TypeComponents::default();
+    for predicate in predicates {
+        let crate::types::parameters::predicates::Bound::Outlives(shorter) = predicate.bound else {
+            continue;
+        };
+        let shorter = resolve(shorter)?;
+        let parts = components.get(types, predicate.ty)?;
+        for &region in parts.regions {
+            graph
+                .require(resolve(region)?, shorter, 0)
+                .map_err(|e| e.to_string())?;
+        }
+        for &id in parts.parameters {
+            let longer = parameter_region(&mut graph, &mut parameters, id)?;
+            graph
+                .require(longer, shorter, 0)
+                .map_err(|e| e.to_string())?;
+        }
+    }
     graph.solve().map_err(|error| match error {
         region_graph::Error::Unsatisfied { .. } => {
             "Drop impl adds lifetime requirements to its nominal type".into()
@@ -130,4 +158,19 @@ pub(super) fn check_bounds(
         _ => error.to_string(),
     })?;
     Ok(())
+}
+
+fn parameter_region(
+    graph: &mut region_graph::Graph,
+    parameters: &mut HashMap<crate::types::parameters::ParameterId, region_graph::Region>,
+    id: crate::types::parameters::ParameterId,
+) -> Result<region_graph::Region, String> {
+    if let Some(&region) = parameters.get(&id) {
+        return Ok(region);
+    }
+    let region = graph
+        .region(region_graph::Kind::Universal { universe: 0 })
+        .map_err(|e| e.to_string())?;
+    parameters.insert(id, region);
+    Ok(region)
 }

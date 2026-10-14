@@ -43,6 +43,7 @@ impl Checker<'_> {
     ) -> Result<(), Error> {
         let item = self.item(key)?;
         let function = matches!(item.kind, crate::syntax::item::ItemKind::Function { .. });
+        let implementation = matches!(item.kind, crate::syntax::item::ItemKind::Impl { .. });
         let unit = self.report.package.unit(key.file);
         let nodes: Vec<_> = unit
             .configured
@@ -89,6 +90,9 @@ impl Checker<'_> {
             non_lifetime |= !lifetime;
             if function && parameter.default.is_some() {
                 return Err(self.error(*node, "function generic parameters cannot have defaults"));
+            }
+            if implementation && parameter.default.is_some() {
+                return Err(self.error(*node, "impl generic parameters cannot have defaults"));
             }
             if !lifetime && defaulted && parameter.default.is_none() {
                 return Err(self.error(*node, "generic parameters with defaults must be trailing"));

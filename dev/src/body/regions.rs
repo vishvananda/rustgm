@@ -214,7 +214,7 @@ fn function_contract(
     let owner = function.definition;
     let scheme = facts.lifetimes.functions.get(&owner);
     let mut parameters = Vec::new();
-    for parameter in facts.generics.parameters.get(&owner).into_iter().flatten() {
+    for parameter in facts.generics.parameters_in_scope(owner) {
         if let crate::types::arguments::Argument::Type(ty) = parameter.argument {
             let Some(crate::types::Kind::Parameter(id)) = facts.types.kind(ty) else {
                 return Err("body parameter must have a rigid identity");
@@ -224,10 +224,7 @@ fn function_contract(
     }
     let type_assumptions = facts
         .generics
-        .predicates
-        .get(&owner)
-        .into_iter()
-        .flatten()
+        .predicates_in_scope(owner)
         .filter_map(|p| {
             if let crate::types::parameters::predicates::Bound::Outlives(region) = p.value.bound {
                 Some((p.value.ty, region))

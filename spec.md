@@ -86,6 +86,16 @@ simultaneously. Finite self applications in defaults remain valid, while genuine
 head/default cycles fail. Constant eligibility consumes these owner identities;
 method bodies and cleanup still require completed implementations.
 
+Generic Drop headers must cover the complete nominal schema. Invert direct,
+distinct impl type/const arguments into the nominal parameter environment before
+proving that impl and method bounds add no requirements. Include implicit Sized;
+never use the impl's own assumptions to prove its conformance. Captured lifetime
+slots are separate from named argument indices, including anonymous impl slots.
+Use the shared outlives graph for lifetime and type-parameter requirements;
+unused impl lifetimes remain existential. Inherited method environments retain
+each parameter's original declaration identity. Classify such bodies as templates
+until demanded concrete instances and their destruction plans are available.
+
 Analyze generic bodies without reparsing syntax. A monomorphization key must
 include all type/const arguments and semantic context affecting its result.
 Trait solver caches include parameter environment, binder universe and mode;
@@ -150,6 +160,9 @@ substituted field lists per instance. Prepare demanded fields before immutable
 layout and ownership queries. Follow owned fields and derive argument obligations
 iteratively, stopping at pointer/reference referents; equality separately demands
 reference referents. Do not expand growing recursive pointer instantiations.
+Implicit field dereferences also demand their selected receiver's fields, even
+without a separate syntax node. Retain receiver discovery order when publishing
+these canonical types; hash-map iteration must not determine type identities.
 Failed preparation cannot publish unfinished descendants as prepared. This
 availability check does not prove declaration validity, bounds or finite layout.
 

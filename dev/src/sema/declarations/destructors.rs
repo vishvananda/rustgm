@@ -1,10 +1,11 @@
 //! Elaborate destructor targets once and retain their lifetime environments.
+mod coverage;
 mod headers;
 mod heads;
 mod receivers;
 use super::{BinderId, Checker, DefId, Error, NodeKey, Type, TypeId, regions};
 use crate::{sema::destructors::Implementation, types::outlives::Queries};
-use std::collections::HashSet;
+pub(super) use coverage::Coverage;
 
 pub(super) struct Pending {
     header: headers::Header,
@@ -48,14 +49,13 @@ impl Checker<'_> {
                     .map_err(|e| self.error(key, e))?;
             }
             let bounds = self.function_bounds(key, binder)?;
-            self.node_work(
-                header.target.file,
-                header.target.node,
-                regions::Context {
-                    binder: Some(binder),
-                    position: regions::Position::Impl,
-                },
-            );
+            let context = regions::Context {
+                binder: Some(binder),
+                position: regions::Position::Impl,
+            };
+            self.declaration_parameters(header.self_definition, key, context)?;
+            self.drain(steps, limit)?;
+            self.node_work(header.target.file, header.target.node, context);
             self.drain(steps, limit)?;
             let target = self.ty(header.target)?;
             let Some(Type::Adt(item, arguments)) = self.facts.types.kind(target) else {
@@ -64,22 +64,15 @@ impl Checker<'_> {
             if owner != Some(item) {
                 return Err(self.error(key, "Drop target disagrees with its declared nominal head"));
             }
-            let arguments = self
-                .facts
-                .types
-                .region_args(arguments)
-                .ok_or_else(|| self.error(key, "missing Drop target lifetimes"))?;
-            let mut seen = HashSet::new();
-            for &argument in arguments {
-                if !matches!(argument.bound_parts(), Some((0, index)) if u32::from(index) < self.regions.count(binder))
-                    || !seen.insert(argument)
-                {
-                    return Err(self.error(
-                        key,
-                        "Drop target requires distinct lifetime parameters without specialization",
-                    ));
-                }
-            }
+            let coverage = self
+                .drop_target_coverage(
+                    header.self_definition,
+                    item,
+                    arguments,
+                    self.regions.count(binder),
+                )
+                .map_err(|e| self.error(key, e))?;
+            self.drop_coverage.insert(header.self_definition, coverage);
             self.facts
                 .destructors
                 .insert(Implementation {
@@ -94,12 +87,32 @@ impl Checker<'_> {
                 .map_err(|e| self.error(key, e))?;
             self.drop_binders.insert(header.self_definition, binder);
             self.complete(header.self_definition, key, target)?;
+            self.schedule_bounds(header.self_definition, context)?;
+            self.drain(steps, limit)?;
+            self.facts
+                .generics
+                .complete_environment(&self.facts.types, header.self_definition)
+                .map_err(|e| self.error(key, e))?;
+            if self
+                .facts
+                .generics
+                .environments
+                .contains_key(&header.self_definition)
+            {
+                self.facts
+                    .generics
+                    .parents
+                    .insert(method, header.self_definition);
+            }
         }
         Ok(())
     }
-    pub(super) fn validate_destructors(&self) -> Result<(), Error> {
+    pub(super) fn validate_destructors(&mut self) -> Result<(), Error> {
         if self.facts.destructors.implementations().is_empty() {
             return Ok(());
+        }
+        for index in 0..self.facts.destructors.implementations().len() {
+            self.validate_drop_traits(index)?;
         }
         let mut queries = Queries::new(
             &self.facts.types,
@@ -108,27 +121,36 @@ impl Checker<'_> {
         );
         for implementation in self.facts.destructors.implementations() {
             let key = implementation.source;
-            if self
-                .facts
-                .derives
-                .get(&implementation.item)
-                .is_some_and(|p| p.copy)
-            {
-                return Err(self.error(key, "a type cannot implement both Copy and Drop"));
-            }
             let Some(Type::Adt(_, arguments)) = self.facts.types.kind(implementation.target) else {
                 return Err(self.error(key, "missing nominal Drop target"));
             };
             let arguments = self
                 .facts
                 .types
-                .region_args(arguments)
-                .ok_or_else(|| self.error(key, "missing Drop target arguments"))?;
+                .arguments(arguments)
+                .ok_or_else(|| self.error(key, "missing Drop target arguments"))?
+                .filter_map(|argument| {
+                    if let crate::types::arguments::Argument::Lifetime(region) = argument {
+                        Some(region)
+                    } else {
+                        None
+                    }
+                })
+                .collect::<Vec<_>>();
             let assumptions = queries
-                .requirements(implementation.target)
+                .symbolic_requirements(implementation.target)
                 .map_err(|e| self.error(key, e))?;
-            crate::sema::destructors::check_bounds(implementation, arguments, assumptions)
-                .map_err(|e| self.error(key, e))?;
+            crate::sema::destructors::check_bounds(
+                implementation,
+                &arguments,
+                &assumptions,
+                &self.facts.types,
+                self.facts
+                    .generics
+                    .predicates_in_scope(implementation.method)
+                    .map(|p| p.value),
+            )
+            .map_err(|e| self.error(key, e))?;
         }
         Ok(())
     }

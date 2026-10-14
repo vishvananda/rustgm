@@ -577,6 +577,16 @@ impl Checker<'_> {
         let body_key = self.key(body);
         let mut well_formed = HashSet::new();
         let mut nominal_types = HashSet::new();
+        // An implicit dereference need not have an AST node among `touched`.
+        // Its selected field receiver still supplies a concrete type query key.
+        // Retain discovery order so appended canonical types are deterministic.
+        for &receiver in &self.call_types.nominal_order {
+            let ty = solved.types[receiver.0 as usize];
+            self.facts
+                .aggregates
+                .prepare(&mut self.facts.types, ty)
+                .map_err(|e| self.error(body, e))?;
+        }
         for index in 0..self.touched.len() {
             let node = self.touched[index];
             let term = self.term(node)?;

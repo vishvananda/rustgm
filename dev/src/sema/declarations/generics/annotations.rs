@@ -12,7 +12,10 @@ impl Checker<'_> {
         owner: DefId,
         context: regions::Context,
     ) -> Result<bool, Error> {
-        if !self.facts.generics.parameters.contains_key(&owner) {
+        if !self.facts.generics.parameters.contains_key(&owner)
+            || self.report.resolution.definitions[owner.0 as usize].kind
+                == crate::resolve::model::DefKind::SelfType
+        {
             return Ok(false);
         }
         let (supplied, omitted) = self.supplied_arguments(key, owner)?;

@@ -90,6 +90,71 @@ fn parameter_replacement_is_simultaneous_and_owner_scoped() -> Result<(), &'stat
 }
 
 #[test]
+fn captured_lifetime_slots_do_not_renumber_named_type_or_const_arguments()
+-> Result<(), &'static str> {
+    let mut store = Store::default();
+    let owner = ItemId(17);
+    let t = parameter(&mut store, owner, 0)?;
+    let usize_ = TypeId::primitive(Primitive::Usize);
+    let n = store.intern_parameter(Parameter {
+        owner,
+        index: 1,
+        kind: ParameterKind::Const { ty: usize_ },
+    })?;
+    let n = store.intern_const(ConstKind::Parameter(n))?;
+    let array = store.intern(Kind::ArrayTerm {
+        element: t,
+        length: n,
+    })?;
+    let local = reference(&mut store, RegionId::bound(0, 0)?, array)?;
+    let captured = reference(&mut store, RegionId::bound(1, 1)?, t)?;
+    let parameters = store.intern_list(&[local, captured])?;
+    let function = store.intern(Kind::Function {
+        bound_regions: 1,
+        parameters,
+        result: t,
+        unsafe_: false,
+    })?;
+    let argument = reference(&mut store, RegionId::bound(0, 6)?, TypeId::UNIT)?;
+    let length = store.intern_constant(Constant {
+        ty: usize_,
+        bits: 3,
+    })?;
+    let args = store.intern_arguments(&[Argument::Type(argument), Argument::Const(length)])?;
+    let mut substitution = Bound::joint_captured(
+        &store,
+        owner,
+        args,
+        vec![RegionId::STATIC, RegionId::bound(0, 4)?],
+    )?;
+    let actual = substitution.apply(&mut store, function)?;
+    let shifted = reference(&mut store, RegionId::bound(1, 6)?, TypeId::UNIT)?;
+    let array = store.intern(Kind::Array {
+        element: shifted,
+        length: 3,
+    })?;
+    let local = reference(&mut store, RegionId::bound(0, 0)?, array)?;
+    let captured = reference(&mut store, RegionId::bound(1, 4)?, shifted)?;
+    let parameters = store.intern_list(&[local, captured])?;
+    let expected = store.intern(Kind::Function {
+        bound_regions: 1,
+        parameters,
+        result: shifted,
+        unsafe_: false,
+    })?;
+    assert_eq!(actual, expected);
+    let steps = substitution.steps;
+    assert_eq!(substitution.apply(&mut store, function)?, expected);
+    assert_eq!(steps, substitution.steps);
+    assert!(
+        Bound::joint_captured(&store, owner, args, vec![])?
+            .apply(&mut store, function)
+            .is_err()
+    );
+    Ok(())
+}
+
+#[test]
 fn isolated_default_substitution_preserves_other_slots_and_every_binder() -> Result<(), &'static str>
 {
     let mut store = Store::default();

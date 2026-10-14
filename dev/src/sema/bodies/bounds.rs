@@ -35,10 +35,7 @@ impl Checker<'_> {
         let mut predicates = self
             .facts
             .generics
-            .predicates
-            .get(&owner)
-            .into_iter()
-            .flatten()
+            .predicates_in_scope(owner)
             .filter(|p| !matches!(p.value.bound, Bound::Outlives(_)))
             .filter(|p| {
                 self.facts

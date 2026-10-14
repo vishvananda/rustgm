@@ -86,7 +86,7 @@ impl Checker<'_> {
                 .infer
                 .nominal(ItemId(owner.0), &arguments)
                 .map_err(|e| self.error(node, e))?;
-            self.call_types.nominal_receivers.insert(term, fields);
+            self.call_types.insert_nominal(term, fields);
             term
         };
         Ok(term)
@@ -176,7 +176,7 @@ impl Checker<'_> {
             .infer
             .nominal(owner, &arguments)
             .map_err(|e| self.error(node, e))?;
-        self.call_types.nominal_receivers.insert(term, fields);
+        self.call_types.insert_nominal(term, fields);
         Ok(term)
     }
     fn nominal_default(
@@ -255,7 +255,7 @@ impl Checker<'_> {
         let root = self.infer.root(receiver).map_err(|e| self.error(node, e))?;
         if !self.call_types.nominal_receivers.contains_key(&root) {
             let fields = self.receiver_fields(node, root, owner)?;
-            self.call_types.nominal_receivers.insert(root, fields);
+            self.call_types.insert_nominal(root, fields);
         }
         let key = self.key(node);
         let report = self.report;

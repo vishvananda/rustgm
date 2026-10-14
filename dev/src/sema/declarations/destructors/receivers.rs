@@ -226,6 +226,16 @@ impl Checker<'_> {
         if bounds
             .iter()
             .any(|(a, b)| method_slots.contains(a) || method_slots.contains(b))
+            || self
+                .facts
+                .generics
+                .bound_lifetimes(&self.facts.types, owner)
+                .map_err(|e| self.error(key, e))?
+                .iter()
+                .any(|&slot| {
+                    crate::types::RegionId::bound(0, slot)
+                        .is_ok_and(|region| method_slots.contains(&region))
+                })
         {
             return Err(self.error(
                 key,

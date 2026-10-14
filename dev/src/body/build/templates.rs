@@ -24,7 +24,7 @@ pub fn build(report: &Report, facts: &Declarations) -> Result<Templates, Error> 
     let query = NeedsDrop::new(facts.destructors.implementations().iter().map(|i| i.item));
     let mut bodies = Vec::new();
     for function in &facts.functions {
-        if !facts.generics.parameters.contains_key(&function.definition) {
+        if !facts.generics.has_parameters(function.definition) {
             continue;
         }
         let environment = facts

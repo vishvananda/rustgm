@@ -116,6 +116,22 @@ impl Bound {
         Ok(substitution)
     }
 
+    /// Replace named parameters while mapping a separate captured lifetime binder.
+    /// Anonymous impl lifetimes have binder slots but no named argument slot.
+    /// # Errors
+    /// Rejects malformed argument lists and excessive captured binders.
+    pub fn joint_captured(
+        store: &Store,
+        owner: ItemId,
+        arguments: GenericArgs,
+        regions: Vec<crate::types::RegionId>,
+    ) -> Result<Self, &'static str> {
+        let mut substitution = Self::joint(store, owner, arguments)?;
+        substitution.account_arguments(regions.len())?;
+        substitution.arguments = regions;
+        Ok(substitution)
+    }
+
     /// Replace exactly one rigid parameter while preserving every lifetime binder
     /// and other parameter. Closed default checks must not compose defaults from
     /// different slots, which would strengthen the declaration's requirements.
