@@ -14,6 +14,23 @@ pub struct Predicate {
     pub bound: Bound,
 }
 impl Predicate {
+    /// Projections may occur in the subject or any complete trait argument.
+    /// # Errors
+    /// Rejects unknown subject or application identities.
+    pub fn contains_projections(self, store: &crate::types::Store) -> Result<bool, &'static str> {
+        let subject = store
+            .contains_projections(self.ty)
+            .ok_or("invalid predicate subject")?;
+        let arguments = if let Bound::Trait(id) = self.bound {
+            store
+                .trait_properties(id)
+                .ok_or("invalid predicate trait application")?
+                .has(crate::types::Property::Projections)
+        } else {
+            false
+        };
+        Ok(subject || arguments)
+    }
     /// Whether any argument lifetime needs opening outside its local binders.
     /// # Errors
     /// Rejects unknown subject or application identities.

@@ -4798,3 +4798,59 @@ inputs measure 118.77 and 116.17 ms. Initial resident medians span 5,872 to
 source-level controls as a complexity proof. The receipt is
 `obj/pa20-work/projection-environments-v1/validation-v1.json`; remaining work is
 recorded beside it in `next-implementation.md`.
+
+## Projections in complete trait arguments
+
+Function bound environments now retain projections in trait type arguments as
+well as subjects. Typed roots are collected using the declared argument kinds,
+preserving mixed lifetime/type/const applications. Nominal and ordinary alias
+wrappers also wait for the raw assumption snapshot. Completed roots rebuild the
+trait applications before the final environment and implied supertraits are
+published. Genericity and early lifetime binding retain the original complete
+predicate even when only an argument contains the erased parameter or lifetime.
+
+The source controls include both bound orders, composite and zero-length-array
+arguments, explicit lifetime calls, owner isolation, declaration/use failures and
+method inheritance. Negative controls require their intended semantic diagnostic.
+Native programs exercise generic trait dispatch, inherited method requirements,
+normalized supertraits and mixed lifetime/type/const arguments through CPPGM.
+
+One initial hypothesis about a projected bound depending on another projected
+assumption was independently disproved: pinned rustc rejects it with E0277.
+The original expectation and diagnostics are retained. RustGM currently reaches
+an unsupported raw-projection selection path for that boundary, so it is excluded
+from the passing language matrix. Symbolic equality support and nested callable
+bound scopes remain required. PA20 and PA21 remain planned.
+
+The complete optimized suite passes 988 tests with 36 native tests explicitly
+ignored. The affected optimized run includes ten native programs across the two
+projection-environment test modules, including four new programs. The final
+source matrix has 34 independently qualified cases: 25 accepted and nine rejected
+through LowIR, with intended diagnostics checked for every rejection. All 4,857
+active course cases, Clippy all/pedantic, rustfmt, the 616-file audit and 27 harness
+tests pass. Course fixtures, manifests and oracle bytes are unchanged.
+
+The immutable candidate is
+`6f91dd94db2ea361cc901026c37a387bce249d232d4822257a4e8060ab775cc7`;
+619 source/config/test files are archived. Sixty-six existing workloads preserve
+published full/count output bytes. Nine new, independently rustc-qualified inputs
+exercise projected argument width, repeated bounds and nominal wrappers at
+128/512/2,048. Remaining work and independently qualified alias boundaries are
+recorded in `obj/pa20-work/projected-bound-arguments-v1/next-implementation.md`.
+
+A/A calibration and five ABBA blocks per workload retain 1,950 observations;
+seven confirmation workloads retain another 182. Both runs verify full/count
+output equality and frozen source, binary and input hashes. No local RustGM
+build, test or frontend probe overlaps either run. Initial existing-workload
+paired medians range from -4.9% to +3.1%. The +3.1% conditional-width comparison
+moves to -0.7% in confirmation, and the +1.2% bound-subject comparison also moves
+to -0.7%. Confirmation includes a -14.3% depth comparison, while absolute times
+and calibration show substantial host variability. These measurements establish
+neither a general speedup nor the absence of small regressions.
+
+Initial new-input medians are 12.13/36.83/139.37 ms for argument width,
+7.61/18.71/64.11 ms for repeated bounds and 13.20/42.02/151.60 ms for wrappers.
+Resident medians range from 5,920 to 23,496 KiB. The identical-binary width-512
+confirmation measures 62.81 ms with 44.8% calibration spread, further limiting
+throughput conclusions. All observations remain recorded; the receipt is
+`obj/pa20-work/projected-bound-arguments-v1/validation-v1.json`.

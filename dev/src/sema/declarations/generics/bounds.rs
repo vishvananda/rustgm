@@ -276,6 +276,7 @@ impl Checker<'_> {
         self.work.push(Work::Bounds(owner, context));
         for bound in bounds.iter().rev() {
             if let Written::User { path, definition } = bound.bound {
+                self.bound_subject_lifetimes(path, owner)?;
                 self.work
                     .push(Work::PathArguments(path, definition, context));
             }
@@ -301,8 +302,8 @@ impl Checker<'_> {
                 return Err(self.error(key, "bound syntax work budget exceeded"));
             }
             let source = NodeKey { node, ..key };
-            if raw && self.report.resolution.qualified_paths.contains_key(&source) {
-                self.defer_bound_projection(source);
+            if raw {
+                self.defer_bound_type(source);
             }
             match ast.node(node).kind {
                 Kind::FunctionType(_) => continue,
@@ -368,7 +369,10 @@ impl Checker<'_> {
                 return Err(self.error(bound.source, "trait bounds require a type parameter"));
             }
             let value = Predicate { ty, bound: value };
-            if self.facts.types.contains_projections(ty) == Some(true) {
+            if value
+                .contains_projections(&self.facts.types)
+                .map_err(|e| self.error(bound.source, e))?
+            {
                 self.facts.unreduced.retain_predicate(bound.source, value);
             }
             completed.push(crate::sema::generics::Predicate {
@@ -383,6 +387,12 @@ impl Checker<'_> {
 }
 
 impl Syntax {
+    pub(in super::super) fn trait_path(self) -> Option<(NodeKey, DefId)> {
+        match self.bound {
+            Written::User { path, definition } => Some((path, definition)),
+            Written::Trait(_) | Written::Outlives(_) => None,
+        }
+    }
     pub(in super::super) fn subject(self) -> Option<NodeKey> {
         match self.subject {
             Subject::Type(key) => Some(key),

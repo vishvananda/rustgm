@@ -144,12 +144,7 @@ impl Checker<'_> {
             )?;
             self.facts.unreduced.retain_node(key, original);
         }
-        if self.projections.raw_bound_nodes.contains(&key) {
-            self.facts.unreduced.retain_node(key, ty);
-            self.store(key, ty)
-        } else {
-            self.normalize_annotation(key, ty, context)
-        }
+        self.normalize_annotation(key, ty, context)
     }
 
     pub(super) fn normalize_annotation(
@@ -162,6 +157,9 @@ impl Checker<'_> {
             return self.store(key, ty);
         }
         self.facts.unreduced.retain_node(key, ty);
+        if self.projections.raw_bound_nodes.remove(&key) {
+            return self.store(key, ty);
+        }
         let mut fold = Normalizer::default();
         let step = fold
             .start(&mut self.facts.types, ty)

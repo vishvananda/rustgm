@@ -5,7 +5,7 @@ use crate::{
     types::{GenericArgs, ItemId, substitute::Bound},
 };
 impl Checker<'_> {
-    pub(super) fn supplied_arguments(
+    pub(in super::super) fn supplied_arguments(
         &self,
         key: NodeKey,
         owner: DefId,

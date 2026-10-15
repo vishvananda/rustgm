@@ -111,8 +111,9 @@ nominal contract; an ordinary alias's written bounds do not grant permissions.
 Retain worklist dependencies and completion states instead of selecting against
 whichever assumptions happen to have been published so far.
 
-When a bound subject contains a projection, elaborate its typed identity before
-normalizing it. A private, immutable snapshot of all typed bounds supplies the
+When a bound subject or trait argument contains a projection, elaborate its typed
+identity before normalizing it, including nominal and alias wrappers.
+A private, immutable snapshot of all typed bounds supplies the
 assumptions for normalization; publish the final environment only after the bound
 roots complete. Preserve the original predicate separately from its normal form.
 Its original parameter/lifetime occurrences determine declaration-time versus
@@ -120,6 +121,11 @@ instantiation-time checking and early lifetime binding. A generic projected boun
 may normalize to an unsatisfied concrete requirement without rejecting an unused
 generic function; actual calls still must prove that requirement. An unrelated
 generic parameter does not defer a genuinely closed written bound.
+Normalize the retained type argument roots before rebuilding complete trait
+applications; do not reconstruct parameters from rendered output or infer a
+projection's inputs from its result. Bounds inside nested callable binders and
+dependencies between unresolved projected assumptions require their own scoped
+normalization support.
 
 Ordinary aliases and generic defaults retain conditional projection requirements
 as sealed typed dependency graphs. Instantiate a contract only at an actual use;

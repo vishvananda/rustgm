@@ -1,6 +1,7 @@
-//! Typed bound subjects form assumptions before their projections are normalized.
+//! Typed bound subjects and arguments form assumptions before normalization.
 use super::{Checker, DefId, Error, NodeKey, Work, regions};
 use crate::sema::declarations::generics::bounds::Syntax;
+use crate::types::arguments::Argument;
 use std::{collections::HashSet, sync::Arc};
 
 pub(super) struct Bounds {
@@ -8,8 +9,21 @@ pub(super) struct Bounds {
     roots: Vec<NodeKey>,
 }
 impl Checker<'_> {
-    pub(in super::super) fn defer_bound_projection(&mut self, key: NodeKey) {
-        self.projections.raw_bound_nodes.insert(key);
+    pub(in super::super) fn defer_bound_type(&mut self, key: NodeKey) {
+        use crate::resolve::model::{DefKind, Target};
+        let application = self
+            .facts
+            .node(key)
+            .and_then(|facts| facts.reference)
+            .is_some_and(|target| {
+                matches!(target, Target::Definition(id) if matches!(
+                    self.report.resolution.definitions[id.0 as usize].kind,
+                    DefKind::Struct | DefKind::Enum | DefKind::TypeAlias | DefKind::SelfType
+                ))
+            });
+        if application || self.report.resolution.qualified_paths.contains_key(&key) {
+            self.projections.raw_bound_nodes.insert(key);
+        }
     }
     pub(in super::super) fn bound_environment_pending(&self, owner: DefId) -> bool {
         self.projections.raw_bounds.contains_key(&owner)
@@ -21,17 +35,46 @@ impl Checker<'_> {
     ) -> Result<(), Error> {
         let mut roots = Vec::new();
         let mut seen = HashSet::new();
-        for key in syntax.iter().filter_map(|s| s.subject()) {
-            if self.facts.types.contains_projections(self.ty(key)?) == Some(true)
-                && seen.insert(key)
-            {
-                roots.push(key);
+        for bound in &syntax {
+            if let Some(key) = bound.subject() {
+                self.retain_bound_root(key, &mut seen, &mut roots)?;
+            }
+            if let Some((path, definition)) = bound.trait_path() {
+                let (list, omitted) = self.supplied_arguments(path, definition)?;
+                if let Some(list) = list {
+                    let ast = &self.report.package.unit(path.file).configured.ast;
+                    for (&node, parameter) in ast.list(list).iter().zip(
+                        self.facts.generics.parameters[&definition]
+                            .iter()
+                            .skip(omitted),
+                    ) {
+                        if matches!(parameter.argument, Argument::Type(_)) {
+                            self.retain_bound_root(
+                                NodeKey { node, ..path },
+                                &mut seen,
+                                &mut roots,
+                            )?;
+                        }
+                    }
+                }
             }
         }
         if !roots.is_empty() {
             self.projections
                 .raw_bounds
                 .insert(owner, Bounds { syntax, roots });
+        }
+        Ok(())
+    }
+
+    fn retain_bound_root(
+        &self,
+        key: NodeKey,
+        seen: &mut HashSet<NodeKey>,
+        roots: &mut Vec<NodeKey>,
+    ) -> Result<(), Error> {
+        if self.facts.types.contains_projections(self.ty(key)?) == Some(true) && seen.insert(key) {
+            roots.push(key);
         }
         Ok(())
     }
