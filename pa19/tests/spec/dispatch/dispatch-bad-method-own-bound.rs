@@ -1,0 +1,1 @@
+trait A{fn f<T:Copy>(self,x:T);}impl A for u8{fn f<T:Copy>(self,x:T){}}struct N;fn main(){A::f(3u8,N);}

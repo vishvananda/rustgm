@@ -1,0 +1,1 @@
+trait A:Sized{fn take(self)->Self{self}}fn main(){}

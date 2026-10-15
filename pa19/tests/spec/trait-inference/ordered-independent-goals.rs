@@ -1,0 +1,1 @@
+trait A<U>{}trait B<U>{}fn g<T:A<U>,V:B<U>,U>(x:T,y:V){}fn f<T:A<u8>+A<u16>,V:B<u8>>(x:T,y:V){g(x,y)}fn main(){}

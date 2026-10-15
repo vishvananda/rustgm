@@ -1,0 +1,1 @@
+trait A:B{}trait B:C{}trait C:Copy{}fn f<T:A>(x:T){let _a=x;let _b=x;}fn main(){}

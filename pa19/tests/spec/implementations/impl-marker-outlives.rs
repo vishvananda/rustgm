@@ -1,0 +1,1 @@
+trait A<'a>:'a{}impl<'a,T:'a> A<'a> for T{}fn main(){}

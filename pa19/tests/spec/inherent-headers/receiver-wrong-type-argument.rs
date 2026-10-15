@@ -1,0 +1,1 @@
+struct S<T>(T);impl S<u8>{fn get(self:S<u16>)->u16{self.0}}fn main(){}

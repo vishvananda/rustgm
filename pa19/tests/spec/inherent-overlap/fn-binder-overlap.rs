@@ -1,0 +1,1 @@
+struct S<T>(T);impl S<fn(&u8)>{fn f(){}}impl S<fn(&'static u8)>{fn f(){}}fn main(){}

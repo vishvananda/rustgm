@@ -1,0 +1,1 @@
+trait A<U>{}fn g<T,U>(x:T)where T:A<(U,U)>{}fn f<T>(x:T)where T:A<(u8,u16)>{g(x)}fn main(){}

@@ -1,0 +1,1 @@
+trait A:Sized{fn f(self,n:u8)->u8{if n==0{7}else{self.f(n-1)}}}impl A for u8{}fn main(){let x=3u8.f(2);}

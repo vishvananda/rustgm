@@ -1,0 +1,1 @@
+trait A<U>{}fn g<'a,T:A<&'a u8>>(x:T){}fn f<'a,T:A<&'a u8>>(x:T){g::<'a,T>(x)}fn main(){}

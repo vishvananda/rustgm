@@ -1,0 +1,1 @@
+trait A{pub fn f(&self);}fn main(){}

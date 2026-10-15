@@ -1,0 +1,1 @@
+mod m{pub trait A{}}use m::A as B;struct D<T:B>(T);impl<T:B> Drop for D<T>{fn drop(&mut self){}}fn main(){}

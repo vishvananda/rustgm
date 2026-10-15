@@ -1,0 +1,1 @@
+struct N;struct S<T>(T);impl S<u8>{fn f(self)->u8{1}}impl S<N>{fn f(self)->u8{7}}fn g<T>(x:T)->u8{S::<T>::f(S(x))}fn main(){}

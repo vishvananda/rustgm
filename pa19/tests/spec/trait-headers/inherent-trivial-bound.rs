@@ -1,0 +1,1 @@
+struct S;impl S where str:Sized{}fn main(){}

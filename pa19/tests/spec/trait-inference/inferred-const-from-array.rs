@@ -1,0 +1,1 @@
+trait A<const N:usize>{}fn g<const N:usize,T:A<N>>(x:T)->[u8;N]{[7;N]}fn f<T:A<2>>(x:T){let _: [u8;2]=g(x);}fn main(){}

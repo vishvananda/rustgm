@@ -1,0 +1,1 @@
+trait A{#[cfg(any())]safe fn f(&self);}fn main(){}

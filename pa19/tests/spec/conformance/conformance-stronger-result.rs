@@ -1,0 +1,1 @@
+static N:u8=7;trait A{fn f<'a>(x:&'a u8)->&'a u8;}impl A for u8{fn f<'a>(x:&'a u8)->&'static u8{&N}}fn main(){}

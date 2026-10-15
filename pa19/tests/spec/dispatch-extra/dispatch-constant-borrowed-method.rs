@@ -1,0 +1,1 @@
+trait A{fn f(&self)->u8;}impl A for u8{fn f(&self)->u8{*self+1}}const P:fn(&u8)->u8=A::f;fn main(){let x=P(&3u8);}

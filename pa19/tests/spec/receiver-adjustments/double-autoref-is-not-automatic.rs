@@ -1,0 +1,1 @@
+trait A{fn f(self:&&Self)->u8;}impl A for u8{fn f(self:&&Self)->u8{**self}}fn main(){let n=7u8;let x=n.f();}

@@ -1,0 +1,1 @@
+trait A{}impl<T:Copy>A for T{}fn f<T:A>(x:T){}fn main(){let mut x=7u8;f(&mut x);}

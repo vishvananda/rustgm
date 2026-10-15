@@ -1,0 +1,1 @@
+struct S<T>(T);impl<T:Copy>S<T>{fn f(&self){}}fn g<T>(x:S<T>){x.f();}fn main(){}

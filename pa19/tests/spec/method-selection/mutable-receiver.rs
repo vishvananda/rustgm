@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+struct S<T>(T);impl S<u8>{fn set(&mut self){self.0=7;}}impl S<u16>{fn set(&mut self){self.0=517;}}fn main(){let mut s=S(1u16);S::<u16>::set(&mut s);check(s.0==517);}

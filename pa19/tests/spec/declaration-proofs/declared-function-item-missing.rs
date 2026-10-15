@@ -1,0 +1,1 @@
+trait A{}impl A for u8{}struct W<T:A>(T);fn value<T:A>(x:W<T>){}fn main(){let _f=value::<u16>;}

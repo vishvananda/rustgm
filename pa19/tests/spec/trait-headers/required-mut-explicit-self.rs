@@ -1,0 +1,1 @@
+trait A{fn take(mut self:&Self);}fn main(){}

@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+struct S<'a>(&'a u8);impl<'a>S<'a>{fn get(self)->&'a u8{self.0}}fn read<'a>(x:&'a u8)->&'a u8{S::get(S(x))}fn main(){let x=7;check(*read(&x)==7);}

@@ -1,0 +1,1 @@
+struct S<T>(T);impl<T:Copy>S<T>{fn f(){}}impl<T:Clone>S<T>{fn f(){}}fn main(){}

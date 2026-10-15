@@ -1,0 +1,1 @@
+struct S;impl S{fn f<T>(&self,x:T)->T{x}}fn main(){S.f::<u8,u16>(7);}

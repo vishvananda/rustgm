@@ -1,0 +1,1 @@
+trait A<'a>{}trait B<'b>:A<'b>{}fn main(){}

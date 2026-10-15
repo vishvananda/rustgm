@@ -1,0 +1,1 @@
+trait A{}trait B{}struct S<T,U>(T,U);impl<T>S<T,u8>{fn run(self)where T:A{}}impl<T>S<T,u16>{fn run(self)where T:B{}}fn f<T:A>(){let s:S<T,_>=loop{};s.run()}fn main(){}

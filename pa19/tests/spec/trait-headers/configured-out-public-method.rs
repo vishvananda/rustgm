@@ -1,0 +1,1 @@
+trait A{#[cfg(any())]pub fn f(&self);}fn main(){}

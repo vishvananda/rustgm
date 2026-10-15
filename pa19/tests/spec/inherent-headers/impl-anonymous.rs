@@ -1,0 +1,1 @@
+struct S<'a>(&'a u8);impl S<'_>{fn value(self)->u8{*self.0}fn borrow(&self)->&u8{self.0}}fn main(){}

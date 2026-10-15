@@ -1,0 +1,1 @@
+trait A<'a>{}struct S<T,U>(T,U);impl<'a,T:A<'a>,U:A<'a>>A<'a>for S<T,U>{}impl<'a>A<'a>for &'a u8{}fn g<'a,T:A<'a>>(x:T,y:&'a()){}fn f<'a>(x:&'a u8,y:&'a u8,z:&'a()){g::<'a,_>(S(x,y),z)}fn main(){}

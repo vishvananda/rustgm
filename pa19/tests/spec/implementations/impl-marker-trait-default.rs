@@ -1,0 +1,1 @@
+trait A<U:?Sized=Self>{}impl A for u8{}fn main(){}

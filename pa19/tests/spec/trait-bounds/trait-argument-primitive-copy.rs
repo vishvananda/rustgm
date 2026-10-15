@@ -1,0 +1,1 @@
+trait A<U:Copy>{}fn f<T:A<u8>>(x:T){}fn main(){}

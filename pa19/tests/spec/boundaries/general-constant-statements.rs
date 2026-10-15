@@ -1,0 +1,1 @@
+struct S;impl S{fn f<const N:usize>(&self)->[u8;N]{[7;N]}}fn main(){let _=S.f::<{let n=1usize;n+1}>();}

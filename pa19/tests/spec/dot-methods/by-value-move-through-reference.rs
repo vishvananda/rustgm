@@ -1,0 +1,1 @@
+struct S(u8);impl S{fn get(self)->u8{self.0}}fn main(){let s=S(7);let r=&s;r.get();}

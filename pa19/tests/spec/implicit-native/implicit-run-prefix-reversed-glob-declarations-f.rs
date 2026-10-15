@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+mod n{pub trait A{fn g(self)->u8;}impl A for u8{fn g(self)->u8{2}}}mod m{pub trait A{fn f(self)->u8;}impl A for u8{fn f(self)->u8{1}}}use m::*;use n::*;fn main(){let x=u8::f(3);check(x==1);}

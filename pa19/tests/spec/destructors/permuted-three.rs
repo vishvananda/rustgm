@@ -1,0 +1,1 @@
+trait A<'a>{}struct D<'a:'b,'b:'a,'c,T:A<'a>>(&'a (),&'b (),&'c (),T);impl<'x:'z,'y,'z:'x,U:A<'z>> Drop for D<'x,'z,'y,U>{fn drop(&mut self){}}fn main(){}

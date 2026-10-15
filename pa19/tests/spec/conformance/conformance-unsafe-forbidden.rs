@@ -1,0 +1,1 @@
+trait A{fn f();}impl A for u8{unsafe fn f(){}}fn main(){}

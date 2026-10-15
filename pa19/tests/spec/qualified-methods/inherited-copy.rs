@@ -1,0 +1,1 @@
+struct N(u8);struct S<T>(T);impl<T:Copy>S<T>{fn get(self)->T{self.0}}fn main(){let _=S::get(S(N(7)));}

@@ -1,0 +1,1 @@
+trait B{}trait A:B{}impl<T> A for T{}fn main(){}

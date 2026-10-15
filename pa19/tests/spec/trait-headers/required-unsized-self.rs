@@ -1,0 +1,1 @@
+trait A{fn take(self);fn make()->Self;fn pair(x:Self)->Self;}fn main(){}

@@ -1,0 +1,1 @@
+trait A{}impl A for u8{}fn main(){let x=<u8 as A>::f(3);}

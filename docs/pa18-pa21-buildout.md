@@ -2,7 +2,9 @@
 
 The active goal is to implement all four assignments. PA18 now has its public
 CLI, handout and grading manifest; its release evidence is recorded in
-[pa18-validation.md](pa18-validation.md). PA19–PA21 remain planned and required. PA17 at `8e33000` is
+[pa18-validation.md](pa18-validation.md). PA19 is also implemented-draft, with
+[pa19-validation.md](pa19-validation.md) recording its course release. PA20 and
+PA21 remain planned and required. PA17 at `8e33000` is
 the regression baseline. This document records the sequence and remaining work,
 not a reduced completion contract.
 
@@ -4086,3 +4088,29 @@ The 581 source/config/test files are archived under
 The receipt is `obj/pa19-work/semantic-view-validation-v1.json`; declarations,
 validation and timings remain in `obj/pa19-work/semantic-view-v1`,
 `obj/pa19-work/semantic-view-*` and `obj/perf/`.
+
+
+## PA19 course release
+
+PA19 is now implemented-draft with 1,070 declared fixtures and generated oracle
+triples. The semantic lane contains 439 cases; the LowIR lane contains 631,
+including 247 accepted programs that all execute through pinned rustc and CPPGM.
+All installed oracle triples match the independently repeated pre-install outputs.
+The complete handout, manifest, references, provenance, root test registration and
+independent/native targets are published together.
+
+Five future-stage boundaries, one pending-lifetime inspection and three redundant-
+binder compiler differences are explicit. The latter preserve canonical equality
+and retain the pinned default compiler's rejection in the independent metadata;
+next-solver diagnosis does not replace that oracle. The nine differences are
+excluded from acceptance-equivalence claims. Review also corrected one extraction
+prediction that mistook a maintainer PA25 boundary for candidate acceptance; its
+original declaration, failure and correction remain recorded.
+
+All 4,859 active course cases, 1,070 PA19 independent language checks and 247 native
+executions pass. Clippy all/pedantic, formatting, the 578-file audit, 27 harness
+tests, upstream verification and backend qualification pass. Compiler sources are
+unchanged from the measured semantic-view checkpoint. Both preceding main commits,
+c3bb0dc and d28780f, passed CI runs 38735309406 and 38736772181. The course release
+receipt is `obj/pa19-work/course-v1/release-validation-v1.json` and its public review
+is [pa19-validation.md](pa19-validation.md). PA20 and PA21 remain required.

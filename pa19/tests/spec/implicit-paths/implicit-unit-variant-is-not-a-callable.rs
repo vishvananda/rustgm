@@ -1,0 +1,1 @@
+trait A{fn F()->u8;}enum E{F}impl A for E{fn F()->u8{7}}type X=E;fn main(){let x=X::F();}

@@ -1,0 +1,1 @@
+trait A{fn required(&self)->u8{7}}struct S;impl A for S{}fn main(){}

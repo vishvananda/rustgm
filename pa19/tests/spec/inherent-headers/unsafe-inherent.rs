@@ -1,0 +1,1 @@
+struct S;unsafe impl S{fn get(&self){}}fn main(){}

@@ -1,0 +1,1 @@
+trait A{fn f(self)->u8;}impl A for u8{fn f(self)->u8{self+1}}mod m{pub fn g()->u8{7u8.f()}}fn main(){let x=m::g();}

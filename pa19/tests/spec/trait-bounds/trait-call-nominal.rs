@@ -1,0 +1,1 @@
+trait A{}struct S<T:A>(T);fn g<T:A>(x:T)->S<T>{S(x)}fn main(){}

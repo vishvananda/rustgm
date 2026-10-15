@@ -1,0 +1,1 @@
+trait A{fn f(self)->u8 where Self:Sized{false}}impl A for u8{}fn main(){}

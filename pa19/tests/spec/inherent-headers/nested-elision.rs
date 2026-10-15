@@ -1,0 +1,1 @@
+struct S(u8);impl S{fn get(self:&&Self)->&u8{&self.0}}fn main(){}

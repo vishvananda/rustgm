@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+mod m{pub struct S<T>(pub T);pub type A<T=u8>=S<T>;impl S<u8>{pub fn f()->u8{7}}impl S<u16>{pub fn f()->u8{9}}}use m::A;fn main(){check(<A>::f()==7);check(A::<u16>::f()==9);}

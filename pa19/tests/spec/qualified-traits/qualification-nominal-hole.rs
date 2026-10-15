@@ -1,0 +1,1 @@
+trait A{fn f(self)->u8;}struct W<T>(T);impl A for W<u8>{fn f(self)->u8{self.0}}fn main(){let x=<W<_>as A>::f(W(3u8));}

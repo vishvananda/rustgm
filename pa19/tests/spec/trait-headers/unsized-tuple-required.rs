@@ -1,0 +1,1 @@
+trait A{fn take()->(Self,Self);}fn main(){}

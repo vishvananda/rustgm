@@ -1,0 +1,1 @@
+trait A:Sized{fn f(self)->u8{7}}impl A for u8{}const P:fn(u8)->u8=A::f;fn main(){let x=P(3u8);}

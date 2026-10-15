@@ -1,0 +1,1 @@
+struct S<T>(T);impl S<u8>{fn f(&self)->u8{7}}impl S<u16>{fn f(&self)->u8{9}}fn main(){let s=S(1);s.f();let _:S<u8>=s;}

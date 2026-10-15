@@ -1,0 +1,1 @@
+struct S<'a>(&'a u8);impl<'a,'b>S<'a>{fn get(self:&S<'b>)->u8 where 'a:'b,'b:'a{*self.0}}fn main(){}

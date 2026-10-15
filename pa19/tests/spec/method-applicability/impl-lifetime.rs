@@ -1,0 +1,1 @@
+trait A<'a>{}struct S<'a,T>(&'a T);impl<'a,T:A<'a>>S<'a,T>{fn run(self){}}fn f<'a,T:A<'a>>(x:S<'a,T>){x.run()}fn main(){}

@@ -1,0 +1,1 @@
+trait A{}struct S<T>(T);impl<T:A>S<T>{fn run(self){}}fn f<T:A>(){let s:S<_>=loop{};s.run()}fn main(){}

@@ -1,0 +1,1 @@
+trait A{}struct W<T:A>(T);fn f(x:for<'a>fn(W<fn(&'a u8)>)){}fn main(){}

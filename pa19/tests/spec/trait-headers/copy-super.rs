@@ -1,0 +1,1 @@
+trait A:Copy{fn twice(self)->(Self,Self){(self,self)}}fn main(){}

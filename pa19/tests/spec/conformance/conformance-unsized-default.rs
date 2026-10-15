@@ -1,0 +1,1 @@
+trait A{fn f()where Self:Sized{}}impl A for str{}fn main(){}

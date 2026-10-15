@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+struct S<T>(T);impl S<u8>{fn f(self)->u16{self.0 as u16+1}}impl S<u16>{fn f(self)->u16{self.0+2}}fn main(){let f:fn(S<u16>)->u16=<S<u16>>::f;check(f(S(517))==519);}

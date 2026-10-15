@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+trait A{fn get(&self)->u8;fn set(&mut self,x:u8);}impl A for u8{fn get(&self)->u8{*self}fn set(&mut self,x:u8){*self=x;}}fn main(){let mut n=7u8;n.set(n.get()+1);check(n==8);}

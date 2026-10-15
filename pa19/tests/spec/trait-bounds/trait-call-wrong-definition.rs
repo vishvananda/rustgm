@@ -1,0 +1,1 @@
+trait A{}trait B{}fn g<T:A>(x:T){}fn f<T:B>(x:T){g(x)}fn main(){}

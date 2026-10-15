@@ -1,0 +1,1 @@
+struct S<'a>(&'a u8);impl<'a>S<'a>{fn choose<'b>(self,x:&'b u8)->&'b u8 where 'b:'a{x}}fn main(){let x=7;let _=S::choose::<'_, '_>(S(&x),&x);}

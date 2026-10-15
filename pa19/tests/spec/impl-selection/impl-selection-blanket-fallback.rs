@@ -1,0 +1,1 @@
+trait A{}impl<T:Copy>A for T{}fn g<T:A>(x:T){}fn main(){g(7);g(7.0);}

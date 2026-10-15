@@ -1,0 +1,1 @@
+trait A<U>{fn f(&self,x:U)->U;}impl<T>A<u16>for T{fn f(&self,x:u16)->u16{x}}trait B:A<u8>{}fn g<T:B>(x:&T)->u16{x.f(7u16)}fn main(){}

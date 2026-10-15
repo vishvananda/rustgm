@@ -1,0 +1,1 @@
+trait A{fn f(self)->u8;}impl<'a>A for &'a u8{fn f(self)->u8{*self}}fn pass<T>(x:T)->T{x}fn g<T:A>(x:T)->u8{let p=pass(A::f);p(x)}fn main(){let v=7u8;let x=g(&v);}

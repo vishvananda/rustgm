@@ -1,0 +1,1 @@
+struct S<T>(T);impl<const N:usize>S<[u8;N]>{fn count(&self)->usize{N}}fn main(){}

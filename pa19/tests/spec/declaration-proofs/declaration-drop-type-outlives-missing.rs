@@ -1,0 +1,1 @@
+trait A<'a>{}impl<'a,T:'a>A<'a>for T{}struct S<'a,T>(&'a (),T);impl<'b,U:A<'b>>Drop for S<'b,U>{fn drop(&mut self){}}fn main(){}

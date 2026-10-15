@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+struct S<'a,T:Copy,const N:usize>(&'a T,[u8;N]);impl<'a,T:Copy,const N:usize>S<'a,T,N>{fn pair<'b,U:Copy>(self,x:&'b U)->(&'a T,&'b U){(self.0,x)}}fn forward<'a,'b,T:Copy,U:Copy,const N:usize>(s:S<'a,T,N>,x:&'b U)->(&'a T,&'b U){S::pair::<U>(s,x)}fn main(){let a=7u8;let b=517u16;let x=forward(S(&a,[1,2,3]),&b);check(*x.0==7);check(*x.1==517);}

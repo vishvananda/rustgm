@@ -1,0 +1,1 @@
+struct S(u8);impl S{fn f(&self,x:u8)->u8{self.0+x}}fn main(){let mut s=S(7);s.f({s.0=8;1});}

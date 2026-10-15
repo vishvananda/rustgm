@@ -169,7 +169,7 @@ maintainer native tests. See `docs/pa15-pa16-validation.md` for the release revi
 PA17 has 205 LowIR fixtures: 135 accepted programs and 70 rejections. Two
 accepted programs declare panic-abort; the other 133 require clean execution.
 The former PA17/PA18 inherent-method boundaries now have accepted maintainer
-coverage in `dev/tests/dot_methods.rs`, pending the complete PA19 course release.
+coverage in `dev/tests/dot_methods.rs` and accepted PA19 course fixtures.
 The root independent and native targets include PA17. `make test-native-pa17`
 selects its course executions. Its counter fixtures and 33 order fixtures are
 also read directly by the maintainer suite.
@@ -207,7 +207,7 @@ lifetimes, initializer/default types and Drop coverage. Every source control is
 independently checked with pinned rustc; four executable programs also compare
 RustGM/CPPGM with rustc. Function-item controls verify that an already-checked
 signature keeps its own binders while item substitutions still satisfy declared
-bounds. These tests do not activate the planned PA19 course suite.
+bounds. These controls also contribute to the PA19 course suite.
 
 `dev/tests/trait_bounds/callables.rs` checks nominal requirements inside function
 pointer binders: deferred local predicates, independent closed/outer predicates,
@@ -246,8 +246,14 @@ in `dev/tests/semantic_view.rs`: canonical selection records and defaults, repea
 process determinism, count agreement, inherited Drop/const arguments, later-region
 rejection and output failure propagation. It shares declaration/body inference with
 the type view and reports pending lifetime constraints explicitly; complete
-execution proof remains in `--emit-lowir`. PA19's full grading contract remains
-pending, so the course stage is still planned.
+execution proof remains in `--emit-lowir`.
+
+PA19 has 1,070 cases: 439 semantic inspection and 631 LowIR cases, with 247
+accepted native programs and no skipped executions. Five later-stage boundaries,
+one inspection-only lifetime control and three redundant-binder compiler
+differences have explicit independent statuses and reasons. See
+[the validation review](docs/pa19-validation.md). `make test-rustc` and the root
+native target include PA19; `make test-native-pa19` selects its execution lane.
 
 ## Placement and provenance
 
@@ -267,7 +273,7 @@ our oracle: their representation and diagnostic contracts belong to upstream.
 ## Release discipline
 
 PA1–PA18 are implemented drafts, not a claim of full Rust frontend conformance.
-Planned PA19–PA38 fail on invocation and are excluded from pass counts. Promote
+Planned PA20–PA38 fail on invocation and are excluded from pass counts. Promote
 a stage only after handout/reference/fixtures are coherent, independent checks
 pass, the source-to-feature ledger is reviewed and all prior stages remain green.
 Keep maintainer measurements and logs in ignored `obj/`; keep student handout

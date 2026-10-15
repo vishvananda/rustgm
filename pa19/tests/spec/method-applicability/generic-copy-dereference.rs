@@ -1,0 +1,1 @@
+#[derive(Copy,Clone)]struct S<'a,T>(&'a T);impl<'a,T>S<'a,T>{fn run(self){}}fn f<'a,T:Copy>(x:&S<'a,T>){x.run()}fn main(){}

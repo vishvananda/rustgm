@@ -1,0 +1,1 @@
+trait A{fn f(self)->u8;}impl A for u8{fn f(self)->u8{self}}macro_rules! call{($x:expr)=>{<u8 as A>::f($x)}}fn main(){let x=call!(7);}

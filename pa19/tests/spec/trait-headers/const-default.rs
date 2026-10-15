@@ -1,0 +1,1 @@
+trait A{const fn take(&self)->u8{7}}fn main(){}

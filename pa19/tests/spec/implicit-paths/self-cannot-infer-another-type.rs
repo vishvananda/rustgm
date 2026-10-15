@@ -1,0 +1,1 @@
+trait A:Sized{fn f(self)->u8;fn g(self)->u8{Self::f(3u16)}}impl A for u8{fn f(self)->u8{1}}impl A for u16{fn f(self)->u8{2}}fn main(){}

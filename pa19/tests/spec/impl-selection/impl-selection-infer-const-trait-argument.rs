@@ -1,0 +1,1 @@
+trait A<const N:usize>{}impl<const N:usize>A<N>for [u8;N]{}fn f<T:A<N>,const N:usize>(x:T){}fn main(){f::<_,_>([0u8;3]);}

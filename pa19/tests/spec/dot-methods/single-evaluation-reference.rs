@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+struct S(u8);impl S{fn get(&self)->u8{self.0}}fn take<'a>(s:&'a S,n:&mut u8)->&'a S{*n+=1;s}fn main(){let s=S(7);let mut n=0u8;check(take(&s,&mut n).get()==7);check(n==1);}

@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+struct S<'a>(&'a u8);impl<'a>S<'a>{fn choose<'b>(&self,x:&'b u8)->&'b u8 where 'b:'a{x}}fn pick<'a>(s:S<'a>,x:&'a u8)->&'a u8{S::choose::<'a>(&s,x)}fn main(){let a=3;let b=7;check(*pick(S(&a),&b)==7);}

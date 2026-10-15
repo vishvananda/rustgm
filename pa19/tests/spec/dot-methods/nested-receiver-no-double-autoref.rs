@@ -1,0 +1,1 @@
+struct S(u8);impl S{fn f(self:&&Self)->u8{self.0}}fn main(){S(7).f();}

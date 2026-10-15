@@ -1,0 +1,1 @@
+trait A<U>where U:Copy{}fn f<T:A<U>,U>(x:T){}fn main(){}

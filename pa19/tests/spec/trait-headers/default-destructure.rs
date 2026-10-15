@@ -1,0 +1,1 @@
+trait A{fn take((a,b):(u8,u8))->u8{a+b}}fn main(){}

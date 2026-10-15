@@ -1,0 +1,1 @@
+struct S;impl<const N:usize>S{fn get(&self){}}fn main(){}

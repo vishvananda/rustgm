@@ -1,0 +1,1 @@
+struct N;struct S<T>(T);impl<T:Copy>S<T>{fn f(self){}}impl S<N>{fn f(self){}}fn main(){let mut x=7u8;S::<(&mut _,)>::f(S((&mut x,)));}

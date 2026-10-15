@@ -1,0 +1,1 @@
+trait A<U>{}struct S<T:A<for<'x,'y>fn(&'x (),&'y ())->&'y ()>>(T);fn f<'a:'b,'b:'a,T:A<for<'x,'y>fn(&'x (),&'y ())->&'x ()>>(t:T){let _:S<T>;}fn main(){}

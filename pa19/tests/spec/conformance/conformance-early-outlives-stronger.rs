@@ -1,0 +1,1 @@
+trait A{fn f<'a:'a,'b:'b>(x:&'a (),y:&'b ());}impl A for u8{fn f<'x:'y,'y:'y>(x:&'x (),y:&'y ()) {}}fn main(){}

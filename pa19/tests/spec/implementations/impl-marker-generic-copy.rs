@@ -1,0 +1,1 @@
+trait A:Copy{}impl<T:Copy> A for T{}fn main(){}

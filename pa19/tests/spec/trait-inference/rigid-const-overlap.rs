@@ -1,0 +1,1 @@
+trait A<const N:usize>{}fn f<const N:usize,S:A<N>+A<2>>(x:S){}fn main(){}

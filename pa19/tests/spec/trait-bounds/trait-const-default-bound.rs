@@ -1,0 +1,1 @@
+trait X<const N:usize>{}trait A<const N:usize=2>where u8:X<N>{}fn main(){}

@@ -1,0 +1,1 @@
+trait A{fn f();}struct S where S:A;impl A for S{fn f(){let x:u8=false;}}fn main(){}

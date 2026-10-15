@@ -1,0 +1,1 @@
+trait A{fn f(&self)->&u8;}struct S(u8);impl A for S{fn f(&self)->&u8{&self.0}}fn g<T:A>(x:&T)->&u8{x.f()}fn main(){let s=S(7);let x=g(&s);}

@@ -1,0 +1,1 @@
+struct S<T>(T);struct N(u8);impl<T:Copy>S<T>{fn f(){}}impl S<N>{fn f(){}}fn main(){}

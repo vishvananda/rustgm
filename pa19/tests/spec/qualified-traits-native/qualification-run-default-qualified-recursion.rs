@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+trait A:Sized{fn f(self,n:u8)->u8{if n==0{7}else{<Self as A>::f(self,n-1)}}}impl A for u8{}fn main(){let x=<u8 as A>::f(3,2);check(x==7);}

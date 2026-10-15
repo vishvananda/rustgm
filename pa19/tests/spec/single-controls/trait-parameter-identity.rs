@@ -1,0 +1,1 @@
+trait A<'a,T:Copy,const N:usize>{fn pair<U:Copy>(&self,x:T,y:U)->(T,U){(x,y)}fn required(self)->Self;}fn main(){}

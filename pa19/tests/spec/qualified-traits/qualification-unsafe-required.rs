@@ -1,0 +1,1 @@
+trait A{unsafe fn f(self)->u8;}impl A for u8{unsafe fn f(self)->u8{self}}fn main(){let x=<u8 as A>::f(7);}

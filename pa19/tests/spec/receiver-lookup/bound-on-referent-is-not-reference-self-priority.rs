@@ -1,0 +1,1 @@
+trait A{fn f(self)->u8;}trait B{fn f(self)->u8;}impl<T>A for &T{fn f(self)->u8{7}}impl<T>B for &T{fn f(self)->u8{9}}fn g<T:A>(x:&T)->u8{x.f()}fn main(){}

@@ -1,0 +1,1 @@
+trait Tr<'a>{}struct Wrap<'a,T:Tr<'a>>(&'a (),T);fn f<'a:'b+'c,'b:'a,'c,T:Tr<'a>>(b:&'b (),c:&'c (),t:T,u:T){let _:Wrap<'b,T>=Wrap(b,t);let _:Wrap<'c,T>=Wrap(c,u);}fn main(){}

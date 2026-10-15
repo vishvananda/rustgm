@@ -1,0 +1,1 @@
+trait A where Self:B{}trait B:Copy{}fn f<T:A>(x:T){let _a=x;let _b=x;}fn main(){}

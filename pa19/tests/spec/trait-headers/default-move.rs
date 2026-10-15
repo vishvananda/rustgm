@@ -1,0 +1,1 @@
+trait A:Sized{fn twice(self)->(Self,Self){(self,self)}}fn main(){}

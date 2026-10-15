@@ -1,0 +1,1 @@
+trait A{}fn f()where u8:A{}fn main(){}

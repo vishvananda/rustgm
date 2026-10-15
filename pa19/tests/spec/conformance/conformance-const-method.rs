@@ -1,0 +1,1 @@
+trait A{fn f<const N:usize>(x:[u8;N])->[u8;N];}impl A for u8{fn f<const M:usize>(x:[u8;M])->[u8;M]{x}}fn main(){}

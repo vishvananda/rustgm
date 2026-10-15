@@ -1,0 +1,1 @@
+struct S<'a,'b>(&'a u8,&'b u8);impl<'a:'b,'b>S<'a,'b>{fn first(&self)->&'b u8{self.0}}fn main(){}

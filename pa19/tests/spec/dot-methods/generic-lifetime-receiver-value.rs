@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+struct S<'a,T>(&'a T);impl<'a,T>S<'a,T>{fn get(self)->&'a T{self.0}}fn value<'a,T>(x:S<'a,T>)->&'a T{x.get()}fn main(){let n=7u8;check(*value(S(&n))==7);}

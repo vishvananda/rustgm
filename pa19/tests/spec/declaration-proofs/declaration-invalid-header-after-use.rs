@@ -1,0 +1,1 @@
+trait A{fn required();}trait B{fn f<T>();}struct S;impl B for S{fn f<U:A>(){}}impl<T>A for T{}fn main(){}

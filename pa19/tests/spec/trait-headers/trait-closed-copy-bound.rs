@@ -1,0 +1,1 @@
+struct S;trait A where S:Copy{}fn main(){}

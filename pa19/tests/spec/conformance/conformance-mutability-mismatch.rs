@@ -1,0 +1,1 @@
+trait A{fn f(x:&mut u8);}impl A for u8{fn f(x:&u8){}}fn main(){}

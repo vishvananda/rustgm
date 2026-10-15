@@ -1,0 +1,1 @@
+struct S<T:?Sized>(*const T);impl<T>S<T>{fn f(){}}impl S<str>{fn f(){}}fn main(){}

@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+trait A<const N:usize>{fn f(self,x:[u8;N])->[u8;N];}impl<const N:usize>A<N>for u8{fn f(self,x:[u8;N])->[u8;N]{x}}fn main(){let x=<u8 as A<_>>::f(3,[7,9]);check(x[0]==7&&x[1]==9);}

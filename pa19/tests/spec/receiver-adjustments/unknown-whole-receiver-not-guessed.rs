@@ -1,0 +1,1 @@
+trait A{fn f(self)->u8;}impl A for u8{fn f(self)->u8{7}}fn g<T>()->T{loop{}}fn main(){let x=g().f();}

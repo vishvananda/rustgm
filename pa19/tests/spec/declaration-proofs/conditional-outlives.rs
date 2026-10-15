@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+trait A<'a>{}impl<'a,T:'a>A<'a>for T{}struct W<'a,T:A<'a>>(&'a (),T);fn value<'a,'b:'a>(x:W<'a,&'b u8>)->u8{*x.1}fn main(){let x=11u8;check(value(W(&(),&x))==11);}

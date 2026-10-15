@@ -1,0 +1,1 @@
+trait A{fn f(self);}trait B{fn f(self);}impl A for u8{fn f(self){}}impl B for u8{fn f(self){}}fn main(){3u8.f();}

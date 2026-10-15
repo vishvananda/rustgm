@@ -1,0 +1,1 @@
+unsafe trait A{unsafe fn f(&self){}}fn main(){}

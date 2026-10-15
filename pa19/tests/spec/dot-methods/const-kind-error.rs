@@ -1,0 +1,1 @@
+struct S;impl S{fn f<const N:usize>(&self){}}fn main(){S.f::<u8>();}

@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+struct S<const N:usize>([u8;N]);type A<const N:usize=1>=S<N>;impl<const N:usize>S<N>{fn get(self)->u8{self.0[N-1]}}fn main(){check(A::get(S([3,7]))==7);}

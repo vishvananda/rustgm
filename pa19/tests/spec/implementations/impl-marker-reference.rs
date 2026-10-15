@@ -1,0 +1,1 @@
+trait A{}impl<'a,T:?Sized> A for &'a T{}fn main(){}

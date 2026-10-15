@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+struct S<T,const N:usize>([T;N]);impl<T:Copy,const N:usize>S<T,N>{fn f<U>(&self,x:U)->(T,U){(self.0[N-1],x)}}fn main(){let s=S([2u8,7]);let p=s.f::<u16>(517);check(p.0==7&&p.1==517);}

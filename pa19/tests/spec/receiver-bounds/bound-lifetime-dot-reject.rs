@@ -1,0 +1,1 @@
+trait A<'a>{fn f(&self,x:&'a u8)->&'a u8;}impl<T>A<'static>for T{fn f(&self,x:&'static u8)->&'static u8{x}}fn g<'a,T:A<'a>>(x:&T,y:&'a u8)->&'static u8{x.f(&7)}fn main(){}

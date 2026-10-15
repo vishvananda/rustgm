@@ -1,0 +1,1 @@
+trait A:B{fn pair(self)->(Self,Self){(self,self)}}trait B:Copy{}fn main(){}

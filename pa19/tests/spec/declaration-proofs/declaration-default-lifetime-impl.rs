@@ -1,0 +1,1 @@
+trait A{}impl<'a>A for &'a u8{}struct W<T:A=&'static u8>(T);fn main(){}

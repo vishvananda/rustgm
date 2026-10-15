@@ -1,0 +1,1 @@
+struct S(u8);impl S{fn set(&mut self,x:u8){self.0=x;}}fn main(){let s=S(7);let r=&&s;r.set(8);}

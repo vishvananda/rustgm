@@ -1,0 +1,1 @@
+struct S(u32);impl S{fn f(&self)->u32{self.0}}#[repr(packed)]struct P{a:u8,s:S}fn main(){let p=P{a:0,s:S(7)};p.s.f();}

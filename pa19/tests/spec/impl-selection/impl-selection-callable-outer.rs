@@ -1,0 +1,1 @@
+trait A{}impl<T>A for fn(T){}fn g<T:A>(x:T){}fn f<'a>(x:fn(&'a u8)){g(x)}fn main(){}

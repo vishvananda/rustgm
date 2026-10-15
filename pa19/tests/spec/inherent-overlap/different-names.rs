@@ -1,0 +1,1 @@
+struct S;impl S{fn f(){}}impl S{fn g(){}}fn main(){}

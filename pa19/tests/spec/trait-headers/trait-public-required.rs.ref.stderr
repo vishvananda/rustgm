@@ -1,0 +1,1 @@
+ERROR: file 0: 8: trait methods require inherited visibility and cannot be explicitly safe

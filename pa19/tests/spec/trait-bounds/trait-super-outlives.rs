@@ -1,0 +1,1 @@
+trait A:'static{}fn g<T:'static>(x:T){}fn f<T:A>(x:T){g(x)}fn main(){}

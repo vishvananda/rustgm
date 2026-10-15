@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+struct S<T>(T);type A<T=u8>=S<T>;impl S<u8>{fn f()->u16{7}}impl S<u16>{fn f()->u16{517}}fn main(){check(<A>::f()==7);check(A::<u16>::f()==517);}

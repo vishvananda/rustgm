@@ -1,0 +1,1 @@
+struct S;impl S{pub fn f(){}}mod m{impl super::S{fn f(){}}}fn main(){}

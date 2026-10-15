@@ -1,0 +1,1 @@
+trait A{fn take(_:u8,x:u8);}fn main(){}

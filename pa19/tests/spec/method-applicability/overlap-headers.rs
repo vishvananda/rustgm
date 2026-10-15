@@ -1,0 +1,1 @@
+trait A{}struct S<T>(T);impl<T:A>S<T>{fn run(self){}}impl<T>S<T>{fn run(self){}}fn main(){}

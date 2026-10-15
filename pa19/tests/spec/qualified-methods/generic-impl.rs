@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+struct S<T>(T);impl<T>S<T>{fn make(x:T)->Self{S(x)}fn take(self)->T{self.0}}fn main(){check(S::take(S::make(13u8))==13);check(S::<u16>::take(S::<u16>::make(517))==517);}

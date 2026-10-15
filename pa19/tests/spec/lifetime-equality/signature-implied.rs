@@ -1,0 +1,1 @@
+trait Tr<'a>{}struct Wrap<'a,T:Tr<'a>>(&'a (),T);fn f<'a,'b:'a,T:Tr<'a>>(proof:&'b &'a (),x:Wrap<'b,T>){}fn main(){}

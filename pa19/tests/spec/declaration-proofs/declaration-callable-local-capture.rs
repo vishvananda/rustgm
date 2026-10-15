@@ -1,0 +1,1 @@
+trait A<U>{}impl<T>A<T>for fn(T){}struct W<F:A<U>,U>(F,U);fn f(x:W<for<'a>fn(&'a u8),&'static u8>){}fn main(){}

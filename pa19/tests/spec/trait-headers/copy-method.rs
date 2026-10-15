@@ -1,0 +1,1 @@
+trait A{fn twice(self)->(Self,Self)where Self:Copy{(self,self)}}fn main(){}

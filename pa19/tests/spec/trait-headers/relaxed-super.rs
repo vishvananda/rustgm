@@ -1,0 +1,1 @@
+trait A:?Sized{}fn main(){}

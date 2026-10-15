@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+struct S<'a>(u8,&'a mut u8);impl Drop for S<'_>{fn drop(&mut self){*self.1+=self.0;}}impl S<'_>{fn f(self)->u8{self.0}}fn main(){let mut n=0u8;{let s=S(7,&mut n);check(s.f()==7);}check(n==7);}

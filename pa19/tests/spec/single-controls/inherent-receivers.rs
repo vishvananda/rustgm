@@ -1,0 +1,1 @@
+struct S(u8);impl S{fn take(self)->u8{self.0}fn change(mut self)->u8{self.0=8;self.0}fn shared(&self,x:&u8)->&u8{&self.0}fn explicit(self:&Self,x:&u8)->&u8{&self.0}fn named<'a>(&'a self,x:&u8)->&'a u8{&self.0}fn nested(self:&&Self)->u8{self.0}fn make()->Self{S(7)}}fn main(){}

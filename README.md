@@ -50,7 +50,9 @@ repository with pinned reference tools. It has not been built yet.
 - PA18 checks generic templates and emits demanded function, constructor and
   destructor instances, with 432 course cases, 265 native executions and three
   explicit code-generation-only controls.
-- PA19–PA38 have buildout briefs and Makefiles. Their suites and implementation
+- PA19 provides trait/method semantic inspection and checked static dispatch, with
+  1,070 cases and 247 native execution controls.
+- PA20–PA38 have buildout briefs and Makefiles. Their suites and implementation
   are not complete; invoking an unbuilt assignment fails explicitly.
 
 Read [ROADMAP.md](ROADMAP.md), [spec.md](spec.md),
@@ -86,7 +88,7 @@ wrapper `dev/rustgm-ref` invokes the same maintained solution. Override
 against the committed oracles without regenerating them.
 
 The maintainer also provides `--emit-semantics` and `--count-semantics` for
-PA19 trait/method inspection. Its course grading contract remains planned.
+PA19 trait/method inspection. Its LowIR lane retains complete execution proofs.
 
 ## CPPGM backend
 

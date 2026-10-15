@@ -1,0 +1,1 @@
+trait A:Copy{}struct D<T:A>(T);impl<T:A> Drop for D<T>{fn drop(&mut self){let _a=self.0;let _b=self.0;}}fn main(){}

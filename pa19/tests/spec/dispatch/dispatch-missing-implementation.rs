@@ -1,0 +1,1 @@
+trait A{fn f(self)->u8;}fn main(){let x=A::f(3u8);}

@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+trait A{}impl<T>A for T{}struct S<'a,T>(&'a mut u8,T);impl<'a,T:A>Drop for S<'a,T>{fn drop(&mut self){*self.0+=1;}}fn main(){let mut count=0u8;{let _s=S(&mut count,7u8);}check(count==1);}

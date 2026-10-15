@@ -1,0 +1,1 @@
+struct S<T>(T);impl<T>S<T>{fn get<U>(&self,x:U)->U{x}}fn main(){}

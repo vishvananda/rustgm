@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+trait A<T>{fn f(self,x:T)->T;}struct W<T,U>(T,U);impl<V:Copy,U:Copy>A<U>for W<U,V>{fn f(self,x:U)->U{x}}fn main(){let x=A::f(W(3u8,4u16),7u8);check(x==7);}

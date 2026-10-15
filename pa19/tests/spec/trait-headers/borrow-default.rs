@@ -1,0 +1,1 @@
+trait A{fn shared(&self,x:&u8)->&Self{self}fn nested(self:&&Self)->u8{7}}fn main(){}

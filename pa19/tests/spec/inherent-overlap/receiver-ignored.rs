@@ -1,0 +1,1 @@
+struct S;impl S{fn f(&self){}}impl S{fn f(&mut self){}}fn main(){}

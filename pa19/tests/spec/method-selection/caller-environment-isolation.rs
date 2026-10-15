@@ -1,0 +1,1 @@
+struct N;struct S<T>(T);impl<T:Copy>S<T>{fn f(self)->T{self.0}}impl S<N>{fn f(self)->N{self.0}}fn good<T:Copy>(x:T)->T{S::<T>::f(S(x))}fn bad<T>(x:T)->T{S::<T>::f(S(x))}fn main(){}

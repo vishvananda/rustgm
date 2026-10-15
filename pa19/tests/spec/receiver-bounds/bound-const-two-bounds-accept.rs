@@ -1,0 +1,1 @@
+trait A<const N:usize>{fn f(&self,x:[u8;N])->[u8;N];}impl<T>A<2>for T{fn f(&self,x:[u8;2])->[u8;2]{x}}fn g<T:A<1>+A<2>>(x:&T)->[u8;2]{x.f([7,9])}fn main(){}

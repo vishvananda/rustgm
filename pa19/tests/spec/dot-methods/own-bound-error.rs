@@ -1,0 +1,1 @@
+struct N;struct S;impl S{fn f<T:Copy>(&self,x:T){}}fn main(){S.f::<N>(N);}

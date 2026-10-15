@@ -129,7 +129,7 @@ def check(stage, app):
     differences = sum(c.get("rustc", {}).get("status", 0) != c["exit_status"]
                       for c in cases if c["rustc"]["kind"] != "fragment")
     if differences:
-        print(f"  {differences} documented phase-boundary differences, not acceptance equivalence")
+        print(f"  {differences} documented acceptance differences, not acceptance equivalence")
 
 
 if __name__ == "__main__":

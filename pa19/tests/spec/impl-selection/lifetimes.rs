@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+trait A<'a>{}impl<'a>A<'a>for &'a u8{}fn id<'a,T:A<'a>>(x:T,y:&'a())->T{x}static X:u8=11;fn main(){let value=id(&X,&());check(*value==11);}

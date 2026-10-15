@@ -1,0 +1,1 @@
+trait A where Self:Sized{fn take(self)->Self{self}}fn main(){}

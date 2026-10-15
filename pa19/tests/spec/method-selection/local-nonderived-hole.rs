@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+struct N<T>(T);struct S<T>(T);impl<T:Copy>S<T>{fn f(self)->u8{1}}impl<T>S<N<T>>{fn f(self)->u8{7}}fn main(){check(S::<N<_>>::f(S(N(9u16)))==7);}

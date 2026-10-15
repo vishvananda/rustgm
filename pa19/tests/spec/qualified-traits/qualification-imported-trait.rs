@@ -1,0 +1,1 @@
+mod m{pub trait A{fn f(self)->u8;}impl A for u8{fn f(self)->u8{self}}}use m::A as Alias;fn main(){let x=<u8 as Alias>::f(7);}

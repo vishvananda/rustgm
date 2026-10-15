@@ -1,0 +1,1 @@
+mod m{pub struct S;impl S{fn f(&self){}}}fn main(){m::S.f();}

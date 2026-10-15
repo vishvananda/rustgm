@@ -1,0 +1,1 @@
+trait A<'a,T,const N:usize>{}impl<'b,U,const M:usize> A<'b,U,M> for [U;M]{}fn main(){}

@@ -281,14 +281,15 @@
       "path": "pa19",
       "title": "Traits and methods",
       "mode": "--emit-semantics",
-      "status": "planned",
+      "status": "implemented-draft",
       "scope": "Trait and inherent impls, method lookup, bounds, receiver adjustments",
       "test_families": [
         "autoderef/autoref",
         "qualified calls",
         "bounds",
         "ambiguous methods"
-      ]
+      ],
+      "additional_modes": ["--emit-lowir"]
     },
     {
       "number": 20,

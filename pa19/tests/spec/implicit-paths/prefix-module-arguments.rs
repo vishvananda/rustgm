@@ -1,0 +1,1 @@
+mod m{pub trait A{fn f(self)->u8;}pub struct S;impl A for S{fn f(self)->u8{7}}}use m::A;fn main(){let x=m::<u8>::S::f(m::S);}

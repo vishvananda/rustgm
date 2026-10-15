@@ -1,0 +1,31 @@
+function @rg.21() -> void {
+  slot $s0 : obj<1x1>
+  block ^b0:
+    %t0 = addr $s0
+    call void @rg.20(%t0)
+    %t1 = addr $s0
+    call void @rg.drop.0(%t1)
+    return void
+}
+function @rg.20(%p0 : ptr) -> void {
+  slot $s0 : ptr
+  block ^b0:
+    store ptr %p0, $s0
+    return void
+}
+function @rg.drop.0(%p0 : ptr) -> void {
+  block ^b0:
+    call void @rg.18(%p0)
+    return void
+}
+function @rg.18(%p0 : ptr) -> void {
+  slot $s0 : ptr
+  block ^b0:
+    store ptr %p0, $s0
+    return void
+}
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.21()
+    return i64 0
+}

@@ -1,0 +1,1 @@
+struct S;trait A<T:Copy=S>{}fn main(){}

@@ -1,0 +1,1 @@
+trait A{fn f(self)->u8;}impl A for f32{fn f(self)->u8{7}}fn main(){let x=7.0.f();}

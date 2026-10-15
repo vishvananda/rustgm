@@ -1,0 +1,1 @@
+struct S<T>(T);impl<T:Copy>S<T>{fn f(){}}impl<'a,T,U>S<(T,&'a mut U)>{fn f(){}}fn main(){}

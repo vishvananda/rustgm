@@ -1,0 +1,1 @@
+trait A{fn f<T>(self,x:T);}struct S;impl S{fn f<T:Copy>(self,x:T){}}impl A for S{fn f<T>(self,x:T){}}struct N;fn main(){S.f(N);}

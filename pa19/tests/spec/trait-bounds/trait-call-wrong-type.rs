@@ -1,0 +1,1 @@
+trait A<U>{}fn g<T:A<U>,U>(x:T,y:U){}fn f<T:A<u16>>(x:T){g(x,7u8)}fn main(){}

@@ -1,0 +1,1 @@
+trait A{fn f<T:Copy>(x:T)->T;}impl A for u8{fn f<U:Clone>(x:U)->U{x}}fn main(){}

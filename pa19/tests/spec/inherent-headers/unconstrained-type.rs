@@ -1,0 +1,1 @@
+struct S;impl<T>S{fn get(&self){}}fn main(){}

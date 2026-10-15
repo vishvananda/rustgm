@@ -1,0 +1,1 @@
+struct S;impl S where S:Copy{}fn main(){}

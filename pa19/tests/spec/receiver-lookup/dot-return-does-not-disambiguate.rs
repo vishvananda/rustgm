@@ -1,0 +1,1 @@
+trait A{fn f(self)->u8;}impl A for u8{fn f(self)->u8{self+1}}trait B{fn f(self)->u16;}impl B for u8{fn f(self)->u16{7}}fn main(){let x:u8=3u8.f();}

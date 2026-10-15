@@ -1,0 +1,1 @@
+trait Flag{}struct Boxed<T:Flag>(T);fn f<'a:'b,'b:'a>(x:&'b u8)where &'a u8:Flag{let _:Boxed<&'b u8>=Boxed(x);}fn main(){}

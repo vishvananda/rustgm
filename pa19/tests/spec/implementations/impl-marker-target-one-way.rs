@@ -1,0 +1,1 @@
+trait B<'a>{}trait A{}struct S<'a:'b,'b,T:B<'a>>(&'a (),&'b (),T);impl<'a,'b,T:B<'b>> A for S<'a,'b,T>{}fn main(){}

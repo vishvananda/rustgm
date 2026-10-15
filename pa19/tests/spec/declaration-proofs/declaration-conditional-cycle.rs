@@ -1,0 +1,1 @@
+trait A{}impl<T:A>A for T{}fn f()where u8:A{}fn main(){}

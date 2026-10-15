@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+trait A{fn f(self)->u8;}impl<'a>A for &'a u8{fn f(self)->u8{*self}}fn g<'a>(x:&'a u8)->u8{<&'a u8 as A>::f(x)}fn main(){let x=7u8;let y=g(&x);check(y==7);}

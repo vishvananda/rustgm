@@ -1,0 +1,1 @@
+trait A{}impl<T> A for T{}impl A for u8{}fn main(){}

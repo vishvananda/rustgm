@@ -1,0 +1,1 @@
+unsafe trait A{}unsafe impl A for u8{}fn main(){}

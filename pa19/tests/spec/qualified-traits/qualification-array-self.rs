@@ -1,0 +1,1 @@
+trait A{fn f(self)->u8;}impl<const N:usize>A for [u8;N]{fn f(self)->u8{self[0]}}fn main(){let x=<[u8;2]as A>::f([7,9]);}

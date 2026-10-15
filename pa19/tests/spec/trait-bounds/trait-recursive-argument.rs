@@ -1,0 +1,1 @@
+trait A:B<Self>{}trait B<T:?Sized+A>{}fn main(){}

@@ -1,0 +1,1 @@
+trait A{}struct S<T:Copy>(T);impl<T:Copy> A for S<T>{}fn main(){}

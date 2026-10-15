@@ -1,0 +1,1 @@
+trait A<T=u16>{fn f(self,x:T)->T;}impl A<u32>for u8{fn f(self,x:u32)->u32{x}}fn main(){let x=<u8 as A>::f(3,7u32);}

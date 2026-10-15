@@ -1,0 +1,1 @@
+trait Weak{}trait Strong:Weak{}struct D<T:Strong>(T);impl<T:Strong+Weak> Drop for D<T>{fn drop(&mut self){}}fn main(){}

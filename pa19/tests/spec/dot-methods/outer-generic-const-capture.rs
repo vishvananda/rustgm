@@ -1,0 +1,1 @@
+struct S;impl S{fn f<const N:usize>(&self){}}fn g<const N:usize>(){S.f::<{N+1}>();}fn main(){}

@@ -1,0 +1,1 @@
+trait A<T:?Sized=Self>{fn take(&self,x:&T)->u8{7}}fn main(){}

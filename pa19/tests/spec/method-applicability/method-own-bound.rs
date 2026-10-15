@@ -1,0 +1,1 @@
+trait A{}struct S<T>(T);impl<T>S<T>{fn run(self)where T:A{}}fn f<T:A>(x:S<T>){x.run()}fn main(){}

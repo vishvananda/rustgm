@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+trait A<const N:usize>{}impl<const N:usize>A<N>for[u8;N]{}fn size<T:A<N>,const N:usize>(x:T)->usize{N}fn main(){check(size::<_,_>([7u8;3])==3);}

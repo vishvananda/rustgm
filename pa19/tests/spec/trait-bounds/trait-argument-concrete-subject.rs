@@ -1,0 +1,1 @@
+trait A<U>{}fn f<T>()where u8:A<T>{}fn main(){}

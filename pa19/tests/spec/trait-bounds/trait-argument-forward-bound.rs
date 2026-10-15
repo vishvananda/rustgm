@@ -1,0 +1,1 @@
+trait A<T:B<u8>>{}trait B<U>{}fn main(){}

@@ -1,0 +1,1 @@
+struct S<const N:usize>([u8;N]);impl S<2>{fn get(self:S<3>){}}fn main(){}

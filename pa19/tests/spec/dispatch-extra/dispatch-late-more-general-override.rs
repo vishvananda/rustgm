@@ -1,0 +1,1 @@
+trait A{fn f<'a>(self,x:&'a u8,y:&'a u8)->&'a u8;}impl A for u8{fn f<'b,'c>(self,x:&'b u8,y:&'c u8)->&'b u8{x}}fn main(){let a=7u8;let b=9u8;let p=A::f as for<'a>fn(u8,&'a u8,&'a u8)->&'a u8;let x=p(3,&a,&b);}

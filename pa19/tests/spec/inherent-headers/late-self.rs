@@ -1,0 +1,1 @@
+struct S;impl S{fn get(x:u8,self){}}fn main(){}

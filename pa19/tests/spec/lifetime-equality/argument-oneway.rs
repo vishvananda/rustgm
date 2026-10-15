@@ -1,0 +1,1 @@
+trait Tr<'a>{}trait Need<'b,U:Tr<'b>>{}fn f<'a:'b,'b,T:Tr<'a>,V:Need<'b,T>>(){}fn main(){}

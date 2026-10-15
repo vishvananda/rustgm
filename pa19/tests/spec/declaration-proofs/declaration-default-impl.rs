@@ -1,0 +1,1 @@
+trait A{}impl A for u8{}struct W<T:A=u8>(T);fn main(){}

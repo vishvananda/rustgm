@@ -1,0 +1,1 @@
+trait A{pub(crate) fn f(&self){}}fn main(){}

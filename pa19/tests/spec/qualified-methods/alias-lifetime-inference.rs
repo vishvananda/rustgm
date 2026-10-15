@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+struct S<'a,T>(&'a T);type A<'a,T>=S<'a,T>;impl<'a,T>S<'a,T>{fn get(self)->&'a T{self.0}}fn read<'a>(x:&'a u16)->&'a u16{A::<'a>::get(S(x))}fn main(){let x=517;check(*read(&x)==517);}

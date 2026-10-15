@@ -1,0 +1,1 @@
+trait A<U>{}fn f<T:A<u8>+A<u16>>(x:T){}fn main(){}

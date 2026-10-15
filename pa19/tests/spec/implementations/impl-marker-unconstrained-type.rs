@@ -1,0 +1,1 @@
+trait A{}struct S;impl<T> A for S{}fn main(){}

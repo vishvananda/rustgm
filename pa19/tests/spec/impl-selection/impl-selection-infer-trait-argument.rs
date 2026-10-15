@@ -1,0 +1,1 @@
+trait A<U>{}impl A<u16> for u8{}fn f<T:A<U>,U>(x:T){}fn main(){f::<_,_>(7u8);}

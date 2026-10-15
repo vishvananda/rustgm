@@ -1,0 +1,1 @@
+trait A{}struct S;impl<const N:usize> A for S{}fn main(){}

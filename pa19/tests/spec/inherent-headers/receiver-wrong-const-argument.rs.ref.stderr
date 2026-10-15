@@ -1,0 +1,1 @@
+ERROR: file 0: 49: receiver type does not match Self: invalid lifetime constraint identity

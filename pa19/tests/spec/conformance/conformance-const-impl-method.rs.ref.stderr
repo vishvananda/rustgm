@@ -1,0 +1,1 @@
+ERROR: file 0: 30: trait implementation methods require inherited visibility, a Rust body, and supported function qualifiers

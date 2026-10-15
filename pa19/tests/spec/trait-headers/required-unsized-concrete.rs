@@ -1,0 +1,1 @@
+trait A{fn take(x:str)->str;}fn main(){}

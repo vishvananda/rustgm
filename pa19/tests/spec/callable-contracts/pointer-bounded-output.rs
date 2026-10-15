@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+trait A{}impl<'a>A for &'a u8{}struct W<T:A>(T);fn value<'a>(x:&'a u8)->W<&'a u8>{W(x)}fn through(p:for<'a>fn(&'a u8)->W<&'a u8>)->u8{let x=31u8;*p(&x).0}fn main(){check(through(value)==31);}

@@ -1,0 +1,1 @@
+trait A{fn f(x:for<'a,'b>fn(&'a (),&'b ())->&'a ());}impl A for u8{fn f(x:for<'a,'b>fn(&'a (),&'b ())->&'b ()) {}}fn main(){}

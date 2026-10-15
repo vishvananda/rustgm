@@ -1,0 +1,1 @@
+mod m{pub struct S<T>(pub T);impl S<u8>{pub fn f()->u8{7}}impl S<u16>{fn f()->u8{9}}}fn main(){let _=m::S::<u16>::f();}

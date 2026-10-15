@@ -1,0 +1,1 @@
+struct S<T>(T);impl<T>S<T>{fn twice(self)->(T,T){(self.0,self.0)}}fn main(){}

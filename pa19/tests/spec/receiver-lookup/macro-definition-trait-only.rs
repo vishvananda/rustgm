@@ -1,0 +1,1 @@
+mod m{pub trait A{fn f(self)->u8;}impl A for u8{fn f(self)->u8{7}}}mod n{use crate::m::A;#[macro_export]macro_rules! call{($x:expr)=>{$x.f()}}}fn main(){let x=call!(3u8);}

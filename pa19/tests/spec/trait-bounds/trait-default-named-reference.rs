@@ -1,0 +1,1 @@
+trait A<'a,U=&'a u8>{}fn main(){}

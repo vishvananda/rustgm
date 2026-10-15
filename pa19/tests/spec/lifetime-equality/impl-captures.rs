@@ -1,0 +1,1 @@
+trait Tr<'a>{}struct Wrap<'a,T:Tr<'a>>(&'a (),T);struct Host<'a,T>(&'a (),T);impl<'a:'b,'b:'a,T:Tr<'a>> Host<'a,T>{fn f(x:Wrap<'b,T>){}}fn main(){}

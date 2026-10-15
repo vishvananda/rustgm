@@ -1,0 +1,1 @@
+struct S<const N:usize,const M:usize>;impl S<1,1>{fn f(){}}impl S<2,3>{fn f(){}}fn main(){S::<_,_>::f();}

@@ -1,0 +1,1 @@
+trait A<U>{}impl A<u8>for u16{}fn g<T:A<U>,U>(x:T,y:U){}fn main(){g(7,9);}

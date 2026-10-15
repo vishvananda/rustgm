@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+enum E<T>{V(T)}type A<T>=E<T>;impl<T>E<T>{fn V()->u8{9}}fn main(){let E::V(x)=A::V(517u16);check(x==517);let E::V(y)=<E<_>>::V(7u8);check(y==7);}

@@ -1,0 +1,1 @@
+trait A{fn make()->Self{loop{}}}fn main(){}

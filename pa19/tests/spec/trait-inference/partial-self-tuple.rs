@@ -1,0 +1,1 @@
+trait A{}fn g<T>()where(T,):A{}fn f<S>()where(S,):A{g()}fn main(){}

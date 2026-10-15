@@ -1,0 +1,1 @@
+trait A{}struct W<T>(T);fn g<T>()where W<T>:A{}fn f<S>()where W<S>:A{g()}fn main(){}

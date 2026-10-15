@@ -1,0 +1,1 @@
+pub trait A{fn f(&self){}}fn main(){}

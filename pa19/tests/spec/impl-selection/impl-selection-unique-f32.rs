@@ -1,0 +1,1 @@
+trait A{}impl A for f32{}fn g<T:A>(x:T){}fn main(){g(7.0);}

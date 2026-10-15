@@ -1,0 +1,1 @@
+trait A<'a,T:Copy,const N:usize>{fn pair<U:Copy>(&self,x:T,y:U)->(T,U){(x,y)}fn count(&self)->usize{N}fn borrow<'b>(&'b self,x:&'a T)->&'a T{x}}fn main(){}

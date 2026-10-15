@@ -1,0 +1,1 @@
+struct S<T>(T);type A<T=u8>=S<T>;impl S<u8>{fn f()->u8{7}}impl S<u16>{fn f()->u8{9}}fn main(){let _=A::f();}

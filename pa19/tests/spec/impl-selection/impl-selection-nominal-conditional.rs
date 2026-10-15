@@ -1,0 +1,1 @@
+trait A{}struct S<T>(T);impl<T:Copy>A for S<T>{}fn f<T:A>(x:T){}fn main(){f(S(7u8));}

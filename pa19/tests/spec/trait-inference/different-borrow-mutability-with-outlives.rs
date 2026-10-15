@@ -1,0 +1,1 @@
+trait A{}fn f<'a,T:'a>()where &'a T:A,&'a mut T:A{}fn main(){}

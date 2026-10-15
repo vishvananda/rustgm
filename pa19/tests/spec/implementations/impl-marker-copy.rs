@@ -1,0 +1,1 @@
+trait A:Copy{}impl A for u8{}fn main(){}

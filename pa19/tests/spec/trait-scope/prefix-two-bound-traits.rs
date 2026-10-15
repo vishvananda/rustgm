@@ -1,0 +1,1 @@
+trait A{fn f(self)->u8;}trait B{fn f(self)->u8;}fn g<T:A+B>(x:T)->u8{T::f(x)}fn main(){}

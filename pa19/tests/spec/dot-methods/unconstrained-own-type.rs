@@ -1,0 +1,1 @@
+struct S;impl S{fn f<T>(&self){}}fn main(){S.f();}

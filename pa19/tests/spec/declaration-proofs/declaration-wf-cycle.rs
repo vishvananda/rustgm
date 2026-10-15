@@ -1,0 +1,1 @@
+trait A{}struct S where S:A;impl A for S{}fn main(){}

@@ -1,0 +1,1 @@
+struct S<T>(T);type A<T>=S<T>;impl<T>S<T>{fn get(self)->T{self.0}}fn main(){let _=<A>::get(S(7u8));}

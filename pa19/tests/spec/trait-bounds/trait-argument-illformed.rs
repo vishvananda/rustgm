@@ -1,0 +1,1 @@
+trait A<U:?Sized>{}fn f<T:A<[str;0]>>(x:T){}fn main(){}

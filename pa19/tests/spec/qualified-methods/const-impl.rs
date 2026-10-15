@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+struct S<const N:usize>([u8;N]);impl<const N:usize>S<N>{fn count(&self)->usize{N}fn last(self)->u8{self.0[N-1]}}fn main(){let s=S([2,3,7]);check(S::count(&s)==3);check(S::<3>::last(s)==7);}

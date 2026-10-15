@@ -1,0 +1,1 @@
+struct S<'a,T>(&'a T);impl<'a,T>S<'a,T>{fn run(self){}}fn f<'a,T>(x:S<'a,T>){x.run()}fn main(){}

@@ -1,0 +1,1 @@
+trait A<const N:usize>{}struct D<T:A<N>,const N:usize>(T);impl<const M:usize,U:A<M>> Drop for D<U,M>{fn drop(&mut self){}}fn main(){}

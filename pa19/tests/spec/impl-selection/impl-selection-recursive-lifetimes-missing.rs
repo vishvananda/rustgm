@@ -1,0 +1,1 @@
+trait A<'a>{}struct S<T>(T);impl<'a,T:A<'a>>A<'a>for S<T>{}impl<'a>A<'a>for &'a u8{}fn g<T:A<'static>>(x:T){}fn main(){let x=7u8;g(S(S(&x)));}

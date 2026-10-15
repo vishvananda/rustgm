@@ -1,0 +1,1 @@
+unsafe trait A{fn shared(&self)->u8{7}}fn main(){}

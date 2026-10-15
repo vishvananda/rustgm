@@ -1,0 +1,1 @@
+trait A<T=[str;0]>{}fn main(){}

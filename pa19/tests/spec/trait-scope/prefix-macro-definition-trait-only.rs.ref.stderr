@@ -1,0 +1,2 @@
+ERROR: file 0: 134: no applicable trait method for this prefix
+  in macro call at file 0: 164; defined at file 0: 104

@@ -1,0 +1,1 @@
+trait A{fn f(&self)->&u8;}struct S(u8);impl A for S{fn f(&self)->&u8{&self.0}}fn g()->&'static u8{let s=S(7);s.f()}fn main(){}

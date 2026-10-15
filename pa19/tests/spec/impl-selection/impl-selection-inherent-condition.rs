@@ -1,0 +1,1 @@
+trait A{}impl A for u8{}struct S<T>(T);impl<T:A>S<T>{fn get(self)->T{self.0}}fn main(){let _=S(7u8).get();}

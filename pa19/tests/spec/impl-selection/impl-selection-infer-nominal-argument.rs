@@ -1,0 +1,1 @@
+trait A<U>{}struct S<T>(T);impl<T>A<T>for S<T>{}fn f<T:A<U>,U>(x:T){}fn main(){f::<_,_>(S(7u8));}

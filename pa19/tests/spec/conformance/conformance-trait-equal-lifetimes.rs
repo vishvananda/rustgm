@@ -1,0 +1,1 @@
+trait B<'a>{}trait A{fn f<'a:'b,'b:'a,T:B<'a>>();}impl A for u8{fn f<'x:'y,'y:'x,U:B<'y>>(){}}fn main(){}

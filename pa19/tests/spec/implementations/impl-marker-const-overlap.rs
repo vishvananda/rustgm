@@ -1,0 +1,1 @@
+trait A<const N:usize>{}impl<const N:usize> A<N> for u8{}impl A<1> for u8{}fn main(){}

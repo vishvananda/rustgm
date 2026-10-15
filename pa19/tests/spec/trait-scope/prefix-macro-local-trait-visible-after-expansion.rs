@@ -1,0 +1,1 @@
+macro_rules! enable{()=>{trait A{fn f(self)->u8;}impl A for u8{fn f(self)->u8{7}}}}fn main(){enable!();let x=u8::f(3);}

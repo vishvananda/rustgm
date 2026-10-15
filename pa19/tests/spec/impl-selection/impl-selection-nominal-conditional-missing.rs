@@ -1,0 +1,1 @@
+trait A{}struct S<T>(T);impl<T:Copy>A for S<T>{}fn f<T:A>(x:T){}fn main(){let mut x=7u8;f(S(&mut x));}

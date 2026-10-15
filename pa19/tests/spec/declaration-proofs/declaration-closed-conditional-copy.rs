@@ -1,0 +1,1 @@
+trait A{}impl<T:Copy>A for T{}struct S;fn f()where S:A{}fn main(){}

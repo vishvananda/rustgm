@@ -1,0 +1,1 @@
+trait A<U>{}struct W<T:A<U>,U>(T,U);fn need<T:A<&'static u8>>(){}fn f<T>(p:for<'a>fn(W<T,&'a u8>)){need::<T>();}fn main(){}

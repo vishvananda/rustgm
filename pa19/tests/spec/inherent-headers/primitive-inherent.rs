@@ -1,0 +1,1 @@
+impl u8{fn get(&self){}}fn main(){}

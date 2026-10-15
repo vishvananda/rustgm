@@ -1,0 +1,1 @@
+trait A<'a:'b,'b>{}fn f<'a:'b,'b,T:A<'a,'b>>(x:T){}fn main(){}

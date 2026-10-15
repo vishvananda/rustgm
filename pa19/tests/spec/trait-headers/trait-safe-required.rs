@@ -1,0 +1,1 @@
+trait A{safe fn f(&self);}fn main(){}

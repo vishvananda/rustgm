@@ -1,0 +1,1 @@
+trait B{}trait A:B{}impl A for u8{}impl B for u8{}fn g<T:A>(x:T){}fn main(){g(7u8);}

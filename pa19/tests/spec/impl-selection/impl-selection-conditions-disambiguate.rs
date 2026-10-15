@@ -1,0 +1,1 @@
+#[derive(Clone)]struct N;struct S<T>(T);trait A<U>{}impl<T:Copy>A<u8>for S<T>{}impl<T:Clone>A<u16>for S<T>{}fn g<T:A<U>,U>(x:T){}fn main(){g::<_,_>(S(N));}

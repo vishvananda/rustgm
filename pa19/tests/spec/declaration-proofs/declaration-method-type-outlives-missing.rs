@@ -1,0 +1,1 @@
+trait A<'a>{}impl<'a,T:'a>A<'a>for T{}trait B{fn f<'a,T>();}struct S;impl B for S{fn f<'b,U:A<'b>>() {}}fn main(){}

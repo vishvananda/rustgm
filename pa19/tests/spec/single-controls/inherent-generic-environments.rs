@@ -1,0 +1,1 @@
+struct S<'a,T:Copy,const N:usize>(&'a T,[u8;N]);impl<'a,T:Copy,const N:usize>S<'a,T,N>{fn pair<U:Copy>(&self,x:U)->(T,U){(*self.0,x)}fn count(&self)->usize{N}fn value(self)->T{*self.0}fn make(x:&'a T,ys:[u8;N])->Self{S(x,ys)}}fn main(){}
