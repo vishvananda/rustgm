@@ -1,5 +1,8 @@
 //! Iterative candidate search; each child proof commits only its resolved goal.
 mod frames;
+#[cfg(test)]
+#[path = "../../../../tests/invariants/proof_cache.rs"]
+mod tests;
 use super::{
     Caller, Context, Declarations, Evidence, Goal, Predicate, Selection, Source, inference,
 };
@@ -7,7 +10,7 @@ use crate::types::{infer, outlives::Pair, substitute};
 use frames::{Frame, Trial};
 use std::collections::{HashMap, HashSet};
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum Decision {
     Absent,
     Deferred,
@@ -33,7 +36,10 @@ struct Search<'a> {
     availability: super::Availability,
     nodes: Vec<Node>,
     active: HashSet<Predicate>,
-    completed: HashMap<Predicate, usize>,
+    // This table belongs to one immutable caller, query mode and region scope.
+    // A canonical key retains every type/const argument and binder identity.
+    completed: HashMap<Predicate, Decision>,
+    cycles: usize,
     reused: bool,
     shapes: substitute::Bound,
     steps: usize,
@@ -47,19 +53,8 @@ pub(super) fn prove(
     caller: Caller<'_>,
     availability: super::Availability,
 ) -> Result<Selection, String> {
-    let builtins = crate::sema::nominals::Proof::new(caller.environment.cloned());
     let first = Frame::new(facts, context, goal, caller.first_region)?;
-    let mut search = Search {
-        caller,
-        availability,
-        builtins,
-        nodes: Vec::new(),
-        active: HashSet::new(),
-        completed: HashMap::new(),
-        reused: false,
-        shapes: substitute::Bound::shape(),
-        steps: 0,
-    };
+    let mut search = Search::new(caller, availability);
     let decision = search.run(facts, first)?;
     context.account_work(search.steps).map_err(inference)?;
     match decision {
@@ -74,7 +69,21 @@ pub(super) fn prove(
     }
 }
 
-impl Search<'_> {
+impl<'a> Search<'a> {
+    fn new(caller: Caller<'a>, availability: super::Availability) -> Self {
+        Self {
+            builtins: crate::sema::nominals::Proof::new(caller.environment.cloned()),
+            caller,
+            availability,
+            nodes: Vec::new(),
+            active: HashSet::new(),
+            completed: HashMap::new(),
+            cycles: 0,
+            reused: false,
+            shapes: substitute::Bound::shape(),
+            steps: 0,
+        }
+    }
     fn charge(&mut self, context: &mut Context) -> Result<(), String> {
         self.steps = self
             .steps
@@ -109,22 +118,36 @@ impl Search<'_> {
                     if let Some(key) = frame.key {
                         self.active.remove(&key);
                     }
+                    let (canonical, cycles) = (frame.canonical, frame.cycles);
                     stack.pop();
                     let Some(parent) = stack.last_mut() else {
                         return Ok(decision);
                     };
-                    if let Decision::Proven(index) = decision {
-                        let node = &self.nodes[index];
-                        // No speculative region identities can escape through this cache.
-                        if node.first == node.end {
-                            self.completed.insert(node.goal, index);
-                        }
-                    }
+                    self.remember(canonical, cycles, decision);
                     self.accept(facts, parent, decision)?;
                 }
             }
         }
         Err("missing trait selection result".into())
+    }
+    fn remember(&mut self, canonical: Option<Predicate>, cycles: usize, decision: Decision) {
+        match decision {
+            Decision::Proven(index) => {
+                let node = &self.nodes[index];
+                // Reusing existential evidence requires fresh region rebasing.
+                if node.first == node.end {
+                    self.completed.insert(node.goal, decision);
+                }
+            }
+            Decision::Absent if cycles == self.cycles => {
+                // A cycle cutoff is relative to the active proof stack, not a
+                // negative fact. Neither it nor any ancestor may cache failure.
+                if let Some(goal) = canonical {
+                    self.completed.insert(goal, decision);
+                }
+            }
+            Decision::Absent | Decision::Deferred => {}
+        }
     }
     fn advance(&mut self, facts: &mut Declarations, frame: &mut Frame) -> Result<Action, String> {
         if !frame.started {
@@ -182,6 +205,7 @@ impl Search<'_> {
     fn start(&mut self, facts: &mut Declarations, frame: &mut Frame) -> Result<Action, String> {
         use super::Assumed;
         frame.started = true;
+        frame.cycles = self.cycles;
         match self
             .caller
             .assumptions
@@ -214,9 +238,10 @@ impl Search<'_> {
             .resolved_predicate(&mut facts.types, &frame.goal)
         {
             Ok(goal) => {
-                if let Some(&node) = self.completed.get(&goal) {
-                    self.reused = true;
-                    return Ok(Action::Complete(Decision::Proven(node)));
+                frame.canonical = Some(goal);
+                if let Some(&decision) = self.completed.get(&goal) {
+                    self.reused |= matches!(decision, Decision::Proven(_));
+                    return Ok(Action::Complete(decision));
                 }
                 let before = self.shapes.steps;
                 let key = self.shapes.predicate(&mut facts.types, goal)?;
@@ -225,6 +250,7 @@ impl Search<'_> {
                     .account_work(self.shapes.steps.saturating_sub(before))
                     .map_err(inference)?;
                 if !self.active.insert(key) {
+                    self.cycles += 1;
                     return Ok(Action::Complete(Decision::Absent));
                 }
                 frame.key = Some(key);

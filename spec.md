@@ -223,6 +223,14 @@ Cache completed requests that allocate no new lifetime identities, and collect a
 shared proof graph only once. Reusing evidence with new existential lifetimes requires
 fresh rebasing before it can enter a different proof.
 
+Memoize a fully resolved failed trait request only when its whole search completed
+without an inductive cycle cutoff. A cutoff depends on the active proof stack;
+neither it nor its failed ancestors is a reusable negative answer. Keep deferred
+inference and exhausted-work errors separate from absence. The memo belongs to
+one immutable caller environment, declaration/validated query mode and region
+scope; its keys preserve complete trait arguments and binder identities. It must
+not survive a change of assumptions or implementation availability.
+
 Each candidate allocates lifetime captures from an isolated view of the caller's
 next free identity. Only a selected proof publishes those variables, equalities,
 outlives and type-outlives obligations into the ordinary region checker. Retain the

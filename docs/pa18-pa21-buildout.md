@@ -4114,3 +4114,52 @@ unchanged from the measured semantic-view checkpoint. Both preceding main commit
 c3bb0dc and d28780f, passed CI runs 38735309406 and 38736772181. The course release
 receipt is `obj/pa19-work/course-v1/release-validation-v1.json` and its public review
 is [pa19-validation.md](pa19-validation.md). PA20 and PA21 remain required.
+
+## PA20 scoped failure memoization
+
+PA19's release commit `7931fc5` passed CI run 38739538725. The first PA20 solver
+checkpoint extends the existing iterative trait search to reuse fully resolved
+failed subgoals. The memo remains inside one immutable caller, query mode and
+region scope; complete type/const arguments and callable binder identities remain
+in its canonical keys. No answer is shared across declaration-only and validated
+queries, across changed assumptions, or after implementation availability changes.
+
+An inductive cycle cutoff is not a completed negative proof. A search-local cycle
+counter prevents both the cutoff and its failed ancestors from entering the memo.
+Deferred inference and work-budget errors remain separate outcomes. Successful
+proof sharing retains the previous restriction against reusing fresh existential
+lifetimes without rebasing. The outermost request is never memoized, since there
+is no subsequent consumer in that search; this preserves the allocation-free memo
+path for a simple leaf implementation. Assumption lookup still precedes impl search.
+
+Six internal controls cover a 128-candidate/32-level repeated failure, inductive
+cycles, caller trait assumptions, builtin permissions, provisional headers and
+work exhaustion. Source controls declare twelve acceptance outcomes before pinned
+rustc qualification. Two native programs verify the selected method values after
+failed candidates and across distinct const arguments. The test-only source
+expansion harness lives under `dev/tests/invariants`; compiler phase dependencies
+and the audit rules remain unchanged.
+
+The full maintainer debug run passed 940 tests before the final removal of unused
+outermost memo entries. The final candidate passed ten optimized trait invariants,
+117 affected optimized tests, both native programs, all 4,859 active course cases,
+Clippy all/pedantic, formatting, the 580-file audit and 27 harness tests. No course
+reference bytes or assignment status changed. Associated items, projection
+normalization and the remaining PA20/PA21 requirements are still open.
+
+The final frozen compiler has SHA256
+`3d357d89cec39182e708a6872defc6aab03179f6dd4bee85ba9911225789d4be`.
+Its 583 source/config/test files are archived under
+`obj/pa20-work/scoped-cache-v1/source-v2`. Twelve frozen inputs were independently
+accepted by pinned rustc and matched the published PA19 compiler in full and count
+semantic output. A/A calibration and five paired ABBA blocks per input retained
+312 observations; no local RustGM build, test or probe overlapped timing.
+
+Repeated failed-bound workloads reduced paired median wall time by 56.1–87.0%,
+with A/A spreads of 0.2–3.1%. The deepest case went from 167.66 ms to 21.85 ms.
+Receiver and concrete-goal controls ranged from -1.3% to +0.6%, with A/A spreads
+of 1.9–4.6%; these controls establish no stable change. All observations,
+including a delayed baseline sample, are retained. Full/count output and frozen
+source, input and binary hash checks passed. The receipt is
+`obj/pa20-work/scoped-cache-v1/validation-v2.json`; the untimed predecessor snapshot
+and its validation logs remain alongside the final evidence.
