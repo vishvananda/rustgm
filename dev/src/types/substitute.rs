@@ -11,6 +11,7 @@ const WORK_LIMIT: usize = 1_000_000;
 enum Action {
     Remove,
     Shift(u16),
+    Lower(u16),
     Universals(Box<universals::Mapping>),
     Shape,
 }
@@ -54,6 +55,13 @@ impl Bound {
     pub(crate) fn shift(amount: u16) -> Self {
         let mut bound = Self::new(Vec::new());
         bound.action = Action::Shift(amount);
+        bound
+    }
+
+    /// Remove surrounding scopes only after proving that none of their locals occur.
+    pub(crate) fn lower(amount: u16) -> Self {
+        let mut bound = Self::new(Vec::new());
+        bound.action = Action::Lower(amount);
         bound
     }
 
@@ -265,6 +273,12 @@ impl Bound {
         };
         if binder < depth {
             return Ok(region);
+        }
+        if let Action::Lower(amount) = self.action {
+            if binder - depth < amount {
+                return Err("cannot lower a captured local lifetime");
+            }
+            return RegionId::bound(binder - amount, index);
         }
         if let Action::Shift(amount) = self.action {
             return RegionId::bound(

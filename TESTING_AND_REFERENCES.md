@@ -209,6 +209,12 @@ RustGM/CPPGM with rustc. Function-item controls verify that an already-checked
 signature keeps its own binders while item substitutions still satisfy declared
 bounds. These tests do not activate the planned PA19 course suite.
 
+`dev/tests/trait_bounds/callables.rs` checks nominal requirements inside function
+pointer binders: deferred local predicates, independent closed/outer predicates,
+nested callable scopes and actual call obligations. Acceptance is independently
+qualified with pinned rustc. Its explicit native test executes bounded pointer
+inputs, outputs and trait lifetime arguments through both compilers.
+
 ## Placement and provenance
 
 Every `.rs` fixture under an active assignment's tests directory must be in its

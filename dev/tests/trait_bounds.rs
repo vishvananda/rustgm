@@ -3,6 +3,8 @@
 mod applicability;
 #[path = "trait_bounds/binders.rs"]
 mod binders;
+#[path = "trait_bounds/callables.rs"]
+mod callables;
 #[path = "trait_bounds/conformance.rs"]
 mod conformance;
 #[path = "trait_bounds/declarations.rs"]

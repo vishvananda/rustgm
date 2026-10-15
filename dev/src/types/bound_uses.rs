@@ -1,4 +1,5 @@
 //! Collect occurrences of one enclosing binder from already elaborated types.
+pub(crate) mod captures;
 use super::{GenericArgs, Kind, RegionId, Store, TypeId, arguments::Argument};
 use std::collections::HashSet;
 

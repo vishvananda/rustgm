@@ -504,6 +504,15 @@ Zero-length arrays still require their element alignment. Infer field-implied
 outlives requirements over the same symbolic arguments, retaining type-parameter
 requirements as well as lifetime pairs.
 
+Nominal requirements inside function pointer types retain their callable binder
+depth. Defer predicates mentioning a surrounding late-bound lifetime, as required
+by [RFC 1214](https://github.com/rust-lang/rfcs/blob/main/text/1214-projections-lifetimes-and-wf.md#checking-conditions).
+Prove independent predicates in the caller's scope after capture-safe lowering;
+a predicate's own nested binders do not make it deferred. Cache occurrence and
+lowering queries within each immutable scope, with a shared work budget. Deferred
+predicates grant no body permissions. At a call, check the instantiated inputs
+and result even if an argument diverges or the result is discarded.
+
 Constructor and pattern inference retain unresolved mixed arguments. Reuse one
 substitution session across the selected receiver's field templates; do not
 resolve the receiver before its fields have constrained it. Substitution under

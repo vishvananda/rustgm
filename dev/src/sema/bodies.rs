@@ -630,7 +630,7 @@ impl Checker<'_> {
         solved: &crate::types::infer::Solved,
     ) -> Result<(), Error> {
         let mut well_formed = HashSet::new();
-        let mut nominal_types = HashSet::new();
+        let mut nominal_types = super::nominals::Requirements::default();
         // A generic result retains declaration lifetimes even when its expression
         // uses free aliases. Ownership queries need both canonical field contexts.
         if self.facts.types.contains_parameters(self.result) == Some(true) {
@@ -669,6 +669,12 @@ impl Checker<'_> {
                 self.value_type(node, ty, &mut well_formed, &mut nominal_types)?;
             }
         }
+        // Call inputs need their instantiated contracts even when an argument
+        // diverges and therefore has no value node with the parameter's type.
+        for index in 0..self.calls.len() {
+            let (node, term) = self.calls[index];
+            self.nominal_requirements(node, solved.types[term.0 as usize], &mut nominal_types)?;
+        }
         for index in 0..self.bindings.len() {
             let id = self.bindings[index];
             if let Some(term) = self.locals[id.0 as usize].take() {
@@ -686,7 +692,7 @@ impl Checker<'_> {
         node: NodeId,
         ty: TypeId,
         well_formed: &mut HashSet<TypeId>,
-        nominal_types: &mut HashSet<TypeId>,
+        nominal_types: &mut super::nominals::Requirements,
     ) -> Result<(), Error> {
         self.nominal_requirements(node, ty, nominal_types)?;
         if self.facts.generics.has_nominal_requirements {

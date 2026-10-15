@@ -11,7 +11,7 @@ impl Checker<'_> {
         &mut self,
         node: NodeId,
         ty: TypeId,
-        checked: &mut std::collections::HashSet<TypeId>,
+        checked: &mut crate::sema::nominals::Requirements,
     ) -> Result<(), Error> {
         if !self.facts.generics.has_nominal_requirements {
             return Ok(());
