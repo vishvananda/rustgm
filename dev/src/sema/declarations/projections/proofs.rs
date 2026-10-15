@@ -20,7 +20,13 @@ impl Checker<'_> {
         let mut environment = None;
         while let Some(current) = binder {
             if let Some(owner) = self.regions.owner(current) {
-                environment = self.facts.generics.environments.get(&owner).cloned();
+                environment = self
+                    .facts
+                    .generics
+                    .environments
+                    .get(&owner)
+                    .or_else(|| self.projections.raw_environments.get(&owner))
+                    .cloned();
                 break;
             }
             binder = self.regions.parent(current);

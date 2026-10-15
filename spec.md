@@ -104,6 +104,23 @@ annotations instead retain obligations in the body's allocator and ordinary
 lifetime gate; they must not append to a declaration gate that has already run.
 Keep plain, closed projection queries off the lifetime-fold allocation path.
 
+Projection selection in a signature waits for its owner's immutable parameter
+environment, including requirements inherited by methods. Generic lifetime
+arguments also create this dependency. Nominal defaults demand the existing
+nominal contract; an ordinary alias's written bounds do not grant permissions.
+Retain worklist dependencies and completion states instead of selecting against
+whichever assumptions happen to have been published so far.
+
+When a bound subject contains a projection, elaborate its typed identity before
+normalizing it. A private, immutable snapshot of all typed bounds supplies the
+assumptions for normalization; publish the final environment only after the bound
+roots complete. Preserve the original predicate separately from its normal form.
+Its original parameter/lifetime occurrences determine declaration-time versus
+instantiation-time checking and early lifetime binding. A generic projected bound
+may normalize to an unsatisfied concrete requirement without rejecting an unused
+generic function; actual calls still must prove that requirement. An unrelated
+generic parameter does not defer a genuinely closed written bound.
+
 Ordinary aliases and generic defaults retain conditional projection requirements
 as sealed typed dependency graphs. Instantiate a contract only at an actual use;
 an overridden default contributes no requirements. Retain dependencies even when

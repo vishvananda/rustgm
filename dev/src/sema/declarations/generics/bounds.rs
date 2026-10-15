@@ -270,7 +270,7 @@ impl Checker<'_> {
         owner: DefId,
         context: regions::Context,
     ) -> Result<(), Error> {
-        let Some(bounds) = self.bound_syntax.get(&owner) else {
+        let Some(bounds) = self.bound_syntax.remove(&owner) else {
             return Ok(());
         };
         self.work.push(Work::Bounds(owner, context));
@@ -280,14 +280,17 @@ impl Checker<'_> {
                     .push(Work::PathArguments(path, definition, context));
             }
             if let Subject::Type(key) = bound.subject {
-                self.bound_subject_lifetimes(key)?;
+                self.bound_subject_lifetimes(key, owner)?;
                 self.work.push(Work::Node(key, false, context));
             }
         }
+        self.bound_syntax.insert(owner, bounds);
         Ok(())
     }
-    fn bound_subject_lifetimes(&self, key: NodeKey) -> Result<(), Error> {
+    fn bound_subject_lifetimes(&mut self, key: NodeKey, owner: DefId) -> Result<(), Error> {
         let ast = &self.report.package.unit(key.file).configured.ast;
+        let raw = self.report.resolution.definitions[owner.0 as usize].kind
+            == crate::resolve::model::DefKind::Function;
         let mut work = vec![key.node];
         let mut seen = std::collections::HashSet::new();
         while let Some(node) = work.pop() {
@@ -296,6 +299,10 @@ impl Checker<'_> {
             }
             if seen.len() + work.len() > 1_000_000 {
                 return Err(self.error(key, "bound syntax work budget exceeded"));
+            }
+            let source = NodeKey { node, ..key };
+            if raw && self.report.resolution.qualified_paths.contains_key(&source) {
+                self.defer_bound_projection(source);
             }
             match ast.node(node).kind {
                 Kind::FunctionType(_) => continue,
@@ -328,7 +335,7 @@ impl Checker<'_> {
             Error::at(crate::resolve::unit::FileId(0), 0, "missing pending bounds")
         })?;
         let mut completed = Vec::with_capacity(bounds.len());
-        for bound in bounds {
+        for &bound in &bounds {
             let ty = match bound.subject {
                 Subject::Parameter(id) => self.facts.definitions[id.0 as usize]
                     .ok_or_else(|| self.error(bound.source, "missing bounded parameter type"))?,
@@ -360,12 +367,26 @@ impl Checker<'_> {
             {
                 return Err(self.error(bound.source, "trait bounds require a type parameter"));
             }
+            let value = Predicate { ty, bound: value };
+            if self.facts.types.contains_projections(ty) == Some(true) {
+                self.facts.unreduced.retain_predicate(bound.source, value);
+            }
             completed.push(crate::sema::generics::Predicate {
                 source: bound.source,
-                value: Predicate { ty, bound: value },
+                value,
             });
         }
         self.facts.generics.predicates.insert(owner, completed);
+        self.retain_raw_bounds(owner, bounds)?;
         Ok(())
+    }
+}
+
+impl Syntax {
+    pub(in super::super) fn subject(self) -> Option<NodeKey> {
+        match self.subject {
+            Subject::Type(key) => Some(key),
+            Subject::Parameter(_) => None,
+        }
     }
 }

@@ -210,11 +210,15 @@ impl Generics {
     pub(super) fn bound_lifetimes(
         &self,
         types: &Store,
+        originals: &super::unreduced::Types,
         owner: DefId,
     ) -> Result<std::collections::HashSet<u16>, &'static str> {
         let mut uses = crate::types::bound_uses::Uses::default();
         for predicate in self.predicates.get(&owner).into_iter().flatten() {
             uses.predicate(types, predicate.value)?;
+            if let Some(original) = originals.predicate(predicate.source) {
+                uses.predicate(types, original)?;
+            }
         }
         Ok(uses.indices)
     }
@@ -288,8 +292,7 @@ impl Generics {
         {
             return Ok(());
         }
-        self.elaborate_trait_bounds(store, owner)?;
-        let environment = self.parameter_environment(store, owner)?;
+        let environment = self.elaborated_environment(store, owner)?;
         match self.environments.entry(owner) {
             Entry::Occupied(_) => Err("generic body environment already completed"),
             Entry::Vacant(entry) => {
@@ -297,6 +300,14 @@ impl Generics {
                 Ok(())
             }
         }
+    }
+    pub(crate) fn elaborated_environment(
+        &mut self,
+        store: &mut Store,
+        owner: DefId,
+    ) -> Result<Environment, &'static str> {
+        self.elaborate_trait_bounds(store, owner)?;
+        self.parameter_environment(store, owner)
     }
     /// Build assumptions from completed declaration parameters and predicates.
     /// Consumers may share this immutable environment across implicit bodies.

@@ -1,5 +1,7 @@
 //! Associated type paths suspend normalization while their selected definitions elaborate.
 mod aliases;
+mod bound_environments;
+mod environments;
 mod proofs;
 use super::{Checker, DefId, Error, NodeKey, Type, TypeId, Work, regions};
 use crate::{
@@ -25,6 +27,11 @@ struct Query {
 }
 #[derive(Default)]
 pub(super) struct Pending {
+    environments: HashMap<DefId, super::State>,
+    raw_bound_nodes: std::collections::HashSet<NodeKey>,
+    raw_bounds: HashMap<DefId, bound_environments::Bounds>,
+    raw_environments:
+        HashMap<DefId, std::sync::Arc<crate::types::parameters::environment::Environment>>,
     alias_templates: HashMap<regions::BinderId, aliases::Template>,
     alias_scopes: HashMap<aliases::ScopeKey, crate::sema::alias_requirements::Scope>,
     roots: HashMap<NodeKey, Query>,
@@ -137,7 +144,12 @@ impl Checker<'_> {
             )?;
             self.facts.unreduced.retain_node(key, original);
         }
-        self.normalize_annotation(key, ty, context)
+        if self.projections.raw_bound_nodes.contains(&key) {
+            self.facts.unreduced.retain_node(key, ty);
+            self.store(key, ty)
+        } else {
+            self.normalize_annotation(key, ty, context)
+        }
     }
 
     pub(super) fn normalize_annotation(
@@ -172,18 +184,27 @@ impl Checker<'_> {
                 self.store(key, ty)
             }
             Step::Resolve(request) => {
-                let selected = self.select_projection(key, request)?;
-                let definition = selected.definition;
-                self.projections
-                    .roots
-                    .get_mut(&key)
-                    .ok_or_else(|| Error::at(key.file, 0, "missing projection scope"))?
-                    .selected = Some(selected);
-                self.work.push(Work::ProjectionResult(key));
-                self.work.push(Work::Definition(definition, false));
-                Ok(())
+                self.work.push(Work::ProjectionSelection(key, request));
+                self.demand_projection_environment(key, request)
             }
         }
+    }
+
+    pub(super) fn complete_projection_selection(
+        &mut self,
+        key: NodeKey,
+        request: Request,
+    ) -> Result<(), Error> {
+        let selected = self.select_projection(key, request)?;
+        let definition = selected.definition;
+        self.projections
+            .roots
+            .get_mut(&key)
+            .ok_or_else(|| Error::at(key.file, 0, "missing projection scope"))?
+            .selected = Some(selected);
+        self.work.push(Work::ProjectionResult(key));
+        self.work.push(Work::Definition(definition, false));
+        Ok(())
     }
 
     pub(super) fn complete_projection_result(&mut self, key: NodeKey) -> Result<(), Error> {

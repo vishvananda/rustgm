@@ -43,12 +43,15 @@ impl Checker<'_> {
             if matches!(predicate.value.bound, Bound::Outlives(_)) {
                 continue;
             }
-            if predicate
-                .value
+            let original = self
+                .facts
+                .unreduced
+                .predicate(predicate.source)
+                .unwrap_or(predicate.value);
+            if original
                 .contains_parameters(&self.facts.types)
                 .map_err(|e| self.error(predicate.source, e))?
-                || predicate
-                    .value
+                || original
                     .escaping_binders(&self.facts.types)
                     .map_err(|e| self.error(predicate.source, e))?
                     != 0

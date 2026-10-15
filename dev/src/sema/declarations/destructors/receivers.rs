@@ -41,7 +41,7 @@ impl Checker<'_> {
             || self
                 .facts
                 .generics
-                .bound_lifetimes(&self.facts.types, owner)
+                .bound_lifetimes(&self.facts.types, &self.facts.unreduced, owner)
                 .map_err(|e| self.error(key, e))?
                 .iter()
                 .any(|&slot| {

@@ -4720,3 +4720,81 @@ at these small source sizes. Every original observation and the excluded parser
 boundary are retained. The receipt is
 `obj/pa20-work/quantified-aliases-v1/validation-v2.json`; remaining implementation
 work and the newly qualified declaration-environment probes are recorded beside it.
+
+## Declaration environments for projection selection
+
+Function signature projections now suspend until their owning parameter
+environment is ready. Method signatures include inherited requirements; the
+same dependency applies to lifetime-only goals. Nominal defaults demand the
+existing nominal contract, preserving required owner bounds even when a default
+is explicitly overridden. Ordinary alias bounds still grant no permissions.
+
+Bound subjects retain typed projection identities while the complete bound list
+is elaborated. Normalization uses a private immutable assumption snapshot, then
+rebuilds the predicates and publishes the final environment. This supports either
+written order of a projected bound and its selection requirements without
+speculatively selecting an implementation from an incomplete environment.
+Ordinary bounds keep their existing path, and typed source facts are reused.
+
+Normalization preserves original predicates for two separate decisions. A bound
+such as `<T as A>::Out: B` can normalize to `u8: B` and remain a conditional generic
+requirement: pinned rustc accepts the unused generic definition even when `u8`
+has no implementation of `B`. Calls must still prove the requirement. The initial
+hypothesized rejection, its rustc diagnostic outcome, and the corrected positive
+control are retained. Written closed bounds continue to require declaration-time
+proof even if the surrounding function has an unrelated generic parameter.
+
+Original bound lifetime occurrences also determine early binding. Diagnostic
+review caught an explicit-lifetime call being rejected for the wrong reason after
+normalization erased its bound's lifetime. Binding-time classification now retains
+those occurrences, with a positive explicit-lifetime call and a negative control
+that must reach its actual Copy requirement.
+
+The final source matrix covers 47 independently qualified programs: signatures,
+method inheritance, supertraits, complete trait arguments, bound order, composite
+subjects, default selection/override, lifetime-only requirements, inference input
+preservation and declaration/use rejection controls. Six new native programs
+exercise projected signatures, method inheritance, normalized bound subjects,
+selected nominal defaults and lifetime-only assumptions through CPPGM.
+
+PA20 and PA21 remain planned. Conditional ordinary aliases still need deferred
+trait normalization; projected trait arguments and other declaration environments
+need the corresponding dependency support. Symbolic associated-type equalities,
+delayed inference, direct nested local annotation proof scopes and the remaining
+advanced generic relationships are still required. This work does not promote
+partial assignment suites or regenerate course oracles.
+
+The final debug suite passes 987 tests with 35 native tests explicitly ignored;
+the final optimized affected suite passes 197 tests with native cases included.
+An earlier complete optimized run also passed 987 tests, before the final early
+lifetime binding correction. The final independently qualified matrix contains
+32 accepted and 15 rejected programs. All 4,857 active course cases, Clippy
+all/pedantic, rustfmt, the 615-file audit and 27 harness tests pass. Course
+fixtures, manifests and oracle bytes are unchanged.
+
+The frozen candidate is
+`7ad7133cb6fc03dab9f88e650a8856c8d27b80e792db7aec2eaa1b3b98424d4f`;
+618 source/config/test files are archived. Fifty-four existing workloads preserve
+published full/count output bytes. Twelve new, independently rustc-qualified
+inputs cover signature width, repeated signatures, projected bound subjects and
+nominal defaults at 128/512/2,048. A/A calibration and five ABBA blocks retain
+1,716 observations; nine confirmation workloads retain another 234. Frozen
+source, binary and input hashes and output equality are checked throughout.
+No local RustGM build, test or frontend probe overlaps either timing run.
+
+Existing-workload paired medians initially range from -12.7% to +2.5%; four
+confirmation comparisons range from -0.1% to +0.8%. The initial -12.7% body-proof
+comparison has 63.2% calibration spread and moves to +0.8% in confirmation.
+An identical-binary signature-width confirmation measures -23.9%, independently
+demonstrating substantial host variability. These results establish neither a
+general speedup, precise throughput nor the absence of small regressions.
+
+Initial new-input medians are 16.96/51.96/198.76 ms for signature width,
+10.82/27.07/90.26 ms for repeated signatures, 18.21/32.13/194.27 ms for bound
+subjects and 11.29/35.69/172.57 ms for nominal defaults. Confirmation bound-subject
+medians are 11.88/47.53/224.65 ms; the largest nominal-default and signature-width
+inputs measure 118.77 and 116.17 ms. Initial resident medians span 5,872 to
+22,068 KiB. All original observations are retained without treating these noisy
+source-level controls as a complexity proof. The receipt is
+`obj/pa20-work/projection-environments-v1/validation-v1.json`; remaining work is
+recorded beside it in `next-implementation.md`.

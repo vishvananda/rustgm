@@ -47,12 +47,16 @@ enum State {
 enum SignaturePhase {
     Begin(regions::Context),
     Output(BinderId),
+    Bounds(BinderId, u32),
     Finish(BinderId, u32),
 }
 #[derive(Clone, Copy)]
 enum Work {
     ProjectionPath(NodeKey, regions::Context),
+    ProjectionSelection(NodeKey, crate::types::substitute::Request),
     ProjectionResult(NodeKey),
+    ProjectionEnvironment(DefId, regions::Context, bool),
+    NormalizeBound(NodeKey, regions::Context),
     NominalContract(ItemId, bool),
     Fields(ItemId, bool),
     Constructor(DefId),
@@ -235,6 +239,15 @@ impl Checker<'_> {
                 }
                 Work::ProjectionResult(key) => {
                     self.complete_projection_result(key)?;
+                }
+                Work::ProjectionSelection(key, request) => {
+                    self.complete_projection_selection(key, request)?;
+                }
+                Work::ProjectionEnvironment(owner, context, finish) => {
+                    self.complete_projection_environment(owner, context, finish)?;
+                }
+                Work::NormalizeBound(key, context) => {
+                    self.normalize_annotation(key, self.ty(key)?, context)?;
                 }
                 Work::NominalContract(item, finish) => self.nominal_contract(item, finish)?,
                 Work::Fields(item, finish) => self.nominal_fields(item, finish)?,
@@ -894,17 +907,8 @@ impl Checker<'_> {
                 self.work.push(Work::Signature(
                     key,
                     owner,
-                    SignaturePhase::Finish(binder, self.regions.count(binder)),
+                    SignaturePhase::Bounds(binder, self.regions.count(binder)),
                 ));
-                if let Some(owner) = owner {
-                    self.schedule_bounds(
-                        owner,
-                        regions::Context {
-                            binder: Some(binder),
-                            position: Position::Output,
-                        },
-                    )?;
-                }
                 if let Some(result) = signature.result {
                     self.node_work(
                         key.file,
@@ -916,7 +920,37 @@ impl Checker<'_> {
                     );
                 }
             }
+            SignaturePhase::Bounds(binder, input_count) => {
+                self.work.push(Work::Signature(
+                    key,
+                    owner,
+                    SignaturePhase::Finish(binder, input_count),
+                ));
+                if let Some(owner) = owner {
+                    self.schedule_bounds(
+                        owner,
+                        regions::Context {
+                            binder: Some(binder),
+                            position: Position::Output,
+                        },
+                    )?;
+                }
+            }
             SignaturePhase::Finish(binder, input_count) => {
+                if let Some(owner) = owner
+                    && self.bound_environment_pending(owner)
+                {
+                    self.work.push(Work::Signature(key, Some(owner), phase));
+                    self.work.push(Work::ProjectionEnvironment(
+                        owner,
+                        regions::Context {
+                            binder: Some(binder),
+                            position: Position::Output,
+                        },
+                        false,
+                    ));
+                    return Ok(());
+                }
                 let bounds = if owner.is_some() {
                     self.function_bounds(key, binder)?
                 } else {
@@ -966,10 +1000,7 @@ impl Checker<'_> {
                         .map_err(|e| self.error(key, e))?;
                 }
                 if let Some(id) = owner {
-                    self.facts
-                        .generics
-                        .complete_environment(&mut self.facts.types, id)
-                        .map_err(|e| self.error(key, e))?;
+                    self.finish_function_environment(key, id)?;
                     self.function_regions(
                         key,
                         id,
