@@ -13,6 +13,23 @@ use std::{
     sync::Arc,
 };
 
+pub(super) fn parameter_id(
+    store: &Store,
+    formal: Argument,
+) -> Result<crate::types::parameters::ParameterId, &'static str> {
+    match formal {
+        Argument::Type(ty) => match store.kind(ty) {
+            Some(Kind::Parameter(id)) => Ok(id),
+            _ => Err("missing rigid type parameter"),
+        },
+        Argument::Const(constant) => match store.const_kind(constant) {
+            Some(crate::types::arguments::ConstKind::Parameter(id)) => Ok(id),
+            _ => Err("missing rigid const parameter"),
+        },
+        Argument::Lifetime(_) => Err("late lifetime was retained as a type argument"),
+    }
+}
+
 impl super::model::Declarations {
     /// Read a resolved const parameter through the permitted argument wrappers.
     pub(super) fn const_parameter(

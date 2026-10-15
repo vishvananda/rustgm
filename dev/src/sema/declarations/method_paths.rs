@@ -194,27 +194,11 @@ impl Checker<'_> {
         let Some(candidates) = self.facts.methods.inherent.get(&(path.nominal, path.name)) else {
             return Ok(false);
         };
-        let [method] = candidates.as_slice() else {
-            return Err(self.error(
-                key,
-                "multiple inherent candidates require overlap and selection proofs",
-            ));
+        let unique = if let [method] = candidates.as_slice() {
+            Some(*method)
+        } else {
+            None
         };
-        let method = *method;
-        let definition = &self.report.resolution.definitions[method.0 as usize];
-        let module = self.report.resolution.scopes[path.scope.0 as usize].module;
-        if let Access::Within(ancestor) = definition.access
-            && !self.report.package.is_descendant(module, ancestor)
-        {
-            return Err(self.error(key, "inherent method is private"));
-        }
-        let implementation = self
-            .facts
-            .associated
-            .owner(method)
-            .and_then(|id| self.facts.associated.get(id))
-            .ok_or_else(|| self.error(key, "missing selected method owner"))?
-            .self_definition;
         let prefix = path.prefix;
         if let Some(owner) = path.owner {
             self.facts
@@ -238,6 +222,35 @@ impl Checker<'_> {
             }
             self.drain(steps, limit)?;
         }
+        let method = if let Some(method) = unique {
+            method
+        } else {
+            self.selection_prefix(prefix, path.owner, context)?;
+            let environment = self.selection_environment(key, context);
+            crate::sema::methods::selection::choose(
+                self.report,
+                &mut self.facts,
+                key,
+                prefix,
+                (path.nominal, path.name),
+                path.scope,
+                environment.as_ref(),
+            )?
+        };
+        let definition = &self.report.resolution.definitions[method.0 as usize];
+        let module = self.report.resolution.scopes[path.scope.0 as usize].module;
+        if let Access::Within(ancestor) = definition.access
+            && !self.report.package.is_descendant(module, ancestor)
+        {
+            return Err(self.error(key, "inherent method is private"));
+        }
+        let implementation = self
+            .facts
+            .associated
+            .owner(method)
+            .and_then(|id| self.facts.associated.get(id))
+            .ok_or_else(|| self.error(key, "missing selected method owner"))?
+            .self_definition;
         self.facts.methods.qualified.insert(
             key,
             Qualified {

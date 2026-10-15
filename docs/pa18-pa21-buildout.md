@@ -2809,9 +2809,9 @@ and incorrectly supplying impl arguments as method arguments. A typed invariant
 checks that unused owner captures remain distinct nonstatic regions before
 instance lifetime erasure.
 
-This checkpoint deliberately supports only a unique inherent method in the
-nominal/name bucket. Multiple candidates still diagnose the selection boundary.
-Unused duplicate validation is implemented by the overlap checkpoint below.
+This initial checkpoint supported only a unique inherent method in the
+nominal/name bucket. The overlap and prefix-selection checkpoints below remove
+that restriction and validate unused duplicate declarations.
 Dot-call autoderef/autoref, trait candidate visibility and fallback, user trait
 bounds, impl conformance and selected default bodies remain required work.
 PA19 stays planned; PA20 and PA21 remain required by the active goal.
@@ -2957,7 +2957,7 @@ the original receipts remain in `obj/pa19-work/inherent-overlap-rules-v1` and th
 compatible-world matrix records the investigation. The final tests declare the
 corrected expectations before running both implementations. Five additional
 higher-ranked function-pointer probes also agree. No course fixture or oracle
-bytes changed, and PA19 remains planned. Multiple-candidate qualified selection,
+bytes changed, and PA19 remains planned. Qualified selection follows below;
 dot lookup/adjustments, trait dispatch/conformance, and PA20–PA21 remain required.
 
 Validation passes: 781 frontend tests in both debug and release; 16 explicit
@@ -2980,3 +2980,88 @@ files, binaries and inputs were reverified. Candidate SHA256:
 `e10a945ba53bc72b1916911158feb428e0c1336b6660164f4568d9c25d025d91`.
 Qualification, validation and measurement receipts are under
 `obj/pa19-work/inherent-overlap-*`, with per-sample records under `obj/perf/`.
+
+## Qualified selection across disjoint inherent implementations
+
+Qualified paths now choose among multiple valid inherent implementations using
+only the prefix's type and const information. Explicit types, partial types,
+aliases, defaults, Self, function-pointer shapes and repeated type/const holes
+share ordinary annotation inference. Caller parameters retain their identities
+and declared assumptions. Result types, call arguments and method turbofish do
+not resolve an otherwise ambiguous prefix. The selected method feeds the existing
+callable, instance, ownership and native-lowering path.
+
+The annotation worklist and generic-application/default logic are now shared by
+body checking and isolated prefix queries. Each candidate imports only the prefix's
+reachable inference graph, preserving type-variable domains and const equivalence
+classes. Failed probes cannot affect later candidates or the body. After header
+equations, a bounded built-in property query handles unresolved subtrees and
+canonical composite assumptions without inventing concrete witness types or
+synthetic declaration identities. Actual caller bounds govern rigid parameters;
+current Copy/Clone/Sized implementations govern candidate applicability. The
+compatible-world coherence mode remains separate. Method-own bounds are checked
+after selection; lifetime/ownership legality still requires the ordinary body proof.
+
+Visibility filters candidates before uniqueness. An initial prediction that an
+inaccessible private method would make an unknown qualified prefix ambiguous was
+incorrect. The pinned-rustc investigation is preserved in
+`obj/pa19-work/method-selection-visibility-v1`; the original and corrected expected
+case tables are both retained. A public method can be selected from outside its
+module while a same-named private method is ignored. Inside the owning module,
+both candidates remain visible and the unresolved prefix is ambiguous.
+
+The overlap checker and selector now share one candidate partition. Concrete
+prefixes use its closed-shape index; generic and partial prefixes use bounded
+isolated probes. The shape folder survives declaration checking and memoizes later
+prefix normalization. A 256-implementation/256-call invariant requires exactly
+256 probes. Another invariant performs 128 repeated calls through a wide alias
+without any additional shape-folding steps. Empty predicate sets avoid allocating
+a property-query environment.
+
+The maintainer suite declares and independently checks 46 language cases: 31
+accepted native programs and 15 rejections. Cases cover disjoint type/const impls,
+partial and nested holes, failed-first probe isolation, repeated variable identity,
+conditional derives, unsized subjects, caller/composite bounds, environment
+isolation, mutable receivers, captured lifetimes, own generic arguments, aliases,
+function values and visibility. Both structural work invariants are also qualified
+with rustc. No course fixture or oracle bytes changed.
+
+PA19 remains planned. Dot-call autoderef/autoref, trait visibility and bound lookup,
+impl conformance/default dispatch, the semantic CLI and the assignment's released
+contract remain required. PA20 and PA21 retain their full responsibilities above.
+
+The final candidate's twelve A/A and three-block ABBA jobs retain 216 observations
+with full/count output equality. Unchanged ordinary-function, generic-record,
+qualified-generic-method, alias-method and unused-closed-impl median changes versus
+the published overlap checkpoint are +2.2%, +1.7%, +0.7%, +0.3% and +0.6%.
+Ordinary-function observations range from roughly 504 to 954 ms across lanes;
+the host is noisy, and these measurements do not establish zero overhead.
+
+New concrete selection at 64/256/1,024 impls and calls takes 7.27/17.24/59.34 ms;
+partial-bound selection at 64/1,024 takes 8.70/74.79 ms. These new-feature jobs
+compare identical candidate binaries as controls, not the unsupported old frontend.
+Repeated wide-alias selection versus the frozen uncached implementation improves
+from 10.26 to 5.87 ms at 64 calls and 83.97 to 16.35 ms at 1,024 calls. The latter
+is an 80.5% median reduction. Peak-RSS observations at 1,024 calls are about 7.2 MiB
+in both final lanes; earlier observations showed a small increase, so this does
+not establish a memory reduction.
+
+The first candidate's 216 observations and 54 focused repeat observations are
+also retained. Its repeatable roughly 2% unused-impl cost motivated consolidating
+the overlap and selection partitions. No RustGM builds/tests overlapped timing.
+All binaries, frozen inputs and 502 source/config/test files were reverified;
+read-only source archives preserve both candidates and the uncached implementation.
+Final candidate SHA256:
+`5e73fba3850ad1f518d40f1e55dc8f158d101b001cf1b9b2adecbf8970d80966`.
+Receipts live under `obj/pa19-work/method-selection-*`, with individual timing
+samples under `obj/perf/`.
+
+Final validation passes: 785 frontend tests in both debug and release, all 17
+explicit maintainer native groups (including the 31 new accepted programs), and
+3,792 PA1–PA18 text cases. Formatting, Clippy all/pedantic, the 499-file audit,
+27 harness tests, backend qualification and upstream/Reference integrity pass.
+The course-native run before the final candidate-table consolidation also passed
+1,126 executable comparisons and three codegen-only comparisons, retaining the
+sixteen declared PA13 runtime differences. The final release executable matches
+the frozen candidate's SHA256. Validation receipts record exact log hashes and
+source verification under `obj/pa19-work/method-selection-validation-v2.json`.

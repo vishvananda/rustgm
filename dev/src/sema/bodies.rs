@@ -1,6 +1,7 @@
 //! Scalar body constraints consume resolved identities; fallback occurs once per body.
 mod aggregates;
 mod alignment;
+mod annotations;
 mod bounds;
 mod calls;
 mod conditions;
@@ -28,7 +29,7 @@ use crate::{
         package::{Error, ModuleId},
         unit::{FileId, NodeKey},
     },
-    syntax::ast::{BlockFlavor, Kind, List, NodeId, TypeFlavor, Unary},
+    syntax::ast::{BlockFlavor, Kind, List, NodeId, Unary},
     types::{
         Kind as Type, Primitive, TypeId,
         infer::{Constructor, Context, Domain, TermId},
@@ -166,10 +167,10 @@ pub(super) struct Checker<'a> {
     parameter_copies: Option<crate::types::copy::Copies>,
     parameter_shapes: Option<crate::types::parameters::shape::Shapes>,
     body_binders: u32,
-    annotation_work: Vec<(NodeId, bool)>,
+    annotations: super::annotations::Scratch,
+    type_children: Vec<TermId>,
     annotation_checks: Vec<NodeId>,
     annotation_children: HashSet<NodeId>,
-    type_children: Vec<TermId>,
     frames: Vec<Frame>,
     pending_label: Option<(NodeId, DefId)>,
     assignments: Vec<(NodeId, Option<DefId>, Option<Op>)>,
@@ -230,10 +231,10 @@ impl<'a> Checker<'a> {
             parameter_copies: None,
             parameter_shapes: None,
             body_binders: 0,
-            annotation_work: Vec::new(),
+            annotations: super::annotations::Scratch::default(),
+            type_children: Vec::new(),
             annotation_checks: Vec::new(),
             annotation_children: HashSet::new(),
-            type_children: Vec::new(),
             frames: Vec::new(),
             pending_label: None,
             assignments: Vec::new(),
@@ -696,208 +697,6 @@ impl Checker<'_> {
         }
         self.save(node, term);
         Ok(())
-    }
-    fn annotation(&mut self, root: NodeId) -> Result<TermId, Error> {
-        let first = self.touched.len();
-        self.annotation_work.push((root, false));
-        while let Some((node, finish)) = self.annotation_work.pop() {
-            if self.terms[self.file.0 as usize][node.0 as usize].is_some() {
-                continue;
-            }
-            if let Some(ty) = self.facts.node(self.key(node)).and_then(|f| f.ty) {
-                let term = self.known(node, ty)?;
-                self.save(node, term);
-                continue;
-            }
-            if finish {
-                let term = self.annotation_finish(node)?;
-                self.save(node, term);
-            } else {
-                self.annotation_work.push((node, true));
-                let unit = self.report.package.unit(self.file);
-                match self.kind(node) {
-                    Kind::Group(value) | Kind::Attributed { value, .. } => {
-                        self.annotation_work.push((value, false));
-                    }
-                    Kind::Type { flavor, elements } => {
-                        if matches!(flavor, TypeFlavor::Ref | TypeFlavor::RefMut) {
-                            let referent = unit
-                                .configured
-                                .ast
-                                .list(elements)
-                                .last()
-                                .copied()
-                                .ok_or_else(|| {
-                                    self.error(node, "missing reference annotation referent")
-                                })?;
-                            self.annotation_work.push((referent, false));
-                            continue;
-                        }
-                        let elements = unit.configured.ast.list(elements);
-                        let count = elements
-                            .len()
-                            .saturating_sub(usize::from(flavor == TypeFlavor::Array));
-                        self.annotation_work
-                            .extend(elements[..count].iter().rev().map(|n| (*n, false)));
-                    }
-                    Kind::FunctionType(index) => {
-                        let function = unit.configured.ast.function_types[index as usize];
-                        self.annotation_work
-                            .extend(function.result.map(|n| (n, false)));
-                        for parameter in unit.configured.ast.list(function.parameters).iter().rev()
-                        {
-                            if self.active(*parameter) {
-                                let ty = declarations::parameter_type(
-                                    self.report,
-                                    self.key(*parameter),
-                                )?;
-                                self.annotation_work.push((ty, false));
-                            }
-                        }
-                    }
-                    Kind::Path { .. } | Kind::Name(_) | Kind::Applied { .. } => {
-                        self.annotation_arguments(node);
-                    }
-                    Kind::InferType | Kind::NeverType => {}
-                    _ => return Err(self.error(node, "unsupported local type annotation")),
-                }
-            }
-        }
-        // Only the complete annotation is a well-formedness root. Its children
-        // may use a callable's private binder, which is not the body binder.
-        self.annotation_children
-            .extend(self.touched[first..].iter().copied().filter(|n| *n != root));
-        self.term(root)
-    }
-    fn annotation_arguments(&mut self, node: NodeId) {
-        if let Some(use_) = self.facts.generics.annotation_uses.get(&self.key(node)) {
-            self.annotation_work
-                .extend(use_.arguments.iter().rev().filter_map(|arg| {
-                    if let super::generics::AnnotationArgument::Type(key) = arg {
-                        Some((key.node, false))
-                    } else {
-                        None
-                    }
-                }));
-        }
-    }
-    fn annotation_finish(&mut self, node: NodeId) -> Result<TermId, Error> {
-        let constructor = match self.kind(node) {
-            Kind::InferType => return self.variable(node, Domain::Any),
-            Kind::NeverType => return self.known(node, TypeId::NEVER),
-            Kind::Group(value) | Kind::Attributed { value, .. } => return self.term(value),
-            Kind::Path { .. } | Kind::Name(_) | Kind::Applied { .. } => {
-                if self
-                    .facts
-                    .generics
-                    .annotation_uses
-                    .contains_key(&self.key(node))
-                {
-                    return self.annotation_application(node);
-                }
-                let Some(Target::Definition(id)) =
-                    self.facts.node(self.key(node)).and_then(|f| f.reference)
-                else {
-                    return Err(self.error(node, "missing annotation resolution"));
-                };
-                let ty = self.facts.definitions[id.0 as usize]
-                    .ok_or_else(|| self.error(node, "missing resolved annotation type"))?;
-                return self.known(node, ty);
-            }
-            Kind::Type { flavor, elements } => {
-                self.type_children.clear();
-                let children = self
-                    .report
-                    .package
-                    .unit(self.file)
-                    .configured
-                    .ast
-                    .list(elements);
-                let children = if matches!(flavor, TypeFlavor::Ref | TypeFlavor::RefMut) {
-                    children
-                        .last()
-                        .map(std::slice::from_ref)
-                        .ok_or_else(|| self.error(node, "missing inferred reference referent"))?
-                } else {
-                    children
-                };
-                for child in children.iter().take(
-                    children
-                        .len()
-                        .saturating_sub(usize::from(flavor == TypeFlavor::Array)),
-                ) {
-                    self.type_children.push(self.term(*child)?);
-                }
-                match flavor {
-                    TypeFlavor::Path => {
-                        return self
-                            .type_children
-                            .first()
-                            .copied()
-                            .ok_or_else(|| self.error(node, "missing type path"));
-                    }
-                    TypeFlavor::Tuple => Constructor::Tuple,
-                    TypeFlavor::Slice => Constructor::Slice,
-                    TypeFlavor::Array => Constructor::Array(declarations::array_length(
-                        self.report,
-                        self.key(
-                            *children
-                                .get(1)
-                                .ok_or_else(|| self.error(node, "missing array length"))?,
-                        ),
-                    )?),
-                    TypeFlavor::PointerConst | TypeFlavor::PointerMut => Constructor::Pointer {
-                        mutable: flavor == TypeFlavor::PointerMut,
-                    },
-                    TypeFlavor::Ref | TypeFlavor::RefMut => {
-                        let Some(super::model::PartialAnnotation::Reference(region)) =
-                            self.facts.partial_annotations.get(&self.key(node))
-                        else {
-                            return Err(self.error(node, "missing elaborated annotation region"));
-                        };
-                        Constructor::Reference {
-                            mutable: flavor == TypeFlavor::RefMut,
-                            region: *region,
-                        }
-                    }
-                }
-            }
-            Kind::FunctionType(index) => self.annotation_function(node, index)?,
-            _ => return Err(self.error(node, "invalid local annotation work")),
-        };
-        self.infer
-            .construct(constructor, &self.type_children)
-            .map_err(|e| self.error(node, e))
-    }
-    fn annotation_function(&mut self, node: NodeId, index: u32) -> Result<Constructor, Error> {
-        self.type_children.clear();
-        let unit = self.report.package.unit(self.file);
-        let function = unit.configured.ast.function_types[index as usize];
-        for parameter in unit.configured.ast.list(function.parameters) {
-            if self.active(*parameter) {
-                let ty = declarations::parameter_type(self.report, self.key(*parameter))?;
-                self.type_children.push(self.term(ty)?);
-            }
-        }
-        let parameters = u32::try_from(self.type_children.len())
-            .map_err(|_| self.error(node, "too many function parameters"))?;
-        let result = if let Some(result) = function.result {
-            self.term(result)?
-        } else {
-            self.known(node, TypeId::UNIT)?
-        };
-        self.type_children.push(result);
-        let Some(super::model::PartialAnnotation::Function { bound_regions }) =
-            self.facts.partial_annotations.get(&self.key(node))
-        else {
-            return Err(self.error(node, "missing elaborated callable binder"));
-        };
-        self.annotation_checks.push(node);
-        Ok(Constructor::Function {
-            bound_regions: *bound_regions,
-            parameters,
-            unsafe_: function.unsafe_,
-        })
     }
     #[expect(
         clippy::too_many_lines,

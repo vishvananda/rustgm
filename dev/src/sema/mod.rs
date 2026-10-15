@@ -1,4 +1,5 @@
 //! Type checking consumes resolved syntax identities and publishes typed facts once.
+mod annotations;
 pub mod associated;
 pub mod bodies;
 mod constants;

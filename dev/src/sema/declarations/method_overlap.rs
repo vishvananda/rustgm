@@ -3,35 +3,27 @@ use super::{Checker, DefId, Error, NodeKey, TypeId};
 use crate::{sema::methods::overlap, types::substitute::Bound};
 use std::collections::HashMap;
 
-#[derive(Clone, Copy)]
-struct Header {
-    owner: DefId,
-    source: NodeKey,
-    closed: Option<TypeId>,
-}
-
 #[derive(Default)]
 struct Bucket {
-    all: Vec<Header>,
-    open: Vec<Header>,
-    closed: HashMap<TypeId, Vec<Header>>,
+    all: Vec<DefId>,
+    methods: crate::sema::methods::Candidates,
 }
 impl Bucket {
-    fn candidates(&self, header: Header) -> Vec<Header> {
-        let Some(key) = header.closed else {
+    fn candidates(&self, closed: Option<TypeId>) -> Vec<DefId> {
+        let Some(key) = closed else {
             return self.all.clone();
         };
-        let mut candidates = self.open.clone();
-        candidates.extend(self.closed.get(&key).into_iter().flatten().copied());
-        candidates.sort_unstable_by_key(|header| header.owner.0);
+        let mut candidates = self.methods.open.clone();
+        candidates.extend(self.methods.closed.get(&key).into_iter().flatten().copied());
+        candidates.sort_unstable_by_key(|method| method.0);
         candidates
     }
-    fn insert(&mut self, header: Header) {
-        self.all.push(header);
-        if let Some(key) = header.closed {
-            self.closed.entry(key).or_default().push(header);
+    fn insert(&mut self, closed: Option<TypeId>, method: DefId) {
+        self.all.push(method);
+        if let Some(key) = closed {
+            self.methods.closed.entry(key).or_default().push(method);
         } else {
-            self.open.push(header);
+            self.methods.open.push(method);
         }
     }
 }
@@ -42,25 +34,21 @@ impl Checker<'_> {
             .facts
             .methods
             .inherent
-            .values()
-            .filter(|members| members.len() > 1)
-            .cloned()
+            .iter()
+            .filter(|(_, members)| members.len() > 1)
+            .map(|(&key, members)| (key, members.clone()))
             .collect();
-        buckets.sort_unstable_by_key(|members| members[0].0);
+        buckets.sort_unstable_by_key(|(_, members)| members[0].0);
+        if buckets.is_empty() {
+            return Ok(());
+        }
         let mut headers = HashMap::new();
         let mut pairs = HashMap::new();
         let mut shapes = Bound::shape();
-        for members in buckets {
+        for (key, members) in buckets {
             let mut bucket = Bucket::default();
             for method in members {
-                let owner = self
-                    .facts
-                    .associated
-                    .owner(method)
-                    .and_then(|id| self.facts.associated.get(id))
-                    .ok_or_else(|| {
-                        Error::at(crate::resolve::unit::FileId(0), 0, "missing inherent owner")
-                    })?;
+                let owner = self.inherent_owner(method)?;
                 let (owner, source) = (owner.self_definition, owner.source);
                 let header = if let Some(&header) = headers.get(&owner) {
                     header
@@ -70,10 +58,11 @@ impl Checker<'_> {
                     header
                 };
                 for previous in bucket.candidates(header) {
-                    let key = if previous.owner.0 <= owner.0 {
-                        (previous.owner, owner)
+                    let previous = self.inherent_owner(previous)?.self_definition;
+                    let key = if previous.0 <= owner.0 {
+                        (previous, owner)
                     } else {
-                        (owner, previous.owner)
+                        (owner, previous)
                     };
                     let possible = if let Some(&possible) = pairs.get(&key) {
                         possible
@@ -91,14 +80,16 @@ impl Checker<'_> {
                     };
                     if possible {
                         return Err(self.error(
-                            header.source,
+                            source,
                             "duplicate inherent method in overlapping implementations",
                         ));
                     }
                 }
-                bucket.insert(header);
+                bucket.insert(header, method);
             }
+            self.facts.methods.indices.insert(key, bucket.methods);
         }
+        self.facts.methods.shapes = Some(Box::new(shapes));
         Ok(())
     }
 
@@ -107,7 +98,7 @@ impl Checker<'_> {
         owner: DefId,
         source: NodeKey,
         shapes: &mut Bound,
-    ) -> Result<Header, Error> {
+    ) -> Result<Option<TypeId>, Error> {
         let ty = self
             .facts
             .associated
@@ -123,10 +114,14 @@ impl Checker<'_> {
         } else {
             None
         };
-        Ok(Header {
-            owner,
-            source,
-            closed,
-        })
+        Ok(closed)
+    }
+    fn inherent_owner(&self, member: DefId) -> Result<crate::sema::associated::Owner, Error> {
+        self.facts
+            .associated
+            .owner(member)
+            .and_then(|id| self.facts.associated.get(id))
+            .copied()
+            .ok_or_else(|| Error::at(crate::resolve::unit::FileId(0), 0, "missing inherent owner"))
     }
 }

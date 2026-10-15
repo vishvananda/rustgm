@@ -1,8 +1,9 @@
 //! Typed inherent candidate buckets and selected qualified source uses.
 pub(super) mod overlap;
+pub(super) mod selection;
 use crate::{
     resolve::{model::DefId, names::NameId, unit::NodeKey},
-    types::ItemId,
+    types::{ItemId, TypeId},
 };
 use std::collections::HashMap;
 
@@ -18,8 +19,19 @@ pub struct Qualified {
 pub struct Methods {
     /// Members enter each bucket in resolver declaration order.
     pub(super) inherent: HashMap<(ItemId, NameId), Vec<DefId>>,
+    pub(super) indices: HashMap<(ItemId, NameId), Candidates>,
+    pub(super) shapes: Option<Box<crate::types::substitute::Bound>>,
     pub qualified: HashMap<NodeKey, Qualified>,
     /// Unique owner-pair probes, shared across names and independent of call demand.
     pub overlap_pairs: usize,
     pub overlap_steps: usize,
+    pub selection_probes: usize,
+    pub selection_steps: usize,
+    pub selection_shape_steps: usize,
+}
+
+#[derive(Default)]
+pub(super) struct Candidates {
+    pub closed: HashMap<TypeId, Vec<DefId>>,
+    pub open: Vec<DefId>,
 }

@@ -3,7 +3,7 @@ use super::{Checker, Constructor, DefId, Error, NodeId, TermId, Type, TypeId};
 use crate::{
     sema::{generics::SourceArgument, model::BodyRegionOrigin},
     types::{
-        arguments::{Argument as Canonical, ConstKind},
+        arguments::Argument as Canonical,
         infer::{self, arguments::Argument},
         parameters::ParameterKind,
     },
@@ -99,23 +99,8 @@ impl Checker<'_> {
         formal: Canonical,
         supplied: SourceArgument,
     ) -> Result<(crate::types::parameters::ParameterId, Argument), Error> {
-        let id = match formal {
-            Canonical::Type(ty) => {
-                let Some(Type::Parameter(id)) = self.facts.types.kind(ty) else {
-                    return Err(self.error(node, "missing rigid type parameter"));
-                };
-                id
-            }
-            Canonical::Const(constant) => {
-                let Some(ConstKind::Parameter(id)) = self.facts.types.const_kind(constant) else {
-                    return Err(self.error(node, "missing rigid const parameter"));
-                };
-                id
-            }
-            Canonical::Lifetime(_) => {
-                return Err(self.error(node, "late lifetime was retained as a type argument"));
-            }
-        };
+        let id = crate::sema::generics::parameter_id(&self.facts.types, formal)
+            .map_err(|e| self.error(node, e))?;
         Ok((id, self.inferred_parameter(node, id, supplied)?))
     }
     fn inferred_parameter(

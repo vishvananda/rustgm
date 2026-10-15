@@ -14,83 +14,8 @@ use crate::{
     },
 };
 
-pub(super) struct Fields {
-    regions: Bound,
-    parameters: Instantiation,
-}
+pub(super) use crate::sema::annotations::Fields;
 impl Checker<'_> {
-    pub(super) fn annotation_application(&mut self, node: NodeId) -> Result<TermId, Error> {
-        use crate::sema::generics::AnnotationArgument as Written;
-        let use_ = self
-            .facts
-            .generics
-            .annotation_uses
-            .get(&self.key(node))
-            .ok_or_else(|| self.error(node, "missing partial generic annotation"))?;
-        let (owner, supplied) = (use_.owner, use_.arguments.clone());
-        let parameters = self.facts.generics.parameters[&owner].clone();
-        let mut regions = Vec::new();
-        let mut arguments = Vec::with_capacity(parameters.len());
-        let mut bindings = Vec::new();
-        for (parameter, source) in parameters.iter().zip(&supplied) {
-            if let Written::Lifetime(region) = *source {
-                regions.push(region);
-                arguments.push(Argument::Lifetime(region));
-                continue;
-            }
-            let binding =
-                self.inferred_argument(node, parameter.argument, SourceArgument::Infer)?;
-            match (*source, binding.1) {
-                (Written::Type(key), Argument::Type(term)) => {
-                    self.equate(node, term, self.term(key.node)?)?;
-                }
-                (Written::Const(id), Argument::Const(term)) => {
-                    let known = self
-                        .infer
-                        .known_const(&self.facts.types, id)
-                        .map_err(|e| self.error(node, e))?;
-                    self.infer
-                        .equate_consts(term, known)
-                        .map_err(|e| self.error(node, e))?;
-                }
-                (Written::Infer | Written::Default(_), _) => {}
-                _ => return Err(self.error(node, "partial annotation argument kind mismatch")),
-            }
-            arguments.push(binding.1);
-            bindings.push(binding);
-        }
-        let mut fields = Fields {
-            regions: Bound::new(regions),
-            parameters: Instantiation::new(&mut self.infer, &self.facts.types, &bindings)
-                .map_err(|e| self.error(node, e))?,
-        };
-        for (index, source) in supplied.iter().enumerate() {
-            if let Written::Default(default) = *source {
-                self.nominal_default(node, default, arguments[index], &mut fields)?;
-            }
-        }
-        let term = if self.report.resolution.definitions[owner.0 as usize].kind
-            == crate::resolve::model::DefKind::TypeAlias
-        {
-            let template = self.facts.definitions[owner.0 as usize]
-                .ok_or_else(|| self.error(node, "missing alias template"))?;
-            let template = fields
-                .regions
-                .apply(&mut self.facts.types, template)
-                .map_err(|e| self.error(node, e))?;
-            self.infer
-                .instantiate_with(&mut self.facts.types, template, &mut fields.parameters)
-                .map_err(|e| self.error(node, e))?
-        } else {
-            let term = self
-                .infer
-                .nominal(ItemId(owner.0), &arguments)
-                .map_err(|e| self.error(node, e))?;
-            self.call_types.insert_nominal(term, fields);
-            term
-        };
-        Ok(term)
-    }
     pub(super) fn nominal_term(
         &mut self,
         node: NodeId,
@@ -169,7 +94,7 @@ impl Checker<'_> {
                 let default = parameters[index]
                     .default
                     .ok_or_else(|| self.error(node, "missing generic default"))?;
-                self.nominal_default(node, default, arguments[index], &mut fields)?;
+                fields.default(self, self.key(node), default, arguments[index])?;
             }
         }
         let term = self
@@ -178,37 +103,6 @@ impl Checker<'_> {
             .map_err(|e| self.error(node, e))?;
         self.call_types.insert_nominal(term, fields);
         Ok(term)
-    }
-    fn nominal_default(
-        &mut self,
-        node: NodeId,
-        default: Canonical,
-        argument: Argument,
-        fields: &mut Fields,
-    ) -> Result<(), Error> {
-        match (default, argument) {
-            (Canonical::Type(ty), Argument::Type(term)) => {
-                let ty = fields
-                    .regions
-                    .apply(&mut self.facts.types, ty)
-                    .map_err(|e| self.error(node, e))?;
-                let expected = self
-                    .infer
-                    .instantiate_with(&mut self.facts.types, ty, &mut fields.parameters)
-                    .map_err(|e| self.error(node, e))?;
-                self.equate(node, term, expected)
-            }
-            (Canonical::Const(id), Argument::Const(term)) => {
-                let value = self
-                    .infer
-                    .instantiate_const(&self.facts.types, id, &fields.parameters)
-                    .map_err(|e| self.error(node, e))?;
-                self.infer
-                    .equate_consts(term, value)
-                    .map_err(|e| self.error(node, e))
-            }
-            _ => Err(self.error(node, "generic default argument kind mismatch")),
-        }
     }
     pub(super) fn generic_constructor(
         &mut self,

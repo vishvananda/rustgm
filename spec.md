@@ -117,6 +117,29 @@ probing possible pairs. These erased shapes are index keys only. They must never
 replace source proof types or executable lifetimes. Keep deterministic diagnostic
 order independent of hash iteration and bound inference, folding and pair work.
 
+Qualified method selection consumes only the typed prefix and caller environment.
+Surrounding call arguments, result expectations and method turbofish must not break
+an ambiguous prefix lookup. Filter inaccessible candidates and unsatisfied impl
+predicates before selection; check the selected method's own requirements afterward.
+Caller parameters remain rigid. Unknown prefix arguments may remain possible,
+but they do not acquire permissions in the completed body.
+
+Partial annotations, inferred aliases and ordered defaults use one inference
+implementation shared by bodies and prefix queries. Import only the reachable
+type/const graph into each isolated candidate context, preserving variable
+equivalence classes and domains. Failed equations never constrain the source
+context. Built-in candidate properties consume actual caller assumptions and
+current implementations, separately from compatible-world coherence queries.
+After selection, ordinary body inference commits owner arguments and performs
+the complete ownership, lifetime and lowering checks.
+
+Retain the candidate partition built for overlap checking instead of maintaining
+a duplicate header table. Closed prefix lookup consumes that partition; unknown
+prefixes use bounded probes within the nominal/name bucket. Reuse the same shape
+folder across headers and prefixes, so repeated aliases do not repeatedly traverse
+their type DAG. Property queries cache known and unknown subtrees only after a
+probe's equations are fixed and under its immutable environment.
+
 An alias used as a value prefix with no written type/const arguments infers all
 those arguments, including slots with defaults; explicit type qualification
 retains ordinary type-annotation arity and default rules. Store this distinction

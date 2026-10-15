@@ -50,6 +50,19 @@ impl Instantiation {
 }
 
 impl Context {
+    /// Fresh existential of a declared type or const parameter's kind.
+    /// # Errors
+    /// Rejects invalid parameter identities and exhausted inference resources.
+    pub fn parameter_variable(
+        &mut self,
+        store: &Store,
+        id: ParameterId,
+    ) -> Result<Argument, Error> {
+        match store.parameter(id).ok_or(Error::InvalidIdentity)?.kind {
+            ParameterKind::Type { .. } => self.variable(super::Domain::Any).map(Argument::Type),
+            ParameterKind::Const { ty } => self.const_variable(store, ty).map(Argument::Const),
+        }
+    }
     /// Substitute one constant using the same environment as its enclosing types.
     /// # Errors
     /// Rejects invalid constant identities and exhausted inference resources.

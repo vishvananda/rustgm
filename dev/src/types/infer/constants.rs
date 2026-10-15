@@ -37,7 +37,7 @@ impl Constants {
         let id = self.root(id)?;
         Ok(self.terms[id.0 as usize].value)
     }
-    fn root(&mut self, mut id: ConstTermId) -> Result<ConstTermId, Error> {
+    pub(super) fn root(&mut self, mut id: ConstTermId) -> Result<ConstTermId, Error> {
         let mut root = id;
         loop {
             let parent = self
@@ -111,7 +111,11 @@ impl Context {
         let ty = store.const_type(id).ok_or(Error::InvalidIdentity)?;
         self.const_value(ty, value)
     }
-    fn const_value(&mut self, ty: TypeId, value: ConstKind) -> Result<ConstTermId, Error> {
+    pub(super) fn const_value(
+        &mut self,
+        ty: TypeId,
+        value: ConstKind,
+    ) -> Result<ConstTermId, Error> {
         self.step()?;
         let constants = self.constants();
         if let Some(id) = constants.known.get(&value) {

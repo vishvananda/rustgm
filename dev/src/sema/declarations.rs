@@ -8,6 +8,7 @@ mod generics;
 mod lifetimes;
 mod method_overlap;
 mod method_paths;
+mod method_prefix;
 mod methods;
 mod receivers;
 mod traits;
@@ -71,6 +72,12 @@ struct Signature {
     unsafe_: bool,
 }
 struct Checker<'a> {
+    method_environments: Option<
+        std::collections::HashMap<
+            NodeKey,
+            std::sync::Arc<crate::types::parameters::environment::Environment>,
+        >,
+    >,
     nominals: aggregates::Pending,
     defaults: generics::Defaults,
     deferred_bounds: Vec<(DefId, regions::Context)>,
@@ -106,6 +113,7 @@ pub fn analyze(report: &Report) -> Result<Declarations, Error> {
         ));
     }
     let mut checker = Checker {
+        method_environments: None,
         nominals: aggregates::Pending::default(),
         defaults: generics::Defaults::default(),
         deferred_bounds: Vec::new(),

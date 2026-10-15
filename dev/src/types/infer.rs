@@ -4,6 +4,8 @@ pub mod arguments;
 mod compare;
 pub mod constants;
 mod freshen;
+mod import;
+pub mod properties;
 mod regions;
 mod resolve;
 mod substitute;

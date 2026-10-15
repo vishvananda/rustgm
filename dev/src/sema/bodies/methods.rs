@@ -39,6 +39,11 @@ impl Checker<'_> {
         let prefix = if selected.annotation
             || self
                 .facts
+                .generics
+                .annotation_uses
+                .contains_key(&selected.prefix)
+            || self
+                .facts
                 .node(selected.prefix)
                 .is_some_and(|f| f.ty.is_some())
         {
