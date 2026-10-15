@@ -149,9 +149,13 @@ argument requirements use the same complete-goal matcher under rigid caller
 parameters. Retain inferred lifetime equalities with their owning declaration or
 body; prove both directions using the ordinary region engine and completed nominal
 contracts. An outlives relation in one direction alone is not equality. Keep exact
-assumption lookups cheap and build broader indexes only when needed. Apply builtin
-property queries after trait equations fix their inference inputs. Method-own bounds remain checks
-on the selected callable. Prove disjoint target shapes before requiring trait
+assumption lookups cheap and build broader indexes only when needed. Drop coverage
+folds the complete predicate into nominal parameter order. Map resulting lifetime
+equations back to the original impl slots and prove them in the destructor coverage
+graph, where target lifetimes are universal and extra impl lifetimes are existential.
+Extra slots must not strengthen the nominal contract. Apply builtin property
+queries after trait equations fix their inference inputs. Method-own bounds remain
+checks on the selected callable. Prove disjoint target shapes before requiring trait
 coherence; missing local implementations do not establish negative evidence.
 
 Dot calls retain the resolved receiver, canonical method name, lexical scope and

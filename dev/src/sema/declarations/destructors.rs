@@ -127,15 +127,19 @@ impl Checker<'_> {
         if self.facts.destructors.implementations().is_empty() {
             return Ok(());
         }
+        let mut trait_equalities = std::collections::HashMap::new();
         for index in 0..self.facts.destructors.implementations().len() {
-            self.validate_drop_traits(index)?;
+            let equalities = self.validate_drop_traits(index)?;
+            if !equalities.is_empty() {
+                trait_equalities.insert(index, equalities);
+            }
         }
         let mut queries = Queries::new(
             &self.facts.types,
             &self.facts.lifetimes.nominal_requirements,
             &self.facts.lifetimes.callables,
         );
-        for implementation in self.facts.destructors.implementations() {
+        for (index, implementation) in self.facts.destructors.implementations().iter().enumerate() {
             let key = implementation.source;
             let Some(Type::Adt(_, arguments)) = self.facts.types.kind(implementation.target) else {
                 return Err(self.error(key, "missing nominal Drop target"));
@@ -165,6 +169,7 @@ impl Checker<'_> {
                     .generics
                     .predicates_in_scope(implementation.method)
                     .map(|p| p.value),
+                trait_equalities.get(&index).map_or(&[][..], Vec::as_slice),
             )
             .map_err(|e| self.error(key, e))?;
         }

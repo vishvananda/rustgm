@@ -125,7 +125,10 @@ fn parameter_index(types: &Store, owner: DefId, argument: Argument) -> Result<us
 }
 
 impl Checker<'_> {
-    pub(super) fn validate_drop_traits(&mut self, index: usize) -> Result<(), super::Error> {
+    pub(super) fn validate_drop_traits(
+        &mut self,
+        index: usize,
+    ) -> Result<Vec<crate::types::outlives::Pair>, super::Error> {
         use crate::types::parameters::{
             ParameterKind,
             predicates::{Bound, Predicate},
@@ -181,9 +184,9 @@ impl Checker<'_> {
             .get(&DefId(item.0))
             .cloned();
         let mut proof = crate::sema::nominals::Proof::new(environment);
-        for mut requirement in requirements {
-            requirement.ty = substitution
-                .apply(&mut self.facts.types, requirement.ty)
+        for requirement in requirements {
+            let requirement = substitution
+                .predicate(&mut self.facts.types, requirement)
                 .map_err(|e| self.error(key, e))?;
             if !proof
                 .prove(&mut self.facts, requirement)
@@ -192,7 +195,6 @@ impl Checker<'_> {
                 return Err(self.error(key, "Drop impl adds type requirements to its nominal type"));
             }
         }
-        self.retain_trait_equalities(DefId(item.0), key, &mut proof);
-        Ok(())
+        Ok(proof.take_trait_equalities())
     }
 }

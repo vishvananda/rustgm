@@ -22,23 +22,6 @@ impl Checker<'_> {
         // Reserve every trait Self before elaborating references to other trait headers.
         for index in 0..self.facts.associated.owners().len() {
             let owner = self.facts.associated.owners()[index];
-            if matches!(
-                owner.kind,
-                OwnerKind::Impl {
-                    trait_type: Some(_),
-                    ..
-                }
-            ) && self
-                .facts
-                .associated
-                .schema(owner.self_definition)
-                .is_none()
-            {
-                return Err(self.error(
-                    owner.source,
-                    "trait implementation requires conformance and selection semantics",
-                ));
-            }
             if let OwnerKind::Trait { definition, .. } = owner.kind {
                 self.reserve_trait(owner, definition)?;
             }
@@ -76,6 +59,31 @@ impl Checker<'_> {
             self.implicit_trait_bound(owner, definition)?;
         }
         self.complete_trait_contracts()
+    }
+
+    /// Drop headers consume trait contracts but retain their own conformance path.
+    /// Other trait impls still need an elaborated, validated owner before use.
+    pub(super) fn validate_trait_impl_owners(&self) -> Result<(), Error> {
+        for owner in self.facts.associated.owners() {
+            if matches!(
+                owner.kind,
+                OwnerKind::Impl {
+                    trait_type: Some(_),
+                    ..
+                }
+            ) && self
+                .facts
+                .associated
+                .schema(owner.self_definition)
+                .is_none()
+            {
+                return Err(self.error(
+                    owner.source,
+                    "trait implementation requires conformance and selection semantics",
+                ));
+            }
+        }
+        Ok(())
     }
     fn reserve_trait(
         &mut self,

@@ -166,8 +166,9 @@ impl Checker<'_> {
             .saturating_mul(16);
         let destructors = self.reserve_destructors()?;
         self.complete_nominal_headers(&mut steps, work_limit)?;
-        self.prepare_destructors(destructors, &mut steps, work_limit)?;
         self.prepare_trait_owners(&mut steps, work_limit)?;
+        self.prepare_destructors(destructors, &mut steps, work_limit)?;
+        self.validate_trait_impl_owners()?;
         self.prepare_inherent_owners(&mut steps, work_limit)?;
         for index in 0..self.report.resolution.definitions.len() {
             let id = DefId(

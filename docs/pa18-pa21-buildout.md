@@ -3413,3 +3413,71 @@ final compiler SHA256 is
 `obj/pa19-work/nominal-trait-validation-v1.json` records final validation and log
 hashes; source snapshots and measurements remain under `obj/pa19-work/nominal-trait-*`
 and `obj/perf/`.
+
+
+## Trait bounds on Drop headers
+
+Trait contracts now precede Drop header elaboration. Destructor inventory still
+precedes nominal completion, and the unsupported general-trait-impl gate runs after
+Drop owners are ready. Recognizing a trait declaration does not grant arbitrary
+impl conformance or destructor identity from its spelling.
+
+Drop coverage substitutes the complete trait predicate into the nominal parameter
+context, including type, const and lifetime arguments. Type compatibility retains
+lifetime equations. These equations use the existing destructor coverage graph:
+the target lifetimes remain universal, and extra impl lifetimes remain existential.
+An inverse slot map translates nominal coverage order back to impl order once.
+Both directed requirements are added, including equality with static. Keeping
+these obligations under the nominal declaration alone would incorrectly reject
+valid extra impl lifetime slots, which do not exist in that declaration.
+
+Twenty-five independent source controls cover complete argument remapping,
+stronger/missing requirements, trait aliases, supertrait permissions in destructor
+bodies, rejected field moves, and extra lifetime slots. Three-lifetime permutation
+controls check the inverse map; paths through extra slots may not strengthen the
+nominal contract. Initial extra-slot controls caught an invalid-identity rejection
+before this integration. Required generic bodies undergo complete instance proof.
+These cases do not claim concrete user-trait execution before general impl dispatch.
+Existing general-trait gates and destructor identity/conformance suites also pass.
+
+General trait impl conformance, selection and dispatch, trait method lookup, and
+the PA19 course release remain outstanding. PA20 and PA21 remain required.
+
+
+Validation passes 817 frontend tests in debug and release, all 3,790 PA1–PA18
+text cases, the complete independent rustc sweep, 18 maintainer native groups,
+1,126 course executable comparisons and three codegen checks. The sixteen declared
+PA13 runtime differences remain explicit. Clippy all/pedantic, formatting, the
+525-file audit, 27 harness tests and upstream/Reference integrity pass. Course
+fixtures and oracle bytes remain unchanged.
+
+A follow-up trait probe exposed a separate false acceptance: a function-pointer
+trait argument returning its first bound lifetime can incorrectly satisfy one
+returning its second, when unrelated outer caller lifetimes are equal. Typed facts
+retain the distinct signatures, but an inner lifetime equation reaches the outer
+body proof without its binder scope. The reproducer and independent rejection are
+retained in `obj/pa19-work/trait-nested-binder-v1`. Fixing this is required before
+general trait dispatch and the PA19 release; the current checkpoint does not fix it.
+
+
+Fifteen frozen A/A and three-block ABBA jobs retain 270 observations; three repeats
+add 54. Full/count outputs and all source, binary and input hashes agree. Existing
+builtin-Drop declarations change median wall time by +0.2%, with paired blocks
+between -0.6% and +0.3%. Trait-bound and inference repeats change by -0.6% and -0.1%;
+these are within the observed noise and are not speedup claims. Median RSS changes
+for existing workloads remain between -30 and +30 KiB.
+
+The initial run has substantial timing instability: even identical candidate
+binaries differ by +50.8% in the largest new trait-Drop workload. Its repeat differs
+by +1.6%. Both runs are retained. Ordinary functions, generic records and receivers
+change by +1.2%, +2.7% and -2.5% initially, with unstable blocks/calibration;
+these observations do not establish stable regressions or improvements.
+
+New trait-Drop declarations at 64/256/1,024 items take approximately
+12.0/37.4/131.0 ms, using the repeat for the last value. Extra-lifetime Drop headers
+take 11.1/56.9/208.4 ms. These are same-binary scaling observations on this host,
+not throughput guarantees. No local RustGM build, test or diagnostic probe overlapped
+timing. All 528 source/config/test files remain archived and verified. Final compiler
+SHA256 is `36111e0653f3cb859682b3f4ac25cbdac94581796c101d057a4c20b7e4be1ea4`.
+The validation receipt is `obj/pa19-work/drop-trait-validation-v1.json`; all source
+snapshots and measurements remain under `obj/pa19-work/drop-trait-*` and `obj/perf/`.
