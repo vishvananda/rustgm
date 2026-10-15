@@ -9,6 +9,9 @@ use std::collections::HashSet;
 /// # Errors
 /// Rejects malformed binders and output-only late lifetimes.
 pub fn check_pointer(store: &Store, signature: TypeId) -> Result<(), &'static str> {
+    if store.contains_projections(signature) == Some(true) {
+        return Err("projected function inputs require normalization before binder validation");
+    }
     let Some(Kind::Function {
         parameters,
         result,
@@ -110,6 +113,14 @@ impl Uses {
                 }
                 Kind::Adt(_, arguments) => {
                     self.arguments(store, arguments, depth)?;
+                }
+                Kind::Projection(application) => {
+                    self.push(application.subject, depth)?;
+                    let trait_ = store
+                        .trait_application(application.trait_application)
+                        .ok_or("invalid bound-use projection trait")?;
+                    self.arguments(store, trait_.arguments, depth)?;
+                    self.arguments(store, application.arguments, depth)?;
                 }
                 Kind::Tuple(list) => {
                     for ty in store.list(list).ok_or("invalid bound-use tuple")? {

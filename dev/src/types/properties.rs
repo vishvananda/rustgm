@@ -10,6 +10,7 @@ pub(super) enum Property {
     LateCallables,
     Parameters,
     Callables,
+    Projections,
 }
 impl Property {
     const fn mask(self) -> u8 {
@@ -20,7 +21,8 @@ const DEPENDENCIES: u8 = Property::Regions.mask()
     | Property::FreeRegions.mask()
     | Property::LateCallables.mask()
     | Property::Parameters.mask()
-    | Property::Callables.mask();
+    | Property::Callables.mask()
+    | Property::Projections.mask();
 
 #[derive(Clone, Copy)]
 pub(super) struct Properties {

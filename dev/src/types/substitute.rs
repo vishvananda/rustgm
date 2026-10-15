@@ -236,6 +236,15 @@ impl Bound {
                 self.argument_dependencies(store, arguments, depth)?;
                 None
             }
+            Kind::Projection(application) => {
+                self.queue(application.subject, depth)?;
+                let trait_ = store
+                    .trait_application(application.trait_application)
+                    .ok_or("invalid substituted projection trait")?;
+                self.argument_dependencies(store, trait_.arguments, depth)?;
+                self.argument_dependencies(store, application.arguments, depth)?;
+                None
+            }
             Kind::Never | Kind::Primitive(_) | Kind::Parameter(_) => None,
         };
         if let Some((list, depth)) = list {
@@ -335,6 +344,23 @@ impl Bound {
         Ok(match kind {
             Kind::Never | Kind::Primitive(_) | Kind::Parameter(_) => kind,
             Kind::Adt(item, args) => Kind::Adt(item, self.arguments(store, args, depth)?),
+            Kind::Projection(application) => {
+                let trait_ = store
+                    .trait_application(application.trait_application)
+                    .ok_or("invalid substituted projection trait")?;
+                let arguments = self.arguments(store, trait_.arguments, depth)?;
+                let trait_application =
+                    store.intern_trait_application(super::traits::Application {
+                        arguments,
+                        ..trait_
+                    })?;
+                Kind::Projection(super::projection::Application {
+                    subject: self.child(store, application.subject, depth)?,
+                    trait_application,
+                    arguments: self.arguments(store, application.arguments, depth)?,
+                    ..application
+                })
+            }
             Kind::Tuple(list) => Kind::Tuple(self.list(store, list, depth)?),
             Kind::Array { element, length } => Kind::Array {
                 element: self.child(store, element, depth)?,

@@ -60,6 +60,17 @@ nodes or dense side arrays; sparse composite query keys may use hash tables.
 Rendered names/types are never semantic keys. Deterministic output must not
 force ordered node-based containers onto the lookup hot path.
 
+Associated type projections retain their declaration identity, Self, complete
+trait application and separate family arguments. Their immutable schema fixes
+the declaring trait and result sizedness. A projection is not a nominal type:
+equal projected results do not establish equality of their inputs. Keep its
+inputs invariant and preserve them through parameter/lifetime substitution at
+the actual binder depth. An explicit dependency flag also identifies closed
+projections that still need normalization. Structural properties and occurrence
+sets are not implementation evidence or an injectivity proof. Concrete layout,
+Copy/equality, destruction and lifetime queries must not infer result properties
+from an unfamiliar constructor or silently treat it as a primitive.
+
 Built-in semantic traits retain their own definition identities; a user item
 with the same spelling cannot acquire language behavior. Resolve aliases and
 qualified paths through ordinary typed namespace facts. Demand external metadata

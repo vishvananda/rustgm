@@ -297,7 +297,44 @@ impl Graph {
                 Kind::Adt(item, args) => {
                     self.nominal(types, owner, (item, args), position, depth)?;
                 }
+                Kind::Projection(application) => {
+                    let invariant = self
+                        .solver
+                        .compose(position, Term::constant(Variance::Invariant))?;
+                    self.queue_type(application.subject, invariant, depth)?;
+                    let trait_ = types
+                        .trait_application(application.trait_application)
+                        .ok_or("invalid variance projection trait")?;
+                    for args in [trait_.arguments, application.arguments] {
+                        self.invariant_arguments(types, owner, args, invariant, depth)?;
+                    }
+                }
                 Kind::Never | Kind::Primitive(_) => {}
+            }
+        }
+        Ok(())
+    }
+    fn invariant_arguments(
+        &mut self,
+        types: &Store,
+        owner: ItemId,
+        args: GenericArgs,
+        position: Term,
+        depth: u16,
+    ) -> Result<(), &'static str> {
+        for argument in types
+            .arguments(args)
+            .ok_or("invalid projection variance arguments")?
+        {
+            self.solver.charge()?;
+            match argument {
+                Argument::Type(ty) => self.queue_type(ty, position, depth)?,
+                Argument::Lifetime(region) => {
+                    if let Some(target) = self.region(owner, region, depth)? {
+                        self.solver.constrain(target, position)?;
+                    }
+                }
+                Argument::Const(id) => self.constant(types, owner, id)?,
             }
         }
         Ok(())

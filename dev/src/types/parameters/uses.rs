@@ -87,6 +87,15 @@ impl Uses {
                     self.arguments(store, arguments)?;
                     None
                 }
+                Kind::Projection(application) => {
+                    self.work.push(application.subject);
+                    let trait_ = store
+                        .trait_application(application.trait_application)
+                        .ok_or("invalid parameter-use projection trait")?;
+                    self.arguments(store, trait_.arguments)?;
+                    self.arguments(store, application.arguments)?;
+                    None
+                }
                 Kind::Never | Kind::Primitive(_) => None,
             };
             if let Some(list) = list {

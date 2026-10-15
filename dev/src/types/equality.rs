@@ -181,6 +181,9 @@ impl Query {
                 false
             };
             let mut initial = match kind {
+                Kind::Projection(_) => {
+                    return Err("associated type equality checking requires normalization");
+                }
                 Kind::Parameter(id) => {
                     let (owner, abilities) = scope
                         .ok_or("generic equality checking requires a parameter environment")?;

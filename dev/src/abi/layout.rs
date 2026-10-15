@@ -246,6 +246,7 @@ impl Layouts {
     ) -> Result<Layout, &'static str> {
         match kind {
             Kind::Parameter(_) => Err("generic type parameter has no concrete layout"),
+            Kind::Projection(_) => Err("associated type layout requires normalization"),
             Kind::ArrayTerm { .. } => Err("generic array length has no concrete layout"),
             Kind::Never => Ok(Layout {
                 size: 0,

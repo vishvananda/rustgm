@@ -120,6 +120,9 @@ fn children(
             }
         }
         Kind::Never | Kind::Primitive(_) | Kind::Parameter(_) => {}
+        Kind::Projection(_) => {
+            return Err("associated type outlives checking requires normalization");
+        }
     }
     budget.pending(work.len())
 }
@@ -195,6 +198,9 @@ impl Components {
         kind: ComponentKind,
         budget: &mut Budget,
     ) -> Result<Parts<'_>, &'static str> {
+        if types.contains_projections(root) == Some(true) {
+            return Err("associated type outlives checking requires normalization");
+        }
         if types.contains_regions(root) == Some(false)
             && types.contains_parameters(root) == Some(false)
         {
@@ -324,6 +330,9 @@ impl Scan {
         }
     }
     fn visit(&mut self, types: &Store, root: TypeId) -> Result<(), &'static str> {
+        if types.contains_projections(root) == Some(true) {
+            return Err("associated type well-formedness requires normalization");
+        }
         self.work.push((root, 0));
         while let Some((ty, depth)) = self.work.pop() {
             self.budget.charge()?;

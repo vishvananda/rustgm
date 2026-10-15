@@ -4163,3 +4163,59 @@ including a delayed baseline sample, are retained. Full/count output and frozen
 source, input and binary hash checks passed. The receipt is
 `obj/pa20-work/scoped-cache-v1/validation-v2.json`; the untimed predecessor snapshot
 and its validation logs remain alongside the final evidence.
+
+## PA20 canonical projection representation
+
+The preceding solver checkpoint `c7a4958` passed CI run 38743603167. Associated
+type applications now have a distinct canonical `Kind::Projection`, with the
+declaring item, Self, full trait application and separate family arguments.
+One immutable declaration schema fixes trait ownership and result sizedness;
+conflicting redeclarations and invalid references fail. Storage is allocated
+only when projections are declared. The canonical type enum remains 24 bytes.
+
+A dependency bit retains projections even when their inputs contain no generic
+parameters or lifetimes. The common bounded type fold substitutes Self, trait
+arguments and family arguments at the current binder depth. Parameter and bound-
+lifetime occurrence collection visits all inputs; these occurrence sets are not
+injectivity proofs. Variance treats projection inputs invariantly. Ordinary
+inference cannot reverse a projected equality into input equations. The type view
+has an explicit projection spelling using the existing generic-argument writer.
+
+Legacy layout, Copy/equality, destruction, shape and lifetime queries diagnose
+missing normalization instead of classifying a new constructor through a catch-all
+primitive case. This is a typed representation checkpoint: source elaboration,
+associated-item conformance, projection equalities and normalization still need
+implementation. No new source program, course oracle or assignment status is
+claimed by this change; PA20 and PA21 remain required. In particular, source
+generic-parameter constraint checks must distinguish occurrences inside a
+non-injective projection from constraining inputs before the frontend publishes
+these types. Associated constants and PA21 family rules also remain open.
+
+Six typed invariants check schema/application identity, complete parameter/const
+uses, binder capture and depth-specific substitution, lack of invented result
+properties, invariant input positions and a 10,000-level shared type graph.
+All 946 maintainer debug tests, 34 affected optimized tests (including two native
+programs), all 4,859 course cases, Clippy all/pedantic, formatting, the 582-file
+audit and 27 harness tests pass. Earlier oracle bytes are unchanged.
+
+The frozen compiler SHA256 is
+`aa5270879d99538e6f78bb226af98b444f9de87ff41622bf785c97f7bc457bf4`.
+Its 585 source/config/test files are archived under
+`obj/pa20-work/projections-v1/source-v1`. Twelve ordinary workloads compare full
+and count semantic bytes with the published solver compiler. Paired median wall
+changes range from -1.0% to +2.7%, with A/A spreads of 2.6–94.8%. Two retained
+repeats yielded +2.6% and +1.6%, with calibration spreads of 3.6% and 5.7%.
+These small positive observations remain visible; no overall speedup is claimed.
+
+A separate frozen driver measures only canonical projection construction and
+substitution through the reference library; it is not a new frontend CLI mode.
+At depths 4,000, 16,000 and 64,000, work counts are 32,002, 128,002 and 512,002,
+with median wall times 9.82, 31.87 and 133.96 ms and peak resident medians
+3,616, 8,542 and 28,776 KiB. This is same-binary scaling evidence, with A/A spreads
+up to 41.6%, not a comparison against a prior projection implementation.
+
+All 442 observations are retained: 312 initial regression observations, 52
+repeat observations and 78 direct-fold observations. No local RustGM build, test
+or unrelated probe overlapped timing. Full/count or repeated-driver output and
+source, input and binary hashes pass. The receipt is
+`obj/pa20-work/projections-v1/validation-v1.json`.

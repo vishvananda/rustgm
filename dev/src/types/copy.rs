@@ -183,6 +183,9 @@ impl Copies {
                 definitions.shape(types, ty)?;
             }
             let initial = match kind {
+                Kind::Projection(_) => {
+                    return Err("associated type Copy checking requires normalization");
+                }
                 Kind::Parameter(id) => {
                     let abilities = self
                         .scope

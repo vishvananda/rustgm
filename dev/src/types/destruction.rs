@@ -160,6 +160,9 @@ impl NeedsDrop {
             } else if matches!(kind, Kind::Parameter(_) | Kind::ArrayTerm { .. }) {
                 return Err("generic destruction checking requires a parameter environment");
             }
+            if matches!(kind, Kind::Projection(_)) {
+                return Err("associated type destruction checking requires normalization");
+            }
             if matches!(kind, Kind::Adt(_, args) if types.region_args(args).is_none()) {
                 definitions.shape(types, ty)?;
             }

@@ -192,5 +192,6 @@ fn inference_error(error: Error) -> &'static str {
         Error::Occurs => "recursive overlap equation",
         Error::Unresolved => "unresolved overlap parameter",
         Error::Budget => "overlap inference work budget exceeded",
+        Error::Normalization => "overlap projection requires normalization",
     }
 }

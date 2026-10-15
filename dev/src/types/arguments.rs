@@ -64,6 +64,7 @@ impl std::iter::FusedIterator for Arguments<'_> {}
 pub(super) struct Storage {
     pub(super) parameters: super::parameters::Storage,
     pub(super) traits: Option<Box<super::traits::Storage>>,
+    pub(super) projections: Option<Box<super::projection::Storage>>,
     mixed: Slices<Argument>,
     constants: Vec<ConstKind>,
     constant_index: HashMap<ConstKind, ConstId>,

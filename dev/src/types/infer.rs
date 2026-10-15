@@ -72,6 +72,7 @@ pub enum Error {
     Occurs,
     Unresolved,
     Budget,
+    Normalization,
 }
 impl std::fmt::Display for Error {
     fn fmt(&self, out: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -82,6 +83,7 @@ impl std::fmt::Display for Error {
             Self::Occurs => "type variable occurs in its own type",
             Self::Unresolved => "type annotations needed",
             Self::Budget => "type constraint work budget exceeded",
+            Self::Normalization => "associated type projection requires normalization",
         })
     }
 }
@@ -560,6 +562,7 @@ impl Context {
             Kind::Never => Constructor::Never,
             Kind::Primitive(p) => Constructor::Primitive(p),
             Kind::Parameter(id) => Constructor::Parameter(id),
+            Kind::Projection(_) => return Err(Error::Normalization),
             Kind::Adt(item, args) => {
                 if store.region_args(args).is_some() {
                     Constructor::Adt(item, args)

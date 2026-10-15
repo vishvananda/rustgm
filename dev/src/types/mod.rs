@@ -11,6 +11,7 @@ pub mod instance;
 pub mod length;
 pub mod outlives;
 pub mod parameters;
+pub mod projection;
 mod properties;
 pub mod region_graph;
 pub mod relations;
@@ -162,6 +163,8 @@ pub enum Kind {
     Parameter(parameters::ParameterId),
     /// Nominal identity; field definitions and by-value cycles are checked separately.
     Adt(ItemId, GenericArgs),
+    /// An associated type application is not injective in Self or its arguments.
+    Projection(projection::Application),
     Tuple(ListId),
     Array {
         element: TypeId,
@@ -262,6 +265,13 @@ impl Store {
             .get(id.0 as usize)
             .map(|p| p.has(Property::Regions))
     }
+    /// Normalization must visit projections even when all of their inputs are closed.
+    #[must_use]
+    pub fn contains_projections(&self, id: TypeId) -> Option<bool> {
+        self.properties
+            .get(id.0 as usize)
+            .map(|p| p.has(Property::Projections))
+    }
     #[must_use]
     pub fn contains_late_callables(&self, id: TypeId) -> Option<bool> {
         self.properties
@@ -337,6 +347,7 @@ impl Store {
                 .parameter(id)
                 .is_some_and(|p| matches!(p.kind, parameters::ParameterKind::Type { .. })),
             Kind::Adt(_, args) => self.arguments(args).is_some(),
+            Kind::Projection(application) => self.valid_projection(application),
             Kind::Tuple(list) => self.list(list).is_some(),
             Kind::Slice(element)
             | Kind::Array { element, .. }
@@ -387,6 +398,9 @@ impl Store {
             }
             Kind::Adt(_, args) => {
                 self.argument_properties(args, &mut result)?;
+            }
+            Kind::Projection(application) => {
+                result = self.projection_properties(application)?;
             }
             Kind::Primitive(p) => result.set(Property::Sized, p != Primitive::Str),
             Kind::Array { element, .. }

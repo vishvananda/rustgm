@@ -44,6 +44,7 @@ impl Subject {
 pub(super) enum Head {
     Primitive(Primitive),
     Parameter(crate::types::parameters::ParameterId),
+    Projection(ItemId),
     Nominal(ItemId),
     FunctionItem(ItemId),
     Reference(bool),
@@ -59,6 +60,7 @@ impl Head {
         match kind {
             Kind::Primitive(p) => Self::Primitive(p),
             Kind::Parameter(id) => Self::Parameter(id),
+            Kind::Projection(application) => Self::Projection(application.item),
             Kind::Adt(item, _) => Self::Nominal(item),
             Kind::FunctionItem { item, .. } => Self::FunctionItem(item),
             Kind::Reference { mutable, .. } => Self::Reference(mutable),

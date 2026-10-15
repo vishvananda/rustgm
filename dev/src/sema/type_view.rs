@@ -347,6 +347,19 @@ fn ty(store: &Store, id: TypeId, out: &mut impl Write) -> io::Result<()> {
             write!(out, "aggregate def={}", item.0)?;
             region_arguments(store, args, out)
         }
+        Kind::Projection(application) => {
+            let trait_ = store
+                .trait_application(application.trait_application)
+                .ok_or_else(|| io::Error::other("invalid projection trait"))?;
+            write!(
+                out,
+                "projection def={} self={} trait={}",
+                application.item.0, application.subject.0, trait_.item.0
+            )?;
+            generic_arguments(store, trait_.arguments, out)?;
+            write!(out, " family")?;
+            generic_arguments(store, application.arguments, out)
+        }
         Kind::Tuple(elements) => {
             write!(out, "tuple ")?;
             list(store, elements, out)

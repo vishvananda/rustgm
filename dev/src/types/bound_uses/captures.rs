@@ -141,6 +141,15 @@ impl Captures {
                 found = self.arguments(store, arguments, depth, finish)?;
                 None
             }
+            Kind::Projection(application) => {
+                let trait_ = store
+                    .trait_application(application.trait_application)
+                    .ok_or("invalid capture projection trait")?;
+                found = self.child(store, (application.subject, depth), finish)?
+                    | self.arguments(store, trait_.arguments, depth, finish)?
+                    | self.arguments(store, application.arguments, depth, finish)?;
+                None
+            }
             Kind::FunctionItem {
                 signature,
                 arguments,

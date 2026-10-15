@@ -26,6 +26,9 @@ impl Shapes {
     /// # Errors
     /// Rejects invalid/foreign parameter types and exhausted graph work.
     pub fn demand(&mut self, types: &Store, ty: TypeId) -> Result<Properties, &'static str> {
+        if types.contains_projections(ty) == Some(true) {
+            return Err("associated type shape checking requires normalization");
+        }
         if let Some(value) = self.cache.get(&ty) {
             return Ok(*value);
         }
