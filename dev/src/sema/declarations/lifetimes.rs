@@ -203,6 +203,7 @@ impl Checker<'_> {
             if let Some(original) = self.facts.unreduced.definition(id) {
                 self.facts.unreduced.retain_node(key, original);
             }
+            self.alias_path_use(key, id, GenericArgs::EMPTY, context)?;
             return Ok(ty);
         }
         let args = self
@@ -218,10 +219,13 @@ impl Checker<'_> {
                 .map_err(|e| self.error(key, e))?;
             self.facts.unreduced.retain_node(key, original);
         }
-        self.facts
+        let result = self
+            .facts
             .lifetimes
             .substitute(&mut self.facts.types, args, ty)
-            .map_err(|e| self.error(key, e))
+            .map_err(|e| self.error(key, e))?;
+        self.alias_path_use(key, id, args, context)?;
+        Ok(result)
     }
 
     pub(super) fn nominal_context(&self, item: ItemId) -> regions::Context {

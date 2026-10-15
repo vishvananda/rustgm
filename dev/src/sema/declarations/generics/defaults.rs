@@ -15,6 +15,11 @@ pub(in super::super) struct Defaults {
     index: HashMap<DefId, DefaultId>,
 }
 impl Defaults {
+    pub(in super::super) fn owner(&self, binding: DefId) -> Option<DefId> {
+        self.index
+            .get(&binding)
+            .map(|id| self.entries[id.0].declaration.owner)
+    }
     pub(super) fn insert(
         &mut self,
         binding: DefId,
@@ -62,7 +67,15 @@ impl Checker<'_> {
             self.defaults.entries[id.0].state = State::Active;
             self.work.push(Work::Default(id, true));
             if syntax.flavor == crate::syntax::item::GenericFlavor::Type {
-                self.node_work(key.file, node, context);
+                let binding = self.facts.generics.parameters[&owner][index as usize].binding;
+                self.node_work(
+                    key.file,
+                    node,
+                    super::regions::Context {
+                        position: super::regions::Position::Default(binding),
+                        ..context
+                    },
+                );
             } else {
                 self.constant_dependencies(NodeKey { node, ..key }, context)?;
             }
@@ -93,6 +106,9 @@ impl Checker<'_> {
             .ok_or_else(|| Error::at(key.file, 0, "missing generic owner"))?[index as usize]
             .default = Some(default);
         self.defaults.entries[id.0].state = State::Complete;
+        self.facts
+            .alias_requirements
+            .seal(self.facts.generics.parameters[&owner][index as usize].binding);
         Ok(())
     }
     pub(in super::super) fn complete_deferred_declarations(

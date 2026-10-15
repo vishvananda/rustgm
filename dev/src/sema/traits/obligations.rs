@@ -1,5 +1,6 @@
 //! A declaration proof owns a disjoint interval of fresh lifetimes and all its obligations.
 mod body;
+mod instantiate;
 mod restoration;
 use crate::types::{
     RegionId, TypeId,

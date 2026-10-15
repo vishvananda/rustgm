@@ -4572,3 +4572,73 @@ environment widths take 11.13/24.98/88.96 ms and repeated environments take
 6,450 to 15,618 KiB. Interpret the scaling observations with the recorded timing
 noise rather than as a precise throughput guarantee. The validation receipt is
 `obj/pa20-work/scoped-projections-v1/validation-v1.json`.
+
+## Conditional alias lifetime contracts
+
+Ordinary aliases now defer conditional projection lifetime requirements to their
+uses. Generic defaults retain separate contracts, instantiated only when selected;
+an explicit override does not acquire the unused default's requirements. Alias
+bounds do not grant those requirements to callers, and associated definitions
+continue to prove their contracts even when unused.
+
+The implementation stores a sparse, sealed dependency graph. Dependencies survive
+an enclosing projection that erases their result. Instantiation shares identical
+(contract, arguments) pairs within the actual declaration binder or body, retains
+all selection evidence, and allocates disjoint proof-private lifetime intervals
+before substituting caller arguments. A failed expansion poisons its proof scope.
+Typed dependency and argument work is bounded; alias chains do not copy their
+entire transitive requirement set into each declaration.
+
+Nested function-pointer annotations inherit their enclosing alias/default proof
+owner. Proofs without references to intervening local binders can be lowered into
+that template. Requirements involving local universal lifetimes still need an
+explicit quantified proof representation and remain conservatively rejected.
+
+The source matrix contains 39 independently qualified cases: 23 accepted and 16
+rejected. Every negative candidate reaches the intended lifetime failure through
+LowIR validation. Coverage includes unused conditional aliases, signature/local
+uses, argument permutations, erased results/dependencies, nested pointers, alias
+and nominal defaults, explicit overrides, distinct scopes, and associated-definition
+conformance. Three new native programs exercise reference chains, selected defaults
+and captured function pointers through CPPGM.
+
+Typed controls exercise a 512-level diamond dependency graph, per-scope and
+per-argument sharing, overlapping numeric caller/template identities, incomplete
+or sealed graph mutations, failed-scope reuse, binder preservation and allocator
+limits. The complete debug suite passes 976 tests with 33 native tests ignored;
+the optimized affected run passes 88 tests with native cases explicitly included.
+All 4,857 course cases, Clippy all/pedantic, rustfmt, the 604-file audit and 27
+harness tests pass. Course fixtures, manifests and oracle bytes are unchanged.
+
+Partial conditional aliases/defaults remain an explicit implementation boundary.
+Independent experiments showed that eagerly applying normalized alias templates
+can incorrectly infer projection inputs: three hypothesized positive cases are
+rejected by pinned rustc with E0283. Their original declarations and stderr remain
+recorded. The incomplete inferred-root experiment is archived, and the compiler
+requires delayed projection normalization rather than publishing those results.
+Some valid partial default uses therefore remain unsupported. Complete caller
+environments, quantified proofs, symbolic equalities and the remaining PA20/PA21
+contracts are still required; both assignments remain planned.
+
+The immutable candidate is
+`568d30eb3c019dd190a3c40e0c425c5565572f0ac71626405c326a216c60c3f2`;
+607 source/config/test files are archived. Thirty existing workloads preserve
+published full/count output bytes. Nine new, independently rustc-qualified
+workloads measure conditional alias chains, repeated uses and widths at
+128/512/2,048. Both timing runs verify frozen hashes and output equality before
+and after measurement, with no overlapping local builds, tests or frontend probes.
+
+A/A calibration and five ABBA blocks per workload retain 1,014 observations;
+six confirmation controls retain another 156. Initial existing-workload paired
+medians range from -4.8% to +3.7%. The four repeated comparisons range from -2.5%
+to +1.1%; the largest initial negative moves to -0.3%, and both repeated scoped
+chain positives change sign. Calibration and identical-binary controls also show
+variability. These results establish neither a general speedup nor the absence
+of small regressions; every observation is retained.
+
+Initial candidate chain medians are 5.04/8.64/27.88 ms, repeated-use medians are
+4.90/7.72/19.11 ms, and width medians are 9.27/25.32/91.32 ms. Their peak resident
+medians range from 5,746 to 18,420 KiB. The source-level scaling controls and typed
+diamond test cover sharing without claiming precise throughput from noisy wall
+times. The receipt is `obj/pa20-work/alias-obligations-v1/validation-v1.json`;
+remaining prerequisites are recorded beside it in `next-implementation.md`.

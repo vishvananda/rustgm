@@ -216,6 +216,7 @@ pub struct ReferenceAlignment {
     pub guard: bool,
 }
 pub struct Declarations {
+    pub alias_requirements: super::alias_requirements::Requirements,
     pub unreduced: super::unreduced::Types,
     pub(super) anonymous_constants: std::collections::HashMap<NodeKey, TypeId>,
     pub(super) constant_annotation_bodies: std::collections::HashSet<NodeKey>,
@@ -293,6 +294,7 @@ impl Declarations {
     }
     pub(super) fn new(report: &Report) -> Result<Self, Error> {
         let mut value = Self {
+            alias_requirements: super::alias_requirements::Requirements::default(),
             unreduced: super::unreduced::Types::default(),
             anonymous_constants: std::collections::HashMap::new(),
             constant_annotation_bodies: std::collections::HashSet::new(),

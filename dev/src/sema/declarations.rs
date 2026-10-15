@@ -45,7 +45,7 @@ enum State {
 }
 #[derive(Clone, Copy)]
 enum SignaturePhase {
-    Begin(Option<BinderId>),
+    Begin(regions::Context),
     Output(BinderId),
     Finish(BinderId, u32),
 }
@@ -457,8 +457,11 @@ impl Checker<'_> {
             }
             self.states[id.0 as usize] = State::Active;
             if matches!(item.kind, ItemKind::Function { .. }) {
-                self.work
-                    .push(Work::Signature(key, Some(id), SignaturePhase::Begin(None)));
+                self.work.push(Work::Signature(
+                    key,
+                    Some(id),
+                    SignaturePhase::Begin(regions::Context::ALIAS),
+                ));
                 return Ok(());
             }
             if item.where_clause.start != item.where_clause.end
@@ -496,6 +499,7 @@ impl Checker<'_> {
                 self.facts.unreduced.retain_definition(id, original);
             }
             self.validate_alias(id, key, ty)?;
+            self.facts.alias_requirements.seal(id);
         }
         let (value, kind) = match item.kind {
             ItemKind::Const { value, .. } => (value, InitializerKind::Const),
@@ -543,11 +547,8 @@ impl Checker<'_> {
                 return self.schedule_projection_path(key, context);
             }
             if let Kind::FunctionType(_) = kind {
-                self.work.push(Work::Signature(
-                    key,
-                    None,
-                    SignaturePhase::Begin(context.binder),
-                ));
+                self.work
+                    .push(Work::Signature(key, None, SignaturePhase::Begin(context)));
                 return Ok(());
             }
             if let Kind::Type {
@@ -830,7 +831,10 @@ impl Checker<'_> {
         match phase {
             SignaturePhase::Begin(parent) => {
                 let declared = self.declared_regions(key, signature.binders)?;
-                let binder = self.signature_binder(owner, parent, declared);
+                let binder = self.signature_binder(owner, parent.binder, declared);
+                if owner.is_none() {
+                    self.inherit_alias_scope(key, parent, binder)?;
+                }
                 self.work
                     .push(Work::Signature(key, owner, SignaturePhase::Output(binder)));
                 if let Some(owner) = owner

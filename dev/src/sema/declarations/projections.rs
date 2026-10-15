@@ -1,4 +1,5 @@
 //! Associated type paths suspend normalization while their selected definitions elaborate.
+mod aliases;
 mod proofs;
 use super::{Checker, DefId, Error, NodeKey, Type, TypeId, Work, regions};
 use crate::{
@@ -24,6 +25,8 @@ struct Query {
 }
 #[derive(Default)]
 pub(super) struct Pending {
+    alias_templates: HashMap<regions::BinderId, aliases::Template>,
+    alias_scopes: HashMap<aliases::ScopeKey, crate::sema::alias_requirements::Scope>,
     roots: HashMap<NodeKey, Query>,
     scopes: HashMap<Option<regions::BinderId>, usize>,
     proofs: Vec<(

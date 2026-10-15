@@ -3,7 +3,14 @@ use super::{Action, Bound, RegionId};
 use std::collections::HashMap;
 
 enum Mode {
-    Open { first: u32, next: u32 },
+    Open {
+        first: u32,
+        next: u32,
+    },
+    Rebase {
+        source: std::ops::Range<u32>,
+        first: u32,
+    },
     Restore,
 }
 pub(super) struct Mapping {
@@ -18,6 +25,15 @@ impl Mapping {
     ) -> Result<RegionId, &'static str> {
         if original == RegionId::STATIC {
             return Ok(original);
+        }
+        if let Mode::Rebase { source, first } = &self.mode {
+            return if original.bound_parts().is_some() {
+                Ok(original)
+            } else if source.contains(&original.0) {
+                Ok(RegionId(first + (original.0 - source.start)))
+            } else {
+                Err("proof template contains a foreign free lifetime")
+            };
         }
         let key = match original.bound_parts() {
             Some((binder, _)) if binder < depth => return Ok(original),
@@ -59,6 +75,30 @@ impl Mapping {
     }
 }
 impl Bound {
+    /// Freshen an owned proof interval without changing any bound lifetime.
+    /// Apply this before substituting arguments, whose free lifetimes belong to
+    /// the caller and must not be mistaken for the template's private variables.
+    /// # Errors
+    /// Rejects invalid intervals and target identity overflow.
+    pub fn rebase_free_regions(
+        source: std::ops::Range<u32>,
+        first: u32,
+    ) -> Result<Self, &'static str> {
+        if source.start == 0 || source.end < source.start || source.end >= 0x8000_0000 || first == 0
+        {
+            return Err("invalid proof lifetime interval");
+        }
+        first
+            .checked_add(source.end - source.start)
+            .filter(|end| *end < 0x8000_0000)
+            .ok_or("proof lifetime interval exhausted")?;
+        let mut fold = Self::new(Vec::new());
+        fold.action = Action::Regions(Box::new(Mapping {
+            mode: Mode::Rebase { source, first },
+            replacements: HashMap::new(),
+        }));
+        Ok(fold)
+    }
     /// Open surrounding bound lifetimes into a fresh, caller-owned free interval.
     /// Static, existing free lifetimes and nested local binders remain unchanged.
     /// Reuse this fold for all roots and assumptions in the same proof scope.
@@ -97,7 +137,7 @@ impl Bound {
         match &self.action {
             Action::Regions(mapping) => match mapping.mode {
                 Mode::Open { next, .. } => Some(next),
-                Mode::Restore => None,
+                Mode::Restore | Mode::Rebase { .. } => None,
             },
             _ => None,
         }

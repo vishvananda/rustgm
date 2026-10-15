@@ -11,6 +11,7 @@ pub(super) enum Position {
     Static,
     Local(crate::syntax::ast::NodeId),
     Constant(crate::syntax::ast::NodeId),
+    Default(DefId),
 }
 #[derive(Clone, Copy)]
 pub(super) struct Context {
@@ -140,7 +141,7 @@ impl Regions {
             }
             Position::Static => Ok(RegionId::STATIC),
             Position::Input | Position::Impl => RegionId::bound(0, self.fresh(id)?),
-            Position::Output => self.binders[id.0]
+            Position::Output | Position::Default(_) => self.binders[id.0]
                 .receiver
                 .or(self.binders[id.0].output)
                 .ok_or("cannot infer an output lifetime from these parameters"),

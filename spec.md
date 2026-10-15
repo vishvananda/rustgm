@@ -104,6 +104,23 @@ annotations instead retain obligations in the body's allocator and ordinary
 lifetime gate; they must not append to a declaration gate that has already run.
 Keep plain, closed projection queries off the lifetime-fold allocation path.
 
+Ordinary aliases and generic defaults retain conditional projection requirements
+as sealed typed dependency graphs. Instantiate a contract only at an actual use;
+an overridden default contributes no requirements. Retain dependencies even when
+an enclosing projection erases their result. Share identical instantiated uses
+within the actual declaration binder or body, never across proof scopes, and
+bound graph traversal and argument work. Freshen each template's private region
+interval before substituting caller arguments; numeric overlap must not turn a
+caller lifetime into a template variable. A failed expansion invalidates its scope.
+
+Nested callable annotations retain their enclosing alias/default proof owner.
+Removing intervening binders is valid only when no local lifetime is captured;
+requirements involving such locals need explicit universal proof scopes. Missing
+that representation must produce an error. Partial alias annotations likewise
+require delayed projection inference: a normalized result cannot infer a
+non-injective projection's input parameters. Do not use either shortcut to
+manufacture a successful proof.
+
 Check constraining lifetime positions before erasing projections through
 normalization. A lifetime occurring only inside a projected function-pointer
 input does not constrain the pointer's output, even when a selected impl would

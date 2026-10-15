@@ -36,6 +36,14 @@ impl Checker<'_> {
                     .map_err(|e| self.error(key, e))?,
             ));
         }
+        Ok((environment, self.projection_region_start(key, context)?))
+    }
+
+    pub(in super::super) fn projection_region_start(
+        &self,
+        key: NodeKey,
+        context: regions::Context,
+    ) -> Result<u32, Error> {
         let first = if matches!(
             context.position,
             regions::Position::Local(_) | regions::Position::Constant(_)
@@ -51,14 +59,14 @@ impl Checker<'_> {
                 .get(&context.binder)
                 .map_or(1, |&index| self.projections.proofs[index].2.regions.end)
         };
-        Ok((environment, first))
+        Ok(first)
     }
 
     pub(super) fn retain_projection_proof(
         &mut self,
         key: NodeKey,
         context: regions::Context,
-        proof: Obligations,
+        mut proof: Obligations,
     ) -> Result<(), Error> {
         if proof.regions.is_empty()
             && proof.equalities.is_empty()
@@ -66,6 +74,18 @@ impl Checker<'_> {
             && proof.types.is_empty()
         {
             return Ok(());
+        }
+        if let Some(template) = self.projection_alias_owner(context) {
+            if template.depth != 0 {
+                proof
+                    .substitute(&mut self.facts.types, &mut Bound::lower(template.depth))
+                    .map_err(|e| self.error(key, e))?;
+            }
+            return self
+                .facts
+                .alias_requirements
+                .direct(template.owner, template.parameters, proof)
+                .map_err(|e| self.error(key, e));
         }
         if let regions::Position::Local(body) | regions::Position::Constant(body) = context.position
         {
@@ -105,16 +125,9 @@ impl Checker<'_> {
             let (owner, count, mut fold) = self
                 .projection_scope(context, &proof)
                 .map_err(|e| self.error(source, e))?;
-            for pair in proof.equalities.iter_mut().chain(&mut proof.outlives) {
-                pair.0 = fold.region(pair.0, 0).map_err(|e| self.error(source, e))?;
-                pair.1 = fold.region(pair.1, 0).map_err(|e| self.error(source, e))?;
-            }
-            for (ty, region) in &mut proof.types {
-                *ty = fold
-                    .apply(&mut self.facts.types, *ty)
-                    .map_err(|e| self.error(source, e))?;
-                *region = fold.region(*region, 0).map_err(|e| self.error(source, e))?;
-            }
+            proof
+                .substitute(&mut self.facts.types, &mut fold)
+                .map_err(|e| self.error(source, e))?;
             let mut queries = Queries::new(
                 &self.facts.types,
                 &self.facts.lifetimes.nominal_requirements,

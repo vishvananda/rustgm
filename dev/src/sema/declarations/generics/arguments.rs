@@ -118,6 +118,7 @@ impl Checker<'_> {
         let mut arguments = Vec::with_capacity(count);
         let mut defaults = None;
         let mut originals = super::super::unreduced::Arguments::default();
+        let mut required_defaults = Vec::new();
         for index in 0..count {
             let parameter = self.facts.generics.parameters[&owner][index];
             let node = index.checked_sub(omitted).and_then(|i| {
@@ -152,6 +153,7 @@ impl Checker<'_> {
                 let default = parameter
                     .default
                     .ok_or_else(|| self.error(key, "missing generic default"))?;
+                required_defaults.push(parameter.binding);
                 if defaults.is_none() {
                     let mut prefix = Bound::prefix(ItemId(owner.0));
                     for &argument in &arguments {
@@ -206,6 +208,9 @@ impl Checker<'_> {
         {
             self.facts.unreduced.retain_arguments(key, originals);
         }
+        for binding in required_defaults {
+            self.alias_use(key, binding, args, context)?;
+        }
         Ok(args)
     }
     pub(in super::super) fn generic_path(
@@ -239,6 +244,7 @@ impl Checker<'_> {
                 self.facts.unreduced.retain_node(key, original);
             }
         }
+        self.alias_path_use(key, owner, args, context)?;
         Ok(result)
     }
     fn source_argument(

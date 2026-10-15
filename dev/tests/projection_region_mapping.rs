@@ -143,3 +143,30 @@ fn restoration_is_simultaneous_and_rejects_unknown_or_overflowing_captures() -> 
     assert!(overflowing.apply(&mut store, signature).is_err());
     Ok(())
 }
+
+#[test]
+fn rebasing_preserves_all_bound_lifetimes_and_only_freshens_its_interval() -> TestResult {
+    let mut store = Store::default();
+    let local = reference(&mut store, RegionId::bound(0, 0)?)?;
+    let outer = reference(&mut store, RegionId::bound(3, 4)?)?;
+    let private = reference(&mut store, RegionId(2))?;
+    let fresh = reference(&mut store, RegionId(22))?;
+    let original = pointer(&mut store, &[local, outer, private], private)?;
+    let expected = pointer(&mut store, &[local, outer, fresh], fresh)?;
+    let mut fold = Bound::rebase_free_regions(1..4, 21)?;
+    assert_eq!(fold.apply(&mut store, original)?, expected);
+    let static_ = reference(&mut store, RegionId::STATIC)?;
+    assert_eq!(fold.apply(&mut store, static_)?, static_);
+    let foreign = reference(&mut store, RegionId(4))?;
+    assert!(fold.apply(&mut store, foreign).is_err());
+    for (range, first) in [
+        (0..1, 10),
+        (std::ops::Range { start: 3, end: 2 }, 10),
+        (1..2, 0),
+        (1..3, 0x7fff_fffe),
+        (1..0x8000_0000, 1),
+    ] {
+        assert!(Bound::rebase_free_regions(range, first).is_err());
+    }
+    Ok(())
+}
