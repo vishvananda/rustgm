@@ -1,12 +1,17 @@
 //! Definition-time checks use no assumed proof for closed, non-generic bounds.
 use super::{Checker, DefId, Error};
 use crate::{sema::nominals::Proof, types::parameters::predicates::Bound};
+struct TraitEvidence {
+    assumptions: crate::sema::traits::assumptions::Assumptions,
+    context: crate::types::infer::Context,
+}
 impl Checker<'_> {
     pub(in super::super) fn validate_bounds(
         &mut self,
         owner: DefId,
         proof: &mut Proof,
     ) -> Result<(), Error> {
+        let mut traits = None;
         for index in 0..self
             .facts
             .generics
@@ -25,6 +30,15 @@ impl Checker<'_> {
             }
             if matches!(predicate.value.bound, Bound::Trait(_)) {
                 self.trait_requirements(predicate, proof)?;
+                if traits.is_none() {
+                    traits = Some(self.declared_trait_assumptions(owner)?);
+                }
+                self.check_trait_assumption(
+                    traits.as_mut().ok_or_else(|| {
+                        self.error(predicate.source, "missing trait proof environment")
+                    })?,
+                    predicate,
+                )?;
             }
             if matches!(predicate.value.bound, Bound::Outlives(_)) {
                 continue;
@@ -78,6 +92,39 @@ impl Checker<'_> {
                     "non-generic bound is not satisfied at declaration",
                 ));
             }
+        }
+        Ok(())
+    }
+
+    fn declared_trait_assumptions(&self, owner: DefId) -> Result<TraitEvidence, Error> {
+        let mut assumptions = crate::sema::traits::assumptions::Assumptions::default();
+        for predicate in self.facts.generics.predicates_in_scope(owner) {
+            if matches!(predicate.value.bound, Bound::Trait(_)) {
+                assumptions
+                    .insert(&self.facts.types, predicate.value)
+                    .map_err(|e| self.error(predicate.source, e.to_string()))?;
+            }
+        }
+        Ok(TraitEvidence {
+            assumptions,
+            context: crate::types::infer::Context::default(),
+        })
+    }
+
+    fn check_trait_assumption(
+        &mut self,
+        state: &mut TraitEvidence,
+        predicate: crate::sema::generics::Predicate,
+    ) -> Result<(), Error> {
+        if !state
+            .assumptions
+            .unambiguous_declaration(&mut self.facts.types, &mut state.context, predicate.value)
+            .map_err(|e| self.error(predicate.source, e.to_string()))?
+        {
+            return Err(self.error(
+                predicate.source,
+                "ambiguous trait assumptions in declaration",
+            ));
         }
         Ok(())
     }

@@ -1,4 +1,5 @@
 //! Trait obligations retain inference arguments until the whole body is solved.
+mod equations;
 use super::{Context, Error, Instantiation, Solved, Store, TermId, TypeId, arguments::Argument};
 use crate::types::{
     ItemId,

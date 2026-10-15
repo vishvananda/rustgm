@@ -209,6 +209,22 @@ explicit bounds remain distinct from obligations imposed by a trait application.
 Predicate inference shares the ordinary type/const equivalence classes, and
 completion rejects unresolved arguments that appear only in an obligation.
 
+Caller-bound trait goals participate in the same inference graph as call arguments.
+Import each probe with one shared mapping across Self and all type/const roots.
+Index assumptions by trait identity and the rigid outer subject shape; do not scan
+unrelated parameter subjects. Deduplicate identical assumptions before probing.
+Failed alternatives never constrain the caller. Commit a unique match and retain
+its actual assumption identity and every required lifetime equality. The ordinary
+region checker proves those equalities; matching never erases lifetime obligations.
+
+An unknown whole Self is not inferred merely from an available caller assumption.
+Other arguments may be inferred, and a bounded worklist revisits ambiguous goals
+after another goal constrains their shared arguments. Check declaration ambiguity
+even for unused owners. Distinct lifetime applications that remain type-compatible
+are ambiguous; identical repeated bounds are one assumption. A declaration-owned
+exact bound with no competing index entry needs no inference probe. Bodies without
+user trait call obligations take the empty fast path.
+
 Resolve a destructor's impl target and receiver once. Retain the nominal item,
 method identity, whole-reference receiver binding and captured lifetime slots.
 Anonymous impl lifetimes are real slots, not fabricated declaration IDs. A

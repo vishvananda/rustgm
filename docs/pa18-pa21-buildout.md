@@ -3209,3 +3209,71 @@ and inputs were reverified; read-only archives and every observation remain in
 `obj/pa19-work/trait-contracts-*` and `obj/perf/`. The final candidate SHA256 is
 `700e6bd8ce8d8678905845410db7b8292f8584ce4ada890c021a55e2465387a1`.
 `trait-contracts-validation-v2.json` records log hashes and exact validation scope.
+
+## Caller-bound trait inference
+
+Calls now use caller trait assumptions to infer type and const arguments that
+appear only in bounds. Complete goals share the ordinary inference graph. A
+pending-goal worklist revisits ambiguity after another goal constrains a shared
+argument, independently of goal order. A wholly unknown Self is not guessed from
+a caller assumption; a known outer type constructor may constrain its children.
+
+Assumptions are indexed by trait identity and the rigid outer subject shape, with
+exact duplicates removed. Isolated probes preserve shared variables across Self,
+type arguments and const arguments, including array lengths. Only a unique match
+commits equations. The selected assumption remains explicit evidence, and its
+lifetime equalities must pass the ordinary region proof. Declaration checking also
+rejects lifetime-compatible duplicate bounds on unused items. A declaration
+containing only its own exact candidate skips inference construction.
+
+The new source suite checks 36 outcomes against pinned rustc and proves complete
+instances for accepted unused generic bodies. Three typed tests cover failed-probe
+isolation, cross-root aliases, region obligations and 4,096 repeated arguments.
+Two internal tests check unknown Self and 4,096 unrelated rigid subjects; the
+latter stays below 150,000 inference steps. Tests live with the existing trait
+application and source-bound suites. The source suite also checks
+partial tuple, array, reference and nominal subjects, conflicting repeated roots
+and ambiguous partial subjects.
+
+This also reaches ordinary qualified calls and method-own bounds through their
+existing callable obligations. General trait impls and conformance, impl-bound dot
+applicability, canonical nominal proof across equivalent lifetimes, trait-aware
+coherence, bounded Drop headers, trait method dispatch and the PA19 course release
+remain outstanding. PA20 and PA21 remain required.
+
+Validation passes 811 frontend tests in both debug and release, all 3,790
+PA1–PA18 text cases, the full independent rustc sweep, 18 maintainer native groups,
+1,126 course executable comparisons and three codegen-only controls. The sixteen
+previously declared PA13 runtime differences remain explicit. Clippy all/pedantic,
+formatting, the 522-file audit, 27 harness tests and pinned upstream/Reference
+integrity pass. No course fixtures or oracle bytes changed.
+
+Twelve frozen A/A and three-block ABBA jobs retain 216 final observations with
+full/count output equality. The initial implementation added about 33% wall time
+to the 24-level diamond workload. Skipping inference for a declaration's exact,
+unique candidate reduces that overhead to 9.6% against the published compiler.
+A direct frozen before/after comparison measures an 18.9% improvement for that
+change, with all three paired blocks improving. Existing trait-bound bodies add
+7.6% for the new declaration ambiguity and call-evidence checks. Median RSS changes
+for these two workloads are -46 and -20 KiB, respectively.
+
+An unstable ordinary-function run was repeated: the repeat changes median wall
+time by +0.3%, with paired blocks between -0.2% and +1.8%. Qualified generic method
+timing remains inconclusive: two runs have large spreads and opposite median
+deltas (-21.5% and +14.7%). These are not speedup or regression claims. Generic
+records, unused closed impls and receiver calls have median changes of -1.5%, +2.8%
+and -2.8%, with calibration noise of comparable magnitude. All observations remain
+retained, including the noisy runs; the three repeat/comparison jobs add 54 samples.
+
+New inference bodies at 64/256/1,024 functions take 8.30/20.69/76.76 ms. Single-body
+rigid-subject workloads at 64/128 parameters take 19.53/56.74 ms. A 256-parameter
+source exceeded the existing runtime-lifetime storage budget before timing; its
+failure is retained. The separate typed index test covers 4,096 subjects without
+that downstream work. New-feature scaling jobs compare identical candidate bytes.
+
+No RustGM builds or tests overlapped timing. All 525 source/config/test files,
+binaries and inputs were reverified. Final compiler SHA256:
+`85439989c23340edd2f7f8acfb57f03a0ae435c7d7b2d890666d3c9219728cbb`.
+`obj/pa19-work/trait-inference-validation-v3.json` records the final validation
+and log hashes; source snapshots, all timing receipts and earlier measurements
+remain under `obj/pa19-work/trait-inference-*` and `obj/perf/`.

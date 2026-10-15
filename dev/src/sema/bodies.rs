@@ -17,6 +17,7 @@ mod patterns;
 mod references;
 mod selected_arguments;
 mod text;
+mod trait_goals;
 use super::{
     declarations,
     model::{AdjustmentKind, Declarations, Function, Operation, RegionEquality},
@@ -538,6 +539,7 @@ impl Checker<'_> {
                     .map_err(|e| self.error(body, e))?;
             }
         }
+        let evidence = self.infer_trait_obligations(body)?;
         let (solved, predicates) = std::mem::take(&mut self.infer)
             .finish_with_predicates(
                 &mut self.facts.types,
@@ -547,7 +549,7 @@ impl Checker<'_> {
                     .map(|(_, predicate)| predicate),
             )
             .map_err(|e| self.error(body, e))?;
-        self.validate_generic_uses(&solved, &predicates)?;
+        self.validate_generic_uses(&solved, &predicates, &evidence)?;
         self.publish_methods(&solved);
         let body_key = self.key(body);
         self.publish_pattern_types(&solved)?;

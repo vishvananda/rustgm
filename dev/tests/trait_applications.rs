@@ -1,4 +1,6 @@
 //! Trait arguments remain part of identity, binder substitution and inference obligations.
+#[path = "trait_applications/equations.rs"]
+mod equations;
 use rustgm::types::{
     GenericArgs, ItemId, Kind, Primitive, RegionId, Store, TypeId,
     arguments::{Argument, ConstKind, Constant},

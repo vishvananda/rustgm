@@ -7,7 +7,7 @@ use super::{
 use std::collections::HashMap;
 
 #[derive(Default)]
-struct Import {
+pub(super) struct Import {
     types: HashMap<TermId, TermId>,
     constants: HashMap<ConstTermId, ConstTermId>,
 }
@@ -24,6 +24,15 @@ impl Context {
         root: TermId,
     ) -> Result<TermId, Error> {
         let mut mappings = Import::default();
+        self.import_with(store, source, root, &mut mappings)
+    }
+    pub(super) fn import_with(
+        &mut self,
+        store: &Store,
+        source: &mut Self,
+        root: TermId,
+        mappings: &mut Import,
+    ) -> Result<TermId, Error> {
         let root = source.root(root)?;
         let mut work = vec![(root, false)];
         let mut children = Vec::new();
@@ -73,7 +82,7 @@ impl Context {
 }
 
 impl Import {
-    fn constant(
+    pub(super) fn constant(
         &mut self,
         store: &Store,
         source: &mut Context,
