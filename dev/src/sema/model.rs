@@ -155,6 +155,11 @@ pub struct Outlives {
     pub longer: RegionId,
     pub shorter: RegionId,
 }
+pub struct QuantifiedProof {
+    pub body: NodeKey,
+    pub source: NodeKey,
+    pub proof: crate::types::lifetime_proof::Obligations,
+}
 #[derive(Clone, Copy)]
 pub struct TypeOutlives {
     pub body: NodeKey,
@@ -192,6 +197,7 @@ pub enum PartialAnnotation {
 }
 #[derive(Clone, Copy)]
 pub enum BodyRegionOrigin {
+    QuantifiedProof,
     Annotation,
     Inference,
     ItemArgument,
@@ -235,6 +241,7 @@ pub struct Declarations {
     pub coercions: Vec<Coercion>,
     pub outlives: Vec<Outlives>,
     pub type_outlives: Vec<TypeOutlives>,
+    pub quantified_proofs: Vec<QuantifiedProof>,
     pub lifetimes: super::lifetimes::Lifetimes,
     pub(super) constant_values: std::collections::HashMap<DefId, super::constants::Value>,
     pub(super) constant_products: super::constants::products::Products,
@@ -279,6 +286,7 @@ impl Declarations {
             + self.coercions.len()
             + self.outlives.len()
             + self.type_outlives.len()
+            + self.quantified_proofs.len()
             + self.well_formed.len()
     }
     /// Retain the directed lifetime relation independently of runtime adjustment
@@ -309,6 +317,7 @@ impl Declarations {
             partial_annotations: std::collections::HashMap::new(),
             well_formed: Vec::new(),
             type_outlives: Vec::new(),
+            quantified_proofs: Vec::new(),
             coercions: Vec::new(),
             outlives: Vec::new(),
             lifetimes: super::lifetimes::Lifetimes::default(),

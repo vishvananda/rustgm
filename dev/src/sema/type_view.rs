@@ -188,6 +188,7 @@ pub fn regions(equalities: &[RegionEquality], out: &mut impl Write) -> io::Resul
 pub fn body_regions(regions: &[BodyRegion], out: &mut impl Write) -> io::Result<()> {
     for (ordinal, variable) in regions.iter().enumerate() {
         let origin = match variable.origin {
+            BodyRegionOrigin::QuantifiedProof => "quantified-proof",
             BodyRegionOrigin::Annotation => "annotation",
             BodyRegionOrigin::Inference => "inference",
             BodyRegionOrigin::ItemArgument => "item-argument",

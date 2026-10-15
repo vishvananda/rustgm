@@ -113,13 +113,21 @@ bound graph traversal and argument work. Freshen each template's private region
 interval before substituting caller arguments; numeric overlap must not turn a
 caller lifetime into a template variable. A failed expansion invalidates its scope.
 
-Nested callable annotations retain their enclosing alias/default proof owner.
-Removing intervening binders is valid only when no local lifetime is captured;
-requirements involving such locals need explicit universal proof scopes. Missing
-that representation must produce an error. Partial alias annotations likewise
-require delayed projection inference: a normalized result cannot infer a
-non-injective projection's input parameters. Do not use either shortcut to
-manufacture a successful proof.
+Nested callable annotations retain their enclosing alias/default proof owner and
+an explicit universal scope tree. Complete each binder's slot count before sealing
+the contract. Cache source scopes as they are discovered; captured-lifetime lookup
+uses packed ancestor jumps rather than repeated parent walks. Instantiate each
+private witness in its actual universe, keeping sibling scopes distinct and caller
+inference variables outside younger binders. Empty binders preserve coordinates
+and consume work without introducing new universal lifetimes.
+
+Retain quantified evidence through body collection, specialization and selected
+item rewriting. Substitute caller parameters beneath each block's local binder
+prefix, and prove the resulting requirements in the same graph as ordinary caller
+constraints. Scope IDs are local to one evidence object and must be remapped when
+combining independent objects. Partial alias annotations still require delayed
+projection inference: a normalized result cannot infer a non-injective
+projection's input parameters.
 
 Check constraining lifetime positions before erasing projections through
 normalization. A lifetime occurring only inside a projected function-pointer

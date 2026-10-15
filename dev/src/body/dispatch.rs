@@ -28,6 +28,12 @@ pub(crate) fn resolve(
                 None
             }
         })
+        .chain(
+            contract
+                .proofs
+                .iter()
+                .map(|(_, proof)| proof.regions.end.saturating_sub(1)),
+        )
         .max()
         .unwrap_or(0)
         .checked_add(1)
@@ -62,6 +68,10 @@ pub(crate) fn resolve(
         }
     }
     let proof = dispatcher.finish();
+    if proof.has_quantified() {
+        contract.proofs.push((body.source, proof));
+        return Ok(());
+    }
     let mut obligations = proof
         .regions
         .map(|id| Obligation {
@@ -131,6 +141,9 @@ fn rewrite(
             }
             _ => {}
         }
+    }
+    for (_, proof) in &mut contract.proofs {
+        proof.substitute(&mut facts.types, fold)?;
     }
     for (ty, _) in &mut contract.type_assumptions {
         *ty = fold.apply(&mut facts.types, *ty)?;

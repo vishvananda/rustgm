@@ -108,7 +108,8 @@ impl Checker<'_> {
         self.defaults.entries[id.0].state = State::Complete;
         self.facts
             .alias_requirements
-            .seal(self.facts.generics.parameters[&owner][index as usize].binding);
+            .seal(self.facts.generics.parameters[&owner][index as usize].binding)
+            .map_err(|e| self.error(key, e))?;
         Ok(())
     }
     pub(in super::super) fn complete_deferred_declarations(

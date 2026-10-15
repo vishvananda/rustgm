@@ -94,7 +94,14 @@ impl Checker<'_> {
         if item.generics.start == item.generics.end
             && item.where_clause.start == item.where_clause.end
         {
-            return Ok(regions::Context::ALIAS);
+            return Ok(regions::Context {
+                position: if matches!(item.kind, crate::syntax::item::ItemKind::TypeAlias { .. }) {
+                    regions::Position::Alias(id)
+                } else {
+                    regions::Position::Output
+                },
+                ..regions::Context::ALIAS
+            });
         }
         let declared = self.declared_regions(key, item.generics)?;
         let binder = self.regions.binder(None, declared.clone());
@@ -122,7 +129,11 @@ impl Checker<'_> {
         self.facts.lifetimes.parameters.insert(id, declared);
         Ok(regions::Context {
             binder: Some(binder),
-            position: regions::Position::Output,
+            position: if matches!(item.kind, crate::syntax::item::ItemKind::TypeAlias { .. }) {
+                regions::Position::Alias(id)
+            } else {
+                regions::Position::Output
+            },
         })
     }
 

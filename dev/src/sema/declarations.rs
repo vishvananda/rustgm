@@ -499,7 +499,10 @@ impl Checker<'_> {
                 self.facts.unreduced.retain_definition(id, original);
             }
             self.validate_alias(id, key, ty)?;
-            self.facts.alias_requirements.seal(id);
+            self.facts
+                .alias_requirements
+                .seal(id)
+                .map_err(|e| self.error(key, e))?;
         }
         let (value, kind) = match item.kind {
             ItemKind::Const { value, .. } => (value, InitializerKind::Const),
@@ -920,6 +923,7 @@ impl Checker<'_> {
                     Vec::new()
                 };
                 let bound_regions = self.regions.count(binder);
+                self.complete_alias_scope(binder, bound_regions);
                 if owner.is_none() && bound_regions != input_count {
                     return Err(self.error(
                         key,

@@ -66,25 +66,17 @@ impl Checker<'_> {
         &mut self,
         key: NodeKey,
         context: regions::Context,
-        mut proof: Obligations,
+        proof: Obligations,
     ) -> Result<(), Error> {
-        if proof.regions.is_empty()
-            && proof.equalities.is_empty()
-            && proof.outlives.is_empty()
-            && proof.types.is_empty()
-        {
+        if proof.is_empty() {
             return Ok(());
         }
         if let Some(template) = self.projection_alias_owner(context) {
-            if template.depth != 0 {
-                proof
-                    .substitute(&mut self.facts.types, &mut Bound::lower(template.depth))
-                    .map_err(|e| self.error(key, e))?;
-            }
+            let scope = self.projection_alias_scope(key, context, template)?;
             return self
                 .facts
                 .alias_requirements
-                .direct(template.owner, template.parameters, proof)
+                .direct(template.owner, template.parameters, proof, scope)
                 .map_err(|e| self.error(key, e));
         }
         if let regions::Position::Local(body) | regions::Position::Constant(body) = context.position

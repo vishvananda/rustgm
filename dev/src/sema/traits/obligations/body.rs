@@ -20,9 +20,25 @@ impl Obligations {
         let region = BodyRegion {
             body,
             source,
-            origin: BodyRegionOrigin::Inference,
+            origin: if self.has_quantified() {
+                BodyRegionOrigin::QuantifiedProof
+            } else {
+                BodyRegionOrigin::Inference
+            },
         };
-        facts.body_regions.extend(self.regions.map(|_| region));
+        facts
+            .body_regions
+            .extend(self.regions.clone().map(|_| region));
+        if self.has_quantified() {
+            facts
+                .quantified_proofs
+                .push(crate::sema::model::QuantifiedProof {
+                    body,
+                    source,
+                    proof: self,
+                });
+            return Ok(());
+        }
         facts.region_equalities.extend(
             self.equalities
                 .into_iter()

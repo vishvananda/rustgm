@@ -130,9 +130,17 @@ impl Bound {
         store: &mut Store,
         argument: Argument,
     ) -> Result<Argument, &'static str> {
+        self.apply_argument_inside(store, argument, 0)
+    }
+    pub(crate) fn apply_argument_inside(
+        &mut self,
+        store: &mut Store,
+        argument: Argument,
+        depth: u16,
+    ) -> Result<Argument, &'static str> {
         Ok(match argument {
-            Argument::Lifetime(region) => Argument::Lifetime(self.region(region, 0)?),
-            Argument::Type(ty) => Argument::Type(self.apply(store, ty)?),
+            Argument::Lifetime(region) => Argument::Lifetime(self.region(region, depth)?),
+            Argument::Type(ty) => Argument::Type(self.apply_inside(store, ty, depth)?),
             Argument::Const(id) => Argument::Const(self.constant(store, id)?),
         })
     }

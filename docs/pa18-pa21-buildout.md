@@ -4642,3 +4642,81 @@ medians range from 5,746 to 18,420 KiB. The source-level scaling controls and ty
 diamond test cover sharing without claiming precise throughput from noisy wall
 times. The receipt is `obj/pa20-work/alias-obligations-v1/validation-v1.json`;
 remaining prerequisites are recorded beside it in `next-implementation.md`.
+
+## Quantified alias lifetime requirements
+
+Conditional alias/default contracts now retain nested universal binder scopes.
+An unused alias may keep an unproved requirement; each actual use must discharge
+it with distinct private witnesses beneath the appropriate universal binder.
+Sibling binders cannot share witnesses. Caller inference variables remain outside
+younger binders, and an enclosing projection or zero-length array cannot erase a
+requirement that was needed to form its argument.
+
+The shared typed lifetime evidence contains a flat, topologically ordered scope
+plan and proof blocks with disjoint fresh intervals. Combining independent plans
+remaps their scope IDs. Source binders acquire their final slot counts before a
+contract is sealed; empty binders retain coordinates and consume bounded work.
+Each source scope is cached after discovery, and packed ancestor jumps resolve
+captured lifetimes without repeatedly walking a deep parent chain. Ordinary flat
+proofs retain the allocation-free quantifier path.
+
+Body collection, generic specialization and selected-item rewriting preserve the
+structured evidence. Parameter substitution skips each block's local binder
+prefix. The ordinary lifetime gate proves quantified requirements together with
+caller constraints, preserving both body inference and diagnostic source identity.
+Associated definitions still prove their own requirements even when unused;
+ordinary alias bounds do not grant assumptions to an alias use.
+
+The independently qualified source matrix covers 48 programs, including nested
+captures, selected and overridden defaults, erased results, generic type-outlives
+requirements, local lifetime inference and associated-definition conformance.
+Its negative checks require the intended unsatisfied lifetime diagnostic.
+Four native programs exercise private witnesses, generic Copy/type-outlives
+requirements, erased results and trait dispatch after a quantified local alias.
+Typed controls include sibling isolation, scope remapping, incomplete contract
+rejection, numeric region overlap, empty-binder budgets and exact ancestor lookup
+through 4,096 nested binders.
+
+PA20 and PA21 remain planned. Delayed projection inference, complete declaration
+environment dependencies, symbolic associated-type equalities, direct nested local
+annotation scopes and the remaining advanced generic contracts are still required.
+These changes do not promote a partial assignment or regenerate course oracles.
+
+The full debug suite passes 986 tests with 34 native tests explicitly ignored.
+The optimized affected suite passes 54 test functions with native cases included.
+The final 48-case source matrix contains 30 accepted and 18 rejected programs;
+every rejection reaches its intended lifetime solver failure. All 4,857 active
+course cases, Clippy all/pedantic, rustfmt, the 612-file audit and 27 harness tests
+pass. Course fixtures, manifests and oracle bytes are unchanged.
+
+The final binary is
+`fb0c25fedad24b1ec54307874f10d32ce31e5a81e037a922fb84619f053d2862`;
+615 source/config/test files are archived. Thirty-nine existing workloads preserve
+published full/count output bytes. Twelve new inputs cover quantified chains,
+repeated uses, distinct widths and body proofs at 128/512/2,048. Three source-depth
+inputs at 16/32/64 compare the initial implementation with its source-scope cache
+and ancestor lookup refinements. An independently accepted depth-128 input exceeds
+the frontend's existing parser nesting limit; its rejection is retained separately
+and is excluded from successful timing. The 4,096-level typed control bypasses
+source parsing to test the lifetime scope machinery directly.
+
+A/A calibration and five ABBA blocks retain 1,404 observations; eight confirmation
+controls retain another 208. Full/count outputs and frozen source, binary and
+input hashes agree throughout both runs. No local RustGM build, test or frontend
+probe overlaps timing. Existing-workload paired medians initially range from
+-3.5% to +5.0%. The pointer-binder increases at 128/512/2,048 fall from
++1.7/+5.0/+2.2% to +0.9/+0.8/+0.6% in confirmation; the large conditional-width
+comparison moves from -3.5% to -3.0%. Calibration still shows host variability.
+These results establish neither a general speedup nor the absence of small
+regressions.
+
+Initial quantified chain medians are 10.04/9.17/25.00 ms; confirmation of the
+nonmonotonic first two points gives 5.16/8.98 ms with identical candidate binaries.
+Repeated-use medians are 4.97/7.57/18.37 ms, width medians 7.56/17.99/63.67 ms,
+and body-proof medians 8.28/20.73/71.17 ms. New workload resident medians range
+from 5,744 to 19,844 KiB. Depth-16 and depth-64 refinements measure +2.5/-3.8%
+initially and +1.6/-2.6% in confirmation; startup and host noise limit conclusions
+at these small source sizes. Every original observation and the excluded parser
+boundary are retained. The receipt is
+`obj/pa20-work/quantified-aliases-v1/validation-v2.json`; remaining implementation
+work and the newly qualified declaration-environment probes are recorded beside it.

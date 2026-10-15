@@ -45,6 +45,9 @@ pub(super) fn specialize(
             _ => {}
         }
     }
+    for (_, proof) in &mut contract.proofs {
+        proof.substitute(&mut facts.types, &mut bound)?;
+    }
     // Instantiation sites have checked argument well-formedness. Retain those
     // structural relations as assumptions in this separate proof universe,
     // including arguments absent from the signature's runtime parameters.

@@ -42,6 +42,7 @@ pub struct Contract {
     pub parameters: Vec<crate::types::parameters::ParameterId>,
     pub type_assumptions: Vec<(TypeId, RegionId)>,
     pub obligations: Vec<Obligation>,
+    pub proofs: Vec<(NodeKey, crate::types::lifetime_proof::Obligations)>,
 }
 impl Contract {
     fn constant(source: NodeKey) -> Self {
@@ -53,6 +54,7 @@ impl Contract {
             parameters: Vec::new(),
             type_assumptions: Vec::new(),
             obligations: Vec::new(),
+            proofs: Vec::new(),
         }
     }
 }
@@ -95,6 +97,9 @@ pub fn collect(facts: &Declarations) -> Result<Contracts<'_>, &'static str> {
         Ok(())
     };
     for (i, v) in facts.body_regions.iter().enumerate() {
+        if matches!(v.origin, BodyRegionOrigin::QuantifiedProof) {
+            continue;
+        }
         add(
             v.body,
             v.source,
@@ -151,11 +156,28 @@ pub fn collect(facts: &Declarations) -> Result<Contracts<'_>, &'static str> {
             }
         }
     }
+    collect_proofs(facts, &mut bodies, &index)?;
     Ok(Contracts {
         bodies,
         callables: &facts.lifetimes.callables,
         nominal_requirements: &facts.lifetimes.nominal_requirements,
     })
+}
+fn collect_proofs(
+    facts: &Declarations,
+    bodies: &mut [Contract],
+    index: &HashMap<NodeKey, usize>,
+) -> Result<(), &'static str> {
+    for proof in &facts.quantified_proofs {
+        let index = index
+            .get(&proof.body)
+            .copied()
+            .ok_or("quantified proof has no body owner")?;
+        bodies[index]
+            .proofs
+            .push((proof.source, proof.proof.clone()));
+    }
+    Ok(())
 }
 fn constructors(
     facts: &Declarations,
@@ -260,5 +282,6 @@ fn parameter_contract(
         parameters,
         type_assumptions,
         obligations: Vec::new(),
+        proofs: Vec::new(),
     })
 }

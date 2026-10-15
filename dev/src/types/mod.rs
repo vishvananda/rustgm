@@ -9,6 +9,7 @@ pub mod equality;
 pub mod infer;
 pub mod instance;
 pub mod length;
+pub mod lifetime_proof;
 pub mod outlives;
 pub mod parameters;
 pub mod projection;

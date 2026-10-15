@@ -1,4 +1,6 @@
 //! Directed type relations use actual region arguments and explicit binder scopes.
+mod ancestry;
+mod scopes;
 use super::region_graph::{Error, Graph, Kind as RegionKind, Region, Solution};
 use crate::types::{
     Kind, RegionId, Store, TypeId,
@@ -6,11 +8,14 @@ use crate::types::{
     parameters::{ParameterId, ParameterKind},
     variance::{Variance, Variances},
 };
+pub use scopes::ProofScope;
 use std::collections::{HashMap, HashSet};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 struct Scope(usize);
 struct Binder {
+    depth: u16,
+    jump_start: usize,
     parent: Option<Scope>,
     start: usize,
     end: usize,
@@ -73,6 +78,7 @@ pub struct Constraints<'a> {
     variables: HashMap<RegionId, Region>,
     parameters: HashMap<ParameterId, Region>,
     binders: Vec<Binder>,
+    ancestors: Vec<Scope>,
     arguments: Vec<Region>,
     universe: u32,
     seen: HashSet<Relation>,
@@ -156,6 +162,7 @@ impl<'a> Constraints<'a> {
             variables: HashMap::new(),
             parameters: HashMap::new(),
             binders: Vec::new(),
+            ancestors: Vec::new(),
             arguments: Vec::new(),
             universe: 0,
             seen: HashSet::new(),
@@ -163,7 +170,7 @@ impl<'a> Constraints<'a> {
             steps: 0,
             limit,
         };
-        this.binder(None, universals, true)?;
+        this.binder(None, universals, true, 0)?;
         Ok(this)
     }
     /// A rigid type parameter's lifetime components are opaque to this body.
@@ -256,22 +263,22 @@ impl<'a> Constraints<'a> {
         parent: Option<Scope>,
         count: u32,
         universal: bool,
+        universe: u32,
     ) -> Result<Scope, Error> {
+        let (depth, jump_start) = self.prepare_ancestry(parent)?;
         let scope = Scope(self.binders.len());
         let start = self.arguments.len();
         for _ in 0..count {
             let kind = if universal {
-                RegionKind::Universal {
-                    universe: self.universe,
-                }
+                RegionKind::Universal { universe }
             } else {
-                RegionKind::Variable {
-                    universe: self.universe,
-                }
+                RegionKind::Variable { universe }
             };
             self.arguments.push(self.graph.region(kind)?);
         }
         self.binders.push(Binder {
+            depth,
+            jump_start,
             parent,
             start,
             end: self.arguments.len(),
@@ -285,13 +292,7 @@ impl<'a> Constraints<'a> {
         let Some((depth, index)) = id.bound_parts() else {
             return self.variables.get(&id).copied().ok_or(Error::Identity);
         };
-        for _ in 0..depth {
-            scope = self
-                .binders
-                .get(scope.0)
-                .and_then(|b| b.parent)
-                .ok_or(Error::Identity)?;
-        }
+        scope = self.ancestor(scope, depth)?;
         let binder = self.binders.get(scope.0).ok_or(Error::Identity)?;
         self.arguments[binder.start..binder.end]
             .get(usize::from(index))
@@ -617,8 +618,8 @@ impl<'a> Constraints<'a> {
             return Err(Error::Identity);
         }
         self.universe = self.universe.checked_add(1).ok_or(Error::Budget)?;
-        let right = self.binder(Some(relation.right), bc, true)?;
-        let left = self.binder(Some(relation.left), ac, false)?;
+        let right = self.binder(Some(relation.right), bc, true, self.universe)?;
+        let left = self.binder(Some(relation.left), ac, false, self.universe)?;
         let nested = Relation {
             left,
             right,

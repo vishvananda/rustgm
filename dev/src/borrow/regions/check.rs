@@ -255,6 +255,8 @@ fn body(
             message,
         })?;
     }
+    let first_proof = input.obligations.len().saturating_add(provenance.len());
+    quantified(input, queries, &mut constraints, first_proof)?;
     let proof = constraints.prove().map_err(|e| {
         let source = match e {
             graph::Error::Unsatisfied { source, .. } => input
@@ -265,7 +267,14 @@ fn body(
                         .checked_sub(input.obligations.len())
                         .and_then(|i| provenance.get(i))
                 })
-                .map_or(input.source, |o| o.source),
+                .map(|o| o.source)
+                .or_else(|| {
+                    (source as usize)
+                        .checked_sub(first_proof)
+                        .and_then(|i| input.proofs.get(i))
+                        .map(|(source, _)| *source)
+                })
+                .unwrap_or(input.source),
             _ => input.source,
         };
         Error {
@@ -279,6 +288,25 @@ fn body(
         solution: proof.solution,
         identities: proof.identities,
     })
+}
+fn quantified(
+    input: &Contract,
+    queries: &mut Queries<'_>,
+    constraints: &mut Constraints<'_>,
+    first: usize,
+) -> Result<(), Error> {
+    for (index, (source, proof)) in input.proofs.iter().enumerate() {
+        let error = |message| Error {
+            source: Some(*source),
+            message,
+        };
+        let index = u32::try_from(first.saturating_add(index))
+            .map_err(|_| error("too many lifetime proof sources".into()))?;
+        proof
+            .require_source(constraints, queries, index)
+            .map_err(error)?;
+    }
+    Ok(())
 }
 fn apply(
     queries: &mut Queries<'_>,
