@@ -3940,3 +3940,100 @@ Compiler SHA256 is
 The receipt is `obj/pa19-work/implicit-validation-v1.json`; original predictions,
 failed probes, qualifications and timings remain under
 `obj/pa19-work/implicit-methods-v1`, `obj/pa19-work/implicit-*` and `obj/perf/`.
+
+## Trait receiver calls
+
+Dot calls now search inherent methods, parameter-bound methods and lexical trait
+methods at each built-in dereference/autoref candidate. Bound priority pins Self
+to the parameter that supplies the bound. A method that cannot use that Self can
+still participate through a lexical implementation for another Self, such as
+`&T`; this distinction preserves genuine ambiguity between reference impls.
+Static associated functions cannot become dot methods. Call arguments, expected
+results, method-own bounds, lifetimes and write permission do not select a fallback.
+
+Primitive, nominal, rigid, reference and numeric receivers share ordinary callable
+inference and concrete trait dispatch. A unique implementation can infer a numeric
+receiver; otherwise ordinary numeric fallback remains available. An unconstrained
+whole type is not inferred solely from a trait implementation. Mutable-reference
+receivers reborrow the original place, including when Self is itself a reference.
+Both rules were corrected from initial predictions using pinned rustc; original
+predictions and results remain in the evidence rather than being overwritten.
+
+Array receivers can unsize after the final built-in dereference. The actual borrow
+retains the array place type and the region contract records its conversion to a
+slice reference. Existing body lowering then produces the slice value. No source
+is reparsed, no second evaluation of the receiver is introduced and the backend
+contract is unchanged. Trait calls infer Self through the receiver signature;
+ordinary call arity counts the hidden receiver from its typed call node.
+
+The first deep-reference control exposed 139,602 inference steps at 64 reference
+levels. Receiver-shape checks and the existing trait head indexes now exclude
+impossible candidates before importing graphs. The 64/96-level controls each need
+one full candidate probe, while successful candidates still undergo complete trait,
+borrow and lifetime proof. Existing inherent selection retains its indexed path.
+
+The new tests have 93 independently qualified acceptance controls and 50 native
+comparisons. They distinguish inherent/shared/mutable precedence and parameter
+bounds from lexical reference impls, exercise defaults and recursion, and verify
+source-place mutations, returned borrows, captured lifetimes and two-phase calls.
+Two generated dot-call workloads add 1,024 independent scopes with 1,024 unimported
+homonyms; they share the existing scope-index regression with type-path lookup.
+
+A final control exposed a gap shared with the preceding implicit-path checkpoint:
+lookup selected a bound method, but later inference could replace its trait arguments
+with those of an unrelated blanket implementation. The final implementation retains
+the selected origin and restricts exactly the callable's implicit Self predicate to
+caller-assumption evidence. Additional method requirements keep ordinary impl proof.
+Twenty-two controls cover types, consts, lifetimes, function values, supertraits and
+multiple bound applications; six additional programs execute the selected dispatch.
+One explicit-lifetime prediction was corrected against rustc before accepting the
+control, and its original prediction and diagnostic remain retained.
+
+The former PA18 trait-method boundary source is preserved verbatim in the accepted
+maintainer/native checks. Its obsolete rejection and manifest entry are removed;
+all remaining 432 PA18 oracle triples are unchanged, and the receipt is regenerated
+through the explicit reference command. PA18 now has 268 accepted and 164 rejected
+cases, including two documented later-stage acceptance differences. The independent
+PA18 checks, 24 upstream fixtures and 126 vendored Reference files pass.
+
+Validation passes 929 debug frontend tests, 117 affected optimized tests, all ten
+affected native groups and 3,789 active course cases. Formatting, Clippy all/pedantic,
+the 576-file zero-finding audit and 27 harness checks pass. The preceding implicit
+path checkpoint f539916 passed CI run 38728011044 on main. PA19's semantic view and
+complete grading contract remain required; PA20 and PA21 are still unfinished.
+
+Seventy-nine frozen A/A and five-block ABBA jobs plus three retained repeats record
+2,132 observations for the final source. All full/count output comparisons and
+source/binary/input hashes pass. No local RustGM builds, tests or probes overlap
+these timing runs. The earlier pre-fix snapshots and their 1,950 observations remain
+retained separately; they do not validate the final bound-selection correction.
+
+Against the published implicit-path compiler, initial paired medians range from
+-5.7% to +5.5%, with A/A spreads up to 39.0%. The Drop, callable-inference and implicit-
+fallback positive outliers become -0.4%, -0.9% and -4.6% on repeat. Every original
+sample remains included. Against the pre-fix receiver compiler, paired medians
+range from -1.4% to +2.7%, with A/A spreads up to 31.5%. These measurements do not
+establish a stable speedup or performance equivalence. Median RSS differences are
+-686 to +744 KiB against the published compiler and -20 to +398 KiB against the
+pre-fix receiver compiler.
+
+Final candidate median wall times in milliseconds are:
+
+| Workload | 64 | 256 | 1,024 |
+| --- | ---: | ---: | ---: |
+| Value receivers | 7.79 | 18.28 | 62.65 |
+| Borrowed receivers | 9.24 | 23.88 | 83.72 |
+| Rigid receivers | 13.95 | 43.51 | 182.46 |
+| Unimported homonyms | 9.31 | 30.54 | 93.64 |
+| Array to slice receivers | 9.93 | 27.62 | 99.57 |
+| Reference Self | 9.44 | 25.55 | 91.43 |
+| Bound arguments, dot calls | 18.90 | 75.88 | 249.21 |
+| Bound arguments, type paths | 16.89 | 78.66 | 220.88 |
+
+The 579 source/config/test files are archived under
+`obj/pa19-work/trait-receiver-source-v2`. Compiler SHA256 is
+`dfd43e1a1604644f49c585b700104854794846ffe4a9a53ce91afa2f2075a9f0`.
+The receipt is `obj/pa19-work/trait-receiver-validation-v2.json`; original predictions,
+corrections, failed probes and validation logs remain under
+`obj/pa19-work/dot-receivers-v1`, with frozen inputs, measurements and both source
+snapshots under `obj/pa19-work/trait-receiver-*` and `obj/perf/`.

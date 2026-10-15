@@ -4,11 +4,12 @@ use crate::{
     sema::model::{BodyRegionOrigin, Outlives},
     types::{GenericArgs, RegionId, infer, substitute::Bound},
 };
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 #[derive(Default)]
 pub(super) struct CallTypes {
     pub obligations: Vec<(NodeId, crate::types::infer::predicates::Predicate)>,
+    pub assumed_obligations: HashSet<usize>,
     pub generic: Vec<(NodeId, DefId, TermId)>,
     pub generic_constructors: bool,
     pub active: HashMap<NodeId, TermId>,
@@ -31,6 +32,7 @@ impl CallTypes {
     }
     pub fn clear(&mut self) {
         self.obligations.clear();
+        self.assumed_obligations.clear();
         self.generic.clear();
         self.generic_constructors = false;
         self.active.clear();

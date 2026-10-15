@@ -38,6 +38,11 @@ impl Evidence {
 }
 
 impl Assumptions {
+    pub(super) fn may_have_subject(&self, item: ItemId, subject: Subject) -> bool {
+        subject
+            .heads()
+            .any(|head| self.candidates.contains_key(&(item, head)))
+    }
     pub fn parameter_traits(&self, parameter: ParameterId) -> &[ItemId] {
         self.parameter_traits
             .get_or_init(|| {

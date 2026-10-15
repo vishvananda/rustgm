@@ -35,6 +35,16 @@ mod native;
 mod qualification;
 #[path = "trait_bounds/qualification_native.rs"]
 mod qualification_native;
+#[path = "trait_bounds/receiver_adjustments.rs"]
+mod receiver_adjustments;
+#[path = "trait_bounds/receiver_bounds.rs"]
+mod receiver_bounds;
+#[path = "trait_bounds/receiver_contracts.rs"]
+mod receiver_contracts;
+#[path = "trait_bounds/receiver_lookup.rs"]
+mod receiver_lookup;
+#[path = "trait_bounds/receiver_native.rs"]
+mod receiver_native;
 #[path = "helpers/qualify.rs"]
 mod rustc;
 #[path = "trait_bounds/selection.rs"]

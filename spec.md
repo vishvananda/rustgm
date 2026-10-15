@@ -237,6 +237,30 @@ Reuse the inherent candidate partition and isolated applicability equations;
 discard impossible receiver depths before importing an inference graph. Receiver
 mutability, moves and loan legality remain obligations of the selected call.
 
+At each candidate receiver, inherent methods precede parameter-bound methods,
+which precede lexical trait methods. Bound priority constrains Self to the parameter
+that supplies the bound. Retain that origin for both dot calls and implicit type
+paths. The selected callable's exact implicit `Self: Trait<parameters>` predicate
+must use caller assumptions; matching only the trait name could incorrectly
+replace its arguments with an unrelated blanket implementation. Multiple stated
+applications can still be resolved by ordinary argument inference. Other predicates
+of the selected method keep normal implementation proof, and an explicitly written
+trait qualifier keeps normal trait selection. The same trait declaration may remain
+a lexical candidate for another Self, such as a reference to that parameter. Peel the retained receiver
+reference shape and consult existing assumption/implementation head indexes before
+copying a probe graph. These filters can exclude impossible candidates; positive
+matches still require complete equations and validated implementation evidence.
+Integer and floating-point receiver variables keep their numeric domains and the
+ordinary inference/fallback rules. A completely unknown Self is not guessed.
+
+After the final built-in dereference, consider an array's slice type and its shared
+and mutable borrows. Keep the actual place and borrow typed as an array; publish
+the array-to-slice conversion explicitly for the region proof and body lowering.
+Trait Self is inferred through the selected receiver signature, including when
+Self is a reference. Only inherent calls bind the nominal impl target separately.
+The hidden receiver argument belongs to every typed method-call node, regardless
+of whether it has inherent-owner metadata.
+
 Prepare written method type annotations and constant dependencies in the ordinary
 declaration worklist without selecting a method. After selection, validate kinds
 and arity against the method's own parameters, then evaluate constant arguments

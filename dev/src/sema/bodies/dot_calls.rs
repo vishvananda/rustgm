@@ -15,6 +15,7 @@ pub(super) struct Pending {
     borrow: Option<TermId>,
     actual: TermId,
     expected: TermId,
+    unsize: bool,
 }
 impl Pending {
     pub(super) fn value_types(&self, solved: &Solved) -> [crate::types::TypeId; 3] {
@@ -47,16 +48,21 @@ impl Checker<'_> {
                 traits: traits.as_deref(),
             },
         )?;
-        let implementation = self
-            .facts
-            .associated
-            .owner(selected.method)
-            .and_then(|id| self.facts.associated.get(id))
-            .ok_or_else(|| self.error(node, "missing selected receiver owner"))?
-            .self_definition;
-        self.call_types
-            .method_owners
-            .insert(node, (implementation, selected.self_term));
+        if selected.from_bound {
+            self.facts.methods.bound_uses.insert(key);
+        }
+        if let Some(subject) = selected.self_term {
+            let implementation = self
+                .facts
+                .associated
+                .owner(selected.method)
+                .and_then(|id| self.facts.associated.get(id))
+                .ok_or_else(|| self.error(node, "missing selected receiver owner"))?
+                .self_definition;
+            self.call_types
+                .method_owners
+                .insert(node, (implementation, subject));
+        }
         self.complete_method_arguments(node, selected.method)?;
         let ty = self.facts.definitions[selected.method.0 as usize]
             .ok_or_else(|| self.error(node, "missing selected method type"))?;
@@ -66,7 +72,12 @@ impl Checker<'_> {
         let expected = self.child(node, signature, 0)?;
         let (dereferences, borrow, actual) =
             self.adjust_method_receiver(node, site.receiver, term, selected)?;
-        self.shape_equation(node, actual, expected)?;
+        let converted = if selected.unsize {
+            self.unsize_method_receiver(node, actual)?
+        } else {
+            actual
+        };
+        self.shape_equation(node, converted, expected)?;
         self.call_types.methods.push((
             node,
             Pending {
@@ -76,10 +87,26 @@ impl Checker<'_> {
                 borrow,
                 actual,
                 expected,
+                unsize: selected.unsize,
             },
         ));
         self.call_types.active.insert(node, signature);
         self.schedule_call_arguments(node, signature, site.arguments, 1)
+    }
+
+    fn unsize_method_receiver(&mut self, node: NodeId, actual: TermId) -> Result<TermId, Error> {
+        let Some(reference @ Constructor::Reference { .. }) = self.head(node, actual)? else {
+            return Err(self.error(node, "unsized method receiver requires a reference"));
+        };
+        let array = self.child(node, actual, 0)?;
+        let element = self.child(node, array, 0)?;
+        let slice = self
+            .infer
+            .construct(Constructor::Slice, &[element])
+            .map_err(|e| self.error(node, e))?;
+        self.infer
+            .construct(reference, &[slice])
+            .map_err(|e| self.error(node, e))
     }
 
     fn adjust_method_receiver(
@@ -144,7 +171,11 @@ impl Checker<'_> {
                 source: key,
                 actual,
                 expected,
-                kind: AdjustmentKind::Equality,
+                kind: if pending.unsize {
+                    AdjustmentKind::ArrayToSlice
+                } else {
+                    AdjustmentKind::Equality
+                },
                 reference: None,
             });
         }

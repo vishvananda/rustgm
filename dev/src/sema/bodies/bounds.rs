@@ -230,11 +230,17 @@ impl Checker<'_> {
                 regions[usize::from(*index)] = *region;
             }
         }
+        let assumed = self.bound_method_requirement(node, owner)?;
         let mut substitution = substitute::Bound::new(regions);
         let mut inference =
             crate::types::infer::Instantiation::new(&mut self.infer, &self.facts.types, bindings)
                 .map_err(|e| self.error(node, e))?;
         for predicate in predicates {
+            if assumed == Some(predicate.value) {
+                self.call_types
+                    .assumed_obligations
+                    .insert(self.call_types.obligations.len());
+            }
             let predicate = substitution
                 .predicate(&mut self.facts.types, predicate.value)
                 .map_err(|e| self.error(node, e))?;
@@ -245,5 +251,22 @@ impl Checker<'_> {
             self.call_types.obligations.push((node, predicate));
         }
         Ok(())
+    }
+
+    fn bound_method_requirement(
+        &self,
+        node: NodeId,
+        owner: DefId,
+    ) -> Result<Option<crate::types::parameters::predicates::Predicate>, Error> {
+        if !self.facts.methods.bound_uses.contains(&self.key(node)) {
+            return Ok(None);
+        }
+        self.facts
+            .associated
+            .trait_owner(owner)
+            .and_then(|owner| self.facts.generics.trait_self_bounds.get(&owner))
+            .copied()
+            .map(Some)
+            .ok_or_else(|| self.error(node, "bound-selected method has no trait Self predicate"))
     }
 }

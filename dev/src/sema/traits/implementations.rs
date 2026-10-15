@@ -39,6 +39,12 @@ pub(in crate::sema) struct Implementations {
     pairs: Vec<(usize, usize)>,
 }
 impl Implementations {
+    pub(super) fn may_have_subject(&self, item: ItemId, subject: Subject) -> bool {
+        self.heads.contains_key(&(item, None))
+            || subject
+                .heads()
+                .any(|head| self.heads.contains_key(&(item, Some(head))))
+    }
     pub fn candidates(
         &mut self,
         store: &mut Store,

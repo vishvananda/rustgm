@@ -176,6 +176,14 @@ impl Checker<'_> {
             .schema(definition)
             .ok_or_else(|| self.error(owner.source, "missing trait Self schema"))?
             .self_type;
+        let value = Predicate {
+            ty,
+            bound: Bound::Trait(application),
+        };
+        self.facts
+            .generics
+            .trait_self_bounds
+            .insert(definition, value);
         self.facts
             .generics
             .predicates
@@ -183,10 +191,7 @@ impl Checker<'_> {
             .or_default()
             .push(crate::sema::generics::Predicate {
                 source: owner.source,
-                value: Predicate {
-                    ty,
-                    bound: Bound::Trait(application),
-                },
+                value,
             });
         Ok(())
     }

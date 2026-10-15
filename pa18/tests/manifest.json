@@ -1602,20 +1602,6 @@
       "maintainer_origin": "PA18 later-stage ownership"
     },
     {
-      "path": "tests/spec/boundaries/trait-method.rs",
-      "exit_status": 1,
-      "features": [
-        "pa18.boundaries"
-      ],
-      "rustc": {
-        "kind": "program",
-        "status": 0,
-        "default_lints": true,
-        "reason": "General trait and method selection belongs to PA19."
-      },
-      "maintainer_origin": "PA18 later-stage ownership"
-    },
-    {
       "path": "tests/spec/bounds/alias-bound-not-proof.rs",
       "exit_status": 1,
       "features": [

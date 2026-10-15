@@ -154,12 +154,12 @@ normalization and general coherence to PA20; higher-ranked trait obligations,
 GATs and opaque identities/captures to PA21. PA18 uses existing lifetime/binder
 machinery as required by its signatures; it does not claim those later features.
 Unsized executable values and pointer metadata remain PA22, trait objects PA23,
-closures PA24 and general const functions PA25. The three explicit boundary cases
+closures PA24 and general const functions PA25. The two explicit boundary cases
 have documented rustc acceptance differences.
 
 ## Validation
 
-The suite declares 433 fixtures: 268 accepted and 165 rejected. Of the accepted
+The suite declares 432 fixtures: 268 accepted and 164 rejected. Of the accepted
 programs, 265 execute through both pinned rustc and the qualified CPPGM backend;
 three intentionally diverge and must only undergo code generation. Growing-instance
 rejections use rustc object generation: metadata-only success cannot qualify them.

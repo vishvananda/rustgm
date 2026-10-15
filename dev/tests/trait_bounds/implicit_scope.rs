@@ -113,13 +113,15 @@ fn unrelated_homonyms_do_not_exhaust_repeated_lookup() -> Result<(), Box<dyn std
         )?;
     }
     declarations.push_str("trait A{fn f(self)->u8;}impl A for u8{fn f(self)->u8{self}}");
-    for rigid in [false, true] {
+    for (rigid, dot) in [(false, false), (true, false), (false, true), (true, true)] {
         let mut source = declarations.clone();
         for index in 0..1024 {
             if rigid {
-                write!(source, "fn g{index}<T:A>(x:T)->u8{{T::f(x)}}")?;
+                let call = if dot { "x.f()" } else { "T::f(x)" };
+                write!(source, "fn g{index}<T:A>(x:T)->u8{{{call}}}")?;
             } else {
-                write!(source, "fn g{index}()->u8{{u8::f(7)}}")?;
+                let call = if dot { "7u8.f()" } else { "u8::f(7)" };
+                write!(source, "fn g{index}()->u8{{{call}}}")?;
             }
         }
         source.push_str("fn main(){}");

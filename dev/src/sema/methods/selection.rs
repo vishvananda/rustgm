@@ -29,6 +29,12 @@ pub(in crate::sema) struct Caller<'a> {
     pub traits: Option<&'a Assumptions>,
 }
 
+pub(super) struct Receiver {
+    pub ty: TypeId,
+    /// Bound-priority lookup must use the parameter that supplies that bound.
+    pub subject: Option<TermId>,
+}
+
 struct Prefix<'a> {
     report: &'a Report,
     facts: &'a mut Declarations,
@@ -54,7 +60,7 @@ pub(in crate::sema) fn choose_trait_path(
     let error = |message: &str| Declarations::error(report, key, message);
     let groups =
         trait_groups(report, source.facts, &mut source.infer, term, site, caller).map_err(error)?;
-    for candidates in groups {
+    for (group, candidates) in groups.into_iter().enumerate() {
         let mut selected = None;
         for method in candidates {
             let owner = source
@@ -74,6 +80,9 @@ pub(in crate::sema) fn choose_trait_path(
             }
         }
         if let Some(method) = selected {
+            if group == 0 {
+                source.facts.methods.bound_uses.insert(key);
+            }
             return Ok(method);
         }
     }
@@ -249,7 +258,7 @@ pub(super) fn applicable(
     context: &mut Context,
     prefix: TermId,
     owner: DefId,
-    receiver: Option<TypeId>,
+    receiver: Option<Receiver>,
     caller: Caller<'_>,
 ) -> Result<bool, &'static str> {
     let target = facts
@@ -257,7 +266,8 @@ pub(super) fn applicable(
         .schema(owner)
         .ok_or("missing candidate schema")?
         .self_type;
-    let target = receiver.unwrap_or(target);
+    let subject = target;
+    let target = receiver.as_ref().map_or(target, |r| r.ty);
     let ids = if facts.associated.trait_owner(owner).is_some() {
         facts.generics.callable_parameters(&facts.types, owner)?.1
     } else {
@@ -285,6 +295,16 @@ pub(super) fn applicable(
     let target = context
         .instantiate_with(&mut facts.types, target, &mut substitution)
         .map_err(inference)?;
+    if let Some(actual) = receiver.and_then(|r| r.subject) {
+        let subject = context
+            .instantiate_with(&mut facts.types, subject, &mut substitution)
+            .map_err(inference)?;
+        match context.equate_shape(&facts.types, subject, actual) {
+            Ok(()) => {}
+            Err(infer::Error::Mismatch | infer::Error::Occurs) => return Ok(false),
+            Err(error) => return Err(inference(error)),
+        }
+    }
     match context.equate_shape(&facts.types, target, prefix) {
         Ok(()) => {}
         Err(infer::Error::Mismatch | infer::Error::Occurs) => return Ok(false),

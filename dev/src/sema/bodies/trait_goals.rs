@@ -82,18 +82,23 @@ impl Checker<'_> {
                 let first_region = self.trait_region_start(body)?;
                 let (node, predicate) = &self.call_types.obligations[index];
                 let node = *node;
-                if let Selection::Proven(proof) = selection::select(
-                    self.facts,
-                    &mut self.infer,
-                    predicate,
-                    Caller {
-                        assumptions: &assumptions,
-                        environment: self.method_environment.as_ref(),
-                        first_region,
-                    },
-                )
-                .map_err(|e| self.error(node, e))?
-                {
+                let caller = Caller {
+                    assumptions: &assumptions,
+                    environment: self.method_environment.as_ref(),
+                    first_region,
+                };
+                let selected = if self.call_types.assumed_obligations.contains(&index) {
+                    selection::select_assumption(
+                        &self.facts.types,
+                        &mut self.infer,
+                        predicate,
+                        &caller,
+                    )
+                } else {
+                    selection::select(self.facts, &mut self.infer, predicate, caller)
+                }
+                .map_err(|e| self.error(node, e))?;
+                if let Selection::Proven(proof) = selected {
                     evidence.insert(index, self.retain_trait_evidence(node, proof)?);
                 } else {
                     next.push(index);

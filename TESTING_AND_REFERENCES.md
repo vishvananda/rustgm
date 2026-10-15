@@ -184,7 +184,7 @@ is not counted as an unchanged-source native comparison. Course text oracles
 remain uninstrumented; 22 accepted counter programs check unchanged-source
 cleanup effects through both compilers. See `docs/pa17-validation.md`.
 
-PA18 adds 433 generic LowIR cases: 268 accepted and 165 rejected. There are
+PA18 adds 432 generic LowIR cases: 268 accepted and 164 rejected. There are
 265 executable comparisons and three deliberately divergent codegen-only
 controls. Their `native.kind: "codegen"` requires a nonempty reason and forbids
 runtime outcome fields; both compilers produce native code, but neither binary
@@ -194,7 +194,7 @@ retain the mandatory execution/outcome contract.
 An explicit `rustc.emit: "obj"` selects object generation in the independent
 acceptance checker. Growing-instance rejection and demand-only controls need
 that stronger check because metadata emission does not monomorphize bodies.
-It is valid only for complete programs. Three PA18 rejection fixtures declare
+It is valid only for complete programs. Two PA18 rejection fixtures declare
 later PA20–PA21 boundaries accepted by rustc; there are no new runtime differences.
 The generic constructor/destructor boundaries moved from PA12/PA17 with unchanged
 input bytes and newly qualified accepted oracles. Root independent/native targets
@@ -231,8 +231,16 @@ The `trait_bounds/implicit*.rs` tests cover `T::method`, `Self::method` and
 `<T>::method`, including bounds, inherent fallback, enum variants, imports,
 macro scopes and arguments that must not disambiguate a name. Executable checks
 verify the chosen body. Concrete and rigid scaling controls combine 1,024
-unimported homonyms with 1,024 independent call scopes. General dot trait lookup
-remains pending, so PA19 is still planned.
+unimported homonyms with 1,024 independent call scopes, using both type paths and
+dot calls.
+
+The `trait_bounds/receiver*.rs` tests add 93 acceptance controls and 50 native
+comparisons for trait dot calls. They cover candidate order, defaults, scoped
+traits, reference Self, numeric inference, array unsizing, captured lifetimes,
+returned borrows and two-phase arguments. The former PA18 trait-method boundary
+is preserved verbatim as an accepted maintainer/native control. Deep receivers at
+64 and 96 reference levels require one full candidate probe. PA19's semantic view
+and complete assignment contract remain pending, so the course stage is still planned.
 
 ## Placement and provenance
 

@@ -127,6 +127,8 @@ pub struct Generics {
     /// Concrete initializer callables consumed by the shared constant value reader.
     pub(crate) constant_callable_targets: HashMap<TypeId, TypeId>,
     pub(super) trait_uses: HashMap<crate::resolve::unit::NodeKey, TraitUse>,
+    /// Exact implicit Self: Trait<parameters> predicate, before callable substitution.
+    pub(super) trait_self_bounds: HashMap<DefId, crate::types::parameters::predicates::Predicate>,
     /// Selected impl evidence at body bound uses, after proving its conditions.
     pub trait_selections: HashMap<crate::resolve::unit::NodeKey, Vec<ImplementationSelection>>,
     pub(super) implementations: Option<Box<super::traits::implementations::Implementations>>,

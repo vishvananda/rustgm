@@ -85,11 +85,9 @@ impl Index {
         bound.dedup();
         let inherited = self.visible(report, scope, name)?;
         self.account(inherited.len())?;
-        let lexical = inherited
-            .iter()
-            .copied()
-            .filter(|id| bound.binary_search_by_key(&id.0, |id| id.0).is_err())
-            .collect();
+        // A bound method can also be a lexical candidate with a different Self,
+        // such as an implementation for a reference to the bounded parameter.
+        let lexical = inherited.to_vec();
         Ok([bound, lexical])
     }
     fn visible(

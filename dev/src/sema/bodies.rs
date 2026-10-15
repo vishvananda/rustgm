@@ -1373,7 +1373,10 @@ impl Checker<'_> {
             ));
         }
         let unit = self.report.package.unit(self.file);
-        let mut count = usize::from(self.call_types.method_owners.contains_key(&node));
+        let mut count = usize::from(matches!(
+            self.kind(node),
+            Kind::MethodCall { .. } | Kind::GenericMethodCall { .. }
+        ));
         for argument in unit.configured.ast.list(arguments) {
             if !self.active(*argument) {
                 continue;
