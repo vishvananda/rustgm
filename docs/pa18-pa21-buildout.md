@@ -3644,3 +3644,85 @@ All 541 source/config/test files are archived under
 The receipt is `obj/pa19-work/impl-headers-validation-v2.json`; qualification, prior
 snapshots, failed checks and measurements remain under `obj/pa19-work/impl-headers-*`
 and `obj/perf/`. This advances PA19 without declaring PA19–PA21 complete.
+
+## Trait method conformance before dispatch
+
+Method-bearing implementations now validate direct associated methods instead of
+failing the blanket impl gate. One owner/name index matches members in declaration
+order, rejects extra methods and missing required methods, and retains each trait
+method identity with either its override or its default. Receiver presence, safety,
+parameter kind/arity and supported function qualifiers are checked even when the
+program never calls a method. Required signatures still never become executable
+bodies. Associated types/constants retain their separate PA20 boundary.
+
+Conformance substitutes trait Self and explicit arguments from the actual impl
+header. The trait method's own type/const parameters remain rigid proof inputs;
+the impl method's parameters map to them. This matters for implicit Sized: using
+an impl-owned sized parameter as the proof input would incorrectly authorize a
+stronger bound than the trait's `?Sized` contract. Impl method requirements are
+proved under the impl owner plus the substituted trait method contract. The impl
+body continues through the ordinary pipeline under only its own assumptions;
+a weaker override cannot borrow the trait declaration's Copy permission.
+
+Own early lifetime arguments match positionally. Trait late slots become universal
+proof inputs and impl late slots become existential instantiations. Unused late
+declarations do not change that contract. The existing capture-safe folder keeps
+nested callable binders intact. Shape equality excludes type/const mismatches and
+ordinary value coercions; directed region relations check parameters
+contravariantly and results covariantly, permitting stronger returned lifetimes
+and weaker input lifetimes. Expected signature and impl input well-formedness
+supply implied lifetime facts through one shared relation helper. Impl outlives
+requirements and trait-equation equalities remain obligations of that proof.
+
+Sixty-three source controls independently agree with pinned rustc. They cover
+method coverage, overrides/defaults, receiver presence, type/const arguments,
+implicit sizedness, weaker/stronger builtin and user bounds, early/late lifetime
+classification, alpha renaming, unused late parameters, input/output subsumption,
+nested function correlation and lifetime equations. Typed assertions retain the
+actual override/default identities and confirm that required declarations lack
+bodies. A double-move override fails under its own weaker assumptions.
+
+The PA18 trait-method boundary still declares exit 1 and independently accepted
+Rust source. Its valid impl now passes conformance, so rejection moves from the
+impl declaration at byte 38 to the still-unsupported method call at byte 90.
+The existing `no inherent method with this name` diagnostic is generated through
+`ref-test-pa18`. Review confirms exactly one stderr oracle changes, with only
+compiler-source hashes changing in the reference receipt. Source, manifest,
+expected status and the documented PA19 ownership remain unchanged. This is not
+native trait dispatch; the called boundary program must pass when PA19 selection
+and dispatch are implemented.
+
+General impl selection as bound evidence, trait method lookup and concrete
+required/default dispatch remain outstanding. Predicate-sensitive coherence,
+associated items and normalization remain PA20 work; PA21 is still required.
+Conformance currently consumes the existing caller/owner assumption proofs and
+will share the general solver when it is implemented. PA19 is still planned as a
+course release, not promoted by these maintainer controls.
+
+Validation passes all 838 debug frontend tests, 837 release tests before the final
+lifetime-equation control was added, and all 36 affected release tests afterward,
+including that control. The final full course report passes all 3,790 cases.
+The independent rustc sweep, 19 maintainer native groups, 1,126 course executions
+and three codegen controls pass; the sixteen declared PA13 runtime differences
+remain explicit. Clippy all/pedantic, formatting, the 543-file audit, 27 harness
+tests and upstream/Reference integrity pass. Course native outputs are unchanged;
+no trait-call execution is claimed by the existing native sweep.
+
+Twenty-two frozen A/A and five-block ABBA jobs retain 572 observations, with full
+and count output equality and all source/binary/input hashes verified. No local
+RustGM build, test or diagnostic probe overlaps timing. Existing workload median
+wall-time changes range from -1.5% to +1.1%, with median RSS changes between -20
+and +16 KiB. Several paired blocks and calibration intervals are noisy: ordinary
+functions include a +11.5% block, trait bounds a -29.8% block, and identical new
+binaries show calibration spreads up to 39.5%. The small median differences do
+not establish stable speedups or regressions; all observations remain retained.
+
+New same-binary 64/256/1,024-item cases take 6.81/15.05/51.58 ms for simple methods,
+7.48/20.00/74.21 ms for generic weaker overrides, 8.27/21.66/80.58 ms for lifetime
+methods and 8.60/21.22/78.92 ms for trait-bound method contracts. These are measured
+scaling points on this host, not throughput guarantees. All 546 source/config/test
+files are archived under `obj/pa19-work/conformance-source-v1`. Compiler SHA256 is
+`5048340c4e2766dde10779cd79d09564e06c230a1b62a2669af00f7278e4edc5`.
+The receipt is `obj/pa19-work/conformance-validation-v1.json`; failed checks,
+independent qualifications and all measurements remain under
+`obj/pa19-work/conformance-*`, `obj/pa19-work/method-binders-v1` and `obj/perf/`.

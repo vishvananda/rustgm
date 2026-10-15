@@ -100,14 +100,25 @@ impl<'a> Constraints<'a> {
             .list(parameters)
             .ok_or("missing lifetime function parameters")?;
         for ty in parameters.iter().copied().chain(std::iter::once(result)) {
-            let requirements = queries.symbolic_requirements(ty)?;
-            for &(a, b) in requirements.regions {
-                self.assume(a, b).map_err(|e| e.to_string())?;
-            }
-            for &(id, shorter) in requirements.parameters {
-                self.assume_parameter(id, shorter)
-                    .map_err(|e| e.to_string())?;
-            }
+            self.assume_well_formed(queries, ty)?;
+        }
+        Ok(())
+    }
+    /// Assume only the lifetime requirements implied by a declared input type.
+    /// # Errors
+    /// Rejects missing type/parameter identities and exhausted query resources.
+    pub fn assume_well_formed(
+        &mut self,
+        queries: &mut super::outlives::Queries<'_>,
+        ty: TypeId,
+    ) -> Result<(), String> {
+        let requirements = queries.symbolic_requirements(ty)?;
+        for &(a, b) in requirements.regions {
+            self.assume(a, b).map_err(|e| e.to_string())?;
+        }
+        for &(id, shorter) in requirements.parameters {
+            self.assume_parameter(id, shorter)
+                .map_err(|e| e.to_string())?;
         }
         Ok(())
     }

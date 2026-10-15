@@ -74,7 +74,7 @@ fn trait_methods_validate_visibility_and_safety_after_configuration()
 }
 
 #[test]
-fn trait_implementations_cannot_bypass_pending_conformance_checks()
+fn trait_implementations_require_conforming_methods_or_defaults()
 -> Result<(), Box<dyn std::error::Error>> {
     for (name, source, accepted) in [
         (
@@ -94,15 +94,8 @@ fn trait_implementations_cannot_bypass_pending_conformance_checks()
         ),
     ] {
         rustc::qualify(name, source, accepted)?;
-        let error = prove(source)
-            .err()
-            .ok_or("trait impl incorrectly accepted without conformance")?;
-        assert!(
-            error
-                .to_string()
-                .contains("trait implementation requires conformance"),
-            "{name}: {error}"
-        );
+        let result = prove(source);
+        assert_eq!(result.is_ok(), accepted, "{name}: {result:?}");
     }
     Ok(())
 }

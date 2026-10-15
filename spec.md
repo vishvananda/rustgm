@@ -231,13 +231,31 @@ trait requirements and safety under the impl's own environment. Input types impl
 lifetime well-formedness facts, never new Copy or user-trait assumptions.
 
 Keep prepared headers separate from validated implementations. A schema alone
-cannot supply selection evidence; member-bearing implementations require signature
-conformance and checked default dispatch. Index overlap candidates by trait and
+cannot supply selection evidence; member-bearing implementations require matching
+associated declarations and signature conformance. Retain overrides separately
+from default declaration identities; executable demand must dispatch through the
+selected implementation. Index overlap candidates by trait and
 rigid subject, then by complete lifetime-erased application for closed headers.
 Share existential bindings across Self and every type/const argument when probing
 compatibility. Lifetime erasure may establish structural disjointness, never body
 permissions. Charge candidate-pair storage before allocation and equation work
 during probes; predicate-sensitive coherence remains a separate proof.
+
+Method conformance checks unused implementations too. Match direct members by
+owner and name, require every nondefault method, and reject extra members. The
+trait method's type/const parameters are rigid proof inputs; using the impl's
+parameter identities would assume a stronger implicit Sized requirement. Prove
+the impl method's requirements under the impl owner and substituted trait method
+contract, while checking its body under its own declared assumptions.
+
+Match early lifetime arguments positionally. Instantiate impl late lifetimes
+existentially against universal trait late lifetimes; unused late declarations
+do not alter the contract. Share capture-safe substitution, shape equality and
+directed lifetime relations. Preserve nested callable binders. Trait input
+well-formedness supplies implied lifetime facts for contravariant parameter and
+covariant result checks; structural types, receiver presence and safety still
+must agree. This permits weaker input lifetimes and stronger results without
+granting unproved bounds to the implementation body.
 
 Trait argument well-formedness and declared requirements are checked even for
 unused declarations. Lifetime requirements consume the completed nominal contracts

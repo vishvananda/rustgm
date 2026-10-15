@@ -1,4 +1,5 @@
 //! Retain complete impl applications; headers alone do not prove an implementation.
+mod methods;
 mod validation;
 use super::super::{Checker, DefId, Error, ItemId, Kind, NodeKey, TypeFlavor, Work};
 use crate::{

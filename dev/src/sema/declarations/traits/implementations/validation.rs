@@ -1,4 +1,5 @@
 //! An impl's trait requirements are obligations, never extra assumptions about Self.
+use super::methods::Members;
 use super::{Checker, DefId, Error, NodeKey};
 use crate::{
     sema::{nominals::Proof, traits::implementations::overlap},
@@ -7,7 +8,6 @@ use crate::{
         parameters::predicates::{Bound, Predicate},
     },
 };
-use std::collections::HashSet;
 
 impl Checker<'_> {
     pub(in crate::sema::declarations) fn validate_trait_implementations(
@@ -49,48 +49,16 @@ impl Checker<'_> {
                 ));
             }
         }
-        let members: HashSet<_> = self
-            .facts
-            .associated
-            .members()
-            .iter()
-            .map(|member| member.owner)
-            .collect();
+        let members = Members::new(self.report, &self.facts);
         for (owner, source, predicate) in headers {
             self.validate_trait_impl_contract(owner, source, predicate)?;
-            let Bound::Trait(id) = predicate.bound else {
-                return Err(self.error(source, "invalid trait implementation predicate"));
-            };
-            let trait_ = self
-                .facts
-                .types
-                .trait_application(id)
-                .ok_or_else(|| self.error(source, "missing trait implementation application"))?
-                .item;
-            let own_members = self
-                .facts
-                .associated
-                .owner(owner)
-                .is_some_and(|id| members.contains(&id));
-            let trait_members = self
-                .facts
-                .associated
-                .owner(DefId(trait_.0))
-                .is_some_and(|id| members.contains(&id));
-            if own_members || trait_members {
-                // Member signature conformance and checked default dispatch must
-                // precede publishing any method-bearing implementation.
-                return Err(self.error(
-                    source,
-                    "trait implementation requires conformance and selection semantics",
-                ));
-            }
+            let methods = self.trait_impl_methods(owner, source, predicate, &members)?;
             self.facts
                 .generics
                 .implementations
                 .as_mut()
                 .ok_or_else(|| Error::at(source.file, 0, "missing trait impl registry"))?
-                .complete(owner, Vec::new())
+                .complete(owner, methods)
                 .map_err(|e| self.error(source, e))?;
         }
         Ok(())

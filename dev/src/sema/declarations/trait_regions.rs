@@ -245,15 +245,7 @@ impl Checker<'_> {
                 None
             }
         })) {
-            let implied = queries.symbolic_requirements(ty)?;
-            for &(a, b) in implied.regions {
-                constraints.assume(a, b).map_err(|e| e.to_string())?;
-            }
-            for &(id, shorter) in implied.parameters {
-                constraints
-                    .assume_parameter(id, shorter)
-                    .map_err(|e| e.to_string())?;
-            }
+            constraints.assume_well_formed(queries, ty)?;
         }
         Ok(())
     }
