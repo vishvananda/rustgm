@@ -41,6 +41,7 @@ struct Scope {
 pub struct Copies {
     scope: Option<Box<Scope>>,
     declaration: bool,
+    intercrate: Option<Box<super::parameters::shape::Shapes>>,
     states: Vec<State>,
     work: Vec<(TypeId, bool)>,
     pub steps: usize,
@@ -69,6 +70,14 @@ impl Copies {
             declaration: true,
             ..Self::default()
         }
+    }
+    /// Possibility in a compatible crate world, never permission to copy a value.
+    /// Local derive contracts still constrain their arguments. Foreign type heads
+    /// may acquire implementations; references retain the referent's locality.
+    pub(crate) fn for_coherence(environment: Arc<Environment>) -> Self {
+        let mut query = Self::for_derive(Some(Arc::clone(&environment)));
+        query.intercrate = Some(Box::new(super::parameters::shape::Shapes::new(environment)));
+        query
     }
     /// # Errors
     /// Rejects invalid type graphs and by-value cycles; caches failed queries too.
@@ -155,6 +164,10 @@ impl Copies {
                 self.work.push((ty, true));
                 self.steps += 1;
             }
+            if let Some(value) = self.intercrate_properties(types, definitions, ty, kind)? {
+                self.record(ty, State::Ready(value));
+                continue;
+            }
             let assumed = self
                 .scope
                 .as_ref()
@@ -212,6 +225,43 @@ impl Copies {
             }
         }
         Ok(())
+    }
+    fn intercrate_properties(
+        &mut self,
+        types: &Store,
+        definitions: &Definitions,
+        ty: TypeId,
+        kind: Kind,
+    ) -> Result<Option<Properties>, &'static str> {
+        let Some(shapes) = &mut self.intercrate else {
+            return Ok(None);
+        };
+        if !shapes.demand(types, ty)?.sized {
+            return Ok(Some(Properties::default()));
+        }
+        match kind {
+            Kind::Adt(..) | Kind::Parameter(_) => Ok(None),
+            Kind::Reference {
+                mutable: true,
+                mut referent,
+                ..
+            } => loop {
+                self.steps += 1;
+                if self.steps > 1_000_000 {
+                    return Err("coherence locality work budget exceeded");
+                }
+                match types.kind(referent).ok_or("invalid coherence referent")? {
+                    Kind::Reference {
+                        referent: inner, ..
+                    } => referent = inner,
+                    Kind::Adt(item, _) if definitions.get(item).is_some() => {
+                        return Ok(Some(Properties::default()));
+                    }
+                    _ => return Ok(Some(Properties::BOTH)),
+                }
+            },
+            _ => Ok(Some(Properties::BOTH)),
+        }
     }
 }
 fn children(

@@ -11,6 +11,7 @@ enum Action {
     Remove,
     Shift(u16),
     Universals(Box<universals::Mapping>),
+    Shape,
 }
 
 /// A substitution cache belongs to one store and one argument environment.
@@ -46,6 +47,13 @@ impl Bound {
     pub(crate) fn shift(amount: u16) -> Self {
         let mut bound = Self::new(Vec::new());
         bound.action = Action::Shift(amount);
+        bound
+    }
+
+    /// An index key for lifetime-insensitive shape equality, never a usable type.
+    pub(crate) fn shape() -> Self {
+        let mut bound = Self::new(Vec::new());
+        bound.action = Action::Shape;
         bound
     }
 
@@ -119,7 +127,10 @@ impl Bound {
         let escaping = store
             .escaping_binders(key.0)
             .ok_or("invalid substitution type")?;
-        let closed = if matches!(self.action, Action::Universals(_)) {
+        let closed = if matches!(self.action, Action::Shape) {
+            store.has_free_regions(key.0, 0) == Some(false)
+                && store.contains_late_callables(key.0) == Some(false)
+        } else if matches!(self.action, Action::Universals(_)) {
             store.has_free_regions(key.0, key.1) == Some(false)
         } else {
             escaping <= key.1
@@ -236,6 +247,9 @@ impl Bound {
         region: RegionId,
         depth: u16,
     ) -> Result<RegionId, &'static str> {
+        if matches!(self.action, Action::Shape) {
+            return Ok(RegionId::STATIC);
+        }
         if let Action::Universals(mapping) = &mut self.action {
             return mapping.region(region, depth);
         }
@@ -320,7 +334,11 @@ impl Bound {
             } => {
                 let depth = nested(depth)?;
                 Kind::Function {
-                    bound_regions,
+                    bound_regions: if matches!(self.action, Action::Shape) {
+                        0
+                    } else {
+                        bound_regions
+                    },
                     parameters: self.list(store, parameters, depth)?,
                     result: self.child(store, result, depth)?,
                     unsafe_,

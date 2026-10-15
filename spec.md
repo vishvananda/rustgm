@@ -102,6 +102,21 @@ the instantiated impl target with the typed prefix. Check inherited predicates
 as well as method predicates. A declaration or required trait signature alone
 does not authorize executable dispatch.
 
+Validate unused inherent methods for overlap after completing owner signatures.
+Use isolated existential header equations, preserving repeated type and const
+parameters. Impl predicates constrain overlap; method predicates, visibility,
+receiver spelling and lifetime restrictions do not disambiguate declarations.
+Coherence asks whether a compatible instantiation can exist, separately from
+whether a generic body may perform an operation. Local conditional derive
+contracts constrain this possibility; absence of Copy/Clone on a foreign type
+head is not itself a negative coherence fact.
+
+Share each owner-pair proof across method names. Partition closed targets by
+canonical lifetime-erased shape, including callable binder erasure, before
+probing possible pairs. These erased shapes are index keys only. They must never
+replace source proof types or executable lifetimes. Keep deterministic diagnostic
+order independent of hash iteration and bound inference, folding and pair work.
+
 An alias used as a value prefix with no written type/const arguments infers all
 those arguments, including slots with defaults; explicit type qualification
 retains ordinary type-annotation arity and default rules. Store this distinction

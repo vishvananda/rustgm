@@ -179,6 +179,17 @@ pub(super) struct Proof {
     checked: HashSet<TypeId>,
 }
 impl Proof {
+    pub(super) fn for_coherence(
+        environment: std::sync::Arc<crate::types::parameters::environment::Environment>,
+    ) -> Self {
+        Self {
+            shapes: Some(crate::types::parameters::shape::Shapes::new(
+                std::sync::Arc::clone(&environment),
+            )),
+            copies: crate::types::copy::Copies::for_coherence(environment),
+            checked: HashSet::new(),
+        }
+    }
     pub fn new(
         environment: Option<std::sync::Arc<crate::types::parameters::environment::Environment>>,
     ) -> Self {

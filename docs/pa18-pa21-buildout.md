@@ -2810,8 +2810,8 @@ checks that unused owner captures remain distinct nonstatic regions before
 instance lifetime erasure.
 
 This checkpoint deliberately supports only a unique inherent method in the
-nominal/name bucket. Multiple candidates diagnose the remaining selection and
-overlap boundary. Unused duplicate declarations are not yet checked for overlap.
+nominal/name bucket. Multiple candidates still diagnose the selection boundary.
+Unused duplicate validation is implemented by the overlap checkpoint below.
 Dot-call autoderef/autoref, trait candidate visibility and fallback, user trait
 bounds, impl conformance and selected default bodies remain required work.
 PA19 stays planned; PA20 and PA21 remain required by the active goal.
@@ -2925,3 +2925,58 @@ reverified. The candidate SHA256 is
 `4593a43159e488a818632cceaa7cb6ef91ea5975ce5a33af199123d94f70c217`.
 The 234 raw observations, independent qualification and validation receipts live
 under `obj/pa19-work/qualified-prefix-*` and `obj/perf/`.
+
+## Unused inherent overlap validation
+
+Inherent method declarations now require disjoint implementation headers even
+when no call demands them. One isolated inference graph instantiates both owner
+schemas and their impl predicates; repeated type/const parameters retain their
+identity. Structural mismatch and occurs failure establish disjointness. Remaining
+existentials retain representative parameter identities under a possibility-only
+environment, rather than being replaced with an arbitrary concrete witness.
+Method predicates, receiver shape, access and lifetimes do not resolve duplicates.
+
+Copy/Clone coherence uses a separate query mode. Local non-derived nominals can
+establish a negative result; validated conditional derives constrain their type
+arguments. Foreign tuples, arrays and other type heads cannot be ruled out merely
+because the present body query lacks an implementation. Reference locality follows
+its referent. Sized requirements still exclude unsized subjects. This possibility
+mode never supplies move or body permissions.
+
+Nominal/name buckets retain declaration order. Closed targets use canonical shape
+keys that erase lifetimes and callable binder counts only for indexing. Distinct
+closed shapes skip pair probes; generic pairs share results across method names.
+The work is bounded, with retained inference-work counters. A 1,024-impl const
+case performs zero probes; 128 shared method names reuse one owner-pair proof.
+
+The maintainer suite independently qualifies 59 declaration cases against pinned
+rustc, covering repeated variables, occurs checks, concrete consts, impl versus
+method bounds, local/foreign types, derives, visibility, receivers and binders.
+Two exploratory predictions about mutable-reference/tuple Copy bounds were wrong;
+the original receipts remain in `obj/pa19-work/inherent-overlap-rules-v1` and the
+compatible-world matrix records the investigation. The final tests declare the
+corrected expectations before running both implementations. Five additional
+higher-ranked function-pointer probes also agree. No course fixture or oracle
+bytes changed, and PA19 remains planned. Multiple-candidate qualified selection,
+dot lookup/adjustments, trait dispatch/conformance, and PA20–PA21 remain required.
+
+Validation passes: 781 frontend tests in both debug and release; 16 explicit
+maintainer native groups; 3,792 PA1–PA18 text cases; 1,126 executable comparisons
+and three codegen-only comparisons. The sixteen existing PA13 runtime differences
+remain explicitly reported. Formatting, Clippy all/pedantic, the 491-file audit,
+27 harness tests, backend qualification and upstream/Reference integrity pass.
+
+Eight frozen A/A and three-block ABBA jobs retain 144 observations with full/count
+output equality. Ordinary-function, generic-record and qualified-generic-method
+median changes are +0.8%, -0.3% and +0.7%. Closed-impl workloads at 64/256/1,024
+change by +2.1%, -2.1% and +0.7%; shared-owner workloads at 64/1,024 by +0.3% and
++1.0%. Individual blocks and A/A samples remain noisy; these results do not show
+a substantial regression or establish zero cost. Candidate medians at 1,024 closed
+impls and 1,024 shared names are 28.90 ms and 35.72 ms respectively. The structural
+work assertions provide separate evidence for skipped pairs and shared proofs.
+
+No RustGM builds or tests overlapped timing. All 494 frozen source/config/test
+files, binaries and inputs were reverified. Candidate SHA256:
+`e10a945ba53bc72b1916911158feb428e0c1336b6660164f4568d9c25d025d91`.
+Qualification, validation and measurement receipts are under
+`obj/pa19-work/inherent-overlap-*`, with per-sample records under `obj/perf/`.

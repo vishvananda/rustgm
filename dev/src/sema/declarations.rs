@@ -6,6 +6,7 @@ mod contracts;
 mod destructors;
 mod generics;
 mod lifetimes;
+mod method_overlap;
 mod method_paths;
 mod methods;
 mod receivers;
@@ -176,6 +177,7 @@ impl Checker<'_> {
         self.validate_owner_bounds()?;
         self.validate_signatures()?;
         self.index_inherent_methods()?;
+        self.validate_inherent_overlaps()?;
         self.local_annotations(&mut steps, work_limit)?;
         super::constants::finish_discriminants(
             self.report,
