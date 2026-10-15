@@ -66,4 +66,7 @@ impl Host for Checker<'_> {
     fn child(&mut self, key: NodeKey) {
         self.annotation_children.insert(key.node);
     }
+    fn pending_normalization(&self) -> bool {
+        self.projections.active()
+    }
 }

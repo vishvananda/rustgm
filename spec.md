@@ -556,6 +556,15 @@ binder scope, normalization, evidence and suspended equations. Collect dependenc
 from every retained proof, normalization and Sized root, including erased inputs.
 Wait only on the parameters those roots use: waiting on an unrelated output or a
 dependent default can prevent an otherwise solvable query from making progress.
+Schedule individual projected occurrences rather than whole output aggregates.
+Traverse shared ordinary structure once per scope, preserve callable binder counts,
+and leave a projection's input normalization to that query. An input also used
+outside the projection has its own occurrence. Deduplicate an identical projected
+term in the same scope without discarding its separate formation contracts.
+Lifetime and parameter substitution must register the projected terms they create,
+including projections supplied through arguments or defaults when the original
+outer template contains none. A copied graph cannot inherit a finished ticket
+from its original term.
 
 Deferred equality and shape equations constrain ordinary siblings while retaining
 blocked associated-result leaves. Never bind an output hole to a projection merely

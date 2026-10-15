@@ -5150,3 +5150,81 @@ normalization is not yet scheduled. Its source, expectations and diagnostics are
 retained in `capture-followup-declared-v1.json` and `capture-followup-v1.json`.
 That transformed-occurrence scheduling is the next body-inference fix, rather
 than completed conformance coverage in this checkpoint.
+
+## Transformed projection occurrences
+
+Captured-lifetime mapping now registers the projected terms it creates. Alias
+arguments and dependent defaults also register projections introduced through
+substitution, including when the outer template itself has none. A query waits
+on its projected inputs rather than the whole output aggregate, allowing an
+independent output hole to be solved by the selected associated result. Repeated
+registration of the same term in the same scope shares its normalization query;
+the separate formation contracts remain required.
+
+The occurrence walk preserves callable binder scopes, including empty and sibling
+binders. It visits shared ordinary structure once per scope and leaves a nested
+projection's inputs to its semantic query. Three typed tests cover unrelated
+output holes, scope identities, 512 nested projection inputs and a 512-level
+ordinary shared graph with bounded traversal work.
+
+The expanded source matrix independently agrees with pinned rustc on 31 programs:
+20 accept and 11 reject. Eight native programs exercise inferred aliases,
+defaults, captures and independent output holes; the complete affected native run
+executes 43 programs across nine modules. One original positive test expectation
+was wrong: a type parameter used only in another parameter's default is unused
+in the alias body. Rustc's E0091 rejection is preserved as a negative control;
+the corrected positive also uses that parameter in the body. The initial failed
+test and the expectation correction remain in the evidence directory.
+
+The full optimized suite passes 1,031 tests with 39 explicit native ignores.
+All 4,857 active course cases, Clippy all/pedantic, formatting, the 641-file audit
+and 33 harness tests pass. No course fixture, manifest or oracle changes.
+The earlier erased-inner-input negative still stops at a normalization demand;
+its rejected status does not establish complete delayed-operation support.
+PA20 and PA21 remain planned, with the remaining responsibilities listed above.
+
+The immutable candidate is
+`5aa15338213dcd21f56c063cc0be00171c03131efd66455b812656abeef8e0b5`;
+644 source/config/test files are archived under
+`obj/pa20-work/transformed-projection-occurrences-v1/`. Of 114 inherited
+performance inputs, 105 retain identical full/count semantic output. Nine omit
+unused intermediate aggregate/callable types, shifting later type identities
+in the semantic dump. Their count views remain identical. The initial strict
+comparison correctly failed; original dumps, diffs and the reviewed change are
+retained in `output-review-v1.json`. Those nine comparisons now use full/count
+LowIR, whose bytes match exactly. This is an explicit change of measurement
+stage, not semantic-dump byte equality or an oracle update.
+
+Twelve new independently rustc-qualified workloads vary repeated captured generic
+callables, callable defaults, wrapped projected arguments and unrelated output
+holes at 64/256/1,024. The full run retains 3,276 observations with A/A calibration
+and five ABBA blocks per workload. Every run verifies source, input and binary
+hashes. No local RustGM build, test or probe overlaps timing; other projects on
+this host remain active. Measurements reuse the two pinned executable paths,
+remove rendering scratch and retain all observations and diagnostic evidence.
+
+Inherited-workload paired medians range from -7.2% to +5.3%. Four focused
+confirmations retain another 104 observations: conditional width moves from
++5.3% to -1.0%, quantified chains from +4.6% to +2.0%, and callable repeated
+uses from +3.8% to -2.0%. Conditional repeated uses remain slower, moving from
++2.9% to +3.7%, with 1.9% confirmation calibration spread. This small measured
+regression remains recorded; the noisy comparisons do not prove a general
+speedup or erase the earlier alias-width cost. Conditional width's confirmation
+has 96.2% calibration spread and cannot establish an improvement.
+
+New-input median wall times are 12.63/40.91/157.88 ms for captured generic
+callables, 8.22/20.55/66.47 ms for callable defaults, 7.80/20.06/67.79 ms for
+wrapped projections and 7.73/18.00/58.83 ms for unrelated output holes. Resident
+medians range from 5,938 to 15,106 KiB. These are source-level measurements,
+distinct from the typed bounded-work assertions. The receipt is
+`obj/pa20-work/transformed-projection-occurrences-v1/validation-v1.json`.
+
+After timing, fifteen further probes independently match their declared rustc
+expectations. Two accepted controls also pass RustGM. Ten other accepted programs
+still fail, covering projected values used before later statements constrain their
+inputs, delayed result-region freshening and a projected generic function argument.
+The three negative controls currently stop at an earlier normalization demand,
+so their rejection is not counted as validation of the intended negative reason.
+Inputs and results remain in `obj/pa20-work/delayed-projection-demands-v1/`.
+These operational demands and transformed generic signatures are follow-up work,
+not completed support in this checkpoint.

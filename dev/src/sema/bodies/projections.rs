@@ -14,7 +14,7 @@ use crate::{
         parameters::{ParameterId, uses::Uses},
     },
 };
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 struct Contract {
     expansion: Expansion,
@@ -34,6 +34,7 @@ struct Data {
     scopes: Obligations,
     tasks: HashMap<WatchId, Query>,
     equations: HashMap<EquationId, NodeId>,
+    normalizations: HashSet<(ScopeId, TermId)>,
 }
 impl Default for Data {
     fn default() -> Self {
@@ -41,6 +42,7 @@ impl Default for Data {
             scopes: Obligations::new(1),
             tasks: HashMap::new(),
             equations: HashMap::new(),
+            normalizations: HashSet::new(),
         }
     }
 }
@@ -141,18 +143,37 @@ impl Checker<'_> {
         scope: ScopeId,
         term: TermId,
     ) -> Result<(), Error> {
-        let watch = self
+        let roots = self
             .infer
-            .watch_resolution(&[term], &[])
+            .normalization_roots(&self.facts.types, term, scope, |parent, count| {
+                self.projections
+                    .scope(parent, count)
+                    .map_err(|_| crate::types::infer::Error::InvalidIdentity)
+            })
             .map_err(|e| self.error(node, e))?;
-        self.projections.insert(
-            watch,
-            Query {
-                node,
-                scope,
-                task: Task::Normalize(term),
-            },
-        );
+        for (scope, term) in roots {
+            if !self
+                .projections
+                .data
+                .get_or_insert_with(Default::default)
+                .normalizations
+                .insert((scope, term))
+            {
+                continue;
+            }
+            let watch = self
+                .infer
+                .watch_resolution(&[term], &[])
+                .map_err(|e| self.error(node, e))?;
+            self.projections.insert(
+                watch,
+                Query {
+                    node,
+                    scope,
+                    task: Task::Normalize(term),
+                },
+            );
+        }
         Ok(())
     }
     pub(super) fn deferred_equation(

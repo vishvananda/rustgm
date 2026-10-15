@@ -96,6 +96,71 @@ const CASES: &[(&str, &str, bool)] = &[
         "trait A{type Out;}impl A for i32{type Out=u8;}type P<T>=(T,<T as A>::Out);fn main(){let _:P<_>=(3,7u8);}",
         true,
     ),
+    (
+        "captured-callable",
+        "trait A{type Out;}impl<T:Copy>A for T{type Out=T;}type P<T>=(T,fn(<T as A>::Out));fn take(_: &u8){}fn f<'a>(x:&'a u8){let p:P<_>=(x,take);(p.1)(x);}fn main(){}",
+        true,
+    ),
+    (
+        "captured-callable-static",
+        "trait A{type Out;}impl<T:Copy>A for T{type Out=T;}type P<T>=(T,fn(<T as A>::Out));fn take(_: &'static u8){}fn f<'a>(x:&'a u8){let p:P<_>=(x,take);(p.1)(x);}fn main(){}",
+        false,
+    ),
+    (
+        "captured-generic-callable",
+        "trait A{type Out;}impl<T:Copy>A for T{type Out=T;}type P<T>=(T,fn(<T as A>::Out));fn take<T>(_:T){}fn f<'a>(x:&'a u8){let p:P<_>=(x,take::<&'a u8>);(p.1)(x);}fn main(){}",
+        true,
+    ),
+    (
+        "captured-callable-default",
+        "trait A{type Out;}impl<T:Copy>A for T{type Out=T;}type P<T,U=fn(<T as A>::Out)>=(T,U);fn take(_: &u8){}fn f<'a>(x:&'a u8){let p:P<_>=(x,take);(p.1)(x);}fn main(){}",
+        true,
+    ),
+    (
+        "captured-generic-callable-reversed",
+        "trait A{type Out;}impl<T:Copy>A for T{type Out=T;}type P<T>=(fn(<T as A>::Out),T);fn take<T>(_:T){}fn f<'a>(x:&'a u8){let p:P<_>=(take::<&'a u8>,x);(p.0)(x);}fn main(){}",
+        true,
+    ),
+    (
+        "captured-callable-reversed",
+        "trait A{type Out;}impl<T:Copy>A for T{type Out=T;}type P<T>=(fn(<T as A>::Out),T);fn take(_: &u8){}fn f<'a>(x:&'a u8){let p:P<_>=(take,x);(p.0)(x);}fn main(){}",
+        true,
+    ),
+    (
+        "unrelated-output-hole",
+        "trait A{type Out;}impl A for u16{type Out=u8;}type F<T,U>=(T,fn(<T as A>::Out,U));fn same<V>(_:V,_:V){}fn main(){let _:F<_,_>=(3u16,same::<_>);}",
+        true,
+    ),
+    (
+        "unrelated-output-wrong",
+        "trait A{type Out;}impl A for u16{type Out=u8;}type F<T,U>=(T,fn(<T as A>::Out,U));fn same(_:u32,_:u32){}fn main(){let _:F<_,_>=(3u16,same);}",
+        false,
+    ),
+    (
+        "projected-default-inside-callable",
+        "trait A{type Out;}impl<T:Copy>A for T{type Out=u8;}type P<T,U=<T as A>::Out>=(T,fn(U));fn g(_:u8){}fn main(){let _:P<_>=(3u16,g);}",
+        true,
+    ),
+    (
+        "projected-argument-inside-wrapper",
+        "trait A{type Out;}impl<T:Copy>A for T{type Out=u8;}type P<T>=(T,<T as A>::Out);type W<U>=fn(U);fn g(_:(u16,u8)){}fn main(){let _:W<P<_>>=g;}",
+        true,
+    ),
+    (
+        "projected-default-inside-later-default",
+        "trait A{type Out;}impl<T:Copy>A for T{type Out=u8;}type P<T,U=<T as A>::Out,V=fn(U)>=(V,T,U);fn g(_:u8){}fn main(){let _:P<_>=(g,3u16,7u8);}",
+        true,
+    ),
+    (
+        "unused-default-only-parameter",
+        "trait A{type Out;}impl<T:Copy>A for T{type Out=u8;}type P<T,U=<T as A>::Out,V=fn(U)>=(T,V);fn g(_:u8){}fn main(){let _:P<_>=(3u16,g);}",
+        false,
+    ),
+    (
+        "unrelated-output-hole-reversed",
+        "trait A{type Out;}impl A for u16{type Out=u8;}type F<T,U>=(fn(<T as A>::Out,U),T);fn same<V>(_:V,_:V){}fn main(){let _:F<_,_>=(same::<_>,3u16);}",
+        true,
+    ),
 ];
 #[test]
 fn partial_alias_inputs_and_defaults_match_rustc() -> Result<(), Box<dyn std::error::Error>> {
@@ -123,6 +188,16 @@ fn inferred_projections_execute_after_input_resolution() -> Result<(), Box<dyn s
     native::check_cases(
         "inferred-alias-projections",
         &[
+            (
+                "reversed-generic-capture",
+                "trait A{type Out;}impl<T:Copy>A for T{type Out=u8;}type P<T>=(fn(<T as A>::Out),T);fn take<T>(x:u8){check(x==73)}fn f<'a>(x:&'a u8){let p:P<_>=(take::<&'a u8>,x);(p.0)(73);check(*p.1==19)}fn main(){let x=19;f(&x)}",
+                false,
+            ),
+            (
+                "unrelated-output-hole",
+                "trait A{type Out;}impl A for u16{type Out=u8;}type F<T,U>=(fn(<T as A>::Out,U),T);trait C{fn verify(self);}impl C for u8{fn verify(self){check(self==73)}}fn same<V:C>(x:V,y:V){x.verify();y.verify()}fn main(){let p:F<_,_>=(same::<_>,19u16);(p.0)(73,73);check(p.1==19)}",
+                false,
+            ),
             (
                 "reversed",
                 "trait A{type Out;}impl<T:Copy>A for T{type Out=u8;}type P<T>=(<T as A>::Out,T);fn main(){let x:P<_>=(73u8,19u16);check(x.0==73);check(x.1==19)}",

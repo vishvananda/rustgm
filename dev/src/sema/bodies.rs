@@ -383,7 +383,9 @@ impl Checker<'_> {
         // solves such a hole, caller universals must remain free there rather
         // than becoming lifetimes owned by the nested callable.
         let (left, right) = if self.body_binders != 0
-            && (!self.call_types.generic.is_empty() || self.call_types.generic_constructors)
+            && (!self.call_types.generic.is_empty()
+                || self.call_types.generic_constructors
+                || self.projections.active())
         {
             (
                 self.alias_argument(node, left)?,

@@ -146,6 +146,9 @@ impl Host for Prefix<'_> {
     fn requirement(&mut self, _: NodeKey, _: crate::types::infer::predicates::Predicate) {}
     fn callable(&mut self, _: NodeKey) {}
     fn child(&mut self, _: NodeKey) {}
+    fn pending_normalization(&self) -> bool {
+        false
+    }
     fn scope(
         &mut self,
         _: NodeKey,

@@ -95,7 +95,7 @@ pub(super) fn infer(host: &mut impl Host, key: NodeKey, scope: ScopeId) -> Resul
         let term = infer
             .instantiate_with(&mut facts.types, template, &mut fields.parameters)
             .map_err(|e| error(host, key, e))?;
-        if projected {
+        if projected || host.pending_normalization() {
             host.normalization(key, scope, term)?;
         }
         Ok(term)
@@ -138,7 +138,9 @@ impl Fields {
                 let expected = infer
                     .instantiate_with(&mut facts.types, ty, &mut self.parameters)
                     .map_err(|e| error(host, key, e))?;
-                if host.facts().types.contains_projections(ty) == Some(true) {
+                if host.facts().types.contains_projections(ty) == Some(true)
+                    || host.pending_normalization()
+                {
                     host.normalization(key, scope, expected)?;
                 }
                 let (facts, infer) = host.inference();

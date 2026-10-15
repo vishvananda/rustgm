@@ -143,7 +143,7 @@ impl Checker<'_> {
         })
     }
     pub(super) fn alias_argument(&mut self, node: NodeId, term: TermId) -> Result<TermId, Error> {
-        match self.infer.resolved(&mut self.facts.types, term) {
+        let transformed = match self.infer.resolved(&mut self.facts.types, term) {
             Ok(ty) => {
                 let ty = self.alias_type(node, ty)?;
                 self.known(node, ty)
@@ -156,7 +156,15 @@ impl Checker<'_> {
                     .map_err(|e| self.error(node, e))
             }
             Err(e) => Err(self.error(node, e)),
+        }?;
+        if self.projections.active() && transformed != term {
+            self.defer_normalization(
+                node,
+                crate::types::lifetime_proof::ScopeId::ROOT,
+                transformed,
+            )?;
         }
+        Ok(transformed)
     }
     pub(super) fn instantiate_call_term(
         &mut self,

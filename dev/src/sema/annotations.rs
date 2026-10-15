@@ -33,6 +33,7 @@ pub(super) trait Host {
         fields: &Fields,
     ) -> Result<(), Error>;
     fn normalization(&mut self, key: NodeKey, scope: ScopeId, term: TermId) -> Result<(), Error>;
+    fn pending_normalization(&self) -> bool;
 }
 
 #[derive(Default)]
