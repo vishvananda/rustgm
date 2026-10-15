@@ -297,3 +297,37 @@ and validates fixture/manifest provenance in `make test-harness`. It does not
 regenerate sidecars. A reference receipt records the compiler used to generate
 that oracle; changing compiler source does not rewrite the historical receipt
 when the output contract is unchanged.
+
+## Storage and cleanup
+
+Generated output is bounded separately from validation evidence. Builds and
+validation commands use `scripts/storage.py`: it checks free space before work,
+serializes protected commands with cleanup, and removes disposable artifacts after
+successful test or measurement batches. The local reserve is 40 GiB; when
+`GITHUB_ACTIONS=true` the default is 8 GiB for its smaller ephemeral filesystem.
+`RUSTGM_MIN_FREE_GIB` explicitly overrides either default. Incremental
+Cargo caching is disabled in these commands.
+
+For direct optimized checks, use:
+
+```sh
+CARGO_TARGET_DIR=obj/rust python3 scripts/storage.py run -- cargo test --release --locked --manifest-path dev/Cargo.toml
+make tidy
+# Also discard the rebuildable Cargo cache when it is no longer useful:
+make tidy-build
+```
+
+Cleanup retains inputs, text outputs, errors, receipts and every timing
+observation. It removes generated ELF executables and object/metadata files,
+along with rendering scratch files; failed wrapped runs retain their artifacts
+until explicitly pruned. `python3 scripts/storage.py prune` previews deletion.
+Deletion records live in `obj/cleanup/`. Cleanup never follows directory/file
+symlinks or enters another checkout, and it refuses live RustGM executables.
+
+Pin the current immutable A/B archive directories with `.keep-artifacts` before
+running measurements through the wrapper. The source, binary and input hash
+checks still happen before cleanup, with no pruning during the timed command.
+Retire old pins after replacing the baseline. Historical binary copies may be
+pruned; their recorded hashes and observations remain, but rerunning a measurement
+requires a restored binary whose hash matches. Old path references in historical
+validation notes do not imply that disposable executables still exist.

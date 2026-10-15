@@ -143,6 +143,8 @@ def check(app, jobs, stage="pa11"):
                         raise ValueError(f"{label} failed ({result.returncode}): {result.stderr.decode(errors='replace')}")
                 evidence["native"] = case["native"]
                 run_executables(case["native"], rustexe, native, run)
+            for executable in (rustexe, folder / "native-output"):
+                executable.unlink(missing_ok=True)
             evidence["passed"] = True
         except (ValueError, OSError, subprocess.SubprocessError) as error:
             evidence["error"] = str(error)

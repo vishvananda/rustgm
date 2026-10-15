@@ -1,16 +1,18 @@
 PYTHON ?= python3
 CARGO ?= cargo
+GUARDED = $(PYTHON) scripts/storage.py run --
+export CARGO_INCREMENTAL := 0
 ROOT := $(CURDIR)
 export CARGO_TARGET_DIR := $(ROOT)/obj/rust
 ACTIVE_PAS := pa1 pa2 pa3 pa4 pa5 pa6 pa7 pa8 pa9 pa10 pa11 pa12 pa13 pa14 pa15 pa16 pa17 pa18 pa19
 RUSTGM_TEST_APP ?= $(ROOT)/dev/rustgm
 REF_TEST_APP ?= $(ROOT)/dev/rustgm-ref
 
-.PHONY: all test test-report ref-test lint setup-audit audit-rust test-harness test-backend test-native test-maintainer-native test-layouts test-upstream test-rustc perf perf-literals perf-ast perf-crate-ast perf-names perf-expanded perf-expanded-crate perf-types perf-layouts perf-body-ir perf-ownership perf-lowir clean
+.PHONY: all test test-report ref-test lint setup-audit audit-rust test-harness test-backend test-native test-maintainer-native test-layouts test-upstream test-rustc perf perf-literals perf-ast perf-crate-ast perf-names perf-expanded perf-expanded-crate perf-types perf-layouts perf-body-ir perf-ownership perf-lowir clean tidy tidy-build check-space
 all:
-	$(CARGO) build --manifest-path dev/Cargo.toml --release --locked
+	$(PYTHON) scripts/storage.py run --no-prune -- $(CARGO) build --manifest-path dev/Cargo.toml --release --locked
 test: all
-	$(CARGO) test --manifest-path dev/Cargo.toml --locked
+	$(GUARDED) $(CARGO) test --manifest-path dev/Cargo.toml --locked
 	@status=0; for stage in $(ACTIVE_PAS); do $(PYTHON) scripts/course.py $$stage --app "$(RUSTGM_TEST_APP)" || status=1; done; exit $$status
 test-report: all
 	@status=0; for stage in $(ACTIVE_PAS); do $(PYTHON) scripts/course.py $$stage --app "$(RUSTGM_TEST_APP)" || status=1; done; exit $$status
@@ -23,7 +25,7 @@ ref-test-pa%: all
 	$(PYTHON) scripts/course.py pa$* --app "$(REF_TEST_APP)" --bless
 lint:
 	$(CARGO) fmt --manifest-path dev/Cargo.toml --all -- --check
-	$(CARGO) clippy --manifest-path dev/Cargo.toml --all-targets --all-features --locked -- -D warnings
+	$(PYTHON) scripts/storage.py run --no-prune -- $(CARGO) clippy --manifest-path dev/Cargo.toml --all-targets --all-features --locked -- -D warnings
 setup-audit:
 	$(PYTHON) -m venv obj/audit-venv
 	obj/audit-venv/bin/pip install -r scripts/requirements-audit.txt
@@ -36,18 +38,18 @@ test-harness:
 test-backend:
 	$(PYTHON) scripts/backend.py --test
 test-maintainer-native: all test-backend
-	$(CARGO) test --manifest-path dev/Cargo.toml --locked -- --ignored
+	$(GUARDED) $(CARGO) test --manifest-path dev/Cargo.toml --locked -- --ignored
 test-native: all test-maintainer-native
-	$(PYTHON) scripts/check_native.py pa11 --app "$(RUSTGM_TEST_APP)"
-	$(PYTHON) scripts/check_native.py pa12 --app "$(RUSTGM_TEST_APP)"
-	$(PYTHON) scripts/check_native.py pa13 --app "$(RUSTGM_TEST_APP)"
-	$(PYTHON) scripts/check_native.py pa14 --app "$(RUSTGM_TEST_APP)"
-	$(PYTHON) scripts/check_native.py pa16 --app "$(RUSTGM_TEST_APP)"
-	$(PYTHON) scripts/check_native.py pa17 --app "$(RUSTGM_TEST_APP)"
-	$(PYTHON) scripts/check_native.py pa18 --app "$(RUSTGM_TEST_APP)"
-	$(PYTHON) scripts/check_native.py pa19 --app "$(RUSTGM_TEST_APP)"
+	$(GUARDED) $(PYTHON) scripts/check_native.py pa11 --app "$(RUSTGM_TEST_APP)"
+	$(GUARDED) $(PYTHON) scripts/check_native.py pa12 --app "$(RUSTGM_TEST_APP)"
+	$(GUARDED) $(PYTHON) scripts/check_native.py pa13 --app "$(RUSTGM_TEST_APP)"
+	$(GUARDED) $(PYTHON) scripts/check_native.py pa14 --app "$(RUSTGM_TEST_APP)"
+	$(GUARDED) $(PYTHON) scripts/check_native.py pa16 --app "$(RUSTGM_TEST_APP)"
+	$(GUARDED) $(PYTHON) scripts/check_native.py pa17 --app "$(RUSTGM_TEST_APP)"
+	$(GUARDED) $(PYTHON) scripts/check_native.py pa18 --app "$(RUSTGM_TEST_APP)"
+	$(GUARDED) $(PYTHON) scripts/check_native.py pa19 --app "$(RUSTGM_TEST_APP)"
 test-native-pa%: all
-	$(PYTHON) scripts/check_native.py pa$* --app "$(RUSTGM_TEST_APP)"
+	$(GUARDED) $(PYTHON) scripts/check_native.py pa$* --app "$(RUSTGM_TEST_APP)"
 test-layouts: all
 	$(PYTHON) scripts/check_layouts.py pa12 --app "$(RUSTGM_TEST_APP)"
 test-upstream:
@@ -73,28 +75,35 @@ test-rustc: all test-layouts
 	$(PYTHON) scripts/check_syntax.py pa18 --app "$(RUSTGM_TEST_APP)"
 	$(PYTHON) scripts/check_syntax.py pa19 --app "$(RUSTGM_TEST_APP)"
 perf: all
-	$(PYTHON) scripts/measure_lexer.py
+	$(GUARDED) $(PYTHON) scripts/measure_lexer.py
 perf-literals: all
-	$(PYTHON) scripts/measure_lexer.py --stage literals
+	$(GUARDED) $(PYTHON) scripts/measure_lexer.py --stage literals
 perf-ast: all
-	$(PYTHON) scripts/measure_lexer.py --stage ast
+	$(GUARDED) $(PYTHON) scripts/measure_lexer.py --stage ast
 perf-crate-ast: all
-	$(PYTHON) scripts/measure_lexer.py --stage crate-ast
+	$(GUARDED) $(PYTHON) scripts/measure_lexer.py --stage crate-ast
 perf-names: all
-	$(PYTHON) scripts/measure_lexer.py --stage names
+	$(GUARDED) $(PYTHON) scripts/measure_lexer.py --stage names
 perf-expanded: all
-	$(PYTHON) scripts/measure_lexer.py --stage expanded
+	$(GUARDED) $(PYTHON) scripts/measure_lexer.py --stage expanded
 perf-expanded-crate: all
-	$(PYTHON) scripts/measure_lexer.py --stage expanded-crate
+	$(GUARDED) $(PYTHON) scripts/measure_lexer.py --stage expanded-crate
 perf-types: all
-	$(PYTHON) scripts/measure_lexer.py --stage types
+	$(GUARDED) $(PYTHON) scripts/measure_lexer.py --stage types
 perf-layouts: all
-	$(PYTHON) scripts/measure_lexer.py --stage layouts
+	$(GUARDED) $(PYTHON) scripts/measure_lexer.py --stage layouts
 perf-body-ir: all
-	$(PYTHON) scripts/measure_lexer.py --stage body-ir
+	$(GUARDED) $(PYTHON) scripts/measure_lexer.py --stage body-ir
 perf-lowir: all
-	$(PYTHON) scripts/measure_lexer.py --stage lowir
+	$(GUARDED) $(PYTHON) scripts/measure_lexer.py --stage lowir
 perf-ownership: all
-	$(PYTHON) scripts/measure_lexer.py --stage ownership
+	$(GUARDED) $(PYTHON) scripts/measure_lexer.py --stage ownership
 clean:
 	$(CARGO) clean --manifest-path dev/Cargo.toml
+
+check-space:
+	$(PYTHON) scripts/storage.py check
+tidy:
+	$(PYTHON) scripts/storage.py prune --apply
+tidy-build:
+	$(PYTHON) scripts/storage.py prune --apply --build-cache

@@ -34,3 +34,26 @@ unimplemented and process exit in production. Narrow lint expectations require
 reasons; blanket allowances and mechanical file splitting are prohibited.
 The syntax-aware audit additionally checks file/function size, nesting, unsafe
 code, duplicated blocks, phase dependencies and misplaced environment access.
+
+## Generated storage
+
+- Check free space before every build, validation batch or benchmark. Use the
+  Makefile targets or `python3 scripts/storage.py run -- COMMAND` for direct
+  Cargo/test/measurement commands; use `--no-prune` before `--` for build-only
+  commands. The wrapper reserves 40 GiB locally and disables incremental caches.
+  GitHub Actions defaults to an 8 GiB reserve. Do not lower the local reserve to
+  work around exhaustion: clean generated output first.
+- Successful wrapped runs remove generated executables, object/metadata files
+  and large rendering scratch files. Source inputs, diagnostics, receipts and
+  raw timing observations remain. Failed runs retain artifacts for diagnosis;
+  prune them after investigating. Never accumulate a fresh binary per historical
+  test case or benchmark observation indefinitely.
+- Use `make tidy` between work batches; `make tidy-build` also removes the
+  rebuildable Cargo cache. Cleanup refuses active compiler/test executables and
+  shares an exclusive lock with wrapped commands. Do not run cleanup during
+  measurements, and do not modify another checkout's outputs.
+- Put `.keep-artifacts` in the directory of the immutable baseline/candidate
+  currently needed for comparison. Remove superseded pins after publishing a
+  replacement. Keep only current baselines; historical receipts and hashes do
+  not require retaining every old executable. Do not treat a pruned binary as
+  available evidence for a new run: rebuild or restore it and verify its hash.
