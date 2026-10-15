@@ -1,0 +1,90 @@
+//! Paired binder slots form a bijection; unused declared slots need no partner.
+use super::super::{Error, RegionId};
+use std::collections::HashMap;
+
+struct Frame {
+    scope: usize,
+    counts: (u32, u32),
+    forward: HashMap<u16, u16>,
+    reverse: HashMap<u16, u16>,
+}
+
+#[derive(Default)]
+pub(super) struct Binders {
+    frames: Vec<Frame>,
+    next: usize,
+}
+
+enum Region {
+    Local(usize, u16),
+    Outer(RegionId),
+}
+
+impl Binders {
+    pub fn is_empty(&self) -> bool {
+        self.frames.is_empty()
+    }
+    pub fn depth(&self) -> Result<u16, Error> {
+        u16::try_from(self.frames.len()).map_err(|_| Error::Overflow)
+    }
+    pub fn scope(&self) -> usize {
+        self.frames.last().map_or(0, |frame| frame.scope)
+    }
+    pub fn enter(&mut self, left: u32, right: u32) -> Result<(), Error> {
+        if self.frames.len() >= 0x7fff {
+            return Err(Error::Overflow);
+        }
+        self.next = self.next.checked_add(1).ok_or(Error::Overflow)?;
+        self.frames.push(Frame {
+            scope: self.next,
+            counts: (left, right),
+            forward: HashMap::new(),
+            reverse: HashMap::new(),
+        });
+        Ok(())
+    }
+    pub fn exit(&mut self) -> Result<(), Error> {
+        self.frames.pop().ok_or(Error::InvalidIdentity)?;
+        Ok(())
+    }
+    fn region(&self, region: RegionId) -> Result<Region, Error> {
+        let Some((depth, slot)) = region.bound_parts() else {
+            return Ok(Region::Outer(region));
+        };
+        let count = self.depth()?;
+        Ok(if depth < count {
+            Region::Local(usize::from(count - depth - 1), slot)
+        } else {
+            Region::Outer(RegionId::bound(depth - count, slot).map_err(|_| Error::Overflow)?)
+        })
+    }
+    pub fn equate(
+        &mut self,
+        left: RegionId,
+        right: RegionId,
+        outer: &mut Vec<(RegionId, RegionId)>,
+    ) -> Result<(), Error> {
+        match (self.region(left)?, self.region(right)?) {
+            (Region::Outer(a), Region::Outer(b)) => {
+                if a != b {
+                    outer.push((a, b));
+                }
+            }
+            (Region::Local(a, x), Region::Local(b, y)) if a == b => {
+                let frame = &mut self.frames[a];
+                if u32::from(x) >= frame.counts.0 || u32::from(y) >= frame.counts.1 {
+                    return Err(Error::InvalidIdentity);
+                }
+                if frame.forward.get(&x).is_some_and(|&slot| slot != y)
+                    || frame.reverse.get(&y).is_some_and(|&slot| slot != x)
+                {
+                    return Err(Error::Mismatch);
+                }
+                frame.forward.insert(x, y);
+                frame.reverse.insert(y, x);
+            }
+            _ => return Err(Error::Mismatch),
+        }
+        Ok(())
+    }
+}

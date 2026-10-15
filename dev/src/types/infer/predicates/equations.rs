@@ -69,13 +69,11 @@ impl Context {
             return Err(Error::Mismatch);
         }
         self.account_work(1 + arguments.len())?;
-        let subject = self.known(store, assumption.ty)?;
-        self.equate(store, predicate.subject, subject)?;
+        self.equate_scoped(store, predicate.subject, assumption.ty)?;
         for (&inferred, canonical) in trait_.arguments.iter().zip(arguments) {
             match (inferred, canonical) {
                 (Argument::Type(term), CanonicalArgument::Type(ty)) => {
-                    let known = self.known(store, ty)?;
-                    self.equate(store, term, known)?;
+                    self.equate_scoped(store, term, ty)?;
                 }
                 (Argument::Const(term), CanonicalArgument::Const(id)) => {
                     let known = self.known_const(store, id)?;

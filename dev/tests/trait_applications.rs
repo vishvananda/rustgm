@@ -1,4 +1,6 @@
 //! Trait arguments remain part of identity, binder substitution and inference obligations.
+#[path = "trait_applications/binders.rs"]
+mod binders;
 #[path = "trait_applications/equations.rs"]
 mod equations;
 use rustgm::types::{

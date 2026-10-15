@@ -3481,3 +3481,87 @@ timing. All 528 source/config/test files remain archived and verified. Final com
 SHA256 is `36111e0653f3cb859682b3f4ac25cbdac94581796c101d057a4c20b7e4be1ea4`.
 The validation receipt is `obj/pa19-work/drop-trait-validation-v1.json`; all source
 snapshots and measurements remain under `obj/pa19-work/drop-trait-*` and `obj/perf/`.
+
+
+## Scoped trait equality for function-pointer arguments
+
+The callable-lifetime false acceptance recorded at the preceding checkpoint is
+fixed. A local function binder's return/input correlation no longer becomes an
+ordinary caller lifetime equality. Twenty-five source controls independently agree
+with pinned rustc, and four typed invariants inspect the actual equations, inference
+results, alpha mappings and bounded shared work. No course fixtures or reference
+sidecars change at this checkpoint.
+
+Trait type arguments require rigid alpha equality. Renaming or reordering local
+binder declarations and adding unused declarations preserve that equality; merging
+two independently used slots does not. Independent probes rejected the initial
+hypothesis that bidirectional function subtyping would suffice. The final matcher
+uses a per-callable bijection of used slots, keeps nested frames distinct, and counts
+zero-slot callable binders when normalizing captured outer lifetimes. Only those
+outer equalities reach the ordinary region proof. Identical child type identities
+inside a nonidentity alpha mapping do not bypass correlation checks.
+
+Type and const structure still use the existing inference equations. A variable
+inside a callable cannot capture that callable's local lifetime; a replacement with
+its own closed function binder is valid. A shared region-constructor mapper rebases
+inferred types without parsing or canonical-store mutation. Repeated variable uses
+cache rebasing, and all traversal/probe work remains charged. The existing inference
+API's caller-universal convention remains free region identities; declaration-only
+canonical queries retain rigid parameters. One propagated dependency bit selects
+the callable path without increasing the compact type-property storage size.
+
+The source controls cover the original call and nominal-annotation failures, outer
+equality versus one-way outlives, local versus static/captured regions, nested and
+nominal lifetime arguments, distinct assumptions, inferred and preconstrained type
+arguments, and capture rejection. Generic user-trait bodies remain checked templates;
+these controls do not claim concrete general-trait execution before impl dispatch.
+
+A separate exploratory probe found a pre-existing pinned-rustc acceptance difference:
+redundant, differently spelled but canonically identical function-pointer trait
+bounds can produce rustc E0283, while both the published baseline and this candidate
+deduplicate them under the current canonical-predicate contract. Three initial
+acceptance predictions were wrong for rustc; predictions, actual diagnostics and
+both compiler outcomes remain in `obj/pa19-work/binder-duplicates-v1`. They are not
+counted as matching qualification cases. PA19 release review must resolve or document
+that diagnostic-boundary difference; this scoped-equality fix does not change it.
+
+General trait impl conformance, selection and dispatch, trait method lookup, and
+the PA19 release remain outstanding. PA20 and PA21 remain part of the active goal.
+
+The first implementation passes 825 frontend tests in debug and release, the full
+3,790-case course report, the independent rustc sweep, all 18 maintainer native
+groups, 1,126 course executable comparisons and three codegen controls. The sixteen
+PA13 runtime differences remain explicit. A final allocation shortcut uses canonical
+escaping-binder metadata before creating rebasing storage or traversing an identical
+closed subtree. It passes the full 825-test debug suite and course report again,
+all 30 affected release tests, Clippy all/pedantic, formatting, the 530-file audit,
+27 harness tests and upstream/Reference integrity. Final course LowIR remains
+byte-identical to the same oracles qualified by the native run; neither lowering
+nor the backend bridge changed.
+
+The original frozen implementation retains 270 timing observations. The final
+candidate adds 416 observations across sixteen A/A and five-block ABBA jobs,
+including a direct comparison against that first implementation. All frozen source,
+binary and input hashes and full/count output equality pass. No local compiler
+build, test or diagnostic probe overlapped either timing run.
+
+The initial callable-inference workload showed roughly 5–8% median overhead. After
+the allocation shortcut, the 64/256/1,024-item versions measure 8.99/23.63/89.33 ms,
+about +3.5/+2.6/+2.4% against the published baseline. The direct 1,024-item comparison
+against the first candidate changes median wall time by -3.7%; all five paired
+blocks are faster (-3.1% to -7.8%). These measurements support removing the avoidable
+allocation, not a claim of zero cost for scoped matching.
+
+Final ordinary functions and generic records differ by +0.3%/+0.4%, and ordinary
+trait bounds are effectively unchanged; their calibration/block noise is larger
+than those median changes. Other existing workloads have mixed blocks, including
+18% calibration spread for trait inference, so their medians are not speedup claims.
+Final median RSS differences are within -6 to +50 KiB. The final callable-alpha and
+outer-equality workloads at 1,024 items take 65.57 and 86.47 ms on this host.
+
+All 533 source/config/test files are archived under `obj/pa19-work/binder-source-v2`.
+Final compiler SHA256 is
+`0580d4325d404b6bd481d4257e4147a65e79692de4dfea02b1b97493031b369a`.
+The validation receipt is `obj/pa19-work/binder-validation-v2.json`; prior snapshots,
+qualification records and all observations remain in `obj/pa19-work/binder-*` and
+`obj/perf/`. This checkpoint advances PA19; it does not complete PA19–PA21.

@@ -87,7 +87,11 @@ impl Context {
                         .ok_or(Error::InvalidIdentity)?,
                 );
             }
-            let value = self.region_constructor(store, kind, &children, &mut bound, depth)?;
+            let value = self.map_constructor_regions(store, kind, &children, |region| {
+                bound
+                    .region(region, depth)
+                    .map_err(|_| Error::InvalidIdentity)
+            })?;
             results.insert((id, depth), value);
         }
         results
@@ -95,35 +99,24 @@ impl Context {
             .copied()
             .ok_or(Error::InvalidIdentity)
     }
-    fn region_constructor(
+    pub(super) fn map_constructor_regions(
         &mut self,
-        store: &mut Store,
+        store: &Store,
         kind: Constructor,
         children: &[TermId],
-        bound: &mut Bound,
-        depth: u16,
+        mut replace: impl FnMut(RegionId) -> Result<RegionId, Error>,
     ) -> Result<TermId, Error> {
-        let mut replace = |region| {
-            bound
-                .region(region, depth)
-                .map_err(|_| Error::InvalidIdentity)
+        let kind = match kind {
+            Constructor::Adt(item, args) => Constructor::AdtArgs(
+                item,
+                self.materialize_arguments(store, args, &mut Vec::new())?,
+            ),
+            Constructor::FunctionItem(item, args) => Constructor::FunctionItemArgs(
+                item,
+                self.materialize_arguments(store, args, &mut Vec::new())?,
+            ),
+            other => other,
         };
-        if let Constructor::Adt(item, args) | Constructor::FunctionItem(item, args) = kind {
-            let args = store.region_args(args).ok_or(Error::InvalidIdentity)?;
-            self.account_work(args.len())?;
-            let args = args
-                .iter()
-                .copied()
-                .map(replace)
-                .collect::<Result<Vec<_>, _>>()?;
-            let args = store.intern_regions(&args).map_err(|_| Error::Overflow)?;
-            let kind = if matches!(kind, Constructor::Adt(..)) {
-                Constructor::Adt(item, args)
-            } else {
-                Constructor::FunctionItem(item, args)
-            };
-            return self.construct(kind, children);
-        }
         if let Constructor::Reference { mutable, region } = kind {
             return self.construct(
                 Constructor::Reference {

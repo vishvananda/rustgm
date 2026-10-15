@@ -269,6 +269,12 @@ impl Store {
             .map(|p| p.has(Property::LateCallables))
     }
     #[must_use]
+    pub(crate) fn contains_callables(&self, id: TypeId) -> Option<bool> {
+        self.properties
+            .get(id.0 as usize)
+            .map(|p| p.has(Property::Callables))
+    }
+    #[must_use]
     pub fn contains_parameters(&self, id: TypeId) -> Option<bool> {
         self.properties
             .get(id.0 as usize)
@@ -445,6 +451,7 @@ impl Store {
                 result.region(region);
             }
             Kind::Function { bound_regions, .. } => {
+                result.set(Property::Callables, true);
                 result.escaping = result.escaping.saturating_sub(1);
                 result.set(
                     Property::LateCallables,

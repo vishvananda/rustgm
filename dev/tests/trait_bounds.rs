@@ -1,6 +1,8 @@
 //! User predicates preserve complete arguments without inventing implementation evidence.
 #[path = "trait_bounds/applicability.rs"]
 mod applicability;
+#[path = "trait_bounds/binders.rs"]
+mod binders;
 #[path = "trait_bounds/destructors.rs"]
 mod destructors;
 #[path = "trait_bounds/equality.rs"]

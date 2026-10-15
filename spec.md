@@ -238,6 +238,16 @@ Failed alternatives never constrain the caller. Commit a unique match and retain
 its actual assumption identity and every required lifetime equality. The ordinary
 region checker proves those equalities; matching never erases lifetime obligations.
 
+Function-pointer types inside trait applications use scoped alpha equality, not
+function subtyping. Pair each callable's local lifetime slots bijectively as they
+are used; renaming, reordering and unused declarations do not change equality.
+Keep nested binder frames distinct, including callables with no local slots.
+Only outer lifetime equalities may reach the caller's region proof, lowered by
+the number of enclosing callable binders. An inference variable cannot capture
+one of those local slots. Share ordinary shape/const equations and region mapping,
+and cache rebasing for repeated variable uses. Canonical dependency flags keep
+ordinary trait arguments on the existing equality path without scanning types.
+
 An unknown whole Self is not inferred merely from an available caller assumption.
 Other arguments may be inferred, and a bounded worklist revisits ambiguous goals
 after another goal constrains their shared arguments. Check declaration ambiguity
