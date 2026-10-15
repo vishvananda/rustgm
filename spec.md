@@ -181,8 +181,8 @@ Retain quantified evidence through body collection, specialization and selected
 item rewriting. Substitute caller parameters beneath each block's local binder
 prefix, and prove the resulting requirements in the same graph as ordinary caller
 constraints. Scope IDs are local to one evidence object and must be remapped when
-combining independent objects. Partial alias annotations with deferred projections
-or lifetime proofs still require delayed projection inference. Residual projected
+combining independent objects. Partial alias annotations retain deferred projections
+and lifetime proofs until their actual inputs are determined. Residual projected
 types and erased formation requirements normalize in their retained callable
 scopes. Share an immutable binder plan with pending queries so moving or remapping
 the original proof cannot change their scope identities. Import each required
@@ -552,9 +552,32 @@ leaves. Unions, bindings and explicit fallback wake only affected watches; newly
 exposed compound terms add their own leaves without rescanning resolved ancestors.
 Deliver each readiness event once and charge the shared inference work budget.
 Watches retain no proof authority: the semantic caller still owns source identity,
-binder scope, normalization, evidence and suspended equations. General inferred
-alias/default normalization is still unfinished; this graph support does not
-relax the source annotation gate or promote PA20/PA21.
+binder scope, normalization, evidence and suspended equations. Collect dependencies
+from every retained proof, normalization and Sized root, including erased inputs.
+Wait only on the parameters those roots use: waiting on an unrelated output or a
+dependent default can prevent an otherwise solvable query from making progress.
+
+Deferred equality and shape equations constrain ordinary siblings while retaining
+blocked associated-result leaves. Never bind an output hole to a projection merely
+to avoid suspension, and never infer projection inputs from an output equation.
+Preserve the original relation kind and resume only awakened leaves; unchanged
+siblings must not repeat work or lifetime equalities. Completion rejects remaining
+equation or formation debt, including when a normalized result erased its inputs.
+
+Body annotations retain source callable scopes before descending into their typed
+children. Alias-local binders extend that ambient prefix. Rebase proof-private
+identities before substituting actual arguments, and preserve both prefixes when
+aliasing caller universals. A fresh query copies only its ancestor chain, not every
+previous sibling scope. Scoped proof publication preserves gaps in private region
+intervals and the ownership of nested witnesses. Synchronous body normalization
+reserves intervals in its exclusive local proof before publishing the contiguous
+result once; it uses validated implementations and the existing lifetime gate.
+
+Projection and trait progress run before numeric fallback and body publication.
+Normalization never substitutes for the original well-formedness proof. Isolated
+method-prefix queries still reject pending projection proofs until that query mode
+supports them; body proofs cannot leak into a speculative candidate. Symbolic
+associated equalities and further PA20/PA21 work remain required.
 
 Caller-bound trait goals participate in the same inference graph as call arguments.
 Import each probe with one shared mapping across Self and all type/const roots.

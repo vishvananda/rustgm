@@ -21,6 +21,7 @@ struct Watch {
 
 #[derive(Default)]
 pub(super) struct Storage {
+    pub(super) equations: super::deferred::Storage,
     watches: Vec<Watch>,
     waiting: HashMap<Dependency, Vec<WatchId>>,
     work: VecDeque<(WatchId, Dependency)>,

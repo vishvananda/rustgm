@@ -146,6 +146,40 @@ impl Host for Prefix<'_> {
     fn requirement(&mut self, _: NodeKey, _: crate::types::infer::predicates::Predicate) {}
     fn callable(&mut self, _: NodeKey) {}
     fn child(&mut self, _: NodeKey) {}
+    fn scope(
+        &mut self,
+        _: NodeKey,
+        parent: crate::types::lifetime_proof::ScopeId,
+        _: u32,
+    ) -> Result<crate::types::lifetime_proof::ScopeId, Error> {
+        Ok(parent)
+    }
+    fn deferred(
+        &mut self,
+        key: NodeKey,
+        _: crate::types::lifetime_proof::ScopeId,
+        _: crate::sema::alias_requirements::Expansion,
+        _: &[crate::sema::generics::AnnotationArgument],
+        _: &Fields,
+    ) -> Result<(), Error> {
+        Err(Declarations::error(
+            self.report,
+            key,
+            "inferred alias proofs require delayed projection normalization",
+        ))
+    }
+    fn normalization(
+        &mut self,
+        key: NodeKey,
+        _: crate::types::lifetime_proof::ScopeId,
+        _: TermId,
+    ) -> Result<(), Error> {
+        Err(Declarations::error(
+            self.report,
+            key,
+            "method prefix requires completed projection normalization",
+        ))
+    }
 }
 
 pub(in crate::sema) fn choose(

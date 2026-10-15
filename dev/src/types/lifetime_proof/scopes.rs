@@ -2,11 +2,56 @@
 use super::{Obligations, ScopeId, quantified::Binder};
 use std::sync::Arc;
 
+/// Reuse one source-to-destination map while preserving empty and sibling binders.
+pub(crate) fn map_scopes(
+    bindings: &mut Vec<ScopeId>,
+    root: ScopeId,
+    needed: ScopeId,
+    mut binder: impl FnMut(ScopeId) -> Result<(ScopeId, u32), &'static str>,
+    mut create: impl FnMut(ScopeId, u32) -> Result<ScopeId, &'static str>,
+) -> Result<ScopeId, &'static str> {
+    if bindings.is_empty() {
+        bindings.push(root);
+    } else if bindings[0] != root {
+        return Err("proof scope mapping has a different root");
+    }
+    while bindings.len() <= needed.0 as usize {
+        let id = ScopeId(u32::try_from(bindings.len()).map_err(|_| "too many proof scopes")?);
+        let (parent, count) = binder(id)?;
+        let parent = *bindings
+            .get(parent.0 as usize)
+            .ok_or("missing mapped proof parent")?;
+        bindings.push(create(parent, count)?);
+    }
+    bindings
+        .get(needed.0 as usize)
+        .copied()
+        .ok_or("invalid mapped proof scope")
+}
+
 #[derive(Clone, Default)]
 pub(crate) struct ScopePlan {
     scopes: Option<Arc<Vec<Binder>>>,
 }
 impl ScopePlan {
+    /// A fresh query needs only its ancestor chain, never earlier sibling scopes.
+    pub fn enter(
+        &self,
+        mut scope: ScopeId,
+        destination: &mut Obligations,
+    ) -> Result<ScopeId, &'static str> {
+        let mut counts = Vec::with_capacity(usize::from(self.depth(scope)?));
+        while scope != ScopeId::ROOT {
+            let (parent, count) = self.binder(scope)?;
+            counts.push(count);
+            scope = parent;
+        }
+        let mut root = ScopeId::ROOT;
+        for count in counts.into_iter().rev() {
+            root = destination.scope(root, count)?;
+        }
+        Ok(root)
+    }
     pub fn len(&self) -> usize {
         self.scopes.as_ref().map_or(0, |scopes| scopes.len())
     }
@@ -40,6 +85,24 @@ impl Obligations {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn fresh_queries_copy_only_their_actual_ancestors() -> Result<(), &'static str> {
+        let mut source = Obligations::new(1);
+        let outer = source.scope(ScopeId::ROOT, 0)?;
+        for _ in 0..8192 {
+            source.scope(outer, 3)?;
+        }
+        let chosen = source.scope(outer, 1)?;
+        let mut destination = Obligations::new(1);
+        let target = source.scope_plan().enter(chosen, &mut destination)?;
+        assert_eq!(destination.scope_plan().len(), 2);
+        assert_eq!(destination.scope_plan().depth(target)?, 2);
+        let (parent, count) = destination.scope_plan().binder(target)?;
+        assert_eq!(count, 1);
+        assert_eq!(destination.scope_plan().binder(parent)?, (ScopeId::ROOT, 0));
+        Ok(())
+    }
 
     #[test]
     fn retained_plans_survive_scope_remapping_and_later_extension() -> Result<(), &'static str> {

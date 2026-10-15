@@ -152,21 +152,12 @@ impl Plan {
             self.bindings.clear();
             self.bindings.push(ScopeId::ROOT);
         }
-        while self.bindings.len() <= needed.0 as usize {
-            let id = ScopeId(
-                u32::try_from(self.bindings.len())
-                    .map_err(|_| "too many retained projection scopes")?,
-            );
-            let (parent, count) = self.source.binder(id)?;
-            let parent = *self
-                .bindings
-                .get(parent.0 as usize)
-                .ok_or("missing retained parent scope")?;
-            self.bindings.push(destination.scope(parent, count)?);
-        }
-        self.bindings
-            .get(needed.0 as usize)
-            .copied()
-            .ok_or("missing retained projection scope")
+        crate::types::lifetime_proof::map_scopes(
+            &mut self.bindings,
+            ScopeId::ROOT,
+            needed,
+            |id| self.source.binder(id),
+            |parent, count| destination.scope(parent, count),
+        )
     }
 }

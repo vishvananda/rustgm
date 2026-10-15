@@ -15,6 +15,7 @@ mod nominals;
 mod owner_arguments;
 mod pattern_constants;
 mod patterns;
+mod projections;
 mod references;
 mod selected_arguments;
 mod text;
@@ -177,6 +178,7 @@ pub(super) struct Checker<'a> {
     trait_environment: Option<std::sync::Arc<super::traits::assumptions::Assumptions>>,
     canonical_trait_inference: Option<Box<Context>>,
     annotations: super::annotations::Scratch,
+    projections: projections::Pending,
     type_children: Vec<TermId>,
     annotation_checks: Vec<NodeId>,
     annotation_children: HashSet<NodeId>,
@@ -245,6 +247,7 @@ impl<'a> Checker<'a> {
             trait_environment: None,
             canonical_trait_inference: None,
             annotations: super::annotations::Scratch::default(),
+            projections: projections::Pending::default(),
             type_children: Vec::new(),
             annotation_checks: Vec::new(),
             annotation_children: HashSet::new(),
@@ -280,6 +283,7 @@ impl<'a> Checker<'a> {
         module: ModuleId,
     ) -> Result<(), Error> {
         self.call_types.clear();
+        self.projections = projections::Pending::default();
         self.body_binders = 0;
         self.method_environment = None;
         self.trait_environment = None;
@@ -362,6 +366,14 @@ impl Checker<'_> {
         }
     }
     fn equate(&mut self, node: NodeId, left: TermId, right: TermId) -> Result<(), Error> {
+        if self.projections.active() {
+            return self.deferred_equation(
+                node,
+                left,
+                right,
+                crate::types::infer::deferred::Relation::Equality,
+            );
+        }
         self.infer
             .equate(&self.facts.types, left, right)
             .map_err(|e| self.error(node, e))
@@ -380,11 +392,20 @@ impl Checker<'_> {
         } else {
             (left, right)
         };
+        if self.projections.active() {
+            return self.deferred_equation(
+                node,
+                left,
+                right,
+                crate::types::infer::deferred::Relation::Shape,
+            );
+        }
         self.infer
             .equate_shape(&self.facts.types, left, right)
             .map_err(|e| self.error(node, e))
     }
     fn head(&mut self, node: NodeId, term: TermId) -> Result<Option<Constructor>, Error> {
+        self.advance_projections(node)?;
         self.infer
             .head(&self.facts.types, term)
             .map_err(|e| self.error(node, e))
@@ -399,6 +420,7 @@ impl Checker<'_> {
     }
     fn function(&mut self, function: Function) -> Result<(), Error> {
         self.call_types.clear();
+        self.projections = projections::Pending::default();
         self.body_binders = self
             .facts
             .lifetimes

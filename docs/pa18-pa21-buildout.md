@@ -5072,3 +5072,81 @@ per job. Rendering scratch files are removed after each job. Guarded validation
 prunes disposable generated executables while preserving source, diagnostics,
 receipts and observations. The receipt is
 `obj/pa20-work/inferred-projection-terms-v1/validation-v1.json`.
+
+## Deferred equations and partial alias normalization
+
+Partial alias annotations now preserve projection inputs through body inference.
+Ordinary sibling equations determine type/const arguments; comparisons involving
+associated results suspend without equating those inputs. Normalization wakes
+only the blocked leaves that changed, retaining equality versus shape semantics.
+Finishing a body with unresolved equations or formation requirements fails.
+A 4,096-leaf typed test bounds each single-leaf resume without rescanning siblings
+or repeating their lifetime equalities. Thirteen equation tests cover ordering,
+noninjectivity, defaults, chained dependencies and mismatched selected results.
+
+Alias contracts retain their original canonical proofs and erased formation
+requirements separately from inferred output terms. Parameter-use collection
+identifies the actual input dependencies. Source callable scopes and alias-local
+scopes retain their own binders; private proof identities are rebased before
+actual arguments enter. Canonical body normalization selects only validated
+implementations and retains the complete scoped lifetime evidence. Four new
+proof tests cover private-ID collisions, ambient substitution, scoped interval
+gaps and copying a chosen ancestor chain after 8,192 earlier sibling scopes.
+
+Eighteen declared source cases match pinned rustc: ten accept and eight reject.
+They cover inferred tuples in either field order, callable parameters, mixed
+const arguments, dependent defaults and overrides, numeric fallback, captured
+body lifetimes, static-only implementations and invalid lifetime escape.
+The erased-inner-input rejection still reports a normalization demand, so it is
+not evidence that all delayed operational demands are implemented. Six new
+native programs execute the selected results and callable/lifetime paths through
+CPPGM and rustc. Together with eight affected existing modules, 41 native programs
+pass. The full optimized suite passes 1,028 tests with 39 explicit native ignores;
+all 4,857 active course cases, Clippy all/pedantic, formatting, the 639-file audit
+and 33 harness tests pass. No course fixtures, manifests or oracle bytes change.
+
+PA20 and PA21 remain planned. Isolated inferred method prefixes still reject
+pending projection proofs. Symbolic assumption-selected associated equalities,
+remaining delayed operational demands, associated constants/result bounds,
+shorthand paths, the remaining coherence work, GATs, opaques, complete higher-ranked
+relationships and generic drop checking remain required. This checkpoint does
+not promote an assignment or reduce the active goal.
+
+Evidence and immutable source/binary snapshots are retained in
+`obj/pa20-work/deferred-inference-equations-v1/`. A mistyped native test target in
+the first batch was corrected to `unreduced_annotations`; the failed invocation
+ran no native tests. The corrected native run and subsequent course checks pass.
+
+The frozen candidate is
+`8d8b0d661faa3f1af39a7d9c9a716c26f6276143aba21a1cd73cc55280c9dd8d`,
+with 642 source/config/test files archived. All 102 previous workloads retain
+identical full/count output bytes against the published `2a370446...` baseline.
+Twelve new, independently rustc-qualified workloads measure repeated inferred
+aliases and source callable scopes at 64/256/1,024, plus callable width and
+dependent-default chains at 64/256/512. A/A calibration and five ABBA blocks per
+workload retain 2,964 observations; five focused confirmations retain 130 more.
+No local RustGM build, test or frontend probe overlaps timing. Other projects
+remain active on this host, and every raw observation is retained.
+
+Initial existing-workload paired medians range from -5.7% to +6.6%. Quantified
+width's +6.6% has 64.4% calibration spread and becomes +0.5% in confirmation.
+Quantified repeated uses move from +2.6% to +0.4%; nominal defaults, argument width
+and inferred Sized controls confirm at -0.4%, +0.9% and -1.0%. Confirmation
+calibration spreads are 8.9–15.2%. These measurements neither establish a general
+speedup nor rule out small regressions; the earlier alias-width cost remains.
+
+New workload median wall times are 6.82/15.17/47.90 ms for repeated inferred
+aliases, 9.71/26.35/104.02 ms for repeated source callable scopes,
+6.07/12.64/19.64 ms for callable width, and 4.49/6.46/8.68 ms for default chains.
+Their resident medians range from 5,896 to 13,642 KiB. These timings complement
+the typed bounded-work checks; they are not a proof for arbitrary programs.
+
+Six further capture probes were independently qualified after timing. Five
+match rustc, including rejection of a static-only function pointer. The remaining
+accepted program puts a generic function pointer before the tuple field that
+determines its projected input; RustGM still rejects it as unresolved. The
+captured-lifetime transformation creates a new projection occurrence whose
+normalization is not yet scheduled. Its source, expectations and diagnostics are
+retained in `capture-followup-declared-v1.json` and `capture-followup-v1.json`.
+That transformed-occurrence scheduling is the next body-inference fix, rather
+than completed conformance coverage in this checkpoint.

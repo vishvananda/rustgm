@@ -35,6 +35,34 @@ impl Host for Checker<'_> {
     fn callable(&mut self, key: NodeKey) {
         self.annotation_checks.push(key.node);
     }
+    fn scope(
+        &mut self,
+        key: NodeKey,
+        parent: crate::types::lifetime_proof::ScopeId,
+        count: u32,
+    ) -> Result<crate::types::lifetime_proof::ScopeId, Error> {
+        self.projections
+            .scope(parent, count)
+            .map_err(|e| self.error(key.node, e))
+    }
+    fn deferred(
+        &mut self,
+        key: NodeKey,
+        scope: crate::types::lifetime_proof::ScopeId,
+        expansion: crate::sema::alias_requirements::Expansion,
+        supplied: &[crate::sema::generics::AnnotationArgument],
+        fields: &Fields,
+    ) -> Result<(), Error> {
+        self.defer_contract(key.node, scope, expansion, supplied, fields)
+    }
+    fn normalization(
+        &mut self,
+        key: NodeKey,
+        scope: crate::types::lifetime_proof::ScopeId,
+        term: TermId,
+    ) -> Result<(), Error> {
+        self.defer_normalization(key.node, scope, term)
+    }
     fn child(&mut self, key: NodeKey) {
         self.annotation_children.insert(key.node);
     }

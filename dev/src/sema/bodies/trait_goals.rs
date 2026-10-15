@@ -72,11 +72,12 @@ impl Checker<'_> {
             .filter_map(|(index, (_, predicate))| predicate.trait_arguments().map(|_| index))
             .collect();
         let mut evidence = HashMap::new();
-        if pending.is_empty() {
+        if pending.is_empty() && !self.projections.active() {
             return Ok(evidence);
         }
         let assumptions = self.trait_assumptions(body)?.unwrap_or_default();
-        while !pending.is_empty() {
+        while !pending.is_empty() || self.projections.active() {
+            let progress = self.advance_projections(body)?;
             let before = pending.len();
             let mut next = Vec::new();
             for index in pending {
@@ -106,7 +107,8 @@ impl Checker<'_> {
                     next.push(index);
                 }
             }
-            if next.len() == before {
+            if next.len() == before && !progress && (!next.is_empty() || self.projections.active())
+            {
                 if self
                     .infer
                     .default_numbers()
@@ -115,7 +117,10 @@ impl Checker<'_> {
                     pending = next;
                     continue;
                 }
-                let node = self.call_types.obligations[next[0]].0;
+                let Some(&index) = next.first() else {
+                    return Err(self.error(body, "associated projection inputs remain unresolved"));
+                };
+                let node = self.call_types.obligations[index].0;
                 return Err(self.error(node,"trait obligation requires an unambiguous matching assumption or implementation"));
             }
             pending = next;

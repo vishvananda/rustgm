@@ -18,6 +18,11 @@ pub struct Instantiation {
     shifted: HashMap<(TermId, u16), TermId>,
 }
 impl Instantiation {
+    /// Retrieve an existing actual argument without inventing a new inference variable.
+    #[must_use]
+    pub(crate) fn binding(&self, id: ParameterId) -> Option<Argument> {
+        self.parameters.get(&id).copied()
+    }
     /// # Errors
     /// Rejects duplicate/mismatched bindings, invalid identities and work limits.
     pub fn new(

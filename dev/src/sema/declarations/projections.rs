@@ -330,9 +330,15 @@ impl Checker<'_> {
             return Ok(None);
         }
         let (environment, first) = self.scoped_projection_environment(key, request, context)?;
-        let (source, proof, sized) =
-            State::projection(&mut self.facts, environment, predicate, first, deferred)
-                .map_err(|e| self.error(key, e))?;
+        let (source, proof, sized) = State::projection(
+            &mut self.facts,
+            environment,
+            predicate,
+            first,
+            deferred,
+            crate::sema::traits::implementations::Availability::Declarations,
+        )
+        .map_err(|e| self.error(key, e))?;
         let Some(source) = source else {
             if deferred {
                 return Ok(None);
@@ -360,22 +366,9 @@ impl Checker<'_> {
         };
         self.retain_alias_sizes(key, request, context, sized, restore.as_deref_mut())?;
         self.retain_scoped_projection_proof(key, request, context, proof)?;
-        let name = self.report.resolution.definitions[application.item.0 as usize].name;
-        let scope = self.report.resolution.definitions[owner.0 as usize].scope;
-        let definition = self.report.resolution.scopes[scope.0 as usize]
-            .bindings
-            .get(&(name, Namespace::Type))
-            .map(|binding| binding.target)
-            .filter(|id| {
-                self.report.resolution.definitions[id.0 as usize].kind == DefKind::TypeAlias
-                    && self.facts.associated.owner(*id) == self.facts.associated.owner(owner)
-            })
-            .ok_or_else(|| {
-                self.error(
-                    key,
-                    "selected implementation is missing the associated type",
-                )
-            })?;
+        let definition =
+            crate::sema::projections::definition(self.report, &self.facts, owner, application.item)
+                .map_err(|e| self.error(key, e))?;
         Ok(Some(Selected {
             request,
             owner,

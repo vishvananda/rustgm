@@ -3,6 +3,7 @@
 pub mod arguments;
 mod compare;
 pub mod constants;
+pub mod deferred;
 pub mod dependencies;
 mod freshen;
 mod import;
@@ -317,7 +318,7 @@ impl Context {
     /// # Errors
     /// Reports incompatible shapes/domains, recursive types, invalid IDs and work limits.
     pub fn equate(&mut self, store: &Store, left: TermId, right: TermId) -> Result<(), Error> {
-        self.unify(store, left, right, true)
+        self.unify(store, left, right, true, None)
     }
     /// Constrain type structure while leaving the lifetime relation to the caller.
     /// Coercions retain a directed relation separately; equality alone cannot
@@ -331,7 +332,7 @@ impl Context {
         left: TermId,
         right: TermId,
     ) -> Result<(), Error> {
-        self.unify(store, left, right, false)
+        self.unify(store, left, right, false, None)
     }
     /// Match a constant value's type without equating its storage lifetime to
     /// the scrutinee's lifetime. Reference mutability and referent shapes still
@@ -353,6 +354,7 @@ impl Context {
         left: TermId,
         right: TermId,
         record_regions: bool,
+        mut blocked: Option<&mut Vec<(TermId, TermId)>>,
     ) -> Result<(), Error> {
         self.pairs.clear();
         self.seen.clear();
@@ -363,6 +365,17 @@ impl Context {
             let b = self.root(b)?;
             if a == b {
                 continue;
+            }
+            if let Some(blocked) = &mut blocked {
+                let first = self.is_projection(store, a)?;
+                let second = self.is_projection(store, b)?;
+                if first || second {
+                    let pair = if a.0 < b.0 { (a, b) } else { (b, a) };
+                    if self.seen.insert(pair) {
+                        blocked.push((a, b));
+                    }
+                    continue;
+                }
             }
             match (
                 self.terms[a.0 as usize].value,
@@ -687,6 +700,9 @@ impl Context {
         self.solve_types(store)
     }
     fn solve_types(&mut self, store: &mut Store) -> Result<Solved, Error> {
+        if self.has_deferred_equations() {
+            return Err(Error::Normalization);
+        }
         let mut resolved = vec![None; self.terms.len()];
         let mut state = vec![0_u8; self.terms.len()];
         let mut work = Vec::new();

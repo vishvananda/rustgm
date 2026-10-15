@@ -2,7 +2,7 @@
 mod proofs;
 use super::{Checker, Error, NodeKey, Request, aliases, regions};
 use crate::types::{
-    lifetime_proof::{ScopeId, ScopePlan},
+    lifetime_proof::{ScopeId, ScopePlan, map_scopes},
     parameters::environment::Environment,
     substitute::{Bound, Normalizer},
 };
@@ -137,20 +137,11 @@ fn map_binders(
     needed: ScopeId,
     mut create: impl FnMut(ScopeId, u32) -> Result<ScopeId, &'static str>,
 ) -> Result<ScopeId, &'static str> {
-    if bindings.is_empty() {
-        bindings.push(root);
-    }
-    while bindings.len() <= needed.0 as usize {
-        let id =
-            ScopeId(u32::try_from(bindings.len()).map_err(|_| "too many projection proof scopes")?);
-        let (parent, count) = fold.binder(id).ok_or("missing normalization binder")?;
-        let parent = *bindings
-            .get(parent.0 as usize)
-            .ok_or("missing normalization parent scope")?;
-        bindings.push(create(parent, count)?);
-    }
-    bindings
-        .get(needed.0 as usize)
-        .copied()
-        .ok_or("invalid normalized proof scope")
+    map_scopes(
+        bindings,
+        root,
+        needed,
+        |id| fold.binder(id).ok_or("missing normalization binder"),
+        &mut create,
+    )
 }

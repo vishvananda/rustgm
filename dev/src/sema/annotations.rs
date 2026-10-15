@@ -8,6 +8,7 @@ use crate::{
     types::{
         TypeId,
         infer::{Constructor, Context, Domain, TermId},
+        lifetime_proof::ScopeId,
     },
 };
 pub(super) use applications::Fields;
@@ -22,27 +23,43 @@ pub(super) trait Host {
     fn requirement(&mut self, key: NodeKey, predicate: crate::types::infer::predicates::Predicate);
     fn callable(&mut self, key: NodeKey);
     fn child(&mut self, key: NodeKey);
+    fn scope(&mut self, key: NodeKey, parent: ScopeId, count: u32) -> Result<ScopeId, Error>;
+    fn deferred(
+        &mut self,
+        key: NodeKey,
+        scope: ScopeId,
+        expansion: super::alias_requirements::Expansion,
+        supplied: &[super::generics::AnnotationArgument],
+        fields: &Fields,
+    ) -> Result<(), Error>;
+    fn normalization(&mut self, key: NodeKey, scope: ScopeId, term: TermId) -> Result<(), Error>;
 }
 
 #[derive(Default)]
 pub(super) struct Scratch {
-    work: Vec<(NodeKey, bool)>,
+    work: Vec<(NodeKey, bool, ScopeId)>,
     children: Vec<TermId>,
 }
 impl Scratch {
     pub(super) fn infer(&mut self, host: &mut impl Host, root: NodeKey) -> Result<TermId, Error> {
-        self.work.push((root, false));
-        while let Some((key, finish)) = self.work.pop() {
+        self.work.push((root, false, ScopeId::ROOT));
+        while let Some((key, finish, scope)) = self.work.pop() {
             if host.cached(key).is_some() {
                 continue;
             }
             let term = if let Some(ty) = host.facts().node(key).and_then(|f| f.ty) {
                 known(host, key, ty)?
             } else if finish {
-                self.finish(host, key)?
+                self.finish(host, key, scope)?
             } else {
-                self.work.push((key, true));
-                self.dependencies(host, key)?;
+                self.work.push((key, true, scope));
+                let scope = match host.facts().partial_annotations.get(&key) {
+                    Some(super::model::PartialAnnotation::Function { bound_regions }) => {
+                        host.scope(key, scope, *bound_regions)?
+                    }
+                    _ => scope,
+                };
+                self.dependencies(host, key, scope)?;
                 continue;
             };
             host.save(key, term);
@@ -53,9 +70,14 @@ impl Scratch {
         term(host, root)
     }
 
-    fn dependencies(&mut self, host: &impl Host, key: NodeKey) -> Result<(), Error> {
+    fn dependencies(
+        &mut self,
+        host: &impl Host,
+        key: NodeKey,
+        scope: ScopeId,
+    ) -> Result<(), Error> {
         let unit = host.report().package.unit(key.file);
-        let mut push = |node| self.work.push((NodeKey { node, ..key }, false));
+        let mut push = |node| self.work.push((NodeKey { node, ..key }, false, scope));
         match Declarations::kind(host.report(), key) {
             Kind::Group(value) | Kind::Attributed { value, .. } => push(value),
             Kind::Type { flavor, elements } => {
@@ -94,7 +116,7 @@ impl Scratch {
                 if let Some(use_) = host.facts().generics.annotation_uses.get(&key) {
                     for argument in use_.arguments.iter().rev() {
                         if let super::generics::AnnotationArgument::Type(key) = argument {
-                            self.work.push((*key, false));
+                            self.work.push((*key, false, scope));
                         }
                     }
                 }
@@ -105,7 +127,12 @@ impl Scratch {
         Ok(())
     }
 
-    fn finish(&mut self, host: &mut impl Host, key: NodeKey) -> Result<TermId, Error> {
+    fn finish(
+        &mut self,
+        host: &mut impl Host,
+        key: NodeKey,
+        scope: ScopeId,
+    ) -> Result<TermId, Error> {
         let constructor = match Declarations::kind(host.report(), key) {
             Kind::InferType => {
                 return host
@@ -120,7 +147,7 @@ impl Scratch {
             }
             Kind::Path { .. } | Kind::Name(_) | Kind::Applied { .. } => {
                 if host.facts().generics.annotation_uses.contains_key(&key) {
-                    return applications::infer(host, key);
+                    return applications::infer(host, key, scope);
                 }
                 let Some(Target::Definition(id)) = host.facts().node(key).and_then(|f| f.reference)
                 else {

@@ -7,6 +7,7 @@ use crate::{
         ItemId,
         arguments::Argument as Canonical,
         infer::{Instantiation, TermId, arguments::Argument},
+        lifetime_proof::ScopeId,
         substitute::Bound,
     },
 };
@@ -16,7 +17,7 @@ pub(in crate::sema) struct Fields {
     pub parameters: Instantiation,
 }
 
-pub(super) fn infer(host: &mut impl Host, key: NodeKey) -> Result<TermId, Error> {
+pub(super) fn infer(host: &mut impl Host, key: NodeKey, scope: ScopeId) -> Result<TermId, Error> {
     let use_ = host
         .facts()
         .generics
@@ -76,10 +77,10 @@ pub(super) fn infer(host: &mut impl Host, key: NodeKey) -> Result<TermId, Error>
         parameters: Instantiation::new(infer, &facts.types, &bindings)
             .map_err(|e| error(host, key, e))?,
     };
-    super::requirements::retain(host, key, owner, &supplied, &mut fields)?;
+    super::requirements::retain(host, key, scope, owner, &supplied, &mut fields)?;
     for (index, source) in supplied.iter().enumerate() {
         if let Written::Default(default) = *source {
-            fields.default(host, key, default, arguments[index])?;
+            fields.scoped_default(host, key, scope, default, arguments[index])?;
         }
     }
     if host.report().resolution.definitions[owner.0 as usize].kind == DefKind::TypeAlias {
@@ -90,9 +91,14 @@ pub(super) fn infer(host: &mut impl Host, key: NodeKey) -> Result<TermId, Error>
             .apply(&mut host.inference().0.types, template)
             .map_err(|e| error(host, key, e))?;
         let (facts, infer) = host.inference();
-        infer
+        let projected = facts.types.contains_projections(template) == Some(true);
+        let term = infer
             .instantiate_with(&mut facts.types, template, &mut fields.parameters)
-            .map_err(|e| error(host, key, e))
+            .map_err(|e| error(host, key, e))?;
+        if projected {
+            host.normalization(key, scope, term)?;
+        }
+        Ok(term)
     } else {
         let term = host
             .inference()
@@ -112,6 +118,16 @@ impl Fields {
         default: Canonical,
         argument: Argument,
     ) -> Result<(), Error> {
+        self.scoped_default(host, key, ScopeId::ROOT, default, argument)
+    }
+    fn scoped_default(
+        &mut self,
+        host: &mut impl Host,
+        key: NodeKey,
+        scope: ScopeId,
+        default: Canonical,
+        argument: Argument,
+    ) -> Result<(), Error> {
         match (default, argument) {
             (Canonical::Type(ty), Argument::Type(term)) => {
                 let ty = self
@@ -122,6 +138,9 @@ impl Fields {
                 let expected = infer
                     .instantiate_with(&mut facts.types, ty, &mut self.parameters)
                     .map_err(|e| error(host, key, e))?;
+                if host.facts().types.contains_projections(ty) == Some(true) {
+                    host.normalization(key, scope, expected)?;
+                }
                 let (facts, infer) = host.inference();
                 infer
                     .equate(&facts.types, term, expected)

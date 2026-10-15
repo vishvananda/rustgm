@@ -7,6 +7,7 @@ use crate::{
         generics::AnnotationArgument,
     },
     types::{
+        lifetime_proof::ScopeId,
         parameters::predicates::{Bound, Predicate},
         substitute,
     },
@@ -15,6 +16,7 @@ use crate::{
 pub(super) fn retain(
     host: &mut impl Host,
     key: NodeKey,
+    scope_id: ScopeId,
     owner: DefId,
     supplied: &[AnnotationArgument],
     fields: &mut Fields,
@@ -51,11 +53,8 @@ pub(super) fn retain(
             .instantiate(&mut facts.types, Use { owner, arguments }, 1, &mut scope)
             .map_err(|e| error(host, key, e))?;
         if !expansion.proof.is_empty() || !expansion.normalizations.is_empty() {
-            return Err(error(
-                host,
-                key,
-                "inferred alias proofs require delayed projection normalization",
-            ));
+            host.deferred(key, scope_id, expansion, supplied, fields)?;
+            continue;
         }
         for (scope, ty) in expansion.sized {
             let depth = expansion

@@ -2,7 +2,10 @@
 use crate::{
     sema::{
         model::Declarations,
-        traits::{assumptions::Assumptions, obligations::Obligations, selection},
+        traits::{
+            assumptions::Assumptions, implementations::Availability, obligations::Obligations,
+            selection,
+        },
     },
     types::{
         RegionId,
@@ -21,6 +24,7 @@ pub(crate) struct State {
     obligations: Obligations,
     sized: Vec<crate::types::TypeId>,
     retain_sized: bool,
+    availability: Availability,
 }
 impl State {
     pub fn new(
@@ -68,6 +72,7 @@ impl State {
             obligations,
             sized: Vec::new(),
             retain_sized: false,
+            availability: Availability::Declarations,
         })
     }
 
@@ -90,6 +95,7 @@ impl State {
         requirement: Predicate,
         first: u32,
         retain_sized: bool,
+        availability: Availability,
     ) -> Result<
         (
             Option<selection::Source>,
@@ -106,6 +112,7 @@ impl State {
             let mut state = Self::new(facts, environment, None)?;
             state.obligations = Obligations::new(first);
             state.retain_sized = retain_sized;
+            state.availability = availability;
             let source = state.select_opened(facts, requirement, false)?;
             let sized = std::mem::take(&mut state.sized);
             return Ok((source, state.finish(), sized));
@@ -120,6 +127,7 @@ impl State {
             .transpose()?;
         let mut state = Self::new(facts, environment, None)?;
         state.retain_sized = retain_sized;
+        state.availability = availability;
         state
             .context
             .account_work(fold.steps)
@@ -181,9 +189,13 @@ impl State {
             first_region: self.obligations.regions.end,
             retain_sized: self.retain_sized,
         };
-        match selection::select_declaration(facts, &mut self.context, &goal, caller)
-            .map_err(|_| "invalid or exhausted declaration trait selection")?
-        {
+        let selected = match self.availability {
+            Availability::Declarations => {
+                selection::select_declaration(facts, &mut self.context, &goal, caller)
+            }
+            Availability::Validated => selection::select(facts, &mut self.context, &goal, caller),
+        };
+        match selected.map_err(|_| "invalid or exhausted canonical trait selection")? {
             selection::Selection::Proven(mut evidence) => {
                 let source = evidence.source;
                 self.sized.append(&mut evidence.sized);
