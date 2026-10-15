@@ -199,6 +199,9 @@ impl Checker<'_> {
             }
         }
         if regions.is_empty() {
+            if let Some(original) = self.facts.unreduced.definition(id) {
+                self.facts.unreduced.retain_node(key, original);
+            }
             return Ok(ty);
         }
         let args = self
@@ -206,6 +209,14 @@ impl Checker<'_> {
             .types
             .intern_regions(&regions)
             .map_err(|e| self.error(key, e))?;
+        if let Some(original) = self.facts.unreduced.definition(id) {
+            let original = self
+                .facts
+                .lifetimes
+                .substitute(&mut self.facts.types, args, original)
+                .map_err(|e| self.error(key, e))?;
+            self.facts.unreduced.retain_node(key, original);
+        }
         self.facts
             .lifetimes
             .substitute(&mut self.facts.types, args, ty)

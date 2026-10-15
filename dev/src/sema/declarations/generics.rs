@@ -237,7 +237,10 @@ impl Checker<'_> {
             return Ok(());
         };
         self.parameter_uses
-            .collect(&self.facts.types, ty)
+            .collect(
+                &self.facts.types,
+                self.facts.unreduced.definition(owner).unwrap_or(ty),
+            )
             .map_err(|e| self.error(key, e))?;
         for parameter in parameters {
             if let Argument::Type(ty) = parameter.argument

@@ -18,6 +18,7 @@ mod receivers;
 mod trait_paths;
 mod trait_regions;
 mod traits;
+mod unreduced;
 mod validation;
 use super::{
     model::{Declarations, Function, Initializer, InitializerKind},
@@ -410,6 +411,7 @@ impl Checker<'_> {
             .ok_or_else(|| self.error(key, "missing annotation type fact"))
     }
     fn store(&mut self, key: NodeKey, ty: TypeId) -> Result<(), Error> {
+        self.retain_unreduced_annotation(key, ty)?;
         let Some(facts) = self.facts.node_mut(key) else {
             return Err(self.error(key, "invalid annotation node"));
         };
@@ -477,17 +479,21 @@ impl Checker<'_> {
             }
             return Ok(());
         }
-        let ty = match item.kind {
+        let annotation = match item.kind {
             ItemKind::TypeAlias { ty: Some(ty), .. }
             | ItemKind::Const { ty, .. }
-            | ItemKind::Static { ty, .. } => self.ty(NodeKey {
+            | ItemKind::Static { ty, .. } => NodeKey {
                 file: key.file,
                 node: ty,
-            })?,
+            },
             _ => return Err(self.error(key, "invalid completed declaration")),
         };
+        let ty = self.ty(annotation)?;
         self.complete(id, key, ty)?;
         if matches!(item.kind, ItemKind::TypeAlias { .. }) {
+            if let Some(original) = self.facts.unreduced.node(annotation) {
+                self.facts.unreduced.retain_definition(id, original);
+            }
             self.validate_alias(id, key, ty)?;
         }
         let (value, kind) = match item.kind {
@@ -945,8 +951,9 @@ impl Checker<'_> {
                         unsafe_: signature.unsafe_,
                     },
                 )?;
+                let original = self.unreduced_signature(key, ty, &signature)?;
                 if owner.is_none() && bound_regions != 0 {
-                    crate::types::bound_uses::check_pointer(&self.facts.types, ty)
+                    crate::types::bound_uses::check_pointer(&self.facts.types, original)
                         .map_err(|e| self.error(key, e))?;
                 }
                 if let Some(id) = owner {
@@ -981,8 +988,22 @@ impl Checker<'_> {
                             signature: ty,
                         },
                     )?;
+                    if original != ty {
+                        let original = self.intern(
+                            key,
+                            Type::FunctionItem {
+                                arguments: crate::types::GenericArgs::EMPTY,
+                                item: ItemId(id.0),
+                                signature: original,
+                            },
+                        )?;
+                        self.facts.unreduced.retain_node(key, original);
+                    }
                     self.complete(id, key, item)?;
                 } else {
+                    if original != ty {
+                        self.facts.unreduced.retain_node(key, original);
+                    }
                     self.store(key, ty)?;
                 }
             }

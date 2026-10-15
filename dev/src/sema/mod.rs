@@ -25,5 +25,6 @@ pub mod scopes;
 pub mod semantic_view;
 mod traits;
 pub mod type_view;
+pub mod unreduced;
 
 pub mod text;

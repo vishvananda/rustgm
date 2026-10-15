@@ -10,7 +10,12 @@ impl Checker<'_> {
         key: NodeKey,
         owner: DefId,
     ) -> Result<(Option<List>, usize), Error> {
-        let parameters = &self.facts.generics.parameters[&owner];
+        let parameters = self.facts.generics.parameters.get(&owner).ok_or_else(|| {
+            self.error(
+                key,
+                "type arguments require prepared parameter declarations",
+            )
+        })?;
         let list = crate::sema::lifetimes::arguments(self.report, key, false)?;
         let ast = &self.report.package.unit(key.file).configured.ast;
         let supplied = list.map_or(&[][..], |list| ast.list(list));
@@ -112,6 +117,7 @@ impl Checker<'_> {
         let count = self.facts.generics.parameters[&owner].len();
         let mut arguments = Vec::with_capacity(count);
         let mut defaults = None;
+        let mut originals = super::super::unreduced::Arguments::default();
         for index in 0..count {
             let parameter = self.facts.generics.parameters[&owner][index];
             let node = index.checked_sub(omitted).and_then(|i| {
@@ -126,12 +132,22 @@ impl Checker<'_> {
                         .copied()
                 })
             });
-            let argument = if let Some(node) = node {
-                self.source_argument(NodeKey { node, ..key }, owner, parameter.argument, context)?
+            let (argument, original) = if let Some(node) = node {
+                let node = NodeKey { node, ..key };
+                let argument = self.source_argument(node, owner, parameter.argument, context)?;
+                let original = if matches!(argument, Argument::Type(_)) {
+                    self.facts
+                        .unreduced
+                        .node(node)
+                        .map_or(argument, Argument::Type)
+                } else {
+                    argument
+                };
+                (argument, original)
             } else if index < omitted {
                 let region = self.region(key, None, context)?;
                 self.regions.record(context, region);
-                Argument::Lifetime(region)
+                (Argument::Lifetime(region), Argument::Lifetime(region))
             } else {
                 let default = parameter
                     .default
@@ -145,12 +161,30 @@ impl Checker<'_> {
                     }
                     defaults = Some(prefix);
                 }
-                defaults
+                let argument = defaults
                     .as_mut()
                     .ok_or_else(|| self.error(key, "missing default substitution"))?
                     .apply_argument(&mut self.facts.types, default)
-                    .map_err(|e| self.error(key, e))?
+                    .map_err(|e| self.error(key, e))?;
+                let template = self
+                    .facts
+                    .unreduced
+                    .default_type(parameter.binding)
+                    .map_or(default, Argument::Type);
+                let original = originals
+                    .apply_default(
+                        &mut self.facts.types,
+                        ItemId(owner.0),
+                        &arguments,
+                        template,
+                        argument,
+                    )
+                    .map_err(|e| self.error(key, e))?;
+                (argument, original)
             };
+            originals
+                .push(&self.facts.types, &arguments, argument, original)
+                .map_err(|e| self.error(key, e))?;
             if let Some(prefix) = &mut defaults {
                 prefix
                     .push_argument(&self.facts.types, argument)
@@ -165,6 +199,12 @@ impl Checker<'_> {
             .map_err(|e| self.error(key, e))?;
         if let Some(prefix) = defaults {
             self.facts.generics.retain_arguments(owner, args, prefix);
+        }
+        if let Some(originals) = originals
+            .finish(&mut self.facts.types)
+            .map_err(|e| self.error(key, e))?
+        {
+            self.facts.unreduced.retain_arguments(key, originals);
         }
         Ok(args)
     }
@@ -182,6 +222,23 @@ impl Checker<'_> {
             .generics
             .substitute(&mut self.facts.types, owner, args, template)
             .map_err(|e| self.error(key, e))?;
+        let original_template = self.facts.unreduced.definition(owner);
+        let original_args = self.facts.unreduced.arguments(key);
+        if original_template.is_some() || original_args.is_some() {
+            let original = self
+                .facts
+                .generics
+                .substitute(
+                    &mut self.facts.types,
+                    owner,
+                    original_args.unwrap_or(args),
+                    original_template.unwrap_or(template),
+                )
+                .map_err(|e| self.error(key, e))?;
+            if self.facts.types.contains_projections(original) == Some(true) {
+                self.facts.unreduced.retain_node(key, original);
+            }
+        }
         Ok(result)
     }
     fn source_argument(

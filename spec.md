@@ -96,6 +96,15 @@ typed signature for this check, including projections introduced through aliases
 normal forms alone cannot establish this declaration constraint. Opaque input
 positions still require valid binder slots.
 
+Retain unreduced annotation, alias and argument identities in sparse records
+allocated only when projections occur; ordinary node facts keep their normal
+types. Propagate those identities through completed typed children and cached
+parameter/lifetime substitutions. Default arguments use their own append-only
+unreduced prefix, so a preceding projected argument is not silently replaced by
+its normal form in later defaults. Alias parameter-occurrence checks consume the
+unreduced definition. Executable shapes, inference and lowering continue to use
+normal forms, without reversing projected results into argument equations.
+
 Built-in semantic traits retain their own definition identities; a user item
 with the same spelling cannot acquire language behavior. Resolve aliases and
 qualified paths through ordinary typed namespace facts. Demand external metadata

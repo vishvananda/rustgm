@@ -4417,3 +4417,80 @@ arguments, impl outlives requirements, strengthening failures, nested callable
 binders and local annotations. Their positive outcomes are requirements for the
 next integration, not current source acceptance claims. PA20 and PA21 remain
 planned and required.
+
+
+## Unreduced annotation identities and alias constraints
+
+Qualified normalization `6d04b06` passed CI run 38762675396; binder constraints
+`edff17c` passed CI run 38764378850. The declaration pipeline now retains original
+projection identities separately from normal types. Sparse records cover source
+annotations, alias definitions, supplied argument lists and generic defaults.
+Their storage is allocated on first use; ordinary node facts and their layout
+are unchanged, and ordinary programs allocate no such records.
+
+Completed typed children carry these identities through aliases, references,
+arrays, pointers, tuples and callable signatures. Alias paths reuse the existing
+joint parameter/lifetime substitutions. Defaults use a separate append-only
+unreduced argument prefix; the extra state is allocated only when an argument
+actually differs. Nested projections retain original Self and trait inputs while
+selection consumes their already-normalized children. Feeding the original inputs
+back into selection would repeat work along alias chains; the final implementation
+keeps those two responsibilities separate.
+
+This fixes an observable source error: `type P<T> = <T as A>::Out` can use `T`
+even when a blanket impl normalizes its result to `u16`. The alias occurrence check
+now consumes the original definition instead of incorrectly diagnosing unused `T`.
+Aliases with an actually unused parameter still reject. Normal results do not infer
+projected inputs: a generic call whose signature erases its parameter still needs
+an explicit argument. Inference, layout and lowering consume normal types.
+
+Thirteen alias/function controls agree with pinned rustc. Additional independent
+controls cover compound signatures, nested Self/trait projections and a 512-link
+alias chain. Typed invariants verify distinct origins for equal normal forms,
+default substitution, alias forwarding, callable item identities and absent storage
+for ordinary programs. Two new native programs execute a demanded generic function
+whose alias result erases its parameter and an aggregate using a dependent default.
+Function-pointer binder checks consume unreduced completed signatures, preparing
+for lifetime projection support without claiming that support is finished.
+
+The full debug run passed 963 tests before the final work-sharing correction and
+additional chain control. The final implementation passes 179 distinct affected
+optimized tests, including the new and existing native controls, all 4,857 active
+course cases, 27 harness tests, upstream provenance, formatting, Clippy all/pedantic
+and the 593-file audit with no findings. Course fixtures, manifests and all oracle
+bytes are unchanged. Escaping lifetime projections still diagnose explicitly;
+scoped rebasing, retained obligations, partial inferred signatures, symbolic
+equalities and the remaining full PA20/PA21 requirements remain open.
+
+
+The final compiler SHA256 is
+`0114551c47f32398ced97e50f7c3c8c2a8d82bfe7797f933e9b87b062042a728`;
+596 source/config/test files are archived under
+`obj/pa20-work/unreduced-v1/source-v2`. Fifteen existing workloads match the
+published binder-check compiler in full and count semantic bytes. Nine new
+retained-origin workloads vary alias declaration width, repeated uses and chain
+depth at 128, 512 and 2,048; all are independently accepted by pinned rustc.
+The revised compiler also matches the initial candidate's full/count semantic
+bytes on all 24 inputs. Three previously accepted chain programs separately
+match the published compiler's full/count LowIR bytes, allowing a meaningful
+runtime comparison despite their intentionally richer semantic type graphs.
+
+Both immutable candidates retain A/A calibration and five ABBA blocks for every
+input, totaling 1,404 observations. Initial ordinary paired medians range from
+-15.7% to +2.0%; final ordinary medians range from -3.1% to +3.0%, with A/A
+spreads of 1.3–37.7%. The initial large negative concrete-goal result is retained
+and is not reproduced by the final run; no general speedup is claimed.
+
+The cost of retaining origins remains visible. Initial LowIR chain comparisons
+are +6.8%, +8.1% and +12.2%. Removing redundant records at alias item nodes keeps
+the RHS annotation and definition identity; final chain comparisons are +5.0%,
++8.9% and +11.2%, with A/A spreads of 2.4%, 0.9% and 6.4%. These are costs of
+additional retained facts, not evidence of an absent regression or a demonstrated
+speedup from the record change. The required original identities remain intact.
+
+Final same-binary semantic medians for widths 128/512/2,048 are
+6.90/15.84/53.15 ms, with peak resident medians 6,438/7,872/13,456 KiB. Repeated
+uses take 4.98/8.02/21.19 ms and 5,794/6,426/8,526 KiB. Chains take
+6.23/12.68/42.56 ms and 5,726/7,132/9,970 KiB. All observations and output/hash
+checks are retained, and no local build, test or unrelated probe overlapped timing.
+The receipt is `obj/pa20-work/unreduced-v1/validation-v1.json`.

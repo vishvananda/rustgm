@@ -76,10 +76,11 @@ impl Checker<'_> {
             .qualified_paths
             .get(&key)
             .ok_or_else(|| self.error(key, "missing qualified type path"))?;
-        let subject = self.ty(NodeKey {
+        let subject_key = NodeKey {
             node: path.ty,
             ..key
-        })?;
+        };
+        let subject = self.ty(subject_key)?;
         let name = path.suffix[0].1;
         let (prefix, owner) = self.resolved_trait_path(NodeKey {
             node: path
@@ -99,7 +100,8 @@ impl Checker<'_> {
                     && self.facts.associated.type_contract(*id).is_some()
             })
             .ok_or_else(|| self.error(key, "qualified trait has no prepared associated type"))?;
-        let trait_application = self.trait_path(prefix, owner, subject, context)?;
+        let arguments = self.application_arguments(prefix, owner, context)?;
+        let trait_application = self.applied_trait(prefix, owner, subject, arguments)?;
         let ty = self.intern(
             key,
             Type::Projection(projection::Application {
@@ -109,6 +111,22 @@ impl Checker<'_> {
                 arguments: GenericArgs::EMPTY,
             }),
         )?;
+        let original_subject = self.facts.unreduced.node(subject_key).unwrap_or(subject);
+        let original_arguments = self.facts.unreduced.arguments(prefix).unwrap_or(arguments);
+        if original_subject != subject || original_arguments != arguments {
+            let trait_application =
+                self.applied_trait(prefix, owner, original_subject, original_arguments)?;
+            let original = self.intern(
+                key,
+                Type::Projection(projection::Application {
+                    item: ItemId(declaration.0),
+                    subject: original_subject,
+                    trait_application,
+                    arguments: GenericArgs::EMPTY,
+                }),
+            )?;
+            self.facts.unreduced.retain_node(key, original);
+        }
         self.normalize_annotation(key, ty, context)
     }
 
@@ -121,6 +139,7 @@ impl Checker<'_> {
         if self.facts.types.contains_projections(ty) != Some(true) {
             return self.store(key, ty);
         }
+        self.facts.unreduced.retain_node(key, ty);
         let mut fold = Normalizer::default();
         let step = fold
             .start(&mut self.facts.types, ty)

@@ -274,6 +274,17 @@ impl Checker<'_> {
         subject: TypeId,
         context: regions::Context,
     ) -> Result<ApplicationId, Error> {
+        let arguments = self.application_arguments(path, owner, context)?;
+        self.applied_trait(path, owner, subject, arguments)
+    }
+
+    pub(super) fn applied_trait(
+        &mut self,
+        path: NodeKey,
+        owner: DefId,
+        subject: TypeId,
+        arguments: crate::types::GenericArgs,
+    ) -> Result<ApplicationId, Error> {
         let self_type = self
             .facts
             .associated
@@ -285,7 +296,6 @@ impl Checker<'_> {
         let Some(Type::Parameter(self_parameter)) = self.facts.types.kind(self_type) else {
             return Err(self.error(path, "trait Self must be a rigid type parameter"));
         };
-        let arguments = self.application_arguments(path, owner, context)?;
         let mut replace =
             Bound::parameter_only(&self.facts.types, self_parameter, Argument::Type(subject))
                 .map_err(|e| self.error(path, e))?;

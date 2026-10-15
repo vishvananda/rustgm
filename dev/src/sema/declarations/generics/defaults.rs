@@ -82,6 +82,10 @@ impl Checker<'_> {
             }
             Argument::Lifetime(_) => return Err(self.error(key, "lifetimes cannot have defaults")),
         };
+        if let Some(original) = self.facts.unreduced.node(key) {
+            let parameter = self.facts.generics.parameters[&owner][index as usize].binding;
+            self.facts.unreduced.retain_default(parameter, original);
+        }
         self.facts
             .generics
             .parameters
