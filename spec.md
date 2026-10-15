@@ -158,6 +158,14 @@ queries after trait equations fix their inference inputs. Method-own bounds rema
 checks on the selected callable. Prove disjoint target shapes before requiring trait
 coherence; missing local implementations do not establish negative evidence.
 
+Goal/header equations may contain inference variables on both sides. Share the
+scoped callable relation with canonical assumption matching, preserving local
+lifetime correlations while allowing alpha renaming and unused binder slots.
+A variable on either side cannot capture a surrounding callable's local lifetime;
+outer lifetimes are rebased when entering or leaving a callable. Equalities of
+those outer lifetimes remain obligations, including explicit trait arguments.
+Lifetime-erased header overlap equations establish possible compatibility only.
+
 Dot calls retain the resolved receiver, canonical method name, lexical scope and
 written arguments. Type the receiver before selection. For each built-in reference
 dereference level, probe the value, shared borrow and mutable borrow in that order.

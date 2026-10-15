@@ -27,6 +27,25 @@ fn goal(
     })
 }
 
+fn probe_match(
+    store: &mut Store,
+    source: &mut Context,
+    goal: &infer::predicates::Predicate,
+    candidate: Predicate,
+    inferred: bool,
+) -> Result<Context, infer::Error> {
+    let mut probe = Context::default();
+    let copied = probe.import_predicate(store, source, goal)?;
+    if inferred {
+        let mut substitution = Instantiation::new(&mut probe, store, &[])?;
+        let candidate = probe.instantiate_predicate(store, candidate, &mut substitution)?;
+        probe.equate_predicates(store, &copied, &candidate)?;
+    } else {
+        probe.equate_trait_predicate(store, &copied, candidate)?;
+    }
+    Ok(probe)
+}
+
 #[test]
 fn probes_preserve_aliases_across_self_type_and_const_roots()
 -> Result<(), Box<dyn std::error::Error>> {
@@ -95,17 +114,17 @@ fn probes_preserve_aliases_across_self_type_and_const_roots()
                 Argument::Const(constant),
             ],
         )?;
-        let mut probe = Context::default();
-        let copied = probe.import_predicate(&store, &mut source, &predicate)?;
-        assert_eq!(
-            probe.equate_trait_predicate(&store, &copied, candidate),
-            Err(infer::Error::Mismatch)
-        );
-        assert!(matches!(
-            source.resolved_predicate(&mut store, &predicate),
-            Err(infer::Error::Unresolved)
-        ));
-        assert!(source.region_equalities.is_empty());
+        for inferred in [false, true] {
+            assert!(matches!(
+                probe_match(&mut store, &mut source, &predicate, candidate, inferred),
+                Err(infer::Error::Mismatch)
+            ));
+            assert!(matches!(
+                source.resolved_predicate(&mut store, &predicate),
+                Err(infer::Error::Unresolved)
+            ));
+            assert!(source.region_equalities.is_empty());
+        }
     }
     let selected = goal(
         &mut store,

@@ -3726,3 +3726,55 @@ files are archived under `obj/pa19-work/conformance-source-v1`. Compiler SHA256 
 The receipt is `obj/pa19-work/conformance-validation-v1.json`; failed checks,
 independent qualifications and all measurements remain under
 `obj/pa19-work/conformance-*`, `obj/pa19-work/method-binders-v1` and `obj/perf/`.
+
+
+## Inferred goals on both sides of impl matching
+
+The trait equation engine now accepts inferred type and const parameters on both
+sides of a complete goal. Canonical caller assumptions enter the same scoped
+callable relation. Shared Self/argument variables remain correlated; function-local
+lifetimes permit alpha renaming without losing their relationships. Either inferred
+side rejects a binding that would capture a surrounding callable's local lifetime.
+Outer lifetimes rebase when a variable moves across callable scopes and remain
+explicit equality obligations. A shared unresolved variable is reflexive even
+inside a callable. Closed subtrees retain the existing cheap equality path.
+
+`equate_predicates` is the scoped inferred-goal interface for implementation
+selection. `equate_predicate_shapes` shares the structural argument traversal but
+continues to erase lifetimes exclusively for possible-overlap queries. This
+prerequisite does not yet select general impl evidence or dispatch trait methods;
+PA19 remains planned, and PA20/PA21 remain required.
+
+Five new typed tests cover inference in both directions, local capture rejection,
+closed nested functions, repeated variables across callable scopes, outer lifetime
+rebasing and correlated type/const arguments. Existing binder and isolated-probe
+controls now exercise both inferred and canonical interfaces, including mismatched
+traits/arguments, local lifetime correlations, wide shared graphs and work limits.
+No course fixture or text oracle changes. The source-level trait/conformance
+regressions continue to run their independent pinned-rustc checks.
+
+Validation passes 843 frontend tests and all 3,790 PA1–PA18 course cases, plus the
+final 18 affected debug tests and 57 affected release tests after extending the
+existing controls. All 19 maintainer native tests pass. Clippy all/pedantic,
+formatting, the 544-file audit and 27 harness tests pass with no lint exemptions.
+The full course-native sweep was not repeated: lowering and dispatch are unchanged,
+and no new native trait-call support is claimed.
+
+Eighteen frozen A/A and five-block ABBA workloads, followed by two retained repeats,
+record 520 observations with full/count output equality. All source, binary and
+input hashes agree; no local RustGM build, test or compiler probe overlaps timing.
+Initial workload median wall-time changes range from -2.7% to +3.3% except for a
+noisy -17.9% callable-outer result. That apparent speedup is not supported by the
+paired blocks (median -0.5%); its repeat has a +2.1% workload median and +1.5%
+paired-block median. Callable-alpha repeats at +3.6% overall and +1.2% paired.
+Other noisy controls include builtin Drop's 35.4% A/A spread. These measurements
+do not establish stable speedups or a performance-equivalence guarantee.
+Initial median RSS changes range from -36 to +276 KiB; the callable-alpha +276 KiB
+observation becomes +8 KiB in its repeat. Every observation is retained.
+
+All 547 source/config/test files are archived under
+`obj/pa19-work/bilateral-source-v1`. Compiler SHA256 is
+`588b8aa827b598fda634617288988deced0bab1efae80d01e5274d2c7cd94317`.
+The receipt is `obj/pa19-work/bilateral-validation-v1.json`; checks and measurements
+remain under `obj/pa19-work/bilateral-*` and `obj/perf/`. The preceding conformance
+checkpoint c7dae8d passed CI run 38694839917 on main.

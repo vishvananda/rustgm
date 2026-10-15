@@ -19,16 +19,28 @@ impl Context {
         right: TypeId,
     ) -> Result<(), Error> {
         let known = self.known(store, right)?;
-        if self.root(left)? == known {
+        self.equate_scoped_terms(store, left, known)
+    }
+
+    pub(super) fn equate_scoped_terms(
+        &mut self,
+        store: &Store,
+        left: TermId,
+        right: TermId,
+    ) -> Result<(), Error> {
+        let left = self.root(left)?;
+        let right = self.root(right)?;
+        if left == right {
             return Ok(());
         }
-        if !store
-            .contains_callables(right)
-            .ok_or(Error::InvalidIdentity)?
-        {
-            return self.equate(store, left, known);
+        for term in [right, left] {
+            if let Value::Known(ty) = self.terms[term.0 as usize].value
+                && !store.contains_callables(ty).ok_or(Error::InvalidIdentity)?
+            {
+                return self.equate(store, left, right);
+            }
         }
-        let mut work = vec![Work::Pair(left, known)];
+        let mut work = vec![Work::Pair(left, right)];
         let mut binders = Binders::default();
         let mut seen = HashSet::new();
         let mut rebasing = Rebasing::default();
@@ -39,8 +51,15 @@ impl Context {
                 continue;
             };
             let a = self.scoped_root(store, a, binders.depth()?, &mut rebasing)?;
-            let b = self.root(b)?;
+            let b = self.scoped_root(store, b, binders.depth()?, &mut rebasing)?;
             if !seen.insert((a, b, binders.scope())) {
+                continue;
+            }
+            if a == b
+                && (binders.is_empty()
+                    || matches!(self.terms[a.0 as usize].value, Value::Variable(_))
+                    || self.scoped_closed(store, a)?)
+            {
                 continue;
             }
             if let Value::Variable(domain) = self.terms[a.0 as usize].value {
@@ -48,7 +67,9 @@ impl Context {
                 self.bind(store, a, candidate, domain)?;
                 continue;
             }
-            if a == b && (binders.is_empty() || self.scoped_closed(store, a)?) {
+            if let Value::Variable(domain) = self.terms[b.0 as usize].value {
+                let candidate = rebasing.apply(self, store, a, binders.depth()?, false)?;
+                self.bind(store, b, candidate, domain)?;
                 continue;
             }
             let left = self.materialize(store, a)?;

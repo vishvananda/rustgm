@@ -4,6 +4,12 @@ use super::{
 };
 use crate::types::parameters::predicates::Bound;
 
+#[derive(Clone, Copy)]
+enum Relation {
+    Shape,
+    Scoped,
+}
+
 impl Context {
     /// Existential header compatibility, with lifetime proof deliberately deferred.
     /// This overapproximation may establish disjointness, never body permissions.
@@ -15,6 +21,30 @@ impl Context {
         left: &Predicate,
         right: &Predicate,
     ) -> Result<(), Error> {
+        self.relate_predicates(store, left, right, Relation::Shape)
+    }
+
+    /// Equate inferred goals with shared type/const variables on either side.
+    /// Callable-local regions stay scoped; outer equalities remain proof obligations.
+    /// Probe alternatives in isolated contexts before committing a selected header.
+    /// # Errors
+    /// Rejects mismatches, local lifetime capture, occurs cycles and exhausted work.
+    pub fn equate_predicates(
+        &mut self,
+        store: &Store,
+        left: &Predicate,
+        right: &Predicate,
+    ) -> Result<(), Error> {
+        self.relate_predicates(store, left, right, Relation::Scoped)
+    }
+
+    fn relate_predicates(
+        &mut self,
+        store: &Store,
+        left: &Predicate,
+        right: &Predicate,
+        relation: Relation,
+    ) -> Result<(), Error> {
         let (Requirement::Trait(a), Requirement::Trait(b)) =
             (&left.requirement, &right.requirement)
         else {
@@ -24,16 +54,35 @@ impl Context {
             return Err(Error::Mismatch);
         }
         self.account_work(1 + a.arguments.len())?;
-        self.equate_shape(store, left.subject, right.subject)?;
+        self.relate_predicate_types(store, left.subject, right.subject, relation)?;
         for (&a, &b) in a.arguments.iter().zip(&b.arguments) {
             match (a, b) {
-                (Argument::Type(a), Argument::Type(b)) => self.equate_shape(store, a, b)?,
+                (Argument::Type(a), Argument::Type(b)) => {
+                    self.relate_predicate_types(store, a, b, relation)?;
+                }
                 (Argument::Const(a), Argument::Const(b)) => self.equate_consts(a, b)?,
-                (Argument::Lifetime(_), Argument::Lifetime(_)) => {}
+                (Argument::Lifetime(a), Argument::Lifetime(b)) => {
+                    if matches!(relation, Relation::Scoped) && a != b {
+                        self.region_equalities.push((a, b));
+                    }
+                }
                 _ => return Err(Error::Mismatch),
             }
         }
         Ok(())
+    }
+
+    fn relate_predicate_types(
+        &mut self,
+        store: &Store,
+        left: super::TermId,
+        right: super::TermId,
+        relation: Relation,
+    ) -> Result<(), Error> {
+        match relation {
+            Relation::Shape => self.equate_shape(store, left, right),
+            Relation::Scoped => self.equate_scoped_terms(store, left, right),
+        }
     }
     /// Import Self and every argument with one shared reachable-graph mapping.
     /// Failed candidate equations in this context cannot constrain the source.

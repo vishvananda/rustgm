@@ -9,7 +9,7 @@ use rustgm::types::{
     },
 };
 
-fn reference(store: &mut Store, depth: u16, slot: u16) -> Result<TypeId, &'static str> {
+pub(super) fn reference(store: &mut Store, depth: u16, slot: u16) -> Result<TypeId, &'static str> {
     store.intern(Kind::Reference {
         referent: TypeId::UNIT,
         mutable: false,
@@ -17,7 +17,7 @@ fn reference(store: &mut Store, depth: u16, slot: u16) -> Result<TypeId, &'stati
     })
 }
 
-fn function(
+pub(super) fn function(
     store: &mut Store,
     count: u32,
     inputs: &[TypeId],
@@ -32,7 +32,7 @@ fn function(
     })
 }
 
-fn predicate(store: &mut Store, argument: TypeId) -> Result<Predicate, &'static str> {
+pub(super) fn predicate(store: &mut Store, argument: TypeId) -> Result<Predicate, &'static str> {
     Ok(Predicate {
         ty: TypeId::UNIT,
         bound: Bound::Trait(super::application(store, 200, &[Argument::Type(argument)])?),
@@ -49,8 +49,16 @@ fn equate(
     let mut context = Context::default();
     let mut substitution = Instantiation::new(&mut context, store, &[])?;
     let goal = context.instantiate_predicate(store, template, &mut substitution)?;
-    context.equate_trait_predicate(store, &goal, assumption)?;
-    Ok(context)
+    let expected = context.equate_trait_predicate(store, &goal, assumption);
+    let mut inferred = Context::default();
+    let mut substitution = Instantiation::new(&mut inferred, store, &[])?;
+    let left = inferred.instantiate_predicate(store, template, &mut substitution)?;
+    let right = inferred.instantiate_predicate(store, assumption, &mut substitution)?;
+    let actual = inferred.equate_predicates(store, &left, &right);
+    assert_eq!(actual, expected);
+    actual?;
+    assert_eq!(inferred.region_equalities, context.region_equalities);
+    Ok(inferred)
 }
 
 #[test]
@@ -163,6 +171,15 @@ fn repeated_callable_children_share_scope_work_and_charge_the_budget()
     context.steps = 999_990;
     assert_eq!(
         context.equate_trait_predicate(&store, &goal, assumption),
+        Err(infer::Error::Budget)
+    );
+    let mut context = Context::default();
+    let mut substitution = Instantiation::new(&mut context, &store, &[])?;
+    let left = context.instantiate_predicate(&mut store, template, &mut substitution)?;
+    let right = context.instantiate_predicate(&mut store, assumption, &mut substitution)?;
+    context.steps = 999_990;
+    assert_eq!(
+        context.equate_predicates(&store, &left, &right),
         Err(infer::Error::Budget)
     );
     Ok(())

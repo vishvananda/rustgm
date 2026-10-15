@@ -3,6 +3,8 @@
 mod binders;
 #[path = "trait_applications/equations.rs"]
 mod equations;
+#[path = "trait_applications/impl_equations.rs"]
+mod impl_equations;
 use rustgm::types::{
     GenericArgs, ItemId, Kind, Primitive, RegionId, Store, TypeId,
     arguments::{Argument, ConstKind, Constant},
