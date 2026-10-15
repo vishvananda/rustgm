@@ -227,6 +227,7 @@ impl Checker<'_> {
         } else {
             self.selection_prefix(prefix, path.owner, context)?;
             let environment = self.selection_environment(key, context);
+            let traits = self.selection_trait_assumptions(key, context, environment.as_ref())?;
             crate::sema::methods::selection::choose(
                 self.report,
                 &mut self.facts,
@@ -234,7 +235,10 @@ impl Checker<'_> {
                 prefix,
                 (path.nominal, path.name),
                 path.scope,
-                environment.as_ref(),
+                crate::sema::methods::selection::Caller {
+                    environment: environment.as_ref(),
+                    traits: traits.as_deref(),
+                },
             )?
         };
         let definition = &self.report.resolution.definitions[method.0 as usize];

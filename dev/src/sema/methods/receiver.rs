@@ -11,10 +11,8 @@ use crate::{
     types::{
         RegionId,
         infer::{Constructor, Context, TermId},
-        parameters::environment::Environment,
     },
 };
-use std::sync::Arc;
 
 #[derive(Clone, Copy)]
 pub(in crate::sema) struct Selected {
@@ -31,7 +29,7 @@ pub(in crate::sema) fn choose(
     key: NodeKey,
     mut term: TermId,
     site: MethodCall,
-    environment: Option<&Arc<Environment>>,
+    caller: selection::Caller<'_>,
 ) -> Result<Selected, Error> {
     let error = |message: &str| Declarations::error(report, key, message);
     let (base, reference_depth) = source
@@ -92,15 +90,9 @@ pub(in crate::sema) fn choose(
                         )
                         .map_err(|e| error(&e.to_string()))?;
                 }
-                let applicable = selection::applicable(
-                    facts,
-                    &mut probe,
-                    actual,
-                    owner,
-                    Some(receiver),
-                    environment,
-                )
-                .map_err(error)?;
+                let applicable =
+                    selection::applicable(facts, &mut probe, actual, owner, Some(receiver), caller)
+                        .map_err(error)?;
                 facts.methods.selection_probes += 1;
                 facts.methods.selection_steps =
                     facts.methods.selection_steps.saturating_add(probe.steps);

@@ -140,6 +140,15 @@ folder across headers and prefixes, so repeated aliases do not repeatedly traver
 their type DAG. Property queries cache known and unknown subtrees only after a
 probe's equations are fixed and under its immutable environment.
 
+Impl applicability shares complete trait-goal equations with body checking. Cache
+caller assumption indexes once per scope, normalizing body lifetime aliases before
+indexing. A missing match for a rigid goal excludes a candidate; unresolved evidence
+may remain possible until the selected call has all argument/result constraints.
+Only proved evidence authorizes a body operation. Apply builtin property queries
+after trait equations fix their inference inputs. Method-own bounds remain checks
+on the selected callable. Prove disjoint target shapes before requiring trait
+coherence; missing local implementations do not establish negative evidence.
+
 Dot calls retain the resolved receiver, canonical method name, lexical scope and
 written arguments. Type the receiver before selection. For each built-in reference
 dereference level, probe the value, shared borrow and mutable borrow in that order.
@@ -156,8 +165,11 @@ expressions. Callable templates and complete owner arguments remain shared with
 qualified function-item uses.
 
 Retain selected callable identity, dereference count, borrow type and receiver
-parameter type as semantic facts. Body construction evaluates the receiver place
-once, before explicit arguments, and feeds its adjusted value as the first ordinary
+parameter type as semantic facts. Validate the hidden callable and actual/expected
+receiver value types through the ordinary body path, including field preparation
+for generic lifetime instances without their own expression node. Body construction
+evaluates the receiver place once, before explicit arguments, and feeds its adjusted
+value as the first ordinary
 call argument. Implicit mutable receiver borrows use the existing two-phase loan
 model; explicit source borrows retain their own earlier loan events. Borrow regions
 keep expression provenance, and ordinary ownership, destruction, instance demand

@@ -10,6 +10,42 @@ use crate::{
 use std::sync::Arc;
 
 impl Checker<'_> {
+    pub(super) fn selection_trait_assumptions(
+        &mut self,
+        key: NodeKey,
+        context: regions::Context,
+        environment: Option<&Arc<Environment>>,
+    ) -> Result<Option<Arc<crate::sema::traits::assumptions::Assumptions>>, Error> {
+        let Some(environment) = environment else {
+            return Ok(None);
+        };
+        if environment.trait_predicates().next().is_none() {
+            return Ok(None);
+        }
+        let regions::Position::Local(body) = context.position else {
+            return Err(self.error(key, "trait selection requires its caller scope"));
+        };
+        let body = NodeKey { node: body, ..key };
+        if let Some(assumptions) = self
+            .method_trait_environments
+            .as_ref()
+            .and_then(|cache| cache.get(&body))
+        {
+            return Ok(Some(Arc::clone(assumptions)));
+        }
+        let mut assumptions = crate::sema::traits::assumptions::Assumptions::default();
+        for &predicate in environment.trait_predicates() {
+            assumptions
+                .insert(&self.facts.types, predicate)
+                .map_err(|e| self.error(key, e.to_string()))?;
+        }
+        let assumptions = Arc::new(assumptions);
+        self.method_trait_environments
+            .get_or_insert_with(Default::default)
+            .insert(body, Arc::clone(&assumptions));
+        Ok(Some(assumptions))
+    }
+
     pub(super) fn selection_environment(
         &mut self,
         key: NodeKey,

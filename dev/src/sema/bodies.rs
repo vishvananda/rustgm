@@ -173,6 +173,7 @@ pub(super) struct Checker<'a> {
     body_binders: u32,
     method_constants: Option<Box<super::arguments::Cache>>,
     method_environment: Option<std::sync::Arc<crate::types::parameters::environment::Environment>>,
+    trait_environment: Option<std::sync::Arc<super::traits::assumptions::Assumptions>>,
     annotations: super::annotations::Scratch,
     type_children: Vec<TermId>,
     annotation_checks: Vec<NodeId>,
@@ -239,6 +240,7 @@ impl<'a> Checker<'a> {
             body_binders: 0,
             method_constants: None,
             method_environment: None,
+            trait_environment: None,
             annotations: super::annotations::Scratch::default(),
             type_children: Vec::new(),
             annotation_checks: Vec::new(),
@@ -277,6 +279,7 @@ impl<'a> Checker<'a> {
         self.call_types.clear();
         self.body_binders = 0;
         self.method_environment = None;
+        self.trait_environment = None;
         self.parameter_copies = None;
         self.parameter_shapes = None;
         self.body = key;
@@ -645,8 +648,12 @@ impl Checker<'_> {
         }
         for index in 0..self.call_types.methods.len() {
             let (node, pending) = &self.call_types.methods[index];
-            let (node, ty) = (*node, solved.types[pending.callable.0 as usize]);
-            self.value_type(node, ty, &mut well_formed, &mut nominal_types)?;
+            let (node, types) = (*node, pending.value_types(solved));
+            // Receiver reads and lifetime conversions are runtime values even
+            // when no expression node has their precise instantiated type.
+            for ty in types {
+                self.value_type(node, ty, &mut well_formed, &mut nominal_types)?;
+            }
         }
         for index in 0..self.bindings.len() {
             let id = self.bindings[index];

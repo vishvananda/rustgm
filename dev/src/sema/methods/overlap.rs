@@ -19,6 +19,7 @@ struct Probe {
     context: Context,
     bindings: Vec<(ParameterId, Argument, Canonical)>,
     obligations: Vec<(TermId, Bound)>,
+    trait_obligations: bool,
 }
 
 pub(in crate::sema) fn possible(
@@ -30,7 +31,13 @@ pub(in crate::sema) fn possible(
     let left = probe.header(facts, left)?;
     let right = probe.header(facts, right)?;
     let possible = match probe.context.equate_shape(&facts.types, left, right) {
-        Ok(()) => probe.obligations(facts)?,
+        Ok(()) => {
+            let possible = probe.obligations(facts)?;
+            if possible && probe.trait_obligations {
+                return Err("user trait overlap obligations require trait coherence");
+            }
+            possible
+        }
         Err(Error::Mismatch | Error::Occurs) => false,
         Err(error) => return Err(inference_error(error)),
     };
@@ -98,7 +105,9 @@ impl Probe {
         }
         for predicate in facts.generics.predicates_in_scope(owner) {
             if matches!(predicate.value.bound, Bound::Trait(_)) {
-                return Err("user trait overlap obligations require trait coherence");
+                // Structurally disjoint headers need no trait coherence proof.
+                self.trait_obligations = true;
+                continue;
             }
             if matches!(predicate.value.bound, Bound::Outlives(_)) {
                 continue;

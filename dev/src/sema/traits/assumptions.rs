@@ -17,6 +17,12 @@ pub(in crate::sema) struct Assumptions {
 /// Equations against this actual caller assumption have been committed to inference.
 /// Their region equalities still require the ordinary body lifetime proof.
 pub(in crate::sema) struct Evidence(Predicate);
+/// Applicability may defer unresolved evidence; only Proven authorizes a body goal.
+pub(in crate::sema) enum Selection {
+    Absent,
+    Deferred,
+    Proven(Evidence),
+}
 impl Evidence {
     pub fn assumption(&self) -> Predicate {
         self.0
@@ -91,12 +97,24 @@ impl Assumptions {
         context: &mut Context,
         goal: &Goal,
     ) -> Result<Option<Evidence>, infer::Error> {
+        Ok(match self.select(store, context, goal)? {
+            Selection::Proven(evidence) => Some(evidence),
+            Selection::Absent | Selection::Deferred => None,
+        })
+    }
+
+    pub fn select(
+        &self,
+        store: &Store,
+        context: &mut Context,
+        goal: &Goal,
+    ) -> Result<Selection, infer::Error> {
         context.account_work(1)?;
         let Some((item, _)) = goal.trait_arguments() else {
             return Err(infer::Error::InvalidIdentity);
         };
         let Some(head) = context.head(store, goal.subject())?.map(Head::inferred) else {
-            return Ok(None);
+            return Ok(Selection::Deferred);
         };
         let mut selected = None;
         for &candidate in self.candidates.get(&(item, head)).into_iter().flatten() {
@@ -107,7 +125,7 @@ impl Assumptions {
             match result {
                 Ok(()) => {
                     if selected.replace(candidate).is_some() {
-                        return Ok(None);
+                        return Ok(Selection::Deferred);
                     }
                 }
                 Err(infer::Error::Mismatch | infer::Error::Occurs) => {}
@@ -116,9 +134,9 @@ impl Assumptions {
         }
         if let Some(assumption) = selected {
             context.equate_trait_predicate(store, goal, assumption)?;
-            Ok(Some(Evidence(assumption)))
+            Ok(Selection::Proven(Evidence(assumption)))
         } else {
-            Ok(None)
+            Ok(Selection::Absent)
         }
     }
 }

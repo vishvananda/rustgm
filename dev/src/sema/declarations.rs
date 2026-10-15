@@ -75,6 +75,9 @@ struct Signature {
     unsafe_: bool,
 }
 struct Checker<'a> {
+    method_trait_environments: Option<
+        std::collections::HashMap<NodeKey, std::sync::Arc<super::traits::assumptions::Assumptions>>,
+    >,
     method_environments: Option<
         std::collections::HashMap<
             NodeKey,
@@ -117,6 +120,7 @@ pub fn analyze(report: &Report) -> Result<Declarations, Error> {
     }
     let mut checker = Checker {
         method_environments: None,
+        method_trait_environments: None,
         nominals: aggregates::Pending::default(),
         defaults: generics::Defaults::default(),
         deferred_bounds: Vec::new(),

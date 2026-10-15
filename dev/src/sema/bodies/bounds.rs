@@ -29,6 +29,7 @@ impl Checker<'_> {
         owner: DefId,
     ) -> Result<(), Error> {
         let mut environment = self.facts.generics.environments.get(&owner).cloned();
+        self.trait_environment = None;
         // Body calls express caller universals as free aliases. Add the same
         // assumptions in that context before either query cache is constructed.
         // Original subjects remain available for declaration-context annotations.

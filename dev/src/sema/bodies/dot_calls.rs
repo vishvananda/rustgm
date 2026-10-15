@@ -2,7 +2,7 @@
 use super::{Checker, Constructor, DefId, Error, NodeId, TermId};
 use crate::{
     sema::{
-        methods::{Call, receiver},
+        methods::{Call, receiver, selection::Caller},
         model::{AdjustmentKind, BodyRegionOrigin, Coercion},
     },
     types::{RegionId, infer::Solved},
@@ -16,6 +16,11 @@ pub(super) struct Pending {
     actual: TermId,
     expected: TermId,
 }
+impl Pending {
+    pub(super) fn value_types(&self, solved: &Solved) -> [crate::types::TypeId; 3] {
+        [self.callable, self.actual, self.expected].map(|term| solved.types[term.0 as usize])
+    }
+}
 
 impl Checker<'_> {
     pub(super) fn method_arguments(&mut self, node: NodeId) -> Result<(), Error> {
@@ -28,6 +33,7 @@ impl Checker<'_> {
             .ok_or_else(|| self.error(node, "missing resolved method call site"))?;
         let term = self.term(site.receiver)?;
         let environment = self.method_environment.clone();
+        let traits = self.trait_assumptions(node)?;
         let key = self.key(node);
         let selected = receiver::choose(
             self.report,
@@ -36,7 +42,10 @@ impl Checker<'_> {
             key,
             term,
             site,
-            environment.as_ref(),
+            Caller {
+                environment: environment.as_ref(),
+                traits: traits.as_deref(),
+            },
         )?;
         let implementation = self
             .facts

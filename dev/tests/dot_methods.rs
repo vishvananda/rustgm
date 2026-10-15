@@ -167,6 +167,16 @@ const ACCEPT: &[(&str, &str, bool)] = &[
         "struct S;impl S{fn f<T:Copy,const N:usize>(&self,x:&[T;N])->T{x[N-1]}}fn main(){check(S.f::<u16,_>(&[2,517])==517);}",
         false,
     ),
+    (
+        "generic-lifetime-receiver-value",
+        "struct S<'a,T>(&'a T);impl<'a,T>S<'a,T>{fn get(self)->&'a T{self.0}}fn value<'a,T>(x:S<'a,T>)->&'a T{x.get()}fn main(){let n=7u8;check(*value(S(&n))==7);}",
+        false,
+    ),
+    (
+        "generic-lifetime-copy-receiver",
+        "#[derive(Copy,Clone)]struct S<'a,T>(&'a T);impl<'a,T>S<'a,T>{fn get(self)->&'a T{self.0}}fn value<'a,T:Copy>(x:&S<'a,T>)->&'a T{x.get()}fn main(){let n=7u8;let s=S(&n);check(*value(&s)==7);check(*s.0==7);}",
+        false,
+    ),
 ];
 const REJECT: &[(&str, &str, bool)] = &[
     (

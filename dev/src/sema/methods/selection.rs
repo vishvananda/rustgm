@@ -10,6 +10,7 @@ use crate::{
     sema::{
         annotations::{Fields, Host, Scratch},
         model::Declarations,
+        traits::assumptions::{Assumptions, Selection},
     },
     types::{
         ItemId, TypeId,
@@ -18,6 +19,12 @@ use crate::{
     },
 };
 use std::{collections::HashMap, sync::Arc};
+
+#[derive(Clone, Copy)]
+pub(in crate::sema) struct Caller<'a> {
+    pub environment: Option<&'a Arc<Environment>>,
+    pub traits: Option<&'a Assumptions>,
+}
 
 struct Prefix<'a> {
     report: &'a Report,
@@ -53,7 +60,7 @@ pub(in crate::sema) fn choose(
     prefix: NodeKey,
     bucket: (ItemId, NameId),
     scope: ScopeId,
-    environment: Option<&Arc<Environment>>,
+    caller: Caller<'_>,
 ) -> Result<DefId, Error> {
     let mut source = Prefix {
         report,
@@ -88,8 +95,8 @@ pub(in crate::sema) fn choose(
         let prefix = probe
             .import(&source.facts.types, &mut source.infer, term)
             .map_err(|e| error(&e.to_string()))?;
-        let applicable = applicable(source.facts, &mut probe, prefix, owner, None, environment)
-            .map_err(error)?;
+        let applicable =
+            applicable(source.facts, &mut probe, prefix, owner, None, caller).map_err(error)?;
         source.facts.methods.selection_probes += 1;
         source.facts.methods.selection_steps = source
             .facts
@@ -151,7 +158,7 @@ pub(super) fn applicable(
     prefix: TermId,
     owner: DefId,
     receiver: Option<TypeId>,
-    environment: Option<&Arc<Environment>>,
+    caller: Caller<'_>,
 ) -> Result<bool, &'static str> {
     let target = facts
         .associated
@@ -162,6 +169,7 @@ pub(super) fn applicable(
     let ids = facts.generics.parameter_ids(&facts.types, owner)?;
     let mut bindings = Vec::with_capacity(ids.len());
     let mut obligations = Vec::new();
+    let mut traits = Vec::new();
     for id in ids {
         let argument = context
             .parameter_variable(&facts.types, id)
@@ -188,7 +196,12 @@ pub(super) fn applicable(
     }
     for predicate in facts.generics.predicates_in_scope(owner) {
         if matches!(predicate.value.bound, Bound::Trait(_)) {
-            return Err("user trait candidate obligations require trait selection");
+            traits.push(
+                context
+                    .instantiate_predicate(&mut facts.types, predicate.value, &mut substitution)
+                    .map_err(inference)?,
+            );
+            continue;
         }
         if matches!(predicate.value.bound, Bound::Outlives(_)) {
             continue;
@@ -198,10 +211,13 @@ pub(super) fn applicable(
             .map_err(inference)?;
         obligations.push((term, predicate.value.bound));
     }
+    if !trait_requirements(facts, context, &traits, caller.traits)? {
+        return Ok(false);
+    }
     if obligations.is_empty() {
         return Ok(true);
     }
-    let environment = if let Some(environment) = environment {
+    let environment = if let Some(environment) = caller.environment {
         Arc::clone(environment)
     } else {
         Arc::new(Environment::new(&facts.types, &[])?)
@@ -227,6 +243,40 @@ pub(super) fn applicable(
         if !possible {
             return Ok(false);
         }
+    }
+    Ok(true)
+}
+fn trait_requirements(
+    facts: &Declarations,
+    context: &mut Context,
+    goals: &[infer::predicates::Predicate],
+    assumptions: Option<&Assumptions>,
+) -> Result<bool, &'static str> {
+    if goals.is_empty() {
+        return Ok(true);
+    }
+    let empty = Assumptions::default();
+    let assumptions = assumptions.unwrap_or(&empty);
+    let mut pending: Vec<_> = goals.iter().collect();
+    while !pending.is_empty() {
+        let before = pending.len();
+        let mut next = Vec::new();
+        for goal in pending {
+            match assumptions
+                .select(&facts.types, context, goal)
+                .map_err(inference)?
+            {
+                Selection::Absent => return Ok(false),
+                Selection::Deferred => next.push(goal),
+                Selection::Proven(_) => {}
+            }
+        }
+        if next.len() == before {
+            // A candidate is possible; the selected ordinary callable must prove
+            // its bounds after all arguments and result constraints are known.
+            return Ok(true);
+        }
+        pending = next;
     }
     Ok(true)
 }

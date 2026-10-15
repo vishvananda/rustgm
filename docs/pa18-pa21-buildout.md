@@ -3277,3 +3277,71 @@ binaries and inputs were reverified. Final compiler SHA256:
 `obj/pa19-work/trait-inference-validation-v3.json` records the final validation
 and log hashes; source snapshots, all timing receipts and earlier measurements
 remain under `obj/pa19-work/trait-inference-*` and `obj/perf/`.
+
+## Impl-bound method applicability
+
+Inherent method selection now uses complete caller trait assumptions when checking
+an impl's requirements. Prefix and receiver probes share one substitution across
+the impl target and every type/const trait argument. Missing evidence for a rigid
+goal excludes that candidate; unresolved evidence may remain possible until call
+arguments or the result constrain the selected ordinary callable. The final body
+proof still requires actual evidence and all lifetime equalities. Method-own bounds
+do not filter candidates before selection.
+
+The assumption matcher distinguishes absence, deferred inference and proved
+matching evidence. Body and qualified-prefix lookups cache caller indexes per
+scope; body universal aliases are normalized before indexing. Trait goals resolve
+before builtin property queries, so an inferred non-Copy argument can exclude a
+candidate without leaving a stale property result. Failed candidates retain no
+caller constraints. Structurally disjoint inherent headers no longer fail merely
+because they contain a trait predicate; potentially overlapping user-trait headers
+still require the pending coherence implementation.
+
+Receiver testing exposed a separate pre-existing lowering failure: a generic
+receiver read or lifetime conversion can produce a runtime value without an
+expression node having that exact type. Such values had no prepared fields.
+The hidden callable and both receiver types now use the existing body value
+validation/preparation path. The published compiler independently rejects two valid
+controls that exercise this gap; the new implementation accepts them, while moving
+an owned generic value through a shared reference still rejects.
+
+Thirty-five new source cases check outcomes against pinned rustc and run full
+instance proof for accepted unused generic bodies. They cover ambiguous/missing
+bounds, selection before method-own requirements, failed-first-candidate isolation,
+shared-goal inference, deferred call arguments/results, const arguments and lifetime
+requirements. Two additional unchanged-source executable controls join the existing
+receiver suite: generic lifetime conversion and copying a receiver through a borrow.
+
+General trait implementations and conformance, trait method lookup/dispatch,
+canonical nominal proof across equivalent lifetimes, bounded Drop headers and the
+PA19 course release remain outstanding. PA20 and PA21 remain required.
+
+
+Validation passes 812 frontend tests in both debug and release, all 3,790
+PA1–PA18 text cases, the complete independent rustc sweep, 18 maintainer native
+groups, 1,126 course executable comparisons and three codegen checks. The sixteen
+declared PA13 runtime differences remain explicit. Clippy all/pedantic, formatting,
+the 523-file audit, 27 harness tests and upstream/Reference integrity pass. Course
+fixtures and oracle bytes are unchanged.
+
+Fifteen frozen A/A and three-block ABBA jobs retain 270 observations; three targeted
+repeats add 54. Full/count outputs and all source, binary and input hashes match.
+The first ordinary-function and trait-bound runs were noisy; their repeats change
+median wall time by +0.2% and +0.3%. Generic receiver calls add 3.4% in the repeat,
+with all paired blocks between +2.7% and +4.4%, for the extra receiver value checks.
+Their median RSS changes by -6 KiB. Generic records, unused closed impls and trait
+inference change by -0.6%, -1.2% and less than +0.1%. Qualified generic methods
+change by +1.2%, but their calibration and paired samples run at substantially
+different absolute speeds, so that result does not establish a stable effect.
+Every noisy observation is retained; no speedup is claimed.
+
+New bounded-receiver workloads at 64/256/1,024 bodies take approximately
+10.7/28.7/106.8 ms. Qualified bound selection at 64/256 bodies takes 9.7/25.2 ms.
+One caller environment with 64/256/1,024 distinct bounds and sixteen repeated
+method calls takes 6.0/9.3/21.4 ms. These new-feature jobs compare identical candidate
+bytes; absolute timings are measurements from this run, not throughput guarantees.
+No local RustGM builds or tests overlapped timing. All 526 source/config/test files
+and immutable binaries remain archived under `obj/pa19-work/candidate-bounds-*`;
+raw samples remain in `obj/perf/`. The validation receipt is
+`obj/pa19-work/candidate-bounds-validation-v1.json`. Final compiler SHA256:
+`e389a9d9a0704e2acbf0e56cabd52008673f5bb4cd71d74e1e9da16cfe62636f`.
