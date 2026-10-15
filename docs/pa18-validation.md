@@ -1,5 +1,11 @@
 # PA18 release validation
 
+This document retains release and subsequent checkpoint evidence. Following PA20
+projection normalization, the active suite has 431 cases: 268 accepted and 163
+rejected. Its former associated-type boundary is retained byte-for-byte as an
+accepted control in `dev/tests/projection_paths.rs`, awaiting PA20's grading contract.
+See `pa18/README.md` for the current suite counts.
+
 PA18 exposes demanded generic execution through the public LowIR CLI. The
 maintainer implementation previously had the complete instance path behind a
 library API; the CLI now selects it before the ordinary inspection body builder.

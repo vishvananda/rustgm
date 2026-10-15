@@ -1,5 +1,7 @@
 //! Substitute a template binder and its parameters without capturing nested binders.
 mod items;
+mod normalize;
+pub use normalize::{Normalizer, Request, Resolution, Step};
 mod parameters;
 mod predicates;
 mod universals;
@@ -16,6 +18,7 @@ enum Action {
     Items(Box<items::Replacements>),
     Universals(Box<universals::Mapping>),
     Shape,
+    Normalize,
 }
 
 /// A substitution cache belongs to one store and one argument environment.
@@ -141,6 +144,16 @@ impl Bound {
     }
 
     fn result(&self, store: &Store, key: Key) -> Result<Option<TypeId>, &'static str> {
+        if matches!(self.action, Action::Normalize) {
+            return if store
+                .contains_projections(key.0)
+                .ok_or("invalid normalization type")?
+            {
+                Ok(self.completed.get(&key).copied())
+            } else {
+                Ok(Some(key.0))
+            };
+        }
         if matches!(self.action, Action::Items(_)) {
             return Ok(self.completed.get(&key).copied());
         }
@@ -279,7 +292,7 @@ impl Bound {
         region: RegionId,
         depth: u16,
     ) -> Result<RegionId, &'static str> {
-        if matches!(self.action, Action::Items(_)) {
+        if matches!(self.action, Action::Items(_) | Action::Normalize) {
             return Ok(region);
         }
         if matches!(self.action, Action::Shape) {

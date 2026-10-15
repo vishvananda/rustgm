@@ -45,6 +45,7 @@ pub fn check_pointer(store: &Store, signature: TypeId) -> Result<(), &'static st
 
 #[derive(Default)]
 pub struct Uses {
+    opaque_projections: bool,
     pub indices: HashSet<u16>,
     seen: HashSet<(TypeId, u16)>,
     applications: HashSet<super::traits::ApplicationId>,
@@ -52,6 +53,14 @@ pub struct Uses {
     pub steps: usize,
 }
 impl Uses {
+    /// Count only positions that determine a lifetime, excluding projection inputs.
+    #[must_use]
+    pub fn constraining() -> Self {
+        Self {
+            opaque_projections: true,
+            ..Self::default()
+        }
+    }
     /// Accumulate several roots from the same binder and canonical store.
     /// Nested binders and alias-erased arguments do not constrain this binder.
     ///
@@ -115,6 +124,9 @@ impl Uses {
                     self.arguments(store, arguments, depth)?;
                 }
                 Kind::Projection(application) => {
+                    if self.opaque_projections {
+                        continue;
+                    }
                     self.push(application.subject, depth)?;
                     let trait_ = store
                         .trait_application(application.trait_application)

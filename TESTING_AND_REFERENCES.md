@@ -184,7 +184,7 @@ is not counted as an unchanged-source native comparison. Course text oracles
 remain uninstrumented; 22 accepted counter programs check unchanged-source
 cleanup effects through both compilers. See `docs/pa17-validation.md`.
 
-PA18 adds 432 generic LowIR cases: 268 accepted and 164 rejected. There are
+PA18 has 431 generic LowIR cases: 268 accepted and 163 rejected. There are
 265 executable comparisons and three deliberately divergent codegen-only
 controls. Their `native.kind: "codegen"` requires a nonempty reason and forbids
 runtime outcome fields; both compilers produce native code, but neither binary
@@ -194,8 +194,10 @@ retain the mandatory execution/outcome contract.
 An explicit `rustc.emit: "obj"` selects object generation in the independent
 acceptance checker. Growing-instance rejection and demand-only controls need
 that stronger check because metadata emission does not monomorphize bodies.
-It is valid only for complete programs. Two PA18 rejection fixtures declare
-later PA20–PA21 boundaries accepted by rustc; there are no new runtime differences.
+It is valid only for complete programs. One PA18 rejection fixture declares
+a later PA21 boundary accepted by rustc; there are no new runtime differences.
+The former associated-type boundary is retained byte-for-byte as an accepted
+maintainer control awaiting the PA20 grading contract.
 The generic constructor/destructor boundaries moved from PA12/PA17 with unchanged
 input bytes and newly qualified accepted oracles. Root independent/native targets
 include PA18. See `docs/pa18-validation.md` for the feature ledger and release gates.
@@ -248,12 +250,14 @@ rejection and output failure propagation. It shares declaration/body inference w
 the type view and reports pending lifetime constraints explicitly; complete
 execution proof remains in `--emit-lowir`.
 
-PA19 has 1,070 cases: 439 semantic inspection and 631 LowIR cases, with 247
-accepted native programs and no skipped executions. Five later-stage boundaries,
+PA19 has 1,069 cases: 439 semantic inspection and 630 LowIR cases, with 247
+accepted native programs and no skipped executions. Four later-stage boundaries,
 one inspection-only lifetime control and three redundant-binder compiler
 differences have explicit independent statuses and reasons. See
 [the validation review](docs/pa19-validation.md). `make test-rustc` and the root
 native target include PA19; `make test-native-pa19` selects its execution lane.
+Its former associated-type rejection likewise moves to accepted maintainer
+coverage until PA20 releases its complete contract.
 
 ## Placement and provenance
 

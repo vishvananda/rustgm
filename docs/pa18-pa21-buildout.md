@@ -153,7 +153,7 @@ must separately vary body size, instance count, repeated uses, structural sharin
 recursive demand and solver environment count. Work counters must demonstrate
 sharing; wall time alone cannot establish that an algorithm is bounded.
 
-Commit and push validated checkpoints on `work/pa18-pa21`, and check CI for each
+Commit and push validated checkpoints directly to `main`, and check CI for each
 pushed implementation. Activate each assignment only after its reference,
 handout, independent qualification and regression evidence are complete.
 
@@ -4291,3 +4291,85 @@ typed implementation mapping and scoped selection evidence, preserving unresolve
 generic projections without treating their inputs as injective. Concrete layout
 and lowering must consume normalized results. Do not confuse the completed
 declaration checks with complete projected-type usage or assignment release.
+
+
+## PA20 qualified associated type normalization
+
+Associated declaration checkpoint `aa44b01` passed CI run 38752633074. Explicit
+qualified paths such as `<S as Trait<T, N>>::Item` now select an implementation,
+substitute its arguments into the associated definition and normalize the result
+before structural checks, layout or lowering. This includes concrete signatures,
+aliases, generic impl substitutions, trait defaults, nested projections, static
+references and higher-ranked function pointer results. All implementation contracts
+still complete before bodies or executable facts are published.
+
+The common bounded type fold now suspends at typed projection requests after
+normalizing their inputs. Declaration work can finish a selected definition while
+the fold is suspended; its replacement is recursively normalized before publication.
+Completed work is shared only within the same proof scope and binder depth. Active
+cycles, stale responses and exhausted work diagnose explicitly. A generated graph
+with 10,000 projection levels verifies bounded iterative traversal and shared work.
+Already-normalized structural annotations need no additional normalization walk;
+instantiated type paths still check for projections introduced through defaults.
+
+Projection occurrences cannot constrain an impl parameter merely by appearing in
+its projected inputs. Separate constraining collectors preserve ordinary occurrence
+queries while treating those inputs as opaque. Associated definitions also reject
+an impl lifetime used in the result but unconstrained by Self or trait arguments.
+Independent controls cover alias erasure, unused lifetimes, nested binders, outer
+capture and mutually related but unconstrained lifetimes. Associated declarations
+cannot masquerade as ordinary lexical aliases: bare names in traits and impls
+reject, while an ordinary alias nested inside a method remains valid.
+
+Thirty source path cases and 39 associated declaration cases agree with pinned
+rustc. New native programs exercise scalar, aggregate and wide-reference results;
+the associated declaration and existing trait native controls also pass. The final
+candidate passes 161 affected optimized tests including those native checks,
+formatting, Clippy all/pedantic, the 589-file audit with no findings, 27 harness tests,
+upstream provenance and all 4,857 active course cases. The full debug run passes 955
+tests; its compiler predates the final extension of the bare-name guard to impls,
+which is covered by the final optimized run and three additional source controls.
+
+PA18 and PA19's former associated-type rejection fixtures now succeed. Their exact
+source bytes are retained in the independently qualified path tests, including
+the different trailing-newline contracts. Their obsolete rejection sidecars and
+manifest entries were removed; all remaining oracle bytes are unchanged. The
+current counts are PA18 431 and PA19 1,069. Their reference provenance was regenerated
+through the official targets. The declared migration review and original sidecars
+remain under `obj/pa20-work/normalization-v1/`; these cases will enter the PA20
+manifest when its complete grading contract is ready.
+
+This is still a partial PA20 checkpoint. Scoped lifetime rebasing and retained
+selection evidence, symbolic projection equalities, shorthand `T::Item`/`Self::Item`,
+general projected generic bodies, associated constants and arbitrary associated
+bounds remain required. Unsupported evidence is diagnosed, never discarded to
+manufacture a normal form. Projection use in early headers/defaults also requires
+pipeline integration. PA20 and PA21 remain planned; their full original scope is
+unchanged.
+
+
+The final frozen compiler SHA256 is
+`a5cf9019698ea1f447189d2089a23c487896b8f1d1690ed6d72afe0f9a84df84`;
+592 source/config/test files are archived in
+`obj/pa20-work/normalization-v1/source-v2`. Eighteen existing workloads match the
+published associated-declaration compiler in full and count semantic bytes. Six
+new source workloads, independently accepted by pinned rustc, check projection
+chains and repeated qualified annotations at scales 128, 512 and 2,048; their
+semantic output contains exactly the declared implementation-type record counts.
+
+Two frozen candidates retain 624 observations each, for 1,248 total. Every run
+uses A/A calibration and five paired ABBA blocks per input. The initial ordinary
+paired medians range from -2.2% to +3.1%. After avoiding redundant structural
+annotation checks and correcting qualification, final medians range from -1.3%
+to +4.3%, with A/A spreads of 0.7–62.7%. Concrete-goal cases remain 3.2–4.3%
+slower, following the initial 2.6–3.1% observations. The removed redundant checks
+do not establish elimination of that cost; no overall speedup is claimed.
+
+Final same-binary chain medians are 8.87, 30.26 and 91.18 ms, with peak resident
+medians 6,478, 9,982 and 21,090 KiB. Repeated-path medians are 5.78, 11.93 and
+36.62 ms, with 5,720, 6,468 and 9,936 KiB. These are new-feature scaling evidence,
+not a comparison with a previously supported implementation. The shared host had
+unrelated compiler activity; all noise and observations remain recorded. No local
+RustGM build, test or unrelated probe overlapped either timed run. Full/count
+output equality and source, binary and input hashes pass. The receipt is
+`obj/pa20-work/normalization-v1/validation-v1.json`.

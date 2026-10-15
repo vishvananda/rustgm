@@ -130,7 +130,7 @@ impl Checker<'_> {
         Ok(())
     }
     fn inherent_parameters(&self, owner: DefId, key: NodeKey, target: TypeId) -> Result<(), Error> {
-        let mut uses = crate::types::parameters::uses::Uses::default();
+        let mut uses = crate::types::parameters::uses::Uses::constraining();
         uses.collect(&self.facts.types, target)
             .map_err(|e| self.error(key, e))?;
         for id in self

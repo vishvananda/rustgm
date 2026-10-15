@@ -4,6 +4,7 @@ use crate::types::{Kind, Store, TypeId, arguments::Argument};
 use std::collections::HashSet;
 #[derive(Default)]
 pub struct Uses {
+    opaque_projections: bool,
     pub parameters: HashSet<ParameterId>,
     pub constants: HashSet<ParameterId>,
     seen: HashSet<TypeId>,
@@ -12,6 +13,14 @@ pub struct Uses {
     pub steps: usize,
 }
 impl Uses {
+    /// Inputs of a non-injective projection do not constrain implementation parameters.
+    #[must_use]
+    pub fn constraining() -> Self {
+        Self {
+            opaque_projections: true,
+            ..Self::default()
+        }
+    }
     /// Accumulate type and const parameter occurrences from completed types in one store.
     /// # Errors
     /// Rejects malformed canonical identities and exhausted traversal resources.
@@ -88,6 +97,9 @@ impl Uses {
                     None
                 }
                 Kind::Projection(application) => {
+                    if self.opaque_projections {
+                        continue;
+                    }
                     self.work.push(application.subject);
                     let trait_ = store
                         .trait_application(application.trait_application)

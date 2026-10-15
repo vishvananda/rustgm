@@ -1,9 +1,15 @@
 # PA19 trait and method validation
 
-PA19 publishes 1,070 text-oracle cases: 683 accepted and 387 rejected. The semantic
+The PA19 release published 1,070 text-oracle cases: 683 accepted and 387 rejected. The semantic
 lane contains 439 cases (436 accepted, three rejected); the LowIR lane contains
 631 (247 accepted, 384 rejected). All accepted LowIR controls require clean
 execution through both pinned rustc and the immutable CPPGM backend.
+
+Subsequent PA20 normalization work removed the obsolete associated-type rejection.
+Its exact source is now an accepted control in `dev/tests/projection_paths.rs`,
+awaiting PA20's grading contract. The active PA19 suite has 1,069 cases: 683
+accepted and 386 rejected, including 630 LowIR cases. Counts below describe the
+original release evidence; the current contract is in `pa19/README.md`.
 
 ## Source and expectation review
 

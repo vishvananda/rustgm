@@ -117,7 +117,7 @@ impl Checker<'_> {
             // The mapping is published only with the rest of the checked implementation.
             result.push((expected, actual));
         }
-        self.associated_type_regions(owner, source, &result)?;
+        self.associated_type_regions(owner, source, predicate, &result)?;
         self.retain_trait_proof(owner, source, &mut proof);
         Ok(result)
     }
@@ -126,8 +126,14 @@ impl Checker<'_> {
         &self,
         owner: DefId,
         source: NodeKey,
+        predicate: Predicate,
         definitions: &[(DefId, DefId)],
     ) -> Result<(), Error> {
+        let mut inputs = crate::types::bound_uses::Uses::constraining();
+        inputs
+            .predicate(&self.facts.types, predicate)
+            .map_err(|e| self.error(source, e))?;
+        let mut outputs = crate::types::bound_uses::Uses::default();
         let mut queries = Queries::new(
             &self.facts.types,
             &self.facts.lifetimes.nominal_requirements,
@@ -142,6 +148,12 @@ impl Checker<'_> {
                 .ok_or_else(|| self.error(source, "missing associated type source"))?;
             let ty = self.facts.definitions[definition.0 as usize]
                 .ok_or_else(|| self.error(key, "missing associated type definition type"))?;
+            outputs
+                .collect(&self.facts.types, ty)
+                .map_err(|e| self.error(key, e))?;
+            if !outputs.indices.is_subset(&inputs.indices) {
+                return Err(self.error(key, "associated type uses an impl lifetime not constrained by Self or the trait arguments"));
+            }
             let required = queries
                 .symbolic_requirements(ty)
                 .map_err(|e| self.error(key, e))?;

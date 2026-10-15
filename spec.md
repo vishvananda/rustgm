@@ -79,6 +79,15 @@ selected definition with the validated implementation, and share lifetime querie
 across all associated definitions of that impl. An ordinary alias's deferred
 well-formedness policy must not weaken an associated type contract.
 
+Projection normalization uses the common bounded type fold. Normalize inputs
+before asking semantic selection for a result; suspend with typed requests when
+selection needs the store or declaration worklist. Replacement types retain the
+request's binder context and are normalized before their parents are published.
+Cache only within one immutable proof scope, and diagnose recursive results or
+exhausted work. A prepared impl may supply declaration work, but its complete
+conformance remains mandatory before executable facts are published. Missing
+lifetime or equality evidence must never be dropped to manufacture a normal form.
+
 Built-in semantic traits retain their own definition identities; a user item
 with the same spelling cannot acquire language behavior. Resolve aliases and
 qualified paths through ordinary typed namespace facts. Demand external metadata

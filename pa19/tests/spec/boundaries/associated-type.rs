@@ -1,1 +1,0 @@
-trait A{type Out;}struct S;impl A for S{type Out=u8;}fn main(){let _: <S as A>::Out=7;}

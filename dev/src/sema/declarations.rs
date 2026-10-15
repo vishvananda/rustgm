@@ -13,6 +13,7 @@ mod method_overlap;
 mod method_paths;
 mod method_prefix;
 mod methods;
+mod projections;
 mod receivers;
 mod trait_paths;
 mod trait_regions;
@@ -49,6 +50,8 @@ enum SignaturePhase {
 }
 #[derive(Clone, Copy)]
 enum Work {
+    ProjectionPath(NodeKey, regions::Context),
+    ProjectionResult(NodeKey),
     NominalContract(ItemId, bool),
     Fields(ItemId, bool),
     Constructor(DefId),
@@ -77,6 +80,7 @@ struct Signature {
     unsafe_: bool,
 }
 struct Checker<'a> {
+    projections: projections::Pending,
     trait_proofs: trait_regions::Proofs,
     method_trait_environments: Option<
         std::collections::HashMap<NodeKey, std::sync::Arc<super::traits::assumptions::Assumptions>>,
@@ -122,6 +126,7 @@ pub fn analyze(report: &Report) -> Result<Declarations, Error> {
         ));
     }
     let mut checker = Checker {
+        projections: projections::Pending::default(),
         trait_proofs: trait_regions::Proofs::default(),
         method_environments: None,
         method_trait_environments: None,
@@ -223,6 +228,12 @@ impl Checker<'_> {
                 ));
             }
             match work {
+                Work::ProjectionPath(key, context) => {
+                    self.complete_projection_path(key, context)?;
+                }
+                Work::ProjectionResult(key) => {
+                    self.complete_projection_result(key)?;
+                }
                 Work::NominalContract(item, finish) => self.nominal_contract(item, finish)?,
                 Work::Fields(item, finish) => self.nominal_fields(item, finish)?,
                 Work::Constructor(id) => self.constructor(id)?,
@@ -521,6 +532,9 @@ impl Checker<'_> {
         }
         let kind = self.kind(key);
         if !finish {
+            if matches!(kind, Kind::Qualified { .. }) {
+                return self.schedule_projection_path(key, context);
+            }
             if let Kind::FunctionType(_) = kind {
                 self.work.push(Work::Signature(
                     key,
@@ -587,11 +601,20 @@ impl Checker<'_> {
                 if self.partial_generic_path(key, id, context)? {
                     return Ok(());
                 }
-                self.path_type(key, id, context)?
+                let ty = self.path_type(key, id, context)?;
+                if !matches!(
+                    self.report.resolution.definitions[id.0 as usize].kind,
+                    DefKind::Primitive | DefKind::Generic
+                ) {
+                    return self.normalize_annotation(key, ty, context);
+                }
+                ty
             }
             Kind::Type { flavor, elements } => self.compound(key, flavor, elements)?,
             _ => return Err(self.error(key, "invalid completed annotation")),
         };
+        // Structural annotations only combine children already normalized in this scope.
+        // Type applications above can introduce projections through substituted defaults.
         self.store(key, ty)
     }
     fn schedule_type_path(&mut self, key: NodeKey, context: regions::Context) -> Result<(), Error> {
@@ -600,6 +623,12 @@ impl Checker<'_> {
             return Err(self.error(key, "type path needs a resolved declaration"));
         };
         let kind = self.report.resolution.definitions[id.0 as usize].kind;
+        if kind == DefKind::TypeAlias && self.facts.associated.owner(id).is_some() {
+            return Err(self.error(
+                key,
+                "associated type requires an explicit Self qualification",
+            ));
+        }
         if kind == DefKind::Generic
             && !self.facts.definitions[id.0 as usize]
                 .is_some_and(|ty| matches!(self.facts.types.kind(ty), Some(Type::Parameter(_))))

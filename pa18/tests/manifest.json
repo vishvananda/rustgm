@@ -1574,20 +1574,6 @@
       "maintainer_origin": "PA18 public generic contract"
     },
     {
-      "path": "tests/spec/boundaries/associated-type.rs",
-      "exit_status": 1,
-      "features": [
-        "pa18.boundaries"
-      ],
-      "rustc": {
-        "kind": "program",
-        "status": 0,
-        "default_lints": true,
-        "reason": "Associated items and normalization belong to PA20."
-      },
-      "maintainer_origin": "PA18 later-stage ownership"
-    },
-    {
       "path": "tests/spec/boundaries/opaque-return.rs",
       "exit_status": 1,
       "features": [

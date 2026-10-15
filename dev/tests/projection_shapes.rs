@@ -21,6 +21,60 @@ use rustgm::{
 use std::{collections::HashMap, sync::Arc};
 type TestResult = Result<(), Box<dyn std::error::Error>>;
 
+#[test]
+fn projection_occurrences_do_not_constrain_impl_parameters() -> TestResult {
+    let mut store = Store::default();
+    schema(&mut store, 11, true)?;
+    let a = parameter(&mut store, 20, 0)?;
+    let b = parameter(&mut store, 20, 1)?;
+    let c = store.intern_parameter(Parameter {
+        owner: ItemId(20),
+        index: 2,
+        kind: ParameterKind::Const {
+            ty: TypeId::primitive(Primitive::Usize),
+        },
+    })?;
+    let constant = store.intern_const(ConstKind::Parameter(c))?;
+    let subject = borrow(&mut store, RegionId::bound(0, 0)?, a)?;
+    let kind = application(
+        &mut store,
+        11,
+        subject,
+        &[Argument::Type(b)],
+        &[
+            Argument::Const(constant),
+            Argument::Lifetime(RegionId::bound(0, 1)?),
+        ],
+    )?;
+    let projected = store.intern(kind)?;
+    let mut occurrences = parameters::uses::Uses::default();
+    occurrences.collect(&store, projected)?;
+    assert_eq!(occurrences.parameters.len(), 2);
+    assert_eq!(occurrences.constants, [c].into());
+    let mut constrained = parameters::uses::Uses::constraining();
+    constrained.collect(&store, projected)?;
+    assert!(constrained.parameters.is_empty() && constrained.constants.is_empty());
+    let mut regions = bound_uses::Uses::default();
+    regions.collect(&store, projected)?;
+    assert_eq!(regions.indices, [0, 1].into());
+    let mut fixed = bound_uses::Uses::constraining();
+    fixed.collect(&store, projected)?;
+    assert!(fixed.indices.is_empty());
+    let direct = store.intern(Kind::ArrayTerm {
+        element: a,
+        length: constant,
+    })?;
+    let direct = borrow(&mut store, RegionId::bound(0, 1)?, direct)?;
+    let list = store.intern_list(&[projected, direct])?;
+    let root = store.intern(Kind::Tuple(list))?;
+    constrained.collect(&store, root)?;
+    assert_eq!(constrained.parameters.len(), 1);
+    assert_eq!(constrained.constants, [c].into());
+    fixed.collect(&store, root)?;
+    assert_eq!(fixed.indices, [1].into());
+    Ok(())
+}
+
 fn schema(store: &mut Store, item: u32, sized: bool) -> Result<(), &'static str> {
     store.declare_projection(
         ItemId(item),

@@ -12,6 +12,46 @@ use rustgm::{
 
 const CASES: &[(&str, &str, bool)] = &[
     (
+        "unconstrained-impl-lifetime",
+        "trait A{type Out;}impl<'a>A for u8{type Out=&'a u8;}fn main(){}",
+        false,
+    ),
+    (
+        "unused-impl-lifetime",
+        "trait A{type Out;}impl<'a>A for u8{type Out=u8;}fn main(){}",
+        true,
+    ),
+    (
+        "alias-erased-impl-lifetime",
+        "type Erase<'a>=u8;trait A{type Out;}impl<'a>A for u8{type Out=Erase<'a>;}fn main(){}",
+        true,
+    ),
+    (
+        "unconstrained-secondary-lifetime",
+        "trait A<'a>{type Out;}impl<'a,'b>A<'a>for u8{type Out=&'b u8;}fn main(){}",
+        false,
+    ),
+    (
+        "outlives-does-not-constrain",
+        "trait A<'a>{type Out;}impl<'a:'b,'b:'a>A<'a>for u8{type Out=&'b u8;}fn main(){}",
+        false,
+    ),
+    (
+        "nested-binder-is-independent",
+        "trait A{type Out;}impl<'a>A for u8{type Out=for<'b>fn(&'b u8)->&'b u8;}fn main(){}",
+        true,
+    ),
+    (
+        "nested-outer-capture",
+        "trait A{type Out;}impl<'a>A for u8{type Out=fn(&'a u8);}fn main(){}",
+        false,
+    ),
+    (
+        "constrained-nested-outer-capture",
+        "trait A{type Out;}impl<'a>A for &'a u8{type Out=fn(&'a u8);}fn main(){}",
+        true,
+    ),
+    (
         "second-output-lifetime",
         "trait A<'a>{type X;type Y;}impl<'a,T>A<'a>for T{type X=u8;type Y=&'a T;}fn main(){}",
         false,

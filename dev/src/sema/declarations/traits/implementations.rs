@@ -134,7 +134,7 @@ impl Checker<'_> {
         source: NodeKey,
         predicate: Predicate,
     ) -> Result<(), Error> {
-        let mut uses = Uses::default();
+        let mut uses = Uses::constraining();
         uses.predicate(&self.facts.types, predicate)
             .map_err(|e| self.error(source, e))?;
         for id in self
