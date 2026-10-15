@@ -3,15 +3,15 @@ pub(crate) mod captures;
 use super::{GenericArgs, Kind, RegionId, Store, TypeId, arguments::Argument};
 use std::collections::HashSet;
 
-/// Validate the completed signature, including references introduced by local
-/// type inference. Captured outer lifetimes are distinct from this binder.
+/// Validate a signature before normalizing its projections. Projected input
+/// occurrences do not constrain output lifetimes, even if their normal form would.
+/// Captured outer lifetimes are distinct from this binder. Repeat after local
+/// type inference to include references introduced by inferred annotations.
 ///
 /// # Errors
 /// Rejects malformed binders and output-only late lifetimes.
 pub fn check_pointer(store: &Store, signature: TypeId) -> Result<(), &'static str> {
-    if store.contains_projections(signature) == Some(true) {
-        return Err("projected function inputs require normalization before binder validation");
-    }
+    let projected = store.contains_projections(signature) == Some(true);
     let Some(Kind::Function {
         parameters,
         result,
@@ -21,11 +21,11 @@ pub fn check_pointer(store: &Store, signature: TypeId) -> Result<(), &'static st
     else {
         return Err("missing function pointer signature");
     };
-    let mut inputs = Uses::default();
-    for ty in store
+    let parameters = store
         .list(parameters)
-        .ok_or("missing function pointer inputs")?
-    {
+        .ok_or("missing function pointer inputs")?;
+    let mut inputs = Uses::constraining();
+    for ty in parameters {
         inputs.collect(store, *ty)?;
     }
     let mut output = Uses::default();
@@ -33,9 +33,17 @@ pub fn check_pointer(store: &Store, signature: TypeId) -> Result<(), &'static st
     if !output.indices.is_subset(&inputs.indices) {
         return Err("function pointer output lifetime is unconstrained by its inputs");
     }
+    if projected {
+        // Even opaque input positions must refer to valid binder slots. Reuse
+        // output's occurrence walk only after testing the output constraint.
+        for ty in parameters {
+            output.collect(store, *ty)?;
+        }
+    }
     if inputs
         .indices
         .iter()
+        .chain(&output.indices)
         .any(|index| u32::from(*index) >= bound_regions)
     {
         return Err("function pointer references an unbound lifetime");

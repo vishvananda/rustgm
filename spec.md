@@ -88,6 +88,14 @@ exhausted work. A prepared impl may supply declaration work, but its complete
 conformance remains mandatory before executable facts are published. Missing
 lifetime or equality evidence must never be dropped to manufacture a normal form.
 
+Check constraining lifetime positions before erasing projections through
+normalization. A lifetime occurring only inside a projected function-pointer
+input does not constrain the pointer's output, even when a selected impl would
+normalize that input to a reference using the lifetime. Preserve the unreduced
+typed signature for this check, including projections introduced through aliases;
+normal forms alone cannot establish this declaration constraint. Opaque input
+positions still require valid binder slots.
+
 Built-in semantic traits retain their own definition identities; a user item
 with the same spelling cannot acquire language behavior. Resolve aliases and
 qualified paths through ordinary typed namespace facts. Demand external metadata

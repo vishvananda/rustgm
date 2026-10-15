@@ -4373,3 +4373,47 @@ unrelated compiler activity; all noise and observations remain recorded. No loca
 RustGM build, test or unrelated probe overlapped either timed run. Full/count
 output equality and source, binary and input hashes pass. The receipt is
 `obj/pa20-work/normalization-v1/validation-v1.json`.
+
+
+## Projection lifetime constraints before normalization
+
+Qualified projection checkpoint `6d04b06` is published on `main`. Independent
+qualification for the next lifetime integration exposed Rust's E0581 constraint:
+`for<'a> fn(<&'a u8 as A>::Out) -> &'a u8` is invalid even if the selected impl
+normalizes its input to `&'a u8`. The occurrence inside the non-injective projected
+input cannot constrain the output lifetime. An additional direct `&'a u8` input
+makes the binder valid. Aliases must preserve this distinction as well.
+
+The canonical function-pointer validator now consumes unreduced signatures,
+collects constraining input positions separately from output occurrences and
+checks every opaque input occurrence against the binder's valid slot range.
+Six typed cases agree with independently compiled Rust programs, covering direct
+and projected inputs/results and an unused projected input lifetime. A separate
+malformed canonical control checks a lifetime slot hidden in trait arguments.
+This establishes the typed query contract; source support for escaping lifetime
+projections remains explicitly rejected until scoped rebasing, retained selection
+obligations and unreduced annotation provenance are integrated. Normalizing first
+and checking only the normal form would incorrectly accept the E0581 cases.
+
+All 149 affected optimized tests, including existing projection and trait native
+controls, 4,857 active course cases, 27 harness tests, formatting, Clippy all/pedantic
+and the 589-file audit pass. Course fixtures, manifests and oracle bytes are unchanged.
+The frozen compiler SHA256 is
+`eaca62988472d0fc3254bcd03f42efc6e6a86a3e080eb3ed80e0953396209954`;
+592 source/config/test files are archived in
+`obj/pa20-work/projection-regions-v1/source-v1`. Twelve ordinary regression inputs
+and three independently qualified pointer-binder workloads match `6d04b06` in
+full and count semantic bytes. A/A calibration and five ABBA blocks retain all
+390 observations. Ordinary paired medians range from -1.8% to +1.7%, with A/A
+spreads of 1.8–7.2%; pointer-binder medians are +0.3%, -0.5% and +1.5% at 128,
+512 and 2,048 aliases, with spreads of 3.0–6.6%. These small differences do not
+establish a speedup. No local build, test or unrelated probe overlapped timing;
+source, binary and input hashes and all output comparisons pass. The receipt is
+`obj/pa20-work/projection-regions-v1/binder-validation-v1.json`.
+
+Eighteen future source controls are independently qualified under the same local
+evidence directory. They cover static and caller lifetimes, permuted trait
+arguments, impl outlives requirements, strengthening failures, nested callable
+binders and local annotations. Their positive outcomes are requirements for the
+next integration, not current source acceptance claims. PA20 and PA21 remain
+planned and required.

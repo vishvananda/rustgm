@@ -1,4 +1,6 @@
 //! Canonical projections preserve inputs without granting properties of their unknown result.
+#[path = "helpers/qualify.rs"]
+mod rustc;
 use rustgm::{
     abi::layout::Layouts,
     types::{
@@ -20,6 +22,87 @@ use rustgm::{
 };
 use std::{collections::HashMap, sync::Arc};
 type TestResult = Result<(), Box<dyn std::error::Error>>;
+
+#[test]
+fn projected_input_occurrences_do_not_constrain_pointer_outputs() -> TestResult {
+    let mut store = Store::default();
+    schema(&mut store, 11, true)?;
+    let direct = borrow(
+        &mut store,
+        RegionId::bound(0, 0)?,
+        TypeId::primitive(Primitive::U8),
+    )?;
+    let kind = application(&mut store, 11, direct, &[], &[])?;
+    let projected = store.intern(kind)?;
+    let cases = [
+        (
+            vec![projected],
+            direct,
+            false,
+            "fn(<&'a u8 as A>::Out)->&'a u8",
+        ),
+        (
+            vec![projected],
+            projected,
+            false,
+            "fn(<&'a u8 as A>::Out)-><&'a u8 as A>::Out",
+        ),
+        (vec![], projected, false, "fn()-><&'a u8 as A>::Out"),
+        (
+            vec![direct, projected],
+            direct,
+            true,
+            "fn(&'a u8,<&'a u8 as A>::Out)->&'a u8",
+        ),
+        (
+            vec![direct],
+            projected,
+            true,
+            "fn(&'a u8)-><&'a u8 as A>::Out",
+        ),
+        (
+            vec![projected],
+            TypeId::UNIT,
+            true,
+            "fn(<&'a u8 as A>::Out)",
+        ),
+    ];
+    for (index, (inputs, result, accepted, source)) in cases.into_iter().enumerate() {
+        let source = format!(
+            "trait A{{type Out;}}impl<'a>A for &'a u8{{type Out=&'a u8;}}type F=for<'a>{source};"
+        );
+        rustc::qualify(&format!("projection-binder-{index}"), &source, accepted)?;
+        let ty = signature(&mut store, &inputs, result, 1)?;
+        assert_eq!(bound_uses::check_pointer(&store, ty).is_ok(), accepted);
+    }
+    // Normalization would erase the distinction, so a caller must check the
+    // unnormalized signature before publishing this otherwise valid normal form.
+    let normalized = signature(&mut store, &[direct], direct, 1)?;
+    bound_uses::check_pointer(&store, normalized)?;
+    Ok(())
+}
+
+#[test]
+fn opaque_pointer_inputs_still_require_valid_lifetime_slots() -> TestResult {
+    let mut store = Store::default();
+    schema(&mut store, 11, true)?;
+    let kind = application(
+        &mut store,
+        11,
+        TypeId::UNIT,
+        &[Argument::Lifetime(RegionId::bound(0, 1)?)],
+        &[],
+    )?;
+    let projected = store.intern(kind)?;
+    let invalid = signature(&mut store, &[projected], TypeId::UNIT, 1)?;
+    assert_eq!(
+        bound_uses::check_pointer(&store, invalid),
+        Err("function pointer references an unbound lifetime")
+    );
+    let valid = signature(&mut store, &[projected], TypeId::UNIT, 2)?;
+    bound_uses::check_pointer(&store, valid)?;
+    Ok(())
+}
 
 #[test]
 fn projection_occurrences_do_not_constrain_impl_parameters() -> TestResult {
