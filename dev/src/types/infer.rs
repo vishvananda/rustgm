@@ -3,9 +3,11 @@
 pub mod arguments;
 mod compare;
 pub mod constants;
+pub mod dependencies;
 mod freshen;
 mod import;
 pub mod predicates;
+pub mod projections;
 pub mod properties;
 mod regions;
 mod resolve;
@@ -35,6 +37,7 @@ pub enum Constructor {
     ArrayInfer(constants::ConstTermId),
     AdtArgs(ItemId, arguments::ArgumentsId),
     FunctionItemArgs(ItemId, arguments::ArgumentsId),
+    Projection(projections::Projection),
     Slice,
     Reference {
         mutable: bool,
@@ -91,6 +94,7 @@ impl std::error::Error for Error {}
 #[derive(Default)]
 pub struct Context {
     arguments: Option<Box<arguments::Storage>>,
+    dependencies: Option<Box<dependencies::Storage>>,
     generalization: freshen::Scratch,
     terms: Vec<Term>,
     edges: Vec<TermId>,
@@ -152,6 +156,10 @@ impl Context {
     pub fn construct(&mut self, kind: Constructor, children: &[TermId]) -> Result<TermId, Error> {
         let valid = match kind {
             Constructor::AdtArgs(_, id) => children.len() == self.argument_arity(id)?,
+            Constructor::Projection(value) => {
+                children.len().checked_sub(1) == Some(self.argument_arity(value.arguments)?)
+                    && value.trait_arguments as usize <= self.slots(value.arguments)?.len()
+            }
             Constructor::FunctionItemArgs(_, id) => {
                 children.len().checked_sub(1) == Some(self.argument_arity(id)?)
             }
@@ -268,6 +276,8 @@ impl Context {
         }
         self.terms[child.0 as usize].parent = parent;
         self.terms[parent.0 as usize].value = Value::Variable(domain);
+        self.wake_resolution(dependencies::Dependency::Type(child))?;
+        self.wake_resolution(dependencies::Dependency::Type(parent))?;
         Ok(())
     }
     fn bind(
@@ -299,6 +309,7 @@ impl Context {
             return Err(Error::Occurs);
         }
         self.terms[variable.0 as usize].parent = candidate;
+        self.wake_resolution(dependencies::Dependency::Type(variable))?;
         Ok(())
     }
     /// Equality, not coercion: never and numeric conversions require explicit callers.
@@ -383,6 +394,9 @@ impl Context {
             return Ok(None);
         }
         let kind = self.materialize(store, id)?;
+        if matches!(kind, Constructor::Projection(_)) {
+            return Err(Error::Normalization);
+        }
         if let Constructor::ArrayInfer(length) = kind
             && let Some(crate::types::arguments::ConstKind::Value(value)) =
                 self.constants().value(length)?
@@ -447,6 +461,7 @@ impl Context {
             Value::Variable(Domain::Any)
         ) {
             self.terms[id.0 as usize].value = Value::Known(TypeId::NEVER);
+            self.wake_resolution(dependencies::Dependency::Type(id))?;
         }
         Ok(())
     }
@@ -460,6 +475,9 @@ impl Context {
         let left = self.materialize(store, a)?;
         let right = self.materialize(store, b)?;
         match (left, right) {
+            (Constructor::Projection(_), _) | (_, Constructor::Projection(_)) => {
+                return Err(Error::Normalization);
+            }
             (Constructor::Adt(x, known), Constructor::AdtArgs(y, inferred))
             | (Constructor::AdtArgs(y, inferred), Constructor::Adt(x, known))
             | (Constructor::FunctionItem(x, known), Constructor::FunctionItemArgs(y, inferred))
@@ -562,7 +580,7 @@ impl Context {
             Kind::Never => Constructor::Never,
             Kind::Primitive(p) => Constructor::Primitive(p),
             Kind::Parameter(id) => Constructor::Parameter(id),
-            Kind::Projection(_) => return Err(Error::Normalization),
+            Kind::Projection(value) => self.materialize_projection(store, value, &mut children)?,
             Kind::Adt(item, args) => {
                 if store.region_args(args).is_some() {
                     Constructor::Adt(item, args)
@@ -743,6 +761,7 @@ fn canonical(
     let first = || children.first().copied().ok_or(Error::InvalidIdentity);
     let kind = match constructor {
         Constructor::ArrayInfer(_)
+        | Constructor::Projection(_)
         | Constructor::AdtArgs(..)
         | Constructor::FunctionItemArgs(..) => return Err(Error::InvalidIdentity),
         Constructor::Primitive(p) => Kind::Primitive(p),

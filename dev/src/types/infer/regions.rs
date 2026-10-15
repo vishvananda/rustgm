@@ -126,14 +126,10 @@ impl Context {
                 children,
             );
         }
-        let kind = match kind {
-            Constructor::AdtArgs(item, args) => {
-                Constructor::AdtArgs(item, self.argument_regions(args, replace)?)
-            }
-            Constructor::FunctionItemArgs(item, args) => {
-                Constructor::FunctionItemArgs(item, self.argument_regions(args, replace)?)
-            }
-            other => other,
+        let kind = if let Some((arguments, _)) = kind.application() {
+            kind.with_arguments(self.argument_regions(arguments, replace)?)?
+        } else {
+            kind
         };
         self.construct(kind, children)
     }

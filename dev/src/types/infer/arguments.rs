@@ -60,7 +60,7 @@ impl Context {
             .filter(|s| matches!(s, Slot::Type))
             .count())
     }
-    fn argument_layout(
+    pub(super) fn argument_layout(
         &mut self,
         arguments: &[Argument],
         children: &mut Vec<TermId>,
@@ -181,7 +181,7 @@ impl Context {
         }
         Ok(())
     }
-    fn canonical_arguments(
+    pub(super) fn canonical_arguments(
         &mut self,
         store: &mut Store,
         id: ArgumentsId,
@@ -212,6 +212,7 @@ impl Context {
         children: &[TypeId],
     ) -> Result<TypeId, Error> {
         let kind = match kind {
+            Constructor::Projection(value) => self.canonical_projection(store, value, children)?,
             Constructor::ArrayInfer(id) => Kind::ArrayTerm {
                 element: *children.first().ok_or(Error::InvalidIdentity)?,
                 length: self.resolved_const(store, id)?,

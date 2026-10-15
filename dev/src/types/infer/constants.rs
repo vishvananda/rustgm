@@ -58,11 +58,15 @@ impl Constants {
         }
         Ok(root)
     }
-    pub(super) fn equate(&mut self, a: ConstTermId, b: ConstTermId) -> Result<(), Error> {
+    pub(super) fn equate(
+        &mut self,
+        a: ConstTermId,
+        b: ConstTermId,
+    ) -> Result<Option<(ConstTermId, ConstTermId)>, Error> {
         let mut a = self.root(a)?;
         let mut b = self.root(b)?;
         if a == b {
-            return Ok(());
+            return Ok(None);
         }
         let left = &self.terms[a.0 as usize];
         let right = &self.terms[b.0 as usize];
@@ -83,7 +87,7 @@ impl Constants {
         }
         self.terms[b.0 as usize].parent = a;
         self.terms[a.0 as usize].value = value;
-        Ok(())
+        Ok(Some((a, b)))
     }
 }
 impl Context {
@@ -153,6 +157,10 @@ impl Context {
     /// Rejects incompatible types/values, invalid variables and exhausted work.
     pub fn equate_consts(&mut self, a: ConstTermId, b: ConstTermId) -> Result<(), Error> {
         self.step()?;
-        self.constants().equate(a, b)
+        if let Some((a, b)) = self.constants().equate(a, b)? {
+            self.wake_resolution(super::dependencies::Dependency::Const(a))?;
+            self.wake_resolution(super::dependencies::Dependency::Const(b))?;
+        }
+        Ok(())
     }
 }

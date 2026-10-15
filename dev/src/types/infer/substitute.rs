@@ -181,13 +181,11 @@ impl Context {
         {
             return self.construct(Constructor::ArrayInfer(*id), children);
         }
-        let (item, args, function) = match kind {
-            Constructor::AdtArgs(item, args) => (item, args, false),
-            Constructor::FunctionItemArgs(item, args) => (item, args, true),
-            _ => return self.construct(kind, children),
+        let Some((args, prefix)) = kind.application() else {
+            return self.construct(kind, children);
         };
         let mut arguments = Vec::new();
-        let mut types = children[usize::from(function)..].iter();
+        let mut types = children[prefix..].iter();
         let count = self.slots(args)?.len();
         self.account_work(count)?;
         for index in 0..count {
@@ -205,14 +203,6 @@ impl Context {
                 }
             });
         }
-        if function {
-            self.function_item(
-                item,
-                *children.first().ok_or(Error::InvalidIdentity)?,
-                &arguments,
-            )
-        } else {
-            self.nominal(item, &arguments)
-        }
+        self.rebuild_application(kind, &children[..prefix], &arguments)
     }
 }

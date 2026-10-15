@@ -98,6 +98,9 @@ impl Context {
                         continue;
                     }
                     let original = self.materialize(store, id)?;
+                    if matches!(original, Constructor::Projection(_)) {
+                        return Err(Error::Normalization);
+                    }
                     if let Constructor::FunctionItemArgs(item, args) = original {
                         let term = self.terms[id.0 as usize];
                         scratch.work.push(Work::Item(

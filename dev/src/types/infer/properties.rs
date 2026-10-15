@@ -65,6 +65,9 @@ impl Query {
             let value = match term.value {
                 Value::Variable(_) => Possible::UNKNOWN,
                 Value::Known(ty) => self.known(store, definitions, selected, ty)?,
+                Value::Construct(Constructor::Projection(_)) => {
+                    return Err("candidate properties require associated type normalization");
+                }
                 Value::Construct(kind) => {
                     if !finish {
                         context

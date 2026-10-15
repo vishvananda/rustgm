@@ -115,15 +115,13 @@ impl Import {
             let id = self.constant(store, source, destination, id)?;
             return destination.construct(Constructor::ArrayInfer(id), children);
         }
-        let (item, args, function) = match kind {
-            Constructor::AdtArgs(item, args) => (item, args, false),
-            Constructor::FunctionItemArgs(item, args) => (item, args, true),
-            _ => return destination.construct(kind, children),
+        let Some((args, prefix)) = kind.application() else {
+            return destination.construct(kind, children);
         };
         let count = source.slots(args)?.len();
         destination.account_work(count)?;
         let mut arguments = Vec::with_capacity(count);
-        let mut types = children[usize::from(function)..].iter();
+        let mut types = children[prefix..].iter();
         for index in 0..count {
             arguments.push(match source.slots(args)?[index] {
                 Slot::Lifetime(region) => Argument::Lifetime(region),
@@ -133,14 +131,6 @@ impl Import {
                 }
             });
         }
-        if function {
-            destination.function_item(
-                item,
-                *children.first().ok_or(Error::InvalidIdentity)?,
-                &arguments,
-            )
-        } else {
-            destination.nominal(item, &arguments)
-        }
+        destination.rebuild_application(kind, &children[..prefix], &arguments)
     }
 }

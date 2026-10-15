@@ -5015,3 +5015,60 @@ already works. The four rejection probes currently stop at an unsupported-featur
 diagnostic, so they are not counted as successful semantic negative controls.
 Their records and implementation notes remain beside the receipt for the next
 batch of work.
+
+## Inferred projection inputs and dependency watches
+
+The inference graph can now retain an associated application's Self, trait inputs
+and family inputs while type and const arguments are unknown. Mixed argument
+layouts preserve the trait/family boundary and shared variable identities through
+parameter substitution, lifetime mapping and isolated candidate imports. Result
+comparison still requires normalization: matching two projections never equates
+their inputs. Property queries and result-region freshening cannot substitute
+facts about a projection's inputs for facts about its result.
+
+Canonical-input watches suspend on unresolved type/const leaves. Equivalence-class
+unions, bindings and explicit numeric/never fallback wake only affected watches.
+Binding a leaf to a compound term exposes its children without rescanning resolved
+ancestors. Each completed watch is delivered once; all visits and notifications
+consume the existing inference work budget. Ordinary bodies allocate no watch
+storage. Readiness has no proof authority and may still produce a canonical type
+containing projections.
+
+Thirteen new typed tests cover shared Self/trait/family inputs, mixed const slots,
+substitution under callable binders, noninjective result equations, speculative
+isolation, unions, defaults and readiness delivery. A 512-step compound dependency
+chain checks bounded linear work, and 4,096 sleeping queries check that changing
+one input does not scan unrelated queries. These are work-count assertions, not
+source-level timing or conformance claims.
+
+The full optimized suite passes 1,010 tests with 38 explicit native ignores. The
+affected run passes 30 tests with native execution enabled, including 35 programs
+across eight modules. All 4,857 active course cases, Clippy, formatting, the 630-file
+audit and 33 harness tests pass. General inferred alias/default proofs and
+suspended result equations remain unconnected; the existing source annotation
+gate remains. No course fixture,
+manifest or oracle changes, and PA20/PA21 remain planned. The next implementation
+steps and retained validation records are in
+`obj/pa20-work/inferred-projection-terms-v1/`.
+
+The frozen candidate is
+`2a370446719727a69a3698a94e327b413bc7a1af14cfffff369b79da0e01ce4c`;
+633 source/config/test files are archived. All 102 previously qualified workloads
+retain their full/count output bytes against the preceding published compiler.
+A/A calibration and five paired ABBA blocks per workload retain 2,652 observations.
+Each run verifies frozen source, input and binary hashes. No local RustGM build,
+test or frontend probe overlaps timing; other projects on this host remain active.
+
+Paired medians range from -6.8% to +2.5%. The largest increase is unreduced repeated
+aliases at 2,048 (+2.5%, with 2.1% calibration spread); quantified width at 2,048 is
++2.2%, with 3.5% spread. These observations do not prove a general speedup or rule
+out small regressions, and do not erase the earlier documented alias-width cost.
+The old candidate-only workload label on 15 inherited jobs is corrected in the
+derived analysis using the actual binary digests: all 102 current jobs compare
+distinct A/B binaries. Original receipts and observations remain unchanged.
+
+Timing reuses the two pinned executable paths instead of creating a binary copy
+per job. Rendering scratch files are removed after each job. Guarded validation
+prunes disposable generated executables while preserving source, diagnostics,
+receipts and observations. The receipt is
+`obj/pa20-work/inferred-projection-terms-v1/validation-v1.json`.

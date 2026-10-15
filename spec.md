@@ -540,6 +540,22 @@ explicit bounds remain distinct from obligations imposed by a trait application.
 Predicate inference shares the ordinary type/const equivalence classes, and
 completion rejects unresolved arguments that appear only in an obligation.
 
+Inferred associated applications retain Self and every trait/family input in
+the type graph, including shared const variables and the argument-kind boundary.
+Parameter substitution, binder mapping and isolated imports preserve these
+identities. A projection remains a noninjective operation: its result cannot
+equate its inputs or acquire structural properties before normalization.
+Freshening its inputs is not a substitute for freshening a selected result.
+
+Canonical-input readiness uses dependency watches on unresolved type and const
+leaves. Unions, bindings and explicit fallback wake only affected watches; newly
+exposed compound terms add their own leaves without rescanning resolved ancestors.
+Deliver each readiness event once and charge the shared inference work budget.
+Watches retain no proof authority: the semantic caller still owns source identity,
+binder scope, normalization, evidence and suspended equations. General inferred
+alias/default normalization is still unfinished; this graph support does not
+relax the source annotation gate or promote PA20/PA21.
+
 Caller-bound trait goals participate in the same inference graph as call arguments.
 Import each probe with one shared mapping across Self and all type/const roots.
 Index assumptions by trait identity and the rigid outer subject shape; do not scan

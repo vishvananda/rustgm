@@ -21,6 +21,7 @@ impl Context {
     pub fn default_numbers(&mut self) -> Result<bool, Error> {
         self.account_work(self.terms.len())?;
         let mut changed = false;
+        let mut wake = Vec::new();
         for (index, term) in self.terms.iter_mut().enumerate() {
             if term.parent.0 as usize != index {
                 continue;
@@ -31,7 +32,13 @@ impl Context {
                 _ => continue,
             };
             term.value = Value::Known(TypeId::primitive(primitive));
+            if self.dependencies.is_some() {
+                wake.push(term.parent);
+            }
             changed = true;
+        }
+        for id in wake {
+            self.wake_resolution(super::dependencies::Dependency::Type(id))?;
         }
         Ok(changed)
     }
