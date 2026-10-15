@@ -3144,3 +3144,68 @@ files, binaries and inputs were reverified. Candidate SHA256:
 Evidence lives under `obj/pa19-work/dot-methods-*`, including
 `dot-methods-validation-v1.json` and `dot-methods-perf-results-v2.json`; individual
 measurements retain every sample under `obj/perf/`.
+
+## User trait contracts and bound environments
+
+Canonical trait applications now retain the resolved declaration and every explicit
+lifetime, type and const argument. Self remains the predicate subject. Complete
+predicates share ordinary argument/default elaboration, capture-safe substitution,
+parameter-use traversal and inference equivalence classes. Closed-subject bounds
+with generic arguments remain generic; arguments occurring only in obligations
+cannot silently disappear at inference completion.
+
+Trait headers precede dependent bounds. Immutable environments contain the written
+trait assumptions and transitive Self requirements, including builtin abilities
+and outlives bounds. Requirements on explicit trait parameters or composite types
+must be proved separately. A user trait named Copy or Clone grants no language
+ability. Definition-identity cycle checks precede expansion, and a deduplicated
+worklist handles diamond inheritance without exponential traversal. Application
+contracts and their substitutions are shared across declaration proof consumers.
+
+Declaration checking validates trait argument shapes, required predicates and
+lifetimes even for unused items. Lifetime proof uses the completed nominal
+contracts and existing directed relation engine, with explicit and signature-implied
+assumptions separate from application obligations. Closed defaults include const
+parameters; a const occurring only in a trait argument participates in the check.
+
+Six typed representation/inference tests cover identities, capture-safe folding,
+foreign parameters, constant-only obligations, compact predicate layout and shared
+wide-argument work. The source corpus independently checks 61 outcomes against
+pinned rustc and runs the complete instance proof for accepted unused generic
+bodies. An additional 24-level diamond retains exactly 73 distinct trait assumptions.
+The source tests include exact function-item obligations and nominal bounds,
+forward supertraits, defaults involving Self, argument requirements, lifetime-only
+trait parameters and negative move/identity controls.
+
+This is a PA19 implementation checkpoint, not its grading release. General trait
+impl proofs, inference driven by trait selection, lifetime-sensitive goal matching,
+trait-aware inherent applicability/coherence, user-trait bounded Drop headers,
+visible and caller-bound method
+lookup, conformance and concrete dispatch remain outstanding. Closed user-trait
+obligations without implementation evidence still reject. PA19 remains planned;
+PA20 and PA21 remain required.
+
+Final validation passes 805 frontend tests in both debug and release and all 3,790
+PA1–PA18 text cases, with no oracle changes. Clippy all/pedantic, formatting, the
+516-file audit, 27 harness tests and upstream/Reference integrity pass. Before the
+final two-line trait-header elision correction, the complete independent rustc sweep,
+18 maintainer native groups, 1,126 course executable comparisons and three codegen
+checks passed, retaining the sixteen declared PA13 runtime differences. Final full
+frontend/course runs and all 61 independent source cases include the correction.
+
+Ten frozen A/A and three-block ABBA jobs retain 180 observations with full/count
+output equality. Against the published inherent-dot-call compiler, median wall-time
+changes for ordinary functions, generic records, qualified generic methods, unused
+closed impls and generic receiver calls are -1.0%, -1.1%, +0.5%, +0.2% and -1.5%.
+The largest RSS increase is about 710 KiB for qualified generic methods; ordinary
+functions and unused impls increase by 356 and 294 KiB. These measurements do not
+establish zero overhead or a speedup: identical-binary controls vary by up to 3.1%.
+
+New trait-bound bodies at 64/256/1,024 functions take 9.08/22.17/76.72 ms; diamond
+supertraits at 8/24 levels take 4.90/10.08 ms. New-feature jobs compare identical
+candidate binaries, since the previous frontend rejects their source. No local
+RustGM builds or tests overlapped timing. All 519 source/config/test files, binaries
+and inputs were reverified; read-only archives and every observation remain in
+`obj/pa19-work/trait-contracts-*` and `obj/perf/`. The final candidate SHA256 is
+`700e6bd8ce8d8678905845410db7b8292f8584ce4ada890c021a55e2465387a1`.
+`trait-contracts-validation-v2.json` records log hashes and exact validation scope.

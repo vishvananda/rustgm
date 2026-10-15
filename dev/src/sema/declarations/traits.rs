@@ -19,6 +19,7 @@ impl Checker<'_> {
         steps: &mut usize,
         limit: usize,
     ) -> Result<(), Error> {
+        // Reserve every trait Self before elaborating references to other trait headers.
         for index in 0..self.facts.associated.owners().len() {
             let owner = self.facts.associated.owners()[index];
             if matches!(
@@ -38,67 +39,140 @@ impl Checker<'_> {
                     "trait implementation requires conformance and selection semantics",
                 ));
             }
+            if let OwnerKind::Trait { definition, .. } = owner.kind {
+                self.reserve_trait(owner, definition)?;
+            }
+        }
+        // All parameter lists precede bounds, including forward supertrait applications.
+        for index in 0..self.facts.associated.owners().len() {
+            let owner = self.facts.associated.owners()[index];
             let OwnerKind::Trait { definition, .. } = owner.kind else {
                 continue;
             };
-            let key = owner.source;
-            let declared = self.declared_regions(key, self.item(key)?.generics)?;
-            let binder = self.regions.binder(None, declared.clone());
-            for &parameter in &declared {
-                self.regions
-                    .named(Some(binder), parameter)
-                    .map_err(|e| self.error(key, e))?;
-            }
-            let bounds = self.function_bounds(key, binder)?;
-            let parameter = self
-                .facts
-                .types
-                .intern_parameter(TypeParameter {
-                    owner: ItemId(owner.self_definition.0),
-                    index: 0,
-                    kind: ParameterKind::Type { sized: false },
-                })
-                .map_err(|e| self.error(key, e))?;
-            let self_type = self.intern(key, Type::Parameter(parameter))?;
-            self.facts.generics.parameters.insert(
-                owner.self_definition,
-                vec![Parameter {
-                    binding: owner.self_definition,
-                    argument: Argument::Type(self_type),
-                    default: None,
-                }],
-            );
+            let context = regions::Context {
+                binder: Some(self.owner_binders[&owner.self_definition]),
+                position: regions::Position::Output,
+            };
+            self.declaration_parameters(definition, owner.source, context)?;
             self.facts
                 .generics
-                .parents
-                .insert(definition, owner.self_definition);
-            self.facts
-                .associated
-                .declare(
-                    owner.self_definition,
-                    Schema {
-                        self_type,
-                        captures: self.regions.count(binder),
-                        bounds,
-                    },
-                )
-                .map_err(|e| self.error(key, e))?;
-            self.owner_binders.insert(owner.self_definition, binder);
-            self.complete(owner.self_definition, key, self_type)?;
-            self.facts.lifetimes.parameters.insert(definition, declared);
-            let context = regions::Context {
-                binder: Some(binder),
-                position: regions::Position::Impl,
-            };
-            self.declaration_parameters(definition, key, context)?;
+                .parameters
+                .entry(definition)
+                .or_default();
             self.drain(steps, limit)?;
+        }
+        for index in 0..self.facts.associated.owners().len() {
+            let owner = self.facts.associated.owners()[index];
+            let OwnerKind::Trait { definition, .. } = owner.kind else {
+                continue;
+            };
+            let context = regions::Context {
+                binder: Some(self.owner_binders[&owner.self_definition]),
+                position: regions::Position::Output,
+            };
             self.schedule_bounds(definition, context)?;
             self.drain(steps, limit)?;
-            self.facts
-                .generics
-                .complete_environment(&self.facts.types, definition)
+            self.retain_trait_contract(owner, definition)?;
+            self.implicit_trait_bound(owner, definition)?;
+        }
+        self.complete_trait_contracts()
+    }
+    fn reserve_trait(
+        &mut self,
+        owner: crate::sema::associated::Owner,
+        definition: crate::resolve::model::DefId,
+    ) -> Result<(), Error> {
+        let key = owner.source;
+        let declared = self.declared_regions(key, self.item(key)?.generics)?;
+        let binder = self.regions.binder(None, declared.clone());
+        for &parameter in &declared {
+            self.regions
+                .named(Some(binder), parameter)
                 .map_err(|e| self.error(key, e))?;
         }
+        let bounds = self.function_bounds(key, binder)?;
+        let parameter = self
+            .facts
+            .types
+            .intern_parameter(TypeParameter {
+                owner: ItemId(owner.self_definition.0),
+                index: 0,
+                kind: ParameterKind::Type { sized: false },
+            })
+            .map_err(|e| self.error(key, e))?;
+        let self_type = self.intern(key, Type::Parameter(parameter))?;
+        self.facts.generics.parameters.insert(
+            owner.self_definition,
+            vec![Parameter {
+                binding: owner.self_definition,
+                argument: Argument::Type(self_type),
+                default: None,
+            }],
+        );
+        self.facts
+            .generics
+            .parents
+            .insert(definition, owner.self_definition);
+        self.facts
+            .associated
+            .declare(
+                owner.self_definition,
+                Schema {
+                    self_type,
+                    captures: self.regions.count(binder),
+                    bounds,
+                },
+            )
+            .map_err(|e| self.error(key, e))?;
+        self.owner_binders.insert(owner.self_definition, binder);
+        self.complete(owner.self_definition, key, self_type)?;
+        self.facts.lifetimes.parameters.insert(definition, declared);
+        Ok(())
+    }
+    fn implicit_trait_bound(
+        &mut self,
+        owner: crate::sema::associated::Owner,
+        definition: crate::resolve::model::DefId,
+    ) -> Result<(), Error> {
+        use crate::types::{
+            parameters::predicates::{Bound, Predicate},
+            traits::Application,
+        };
+        let arguments = self.facts.generics.parameters[&definition]
+            .iter()
+            .map(|parameter| parameter.argument)
+            .collect::<Vec<_>>();
+        let arguments = self
+            .facts
+            .types
+            .intern_arguments(&arguments)
+            .map_err(|e| self.error(owner.source, e))?;
+        let application = self
+            .facts
+            .types
+            .intern_trait_application(Application {
+                item: ItemId(definition.0),
+                arguments,
+            })
+            .map_err(|e| self.error(owner.source, e))?;
+        let ty = self
+            .facts
+            .associated
+            .schema(definition)
+            .ok_or_else(|| self.error(owner.source, "missing trait Self schema"))?
+            .self_type;
+        self.facts
+            .generics
+            .predicates
+            .entry(definition)
+            .or_default()
+            .push(crate::sema::generics::Predicate {
+                source: owner.source,
+                value: Predicate {
+                    ty,
+                    bound: Bound::Trait(application),
+                },
+            });
         Ok(())
     }
 

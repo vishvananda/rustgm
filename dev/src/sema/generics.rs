@@ -1,5 +1,6 @@
 //! Completed declaration environments and substitutions keyed by owner and arguments.
 pub(super) mod captures;
+mod traits;
 use crate::{
     resolve::model::DefId,
     types::{
@@ -116,6 +117,7 @@ pub struct Predicate {
 }
 #[derive(Default)]
 pub struct Generics {
+    pub(super) traits: Option<Box<super::traits::Contracts>>,
     pub(super) method_uses: HashMap<crate::resolve::unit::NodeKey, DeferredUse>,
     pub(super) parents: HashMap<DefId, DefId>,
     pub storage: Option<crate::types::aggregate::finiteness::Storage>,
@@ -168,13 +170,7 @@ impl Generics {
     ) -> Result<std::collections::HashSet<u16>, &'static str> {
         let mut uses = crate::types::bound_uses::Uses::default();
         for predicate in self.predicates.get(&owner).into_iter().flatten() {
-            uses.collect(types, predicate.value.ty)?;
-            if let crate::types::parameters::predicates::Bound::Outlives(region) =
-                predicate.value.bound
-                && let Some((0, index)) = region.bound_parts()
-            {
-                uses.indices.insert(index);
-            }
+            uses.predicate(types, predicate.value)?;
         }
         Ok(uses.indices)
     }
@@ -239,7 +235,7 @@ impl Generics {
     /// Rejects malformed parameter facts and repeated publication.
     pub fn complete_environment(
         &mut self,
-        store: &Store,
+        store: &mut Store,
         owner: DefId,
     ) -> Result<(), &'static str> {
         if !self
@@ -248,6 +244,7 @@ impl Generics {
         {
             return Ok(());
         }
+        self.elaborate_trait_bounds(store, owner)?;
         let environment = self.parameter_environment(store, owner)?;
         match self.environments.entry(owner) {
             Entry::Occupied(_) => Err("generic body environment already completed"),
@@ -267,19 +264,28 @@ impl Generics {
         owner: DefId,
     ) -> Result<Environment, &'static str> {
         let mut assumptions = Vec::new();
+        let mut constants = Vec::new();
         for parameter in self.parameters_in_scope(owner) {
             if let Argument::Type(ty) = parameter.argument {
                 let Some(Kind::Parameter(id)) = store.kind(ty) else {
                     return Err("generic declaration requires a rigid type parameter");
                 };
                 assumptions.push((id, Abilities::default()));
+            } else if let Argument::Const(id) = parameter.argument {
+                let Some(crate::types::arguments::ConstKind::Parameter(id)) = store.const_kind(id)
+                else {
+                    return Err("generic declaration requires a rigid const parameter");
+                };
+                constants.push(id);
             }
         }
         let predicates = self
             .predicates_in_scope(owner)
             .map(|p| p.value)
             .collect::<Vec<_>>();
-        Environment::new(store, &assumptions)?.with_predicates(store, &predicates)
+        Environment::new(store, &assumptions)?
+            .with_const_parameters(store, &constants)?
+            .with_predicates(store, &predicates)
     }
     fn substitution(
         &mut self,
@@ -302,6 +308,19 @@ impl Generics {
         ty: TypeId,
     ) -> Result<TypeId, &'static str> {
         self.substitution(store, owner, args)?.apply(store, ty)
+    }
+    /// Transform a bound's subject and arguments in the same cached parameter mapping.
+    /// # Errors
+    /// Rejects malformed identities, mismatched arguments and exhausted work.
+    pub fn substitute_predicate(
+        &mut self,
+        store: &mut Store,
+        owner: DefId,
+        args: GenericArgs,
+        predicate: crate::types::parameters::predicates::Predicate,
+    ) -> Result<crate::types::parameters::predicates::Predicate, &'static str> {
+        self.substitution(store, owner, args)?
+            .predicate(store, predicate)
     }
     /// Retain the completed append-only environment built from these exact
     /// arguments. Subsequent body expansion reuses it just like an explicit use.

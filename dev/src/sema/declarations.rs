@@ -12,6 +12,8 @@ mod method_paths;
 mod method_prefix;
 mod methods;
 mod receivers;
+mod trait_paths;
+mod trait_regions;
 mod traits;
 mod validation;
 use super::{
@@ -185,6 +187,7 @@ impl Checker<'_> {
         self.validate_destructors()?;
         self.validate_owner_bounds()?;
         self.validate_signatures()?;
+        self.validate_trait_regions()?;
         self.index_inherent_methods()?;
         self.validate_inherent_overlaps()?;
         self.local_annotations(&mut steps, work_limit)?;
@@ -908,7 +911,7 @@ impl Checker<'_> {
                 if let Some(id) = owner {
                     self.facts
                         .generics
-                        .complete_environment(&self.facts.types, id)
+                        .complete_environment(&mut self.facts.types, id)
                         .map_err(|e| self.error(key, e))?;
                     self.function_regions(key, id, binder, signature.binders, ty, bounds)?;
                     self.facts.lifetimes.named.extend(

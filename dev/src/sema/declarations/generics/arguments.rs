@@ -102,12 +102,12 @@ impl Checker<'_> {
         }
         Ok(())
     }
-    pub(in super::super) fn generic_path(
+    pub(in super::super) fn application_arguments(
         &mut self,
         key: NodeKey,
         owner: DefId,
         context: regions::Context,
-    ) -> Result<TypeId, Error> {
+    ) -> Result<GenericArgs, Error> {
         let (supplied, omitted) = self.supplied_arguments(key, owner)?;
         let count = self.facts.generics.parameters[&owner].len();
         let mut arguments = Vec::with_capacity(count);
@@ -163,11 +163,20 @@ impl Checker<'_> {
             .types
             .intern_arguments(&arguments)
             .map_err(|e| self.error(key, e))?;
-        let template = self.facts.definitions[owner.0 as usize]
-            .ok_or_else(|| self.error(key, "missing alias template"))?;
         if let Some(prefix) = defaults {
             self.facts.generics.retain_arguments(owner, args, prefix);
         }
+        Ok(args)
+    }
+    pub(in super::super) fn generic_path(
+        &mut self,
+        key: NodeKey,
+        owner: DefId,
+        context: regions::Context,
+    ) -> Result<TypeId, Error> {
+        let args = self.application_arguments(key, owner, context)?;
+        let template = self.facts.definitions[owner.0 as usize]
+            .ok_or_else(|| self.error(key, "missing alias template"))?;
         let result = self
             .facts
             .generics

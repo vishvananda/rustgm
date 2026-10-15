@@ -43,6 +43,7 @@ pub fn check_pointer(store: &Store, signature: TypeId) -> Result<(), &'static st
 pub struct Uses {
     pub indices: HashSet<u16>,
     seen: HashSet<(TypeId, u16)>,
+    applications: HashSet<super::traits::ApplicationId>,
     work: Vec<(TypeId, u16)>,
     pub steps: usize,
 }
@@ -61,6 +62,34 @@ impl Uses {
             return Ok(());
         }
         self.push(root, 0)?;
+        self.drain(store)
+    }
+    /// Include direct outlives regions and lifetimes appearing only in trait arguments.
+    /// # Errors
+    /// Rejects malformed predicates and exhausted traversal resources.
+    pub fn predicate(
+        &mut self,
+        store: &Store,
+        predicate: super::parameters::predicates::Predicate,
+    ) -> Result<(), &'static str> {
+        use super::parameters::predicates::Bound;
+        self.collect(store, predicate.ty)?;
+        match predicate.bound {
+            Bound::Outlives(region) => self.region(region, 0),
+            Bound::Trait(id) => {
+                let application = store
+                    .trait_application(id)
+                    .ok_or("invalid bound-use trait application")?;
+                if self.applications.insert(id) {
+                    self.arguments(store, application.arguments, 0)?;
+                    self.drain(store)?;
+                }
+            }
+            Bound::Copy | Bound::Clone | Bound::Sized => {}
+        }
+        Ok(())
+    }
+    fn drain(&mut self, store: &Store) -> Result<(), &'static str> {
         while let Some((ty, depth)) = self.work.pop() {
             self.steps += 1;
             if store

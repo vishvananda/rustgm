@@ -16,6 +16,7 @@ pub mod region_graph;
 pub mod relations;
 pub mod specialize;
 pub mod substitute;
+pub mod traits;
 pub mod variance;
 
 use crate::support::intern_slice::Slices;

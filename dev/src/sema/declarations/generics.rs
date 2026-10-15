@@ -55,10 +55,12 @@ impl Checker<'_> {
             .map(|node| self.unattributed(NodeKey { node, ..key }))
             .collect();
         self.prepare_bounds(owner, key, &nodes)?;
-        if !nodes.iter().any(|key| {
+        if !(nodes.iter().any(|key| {
             self.generic_syntax(*key)
                 .is_ok_and(|p| p.flavor != GenericFlavor::Lifetime)
-        }) {
+        }) || (!nodes.is_empty()
+            && matches!(item.kind, crate::syntax::item::ItemKind::Trait { .. })))
+        {
             if !function && self.bound_syntax.contains_key(&owner) {
                 self.deferred_bounds.push((owner, context));
             }

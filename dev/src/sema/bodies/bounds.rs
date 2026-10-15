@@ -38,16 +38,15 @@ impl Checker<'_> {
             .predicates_in_scope(owner)
             .filter(|p| !matches!(p.value.bound, Bound::Outlives(_)))
             .filter(|p| {
-                self.facts
-                    .types
-                    .escaping_binders(p.value.ty)
-                    .is_some_and(|n| n != 0)
+                p.value
+                    .escaping_binders(&self.facts.types)
+                    .is_ok_and(|n| n != 0)
             })
             .map(|p| p.value)
             .collect::<Vec<_>>();
         if !predicates.is_empty() {
             for predicate in &mut predicates {
-                predicate.ty = self.alias_type(node, predicate.ty)?;
+                *predicate = self.alias_predicate(node, *predicate)?;
             }
             let original = environment
                 .as_ref()
@@ -119,6 +118,20 @@ impl Checker<'_> {
                 });
             return Ok(());
         }
+        if let Bound::Trait(application) = bound {
+            return if self
+                .method_environment
+                .as_ref()
+                .is_some_and(|environment| environment.assumes_trait(ty, application))
+            {
+                Ok(())
+            } else {
+                Err(self.error(
+                    node,
+                    "user trait obligation requires a matching assumption or implementation",
+                ))
+            };
+        }
         let valid = if bound == Bound::Sized {
             self.body_shape(node, ty)?.sized
         } else {
@@ -154,6 +167,7 @@ impl Checker<'_> {
                     Bound::Copy => "generic argument must implement Copy",
                     Bound::Clone => "generic argument must implement Clone",
                     Bound::Sized => "generic argument must be sized",
+                    Bound::Trait(_) => "generic argument must implement its declared trait",
                     Bound::Outlives(_) => "generic argument must outlive its bound",
                 },
             ))
@@ -215,29 +229,19 @@ impl Checker<'_> {
                 regions[usize::from(*index)] = *region;
             }
         }
-        let mut substitution = substitute::Bound::new(regions.clone());
+        let mut substitution = substitute::Bound::new(regions);
+        let mut inference =
+            crate::types::infer::Instantiation::new(&mut self.infer, &self.facts.types, bindings)
+                .map_err(|e| self.error(node, e))?;
         for predicate in predicates {
-            let bound = match predicate.value.bound {
-                Bound::Outlives(region) if region != crate::types::RegionId::STATIC => {
-                    let Some((0, index)) = region.bound_parts() else {
-                        return Err(self.error(node, "invalid outlives bound lifetime"));
-                    };
-                    Bound::Outlives(
-                        *regions
-                            .get(usize::from(index))
-                            .ok_or_else(|| self.error(node, "missing outlives bound lifetime"))?,
-                    )
-                }
-                bound => bound,
-            };
-            let ty = substitution
-                .apply(&mut self.facts.types, predicate.value.ty)
+            let predicate = substitution
+                .predicate(&mut self.facts.types, predicate.value)
                 .map_err(|e| self.error(node, e))?;
-            let term = self
+            let predicate = self
                 .infer
-                .instantiate(&mut self.facts.types, ty, bindings)
+                .instantiate_predicate(&mut self.facts.types, predicate, &mut inference)
                 .map_err(|e| self.error(node, e))?;
-            self.call_types.obligations.push((node, bound, term));
+            self.call_types.obligations.push((node, predicate));
         }
         Ok(())
     }

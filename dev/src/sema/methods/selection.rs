@@ -187,6 +187,9 @@ pub(super) fn applicable(
         Err(e) => return Err(inference(e)),
     }
     for predicate in facts.generics.predicates_in_scope(owner) {
+        if matches!(predicate.value.bound, Bound::Trait(_)) {
+            return Err("user trait candidate obligations require trait selection");
+        }
         if matches!(predicate.value.bound, Bound::Outlives(_)) {
             continue;
         }
@@ -217,6 +220,9 @@ pub(super) fn applicable(
             Bound::Copy => value.abilities.copy,
             Bound::Clone => value.abilities.clone_,
             Bound::Outlives(_) => return Err("unexpected candidate region predicate"),
+            Bound::Trait(_) => {
+                return Err("user trait candidate obligations require trait selection");
+            }
         };
         if !possible {
             return Ok(false);

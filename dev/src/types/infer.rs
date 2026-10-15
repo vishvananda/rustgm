@@ -5,6 +5,7 @@ mod compare;
 pub mod constants;
 mod freshen;
 mod import;
+pub mod predicates;
 pub mod properties;
 mod regions;
 mod resolve;
@@ -661,6 +662,9 @@ impl Context {
     /// # Errors
     /// Rejects unconstrained general variables, invalid identities and work/arena limits.
     pub fn finish(mut self, store: &mut Store) -> Result<Solved, Error> {
+        self.solve_types(store)
+    }
+    fn solve_types(&mut self, store: &mut Store) -> Result<Solved, Error> {
         let mut resolved = vec![None; self.terms.len()];
         let mut state = vec![0_u8; self.terms.len()];
         let mut work = Vec::new();
@@ -722,7 +726,7 @@ impl Context {
             .collect::<Result<_, _>>()?;
         Ok(Solved {
             types,
-            region_equalities: self.region_equalities,
+            region_equalities: std::mem::take(&mut self.region_equalities),
             steps: self.steps,
         })
     }

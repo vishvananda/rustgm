@@ -194,7 +194,11 @@ impl Checker<'_> {
             )
             .map_err(|e| self.error(node, e))
     }
-    pub(super) fn validate_generic_uses(&mut self, solved: &infer::Solved) -> Result<(), Error> {
+    pub(super) fn validate_generic_uses(
+        &mut self,
+        solved: &infer::Solved,
+        predicates: &[crate::types::parameters::predicates::Predicate],
+    ) -> Result<(), Error> {
         for index in 0..self.call_types.generic.len() {
             let (node, owner, term) = self.call_types.generic[index];
             let ty = *solved
@@ -240,13 +244,9 @@ impl Checker<'_> {
                 return Err(self.error(node, "unexpected inferred generic argument"));
             }
         }
-        for index in 0..self.call_types.obligations.len() {
-            let (node, bound, term) = self.call_types.obligations[index];
-            let ty = *solved
-                .types
-                .get(term.0 as usize)
-                .ok_or_else(|| self.error(node, "missing inferred bound subject"))?;
-            self.prove_bound(node, ty, bound)?;
+        for (index, predicate) in predicates.iter().enumerate() {
+            let node = self.call_types.obligations[index].0;
+            self.prove_bound(node, predicate.ty, predicate.bound)?;
         }
         Ok(())
     }

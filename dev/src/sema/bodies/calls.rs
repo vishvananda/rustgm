@@ -8,7 +8,7 @@ use std::collections::HashMap;
 
 #[derive(Default)]
 pub(super) struct CallTypes {
-    pub obligations: Vec<(NodeId, crate::types::parameters::predicates::Bound, TermId)>,
+    pub obligations: Vec<(NodeId, crate::types::infer::predicates::Predicate)>,
     pub generic: Vec<(NodeId, DefId, TermId)>,
     pub generic_constructors: bool,
     pub active: HashMap<NodeId, TermId>,
@@ -146,6 +146,20 @@ impl Checker<'_> {
         };
         substitution
             .apply(&mut self.facts.types, ty)
+            .map_err(|e| self.error(node, e))
+    }
+
+    pub(super) fn alias_predicate(
+        &mut self,
+        node: NodeId,
+        predicate: crate::types::parameters::predicates::Predicate,
+    ) -> Result<crate::types::parameters::predicates::Predicate, Error> {
+        self.prepare_universals(node)?;
+        let Some(substitution) = self.call_types.universals.as_mut() else {
+            return Err(self.error(node, "missing universal predicate substitution"));
+        };
+        substitution
+            .predicate(&mut self.facts.types, predicate)
             .map_err(|e| self.error(node, e))
     }
 

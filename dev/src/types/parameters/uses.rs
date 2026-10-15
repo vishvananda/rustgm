@@ -7,6 +7,7 @@ pub struct Uses {
     pub parameters: HashSet<ParameterId>,
     pub constants: HashSet<ParameterId>,
     seen: HashSet<TypeId>,
+    applications: HashSet<crate::types::traits::ApplicationId>,
     work: Vec<TypeId>,
     pub steps: usize,
 }
@@ -16,6 +17,29 @@ impl Uses {
     /// Rejects malformed canonical identities and exhausted traversal resources.
     pub fn collect(&mut self, store: &Store, root: TypeId) -> Result<(), &'static str> {
         self.work.push(root);
+        self.drain(store)
+    }
+    /// Include parameters appearing only in trait arguments, with shared graph memoization.
+    /// # Errors
+    /// Rejects invalid subjects/applications and exhausted traversal resources.
+    pub fn predicate(
+        &mut self,
+        store: &Store,
+        predicate: super::predicates::Predicate,
+    ) -> Result<(), &'static str> {
+        self.collect(store, predicate.ty)?;
+        if let super::predicates::Bound::Trait(id) = predicate.bound {
+            let application = store
+                .trait_application(id)
+                .ok_or("invalid parameter use trait application")?;
+            if self.applications.insert(id) {
+                self.arguments(store, application.arguments)?;
+                self.drain(store)?;
+            }
+        }
+        Ok(())
+    }
+    fn drain(&mut self, store: &Store) -> Result<(), &'static str> {
         while let Some(ty) = self.work.pop() {
             self.steps += 1;
             if self.steps + self.work.len() > 1_000_000 {
@@ -60,18 +84,7 @@ impl Uses {
                     if let Some(Kind::FunctionItem { signature, .. }) = store.kind(ty) {
                         self.work.push(signature);
                     }
-                    let arguments = store
-                        .arguments(arguments)
-                        .ok_or("invalid parameter use arguments")?;
-                    self.capacity(arguments.len())?;
-                    self.steps += arguments.len();
-                    for argument in arguments {
-                        match argument {
-                            Argument::Type(ty) => self.work.push(ty),
-                            Argument::Const(id) => self.constant(store, id)?,
-                            Argument::Lifetime(_) => {}
-                        }
-                    }
+                    self.arguments(store, arguments)?;
                     None
                 }
                 Kind::Never | Kind::Primitive(_) => None,
@@ -80,6 +93,25 @@ impl Uses {
                 let children = store.list(list).ok_or("invalid parameter use list")?;
                 self.capacity(children.len())?;
                 self.work.extend_from_slice(children);
+            }
+        }
+        Ok(())
+    }
+    fn arguments(
+        &mut self,
+        store: &Store,
+        arguments: crate::types::GenericArgs,
+    ) -> Result<(), &'static str> {
+        let arguments = store
+            .arguments(arguments)
+            .ok_or("invalid parameter use arguments")?;
+        self.capacity(arguments.len())?;
+        self.steps += arguments.len();
+        for argument in arguments {
+            match argument {
+                Argument::Type(ty) => self.work.push(ty),
+                Argument::Const(id) => self.constant(store, id)?,
+                Argument::Lifetime(_) => {}
             }
         }
         Ok(())

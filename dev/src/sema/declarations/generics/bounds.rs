@@ -1,4 +1,4 @@
-//! Decode builtin bounds once; typed subjects are completed by the ordinary worklist.
+//! Decode resolved bounds once; subjects and trait arguments share the declaration worklist.
 use super::{Checker, DefId, Error, Kind, NodeKey, Type, Work, regions};
 use crate::{
     resolve::model::{BuiltinTrait, Target},
@@ -22,6 +22,7 @@ pub(in super::super) struct Syntax {
 #[derive(Clone, Copy)]
 enum Written {
     Trait(Bound),
+    User { path: NodeKey, definition: DefId },
     Outlives(NodeKey),
 }
 impl Checker<'_> {
@@ -164,9 +165,9 @@ impl Checker<'_> {
                 });
                 continue;
             }
-            let bound = self.builtin_bound(value)?;
+            let bound = self.trait_bound(value)?;
             if optional {
-                if bound != Bound::Sized {
+                if !matches!(bound, Written::Trait(Bound::Sized)) {
                     return Err(self.error(key, "only Sized bounds can be relaxed"));
                 }
                 let binding = match subject {
@@ -188,7 +189,7 @@ impl Checker<'_> {
                 output.push(Syntax {
                     source: key,
                     subject,
-                    bound: Written::Trait(bound),
+                    bound,
                 });
             }
         }
@@ -215,7 +216,7 @@ impl Checker<'_> {
             };
         }
     }
-    fn builtin_bound(&self, mut key: NodeKey) -> Result<Bound, Error> {
+    fn trait_bound(&self, mut key: NodeKey) -> Result<Written, Error> {
         loop {
             if self.lifetime_argument(key) {
                 return Err(self.error(
@@ -223,18 +224,27 @@ impl Checker<'_> {
                     "generic type-outlives bounds require symbolic region proofs",
                 ));
             }
-            if let Kind::Path { .. } = self.kind(key)
-                && crate::sema::lifetimes::arguments(self.report, key, false)?
-                    .is_some_and(|list| list.start != list.end)
-            {
-                return Err(self.error(key, "builtin traits do not accept generic arguments"));
-            }
             if let Some(Target::Definition(id)) = self.facts.node(key).and_then(|f| f.reference) {
-                return match self.report.resolution.builtin_traits.identify(id) {
-                    Some(BuiltinTrait::Copy) => Ok(Bound::Copy),
-                    Some(BuiltinTrait::Clone) => Ok(Bound::Clone),
-                    Some(BuiltinTrait::Sized) => Ok(Bound::Sized),
-                    None => Err(self.error(key, "user trait bounds require trait semantics")),
+                let builtin = self.report.resolution.builtin_traits.identify(id);
+                if builtin.is_some()
+                    && crate::sema::lifetimes::arguments(self.report, key, false)?
+                        .is_some_and(|list| list.start != list.end)
+                {
+                    return Err(self.error(key, "builtin traits do not accept generic arguments"));
+                }
+                return match builtin {
+                    Some(BuiltinTrait::Copy) => Ok(Written::Trait(Bound::Copy)),
+                    Some(BuiltinTrait::Clone) => Ok(Written::Trait(Bound::Clone)),
+                    Some(BuiltinTrait::Sized) => Ok(Written::Trait(Bound::Sized)),
+                    None if self.report.resolution.definitions[id.0 as usize].kind
+                        == crate::resolve::model::DefKind::Trait =>
+                    {
+                        Ok(Written::User {
+                            path: key,
+                            definition: id,
+                        })
+                    }
+                    None => Err(self.error(key, "bound requires a trait declaration")),
                 };
             }
             key.node = match self.kind(key) {
@@ -265,6 +275,10 @@ impl Checker<'_> {
         };
         self.work.push(Work::Bounds(owner, context));
         for bound in bounds.iter().rev() {
+            if let Written::User { path, definition } = bound.bound {
+                self.work
+                    .push(Work::PathArguments(path, definition, context));
+            }
             if let Subject::Type(key) = bound.subject {
                 self.bound_subject_lifetimes(key)?;
                 self.work.push(Work::Node(key, false, context));
@@ -315,8 +329,16 @@ impl Checker<'_> {
         })?;
         let mut completed = Vec::with_capacity(bounds.len());
         for bound in bounds {
+            let ty = match bound.subject {
+                Subject::Parameter(id) => self.facts.definitions[id.0 as usize]
+                    .ok_or_else(|| self.error(bound.source, "missing bounded parameter type"))?,
+                Subject::Type(key) => self.ty(key)?,
+            };
             let value = match bound.bound {
                 Written::Trait(bound) => bound,
+                Written::User { path, definition } => {
+                    Bound::Trait(self.trait_path(path, definition, ty, context)?)
+                }
                 Written::Outlives(key) => {
                     let Kind::Name(span) = self.kind(key) else {
                         return Err(self.error(key, "outlives bound requires a named lifetime"));
@@ -332,11 +354,6 @@ impl Checker<'_> {
                     }
                     Bound::Outlives(self.region(key, Some(key.node), context)?)
                 }
-            };
-            let ty = match bound.subject {
-                Subject::Parameter(id) => self.facts.definitions[id.0 as usize]
-                    .ok_or_else(|| self.error(bound.source, "missing bounded parameter type"))?,
-                Subject::Type(key) => self.ty(key)?,
             };
             if matches!(bound.subject, Subject::Parameter(_))
                 && !matches!(self.facts.types.kind(ty), Some(Type::Parameter(_)))

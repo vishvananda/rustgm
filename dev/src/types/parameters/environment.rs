@@ -19,12 +19,19 @@ pub struct Abilities {
 pub struct Environment {
     parameters: HashMap<ParameterId, Abilities>,
     assumptions: Option<Box<Assumptions>>,
+    traits: Option<Box<TraitAssumptions>>,
     shape_assumptions: bool,
 }
 #[derive(Clone, Default)]
 struct Assumptions {
     predicates: HashMap<TypeId, Abilities>,
     sized: std::collections::HashSet<TypeId>,
+}
+#[derive(Clone, Default)]
+struct TraitAssumptions {
+    predicates: Vec<Predicate>,
+    unique: std::collections::HashSet<Predicate>,
+    constants: std::collections::HashSet<ParameterId>,
 }
 impl Environment {
     /// Include every type parameter in scope, even when it has no bounds.
@@ -67,8 +74,36 @@ impl Environment {
         Ok(Self {
             parameters,
             assumptions: None,
+            traits: None,
             shape_assumptions,
         })
+    }
+
+    /// Const parameters may occur in a trait application without granting a type ability.
+    /// # Errors
+    /// Rejects unknown/type parameters and excessive input before retaining identities.
+    pub fn with_const_parameters(
+        mut self,
+        types: &Store,
+        parameters: &[ParameterId],
+    ) -> Result<Self, &'static str> {
+        if parameters.len() > 1_000_000 {
+            return Err("const parameter environment storage budget exceeded");
+        }
+        for &id in parameters {
+            if !matches!(
+                types.parameter(id).map(|p| p.kind),
+                Some(ParameterKind::Const { .. })
+            ) {
+                return Err("const parameter environment requires declared const parameters");
+            }
+            let traits = self.traits.get_or_insert_with(Default::default);
+            if traits.constants.len() >= 1_000_000 && !traits.constants.contains(&id) {
+                return Err("const parameter environment storage budget exceeded");
+            }
+            traits.constants.insert(id);
+        }
+        Ok(self)
     }
 
     /// Freeze additional assumptions without deriving reverse implications from
@@ -85,7 +120,17 @@ impl Environment {
         }
         let mut uses = super::uses::Uses::default();
         for predicate in predicates {
-            uses.collect(types, predicate.ty)?;
+            uses.predicate(types, *predicate)?;
+            if matches!(predicate.bound, Bound::Trait(_)) {
+                let traits = self.traits.get_or_insert_with(Default::default);
+                if traits.unique.len() >= 1_000_000 && !traits.unique.contains(predicate) {
+                    return Err("trait assumption storage budget exceeded");
+                }
+                if traits.unique.insert(*predicate) {
+                    traits.predicates.push(*predicate);
+                }
+                continue;
+            }
             if matches!(predicate.bound, Bound::Outlives(_)) {
                 continue;
             }
@@ -98,7 +143,7 @@ impl Environment {
                     properties.clone_ = true;
                 }
                 Bound::Clone => properties.clone_ = true,
-                Bound::Sized | Bound::Outlives(_) => {}
+                Bound::Sized | Bound::Outlives(_) | Bound::Trait(_) => {}
             }
             if let Some(Kind::Parameter(id)) = types.kind(predicate.ty) {
                 let parameter = self
@@ -116,7 +161,33 @@ impl Environment {
         {
             return Err("bound parameter is outside its environment");
         }
+        if uses.constants.iter().any(|id| {
+            !self
+                .traits
+                .as_ref()
+                .is_some_and(|traits| traits.constants.contains(id))
+        }) {
+            return Err("bound const parameter is outside its environment");
+        }
         Ok(self)
+    }
+    /// Exact retained assumptions, in declaration order. Supertrait elaboration
+    /// adds its own proved predicates rather than granting arbitrary type abilities.
+    pub fn trait_predicates(&self) -> impl Iterator<Item = &Predicate> {
+        self.traits.iter().flat_map(|traits| &traits.predicates)
+    }
+    #[must_use]
+    pub fn assumes_trait(
+        &self,
+        ty: TypeId,
+        application: crate::types::traits::ApplicationId,
+    ) -> bool {
+        self.traits.as_ref().is_some_and(|traits| {
+            traits.unique.contains(&Predicate {
+                ty,
+                bound: Bound::Trait(application),
+            })
+        })
     }
     #[must_use]
     pub fn assumed(&self, ty: TypeId) -> Abilities {

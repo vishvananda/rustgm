@@ -538,10 +538,16 @@ impl Checker<'_> {
                     .map_err(|e| self.error(body, e))?;
             }
         }
-        let solved = std::mem::take(&mut self.infer)
-            .finish(&mut self.facts.types)
+        let (solved, predicates) = std::mem::take(&mut self.infer)
+            .finish_with_predicates(
+                &mut self.facts.types,
+                self.call_types
+                    .obligations
+                    .iter()
+                    .map(|(_, predicate)| predicate),
+            )
             .map_err(|e| self.error(body, e))?;
-        self.validate_generic_uses(&solved)?;
+        self.validate_generic_uses(&solved, &predicates)?;
         self.publish_methods(&solved);
         let body_key = self.key(body);
         self.publish_pattern_types(&solved)?;

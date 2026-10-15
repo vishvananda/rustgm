@@ -23,13 +23,29 @@ impl Checker<'_> {
             if !well_formed {
                 return Err(self.error(predicate.source, "bound subject must be well-formed"));
             }
+            if matches!(predicate.value.bound, Bound::Trait(_)) {
+                self.trait_requirements(predicate, proof)?;
+            }
             if matches!(predicate.value.bound, Bound::Outlives(_)) {
                 continue;
             }
-            if self.facts.types.contains_parameters(ty) != Some(false)
-                || self.facts.types.escaping_binders(ty) != Some(0)
+            if predicate
+                .value
+                .contains_parameters(&self.facts.types)
+                .map_err(|e| self.error(predicate.source, e))?
+                || predicate
+                    .value
+                    .escaping_binders(&self.facts.types)
+                    .map_err(|e| self.error(predicate.source, e))?
+                    != 0
             {
                 continue;
+            }
+            if matches!(predicate.value.bound, Bound::Trait(_)) {
+                return Err(self.error(
+                    predicate.source,
+                    "closed trait bounds require an implementation proof",
+                ));
             }
             let valid = if predicate.value.bound == Bound::Sized {
                 self.facts.types.is_sized(ty) == Some(true)

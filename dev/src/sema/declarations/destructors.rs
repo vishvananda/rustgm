@@ -107,7 +107,7 @@ impl Checker<'_> {
             self.drain(steps, limit)?;
             self.facts
                 .generics
-                .complete_environment(&self.facts.types, header.self_definition)
+                .complete_environment(&mut self.facts.types, header.self_definition)
                 .map_err(|e| self.error(key, e))?;
             if self
                 .facts

@@ -1,5 +1,6 @@
 //! Substitute a template binder and its parameters without capturing nested binders.
 mod parameters;
+mod predicates;
 mod universals;
 use super::{Kind, ListId, RegionId, Store, TypeId, arguments::Argument};
 use std::collections::HashMap;
@@ -21,6 +22,11 @@ pub struct Bound {
     action: Action,
     parameters: Option<Box<parameters::Bindings>>,
     completed: HashMap<Key, TypeId>,
+    #[expect(
+        clippy::box_collection,
+        reason = "trait-free substitution folders retain one pointer instead of an inline hash table"
+    )]
+    applications: Option<Box<HashMap<super::traits::ApplicationId, super::traits::ApplicationId>>>,
     work: Vec<(Key, bool)>,
     children: Vec<TypeId>,
     regions: Vec<RegionId>,
@@ -36,6 +42,7 @@ impl Bound {
             action: Action::Remove,
             parameters: None,
             completed: HashMap::new(),
+            applications: None,
             work: Vec::new(),
             children: Vec::new(),
             regions: Vec::new(),

@@ -161,19 +161,18 @@ fn instance(
         if matches!(predicate.bound, Bound::Outlives(_)) {
             continue;
         }
-        let ty = facts
-            .generics
-            .substitute(&mut facts.types, owner, arguments, predicate.ty)?;
-        output.push(Predicate {
-            ty,
-            bound: predicate.bound,
-        });
+        let predicate =
+            facts
+                .generics
+                .substitute_predicate(&mut facts.types, owner, arguments, predicate)?;
+        output.push(predicate);
     }
     Ok(())
 }
 
 /// Predicate proofs are reusable only within one immutable declaration environment.
 pub(super) struct Proof {
+    environment: Option<std::sync::Arc<crate::types::parameters::environment::Environment>>,
     shapes: Option<crate::types::parameters::shape::Shapes>,
     copies: crate::types::copy::Copies,
     checked: HashSet<TypeId>,
@@ -183,6 +182,7 @@ impl Proof {
         environment: std::sync::Arc<crate::types::parameters::environment::Environment>,
     ) -> Self {
         Self {
+            environment: Some(std::sync::Arc::clone(&environment)),
             shapes: Some(crate::types::parameters::shape::Shapes::new(
                 std::sync::Arc::clone(&environment),
             )),
@@ -196,11 +196,14 @@ impl Proof {
         let shapes = environment
             .as_ref()
             .map(|env| crate::types::parameters::shape::Shapes::new(std::sync::Arc::clone(env)));
-        let copies = environment.map_or_else(
-            crate::types::copy::Copies::default,
-            crate::types::copy::Copies::in_environment,
-        );
+        let copies =
+            environment
+                .as_ref()
+                .map_or_else(crate::types::copy::Copies::default, |environment| {
+                    crate::types::copy::Copies::in_environment(std::sync::Arc::clone(environment))
+                });
         Self {
+            environment,
             shapes,
             copies,
             checked: HashSet::new(),
@@ -238,6 +241,9 @@ impl Proof {
                         Bound::Copy => "nominal type argument must implement Copy",
                         Bound::Clone => "nominal type argument must implement Clone",
                         Bound::Sized => "nominal type argument must be sized",
+                        Bound::Trait(_) => {
+                            "nominal type argument must implement its declared trait"
+                        }
                         Bound::Outlives(_) => "nominal type argument must outlive its bound",
                     });
                 }
@@ -251,6 +257,10 @@ impl Proof {
         requirement: Predicate,
     ) -> Result<bool, &'static str> {
         let valid = match requirement.bound {
+            Bound::Trait(application) => self
+                .environment
+                .as_ref()
+                .is_some_and(|environment| environment.assumes_trait(requirement.ty, application)),
             Bound::Sized => self.shape(facts, requirement.ty)?.sized,
             Bound::Copy | Bound::Clone => {
                 facts.aggregates.prepare(&mut facts.types, requirement.ty)?;

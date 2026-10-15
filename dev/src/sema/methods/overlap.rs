@@ -97,6 +97,9 @@ impl Probe {
             }
         }
         for predicate in facts.generics.predicates_in_scope(owner) {
+            if matches!(predicate.value.bound, Bound::Trait(_)) {
+                return Err("user trait overlap obligations require trait coherence");
+            }
             if matches!(predicate.value.bound, Bound::Outlives(_)) {
                 continue;
             }

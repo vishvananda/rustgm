@@ -188,6 +188,27 @@ CFG templates or executable symbols. Validate owner bounds and closed parameter
 defaults even when a trait or impl has no methods; unchecked trait implementations
 must not pass merely because required methods have no bodies.
 
+User trait applications have canonical declaration and argument identities, with
+Self retained separately as the predicate subject. Preserve every type, const and
+lifetime argument through inference, substitution, parameter-use queries and body
+universal aliases. Arguments are not synthetic nominal types. Complete predicates
+participate in closed/default checks even when their subject alone is concrete.
+
+Prepare trait headers before dependent bounds. Share ordinary path argument and
+default elaboration, then instantiate each trait contract through one cached,
+capture-safe mapping of Self and its explicit parameters. Expand only requirements
+on Self into caller assumptions; parameter and composite-subject bounds require
+separate evidence. Diagnose supertrait cycles by declaration identity before
+expansion, and deduplicate diamond paths under a bounded worklist. Arbitrary trait
+names confer no builtin Copy, Clone or Sized behavior.
+
+Trait argument well-formedness and declared requirements are checked even for
+unused declarations. Lifetime requirements consume the completed nominal contracts
+and shared directed relation engine. Assumptions from the original signature and
+explicit bounds remain distinct from obligations imposed by a trait application.
+Predicate inference shares the ordinary type/const equivalence classes, and
+completion rejects unresolved arguments that appear only in an obligation.
+
 Resolve a destructor's impl target and receiver once. Retain the nominal item,
 method identity, whole-reference receiver binding and captured lifetime slots.
 Anonymous impl lifetimes are real slots, not fabricated declaration IDs. A

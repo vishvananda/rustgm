@@ -92,7 +92,7 @@ impl Checker<'_> {
         }
         self.facts
             .generics
-            .complete_environment(&self.facts.types, owner)
+            .complete_environment(&mut self.facts.types, owner)
             .map_err(|e| self.error(key, e))?;
         self.facts.generics.has_nominal_requirements |=
             self.facts.generics.parameters.contains_key(&owner)
