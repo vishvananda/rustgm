@@ -130,60 +130,14 @@ impl Checker<'_> {
     }
 
     fn retain_trait_evidence(&mut self, node: NodeId, evidence: Evidence) -> Result<Source, Error> {
-        use crate::sema::model::{
-            BodyRegion, BodyRegionOrigin, Outlives, RegionEquality, TypeOutlives,
-        };
-        if self.trait_region_start(node)? != evidence.regions.start {
-            return Err(self.error(node, "trait proof has foreign region identities"));
-        }
         let source = self.key(node);
-        let region = BodyRegion {
-            body: self.body,
-            source,
-            origin: BodyRegionOrigin::Inference,
-        };
-        self.facts
-            .body_regions
-            .extend(evidence.regions.map(|_| region));
-        self.facts
-            .region_equalities
-            .extend(
-                evidence
-                    .equalities
-                    .into_iter()
-                    .map(|(left, right)| RegionEquality {
-                        body: self.body,
-                        left,
-                        right,
-                    }),
-            );
-        self.facts
-            .outlives
-            .extend(
-                evidence
-                    .outlives
-                    .into_iter()
-                    .map(|(longer, shorter)| Outlives {
-                        body: self.body,
-                        source,
-                        longer,
-                        shorter,
-                    }),
-            );
-        self.facts
-            .type_outlives
-            .extend(
-                evidence
-                    .type_outlives
-                    .into_iter()
-                    .map(|(ty, shorter)| TypeOutlives {
-                        body: self.body,
-                        source,
-                        ty,
-                        shorter,
-                    }),
-            );
-        if let Source::Implementation { owner, arguments } = evidence.source {
+        let selected = evidence.source;
+        let mut proof = crate::sema::traits::obligations::Obligations::new(evidence.regions.start);
+        proof.append(evidence).map_err(|e| self.error(node, e))?;
+        proof
+            .retain_body(self.facts, self.body, source)
+            .map_err(|e| self.error(node, e))?;
+        if let Source::Implementation { owner, arguments } = selected {
             self.facts
                 .generics
                 .trait_selections
@@ -191,7 +145,7 @@ impl Checker<'_> {
                 .or_default()
                 .push(crate::sema::generics::ImplementationSelection { owner, arguments });
         }
-        Ok(evidence.source)
+        Ok(selected)
     }
 
     pub(super) fn trait_assumptions(

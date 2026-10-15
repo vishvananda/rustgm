@@ -1,4 +1,6 @@
 //! A declaration proof owns a disjoint interval of fresh lifetimes and all its obligations.
+mod body;
+mod restoration;
 use crate::types::{
     RegionId, TypeId,
     outlives::{Pair, Queries},
@@ -25,13 +27,21 @@ impl Obligations {
         &mut self,
         evidence: super::selection::Evidence,
     ) -> Result<(), &'static str> {
-        if evidence.regions.start != self.regions.end {
+        self.extend(Self {
+            regions: evidence.regions,
+            equalities: evidence.equalities,
+            outlives: evidence.outlives,
+            types: evidence.type_outlives,
+        })
+    }
+    pub(crate) fn extend(&mut self, proof: Self) -> Result<(), &'static str> {
+        if proof.regions.start != self.regions.end {
             return Err("declaration trait proof region intervals disagree");
         }
-        self.regions.end = evidence.regions.end;
-        self.equalities.extend(evidence.equalities);
-        self.outlives.extend(evidence.outlives);
-        self.types.extend(evidence.type_outlives);
+        self.regions.end = proof.regions.end;
+        self.equalities.extend(proof.equalities);
+        self.outlives.extend(proof.outlives);
+        self.types.extend(proof.types);
         Ok(())
     }
     pub fn require(

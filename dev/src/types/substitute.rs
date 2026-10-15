@@ -4,6 +4,7 @@ mod normalize;
 pub use normalize::{Normalizer, Request, Resolution, Step};
 mod parameters;
 mod predicates;
+mod region_mapping;
 mod universals;
 use super::{Kind, ListId, RegionId, Store, TypeId, arguments::Argument};
 use std::collections::HashMap;
@@ -17,6 +18,7 @@ enum Action {
     Lower(u16),
     Items(Box<items::Replacements>),
     Universals(Box<universals::Mapping>),
+    Regions(Box<region_mapping::Mapping>),
     Shape,
     Normalize,
 }
@@ -163,7 +165,7 @@ impl Bound {
         let closed = if matches!(self.action, Action::Shape) {
             store.has_free_regions(key.0, 0) == Some(false)
                 && store.contains_late_callables(key.0) == Some(false)
-        } else if matches!(self.action, Action::Universals(_)) {
+        } else if matches!(self.action, Action::Universals(_) | Action::Regions(_)) {
             store.has_free_regions(key.0, key.1) == Some(false)
         } else {
             escaping <= key.1
@@ -299,6 +301,9 @@ impl Bound {
             return Ok(RegionId::STATIC);
         }
         if let Action::Universals(mapping) = &mut self.action {
+            return mapping.region(region, depth);
+        }
+        if let Action::Regions(mapping) = &mut self.action {
             return mapping.region(region, depth);
         }
         let Some((binder, index)) = region.bound_parts() else {

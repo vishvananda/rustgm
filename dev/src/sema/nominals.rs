@@ -1,6 +1,6 @@
 //! Nominal use requirements are instantiated once; proofs belong to the caller's environment.
 mod requirements;
-mod traits;
+pub(crate) mod traits;
 use super::model::Declarations;
 use crate::types::{
     TypeId,

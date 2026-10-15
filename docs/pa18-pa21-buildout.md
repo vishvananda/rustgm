@@ -4494,3 +4494,81 @@ uses take 4.98/8.02/21.19 ms and 5,794/6,426/8,526 KiB. Chains take
 6.23/12.68/42.56 ms and 5,726/7,132/9,970 KiB. All observations and output/hash
 checks are retained, and no local build, test or unrelated probe overlapped timing.
 The receipt is `obj/pa20-work/unreduced-v1/validation-v1.json`.
+
+## Scoped projection lifetime proofs
+
+Qualified associated types now normalize selected impl lifetimes back into their
+caller's scope. The common type fold opens surrounding lifetimes while preserving
+static, existing body variables and nested local binders. Equality components
+restore selected result identities and shift captures beneath nested callables;
+they do not grant the equalities as assumptions. Every selection equality,
+outlives and type-outlives obligation remains mandatory, including when the
+normalized result erases the lifetime entirely.
+
+Declaration annotations share one directed proof per binder with disjoint fresh
+intervals, checked against the completed owning environment. Local annotations
+retain evidence through the same body allocator and proof gate as trait calls.
+This avoids both checking every annotation against a newly rebuilt declaration
+graph and appending local evidence to an already completed declaration gate.
+Closed, lifetime-free projections avoid allocating the opening/restoration folds.
+
+Original associated RHS occurrences now detect unconstrained impl lifetimes even
+when projection normalization erases them. Function binding-time classification
+uses constraining original inputs and all original outputs; late instantiation
+separately uses the normalized signature's live slots. This preserves explicit
+early lifetime arguments without inventing slots in erased executable shapes.
+
+The 18 previously declared projection-region cases now match pinned rustc.
+`projection_lifetimes` contains 39 independently qualified source cases and a
+24-compilation semantic determinism control. Five typed controls check binder
+depth, simultaneous restoration, unknown identities, allocation limits and the
+closed-query shortcut. Three new native programs execute reference results,
+permuted tuple arguments and captured function-pointer results through CPPGM.
+
+The determinism control exposed randomized assumption traversal during region
+substitution. Both predicate and sized-assumption keys now have a stable typed
+visit order before allocation. The independently accepted, structurally distinct
+Copy-bound witness produced two semantic byte streams across 24 pre-fix runs.
+An earlier probe used overlapping Copy bounds rejected by rustc; its original
+source and stderr remain recorded as a separate compatibility issue, not as a
+positive test or benchmark.
+
+The full debug run passed 969 tests with 32 native tests ignored before the final
+shortcut and deterministic-order refinements. The final optimized affected run
+passed 208 tests, explicitly including native cases. All 4,857 active course cases,
+Clippy all/pedantic, rustfmt, the 599-file audit and 27 harness tests passed on the
+final implementation. Course fixtures, manifests and oracle bytes are unchanged.
+
+PA20 and PA21 remain planned. Conditional ordinary aliases still need deferred
+proof templates at their uses: rustc accepts the recorded unused alias definitions
+but rejects uses missing the impl's outlives relation. RustGM currently rejects
+such definitions conservatively. Signature/header environment dependencies,
+symbolic projection equalities, partial pointer annotation provenance, remaining
+associated-item contracts and advanced generic relationships also remain required.
+The next implementation notes and independent alias controls are retained in
+`obj/pa20-work/scoped-projections-v1/`.
+
+The immutable final binary is
+`e88890fc655d28db097f92ff1f44587affbe63b5e4d86d390bd801af6fe4fc58`;
+602 source/config/test files are archived. Twenty-four existing workloads match
+published full/count semantic bytes. Fifteen independently qualified new inputs
+cover scoped width, repeated uses, alias chains, and distinct caller-environment
+width/repetition at 128, 512 and 2,048. All frozen hashes and full/count outputs
+were verified before and after A/A calibration and five paired ABBA blocks.
+
+The first run retains 1,014 observations; six confirmation controls retain another
+156. Initial ordinary paired medians range from -18.1% to +4.6%. The four repeated
+ordinary controls range from -3.6% to +1.5%; the large pointer-control negative
+moves from -18.1% to +0.4%, and the largest chain positive moves from +4.6% to
++1.5%. Host variability also appears in identical-binary controls, so these
+measurements establish neither a general speedup nor the absence of small
+regressions. Every observation is retained; no local build, test or unrelated
+probe overlaps either timing run.
+
+Initial same-binary scoped width medians are 13.71/41.77/133.14 ms, repeated-use
+medians 14.07/34.15/125.78 ms, and chain medians 14.75/40.67/137.16 ms. Distinct
+environment widths take 11.13/24.98/88.96 ms and repeated environments take
+13.38/31.14/125.55 ms. Peak resident medians across these new inputs range from
+6,450 to 15,618 KiB. Interpret the scaling observations with the recorded timing
+noise rather than as a precise throughput guarantee. The validation receipt is
+`obj/pa20-work/scoped-projections-v1/validation-v1.json`.

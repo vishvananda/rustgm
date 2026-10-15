@@ -1,4 +1,5 @@
 //! Associated type paths suspend normalization while their selected definitions elaborate.
+mod proofs;
 use super::{Checker, DefId, Error, NodeKey, Type, TypeId, Work, regions};
 use crate::{
     resolve::model::{DefKind, Namespace},
@@ -9,12 +10,12 @@ use crate::{
 };
 use std::collections::HashMap;
 
-#[derive(Clone, Copy)]
 struct Selected {
     request: Request,
     owner: DefId,
     definition: DefId,
     arguments: GenericArgs,
+    restore: Option<Box<crate::types::substitute::Bound>>,
 }
 struct Query {
     fold: Normalizer,
@@ -24,6 +25,12 @@ struct Query {
 #[derive(Default)]
 pub(super) struct Pending {
     roots: HashMap<NodeKey, Query>,
+    scopes: HashMap<Option<regions::BinderId>, usize>,
+    proofs: Vec<(
+        NodeKey,
+        regions::Context,
+        crate::sema::traits::obligations::Obligations,
+    )>,
 }
 
 impl Checker<'_> {
@@ -163,20 +170,21 @@ impl Checker<'_> {
             }
             Step::Resolve(request) => {
                 let selected = self.select_projection(key, request)?;
+                let definition = selected.definition;
                 self.projections
                     .roots
                     .get_mut(&key)
                     .ok_or_else(|| Error::at(key.file, 0, "missing projection scope"))?
                     .selected = Some(selected);
                 self.work.push(Work::ProjectionResult(key));
-                self.work.push(Work::Definition(selected.definition, false));
+                self.work.push(Work::Definition(definition, false));
                 Ok(())
             }
         }
     }
 
     pub(super) fn complete_projection_result(&mut self, key: NodeKey) -> Result<(), Error> {
-        let selected = self
+        let mut selected = self
             .projections
             .roots
             .get_mut(&key)
@@ -194,6 +202,13 @@ impl Checker<'_> {
                 template,
             )
             .map_err(|e| self.error(key, e))?;
+        let ty = if let Some(restore) = &mut selected.restore {
+            restore
+                .apply(&mut self.facts.types, ty)
+                .map_err(|e| self.error(key, e))?
+        } else {
+            ty
+        };
         let query = self
             .projections
             .roots
@@ -212,25 +227,18 @@ impl Checker<'_> {
 
     fn select_projection(&mut self, key: NodeKey, request: Request) -> Result<Selected, Error> {
         use crate::{
-            sema::traits::{assumptions::Assumptions, selection},
-            types::{
-                infer::{Context, Instantiation},
-                parameters::predicates::{Bound, Predicate},
-            },
+            sema::{nominals::traits::State, traits::selection},
+            types::parameters::predicates::{Bound, Predicate},
         };
         let application = request.application;
         let predicate = Predicate {
             ty: application.subject,
             bound: Bound::Trait(application.trait_application),
         };
-        if predicate
-            .escaping_binders(&self.facts.types)
-            .map_err(|e| self.error(key, e))?
-            != 0
-        {
+        if request.depth != 0 {
             return Err(self.error(
                 key,
-                "projection normalization requires a scoped lifetime mapping",
+                "nested projection normalization requires its binder scope",
             ));
         }
         let context = self
@@ -239,49 +247,29 @@ impl Checker<'_> {
             .get(&key)
             .ok_or_else(|| self.error(key, "missing projection scope"))?
             .context;
-        let environment = self.selection_environment(key, context);
-        let assumptions = self.selection_trait_assumptions(key, context, environment.as_ref())?;
-        let empty = Assumptions::default();
-        let mut inference = Context::default();
-        let mut substitution = Instantiation::new(&mut inference, &self.facts.types, &[])
-            .map_err(|e| self.error(key, e.to_string()))?;
-        let goal = inference
-            .instantiate_predicate(&mut self.facts.types, predicate, &mut substitution)
-            .map_err(|e| self.error(key, e.to_string()))?;
-        let selection = selection::select_declaration(
-            &mut self.facts,
-            &mut inference,
-            &goal,
-            selection::Caller {
-                assumptions: assumptions.as_deref().unwrap_or(&empty),
-                environment: environment.as_ref(),
-                first_region: 1,
-            },
-        )
-        .map_err(|e| self.error(key, e))?;
-        let selection::Selection::Proven(evidence) = selection else {
+        let (environment, first) = self.projection_environment(key, context)?;
+        let (source, proof) = State::projection(&mut self.facts, environment, predicate, first)
+            .map_err(|e| self.error(key, e))?;
+        let Some(source) = source else {
             return Err(self.error(
                 key,
                 "associated type requires an unambiguous implementation",
             ));
         };
-        let selection::Source::Implementation { owner, arguments } = evidence.source else {
+        let selection::Source::Implementation { owner, arguments } = source else {
             return Err(self.error(
                 key,
                 "symbolic associated types require projection equality obligations",
             ));
         };
-        if !evidence.regions.is_empty()
-            || !evidence.equalities.is_empty()
-            || !evidence.outlives.is_empty()
-            || !evidence.type_outlives.is_empty()
-            || inference.region_equalities.iter().any(|(a, b)| a != b)
-        {
-            return Err(self.error(
-                key,
-                "projection normalization requires retained lifetime evidence",
-            ));
-        }
+        let restore = if proof.regions.is_empty() && proof.equalities.is_empty() {
+            None
+        } else {
+            Some(Box::new(
+                proof.restoration().map_err(|e| self.error(key, e))?,
+            ))
+        };
+        self.retain_projection_proof(key, context, proof)?;
         let name = self.report.resolution.definitions[application.item.0 as usize].name;
         let scope = self.report.resolution.definitions[owner.0 as usize].scope;
         let definition = self.report.resolution.scopes[scope.0 as usize]
@@ -303,6 +291,7 @@ impl Checker<'_> {
             owner,
             definition,
             arguments,
+            restore,
         })
     }
 }

@@ -149,7 +149,10 @@ impl Checker<'_> {
             let ty = self.facts.definitions[definition.0 as usize]
                 .ok_or_else(|| self.error(key, "missing associated type definition type"))?;
             outputs
-                .collect(&self.facts.types, ty)
+                .collect(
+                    &self.facts.types,
+                    self.facts.unreduced.definition(definition).unwrap_or(ty),
+                )
                 .map_err(|e| self.error(key, e))?;
             if !outputs.indices.is_subset(&inputs.indices) {
                 return Err(self.error(key, "associated type uses an impl lifetime not constrained by Self or the trait arguments"));

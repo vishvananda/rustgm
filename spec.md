@@ -88,6 +88,22 @@ exhausted work. A prepared impl may supply declaration work, but its complete
 conformance remains mandatory before executable facts are published. Missing
 lifetime or equality evidence must never be dropped to manufacture a normal form.
 
+Open surrounding projection lifetimes with a single checked mapping shared by
+the goal and its assumptions. Preserve nested local binders and reserve existing
+body inference identities before allocating selection variables. Restore a
+selected result only through equality components anchored in the caller or
+static; an unanchored result lifetime is an error. Shift restored captures beneath
+the result's nested binders without capturing their local slots. Substitution is
+not proof: retain every equality, outlives and type-outlives obligation used during
+selection, including when the result no longer mentions their lifetimes.
+
+Group declaration projection obligations by their actual binder and discharge
+them against the completed owning environment. Independent annotations in the
+same scope use disjoint fresh intervals and share the directed proof. Local
+annotations instead retain obligations in the body's allocator and ordinary
+lifetime gate; they must not append to a declaration gate that has already run.
+Keep plain, closed projection queries off the lifetime-fold allocation path.
+
 Check constraining lifetime positions before erasing projections through
 normalization. A lifetime occurring only inside a projected function-pointer
 input does not constrain the pointer's output, even when a selected impl would
@@ -95,6 +111,12 @@ normalize that input to a reference using the lifetime. Preserve the unreduced
 typed signature for this check, including projections introduced through aliases;
 normal forms alone cannot establish this declaration constraint. Opaque input
 positions still require valid binder slots.
+
+Use original occurrences when detecting unconstrained impl lifetimes and when
+classifying a function lifetime as early or late: projected inputs are
+nonconstraining and original output occurrences remain significant after
+normalization. Late instantiation then supplies the slots actually used by the
+normalized executable signature. These are distinct queries over retained facts.
 
 Retain unreduced annotation, alias and argument identities in sparse records
 allocated only when projections occur; ordinary node facts keep their normal

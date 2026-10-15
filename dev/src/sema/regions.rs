@@ -1,7 +1,7 @@
 //! Canonical signature binders and elision, separate from later outlives checking.
 use crate::{resolve::model::DefId, types::RegionId};
 use std::collections::{HashMap, HashSet};
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub(super) struct BinderId(usize);
 #[derive(Clone, Copy)]
 pub(super) enum Position {
@@ -29,6 +29,7 @@ impl Context {
 }
 struct Binder {
     parent: Option<BinderId>,
+    owner: Option<DefId>,
     captured: Option<BinderId>,
     declared: Vec<DefId>,
     /// Membership is indexed before slot assignment; slots retain first-use order.
@@ -48,6 +49,7 @@ impl Regions {
         let id = BinderId(self.binders.len());
         self.binders.push(Binder {
             parent,
+            owner: None,
             captured: None,
             named: declared.iter().copied().map(|id| (id, None)).collect(),
             declared,
@@ -58,6 +60,15 @@ impl Regions {
             candidate_count: 0,
         });
         id
+    }
+    pub fn associate(&mut self, binder: BinderId, owner: DefId) {
+        self.binders[binder.0].owner = Some(owner);
+    }
+    pub fn owner(&self, binder: BinderId) -> Option<DefId> {
+        self.binders[binder.0].owner
+    }
+    pub fn parent(&self, binder: BinderId) -> Option<BinderId> {
+        self.binders[binder.0].parent
     }
     /// A method body uses one flat environment, including anonymous impl slots.
     pub fn capture(&mut self, source: BinderId, declared: Vec<DefId>) -> BinderId {

@@ -101,6 +101,7 @@ impl Checker<'_> {
         let key = owner.source;
         let declared = self.declared_regions(key, self.item(key)?.generics)?;
         let binder = self.regions.binder(None, declared.clone());
+        self.regions.associate(binder, owner.self_definition);
         for &parameter in &declared {
             self.regions
                 .named(Some(binder), parameter)

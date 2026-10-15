@@ -43,14 +43,18 @@ impl Environment {
     ) -> Result<Self, &'static str> {
         let mut result = self.clone();
         if let Some(assumptions) = &mut result.assumptions {
-            assumptions.predicates = assumptions
-                .predicates
-                .drain()
+            // Substitution may allocate canonical types or open lifetimes. Its
+            // encounter order cannot depend on a hash table's randomized seed.
+            let mut predicates: Vec<_> = assumptions.predicates.drain().collect();
+            predicates.sort_unstable_by_key(|(ty, _)| ty.0);
+            assumptions.predicates = predicates
+                .into_iter()
                 .map(|(ty, abilities)| Ok((fold.apply(types, ty)?, abilities)))
                 .collect::<Result<_, &'static str>>()?;
-            assumptions.sized = assumptions
-                .sized
-                .drain()
+            let mut sized: Vec<_> = assumptions.sized.drain().collect();
+            sized.sort_unstable_by_key(|ty| ty.0);
+            assumptions.sized = sized
+                .into_iter()
                 .map(|ty| fold.apply(types, ty))
                 .collect::<Result<_, _>>()?;
         }

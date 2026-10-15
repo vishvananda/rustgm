@@ -98,6 +98,7 @@ impl Checker<'_> {
         }
         let declared = self.declared_regions(key, item.generics)?;
         let binder = self.regions.binder(None, declared.clone());
+        self.regions.associate(binder, id);
         // Nominal/alias parameter indices follow declaration order, including
         // unused alias parameters. Function elision retains its own ordering.
         for parameter in &declared {

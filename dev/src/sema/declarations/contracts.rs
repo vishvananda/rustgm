@@ -5,6 +5,12 @@ use super::{
 use crate::{sema::lifetimes::FunctionRegions, types::bound_uses::Uses};
 use std::collections::HashSet;
 
+#[derive(Clone, Copy)]
+pub(super) struct SignatureTypes {
+    pub normal: TypeId,
+    pub original: TypeId,
+}
+
 impl Checker<'_> {
     pub(super) fn function_bounds(
         &mut self,
@@ -121,11 +127,18 @@ impl Checker<'_> {
         owner: DefId,
         binder: BinderId,
         declared: List,
-        signature: TypeId,
+        signatures: SignatureTypes,
         mut bounds: Vec<(RegionId, RegionId)>,
     ) -> Result<(), Error> {
         if self.facts.destructors.method(owner).is_some() {
-            return self.drop_method_regions(key, owner, binder, declared, signature, &bounds);
+            return self.drop_method_regions(
+                key,
+                owner,
+                binder,
+                declared,
+                signatures.normal,
+                &bounds,
+            );
         }
         let captures = self
             .facts
@@ -135,15 +148,10 @@ impl Checker<'_> {
         if let Some(schema) = self.facts.associated.schema(owner) {
             bounds.splice(0..0, schema.bounds.iter().copied());
         }
-        let Type::Function {
-            bound_regions,
-            parameters,
-            result,
-            ..
-        } = self
+        let Type::Function { bound_regions, .. } = self
             .facts
             .types
-            .kind(signature)
+            .kind(signatures.normal)
             .ok_or_else(|| self.error(key, "missing lifetime signature"))?
         else {
             return Err(self.error(key, "invalid lifetime signature"));
@@ -156,24 +164,10 @@ impl Checker<'_> {
             return Ok(());
         }
         self.function_binders.insert(key, binder);
-        let (inputs, outputs) = self.signature_occurrences(key, parameters, result)?;
-        let mut bounded: HashSet<_> = bounds
-            .iter()
-            .flat_map(|(a, b)| [a, b])
-            .filter_map(|r| {
-                r.bound_parts()
-                    .filter(|(depth, _)| *depth == 0)
-                    .map(|(_, index)| index)
-            })
-            .collect();
-        bounded.extend(
-            self.facts
-                .generics
-                .bound_lifetimes(&self.facts.types, owner)
-                .map_err(|e| self.error(key, e))?,
-        );
-        // An unused declared lifetime is late, even when an erased alias once
-        // mentioned it. An unconstrained lifetime occurring in the output is early.
+        let (inputs, outputs) = self.signature_occurrences(key, signatures.original, true)?;
+        let bounded = self.bounded_lifetimes(key, owner, &bounds)?;
+        // Projection inputs do not constrain a lifetime. Original output
+        // occurrences make it early even when normalization erases the lifetime.
         let declared = self.declared_regions(key, declared)?;
         for definition in &declared {
             self.regions
@@ -202,6 +196,13 @@ impl Checker<'_> {
             }
         }
         let early_indices: HashSet<_> = early.iter().map(|(_, index)| *index).collect();
+        // Late instantiation supplies exactly the slots used by the executable
+        // signature, including normalized references from projected inputs.
+        let (inputs, outputs) = if signatures.original == signatures.normal {
+            (inputs, outputs)
+        } else {
+            self.signature_occurrences(key, signatures.normal, false)?
+        };
         let mut late: Vec<_> = inputs
             .indices
             .union(&outputs.indices)
@@ -222,19 +223,53 @@ impl Checker<'_> {
             || (self.facts.associated.schema(owner).is_some()
                 && self.facts.generics.has_parameters(owner))
         {
-            self.callable_template(key, owner, signature, &scheme)?;
+            self.callable_template(key, owner, signatures.normal, &scheme)?;
         }
         self.facts.lifetimes.functions.insert(owner, scheme);
         Ok(())
     }
 
+    fn bounded_lifetimes(
+        &self,
+        key: NodeKey,
+        owner: DefId,
+        bounds: &[(RegionId, RegionId)],
+    ) -> Result<HashSet<u16>, Error> {
+        let mut bounded: HashSet<_> = bounds
+            .iter()
+            .flat_map(|(a, b)| [a, b])
+            .filter_map(|r| {
+                r.bound_parts()
+                    .filter(|(depth, _)| *depth == 0)
+                    .map(|(_, index)| index)
+            })
+            .collect();
+        bounded.extend(
+            self.facts
+                .generics
+                .bound_lifetimes(&self.facts.types, owner)
+                .map_err(|e| self.error(key, e))?,
+        );
+        Ok(bounded)
+    }
+
     fn signature_occurrences(
         &self,
         key: NodeKey,
-        parameters: crate::types::ListId,
-        result: TypeId,
+        signature: TypeId,
+        constraining: bool,
     ) -> Result<(Uses, Uses), Error> {
-        let mut inputs = Uses::default();
+        let Some(Type::Function {
+            parameters, result, ..
+        }) = self.facts.types.kind(signature)
+        else {
+            return Err(self.error(key, "missing lifetime occurrence signature"));
+        };
+        let mut inputs = if constraining {
+            Uses::constraining()
+        } else {
+            Uses::default()
+        };
         for ty in self
             .facts
             .types

@@ -14,6 +14,25 @@ pub struct Predicate {
     pub bound: Bound,
 }
 impl Predicate {
+    /// Whether any argument lifetime needs opening outside its local binders.
+    /// # Errors
+    /// Rejects unknown subject or application identities.
+    pub fn has_free_regions(self, store: &crate::types::Store) -> Result<bool, &'static str> {
+        let subject = store
+            .has_free_regions(self.ty, 0)
+            .ok_or("invalid predicate subject")?;
+        let arguments = match self.bound {
+            Bound::Trait(id) => {
+                let properties = store
+                    .trait_properties(id)
+                    .ok_or("invalid predicate trait application")?;
+                properties.escaping != 0 || properties.has(crate::types::Property::FreeRegions)
+            }
+            Bound::Outlives(region) => region != crate::types::RegionId::STATIC,
+            Bound::Copy | Bound::Clone | Bound::Sized => false,
+        };
+        Ok(subject || arguments)
+    }
     /// A trait argument can be generic even when its Self subject is concrete.
     /// # Errors
     /// Rejects unknown subject or application identities.

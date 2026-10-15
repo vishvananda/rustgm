@@ -209,6 +209,7 @@ impl Checker<'_> {
         self.index_inherent_methods()?;
         self.validate_inherent_overlaps()?;
         self.local_annotations(&mut steps, work_limit)?;
+        self.validate_projection_regions()?;
         super::constants::finish_discriminants(
             self.report,
             &mut self.facts,
@@ -961,7 +962,17 @@ impl Checker<'_> {
                         .generics
                         .complete_environment(&mut self.facts.types, id)
                         .map_err(|e| self.error(key, e))?;
-                    self.function_regions(key, id, binder, signature.binders, ty, bounds)?;
+                    self.function_regions(
+                        key,
+                        id,
+                        binder,
+                        signature.binders,
+                        contracts::SignatureTypes {
+                            normal: ty,
+                            original,
+                        },
+                        bounds,
+                    )?;
                     self.facts.lifetimes.named.extend(
                         self.regions
                             .bindings(binder)

@@ -153,12 +153,21 @@ impl Checker<'_> {
         owner: DefId,
         queries: &mut Queries<'_>,
     ) -> Result<Constraints<'_>, String> {
+        self.trait_region_environment_count(owner, queries, self.trait_region_count(owner))
+    }
+
+    pub(super) fn trait_region_environment_count(
+        &self,
+        owner: DefId,
+        queries: &mut Queries<'_>,
+        count: u32,
+    ) -> Result<Constraints<'_>, String> {
         let function = self.facts.lifetimes.functions.get(&owner);
         let schema = self.facts.associated.schema(owner);
         let mut constraints = Constraints::new(
             &self.facts.types,
             &self.facts.lifetimes.variances,
-            self.trait_region_count(owner),
+            count,
             1_000_000,
         )
         .map_err(|e| e.to_string())?;

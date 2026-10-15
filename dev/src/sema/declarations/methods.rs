@@ -158,11 +158,15 @@ impl Checker<'_> {
             .and_then(|id| self.facts.associated.owner(id))
             .and_then(|id| self.facts.associated.get(id))
             .and_then(|owner| self.owner_binders.get(&owner.self_definition));
-        if let Some(&source) = source {
+        let binder = if let Some(&source) = source {
             self.regions.capture(source, declared)
         } else {
             self.regions.binder(parent, declared)
+        };
+        if let Some(owner) = owner {
+            self.regions.associate(binder, owner);
         }
+        binder
     }
     pub(super) fn associated_self_type(
         &mut self,

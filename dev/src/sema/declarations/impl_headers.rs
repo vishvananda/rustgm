@@ -19,6 +19,7 @@ impl Checker<'_> {
     ) -> Result<Header, Error> {
         let declared = self.declared_regions(source, self.item(source)?.generics)?;
         let binder = self.regions.binder(None, declared.clone());
+        self.regions.associate(binder, owner);
         for parameter in declared {
             self.regions
                 .named(Some(binder), parameter)

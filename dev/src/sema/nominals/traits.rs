@@ -13,7 +13,7 @@ use crate::{
 };
 use std::sync::Arc;
 
-pub(super) struct State {
+pub(crate) struct State {
     assumptions: Assumptions,
     environment: Option<Arc<Environment>>,
     context: Context,
@@ -57,12 +57,7 @@ impl State {
                 .map_err(|_| "declaration proof work exhausted")?;
             fold = Some(substitution);
         }
-        let mut assumptions = Assumptions::default();
-        for predicate in environment.iter().flat_map(|env| env.trait_predicates()) {
-            assumptions
-                .insert(&facts.types, *predicate)
-                .map_err(|_| "invalid declaration trait assumption index")?;
-        }
+        let assumptions = Self::assumptions(facts, environment.as_deref())?;
         Ok(Self {
             assumptions,
             environment,
@@ -70,6 +65,55 @@ impl State {
             fold,
             obligations,
         })
+    }
+
+    fn assumptions(
+        facts: &Declarations,
+        environment: Option<&Environment>,
+    ) -> Result<Assumptions, &'static str> {
+        let mut assumptions = Assumptions::default();
+        for predicate in environment.iter().flat_map(|env| env.trait_predicates()) {
+            assumptions
+                .insert(&facts.types, *predicate)
+                .map_err(|_| "invalid declaration trait assumption index")?;
+        }
+        Ok(assumptions)
+    }
+
+    pub(crate) fn projection(
+        facts: &mut Declarations,
+        environment: Option<Arc<Environment>>,
+        requirement: Predicate,
+        first: u32,
+    ) -> Result<(Option<selection::Source>, Obligations), &'static str> {
+        if environment.is_none() && !requirement.has_free_regions(&facts.types)? {
+            let mut state = Self::new(facts, None, None)?;
+            state.obligations = Obligations::new(first);
+            let source = state.select_opened(facts, requirement, false)?;
+            return Ok((source, state.finish()));
+        }
+        let mut fold = substitute::Bound::open_regions(first)?;
+        let requirement = fold.predicate(&mut facts.types, requirement)?;
+        let environment = environment
+            .map(|env| {
+                env.substitute_regions(&mut facts.types, &mut fold)
+                    .map(Arc::new)
+            })
+            .transpose()?;
+        let mut state = Self::new(facts, environment, None)?;
+        state
+            .context
+            .account_work(fold.steps)
+            .map_err(|_| "projection proof work exhausted")?;
+        state.obligations.regions = first
+            ..fold
+                .next_region()
+                .ok_or("missing projection region interval")?;
+        let mut opened: Vec<_> = fold.opened_regions().map(|(a, b)| (b, a)).collect();
+        opened.sort_unstable_by_key(|(free, original)| (free.0, original.0));
+        state.obligations.equalities.extend(opened);
+        let source = state.select_opened(facts, requirement, false)?;
+        Ok((source, state.finish()))
     }
 
     pub fn prove(
@@ -90,6 +134,16 @@ impl State {
         self.context
             .account_work(fold.steps.saturating_sub(before))
             .map_err(|_| "declaration proof work exhausted")?;
+        self.select_opened(facts, requirement, closed)
+            .map(|source| source.is_some())
+    }
+
+    fn select_opened(
+        &mut self,
+        facts: &mut Declarations,
+        requirement: Predicate,
+        closed: bool,
+    ) -> Result<Option<selection::Source>, &'static str> {
         let mut substitution = Instantiation::new(&mut self.context, &facts.types, &[])
             .map_err(|_| "invalid declaration trait instantiation")?;
         let goal = self
@@ -110,10 +164,11 @@ impl State {
             .map_err(|_| "invalid or exhausted declaration trait selection")?
         {
             selection::Selection::Proven(evidence) => {
+                let source = evidence.source;
                 self.obligations.append(evidence)?;
-                Ok(true)
+                Ok(Some(source))
             }
-            selection::Selection::Absent | selection::Selection::Deferred => Ok(false),
+            selection::Selection::Absent | selection::Selection::Deferred => Ok(None),
         }
     }
 
