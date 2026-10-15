@@ -3778,3 +3778,92 @@ All 547 source/config/test files are archived under
 The receipt is `obj/pa19-work/bilateral-validation-v1.json`; checks and measurements
 remain under `obj/pa19-work/bilateral-*` and `obj/perf/`. The preceding conformance
 checkpoint c7dae8d passed CI run 38694839917 on main.
+
+
+## Validated implementation evidence in bodies
+
+Body trait obligations, canonical body checks and inherent-method applicability
+now use one selector over validated impl records. Candidate lookup reuses the
+complete closed-application and outer-head partitions built for coherence.
+An inferred goal and a candidate header share type/const equations across Self
+and every argument; failed probes cannot constrain the caller. Conditional Copy,
+Clone and Sized requirements use the caller's actual environment. User-trait
+conditions are proved recursively with an explicit worklist and a total work
+budget. Required cycles fail instead of becoming their own evidence; an unused
+recursive conditional impl remains legal.
+
+Successful child proofs commit their resolved complete goals into the parent
+candidate. Only an unambiguous selected proof commits to the body. Its impl owner
+and typed arguments are retained at the use site. Impl lifetime captures use an
+isolated view of the caller's next free region identity; selected variables and
+all equality, outlives and type-outlives obligations enter the existing region
+checker. Failed alternatives publish no variables. Tests inspect both discarded
+allocations and distinct fresh captures from successive successful calls, including
+unused existential lifetimes constrained to static.
+
+Completed recursive requests that allocate no new lifetime identities share
+proof nodes. The collector visits this proof graph once. The 4/16/32-level
+A-and-B recursive diamond controls therefore avoid exponential proof expansion.
+Evidence that creates fresh lifetime identities is deliberately not reused until
+it can be rebased safely; general canonicalized solver caching remains PA20 work.
+The 4,096-header index control additionally checks that a closed goal probes its
+own partition and cannot select a merely prepared, unvalidated header.
+
+Numeric inference is distinct from an unconstrained whole Self. Integer and
+floating-point variables search only their compatible primitive heads and can
+infer a unique implementation's type. When progress stops, ordinary numeric
+fallback runs and pending goals are retried. Two initial scratch predictions
+that a sole u8/f32 impl would reject an unsuffixed literal were contradicted by
+pinned rustc and corrected before shipping the controls; those original results
+remain retained. General unknown Self still cannot be guessed from a sole impl.
+
+Fifty-four source controls independently agree with pinned rustc, covering
+conditional and recursive evidence, caller permissions, inferred type/const
+arguments, callable correlation and capture rejection, lifetime requirements,
+numeric domains/fallback, inherent-method conditions, typed selected arguments
+and failed-candidate isolation. Four new programs also execute through CPPGM
+against rustc, including recursive wrappers and a const argument inferred from an
+array. These are generic calls whose bounds now have implementation evidence;
+they do not claim user-trait method dispatch.
+
+The full debug run passes 855 tests and all 3,790 existing course cases; the final
+lifetime-publication test also passes separately, bringing the verified frontend
+total to 856. The affected release run passes 83 tests, followed by all 13 final
+selection tests after that last control was added. All 20 maintainer native tests,
+1,126 course executions and three codegen controls pass. The sixteen documented
+PA13 runtime differences remain explicit. Clippy all/pedantic, formatting, the
+549-file audit and all 27 harness tests pass. Course fixtures and text oracles
+remain unchanged.
+
+Four independently accepted source controls still identify the next declaration
+work: a closed trait bound, supertrait impl requirements in both source orders,
+and a method conformance requirement implied by an unconditional blanket impl.
+They remain recorded as unsupported in `selection-probes-v2.json`,
+not counted among the passing controls. Declaration/nominal proofs and Drop
+coverage still need the shared selector and complete lifetime proof packets;
+prepared headers must not silently become validated body evidence to bypass
+ordering. General trait method lookup and required/default concrete dispatch,
+PA19's course release, PA20 and PA21 are still required.
+
+Thirty-seven frozen A/A and five-block ABBA jobs plus one retained repeat record
+988 observations. Full and count output equality and every source/binary/input
+hash pass; no local RustGM build, test or compiler probe overlaps timing. Existing
+workload median wall-time changes are -2.5% to +1.6%, except an unstable -27.5%
+callable-outer result whose paired-block median is +1.0%. Its repeat is +1.2%
+overall. Calibration spreads reach 73.5%, so no stable speedup or performance-
+equivalence guarantee is claimed. Existing median RSS changes are -30 to +48 KiB.
+
+New 64/256/1,024-use workloads take 7.25/12.34/30.59 ms for concrete selection,
+9.58/19.34/58.47 ms for conditional selection, 13.38/36.29/137.69 ms with lifetime
+captures and 6.87/11.90/28.85 ms for numeric inference. Distinct closed const
+header/use pairs take 11.69/27.01/97.40 ms. Recursive predicate diamonds at depths
+4/8/16/32 take 4.47/4.89/6.12/10.64 ms. These are measurements on this host, not
+throughput guarantees. Every observation and the noisy calibration blocks remain
+retained rather than filtered away.
+
+All 552 source/config/test files are archived under
+`obj/pa19-work/selection-source-v1`. Compiler SHA256 is
+`1e384f30f0d3630160053b59024822045a2bc699ad036396aa5145de0d7b14f3`.
+The receipt is `obj/pa19-work/selection-validation-v1.json`; qualifications, earlier
+failed checks and measurements remain under `obj/pa19-work/selection-*`,
+`obj/pa19-work/impl-selection-v1` and `obj/perf/`.

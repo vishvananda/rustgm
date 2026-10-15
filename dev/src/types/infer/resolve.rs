@@ -1,8 +1,40 @@
 //! Demand a fully determined inference subtree without applying numeric fallback.
-use super::{Context, Error, Store, TermId, TypeId, Value};
+use super::{Context, Domain, Error, Store, TermId, TypeId, Value};
 use std::collections::{HashMap, HashSet};
 
 impl Context {
+    /// The unresolved variable domain restricts numeric trait candidate lookup.
+    /// # Errors
+    /// Rejects an invalid inference identity.
+    pub fn unresolved_domain(&mut self, term: TermId) -> Result<Option<Domain>, Error> {
+        let root = self.root(term)?;
+        Ok(match self.terms[root.0 as usize].value {
+            Value::Variable(domain) => Some(domain),
+            Value::Known(_) | Value::Construct(_) => None,
+        })
+    }
+
+    /// Apply numeric defaults only after ordinary equations and trait progress stop.
+    /// General unknowns remain unknown; candidates must never default speculatively.
+    /// # Errors
+    /// Rejects exhausted inference work.
+    pub fn default_numbers(&mut self) -> Result<bool, Error> {
+        self.account_work(self.terms.len())?;
+        let mut changed = false;
+        for (index, term) in self.terms.iter_mut().enumerate() {
+            if term.parent.0 as usize != index {
+                continue;
+            }
+            let primitive = match term.value {
+                Value::Variable(Domain::Integer) => super::Primitive::I32,
+                Value::Variable(Domain::Float) => super::Primitive::F64,
+                _ => continue,
+            };
+            term.value = Value::Known(TypeId::primitive(primitive));
+            changed = true;
+        }
+        Ok(changed)
+    }
     /// Resolve only the requested reachable terms. A successful result cannot
     /// change under subsequent compatible type equations; regions remain facts.
     ///

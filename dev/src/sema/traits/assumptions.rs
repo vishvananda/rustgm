@@ -1,5 +1,5 @@
 //! Caller assumptions are indexed once; alternatives use isolated complete-goal equations.
-use super::heads::Head;
+use super::heads::{Head, Subject};
 use crate::types::{
     ItemId, Store,
     infer::{self, Context, predicates::Predicate as Goal},
@@ -127,11 +127,14 @@ impl Assumptions {
         let Some((item, _)) = goal.trait_arguments() else {
             return Err(infer::Error::InvalidIdentity);
         };
-        let Some(head) = context.head(store, goal.subject())?.map(Head::inferred) else {
+        let Some(subject) = Subject::query(store, context, goal.subject())? else {
             return Ok(Selection::Deferred);
         };
         let mut selected = None;
-        for &candidate in self.candidates.get(&(item, head)).into_iter().flatten() {
+        for &candidate in subject
+            .heads()
+            .flat_map(|head| self.candidates.get(&(item, head)).into_iter().flatten())
+        {
             let mut probe = Context::default();
             let imported = probe.import_predicate(store, context, goal)?;
             let result = probe.equate_trait_predicate(store, &imported, candidate);

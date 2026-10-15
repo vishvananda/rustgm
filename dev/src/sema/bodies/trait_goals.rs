@@ -1,6 +1,9 @@
 //! Resolve call goals before inference completion, retaining actual assumption evidence.
 use super::{Checker, Error, NodeId};
-use crate::sema::traits::assumptions::{Assumptions, Evidence};
+use crate::sema::traits::{
+    assumptions::Assumptions,
+    selection::{self, Caller, Evidence, Selection, Source},
+};
 use std::collections::HashMap;
 use std::sync::Arc;
 
@@ -12,17 +15,38 @@ impl Checker<'_> {
     ) -> Result<(), Error> {
         let predicate = self.alias_predicate(node, predicate)?;
         let assumptions = self.trait_assumptions(node)?.unwrap_or_default();
+        let first_region = self.trait_region_start(node)?;
+        let key = self.key(node);
         let context = self
             .canonical_trait_inference
             .get_or_insert_with(Default::default);
-        let evidence = assumptions.prove_canonical(&mut self.facts.types, context, predicate);
+        let mut substitution =
+            crate::types::infer::Instantiation::new(context, &self.facts.types, &[]).map_err(
+                |e| crate::sema::model::Declarations::error(self.report, key, e.to_string()),
+            )?;
+        let goal = context
+            .instantiate_predicate(&mut self.facts.types, predicate, &mut substitution)
+            .map_err(|e| {
+                crate::sema::model::Declarations::error(self.report, key, e.to_string())
+            })?;
+        let evidence = selection::select(
+            self.facts,
+            context,
+            &goal,
+            Caller {
+                assumptions: &assumptions,
+                environment: self.method_environment.as_ref(),
+                first_region,
+            },
+        );
         let equalities = std::mem::take(&mut context.region_equalities);
-        if evidence.map_err(|e| self.error(node, e))?.is_none() {
+        let Selection::Proven(evidence) = evidence.map_err(|e| self.error(node, e))? else {
             return Err(self.error(
                 node,
                 "user trait obligation requires a matching assumption or implementation",
             ));
-        }
+        };
+        self.retain_trait_evidence(node, evidence)?;
         self.facts
             .region_equalities
             .extend(equalities.into_iter().map(|(left, right)| {
@@ -38,7 +62,7 @@ impl Checker<'_> {
     pub(super) fn infer_trait_obligations(
         &mut self,
         body: NodeId,
-    ) -> Result<HashMap<usize, Evidence>, Error> {
+    ) -> Result<HashMap<usize, Source>, Error> {
         let mut pending: Vec<_> = self
             .call_types
             .obligations
@@ -55,23 +79,114 @@ impl Checker<'_> {
             let before = pending.len();
             let mut next = Vec::new();
             for index in pending {
+                let first_region = self.trait_region_start(body)?;
                 let (node, predicate) = &self.call_types.obligations[index];
-                if let Some(proof) = assumptions
-                    .prove(&self.facts.types, &mut self.infer, predicate)
-                    .map_err(|e| self.error(*node, e))?
+                let node = *node;
+                if let Selection::Proven(proof) = selection::select(
+                    self.facts,
+                    &mut self.infer,
+                    predicate,
+                    Caller {
+                        assumptions: &assumptions,
+                        environment: self.method_environment.as_ref(),
+                        first_region,
+                    },
+                )
+                .map_err(|e| self.error(node, e))?
                 {
-                    evidence.insert(index, proof);
+                    evidence.insert(index, self.retain_trait_evidence(node, proof)?);
                 } else {
                     next.push(index);
                 }
             }
             if next.len() == before {
+                if self
+                    .infer
+                    .default_numbers()
+                    .map_err(|e| self.error(body, e))?
+                {
+                    pending = next;
+                    continue;
+                }
                 let node = self.call_types.obligations[next[0]].0;
                 return Err(self.error(node,"trait obligation requires an unambiguous matching assumption or implementation"));
             }
             pending = next;
         }
         Ok(evidence)
+    }
+
+    fn trait_region_start(&self, node: NodeId) -> Result<u32, Error> {
+        u32::try_from(self.facts.body_regions.len())
+            .ok()
+            .and_then(|n| n.checked_add(1))
+            .filter(|n| *n < 0x8000_0000)
+            .ok_or_else(|| self.error(node, "trait region identity space exhausted"))
+    }
+
+    fn retain_trait_evidence(&mut self, node: NodeId, evidence: Evidence) -> Result<Source, Error> {
+        use crate::sema::model::{
+            BodyRegion, BodyRegionOrigin, Outlives, RegionEquality, TypeOutlives,
+        };
+        if self.trait_region_start(node)? != evidence.regions.start {
+            return Err(self.error(node, "trait proof has foreign region identities"));
+        }
+        let source = self.key(node);
+        let region = BodyRegion {
+            body: self.body,
+            source,
+            origin: BodyRegionOrigin::Inference,
+        };
+        self.facts
+            .body_regions
+            .extend(evidence.regions.map(|_| region));
+        self.facts
+            .region_equalities
+            .extend(
+                evidence
+                    .equalities
+                    .into_iter()
+                    .map(|(left, right)| RegionEquality {
+                        body: self.body,
+                        left,
+                        right,
+                    }),
+            );
+        self.facts
+            .outlives
+            .extend(
+                evidence
+                    .outlives
+                    .into_iter()
+                    .map(|(longer, shorter)| Outlives {
+                        body: self.body,
+                        source,
+                        longer,
+                        shorter,
+                    }),
+            );
+        self.facts
+            .type_outlives
+            .extend(
+                evidence
+                    .type_outlives
+                    .into_iter()
+                    .map(|(ty, shorter)| TypeOutlives {
+                        body: self.body,
+                        source,
+                        ty,
+                        shorter,
+                    }),
+            );
+        if let Source::Implementation { owner, arguments } = evidence.source {
+            self.facts
+                .generics
+                .trait_selections
+                .entry(source)
+                .or_default()
+                .push(crate::sema::generics::ImplementationSelection { owner, arguments });
+        }
+        Ok(evidence.source)
     }
 
     pub(super) fn trait_assumptions(

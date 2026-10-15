@@ -10,7 +10,10 @@ use crate::{
     sema::{
         annotations::{Fields, Host, Scratch},
         model::Declarations,
-        traits::assumptions::{Assumptions, Selection},
+        traits::{
+            assumptions::Assumptions,
+            selection::{self, Selection},
+        },
     },
     types::{
         ItemId, TypeId,
@@ -211,7 +214,7 @@ pub(super) fn applicable(
             .map_err(inference)?;
         obligations.push((term, predicate.value.bound));
     }
-    if !trait_requirements(facts, context, &traits, caller.traits)? {
+    if !trait_requirements(facts, context, &traits, caller)? {
         return Ok(false);
     }
     if obligations.is_empty() {
@@ -247,28 +250,40 @@ pub(super) fn applicable(
     Ok(true)
 }
 fn trait_requirements(
-    facts: &Declarations,
+    facts: &mut Declarations,
     context: &mut Context,
     goals: &[infer::predicates::Predicate],
-    assumptions: Option<&Assumptions>,
+    caller: Caller<'_>,
 ) -> Result<bool, &'static str> {
     if goals.is_empty() {
         return Ok(true);
     }
     let empty = Assumptions::default();
-    let assumptions = assumptions.unwrap_or(&empty);
+    let assumptions = caller.traits.unwrap_or(&empty);
+    let mut first_region = u32::try_from(facts.body_regions.len())
+        .ok()
+        .and_then(|n| n.checked_add(1))
+        .ok_or("method trait region identity space exhausted")?;
     let mut pending: Vec<_> = goals.iter().collect();
     while !pending.is_empty() {
         let before = pending.len();
         let mut next = Vec::new();
         for goal in pending {
-            match assumptions
-                .select(&facts.types, context, goal)
-                .map_err(inference)?
+            match selection::select(
+                facts,
+                context,
+                goal,
+                selection::Caller {
+                    assumptions,
+                    environment: caller.environment,
+                    first_region,
+                },
+            )
+            .map_err(|_| "invalid or exhausted method trait selection")?
             {
                 Selection::Absent => return Ok(false),
                 Selection::Deferred => next.push(goal),
-                Selection::Proven(_) => {}
+                Selection::Proven(proof) => first_region = proof.regions.end,
             }
         }
         if next.len() == before {

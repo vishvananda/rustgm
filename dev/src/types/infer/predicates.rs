@@ -22,6 +22,13 @@ pub struct Predicate {
 }
 impl Predicate {
     #[must_use]
+    pub const fn builtin_bound(&self) -> Option<Bound> {
+        match &self.requirement {
+            Requirement::Builtin(bound) => Some(*bound),
+            Requirement::Trait(_) => None,
+        }
+    }
+    #[must_use]
     pub const fn subject(&self) -> TermId {
         self.subject
     }

@@ -166,6 +166,22 @@ outer lifetimes are rebased when entering or leaving a callable. Equalities of
 those outer lifetimes remain obligations, including explicit trait arguments.
 Lifetime-erased header overlap equations establish possible compatibility only.
 
+Body trait goals and inherent-method conditions consume the validated impl registry.
+Reuse its complete closed-application and outer-head partitions; probe each possible
+header in an isolated inference graph. Conditions are obligations under the caller's
+environment, never additional caller assumptions. Traverse recursive trait requests
+with an explicit worklist and a total work budget; an active cycle is not evidence.
+Cache completed requests that allocate no new lifetime identities, and collect a
+shared proof graph only once. Reusing evidence with new existential lifetimes requires
+fresh rebasing before it can enter a different proof.
+
+Each candidate allocates lifetime captures from an isolated view of the caller's
+next free identity. Only a selected proof publishes those variables, equalities,
+outlives and type-outlives obligations into the ordinary region checker. Retain the
+selected impl owner and its typed arguments at the body use. Failed alternatives
+must not publish variables or constrain the caller; possible applicability alone
+still cannot authorize an operation in a completed body.
+
 Dot calls retain the resolved receiver, canonical method name, lexical scope and
 written arguments. Type the receiver before selection. For each built-in reference
 dereference level, probe the value, shared borrow and mutable borrow in that order.
@@ -290,7 +306,11 @@ one of those local slots. Share ordinary shape/const equations and region mappin
 and cache rebasing for repeated variable uses. Canonical dependency flags keep
 ordinary trait arguments on the existing equality path without scanning types.
 
-An unknown whole Self is not inferred merely from an available caller assumption.
+An unconstrained whole Self is not inferred merely from an available caller assumption
+or impl. Numeric variables retain their integer or floating-point domain: search
+only compatible scalar heads, and infer a unique matching type when possible.
+Apply numeric defaults only after ordinary equations and trait progress stop,
+then retry the remaining goals. Candidate probes never apply numeric defaults.
 Other arguments may be inferred, and a bounded worklist revisits ambiguous goals
 after another goal constrains their shared arguments. Check declaration ambiguity
 even for unused owners. Distinct lifetime applications that remain type-compatible

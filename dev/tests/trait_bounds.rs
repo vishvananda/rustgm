@@ -17,6 +17,8 @@ mod inference;
 mod native;
 #[path = "helpers/qualify.rs"]
 mod rustc;
+#[path = "trait_bounds/selection.rs"]
+mod selection;
 #[path = "support/semantic.rs"]
 mod semantic;
 use rustgm::resolve::model::{DefId, DefKind};

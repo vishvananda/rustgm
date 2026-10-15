@@ -117,6 +117,8 @@ pub struct Predicate {
 }
 #[derive(Default)]
 pub struct Generics {
+    /// Selected impl evidence at body bound uses, after proving its conditions.
+    pub trait_selections: HashMap<crate::resolve::unit::NodeKey, Vec<ImplementationSelection>>,
     pub(super) implementations: Option<Box<super::traits::implementations::Implementations>>,
     pub(super) traits: Option<Box<super::traits::Contracts>>,
     pub(super) method_uses: HashMap<crate::resolve::unit::NodeKey, DeferredUse>,
@@ -139,6 +141,10 @@ pub struct Generics {
     pub(crate) referenced_constructors: std::collections::HashSet<ItemId>,
     pub annotation_uses: HashMap<crate::resolve::unit::NodeKey, AnnotationUse>,
     substitutions: HashMap<(DefId, GenericArgs), Bound>,
+}
+pub struct ImplementationSelection {
+    pub owner: DefId,
+    pub arguments: GenericArgs,
 }
 impl Generics {
     /// Only completed conformance records may authorize trait selection or dispatch.

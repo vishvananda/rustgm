@@ -60,6 +60,26 @@ fn unrelated_closed_arguments_do_not_create_overlap_probes()
             .as_ref()
             .is_some_and(|folder| folder.steps < 50_000)
     );
+    let owner = DefId(4105);
+    let predicate = registry
+        .header(owner)
+        .ok_or("missing closed header")?
+        .predicate;
+    let mut context = crate::types::infer::Context::default();
+    let mut substitution = crate::types::infer::Instantiation::new(&mut context, &store, &[])?;
+    let goal = context.instantiate_predicate(&mut store, predicate, &mut substitution)?;
+    assert!(
+        registry
+            .candidates(&mut store, &mut context, &goal)?
+            .is_empty()
+    );
+    registry.complete(owner, Vec::new())?;
+    let before = context.steps;
+    assert_eq!(
+        registry.candidates(&mut store, &mut context, &goal)?,
+        [owner]
+    );
+    assert!(context.steps - before < 100, "{}", context.steps - before);
     Ok(())
 }
 

@@ -1,6 +1,6 @@
 //! Prepared impl headers stay unavailable to selection until conformance succeeds.
 pub(in crate::sema) mod overlap;
-use super::heads::Head;
+use super::heads::{Head, Subject};
 use crate::{
     resolve::{model::DefId, unit::NodeKey},
     types::{ItemId, Kind, Store, parameters::predicates::Predicate, substitute},
@@ -32,6 +32,67 @@ pub(in crate::sema) struct Implementations {
     pairs: Vec<(usize, usize)>,
 }
 impl Implementations {
+    pub fn candidates(
+        &mut self,
+        store: &mut Store,
+        context: &mut crate::types::infer::Context,
+        goal: &crate::types::infer::predicates::Predicate,
+    ) -> Result<Vec<DefId>, crate::types::infer::Error> {
+        use crate::types::infer::Error;
+        let (item, _) = goal.trait_arguments().ok_or(Error::InvalidIdentity)?;
+        let Some(subject) = Subject::query(store, context, goal.subject())? else {
+            return Ok(Vec::new());
+        };
+        let shape = match context.resolved_predicate(store, goal) {
+            Ok(value)
+                if !value
+                    .contains_parameters(store)
+                    .map_err(|_| Error::InvalidIdentity)? =>
+            {
+                let folder = self
+                    .shapes
+                    .get_or_insert_with(|| Box::new(substitute::Bound::shape()));
+                let before = folder.steps;
+                let shape = folder
+                    .predicate(store, value)
+                    .map_err(|_| Error::InvalidIdentity)?;
+                context.account_work(folder.steps.saturating_sub(before))?;
+                Some(shape)
+            }
+            Ok(_) | Err(Error::Unresolved) => None,
+            Err(error) => return Err(error),
+        };
+        let mut result = Vec::new();
+        if let Some(shape) = shape {
+            self.append_candidates(context, self.closed.get(&(item, shape)), &mut result)?;
+        }
+        for head in subject.heads() {
+            let bucket = if shape.is_some() {
+                self.open.get(&(item, Some(head)))
+            } else {
+                self.heads.get(&(item, Some(head)))
+            };
+            self.append_candidates(context, bucket, &mut result)?;
+        }
+        self.append_candidates(context, self.heads.get(&(item, None)), &mut result)?;
+        result.sort_unstable_by_key(|id| id.0);
+        Ok(result)
+    }
+    fn append_candidates(
+        &self,
+        context: &mut crate::types::infer::Context,
+        bucket: Option<&Vec<usize>>,
+        output: &mut Vec<DefId>,
+    ) -> Result<(), crate::types::infer::Error> {
+        context.account_work(bucket.map_or(0, Vec::len))?;
+        for &index in bucket.into_iter().flatten() {
+            let entry = &self.entries[index];
+            if entry.validated {
+                output.push(entry.value.owner);
+            }
+        }
+        Ok(())
+    }
     pub fn prepare(
         &mut self,
         store: &mut Store,

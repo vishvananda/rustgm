@@ -1,7 +1,7 @@
 //! Function item inference consumes elaborated arguments and one checked template.
 use super::{Checker, Constructor, DefId, Error, NodeId, TermId, Type, TypeId};
 use crate::{
-    sema::{generics::SourceArgument, model::BodyRegionOrigin, traits::assumptions::Evidence},
+    sema::{generics::SourceArgument, model::BodyRegionOrigin, traits::selection::Source},
     types::{
         arguments::Argument as Canonical,
         infer::{self, arguments::Argument},
@@ -198,7 +198,7 @@ impl Checker<'_> {
         &mut self,
         solved: &infer::Solved,
         predicates: &[crate::types::parameters::predicates::Predicate],
-        evidence: &std::collections::HashMap<usize, Evidence>,
+        evidence: &std::collections::HashMap<usize, Source>,
     ) -> Result<(), Error> {
         for index in 0..self.call_types.generic.len() {
             let (node, owner, term) = self.call_types.generic[index];
@@ -247,9 +247,11 @@ impl Checker<'_> {
         }
         for (index, predicate) in predicates.iter().enumerate() {
             let node = self.call_types.obligations[index].0;
-            let predicate = evidence
-                .get(&index)
-                .map_or(*predicate, Evidence::assumption);
+            let predicate = match evidence.get(&index) {
+                Some(Source::Assumption(actual)) => *actual,
+                Some(Source::Implementation { .. }) => continue,
+                None => *predicate,
+            };
             self.prove_bound(node, predicate.ty, predicate.bound)?;
         }
         Ok(())
