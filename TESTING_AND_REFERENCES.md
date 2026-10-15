@@ -121,8 +121,8 @@ not grade LLVM IR or assume Rust's unspecified layout matches rustc. Test exact
 layouts where guaranteed or where the course contract deliberately specifies
 them. Keep runtime evidence separate from the raw LowIR text comparison.
 
-PA12 has 108 fixtures: 40 clean native executions, ten expected bounds panics,
-12 layout cases and 46 rejection or explicit stage-boundary cases. The manifest
+PA12 has 110 fixtures: 41 clean native executions, ten expected bounds panics,
+12 layout cases and 47 rejection or explicit stage-boundary cases. The manifest
 declares `--emit-layouts` as a supplementary mode; a case's mode must be one of
 the assignment's declared modes. `make test-layouts` checks declared size,
 alignment and field-offset vectors against candidate/committed text and rustc
@@ -183,8 +183,8 @@ is not counted as an unchanged-source native comparison. Course text oracles
 remain uninstrumented; 22 accepted counter programs check unchanged-source
 cleanup effects through both compilers. See `docs/pa17-validation.md`.
 
-PA18 adds 427 generic LowIR cases: 264 accepted and 163 rejected. There are
-261 executable comparisons and three deliberately divergent codegen-only
+PA18 adds 434 generic LowIR cases: 268 accepted and 166 rejected. There are
+265 executable comparisons and three deliberately divergent codegen-only
 controls. Their `native.kind: "codegen"` requires a nonempty reason and forbids
 runtime outcome fields; both compilers produce native code, but neither binary
 is executed. Counts report these separately. All other accepted LowIR cases

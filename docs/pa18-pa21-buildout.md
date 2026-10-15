@@ -2865,3 +2865,63 @@ The candidate SHA256 is
 `9e57d6d33db3a005c00ee05a4e38518f80a2f723a803b808d3a2a4752b95a5fe`.
 Qualification, validation and measurement receipts remain under
 `obj/pa19-work/qualified-calls-*`, with every raw observation under `obj/perf/`.
+
+## Alias inference and enum variant precedence
+
+The qualified-prefix boundaries identified above are now implemented. An alias
+value path with omitted type/const arguments uses the existing partial-annotation
+inference machinery; it preserves alias substitution, supplied lifetime slots
+and repeated parameter identity. Omitted slots infer even when the alias has
+defaults. Explicit type prefixes such as `<Alias<T>>::method` retain ordinary
+type-annotation rules: required arguments cannot disappear, and omitted defaulted
+arguments use their defaults. Partially written argument lists still require
+all nondefaulted slots. Prepared annotation facts are reused during traversal.
+
+Enum variants win over same-named inherent methods through aliases and explicit
+type prefixes. A shared lookup consumes the enum's resolved member bindings and
+access facts; publication retains the typed prefix for ordinary constructor
+inference. It also handles qualified tuple-constructor function values and unit
+variants in constants. Alias method names that are not variants still use the
+inherent method path. Explicit qualified record construction remains rejected:
+the pinned stable rustc reports that context as experimental.
+
+The maintainer corpus now covers 32 native programs and twelve independently
+rejected controls, in addition to the capture-identity invariant. Nine course
+fixtures exercise earlier owning features: PA12 gets qualified tuple/unit enum
+paths and a qualified-record rejection; PA18 gets alias value inference, inferred
+defaulted type/const arguments, qualified generic constructors and arity controls.
+Independent rustc acceptance and runtime qualification precede text generation;
+receipts retain the corrected exploratory expectations about alias defaults and
+explicit type-prefix arity. No method-selection ambiguity or trait functionality
+is claimed by these prefix fixes; the complete remaining PA19–PA21 work stays
+required.
+
+All 778 frontend tests pass in debug and release, all 3,792 active text cases
+pass, and native validation passes sixteen maintainer groups, 1,126 executable
+comparisons and three codegen-only comparisons. The sixteen existing PA13 runtime
+differences remain. Formatting, Clippy all/pedantic, the 488-file audit, 27 harness
+tests and upstream/reference integrity checks pass. No existing oracle bytes
+changed; the PA12/PA18 generation receipts include the nine new fixtures.
+
+Ten immutable performance jobs retain 180 observations, with A/A calibration,
+three paired ABBA blocks, CPU 2 and full/count output equality. No RustGM builds
+or tests overlap timing. The four baseline comparisons change by -1.1% for
+4,096 ordinary functions, +1.4% for 4,096 generic records, +0.9% for 1,024 generic
+method calls and +1.0% for 1,024 captured-lifetime method calls. New alias-method
+and alias-variant workloads use identical candidate binaries at 64/256/1,024
+calls: candidate medians are 7.12/15.68/50.59 ms and 8.53/21.62/73.52 ms.
+
+One initial generic-method paired block is +36.1%; its two slower candidate
+samples also consume more CPU time, so it cannot simply be attributed to time
+waiting for the scheduler. All observations remain retained. A focused repeat
+adds 54 samples: generic records change by -0.9%, generic methods by +0.8% and
+the identical-binary alias-method control by -0.9%. Repeat block changes for
+generic methods are -1.2%, +1.3% and approximately zero; the large first-block
+cost does not recur. This evidence is noisy and does not establish a speedup,
+zero overhead or a consistent regression.
+
+All 491 frozen source/config/test files and every binary/input hash were
+reverified. The candidate SHA256 is
+`4593a43159e488a818632cceaa7cb6ef91ea5975ce5a33af199123d94f70c217`.
+The 234 raw observations, independent qualification and validation receipts live
+under `obj/pa19-work/qualified-prefix-*` and `obj/perf/`.

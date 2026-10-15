@@ -123,6 +123,51 @@ const CASES: &[(&str, &str, bool)] = &[
         "struct S<'a>(&'a u8);impl<'unused:'a,'a>S<'a>{fn get(self)->&'a u8{self.0}}fn main(){let x=11;check(*S::get(S(&x))==11);}",
         false,
     ),
+    (
+        "alias-inference",
+        "struct S<T>(T);type A<T>=S<T>;impl<T>S<T>{fn get(self)->T{self.0}}fn main(){check(A::get(S(517u16))==517);check(A::<>::get(S(7u8))==7);}",
+        false,
+    ),
+    (
+        "alias-default-inference",
+        "struct S<T>(T);type A<T=u8>=S<T>;impl<T>S<T>{fn get(self)->T{self.0}}fn main(){let x:u16=A::get(S(517));check(x==517);}",
+        false,
+    ),
+    (
+        "alias-const-inference",
+        "struct S<const N:usize>([u8;N]);type A<const N:usize=1>=S<N>;impl<const N:usize>S<N>{fn get(self)->u8{self.0[N-1]}}fn main(){check(A::get(S([3,7]))==7);}",
+        false,
+    ),
+    (
+        "alias-lifetime-inference",
+        "struct S<'a,T>(&'a T);type A<'a,T>=S<'a,T>;impl<'a,T>S<'a,T>{fn get(self)->&'a T{self.0}}fn read<'a>(x:&'a u16)->&'a u16{A::<'a>::get(S(x))}fn main(){let x=517;check(*read(&x)==517);}",
+        false,
+    ),
+    (
+        "alias-variant-priority",
+        "enum E{V(u8)}type A=E;impl E{fn V()->u8{9}}fn main(){let E::V(x)=A::V(7);check(x==7);}",
+        false,
+    ),
+    (
+        "qualified-variant-priority",
+        "enum E{V(u8)}impl E{fn V()->u8{9}}fn main(){let E::V(x)=<E>::V(11);check(x==11);}",
+        false,
+    ),
+    (
+        "generic-variant-priority",
+        "enum E<T>{V(T)}type A<T>=E<T>;impl<T>E<T>{fn V()->u8{9}}fn main(){let E::V(x)=A::V(517u16);check(x==517);let E::V(y)=<E<_>>::V(7u8);check(y==7);}",
+        false,
+    ),
+    (
+        "qualified-unit-variant",
+        "enum E{V}impl E{fn V()->u8{9}}const C:E=<E>::V;fn main(){let E::V=C;let E::V=<E>::V;}",
+        false,
+    ),
+    (
+        "enum-alias-method",
+        "enum E<T>{V(T)}type A<T>=E<T>;impl<T>E<T>{fn get(self)->T{let E::V(x)=self;x}}fn main(){check(A::get(A::V(517u16))==517);}",
+        false,
+    ),
 ];
 
 fn prove(source: &str) -> Result<(), Box<dyn std::error::Error>> {
@@ -183,6 +228,22 @@ fn selected_method_constraints_do_not_disappear_in_call_formation()
         (
             "impl-lifetime-in-method",
             "struct S<'a>(&'a u8);impl<'a>S<'a>{fn choose<'b>(self,x:&'b u8)->&'b u8 where 'b:'a{x}}fn main(){let x=7;let _=S::choose::<'_, '_>(S(&x),&x);}",
+        ),
+        (
+            "explicit-alias-needs-arguments",
+            "struct S<T>(T);type A<T>=S<T>;impl<T>S<T>{fn get(self)->T{self.0}}fn main(){let _=<A>::get(S(7u8));}",
+        ),
+        (
+            "partial-alias-needs-arguments",
+            "struct S<T,U>(T,U);type A<T,U>=S<T,U>;impl<T,U>S<T,U>{fn get(self)->T{self.0}}fn main(){let _=A::<u8>::get(S(7,9u16));}",
+        ),
+        (
+            "qualified-variant-arguments",
+            "enum E<T>{V(T)}fn main(){let _=<E<u8>>::V::<u8>(7);}",
+        ),
+        (
+            "explicit-alias-retains-default",
+            "struct S<T>(T);type A<T=u8>=S<T>;impl<T>S<T>{fn get(self)->T{self.0}}fn main(){let _=<A>::get(S(517u16));}",
         ),
     ] {
         rustc::qualify(&format!("qualified-{name}"), source, false)?;

@@ -6625,6 +6625,102 @@
         "kind": "execute",
         "outcome": "panic"
       }
+    },
+    {
+      "path": "tests/spec/aliases/infer-value-prefix.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.aliases"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aliases/infer-default-prefix.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.aliases"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aliases/infer-enum-prefix.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.aliases"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/constructors/qualified-variants.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.constructors"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aliases/reject-qualified-missing-arguments.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.aliases"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/aliases/reject-partial-value-arguments.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.aliases"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/constructors/reject-qualified-variant-arguments.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.constructors"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
     }
   ]
 }

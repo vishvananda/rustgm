@@ -159,8 +159,8 @@ have documented rustc acceptance differences.
 
 ## Validation
 
-The suite declares 427 fixtures: 264 accepted and 163 rejected. Of the accepted
-programs, 261 execute through both pinned rustc and the qualified CPPGM backend;
+The suite declares 434 fixtures: 268 accepted and 166 rejected. Of the accepted
+programs, 265 execute through both pinned rustc and the qualified CPPGM backend;
 three intentionally diverge and must only undergo code generation. Growing-instance
 rejections use rustc object generation: metadata-only success cannot qualify them.
 No compilation-only result counts as a runtime comparison. Native panic cases

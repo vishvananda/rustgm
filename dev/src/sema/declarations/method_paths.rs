@@ -1,22 +1,11 @@
 //! Qualified inherent paths consume typed owner buckets before body inference.
-use super::{Checker, DefId, DefKind, Error, Kind, NodeId, NodeKey, Target, Type, Work, regions};
+use super::associated::Path;
+use super::{Checker, DefKind, Error, Kind, NodeId, NodeKey, Target, Type, Work, regions};
 use crate::{
-    resolve::{
-        model::{Access, Namespace, ScopeId},
-        names::NameId,
-    },
+    resolve::model::{Access, Namespace},
     sema::{associated::OwnerKind, methods::Qualified},
     types::ItemId,
 };
-
-struct Path {
-    prefix: NodeKey,
-    suffix: NodeKey,
-    owner: Option<DefId>,
-    nominal: ItemId,
-    name: NameId,
-    scope: ScopeId,
-}
 
 impl Checker<'_> {
     pub(super) fn index_inherent_methods(&mut self) -> Result<(), Error> {
@@ -69,6 +58,15 @@ impl Checker<'_> {
             self.named_method_path(key)
         };
         let Some(path) = path else { return Ok(false) };
+        if let Some(variant) =
+            self.enum_variant(key, path.nominal, path.name, path.namespace, path.scope)?
+        {
+            if path.owner.is_some() {
+                return Ok(false);
+            }
+            self.select_qualified_variant(key, &path, variant)?;
+            return Ok(true);
+        }
         self.complete_method_path(key, &path, context, steps, limit, scan)
     }
 
@@ -103,6 +101,7 @@ impl Checker<'_> {
             nominal,
             name: path.suffix[0].1,
             scope: path.scope,
+            namespace: path.namespace,
         })
     }
 
@@ -129,7 +128,7 @@ impl Checker<'_> {
             node: path.suffix[0].0,
             ..key
         };
-        let (name, scope) = (path.suffix[0].1, path.scope);
+        let (name, scope, namespace) = (path.suffix[0].1, path.scope, path.namespace);
         self.annotation_holes(prefix, steps, limit, scan)?;
         self.node_work(prefix.file, prefix.node, context);
         self.drain(steps, limit)?;
@@ -143,6 +142,7 @@ impl Checker<'_> {
             nominal,
             name,
             scope,
+            namespace,
         }))
     }
 
@@ -188,6 +188,9 @@ impl Checker<'_> {
         limit: usize,
         scan: &mut Vec<NodeId>,
     ) -> Result<bool, Error> {
+        if path.namespace != Namespace::Value {
+            return Ok(false);
+        }
         let Some(candidates) = self.facts.methods.inherent.get(&(path.nominal, path.name)) else {
             return Ok(false);
         };
@@ -225,7 +228,9 @@ impl Checker<'_> {
                 self.annotation_holes(prefix, steps, limit, scan)?;
                 self.work
                     .push(Work::AssociatedPrefix(prefix, owner, context));
-                self.work.push(Work::PathArguments(prefix, owner, context));
+                if !self.inferred_expression_alias(prefix, owner, context)? {
+                    self.work.push(Work::PathArguments(prefix, owner, context));
+                }
             } else if self.facts.generics.parameters.contains_key(&owner) {
                 self.schedule_item_arguments(prefix, owner, context, steps, limit, scan)?;
             } else {

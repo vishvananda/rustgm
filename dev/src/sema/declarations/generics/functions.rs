@@ -46,7 +46,7 @@ impl Checker<'_> {
         })
     }
 
-    fn item_argument_lists(
+    pub(super) fn item_argument_lists(
         &self,
         key: NodeKey,
         owner: DefId,
@@ -112,6 +112,9 @@ impl Checker<'_> {
         if self.report.resolution.definitions[owner.0 as usize].kind
             == crate::resolve::model::DefKind::TypeAlias
         {
+            if self.inferred_expression_alias(key, owner, context)? {
+                return Ok(());
+            }
             self.annotation_holes(key, steps, limit, scan)?;
             self.node_work(key.file, key.node, context);
             return Ok(());

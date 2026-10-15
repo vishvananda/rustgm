@@ -1725,6 +1725,33 @@
       "native": {
         "outcome": "panic"
       }
+    },
+    {
+      "path": "tests/spec/enums/reject-qualified-record-variant.rs",
+      "exit_status": 1,
+      "features": [
+        "pa12.enums"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/enums/qualified-variants.rs",
+      "exit_status": 0,
+      "features": [
+        "pa12.enums"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "pass"
+      }
     }
   ]
 }

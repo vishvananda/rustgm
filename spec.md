@@ -102,6 +102,13 @@ the instantiated impl target with the typed prefix. Check inherited predicates
 as well as method predicates. A declaration or required trait signature alone
 does not authorize executable dispatch.
 
+An alias used as a value prefix with no written type/const arguments infers all
+those arguments, including slots with defaults; explicit type qualification
+retains ordinary type-annotation arity and default rules. Store this distinction
+in the shared partial-annotation facts, not synthetic syntax. Enum variants take
+precedence over same-named inherent functions for associated paths. Alias and
+explicit type prefixes reuse the enum's resolved bindings and constructor facts.
+
 Receiver syntax binds the whole value or reference. A reference directly to Self
 supplies the output-elision lifetime; nested reference receivers use ordinary
 input elision. Explicit receivers retain their terminal type and prove equality
