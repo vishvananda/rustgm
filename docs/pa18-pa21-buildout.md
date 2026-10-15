@@ -4219,3 +4219,75 @@ repeat observations and 78 direct-fold observations. No local RustGM build, test
 or unrelated probe overlapped timing. Full/count or repeated-driver output and
 source, input and binary hashes pass. The receipt is
 `obj/pa20-work/projections-v1/validation-v1.json`.
+
+## PA20 associated type declarations and conformance
+
+Projection checkpoint `042661c` passed CI run 38749084673. Source trait declarations
+can now require non-parameterized associated types, and trait implementations can
+define them using concrete types or their own type, const and lifetime parameters.
+Each declaration retains its canonical projection and result contract. Required
+definitions are matched in the type namespace and published with the validated
+implementation as declaration/definition identity pairs; the semantic view emits
+`impl-type owner=... declaration=... definition=...` in declaration order.
+
+Definitions must be present, belong to the trait, have inherited visibility and
+provide a right-hand type without additional item bounds. Stable-profile checks
+reject inherent associated types and associated type defaults in traits. Builtin
+Sized, Copy and Clone requirements are checked by identity. The implicit Sized
+bound can be relaxed with `?Sized`. A definition's well-formedness and lifetime
+requirements are proved even when unused, under the impl environment. Unlike an
+ordinary alias, an unused definition cannot defer an invalid underlying type.
+Lifetime queries and their constraint environment are shared across all associated
+definitions of one impl; another impl's successful proof grants no permission.
+
+Thirty-one source acceptance/rejection controls agree with pinned rustc. Typed
+tests separately check projection ownership, Self, result contracts and the selected
+definition mapping, including reversed declaration order and distinct type/value
+namespaces. New native controls execute default and overridden methods on traits
+with associated types. The full debug maintainer run passed 949 tests before the
+final shared-lifetime-query adjustment and four additional source controls. The
+final candidate passed 141 affected optimized tests, including all 31 controls,
+the new native programs and the existing trait native suite. Formatting, Clippy
+all/pedantic, the 585-file audit, 27 harness tests and all 4,859 course cases pass.
+
+The existing PA18 and PA19 associated-type boundary programs still reject: their
+declarations now pass, and the unsupported projected-type annotation is diagnosed
+at offsets 76 and 70. Both programs were independently rechecked as rustc-accepted.
+Only those two diagnostic sidecars and the owning reference provenance records
+were regenerated; source fixtures, statuses and other oracle bytes are unchanged.
+The declared update review is in
+`obj/pa20-work/associated-declarations-v1/declared-boundary-updates-v1.json`.
+
+The frozen compiler SHA256 is
+`8e0780114aeca3edbe3798189bbd89235f498fd2084ad69b8b5fec17c6fc9e6b`;
+588 source/config/test files are archived under
+`obj/pa20-work/associated-declarations-v1/source-v1`. Twelve ordinary workloads
+match the published projection compiler in full and count semantic bytes. Six
+new scaling workloads are independently accepted by pinned rustc and have exactly
+the declared number of implementation-type records. A/A calibration and five
+paired ABBA blocks per input retain 468 initial observations; three repeated
+ordinary workloads add 78, for 546 retained observations. No local RustGM build,
+test or unrelated probe overlapped timing. Source, binary and input hash checks
+and every output equality check pass.
+
+Initial ordinary paired medians range from -5.5% to +5.6%, with A/A spreads of
+3.4–65.2%. Repeats for failed-width 128, receiver-rigid 1024 and concrete-goals 1024
+yield +6.0%, +0.6% and +5.5%, with A/A spreads of 4.9%, 5.7% and 2.0%. These
+positive observations remain part of the record; this checkpoint establishes no
+speedup or absence of cost. Same-binary associated declaration widths 128, 512 and
+2,048 take median 6.93, 13.55 and 39.99 ms, with peak resident medians 5,750,
+7,142 and 9,972 KiB. Distinct associated impl counts 128, 512 and 2,048 take
+11.18, 26.76 and 95.96 ms, with peak resident medians 6,448, 7,858 and 14,200 KiB.
+Those new-feature scaling measurements have no older supported implementation to
+compare. The validation receipt is
+`obj/pa20-work/associated-declarations-v1/validation-v1.json`.
+
+PA20 and PA21 remain planned. Source projection paths, normalization, equality
+predicates, arbitrary user-trait/lifetime associated bounds and associated constants
+still need implementation; unsupported contracts diagnose rather than disappear.
+Associated type parameters and item where clauses remain the explicit advanced
+generic boundary. Next, connect projection elaboration and normalization to the
+typed implementation mapping and scoped selection evidence, preserving unresolved
+generic projections without treating their inputs as injective. Concrete layout
+and lowering must consume normalized results. Do not confuse the completed
+declaration checks with complete projected-type usage or assignment release.

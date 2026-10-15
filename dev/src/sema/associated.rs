@@ -11,6 +11,12 @@ use crate::{
 };
 use std::collections::HashMap;
 
+/// Requirements on a projected result, distinct from assumptions about its inputs.
+pub struct TypeContract {
+    pub projection: TypeId,
+    pub bounds: Vec<crate::types::parameters::predicates::Bound>,
+}
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct OwnerId(pub u32);
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -63,8 +69,13 @@ pub struct Inventory {
     members: Vec<Member>,
     declarations: HashMap<DefId, OwnerId>,
     schemas: HashMap<OwnerId, Schema>,
+    pub(in crate::sema) types: HashMap<DefId, TypeContract>,
 }
 impl Inventory {
+    #[must_use]
+    pub fn type_contract(&self, declaration: DefId) -> Option<&TypeContract> {
+        self.types.get(&declaration)
+    }
     #[must_use]
     pub fn owners(&self) -> &[Owner] {
         &self.owners

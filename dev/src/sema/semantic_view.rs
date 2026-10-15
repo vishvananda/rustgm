@@ -214,6 +214,13 @@ fn implementations(facts: &Declarations, out: &mut impl Write) -> io::Result<()>
                 selected.is_none()
             )?;
         }
+        for &(declaration, definition) in &implementation.types {
+            writeln!(
+                out,
+                "impl-type owner={} declaration={} definition={}",
+                implementation.owner.0, declaration.0, definition.0
+            )?;
+        }
     }
     Ok(())
 }

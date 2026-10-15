@@ -20,7 +20,7 @@ pub(in super::super) struct Syntax {
     bound: Written,
 }
 #[derive(Clone, Copy)]
-enum Written {
+pub(in super::super) enum Written {
     Trait(Bound),
     User { path: NodeKey, definition: DefId },
     Outlives(NodeKey),
@@ -216,7 +216,7 @@ impl Checker<'_> {
             };
         }
     }
-    fn trait_bound(&self, mut key: NodeKey) -> Result<Written, Error> {
+    pub(in super::super) fn trait_bound(&self, mut key: NodeKey) -> Result<Written, Error> {
         loop {
             if self.lifetime_argument(key) {
                 return Err(self.error(

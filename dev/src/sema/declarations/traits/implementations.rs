@@ -50,17 +50,17 @@ impl Checker<'_> {
                     "trait and implementation safety declarations disagree",
                 ));
             }
-            // Associated types/constants still need PA20 elaboration. Preserve
-            // the explicit impl boundary before ordinary definition scheduling
-            // encounters a required associated item without a definition.
+            // Associated constants retain their explicit elaboration boundary.
             let unsupported = unsupported.get_or_insert_with(|| {
                 self.facts
                     .associated
                     .members()
                     .iter()
                     .filter(|member| {
-                        self.report.resolution.definitions[member.definition.0 as usize].kind
-                            != DefKind::Function
+                        !matches!(
+                            self.report.resolution.definitions[member.definition.0 as usize].kind,
+                            DefKind::Function | DefKind::TypeAlias
+                        )
                     })
                     .map(|member| member.owner)
                     .collect::<std::collections::HashSet<_>>()
@@ -102,6 +102,7 @@ impl Checker<'_> {
                         source: owner.source,
                         predicate,
                         methods: Vec::new(),
+                        types: Vec::new(),
                     },
                 )
                 .map_err(|e| self.error(owner.source, e))?;

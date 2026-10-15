@@ -1,4 +1,5 @@
 //! Trait Self has its own identity; source generic parameter indices remain unchanged.
+mod associated_types;
 mod implementations;
 use super::{Checker, Error, ItemId, Kind, NodeKey, Type, regions};
 use crate::{

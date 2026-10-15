@@ -71,6 +71,14 @@ sets are not implementation evidence or an injectivity proof. Concrete layout,
 Copy/equality, destruction and lifetime queries must not infer result properties
 from an unfamiliar constructor or silently treat it as a primitive.
 
+An associated type definition is checked under its impl's immutable environment,
+including when no caller uses it. Prove its well-formedness, declared result
+bounds and lifetime requirements; the definition itself cannot add assumptions.
+Match required types by declaration identity and type namespace, retain the
+selected definition with the validated implementation, and share lifetime queries
+across all associated definitions of that impl. An ordinary alias's deferred
+well-formedness policy must not weaken an associated type contract.
+
 Built-in semantic traits retain their own definition identities; a user item
 with the same spelling cannot acquire language behavior. Resolve aliases and
 qualified paths through ordinary typed namespace facts. Demand external metadata

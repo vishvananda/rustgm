@@ -22,6 +22,8 @@ pub struct Implementation {
     pub predicate: Predicate,
     /// Trait declaration identity paired with an override, or its checked default.
     pub methods: Vec<(DefId, Option<DefId>)>,
+    /// Trait associated type identity paired with the implementing definition.
+    pub types: Vec<(DefId, DefId)>,
 }
 struct Entry {
     value: Implementation,
@@ -239,6 +241,7 @@ impl Implementations {
         &mut self,
         owner: DefId,
         mut methods: Vec<(DefId, Option<DefId>)>,
+        mut types: Vec<(DefId, DefId)>,
     ) -> Result<(), &'static str> {
         let index = *self
             .owners
@@ -252,7 +255,12 @@ impl Implementations {
         if methods.windows(2).any(|pair| pair[0].0 == pair[1].0) {
             return Err("implementation repeats a selected method declaration");
         }
+        types.sort_unstable_by_key(|(declaration, _)| declaration.0);
+        if types.windows(2).any(|pair| pair[0].0 == pair[1].0) {
+            return Err("implementation repeats an associated type declaration");
+        }
         entry.value.methods = methods;
+        entry.value.types = types;
         entry.validated = true;
         Ok(())
     }
