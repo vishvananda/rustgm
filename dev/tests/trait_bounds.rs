@@ -21,6 +21,12 @@ mod dispatch_native;
 mod equality;
 #[path = "trait_bounds/implementations.rs"]
 mod implementations;
+#[path = "trait_bounds/implicit_native.rs"]
+mod implicit_native;
+#[path = "trait_bounds/implicit_paths.rs"]
+mod implicit_paths;
+#[path = "trait_bounds/implicit_scope.rs"]
+mod implicit_scope;
 #[path = "trait_bounds/inference.rs"]
 mod inference;
 #[path = "harness/native_references.rs"]

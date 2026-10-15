@@ -13,6 +13,14 @@ impl Checker<'_> {
             let owner = self.facts.associated.get(member.owner).ok_or_else(|| {
                 Error::at(crate::resolve::unit::FileId(0), 0, "invalid method owner")
             })?;
+            let definition = &self.report.resolution.definitions[member.definition.0 as usize];
+            if definition.kind != DefKind::Function {
+                continue;
+            }
+            if matches!(owner.kind, OwnerKind::Trait { .. }) {
+                self.facts.methods.trait_names.insert(definition.name);
+                continue;
+            }
             if !matches!(
                 owner.kind,
                 OwnerKind::Impl {
@@ -20,10 +28,6 @@ impl Checker<'_> {
                     ..
                 }
             ) {
-                continue;
-            }
-            let definition = &self.report.resolution.definitions[member.definition.0 as usize];
-            if definition.kind != DefKind::Function {
                 continue;
             }
             let schema = self
@@ -60,7 +64,10 @@ impl Checker<'_> {
         } else {
             self.named_method_path(key)
         };
-        let Some(path) = path else { return Ok(false) };
+        let Some(path) = path else {
+            return self.schedule_implicit_method(key, context, steps, limit, scan);
+        };
+        self.method_path_segments(key, path.prefix, path.suffix)?;
         if let Some(variant) =
             self.enum_variant(key, path.nominal, path.name, path.namespace, path.scope)?
         {
@@ -70,7 +77,10 @@ impl Checker<'_> {
             self.select_qualified_variant(key, &path, variant)?;
             return Ok(true);
         }
-        self.complete_method_path(key, &path, context, steps, limit, scan)
+        if self.complete_method_path(key, &path, context, steps, limit, scan)? {
+            return Ok(true);
+        }
+        self.schedule_implicit_method(key, context, steps, limit, scan)
     }
 
     fn named_method_path(&self, key: NodeKey) -> Option<Path> {
@@ -135,9 +145,9 @@ impl Checker<'_> {
         self.annotation_holes(prefix, steps, limit, scan)?;
         self.node_work(prefix.file, prefix.node, context);
         self.drain(steps, limit)?;
-        let nominal = self
-            .nominal_prefix(prefix)
-            .ok_or_else(|| self.error(key, "qualified method requires a local nominal prefix"))?;
+        let Some(nominal) = self.nominal_prefix(prefix) else {
+            return Ok(None);
+        };
         Ok(Some(Path {
             prefix,
             suffix,
@@ -182,28 +192,49 @@ impl Checker<'_> {
         }
     }
 
-    fn complete_method_path(
-        &mut self,
+    pub(super) fn method_path_segments(
+        &self,
         key: NodeKey,
-        path: &Path,
+        prefix: NodeKey,
+        suffix: NodeKey,
+    ) -> Result<(), Error> {
+        if let crate::syntax::ast::Kind::Path { segments, .. } = self.kind(key) {
+            for &node in self
+                .report
+                .package
+                .unit(key.file)
+                .configured
+                .ast
+                .list(segments)
+            {
+                if node != prefix.node
+                    && node != suffix.node
+                    && crate::sema::lifetimes::arguments(
+                        self.report,
+                        NodeKey { node, ..key },
+                        false,
+                    )?
+                    .is_some()
+                {
+                    return Err(
+                        self.error(key, "generic arguments require the type or method segment")
+                    );
+                }
+            }
+        }
+        Ok(())
+    }
+
+    pub(super) fn prepare_method_prefix(
+        &mut self,
+        prefix: NodeKey,
+        owner: Option<super::DefId>,
         context: regions::Context,
         steps: &mut usize,
         limit: usize,
         scan: &mut Vec<NodeId>,
-    ) -> Result<bool, Error> {
-        if path.namespace != Namespace::Value {
-            return Ok(false);
-        }
-        let Some(candidates) = self.facts.methods.inherent.get(&(path.nominal, path.name)) else {
-            return Ok(false);
-        };
-        let unique = if let [method] = candidates.as_slice() {
-            Some(*method)
-        } else {
-            None
-        };
-        let prefix = path.prefix;
-        if let Some(owner) = path.owner {
+    ) -> Result<(), Error> {
+        if let Some(owner) = owner {
             self.facts
                 .node_mut(prefix)
                 .ok_or_else(|| Error::at(prefix.file, 0, "missing method prefix fact"))?
@@ -225,13 +256,44 @@ impl Checker<'_> {
             }
             self.drain(steps, limit)?;
         }
-        let method = if let Some(method) = unique {
+        if owner.is_none() {
+            self.annotation_holes(prefix, steps, limit, scan)?;
+            self.node_work(prefix.file, prefix.node, context);
+            self.drain(steps, limit)?;
+        }
+        Ok(())
+    }
+
+    fn complete_method_path(
+        &mut self,
+        key: NodeKey,
+        path: &Path,
+        context: regions::Context,
+        steps: &mut usize,
+        limit: usize,
+        scan: &mut Vec<NodeId>,
+    ) -> Result<bool, Error> {
+        if path.namespace != Namespace::Value {
+            return Ok(false);
+        }
+        let Some(candidates) = self.facts.methods.inherent.get(&(path.nominal, path.name)) else {
+            return Ok(false);
+        };
+        let unique = if let [method] = candidates.as_slice() {
+            Some(*method)
+        } else {
+            None
+        };
+        let prefix = path.prefix;
+        self.prepare_method_prefix(prefix, path.owner, context, steps, limit, scan)?;
+        let has_traits = self.facts.methods.trait_names.contains(&path.name);
+        let method = if let Some(method) = unique.filter(|_| !has_traits) {
             method
         } else {
             self.selection_prefix(prefix, path.owner, context)?;
             let environment = self.selection_environment(key, context);
             let traits = self.selection_trait_assumptions(key, context, environment.as_ref())?;
-            crate::sema::methods::selection::choose(
+            let selected = crate::sema::methods::selection::choose(
                 self.report,
                 &mut self.facts,
                 key,
@@ -242,7 +304,15 @@ impl Checker<'_> {
                     environment: environment.as_ref(),
                     traits: traits.as_deref(),
                 },
-            )?
+            )?;
+            let Some(method) = selected else {
+                return if has_traits {
+                    Ok(false)
+                } else {
+                    Err(self.error(key, "no applicable inherent method for this prefix"))
+                };
+            };
+            method
         };
         let definition = &self.report.resolution.definitions[method.0 as usize];
         let module = self.report.resolution.scopes[path.scope.0 as usize].module;

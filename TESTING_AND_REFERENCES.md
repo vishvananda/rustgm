@@ -227,8 +227,12 @@ The `trait_bounds/qualification*.rs` tests add 47 acceptance controls and 28
 executable programs for `<T as Trait>::method`, covering explicit Self, inference
 holes, defaults, aliases, imports, macros and captured lifetimes. Their unsafe-call
 control separately checks rustc acceptance and RustGM's existing PA27 boundary.
-Unqualified `T::method` and general dot trait lookup remain pending, so PA19 is
-still planned.
+The `trait_bounds/implicit*.rs` tests cover `T::method`, `Self::method` and
+`<T>::method`, including bounds, inherent fallback, enum variants, imports,
+macro scopes and arguments that must not disambiguate a name. Executable checks
+verify the chosen body. Concrete and rigid scaling controls combine 1,024
+unimported homonyms with 1,024 independent call scopes. General dot trait lookup
+remains pending, so PA19 is still planned.
 
 ## Placement and provenance
 

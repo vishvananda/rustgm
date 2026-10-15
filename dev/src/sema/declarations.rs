@@ -7,6 +7,7 @@ mod deferred_arguments;
 mod destructors;
 mod generics;
 mod impl_headers;
+mod implicit_methods;
 mod lifetimes;
 mod method_overlap;
 mod method_paths;

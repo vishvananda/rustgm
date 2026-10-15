@@ -35,6 +35,87 @@ struct Prefix<'a> {
     infer: Context,
     terms: HashMap<NodeKey, TermId>,
 }
+
+pub(in crate::sema) fn choose_trait_path(
+    report: &Report,
+    facts: &mut Declarations,
+    key: NodeKey,
+    prefix: NodeKey,
+    site: (ScopeId, NameId),
+    caller: Caller<'_>,
+) -> Result<DefId, Error> {
+    let mut source = Prefix {
+        report,
+        facts,
+        infer: Context::default(),
+        terms: HashMap::new(),
+    };
+    let term = Scratch::default().infer(&mut source, prefix)?;
+    let error = |message: &str| Declarations::error(report, key, message);
+    let groups =
+        trait_groups(report, source.facts, &mut source.infer, term, site, caller).map_err(error)?;
+    for candidates in groups {
+        let mut selected = None;
+        for method in candidates {
+            let owner = source
+                .facts
+                .associated
+                .trait_owner(method)
+                .ok_or_else(|| error("missing trait candidate owner"))?;
+            let mut probe = Context::default();
+            let prefix = probe
+                .import(&source.facts.types, &mut source.infer, term)
+                .map_err(|e| error(&e.to_string()))?;
+            let possible =
+                applicable(source.facts, &mut probe, prefix, owner, None, caller).map_err(error)?;
+            account_probe(source.facts, probe.steps).map_err(error)?;
+            if possible && selected.replace(method).is_some() {
+                return Err(error("multiple applicable trait methods"));
+            }
+        }
+        if let Some(method) = selected {
+            return Ok(method);
+        }
+    }
+    Err(error("no applicable trait method for this prefix"))
+}
+
+pub(super) fn trait_groups(
+    report: &Report,
+    facts: &mut Declarations,
+    source: &mut Context,
+    prefix: TermId,
+    site: (ScopeId, NameId),
+    caller: Caller<'_>,
+) -> Result<[Vec<DefId>; 2], &'static str> {
+    if facts.methods.visible.is_none() {
+        facts.methods.visible = Some(Box::new(super::visible::Index::new(report, facts)?));
+    }
+    let parameter = match source.head(&facts.types, prefix).map_err(inference)? {
+        Some(infer::Constructor::Parameter(parameter)) => Some(parameter),
+        _ => None,
+    };
+    let bound_traits = parameter
+        .zip(caller.traits)
+        .map_or(&[][..], |(parameter, traits)| {
+            traits.parameter_traits(parameter)
+        });
+    facts
+        .methods
+        .visible
+        .as_mut()
+        .ok_or("missing trait visibility index")?
+        .groups(report, site.0, site.1, bound_traits)
+}
+
+pub(super) fn account_probe(facts: &mut Declarations, steps: usize) -> Result<(), &'static str> {
+    facts.methods.selection_probes += 1;
+    facts.methods.selection_steps = facts.methods.selection_steps.saturating_add(steps);
+    if facts.methods.selection_steps > 1_000_000 {
+        return Err("method selection work budget exceeded");
+    }
+    Ok(())
+}
 impl Host for Prefix<'_> {
     fn report(&self) -> &Report {
         self.report
@@ -64,7 +145,7 @@ pub(in crate::sema) fn choose(
     bucket: (ItemId, NameId),
     scope: ScopeId,
     caller: Caller<'_>,
-) -> Result<DefId, Error> {
+) -> Result<Option<DefId>, Error> {
     let mut source = Prefix {
         report,
         facts,
@@ -113,7 +194,7 @@ pub(in crate::sema) fn choose(
             return Err(error("multiple applicable inherent methods"));
         }
     }
-    selected.ok_or_else(|| error("no applicable inherent method for this prefix"))
+    Ok(selected)
 }
 
 pub(super) fn candidates(
@@ -122,6 +203,14 @@ pub(super) fn candidates(
     prefix: TermId,
     key: (ItemId, NameId),
 ) -> Result<Vec<DefId>, &'static str> {
+    let bucket = facts
+        .methods
+        .inherent
+        .get(&key)
+        .ok_or("missing method bucket")?;
+    if bucket.len() == 1 {
+        return Ok(bucket.clone());
+    }
     match context.resolved(&mut facts.types, prefix) {
         Ok(ty) if facts.types.contains_parameters(ty) == Some(false) => {
             let shapes = facts
@@ -169,7 +258,11 @@ pub(super) fn applicable(
         .ok_or("missing candidate schema")?
         .self_type;
     let target = receiver.unwrap_or(target);
-    let ids = facts.generics.parameter_ids(&facts.types, owner)?;
+    let ids = if facts.associated.trait_owner(owner).is_some() {
+        facts.generics.callable_parameters(&facts.types, owner)?.1
+    } else {
+        facts.generics.parameter_ids(&facts.types, owner)?
+    };
     let mut bindings = Vec::with_capacity(ids.len());
     let mut obligations = Vec::new();
     let mut traits = Vec::new();

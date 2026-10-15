@@ -3,9 +3,15 @@ use super::heads::{Head, Subject};
 use crate::types::{
     ItemId, Store,
     infer::{self, Context, predicates::Predicate as Goal},
-    parameters::predicates::{Bound, Predicate},
+    parameters::{
+        ParameterId,
+        predicates::{Bound, Predicate},
+    },
 };
-use std::collections::{HashMap, HashSet};
+use std::{
+    collections::{HashMap, HashSet},
+    sync::OnceLock,
+};
 #[cfg(test)]
 mod tests;
 
@@ -13,6 +19,7 @@ mod tests;
 pub(in crate::sema) struct Assumptions {
     candidates: HashMap<(ItemId, Head), Vec<Predicate>>,
     seen: HashSet<Predicate>,
+    parameter_traits: OnceLock<HashMap<ParameterId, Vec<ItemId>>>,
 }
 
 /// Equations against this actual caller assumption have been committed to inference.
@@ -31,6 +38,20 @@ impl Evidence {
 }
 
 impl Assumptions {
+    pub fn parameter_traits(&self, parameter: ParameterId) -> &[ItemId] {
+        self.parameter_traits
+            .get_or_init(|| {
+                let mut index: HashMap<ParameterId, Vec<ItemId>> = HashMap::new();
+                for &(item, head) in self.candidates.keys() {
+                    if let Head::Parameter(parameter) = head {
+                        index.entry(parameter).or_default().push(item);
+                    }
+                }
+                index
+            })
+            .get(&parameter)
+            .map_or(&[], Vec::as_slice)
+    }
     /// Canonical goals keep caller parameters rigid. Any resulting region equations
     /// remain obligations of the caller's declaration or body lifetime proof.
     pub fn prove_canonical(
@@ -55,6 +76,7 @@ impl Assumptions {
             return Err(infer::Error::Budget);
         }
         if self.seen.insert(predicate) {
+            self.parameter_traits.take();
             let head = Head::canonical(
                 store
                     .kind(predicate.ty)

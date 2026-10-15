@@ -3867,3 +3867,76 @@ All 552 source/config/test files are archived under
 The receipt is `obj/pa19-work/selection-validation-v1.json`; qualifications, earlier
 failed checks and measurements remain under `obj/pa19-work/selection-*`,
 `obj/pa19-work/impl-selection-v1` and `obj/perf/`.
+
+## Implicit trait method paths
+
+`T::method`, `Self::method` and `<T>::method` now select trait declarations while
+retaining the written Self type. This fixes a false acceptance where a default
+method's `Self::f(3u16)` could silently infer a different Self. Primitive, nominal,
+reference, array and alias prefixes share ordinary annotation inference. Implicit
+trait arguments are inferred; a trait's type-path defaults do not constrain an
+unwritten qualifier. Selected operands reuse the existing trait dispatch path.
+
+An applicable inherent method wins. If its impl conditions fail for an explicit
+or rigid prefix, lookup can fall back to a scoped trait. A still-unknown prefix
+cannot use subsequent call arguments to make that choice. Method-own bounds,
+argument types and expected return types do not disambiguate names. Enum variants
+keep their earlier lookup and constant-evaluation behavior.
+
+Parameter bounds precede lexical trait candidates. Scope lookup uses final
+resolver bindings, including anonymous imports, aliases and macro call-site
+scopes. The pinned compiler retains one contribution from ambiguous glob imports
+for method lookup; reversed import/declaration-order controls and execution checks
+qualify that behavior. Inner type names do not erase an outer trait's eligibility,
+while a direct same-scope binding can hide a glob-imported trait.
+
+A first implementation scanned all matching trait names for every use. A declared
+1,024-trait/1,024-call control exposed budget exhaustion despite all those traits
+being unimported. The final implementation lazily indexes local methods by name
+and shares inherited candidate lists. Caller parameter bounds acquire a reverse
+index only when implicit lookup requires it. Both concrete and rigid versions of
+that control pass. No source text is reparsed and failed candidate equations do
+not enter the caller's inference graph.
+
+The new maintainer tests contain 48 acceptance controls, two generated scaling
+programs and 27 executable comparisons with pinned rustc and CPPGM. Three initial
+scope predictions were corrected against rustc before becoming test expectations;
+the original predictions and corrections remain in the local evidence. An earlier
+full run caught enum-alias constants entering method fallback; the existing early
+constructor suite and new variant-versus-method controls cover that regression.
+
+Validation passes 908 debug tests, 91 affected optimized tests, all seven affected
+trait native groups and the seven-program early-constructor native group. All
+3,790 PA1–PA18 text-oracle cases pass unchanged. Formatting, Clippy all/pedantic,
+the 571-file zero-finding audit and 27 harness tests pass. PA19 remains planned:
+general dot trait lookup and its complete course release are still required.
+PA20 and PA21 remain unfinished, as does the recorded redundant Fn-bound
+qualification discrepancy that needs review before release.
+
+Sixty-three frozen A/A and five-block ABBA jobs plus one retained repeat record
+1,664 observations. Every source, binary and input hash and full/count output
+comparison passes; no local RustGM build, test or probe overlaps timing. Existing
+workloads' median paired changes range from -6.7% to +4.9%. The +4.9% deferred-pointer
+outlier has a 32.9% A/A spread and becomes -0.7% on repeat with a 3.1% spread.
+Other calibration spreads reach 41.7%; these results do not establish a stable
+speedup or performance equivalence. Existing median RSS changes are -28 to +60 KiB.
+Earlier method and conditional-selection performance follow-ups remain separate.
+
+New 64/256/1,024-use candidate median wall times in milliseconds are:
+
+| Workload | 64 | 256 | 1,024 |
+| --- | ---: | ---: | ---: |
+| Concrete type paths | 8.02 | 19.59 | 67.80 |
+| Rigid parameter paths | 12.30 | 34.06 | 139.79 |
+| Unimported homonyms, concrete calls | 9.71 | 26.77 | 98.56 |
+| Unimported homonyms, rigid calls | 13.44 | 81.86 | 184.49 |
+| Wide trait member sets | 8.63 | 42.48 | 87.20 |
+| Conditional inherent fallback | 12.28 | 46.18 | 125.27 |
+
+These measurements retain all observations and do not imply a throughput bound.
+The 574 source/config/test files are archived in `obj/pa19-work/implicit-source-v1`.
+Compiler SHA256 is
+`3dff0d0a3d0f957107554930d2b95aacc7c7fc90f09dfeec4817a3725d71229e`.
+The receipt is `obj/pa19-work/implicit-validation-v1.json`; original predictions,
+failed probes, qualifications and timings remain under
+`obj/pa19-work/implicit-methods-v1`, `obj/pa19-work/implicit-*` and `obj/perf/`.

@@ -45,30 +45,7 @@ impl Checker<'_> {
             self.work
                 .push(super::Work::PathArguments(prefix, owner, context));
         }
-        if let crate::syntax::ast::Kind::Path { segments, .. } = self.kind(key) {
-            for &node in self
-                .report
-                .package
-                .unit(key.file)
-                .configured
-                .ast
-                .list(segments)
-            {
-                if node != prefix.node
-                    && node != suffix.node
-                    && crate::sema::lifetimes::arguments(
-                        self.report,
-                        NodeKey { node, ..key },
-                        false,
-                    )?
-                    .is_some()
-                {
-                    return Err(
-                        self.error(key, "generic arguments require the trait or method segment")
-                    );
-                }
-            }
-        }
+        self.method_path_segments(key, prefix, suffix)?;
         self.schedule_item_arguments(prefix, owner, context, steps, limit, scan)?;
         self.schedule_item_arguments(suffix, method, context, steps, limit, scan)?;
         self.drain(steps, limit)?;
@@ -88,7 +65,7 @@ impl Checker<'_> {
             key,
             TraitUse {
                 owner,
-                arguments: trait_arguments,
+                arguments: Some(trait_arguments),
                 subject,
             },
         );

@@ -21,7 +21,12 @@ impl Checker<'_> {
         };
         let owner = use_.owner;
         let subject = use_.subject;
-        let supplied = use_.arguments.arguments.clone();
+        let supplied = use_
+            .arguments
+            .as_ref()
+            .map_or_else(Vec::new, |arguments| arguments.arguments.clone());
+        let defaults_apply =
+            use_.arguments.is_some() && (subject.is_some() || !supplied.is_empty());
         if let Some(subject) = subject {
             let target = self
                 .facts
@@ -79,9 +84,7 @@ impl Checker<'_> {
                 }
                 (Some(SourceArgument::Infer), _) => {}
                 (None, _) => {
-                    if (subject.is_some() || !supplied.is_empty())
-                        && let Some(default) = parameter.default
-                    {
+                    if defaults_apply && let Some(default) = parameter.default {
                         defaults.push((default, actual));
                     }
                 }

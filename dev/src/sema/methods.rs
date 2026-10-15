@@ -2,11 +2,12 @@
 pub(super) mod overlap;
 pub(super) mod receiver;
 pub(super) mod selection;
+mod visible;
 use crate::{
     resolve::{model::DefId, names::NameId, unit::NodeKey},
     types::{ItemId, TypeId},
 };
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 #[derive(Clone, Copy)]
 pub struct Qualified {
@@ -18,6 +19,8 @@ pub struct Qualified {
 
 #[derive(Default)]
 pub struct Methods {
+    visible: Option<Box<visible::Index>>,
+    pub(super) trait_names: HashSet<NameId>,
     /// Members enter each bucket in resolver declaration order.
     pub(super) inherent: HashMap<(ItemId, NameId), Vec<DefId>>,
     pub(super) indices: HashMap<(ItemId, NameId), Candidates>,

@@ -90,8 +90,9 @@ pub struct ItemUse {
 }
 pub(super) struct TraitUse {
     pub owner: DefId,
-    pub arguments: ItemUse,
-    /// Explicit Self type in a fully qualified path; its trait arguments use type defaults.
+    /// A written trait prefix supplies arguments and type-path defaults.
+    pub arguments: Option<ItemUse>,
+    /// The written Self type in either a fully qualified or implicit trait path.
     pub subject: Option<crate::resolve::unit::NodeKey>,
 }
 #[derive(Clone, Copy)]

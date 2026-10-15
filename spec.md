@@ -118,6 +118,23 @@ apply even without explicit arguments. Reuse ordinary argument preparation and
 dispatch after this qualification; no additional source parsing or impl search is
 needed for selecting the named declaration.
 
+Implicit `T::method`, `Self::method` and `<T>::method` lookup also retains and
+binds the written Self annotation. Applicable inherent methods take precedence;
+otherwise probe methods from parameter bounds before methods from lexical trait
+bindings. These probes consume only the prefix and caller environment. Arguments,
+return expectations and the method's own bounds do not disambiguate the name.
+An implicit trait prefix infers trait arguments without applying type-path defaults.
+
+Build trait visibility from final resolver bindings, including anonymous imports
+and the retained candidate of an ambiguous glob import. Deduplicate aliases by
+trait identity. Lazily index direct methods by name in each queried scope and
+share inherited candidate lists across scopes that introduce no matching methods.
+Index parameter-to-trait bounds only when a caller needs implicit lookup; preserve
+the complete goals for applicability. Unimported homonyms must not multiply work
+at each use. Bound indexing, scope traversal and candidate probes have explicit
+work limits. Enum variants retain their existing lookup and constant-evaluation
+paths before method fallback.
+
 Before proving and lowering a concrete body, select its trait operands through the
 validated impl registry. Map each declaration to its override or checked default
 using the sorted member table. Keep the selected impl captures separate from the
