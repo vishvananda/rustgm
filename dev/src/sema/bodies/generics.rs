@@ -63,6 +63,7 @@ impl Checker<'_> {
             bindings.push((id, argument));
         }
         self.bind_method_owner(node, &arguments, &bindings)?;
+        self.bind_trait_arguments(node, &arguments, &bindings)?;
         let signature = self
             .infer
             .instantiate(&mut self.facts.types, signature, &bindings)

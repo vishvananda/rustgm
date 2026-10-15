@@ -247,9 +247,6 @@ impl Checker<'_> {
         owner: DefId,
         ty: TypeId,
     ) -> Result<TypeId, Error> {
-        if self.facts.associated.trait_owner(owner).is_some() {
-            return Err(self.error(node, "trait method calls require implementation selection"));
-        }
         if self.facts.destructors.method(owner).is_some() {
             return Err(self.error(
                 node,
@@ -283,6 +280,7 @@ impl Checker<'_> {
         let count = scheme.early.len();
         let captures = scheme.captures as usize;
         if captures != 0
+            && self.facts.associated.trait_owner(owner).is_none()
             && !self.facts.methods.qualified.contains_key(&self.key(node))
             && !self.call_types.method_owners.contains_key(&node)
         {
@@ -301,8 +299,14 @@ impl Checker<'_> {
             .map_err(|_| self.error(node, "too many late lifetime slots"))?;
         let bounds = scheme.bounds.clone();
         let mut arguments = Vec::with_capacity(captures + count);
-        for slot in mapping.iter_mut().take(captures) {
-            let region = self.body_region(node, BodyRegionOrigin::ItemArgument)?;
+        let explicit_captures = self
+            .facts
+            .generics
+            .trait_uses
+            .get(&self.key(node))
+            .and_then(|(_, arguments)| arguments.lifetimes);
+        let owner_regions = self.early_item_arguments(node, explicit_captures, captures)?;
+        for (slot, region) in mapping.iter_mut().take(captures).zip(owner_regions) {
             *slot = region;
             arguments.push(region);
         }

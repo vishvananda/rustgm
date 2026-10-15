@@ -7,6 +7,7 @@ pub use constants::values;
 mod arguments;
 pub mod declarations;
 pub mod destructors;
+pub(crate) mod dispatch;
 pub mod entry;
 pub mod generics;
 pub mod layout_view;

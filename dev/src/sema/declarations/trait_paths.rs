@@ -8,6 +8,82 @@ use crate::types::{
 };
 
 impl Checker<'_> {
+    pub(super) fn schedule_trait_callable(
+        &mut self,
+        key: NodeKey,
+        context: regions::Context,
+        steps: &mut usize,
+        limit: usize,
+        scan: &mut Vec<crate::syntax::ast::NodeId>,
+    ) -> Result<bool, Error> {
+        let Some(crate::resolve::model::Target::Definition(method)) =
+            self.facts.node(key).and_then(|fact| fact.reference)
+        else {
+            return Ok(false);
+        };
+        let Some(owner) = self.facts.associated.trait_owner(method) else {
+            return Ok(false);
+        };
+        let Some(path) = self.report.resolution.associated_paths.get(&key) else {
+            return Ok(false);
+        };
+        if path.owner != owner || path.suffix.len() != 1 {
+            return Ok(false);
+        }
+        let prefix = NodeKey {
+            node: path.prefix,
+            ..key
+        };
+        let suffix = NodeKey {
+            node: path.suffix[0].0,
+            ..key
+        };
+        if let crate::syntax::ast::Kind::Path { segments, .. } = self.kind(key) {
+            for &node in self
+                .report
+                .package
+                .unit(key.file)
+                .configured
+                .ast
+                .list(segments)
+            {
+                if node != prefix.node
+                    && node != suffix.node
+                    && crate::sema::lifetimes::arguments(
+                        self.report,
+                        NodeKey { node, ..key },
+                        false,
+                    )?
+                    .is_some()
+                {
+                    return Err(
+                        self.error(key, "generic arguments require the trait or method segment")
+                    );
+                }
+            }
+        }
+        self.schedule_item_arguments(prefix, owner, context, steps, limit, scan)?;
+        self.schedule_item_arguments(suffix, method, context, steps, limit, scan)?;
+        self.drain(steps, limit)?;
+        let trait_arguments = self
+            .facts
+            .generics
+            .item_uses
+            .remove(&prefix)
+            .ok_or_else(|| self.error(key, "missing trait path arguments"))?;
+        let method_arguments = self
+            .facts
+            .generics
+            .item_uses
+            .remove(&suffix)
+            .ok_or_else(|| self.error(key, "missing trait method arguments"))?;
+        self.facts
+            .generics
+            .trait_uses
+            .insert(key, (owner, trait_arguments));
+        self.facts.generics.item_uses.insert(key, method_arguments);
+        Ok(true)
+    }
     pub(super) fn retain_trait_contract(
         &mut self,
         owner: crate::sema::associated::Owner,

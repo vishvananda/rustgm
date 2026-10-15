@@ -117,6 +117,9 @@ pub struct Predicate {
 }
 #[derive(Default)]
 pub struct Generics {
+    /// Concrete initializer callables consumed by the shared constant value reader.
+    pub(crate) constant_callable_targets: HashMap<TypeId, TypeId>,
+    pub(super) trait_uses: HashMap<crate::resolve::unit::NodeKey, (DefId, ItemUse)>,
     /// Selected impl evidence at body bound uses, after proving its conditions.
     pub trait_selections: HashMap<crate::resolve::unit::NodeKey, Vec<ImplementationSelection>>,
     pub(super) implementations: Option<Box<super::traits::implementations::Implementations>>,

@@ -217,10 +217,22 @@ impl Implementations {
             .get(&owner)
             .is_some_and(|&index| self.entries[index].validated)
     }
+    pub fn method(&self, owner: DefId, declaration: DefId) -> Option<DefId> {
+        let entry = &self.entries[*self.owners.get(&owner)?];
+        if !entry.validated {
+            return None;
+        }
+        let index = entry
+            .value
+            .methods
+            .binary_search_by_key(&declaration.0, |(id, _)| id.0)
+            .ok()?;
+        Some(entry.value.methods[index].1.unwrap_or(declaration))
+    }
     pub fn complete(
         &mut self,
         owner: DefId,
-        methods: Vec<(DefId, Option<DefId>)>,
+        mut methods: Vec<(DefId, Option<DefId>)>,
     ) -> Result<(), &'static str> {
         let index = *self
             .owners
@@ -229,6 +241,10 @@ impl Implementations {
         let entry = &mut self.entries[index];
         if entry.validated {
             return Err("trait implementation was validated twice");
+        }
+        methods.sort_unstable_by_key(|(declaration, _)| declaration.0);
+        if methods.windows(2).any(|pair| pair[0].0 == pair[1].0) {
+            return Err("implementation repeats a selected method declaration");
         }
         entry.value.methods = methods;
         entry.validated = true;

@@ -103,6 +103,8 @@ pub(super) fn prepare(
             let mut materialized =
                 body::instantiate::with_contract(facts, template, instance, input)
                     .map_err(error)?;
+            body::dispatch::resolve(facts, &mut materialized.body, &mut materialized.contract)
+                .map_err(|e| error(&e))?;
             body::promote::instance(
                 report,
                 facts,
@@ -145,9 +147,20 @@ fn prepare_ordinary(
     inputs: Vec<Contract>,
 ) -> Result<(proof::Builder, HashMap<ItemId, usize>), Error> {
     let mut program = body::build_concrete(report, facts)?;
+    let mut inputs: HashMap<_, _> = inputs.into_iter().map(|c| (c.source, c)).collect();
+    for body in &mut program.bodies {
+        let input = inputs.get_mut(&body.source).ok_or_else(|| {
+            diagnostic(
+                report,
+                Some(body.source),
+                "missing ordinary dispatch contract".into(),
+            )
+        })?;
+        body::dispatch::resolve(facts, body, input)
+            .map_err(|e| diagnostic(report, Some(body.source), e))?;
+    }
     body::promote::analyze(report, facts, &mut program)?;
     body::constants::analyze(report, facts, &program)?;
-    let mut inputs: HashMap<_, _> = inputs.into_iter().map(|c| (c.source, c)).collect();
     let (mut program, bodies) =
         proof::Builder::new(program).map_err(|e| diagnostic(report, None, e.into()))?;
     let mut ordinary = HashMap::new();

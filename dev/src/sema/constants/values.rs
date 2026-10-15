@@ -65,7 +65,14 @@ impl<'a> Reader<'a> {
     pub fn view(self, constant: Constant) -> Result<View, &'static str> {
         Ok(match constant.0 {
             Value::Scalar(value) => View::Scalar(value),
-            Value::Function(id) => View::Function(id),
+            Value::Function(id) => {
+                let target = self.facts.generics.constant_callable_targets.get(&id.ty());
+                View::Function(if let Some(&ty) = target {
+                    crate::types::instance::Instance::new(&self.facts.types, ty)?
+                } else {
+                    id
+                })
+            }
             Value::Reference(id) => View::Reference(LocationId(id)),
             Value::Text(id) => View::Text(id),
             Value::Bytes(id) => View::Bytes(id),

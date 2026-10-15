@@ -215,6 +215,15 @@ nested callable scopes and actual call obligations. Acceptance is independently
 qualified with pinned rustc. Its explicit native test executes bounded pointer
 inputs, outputs and trait lifetime arguments through both compilers.
 
+The PA19 dispatch maintainer tests in `dev/tests/trait_bounds/dispatch*.rs` add
+50 acceptance controls and 33 executable programs for `Trait::method` calls.
+They cover required methods, defaults and overrides, recursive/default forwarding,
+type/const/lifetime arguments, dependent defaults, generic function values, and
+constant/static function pointers. Pinned rustc independently checks acceptance;
+the explicit native test compares execution through CPPGM and rustc. Type-fold
+unit controls separately check binder capture and shared-DAG work. General
+type-qualified and dot trait lookup remain pending, so PA19 is still planned.
+
 ## Placement and provenance
 
 Every `.rs` fixture under an active assignment's tests directory must be in its

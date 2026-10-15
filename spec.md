@@ -102,6 +102,27 @@ the instantiated impl target with the typed prefix. Check inherited predicates
 as well as method predicates. A declaration or required trait signature alone
 does not authorize executable dispatch.
 
+Trait-qualified callable uses keep the trait prefix's arguments separate from the
+method's arguments. Infer inherited Self and omitted arguments through the ordinary
+callable graph; explicit prefixes and ordered defaults constrain those same slots.
+Generic bodies retain the trait declaration as a symbolic callable and prove its
+complete requirements without guessing an implementation for a rigid parameter.
+
+Before proving and lowering a concrete body, select its trait operands through the
+validated impl registry. Map each declaration to its override or checked default
+using the sorted member table. Keep the selected impl captures separate from the
+method's own early lifetimes and type/const arguments. Normalize body universals
+into fresh aliases for selection, retaining every equality, outlives requirement
+and allocated variable in that body's proof graph.
+
+Replace actual function-item types and operand definitions throughout the concrete
+CFG and its contract, including callable types inside generic arguments. A shared
+type fold preserves nested binders and memoizes the type DAG. Promotion and demand
+then consume these selected identities. Initializer selections also supply the
+constant value reader's callable targets, so named constants and statics cannot
+retain a declaration-only symbol. Cache dispatch only within its body proof scope;
+generic templates and their source facts remain reusable by other instances.
+
 Validate unused inherent methods for overlap after completing owner signatures.
 Use isolated existential header equations, preserving repeated type and const
 parameters. Impl predicates constrain overlap; method predicates, visibility,

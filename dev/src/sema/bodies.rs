@@ -12,6 +12,7 @@ mod lifetimes;
 mod matches;
 mod methods;
 mod nominals;
+mod owner_arguments;
 mod pattern_constants;
 mod patterns;
 mod references;
@@ -968,7 +969,7 @@ impl Checker<'_> {
                 {
                     return self.generic_constructor(node, ty, variant);
                 }
-                if self.facts.generics.parameters.contains_key(&id)
+                if self.facts.generics.has_parameters(id)
                     || self.facts.methods.qualified.contains_key(&self.key(node))
                 {
                     return self.generic_function(node, id, ty);

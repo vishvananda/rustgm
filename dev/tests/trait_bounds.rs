@@ -11,6 +11,12 @@ mod conformance;
 mod declarations;
 #[path = "trait_bounds/destructors.rs"]
 mod destructors;
+#[path = "trait_bounds/dispatch.rs"]
+mod dispatch;
+#[path = "trait_bounds/dispatch_extra.rs"]
+mod dispatch_extra;
+#[path = "trait_bounds/dispatch_native.rs"]
+mod dispatch_native;
 #[path = "trait_bounds/equality.rs"]
 mod equality;
 #[path = "trait_bounds/implementations.rs"]

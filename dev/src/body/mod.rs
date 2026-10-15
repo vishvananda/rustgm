@@ -2,6 +2,7 @@
 pub mod body_view;
 mod build;
 pub mod constants;
+pub(crate) mod dispatch;
 pub mod drops;
 pub mod instantiate;
 pub mod ir;

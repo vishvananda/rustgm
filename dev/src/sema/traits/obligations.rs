@@ -6,7 +6,7 @@ use crate::types::{
 };
 use std::ops::Range;
 
-pub(in crate::sema) struct Obligations {
+pub(crate) struct Obligations {
     pub regions: Range<u32>,
     pub equalities: Vec<Pair>,
     pub outlives: Vec<Pair>,
@@ -21,7 +21,10 @@ impl Obligations {
             types: Vec::new(),
         }
     }
-    pub fn append(&mut self, evidence: super::selection::Evidence) -> Result<(), &'static str> {
+    pub(in crate::sema) fn append(
+        &mut self,
+        evidence: super::selection::Evidence,
+    ) -> Result<(), &'static str> {
         if evidence.regions.start != self.regions.end {
             return Err("declaration trait proof region intervals disagree");
         }

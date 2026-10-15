@@ -52,6 +52,9 @@ impl Checker<'_> {
         limit: usize,
         scan: &mut Vec<NodeId>,
     ) -> Result<bool, Error> {
+        if self.schedule_trait_callable(key, context, steps, limit, scan)? {
+            return Ok(true);
+        }
         let path = if self.report.resolution.qualified_paths.contains_key(&key) {
             self.explicit_method_path(key, context, steps, limit, scan)?
         } else {

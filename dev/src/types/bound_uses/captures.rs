@@ -61,7 +61,7 @@ impl Captures {
             Bound::Copy | Bound::Clone | Bound::Sized => Ok(false),
         }
     }
-    fn collect(&mut self, store: &Store, ty: TypeId) -> Result<bool, &'static str> {
+    pub(crate) fn collect(&mut self, store: &Store, ty: TypeId) -> Result<bool, &'static str> {
         let root = (ty, 0);
         if let Some(found) = self.result(store, root)? {
             return Ok(found);

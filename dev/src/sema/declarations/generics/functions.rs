@@ -40,7 +40,7 @@ impl Checker<'_> {
         )
         .then_some(owner)
         .filter(|id| {
-            self.facts.generics.parameters.contains_key(id)
+            self.facts.generics.has_parameters(*id)
                 || self.report.resolution.definitions[id.0 as usize].kind
                     == crate::resolve::model::DefKind::TypeAlias
         })

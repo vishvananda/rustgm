@@ -1,4 +1,5 @@
 //! Substitute a template binder and its parameters without capturing nested binders.
+mod items;
 mod parameters;
 mod predicates;
 mod universals;
@@ -12,6 +13,7 @@ enum Action {
     Remove,
     Shift(u16),
     Lower(u16),
+    Items(Box<items::Replacements>),
     Universals(Box<universals::Mapping>),
     Shape,
 }
@@ -139,6 +141,9 @@ impl Bound {
     }
 
     fn result(&self, store: &Store, key: Key) -> Result<Option<TypeId>, &'static str> {
+        if matches!(self.action, Action::Items(_)) {
+            return Ok(self.completed.get(&key).copied());
+        }
         let escaping = store
             .escaping_binders(key.0)
             .ok_or("invalid substitution type")?;
@@ -172,6 +177,9 @@ impl Bound {
                 continue;
             }
             let kind = store.kind(key.0).ok_or("invalid substitution type")?;
+            if matches!(self.action, Action::Items(_)) && self.replace_item(store, key, finish)? {
+                continue;
+            }
             if let Kind::Parameter(id) = kind
                 && let Some(replacement) = self.parameter(store, id, key.1)?
             {
@@ -262,6 +270,9 @@ impl Bound {
         region: RegionId,
         depth: u16,
     ) -> Result<RegionId, &'static str> {
+        if matches!(self.action, Action::Items(_)) {
+            return Ok(region);
+        }
         if matches!(self.action, Action::Shape) {
             return Ok(RegionId::STATIC);
         }
