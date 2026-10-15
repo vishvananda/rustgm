@@ -304,7 +304,7 @@ impl Checker<'_> {
             .generics
             .trait_uses
             .get(&self.key(node))
-            .and_then(|(_, arguments)| arguments.lifetimes);
+            .and_then(|use_| use_.arguments.lifetimes);
         let owner_regions = self.early_item_arguments(node, explicit_captures, captures)?;
         for (slot, region) in mapping.iter_mut().take(captures).zip(owner_regions) {
             *slot = region;

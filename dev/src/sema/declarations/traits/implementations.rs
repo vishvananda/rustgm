@@ -1,9 +1,9 @@
 //! Retain complete impl applications; headers alone do not prove an implementation.
 mod methods;
 mod validation;
-use super::super::{Checker, DefId, Error, ItemId, Kind, NodeKey, TypeFlavor, Work};
+use super::super::{Checker, DefId, Error, ItemId, NodeKey, Work};
 use crate::{
-    resolve::model::{DefKind, Target},
+    resolve::model::DefKind,
     sema::{associated::OwnerKind, traits::implementations::Implementation},
     types::parameters::{
         predicates::{Bound, Predicate},
@@ -43,7 +43,7 @@ impl Checker<'_> {
                     "negative trait implementations require trait coherence",
                 ));
             }
-            let (path, definition) = self.impl_trait_path(path)?;
+            let (path, definition) = self.resolved_trait_path(path)?;
             if self.impl_trait_safety(path, definition)? != unsafe_ {
                 return Err(self.error(
                     owner.source,
@@ -125,36 +125,6 @@ impl Checker<'_> {
             return Err(self.error(path, "implementation path is not a trait"));
         };
         Ok(unsafe_)
-    }
-
-    fn impl_trait_path(&self, mut key: NodeKey) -> Result<(NodeKey, DefId), Error> {
-        loop {
-            if let Some(Target::Definition(id)) =
-                self.facts.node(key).and_then(|facts| facts.reference)
-            {
-                return if self.report.resolution.definitions[id.0 as usize].kind == DefKind::Trait {
-                    Ok((key, id))
-                } else {
-                    Err(self.error(key, "implementation requires a trait declaration"))
-                };
-            }
-            key.node = match self.kind(key) {
-                Kind::Group(node) => node,
-                Kind::Type {
-                    flavor: TypeFlavor::Path,
-                    elements,
-                } => *self
-                    .report
-                    .package
-                    .unit(key.file)
-                    .configured
-                    .ast
-                    .list(elements)
-                    .first()
-                    .ok_or_else(|| self.error(key, "empty trait implementation path"))?,
-                _ => return Err(self.error(key, "implementation requires a resolved trait path")),
-            };
-        }
     }
 
     fn trait_impl_parameters(

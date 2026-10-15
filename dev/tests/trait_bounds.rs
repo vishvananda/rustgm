@@ -25,6 +25,10 @@ mod implementations;
 mod inference;
 #[path = "harness/native_references.rs"]
 mod native;
+#[path = "trait_bounds/qualification.rs"]
+mod qualification;
+#[path = "trait_bounds/qualification_native.rs"]
+mod qualification_native;
 #[path = "helpers/qualify.rs"]
 mod rustc;
 #[path = "trait_bounds/selection.rs"]

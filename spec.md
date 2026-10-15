@@ -108,6 +108,16 @@ callable graph; explicit prefixes and ordered defaults constrain those same slot
 Generic bodies retain the trait declaration as a symbolic callable and prove its
 complete requirements without guessing an implementation for a rigid parameter.
 
+Fully qualified `<T as Trait>::method` paths consume the resolver's retained Self
+annotation, trait identity and canonical member name. Select a direct method from
+the trait's existing member scope; inherited supertrait members require their own
+trait qualifier. Bind the written Self annotation into the same callable inference
+graph, preserving annotation holes, aliases and lifetime scopes. The trait prefix
+has type-path arity and default rules: omitted required arguments fail, and defaults
+apply even without explicit arguments. Reuse ordinary argument preparation and
+dispatch after this qualification; no additional source parsing or impl search is
+needed for selecting the named declaration.
+
 Before proving and lowering a concrete body, select its trait operands through the
 validated impl registry. Map each declaration to its override or checked default
 using the sorted member table. Keep the selected impl captures separate from the

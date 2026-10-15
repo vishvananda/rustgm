@@ -88,6 +88,12 @@ pub struct ItemUse {
     pub lifetimes: Option<crate::syntax::ast::List>,
     pub arguments: Vec<SourceArgument>,
 }
+pub(super) struct TraitUse {
+    pub owner: DefId,
+    pub arguments: ItemUse,
+    /// Explicit Self type in a fully qualified path; its trait arguments use type defaults.
+    pub subject: Option<crate::resolve::unit::NodeKey>,
+}
 #[derive(Clone, Copy)]
 pub(super) enum DeferredArgument {
     Type(crate::resolve::unit::NodeKey),
@@ -119,7 +125,7 @@ pub struct Predicate {
 pub struct Generics {
     /// Concrete initializer callables consumed by the shared constant value reader.
     pub(crate) constant_callable_targets: HashMap<TypeId, TypeId>,
-    pub(super) trait_uses: HashMap<crate::resolve::unit::NodeKey, (DefId, ItemUse)>,
+    pub(super) trait_uses: HashMap<crate::resolve::unit::NodeKey, TraitUse>,
     /// Selected impl evidence at body bound uses, after proving its conditions.
     pub trait_selections: HashMap<crate::resolve::unit::NodeKey, Vec<ImplementationSelection>>,
     pub(super) implementations: Option<Box<super::traits::implementations::Implementations>>,

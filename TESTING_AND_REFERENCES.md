@@ -221,8 +221,14 @@ They cover required methods, defaults and overrides, recursive/default forwardin
 type/const/lifetime arguments, dependent defaults, generic function values, and
 constant/static function pointers. Pinned rustc independently checks acceptance;
 the explicit native test compares execution through CPPGM and rustc. Type-fold
-unit controls separately check binder capture and shared-DAG work. General
-type-qualified and dot trait lookup remain pending, so PA19 is still planned.
+unit controls separately check binder capture and shared-DAG work.
+
+The `trait_bounds/qualification*.rs` tests add 47 acceptance controls and 28
+executable programs for `<T as Trait>::method`, covering explicit Self, inference
+holes, defaults, aliases, imports, macros and captured lifetimes. Their unsafe-call
+control separately checks rustc acceptance and RustGM's existing PA27 boundary.
+Unqualified `T::method` and general dot trait lookup remain pending, so PA19 is
+still planned.
 
 ## Placement and provenance
 

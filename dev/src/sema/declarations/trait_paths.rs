@@ -6,6 +6,18 @@ use crate::types::{
     substitute::Bound,
     traits::{Application, ApplicationId},
 };
+use crate::{
+    resolve::model::{DefKind, Namespace, Target},
+    sema::generics::TraitUse,
+};
+
+struct Callable {
+    owner: DefId,
+    method: DefId,
+    prefix: NodeKey,
+    suffix: NodeKey,
+    subject: Option<NodeKey>,
+}
 
 impl Checker<'_> {
     pub(super) fn schedule_trait_callable(
@@ -16,28 +28,23 @@ impl Checker<'_> {
         limit: usize,
         scan: &mut Vec<crate::syntax::ast::NodeId>,
     ) -> Result<bool, Error> {
-        let Some(crate::resolve::model::Target::Definition(method)) =
-            self.facts.node(key).and_then(|fact| fact.reference)
+        let Some(Callable {
+            owner,
+            method,
+            prefix,
+            suffix,
+            subject,
+        }) = self.trait_callable(key)?
         else {
             return Ok(false);
         };
-        let Some(owner) = self.facts.associated.trait_owner(method) else {
-            return Ok(false);
-        };
-        let Some(path) = self.report.resolution.associated_paths.get(&key) else {
-            return Ok(false);
-        };
-        if path.owner != owner || path.suffix.len() != 1 {
-            return Ok(false);
+        if let Some(subject) = subject {
+            self.annotation_holes(subject, steps, limit, scan)?;
+            self.node_work(subject.file, subject.node, context);
+            self.annotation_holes(prefix, steps, limit, scan)?;
+            self.work
+                .push(super::Work::PathArguments(prefix, owner, context));
         }
-        let prefix = NodeKey {
-            node: path.prefix,
-            ..key
-        };
-        let suffix = NodeKey {
-            node: path.suffix[0].0,
-            ..key
-        };
         if let crate::syntax::ast::Kind::Path { segments, .. } = self.kind(key) {
             for &node in self
                 .report
@@ -77,13 +84,116 @@ impl Checker<'_> {
             .item_uses
             .remove(&suffix)
             .ok_or_else(|| self.error(key, "missing trait method arguments"))?;
-        self.facts
-            .generics
-            .trait_uses
-            .insert(key, (owner, trait_arguments));
+        self.facts.generics.trait_uses.insert(
+            key,
+            TraitUse {
+                owner,
+                arguments: trait_arguments,
+                subject,
+            },
+        );
         self.facts.generics.item_uses.insert(key, method_arguments);
+        self.facts
+            .node_mut(key)
+            .ok_or_else(|| Error::at(key.file, 0, "missing trait callable path fact"))?
+            .reference = Some(Target::Definition(method));
         Ok(true)
     }
+    fn trait_callable(&self, key: NodeKey) -> Result<Option<Callable>, Error> {
+        if let Some(path) = self.report.resolution.qualified_paths.get(&key) {
+            let Some(trait_path) = path.trait_path else {
+                return Ok(None);
+            };
+            if path.namespace != Namespace::Value || path.suffix.len() != 1 {
+                return Ok(None);
+            }
+            let (prefix, owner) = self.resolved_trait_path(NodeKey {
+                node: trait_path,
+                ..key
+            })?;
+            let scope = self.report.resolution.definitions[owner.0 as usize]
+                .members
+                .ok_or_else(|| self.error(key, "trait declaration has no member scope"))?;
+            let method = self.report.resolution.scopes[scope.0 as usize]
+                .bindings
+                .get(&(path.suffix[0].1, Namespace::Value))
+                .map(|binding| binding.target)
+                .filter(|id| {
+                    self.report.resolution.definitions[id.0 as usize].kind == DefKind::Function
+                        && self.facts.associated.trait_owner(*id) == Some(owner)
+                })
+                .ok_or_else(|| self.error(key, "qualified trait has no such method"))?;
+            return Ok(Some(Callable {
+                owner,
+                method,
+                prefix,
+                suffix: NodeKey {
+                    node: path.suffix[0].0,
+                    ..key
+                },
+                subject: Some(NodeKey {
+                    node: path.ty,
+                    ..key
+                }),
+            }));
+        }
+        let Some(Target::Definition(method)) = self.facts.node(key).and_then(|fact| fact.reference)
+        else {
+            return Ok(None);
+        };
+        let Some(owner) = self.facts.associated.trait_owner(method) else {
+            return Ok(None);
+        };
+        let Some(path) = self.report.resolution.associated_paths.get(&key) else {
+            return Ok(None);
+        };
+        if path.owner != owner || path.suffix.len() != 1 {
+            return Ok(None);
+        }
+        Ok(Some(Callable {
+            owner,
+            method,
+            prefix: NodeKey {
+                node: path.prefix,
+                ..key
+            },
+            suffix: NodeKey {
+                node: path.suffix[0].0,
+                ..key
+            },
+            subject: None,
+        }))
+    }
+    pub(super) fn resolved_trait_path(&self, mut key: NodeKey) -> Result<(NodeKey, DefId), Error> {
+        loop {
+            if let Some(crate::resolve::model::Target::Definition(id)) =
+                self.facts.node(key).and_then(|facts| facts.reference)
+            {
+                return if self.report.resolution.definitions[id.0 as usize].kind == DefKind::Trait {
+                    Ok((key, id))
+                } else {
+                    Err(self.error(key, "implementation requires a trait declaration"))
+                };
+            }
+            key.node = match self.kind(key) {
+                crate::syntax::ast::Kind::Group(node) => node,
+                crate::syntax::ast::Kind::Type {
+                    flavor: crate::syntax::ast::TypeFlavor::Path,
+                    elements,
+                } => *self
+                    .report
+                    .package
+                    .unit(key.file)
+                    .configured
+                    .ast
+                    .list(elements)
+                    .first()
+                    .ok_or_else(|| self.error(key, "empty trait implementation path"))?,
+                _ => return Err(self.error(key, "implementation requires a resolved trait path")),
+            };
+        }
+    }
+
     pub(super) fn retain_trait_contract(
         &mut self,
         owner: crate::sema::associated::Owner,

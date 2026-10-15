@@ -16,11 +16,27 @@ impl Checker<'_> {
         arguments: &[Argument],
         bindings: &[(ParameterId, Argument)],
     ) -> Result<(), Error> {
-        let Some((owner, use_)) = self.facts.generics.trait_uses.get(&self.key(node)) else {
+        let Some(use_) = self.facts.generics.trait_uses.get(&self.key(node)) else {
             return Ok(());
         };
-        let owner = *owner;
-        let supplied = use_.arguments.clone();
+        let owner = use_.owner;
+        let subject = use_.subject;
+        let supplied = use_.arguments.arguments.clone();
+        if let Some(subject) = subject {
+            let target = self
+                .facts
+                .associated
+                .schema(owner)
+                .ok_or_else(|| self.error(node, "missing qualified trait Self schema"))?
+                .self_type;
+            let target = self
+                .infer
+                .instantiate(&mut self.facts.types, target, bindings)
+                .map_err(|e| self.error(node, e))?;
+            let actual = self.annotation(subject.node)?;
+            let actual = self.alias_argument(node, actual)?;
+            self.equate(node, target, actual)?;
+        }
         let parameters = self
             .facts
             .generics
@@ -63,7 +79,7 @@ impl Checker<'_> {
                 }
                 (Some(SourceArgument::Infer), _) => {}
                 (None, _) => {
-                    if !supplied.is_empty()
+                    if (subject.is_some() || !supplied.is_empty())
                         && let Some(default) = parameter.default
                     {
                         defaults.push((default, actual));
