@@ -176,6 +176,11 @@ pub(super) struct Proof {
     shapes: Option<crate::types::parameters::shape::Shapes>,
     copies: crate::types::copy::Copies,
     checked: HashSet<TypeId>,
+    traits: Option<Box<TraitProof>>,
+}
+struct TraitProof {
+    assumptions: super::traits::assumptions::Assumptions,
+    context: crate::types::infer::Context,
 }
 impl Proof {
     pub(super) fn for_coherence(
@@ -188,6 +193,7 @@ impl Proof {
             )),
             copies: crate::types::copy::Copies::for_coherence(environment),
             checked: HashSet::new(),
+            traits: None,
         }
     }
     pub fn new(
@@ -207,6 +213,7 @@ impl Proof {
             shapes,
             copies,
             checked: HashSet::new(),
+            traits: None,
         }
     }
     fn shape(
@@ -257,10 +264,7 @@ impl Proof {
         requirement: Predicate,
     ) -> Result<bool, &'static str> {
         let valid = match requirement.bound {
-            Bound::Trait(application) => self
-                .environment
-                .as_ref()
-                .is_some_and(|environment| environment.assumes_trait(requirement.ty, application)),
+            Bound::Trait(_) => self.prove_trait(facts, requirement)?,
             Bound::Sized => self.shape(facts, requirement.ty)?.sized,
             Bound::Copy | Bound::Clone => {
                 facts.aggregates.prepare(&mut facts.types, requirement.ty)?;
@@ -281,5 +285,46 @@ impl Proof {
             }
         };
         Ok(valid)
+    }
+
+    fn prove_trait(
+        &mut self,
+        facts: &mut Declarations,
+        requirement: Predicate,
+    ) -> Result<bool, &'static str> {
+        let Some(environment) = &self.environment else {
+            return Ok(false);
+        };
+        let Bound::Trait(application) = requirement.bound else {
+            return Err("expected a canonical trait requirement");
+        };
+        if environment.assumes_trait(requirement.ty, application) {
+            return Ok(true);
+        }
+        if self.traits.is_none() {
+            let mut assumptions = super::traits::assumptions::Assumptions::default();
+            for &predicate in environment.trait_predicates() {
+                assumptions
+                    .insert(&facts.types, predicate)
+                    .map_err(|_| "invalid nominal trait assumption index")?;
+            }
+            self.traits = Some(Box::new(TraitProof {
+                assumptions,
+                context: crate::types::infer::Context::default(),
+            }));
+        }
+        let state = self.traits.as_mut().ok_or("missing nominal trait proof")?;
+        state
+            .assumptions
+            .prove_canonical(&mut facts.types, &mut state.context, requirement)
+            .map(|evidence| evidence.is_some())
+            .map_err(|_| "invalid or exhausted nominal trait proof")
+    }
+
+    /// The owner must prove these equations after nominal lifetime contracts complete.
+    pub fn take_trait_equalities(&mut self) -> Vec<crate::types::outlives::Pair> {
+        self.traits.as_mut().map_or_else(Vec::new, |state| {
+            std::mem::take(&mut state.context.region_equalities)
+        })
     }
 }

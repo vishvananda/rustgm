@@ -30,6 +30,7 @@ impl Checker<'_> {
     ) -> Result<(), Error> {
         let mut environment = self.facts.generics.environments.get(&owner).cloned();
         self.trait_environment = None;
+        self.canonical_trait_inference = None;
         // Body calls express caller universals as free aliases. Add the same
         // assumptions in that context before either query cache is constructed.
         // Original subjects remain available for declaration-context annotations.
@@ -120,18 +121,17 @@ impl Checker<'_> {
             return Ok(());
         }
         if let Bound::Trait(application) = bound {
-            return if self
+            if self
                 .method_environment
                 .as_ref()
                 .is_some_and(|environment| environment.assumes_trait(ty, application))
             {
-                Ok(())
-            } else {
-                Err(self.error(
-                    node,
-                    "user trait obligation requires a matching assumption or implementation",
-                ))
-            };
+                return Ok(());
+            }
+            return self.prove_canonical_trait(
+                node,
+                crate::types::parameters::predicates::Predicate { ty, bound },
+            );
         }
         let valid = if bound == Bound::Sized {
             self.body_shape(node, ty)?.sized

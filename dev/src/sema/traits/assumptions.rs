@@ -30,6 +30,19 @@ impl Evidence {
 }
 
 impl Assumptions {
+    /// Canonical goals keep caller parameters rigid. Any resulting region equations
+    /// remain obligations of the caller's declaration or body lifetime proof.
+    pub fn prove_canonical(
+        &self,
+        store: &mut Store,
+        context: &mut Context,
+        predicate: Predicate,
+    ) -> Result<Option<Evidence>, infer::Error> {
+        let mut substitution = infer::Instantiation::new(context, store, &[])?;
+        let goal = context.instantiate_predicate(store, predicate, &mut substitution)?;
+        self.prove(store, context, &goal)
+    }
+
     pub fn insert(&mut self, store: &Store, predicate: Predicate) -> Result<(), infer::Error> {
         let Bound::Trait(id) = predicate.bound else {
             return Err(infer::Error::InvalidIdentity);

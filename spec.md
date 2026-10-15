@@ -144,8 +144,13 @@ Impl applicability shares complete trait-goal equations with body checking. Cach
 caller assumption indexes once per scope, normalizing body lifetime aliases before
 indexing. A missing match for a rigid goal excludes a candidate; unresolved evidence
 may remain possible until the selected call has all argument/result constraints.
-Only proved evidence authorizes a body operation. Apply builtin property queries
-after trait equations fix their inference inputs. Method-own bounds remain checks
+Only proved evidence authorizes a body operation. Canonical nominal and trait
+argument requirements use the same complete-goal matcher under rigid caller
+parameters. Retain inferred lifetime equalities with their owning declaration or
+body; prove both directions using the ordinary region engine and completed nominal
+contracts. An outlives relation in one direction alone is not equality. Keep exact
+assumption lookups cheap and build broader indexes only when needed. Apply builtin
+property queries after trait equations fix their inference inputs. Method-own bounds remain checks
 on the selected callable. Prove disjoint target shapes before requiring trait
 coherence; missing local implementations do not establish negative evidence.
 

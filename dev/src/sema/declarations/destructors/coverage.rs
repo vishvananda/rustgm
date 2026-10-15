@@ -192,6 +192,7 @@ impl Checker<'_> {
                 return Err(self.error(key, "Drop impl adds type requirements to its nominal type"));
             }
         }
+        self.retain_trait_equalities(DefId(item.0), key, &mut proof);
         Ok(())
     }
 }

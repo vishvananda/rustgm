@@ -174,6 +174,7 @@ pub(super) struct Checker<'a> {
     method_constants: Option<Box<super::arguments::Cache>>,
     method_environment: Option<std::sync::Arc<crate::types::parameters::environment::Environment>>,
     trait_environment: Option<std::sync::Arc<super::traits::assumptions::Assumptions>>,
+    canonical_trait_inference: Option<Box<Context>>,
     annotations: super::annotations::Scratch,
     type_children: Vec<TermId>,
     annotation_checks: Vec<NodeId>,
@@ -241,6 +242,7 @@ impl<'a> Checker<'a> {
             method_constants: None,
             method_environment: None,
             trait_environment: None,
+            canonical_trait_inference: None,
             annotations: super::annotations::Scratch::default(),
             type_children: Vec::new(),
             annotation_checks: Vec::new(),
@@ -280,6 +282,7 @@ impl<'a> Checker<'a> {
         self.body_binders = 0;
         self.method_environment = None;
         self.trait_environment = None;
+        self.canonical_trait_inference = None;
         self.parameter_copies = None;
         self.parameter_shapes = None;
         self.body = key;

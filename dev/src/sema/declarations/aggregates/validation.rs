@@ -76,6 +76,7 @@ impl Checker<'_> {
                     }
                 }
             }
+            self.retain_trait_equalities(owner, self.nominals.entries[index].key, &mut proof);
         }
         Ok(())
     }

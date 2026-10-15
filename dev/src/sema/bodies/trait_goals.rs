@@ -5,6 +5,36 @@ use std::collections::HashMap;
 use std::sync::Arc;
 
 impl Checker<'_> {
+    pub(super) fn prove_canonical_trait(
+        &mut self,
+        node: NodeId,
+        predicate: crate::types::parameters::predicates::Predicate,
+    ) -> Result<(), Error> {
+        let predicate = self.alias_predicate(node, predicate)?;
+        let assumptions = self.trait_assumptions(node)?.unwrap_or_default();
+        let context = self
+            .canonical_trait_inference
+            .get_or_insert_with(Default::default);
+        let evidence = assumptions.prove_canonical(&mut self.facts.types, context, predicate);
+        let equalities = std::mem::take(&mut context.region_equalities);
+        if evidence.map_err(|e| self.error(node, e))?.is_none() {
+            return Err(self.error(
+                node,
+                "user trait obligation requires a matching assumption or implementation",
+            ));
+        }
+        self.facts
+            .region_equalities
+            .extend(equalities.into_iter().map(|(left, right)| {
+                crate::sema::model::RegionEquality {
+                    body: self.body,
+                    left,
+                    right,
+                }
+            }));
+        Ok(())
+    }
+
     pub(super) fn infer_trait_obligations(
         &mut self,
         body: NodeId,

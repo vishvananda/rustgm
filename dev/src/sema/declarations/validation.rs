@@ -23,7 +23,9 @@ impl Checker<'_> {
                 continue;
             }
             let environment = self.facts.generics.environments.get(&definition).cloned();
-            self.validate_bounds(definition, &mut Proof::new(environment))?;
+            let mut proof = Proof::new(environment);
+            self.validate_bounds(definition, &mut proof)?;
+            self.retain_trait_equalities(definition, owner.source, &mut proof);
         }
         Ok(())
     }
@@ -84,6 +86,7 @@ impl Checker<'_> {
                     ));
                 }
             }
+            self.retain_trait_equalities(function.definition, function.node, &mut proof);
         }
         let mut proof = Proof::new(None);
         for index in 0..self.facts.initializers.len() {

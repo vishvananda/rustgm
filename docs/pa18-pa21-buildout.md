@@ -3345,3 +3345,71 @@ and immutable binaries remain archived under `obj/pa19-work/candidate-bounds-*`;
 raw samples remain in `obj/perf/`. The validation receipt is
 `obj/pa19-work/candidate-bounds-validation-v1.json`. Final compiler SHA256:
 `e389a9d9a0704e2acbf0e56cabd52008673f5bb4cd71d74e1e9da16cfe62636f`.
+
+
+## Canonical trait proofs across equivalent lifetimes
+
+Nominal type uses and trait argument requirements now share the complete caller
+assumption matcher with inferred calls. Caller type and const parameters stay
+rigid. The ordinary exact-assumption lookup remains the first path; nonexact
+matches build a reusable assumption index and bounded inference context lazily.
+Matching a type shape retains lifetime equations and never grants equality.
+
+Declaration proofs attach these equations to the owning signature, aggregate or
+associated owner. Validation waits for completed nominal lifetime contracts and
+uses the existing directed region engine with explicit and signature-implied
+permissions. Both directions must hold. Body proofs normalize universal aliases
+and append equations to the existing body region facts. Caches reset between
+bodies, and earlier successful obligations cannot grant later obligations new
+permissions.
+
+Twenty-eight source controls independently match pinned rustc and run complete
+instance proof for accepted unused generic bodies. They cover signature and field
+requirements, body annotations, borrowed bound subjects, trait argument contracts,
+impl/trait lifetime captures, implied lifetime bounds, type/const argument identity,
+and both cross-body and within-body proof isolation. Annotation-only controls have
+no callee whose obligations could substitute for the nominal check. The previously published
+compiler rejects ten valid cases in the first two declared control sets; the
+remaining cases reject missing or stronger requirements. These tests do not claim
+concrete user-trait dispatch, which remains a separate implementation dependency.
+
+Bounded user-trait Drop headers, general trait impl conformance and dispatch,
+method lookup through traits, and the PA19 course release remain outstanding.
+PA20 and PA21 remain required.
+
+
+Validation passes 814 frontend tests in both debug and release and all 3,790
+PA1–PA18 text cases. The final 28 source controls were also rerun together in both
+profiles after adding the annotation-only cases. The full independent rustc sweep,
+18 maintainer native groups, 1,126 course executable comparisons, three codegen
+checks, and upstream/Reference integrity pass. The sixteen declared PA13 runtime
+differences remain explicit. Formatting, Clippy all/pedantic, the 524-file audit
+and 27 harness tests pass. No course fixture or oracle bytes changed.
+
+
+Sixteen frozen A/A and three-block ABBA jobs retain 288 observations. Three
+repeats add 54, and a twelve-block ordinary-function comparison adds another 54.
+All 396 observations, full/count output equality and source/binary/input hashes
+are retained. Ordinary-function timing remains inconclusive: the three median
+changes are -2.3%, +5.8% and -0.2%, while the longer run's paired blocks range from
+-28.2% to +38.6% and both binaries have samples near twice their median. That is
+not evidence of a speedup or zero overhead.
+
+The trait-bound repeat changes median wall time by +1.5%, with paired blocks
+between -0.6% and +2.8%. Other existing workloads change by between -2.8% and +0.4%
+in the initial run; these differences are generally comparable with calibration
+noise. The cached-caller repeat changes by -1.4%. Existing-workload median RSS
+changes across the runs stay between -20 and +74 KiB. These measurements do not
+establish a universal compile-time bound.
+
+New equivalent-lifetime signatures at 64/256/1,024 functions take approximately
+10.1/24.8/88.2 ms; corresponding body-annotation workloads take 16.4/47.5/170.1 ms.
+One caller with 64/256/1,024 trait bounds and sixteen nominal uses takes
+6.3/9.0/21.5 ms. New-feature measurements compare identical candidate binaries,
+since the previous frontend rejects these sources. No local RustGM build or test
+overlapped timing. All 527 source/config/test files are archived and verified;
+final compiler SHA256 is
+`7bb158d5244904cb6fb30836424f46b99ff097c66b9fc182f512fd5598b02575`.
+`obj/pa19-work/nominal-trait-validation-v1.json` records final validation and log
+hashes; source snapshots and measurements remain under `obj/pa19-work/nominal-trait-*`
+and `obj/perf/`.

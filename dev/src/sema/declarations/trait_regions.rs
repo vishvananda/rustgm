@@ -1,38 +1,40 @@
 //! Trait argument lifetimes use the shared directed proof after nominal contracts complete.
-use super::{Checker, DefId, Error, ItemId, Type};
+use super::{Checker, DefId, Error, ItemId, NodeKey, Type};
 use crate::types::{
     arguments::Argument,
     outlives::{Pair, ParameterPair, Queries},
     parameters::predicates::Bound,
     relations::Constraints,
 };
+pub(super) type Equalities = std::collections::HashMap<DefId, Vec<(NodeKey, Pair)>>;
 
 impl Checker<'_> {
+    pub(super) fn retain_trait_equalities(
+        &mut self,
+        owner: DefId,
+        source: NodeKey,
+        proof: &mut crate::sema::nominals::Proof,
+    ) {
+        let equalities = proof.take_trait_equalities();
+        if !equalities.is_empty() {
+            self.trait_equalities
+                .entry(owner)
+                .or_default()
+                .extend(equalities.into_iter().map(|pair| (source, pair)));
+        }
+    }
+
     pub(super) fn validate_trait_regions(&mut self) -> Result<(), Error> {
         if self.facts.generics.traits.is_none() {
             return Ok(());
         }
         let mut owners: Vec<_> = self.facts.generics.predicates.keys().copied().collect();
+        owners.extend(self.trait_equalities.keys().copied());
         owners.sort_unstable_by_key(|owner| owner.0);
+        owners.dedup();
         let mut steps = 0_usize;
         for owner in owners {
-            let predicates: Vec<_> = self.facts.generics.predicates[&owner]
-                .iter()
-                .filter(|p| matches!(p.value.bound, Bound::Trait(_)))
-                .copied()
-                .collect();
-            let mut requirements = Vec::new();
-            for predicate in predicates {
-                let contract = self
-                    .facts
-                    .generics
-                    .traits
-                    .as_mut()
-                    .ok_or_else(|| Error::at(predicate.source.file, 0, "missing trait contracts"))?
-                    .requirements(&mut self.facts.types, predicate.value)
-                    .map_err(|e| self.error(predicate.source, e))?;
-                requirements.push((predicate.source, contract));
-            }
+            let requirements = self.owner_trait_requirements(owner)?;
             let mut queries = Queries::new(
                 &self.facts.types,
                 &self.facts.lifetimes.nominal_requirements,
@@ -75,10 +77,23 @@ impl Checker<'_> {
                     pending.push((source, regions, parameters));
                 }
             }
-            if let Some(&(source, _, _)) = pending.first() {
+            let equalities = self
+                .trait_equalities
+                .get(&owner)
+                .map_or(&[][..], Vec::as_slice);
+            if let Some(source) = pending
+                .first()
+                .map(|p| p.0)
+                .or_else(|| equalities.first().map(|p| p.0))
+            {
                 let mut constraints = self
                     .trait_region_environment(owner, &mut queries)
                     .map_err(|e| self.error(source, e))?;
+                for &(key, (left, right)) in equalities {
+                    charge(&mut steps, 2).map_err(|e| self.error(key, e))?;
+                    require_regions(&mut constraints, &[(left, right), (right, left)], &[])
+                        .map_err(|e| self.error(key, e))?;
+                }
                 for (key, regions, parameters) in pending {
                     require_regions(&mut constraints, &regions, &parameters)
                         .map_err(|e| self.error(key, e))?;
@@ -92,6 +107,35 @@ impl Checker<'_> {
             }
         }
         Ok(())
+    }
+
+    fn owner_trait_requirements(
+        &mut self,
+        owner: DefId,
+    ) -> Result<Vec<(NodeKey, std::sync::Arc<crate::sema::traits::Requirements>)>, Error> {
+        let predicates: Vec<_> = self
+            .facts
+            .generics
+            .predicates
+            .get(&owner)
+            .map_or(&[][..], Vec::as_slice)
+            .iter()
+            .filter(|p| matches!(p.value.bound, Bound::Trait(_)))
+            .copied()
+            .collect();
+        let mut requirements = Vec::with_capacity(predicates.len());
+        for predicate in predicates {
+            let contract = self
+                .facts
+                .generics
+                .traits
+                .as_mut()
+                .ok_or_else(|| Error::at(predicate.source.file, 0, "missing trait contracts"))?
+                .requirements(&mut self.facts.types, predicate.value)
+                .map_err(|e| self.error(predicate.source, e))?;
+            requirements.push((predicate.source, contract));
+        }
+        Ok(requirements)
     }
 
     fn trait_region_environment(
