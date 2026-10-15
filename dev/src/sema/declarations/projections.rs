@@ -4,6 +4,7 @@ mod bound_environments;
 mod deferred;
 mod environments;
 mod proofs;
+mod scoped;
 use super::{Checker, DefId, Error, NodeKey, Type, TypeId, Work, regions};
 use crate::{
     resolve::model::{DefKind, Namespace},
@@ -26,6 +27,8 @@ struct Query {
     context: regions::Context,
     selected: Option<Selected>,
     destination: Destination,
+    ambient: scoped::Ambient,
+    scopes: scoped::Mapping,
 }
 #[derive(Clone, Copy)]
 enum Destination {
@@ -35,10 +38,12 @@ enum Destination {
 }
 #[derive(Default)]
 pub(super) struct Pending {
-    sized: Vec<(NodeKey, regions::Context, u16, TypeId)>,
+    sized: Vec<(NodeKey, regions::Context, scoped::Ambient, TypeId)>,
     alias_environments:
         HashMap<DefId, std::sync::Arc<crate::types::parameters::environment::Environment>>,
-    deferred: Vec<(NodeKey, regions::Context, TypeId)>,
+    deferred: Vec<(NodeKey, regions::Context, scoped::Ambient, TypeId)>,
+    plans: Vec<scoped::Plan>,
+    body_sinks: HashMap<NodeKey, usize>,
     environments: HashMap<DefId, super::State>,
     raw_bound_nodes: std::collections::HashSet<NodeKey>,
     raw_bounds: HashMap<DefId, bound_environments::Bounds>,
@@ -182,6 +187,17 @@ impl Checker<'_> {
         context: regions::Context,
         destination: Destination,
     ) -> Result<(), Error> {
+        self.start_scoped_normalization(key, ty, context, destination, scoped::Ambient::Root)
+    }
+
+    fn start_scoped_normalization(
+        &mut self,
+        key: NodeKey,
+        ty: TypeId,
+        context: regions::Context,
+        destination: Destination,
+        ambient: scoped::Ambient,
+    ) -> Result<(), Error> {
         let mut fold = Normalizer::default();
         let step = fold
             .start(&mut self.facts.types, ty)
@@ -193,6 +209,8 @@ impl Checker<'_> {
                 context,
                 selected: None,
                 destination,
+                ambient,
+                scopes: scoped::Mapping::default(),
             },
         );
         self.advance_projection(key, step)
@@ -207,7 +225,10 @@ impl Checker<'_> {
                     .remove(&key)
                     .ok_or_else(|| self.error(key, "missing completed projection query"))?;
                 match query.destination {
-                    Destination::Sized => self.prove_alias_size(key, query.context, 0, ty),
+                    Destination::Sized => {
+                        let depth = self.ambient_depth(key, query.ambient)?;
+                        self.prove_alias_size(key, query.context, depth, ty)
+                    }
                     Destination::Annotation => self.store(key, ty),
                     Destination::Requirement => Ok(()),
                 }
@@ -294,12 +315,6 @@ impl Checker<'_> {
             ty: application.subject,
             bound: Bound::Trait(application.trait_application),
         };
-        if request.depth != 0 {
-            return Err(self.error(
-                key,
-                "nested projection normalization requires its binder scope",
-            ));
-        }
         let context = self
             .projections
             .roots
@@ -314,7 +329,7 @@ impl Checker<'_> {
         {
             return Ok(None);
         }
-        let (environment, first) = self.projection_environment(key, context)?;
+        let (environment, first) = self.scoped_projection_environment(key, request, context)?;
         let (source, proof, sized) =
             State::projection(&mut self.facts, environment, predicate, first, deferred)
                 .map_err(|e| self.error(key, e))?;
@@ -343,8 +358,8 @@ impl Checker<'_> {
                 proof.restoration().map_err(|e| self.error(key, e))?,
             ))
         };
-        self.retain_alias_sizes(key, context, sized, restore.as_deref_mut())?;
-        self.retain_projection_proof(key, context, proof)?;
+        self.retain_alias_sizes(key, request, context, sized, restore.as_deref_mut())?;
+        self.retain_scoped_projection_proof(key, request, context, proof)?;
         let name = self.report.resolution.definitions[application.item.0 as usize].name;
         let scope = self.report.resolution.definitions[owner.0 as usize].scope;
         let definition = self.report.resolution.scopes[scope.0 as usize]

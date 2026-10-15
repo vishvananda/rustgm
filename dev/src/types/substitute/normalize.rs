@@ -1,6 +1,8 @@
 //! Suspend the common type fold at projections so semantic selection can borrow the store.
+mod scopes;
 use super::{Action, Bound, Key};
-use crate::types::{Kind, Store, TypeId, projection::Application};
+use crate::types::{Kind, Store, TypeId, lifetime_proof::ScopeId, projection::Application};
+use scopes::{Frame, Suspended};
 use std::collections::{HashMap, HashSet};
 
 /// Inputs have already been normalized in the indicated surrounding binder depth.
@@ -8,6 +10,8 @@ use std::collections::{HashMap, HashSet};
 pub struct Request {
     pub application: Application,
     pub depth: u16,
+    /// Identity in this normalizer's callable binder tree; siblings are distinct.
+    pub scope: ScopeId,
     source: TypeId,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -29,21 +33,21 @@ pub enum Resolution {
 /// One immutable semantic environment owns this cache. Keep availability, caller
 /// assumptions and binder universes fixed; a different proof scope needs a fresh fold.
 pub struct Normalizer {
-    fold: Bound,
-    active: HashSet<Key>,
-    redirects: HashMap<Key, Key>,
+    frame: Frame,
+    suspended: Vec<Suspended>,
+    binders: Vec<(ScopeId, u32)>,
+    suspended_work: usize,
     root: Option<Key>,
     pending: Option<Request>,
     failed: bool,
 }
 impl Default for Normalizer {
     fn default() -> Self {
-        let mut fold = Bound::new(Vec::new());
-        fold.action = Action::Normalize;
         Self {
-            fold,
-            active: HashSet::new(),
-            redirects: HashMap::new(),
+            frame: Frame::new(ScopeId::ROOT, 0),
+            suspended: Vec::new(),
+            binders: Vec::new(),
+            suspended_work: 0,
             root: None,
             pending: None,
             failed: false,
@@ -53,7 +57,7 @@ impl Default for Normalizer {
 impl Normalizer {
     #[must_use]
     pub fn steps(&self) -> usize {
-        self.fold.steps
+        self.frame.fold.steps
     }
 
     /// Begin a root in the same semantic scope, reusing completed graph work.
@@ -64,7 +68,7 @@ impl Normalizer {
             return Err("normalization scope has an unfinished or failed query");
         }
         self.root = Some((ty, 0));
-        self.fold.queue(ty, 0)?;
+        self.frame.fold.queue(ty, 0)?;
         self.advance(store)
     }
 
@@ -81,21 +85,21 @@ impl Normalizer {
         if self.pending != Some(request) || self.failed {
             return Err("normalization response does not match its pending request");
         }
-        let key = (request.source, request.depth);
+        let key = (request.source, 0);
         match resolution {
             Resolution::Opaque | Resolution::Deferred => {
                 let ty = store.intern(Kind::Projection(request.application))?;
-                self.fold.completed.insert(key, ty);
-                self.active.remove(&key);
+                self.frame.fold.completed.insert(key, ty);
+                self.frame.active.remove(&key);
             }
             Resolution::Type(ty) => {
                 store
                     .kind(ty)
                     .ok_or("invalid normalized projection result")?;
-                self.fold.account_arguments(1)?;
-                self.redirects.insert(key, (ty, request.depth));
-                self.fold.work.push((key, true));
-                self.fold.queue(ty, request.depth)?;
+                self.frame.fold.account_arguments(1)?;
+                self.frame.redirects.insert(key, (ty, 0));
+                self.frame.fold.work.push((key, true));
+                self.frame.fold.queue(ty, 0)?;
             }
         }
         self.pending = None;
@@ -106,30 +110,41 @@ impl Normalizer {
         let result = self.drain(store);
         if result.is_err() {
             self.failed = true;
-            self.fold.work.clear();
+            self.frame.fold.work.clear();
+            self.suspended.clear();
+            self.suspended_work = 0;
             self.pending = None;
         }
         result
     }
 
     fn drain(&mut self, store: &mut Store) -> Result<Step, &'static str> {
-        while let Some((key, finish)) = self.fold.work.pop() {
-            self.fold.account_arguments(1)?;
-            if self.fold.result(store, key)?.is_some() {
+        loop {
+            self.check_work()?;
+            let Some((key, finish)) = self.frame.fold.work.pop() else {
+                if self.finish_callable(store)? {
+                    continue;
+                }
+                break;
+            };
+            self.frame.fold.account_arguments(1)?;
+            if self.frame.fold.result(store, key)?.is_some() {
                 continue;
             }
             if finish {
-                if let Some(&(ty, depth)) = self.redirects.get(&key) {
-                    let ty = self.fold.child(store, ty, depth)?;
+                if let Some(&(ty, depth)) = self.frame.redirects.get(&key) {
+                    let ty = self.frame.fold.child(store, ty, depth)?;
                     self.complete(key, ty);
                     continue;
                 }
                 let kind = store.kind(key.0).ok_or("invalid normalization type")?;
-                let kind = self.fold.rebuild(store, kind, key.1)?;
+                let kind = self.frame.fold.rebuild(store, kind, key.1)?;
                 if let Kind::Projection(application) = kind {
                     let request = Request {
                         application,
-                        depth: key.1,
+                        depth: u16::try_from(self.suspended.len())
+                            .map_err(|_| "normalization binder depth exhausted")?,
+                        scope: self.frame.scope,
                         source: key.0,
                     };
                     self.pending = Some(request);
@@ -137,25 +152,29 @@ impl Normalizer {
                 }
                 self.complete(key, store.intern(kind)?);
             } else {
-                if !self.active.insert(key) {
+                if !self.frame.active.insert(key) {
                     return Err("cycle in associated type normalization");
                 }
                 let kind = store
                     .kind(key.0)
                     .ok_or("invalid normalization dependency")?;
-                self.fold.work.push((key, true));
-                self.fold.dependencies(store, kind, key.1)?;
+                if matches!(kind, Kind::Function { .. }) {
+                    self.enter_callable(store, key, kind)?;
+                } else {
+                    self.frame.fold.work.push((key, true));
+                    self.frame.fold.dependencies(store, kind, key.1)?;
+                }
             }
         }
         let root = self.root.ok_or("missing normalization root")?;
-        let ty = self.fold.child(store, root.0, root.1)?;
+        let ty = self.frame.fold.child(store, root.0, root.1)?;
         self.root = None;
         Ok(Step::Complete(ty))
     }
 
     fn complete(&mut self, key: Key, ty: TypeId) {
-        self.fold.completed.insert(key, ty);
-        self.redirects.remove(&key);
-        self.active.remove(&key);
+        self.frame.fold.completed.insert(key, ty);
+        self.frame.redirects.remove(&key);
+        self.frame.active.remove(&key);
     }
 }

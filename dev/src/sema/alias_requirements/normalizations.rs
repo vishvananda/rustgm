@@ -5,7 +5,7 @@ use crate::types::{Store, TypeId, lifetime_proof::ScopeId, substitute::Bound};
 pub(crate) struct Expansion {
     pub proof: Obligations,
     pub normalizations: Vec<(ScopeId, TypeId)>,
-    pub sized: Vec<(u16, TypeId)>,
+    pub sized: Vec<(ScopeId, TypeId)>,
 }
 impl Expansion {
     pub(super) fn new(first: u32) -> Self {
@@ -36,7 +36,7 @@ impl Expansion {
             let (target, depth) = mapping.get(local)?;
             let ty = parameters.apply_inside(store, ty, depth)?;
             if target != ScopeId::ROOT || scope.sized.insert(ty) {
-                self.sized.push((self.proof.scope_depth(target)?, ty));
+                self.sized.push((target, ty));
             }
         }
         Ok(())

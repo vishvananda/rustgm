@@ -62,7 +62,7 @@ impl Checker<'_> {
         let template = self
             .projection_alias_owner(context)
             .ok_or_else(|| self.error(key, "deferred projection requires an alias contract"))?;
-        let scope = self.projection_alias_scope(key, context, template)?;
+        let scope = self.projection_alias_request_scope(key, request, context, template)?;
         let ty = self.intern(key, Type::Projection(request.application))?;
         self.facts
             .alias_requirements
@@ -86,20 +86,21 @@ impl Checker<'_> {
         limit: usize,
     ) -> Result<(), Error> {
         loop {
-            if let Some((key, context, ty)) = self.projections.deferred.pop() {
-                self.start_normalization(key, ty, context, Destination::Requirement)?;
+            if let Some((key, context, ambient, ty)) = self.projections.deferred.pop() {
+                self.start_scoped_normalization(
+                    key,
+                    ty,
+                    context,
+                    Destination::Requirement,
+                    ambient,
+                )?;
                 self.drain(steps, limit)?;
-            } else if let Some((key, context, depth, ty)) = self.projections.sized.pop() {
+            } else if let Some((key, context, ambient, ty)) = self.projections.sized.pop() {
                 if self.facts.types.contains_projections(ty) == Some(true) {
-                    if depth != 0 {
-                        return Err(self.error(
-                            key,
-                            "projected Sized requirements need their callable scope",
-                        ));
-                    }
-                    self.start_normalization(key, ty, context, Destination::Sized)?;
+                    self.start_scoped_normalization(key, ty, context, Destination::Sized, ambient)?;
                     self.drain(steps, limit)?;
                 } else {
+                    let depth = self.ambient_depth(key, ambient)?;
                     self.prove_alias_size(key, context, depth, ty)?;
                 }
             } else {
@@ -111,6 +112,7 @@ impl Checker<'_> {
     pub(super) fn retain_alias_sizes(
         &mut self,
         key: NodeKey,
+        request: Request,
         context: regions::Context,
         sized: Vec<TypeId>,
         mut restore: Option<&mut crate::types::substitute::Bound>,
@@ -132,7 +134,7 @@ impl Checker<'_> {
             } else {
                 ty
             };
-            let scope = self.projection_alias_scope(key, context, template)?;
+            let scope = self.projection_alias_request_scope(key, request, context, template)?;
             self.facts
                 .alias_requirements
                 .sized(template.owner, template.parameters, ty, scope)

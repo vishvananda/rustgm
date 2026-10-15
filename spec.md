@@ -88,6 +88,15 @@ exhausted work. A prepared impl may supply declaration work, but its complete
 conformance remains mandatory before executable facts are published. Missing
 lifetime or equality evidence must never be dropped to manufacture a normal form.
 
+Callable boundaries in residual types create independent normalization frames.
+Requests carry their actual scope identity, parent and local lifetime count;
+depth alone cannot distinguish sibling universes. Keep suspended frames in a flat
+worklist, charge their combined storage and work, and preserve empty binders.
+Shift caller assumptions beneath the complete ambient prefix before selection.
+Retain scoped evidence immediately in the actual declaration or body allocator,
+reserving fresh intervals before another query can use them. Only contiguous
+intervals for the same body can share an evidence object.
+
 Open surrounding projection lifetimes with a single checked mapping shared by
 the goal and its assumptions. Preserve nested local binders and reserve existing
 body inference identities before allocating selection variables. Restore a
@@ -154,8 +163,9 @@ Retain the implicit Sized premises of selected implementations and their recursi
 conditions when alias normalization removes the original inputs. Alias parameters
 can later receive unsized arguments despite their declaration spelling. Substitute
 these premises at each use and check them in the actual caller environment. Track
-their total callable depth across dependency graphs, separately from the local
-substitution depth. Partial annotations with only liftable Sized premises share the
+their actual callable scopes across dependency graphs, separately from the local
+substitution depth. Derive the total binder depth from that scope tree. Partial
+annotations with only liftable Sized premises share the
 result's inference variables and retain those premises through body completion;
 they do not infer erased inputs from an associated result.
 
@@ -173,8 +183,11 @@ prefix, and prove the resulting requirements in the same graph as ordinary calle
 constraints. Scope IDs are local to one evidence object and must be remapped when
 combining independent objects. Partial alias annotations with deferred projections
 or lifetime proofs still require delayed projection inference. Residual projected
-types under callable scopes require scoped normalization; do not drop their
-requirements to produce an executable type.
+types and erased formation requirements normalize in their retained callable
+scopes. Share an immutable binder plan with pending queries so moving or remapping
+the original proof cannot change their scope identities. Import each required
+scope prefix once per destination evidence object; never clone the full tree for
+every requirement or drop its evidence to produce an executable type.
 
 Check constraining lifetime positions before erasing projections through
 normalization. A lifetime occurring only inside a projected function-pointer

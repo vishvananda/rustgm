@@ -158,3 +158,123 @@ fn generated_shared_results_use_bounded_iterative_work() -> TestResult {
     assert!(fold.steps() < 150_000, "{}", fold.steps());
     Ok(())
 }
+
+#[test]
+fn sibling_callable_requests_have_independent_scopes_and_caches() -> TestResult {
+    use rustgm::types::lifetime_proof::ScopeId;
+    let mut store = Store::default();
+    let byte = TypeId::primitive(Primitive::U8);
+    let word = TypeId::primitive(Primitive::U16);
+    let projection = projected(&mut store, byte)?;
+    let parameters = store.intern_list(&[projection])?;
+    let mut callables = Vec::new();
+    for count in [1, 2] {
+        callables.push(store.intern(Kind::Function {
+            bound_regions: count,
+            parameters,
+            result: TypeId::UNIT,
+            unsafe_: false,
+        })?);
+    }
+    let roots = store.intern_list(&callables)?;
+    let root = store.intern(Kind::Tuple(roots))?;
+    let mut fold = Normalizer::default();
+    let first = request(fold.start(&mut store, root)?)?;
+    assert_eq!(first.depth, 1);
+    assert_eq!(fold.binder(first.scope), Some((ScopeId::ROOT, 2)));
+    let second = request(fold.resume(&mut store, first, Resolution::Type(word))?)?;
+    assert_eq!(second.depth, first.depth);
+    assert_eq!(second.application, first.application);
+    assert_ne!(second.scope, first.scope);
+    assert_eq!(fold.binder(second.scope), Some((ScopeId::ROOT, 1)));
+    assert!(
+        fold.resume(&mut store, first, Resolution::Type(byte))
+            .is_err()
+    );
+    let Step::Complete(result) = fold.resume(&mut store, second, Resolution::Type(byte))? else {
+        return Err("unfinished sibling callable normalization".into());
+    };
+    let Some(Kind::Tuple(types)) = store.kind(result) else {
+        return Err("missing normalized sibling tuple".into());
+    };
+    for (&ty, expected) in store
+        .list(types)
+        .ok_or("missing siblings")?
+        .iter()
+        .zip([byte, word])
+    {
+        let Some(Kind::Function { parameters, .. }) = store.kind(ty) else {
+            return Err("missing normalized callable".into());
+        };
+        assert_eq!(store.list(parameters), Some([expected].as_slice()));
+    }
+    Ok(())
+}
+
+#[test]
+fn empty_callable_binders_preserve_depth_with_linear_iterative_work() -> TestResult {
+    use std::collections::HashSet;
+    let mut store = Store::default();
+    let byte = TypeId::primitive(Primitive::U8);
+    let projection = projected(&mut store, byte)?;
+    let mut root = TypeId::UNIT;
+    for _ in 0..1024 {
+        let parameters = store.intern_list(&[projection, root])?;
+        root = store.intern(Kind::Function {
+            bound_regions: 0,
+            parameters,
+            result: TypeId::UNIT,
+            unsafe_: false,
+        })?;
+    }
+    let mut fold = Normalizer::default();
+    let mut step = fold.start(&mut store, root)?;
+    let mut scopes = HashSet::new();
+    let mut expected_depth = 1024;
+    while let Step::Resolve(query) = step {
+        assert_eq!(query.depth, expected_depth);
+        assert_eq!(fold.binder(query.scope).map(|(_, count)| count), Some(0));
+        assert!(scopes.insert(query.scope));
+        step = fold.resume(&mut store, query, Resolution::Opaque)?;
+        expected_depth -= 1;
+    }
+    assert_eq!(step, Step::Complete(root));
+    assert_eq!(scopes.len(), 1024);
+    assert_eq!(expected_depth, 0);
+    assert!(fold.steps() < 20_000, "{}", fold.steps());
+    Ok(())
+}
+
+#[test]
+fn selected_callable_results_open_a_scope_before_normalizing_their_children() -> TestResult {
+    use rustgm::types::lifetime_proof::ScopeId;
+    let mut store = Store::default();
+    let byte = TypeId::primitive(Primitive::U8);
+    let outer = projected(&mut store, byte)?;
+    let reference = store.intern(Kind::Reference {
+        mutable: false,
+        region: RegionId::bound(0, 0)?,
+        referent: byte,
+    })?;
+    let inner = projected(&mut store, reference)?;
+    let parameters = store.intern_list(&[inner])?;
+    let callable = store.intern(Kind::Function {
+        bound_regions: 1,
+        parameters,
+        result: TypeId::UNIT,
+        unsafe_: false,
+    })?;
+    let mut fold = Normalizer::default();
+    let query = request(fold.start(&mut store, outer)?)?;
+    assert_eq!(query.scope, ScopeId::ROOT);
+    let nested = request(fold.resume(&mut store, query, Resolution::Type(callable))?)?;
+    assert_eq!(fold.binder(nested.scope), Some((ScopeId::ROOT, 1)));
+    assert_eq!(nested.application.subject, reference);
+    assert_eq!(nested.depth, 1);
+    let Step::Complete(result) = fold.resume(&mut store, nested, Resolution::Type(reference))?
+    else {
+        return Err("unfinished selected callable normalization".into());
+    };
+    assert_eq!(store.contains_projections(result), Some(false));
+    Ok(())
+}

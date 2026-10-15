@@ -5,6 +5,7 @@ use crate::types::{
     outlives::Queries,
     relations::{Constraints, ProofScope},
 };
+use std::sync::Arc;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct ScopeId(pub(crate) u32);
@@ -24,7 +25,7 @@ pub(super) struct Block {
 }
 #[derive(Clone, Default)]
 pub(super) struct Quantified {
-    pub scopes: Vec<Binder>,
+    pub scopes: Arc<Vec<Binder>>,
     pub blocks: Vec<Block>,
 }
 impl Quantified {
@@ -36,7 +37,8 @@ impl Quantified {
         if self.scopes.len().saturating_add(other.scopes.len()) > 1_000_000 {
             return Err("quantified proof scope budget exhausted");
         }
-        for scope in &mut other.scopes {
+        let mut incoming = Arc::unwrap_or_clone(other.scopes);
+        for scope in &mut incoming {
             if scope.parent != ScopeId::ROOT {
                 scope.parent.0 += offset;
             }
@@ -44,7 +46,7 @@ impl Quantified {
         for block in &mut other.blocks {
             block.scope.0 += offset;
         }
-        self.scopes.extend(other.scopes);
+        Arc::make_mut(&mut self.scopes).extend(incoming);
         self.blocks.extend(other.blocks);
         Ok(())
     }
@@ -57,7 +59,7 @@ impl Quantified {
     ) -> Result<(), String> {
         let mut scopes = Vec::with_capacity(self.scopes.len() + 1);
         scopes.push(ProofScope::ROOT);
-        for binder in &self.scopes {
+        for binder in self.scopes.iter() {
             let parent = *scopes
                 .get(binder.parent.0 as usize)
                 .ok_or("invalid quantified proof parent")?;
@@ -131,7 +133,7 @@ impl Obligations {
         if q.scopes.len() >= 1_000_000 {
             return Err("quantified proof scope budget exhausted");
         }
-        q.scopes.push(Binder {
+        Arc::make_mut(&mut q.scopes).push(Binder {
             parent,
             count,
             depth,

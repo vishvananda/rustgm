@@ -247,7 +247,10 @@ fn deferred_type_debts_share_diamonds_without_disappearing_with_empty_lifetime_p
     assert!(expansion.proof.is_empty());
     assert_eq!(
         expansion.sized,
-        [(0, crate::types::TypeId::primitive(Primitive::U8))]
+        [(
+            ScopeId::ROOT,
+            crate::types::TypeId::primitive(Primitive::U8)
+        )]
     );
     assert_eq!(
         expansion.normalizations,
@@ -363,7 +366,9 @@ fn sized_dependencies_keep_total_depth_across_nested_alias_contracts() -> TestRe
     let mut cache = Scope::default();
     let expansion = requirements.instantiate(&mut store, use_, 1, &mut cache)?;
     assert!(expansion.proof.is_empty());
-    assert_eq!(expansion.sized, [(3, TypeId::UNIT)]);
+    assert_eq!(expansion.sized.len(), 1);
+    assert_eq!(expansion.proof.scope_depth(expansion.sized[0].0)?, 3);
+    assert_eq!(expansion.sized[0].1, TypeId::UNIT);
     assert!(
         requirements
             .instantiate(&mut store, use_, 1, &mut cache)?

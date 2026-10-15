@@ -4940,3 +4940,78 @@ and 5.47/10.64/30.39 ms for inferred Sized premises. Resident medians range from
 5,908 to 31,938 KiB. The receipt is
 `obj/pa20-work/deferred-alias-projections-v1/validation-v2.json`; the first candidate,
 all 5,070 observations and the corrected initial expectations remain available.
+
+## Alias projection normalization beneath callable binders
+
+Residual projections now normalize inside callable aliases, including nested and
+sibling function pointers, captured outer lifetimes, defaults and erased results.
+Each callable receives a distinct normalization frame and typed scope identity.
+Parent identities and local lifetime counts accompany selection requests; depth
+alone never identifies a proof universe. The iterative fold preserves empty
+binders and bounds combined work across suspended frames.
+
+Deferred formation and Sized requirements retain their actual scope IDs. Pending
+queries share immutable binder plans whose identities survive moving or remapping
+the original proof. Selection shifts the caller environment beneath the complete
+ambient binder prefix. New evidence is appended immediately to its declaration
+or body sink, reserving each fresh interval before subsequent queries. Independent
+or interleaved body allocators cannot share a proof interval. Requirement-only
+normalization still leaves the actual annotation intact.
+
+The new source matrix independently agrees with pinned rustc on 29 programs:
+16 accepted and 13 rejected through LowIR. Negatives require their intended
+missing-implementation, unconstrained-output or outlives diagnostic. The earlier
+positive hypothesis for a short captured reference was incorrect; rustc requires
+that reference to outlive static. Original expectations and diagnostics remain
+preserved. Two additional direct source-annotation controls agree with both the
+published compiler and this candidate; they are separate from the new matrix.
+Six native programs compare callable values, generic signatures, erased results,
+defaults, static captures and nested captures through CPPGM against rustc.
+
+Seven typed normalization tests include independent sibling caches, stale request
+rejection, selected results introducing callables and 1,024 empty nested binders
+with bounded linear fold work. A separate unit test checks immutable scope plans
+across proof remapping and subsequent extension. The complete optimized suite
+passes 997 tests with 38 explicit native ignores; the affected run passes 60 tests
+with native execution enabled, including 35 programs. All 4,857 active course
+cases, Clippy all/pedantic, formatting, the 625-file audit and 27 harness tests
+pass. Course fixtures, manifests and oracle bytes remain unchanged.
+
+General delayed alias/default inference, symbolic assumption-selected associated
+values and dependent projected assumptions remain unfinished. Source-local binder
+routing still requires a broader audit, as do nonfunction bound lifecycles and
+complete higher-ranked bounds. These checks do not complete PA20 or PA21; both
+remain planned pending their remaining implementation and course contracts.
+
+The frozen candidate is
+`18d951b2906ae592d0a0937a5fedb4273a77aee9e95baf64db56f412bf8bfc94`;
+628 source/config/test files are archived. Eighty-seven published workloads retain
+all full/count output bytes. Fifteen new independently qualified workloads cover
+callable width, repeated uses, captured lifetimes and alias chains at
+128/512/2,048, plus nested callable depth at 8/32/64. A/A calibration and paired
+ABBA runs retain 2,652 observations, with 130 more in focused confirmation.
+Every run checks source, binary and input hashes and output equality; no local
+RustGM build, test or frontend probe overlaps timing.
+
+Existing-workload paired medians initially range from -7.2% to +4.5%. The +4.5%
+conditional-repeated and +3.0% erased-dependency comparisons move to -0.8% and
++0.8% in confirmation. Nominal defaults move from +1.4% to +3.3%, with 7.1%
+calibration spread. These observations do not establish a general speedup or the
+absence of small regressions. They compare against the preceding published
+compiler and do not erase its already documented alias-width regression.
+
+Initial new-input medians are 13.22/43.27/164.70 ms for width,
+8.31/20.50/72.00 ms for repeated uses, 12.52/39.52/139.12 ms for captured lifetimes
+and 9.10/24.03/77.35 ms for alias chains. Depth inputs measure 4.04/4.46/5.80 ms.
+Resident medians range from 5,904 to 22,792 KiB. Confirmation measures the largest
+chain at 83.99 ms and depth-64 at 6.75 ms; the latter has 39.0% calibration spread.
+These source measurements are distinct from the typed fold's bounded-work test.
+The receipt is `obj/pa20-work/callable-alias-normalization-v1/validation-v1.json`.
+
+Eight newly declared inference probes agree with pinned rustc's expected outcomes.
+They identify three accepted forms still rejected by RustGM: inferred projected
+pairs, callable pairs and dependent defaults. An explicitly overridden default
+already works. The four rejection probes currently stop at an unsupported-feature
+diagnostic, so they are not counted as successful semantic negative controls.
+Their records and implementation notes remain beside the receipt for the next
+batch of work.

@@ -57,7 +57,11 @@ pub(super) fn retain(
                 "inferred alias proofs require delayed projection normalization",
             ));
         }
-        for (depth, ty) in expansion.sized {
+        for (scope, ty) in expansion.sized {
+            let depth = expansion
+                .proof
+                .scope_depth(scope)
+                .map_err(|e| error(host, key, e))?;
             // Local quantified lifetimes cannot be moved into the body's scope.
             // `lower` checks this while restoring captured caller lifetimes.
             let ty = substitute::Bound::lower(depth)

@@ -172,20 +172,33 @@ impl Checker<'_> {
             .alias_requirements
             .instantiate(&mut self.facts.types, use_, first, scope)
             .map_err(|e| self.error(key, e))?;
+        let plan = expansion
+            .normalizations
+            .iter()
+            .chain(&expansion.sized)
+            .any(|(scope, _)| *scope != ScopeId::ROOT)
+            .then(|| {
+                let id = self.projections.plans.len();
+                self.projections
+                    .plans
+                    .push(super::scoped::Plan::new(expansion.proof.scope_plan()));
+                id
+            });
+        let ambient = |scope| {
+            plan.map_or(super::scoped::Ambient::Root, |plan| {
+                super::scoped::Ambient::Alias { plan, scope }
+            })
+        };
         for (scope, ty) in expansion.normalizations {
-            if scope != ScopeId::ROOT {
-                return Err(self.error(
-                    key,
-                    "deferred alias projections require their callable proof scope",
-                ));
-            }
-            self.projections.deferred.push((key, context, ty));
+            self.projections
+                .deferred
+                .push((key, context, ambient(scope), ty));
         }
         self.projections.sized.extend(
             expansion
                 .sized
                 .into_iter()
-                .map(|(depth, ty)| (key, context, depth, ty)),
+                .map(|(scope, ty)| (key, context, ambient(scope), ty)),
         );
         self.retain_projection_proof(key, context, expansion.proof)
     }

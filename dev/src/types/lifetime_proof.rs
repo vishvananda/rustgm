@@ -1,5 +1,6 @@
 //! Directed lifetime evidence retains private intervals and quantified binder ownership.
 mod quantified;
+mod scopes;
 mod substitution;
 use crate::types::{
     RegionId, TypeId,
@@ -7,6 +8,7 @@ use crate::types::{
     relations::{Constraints, ProofScope},
 };
 pub use quantified::ScopeId;
+pub(crate) use scopes::ScopePlan;
 use std::ops::Range;
 
 #[derive(Clone)]
