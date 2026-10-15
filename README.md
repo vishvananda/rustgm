@@ -85,6 +85,9 @@ wrapper `dev/rustgm-ref` invokes the same maintained solution. Override
 `RUSTGM_TEST_APP=/absolute/path/to/candidate` to test another implementation
 against the committed oracles without regenerating them.
 
+The maintainer also provides `--emit-semantics` and `--count-semantics` for
+PA19 trait/method inspection. Its course grading contract remains planned.
+
 ## CPPGM backend
 
 Configure a built checkout of the commit in `backend.lock.json`:

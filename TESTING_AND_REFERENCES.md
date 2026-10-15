@@ -239,8 +239,15 @@ comparisons for trait dot calls. They cover candidate order, defaults, scoped
 traits, reference Self, numeric inference, array unsizing, captured lifetimes,
 returned borrows and two-phase arguments. The former PA18 trait-method boundary
 is preserved verbatim as an accepted maintainer/native control. Deep receivers at
-64 and 96 reference levels require one full candidate probe. PA19's semantic view
-and complete assignment contract remain pending, so the course stage is still planned.
+64 and 96 reference levels require one full candidate probe.
+
+The maintainer `--emit-semantics`/`--count-semantics` view has four focused checks
+in `dev/tests/semantic_view.rs`: canonical selection records and defaults, repeated
+process determinism, count agreement, inherited Drop/const arguments, later-region
+rejection and output failure propagation. It shares declaration/body inference with
+the type view and reports pending lifetime constraints explicitly; complete
+execution proof remains in `--emit-lowir`. PA19's full grading contract remains
+pending, so the course stage is still planned.
 
 ## Placement and provenance
 

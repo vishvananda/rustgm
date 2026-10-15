@@ -986,3 +986,20 @@ code lines: 3000 per implementation module, 2400 for registered interfaces,
 1800 for internal models; functions 240, or 360 for cohesive dispatch with at
 least eight arms. Nesting warns past six and fails past eight. Do not hide logic
 in macros, compressed lines, generated files or mechanically split modules.
+
+
+## Associated semantic inspection
+
+The maintainer semantic view consumes completed declaration/body facts. Reuse the
+canonical type, definition, argument and region writers; do not reconstruct
+semantic decisions from syntax or output. Owner/member inventories and per-owner
+predicate vectors retain construction order. Sort sparse source-keyed maps only
+at the view boundary. Count mode consumes the same facts without text rendering.
+
+Expose trait/impl ownership, declared parameters and defaults, complete predicates,
+validated method/default mappings, qualified paths, receiver adjustments and
+selected implementation arguments. Preserve bound-selected lookup origin through
+this view. Region/loan constraints remain explicitly pending: inspection succeeds
+at the inference boundary, while LowIR emission retains every template, lifetime,
+ownership, loan, cleanup and demanded-instance proof. The new view must not change
+that execution boundary or mutate the analyzed facts.

@@ -22,6 +22,7 @@ mod regions;
 mod representation;
 mod scalar;
 pub mod scopes;
+pub mod semantic_view;
 mod traits;
 pub mod type_view;
 

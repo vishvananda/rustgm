@@ -4037,3 +4037,52 @@ The receipt is `obj/pa19-work/trait-receiver-validation-v2.json`; original predi
 corrections, failed probes and validation logs remain under
 `obj/pa19-work/dot-receivers-v1`, with frozen inputs, measurements and both source
 snapshots under `obj/pa19-work/trait-receiver-*` and `obj/perf/`.
+
+
+## Semantic inspection view
+
+`--emit-semantics` and `--count-semantics` now expose the retained trait/method
+facts needed for PA19's text-oracle contract. Owners, members, parameters,
+defaults, complete predicates, validated impl method mappings, qualified paths,
+receiver conversions and selected implementation arguments have explicit records.
+Canonical type, definition, argument and region writers are shared with the type
+view. Sorting occurs at the output boundary; compiler phases keep using typed facts.
+
+The view runs declaration/body inference. Lifetime, ownership, loan, cleanup and
+concrete-instance proofs remain in the complete LowIR pipeline; pending region
+constraints are labelled accordingly. One focused control deliberately succeeds
+at inspection and fails its later lifetime proof. Other controls verify actual
+method/default mappings, bound versus lexical selection, explicit qualifications,
+Drop/const handling, count agreement, output errors and deterministic bytes across
+seven independently seeded CLI processes.
+
+Four focused debug tests and seven affected optimized tests pass. All 3,789 active
+PA1–PA18 text-oracle cases remain byte-identical; no references or receipts are
+regenerated for this view. Formatting, Clippy all/pedantic, the 578-file zero-finding
+audit and all 27 harness checks pass. PA19 remains planned until its complete
+handout, fixture manifest and independent/native qualification are published.
+
+Eighteen immutable jobs retain 468 observations with A/A calibration and five
+paired ABBA blocks each. They cover 64/256/1,024 bound receiver/type-path calls in
+old type-count mode, new semantic-count mode and full semantic rendering. Full
+output hashes and count results agree, as do all source/binary/input hashes.
+No local RustGM builds, tests or probes overlap timing. Existing type-count paired
+medians range from -1.6% to +2.6% with A/A spreads up to 11.0%; identical-binary new
+mode comparisons range from -3.3% to +3.9%, with calibration spreads up to 76.4%.
+These observations do not establish a stable performance change.
+
+Final median wall times in milliseconds are:
+
+| Workload | 64 | 256 | 1,024 |
+| --- | ---: | ---: | ---: |
+| Receiver semantic count | 8.86 | 38.80 | 74.34 |
+| Receiver full semantic view | 9.15 | 23.31 | 81.03 |
+| Type-path semantic count | 10.30 | 28.14 | 101.84 |
+| Type-path full semantic view | 10.92 | 30.06 | 111.29 |
+
+The 581 source/config/test files are archived under
+`obj/pa19-work/semantic-view-source-v1`. Compiler SHA256 is
+`18e84f6d5d6c9c8227b6520378bb8035c8ec25703d49576befacd8a987cbc1ec`.
+The receipt is `obj/pa19-work/semantic-view-validation-v1.json`; declarations,
+validation and timings remain in `obj/pa19-work/semantic-view-v1`,
+`obj/pa19-work/semantic-view-*` and `obj/perf/`.

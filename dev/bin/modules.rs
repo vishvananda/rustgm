@@ -48,6 +48,7 @@ pub enum Mode {
     Names,
     Expanded,
     Types,
+    Semantics,
     Patterns,
     Layouts,
     Bodies,
@@ -78,6 +79,7 @@ pub fn run(
         mode,
         Mode::Expanded
             | Mode::Types
+            | Mode::Semantics
             | Mode::Patterns
             | Mode::Layouts
             | Mode::Bodies
@@ -93,6 +95,7 @@ pub fn run(
         if matches!(
             mode,
             Mode::Types
+                | Mode::Semantics
                 | Mode::Patterns
                 | Mode::Layouts
                 | Mode::Bodies
@@ -225,6 +228,14 @@ fn semantic(
     let mut facts = rustgm::sema::declarations::analyze(&report)
         .and_then(|facts| rustgm::sema::bodies::analyze(&report, facts))
         .map_err(|e| e.to_string())?;
+    if matches!(mode, Mode::Semantics) {
+        return if count {
+            rustgm::sema::semantic_view::count(&facts, out)
+        } else {
+            rustgm::sema::semantic_view::write(&report, &facts, out)
+        }
+        .map_err(|e| e.to_string());
+    }
     if matches!(mode, Mode::Patterns) {
         return if count {
             rustgm::sema::pattern_view::count(&facts, out)

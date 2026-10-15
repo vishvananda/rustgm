@@ -16,22 +16,7 @@ use std::io::{self, Write};
 pub fn write(report: &Report, facts: &Declarations, out: &mut impl Write) -> io::Result<()> {
     writeln!(out, "typed-crate 1")?;
     types(&facts.types, out)?;
-    for (ordinal, ty) in facts.definitions.iter().enumerate() {
-        let Some(ty) = ty else {
-            continue;
-        };
-        let definition = &report.resolution.definitions[ordinal];
-        write!(out, "def {ordinal} type={} name=", ty.0)?;
-        quoted::bytes(
-            out,
-            report.package.names.get(definition.name).as_bytes(),
-            false,
-        )?;
-        if let Some(node) = definition.node {
-            write!(out, " source={}:{}", node.file.0, node.node.0)?;
-        }
-        writeln!(out)?;
-    }
+    definitions(report, facts, out)?;
     for function in &facts.functions {
         write!(
             out,
@@ -70,6 +55,30 @@ pub fn write(report: &Report, facts: &Declarations, out: &mut impl Write) -> io:
     nodes(report, facts, out)?;
     write!(out, "eof ")?;
     count(facts, out)
+}
+
+pub(super) fn definitions(
+    report: &Report,
+    facts: &Declarations,
+    out: &mut impl Write,
+) -> io::Result<()> {
+    for (ordinal, ty) in facts.definitions.iter().enumerate() {
+        let Some(ty) = ty else {
+            continue;
+        };
+        let definition = &report.resolution.definitions[ordinal];
+        write!(out, "def {ordinal} type={} name=", ty.0)?;
+        quoted::bytes(
+            out,
+            report.package.names.get(definition.name).as_bytes(),
+            false,
+        )?;
+        if let Some(node) = definition.node {
+            write!(out, " source={}:{}", node.file.0, node.node.0)?;
+        }
+        writeln!(out)?;
+    }
+    Ok(())
 }
 
 fn destructors(facts: &Declarations, out: &mut impl Write) -> io::Result<()> {
@@ -416,12 +425,11 @@ fn region_arguments(
     }
     Ok(())
 }
-fn generic_arguments(
+pub(super) fn generic_arguments(
     store: &Store,
     arguments: crate::types::GenericArgs,
     out: &mut impl Write,
 ) -> io::Result<()> {
-    use crate::types::arguments::{Argument, ConstKind};
     let arguments = store
         .arguments(arguments)
         .ok_or_else(|| io::Error::other("invalid generic arguments"))?;
@@ -430,33 +438,42 @@ fn generic_arguments(
         if index != 0 {
             write!(out, ",")?;
         }
-        match argument {
-            Argument::Lifetime(id) => {
-                write!(out, "region:")?;
-                region(id, out)?;
-            }
-            Argument::Type(id) => write!(out, "type:{}", id.0)?,
-            Argument::Const(id) => match store
-                .const_kind(id)
-                .ok_or_else(|| io::Error::other("invalid generic constant"))?
-            {
-                ConstKind::Value(value) => {
-                    write!(out, "const:{}:0x{:032x}", value.ty.0, value.bits)?;
-                }
-                ConstKind::Parameter(id) => {
-                    let parameter = store
-                        .parameter(id)
-                        .ok_or_else(|| io::Error::other("missing const parameter"))?;
-                    write!(
-                        out,
-                        "const-parameter:{}:{}",
-                        parameter.owner.0, parameter.index
-                    )?;
-                }
-            },
-        }
+        self::argument(store, argument, out)?;
     }
     write!(out, "]")
+}
+pub(super) fn argument(
+    store: &Store,
+    argument: crate::types::arguments::Argument,
+    out: &mut impl Write,
+) -> io::Result<()> {
+    use crate::types::arguments::{Argument, ConstKind};
+    match argument {
+        Argument::Lifetime(id) => {
+            write!(out, "region:")?;
+            region(id, out)?;
+        }
+        Argument::Type(id) => write!(out, "type:{}", id.0)?,
+        Argument::Const(id) => match store
+            .const_kind(id)
+            .ok_or_else(|| io::Error::other("invalid generic constant"))?
+        {
+            ConstKind::Value(value) => {
+                write!(out, "const:{}:0x{:032x}", value.ty.0, value.bits)?;
+            }
+            ConstKind::Parameter(id) => {
+                let parameter = store
+                    .parameter(id)
+                    .ok_or_else(|| io::Error::other("missing const parameter"))?;
+                write!(
+                    out,
+                    "const-parameter:{}:{}",
+                    parameter.owner.0, parameter.index
+                )?;
+            }
+        },
+    }
+    Ok(())
 }
 /// Write the common canonical type table for semantic and body views.
 ///
