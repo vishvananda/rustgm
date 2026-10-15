@@ -66,6 +66,7 @@ impl Checker<'_> {
                     .insert(owner, std::sync::Arc::clone(environment));
             }
         }
+        self.method_environment.clone_from(&environment);
         self.parameter_shapes = environment
             .as_ref()
             .filter(|e| e.has_shape_assumptions())

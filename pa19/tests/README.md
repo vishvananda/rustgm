@@ -6,3 +6,7 @@ Required families: autoderef/autoref; qualified calls; bounds; ambiguous methods
 
 Put required regressions here, in the earliest assignment owning all their
 features. Register every input in `manifest.json`; no undiscovered fixtures.
+
+The former PA17/PA18 inherent-method boundary sources are preserved verbatim
+in `dev/tests/dot_methods.rs` as accepted rustc and native checks. Include them
+in the owning PA19 manifest when the complete grading contract is released.

@@ -1588,20 +1588,6 @@
       "maintainer_origin": "PA18 later-stage ownership"
     },
     {
-      "path": "tests/spec/boundaries/inherent-method.rs",
-      "exit_status": 1,
-      "features": [
-        "pa18.boundaries"
-      ],
-      "rustc": {
-        "kind": "program",
-        "status": 0,
-        "default_lints": true,
-        "reason": "General inherent method selection belongs to PA19."
-      },
-      "maintainer_origin": "PA18 later-stage ownership"
-    },
-    {
       "path": "tests/spec/boundaries/opaque-return.rs",
       "exit_status": 1,
       "features": [

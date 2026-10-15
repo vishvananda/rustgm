@@ -7,7 +7,7 @@ use crate::{
 
 impl Checker<'_> {
     pub(super) fn validate_method_receiver(
-        &self,
+        &mut self,
         function: &crate::sema::model::Function,
     ) -> Result<(), Error> {
         let Some(schema) = self.facts.associated.schema(function.definition) else {
@@ -31,6 +31,10 @@ impl Checker<'_> {
         let Some(receiver) = self.facts.receivers.get(&key) else {
             return Ok(());
         };
+        self.facts
+            .methods
+            .receivers
+            .insert(function.definition, (receiver.ty, receiver.references));
         if receiver.base == schema.self_type {
             return Ok(());
         }

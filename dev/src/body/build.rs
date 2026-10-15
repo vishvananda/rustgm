@@ -6,6 +6,7 @@ mod decisions;
 mod drops;
 mod guards;
 mod matches;
+mod methods;
 mod pattern_tests;
 mod patterns;
 mod references;
@@ -213,6 +214,7 @@ enum Work {
     Enter(NodeId),
     EnterUnadjusted(NodeId),
     Reborrow(NodeId),
+    MethodReceiver(NodeId),
     Finish(NodeId),
     EndBlock {
         node: NodeId,
@@ -249,6 +251,7 @@ enum Work {
     },
 }
 struct Scratch {
+    method_receivers: HashMap<NodeId, ValueId>,
     unadjusted: Vec<NodeId>,
     scopes: scopes::Scratch,
     conditional_live: Vec<LocalId>,
@@ -280,6 +283,7 @@ struct Builder<'a> {
 impl Scratch {
     fn new(facts: &Declarations) -> Self {
         Self {
+            method_receivers: HashMap::new(),
             scopes: scopes::Scratch::default(),
             unadjusted: Vec::new(),
             values: facts.nodes.iter().map(|n| vec![None; n.len()]).collect(),
@@ -642,6 +646,7 @@ impl<'a> Builder<'a> {
         for definition in self.scratch.bindings.drain(..) {
             self.scratch.definitions[definition.0 as usize] = None;
         }
+        self.scratch.method_receivers.clear();
         self.scratch.live.clear();
         self.scratch.controls.clear();
         self.scratch.reach.clear();
@@ -722,6 +727,7 @@ impl<'a> Builder<'a> {
                 self.pop_place(node)?;
             }
             Work::Reborrow(node) => self.finish_reborrow(node)?,
+            Work::MethodReceiver(node) => self.method_receiver(node)?,
             Work::EnterUnadjusted(node) if self.current.is_some() && self.active(node) => {
                 self.enter(node)?;
             }
@@ -1029,6 +1035,20 @@ impl<'a> Builder<'a> {
                             self.scratch.work.push(Work::Enter(left));
                         }
                     }
+                    Kind::MethodCall {
+                        receiver,
+                        arguments,
+                        ..
+                    }
+                    | Kind::GenericMethodCall {
+                        receiver,
+                        arguments,
+                        ..
+                    } => {
+                        self.children(arguments);
+                        self.scratch.work.push(Work::MethodReceiver(node));
+                        self.scratch.work.push(Work::Place(receiver));
+                    }
                     Kind::Call { callee, arguments } => {
                         self.children(arguments);
                         self.scratch.work.push(Work::Enter(callee));
@@ -1304,6 +1324,9 @@ impl<'a> Builder<'a> {
                 )?
             }
             Kind::Call { callee, arguments } => self.call(node, callee, arguments)?,
+            Kind::MethodCall { arguments, .. } | Kind::GenericMethodCall { arguments, .. } => {
+                self.method_call(node, arguments)?
+            }
             Kind::Return(value) => {
                 let value = if let Some(value) = value {
                     self.value(value)?
@@ -1393,10 +1416,20 @@ impl<'a> Builder<'a> {
         }
     }
     fn call(&mut self, node: NodeId, callee: NodeId, arguments: List) -> Result<ValueId, Error> {
+        self.invoke(node, self.value(callee)?, arguments, None)
+    }
+    fn invoke(
+        &mut self,
+        node: NodeId,
+        callee: ValueId,
+        arguments: List,
+        receiver: Option<ValueId>,
+    ) -> Result<ValueId, Error> {
         let Some(Operation::Call { signature }) = self.fact(node)?.operation else {
             return Err(self.error(node, "missing call signature"));
         };
         let start = self.index(node, self.body.arguments.len())?;
+        self.body.arguments.extend(receiver);
         for &argument in self
             .report
             .package
@@ -1415,7 +1448,7 @@ impl<'a> Builder<'a> {
             self.ty(node)?,
             Rvalue::Call {
                 signature,
-                callee: self.value(callee)?,
+                callee,
                 arguments: ValueList { start, end },
             },
         )

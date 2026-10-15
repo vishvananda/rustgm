@@ -44,6 +44,8 @@ pub struct Receiver {
     pub ty: TypeId,
     /// Terminal Self-shaped type after the receiver's reference wrappers.
     pub base: TypeId,
+    /// Built-in reference layers between the receiver and its Self-shaped base.
+    pub references: u32,
     /// Binding mutability, independent of the reference's referent mutability.
     pub mutable: bool,
 }

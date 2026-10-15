@@ -12,6 +12,8 @@ pub(super) struct CallTypes {
     pub generic: Vec<(NodeId, DefId, TermId)>,
     pub generic_constructors: bool,
     pub active: HashMap<NodeId, TermId>,
+    pub method_owners: HashMap<NodeId, (DefId, TermId)>,
+    pub methods: Vec<(NodeId, super::dot_calls::Pending)>,
     pub nominal_receivers: HashMap<TermId, super::nominals::Fields>,
     pub nominal_order: Vec<TermId>,
     signatures: HashMap<TermId, TypeId>,
@@ -32,6 +34,8 @@ impl CallTypes {
         self.generic.clear();
         self.generic_constructors = false;
         self.active.clear();
+        self.method_owners.clear();
+        self.methods.clear();
         self.nominal_receivers.clear();
         self.nominal_order.clear();
         self.signatures.clear();
@@ -264,7 +268,10 @@ impl Checker<'_> {
         };
         let count = scheme.early.len();
         let captures = scheme.captures as usize;
-        if captures != 0 && !self.facts.methods.qualified.contains_key(&self.key(node)) {
+        if captures != 0
+            && !self.facts.methods.qualified.contains_key(&self.key(node))
+            && !self.call_types.method_owners.contains_key(&node)
+        {
             return Err(self.error(node, "method lifetime captures require a selected owner"));
         }
         let mut mapping = vec![RegionId::STATIC; scheme.total as usize];

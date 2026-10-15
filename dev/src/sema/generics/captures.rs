@@ -22,7 +22,7 @@ struct Range {
     last: Capture,
 }
 #[derive(Default)]
-pub(in super::super) struct Captures {
+pub(in crate::sema) struct Captures {
     scopes: Option<Vec<(usize, usize)>>,
     complete: Vec<Vec<bool>>,
     nodes: usize,

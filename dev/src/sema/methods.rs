@@ -1,5 +1,6 @@
 //! Typed inherent candidate buckets and selected qualified source uses.
 pub(super) mod overlap;
+pub(super) mod receiver;
 pub(super) mod selection;
 use crate::{
     resolve::{model::DefId, names::NameId, unit::NodeKey},
@@ -22,6 +23,8 @@ pub struct Methods {
     pub(super) indices: HashMap<(ItemId, NameId), Candidates>,
     pub(super) shapes: Option<Box<crate::types::substitute::Bound>>,
     pub qualified: HashMap<NodeKey, Qualified>,
+    pub(super) receivers: HashMap<DefId, (TypeId, u32)>,
+    pub calls: HashMap<NodeKey, Call>,
     /// Unique owner-pair probes, shared across names and independent of call demand.
     pub overlap_pairs: usize,
     pub overlap_steps: usize,
@@ -34,4 +37,14 @@ pub struct Methods {
 pub(super) struct Candidates {
     pub closed: HashMap<TypeId, Vec<DefId>>,
     pub open: Vec<DefId>,
+}
+
+/// One selected method callable and the receiver place conversion consumed by lowering.
+#[derive(Clone, Copy)]
+pub struct Call {
+    pub method: DefId,
+    pub callable: TypeId,
+    pub dereferences: u32,
+    pub borrow: Option<TypeId>,
+    pub receiver: TypeId,
 }

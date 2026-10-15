@@ -2,8 +2,7 @@
 mod annotations;
 mod arguments;
 pub(super) mod bounds;
-mod captures;
-pub(super) use captures::Captures;
+pub(super) use crate::sema::generics::captures::Captures;
 mod constants;
 mod default_validation;
 mod defaults;

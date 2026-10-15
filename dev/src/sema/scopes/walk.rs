@@ -128,7 +128,17 @@ impl Walker<'_> {
                 self.push(Work::Expression(right, context))?;
                 self.push(Work::Expression(left, context))?;
             }
-            Syntax::Call { callee, arguments } => {
+            Syntax::MethodCall {
+                receiver: callee,
+                arguments,
+                ..
+            }
+            | Syntax::GenericMethodCall {
+                receiver: callee,
+                arguments,
+                ..
+            }
+            | Syntax::Call { callee, arguments } => {
                 self.expressions(arguments, context)?;
                 self.push(Work::Expression(callee, context))?;
             }

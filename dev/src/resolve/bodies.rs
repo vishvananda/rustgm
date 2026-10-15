@@ -141,8 +141,41 @@ impl Resolver<'_> {
                 method,
                 arguments,
             } => {
+                let (_, names) = self.path_names(c, method)?;
+                let [name] = names.as_slice() else {
+                    return Err(self.error(c, node, "method requires one name segment"));
+                };
+                self.facts.method_calls.insert(
+                    NodeKey { file: c.file, node },
+                    super::model::MethodCall {
+                        scope: c.scope,
+                        receiver,
+                        name: *name,
+                        method: Some(method),
+                        arguments,
+                    },
+                );
                 self.visit(c, receiver, Namespace::Value)?;
                 self.path_arguments(c, method)?;
+                self.visit_list(c, arguments, Namespace::Value)
+            }
+            Kind::MethodCall {
+                receiver,
+                name,
+                arguments,
+            } => {
+                let name = self.package.name(c.file, name)?;
+                self.facts.method_calls.insert(
+                    NodeKey { file: c.file, node },
+                    super::model::MethodCall {
+                        scope: c.scope,
+                        receiver,
+                        name,
+                        method: None,
+                        arguments,
+                    },
+                );
+                self.visit(c, receiver, Namespace::Value)?;
                 self.visit_list(c, arguments, Namespace::Value)
             }
             Kind::Applied {

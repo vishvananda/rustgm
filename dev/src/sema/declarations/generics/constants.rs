@@ -5,8 +5,8 @@ use crate::{
         model::{DefKind, Target},
         package::ModuleId,
     },
-    syntax::ast::{NodeId, TypeFlavor},
-    types::arguments::{ConstId, Constant},
+    syntax::ast::NodeId,
+    types::arguments::ConstId,
 };
 impl Checker<'_> {
     pub(in super::super) fn constant_use(
@@ -112,48 +112,25 @@ impl Checker<'_> {
     }
     pub(super) fn generic_constant(
         &mut self,
-        mut key: NodeKey,
+        key: NodeKey,
         ty: TypeId,
         owner: DefId,
     ) -> Result<ConstId, Error> {
-        if let Some(id) = self.const_parameter(key) {
-            if self.facts.types.const_type(id) != Some(ty) {
-                return Err(self.error(key, "const argument has the wrong type"));
-            }
-            return Ok(id);
+        let module = if self.const_parameter(key).is_some() {
+            None
+        } else {
+            Some(self.constant_module(key, owner)?)
+        };
+        crate::sema::arguments::Constants {
+            report: self.report,
+            facts: &mut self.facts,
+            captures: &mut self.constant_captures,
+            scratch: &mut self.constant_scratch,
+            discriminants: &mut self.discriminants,
         }
-        if let Kind::Type {
-            flavor: TypeFlavor::Path,
-            elements,
-        } = self.kind(key)
-            && let Some(node) = self
-                .report
-                .package
-                .unit(key.file)
-                .configured
-                .ast
-                .list(elements)
-                .first()
-        {
-            key.node = *node;
-        }
-        let module = self.constant_module(key, owner)?;
-        self.constant_captures
-            .check(self.report, &self.facts, key, module)?;
-        let value = crate::sema::constants::generic_argument(
-            self.report,
-            &mut self.facts,
-            &mut self.constant_scratch,
-            &mut self.discriminants,
-            key,
-            ty,
-            module,
-        )?;
-        self.facts
-            .types
-            .intern_constant(Constant { ty, bits: value })
-            .map_err(|e| self.error(key, e))
+        .argument(key, ty, module)
     }
+
     fn constant_module(&mut self, key: NodeKey, owner: DefId) -> Result<ModuleId, Error> {
         // Non-block arguments are standalone literals/paths. Their references
         // already passed visibility checking; named initializers own their scopes.

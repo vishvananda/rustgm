@@ -77,7 +77,7 @@ invariants additionally verify ordered-rule fragment reuse, capture opacity,
 repetition cardinality and doc-token provenance. The two deliberate acceptance
 differences defer generated-syntax parsing to PA8. See `docs/pa7-validation.md`.
 
-PA8 checks all 93 expansion/hygiene programs with pinned rustc. A case may supply
+PA8 checks all 94 expansion/hygiene programs with pinned rustc. A case may supply
 `environment` as a name-to-string map; null removes that name from the child
 process. The same overrides apply to both compilers and are recorded in harness
 evidence and the manifest receipt. Inherited runner variables are otherwise
@@ -166,12 +166,13 @@ facts; independently reviewed oracles reflect those facts.
 119 execution cases. The root native target includes PA16 and the explicit
 maintainer native tests. See `docs/pa15-pa16-validation.md` for the release review.
 
-PA17 has 206 LowIR fixtures: 135 accepted programs and 71 rejections. Two
+PA17 has 205 LowIR fixtures: 135 accepted programs and 70 rejections. Two
 accepted programs declare panic-abort; the other 133 require clean execution.
-One rejection case documents the PA19 method boundary accepted by rustc. The root
-independent and native targets include PA17. `make test-native-pa17` selects its
-course executions. Its counter fixtures and 33 order fixtures are also read
-directly by the maintainer suite.
+The former PA17/PA18 inherent-method boundaries now have accepted maintainer
+coverage in `dev/tests/dot_methods.rs`, pending the complete PA19 course release.
+The root independent and native targets include PA17. `make test-native-pa17`
+selects its course executions. Its counter fixtures and 33 order fixtures are
+also read directly by the maintainer suite.
 
 The explicit `native_drop_order` test instruments only a named no-op observer
 and an entry count check after successful RustGM lowering. Rustc uses a printing
@@ -183,7 +184,7 @@ is not counted as an unchanged-source native comparison. Course text oracles
 remain uninstrumented; 22 accepted counter programs check unchanged-source
 cleanup effects through both compilers. See `docs/pa17-validation.md`.
 
-PA18 adds 434 generic LowIR cases: 268 accepted and 166 rejected. There are
+PA18 adds 433 generic LowIR cases: 268 accepted and 165 rejected. There are
 265 executable comparisons and three deliberately divergent codegen-only
 controls. Their `native.kind: "codegen"` requires a nonempty reason and forbids
 runtime outcome fields; both compilers produce native code, but neither binary
@@ -193,8 +194,8 @@ retain the mandatory execution/outcome contract.
 An explicit `rustc.emit: "obj"` selects object generation in the independent
 acceptance checker. Growing-instance rejection and demand-only controls need
 that stronger check because metadata emission does not monomorphize bodies.
-It is valid only for complete programs. Four PA18 rejection fixtures declare
-later PA19–PA21 boundaries accepted by rustc; there are no new runtime differences.
+It is valid only for complete programs. Three PA18 rejection fixtures declare
+later PA20–PA21 boundaries accepted by rustc; there are no new runtime differences.
 The generic constructor/destructor boundaries moved from PA12/PA17 with unchanged
 input bytes and newly qualified accepted oracles. Root independent/native targets
 include PA18. See `docs/pa18-validation.md` for the feature ledger and release gates.

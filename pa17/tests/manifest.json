@@ -25,19 +25,6 @@
       }
     },
     {
-      "path": "tests/spec/boundaries/inherent-method.rs",
-      "exit_status": 1,
-      "features": [
-        "pa17.boundaries"
-      ],
-      "rustc": {
-        "kind": "program",
-        "status": 0,
-        "reason": "General inherent methods belong to PA19."
-      },
-      "maintainer_origin": "new PA17 contract"
-    },
-    {
       "path": "tests/spec/constants/dead-branch.rs",
       "exit_status": 1,
       "features": [

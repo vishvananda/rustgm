@@ -51,55 +51,20 @@ impl Checker<'_> {
         key: NodeKey,
         owner: DefId,
     ) -> Result<(Option<List>, Option<List>), Error> {
-        let Some(list) = crate::sema::lifetimes::arguments(
+        let (lifetimes, supplied) = crate::sema::arguments::groups(
             self.report,
             key,
             self.report.resolution.definitions[owner.0 as usize].kind
                 == crate::resolve::model::DefKind::Enum,
-        )?
-        else {
-            return Ok((None, None));
-        };
-        let nodes = self.report.package.unit(key.file).configured.ast.list(list);
-        let lifetimes = nodes
-            .iter()
-            .take_while(|node| {
-                self.lifetime_argument(NodeKey {
-                    node: **node,
-                    ..key
-                })
-            })
-            .count();
-        let count = nodes.len() - lifetimes;
-        let parameters = self.item_parameters(owner);
-        let offset = self.item_lifetime_count(owner);
-        if count != 0
-            && (count + offset > parameters.len()
-                || parameters
-                    .iter()
-                    .skip(count + offset)
-                    .any(|p| p.default.is_none() && self.defaults.get(p.binding).is_none()))
-        {
-            return Err(self.error(key, "incorrect number of type and const arguments"));
-        }
-        let middle = list
-            .start
-            .checked_add(
-                u32::try_from(lifetimes)
-                    .map_err(|_| self.error(key, "too many lifetime arguments"))?,
-            )
-            .ok_or_else(|| self.error(key, "generic argument range overflow"))?;
-        Ok((
-            (lifetimes != 0).then_some(List {
-                start: list.start,
-                end: middle,
-            }),
-            (count != 0).then_some(List {
-                start: middle,
-                end: list.end,
-            }),
-        ))
+        )?;
+        let count = supplied.map_or(0, |list| (list.end - list.start) as usize);
+        crate::sema::arguments::arity(self.item_parameters(owner), count, |binding| {
+            self.defaults.get(binding).is_some()
+        })
+        .map_err(|e| self.error(key, e))?;
+        Ok((lifetimes, supplied))
     }
+
     pub(in super::super) fn schedule_item_arguments(
         &mut self,
         key: NodeKey,

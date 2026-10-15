@@ -9,13 +9,19 @@ impl Checker<'_> {
         arguments: &[Argument],
         bindings: &[(ParameterId, Argument)],
     ) -> Result<(), Error> {
-        let Some(selected) = self.facts.methods.qualified.get(&self.key(node)).copied() else {
+        let selected = self.facts.methods.qualified.get(&self.key(node)).copied();
+        let dot = self.call_types.method_owners.get(&node).copied();
+        let Some(implementation) = selected
+            .map(|s| s.implementation)
+            .or_else(|| dot.map(|d| d.0))
+        else {
             return Ok(());
         };
+
         let schema = self
             .facts
             .associated
-            .schema(selected.implementation)
+            .schema(implementation)
             .ok_or_else(|| self.error(node, "missing selected impl schema"))?;
         let target = schema.self_type;
         let captures = schema.captures as usize;
@@ -36,6 +42,11 @@ impl Checker<'_> {
             .infer
             .instantiate(&mut self.facts.types, target, bindings)
             .map_err(|e| self.error(node, e))?;
+        if let Some((_, prefix)) = dot {
+            let prefix = self.alias_argument(node, prefix)?;
+            return self.equate(node, target, prefix);
+        }
+        let selected = selected.ok_or_else(|| self.error(node, "missing selected method owner"))?;
         let prefix = if selected.annotation
             || self
                 .facts

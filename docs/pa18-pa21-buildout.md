@@ -3065,3 +3065,82 @@ The course-native run before the final candidate-table consolidation also passed
 sixteen declared PA13 runtime differences. The final release executable matches
 the frozen candidate's SHA256. Validation receipts record exact log hashes and
 source verification under `obj/pa19-work/method-selection-validation-v2.json`.
+
+## Inherent receiver calls
+
+Inherent dot calls now use receiver-only selection followed by the ordinary
+callable, instance and ownership path. Lookup visits each built-in dereference
+level in value/shared/mutable order, checks visibility and impl applicability,
+and defers method-own requirements until after selection. Call arguments, result
+expectations and the method's turbofish cannot choose an otherwise ambiguous
+receiver. The selected method may still infer its arguments through the call.
+
+Written method types, holes and constant dependencies are prepared before lookup;
+kind/arity checks and constant evaluation use the selected declaration afterward.
+Declaration and body paths share argument grouping, arity, capture checks and
+scalar constant evaluation. Existing callable templates carry inherited type,
+const and lifetime arguments. Hidden callable values receive the same nominal and
+well-formedness checks as source callee expressions.
+
+Body construction evaluates the receiver place once before explicit arguments.
+It applies the retained dereferences and implicit borrow/reborrow, then passes that
+value as the first ordinary call operand. Mutable implicit borrows use existing
+two-phase loans. Explicit source borrows retain their own immediate events.
+Returned references, packed places, moves, Drop and cleanup use the existing proof
+pipeline. No source rewrite or second parser implements dot calls.
+
+The maintainer corpus declares 56 language cases: 32 accepted native programs
+and 24 rejections. It includes the exact former PA17/PA18 inherent-method boundary
+sources, which are no longer valid rejection fixtures. Their obsolete sidecars
+were removed; regenerated PA17/PA18 receipts leave every remaining oracle byte
+unchanged. Those active suites now contain 205 and 433 cases respectively. The
+graduated sources will join the PA19 manifest with its complete grading contract.
+
+One initially predicted positive uses a general constant block with statements.
+Pinned rustc accepts it, but the existing course constant-expression subset leaves
+statement evaluation to PA25. The original declaration is retained in
+`obj/pa19-work/dot-methods-rules-v1`; a dedicated test preserves the explicit
+acceptance boundary, while the scalar-expression block is a positive control.
+This is separate from the 56 matching language outcomes.
+
+Two structural tests require exactly 256 probes for 256 closed impls/calls and
+one small probe for a 96-reference receiver. Filtering receiver depth before graph
+import avoids repeatedly copying inapplicable reference chains. The resolver's
+three site invariants cover raw/NFC method names, macro expansion, scoped imports
+and unresolved operands independently of semantic selection.
+
+PA19 remains planned: visible trait and caller-bound lookup, impl conformance,
+default dispatch, qualified trait calls, the semantic CLI and the complete course
+contract remain required. Built-in reference adjustment does not claim user Deref
+hooks, unsized receiver coercions or general const-function execution. PA20 and
+PA21 retain their full responsibilities above.
+
+Validation passes 793 frontend tests in both debug and release, all 18 maintainer
+native groups, 3,790 PA1–PA18 text cases and the complete independent rustc sweep.
+Course-native validation passes 1,126 executable comparisons and three codegen-only
+comparisons, retaining the sixteen declared PA13 runtime differences. Formatting,
+Clippy all/pedantic, the 507-file audit with zero findings, 27 harness tests,
+upstream/Reference integrity and backend qualification pass.
+
+Twelve frozen A/A and three-block ABBA jobs retain 216 observations with full/count
+output equality. Relative to the published qualified-selection binary, median
+changes for ordinary functions, generic records, qualified generic methods,
+alias methods and unused closed impls are +0.3%, -0.3%, +0.1%, +2.4% and -0.1%.
+The alias workload has a small measured cost; identical-binary controls also vary
+by roughly 0–2%, so these observations do not establish zero overhead. Median RSS
+increases by about 442 KiB for the unused-impl workload and 190 KiB for qualified
+generic methods; other unchanged workload medians differ by about 12 KiB or less.
+
+New closed receiver selection at 64/256/1,024 impls and calls takes
+8.46/21.69/76.96 ms; repeated generic receiver calls at 64/1,024 take
+6.78/45.75 ms. Reference depths 64/96 take 4.74/5.70 ms. These jobs compare
+identical candidate binaries as controls. An initial 256-reference input exceeded
+the existing parser nesting limit of 128, before timing. Its source and failure
+remain retained; the qualified replacement stays within the parser contract.
+
+No local builds or tests overlapped timing. All 510 frozen source/config/test
+files, binaries and inputs were reverified. Candidate SHA256:
+`a14fe68dabb17cf81d6799bc00649010447f830f0610c51f5c002404b602cfb4`.
+Evidence lives under `obj/pa19-work/dot-methods-*`, including
+`dot-methods-validation-v1.json` and `dot-methods-perf-results-v2.json`; individual
+measurements retain every sample under `obj/perf/`.

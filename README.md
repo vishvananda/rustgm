@@ -41,14 +41,14 @@ repository with pinned reference tools. It has not been built yet.
 - PA14 publishes move/initialization and Copy/Clone proofs through ownership
   views, with 124 course cases and independent native controls.
 - PA15 proves lifetime contracts and exposes region identities, assumptions and
-  requirements, with 191 independently checked text-oracle cases.
+  requirements, with 202 independently checked text-oracle cases.
 - PA16 checks loans, storage and non-lexical lifetimes and lowers checked
-  references, with 293 cases including 113 native executions.
+  references, with 304 cases including 119 native executions.
 - PA17 proves destructor lifetimes and lowers ordered conditional cleanup, with
-  206 course cases, 135 native programs and 33 independently observed drop-order
+  205 course cases, 135 native programs and 33 independently observed drop-order
   traces.
 - PA18 checks generic templates and emits demanded function, constructor and
-  destructor instances, with 425 course cases, 259 native executions and three
+  destructor instances, with 433 course cases, 265 native executions and three
   explicit code-generation-only controls.
 - PA19–PA38 have buildout briefs and Makefiles. Their suites and implementation
   are not complete; invoking an unbuilt assignment fails explicitly.

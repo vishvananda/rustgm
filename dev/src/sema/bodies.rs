@@ -6,6 +6,7 @@ mod bounds;
 mod calls;
 mod conditions;
 mod divergence;
+mod dot_calls;
 mod generics;
 mod lifetimes;
 mod matches;
@@ -14,6 +15,7 @@ mod nominals;
 mod pattern_constants;
 mod patterns;
 mod references;
+mod selected_arguments;
 mod text;
 use super::{
     declarations,
@@ -114,6 +116,7 @@ enum Work {
     Enter(NodeId, Option<TermId>),
     Exit(NodeId),
     CallArguments(NodeId, Option<TermId>),
+    MethodArguments(NodeId),
     AssignmentValue(NodeId),
 }
 /// Dense, cleared slots can be reused between short declaration-time constants.
@@ -167,6 +170,8 @@ pub(super) struct Checker<'a> {
     parameter_copies: Option<crate::types::copy::Copies>,
     parameter_shapes: Option<crate::types::parameters::shape::Shapes>,
     body_binders: u32,
+    method_constants: Option<Box<super::arguments::Cache>>,
+    method_environment: Option<std::sync::Arc<crate::types::parameters::environment::Environment>>,
     annotations: super::annotations::Scratch,
     type_children: Vec<TermId>,
     annotation_checks: Vec<NodeId>,
@@ -231,6 +236,8 @@ impl<'a> Checker<'a> {
             parameter_copies: None,
             parameter_shapes: None,
             body_binders: 0,
+            method_constants: None,
+            method_environment: None,
             annotations: super::annotations::Scratch::default(),
             type_children: Vec::new(),
             annotation_checks: Vec::new(),
@@ -268,6 +275,7 @@ impl<'a> Checker<'a> {
     ) -> Result<(), Error> {
         self.call_types.clear();
         self.body_binders = 0;
+        self.method_environment = None;
         self.parameter_copies = None;
         self.parameter_shapes = None;
         self.body = key;
@@ -489,6 +497,7 @@ impl Checker<'_> {
                 Work::Enter(node, expected) if self.active(node) => self.enter(node, expected)?,
                 Work::Enter(..) => {}
                 Work::CallArguments(node, expected) => self.call_arguments(node, expected)?,
+                Work::MethodArguments(node) => self.method_arguments(node)?,
                 Work::AssignmentValue(node) => {
                     let Kind::Binary { left, right, .. } = self.kind(node) else {
                         return Err(self.error(node, "invalid assignment work"));
@@ -533,6 +542,7 @@ impl Checker<'_> {
             .finish(&mut self.facts.types)
             .map_err(|e| self.error(body, e))?;
         self.validate_generic_uses(&solved)?;
+        self.publish_methods(&solved);
         let body_key = self.key(body);
         self.publish_pattern_types(&solved)?;
         self.facts
@@ -594,7 +604,6 @@ impl Checker<'_> {
         body: NodeId,
         solved: &crate::types::infer::Solved,
     ) -> Result<(), Error> {
-        let body_key = self.key(body);
         let mut well_formed = HashSet::new();
         let mut nominal_types = HashSet::new();
         // A generic result retains declaration lifetimes even when its expression
@@ -620,31 +629,16 @@ impl Checker<'_> {
             let term = self.term(node)?;
             let key = self.key(node);
             let ty = solved.types[term.0 as usize];
-            self.nominal_requirements(node, ty, &mut nominal_types)?;
-            if self.facts.generics.has_nominal_requirements {
-                self.facts
-                    .aggregates
-                    .prepare(&mut self.facts.types, ty)
-                    .map_err(|e| self.error(node, e))?;
-            }
-            if !self.body_shape(body, ty)?.well_formed {
-                return Err(self.error(node, "body uses an ill-formed type"));
-            }
-            if (self.facts.types.contains_regions(ty) == Some(true)
-                || self.facts.types.contains_parameters(ty) == Some(true))
-                && !self.annotation_children.contains(&node)
-                && well_formed.insert(ty)
-            {
-                self.facts.well_formed.push(super::model::WellFormed {
-                    body: body_key,
-                    source: key,
-                    ty,
-                });
-            }
+            self.value_type(node, ty, &mut well_formed, &mut nominal_types)?;
             self.facts
                 .node_mut(key)
                 .ok_or_else(|| Declarations::error(self.report, key, "invalid body node"))?
                 .ty = Some(ty);
+        }
+        for index in 0..self.call_types.methods.len() {
+            let (node, pending) = &self.call_types.methods[index];
+            let (node, ty) = (*node, solved.types[pending.callable.0 as usize]);
+            self.value_type(node, ty, &mut well_formed, &mut nominal_types)?;
         }
         for index in 0..self.bindings.len() {
             let id = self.bindings[index];
@@ -655,6 +649,36 @@ impl Checker<'_> {
                 }
                 self.facts.definitions[id.0 as usize] = Some(ty);
             }
+        }
+        Ok(())
+    }
+    fn value_type(
+        &mut self,
+        node: NodeId,
+        ty: TypeId,
+        well_formed: &mut HashSet<TypeId>,
+        nominal_types: &mut HashSet<TypeId>,
+    ) -> Result<(), Error> {
+        self.nominal_requirements(node, ty, nominal_types)?;
+        if self.facts.generics.has_nominal_requirements {
+            self.facts
+                .aggregates
+                .prepare(&mut self.facts.types, ty)
+                .map_err(|e| self.error(node, e))?;
+        }
+        if !self.body_shape(node, ty)?.well_formed {
+            return Err(self.error(node, "body uses an ill-formed type"));
+        }
+        if (self.facts.types.contains_regions(ty) == Some(true)
+            || self.facts.types.contains_parameters(ty) == Some(true))
+            && !self.annotation_children.contains(&node)
+            && well_formed.insert(ty)
+        {
+            self.facts.well_formed.push(super::model::WellFormed {
+                body: self.body,
+                source: self.key(node),
+                ty,
+            });
         }
         Ok(())
     }
@@ -841,6 +865,11 @@ impl Checker<'_> {
                 self.work.push(Work::Enter(left, None));
                 return Ok(());
             }
+            Kind::MethodCall { receiver, .. } | Kind::GenericMethodCall { receiver, .. } => {
+                self.work.push(Work::MethodArguments(node));
+                self.work.push(Work::Enter(receiver, None));
+                return Ok(());
+            }
             Kind::Call { callee, .. } => {
                 self.work.push(Work::CallArguments(node, expected));
                 self.work.push(Work::Enter(callee, None));
@@ -1022,6 +1051,16 @@ impl Checker<'_> {
                 Ok(term)
             }
             Kind::Call { callee, arguments } => self.call(node, callee, arguments),
+            Kind::MethodCall {
+                receiver,
+                arguments,
+                ..
+            }
+            | Kind::GenericMethodCall {
+                receiver,
+                arguments,
+                ..
+            } => self.call(node, receiver, arguments),
             Kind::Loop { body } => self.finish_loop(node, body, None),
             Kind::While { condition, body } => self.finish_loop(node, body, Some(condition)),
             Kind::Break { label, value } => self.transfer(node, label.is_some(), value, false),
@@ -1298,7 +1337,7 @@ impl Checker<'_> {
             ));
         }
         let unit = self.report.package.unit(self.file);
-        let mut count = 0_usize;
+        let mut count = usize::from(self.call_types.method_owners.contains_key(&node));
         for argument in unit.configured.ast.list(arguments) {
             if !self.active(*argument) {
                 continue;
@@ -1515,6 +1554,18 @@ impl Checker<'_> {
             let result = self.child(node, term, parameters as usize)?;
             self.shape_equation(node, result, expected)?;
         }
+        self.schedule_call_arguments(node, term, arguments, 0)
+    }
+    fn schedule_call_arguments(
+        &mut self,
+        node: NodeId,
+        term: TermId,
+        arguments: List,
+        offset: usize,
+    ) -> Result<(), Error> {
+        let Some(Constructor::Function { parameters, .. }) = self.head(node, term)? else {
+            return Err(self.error(node, "call requires a known function type"));
+        };
         let unit = self.report.package.unit(self.file);
         let count = unit
             .configured
@@ -1523,10 +1574,10 @@ impl Checker<'_> {
             .iter()
             .filter(|n| self.active(**n))
             .count();
-        if count != parameters as usize {
+        if count + offset != parameters as usize {
             return Err(self.error(node, "call argument count mismatch"));
         }
-        let mut index = count;
+        let mut index = count + offset;
         for argument in unit.configured.ast.list(arguments).iter().rev() {
             if self.active(*argument) {
                 index -= 1;

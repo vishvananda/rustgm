@@ -140,6 +140,30 @@ folder across headers and prefixes, so repeated aliases do not repeatedly traver
 their type DAG. Property queries cache known and unknown subtrees only after a
 probe's equations are fixed and under its immutable environment.
 
+Dot calls retain the resolved receiver, canonical method name, lexical scope and
+written arguments. Type the receiver before selection. For each built-in reference
+dereference level, probe the value, shared borrow and mutable borrow in that order.
+Reuse the inherent candidate partition and isolated applicability equations;
+discard impossible receiver depths before importing an inference graph. Receiver
+mutability, moves and loan legality remain obligations of the selected call.
+
+Prepare written method type annotations and constant dependencies in the ordinary
+declaration worklist without selecting a method. After selection, validate kinds
+and arity against the method's own parameters, then evaluate constant arguments
+through the shared capture and scalar-constant machinery. Hidden callable values
+must satisfy the same nominal and well-formedness requirements as ordinary callee
+expressions. Callable templates and complete owner arguments remain shared with
+qualified function-item uses.
+
+Retain selected callable identity, dereference count, borrow type and receiver
+parameter type as semantic facts. Body construction evaluates the receiver place
+once, before explicit arguments, and feeds its adjusted value as the first ordinary
+call argument. Implicit mutable receiver borrows use the existing two-phase loan
+model; explicit source borrows retain their own earlier loan events. Borrow regions
+keep expression provenance, and ordinary ownership, destruction, instance demand
+and LowIR lowering consume the resulting body. Do not synthesize or reparse an AST
+call to implement receiver adjustments.
+
 An alias used as a value prefix with no written type/const arguments infers all
 those arguments, including slots with defaults; explicit type qualification
 retains ordinary type-annotation arity and default rules. Store this distinction

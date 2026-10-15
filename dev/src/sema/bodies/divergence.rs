@@ -43,7 +43,17 @@ impl Checker<'_> {
                     self.diverges[value.0 as usize] || self.diverges[index.0 as usize]
                 }
                 Kind::Tuple(elements) | Kind::Array(elements) => self.list_diverges(elements),
-                Kind::Call { callee, arguments } => {
+                Kind::MethodCall {
+                    receiver: callee,
+                    arguments,
+                    ..
+                }
+                | Kind::GenericMethodCall {
+                    receiver: callee,
+                    arguments,
+                    ..
+                }
+                | Kind::Call { callee, arguments } => {
                     self.diverges[callee.0 as usize] || self.list_diverges(arguments)
                 }
                 Kind::Struct { fields, base, .. } => {

@@ -400,6 +400,24 @@ impl Context {
             .copied()
             .ok_or(Error::InvalidIdentity)
     }
+    /// Follow built-in reference layers without resolving an unknown referent.
+    /// # Errors
+    /// Rejects invalid graph identities and excessive dereference depth.
+    pub fn reference_target(
+        &mut self,
+        store: &Store,
+        mut term: TermId,
+    ) -> Result<(TermId, u32), Error> {
+        let mut count = 0;
+        while matches!(self.head(store, term)?, Some(Constructor::Reference { .. })) {
+            count += 1;
+            if count > 1_000_000 {
+                return Err(Error::Budget);
+            }
+            term = self.child(store, term, 0)?;
+        }
+        Ok((term, count))
+    }
     /// Number of children of a known constructor, without resolving inference variables.
     ///
     /// # Errors

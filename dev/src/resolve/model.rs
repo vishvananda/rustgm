@@ -174,6 +174,16 @@ pub struct QualifiedPath {
     pub trait_path: Option<NodeId>,
     pub suffix: Vec<(NodeId, NameId)>,
 }
+/// A method spelling and lexical search site, independent of receiver typing.
+/// Generic arguments remain in the retained syntax until a method is selected.
+#[derive(Clone, Copy)]
+pub struct MethodCall {
+    pub scope: ScopeId,
+    pub receiver: NodeId,
+    pub name: NameId,
+    pub method: Option<NodeId>,
+    pub arguments: crate::syntax::ast::List,
+}
 pub struct Reference {
     pub scope: ScopeId,
     pub node: NodeKey,
@@ -242,6 +252,7 @@ pub struct Resolution {
     pub references: Vec<Reference>,
     pub associated_paths: HashMap<NodeKey, AssociatedPath>,
     pub qualified_paths: HashMap<NodeKey, QualifiedPath>,
+    pub method_calls: HashMap<NodeKey, MethodCall>,
     pub imports: Vec<Import>,
     pub module_scopes: Vec<ScopeId>,
     pub node_scopes: HashMap<(ModuleId, NodeId), ScopeId>,

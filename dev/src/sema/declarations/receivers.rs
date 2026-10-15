@@ -200,7 +200,8 @@ impl Checker<'_> {
             return Err(self.error(key, "invalid receiver syntax"));
         };
         let ty = self.ty(annotation.map_or(key, |node| NodeKey { node, ..key }))?;
-        let base = if let Some(implementation) = self.facts.destructors.method(owner) {
+        let (base, references) = if let Some(implementation) = self.facts.destructors.method(owner)
+        {
             let Some(Type::Reference {
                 mutable: true,
                 region,
@@ -217,7 +218,7 @@ impl Checker<'_> {
                     "Drop receiver requires an independent lifetime and the exact Self type",
                 ));
             }
-            referent
+            (referent, 1)
         } else {
             self.receiver_base(key, owner, binder, ty)?
         };
@@ -240,6 +241,7 @@ impl Checker<'_> {
                 definition,
                 ty,
                 base,
+                references,
                 mutable,
             },
         );
@@ -251,7 +253,7 @@ impl Checker<'_> {
         owner: DefId,
         binder: BinderId,
         ty: crate::types::TypeId,
-    ) -> Result<crate::types::TypeId, Error> {
+    ) -> Result<(crate::types::TypeId, u32), Error> {
         let target = self
             .facts
             .associated
@@ -259,13 +261,20 @@ impl Checker<'_> {
             .ok_or_else(|| self.error(key, "missing receiver Self type"))?
             .self_type;
         let mut terminal = ty;
+        let mut references = 0;
         while terminal != target {
             match (
                 self.facts.types.kind(terminal),
                 self.facts.types.kind(target),
             ) {
                 (Some(Type::Adt(a, _)), Some(Type::Adt(b, _))) if a == b => break,
-                (Some(Type::Reference { referent, .. }), _) => terminal = referent,
+                (Some(Type::Reference { referent, .. }), _) => {
+                    references += 1;
+                    if references > 1_000_000 {
+                        return Err(self.error(key, "receiver shape work budget exceeded"));
+                    }
+                    terminal = referent;
+                }
                 _ => return Err(self.error(key, "receiver must be Self or a reference to Self")),
             }
         }
@@ -276,6 +285,6 @@ impl Checker<'_> {
         {
             self.regions.prefer_receiver(binder, region);
         }
-        Ok(terminal)
+        Ok((terminal, references))
     }
 }

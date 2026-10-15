@@ -1,0 +1,143 @@
+//! A selected receiver call shares ordinary callable inference and explicit-place borrowing.
+use super::{Checker, Constructor, DefId, Error, NodeId, TermId};
+use crate::{
+    sema::{
+        methods::{Call, receiver},
+        model::{AdjustmentKind, BodyRegionOrigin, Coercion},
+    },
+    types::{RegionId, infer::Solved},
+};
+
+pub(super) struct Pending {
+    method: DefId,
+    pub(super) callable: TermId,
+    dereferences: u32,
+    borrow: Option<TermId>,
+    actual: TermId,
+    expected: TermId,
+}
+
+impl Checker<'_> {
+    pub(super) fn method_arguments(&mut self, node: NodeId) -> Result<(), Error> {
+        let site = self
+            .report
+            .resolution
+            .method_calls
+            .get(&self.key(node))
+            .copied()
+            .ok_or_else(|| self.error(node, "missing resolved method call site"))?;
+        let term = self.term(site.receiver)?;
+        let environment = self.method_environment.clone();
+        let key = self.key(node);
+        let selected = receiver::choose(
+            self.report,
+            self.facts,
+            &mut self.infer,
+            key,
+            term,
+            site,
+            environment.as_ref(),
+        )?;
+        let implementation = self
+            .facts
+            .associated
+            .owner(selected.method)
+            .and_then(|id| self.facts.associated.get(id))
+            .ok_or_else(|| self.error(node, "missing selected receiver owner"))?
+            .self_definition;
+        self.call_types
+            .method_owners
+            .insert(node, (implementation, selected.self_term));
+        self.complete_method_arguments(node, selected.method)?;
+        let ty = self.facts.definitions[selected.method.0 as usize]
+            .ok_or_else(|| self.error(node, "missing selected method type"))?;
+        let callable = self.generic_function(node, selected.method, ty)?;
+        let signature = self.child(node, callable, 0)?;
+        let signature = self.call_signature(node, signature)?;
+        let expected = self.child(node, signature, 0)?;
+        let (dereferences, borrow, actual) =
+            self.adjust_method_receiver(node, site.receiver, term, selected)?;
+        self.shape_equation(node, actual, expected)?;
+        self.call_types.methods.push((
+            node,
+            Pending {
+                method: selected.method,
+                callable,
+                dereferences,
+                borrow,
+                actual,
+                expected,
+            },
+        ));
+        self.call_types.active.insert(node, signature);
+        self.schedule_call_arguments(node, signature, site.arguments, 1)
+    }
+
+    fn adjust_method_receiver(
+        &mut self,
+        node: NodeId,
+        source: NodeId,
+        term: TermId,
+        selected: receiver::Selected,
+    ) -> Result<(u32, Option<TermId>, TermId), Error> {
+        let mut actual = term;
+        for _ in 0..selected.dereferences {
+            actual = self.child(node, actual, 0)?;
+        }
+        let mut dereferences = selected.dereferences;
+        let mut borrow = selected.borrow;
+        if borrow.is_none()
+            && let Some(Constructor::Reference { mutable, .. }) = self.head(node, actual)?
+        {
+            dereferences += 1;
+            actual = self.child(node, actual, 0)?;
+            borrow = Some(mutable);
+        }
+        let borrow = if let Some(mutable) = borrow {
+            let region = if self.in_function {
+                self.body_region(node, BodyRegionOrigin::ExpressionBorrow)?
+            } else {
+                RegionId::STATIC
+            };
+            let value = self
+                .infer
+                .construct(Constructor::Reference { mutable, region }, &[actual])
+                .map_err(|e| self.error(node, e))?;
+            if dereferences == 0 {
+                self.alignment.borrows.push((node, source));
+            }
+            actual = value;
+            Some(value)
+        } else {
+            None
+        };
+        Ok((dereferences, borrow, actual))
+    }
+
+    pub(super) fn publish_methods(&mut self, solved: &Solved) {
+        for index in 0..self.call_types.methods.len() {
+            let (node, pending) = &self.call_types.methods[index];
+            let key = self.key(*node);
+            let actual = solved.types[pending.actual.0 as usize];
+            let expected = solved.types[pending.expected.0 as usize];
+            self.facts.methods.calls.insert(
+                key,
+                Call {
+                    method: pending.method,
+                    callable: solved.types[pending.callable.0 as usize],
+                    dereferences: pending.dereferences,
+                    borrow: pending.borrow.map(|term| solved.types[term.0 as usize]),
+                    receiver: expected,
+                },
+            );
+            self.facts.retain_coercion(Coercion {
+                body: self.body,
+                source: key,
+                actual,
+                expected,
+                kind: AdjustmentKind::Equality,
+                reference: None,
+            });
+        }
+    }
+}

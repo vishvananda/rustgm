@@ -340,15 +340,11 @@ impl Checker<'_> {
         self.selected(node, Operation::Dereference)?;
         self.child(node, term, 0)
     }
-    pub(super) fn autoderef(&mut self, node: NodeId, mut term: TermId) -> Result<TermId, Error> {
-        let mut count = 0;
-        while matches!(self.head(node, term)?, Some(Constructor::Reference { .. })) {
-            count += 1;
-            if count > 1_000_000 {
-                return Err(self.error(node, "automatic dereference work budget exceeded"));
-            }
-            term = self.child(node, term, 0)?;
-        }
+    pub(super) fn autoderef(&mut self, node: NodeId, term: TermId) -> Result<TermId, Error> {
+        let (term, count) = self
+            .infer
+            .reference_target(&self.facts.types, term)
+            .map_err(|e| self.error(node, e))?;
         if count != 0 {
             self.facts.autoderefs.insert(self.key(node), count);
         }

@@ -3,6 +3,7 @@ mod aggregates;
 mod annotations;
 mod associated;
 mod contracts;
+mod deferred_arguments;
 mod destructors;
 mod generics;
 mod lifetimes;
@@ -283,6 +284,17 @@ impl Checker<'_> {
                 unit.configured.ast.push_children(node, &mut nodes);
                 nodes[mark..].reverse();
                 contexts.resize(nodes.len(), context);
+                if let Kind::GenericMethodCall { method, .. } = unit.configured.ast.node(node).kind
+                {
+                    self.prepare_method_arguments(
+                        NodeKey { file, node },
+                        method,
+                        context,
+                        steps,
+                        limit,
+                        &mut scan,
+                    )?;
+                }
                 if self.schedule_method_path(
                     NodeKey { file, node },
                     context,

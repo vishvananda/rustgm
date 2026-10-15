@@ -12,7 +12,7 @@ use crate::{
         model::Declarations,
     },
     types::{
-        ItemId,
+        ItemId, TypeId,
         infer::{self, Context, Instantiation, TermId, arguments::Argument, properties::Query},
         parameters::{ParameterKind, environment::Environment, predicates::Bound},
     },
@@ -88,8 +88,8 @@ pub(in crate::sema) fn choose(
         let prefix = probe
             .import(&source.facts.types, &mut source.infer, term)
             .map_err(|e| error(&e.to_string()))?;
-        let applicable =
-            applicable(source.facts, &mut probe, prefix, owner, environment).map_err(error)?;
+        let applicable = applicable(source.facts, &mut probe, prefix, owner, None, environment)
+            .map_err(error)?;
         source.facts.methods.selection_probes += 1;
         source.facts.methods.selection_steps = source
             .facts
@@ -106,7 +106,7 @@ pub(in crate::sema) fn choose(
     selected.ok_or_else(|| error("no applicable inherent method for this prefix"))
 }
 
-fn candidates(
+pub(super) fn candidates(
     facts: &mut Declarations,
     context: &mut Context,
     prefix: TermId,
@@ -145,11 +145,12 @@ fn candidates(
     }
 }
 
-fn applicable(
+pub(super) fn applicable(
     facts: &mut Declarations,
     context: &mut Context,
     prefix: TermId,
     owner: DefId,
+    receiver: Option<TypeId>,
     environment: Option<&Arc<Environment>>,
 ) -> Result<bool, &'static str> {
     let target = facts
@@ -157,6 +158,7 @@ fn applicable(
         .schema(owner)
         .ok_or("missing candidate schema")?
         .self_type;
+    let target = receiver.unwrap_or(target);
     let ids = facts.generics.parameter_ids(&facts.types, owner)?;
     let mut bindings = Vec::with_capacity(ids.len());
     let mut obligations = Vec::new();

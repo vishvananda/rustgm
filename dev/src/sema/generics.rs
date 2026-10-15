@@ -1,4 +1,5 @@
 //! Completed declaration environments and substitutions keyed by owner and arguments.
+pub(super) mod captures;
 use crate::{
     resolve::model::DefId,
     types::{
@@ -87,6 +88,16 @@ pub struct ItemUse {
     pub arguments: Vec<SourceArgument>,
 }
 #[derive(Clone, Copy)]
+pub(super) enum DeferredArgument {
+    Type(crate::resolve::unit::NodeKey),
+    Const(crate::resolve::unit::NodeKey),
+    Infer,
+}
+pub(super) struct DeferredUse {
+    pub lifetimes: Option<crate::syntax::ast::List>,
+    pub arguments: Vec<DeferredArgument>,
+}
+#[derive(Clone, Copy)]
 pub enum AnnotationArgument {
     Lifetime(crate::types::RegionId),
     Type(crate::resolve::unit::NodeKey),
@@ -105,6 +116,7 @@ pub struct Predicate {
 }
 #[derive(Default)]
 pub struct Generics {
+    pub(super) method_uses: HashMap<crate::resolve::unit::NodeKey, DeferredUse>,
     pub(super) parents: HashMap<DefId, DefId>,
     pub storage: Option<crate::types::aggregate::finiteness::Storage>,
     pub(super) nominal_contracts: std::collections::HashSet<DefId>,
