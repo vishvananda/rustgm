@@ -342,38 +342,29 @@ impl Checker<'_> {
                     .ok_or_else(|| self.error(bound.source, "missing bounded parameter type"))?,
                 Subject::Type(key) => self.ty(key)?,
             };
-            let value = match bound.bound {
-                Written::Trait(bound) => bound,
-                Written::User { path, definition } => {
-                    Bound::Trait(self.trait_path(path, definition, ty, context)?)
-                }
-                Written::Outlives(key) => {
-                    let Kind::Name(span) = self.kind(key) else {
-                        return Err(self.error(key, "outlives bound requires a named lifetime"));
-                    };
-                    if self
-                        .report
-                        .package
-                        .unit(key.file)
-                        .spelling(span)
-                        .is_ok_and(|name| name == "'_")
-                    {
-                        return Err(self.error(key, "outlives bound requires a named lifetime"));
-                    }
-                    Bound::Outlives(self.region(key, Some(key.node), context)?)
-                }
+            let original_ty = match bound.subject {
+                Subject::Type(key) => self.facts.unreduced.node(key).unwrap_or(ty),
+                Subject::Parameter(_) => ty,
             };
+            let (value, original_bound) =
+                self.bound_values(bound.bound, ty, original_ty, context)?;
             if matches!(bound.subject, Subject::Parameter(_))
                 && !matches!(self.facts.types.kind(ty), Some(Type::Parameter(_)))
             {
                 return Err(self.error(bound.source, "trait bounds require a type parameter"));
             }
             let value = Predicate { ty, bound: value };
-            if value
+            let original = Predicate {
+                ty: original_ty,
+                bound: original_bound,
+            };
+            if original
                 .contains_projections(&self.facts.types)
                 .map_err(|e| self.error(bound.source, e))?
             {
-                self.facts.unreduced.retain_predicate(bound.source, value);
+                self.facts
+                    .unreduced
+                    .retain_predicate(bound.source, original);
             }
             completed.push(crate::sema::generics::Predicate {
                 source: bound.source,
@@ -383,6 +374,45 @@ impl Checker<'_> {
         self.facts.generics.predicates.insert(owner, completed);
         self.retain_raw_bounds(owner, bounds)?;
         Ok(())
+    }
+
+    fn bound_values(
+        &mut self,
+        written: Written,
+        subject: crate::types::TypeId,
+        original: crate::types::TypeId,
+        context: regions::Context,
+    ) -> Result<(Bound, Bound), Error> {
+        let value = match written {
+            Written::Trait(bound) => bound,
+            Written::User { path, definition } => {
+                let arguments = self.application_arguments(path, definition, context)?;
+                let original_arguments = self.facts.unreduced.arguments(path).unwrap_or(arguments);
+                let value = self.applied_trait(path, definition, subject, arguments)?;
+                let original = if original != subject || original_arguments != arguments {
+                    self.applied_trait(path, definition, original, original_arguments)?
+                } else {
+                    value
+                };
+                return Ok((Bound::Trait(value), Bound::Trait(original)));
+            }
+            Written::Outlives(key) => {
+                let Kind::Name(span) = self.kind(key) else {
+                    return Err(self.error(key, "outlives bound requires a named lifetime"));
+                };
+                if self
+                    .report
+                    .package
+                    .unit(key.file)
+                    .spelling(span)
+                    .is_ok_and(|name| name == "'_")
+                {
+                    return Err(self.error(key, "outlives bound requires a named lifetime"));
+                }
+                Bound::Outlives(self.region(key, Some(key.node), context)?)
+            }
+        };
+        Ok((value, value))
     }
 }
 

@@ -167,11 +167,26 @@ impl Checker<'_> {
         };
         let first = self.projection_region_start(key, context)?;
         let scope = self.projections.alias_scopes.entry(scope_key).or_default();
-        let proof = self
+        let expansion = self
             .facts
             .alias_requirements
             .instantiate(&mut self.facts.types, use_, first, scope)
             .map_err(|e| self.error(key, e))?;
-        self.retain_projection_proof(key, context, proof)
+        for (scope, ty) in expansion.normalizations {
+            if scope != ScopeId::ROOT {
+                return Err(self.error(
+                    key,
+                    "deferred alias projections require their callable proof scope",
+                ));
+            }
+            self.projections.deferred.push((key, context, ty));
+        }
+        self.projections.sized.extend(
+            expansion
+                .sized
+                .into_iter()
+                .map(|(depth, ty)| (key, context, depth, ty)),
+        );
+        self.retain_projection_proof(key, context, expansion.proof)
     }
 }

@@ -1,5 +1,7 @@
 //! Deferred alias proofs form a typed dependency DAG; uses instantiate each scope once.
+mod normalizations;
 mod scopes;
+pub(crate) use normalizations::Expansion;
 #[cfg(test)]
 mod tests;
 use super::traits::obligations::Obligations;
@@ -19,6 +21,8 @@ struct Contract {
     sealed: bool,
     direct: Vec<(ScopeId, Obligations)>,
     dependencies: Vec<(ScopeId, Use)>,
+    normalizations: Vec<(ScopeId, crate::types::TypeId)>,
+    sized: Vec<(ScopeId, crate::types::TypeId)>,
     scopes: Option<Box<scopes::Scopes>>,
 }
 #[derive(Default)]
@@ -32,6 +36,8 @@ pub struct Requirements {
 #[derive(Default)]
 pub(crate) struct Scope {
     retained: HashSet<Use>,
+    normalized: HashSet<crate::types::TypeId>,
+    sized: HashSet<crate::types::TypeId>,
     failed: bool,
     steps: usize,
 }
@@ -98,6 +104,8 @@ impl Requirements {
                 sealed: false,
                 direct: Vec::new(),
                 dependencies: Vec::new(),
+                normalizations: Vec::new(),
+                sized: Vec::new(),
                 scopes: None,
             });
         if contract.sealed || contract.parameters != parameters {
@@ -126,7 +134,7 @@ impl Requirements {
         use_: Use,
         first: u32,
         scope: &mut Scope,
-    ) -> Result<Obligations, &'static str> {
+    ) -> Result<Expansion, &'static str> {
         if scope.failed {
             return Err("alias obligation scope has already failed");
         }
@@ -141,8 +149,8 @@ impl Requirements {
         use_: Use,
         first: u32,
         scope: &mut Scope,
-    ) -> Result<Obligations, &'static str> {
-        let mut result = Obligations::new(first);
+    ) -> Result<Expansion, &'static str> {
+        let mut result = Expansion::new(first);
         let mut pending = vec![(ScopeId::ROOT, use_)];
         let mut nested = HashSet::new();
         while let Some((caller, use_)) = pending.pop() {
@@ -165,7 +173,7 @@ impl Requirements {
                 Bound::joint(store, ItemId(contract.parameters.0), use_.arguments)?;
             scope.charge(contract.scopes.as_ref().map_or(0, |s| s.len()))?;
             let mapping =
-                scopes::Scopes::instantiate(contract.scopes.as_deref(), &mut result, caller)?;
+                scopes::Scopes::instantiate(contract.scopes.as_deref(), &mut result.proof, caller)?;
             for &(local, ref proof) in &contract.direct {
                 let (target, depth) = mapping.get(local)?;
                 scope.charge(
@@ -175,11 +183,16 @@ impl Requirements {
                         .saturating_add(proof.outlives.len())
                         .saturating_add(proof.types.len()),
                 )?;
-                let (proof, work) =
-                    proof.instantiate_at(store, &mut parameters, result.regions.end, depth)?;
+                let (proof, work) = proof.instantiate_at(
+                    store,
+                    &mut parameters,
+                    result.proof.regions.end,
+                    depth,
+                )?;
                 scope.charge(work)?;
-                result.append_at(proof, target)?;
+                result.proof.append_at(proof, target)?;
             }
+            result.instantiate_normalizations(store, contract, &mapping, &mut parameters, scope)?;
             scope.charge(contract.dependencies.len())?;
             for &(local, dependency) in contract.dependencies.iter().rev() {
                 let (target, depth) = mapping.get(local)?;

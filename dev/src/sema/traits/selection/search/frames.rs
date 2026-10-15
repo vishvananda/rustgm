@@ -95,6 +95,7 @@ impl Search<'_> {
         trial: &mut Trial,
     ) -> Result<Decision, String> {
         let mut type_outlives = Vec::new();
+        let mut sized = Vec::new();
         for goal in &trial.instance.goals {
             let Some(bound) = goal.builtin_bound() else {
                 continue;
@@ -108,6 +109,8 @@ impl Search<'_> {
                 type_outlives.push((ty, region));
             } else if !self.builtins.prove(facts, Predicate { ty, bound })? {
                 return Ok(Decision::Absent);
+            } else if bound == Bound::Sized && self.caller.retain_sized {
+                sized.push(ty);
             }
         }
         let goal = match trial
@@ -136,6 +139,7 @@ impl Search<'_> {
             equalities: std::mem::take(&mut trial.context.region_equalities),
             outlives: std::mem::take(&mut trial.instance.outlives),
             type_outlives,
+            sized,
         });
         Ok(Decision::Proven(node))
     }

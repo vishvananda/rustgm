@@ -4854,3 +4854,89 @@ Resident medians range from 5,920 to 23,496 KiB. The identical-binary width-512
 confirmation measures 62.81 ms with 44.8% calibration spread, further limiting
 throughput conclusions. All observations remain recorded; the receipt is
 `obj/pa20-work/projected-bound-arguments-v1/validation-v1.json`.
+
+## Deferred alias formation and erased Sized requirements
+
+Ordinary aliases now retain unproved associated type formation until an actual
+use supplies its complete environment. Dependent defaults use the same typed
+contract graph; overriding a default avoids its requirements. An empty lifetime
+proof no longer discards a projection requirement, including one whose result
+an enclosing alias erases. Requirement-only normalization does not overwrite the
+use's published annotation. Alias-written bounds remain unenforced and cannot
+supply proof assumptions. Registered derive contracts permit early declaration
+selection, with every selected derive still checked by the final nominal gate.
+
+Independent checking corrected two initial expectations: pinned rustc accepts
+unused dependent nominal and trait defaults. Closed invalid nominal/trait
+defaults still reject; ordinary aliases can defer closed projection formation.
+The original expectations and diagnostics are preserved beside the corrected
+matrix. Associated definitions and missing associated members retain their
+mandatory declaration checks.
+
+A separate negative control exposed an existing acceptance bug: eager alias
+normalization could erase an implementation's implicit Sized premise and accept
+`Alias<str>`. Selected implementation evidence now retains these premises,
+including recursively selected conditions. Alias uses substitute and prove them
+in their actual environment. Typed tests check argument-sensitive DAG sharing,
+sealed contracts, independent scopes and total callable depth across dependencies.
+Partial aliases with only liftable Sized premises retain ordinary body inference
+obligations, preserving valid inferred pairs while rejecting unsized arguments.
+An erased, unconstrained input still requires an annotation; associated results
+never determine noninjective inputs.
+
+Bounds also preserve their original complete predicates through erased aliases.
+This keeps projected generic bounds from being misclassified as closed and
+preserves early lifetime arguments after normalization. The new source matrix
+contains 62 independently rustc-qualified cases: 36 accepted and 26 rejected
+through LowIR, with intended semantic diagnostics required for negatives.
+Seven new native programs cover inference, nested function pointers, conditional
+signatures, erased results, defaults and const arguments.
+
+General alias/default projection inference and lifetime inference remain pending,
+as does normalization of residual projections beneath callable scopes. Two
+additional scoped probes require unsized-tail aggregates outside the current
+profile and are excluded from the supported language matrix. PA20 and PA21
+remain planned. The remaining implementation boundaries and original probe
+records are in `obj/pa20-work/deferred-alias-projections-v1/next-implementation.md`.
+
+The final optimized suite passes 992 tests with 37 native tests explicitly
+ignored. The affected optimized run passes 50 tests, including 29 native programs
+across seven modules. All 4,857 active course cases, Clippy all/pedantic, rustfmt,
+the 620-file audit and 27 harness tests pass. Course fixtures, manifests and oracle
+bytes are unchanged. The final candidate preserves every full LowIR output,
+diagnostic and status in the independently qualified 62-case matrix.
+
+The frozen final binary is
+`9c0869c3abb5747468246f65188444c0d5ccdcd43a0f37954ca4a2b074c4750f`;
+623 source/config/test files are archived. Seventy-five published workloads keep
+their full/count output bytes. Twelve new independently qualified inputs cover
+conditional alias width, repeated uses, erased dependencies and inferred Sized
+premises at 128/512/2,048. Every timing run checks frozen source, binary and input
+hashes and output equality, with no overlapping local RustGM build, test or probe.
+All A/A calibration and paired ABBA observations remain retained.
+
+Initial measurements and confirmation retain 2,470 observations and identify a
+repeatable cost in aliases that erase generic inputs: confirmation measures
++10.1/+13.4/+18.8% at 128/512/2,048. Investigation found parameter-only environments
+unnecessarily cloning and substituting lifetime state. They now preserve their
+immutable parameter environment directly when the projection has no surrounding
+lifetime occurrences; environments containing composite or trait predicates still
+use the checked mapping.
+
+Final measurements and confirmation retain another 2,600 observations, including
+four direct comparisons with the first candidate. The optimization reduces the
+512/2,048 alias-width costs by 3.2/5.4% in confirmation. It does not eliminate the
+cost of retaining previously discarded requirements: relative to published main,
+these alias-width inputs still measure +8.3/+9.9/+14.2%. The 2,048 input has 35.4%
+calibration spread; the 512 input has 0.6%. Other positive confirmation comparisons
+range from +2.3% to +7.8%, with substantial calibration noise in the argument cases.
+These results document a remaining regression, not a no-regression or general
+speedup claim. General delayed normalization/inference remains a possible way to
+avoid eagerly proving unused aliases while preserving all use requirements.
+
+Final new-input medians are 15.45/48.60/202.46 ms for conditional width,
+6.28/14.69/43.88 ms for repeated uses, 15.78/51.90/200.33 ms for erased dependencies
+and 5.47/10.64/30.39 ms for inferred Sized premises. Resident medians range from
+5,908 to 31,938 KiB. The receipt is
+`obj/pa20-work/deferred-alias-projections-v1/validation-v2.json`; the first candidate,
+all 5,070 observations and the corrected initial expectations remain available.

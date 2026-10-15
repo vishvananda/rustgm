@@ -25,18 +25,6 @@ pub(super) fn infer(host: &mut impl Host, key: NodeKey) -> Result<TermId, Error>
         .ok_or_else(|| error(host, key, "missing partial generic annotation"))?;
     let (owner, supplied) = (use_.owner, use_.arguments.clone());
     let parameters = host.facts().generics.parameters[&owner].clone();
-    if host.facts().alias_requirements.contains(owner)
-        || parameters.iter().zip(&supplied).any(|(parameter, source)| {
-            matches!(source, Written::Default(_))
-                && host.facts().alias_requirements.contains(parameter.binding)
-        })
-    {
-        return Err(error(
-            host,
-            key,
-            "inferred alias proofs require delayed projection normalization",
-        ));
-    }
     let mut regions = Vec::new();
     let mut arguments = Vec::with_capacity(parameters.len());
     let mut bindings = Vec::new();
@@ -88,6 +76,7 @@ pub(super) fn infer(host: &mut impl Host, key: NodeKey) -> Result<TermId, Error>
         parameters: Instantiation::new(infer, &facts.types, &bindings)
             .map_err(|e| error(host, key, e))?,
     };
+    super::requirements::retain(host, key, owner, &supplied, &mut fields)?;
     for (index, source) in supplied.iter().enumerate() {
         if let Written::Default(default) = *source {
             fields.default(host, key, default, arguments[index])?;

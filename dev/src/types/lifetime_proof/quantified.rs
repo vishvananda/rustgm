@@ -101,6 +101,16 @@ impl Quantified {
     }
 }
 impl Obligations {
+    pub(crate) fn scope_depth(&self, scope: ScopeId) -> Result<u16, &'static str> {
+        if scope == ScopeId::ROOT {
+            return Ok(0);
+        }
+        self.quantified
+            .as_ref()
+            .and_then(|quantified| quantified.scopes.get(scope.0 as usize - 1))
+            .map(|binder| binder.depth)
+            .ok_or("invalid quantified proof scope")
+    }
     /// Introduce a universal binder relative to this evidence's caller scope.
     /// # Errors
     /// Rejects missing parents and exhausted scope/binder depth budgets.

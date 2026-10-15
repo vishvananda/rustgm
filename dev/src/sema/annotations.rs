@@ -1,5 +1,6 @@
 //! Shared partial-type inference for bodies and isolated method-prefix queries.
 mod applications;
+mod requirements;
 use super::{declarations, model::Declarations};
 use crate::{
     resolve::{expansion::Report, model::Target, package::Error, unit::NodeKey},
@@ -18,6 +19,7 @@ pub(super) trait Host {
     fn cached(&self, key: NodeKey) -> Option<TermId>;
     fn save(&mut self, key: NodeKey, term: TermId);
     fn nominal(&mut self, term: TermId, fields: Fields);
+    fn requirement(&mut self, key: NodeKey, predicate: crate::types::infer::predicates::Predicate);
     fn callable(&mut self, key: NodeKey);
     fn child(&mut self, key: NodeKey);
 }

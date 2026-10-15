@@ -30,6 +30,7 @@ struct Node {
     equalities: Vec<Pair>,
     outlives: Vec<Pair>,
     type_outlives: Vec<(super::TypeId, super::RegionId)>,
+    sized: Vec<super::TypeId>,
 }
 struct Search<'a> {
     caller: Caller<'a>,
@@ -72,7 +73,16 @@ pub(super) fn prove(
 impl<'a> Search<'a> {
     fn new(caller: Caller<'a>, availability: super::Availability) -> Self {
         Self {
-            builtins: crate::sema::nominals::Proof::new(caller.environment.cloned()),
+            builtins: match availability {
+                super::Availability::Declarations => {
+                    crate::sema::nominals::Proof::for_unvalidated_implementations(
+                        caller.environment.cloned(),
+                    )
+                }
+                super::Availability::Validated => {
+                    crate::sema::nominals::Proof::new(caller.environment.cloned())
+                }
+            },
             caller,
             availability,
             nodes: Vec::new(),
@@ -227,6 +237,7 @@ impl<'a> Search<'a> {
                     equalities: std::mem::take(&mut frame.context.region_equalities),
                     outlives: Vec::new(),
                     type_outlives: Vec::new(),
+                    sized: Vec::new(),
                 });
                 return Ok(Action::Complete(Decision::Proven(index)));
             }
@@ -323,6 +334,7 @@ impl<'a> Search<'a> {
             equalities: Vec::new(),
             outlives: Vec::new(),
             type_outlives: Vec::new(),
+            sized: Vec::new(),
         };
         let mut work = vec![root];
         let mut visited = self.reused.then(|| vec![false; self.nodes.len()]);
@@ -338,6 +350,7 @@ impl<'a> Search<'a> {
             evidence.equalities.append(&mut node.equalities);
             evidence.outlives.append(&mut node.outlives);
             evidence.type_outlives.append(&mut node.type_outlives);
+            evidence.sized.append(&mut node.sized);
         }
         Ok(evidence)
     }

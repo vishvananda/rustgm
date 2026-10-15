@@ -29,6 +29,7 @@ pub(in crate::sema) struct Evidence {
     pub equalities: Vec<Pair>,
     pub outlives: Vec<Pair>,
     pub type_outlives: Vec<(TypeId, RegionId)>,
+    pub sized: Vec<TypeId>,
 }
 pub(in crate::sema) enum Selection {
     Absent,
@@ -40,6 +41,8 @@ pub(in crate::sema) struct Caller<'a> {
     pub environment: Option<&'a Arc<Environment>>,
     /// First unused free region identity in the caller's eventual proof graph.
     pub first_region: u32,
+    /// Alias normalization retains builtin premises whose implicit parameter bounds are unenforced.
+    pub retain_sized: bool,
 }
 
 /// A negative outer-head result excludes a candidate without importing its graph.
@@ -119,6 +122,7 @@ pub(in crate::sema) fn select_assumption(
             equalities: Vec::new(),
             outlives: Vec::new(),
             type_outlives: Vec::new(),
+            sized: Vec::new(),
         })),
         Assumed::Deferred => Ok(Selection::Deferred),
         Assumed::Absent => Ok(Selection::Absent),

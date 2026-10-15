@@ -19,6 +19,8 @@ pub(crate) struct State {
     context: Context,
     fold: Option<substitute::Bound>,
     obligations: Obligations,
+    sized: Vec<crate::types::TypeId>,
+    retain_sized: bool,
 }
 impl State {
     pub fn new(
@@ -64,6 +66,8 @@ impl State {
             context,
             fold,
             obligations,
+            sized: Vec::new(),
+            retain_sized: false,
         })
     }
 
@@ -85,12 +89,26 @@ impl State {
         environment: Option<Arc<Environment>>,
         requirement: Predicate,
         first: u32,
-    ) -> Result<(Option<selection::Source>, Obligations), &'static str> {
-        if environment.is_none() && !requirement.has_free_regions(&facts.types)? {
-            let mut state = Self::new(facts, None, None)?;
+        retain_sized: bool,
+    ) -> Result<
+        (
+            Option<selection::Source>,
+            Obligations,
+            Vec<crate::types::TypeId>,
+        ),
+        &'static str,
+    > {
+        if environment
+            .as_ref()
+            .is_none_or(|env| env.has_only_parameters())
+            && !requirement.has_free_regions(&facts.types)?
+        {
+            let mut state = Self::new(facts, environment, None)?;
             state.obligations = Obligations::new(first);
+            state.retain_sized = retain_sized;
             let source = state.select_opened(facts, requirement, false)?;
-            return Ok((source, state.finish()));
+            let sized = std::mem::take(&mut state.sized);
+            return Ok((source, state.finish(), sized));
         }
         let mut fold = substitute::Bound::open_regions(first)?;
         let requirement = fold.predicate(&mut facts.types, requirement)?;
@@ -101,6 +119,7 @@ impl State {
             })
             .transpose()?;
         let mut state = Self::new(facts, environment, None)?;
+        state.retain_sized = retain_sized;
         state
             .context
             .account_work(fold.steps)
@@ -113,7 +132,8 @@ impl State {
         opened.sort_unstable_by_key(|(free, original)| (free.0, original.0));
         state.obligations.equalities.extend(opened);
         let source = state.select_opened(facts, requirement, false)?;
-        Ok((source, state.finish()))
+        let sized = std::mem::take(&mut state.sized);
+        Ok((source, state.finish(), sized))
     }
 
     pub fn prove(
@@ -159,12 +179,14 @@ impl State {
                 self.environment.as_ref()
             },
             first_region: self.obligations.regions.end,
+            retain_sized: self.retain_sized,
         };
         match selection::select_declaration(facts, &mut self.context, &goal, caller)
             .map_err(|_| "invalid or exhausted declaration trait selection")?
         {
-            selection::Selection::Proven(evidence) => {
+            selection::Selection::Proven(mut evidence) => {
                 let source = evidence.source;
+                self.sized.append(&mut evidence.sized);
                 self.obligations.append(evidence)?;
                 Ok(Some(source))
             }

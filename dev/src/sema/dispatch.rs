@@ -86,6 +86,7 @@ impl Dispatcher {
                 assumptions: &empty,
                 environment: None,
                 first_region: self.obligations.regions.end,
+                retain_sized: false,
             },
         )?;
         let selection::Selection::Proven(evidence) = selected else {

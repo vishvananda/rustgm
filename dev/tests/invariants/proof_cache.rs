@@ -79,6 +79,8 @@ fn caller<'a>(
         assumptions,
         environment,
         first_region: 1,
+
+        retain_sized: false,
     }
 }
 

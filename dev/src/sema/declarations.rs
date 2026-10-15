@@ -213,6 +213,7 @@ impl Checker<'_> {
         self.index_inherent_methods()?;
         self.validate_inherent_overlaps()?;
         self.local_annotations(&mut steps, work_limit)?;
+        self.complete_alias_normalizations(&mut steps, work_limit)?;
         self.validate_projection_regions()?;
         super::constants::finish_discriminants(
             self.report,

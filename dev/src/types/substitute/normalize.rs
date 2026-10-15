@@ -21,6 +21,9 @@ pub enum Resolution {
     Type(TypeId),
     /// The resolver has proved the trait obligation but its result remains symbolic.
     Opaque,
+    /// An alias contract retains this unproved type-formation requirement for its uses.
+    /// The resolver must store the requirement before returning this response.
+    Deferred,
 }
 
 /// One immutable semantic environment owns this cache. Keep availability, caller
@@ -80,7 +83,7 @@ impl Normalizer {
         }
         let key = (request.source, request.depth);
         match resolution {
-            Resolution::Opaque => {
+            Resolution::Opaque | Resolution::Deferred => {
                 let ty = store.intern(Kind::Projection(request.application))?;
                 self.fold.completed.insert(key, ty);
                 self.active.remove(&key);

@@ -318,6 +318,21 @@ impl Generics {
         store: &Store,
         owner: DefId,
     ) -> Result<Environment, &'static str> {
+        let predicates = self
+            .predicates_in_scope(owner)
+            .map(|p| p.value)
+            .collect::<Vec<_>>();
+        self.parameter_scope(store, owner)?
+            .with_predicates(store, &predicates)
+    }
+    /// Declare parameters without granting the unenforced written bounds of an alias.
+    /// # Errors
+    /// Rejects malformed parameter identities.
+    pub(crate) fn parameter_scope(
+        &self,
+        store: &Store,
+        owner: DefId,
+    ) -> Result<Environment, &'static str> {
         let mut assumptions = Vec::new();
         let mut constants = Vec::new();
         for parameter in self.parameters_in_scope(owner) {
@@ -334,13 +349,7 @@ impl Generics {
                 constants.push(id);
             }
         }
-        let predicates = self
-            .predicates_in_scope(owner)
-            .map(|p| p.value)
-            .collect::<Vec<_>>();
-        Environment::new(store, &assumptions)?
-            .with_const_parameters(store, &constants)?
-            .with_predicates(store, &predicates)
+        Environment::new(store, &assumptions)?.with_const_parameters(store, &constants)
     }
     fn substitution(
         &mut self,

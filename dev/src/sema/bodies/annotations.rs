@@ -29,6 +29,9 @@ impl Host for Checker<'_> {
     fn nominal(&mut self, term: TermId, fields: Fields) {
         self.call_types.insert_nominal(term, fields);
     }
+    fn requirement(&mut self, key: NodeKey, predicate: crate::types::infer::predicates::Predicate) {
+        self.call_types.obligations.push((key.node, predicate));
+    }
     fn callable(&mut self, key: NodeKey) {
         self.annotation_checks.push(key.node);
     }

@@ -34,6 +34,16 @@ struct TraitAssumptions {
     constants: std::collections::HashSet<ParameterId>,
 }
 impl Environment {
+    /// Parameter identities and abilities contain no regions to substitute.
+    /// Composite and trait predicates still need the ordinary binder mapping.
+    pub(crate) fn has_only_parameters(&self) -> bool {
+        self.assumptions.is_none()
+            && self
+                .traits
+                .as_ref()
+                .is_none_or(|traits| traits.predicates.is_empty())
+    }
+
     /// Preserve the same immutable permissions while replacing their captured
     /// lifetime binder. Inference consumes free aliases, including in callables.
     pub(crate) fn substitute_regions(

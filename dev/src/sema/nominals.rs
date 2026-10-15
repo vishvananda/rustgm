@@ -16,6 +16,7 @@ pub(super) struct Proof {
     checked: Requirements,
     traits: Option<Box<traits::State>>,
     scope: Option<(u32, u32)>,
+    provisional: bool,
 }
 impl Proof {
     pub(super) fn for_coherence(
@@ -30,6 +31,7 @@ impl Proof {
             checked: Requirements::default(),
             traits: None,
             scope: None,
+            provisional: false,
         }
     }
     pub fn new(
@@ -51,7 +53,18 @@ impl Proof {
             checked: Requirements::default(),
             traits: None,
             scope: None,
+            provisional: false,
         }
+    }
+    /// Declaration selection may use derive contracts before fields finish.
+    /// The mandatory nominal gates still validate every selected derive later.
+    pub(super) fn for_unvalidated_implementations(
+        environment: Option<std::sync::Arc<crate::types::parameters::environment::Environment>>,
+    ) -> Self {
+        let mut proof = Self::new(environment.clone());
+        proof.copies = crate::types::copy::Copies::for_derive(environment);
+        proof.provisional = true;
+        proof
     }
     pub fn for_declaration(
         environment: Option<std::sync::Arc<crate::types::parameters::environment::Environment>>,
@@ -121,7 +134,9 @@ impl Proof {
             Bound::Trait(_) => self.prove_trait(facts, requirement)?,
             Bound::Sized => self.shape(facts, requirement.ty)?.sized,
             Bound::Copy | Bound::Clone => {
-                facts.aggregates.prepare(&mut facts.types, requirement.ty)?;
+                if !self.provisional {
+                    facts.aggregates.prepare(&mut facts.types, requirement.ty)?;
+                }
                 let abilities = self.copies.demand(
                     &facts.types,
                     &facts.aggregates,

@@ -1,6 +1,7 @@
 //! Associated type paths suspend normalization while their selected definitions elaborate.
 mod aliases;
 mod bound_environments;
+mod deferred;
 mod environments;
 mod proofs;
 use super::{Checker, DefId, Error, NodeKey, Type, TypeId, Work, regions};
@@ -24,9 +25,20 @@ struct Query {
     fold: Normalizer,
     context: regions::Context,
     selected: Option<Selected>,
+    destination: Destination,
+}
+#[derive(Clone, Copy)]
+enum Destination {
+    Annotation,
+    Requirement,
+    Sized,
 }
 #[derive(Default)]
 pub(super) struct Pending {
+    sized: Vec<(NodeKey, regions::Context, u16, TypeId)>,
+    alias_environments:
+        HashMap<DefId, std::sync::Arc<crate::types::parameters::environment::Environment>>,
+    deferred: Vec<(NodeKey, regions::Context, TypeId)>,
     environments: HashMap<DefId, super::State>,
     raw_bound_nodes: std::collections::HashSet<NodeKey>,
     raw_bounds: HashMap<DefId, bound_environments::Bounds>,
@@ -160,6 +172,16 @@ impl Checker<'_> {
         if self.projections.raw_bound_nodes.remove(&key) {
             return self.store(key, ty);
         }
+        self.start_normalization(key, ty, context, Destination::Annotation)
+    }
+
+    fn start_normalization(
+        &mut self,
+        key: NodeKey,
+        ty: TypeId,
+        context: regions::Context,
+        destination: Destination,
+    ) -> Result<(), Error> {
         let mut fold = Normalizer::default();
         let step = fold
             .start(&mut self.facts.types, ty)
@@ -170,6 +192,7 @@ impl Checker<'_> {
                 fold,
                 context,
                 selected: None,
+                destination,
             },
         );
         self.advance_projection(key, step)
@@ -178,8 +201,16 @@ impl Checker<'_> {
     fn advance_projection(&mut self, key: NodeKey, step: Step) -> Result<(), Error> {
         match step {
             Step::Complete(ty) => {
-                self.projections.roots.remove(&key);
-                self.store(key, ty)
+                let query = self
+                    .projections
+                    .roots
+                    .remove(&key)
+                    .ok_or_else(|| self.error(key, "missing completed projection query"))?;
+                match query.destination {
+                    Destination::Sized => self.prove_alias_size(key, query.context, 0, ty),
+                    Destination::Annotation => self.store(key, ty),
+                    Destination::Requirement => Ok(()),
+                }
             }
             Step::Resolve(request) => {
                 self.work.push(Work::ProjectionSelection(key, request));
@@ -193,7 +224,9 @@ impl Checker<'_> {
         key: NodeKey,
         request: Request,
     ) -> Result<(), Error> {
-        let selected = self.select_projection(key, request)?;
+        let Some(selected) = self.select_projection(key, request)? else {
+            return self.defer_projection_requirement(key, request);
+        };
         let definition = selected.definition;
         self.projections
             .roots
@@ -247,7 +280,11 @@ impl Checker<'_> {
         self.advance_projection(key, step)
     }
 
-    fn select_projection(&mut self, key: NodeKey, request: Request) -> Result<Selected, Error> {
+    fn select_projection(
+        &mut self,
+        key: NodeKey,
+        request: Request,
+    ) -> Result<Option<Selected>, Error> {
         use crate::{
             sema::{nominals::traits::State, traits::selection},
             types::parameters::predicates::{Bound, Predicate},
@@ -269,28 +306,44 @@ impl Checker<'_> {
             .get(&key)
             .ok_or_else(|| self.error(key, "missing projection scope"))?
             .context;
+        let deferred = self.may_defer_projection(key, context, predicate)?;
+        if deferred
+            && predicate
+                .contains_projections(&self.facts.types)
+                .map_err(|e| self.error(key, e))?
+        {
+            return Ok(None);
+        }
         let (environment, first) = self.projection_environment(key, context)?;
-        let (source, proof) = State::projection(&mut self.facts, environment, predicate, first)
-            .map_err(|e| self.error(key, e))?;
+        let (source, proof, sized) =
+            State::projection(&mut self.facts, environment, predicate, first, deferred)
+                .map_err(|e| self.error(key, e))?;
         let Some(source) = source else {
+            if deferred {
+                return Ok(None);
+            }
             return Err(self.error(
                 key,
                 "associated type requires an unambiguous implementation",
             ));
         };
         let selection::Source::Implementation { owner, arguments } = source else {
+            if deferred {
+                return Ok(None);
+            }
             return Err(self.error(
                 key,
                 "symbolic associated types require projection equality obligations",
             ));
         };
-        let restore = if proof.regions.is_empty() && proof.equalities.is_empty() {
+        let mut restore = if proof.regions.is_empty() && proof.equalities.is_empty() {
             None
         } else {
             Some(Box::new(
                 proof.restoration().map_err(|e| self.error(key, e))?,
             ))
         };
+        self.retain_alias_sizes(key, context, sized, restore.as_deref_mut())?;
         self.retain_projection_proof(key, context, proof)?;
         let name = self.report.resolution.definitions[application.item.0 as usize].name;
         let scope = self.report.resolution.definitions[owner.0 as usize].scope;
@@ -308,12 +361,12 @@ impl Checker<'_> {
                     "selected implementation is missing the associated type",
                 )
             })?;
-        Ok(Selected {
+        Ok(Some(Selected {
             request,
             owner,
             definition,
             arguments,
             restore,
-        })
+        }))
     }
 }

@@ -142,6 +142,8 @@ impl Host for Prefix<'_> {
         self.terms.insert(key, term);
     }
     fn nominal(&mut self, _: TermId, _: Fields) {}
+    // Prefix probes discover candidates; the actual body annotation owns its proofs.
+    fn requirement(&mut self, _: NodeKey, _: crate::types::infer::predicates::Predicate) {}
     fn callable(&mut self, _: NodeKey) {}
     fn child(&mut self, _: NodeKey) {}
 }
@@ -390,6 +392,8 @@ fn trait_requirements(
                     assumptions,
                     environment: caller.environment,
                     first_region,
+
+                    retain_sized: false,
                 },
             )
             .map_err(|_| "invalid or exhausted method trait selection")?

@@ -37,6 +37,7 @@ impl Checker<'_> {
                 assumptions: &assumptions,
                 environment: self.method_environment.as_ref(),
                 first_region,
+                retain_sized: false,
             },
         );
         let equalities = std::mem::take(&mut context.region_equalities);
@@ -86,6 +87,7 @@ impl Checker<'_> {
                     assumptions: &assumptions,
                     environment: self.method_environment.as_ref(),
                     first_region,
+                    retain_sized: false,
                 };
                 let selected = if self.call_types.assumed_obligations.contains(&index) {
                     selection::select_assumption(

@@ -103,6 +103,9 @@ same scope use disjoint fresh intervals and share the directed proof. Local
 annotations instead retain obligations in the body's allocator and ordinary
 lifetime gate; they must not append to a declaration gate that has already run.
 Keep plain, closed projection queries off the lifetime-fold allocation path.
+Parameter-only environments also need no binder mapping when the projection has
+no surrounding lifetime occurrences. Composite and trait predicates still pass
+through the shared checked substitution.
 
 Projection selection in a signature waits for its owner's immutable parameter
 environment, including requirements inherited by methods. Generic lifetime
@@ -136,6 +139,26 @@ bound graph traversal and argument work. Freshen each template's private region
 interval before substituting caller arguments; numeric overlap must not turn a
 caller lifetime into a template variable. A failed expansion invalidates its scope.
 
+Distinguish an unproved deferred projection from a proved symbolic result. An
+ordinary alias may retain unproved type formation, including a closed projection,
+until use. Dependent generic defaults similarly retain their requirements; closed
+nominal and trait defaults still require declaration-time proof. Ordinary alias
+bounds supply no assumptions. Its bare parameter scope identifies type and const
+parameters without granting its written predicates. Declaration selection may use
+registered derive contracts before fields finish, but final derive validation is
+mandatory. Check retained type formation even if an outer alias erases the result
+and the lifetime proof is empty; completing that check does not overwrite the
+actual annotation's type.
+
+Retain the implicit Sized premises of selected implementations and their recursive
+conditions when alias normalization removes the original inputs. Alias parameters
+can later receive unsized arguments despite their declaration spelling. Substitute
+these premises at each use and check them in the actual caller environment. Track
+their total callable depth across dependency graphs, separately from the local
+substitution depth. Partial annotations with only liftable Sized premises share the
+result's inference variables and retain those premises through body completion;
+they do not infer erased inputs from an associated result.
+
 Nested callable annotations retain their enclosing alias/default proof owner and
 an explicit universal scope tree. Complete each binder's slot count before sealing
 the contract. Cache source scopes as they are discovered; captured-lifetime lookup
@@ -148,9 +171,10 @@ Retain quantified evidence through body collection, specialization and selected
 item rewriting. Substitute caller parameters beneath each block's local binder
 prefix, and prove the resulting requirements in the same graph as ordinary caller
 constraints. Scope IDs are local to one evidence object and must be remapped when
-combining independent objects. Partial alias annotations still require delayed
-projection inference: a normalized result cannot infer a non-injective
-projection's input parameters.
+combining independent objects. Partial alias annotations with deferred projections
+or lifetime proofs still require delayed projection inference. Residual projected
+types under callable scopes require scoped normalization; do not drop their
+requirements to produce an executable type.
 
 Check constraining lifetime positions before erasing projections through
 normalization. A lifetime occurring only inside a projected function-pointer

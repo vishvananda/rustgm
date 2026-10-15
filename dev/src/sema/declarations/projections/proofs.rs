@@ -34,6 +34,28 @@ impl Checker<'_> {
                 .checked_add(1)
                 .ok_or_else(|| self.error(key, "projection binder depth exhausted"))?;
         }
+        if let Some(template) = self.projection_alias_owner(context) {
+            let owner = template.parameters;
+            let ordinary = self.report.resolution.definitions[owner.0 as usize].kind
+                == crate::resolve::model::DefKind::TypeAlias
+                && self.facts.associated.owner(owner).is_none();
+            if ordinary || environment.is_none() {
+                environment = if self
+                    .facts
+                    .generics
+                    .parameters_in_scope(owner)
+                    .any(|parameter| {
+                        !matches!(
+                            parameter.argument,
+                            crate::types::arguments::Argument::Lifetime(_)
+                        )
+                    }) {
+                    Some(self.alias_parameter_environment(key, owner)?)
+                } else {
+                    None
+                };
+            }
+        }
         if depth != 0
             && let Some(env) = environment
         {
