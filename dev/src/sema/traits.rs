@@ -1,5 +1,7 @@
 //! Trait contracts retain direct predicates; applications share one capture-safe fold.
 pub(super) mod assumptions;
+mod heads;
+pub(super) mod implementations;
 use super::{generics::Parameter, generics::Predicate as Located, generics::parameter_id};
 use crate::types::{
     ItemId, Store, TypeId,

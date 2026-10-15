@@ -117,6 +117,7 @@ pub struct Predicate {
 }
 #[derive(Default)]
 pub struct Generics {
+    pub(super) implementations: Option<Box<super::traits::implementations::Implementations>>,
     pub(super) traits: Option<Box<super::traits::Contracts>>,
     pub(super) method_uses: HashMap<crate::resolve::unit::NodeKey, DeferredUse>,
     pub(super) parents: HashMap<DefId, DefId>,
@@ -140,6 +141,14 @@ pub struct Generics {
     substitutions: HashMap<(DefId, GenericArgs), Bound>,
 }
 impl Generics {
+    /// Only completed conformance records may authorize trait selection or dispatch.
+    pub fn implementations(
+        &self,
+    ) -> impl Iterator<Item = &super::traits::implementations::Implementation> {
+        self.implementations
+            .iter()
+            .flat_map(|registry| registry.validated())
+    }
     fn scopes(&self, owner: DefId) -> impl Iterator<Item = DefId> + '_ {
         std::iter::successors(Some(owner), |id| self.parents.get(id).copied())
     }

@@ -7,8 +7,12 @@ mod binders;
 mod destructors;
 #[path = "trait_bounds/equality.rs"]
 mod equality;
+#[path = "trait_bounds/implementations.rs"]
+mod implementations;
 #[path = "trait_bounds/inference.rs"]
 mod inference;
+#[path = "harness/native_references.rs"]
+mod native;
 #[path = "helpers/qualify.rs"]
 mod rustc;
 #[path = "support/semantic.rs"]

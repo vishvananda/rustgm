@@ -223,6 +223,22 @@ separate evidence. Diagnose supertrait cycles by declaration identity before
 expansion, and deduplicate diamond paths under a bounded worklist. Arbitrary trait
 names confer no builtin Copy, Clone or Sized behavior.
 
+Trait impl headers share generic/lifetime elaboration with inherent and builtin
+Drop owners. Retain the complete trait predicate, owner and source once. Every
+owned type/const parameter must constrain Self or the trait application; a where
+bound alone does not constrain it. Validate target and argument well-formedness,
+trait requirements and safety under the impl's own environment. Input types imply
+lifetime well-formedness facts, never new Copy or user-trait assumptions.
+
+Keep prepared headers separate from validated implementations. A schema alone
+cannot supply selection evidence; member-bearing implementations require signature
+conformance and checked default dispatch. Index overlap candidates by trait and
+rigid subject, then by complete lifetime-erased application for closed headers.
+Share existential bindings across Self and every type/const argument when probing
+compatibility. Lifetime erasure may establish structural disjointness, never body
+permissions. Charge candidate-pair storage before allocation and equation work
+during probes; predicate-sensitive coherence remains a separate proof.
+
 Trait argument well-formedness and declared requirements are checked even for
 unused declarations. Lifetime requirements consume the completed nominal contracts
 and shared directed relation engine. Assumptions from the original signature and

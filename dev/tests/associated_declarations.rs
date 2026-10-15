@@ -162,12 +162,29 @@ fn drop_uses_shared_ownership_and_receivers_without_granting_user_traits_languag
     let report = semantic::resolve(source)?;
     let inventory = associated::collect(&report)?;
     assert_eq!(inventory.owners().len(), 3);
-    let Err(error) = semantic::analyze(source) else {
-        return Err("user impl passed without conformance".into());
+    let (report, facts) = semantic::analyze(source)?;
+    assert_eq!(facts.generics.implementations().count(), 1);
+    assert_eq!(facts.destructors.implementations().len(), 1);
+    let implementation = facts
+        .generics
+        .implementations()
+        .next()
+        .ok_or("missing user implementation")?;
+    let rustgm::types::parameters::predicates::Bound::Trait(id) = implementation.predicate.bound
+    else {
+        return Err("missing user trait application".into());
     };
-    assert!(
-        error.contains("trait implementation requires conformance"),
-        "{error}"
+    let application = facts
+        .types
+        .trait_application(id)
+        .ok_or("missing user trait")?;
+    assert_ne!(
+        Some(DefId(application.item.0)),
+        report.resolution.drop_trait
+    );
+    assert_ne!(
+        implementation.owner,
+        facts.destructors.implementations()[0].self_definition
     );
     Ok(())
 }

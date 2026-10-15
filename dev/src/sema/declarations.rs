@@ -6,6 +6,7 @@ mod contracts;
 mod deferred_arguments;
 mod destructors;
 mod generics;
+mod impl_headers;
 mod lifetimes;
 mod method_overlap;
 mod method_paths;
@@ -168,7 +169,7 @@ impl Checker<'_> {
         self.complete_nominal_headers(&mut steps, work_limit)?;
         self.prepare_trait_owners(&mut steps, work_limit)?;
         self.prepare_destructors(destructors, &mut steps, work_limit)?;
-        self.validate_trait_impl_owners()?;
+        self.prepare_trait_implementations(&mut steps, work_limit)?;
         self.prepare_inherent_owners(&mut steps, work_limit)?;
         for index in 0..self.report.resolution.definitions.len() {
             let id = DefId(
@@ -194,6 +195,8 @@ impl Checker<'_> {
         self.validate_destructors()?;
         self.validate_owner_bounds()?;
         self.validate_signatures()?;
+        self.validate_trait_implementations()?;
+        self.validate_trait_impl_owners()?;
         self.validate_trait_regions()?;
         self.index_inherent_methods()?;
         self.validate_inherent_overlaps()?;

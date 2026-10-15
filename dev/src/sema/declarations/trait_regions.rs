@@ -138,7 +138,7 @@ impl Checker<'_> {
         Ok(requirements)
     }
 
-    fn trait_region_environment(
+    pub(super) fn trait_region_environment(
         &self,
         owner: DefId,
         queries: &mut Queries<'_>,
@@ -176,6 +176,7 @@ impl Checker<'_> {
                 .assume(longer, shorter)
                 .map_err(|e| e.to_string())?;
         }
+        self.assume_trait_impl_inputs(owner, queries, &mut constraints)?;
         if let Some(ty) = self.facts.definitions[owner.0 as usize] {
             if function.is_some() {
                 let Some(Type::FunctionItem { signature, .. }) = self.facts.types.kind(ty) else {
@@ -200,6 +201,61 @@ impl Checker<'_> {
             }
         }
         Ok(constraints)
+    }
+
+    /// Impl input well-formedness implies lifetimes, never Copy or user-trait evidence.
+    fn assume_trait_impl_inputs(
+        &self,
+        owner: DefId,
+        queries: &mut Queries<'_>,
+        constraints: &mut Constraints<'_>,
+    ) -> Result<(), String> {
+        let Some(header) = self
+            .facts
+            .associated
+            .owner(owner)
+            .and_then(|id| self.facts.associated.get(id))
+            .and_then(|owner| {
+                self.facts
+                    .generics
+                    .implementations
+                    .as_ref()
+                    .and_then(|registry| registry.header(owner.self_definition))
+            })
+        else {
+            return Ok(());
+        };
+        let Bound::Trait(id) = header.predicate.bound else {
+            return Err("invalid implementation trait predicate".into());
+        };
+        let application = self
+            .facts
+            .types
+            .trait_application(id)
+            .ok_or("missing implementation trait application")?;
+        let arguments = self
+            .facts
+            .types
+            .arguments(application.arguments)
+            .ok_or("missing implementation trait arguments")?;
+        for ty in std::iter::once(header.predicate.ty).chain(arguments.filter_map(|argument| {
+            if let Argument::Type(ty) = argument {
+                Some(ty)
+            } else {
+                None
+            }
+        })) {
+            let implied = queries.symbolic_requirements(ty)?;
+            for &(a, b) in implied.regions {
+                constraints.assume(a, b).map_err(|e| e.to_string())?;
+            }
+            for &(id, shorter) in implied.parameters {
+                constraints
+                    .assume_parameter(id, shorter)
+                    .map_err(|e| e.to_string())?;
+            }
+        }
+        Ok(())
     }
 }
 

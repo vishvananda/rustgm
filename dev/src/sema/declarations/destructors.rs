@@ -3,7 +3,7 @@ mod coverage;
 mod headers;
 mod heads;
 mod receivers;
-use super::{Checker, Error, Type, regions};
+use super::{Checker, Error, Type};
 use crate::{sema::destructors::Implementation, types::outlives::Queries};
 
 pub(super) struct Pending {
@@ -40,23 +40,9 @@ impl Checker<'_> {
             let method = header
                 .method
                 .ok_or_else(|| self.error(key, "Drop impl is missing its drop method"))?;
-            let declared = self.declared_regions(key, self.item(key)?.generics)?;
-            let binder = self.regions.binder(None, declared.clone());
-            for parameter in declared {
-                self.regions
-                    .named(Some(binder), parameter)
-                    .map_err(|e| self.error(key, e))?;
-            }
-            let bounds = self.function_bounds(key, binder)?;
-            let context = regions::Context {
-                binder: Some(binder),
-                position: regions::Position::Impl,
-            };
-            self.declaration_parameters(header.self_definition, key, context)?;
-            self.drain(steps, limit)?;
-            self.node_work(header.target.file, header.target.node, context);
-            self.drain(steps, limit)?;
-            let target = self.ty(header.target)?;
+            let environment =
+                self.impl_header(header.self_definition, key, header.target, steps, limit)?;
+            let target = environment.schema.self_type;
             let Some(Type::Adt(item, arguments)) = self.facts.types.kind(target) else {
                 return Err(self.error(key, "Drop requires a local struct or enum target"));
             };
@@ -68,7 +54,7 @@ impl Checker<'_> {
                     header.self_definition,
                     item,
                     arguments,
-                    self.regions.count(binder),
+                    environment.schema.captures,
                 )
                 .map_err(|e| self.error(key, e))?;
             self.facts
@@ -79,36 +65,12 @@ impl Checker<'_> {
                     method,
                     target,
                     item,
-                    parameters: self.regions.count(binder),
-                    bounds,
+                    parameters: environment.schema.captures,
+                    bounds: environment.schema.bounds.clone(),
                     coverage,
                 })
                 .map_err(|e| self.error(key, e))?;
-            self.facts
-                .associated
-                .declare(
-                    header.self_definition,
-                    crate::sema::associated::Schema {
-                        self_type: target,
-                        captures: self.regions.count(binder),
-                        bounds: self
-                            .facts
-                            .destructors
-                            .self_type(header.self_definition)
-                            .ok_or_else(|| self.error(key, "missing Drop owner environment"))?
-                            .bounds
-                            .clone(),
-                    },
-                )
-                .map_err(|e| self.error(key, e))?;
-            self.owner_binders.insert(header.self_definition, binder);
-            self.complete(header.self_definition, key, target)?;
-            self.schedule_bounds(header.self_definition, context)?;
-            self.drain(steps, limit)?;
-            self.facts
-                .generics
-                .complete_environment(&mut self.facts.types, header.self_definition)
-                .map_err(|e| self.error(key, e))?;
+            self.complete_impl_owner(header.self_definition, key, environment, steps, limit)?;
             if self
                 .facts
                 .generics

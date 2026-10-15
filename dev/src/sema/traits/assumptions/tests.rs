@@ -1,7 +1,7 @@
 //! The assumption index must bound unrelated candidates without guessing unknown Self.
-use super::{Assumptions, Bound, Context, ItemId, Kind, Predicate, Primitive, Store};
+use super::{Assumptions, Bound, Context, ItemId, Predicate, Store};
 use crate::types::{
-    TypeId,
+    Kind, Primitive, TypeId,
     arguments::Argument,
     infer::{Domain, Instantiation},
     parameters::{Parameter, ParameterKind},

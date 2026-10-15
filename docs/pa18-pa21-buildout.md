@@ -3565,3 +3565,82 @@ Final compiler SHA256 is
 The validation receipt is `obj/pa19-work/binder-validation-v2.json`; prior snapshots,
 qualification records and all observations remain in `obj/pa19-work/binder-*` and
 `obj/perf/`. This checkpoint advances PA19; it does not complete PA19–PA21.
+
+
+## General trait implementation headers
+
+Local trait impl headers now retain typed Self, the complete trait application,
+owner identity and generic/lifetime environment. Inherent, builtin Drop and user
+trait impls share the same owner elaboration. Type and const parameters must
+constrain Self or a trait argument; a where bound alone is insufficient. Unused
+impl lifetimes remain legal. Trait safety, target and argument well-formedness,
+trait parameter requirements and supertrait obligations are checked explicitly.
+
+Prepared headers are distinct from validated implementations. This checkpoint
+accepts memberless local trait implementations whose contracts can already be
+proved. It does not select these impls as evidence in callers or dispatch trait
+methods. A trait or impl with associated members retains the conformance gate.
+General method conformance, implementation selection, dispatch and PA19 release
+remain required; PA20 and PA21 are also unfinished.
+
+Overlap indexing shares rigid subject keys with caller assumptions. Closed headers
+use a complete lifetime-erased application key, so thousands of distinct const
+arguments on the same Self do not create quadratic pair lists. Open candidates
+retain their matching rigid and wildcard buckets. A single existential equation
+context covers Self and every type/const argument, preserving repeated-variable
+correlation. Candidate-pair capacity is charged before extending storage. This
+structural test rejects compatible headers conservatively; predicate-sensitive
+coherence is still required in PA20. Lifetime erasure never grants body permission.
+
+An independently qualified nominal-input case exposed a missing source of lifetime
+assumptions. An impl's Self and type arguments now contribute their implied
+lifetime well-formedness facts to both header requirements and retained equality
+proofs. Equal lifetimes can satisfy a nominal trait argument equation; a one-way
+bound cannot. These inputs do not grant Copy or arbitrary user-trait bounds.
+
+Forty-seven source controls agree with pinned rustc across parameter constraints,
+primitive/reference/tuple/function targets, defaults, safety, contract requirements,
+lifetimes and complete-header overlap. Typed assertions retain actual owner
+parameter identities across Self and trait arguments. Two registry invariants
+check 4,096 distinct closed const applications without overlap probes and preserve
+lifetime-erased overlap candidates without publishing unvalidated evidence.
+
+The previous blanket-gate expectation for an empty user trait named Drop was
+updated to check separate user-impl and builtin-destructor identities. A new native
+control, independently executed by rustc and CPPGM, verifies that wrapping a real
+destructor-bearing field in a custom Drop marker still destroys the field exactly
+once. The full course run caught a changed diagnostic for the unsupported associated-
+type boundary. Associated type/const impls now retain their explicit early gate,
+before ordinary definition scheduling, preserving the existing text contract.
+No course fixtures or generated reference sidecars change.
+
+Validation passes 832 frontend tests in both debug and release. After restoring
+the associated-item diagnostic gate and factoring the safety query for Clippy,
+all 36 affected release tests and all 3,790 PA1–PA18 text oracles pass again.
+Clippy all/pedantic, formatting, the 538-file audit and 27 harness tests pass.
+Upstream and Reference integrity checks pass (24 fixtures and 126 files).
+The independent rustc sweep, 18 existing maintainer native groups, 1,126 course
+executions and three codegen controls pass. The new custom-Drop native control
+also passes on the final release binary. The sixteen declared PA13 runtime
+differences remain explicit. Lowering and the external backend bridge are unchanged.
+
+Eighteen frozen A/A and five-block ABBA jobs retain 468 observations; one repeat
+adds 26. Every source, binary and input hash and full/count output equality check
+passes. No local RustGM build, test or diagnostic probe overlaps timing. Ordinary
+functions, records, receivers, trait bounds and builtin Drop change median wall
+time by +0.6%, -0.9%, -0.4%, -1.9% and -1.3%; mixed blocks and calibration spreads
+of 3–6% do not establish stable improvements or regressions. Existing-workload
+median RSS differences range from -44 to +26 KiB. Trait-Drop's initial -16.8%
+median is unstable (blocks range from -16.8% to +8.8%); the retained repeat is
+-0.6%, so the initial observation is not a speedup claim.
+
+New same-binary 64/256/1,024-item workloads take 4.65/7.07/19.94 ms for distinct
+nominal Self types, 4.60/7.31/18.38 ms for distinct const arguments on one Self,
+6.79/15.08/47.13 ms for generic bounded headers and 6.50/15.91/53.35 ms for lifetime
+headers. These are measured scaling points on this host, not throughput guarantees.
+All 541 source/config/test files are archived under
+`obj/pa19-work/impl-headers-source-v2`. Final compiler SHA256 is
+`1a39b2007f5390a83a60735feb41be3d87cc46c016fe2244b4a6cd4aed756ee9`.
+The receipt is `obj/pa19-work/impl-headers-validation-v2.json`; qualification, prior
+snapshots, failed checks and measurements remain under `obj/pa19-work/impl-headers-*`
+and `obj/perf/`. This advances PA19 without declaring PA19–PA21 complete.

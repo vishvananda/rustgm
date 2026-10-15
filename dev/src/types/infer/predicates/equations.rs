@@ -5,6 +5,36 @@ use super::{
 use crate::types::parameters::predicates::Bound;
 
 impl Context {
+    /// Existential header compatibility, with lifetime proof deliberately deferred.
+    /// This overapproximation may establish disjointness, never body permissions.
+    /// # Errors
+    /// Rejects incompatible traits/arguments, malformed data and exhausted inference work.
+    pub fn equate_predicate_shapes(
+        &mut self,
+        store: &Store,
+        left: &Predicate,
+        right: &Predicate,
+    ) -> Result<(), Error> {
+        let (Requirement::Trait(a), Requirement::Trait(b)) =
+            (&left.requirement, &right.requirement)
+        else {
+            return Err(Error::InvalidIdentity);
+        };
+        if a.item != b.item || a.arguments.len() != b.arguments.len() {
+            return Err(Error::Mismatch);
+        }
+        self.account_work(1 + a.arguments.len())?;
+        self.equate_shape(store, left.subject, right.subject)?;
+        for (&a, &b) in a.arguments.iter().zip(&b.arguments) {
+            match (a, b) {
+                (Argument::Type(a), Argument::Type(b)) => self.equate_shape(store, a, b)?,
+                (Argument::Const(a), Argument::Const(b)) => self.equate_consts(a, b)?,
+                (Argument::Lifetime(_), Argument::Lifetime(_)) => {}
+                _ => return Err(Error::Mismatch),
+            }
+        }
+        Ok(())
+    }
     /// Import Self and every argument with one shared reachable-graph mapping.
     /// Failed candidate equations in this context cannot constrain the source.
     /// # Errors

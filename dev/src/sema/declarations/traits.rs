@@ -1,4 +1,5 @@
 //! Trait Self has its own identity; source generic parameter indices remain unchanged.
+mod implementations;
 use super::{Checker, Error, ItemId, Kind, NodeKey, Type, regions};
 use crate::{
     sema::{
@@ -73,9 +74,15 @@ impl Checker<'_> {
                 }
             ) && self
                 .facts
-                .associated
-                .schema(owner.self_definition)
+                .destructors
+                .self_type(owner.self_definition)
                 .is_none()
+                && !self
+                    .facts
+                    .generics
+                    .implementations
+                    .as_ref()
+                    .is_some_and(|registry| registry.is_validated(owner.self_definition))
             {
                 return Err(self.error(
                     owner.source,

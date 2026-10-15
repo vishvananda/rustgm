@@ -1,9 +1,6 @@
 //! Associated owners share the ordinary generic and lifetime declaration worklist.
 use super::{BinderId, Checker, DefId, Error, NodeKey, Type, TypeId, regions};
-use crate::{
-    resolve::model::DefKind,
-    sema::associated::{OwnerKind, Schema},
-};
+use crate::{resolve::model::DefKind, sema::associated::OwnerKind};
 
 impl Checker<'_> {
     pub(super) fn validate_method_receiver(
@@ -103,46 +100,13 @@ impl Checker<'_> {
             if unsafe_ || negative {
                 return Err(self.error(key, "inherent impls cannot be unsafe or negative"));
             }
-            let declared = self.declared_regions(key, self.item(key)?.generics)?;
-            let binder = self.regions.binder(None, declared.clone());
-            for parameter in declared {
-                self.regions
-                    .named(Some(binder), parameter)
-                    .map_err(|e| self.error(key, e))?;
-            }
-            let bounds = self.function_bounds(key, binder)?;
-            let context = regions::Context {
-                binder: Some(binder),
-                position: regions::Position::Impl,
-            };
-            self.declaration_parameters(owner.self_definition, key, context)?;
-            self.drain(steps, limit)?;
-            self.node_work(target.file, target.node, context);
-            self.drain(steps, limit)?;
-            let self_type = self.ty(target)?;
+            let header = self.impl_header(owner.self_definition, key, target, steps, limit)?;
+            let self_type = header.schema.self_type;
             if !matches!(self.facts.types.kind(self_type), Some(Type::Adt(..))) {
                 return Err(self.error(target, "inherent impl requires a local nominal type"));
             }
             self.inherent_parameters(owner.self_definition, key, self_type)?;
-            self.facts
-                .associated
-                .declare(
-                    owner.self_definition,
-                    Schema {
-                        self_type,
-                        captures: self.regions.count(binder),
-                        bounds,
-                    },
-                )
-                .map_err(|e| self.error(key, e))?;
-            self.owner_binders.insert(owner.self_definition, binder);
-            self.complete(owner.self_definition, key, self_type)?;
-            self.schedule_bounds(owner.self_definition, context)?;
-            self.drain(steps, limit)?;
-            self.facts
-                .generics
-                .complete_environment(&mut self.facts.types, owner.self_definition)
-                .map_err(|e| self.error(key, e))?;
+            self.complete_impl_owner(owner.self_definition, key, header, steps, limit)?;
         }
         for member in self.facts.associated.members() {
             let owner = self.facts.associated.owners()[member.owner.0 as usize];
