@@ -6,8 +6,15 @@ use crate::{
 };
 
 impl Checker<'_> {
+    fn item_parameters(&self, owner: DefId) -> &[crate::sema::generics::Parameter] {
+        self.facts
+            .generics
+            .parameters
+            .get(&owner)
+            .map_or(&[], Vec::as_slice)
+    }
     fn item_lifetime_count(&self, owner: DefId) -> usize {
-        self.facts.generics.parameters[&owner]
+        self.item_parameters(owner)
             .iter()
             .take_while(|p| matches!(p.argument, Argument::Lifetime(_)))
             .count()
@@ -64,7 +71,7 @@ impl Checker<'_> {
             })
             .count();
         let count = nodes.len() - lifetimes;
-        let parameters = &self.facts.generics.parameters[&owner];
+        let parameters = self.item_parameters(owner);
         let offset = self.item_lifetime_count(owner);
         if count != 0
             && (count + offset > parameters.len()
@@ -121,7 +128,12 @@ impl Checker<'_> {
         };
         let offset = self.item_lifetime_count(owner);
         let ast = &self.report.package.unit(key.file).configured.ast;
-        for parameter in self.facts.generics.parameters[&owner]
+        for parameter in self
+            .facts
+            .generics
+            .parameters
+            .get(&owner)
+            .map_or(&[][..], Vec::as_slice)
             .iter()
             .skip(ast.list(list).len() + offset)
             .filter(|p| p.default.is_none())
@@ -136,7 +148,7 @@ impl Checker<'_> {
             if matches!(self.kind(key), Kind::InferType) {
                 continue;
             }
-            match self.facts.generics.parameters[&owner][index + offset].argument {
+            match self.item_parameters(owner)[index + offset].argument {
                 Argument::Type(_) => {
                     self.annotation_holes(key, steps, limit, scan)?;
                     self.node_work(key.file, node, context);
@@ -167,13 +179,13 @@ impl Checker<'_> {
         else {
             return Err(self.error(key, "missing generic function signature"));
         };
-        let scheme = self
-            .facts
-            .lifetimes
-            .functions
-            .get(&owner)
-            .cloned()
-            .ok_or_else(|| self.error(key, "missing generic function lifetime scheme"))?;
+        let scheme = self.facts.lifetimes.functions.get(&owner).cloned();
+        let Some(scheme) = scheme else {
+            if self.facts.generics.has_parameters(owner) {
+                return Err(self.error(key, "missing generic function lifetime scheme"));
+            }
+            return Ok(());
+        };
         self.callable_template(key, owner, signature, &scheme)
     }
     pub(in super::super) fn complete_item_arguments(
@@ -199,7 +211,7 @@ impl Checker<'_> {
                 arguments.push(if matches!(self.kind(key), Kind::InferType) {
                     SourceArgument::Infer
                 } else {
-                    match self.facts.generics.parameters[&owner][index + offset].argument {
+                    match self.item_parameters(owner)[index + offset].argument {
                         Argument::Type(_) => SourceArgument::Type(key),
                         Argument::Const(id) => {
                             let ty =

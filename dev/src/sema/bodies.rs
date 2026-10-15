@@ -8,6 +8,7 @@ mod divergence;
 mod generics;
 mod lifetimes;
 mod matches;
+mod methods;
 mod nominals;
 mod pattern_constants;
 mod patterns;
@@ -941,7 +942,7 @@ impl Checker<'_> {
             Kind::Struct { path, fields, base } => {
                 return self.enter_struct(node, path, fields, base, expected);
             }
-            Kind::Path { .. } | Kind::Name(_) | Kind::Item(_) => {}
+            Kind::Path { .. } | Kind::Name(_) | Kind::Qualified { .. } | Kind::Item(_) => {}
             Kind::Let {
                 pattern,
                 ty,
@@ -1073,7 +1074,7 @@ impl Checker<'_> {
                 self.term(value)
             }
             Kind::Literal(index) => self.literal(node, index),
-            Kind::Path { .. } | Kind::Name(_) => {
+            Kind::Path { .. } | Kind::Name(_) | Kind::Qualified { .. } => {
                 let Some(Target::Definition(id)) =
                     self.facts.node(self.key(node)).and_then(|f| f.reference)
                 else {
@@ -1104,7 +1105,9 @@ impl Checker<'_> {
                 {
                     return self.generic_constructor(node, ty, variant);
                 }
-                if self.facts.generics.parameters.contains_key(&id) {
+                if self.facts.generics.parameters.contains_key(&id)
+                    || self.facts.methods.qualified.contains_key(&self.key(node))
+                {
                     return self.generic_function(node, id, ty);
                 }
                 let ty = self.function_item(node, id, ty)?;

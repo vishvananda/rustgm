@@ -91,6 +91,17 @@ Callable parameter lists validate an ordered declaration-owner path, including
 foreign, repeated and reordered parameter rejection. Keep anonymous and unused
 impl lifetime slots in the source proof environment.
 
+Index inherent functions once by canonical nominal owner and resolved name after
+signature elaboration. Qualified paths retain their resolved owner and typed
+prefix; explicit type qualification uses the ordinary annotation worklist.
+Selected methods enter ordinary function-item inference, template demand and
+lowering. The full callable parameter order includes inherited impl arguments,
+but only the method's own parameters consume its turbofish. Instantiate owner
+lifetime captures as fresh body regions, including unused captures, then equate
+the instantiated impl target with the typed prefix. Check inherited predicates
+as well as method predicates. A declaration or required trait signature alone
+does not authorize executable dispatch.
+
 Receiver syntax binds the whole value or reference. A reference directly to Self
 supplies the output-elision lifetime; nested reference receivers use ordinary
 input elision. Explicit receivers retain their terminal type and prove equality

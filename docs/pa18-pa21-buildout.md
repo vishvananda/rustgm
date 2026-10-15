@@ -2780,3 +2780,88 @@ were reverified. The candidate SHA256 is
 `45d7fb588e59e9dfda91f0dd884135c9bc2a8c8f96bd495c86bd6888be7e8ec3`.
 Validation, qualification, frozen sources and measurement receipts are under
 `obj/pa19-work/associated-resolution-*`; raw per-sample files are under `obj/perf/`.
+
+## Qualified inherent calls
+
+Qualified inherent function paths now feed ordinary function inference and
+executable instance demand. Supported prefixes include nominal paths, explicit
+`<Type>` paths, aliases, `Self`, explicit generic arguments and inference holes.
+The resolver retains the owner of an associated prefix and resolved suffix
+identities; declaration elaboration builds nominal/name buckets once from the
+shared inventory and typed impl targets. Method arguments are read from the
+method suffix, separately from the prefix's arguments.
+
+Call formation uses the callable's full ordered parameter list. Inherited impl
+type/const arguments are inferred by equating the instantiated impl target with
+the prefix. Only the method's own parameters consume written method arguments.
+Owner lifetime captures receive distinct fresh body regions, including unused
+captures, before own early-bound arguments. Inherited and method predicates pass
+through ordinary obligation checks. Selected function values, constants and
+calls reuse existing template substitution, ownership proofs and lowering.
+
+The maintainer corpus contains 23 accepted native programs covering value,
+shared and mutable receivers; function pointers; impl/method type and const
+parameters; aliases and explicit type prefixes; captured and unused lifetimes;
+inherited and own bounds; Self paths; and mixed inherited/own arguments.
+Eight independently rejected controls cover target mismatch, private access,
+failed impl/method Copy bounds, escaping borrows, explicit mutable-borrow conflicts
+and incorrectly supplying impl arguments as method arguments. A typed invariant
+checks that unused owner captures remain distinct nonstatic regions before
+instance lifetime erasure.
+
+This checkpoint deliberately supports only a unique inherent method in the
+nominal/name bucket. Multiple candidates diagnose the remaining selection and
+overlap boundary. Unused duplicate declarations are not yet checked for overlap.
+Dot-call autoderef/autoref, trait candidate visibility and fallback, user trait
+bounds, impl conformance and selected default bodies remain required work.
+PA19 stays planned; PA20 and PA21 remain required by the active goal.
+
+These programs exposed two earlier array defects. Semantic indexing now accepts
+an inferred const array length and publishes its canonical bound after solving.
+Lowering an empty array with a nonzero-sized element retains a typed address for
+the unreachable continuation after its unconditional bounds guard. It must still
+compile and panic, rather than fail compilation because the empty base has no
+storage. Two PA12 controls cover ordinary array reads and field writes; two PA18
+controls cover generic field indexing and the zero-length panic. Pinned rustc
+acceptance and runtime outcomes were checked before generating their oracles.
+
+Follow-up prefix probes also retain three open PA19 boundaries: omitted arguments
+on a generic alias, an alias to an enum variant sharing a name with an inherent
+function, and the corresponding explicit `<Enum>::Variant` path. Rustc accepts
+these controls, while this checkpoint rejects them. The ordinary `Enum::Variant`
+control remains accepted. Alias inference and variant precedence must be resolved
+when completing qualified selection; explicit generic alias arguments are the
+currently qualified method-call form. Evidence is under
+`obj/pa19-work/qualified-calls-prefix-corners-v1`.
+
+Validation passes all 778 frontend tests in debug and release, all 3,783 active
+text cases, sixteen maintainer native tests, 1,121 executable comparisons and
+three codegen-only comparisons. The sixteen existing PA13 runtime differences
+remain explicitly reported. Formatting, Clippy all/pedantic, the 488-file audit,
+27 harness tests, backend qualification and upstream/reference integrity checks
+pass. The four new fixtures have independently reviewed expected outcomes;
+no existing text-oracle bytes changed. PA12 and PA18 generation receipts refresh
+the source provenance for their newly generated suites.
+
+Fifteen immutable performance jobs retain 270 observations on CPU 2, each with
+A/A calibration and three paired ABBA blocks. Full and count outputs agree in
+both lanes. No RustGM builds or tests ran during measurement. Six controls compare
+the preceding resolver binary with this candidate: 4,096 ordinary functions
+(+0.2%), 4,096 generic records (-1.6%), 2,048 generic destructors (+0.8%), 2,048
+const-generic destructors (+0.02%), 1,024 method owners (-1.7%) and 2,048 methods
+sharing one impl (+1.1%). Identical-candidate controls vary by up to 2.8%; these
+observations do not establish a speedup or zero overhead.
+
+New demanded-call workloads use identical candidate binaries at 64/256/1,024
+calls. Candidate medians are 7.67/19.43/66.62 ms for distinct monomorphic owners,
+13.17/40.55/162.80 ms for generic methods sharing an impl, and
+11.38/33.56/128.66 ms for captured-lifetime owners including an unused capture.
+All benchmark inputs were independently accepted by the pinned rustc. These
+measure actual LowIR emission; they are not a claim of full method selection or
+an asymptotic proof from wall time.
+
+All 491 frozen source/config/test files, binaries and inputs were reverified.
+The candidate SHA256 is
+`9e57d6d33db3a005c00ee05a4e38518f80a2f723a803b808d3a2a4752b95a5fe`.
+Qualification, validation and measurement receipts remain under
+`obj/pa19-work/qualified-calls-*`, with every raw observation under `obj/perf/`.

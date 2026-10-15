@@ -141,6 +141,7 @@ impl Walker<'_> {
             Syntax::Literal(_)
             | Syntax::Name(_)
             | Syntax::Path { .. }
+            | Syntax::Qualified { .. }
             | Syntax::Continue(_)
             | Syntax::EmptyStatement
             | Syntax::Item(_) => {}

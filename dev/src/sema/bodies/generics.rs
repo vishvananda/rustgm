@@ -33,7 +33,7 @@ impl Checker<'_> {
         else {
             return Err(self.error(node, "missing generic callable template"));
         };
-        let parameters = self.facts.generics.parameters[&owner].clone();
+        let parameters = self.callable_parameters(node, owner)?;
         let mut arguments = self
             .facts
             .types
@@ -44,15 +44,25 @@ impl Checker<'_> {
             .map(Argument::Lifetime)
             .collect::<Vec<_>>();
         let mut bindings = Vec::with_capacity(parameters.len());
-        for (index, parameter) in parameters.iter().enumerate() {
-            let supplied = supplied
-                .get(index)
-                .copied()
-                .unwrap_or(SourceArgument::Infer);
-            let (id, argument) = self.inferred_argument(node, parameter.argument, supplied)?;
+        let mut own = 0;
+        for id in parameters {
+            let parameter = self
+                .facts
+                .types
+                .parameter(id)
+                .ok_or_else(|| self.error(node, "missing callable parameter"))?;
+            let supplied = if parameter.owner == item {
+                let argument = supplied.get(own).copied().unwrap_or(SourceArgument::Infer);
+                own += 1;
+                argument
+            } else {
+                SourceArgument::Infer
+            };
+            let argument = self.inferred_parameter(node, id, supplied)?;
             arguments.push(argument);
             bindings.push((id, argument));
         }
+        self.bind_method_owner(node, &arguments, &bindings)?;
         let signature = self
             .infer
             .instantiate(&mut self.facts.types, signature, &bindings)
@@ -65,17 +75,62 @@ impl Checker<'_> {
         self.call_types.generic.push((node, owner, term));
         Ok(term)
     }
+    fn callable_parameters(
+        &self,
+        node: NodeId,
+        owner: DefId,
+    ) -> Result<Vec<crate::types::parameters::ParameterId>, Error> {
+        if let Some(parameters) = self
+            .facts
+            .lifetimes
+            .callables
+            .generic_parameters(crate::types::ItemId(owner.0))
+        {
+            return Ok(parameters.to_vec());
+        }
+        if self.facts.generics.has_parameters(owner) {
+            return Err(self.error(node, "missing callable generic parameter order"));
+        }
+        Ok(Vec::new())
+    }
     pub(super) fn inferred_argument(
         &mut self,
         node: NodeId,
         formal: Canonical,
         supplied: SourceArgument,
     ) -> Result<(crate::types::parameters::ParameterId, Argument), Error> {
-        Ok(match formal {
+        let id = match formal {
             Canonical::Type(ty) => {
                 let Some(Type::Parameter(id)) = self.facts.types.kind(ty) else {
                     return Err(self.error(node, "missing rigid type parameter"));
                 };
+                id
+            }
+            Canonical::Const(constant) => {
+                let Some(ConstKind::Parameter(id)) = self.facts.types.const_kind(constant) else {
+                    return Err(self.error(node, "missing rigid const parameter"));
+                };
+                id
+            }
+            Canonical::Lifetime(_) => {
+                return Err(self.error(node, "late lifetime was retained as a type argument"));
+            }
+        };
+        Ok((id, self.inferred_parameter(node, id, supplied)?))
+    }
+    fn inferred_parameter(
+        &mut self,
+        node: NodeId,
+        id: crate::types::parameters::ParameterId,
+        supplied: SourceArgument,
+    ) -> Result<Argument, Error> {
+        let parameter = self
+            .facts
+            .types
+            .parameter(id)
+            .ok_or_else(|| self.error(node, "missing generic parameter"))?;
+        Ok(match parameter.kind {
+            ParameterKind::Type { .. } => {
                 let term = match supplied {
                     SourceArgument::Type(key) => {
                         let term = self.annotation(key.node)?;
@@ -86,17 +141,9 @@ impl Checker<'_> {
                         return Err(self.error(node, "type parameter requires a type argument"));
                     }
                 };
-                (id, Argument::Type(term))
+                Argument::Type(term)
             }
-            Canonical::Const(constant) => {
-                let Some(ConstKind::Parameter(id)) = self.facts.types.const_kind(constant) else {
-                    return Err(self.error(node, "missing rigid const parameter"));
-                };
-                let ty = self
-                    .facts
-                    .types
-                    .const_type(constant)
-                    .ok_or_else(|| self.error(node, "missing const parameter type"))?;
+            ParameterKind::Const { ty } => {
                 let term = match supplied {
                     SourceArgument::Const(id) => self.infer.known_const(&self.facts.types, id),
                     SourceArgument::Infer => self.infer.const_variable(&self.facts.types, ty),
@@ -105,10 +152,7 @@ impl Checker<'_> {
                     }
                 }
                 .map_err(|e| self.error(node, e))?;
-                (id, Argument::Const(term))
-            }
-            Canonical::Lifetime(_) => {
-                return Err(self.error(node, "late lifetime was retained as a type argument"));
+                Argument::Const(term)
             }
         })
     }
@@ -183,26 +227,25 @@ impl Checker<'_> {
                 .filter(|a| !matches!(a, Canonical::Lifetime(_)))
                 .collect::<Vec<_>>();
             let mut arguments = arguments.into_iter();
-            let parameters = self.facts.generics.parameters[&owner].clone();
-            for parameter in &parameters {
+            let parameters = self.callable_parameters(node, owner)?;
+            for id in parameters {
+                let parameter = self
+                    .facts
+                    .types
+                    .parameter(id)
+                    .ok_or_else(|| self.error(node, "missing inferred parameter"))?;
                 let argument = arguments
                     .next()
                     .ok_or_else(|| self.error(node, "missing inferred generic argument"))?;
                 if !matches!(
-                    (parameter.argument, argument),
-                    (Canonical::Type(_), Canonical::Type(_))
-                        | (Canonical::Const(_), Canonical::Const(_))
+                    (parameter.kind, argument),
+                    (ParameterKind::Type { .. }, Canonical::Type(_))
+                        | (ParameterKind::Const { .. }, Canonical::Const(_))
                 ) {
                     return Err(self.error(node, "inferred generic argument kind mismatch"));
                 }
-                if let (Canonical::Type(formal), Canonical::Type(actual)) =
-                    (parameter.argument, argument)
-                    && let Some(Type::Parameter(id)) = self.facts.types.kind(formal)
-                    && self
-                        .facts
-                        .types
-                        .parameter(id)
-                        .is_some_and(|p| matches!(p.kind, ParameterKind::Type { sized: true }))
+                if let (ParameterKind::Type { sized: true }, Canonical::Type(actual)) =
+                    (parameter.kind, argument)
                     && !self.body_shape(node, actual)?.sized
                 {
                     return Err(self.error(node, "generic type argument must be sized"));

@@ -159,10 +159,20 @@ pub enum Target {
 /// The namespace-resolved prefix and canonical names of the remaining segments.
 /// Semantic member selection consumes these facts without repeating path lookup.
 pub struct AssociatedPath {
+    pub owner: DefId,
     pub namespace: Namespace,
     pub scope: ScopeId,
     pub prefix: crate::syntax::ast::NodeId,
     pub suffix: Vec<(crate::syntax::ast::NodeId, NameId)>,
+}
+/// Explicit type qualification keeps canonical suffix names while type analysis
+/// elaborates the receiver and optional trait prefix.
+pub struct QualifiedPath {
+    pub namespace: Namespace,
+    pub scope: ScopeId,
+    pub ty: NodeId,
+    pub trait_path: Option<NodeId>,
+    pub suffix: Vec<(NodeId, NameId)>,
 }
 pub struct Reference {
     pub scope: ScopeId,
@@ -231,6 +241,7 @@ pub struct Resolution {
     pub definitions: Vec<Definition>,
     pub references: Vec<Reference>,
     pub associated_paths: HashMap<NodeKey, AssociatedPath>,
+    pub qualified_paths: HashMap<NodeKey, QualifiedPath>,
     pub imports: Vec<Import>,
     pub module_scopes: Vec<ScopeId>,
     pub node_scopes: HashMap<(ModuleId, NodeId), ScopeId>,

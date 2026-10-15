@@ -6,6 +6,7 @@ mod contracts;
 mod destructors;
 mod generics;
 mod lifetimes;
+mod method_paths;
 mod methods;
 mod receivers;
 mod traits;
@@ -51,6 +52,7 @@ enum Work {
     Bounds(DefId, regions::Context),
     ItemArguments(NodeKey, DefId),
     AliasVariant(NodeKey, DefId, regions::Context),
+    AssociatedPrefix(NodeKey, DefId, regions::Context),
     Generic(generics::Declaration),
     Default(generics::DefaultId, bool),
     PathArguments(NodeKey, DefId, regions::Context),
@@ -173,6 +175,7 @@ impl Checker<'_> {
         self.validate_destructors()?;
         self.validate_owner_bounds()?;
         self.validate_signatures()?;
+        self.index_inherent_methods()?;
         self.local_annotations(&mut steps, work_limit)?;
         super::constants::finish_discriminants(
             self.report,
@@ -213,6 +216,9 @@ impl Checker<'_> {
                 Work::Generic(declaration) => self.generic_declaration(declaration)?,
                 Work::Default(id, finish) => self.generic_default(id, finish)?,
                 Work::PathArguments(key, id, context) => self.path_arguments(key, id, context)?,
+                Work::AssociatedPrefix(key, owner, context) => {
+                    self.complete_associated_prefix(key, owner, context)?;
+                }
                 Work::Definition(id, finish) => self.definition(id, finish)?,
                 Work::Node(key, finish, context) => self.annotation(key, finish, context)?,
                 Work::Reference(key, region) => self.reference_type(key, region)?,
@@ -267,6 +273,15 @@ impl Checker<'_> {
                 unit.configured.ast.push_children(node, &mut nodes);
                 nodes[mark..].reverse();
                 contexts.resize(nodes.len(), context);
+                if self.schedule_method_path(
+                    NodeKey { file, node },
+                    context,
+                    steps,
+                    limit,
+                    &mut scan,
+                )? {
+                    continue;
+                }
                 if self.schedule_alias_variant(
                     NodeKey { file, node },
                     context,

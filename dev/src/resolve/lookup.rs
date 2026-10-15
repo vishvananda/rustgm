@@ -24,6 +24,8 @@ pub(crate) struct Observations {
 }
 pub(crate) enum Lookup {
     Found(Binding),
+    /// A member resolved directly in an associated scope still has a typed prefix.
+    Member(Binding, DefId, usize),
     Associated(DefId, usize),
     Missing,
 }
@@ -357,6 +359,12 @@ impl Resolver<'_> {
             }
             index += 1;
             if index == path.len() {
+                if check_final_privacy
+                    && self.facts.scopes[found_scope.0 as usize].associated
+                    && let Some(owner) = associated
+                {
+                    return Ok(Lookup::Member(binding, owner, index - 1));
+                }
                 return Ok(Lookup::Found(binding));
             }
             let definition = &self.facts.definitions[binding.target.0 as usize];
@@ -389,7 +397,9 @@ impl Resolver<'_> {
         namespace: Namespace,
     ) -> Result<Target, Error> {
         match found {
-            Lookup::Found(binding) => Ok(Target::Definition(binding.target)),
+            Lookup::Found(binding) | Lookup::Member(binding, ..) => {
+                Ok(Target::Definition(binding.target))
+            }
             Lookup::Associated(def, _) => Ok(Target::Associated(*def)),
             Lookup::Missing => {
                 let mut current = Some(c.scope);

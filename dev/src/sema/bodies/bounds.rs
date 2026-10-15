@@ -188,14 +188,26 @@ impl Checker<'_> {
         arguments: &[Argument],
         bindings: &[(ParameterId, Argument)],
     ) -> Result<(), Error> {
-        let Some(predicates) = self.facts.generics.predicates.get(&owner) else {
+        let predicates = self
+            .facts
+            .generics
+            .predicates_in_scope(owner)
+            .copied()
+            .collect::<Vec<_>>();
+        if predicates.is_empty() {
             return Ok(());
-        };
-        let predicates = predicates.clone();
+        }
         let mut regions = Vec::new();
         if let Some(scheme) = self.facts.lifetimes.functions.get(&owner) {
             regions.resize(scheme.total as usize, crate::types::RegionId::STATIC);
-            for ((_, index), argument) in scheme.early.iter().zip(arguments) {
+            let captures = scheme.captures as usize;
+            for (slot, argument) in regions.iter_mut().take(captures).zip(arguments) {
+                let Argument::Lifetime(region) = argument else {
+                    return Err(self.error(node, "missing captured bound argument"));
+                };
+                *slot = *region;
+            }
+            for ((_, index), argument) in scheme.early.iter().zip(arguments.iter().skip(captures)) {
                 let Argument::Lifetime(region) = argument else {
                     return Err(self.error(node, "missing early bound argument"));
                 };

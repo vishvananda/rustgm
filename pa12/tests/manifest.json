@@ -1695,6 +1695,36 @@
       "auxiliary": [
         "tests/spec/packages/modules/items.rs"
       ]
+    },
+    {
+      "path": "tests/spec/arrays/empty-array-index.rs",
+      "exit_status": 0,
+      "features": [
+        "pa12.arrays"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
+    },
+    {
+      "path": "tests/spec/arrays/empty-field-index.rs",
+      "exit_status": 0,
+      "features": [
+        "pa12.arrays"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "outcome": "panic"
+      }
     }
   ]
 }

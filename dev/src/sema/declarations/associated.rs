@@ -87,10 +87,7 @@ impl Checker<'_> {
             return Err(self.error(key, "enum variant is private"));
         }
         let target = binding.target;
-        if !self.partial_generic_path(prefix, owner, context)? {
-            let ty = self.path_type(prefix, owner, context)?;
-            self.store(prefix, ty)?;
-        }
+        self.complete_associated_prefix(prefix, owner, context)?;
         self.facts
             .node_mut(prefix)
             .ok_or_else(|| Error::at(prefix.file, 0, "missing alias prefix fact"))?
@@ -101,5 +98,17 @@ impl Checker<'_> {
             .reference = Some(Target::Definition(target));
         self.facts.generics.constructor_uses.insert(key, prefix);
         self.constructor(target)
+    }
+    pub(super) fn complete_associated_prefix(
+        &mut self,
+        prefix: NodeKey,
+        owner: DefId,
+        context: regions::Context,
+    ) -> Result<(), Error> {
+        if !self.partial_generic_path(prefix, owner, context)? {
+            let ty = self.path_type(prefix, owner, context)?;
+            self.store(prefix, ty)?;
+        }
+        Ok(())
     }
 }

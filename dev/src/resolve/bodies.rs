@@ -2,7 +2,7 @@
 use super::{
     index::{Context, Resolver},
     lookup::{Lookup, LookupMode},
-    model::{Access, DefKind, Definition, Namespace, Reference, Target},
+    model::{Access, DefId, DefKind, Definition, Namespace, Reference, Target},
     package::{Error, ModuleId},
     unit::NodeKey,
 };
@@ -159,6 +159,21 @@ impl Resolver<'_> {
                 trait_path,
                 path,
             } => {
+                let (_, names) = self.path_names(c, path)?;
+                let Kind::Path { segments, .. } = self.kind(c, path) else {
+                    return Err(self.error(c, node, "qualified suffix requires parsed segments"));
+                };
+                let segments = self.package.unit(c.file).configured.ast.list(segments);
+                self.facts.qualified_paths.insert(
+                    NodeKey { file: c.file, node },
+                    super::model::QualifiedPath {
+                        namespace: ns,
+                        scope: c.scope,
+                        ty,
+                        trait_path,
+                        suffix: segments.iter().copied().zip(names).collect(),
+                    },
+                );
                 self.visit(c, ty, Namespace::Type)?;
                 self.optional(c, trait_path, Namespace::Type)?;
                 // Associated suffixes are selected from typed receiver/trait facts later.
@@ -374,8 +389,8 @@ impl Resolver<'_> {
         }
         let found = self.lookup_path(c, node, absolute, &path, LookupMode::Use(ns), None)?;
         let target = self.target(c, node, &found, ns)?;
-        if let Lookup::Associated(_, start) = found {
-            self.associated_path(c, node, start, &path, ns)?;
+        if let Lookup::Associated(owner, start) | Lookup::Member(_, owner, start) = found {
+            self.associated_path(c, node, start, &path, ns, owner)?;
         }
         self.facts.references.push(Reference {
             scope: c.scope,
@@ -392,6 +407,7 @@ impl Resolver<'_> {
         start: usize,
         names: &[crate::support::names::NameId],
         namespace: Namespace,
+        owner: DefId,
     ) -> Result<(), Error> {
         let Kind::Path { segments, .. } = self.kind(c, node) else {
             return Err(self.error(c, node, "associated path requires parsed segments"));
@@ -408,6 +424,7 @@ impl Resolver<'_> {
         self.facts.associated_paths.insert(
             NodeKey { file: c.file, node },
             super::model::AssociatedPath {
+                owner,
                 namespace,
                 scope: c.scope,
                 prefix,

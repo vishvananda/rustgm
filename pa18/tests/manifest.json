@@ -6591,6 +6591,40 @@
         "kind": "execute",
         "outcome": "pass"
       }
+    },
+    {
+      "path": "tests/spec/operands/nominal-array-index.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.operands"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "Generic nominal field inference exposed by qualified method calls",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/operands/nominal-array-index-panic.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.operands"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "Generic nominal field inference exposed by qualified method calls",
+      "native": {
+        "kind": "execute",
+        "outcome": "panic"
+      }
     }
   ]
 }

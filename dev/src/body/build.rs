@@ -1249,7 +1249,7 @@ impl<'a> Builder<'a> {
                 self.value(value)?
             }
             Kind::Literal(_) => self.literal_value(node, ty)?,
-            Kind::Path { .. } | Kind::Name(_) => {
+            Kind::Path { .. } | Kind::Name(_) | Kind::Qualified { .. } => {
                 let value = self.path(node)?;
                 self.evaluate(node, ty, value)?
             }

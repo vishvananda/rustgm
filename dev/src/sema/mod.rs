@@ -10,6 +10,7 @@ pub mod generics;
 pub mod layout_view;
 pub mod lifetimes;
 pub mod members;
+pub mod methods;
 pub mod model;
 mod nominals;
 pub mod pattern_view;

@@ -427,7 +427,7 @@ impl Checker<'_> {
         let array = self.autoderef(node, self.term(value)?)?;
         let operation = match self.head(node, array)? {
             Some(Constructor::Array(length)) => Some(Operation::Index { length }),
-            Some(Constructor::ArrayTerm(_)) => {
+            Some(Constructor::ArrayTerm(_) | Constructor::ArrayInfer(_)) => {
                 self.pending_indexes.insert(node, array);
                 None
             }

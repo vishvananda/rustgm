@@ -229,6 +229,9 @@ impl Checker<'_> {
         owner: DefId,
         ty: TypeId,
     ) -> Result<TypeId, Error> {
+        if self.facts.associated.trait_owner(owner).is_some() {
+            return Err(self.error(node, "trait method calls require implementation selection"));
+        }
         if self.facts.destructors.method(owner).is_some() {
             return Err(self.error(
                 node,
@@ -244,7 +247,7 @@ impl Checker<'_> {
         else {
             return Ok(ty);
         };
-        let explicit = if self.facts.generics.parameters.contains_key(&owner) {
+        let explicit = if self.facts.generics.item_uses.contains_key(&self.key(node)) {
             self.facts
                 .generics
                 .item_uses
@@ -260,6 +263,10 @@ impl Checker<'_> {
             return Ok(ty);
         };
         let count = scheme.early.len();
+        let captures = scheme.captures as usize;
+        if captures != 0 && !self.facts.methods.qualified.contains_key(&self.key(node)) {
+            return Err(self.error(node, "method lifetime captures require a selected owner"));
+        }
         let mut mapping = vec![RegionId::STATIC; scheme.total as usize];
         for (ordinal, index) in scheme.late.iter().copied().enumerate() {
             mapping[usize::from(index)] = RegionId::bound(
@@ -272,32 +279,17 @@ impl Checker<'_> {
         let late = u32::try_from(scheme.late.len())
             .map_err(|_| self.error(node, "too many late lifetime slots"))?;
         let bounds = scheme.bounds.clone();
-        let declared_late = scheme.has_declared_late;
-        let mut arguments = Vec::with_capacity(count);
-        if let Some(list) = explicit {
-            let nodes = self
-                .report
-                .package
-                .unit(self.file)
-                .configured
-                .ast
-                .list(list);
-            if nodes.len() != count || (declared_late && count == 0 && !nodes.is_empty()) {
-                return Err(self.error(
-                    node,
-                    "explicit lifetime arguments must match early-bound parameters",
-                ));
-            }
-            for node in nodes {
-                let region = self.local_region(*node)?;
-                arguments.push(self.alias_region(*node, region)?);
-            }
-        } else {
-            for _ in 0..count {
-                arguments.push(self.body_region(node, BodyRegionOrigin::ItemArgument)?);
-            }
+        let mut arguments = Vec::with_capacity(captures + count);
+        for slot in mapping.iter_mut().take(captures) {
+            let region = self.body_region(node, BodyRegionOrigin::ItemArgument)?;
+            *slot = region;
+            arguments.push(region);
         }
-        for (index, argument) in early.into_iter().zip(arguments.iter().copied()) {
+        arguments.extend(self.early_item_arguments(node, explicit, count)?);
+        for (index, argument) in early
+            .into_iter()
+            .zip(arguments.iter().copied().skip(captures))
+        {
             mapping[usize::from(index)] = argument;
         }
         self.item_bounds(node, &mapping, &bounds)?;
@@ -324,6 +316,38 @@ impl Checker<'_> {
                 signature,
             })
             .map_err(|e| self.error(node, e))
+    }
+    fn early_item_arguments(
+        &mut self,
+        node: NodeId,
+        explicit: Option<crate::syntax::ast::List>,
+        count: usize,
+    ) -> Result<Vec<RegionId>, Error> {
+        let mut arguments = Vec::with_capacity(count);
+        if let Some(list) = explicit {
+            let nodes = self
+                .report
+                .package
+                .unit(self.file)
+                .configured
+                .ast
+                .list(list);
+            if nodes.len() != count {
+                return Err(self.error(
+                    node,
+                    "explicit lifetime arguments must match early-bound parameters",
+                ));
+            }
+            for node in nodes {
+                let region = self.local_region(*node)?;
+                arguments.push(self.alias_region(*node, region)?);
+            }
+        } else {
+            for _ in 0..count {
+                arguments.push(self.body_region(node, BodyRegionOrigin::ItemArgument)?);
+            }
+        }
+        Ok(arguments)
     }
     fn item_bounds(
         &mut self,

@@ -1,0 +1,260 @@
+//! Qualified inherent paths consume typed owner buckets before body inference.
+use super::{Checker, DefId, DefKind, Error, Kind, NodeId, NodeKey, Target, Type, Work, regions};
+use crate::{
+    resolve::{
+        model::{Access, Namespace, ScopeId},
+        names::NameId,
+    },
+    sema::{associated::OwnerKind, methods::Qualified},
+    types::ItemId,
+};
+
+struct Path {
+    prefix: NodeKey,
+    suffix: NodeKey,
+    owner: Option<DefId>,
+    nominal: ItemId,
+    name: NameId,
+    scope: ScopeId,
+}
+
+impl Checker<'_> {
+    pub(super) fn index_inherent_methods(&mut self) -> Result<(), Error> {
+        for member in self.facts.associated.members() {
+            let owner = self.facts.associated.get(member.owner).ok_or_else(|| {
+                Error::at(crate::resolve::unit::FileId(0), 0, "invalid method owner")
+            })?;
+            if !matches!(
+                owner.kind,
+                OwnerKind::Impl {
+                    trait_type: None,
+                    ..
+                }
+            ) {
+                continue;
+            }
+            let definition = &self.report.resolution.definitions[member.definition.0 as usize];
+            if definition.kind != DefKind::Function {
+                continue;
+            }
+            let schema = self
+                .facts
+                .associated
+                .schema(member.definition)
+                .ok_or_else(|| self.error(owner.source, "missing inherent owner schema"))?;
+            let Some(Type::Adt(nominal, _)) = self.facts.types.kind(schema.self_type) else {
+                return Err(self.error(owner.source, "missing inherent nominal target"));
+            };
+            self.facts
+                .methods
+                .inherent
+                .entry((nominal, definition.name))
+                .or_default()
+                .push(member.definition);
+        }
+        Ok(())
+    }
+
+    pub(super) fn schedule_method_path(
+        &mut self,
+        key: NodeKey,
+        context: regions::Context,
+        steps: &mut usize,
+        limit: usize,
+        scan: &mut Vec<NodeId>,
+    ) -> Result<bool, Error> {
+        let path = if self.report.resolution.qualified_paths.contains_key(&key) {
+            self.explicit_method_path(key, context, steps, limit, scan)?
+        } else {
+            self.named_method_path(key)
+        };
+        let Some(path) = path else { return Ok(false) };
+        self.complete_method_path(key, &path, context, steps, limit, scan)
+    }
+
+    fn named_method_path(&self, key: NodeKey) -> Option<Path> {
+        match self.facts.node(key)?.reference? {
+            Target::Associated(_) => {}
+            Target::Definition(id)
+                if self.report.resolution.definitions[id.0 as usize].kind == DefKind::Function => {}
+            _ => return None,
+        }
+        let path = self.report.resolution.associated_paths.get(&key)?;
+        let Type::Adt(nominal, _) = self
+            .facts
+            .types
+            .kind(self.facts.definitions[path.owner.0 as usize]?)?
+        else {
+            return None;
+        };
+        if path.namespace != Namespace::Value || path.suffix.len() != 1 {
+            return None;
+        }
+        Some(Path {
+            prefix: NodeKey {
+                node: path.prefix,
+                ..key
+            },
+            suffix: NodeKey {
+                node: path.suffix[0].0,
+                ..key
+            },
+            owner: Some(path.owner),
+            nominal,
+            name: path.suffix[0].1,
+            scope: path.scope,
+        })
+    }
+
+    fn explicit_method_path(
+        &mut self,
+        key: NodeKey,
+        context: regions::Context,
+        steps: &mut usize,
+        limit: usize,
+        scan: &mut Vec<NodeId>,
+    ) -> Result<Option<Path>, Error> {
+        let Some(path) = self.report.resolution.qualified_paths.get(&key) else {
+            return Ok(None);
+        };
+        if path.namespace != Namespace::Value || path.trait_path.is_some() || path.suffix.len() != 1
+        {
+            return Ok(None);
+        }
+        let prefix = NodeKey {
+            node: path.ty,
+            ..key
+        };
+        let suffix = NodeKey {
+            node: path.suffix[0].0,
+            ..key
+        };
+        let (name, scope) = (path.suffix[0].1, path.scope);
+        self.annotation_holes(prefix, steps, limit, scan)?;
+        self.node_work(prefix.file, prefix.node, context);
+        self.drain(steps, limit)?;
+        let nominal = self
+            .nominal_prefix(prefix)
+            .ok_or_else(|| self.error(key, "qualified method requires a local nominal prefix"))?;
+        Ok(Some(Path {
+            prefix,
+            suffix,
+            owner: None,
+            nominal,
+            name,
+            scope,
+        }))
+    }
+
+    fn nominal_prefix(&self, mut key: NodeKey) -> Option<ItemId> {
+        loop {
+            let fact = self.facts.node(key)?;
+            let ty = fact.ty.or_else(|| match fact.reference {
+                Some(Target::Definition(id)) => self.facts.definitions[id.0 as usize],
+                _ => None,
+            });
+            if let Some(Type::Adt(item, _)) = ty.and_then(|ty| self.facts.types.kind(ty)) {
+                return Some(item);
+            }
+            key.node = match self.kind(key) {
+                Kind::Type {
+                    flavor: crate::syntax::ast::TypeFlavor::Path,
+                    elements,
+                } => {
+                    let [node] = self
+                        .report
+                        .package
+                        .unit(key.file)
+                        .configured
+                        .ast
+                        .list(elements)
+                    else {
+                        return None;
+                    };
+                    *node
+                }
+                Kind::Group(node) | Kind::Attributed { value: node, .. } => node,
+                _ => return None,
+            };
+        }
+    }
+
+    fn complete_method_path(
+        &mut self,
+        key: NodeKey,
+        path: &Path,
+        context: regions::Context,
+        steps: &mut usize,
+        limit: usize,
+        scan: &mut Vec<NodeId>,
+    ) -> Result<bool, Error> {
+        let Some(candidates) = self.facts.methods.inherent.get(&(path.nominal, path.name)) else {
+            return Ok(false);
+        };
+        let [method] = candidates.as_slice() else {
+            return Err(self.error(
+                key,
+                "multiple inherent candidates require overlap and selection proofs",
+            ));
+        };
+        let method = *method;
+        let definition = &self.report.resolution.definitions[method.0 as usize];
+        let module = self.report.resolution.scopes[path.scope.0 as usize].module;
+        if let Access::Within(ancestor) = definition.access
+            && !self.report.package.is_descendant(module, ancestor)
+        {
+            return Err(self.error(key, "inherent method is private"));
+        }
+        let implementation = self
+            .facts
+            .associated
+            .owner(method)
+            .and_then(|id| self.facts.associated.get(id))
+            .ok_or_else(|| self.error(key, "missing selected method owner"))?
+            .self_definition;
+        let prefix = path.prefix;
+        if let Some(owner) = path.owner {
+            self.facts
+                .node_mut(prefix)
+                .ok_or_else(|| Error::at(prefix.file, 0, "missing method prefix fact"))?
+                .reference = Some(Target::Definition(owner));
+            if matches!(
+                self.report.resolution.definitions[owner.0 as usize].kind,
+                DefKind::TypeAlias | DefKind::SelfType
+            ) {
+                self.annotation_holes(prefix, steps, limit, scan)?;
+                self.work
+                    .push(Work::AssociatedPrefix(prefix, owner, context));
+                self.work.push(Work::PathArguments(prefix, owner, context));
+            } else if self.facts.generics.parameters.contains_key(&owner) {
+                self.schedule_item_arguments(prefix, owner, context, steps, limit, scan)?;
+            } else {
+                self.node_work(prefix.file, prefix.node, context);
+            }
+            self.drain(steps, limit)?;
+        }
+        self.facts.methods.qualified.insert(
+            key,
+            Qualified {
+                prefix,
+                nominal: path.nominal,
+                implementation,
+                annotation: path.owner.is_none(),
+            },
+        );
+        self.facts
+            .node_mut(key)
+            .ok_or_else(|| Error::at(key.file, 0, "missing method path fact"))?
+            .reference = Some(Target::Definition(method));
+        self.schedule_item_arguments(path.suffix, method, context, steps, limit, scan)?;
+        self.drain(steps, limit)?;
+        let arguments = self
+            .facts
+            .generics
+            .item_uses
+            .remove(&path.suffix)
+            .ok_or_else(|| self.error(key, "missing selected method arguments"))?;
+        self.facts.generics.item_uses.insert(key, arguments);
+        Ok(true)
+    }
+}

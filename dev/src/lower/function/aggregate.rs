@@ -247,12 +247,14 @@ impl Lower<'_, '_> {
                     return Err("indexed bound differs from canonical layout");
                 }
                 if retained {
-                    Some(self.indexed(
-                        base.ok_or("nonzero array has no storage")?,
-                        index,
-                        stride,
-                        leaf.align,
-                    )?)
+                    let base = match base {
+                        Some(base) => base,
+                        // The guard always panics for an empty array. Its
+                        // unreachable continuation still needs a typed address.
+                        None if length == 0 => self.zero_backing(base_type)?,
+                        None => return Err("nonzero array has no storage"),
+                    };
+                    Some(self.indexed(base, index, stride, leaf.align)?)
                 } else {
                     None
                 }
