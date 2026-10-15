@@ -594,6 +594,17 @@ impl Checker<'_> {
         self.validate_values()?;
         self.publish_reference_alignment()?;
         self.finish_patterns()?;
+        // Canonical nominal checks may allocate universal aliases after the main
+        // inference graph has finished. Publish them under this body's identity.
+        self.facts.region_equalities.extend(
+            std::mem::take(&mut self.infer.region_equalities)
+                .into_iter()
+                .map(|(left, right)| RegionEquality {
+                    body: body_key,
+                    left,
+                    right,
+                }),
+        );
         for node in self.touched.drain(..) {
             self.terms[self.file.0 as usize][node.0 as usize] = None;
             self.diverges[node.0 as usize] = false;

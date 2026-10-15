@@ -254,9 +254,29 @@ bound alone does not constrain it. Validate target and argument well-formedness,
 trait requirements and safety under the impl's own environment. Input types imply
 lifetime well-formedness facts, never new Copy or user-trait assumptions.
 
-Keep prepared headers separate from validated implementations. A schema alone
-cannot supply selection evidence; member-bearing implementations require matching
-associated declarations and signature conformance. Retain overrides separately
+Keep prepared headers separate from validated implementations. Declaration proofs
+may use prepared headers as conditional rules, through an explicit declaration-only
+selection entry point. This permits closed bounds, forward supertraits and cyclic
+declaration well-formedness without depending on source order. Every header still
+passes coherence, contract and member validation before body analysis receives the
+facts; every executable body is checked before lowering. An active cycle of impl
+conditions remains insufficient evidence. Select using the original declared bounds,
+not the additional supertrait assumptions derived from those bounds, which can
+otherwise manufacture circular conditions. Preserve their prefix before elaboration.
+
+Normalize a declaration's captured lifetime binder to fresh free aliases before
+inference, including the same substitution in its immutable assumption environment.
+Nested callable binders remain local. Reserve disjoint lifetime intervals for proofs
+contributing to the same owner and after existing method-conformance existentials.
+Retain alias equations, selected impl equations, outlives and type-outlives obligations
+together. Closed bounds use no caller assumptions and cannot justify themselves.
+Fields, parameter defaults, signatures and initializer types all retain their proofs.
+Drop coverage maps the complete proof back from nominal to impl parameter coordinates,
+while unused impl lifetimes remain existential. Body checks that allocate aliases
+after inference completion publish their equations under that same body's identity.
+
+Member-bearing implementations require matching associated declarations and signature
+conformance. Retain overrides separately
 from default declaration identities; executable demand must dispatch through the
 selected implementation. Index overlap candidates by trait and
 rigid subject, then by complete lifetime-erased application for closed headers.

@@ -31,11 +31,12 @@ struct Group {
 }
 impl Checker<'_> {
     fn nominal_defaults(&mut self) -> Result<(), Error> {
-        let mut proof = crate::sema::nominals::Proof::new(None);
         for index in 0..self.nominals.entries.len() {
             let item = self.nominals.entries[index].item;
             let key = self.nominals.entries[index].key;
+            let mut proof = self.declaration_proof(DefId(item.0), None);
             self.parameter_defaults(DefId(item.0), key, &mut proof)?;
+            self.retain_trait_proof(DefId(item.0), key, &mut proof);
         }
         Ok(())
     }

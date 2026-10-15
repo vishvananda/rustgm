@@ -3,6 +3,7 @@ pub(super) mod assumptions;
 pub(super) mod conformance;
 mod heads;
 pub(super) mod implementations;
+pub(super) mod obligations;
 pub(super) mod selection;
 use super::{generics::Parameter, generics::Predicate as Located, generics::parameter_id};
 use crate::types::{

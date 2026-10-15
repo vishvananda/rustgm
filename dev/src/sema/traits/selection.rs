@@ -1,7 +1,8 @@
-//! Complete trait proofs select validated impls and retain their lifetime obligations.
+//! Explicit declaration and validated views share trait proofs and lifetime obligations.
 mod instantiation;
 mod search;
 use super::assumptions::{Assumptions, Selection as Assumed};
+use super::implementations::Availability;
 use crate::{
     resolve::model::DefId,
     sema::model::Declarations,
@@ -47,6 +48,27 @@ pub(in crate::sema) fn select(
     goal: &Goal,
     caller: Caller<'_>,
 ) -> Result<Selection, String> {
+    select_from(facts, context, goal, caller, Availability::Validated)
+}
+
+/// Provisional declaration proofs cannot authorize executable operations. Every
+/// header's contract, members and body must pass the ordinary validation pipeline.
+pub(in crate::sema) fn select_declaration(
+    facts: &mut Declarations,
+    context: &mut Context,
+    goal: &Goal,
+    caller: Caller<'_>,
+) -> Result<Selection, String> {
+    select_from(facts, context, goal, caller, Availability::Declarations)
+}
+
+fn select_from(
+    facts: &mut Declarations,
+    context: &mut Context,
+    goal: &Goal,
+    caller: Caller<'_>,
+    availability: Availability,
+) -> Result<Selection, String> {
     match caller
         .assumptions
         .select(&facts.types, context, goal)
@@ -67,7 +89,7 @@ pub(in crate::sema) fn select(
     if facts.generics.implementations.is_none() {
         return Ok(Selection::Absent);
     }
-    search::prove(facts, context, goal, caller)
+    search::prove(facts, context, goal, caller, availability)
 }
 
 fn inference(error: infer::Error) -> String {

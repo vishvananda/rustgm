@@ -34,6 +34,35 @@ struct TraitAssumptions {
     constants: std::collections::HashSet<ParameterId>,
 }
 impl Environment {
+    /// Preserve the same immutable permissions while replacing their captured
+    /// lifetime binder. Inference consumes free aliases, including in callables.
+    pub(crate) fn substitute_regions(
+        &self,
+        types: &mut Store,
+        fold: &mut crate::types::substitute::Bound,
+    ) -> Result<Self, &'static str> {
+        let mut result = self.clone();
+        if let Some(assumptions) = &mut result.assumptions {
+            assumptions.predicates = assumptions
+                .predicates
+                .drain()
+                .map(|(ty, abilities)| Ok((fold.apply(types, ty)?, abilities)))
+                .collect::<Result<_, &'static str>>()?;
+            assumptions.sized = assumptions
+                .sized
+                .drain()
+                .map(|ty| fold.apply(types, ty))
+                .collect::<Result<_, _>>()?;
+        }
+        if let Some(traits) = &mut result.traits {
+            for predicate in &mut traits.predicates {
+                *predicate = fold.predicate(types, *predicate)?;
+            }
+            traits.unique = traits.predicates.iter().copied().collect();
+        }
+        Ok(result)
+    }
+
     /// Include every type parameter in scope, even when it has no bounds.
     /// Repeated assumptions are combined; parameter identity includes its owner.
     ///

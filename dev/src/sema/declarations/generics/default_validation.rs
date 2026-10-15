@@ -13,11 +13,12 @@ use std::collections::HashMap;
 
 impl Checker<'_> {
     pub(in super::super) fn trait_defaults(&mut self) -> Result<(), Error> {
-        let mut proof = Proof::new(None);
         for index in 0..self.facts.associated.owners().len() {
             let owner = self.facts.associated.owners()[index];
             if let crate::sema::associated::OwnerKind::Trait { definition, .. } = owner.kind {
+                let mut proof = self.declaration_proof(definition, None);
                 self.parameter_defaults(definition, owner.source, &mut proof)?;
+                self.retain_trait_proof(definition, owner.source, &mut proof);
             }
         }
         Ok(())

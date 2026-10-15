@@ -56,10 +56,16 @@ impl Checker<'_> {
                 continue;
             }
             if matches!(predicate.value.bound, Bound::Trait(_)) {
-                return Err(self.error(
-                    predicate.source,
-                    "closed trait bounds require an implementation proof",
-                ));
+                if !proof
+                    .prove_closed_trait(&mut self.facts, predicate.value)
+                    .map_err(|e| self.error(predicate.source, e))?
+                {
+                    return Err(self.error(
+                        predicate.source,
+                        "closed trait bounds require an implementation proof",
+                    ));
+                }
+                continue;
             }
             let valid = if predicate.value.bound == Bound::Sized {
                 self.facts.types.is_sized(ty) == Some(true)

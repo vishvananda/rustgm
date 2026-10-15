@@ -30,6 +30,7 @@ struct Node {
 }
 struct Search<'a> {
     caller: Caller<'a>,
+    availability: super::Availability,
     nodes: Vec<Node>,
     active: HashSet<Predicate>,
     completed: HashMap<Predicate, usize>,
@@ -44,11 +45,13 @@ pub(super) fn prove(
     context: &mut Context,
     goal: &Goal,
     caller: Caller<'_>,
+    availability: super::Availability,
 ) -> Result<Selection, String> {
     let builtins = crate::sema::nominals::Proof::new(caller.environment.cloned());
     let first = Frame::new(facts, context, goal, caller.first_region)?;
     let mut search = Search {
         caller,
+        availability,
         builtins,
         nodes: Vec::new(),
         active: HashSet::new(),
@@ -234,7 +237,12 @@ impl Search<'_> {
             .implementations
             .as_mut()
             .ok_or("missing impl registry")?
-            .candidates(&mut facts.types, &mut frame.context, &frame.goal)
+            .candidates(
+                &mut facts.types,
+                &mut frame.context,
+                &frame.goal,
+                self.availability,
+            )
             .map_err(inference)?;
         Ok(Action::Continue)
     }

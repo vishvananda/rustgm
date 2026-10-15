@@ -2,7 +2,7 @@
 use super::methods::Members;
 use super::{Checker, DefId, Error, NodeKey};
 use crate::{
-    sema::{nominals::Proof, traits::implementations::overlap},
+    sema::traits::implementations::overlap,
     types::{
         outlives::Queries,
         parameters::predicates::{Bound, Predicate},
@@ -79,7 +79,7 @@ impl Checker<'_> {
             .requirements(&mut self.facts.types, predicate)
             .map_err(|e| self.error(source, e))?;
         let environment = self.facts.generics.environments.get(&owner).cloned();
-        let mut proof = Proof::new(environment);
+        let mut proof = self.declaration_proof(owner, environment);
         for ty in std::iter::once(predicate.ty).chain(requirements.types.iter().copied()) {
             if !proof
                 .check(&mut self.facts, ty)
@@ -101,7 +101,7 @@ impl Checker<'_> {
                 ));
             }
         }
-        self.retain_trait_equalities(owner, source, &mut proof);
+        self.retain_trait_proof(owner, source, &mut proof);
         let mut queries = Queries::new(
             &self.facts.types,
             &self.facts.lifetimes.nominal_requirements,

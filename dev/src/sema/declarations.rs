@@ -76,7 +76,7 @@ struct Signature {
     unsafe_: bool,
 }
 struct Checker<'a> {
-    trait_equalities: trait_regions::Equalities,
+    trait_proofs: trait_regions::Proofs,
     method_trait_environments: Option<
         std::collections::HashMap<NodeKey, std::sync::Arc<super::traits::assumptions::Assumptions>>,
     >,
@@ -121,7 +121,7 @@ pub fn analyze(report: &Report) -> Result<Declarations, Error> {
         ));
     }
     let mut checker = Checker {
-        trait_equalities: trait_regions::Equalities::default(),
+        trait_proofs: trait_regions::Proofs::default(),
         method_environments: None,
         method_trait_environments: None,
         nominals: aggregates::Pending::default(),

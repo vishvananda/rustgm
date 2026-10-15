@@ -80,7 +80,12 @@ pub(super) fn instantiate(
             });
         }
     }
-    predicates.extend(facts.generics.predicates_in_scope(owner).map(|p| p.value));
+    predicates.extend(
+        facts
+            .generics
+            .declared_predicates_in_scope(owner)
+            .map(|p| p.value),
+    );
     let mut substitution =
         Instantiation::new(context, &facts.types, &bindings).map_err(inference)?;
     let predicate = fold.predicate(&mut facts.types, predicate)?;

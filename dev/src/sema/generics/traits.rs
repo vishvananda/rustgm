@@ -52,10 +52,11 @@ impl Generics {
             }
         }
         if work.len() > initial {
-            self.predicates
+            let predicates = self.predicates.entry(owner).or_default();
+            self.declared_predicate_counts
                 .entry(owner)
-                .or_default()
-                .extend(work.drain(initial..));
+                .or_insert(predicates.len());
+            predicates.extend(work.drain(initial..));
         }
         Ok(())
     }

@@ -70,13 +70,36 @@ fn unrelated_closed_arguments_do_not_create_overlap_probes()
     let goal = context.instantiate_predicate(&mut store, predicate, &mut substitution)?;
     assert!(
         registry
-            .candidates(&mut store, &mut context, &goal)?
+            .candidates(
+                &mut store,
+                &mut context,
+                &goal,
+                super::Availability::Validated
+            )?
             .is_empty()
     );
+    let before = context.steps;
+    assert_eq!(
+        registry.candidates(
+            &mut store,
+            &mut context,
+            &goal,
+            super::Availability::Declarations
+        )?,
+        [owner]
+    );
+    assert!(context.steps - before < 100);
+    assert!(!registry.is_validated(owner));
+    assert_eq!(registry.validated().count(), 0);
     registry.complete(owner, Vec::new())?;
     let before = context.steps;
     assert_eq!(
-        registry.candidates(&mut store, &mut context, &goal)?,
+        registry.candidates(
+            &mut store,
+            &mut context,
+            &goal,
+            super::Availability::Validated
+        )?,
         [owner]
     );
     assert!(context.steps - before < 100, "{}", context.steps - before);

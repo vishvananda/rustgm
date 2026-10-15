@@ -1,16 +1,13 @@
 //! Trait late lifetimes are universal; an impl may choose compatible call-time instantiations.
 use super::{Contract, Declarations};
 use crate::types::{
-    Kind,
-    outlives::{Pair, Queries},
-    parameters::predicates::Bound,
-    relations::Constraints,
+    Kind, outlives::Queries, parameters::predicates::Bound, relations::Constraints,
 };
 
 pub(super) fn prove(
     facts: &Declarations,
     contract: &Contract,
-    equalities: &[Pair],
+    evidence: Option<&crate::sema::traits::obligations::Obligations>,
 ) -> Result<(), String> {
     let mut constraints = Constraints::new(
         &facts.types,
@@ -45,9 +42,8 @@ pub(super) fn prove(
     for &(a, b) in &contract.required_regions {
         constraints.outlives(a, b, 0).map_err(|e| e.to_string())?;
     }
-    for &(a, b) in equalities {
-        constraints.outlives(a, b, 0).map_err(|e| e.to_string())?;
-        constraints.outlives(b, a, 0).map_err(|e| e.to_string())?;
+    if let Some(evidence) = evidence {
+        evidence.require(&mut constraints, &mut queries)?;
     }
     for predicate in &contract.obligations {
         if let Bound::Outlives(shorter) = predicate.bound {

@@ -50,11 +50,23 @@ pub(in crate::sema) fn check(
     shape
         .equate_shape(&facts.types, actual, expected)
         .map_err(|e| e.to_string())?;
-    let mut proof = Proof::new(Some(Arc::clone(&contract.environment)));
+    let first = contract
+        .variables
+        .iter()
+        .map(|region| region.0)
+        .max()
+        .unwrap_or(0)
+        .checked_add(1)
+        .ok_or("method conformance region identity space exhausted")?;
+    let mut proof = Proof::for_declaration(
+        Some(Arc::clone(&contract.environment)),
+        contract.universals,
+        first,
+    );
     for &obligation in &contract.obligations {
         if !matches!(obligation.bound, Bound::Outlives(_)) && !proof.prove(facts, obligation)? {
             return Err("implementation method imposes a stronger generic requirement".into());
         }
     }
-    regions::prove(facts, &contract, &proof.take_trait_equalities())
+    regions::prove(facts, &contract, proof.take_trait_proof().as_ref())
 }

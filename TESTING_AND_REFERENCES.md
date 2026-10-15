@@ -200,6 +200,15 @@ The generic constructor/destructor boundaries moved from PA12/PA17 with unchange
 input bytes and newly qualified accepted oracles. Root independent/native targets
 include PA18. See `docs/pa18-validation.md` for the feature ledger and release gates.
 
+PA19 declaration impl proofs have maintainer coverage in
+`dev/tests/trait_bounds/declarations.rs`: closed bounds, source order, cyclic
+well-formedness, invalid headers and bodies, method conformance, nested callable
+lifetimes, initializer/default types and Drop coverage. Every source control is
+independently checked with pinned rustc; four executable programs also compare
+RustGM/CPPGM with rustc. Function-item controls verify that an already-checked
+signature keeps its own binders while item substitutions still satisfy declared
+bounds. These tests do not activate the planned PA19 course suite.
+
 ## Placement and provenance
 
 Every `.rs` fixture under an active assignment's tests directory must be in its

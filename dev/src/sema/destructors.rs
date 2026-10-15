@@ -90,7 +90,7 @@ pub(super) fn check_bounds(
     assumptions: &crate::types::outlives::Requirements<'_>,
     types: &crate::types::Store,
     predicates: impl Iterator<Item = crate::types::parameters::predicates::Predicate>,
-    trait_equalities: &[Pair],
+    evidence: Option<&super::traits::obligations::Obligations>,
 ) -> Result<(), String> {
     let mut graph = region_graph::Graph::new(1_000_000);
     let universals: HashSet<_> = arguments.iter().copied().collect();
@@ -105,12 +105,24 @@ pub(super) fn check_bounds(
         };
         slots.push(graph.region(kind).map_err(|e| e.to_string())?);
     }
+    let mut variables = HashMap::new();
+    if let Some(evidence) = evidence {
+        for id in evidence.regions.clone() {
+            let variable = graph
+                .region(region_graph::Kind::Variable { universe: 0 })
+                .map_err(|e| e.to_string())?;
+            variables.insert(RegionId(id), variable);
+        }
+    }
     let resolve = |region: RegionId| -> Result<region_graph::Region, String> {
         if region == RegionId::STATIC {
             return Ok(region_graph::Region::STATIC);
         }
         let Some((0, index)) = region.bound_parts() else {
-            return Err("invalid impl lifetime identity".into());
+            return variables
+                .get(&region)
+                .copied()
+                .ok_or_else(|| "invalid impl lifetime identity".into());
         };
         slots
             .get(usize::from(index))
@@ -127,18 +139,15 @@ pub(super) fn check_bounds(
             .require(resolve(a)?, resolve(b)?, 0)
             .map_err(|e| e.to_string())?;
     }
-    coverage_equalities(
-        &mut graph,
-        &slots,
-        &implementation.coverage,
-        trait_equalities,
-    )?;
     let mut parameters = HashMap::new();
     for &(id, shorter) in assumptions.parameters {
         let longer = parameter_region(&mut graph, &mut parameters, id)?;
         graph
             .assume(longer, resolve(shorter)?)
             .map_err(|e| e.to_string())?;
+    }
+    if let Some(evidence) = evidence {
+        trait_obligations(&mut graph, types, evidence, &resolve, &mut parameters)?;
     }
     let mut components = crate::types::outlives::TypeComponents::default();
     for predicate in predicates {
@@ -168,48 +177,42 @@ pub(super) fn check_bounds(
     Ok(())
 }
 
-/// Trait matching uses nominal slot order; coverage checks use original impl slots.
-/// Keep the extra slots existential in this same graph, including static equality.
-fn coverage_equalities(
+/// Selected trait requirements have already been restored to impl coordinates.
+fn trait_obligations(
     graph: &mut region_graph::Graph,
-    slots: &[region_graph::Region],
-    coverage: &Coverage,
-    equalities: &[Pair],
+    types: &crate::types::Store,
+    evidence: &super::traits::obligations::Obligations,
+    resolve: &impl Fn(RegionId) -> Result<region_graph::Region, String>,
+    parameters: &mut HashMap<crate::types::parameters::ParameterId, region_graph::Region>,
 ) -> Result<(), String> {
-    if equalities.is_empty() {
-        return Ok(());
+    for &(a, b) in &evidence.equalities {
+        graph
+            .require(resolve(a)?, resolve(b)?, 0)
+            .map_err(|e| e.to_string())?;
+        graph
+            .require(resolve(b)?, resolve(a)?, 0)
+            .map_err(|e| e.to_string())?;
     }
-    let mut covered = vec![None; slots.len()];
-    for (&slot, &region) in slots.iter().zip(&coverage.regions) {
-        let Some((0, index)) = region.bound_parts() else {
-            return Err("invalid destructor coverage lifetime".into());
-        };
-        if covered
-            .get_mut(usize::from(index))
-            .ok_or("missing destructor coverage lifetime")?
-            .replace(slot)
-            .is_some()
-        {
-            return Err("repeated destructor coverage lifetime".into());
-        }
+    for &(a, b) in &evidence.outlives {
+        graph
+            .require(resolve(a)?, resolve(b)?, 0)
+            .map_err(|e| e.to_string())?;
     }
-    let resolve = |region: RegionId| -> Result<region_graph::Region, String> {
-        if region == RegionId::STATIC {
-            return Ok(region_graph::Region::STATIC);
+    let mut components = crate::types::outlives::TypeComponents::default();
+    for &(ty, shorter) in &evidence.types {
+        let shorter = resolve(shorter)?;
+        let parts = components.get(types, ty)?;
+        for &longer in parts.regions {
+            graph
+                .require(resolve(longer)?, shorter, 0)
+                .map_err(|e| e.to_string())?;
         }
-        let Some((0, index)) = region.bound_parts() else {
-            return Err("invalid trait coverage lifetime".into());
-        };
-        covered
-            .get(usize::from(index))
-            .copied()
-            .flatten()
-            .ok_or_else(|| "missing trait coverage lifetime".into())
-    };
-    for &(left, right) in equalities {
-        let (left, right) = (resolve(left)?, resolve(right)?);
-        graph.require(left, right, 0).map_err(|e| e.to_string())?;
-        graph.require(right, left, 0).map_err(|e| e.to_string())?;
+        for &id in parts.parameters {
+            let longer = parameter_region(graph, parameters, id)?;
+            graph
+                .require(longer, shorter, 0)
+                .map_err(|e| e.to_string())?;
+        }
     }
     Ok(())
 }

@@ -129,6 +129,9 @@ pub struct Generics {
         HashMap<TypeId, Arc<[crate::types::parameters::predicates::Predicate]>>,
     pub(super) has_nominal_requirements: bool,
     pub predicates: HashMap<DefId, Vec<Predicate>>,
+    /// Prefix before supertrait elaboration. Implied assumptions are not additional
+    /// impl selection conditions: re-proving them can manufacture a circular goal.
+    declared_predicate_counts: HashMap<DefId, usize>,
     pub parameters: HashMap<DefId, Vec<Parameter>>,
     pub constants: HashMap<DefId, ConstId>,
     pub environments: HashMap<DefId, Arc<Environment>>,
@@ -166,6 +169,20 @@ impl Generics {
     pub fn predicates_in_scope(&self, owner: DefId) -> impl Iterator<Item = &Predicate> {
         self.scopes(owner)
             .flat_map(|id| self.predicates.get(&id).into_iter().flatten())
+    }
+    pub(super) fn declared_predicates_in_scope(
+        &self,
+        owner: DefId,
+    ) -> impl Iterator<Item = &Predicate> {
+        self.scopes(owner).flat_map(|id| {
+            let predicates = self.predicates.get(&id).map_or(&[][..], Vec::as_slice);
+            let count = self
+                .declared_predicate_counts
+                .get(&id)
+                .copied()
+                .unwrap_or(predicates.len());
+            predicates[..count].iter()
+        })
     }
     #[must_use]
     pub fn has_parameters(&self, owner: DefId) -> bool {

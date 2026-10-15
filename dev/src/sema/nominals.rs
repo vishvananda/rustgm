@@ -1,4 +1,5 @@
 //! Nominal use requirements are instantiated once; proofs belong to the caller's environment.
+mod traits;
 use super::model::Declarations;
 use crate::{
     resolve::model::DefId,
@@ -80,12 +81,10 @@ pub(super) fn requirements(
                         .ok_or("invalid nominal requirement signature")?,
                 );
             }
-            Kind::FunctionItem {
-                signature,
-                arguments,
-                ..
-            } => {
-                work.push(signature);
+            Kind::FunctionItem { arguments, .. } => {
+                // The declaration already proved its signature, including local
+                // late binders. Item-use obligations validate its substitutions;
+                // replaying the template signature would capture caller lifetimes.
                 arguments_work(facts, arguments, &mut work)?;
             }
             _ => {}
@@ -176,11 +175,8 @@ pub(super) struct Proof {
     shapes: Option<crate::types::parameters::shape::Shapes>,
     copies: crate::types::copy::Copies,
     checked: HashSet<TypeId>,
-    traits: Option<Box<TraitProof>>,
-}
-struct TraitProof {
-    assumptions: super::traits::assumptions::Assumptions,
-    context: crate::types::infer::Context,
+    traits: Option<Box<traits::State>>,
+    scope: Option<(u32, u32)>,
 }
 impl Proof {
     pub(super) fn for_coherence(
@@ -194,6 +190,7 @@ impl Proof {
             copies: crate::types::copy::Copies::for_coherence(environment),
             checked: HashSet::new(),
             traits: None,
+            scope: None,
         }
     }
     pub fn new(
@@ -214,7 +211,25 @@ impl Proof {
             copies,
             checked: HashSet::new(),
             traits: None,
+            scope: None,
         }
+    }
+    pub fn for_declaration(
+        environment: Option<std::sync::Arc<crate::types::parameters::environment::Environment>>,
+        universals: u32,
+        first_region: u32,
+    ) -> Self {
+        let mut proof = Self::new(environment);
+        proof.scope = Some((universals, first_region));
+        proof
+    }
+    /// Closed declaration bounds must not justify themselves through their environment.
+    pub fn prove_closed_trait(
+        &mut self,
+        facts: &mut Declarations,
+        requirement: Predicate,
+    ) -> Result<bool, &'static str> {
+        self.trait_state(facts)?.prove(facts, requirement, true)
     }
     fn shape(
         &mut self,
@@ -292,39 +307,37 @@ impl Proof {
         facts: &mut Declarations,
         requirement: Predicate,
     ) -> Result<bool, &'static str> {
-        let Some(environment) = &self.environment else {
-            return Ok(false);
-        };
         let Bound::Trait(application) = requirement.bound else {
             return Err("expected a canonical trait requirement");
         };
-        if environment.assumes_trait(requirement.ty, application) {
+        if self
+            .environment
+            .as_ref()
+            .is_some_and(|env| env.assumes_trait(requirement.ty, application))
+        {
             return Ok(true);
         }
-        if self.traits.is_none() {
-            let mut assumptions = super::traits::assumptions::Assumptions::default();
-            for &predicate in environment.trait_predicates() {
-                assumptions
-                    .insert(&facts.types, predicate)
-                    .map_err(|_| "invalid nominal trait assumption index")?;
-            }
-            self.traits = Some(Box::new(TraitProof {
-                assumptions,
-                context: crate::types::infer::Context::default(),
-            }));
-        }
-        let state = self.traits.as_mut().ok_or("missing nominal trait proof")?;
-        state
-            .assumptions
-            .prove_canonical(&mut facts.types, &mut state.context, requirement)
-            .map(|evidence| evidence.is_some())
-            .map_err(|_| "invalid or exhausted nominal trait proof")
+        self.trait_state(facts)?.prove(facts, requirement, false)
     }
 
-    /// The owner must prove these equations after nominal lifetime contracts complete.
-    pub fn take_trait_equalities(&mut self) -> Vec<crate::types::outlives::Pair> {
-        self.traits.as_mut().map_or_else(Vec::new, |state| {
-            std::mem::take(&mut state.context.region_equalities)
-        })
+    fn trait_state(
+        &mut self,
+        facts: &mut Declarations,
+    ) -> Result<&mut traits::State, &'static str> {
+        if self.traits.is_none() {
+            self.traits = Some(Box::new(traits::State::new(
+                facts,
+                self.environment.clone(),
+                self.scope,
+            )?));
+        }
+        self.traits
+            .as_deref_mut()
+            .ok_or("missing nominal trait proof")
+    }
+
+    /// Retain every selected lifetime obligation, including fresh existential identities.
+    pub fn take_trait_proof(&mut self) -> Option<super::traits::obligations::Obligations> {
+        self.traits.take().map(|state| state.finish())
     }
 }

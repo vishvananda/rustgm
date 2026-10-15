@@ -1,26 +1,34 @@
 //! Trait argument lifetimes use the shared directed proof after nominal contracts complete.
 use super::{Checker, DefId, Error, ItemId, NodeKey, Type};
+use crate::sema::{nominals::Proof, traits::obligations::Obligations};
 use crate::types::{
     arguments::Argument,
     outlives::{Pair, ParameterPair, Queries},
     parameters::predicates::Bound,
     relations::Constraints,
 };
-pub(super) type Equalities = std::collections::HashMap<DefId, Vec<(NodeKey, Pair)>>;
+pub(super) type Proofs = std::collections::HashMap<DefId, Vec<(NodeKey, Obligations)>>;
 
 impl Checker<'_> {
-    pub(super) fn retain_trait_equalities(
-        &mut self,
+    pub(super) fn declaration_proof(
+        &self,
         owner: DefId,
-        source: NodeKey,
-        proof: &mut crate::sema::nominals::Proof,
-    ) {
-        let equalities = proof.take_trait_equalities();
-        if !equalities.is_empty() {
-            self.trait_equalities
+        environment: Option<std::sync::Arc<crate::types::parameters::environment::Environment>>,
+    ) -> Proof {
+        let first = self
+            .trait_proofs
+            .get(&owner)
+            .and_then(|proofs| proofs.last())
+            .map_or(1, |(_, proof)| proof.regions.end);
+        Proof::for_declaration(environment, self.trait_region_count(owner), first)
+    }
+
+    pub(super) fn retain_trait_proof(&mut self, owner: DefId, source: NodeKey, proof: &mut Proof) {
+        if let Some(obligations) = proof.take_trait_proof() {
+            self.trait_proofs
                 .entry(owner)
                 .or_default()
-                .extend(equalities.into_iter().map(|pair| (source, pair)));
+                .push((source, obligations));
         }
     }
 
@@ -29,7 +37,7 @@ impl Checker<'_> {
             return Ok(());
         }
         let mut owners: Vec<_> = self.facts.generics.predicates.keys().copied().collect();
-        owners.extend(self.trait_equalities.keys().copied());
+        owners.extend(self.trait_proofs.keys().copied());
         owners.sort_unstable_by_key(|owner| owner.0);
         owners.dedup();
         let mut steps = 0_usize;
@@ -77,22 +85,24 @@ impl Checker<'_> {
                     pending.push((source, regions, parameters));
                 }
             }
-            let equalities = self
-                .trait_equalities
-                .get(&owner)
-                .map_or(&[][..], Vec::as_slice);
+            let proofs = self.trait_proofs.get(&owner).map_or(&[][..], Vec::as_slice);
             if let Some(source) = pending
                 .first()
                 .map(|p| p.0)
-                .or_else(|| equalities.first().map(|p| p.0))
+                .or_else(|| proofs.first().map(|p| p.0))
             {
                 let mut constraints = self
                     .trait_region_environment(owner, &mut queries)
                     .map_err(|e| self.error(source, e))?;
-                for &(key, (left, right)) in equalities {
-                    charge(&mut steps, 2).map_err(|e| self.error(key, e))?;
-                    require_regions(&mut constraints, &[(left, right), (right, left)], &[])
-                        .map_err(|e| self.error(key, e))?;
+                for (key, proof) in proofs {
+                    charge(
+                        &mut steps,
+                        proof.equalities.len() * 2 + proof.outlives.len() + proof.types.len(),
+                    )
+                    .map_err(|e| self.error(*key, e))?;
+                    proof
+                        .require(&mut constraints, &mut queries)
+                        .map_err(|e| self.error(*key, e))?;
                 }
                 for (key, regions, parameters) in pending {
                     require_regions(&mut constraints, &regions, &parameters)
@@ -145,19 +155,10 @@ impl Checker<'_> {
     ) -> Result<Constraints<'_>, String> {
         let function = self.facts.lifetimes.functions.get(&owner);
         let schema = self.facts.associated.schema(owner);
-        let nominal = self.nominal_regions.get(&ItemId(owner.0)).copied();
-        let count = function
-            .map(|f| f.total)
-            .or_else(|| schema.map(|s| s.captures))
-            .unwrap_or_else(|| {
-                nominal
-                    .and_then(|c| c.binder)
-                    .map_or(0, |b| self.regions.count(b))
-            });
         let mut constraints = Constraints::new(
             &self.facts.types,
             &self.facts.lifetimes.variances,
-            count,
+            self.trait_region_count(owner),
             1_000_000,
         )
         .map_err(|e| e.to_string())?;
@@ -201,6 +202,21 @@ impl Checker<'_> {
             }
         }
         Ok(constraints)
+    }
+
+    fn trait_region_count(&self, owner: DefId) -> u32 {
+        self.facts
+            .lifetimes
+            .functions
+            .get(&owner)
+            .map(|f| f.total)
+            .or_else(|| self.facts.associated.schema(owner).map(|s| s.captures))
+            .unwrap_or_else(|| {
+                self.nominal_regions
+                    .get(&ItemId(owner.0))
+                    .and_then(|context| context.binder)
+                    .map_or(0, |binder| self.regions.count(binder))
+            })
     }
 
     /// Impl input well-formedness implies lifetimes, never Copy or user-trait evidence.

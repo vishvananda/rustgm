@@ -128,7 +128,7 @@ impl Checker<'_> {
     pub(super) fn validate_drop_traits(
         &mut self,
         index: usize,
-    ) -> Result<Vec<crate::types::outlives::Pair>, super::Error> {
+    ) -> Result<Option<crate::sema::traits::obligations::Obligations>, super::Error> {
         use crate::types::parameters::{
             ParameterKind,
             predicates::{Bound, Predicate},
@@ -183,7 +183,8 @@ impl Checker<'_> {
             .environments
             .get(&DefId(item.0))
             .cloned();
-        let mut proof = crate::sema::nominals::Proof::new(environment);
+        let count = self.facts.destructors.implementations()[index].parameters;
+        let mut proof = crate::sema::nominals::Proof::for_declaration(environment, count, 1);
         for requirement in requirements {
             let requirement = substitution
                 .predicate(&mut self.facts.types, requirement)
@@ -195,6 +196,72 @@ impl Checker<'_> {
                 return Err(self.error(key, "Drop impl adds type requirements to its nominal type"));
             }
         }
-        Ok(proof.take_trait_equalities())
+        let Some(mut obligations) = proof.take_trait_proof() else {
+            return Ok(None);
+        };
+        self.restore_drop_proof(index, &mut obligations)
+            .map_err(|e| self.error(key, e))?;
+        Ok(Some(obligations))
+    }
+}
+
+impl Checker<'_> {
+    /// Coverage proves in nominal coordinates; the Drop graph retains impl coordinates.
+    fn restore_drop_proof(
+        &mut self,
+        index: usize,
+        proof: &mut crate::sema::traits::obligations::Obligations,
+    ) -> Result<(), &'static str> {
+        let implementation = &self.facts.destructors.implementations()[index];
+        let coverage = &implementation.coverage;
+        let arguments = self
+            .facts
+            .types
+            .arguments(coverage.arguments)
+            .ok_or("missing Drop coverage arguments")?;
+        let parameters = self
+            .facts
+            .generics
+            .parameters
+            .get(&implementation.self_definition)
+            .map_or(&[][..], Vec::as_slice);
+        if parameters.len() != arguments.len() {
+            return Err("Drop coverage argument arity mismatch");
+        }
+        let mut bindings = Vec::new();
+        for (parameter, argument) in parameters.iter().zip(arguments) {
+            if !matches!(argument, Argument::Lifetime(_)) {
+                bindings.push((
+                    crate::sema::generics::parameter_id(&self.facts.types, argument)?,
+                    parameter.argument,
+                ));
+            }
+        }
+        let mut regions = vec![RegionId::STATIC; coverage.regions.len()];
+        for (index, &region) in coverage.regions.iter().enumerate() {
+            let Some((0, slot)) = region.bound_parts() else {
+                return Err("invalid Drop coverage lifetime");
+            };
+            *regions
+                .get_mut(usize::from(slot))
+                .ok_or("missing Drop coverage slot")? = RegionId::bound(
+                0,
+                u16::try_from(index).map_err(|_| "too many Drop lifetimes")?,
+            )?;
+        }
+        let mut fold = crate::types::substitute::Bound::parameters_captured(
+            &self.facts.types,
+            &bindings,
+            regions,
+        )?;
+        for (a, b) in proof.equalities.iter_mut().chain(&mut proof.outlives) {
+            *a = fold.region(*a, 0)?;
+            *b = fold.region(*b, 0)?;
+        }
+        for (ty, region) in &mut proof.types {
+            *ty = fold.apply(&mut self.facts.types, *ty)?;
+            *region = fold.region(*region, 0)?;
+        }
+        Ok(())
     }
 }

@@ -58,7 +58,7 @@ impl Checker<'_> {
             let item = self.nominals.entries[index].item;
             let owner = crate::resolve::model::DefId(item.0);
             let environment = self.facts.generics.environments.get(&owner).cloned();
-            let mut proof = crate::sema::nominals::Proof::new(environment);
+            let mut proof = self.declaration_proof(owner, environment);
             self.validate_bounds(owner, &mut proof)?;
             for ordinal in 0..self.facts.members.variants(item).len() {
                 let id = self.facts.members.variants(item)[ordinal];
@@ -76,7 +76,7 @@ impl Checker<'_> {
                     }
                 }
             }
-            self.retain_trait_equalities(owner, self.nominals.entries[index].key, &mut proof);
+            self.retain_trait_proof(owner, self.nominals.entries[index].key, &mut proof);
         }
         Ok(())
     }

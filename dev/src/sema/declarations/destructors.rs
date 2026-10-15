@@ -89,11 +89,10 @@ impl Checker<'_> {
         if self.facts.destructors.implementations().is_empty() {
             return Ok(());
         }
-        let mut trait_equalities = std::collections::HashMap::new();
+        let mut trait_proofs = std::collections::HashMap::new();
         for index in 0..self.facts.destructors.implementations().len() {
-            let equalities = self.validate_drop_traits(index)?;
-            if !equalities.is_empty() {
-                trait_equalities.insert(index, equalities);
+            if let Some(proof) = self.validate_drop_traits(index)? {
+                trait_proofs.insert(index, proof);
             }
         }
         let mut queries = Queries::new(
@@ -131,7 +130,7 @@ impl Checker<'_> {
                     .generics
                     .predicates_in_scope(implementation.method)
                     .map(|p| p.value),
-                trait_equalities.get(&index).map_or(&[][..], Vec::as_slice),
+                trait_proofs.get(&index),
             )
             .map_err(|e| self.error(key, e))?;
         }

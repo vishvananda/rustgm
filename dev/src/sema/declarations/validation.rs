@@ -1,6 +1,5 @@
 //! Validate declaration uses under their own immutable assumptions.
 use super::{Checker, Error, Type};
-use crate::sema::nominals::Proof;
 
 impl Checker<'_> {
     pub(super) fn validate_owner_bounds(&mut self) -> Result<(), Error> {
@@ -23,9 +22,9 @@ impl Checker<'_> {
                 continue;
             }
             let environment = self.facts.generics.environments.get(&definition).cloned();
-            let mut proof = Proof::new(environment);
+            let mut proof = self.declaration_proof(definition, environment);
             self.validate_bounds(definition, &mut proof)?;
-            self.retain_trait_equalities(definition, owner.source, &mut proof);
+            self.retain_trait_proof(definition, owner.source, &mut proof);
         }
         Ok(())
     }
@@ -40,7 +39,7 @@ impl Checker<'_> {
                 .environments
                 .get(&function.definition)
                 .cloned();
-            let mut proof = Proof::new(environment);
+            let mut proof = self.declaration_proof(function.definition, environment);
             self.validate_bounds(function.definition, &mut proof)?;
             let Some(Type::Function {
                 parameters, result, ..
@@ -86,11 +85,11 @@ impl Checker<'_> {
                     ));
                 }
             }
-            self.retain_trait_equalities(function.definition, function.node, &mut proof);
+            self.retain_trait_proof(function.definition, function.node, &mut proof);
         }
-        let mut proof = Proof::new(None);
         for index in 0..self.facts.initializers.len() {
             let initializer = self.facts.initializers[index];
+            let mut proof = self.declaration_proof(initializer.definition, None);
             let shape = proof
                 .check(&mut self.facts, initializer.ty)
                 .map_err(|e| self.error(initializer.node, e))?;
@@ -100,6 +99,7 @@ impl Checker<'_> {
                     "constant and static types must be well-formed and sized",
                 ));
             }
+            self.retain_trait_proof(initializer.definition, initializer.node, &mut proof);
         }
         Ok(())
     }

@@ -1,4 +1,4 @@
-//! Prepared impl headers stay unavailable to selection until conformance succeeds.
+//! Prepared headers may discharge declaration obligations; bodies require completed impls.
 pub(in crate::sema) mod overlap;
 use super::heads::{Head, Subject};
 use crate::{
@@ -8,6 +8,13 @@ use crate::{
 use std::collections::HashMap;
 #[cfg(test)]
 mod tests;
+
+#[derive(Clone, Copy)]
+pub(in crate::sema) enum Availability {
+    Validated,
+    /// The declaration pipeline must validate every header before returning facts.
+    Declarations,
+}
 
 pub struct Implementation {
     pub owner: DefId,
@@ -37,6 +44,7 @@ impl Implementations {
         store: &mut Store,
         context: &mut crate::types::infer::Context,
         goal: &crate::types::infer::predicates::Predicate,
+        availability: Availability,
     ) -> Result<Vec<DefId>, crate::types::infer::Error> {
         use crate::types::infer::Error;
         let (item, _) = goal.trait_arguments().ok_or(Error::InvalidIdentity)?;
@@ -64,7 +72,12 @@ impl Implementations {
         };
         let mut result = Vec::new();
         if let Some(shape) = shape {
-            self.append_candidates(context, self.closed.get(&(item, shape)), &mut result)?;
+            self.append_candidates(
+                context,
+                self.closed.get(&(item, shape)),
+                availability,
+                &mut result,
+            )?;
         }
         for head in subject.heads() {
             let bucket = if shape.is_some() {
@@ -72,9 +85,14 @@ impl Implementations {
             } else {
                 self.heads.get(&(item, Some(head)))
             };
-            self.append_candidates(context, bucket, &mut result)?;
+            self.append_candidates(context, bucket, availability, &mut result)?;
         }
-        self.append_candidates(context, self.heads.get(&(item, None)), &mut result)?;
+        self.append_candidates(
+            context,
+            self.heads.get(&(item, None)),
+            availability,
+            &mut result,
+        )?;
         result.sort_unstable_by_key(|id| id.0);
         Ok(result)
     }
@@ -82,12 +100,13 @@ impl Implementations {
         &self,
         context: &mut crate::types::infer::Context,
         bucket: Option<&Vec<usize>>,
+        availability: Availability,
         output: &mut Vec<DefId>,
     ) -> Result<(), crate::types::infer::Error> {
         context.account_work(bucket.map_or(0, Vec::len))?;
         for &index in bucket.into_iter().flatten() {
             let entry = &self.entries[index];
-            if entry.validated {
+            if entry.validated || matches!(availability, Availability::Declarations) {
                 output.push(entry.value.owner);
             }
         }
