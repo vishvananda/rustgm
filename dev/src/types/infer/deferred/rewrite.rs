@@ -2,7 +2,29 @@
 use super::super::{Context, Error, Store, TermId, TypeId, Value};
 use std::collections::HashMap;
 
+#[derive(Default)]
+struct Rewriting {
+    results: HashMap<TermId, TermId>,
+    work: Vec<(TermId, bool)>,
+    children: Vec<TermId>,
+}
+
 impl Context {
+    /// Share one transformed graph across every input of a predicate. Inference
+    /// variables and original projection roots remain independent of this view.
+    /// # Errors
+    /// Rejects invalid replacements, equality predicates and exhausted work.
+    pub fn rewritten_projection_inputs(
+        &mut self,
+        store: &Store,
+        predicate: &super::super::predicates::Predicate,
+        replacements: &HashMap<TermId, TypeId>,
+    ) -> Result<super::super::predicates::Predicate, Error> {
+        let mut rewriting = Rewriting::default();
+        predicate.map_inputs(|root| {
+            self.rewrite_projection_root(store, root, replacements, &mut rewriting)
+        })
+    }
     /// Replace independently proved projection roots without mutating the original
     /// input graph. Inference variables and const/lifetime identities remain shared.
     /// The caller owns each replacement's normalization and formation evidence.
@@ -15,10 +37,22 @@ impl Context {
         root: TermId,
         replacements: &HashMap<TermId, TypeId>,
     ) -> Result<TermId, Error> {
+        self.rewrite_projection_root(store, root, replacements, &mut Rewriting::default())
+    }
+    fn rewrite_projection_root(
+        &mut self,
+        store: &Store,
+        root: TermId,
+        replacements: &HashMap<TermId, TypeId>,
+        rewriting: &mut Rewriting,
+    ) -> Result<TermId, Error> {
         let root = self.root(root)?;
-        let mut results = HashMap::new();
-        let mut work = vec![(root, false)];
-        let mut children = Vec::new();
+        let Rewriting {
+            results,
+            work,
+            children,
+        } = rewriting;
+        work.push((root, false));
         while let Some((id, finish)) = work.pop() {
             self.step()?;
             let id = self.root(id)?;
@@ -65,7 +99,7 @@ impl Context {
                 children.push(rewritten);
             }
             let result = if changed {
-                self.construct(kind, &children)?
+                self.construct(kind, children)?
             } else {
                 id
             };

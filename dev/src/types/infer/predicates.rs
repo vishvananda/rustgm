@@ -162,7 +162,10 @@ impl Context {
         store: &mut Store,
         predicate: &Predicate,
     ) -> Result<Canonical, Error> {
-        self.predicate_with(store, predicate, Self::resolved)
+        let mut resolution = super::resolve::Resolution::default();
+        self.predicate_with(store, predicate, |context, store, root| {
+            context.resolve_with(store, root, &mut resolution)
+        })
     }
 
     /// Finish both types and retained obligations before discarding inference state.

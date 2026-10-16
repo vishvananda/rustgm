@@ -165,6 +165,42 @@ fn projected_conditions_are_proved_at_use_sites() -> Result<(), Box<dyn std::err
 }
 
 #[test]
+fn repeated_projected_inputs_preserve_work_and_argument_identity()
+-> Result<(), Box<dyn std::error::Error>> {
+    for (width, accepted) in [(1024, true), (64, false)] {
+        let parameters = (0..width)
+            .map(|index| format!("X{index}"))
+            .collect::<Vec<_>>()
+            .join(",");
+        let projections = "<T as A>::Out,".repeat(width);
+        let concrete = "Shared<u8>,".repeat(width - 1);
+        let last = if accepted { "Shared<u8>" } else { "u32" };
+        let generic = "Shared<T>,".repeat(width);
+        let source = format!(
+            "trait A{{type Out;}}impl A for u8{{type Out=u16;}}\
+             type Shared<T:A>=({projections});trait C<{parameters}>{{}}\
+             impl C<{concrete}{last}>for u8{{}}trait B{{}}\
+             impl<T:A+C<{generic}>>B for T{{}}\
+             fn require<T:B>(){{}}fn main(){{require::<u8>();}}"
+        );
+        rustc::qualify(
+            &format!("repeated-projected-inputs-{width}"),
+            &source,
+            accepted,
+        )?;
+        let result = semantic::analyze(&source).and_then(|(mut report, mut facts)| {
+            let entry =
+                rustgm::sema::entry::select(&mut report, &facts).map_err(|e| e.to_string())?;
+            rustgm::lower::instances::build(&report, &mut facts, entry)
+                .map(|_| ())
+                .map_err(|e| e.to_string())
+        });
+        assert_eq!(result.is_ok(), accepted, "width {width}: {result:?}");
+    }
+    Ok(())
+}
+
+#[test]
 #[ignore = "requires the qualified external CPPGM LowIR backend"]
 fn selected_projected_conditions_execute() -> Result<(), Box<dyn std::error::Error>> {
     native::check_cases(

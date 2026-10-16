@@ -27,30 +27,31 @@ impl Search<'_> {
         }
         let mut roots = Vec::new();
         let mut scopes = Obligations::new(frame.first);
-        for root in frame.goal.input_roots() {
-            for (scope, term) in frame
-                .context
-                .normalization_roots(&facts.types, root, ScopeId::ROOT, |parent, count| {
+        for (scope, term) in frame
+            .context
+            .predicate_normalization_roots(
+                &facts.types,
+                &frame.goal,
+                ScopeId::ROOT,
+                |parent, count| {
                     scopes
                         .scope(parent, count)
                         .map_err(|_| infer::Error::Budget)
-                })
-                .map_err(inference)?
-            {
-                if scope != ScopeId::ROOT {
-                    return Err(
-                        "quantified trait premises require scoped selection evidence".into(),
-                    );
-                }
-                let ty = match frame.context.resolved(&mut facts.types, term) {
-                    Ok(ty) => ty,
-                    Err(infer::Error::Unresolved) => {
-                        return Ok(Some(Action::Complete(Decision::Deferred)));
-                    }
-                    Err(error) => return Err(inference(error)),
-                };
-                roots.push((term, ty));
+                },
+            )
+            .map_err(inference)?
+        {
+            if scope != ScopeId::ROOT {
+                return Err("quantified trait premises require scoped selection evidence".into());
             }
+            let ty = match frame.context.resolved(&mut facts.types, term) {
+                Ok(ty) => ty,
+                Err(infer::Error::Unresolved) => {
+                    return Ok(Some(Action::Complete(Decision::Deferred)));
+                }
+                Err(error) => return Err(inference(error)),
+            };
+            roots.push((term, ty));
         }
         let Some(&(_, first)) = roots.first() else {
             return Ok(None);
@@ -93,13 +94,9 @@ impl Search<'_> {
                 .map_err(inference)?;
             return Ok(Action::Continue);
         }
-        frame.goal = inputs
-            .original
-            .map_inputs(|root| {
-                frame
-                    .context
-                    .rewritten_projections(&facts.types, root, &inputs.replacements)
-            })
+        frame.goal = frame
+            .context
+            .rewritten_projection_inputs(&facts.types, &inputs.original, &inputs.replacements)
             .map_err(inference)?;
         inputs.ready = true;
         if frame.goal.builtin_bound().is_some() {

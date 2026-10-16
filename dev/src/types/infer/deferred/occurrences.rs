@@ -4,6 +4,25 @@ use crate::types::lifetime_proof::ScopeId;
 use std::collections::HashSet;
 
 impl Context {
+    /// Traverse all predicate inputs together so repeated root DAGs share work.
+    /// The source input order is retained, including each nested callable scope.
+    /// # Errors
+    /// Rejects malformed input identities, scopes and exhausted traversal work.
+    pub fn predicate_normalization_roots(
+        &mut self,
+        store: &Store,
+        predicate: &super::super::predicates::Predicate,
+        ambient: ScopeId,
+        mut scope: impl FnMut(ScopeId, u32) -> Result<ScopeId, Error>,
+    ) -> Result<Vec<(ScopeId, TermId)>, Error> {
+        let mut work = predicate
+            .input_roots()
+            .map(|root| (ambient, root))
+            .collect::<Vec<_>>();
+        self.account_work(work.len())?;
+        work.reverse();
+        self.collect_normalization_roots(store, work, |parent, _, count| scope(parent, count))
+    }
     /// Find the present projected roots and retain their enclosing callable scopes.
     /// Projection inputs are normalized by that root's semantic query. An input
     /// that also occurs outside its projection receives its own independent root.

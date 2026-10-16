@@ -6181,3 +6181,64 @@ bounds and 8.48/21.90/72.43 ms for nested inference queries. Resident medians at
 1,024 constraints are approximately 12.5 MiB and 10.4 MiB. These are complete
 frontend/LowIR measurements including rendering, rather than isolated solver
 measurements. `scaling-summary.json` retains the exact values.
+
+### Shared projected predicate inputs
+
+Repeated trait arguments now preserve one inferred graph through projection
+root discovery, normalized-view rewriting and canonical predicate resolution.
+Complete input matching shares successfully related root pairs within one
+predicate relation and enclosing lifetime scope. The cache cannot cross proof
+queries or make different projected operations injective. Known canonical roots
+also avoid allocating traversal scratch on the ordinary resolution path.
+
+A structural invariant repeats one 256-wide projected tuple through 256 trait
+arguments. It checks a single discovered projection, identical rewritten root
+identities, unchanged original projection roots, and linear work bounds for
+rewriting, canonicalization, inferred matching and canonical matching. A permanent
+source regression compiles a 1,024-wide shared alias through 1,024 trait arguments;
+a negative control changes the last implementation argument and must still fail.
+Both source expectations are checked independently with pinned rustc.
+
+The investigation at `obj/pa20-work/projected-input-sharing-v1/` retains twelve
+independently object-qualified source probes. Published `caa3808` accepts all
+unused controls and calls through width 256, but exhausts its work budget at
+widths 512 and 1,024. The candidate accepts all twelve without increasing the
+budgets. An intermediate prototype fixed only discovery and rewriting; its large
+calls still failed, identifying repeated complete-predicate equations and
+resolution as additional work. Diagnostics and versioned receipts retain those
+observations. These are maintainer regressions; course oracles are unchanged.
+
+All 25 final validation commands pass: strict Clippy, architecture/harness checks,
+1,088 release tests across 197 result groups, all 4,864 PA1–PA19 course cases,
+backend qualification and 47 separate native groups. The Rust audit checks 671
+files with zero findings; all 33 harness checks pass. The frozen 674-file source
+snapshot matches after validation. Candidate SHA-256:
+`4530c8d162441dd7368bf023745c45679165a09aeac7f4e46f1f6a402fee9a06`.
+`validation-summary.json` preserves counts and command statuses. A first runner
+attempt nested the storage guard through `make lint` and was correctly refused;
+its receipt is retained. The corrected batch runs direct Clippy beneath the
+outer guard. Validation cleanup removed 4,334 generated files and 4.55 GiB of
+unshared blocks (`obj/cleanup/1792150242791762521.jsonl`).
+
+The standalone `make lint` target also passes. Performance retains 3,016
+observations in 116 jobs: 106 initial comparisons with immutable published
+`caa3808`, four same-candidate controls for newly accepted large calls, and six
+confirmation comparisons. Full/count output equality and all executable, frozen
+input, source and runner hashes are verified. RustGM builds, tests and source
+probes did not overlap timing. Initial paired median changes range from -50.76%
+to +5.08%, with A/A spreads of 0.71%–107.36% on the shared host. The predeclared
+3.5% rule selects every size/mode of `inferred-sized` for confirmation; those six
+paired medians range from -4.28% to -0.21%, with A/A spreads of 3.33%–52.72%.
+The initial increase did not recur. Initial resident-median differences range
+from -98 to +688 KiB; confirmation differences range from +138 to +228 KiB.
+Raw observations and both sets of results remain intact in the evidence directory.
+
+Full LowIR median times for repeated calls decrease from 9.73 to 7.88 ms at
+width 64 and from 49.45 to 24.65 ms at width 256. The newly accepted 512/1,024
+calls have same-candidate scaling controls, not comparisons against a successful
+predecessor. Their medians are approximately 62/202 ms, with about 8.6/10.6 MiB
+resident memory. Unused width-1,024 declarations remain near 201 ms. These complete
+frontend measurements include declaration checking and rendering; the linear
+structural invariants apply to the shared predicate operations, not the entire
+source pipeline. `performance-summary.json` and `scaling-summary.json` retain
+exact measurements. PA20 and PA21 remain incomplete and are not activated here.

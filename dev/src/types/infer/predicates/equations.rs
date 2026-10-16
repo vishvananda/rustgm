@@ -3,6 +3,7 @@ use super::{
     Argument, Canonical, CanonicalArgument, Context, Error, Predicate, Requirement, Store, Trait,
 };
 use crate::types::parameters::predicates::Bound;
+use std::collections::HashSet;
 
 #[derive(Clone, Copy)]
 enum Relation {
@@ -100,11 +101,23 @@ impl Context {
             return Err(Error::Mismatch);
         }
         self.account_work(1 + a.arguments.len())?;
-        self.relate_predicate_types(store, left.subject, right.subject, relation)?;
+        // A successful root pair remains equal under compatible later equations.
+        // Share evidence only within this relation and its enclosing binder scope.
+        let mut proved = (a.arguments.len() > 1).then(HashSet::new);
+        let mut relate = |context: &mut Self, left, right| {
+            if let Some(proved) = &mut proved {
+                let pair = (context.root(left)?, context.root(right)?);
+                if !proved.insert(pair) {
+                    return Ok(());
+                }
+            }
+            context.relate_predicate_types(store, left, right, relation)
+        };
+        relate(self, left.subject, right.subject)?;
         for (&a, &b) in a.arguments.iter().zip(&b.arguments) {
             match (a, b) {
                 (Argument::Type(a), Argument::Type(b)) => {
-                    self.relate_predicate_types(store, a, b, relation)?;
+                    relate(self, a, b)?;
                 }
                 (Argument::Const(a), Argument::Const(b)) => self.equate_consts(a, b)?,
                 (Argument::Lifetime(a), Argument::Lifetime(b)) => {
@@ -211,7 +224,16 @@ impl Context {
             return Err(Error::Mismatch);
         }
         self.account_work(1 + arguments.len())?;
-        self.equate_canonical_input(store, predicate.subject, assumption.ty, ambient)?;
+        let mut proved = (arguments.len() > 1).then(HashSet::new);
+        let mut equate = |context: &mut Self, store: &mut Store, term, ty| {
+            if let Some(proved) = &mut proved
+                && !proved.insert((context.root(term)?, ty))
+            {
+                return Ok(());
+            }
+            context.equate_canonical_input(store, term, ty, ambient)
+        };
+        equate(self, store, predicate.subject, assumption.ty)?;
         for (index, &inferred) in trait_.arguments.iter().enumerate() {
             let canonical = store
                 .arguments(application.arguments)
@@ -219,7 +241,7 @@ impl Context {
                 .ok_or(Error::InvalidIdentity)?;
             match (inferred, canonical) {
                 (Argument::Type(term), CanonicalArgument::Type(ty)) => {
-                    self.equate_canonical_input(store, term, ty, ambient)?;
+                    equate(self, store, term, ty)?;
                 }
                 (Argument::Const(term), CanonicalArgument::Const(id)) => {
                     let known = self.known_const(store, id)?;

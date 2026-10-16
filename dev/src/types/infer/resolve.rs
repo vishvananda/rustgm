@@ -2,6 +2,15 @@
 use super::{Context, Domain, Error, Store, TermId, TypeId, Value};
 use std::collections::{HashMap, HashSet};
 
+/// Scratch for one resolution pass with no intervening inference equations.
+#[derive(Default)]
+pub(super) struct Resolution {
+    results: HashMap<TermId, TypeId>,
+    active: HashSet<TermId>,
+    work: Vec<(TermId, bool)>,
+    children: Vec<TypeId>,
+}
+
 impl Context {
     /// The unresolved variable domain restricts numeric trait candidate lookup.
     /// # Errors
@@ -48,11 +57,27 @@ impl Context {
     /// # Errors
     /// Rejects unresolved variables, cycles, invalid identities and work limits.
     pub fn resolved(&mut self, store: &mut Store, root: TermId) -> Result<TypeId, Error> {
+        self.resolve_with(store, root, &mut Resolution::default())
+    }
+
+    pub(super) fn resolve_with(
+        &mut self,
+        store: &mut Store,
+        root: TermId,
+        resolution: &mut Resolution,
+    ) -> Result<TypeId, Error> {
         let root = self.root(root)?;
-        let mut results = HashMap::new();
-        let mut active = HashSet::new();
-        let mut work = vec![(root, false)];
-        let mut children = Vec::new();
+        if let Value::Known(ty) = self.terms[root.0 as usize].value {
+            self.step()?;
+            return Ok(ty);
+        }
+        let Resolution {
+            results,
+            active,
+            work,
+            children,
+        } = resolution;
+        work.push((root, false));
         while let Some((id, finish)) = work.pop() {
             self.step()?;
             let id = self.root(id)?;
@@ -71,7 +96,7 @@ impl Context {
                         let child = self.root(self.edges[offset as usize])?;
                         children.push(*results.get(&child).ok_or(Error::InvalidIdentity)?);
                     }
-                    results.insert(id, self.canonical(store, kind, &children)?);
+                    results.insert(id, self.canonical(store, kind, children)?);
                     active.remove(&id);
                 }
                 Value::Construct(_) => {

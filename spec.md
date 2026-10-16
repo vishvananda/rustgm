@@ -155,6 +155,15 @@ the environment must map both roots and retain the actual lifetime evidence.
 An unsupported equality proof must fail explicitly, never fall through a
 builtin-only proof loop or disappear when importing candidate obligations.
 
+Preserve graph sharing across the complete predicate, including repeated large
+type arguments. Discover and rewrite projected inputs with one mapping per query;
+resolve all predicate roots with one read-only traversal cache. Reuse successful
+complete input equations only within the same relation and enclosing binder
+scope. Compatible later equations preserve those equalities; a different root
+pair still requires proof. Keep original projection roots and independent holes,
+charge each input, and retain lifetime obligations. Sharing must not turn equal
+projected results into evidence that their inputs are equal.
+
 Ordinary aliases and generic defaults retain conditional projection requirements
 as sealed typed dependency graphs. Instantiate a contract only at an actual use;
 an overridden default contributes no requirements. Retain dependencies even when

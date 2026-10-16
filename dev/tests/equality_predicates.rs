@@ -467,3 +467,73 @@ fn proved_inputs_refine_independent_holes_without_inverting_projections() -> Tes
     );
     Ok(())
 }
+
+#[test]
+fn repeated_projected_predicate_inputs_share_one_transformed_graph() -> TestResult {
+    let mut store = Store::default();
+    let projected = projection(&mut store, BYTE, &[])?;
+    let width = 256;
+    let elements = store.intern_list(&vec![projected; width])?;
+    let original = store.intern(Kind::Tuple(elements))?;
+    let arguments = store.intern_arguments(&vec![Argument::Type(original); width])?;
+    let application = store.intern_trait_application(traits::Application {
+        item: ItemId(9),
+        arguments,
+    })?;
+    let mut context = Context::default();
+    let mut substitution = Instantiation::new(&mut context, &store, &[])?;
+    let goal = context.instantiate_predicate(
+        &mut store,
+        Predicate {
+            ty: BYTE,
+            bound: Bound::Trait(application),
+        },
+        &mut substitution,
+    )?;
+    let before = context.steps;
+    let roots = context.predicate_normalization_roots(
+        &store,
+        &goal,
+        rustgm::types::lifetime_proof::ScopeId::ROOT,
+        |_, _| Err(infer::Error::InvalidIdentity),
+    )?;
+    assert_eq!(roots.len(), 1);
+    let view = context.rewritten_projection_inputs(&store, &goal, &[(roots[0].1, WORD)].into())?;
+    let (_, arguments) = view
+        .trait_arguments()
+        .ok_or("missing normalized trait arguments")?;
+    let first = arguments[0];
+    assert!(arguments.iter().all(|argument| *argument == first));
+    assert!(
+        context.steps - before < width * 20,
+        "{}",
+        context.steps - before
+    );
+    let infer::arguments::Argument::Type(transformed) = first else {
+        return Err("expected type input".into());
+    };
+    let elements = store.intern_list(&vec![WORD; width])?;
+    let expected = store.intern(Kind::Tuple(elements))?;
+    assert_eq!(context.resolved(&mut store, transformed)?, expected);
+    assert_eq!(context.resolved(&mut store, roots[0].1)?, projected);
+    let arguments = store.intern_arguments(&vec![Argument::Type(expected); width])?;
+    let application = store.intern_trait_application(traits::Application {
+        item: ItemId(9),
+        arguments,
+    })?;
+    let expected = Predicate {
+        ty: BYTE,
+        bound: Bound::Trait(application),
+    };
+    let before = context.steps;
+    assert_eq!(context.resolved_predicate(&mut store, &view)?, expected);
+    assert!(context.steps - before < width * 20);
+    let header = context.instantiate_predicate(&mut store, expected, &mut substitution)?;
+    let before = context.steps;
+    context.equate_predicates(&store, &view, &header)?;
+    assert!(context.steps - before < width * 20);
+    let before = context.steps;
+    context.equate_trait_predicate(&mut store, &view, expected)?;
+    assert!(context.steps - before < width * 20);
+    Ok(())
+}
