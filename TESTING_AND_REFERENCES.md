@@ -306,9 +306,9 @@ All seventeen accepted programs execute through CPPGM and rustc. Independent
 object qualification precedes the expectations. The cases distinguish direct
 Self bounds from alias subjects, unrelated arguments and other associated
 members; cyclic declarations and unproved implementation lifetimes still fail.
-The valid borrowed-result case remains an unfinished outlives boundary, already
-represented in the type-only `opaque_body_values.rs` coverage. Neither these
-maintainer tests nor that type-only coverage activate PA20 or PA21.
+The borrowed-result case formerly stopped at the outlives boundary; it now has
+LowIR and native coverage in `result_lifetimes.rs`. These maintainer tests do not
+activate PA20 or PA21.
 
 ## Placement and provenance
 
@@ -370,6 +370,14 @@ models, actual binder scopes and runtime extents. One further valid captured
 function-pointer source still fails the earlier shape gate and is not counted
 as successful rejection coverage. Nominal projected-template substitution and
 projected destructor contracts remain explicit implementation boundaries.
+
+`referent_bounds.rs` adds four independently object-qualified controls for
+references inside projection inputs. A locally bound function-pointer lifetime
+must not erase its referent's type requirement: the unbounded case rejects,
+while a static type input, an implied static referent bound and an independently
+bounded result through an alias accept. The corresponding typed invariant in
+`opaque_outlives.rs` also checks nested projected referents and independent result
+assumptions. These are lifetime-proof checks, not additional native executions.
 
 ## Storage and cleanup
 

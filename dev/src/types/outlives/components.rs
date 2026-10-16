@@ -170,16 +170,14 @@ impl Components {
                         parameters.push(id);
                     }
                 }
-                // Its referent's lifetime requirements follow transitively
-                // from this reference's own well-formedness requirements.
                 Kind::Reference {
                     region, referent, ..
                 } => {
                     self.record_region(region, depth, &mut values)?;
-                    if !matches!(
-                        kind,
-                        ComponentKind::Outlives | ComponentKind::ProjectionInputs
-                    ) {
+                    // Only minimal outlives queries rely on separately proved
+                    // reference well-formedness. Projection inputs retain the
+                    // referent even when this region is bound by a callable.
+                    if kind != ComponentKind::Outlives {
                         self.work.push((referent, depth));
                     }
                 }

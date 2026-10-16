@@ -7277,3 +7277,45 @@ outputs matched. The new families' full-output medians at 64/256 functions were
 `c62794c`; they do not resolve the older runtime-extents comparison concern.
 Detailed declarations, snapshots, observations and cleanup receipts remain in
 `obj/pa20-work/projected-outlives-v1/` and `obj/cleanup/`.
+
+## Referents inside projected callable inputs
+
+Followup qualification found a false acceptance in the sufficient-input route:
+`<fn(&T) as A>::Out: 'static` was accepted without a bound on `T`. The component
+walk discarded the callable's locally bound reference lifetime and also skipped
+its referent, leaving an empty conjunction. Projection input queries now retain
+reference referents. Only the separate minimal outlives query relies on reference
+well-formedness instead of visiting them.
+
+Four independently object-qualified source controls are retained in
+`referent_bounds.rs`: the unbounded input rejects; `T: 'static`, an implied static
+referent bound, and an independent result bound through an alias accept. The
+typed `opaque_outlives.rs` invariant checks parameter and projected referents,
+including independent result assumptions that need no input bound. Two directly
+written function-pointer result bounds unexpectedly rejected by pinned rustc
+remain separate qualification discrepancies; they are not silently classified
+as language-invalid cases. Their original expectations and diagnostics remain.
+
+The focused tests, strict Clippy and formatting pass. Full validation passes
+1,140 regular release tests, all 4,864 PA1–PA19 course fixtures with unchanged
+oracles, the nine affected associated-result native programs, backend
+qualification, the 702-file Rust audit with zero findings, 33 harness checks,
+and upstream provenance verification. All 705 frozen source/configuration hashes
+match afterward. The first validation stopped at a repeated filename-stem audit;
+renaming the new test resolved it without another compiler change. Successful
+validation cleanup removed 3,271 generated files, freeing 1.94 GiB.
+
+Ten count/full performance comparisons use the immutable `0bf4d96` compiler
+`df212eb3…` and corrected compiler `1cce4e27…`. Two new, independently
+object-qualified programs contain 64 and 256 generic callable input contracts;
+ordinary stored calls, implied result borrows and explicit result bounds supply
+controls. A/A calibration and five paired ABBA blocks retain 260 study
+observations and 40 full-output qualifications. Every full/count output and
+binary/source/input/runner hash agrees. Paired medians range from −0.94% to
++2.68%, with A/A spreads of 0.74–26.15%; none triggers the predeclared 3.5%
+confirmation threshold. No edits, builds or probes overlap timing. This study
+does not resolve the earlier runtime-extents timing concern.
+
+Evidence remains in `obj/pa20-work/projected-input-referents-v1/`. Captured
+function-pointer shape checking, nominal projected-template substitution and
+projected destruction remain unfinished; PA20 and PA21 are still planned.

@@ -139,7 +139,10 @@ An atom involving a locally bound lifetime cannot be decomposed into input
 assumptions when it escapes that binder.
 
 Prove an opaque result bound with an applicable environment clause or with all
-of its input components. Match complete typed applications; if two applications
+of its input components. Input components include reference referents even when
+the reference lifetime is locally bound by a function pointer. Dropping that
+lifetime must not erase an unbounded type parameter or nested associated result.
+Match complete typed applications; if two applications
 can match only when their lifetimes are equal, retain that equality as a condition,
 not an inference equation. Introduce ordinary constraints for the forced input
 route when no alternative is available. Keep alternatives in a shared, bounded,

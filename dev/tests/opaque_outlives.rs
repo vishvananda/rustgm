@@ -288,3 +288,41 @@ fn a_bound_on_an_escaping_result_does_not_grant_its_inputs_a_bound() -> Result {
     assert!(proof.solve().is_err());
     Ok(())
 }
+
+#[test]
+fn locally_bound_input_references_retain_their_referent_requirements() -> Result {
+    let mut types = Store::default();
+    let (t, ty) = parameter(&mut types, 0)?;
+    let nested = projection(&mut types, 12, ty, &[])?;
+    let bounds = Bounds::default();
+    let templates = Templates::default();
+    let variances = Variances::default();
+    for referent in [ty, nested] {
+        let input = reference(&mut types, RegionId::bound(0, 0)?, referent)?;
+        let parameters = types.intern_list(&[input])?;
+        let function = types.intern(Kind::Function {
+            bound_regions: 1,
+            parameters,
+            result: TypeId::UNIT,
+            unsafe_: false,
+        })?;
+        let output = projection(&mut types, 11, function, &[])?;
+        for assumption in [None, Some(ty), Some(nested), Some(output)] {
+            let mut queries = Queries::new(&types, &bounds, &templates);
+            let mut proof = Constraints::new(&types, &variances, 0, 100_000)?;
+            proof.parameter(t)?;
+            if let Some(assumed) = assumption {
+                proof.assume_type_outlives(&mut queries, assumed, RegionId::STATIC)?;
+            }
+            proof.require_type(&mut queries, output, RegionId::STATIC, ProofScope::ROOT, 79)?;
+            assert_eq!(
+                proof.solve().is_ok(),
+                assumption == Some(ty)
+                    || assumption == Some(referent)
+                    || assumption == Some(output),
+                "referent={referent:?}, assumption={assumption:?}"
+            );
+        }
+    }
+    Ok(())
+}
