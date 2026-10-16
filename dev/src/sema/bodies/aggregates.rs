@@ -34,7 +34,7 @@ impl Checker<'_> {
         if let Some(expected) = expected {
             // Borrowing can supply a slice element type before reference unsizing.
             if matches!(constructor, Constructor::Array(_))
-                && self.head(node, expected)? == Some(Constructor::Slice)
+                && self.contextual_head(node, expected)? == Some(Constructor::Slice)
             {
                 let element = self.child(node, expected, 0)?;
                 self.shape_equation(node, self.type_children[0], element)?;

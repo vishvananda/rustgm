@@ -31,6 +31,72 @@ fn pending(outcome: Outcome) -> Result<EquationId, &'static str> {
 }
 
 #[test]
+fn symbolic_results_refine_shared_inputs_without_erasing_the_original_application() -> TestResult {
+    let mut store = store()?;
+    let mut context = Context::default();
+    let input = context.variable(Domain::Any)?;
+    let projection = context.projected(&store, ITEM, input, &[], &[])?;
+    let byte = context.known(&store, BYTE)?;
+    let equation =
+        pending(context.equate_deferred(&store, projection, byte, Relation::Equality)?)?;
+    let watch = context.watch_changes(&[projection], &[])?;
+    assert_eq!(context.ready_resolution(&store)?, Some(watch));
+    assert!(!context.watch_resolved(watch)?);
+    let retained = context.publish_projection(&store, projection, input)?;
+    assert_eq!(context.ready_equation()?, Some(equation));
+    assert_eq!(
+        context.resume_equation(&store, equation)?,
+        Outcome::Complete
+    );
+    assert_eq!(context.ready_resolution(&store)?, Some(watch));
+    assert!(context.watch_resolved(watch)?);
+    assert_eq!(context.resolved(&mut store, projection)?, BYTE);
+    let application = context.projection_application(&store, retained)?;
+    assert_eq!(
+        context.resolved(&mut store, application.predicate.subject())?,
+        BYTE
+    );
+    assert!(matches!(
+        context.head(&store, retained),
+        Err(Error::Normalization)
+    ));
+    context.apply_normalization(&mut store, retained, BYTE)?;
+    context.finish(&mut store)?;
+    Ok(())
+}
+
+#[test]
+fn erased_symbolic_results_keep_const_input_dependencies_and_reject_cycles() -> TestResult {
+    let mut store = store()?;
+    let mut context = Context::default();
+    let byte = context.known(&store, BYTE)?;
+    let length = context.const_variable(&store, TypeId::primitive(Primitive::Usize))?;
+    let projection = context.projected(
+        &store,
+        ITEM,
+        byte,
+        &[rustgm::types::infer::arguments::Argument::Const(length)],
+        &[],
+    )?;
+    let recursive = context.construct(Constructor::Tuple, &[projection])?;
+    assert_eq!(
+        context.publish_projection(&store, projection, recursive),
+        Err(Error::Occurs)
+    );
+    let watch = context.watch_changes(&[projection], &[])?;
+    assert_eq!(context.ready_resolution(&store)?, Some(watch));
+    let retained = context.publish_projection(&store, projection, byte)?;
+    assert_eq!(context.resolved(&mut store, projection)?, BYTE);
+    assert_eq!(
+        context.resolved(&mut store, retained),
+        Err(Error::Unresolved)
+    );
+    assert_eq!(context.ready_resolution(&store)?, None);
+    assert!(!context.watch_resolved(watch)?);
+    Ok(())
+}
+
+#[test]
 fn ordinary_siblings_infer_inputs_independently_of_projection_order() -> TestResult {
     for reverse in [false, true] {
         let mut store = store()?;

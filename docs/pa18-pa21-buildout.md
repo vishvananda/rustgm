@@ -5555,3 +5555,123 @@ from the typed work-bound assertions and independent source/native checks.
 Measurement reuses the two current compiler binaries and removes rendering
 scratch. The final receipt is
 `obj/pa20-work/partial-projection-selection-v2/validation-v5.json`.
+
+## Symbolic associated results with retained input proofs
+
+A unique compatible implementation header can now expose its associated result
+while original type or const inputs remain unresolved. Header matching uses an
+isolated graph, counts every compatible alternative and exports only equations
+that preserve the original inputs. A result cannot choose between competing
+implementations. The original application survives publication with shared input
+identities; ordinary selection must eventually prove all implementation and
+formation requirements and agree with the published result. Output completion
+alone cannot discharge those obligations, including erased const inputs.
+
+Partial alias annotations now use their retained unreduced definitions. This
+preserves source-time reference, function-pointer and array conversion context.
+Unresolved projections defer result equality without retroactively introducing
+an implicit conversion or reborrow. Scoped equations intersect numeric variable
+domains in either argument order. The former 16 contextual-coercion mismatches
+among 43 retained controls now agree with pinned rustc.
+
+Nested projection inputs register their own normalization queries and notify only
+dependent applications. Inner publication may erase holes from an outer input,
+while the inner query still owns the original proof. Cached callable scopes retain
+empty frames and ambient lifetime identities across retries. This fixes a concrete
+outer-header regression found by independent comparison during development;
+its original failure evidence remains retained.
+
+Repeated canonical queries share completed normal forms within the body's
+immutable environment when they have no ambient/free lifetimes and leave no
+lifetime obligations. Only successful complete selections enter that cache.
+A single independent header parameter beneath exact known reference/pointer
+heads can also reuse the original input term and actual captures directly.
+Repeated captures must agree and every capture must be supplied; other headers
+retain the isolated probe. Readiness and symbolic publication share that header
+match, while original implementation premises still require the full selector.
+
+The maintainer tests independently qualify 80 source outcomes with pinned rustc
+and execute eight new native programs through both compilers. Additional typed
+controls verify publication identity, cyclic-result rejection, erased const
+requirements, integer/float domain merging and coalesced dependency notifications.
+The optimized suite passes 1,066 tests; all 43 explicitly backend-dependent groups
+also pass. All 4,864 course cases pass. The new PA18 ordinary-alias fixture preserves all
+1,311 preexisting PA18 sidecar hashes; no existing course oracle changes.
+Formatting, Clippy all/pedantic, file and architecture audits, harness checks,
+backend qualification and upstream checks pass on the frozen candidate.
+
+The validated compiler is
+`9436423ce79b1be47eafb4a472ee6e9d0a728d35af4c4033af2adba4f95ef49b`,
+with 659 source/config/test files frozen under
+`obj/pa20-work/symbolic-projection-integration-v1/source-v5/`. Its comparison
+baseline is published commit `0fbaba0`, binary
+`feb02e8ce952f95cb603ee3139963dc837831e8b97a1291cbf213b4c39bb9fcf`.
+
+PA20 and PA21 remain planned. General symbolic associated equalities, associated
+constants and coherence, followed by the remaining variance, higher-ranked,
+GAT, opaque-type and generic-drop responsibilities, still require implementation
+and complete grading contracts.
+
+The initial candidate retained 4,836 timing observations over 186 jobs and
+exposed about 105% overhead at the largest repeated inferred-alias scale. A
+234-observation focused run measured the first normal-form cache improvement.
+The final candidate retains another 4,836 observations over the same jobs, followed
+by 468 observations confirming all increases above 4% and the related inferred
+callable/wide-input controls. Every observation and rejected prototype receipt is
+retained; superseded candidate binaries have been retired.
+
+Of 171 inherited A/B inputs, 168 preserve full and count output bytes. The three
+inferred-Sized inputs retain one additional canonical projection type because
+the original alias application now participates in formation proof; the immediately
+following tuple ID shifts by one. An exact structural diff check permits only
+that addition, and count bytes remain identical. Adding an ordinary entry calling
+the measured function gives independently rustc-qualified programs with identical
+full/count executable LowIR from both compilers. The three semantic output changes
+are recorded explicitly in `output-review-v5.json`, not silently normalized away.
+
+Fifteen additional workloads independently qualify with pinned rustc and reject
+in the published baseline. They therefore use candidate-only measurements. All
+jobs use frozen binaries and sources, A/A calibration and paired ABBA blocks;
+full output hashes are checked before and after timing, count outputs agree, and
+source/binary/input hashes remain unchanged. No RustGM builds, tests or probes
+overlap timing. Unrelated projects remain active on this host.
+
+The final confirmation leaves repeated inferred-alias overhead of 11.8%, 26.0%
+and 33.8% at 128/512/2,048 uses, with candidate medians of 6.45/13.51/41.60 ms.
+These annotations now retain source-time projection context and their original
+queries. The remaining overhead is an optimization target. Repeated inferred
+callable inputs show 4.7%, 3.6% and 4.3% at 64/256/1,024 uses, with medians of
+11.00/30.17/117.42 ms. All other confirmation deltas are at most +1.5%; the wide
+partial-input cases range from -5.9% to -1.3%. These observations do not establish
+a general speedup. Calibration spreads and every paired block remain in the
+receipts, including noisy initial observations.
+
+Candidate-only semantic-view median wall times, in milliseconds, are:
+
+| Workload | 64 | 256 | 1,024 (512 for width) |
+| --- | ---: | ---: | ---: |
+| Later projection inputs | 8.85 | 23.57 | 84.15 |
+| Shared result identity | 11.03 | 29.58 | 105.78 |
+| Shared projection width | 5.22 | 9.49 | 15.66 |
+| Nested projected inputs | 14.17 | 44.31 | 162.86 |
+| Nested callable inputs | 21.57 | 74.20 | 299.37 |
+
+Resident medians range from 5,884 to 19,932 KiB. The final correctness receipt is
+`obj/pa20-work/symbolic-projection-integration-v1/validation-final-v5.json`; timing
+and confirmation summaries are `analysis-v5.json` and `analysis-confirm-v5.json`
+in the same directory. Cleanup after the validation batches removes 10,422
+generated files and 11.70 GiB of unshared blocks, recorded in
+`obj/cleanup/1792128822961449804.jsonl`.
+
+The next associated-equality investigation independently qualifies 17 declared
+source outcomes with pinned rustc. Nine accepted programs remain unimplemented:
+opaque projected identity, explicit associated equalities in inline/where bounds,
+projected Copy assumptions, distinct trait arguments, shorthand associated paths,
+default methods, inherited supertrait equalities and unused contradictory bounds.
+The eight rejection controls also reject in the current compiler, but its early
+boundary diagnostics do not establish the future solver's correctness. In
+particular, pinned rustc accepts an unused contradictory associated-type bound;
+an actual call must still satisfy it. The original incorrect rejection hypothesis
+and its correction are retained under
+`obj/pa20-work/symbolic-associated-equalities-v1/`. These exploratory controls are
+not included in the active assignment or maintainer pass counts.

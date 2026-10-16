@@ -216,6 +216,51 @@ export a result graph merely to establish input preservation.
 Symbolic result transport is a separate operation and may progress before that
 complete proof; it must retain the original input and formation obligations.
 
+Before exposing a symbolic result, count every compatible validated header,
+including candidates whose equations would refine existing inputs. Result types
+cannot remove competing headers. For a unique compatible header, instantiate
+its associated definition with the same type/const bindings as its header and
+export only an input-preserving graph. Scoped variable equations intersect numeric
+domains in either argument order. They must not reject a numeric hole merely
+because the implementation parameter is still unconstrained.
+For a sole indexed candidate with one independent type parameter, exact known
+reference/pointer heads can supply that parameter and its lifetime captures
+directly. Repeated captures must agree exactly, and every capture must be supplied;
+other cases retain the isolated probe. This shared header match supplies no premise
+proof. Result substitution reuses the original input term and shifts captured
+lifetimes beneath any result binders without copying the unchanged input graph.
+
+Publication keeps an independent application root sharing the original input
+identities, while redirecting the result root and waking its blocked equations.
+The original dependency ticket and proof scope survive publication. Completing
+the result does not cancel the input query: ordinary selection must still prove
+its implementation and formation requirements, and its final normal form must
+agree with the published result. Reserve and retain header lifetime equations
+before exported types refer to their private identities. Premises remain pending,
+even when the result erases all type or const inputs. This does not impose a
+global requirement to solve unused const holes: ordinary aliases may erase them.
+
+Partial alias applications use their retained unreduced definition so declaration
+normalization cannot erase source-time inference or coercion context. An unresolved
+projected expectation supplies no reference, array-unsizing or callable hint.
+Ordinary result equalities may wait for normalization; implicit conversions and
+reborrows cannot be introduced retrospectively when later inputs become known.
+
+When a header requires a nested projection's normal form, register the nested
+query at its actual callable scope and subscribe the enclosing application to
+that result. Publication wakes only those dependents; it does not discharge the
+nested query's original input proof. Recheck an enclosing application's current
+inputs after that wakeup: an inner result may have erased holes still retained
+by the inner proof. Cache input callable scopes by parent and inference-term
+identity so retries preserve empty frames and never allocate replacement binders.
+
+Reuse completed canonical body normal forms within the body's immutable caller
+environment when the root has no ambient or free lifetimes and selection leaves
+no lifetime obligations. Cache only after the complete selector succeeds; partial
+results and failures supply no entry. Queries with scoped evidence retain their
+ordinary proof path and private region intervals. Ordinary types bypass the
+normalization worklist.
+
 Run partial selection in an isolated input graph. Share one opening map with the
 caller environment shifted beneath the actual ancestor binders. Restore the
 selected input predicate before committing equations to the body: ambient slots

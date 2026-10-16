@@ -2,6 +2,37 @@
 use super::super::{Context, Error, Store, TermId, TypeId};
 
 impl Context {
+    /// Publish a semantically selected symbolic result, retaining an independent
+    /// application for the caller's eventual formation and implementation proof.
+    /// The retained root shares every original input; it is not a second set of
+    /// inference variables. Result equations may subsequently refine those inputs.
+    ///
+    /// # Errors
+    /// Rejects non-projections, cyclic results and exhausted inference resources.
+    pub fn publish_projection(
+        &mut self,
+        store: &Store,
+        root: TermId,
+        result: TermId,
+    ) -> Result<TermId, Error> {
+        let root = self.root(root)?;
+        let result = self.root(result)?;
+        if !self.is_projection(store, root)? {
+            return Err(Error::InvalidIdentity);
+        }
+        if self.occurs(root, result)? {
+            return Err(Error::Occurs);
+        }
+        let kind = self.materialize(store, root)?;
+        let entry = self.terms[root.0 as usize];
+        self.account_work((entry.end - entry.start) as usize)?;
+        let children = self.edges[entry.start as usize..entry.end as usize].to_vec();
+        let original = self.construct(kind, &children)?;
+        self.terms[root.0 as usize].parent = result;
+        self.normalized_projection(root)?;
+        Ok(original)
+    }
+
     /// Install the result of semantic normalization of one fully determined root.
     /// The caller must first prove every projection in its actual binder scope.
     /// Only associated-result nodes may change; ordinary structure, const inputs

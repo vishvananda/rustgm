@@ -298,7 +298,7 @@ impl Checker<'_> {
     ) -> Result<(), Error> {
         let referent = if let Some(expected) = expected
             && matches!(
-                self.head(node, expected)?,
+                self.contextual_head(node, expected)?,
                 Some(Constructor::Reference { .. })
             ) {
             Some(self.child(node, expected, 0)?)

@@ -341,10 +341,13 @@ fn deferred_alias_requirements_match_independent_use_checks()
                 | "explicit-sized-alias"
                 | "recursive-sized-premise"
                 | "sized-caller-missing" => "alias projection requires a Sized type argument",
-                "inferred-noninjective" => "type annotations needed",
-                "inferred-pair-unsized" | "inferred-default-unsized" => {
-                    "generic argument must be sized"
+                "inferred-noninjective" => "associated projection inputs remain unresolved",
+                // The retained original application now checks its implementation
+                // before the redundant generic Sized obligation at body completion.
+                "inferred-pair-unsized" => {
+                    "associated type requires an unambiguous validated implementation"
                 }
+                "inferred-default-unsized" => "generic argument must be sized",
                 "erased-alias-copy-called" => "must implement Copy",
                 "erased-bound-called" => {
                     "trait obligation requires an unambiguous matching assumption or implementation"

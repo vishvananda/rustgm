@@ -31,11 +31,14 @@ struct Selected {
 }
 pub(super) enum Progress {
     AwaitChange,
+    AwaitInputs,
     AwaitResolution,
     Complete,
+    Symbolic(TermId),
 }
 enum Attempt {
     Retry,
+    NestedInputs,
     Selected(Selected),
 }
 
@@ -97,6 +100,7 @@ impl Checker<'_> {
         scope: ScopeId,
         term: TermId,
         proof: &mut Obligations,
+        expose: bool,
     ) -> Result<Progress, Error> {
         let environment = self.projection_environment(node)?;
         let assumptions = caller_assumptions(self.facts, &mut self.infer, environment.as_ref())
@@ -110,6 +114,11 @@ impl Checker<'_> {
         if selection::requires_resolved_inputs(self.facts, &mut self.infer, term, &caller)
             .map_err(|e| self.error(node, e))?
         {
+            if expose
+                && let Some(result) = self.symbolic_projection(node, scope, term, proof, &caller)?
+            {
+                return Ok(Progress::Symbolic(result));
+            }
             return Ok(Progress::AwaitResolution);
         }
         let counts = proof
@@ -132,7 +141,16 @@ impl Checker<'_> {
             .map_err(|e| self.error(node, e))?;
         let selected = match selected.map_err(|e| self.error(node, e))? {
             Attempt::Selected(selected) => selected,
-            Attempt::Retry => return Ok(Progress::AwaitChange),
+            Attempt::NestedInputs => return Ok(Progress::AwaitInputs),
+            Attempt::Retry => {
+                if expose
+                    && let Some(result) =
+                        self.symbolic_projection(node, scope, term, proof, &caller)?
+                {
+                    return Ok(Progress::Symbolic(result));
+                }
+                return Ok(Progress::AwaitChange);
+            }
         };
         let original = self
             .infer
@@ -154,6 +172,26 @@ impl Checker<'_> {
             .apply_normalization(&mut self.facts.types, term, ty)
             .map_err(|e| self.error(node, e))?;
         Ok(Progress::Complete)
+    }
+
+    fn symbolic_projection(
+        &mut self,
+        node: NodeId,
+        scope: ScopeId,
+        term: TermId,
+        proof: &mut Obligations,
+        caller: &Caller<'_>,
+    ) -> Result<Option<TermId>, Error> {
+        let Some((result, selected)) =
+            selection::symbolic_result(self.report, self.facts, &mut self.infer, term, caller)
+                .map_err(|e| self.error(node, e))?
+        else {
+            return Ok(None);
+        };
+        proof
+            .append_at(selected, scope)
+            .map_err(|e| self.error(node, e))?;
+        Ok(Some(result))
     }
 }
 
@@ -214,10 +252,11 @@ impl Opened {
     }
 
     fn select(&mut self, report: &Report, facts: &mut Declarations) -> Result<Attempt, String> {
-        if !self.application.arguments.is_empty()
-            || self.pending_inputs(facts).map_err(inference)?
-        {
+        if !self.application.arguments.is_empty() {
             return Ok(Attempt::Retry);
+        }
+        if self.pending_inputs(facts).map_err(inference)? {
+            return Ok(Attempt::NestedInputs);
         }
         let assumptions = caller_assumptions(facts, &mut self.context, self.environment.as_ref())?;
         let caller = Caller {

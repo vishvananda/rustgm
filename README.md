@@ -48,7 +48,7 @@ repository with pinned reference tools. It has not been built yet.
   205 course cases, 135 native programs and 33 independently observed drop-order
   traces.
 - PA18 checks generic templates and emits demanded function, constructor and
-  destructor instances, with 437 course cases, 269 native executions and three
+  destructor instances, with 438 course cases, 270 native executions and three
   explicit code-generation-only controls.
 - PA19 provides trait/method semantic inspection and checked static dispatch, with
   1,069 cases and 247 native execution controls.

@@ -4,7 +4,7 @@ use super::{Context, Error, Store, TermId, constants::ConstTermId};
 use std::collections::{HashMap, HashSet, VecDeque};
 
 /// Identifies one readiness query in its original inference context.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct WatchId(u32);
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -149,6 +149,24 @@ impl Context {
             .ok_or(Error::InvalidIdentity)?;
         watch.state = State::Cancelled;
         watch.seen = HashSet::new();
+        Ok(())
+    }
+
+    /// Revisit an observed query after its owner publishes a required normal form.
+    /// This is a notification only: the original input counters remain intact.
+    /// Cancelled/completed tickets are inert, and repeated requests coalesce.
+    /// # Errors
+    /// Rejects invalid tickets and exhausted inference work.
+    pub fn retry_watch(&mut self, id: WatchId) -> Result<(), Error> {
+        self.step()?;
+        let storage = self.dependencies.as_mut().ok_or(Error::InvalidIdentity)?;
+        let watch = storage
+            .watches
+            .get(id.0 as usize)
+            .ok_or(Error::InvalidIdentity)?;
+        if watch.remaining != 0 {
+            storage.notify(id);
+        }
         Ok(())
     }
 

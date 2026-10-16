@@ -184,8 +184,8 @@ is not counted as an unchanged-source native comparison. Course text oracles
 remain uninstrumented; 22 accepted counter programs check unchanged-source
 cleanup effects through both compilers. See `docs/pa17-validation.md`.
 
-PA18 has 437 generic LowIR cases: 272 accepted and 165 rejected. There are
-269 executable comparisons and three deliberately divergent codegen-only
+PA18 has 438 generic LowIR cases: 273 accepted and 165 rejected. There are
+270 executable comparisons and three deliberately divergent codegen-only
 controls. Their `native.kind: "codegen"` requires a nonempty reason and forbids
 runtime outcome fields; both compilers produce native code, but neither binary
 is executed. Counts report these separately. All other accepted LowIR cases
@@ -265,6 +265,15 @@ outcomes, six native programs and wide inferred inputs against pinned rustc.
 `inference_changes.rs` and `scoped_projection_inputs.rs` check dependency
 notifications, bounded graph work and binder-safe input commitment. These tests
 do not activate the planned PA20 or PA21 grading contracts.
+
+`dev/tests/retained_projection_results.rs` independently qualifies 80 source
+controls for associated results available before all implementation inputs are
+known. Eight native programs also check the resulting values and borrow behavior.
+Coverage includes shared type/const result identities, competing headers, retained
+formation and lifetime obligations, source-time coercion context and nested input
+normalization inside callable binders. The inference tests separately check root
+publication, numeric domain intersection and dependency notification invariants.
+These remain maintainer coverage for the developing PA20/PA21 contracts.
 
 ## Placement and provenance
 

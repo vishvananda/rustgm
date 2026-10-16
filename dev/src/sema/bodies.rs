@@ -413,6 +413,17 @@ impl Checker<'_> {
             .head(&self.facts.types, term)
             .map_err(|e| self.error(node, e))
     }
+    fn contextual_head(
+        &mut self,
+        node: NodeId,
+        term: TermId,
+    ) -> Result<Option<Constructor>, Error> {
+        self.advance_projections(node)?;
+        match self.infer.head(&self.facts.types, term) {
+            Err(crate::types::infer::Error::Normalization) => Ok(None),
+            result => result.map_err(|e| self.error(node, e)),
+        }
+    }
     fn child(&mut self, node: NodeId, term: TermId, index: usize) -> Result<TermId, Error> {
         self.infer
             .child(&self.facts.types, term, index)
@@ -791,7 +802,7 @@ impl Checker<'_> {
     fn enter(&mut self, node: NodeId, expected: Option<TermId>) -> Result<(), Error> {
         if let Some(expected) = expected
             && matches!(
-                self.head(node, expected)?,
+                self.contextual_head(node, expected)?,
                 Some(Constructor::Reference { .. })
             )
         {
@@ -1236,8 +1247,35 @@ impl Checker<'_> {
         identity_reborrow: bool,
     ) -> Result<(), Error> {
         let actual = self.term(source)?;
-        let actual_head = self.head(source, actual)?;
-        let expected_head = self.head(source, expected)?;
+        self.advance_projections(source)?;
+        let actual_head = self.infer.head(&self.facts.types, actual);
+        let expected_head = self.infer.head(&self.facts.types, expected);
+        for head in [&actual_head, &expected_head] {
+            if let Err(error) = head
+                && *error != crate::types::infer::Error::Normalization
+            {
+                return Err(self.error(source, error));
+            }
+        }
+        if matches!(actual_head, Err(crate::types::infer::Error::Normalization))
+            || matches!(
+                expected_head,
+                Err(crate::types::infer::Error::Normalization)
+            )
+        {
+            // A future normal form may complete an equality, but cannot supply
+            // an implicit conversion or reborrow missing at this source point.
+            let kind = if actual_head == Ok(Some(Constructor::Never)) {
+                AdjustmentKind::Never
+            } else {
+                self.shape_equation(source, actual, expected)?;
+                AdjustmentKind::Equality
+            };
+            self.record_adjustment(source, expected, kind)?;
+            return Ok(());
+        }
+        let actual_head = actual_head.map_err(|e| self.error(source, e))?;
+        let expected_head = expected_head.map_err(|e| self.error(source, e))?;
         if actual_head == Some(Constructor::Never) {
             self.record_adjustment(source, expected, AdjustmentKind::Never)?;
             return Ok(());
@@ -1548,7 +1586,7 @@ impl Checker<'_> {
         };
         self.equate(frame.node, frame.result, common)?;
         let reference = matches!(
-            self.head(frame.node, common)?,
+            self.contextual_head(frame.node, common)?,
             Some(Constructor::Reference { .. })
         );
         let identity_reborrow = self.reference_expected.contains(&frame.node);
@@ -1587,7 +1625,7 @@ impl Checker<'_> {
     }
     fn frame_expected(&mut self, frame: Frame) -> Result<Option<TermId>, Error> {
         if let Some(expected) = frame.expected
-            && self.head(frame.node, expected)?.is_some()
+            && self.contextual_head(frame.node, expected)?.is_some()
         {
             return Ok(Some(expected));
         }

@@ -48,6 +48,39 @@ fn reference(store: &mut Store, region: RegionId) -> Result<TypeId, &'static str
 }
 
 #[test]
+fn scoped_header_equations_merge_numeric_domains_in_either_direction() -> TestResult {
+    let store = store()?;
+    for numeric in [Domain::Integer, Domain::Float] {
+        for reverse in [false, true] {
+            let mut context = Context::default();
+            let number = context.variable(numeric)?;
+            let parameter = context.variable(Domain::Any)?;
+            let left = goal(&mut context, &store, number)?;
+            let right = goal(&mut context, &store, parameter)?;
+            if reverse {
+                context.equate_predicates(&store, &right, &left)?;
+            } else {
+                context.equate_predicates(&store, &left, &right)?;
+            }
+            assert_eq!(context.unresolved_domain(number)?, Some(numeric));
+            assert_eq!(context.root(number)?, context.root(parameter)?);
+            let other = if numeric == Domain::Integer {
+                Domain::Float
+            } else {
+                Domain::Integer
+            };
+            let conflict = context.variable(other)?;
+            let conflicting = goal(&mut context, &store, conflict)?;
+            assert_eq!(
+                context.equate_predicates(&store, &left, &conflicting),
+                Err(Error::Mismatch)
+            );
+        }
+    }
+    Ok(())
+}
+
+#[test]
 fn extraction_preserves_shared_holes_and_the_family_boundary() -> TestResult {
     let mut store = store()?;
     let mut context = Context::default();

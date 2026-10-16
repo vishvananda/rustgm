@@ -98,72 +98,12 @@ fn transparent_subject(
     goal: &crate::types::infer::predicates::Predicate,
     owner: crate::resolve::model::DefId,
 ) -> Result<bool, Error> {
-    use crate::types::{Kind, infer::Constructor, parameters::predicates::Bound};
-    let (_, arguments) = goal.trait_arguments().ok_or(Error::InvalidIdentity)?;
-    if !arguments.is_empty() {
-        return Ok(false);
-    }
-    let header = facts
-        .generics
-        .implementations
-        .as_ref()
-        .and_then(|registry| registry.header(owner))
-        .ok_or(Error::InvalidIdentity)?
-        .predicate;
-    let Bound::Trait(id) = header.bound else {
-        return Err(Error::InvalidIdentity);
-    };
-    let application = facts
-        .types
-        .trait_application(id)
-        .ok_or(Error::InvalidIdentity)?;
-    if facts
-        .types
-        .arguments(application.arguments)
-        .ok_or(Error::InvalidIdentity)?
-        .len()
-        != 0
-    {
-        return Ok(false);
-    }
+    use crate::types::parameters::predicates::Bound;
     for predicate in facts.generics.declared_predicates_in_scope(owner) {
         context.account_work(1)?;
         if matches!(predicate.value.bound, Bound::Trait(_)) {
             return Ok(false);
         }
     }
-    let parameters = facts
-        .generics
-        .parameter_ids(&facts.types, owner)
-        .map_err(|_| Error::InvalidIdentity)?;
-    context.account_work(parameters.len())?;
-    let [parameter] = parameters.as_slice() else {
-        return Ok(false);
-    };
-    let (mut pattern, mut actual) = (header.ty, goal.subject());
-    loop {
-        context.account_work(1)?;
-        let (child, mutable, reference) =
-            match facts.types.kind(pattern).ok_or(Error::InvalidIdentity)? {
-                Kind::Parameter(id) => return Ok(id == *parameter),
-                Kind::Reference {
-                    mutable, referent, ..
-                } => (referent, mutable, true),
-                Kind::Pointer { mutable, pointee } => (pointee, mutable, false),
-                _ => return Ok(false),
-            };
-        let matches = match context.head(&facts.types, actual) {
-            Ok(Some(Constructor::Reference { mutable: found, .. })) => {
-                reference && found == mutable
-            }
-            Ok(Some(Constructor::Pointer { mutable: found })) => !reference && found == mutable,
-            Ok(_) | Err(Error::Normalization) => false,
-            Err(error) => return Err(error),
-        };
-        if !matches {
-            return Ok(false);
-        }
-        pattern = child;
-        actual = context.child(&facts.types, actual, 0)?;
-    }
+    super::header_inputs::independent(facts, context, goal, owner).map(|inputs| inputs.is_some())
 }

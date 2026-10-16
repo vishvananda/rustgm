@@ -1,0 +1,476 @@
+//! Published associated results retain their input formation and implementation obligations.
+#[path = "harness/native_references.rs"]
+mod native;
+#[path = "helpers/qualify.rs"]
+mod rustc;
+#[path = "support/semantic.rs"]
+mod semantic;
+const CASES: &[(&str, &str, bool)] = &[
+    (
+        "structured-later-read",
+        "struct W<T>(T);trait A{type Out;}impl<T:Copy>A for W<T>{type Out=u8;}type P<T>=(W<T>,<W<T>as A>::Out);fn main(){let p:P<_>=(W(0),7u8);let a=p.1;let _:W<u16>=p.0;let _:u8=a;}",
+        true,
+    ),
+    (
+        "erased-result-invalid-copy",
+        "struct W<T>(T);trait A{type Out;}impl<T:Copy>A for W<T>{type Out=u8;}type P<T>=(W<T>,<W<T>as A>::Out);fn main(){let mut x=0u8;let p:P<_>=(W((&mut x,0)),7u8);let a=p.1;let _:W<(&mut u8,u16)>=p.0;let _:u8=a;}",
+        false,
+    ),
+    (
+        "ambiguous-premise-later-valid",
+        "struct W<T>(T);trait B{}impl B for u8{}impl B for u16{}trait A{type Out;}impl<T:B>A for W<T>{type Out=u8;}type P<T>=(W<T>,<W<T>as A>::Out);fn main(){let p:P<_>=(W(0),7u8);let a=p.1;let _:W<u16>=p.0;let _:u8=a;}",
+        true,
+    ),
+    (
+        "erased-result-invalid-trait",
+        "struct W<T>(T);trait B{}impl B for u8{}impl B for u16{}trait A{type Out;}impl<T:B>A for W<T>{type Out=u8;}type P<T>=(W<T>,<W<T>as A>::Out);fn main(){let p:P<_>=(W(0),7u8);let a=p.1;let _:W<u32>=p.0;let _:u8=a;}",
+        false,
+    ),
+    (
+        "known-head-erased-unbound-type",
+        "struct W<T>(T);trait A{type Out;}impl<T>A for W<T>{type Out=u8;}type Q<T>=<W<T>as A>::Out;fn main(){let _:Q<_>=7u8;}",
+        false,
+    ),
+    (
+        "known-head-identity-output",
+        "struct W<T>(T);trait A{type Out;}impl<T:Copy>A for W<T>{type Out=T;}type Q<T>=<W<T>as A>::Out;fn main(){let _:Q<_>=7u8;}",
+        true,
+    ),
+    (
+        "known-head-shared-output",
+        "struct W<T>(T);trait A{type Out;}impl<T:Copy>A for W<T>{type Out=(T,T);}type Q<T>=<W<T>as A>::Out;fn main(){let _:Q<_>=(7u8,9u8);}",
+        true,
+    ),
+    (
+        "known-head-shared-output-conflict",
+        "struct W<T>(T);trait A{type Out;}impl<T:Copy>A for W<T>{type Out=(T,T);}type Q<T>=<W<T>as A>::Out;fn main(){let _:Q<_>=(7u8,9u16);}",
+        false,
+    ),
+    (
+        "known-head-const-output",
+        "struct W<const N:usize>;trait A{type Out;}impl<const N:usize>A for W<N>{type Out=[u8;N];}type Q<const N:usize>=<W<N>as A>::Out;fn main(){let _:Q<_>=[7u8,9u8];}",
+        true,
+    ),
+    (
+        "known-head-erased-unbound-const",
+        "struct W<const N:usize>;trait A{type Out;}impl<const N:usize>A for W<N>{type Out=u8;}type Q<const N:usize>=<W<N>as A>::Out;fn main(){let _:Q<_>=7u8;}",
+        false,
+    ),
+    (
+        "erased-result-valid-outlives",
+        "struct W<T>(T);trait A<'a>{type Out;}impl<'a,T:'a>A<'a>for W<T>{type Out=&'a u8;}type P<'a,T>=(W<T>,<W<T>as A<'a>>::Out);static V:u8=7;fn f<'a>(x:&'a u8){let p:P<'a,_>=(W((x,0)),&V);let _:u8=*p.1;let _:W<(&'a u8,u16)>=p.0;}fn main(){}",
+        true,
+    ),
+    (
+        "erased-result-invalid-outlives",
+        "struct W<T>(T);trait A<'a>{type Out;}impl<'a,T:'a>A<'a>for W<T>{type Out=&'a u8;}type P<'a,T>=(W<T>,<W<T>as A<'a>>::Out);static V:u8=7;fn f<'a>(x:&'a u8){let p:P<'static,_>=(W((x,0)),&V);let _:u8=*p.1;let _:W<(&'a u8,u16)>=p.0;}fn main(){}",
+        false,
+    ),
+    (
+        "ordinary-erased-const-alias",
+        "type E<const N:usize>=u8;fn main(){let _:E<_>=7u8;}",
+        true,
+    ),
+];
+const CONTEXTS: &[(&str, &str, bool)] = &[
+    (
+        "known-before-read",
+        "trait A{type Out;}impl<T:Copy>A for T{type Out=u8;}type P<T>=(T,<T as A>::Out);fn main(){let p:P<_>=(0u16,7u8);let a=p.1;let _:u8=a;}",
+        true,
+    ),
+    (
+        "later-input-read",
+        "trait A{type Out;}impl<T:Copy>A for T{type Out=u8;}type P<T>=(T,<T as A>::Out);fn main(){let p:P<_>=(0,7u8);let a=p.1;let _:u16=p.0;let _:u8=a;}",
+        true,
+    ),
+    (
+        "fallback-input-read",
+        "trait A{type Out;}impl<T:Copy>A for T{type Out=u8;}type P<T>=(T,<T as A>::Out);fn main(){let p:P<_>=(0,7u8);let a=p.1;let _:u8=a;}",
+        true,
+    ),
+    (
+        "later-input-explicit-output",
+        "trait A{type Out;}impl<T:Copy>A for T{type Out=u8;}type P<T>=(T,<T as A>::Out);fn main(){let p:P<_>=(0,7u8);let a:u8=p.1;let _:u16=p.0;}",
+        true,
+    ),
+    (
+        "later-input-wrong-output",
+        "trait A{type Out;}impl<T:Copy>A for T{type Out=u8;}type P<T>=(T,<T as A>::Out);fn main(){let p:P<_>=(0,7u8);let a:u32=p.1;let _:u16=p.0;}",
+        false,
+    ),
+    (
+        "later-input-comparison",
+        "trait A{type Out;}impl<T:Copy>A for T{type Out=u8;}type P<T>=(T,<T as A>::Out);fn main(){let p:P<_>=(0,7u8);let yes=p.1==7u8;let _:u16=p.0;}",
+        true,
+    ),
+    (
+        "later-input-arithmetic",
+        "trait A{type Out;}impl<T:Copy>A for T{type Out=u8;}type P<T>=(T,<T as A>::Out);fn main(){let p:P<_>=(0,7u8);let a=p.1+3u8;let _:u16=p.0;}",
+        true,
+    ),
+    (
+        "later-input-call-argument",
+        "trait A{type Out;}impl<T:Copy>A for T{type Out=u8;}type P<T>=(T,<T as A>::Out);fn take(_:u8){}fn main(){let p:P<_>=(0,7u8);take(p.1);let _:u16=p.0;}",
+        true,
+    ),
+    (
+        "later-input-aggregate-copy",
+        "trait A{type Out;}impl<T:Copy>A for T{type Out=u8;}type P<T>=(T,<T as A>::Out);fn main(){let p:P<_>=(0,7u8);let q=p;let _:u16=q.0;}",
+        true,
+    ),
+    (
+        "unconstrained-input",
+        "trait A{type Out;}impl<T:Copy>A for T{type Out=u8;}type P<T>=(T,<T as A>::Out);fn main(){let p:P<_>=loop{};let a:u8=p.1;}",
+        false,
+    ),
+    (
+        "later-input-function-result",
+        "trait A{type Out;}impl<T:Copy>A for T{type Out=fn(u8);}type P<T>=(T,<T as A>::Out);fn g(_:u8){}fn main(){let p:P<_>=(0,g as fn(u8));let h:fn(u8)=p.1;let _:u16=p.0;h(7);}",
+        true,
+    ),
+    (
+        "later-input-captured-result",
+        "trait A{type Out;}impl<'a,T:Copy>A for (&'a u8,T){type Out=&'a u8;}type P<'a,T>=(T,<(&'a u8,T) as A>::Out);fn f<'a>(x:&'a u8)->&'a u8{let p:P<'a,_>=(0,x);let a=p.1;let _:u16=p.0;a}fn main(){}",
+        true,
+    ),
+    (
+        "later-input-captured-escape",
+        "trait A{type Out;}impl<'a,T:Copy>A for (&'a u8,T){type Out=&'a u8;}type P<'a,T>=(T,<(&'a u8,T) as A>::Out);fn f<'a>(x:&'a u8)->&'static u8{let p:P<'a,_>=(0,x);let a=p.1;let _:u16=p.0;a}fn main(){}",
+        false,
+    ),
+    (
+        "later-implicit-function-pointer",
+        "trait A{type Out;}impl<T:Copy>A for T{type Out=fn(u8);}type P<T>=(T,<T as A>::Out);fn g(_:u8){}fn main(){let p:P<_>=(0,g);let _:u16=p.0;(p.1)(7);}",
+        true,
+    ),
+    (
+        "reject-later-function-signature",
+        "trait A{type Out;}impl<T:Copy>A for T{type Out=fn(u8);}type P<T>=(T,<T as A>::Out);fn g(_:u16){}fn main(){let p:P<_>=(0,g);let _:u16=p.0;}",
+        false,
+    ),
+    (
+        "later-shared-reborrow",
+        "trait A<'a>{type Out;}impl<'a,T:Copy>A<'a>for T{type Out=&'a u8;}type P<'a,T>=(T,<T as A<'a>>::Out);fn f<'a>(x:&'a mut u8)->u8{let p:P<'_,_>=(0,x);let _:u16=p.0;*p.1}fn main(){}",
+        true,
+    ),
+    (
+        "reject-later-shared-reborrow-write",
+        "trait A<'a>{type Out;}impl<'a,T:Copy>A<'a>for T{type Out=&'a u8;}type P<'a,T>=(T,<T as A<'a>>::Out);fn f<'a>(x:&'a mut u8)->u8{let p:P<'_,_>=(0,x);let _:u16=p.0;*x=73;*p.1}fn main(){}",
+        false,
+    ),
+    (
+        "later-identity-reborrow",
+        "trait A<'a>{type Out;}impl<'a,T:Copy>A<'a>for T{type Out=&'a mut u8;}type P<'a,T>=(T,<T as A<'a>>::Out);fn f<'a>(x:&'a mut u8){let p:P<'_,_>=(0,x);let _:u16=p.0;*p.1=19;*x=73;}fn main(){}",
+        true,
+    ),
+    (
+        "reject-later-identity-overlap",
+        "trait A<'a>{type Out;}impl<'a,T:Copy>A<'a>for T{type Out=&'a mut u8;}type P<'a,T>=(T,<T as A<'a>>::Out);fn f<'a>(x:&'a mut u8){let p:P<'_,_>=(0,x);let _:u16=p.0;*x=73;*p.1=19;}fn main(){}",
+        false,
+    ),
+    (
+        "later-discarded-repeat",
+        "trait A<'a>{type Out;}impl<'a,T:Copy>A<'a>for T{type Out=&'a u8;}type P<'a,T>=(T,[<T as A<'a>>::Out;0]);fn f<'a>(x:&'a mut u8){let p:P<'_,_>=(0,[x;0]);*x=73;let _:u16=p.0;let q=p.1;}fn main(){}",
+        true,
+    ),
+    (
+        "fallback-dependent-arithmetic",
+        "trait A{type Out;}impl<T:Copy>A for T{type Out=u8;}type P<T>=(T,<T as A>::Out);fn main(){let p:P<_>=(0,7u8);let y=p.1+1;}",
+        true,
+    ),
+    (
+        "reject-dependent-arithmetic-result",
+        "trait A{type Out;}impl<T:Copy>A for T{type Out=u8;}type P<T>=(T,<T as A>::Out);fn main(){let p:P<_>=(0,7u8);let y:u16=p.1+1;}",
+        false,
+    ),
+    (
+        "known-element-function-pointer",
+        "trait A{type Out;}impl<T:Copy>A for T{type Out=fn(u8);}type P<T>=(T,<T as A>::Out);fn g(_:u8){}fn main(){let p:P<_>=(0u16,g);let _:u16=p.0;(p.1)(7);}",
+        true,
+    ),
+    (
+        "known-element-shared-reborrow",
+        "trait A<'a>{type Out;}impl<'a,T:Copy>A<'a>for T{type Out=&'a u8;}type P<'a,T>=(T,<T as A<'a>>::Out);fn f<'a>(x:&'a mut u8)->u8{let p:P<'_,_>=(0u16,x);let _:u16=p.0;*p.1}fn main(){}",
+        true,
+    ),
+    (
+        "known-element-identity-reborrow",
+        "trait A<'a>{type Out;}impl<'a,T:Copy>A<'a>for T{type Out=&'a mut u8;}type P<'a,T>=(T,<T as A<'a>>::Out);fn f<'a>(x:&'a mut u8){let p:P<'_,_>=(0u16,x);let _:u16=p.0;*p.1=19;*x=73;}fn main(){}",
+        true,
+    ),
+    (
+        "fully-known-identity-reborrow",
+        "trait A<'a>{type Out;}impl<'a,T:Copy>A<'a>for T{type Out=&'a mut u8;}type P<'a,T>=(T,<T as A<'a>>::Out);fn f<'a>(x:&'a mut u8){let p:P<'_,u16>=(0,x);let _:u16=p.0;*p.1=19;*x=73;}fn main(){}",
+        true,
+    ),
+    (
+        "known-reversed-shared-reborrow",
+        "trait A<'a>{type Out;}impl<'a,T:Copy>A<'a>for T{type Out=&'a u8;}type P<'a,T>=(<T as A<'a>>::Out,T);fn f<'a>(x:&'a mut u8)->u8{let p:P<'_,_>=(x,0u16);let _:u16=p.1;*p.0}fn main(){}",
+        false,
+    ),
+    (
+        "reversed-shared-no-copy-bound",
+        "trait A<'a>{type Out;}impl<'a,T>A<'a>for T{type Out=&'a u8;}type P<'a,T>=(<T as A<'a>>::Out,T);fn f<'a>(x:&'a mut u8)->u8{let p:P<'_,_>=(x,0u16);let _:u16=p.1;*p.0}fn main(){}",
+        false,
+    ),
+    (
+        "reversed-shared-known-input",
+        "trait A<'a>{type Out;}impl<'a,T:Copy>A<'a>for T{type Out=&'a u8;}type P<'a,T>=(<T as A<'a>>::Out,T);fn f<'a>(x:&'a mut u8)->u8{let p:P<'_,u16>=(x,0u16);let _:u16=p.1;*p.0}fn main(){}",
+        true,
+    ),
+    (
+        "reversed-function-pointer",
+        "trait A{type Out;}impl<T:Copy>A for T{type Out=fn(u8);}type P<T>=(<T as A>::Out,T);fn g(_:u8){}fn main(){let p:P<_>=(g,0u16);let _:u16=p.1;(p.0)(7);}",
+        false,
+    ),
+    (
+        "reversed-function-no-copy-bound",
+        "trait A{type Out;}impl<T>A for T{type Out=fn(u8);}type P<T>=(<T as A>::Out,T);fn g(_:u8){}fn main(){let p:P<_>=(g,0u16);let _:u16=p.1;(p.0)(7);}",
+        false,
+    ),
+    (
+        "reversed-function-known-input",
+        "trait A{type Out;}impl<T:Copy>A for T{type Out=fn(u8);}type P<T>=(<T as A>::Out,T);fn g(_:u8){}fn main(){let p:P<u16>=(g,0u16);let _:u16=p.1;(p.0)(7);}",
+        true,
+    ),
+    (
+        "reversed-explicit-shared-borrow",
+        "trait A<'a>{type Out;}impl<'a,T>A<'a>for T{type Out=&'a u8;}type P<'a,T>=(<T as A<'a>>::Out,T);fn f<'a>(x:&'a mut u8)->u8{let p:P<'_,_>=(&*x,0u16);let _:u16=p.1;*p.0}fn main(){}",
+        true,
+    ),
+    (
+        "reversed-explicit-function-pointer",
+        "trait A{type Out;}impl<T>A for T{type Out=fn(u8);}type P<T>=(<T as A>::Out,T);fn g(_:u8){}fn main(){let p:P<_>=(g as fn(u8),0u16);let _:u16=p.1;(p.0)(7);}",
+        true,
+    ),
+    (
+        "fallback-input-no-copy-bound",
+        "trait A{type Out;}impl<T>A for T{type Out=u8;}type P<T>=(T,<T as A>::Out);fn main(){let p:P<_>=(0,7u8);let a=p.1;let _:u8=a;}",
+        true,
+    ),
+    (
+        "fallback-arithmetic-no-copy-bound",
+        "trait A{type Out;}impl<T>A for T{type Out=u8;}type P<T>=(T,<T as A>::Out);fn main(){let p:P<_>=(0,7u8);let y=p.1+1;}",
+        true,
+    ),
+    (
+        "ordinary-shared-tuple-second-reborrow",
+        "type P<T>=(T,T);fn f(x:&mut u8,y:&mut u8){let p:P<_>=(x,y);*p.1=19;*y=73;}fn main(){}",
+        true,
+    ),
+    (
+        "ordinary-shared-tuple-first-moves",
+        "type P<T>=(T,T);fn f(x:&mut u8,y:&mut u8){let p:P<_>=(x,y);*p.1=19;*x=73;}fn main(){}",
+        false,
+    ),
+    (
+        "ordinary-independent-tuple-moves",
+        "fn f(x:&mut u8,y:&mut u8){let p:(_,_)=(x,y);*p.1=19;*y=73;}fn main(){}",
+        false,
+    ),
+];
+#[test]
+fn symbolic_results_match_independent_language_outcomes() -> Result<(), Box<dyn std::error::Error>>
+{
+    check(CASES)
+}
+#[test]
+fn contextual_operations_preserve_source_time_coercions() -> Result<(), Box<dyn std::error::Error>>
+{
+    check(CONTEXTS)
+}
+const RELATIONSHIPS: &[(&str, &str, bool)] = &[
+    (
+        "nested-direct-subject",
+        "struct W<T>(T);trait A{type Out;}impl<T:Copy>A for W<T>{type Out=u8;}trait B{type Out;}impl B for u8{type Out=u16;}type P<T>=(T,<<W<T>as A>::Out as B>::Out);fn main(){let p:P<_>=(3,7u16);let a=p.1;let _:u8=p.0;let _:u16=a;}",
+        true,
+    ),
+    (
+        "nested-erased-const-remains-required",
+        "struct G<const N:usize>;struct W<T>(T);trait A{type Out;}impl<const N:usize>A for G<N>{type Out=u8;}trait B{type Out;}impl B for W<u8>{type Out=u16;}type Q<const N:usize>=<W<<G<N>as A>::Out>as B>::Out;fn main(){let _:Q<_>=7u16;}",
+        false,
+    ),
+    (
+        "nested-callable-input",
+        "struct W<T>(T);trait A<'a>{type Out;}impl<'a,T:Copy>A<'a>for W<T>{type Out=&'a u8;}trait B{type Out;}impl B for fn(&u8){type Out=u16;}type P<T>=(T,<for<'a>fn(<W<T>as A<'a>>::Out)as B>::Out);fn main(){let p:P<_>=(3,7u16);let a=p.1;let _:u8=p.0;let _:u16=a;}",
+        true,
+    ),
+    (
+        "nested-callable-static-rejected",
+        "struct W<T>(T);trait A<'a>{type Out;}impl<'a,T:Copy>A<'a>for W<T>{type Out=&'a u8;}trait B{type Out;}impl B for fn(&'static u8){type Out=u16;}type P<T>=(T,<for<'a>fn(<W<T>as A<'a>>::Out)as B>::Out);fn main(){let p:P<_>=(3,7u16);let a=p.1;let _:u8=p.0;let _:u16=a;}",
+        false,
+    ),
+    (
+        "nested-projected-input-known",
+        "trait A{type Out;}impl<T:Copy>A for T{type Out=u8;}struct W<T>(T);trait B{type Out;}impl<T:Copy>B for W<T>{type Out=u16;}type P<T>=(T,<W<<T as A>::Out>as B>::Out);fn main(){let p:P<_>=(3u8,7u16);let _:u16=p.1;}",
+        true,
+    ),
+    (
+        "nested-projected-input-numeric",
+        "trait A{type Out;}impl<T:Copy>A for T{type Out=u8;}struct W<T>(T);trait B{type Out;}impl<T:Copy>B for W<T>{type Out=u16;}type P<T>=(T,<W<<T as A>::Out>as B>::Out);fn main(){let p:P<_>=(3,7u16);let x=p.1;let _:u8=p.0;let _:u16=x;}",
+        true,
+    ),
+    (
+        "nested-projected-input-known-concrete",
+        "trait A{type Out;}impl<T:Copy>A for T{type Out=u8;}struct W<T>(T);trait B{type Out;}impl B for W<u8>{type Out=u16;}type P<T>=(T,<W<<T as A>::Out>as B>::Out);fn main(){let p:P<_>=(3u8,7u16);let _:u16=p.1;}",
+        true,
+    ),
+    (
+        "nested-projected-input-numeric-concrete",
+        "trait A{type Out;}impl<T:Copy>A for T{type Out=u8;}struct W<T>(T);trait B{type Out;}impl B for W<u8>{type Out=u16;}type P<T>=(T,<W<<T as A>::Out>as B>::Out);fn main(){let p:P<_>=(3,7u16);let x=p.1;let _:u8=p.0;let _:u16=x;}",
+        true,
+    ),
+    (
+        "symbolic-result-invariant-capture",
+        "struct W<T>(T);trait A{type Out;}impl<T:Copy>A for W<T>{type Out=T;}type F<T>=for<'a>fn(&mut <W<T>as A>::Out,&'a u8);fn g<'a>(_:&mut &'a u8,_:&'a u8){}fn main(){let _:F<_>=g;}",
+        false,
+    ),
+    (
+        "symbolic-result-output-capture",
+        "struct W<T>(T);trait A{type Out;}impl<T:Copy>A for W<T>{type Out=T;}type F<T>=for<'a>fn(&'a u8)-><W<T>as A>::Out;fn g<'a>(x:&'a u8)->&'a u8{x}fn main(){let _:F<_>=g;}",
+        false,
+    ),
+    (
+        "later-array-context",
+        "trait A{type Out;}impl<T:Copy>A for T{type Out=[u8;2];}type P<T>=(<T as A>::Out,T);fn main(){let _:P<_>=([7u8,9u8],0u16);}",
+        true,
+    ),
+    (
+        "later-explicit-borrow-context",
+        "trait A<'a>{type Out;}impl<'a,T:Copy>A<'a>for T{type Out=&'a u8;}type P<'a,T>=(<T as A<'a>>::Out,T);fn main(){let _:P<'_,_>=(&7u8,0u16);}",
+        true,
+    ),
+    (
+        "later-block-context",
+        "trait A{type Out;}impl<T:Copy>A for T{type Out=u8;}type P<T>=(<T as A>::Out,T);fn main(){let _:P<_>=({7u8},0u16);}",
+        true,
+    ),
+    (
+        "symbolic-result-covariant-input",
+        "struct W<T>(T);trait A{type Out;}impl<T:Copy>A for W<T>{type Out=T;}type F<T>=for<'a>fn(<W<T>as A>::Out,&'a u8);fn g<'a>(_:&'a u8,_:&'a u8){}fn main(){let _:F<_>=g;}",
+        true,
+    ),
+    (
+        "symbolic-result-covariant-tuple-input",
+        "struct W<T>(T);trait A{type Out;}impl<T:Copy>A for W<T>{type Out=(T,T);}type F<T>=for<'a>fn(<W<T>as A>::Out,&'a u8);fn g<'a>(_:(&'a u8,&'a u8),_:&'a u8){}fn main(){let _:F<_>=g;}",
+        true,
+    ),
+    (
+        "symbolic-empty-nested-binder-matches",
+        "struct W<T>(T);trait A<'a>{type Out;}impl<'a,T:Copy>A<'a>for W<T>{type Out=&'a u8;}type F<T>=for<'a>fn(fn(<W<T>as A<'a>>::Out),T);fn g<'a>(_:fn(&'a u8),_:u16){}fn main(){let _:F<_>=g;}",
+        true,
+    ),
+    (
+        "shared-const-output",
+        "struct W<const N:usize>;trait A{type Out;}impl<const N:usize>A for W<N>{type Out=([u8;N],[u8;N]);}type Q<const N:usize>=<W<N>as A>::Out;fn main(){let _:Q<_>=([7u8,9u8],[11u8,13u8]);}",
+        true,
+    ),
+    (
+        "shared-const-conflict",
+        "struct W<const N:usize>;trait A{type Out;}impl<const N:usize>A for W<N>{type Out=([u8;N],[u8;N]);}type Q<const N:usize>=<W<N>as A>::Out;fn main(){let _:Q<_>=([7u8,9u8],[11u8]);}",
+        false,
+    ),
+    (
+        "different-results-do-not-select-headers",
+        "struct W<T>(T);trait A{type Out;}impl A for W<u8>{type Out=u8;}impl A for W<u16>{type Out=u16;}type Q<T>=<W<T>as A>::Out;fn main(){let _:Q<_>=7u8;}",
+        false,
+    ),
+    (
+        "numeric-result-cannot-select-header",
+        "struct W<T>(T);trait A{type Out;}impl A for W<u8>{type Out=u8;}impl A for W<u16>{type Out=u16;}type P<T>=(W<T>,<W<T>as A>::Out);fn main(){let _:P<_>=(W(0),7u8);}",
+        false,
+    ),
+    (
+        "symbolic-callable-output",
+        "struct W<T>(T);trait A{type Out;}impl<T:Copy>A for W<T>{type Out=(fn(T)->T,T);}type Q<T>=<W<T>as A>::Out;fn f(x:u8)->u8{x}fn main(){let q:Q<_>=(f,7u8);let _:u8=(q.0)(q.1);}",
+        true,
+    ),
+    (
+        "symbolic-ambient-result",
+        "struct W<T>(T);trait A<'a>{type Out;}impl<'a,T:Copy>A<'a>for W<T>{type Out=&'a u8;}type F<T>=for<'a>fn(<W<T>as A<'a>>::Out,T);fn g(_: &u8,_:u16){}fn main(){let f:F<_>=g;f(&7,9);}",
+        true,
+    ),
+    (
+        "symbolic-ambient-result-static-rejected",
+        "struct W<T>(T);trait A<'a>{type Out;}impl<'a,T:Copy>A<'a>for W<T>{type Out=&'a u8;}type F<T>=for<'a>fn(<W<T>as A<'a>>::Out,T);fn g(_: &'static u8,_:u16){}fn main(){let _:F<_>=g;}",
+        false,
+    ),
+    (
+        "symbolic-empty-nested-binder",
+        "struct W<T>(T);trait A<'a>{type Out;}impl<'a,T:Copy>A<'a>for W<T>{type Out=&'a u8;}type F<T>=for<'a>fn(fn(<W<T>as A<'a>>::Out),T);fn g(_:fn(&u8),_:u16){}fn main(){let _:F<_>=g;}",
+        false,
+    ),
+];
+#[test]
+fn symbolic_result_relationships_preserve_identity_and_binders()
+-> Result<(), Box<dyn std::error::Error>> {
+    check(RELATIONSHIPS)
+}
+fn check(cases: &[(&str, &str, bool)]) -> Result<(), Box<dyn std::error::Error>> {
+    let mut failures = Vec::new();
+    for &(name, source, accepted) in cases {
+        rustc::qualify(&format!("symbolic-result-{name}"), source, accepted)?;
+        let result = semantic::analyze(source).and_then(|(mut report, mut facts)| {
+            let entry =
+                rustgm::sema::entry::select(&mut report, &facts).map_err(|e| e.to_string())?;
+            rustgm::lower::instances::build(&report, &mut facts, entry)
+                .map(|_| ())
+                .map_err(|e| e.to_string())
+        });
+        if result.is_ok() != accepted {
+            failures.push(format!("{name}: {:?}", result.err()));
+        }
+    }
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
+    Ok(())
+}
+
+#[test]
+#[ignore = "requires the qualified external CPPGM LowIR backend"]
+fn symbolic_results_execute_with_later_input_proofs() -> Result<(), Box<dyn std::error::Error>> {
+    native::check_cases(
+        "symbolic-projection-results",
+        &[
+            (
+                "nested-concrete-header",
+                "trait A{type Out;}impl<T:Copy>A for T{type Out=u8;}struct W<T>(T);trait B{type Out;}impl B for W<u8>{type Out=u16;}type P<T>=(T,<W<<T as A>::Out>as B>::Out);fn main(){let p:P<_>=(3,7u16);let a=p.1+11u16;let _:u8=p.0;check(a==18);check(p.0==3);}",
+                false,
+            ),
+            (
+                "nested-callable-header",
+                "struct W<T>(T);trait A<'a>{type Out;}impl<'a,T:Copy>A<'a>for W<T>{type Out=&'a u8;}trait B{type Out;}impl B for fn(&u8){type Out=u16;}type P<T>=(T,<for<'a>fn(<W<T>as A<'a>>::Out)as B>::Out);fn main(){let p:P<_>=(3,7u16);let a=p.1+11u16;let _:u8=p.0;check(a==18);check(p.0==3);}",
+                false,
+            ),
+            (
+                "later-input",
+                "trait A{type Out;}impl<T:Copy>A for T{type Out=u8;}type P<T>=(T,<T as A>::Out);fn main(){let p:P<_>=(3,7u8);let a=p.1+5u8;let _:u16=p.0;check(a==12);check(p.0==3);}",
+                false,
+            ),
+            (
+                "identity",
+                "struct W<T>(T);trait A{type Out;}impl<T:Copy>A for W<T>{type Out=(T,T);}type Q<T>=<W<T>as A>::Out;fn main(){let p:Q<_>=(7u8,9u8);check(p.0+p.1==16);}",
+                false,
+            ),
+            (
+                "const-result",
+                "struct W<const N:usize>;trait A{type Out;}impl<const N:usize>A for W<N>{type Out=([u8;N],[u8;N]);}type Q<const N:usize>=<W<N>as A>::Out;fn main(){let p:Q<_>=([7u8,9u8],[11u8,13u8]);check(p.0[0]+p.1[1]==20);}",
+                false,
+            ),
+            (
+                "implicit-callable",
+                "trait A{type Out;}impl<T:Copy>A for T{type Out=fn(u8)->u8;}type P<T>=(T,<T as A>::Out);fn g(x:u8)->u8{x+17}fn main(){let p:P<_>=(3,g);let _:u16=p.0;check((p.1)(7)==24);}",
+                false,
+            ),
+            (
+                "reborrow",
+                "trait A<'a>{type Out;}impl<'a,T:Copy>A<'a>for T{type Out=&'a mut u8;}type P<'a,T>=(T,<T as A<'a>>::Out);fn f(x:&mut u8){let p:P<'_,_>=(3,x);let _:u16=p.0;*p.1=19;check(*p.1==19);*x=73;}fn main(){let mut x=0;f(&mut x);check(x==73);}",
+                false,
+            ),
+            (
+                "ambient",
+                "struct W<T>(T);trait A<'a>{type Out;}impl<'a,T:Copy>A<'a>for W<T>{type Out=&'a u8;}type F<T>=for<'a>fn(<W<T>as A<'a>>::Out,T);fn g(x:&u8,y:u16){check(*x==7);check(y==9);}fn main(){let f:F<_>=g;f(&7,9);}",
+                false,
+            ),
+        ],
+    )
+}

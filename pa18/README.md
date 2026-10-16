@@ -21,8 +21,11 @@ type/const arguments remain distinct even when their signatures erase them.
 
 Support explicit arguments, turbofish, inferred arguments and `_` placeholders
 where the pinned language permits them. Infer through calls, result annotations,
-constructor fields, function pointers and fixed array shapes. An unconstrained
-argument is an error. Distinguish early lifetime arguments from late function
+constructor fields, function pointers and fixed array shapes. Arguments needed
+for type formation or executable instance identity must be determined. An ordinary
+alias may erase an unused const placeholder: `type E<const N:usize>=u8;` permits
+`let value:E<_>=7u8;`. Erasure does not discharge an associated projection's
+original input obligations. Distinguish early lifetime arguments from late function
 binders: supplying a late lifetime explicitly is invalid. Resolution of a bare
 path in an argument follows Rust's type/const ambiguity rules; a const block can
 select the value namespace explicitly.
@@ -174,8 +177,8 @@ is an accepted maintainer control awaiting PA20's grading contract.
 
 ## Validation
 
-The suite declares 437 fixtures: 272 accepted and 165 rejected. Of the accepted
-programs, 269 execute through both pinned rustc and the qualified CPPGM backend;
+The suite declares 438 fixtures: 273 accepted and 165 rejected. Of the accepted
+programs, 270 execute through both pinned rustc and the qualified CPPGM backend;
 three intentionally diverge and must only undergo code generation. Growing-instance
 rejections use rustc object generation: metadata-only success cannot qualify them.
 No compilation-only result counts as a runtime comparison. Native panic cases

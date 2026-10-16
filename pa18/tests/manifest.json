@@ -1055,6 +1055,23 @@
       }
     },
     {
+      "path": "tests/spec/aliases/erased-const-placeholder.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.aliases"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "Unused const inference survives ordinary alias erasure; original projection obligations remain PA20",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
       "path": "tests/spec/aliases/reject-alias-cannot-grant-const-field-access.rs",
       "exit_status": 1,
       "features": [

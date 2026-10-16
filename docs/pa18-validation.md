@@ -2,10 +2,20 @@
 
 This document retains release and subsequent checkpoint evidence. Following PA20
 projection normalization, partial callable inference and tuple coercion ordering,
-the active suite has 437 cases: 272 accepted and 165 rejected.
+the active suite has 438 cases: 273 accepted and 165 rejected.
 Its former associated-type boundary is retained byte-for-byte as an
 accepted control in `dev/tests/projection_paths.rs`, awaiting PA20's grading contract.
 See `pa18/README.md` for the current suite counts.
+
+The unused-const-placeholder checkpoint adds one ordinary-alias program covering
+both an erased placeholder and an explicitly supplied placeholder overriding a
+default. Pinned rustc independently accepts all 438 declarations; native checks
+pass 270 executions and three codegen-only comparisons. The new oracle's runtime
+value check uses the course's ordinary `check`/division-failure helper. Generation
+preserves every byte of all 1,311 preexisting sidecars. The handout now distinguishes
+unused const arguments erased by ordinary aliases from original input obligations
+retained by associated projections. Evidence is under
+`obj/pa20-work/symbolic-projection-integration-v1/`.
 
 The partial callable inference checkpoint adds three declared source controls in
 `callables/`: independent borrowed callback inputs, an inferred whole higher-ranked
@@ -22,7 +32,7 @@ The tuple coercion checkpoint adds three alias-runtime controls: a later field
 reborrows using context inferred from an earlier field, nested block tails retain
 that context, and the first field still moves when no reference context was yet
 available. Outcomes are declared before independent rustc and native qualification.
-The current suite requires 437 declaration checks, 269 executions and three
+That checkpoint requires 437 declaration checks, 269 executions and three
 codegen-only comparisons. Its evidence is retained under
 `obj/pa20-work/partial-projection-normalization-v1/`.
 

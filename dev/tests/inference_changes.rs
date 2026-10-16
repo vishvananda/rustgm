@@ -15,6 +15,30 @@ fn drain(context: &mut Context, store: &Store) -> Result<Vec<WatchId>, Error> {
 }
 
 #[test]
+fn published_normal_forms_retry_queries_without_completing_their_input_tickets() -> TestResult {
+    let store = Store::default();
+    let mut context = Context::default();
+    let input = context.variable(Domain::Any)?;
+    let watch = context.watch_changes(&[input], &[])?;
+    assert_eq!(drain(&mut context, &store)?, [watch]);
+    context.await_resolution(watch)?;
+    context.retry_watch(watch)?;
+    context.retry_watch(watch)?;
+    assert_eq!(drain(&mut context, &store)?, [watch]);
+    assert!(!context.watch_resolved(watch)?);
+    let byte = context.known(&store, BYTE)?;
+    context.equate(&store, input, byte)?;
+    assert_eq!(drain(&mut context, &store)?, [watch]);
+    assert!(context.watch_resolved(watch)?);
+    context.retry_watch(watch)?;
+    assert!(drain(&mut context, &store)?.is_empty());
+    context.cancel_watch(watch)?;
+    context.retry_watch(watch)?;
+    assert!(drain(&mut context, &store)?.is_empty());
+    Ok(())
+}
+
+#[test]
 fn initial_partial_event_is_once_per_query_and_updates_coalesce() -> TestResult {
     let store = Store::default();
     let mut context = Context::default();

@@ -66,6 +66,13 @@ impl Context {
             {
                 continue;
             }
+            if let (Value::Variable(left), Value::Variable(right)) = (
+                self.terms[a.0 as usize].value,
+                self.terms[b.0 as usize].value,
+            ) {
+                self.variable_pair(a, b, left, right)?;
+                continue;
+            }
             if let Value::Variable(domain) = self.terms[a.0 as usize].value {
                 let candidate = rebasing.apply(self, store, b, binders.depth()?, false)?;
                 self.bind(store, a, candidate, domain)?;

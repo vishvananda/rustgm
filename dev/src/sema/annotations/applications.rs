@@ -84,7 +84,11 @@ pub(super) fn infer(host: &mut impl Host, key: NodeKey, scope: ScopeId) -> Resul
         }
     }
     if host.report().resolution.definitions[owner.0 as usize].kind == DefKind::TypeAlias {
-        let template = host.facts().definitions[owner.0 as usize]
+        let template = host
+            .facts()
+            .unreduced
+            .definition(owner)
+            .or(host.facts().definitions[owner.0 as usize])
             .ok_or_else(|| error(host, key, "missing alias template"))?;
         let template = fields
             .regions

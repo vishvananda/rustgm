@@ -1,11 +1,12 @@
 //! Body-local deferred work waits for independently determined inputs before selection.
 mod contracts;
+mod inputs;
 mod selection;
 use super::{Checker, Error, NodeId, TermId};
 use crate::{
     sema::{alias_requirements::Expansion, annotations::Fields, generics::AnnotationArgument},
     types::{
-        RegionId,
+        RegionId, TypeId,
         infer::{
             arguments::Argument,
             deferred::{EquationId, Outcome, Relation},
@@ -25,11 +26,13 @@ struct Contract {
 enum Task {
     Contract(Contract),
     Normalize(TermId),
+    Symbolic { input: TermId, output: TermId },
 }
 struct Query {
     node: NodeId,
     scope: ScopeId,
     task: Task,
+    input_normalizations: bool,
 }
 struct Data {
     scopes: Obligations,
@@ -39,6 +42,9 @@ struct Data {
     tasks: HashMap<WatchId, Query>,
     equations: HashMap<EquationId, NodeId>,
     normalizations: HashSet<(ScopeId, TermId)>,
+    normalization_waiters: HashMap<TermId, HashSet<WatchId>>,
+    input_scopes: HashMap<(ScopeId, TermId), ScopeId>,
+    normal_forms: HashMap<TypeId, TypeId>,
 }
 impl Default for Data {
     fn default() -> Self {
@@ -48,6 +54,9 @@ impl Default for Data {
             tasks: HashMap::new(),
             equations: HashMap::new(),
             normalizations: HashSet::new(),
+            normalization_waiters: HashMap::new(),
+            input_scopes: HashMap::new(),
+            normal_forms: HashMap::new(),
         }
     }
 }
@@ -138,6 +147,7 @@ impl Checker<'_> {
                     arguments,
                     regions,
                 }),
+                input_normalizations: false,
             },
         );
         Ok(())
@@ -176,6 +186,7 @@ impl Checker<'_> {
                     node,
                     scope,
                     task: Task::Normalize(term),
+                    input_normalizations: false,
                 },
             );
         }
@@ -222,7 +233,9 @@ impl Checker<'_> {
                     .infer
                     .watch_resolved(watch)
                     .map_err(|e| self.error(body, e))?;
-                if let Some(query) = self.complete_projection(query, resolved, watch)? {
+                let (query, advanced) = self.complete_projection(query, resolved, watch)?;
+                progress |= advanced;
+                if let Some(query) = query {
                     self.projections.insert(watch, query);
                 } else {
                     self.infer
@@ -263,21 +276,21 @@ impl Checker<'_> {
     }
     fn complete_projection(
         &mut self,
-        query: Query,
+        mut query: Query,
         resolved: bool,
         watch: WatchId,
-    ) -> Result<Option<Query>, Error> {
+    ) -> Result<(Option<Query>, bool), Error> {
         let node = query.node;
-        if let Task::Normalize(term) = query.task {
-            match self.infer.head(&self.facts.types, term) {
-                Ok(_) => return Ok(None),
-                Err(crate::types::infer::Error::Normalization) => {}
-                Err(error) => return Err(self.error(node, error)),
-            }
-            if !resolved && !self.projection_subject_known(node, term)? {
-                return Ok(Some(query));
-            }
-        }
+        let input = match query.task {
+            Task::Normalize(term) | Task::Symbolic { input: term, .. } => Some(term),
+            Task::Contract(_) => None,
+        };
+        let resolved = match self.projection_readiness(&mut query, resolved, watch)? {
+            inputs::Readiness::Complete => return Ok((None, true)),
+            inputs::Readiness::Waiting => return Ok((Some(query), false)),
+            inputs::Readiness::Partial => false,
+            inputs::Readiness::Resolved => true,
+        };
         self.prepare_universals(node)?;
         let first = u32::try_from(self.facts.body_regions.len())
             .ok()
@@ -294,23 +307,48 @@ impl Checker<'_> {
         let scope = plan
             .enter(query.scope, &mut proof)
             .map_err(|e| self.error(node, e))?;
+        let published = match query.task {
+            Task::Symbolic { input, output } => Some((input, output)),
+            Task::Normalize(_) | Task::Contract(_) => None,
+        };
         match query.task {
             Task::Contract(contract) => {
                 self.complete_contract(node, scope, contract, &mut proof)?;
             }
-            Task::Normalize(term) if !resolved => {
-                match self.select_projection(node, scope, term, &mut proof)? {
+            Task::Normalize(term) | Task::Symbolic { input: term, .. } if !resolved => {
+                let expose = matches!(query.task, Task::Normalize(_));
+                match self.select_projection(node, scope, term, &mut proof, expose)? {
                     selection::Progress::Complete => {}
-                    selection::Progress::AwaitChange => return Ok(Some(query)),
+                    selection::Progress::Symbolic(result) => {
+                        let input = self
+                            .infer
+                            .publish_projection(&self.facts.types, term, result)
+                            .map_err(|e| self.error(node, e))?;
+                        query.task = Task::Symbolic {
+                            input,
+                            output: term,
+                        };
+                        proof
+                            .retain_body(self.facts, self.body, self.key(node))
+                            .map_err(|e| self.error(node, e))?;
+                        self.defer_normalization(node, query.scope, result)?;
+                        self.published_normalization(node, term)?;
+                        return Ok((Some(query), true));
+                    }
+                    selection::Progress::AwaitInputs => {
+                        self.defer_input_normalizations(&mut query, term, watch)?;
+                        return Ok((Some(query), false));
+                    }
+                    selection::Progress::AwaitChange => return Ok((Some(query), false)),
                     selection::Progress::AwaitResolution => {
                         self.infer
                             .await_resolution(watch)
                             .map_err(|e| self.error(node, e))?;
-                        return Ok(Some(query));
+                        return Ok((Some(query), false));
                     }
                 }
             }
-            Task::Normalize(term) => {
+            Task::Normalize(term) | Task::Symbolic { input: term, .. } => {
                 let ty = self
                     .infer
                     .resolved(&mut self.facts.types, term)
@@ -321,20 +359,45 @@ impl Checker<'_> {
                     .map_err(|e| self.error(node, e))?;
             }
         }
+        if let Some((input, output)) = published {
+            self.deferred_equation(node, input, output, Relation::Equality)?;
+        }
         proof
             .retain_body(self.facts, self.body, self.key(node))
             .map_err(|e| self.error(node, e))?;
-        Ok(None)
+        if published.is_none()
+            && let Some(input) = input
+        {
+            self.published_normalization(node, input)?;
+        }
+        Ok((None, true))
     }
     fn normalize_body_type(
         &mut self,
         node: NodeId,
         proof: &mut Obligations,
         scope: ScopeId,
-        ty: crate::types::TypeId,
-    ) -> Result<crate::types::TypeId, Error> {
+        ty: TypeId,
+    ) -> Result<TypeId, Error> {
+        if self.facts.types.contains_projections(ty) == Some(false) {
+            return Ok(ty);
+        }
+        // The body owns one immutable environment. A root-scope result with no
+        // lifetime evidence can be reused without copying or freshening proof.
+        let cacheable = scope == ScopeId::ROOT
+            && proof.is_empty()
+            && self.facts.types.has_free_regions(ty, 0) == Some(false);
+        if cacheable
+            && let Some(&result) = self
+                .projections
+                .data
+                .as_ref()
+                .and_then(|data| data.normal_forms.get(&ty))
+        {
+            return Ok(result);
+        }
         let environment = self.projection_environment(node)?;
-        let (ty, steps) = crate::sema::projections::normalize(
+        let (result, steps) = crate::sema::projections::normalize(
             self.report,
             self.facts,
             environment.as_ref(),
@@ -346,6 +409,13 @@ impl Checker<'_> {
         self.infer
             .account_work(steps)
             .map_err(|e| self.error(node, e))?;
-        Ok(ty)
+        if cacheable && proof.is_empty() {
+            self.projections
+                .data
+                .get_or_insert_with(Default::default)
+                .normal_forms
+                .insert(ty, result);
+        }
+        Ok(result)
     }
 }

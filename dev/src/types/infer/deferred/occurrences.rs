@@ -19,8 +19,43 @@ impl Context {
         ambient: ScopeId,
         mut scope: impl FnMut(ScopeId, u32) -> Result<ScopeId, Error>,
     ) -> Result<Vec<(ScopeId, TermId)>, Error> {
+        self.collect_normalization_roots(store, vec![(ambient, root)], |parent, _, count| {
+            scope(parent, count)
+        })
+    }
+
+    /// Find projected input boundaries which must expose their results before
+    /// the enclosing application can match a concrete implementation header.
+    /// # Errors
+    /// Rejects malformed applications, invalid scopes and exhausted inference work.
+    pub fn normalization_input_roots(
+        &mut self,
+        store: &Store,
+        root: TermId,
+        ambient: ScopeId,
+        scope: impl FnMut(ScopeId, TermId, u32) -> Result<ScopeId, Error>,
+    ) -> Result<Vec<(ScopeId, TermId)>, Error> {
+        let root = self.root(root)?;
+        if !matches!(self.materialize(store, root)?, Constructor::Projection(_)) {
+            return Err(Error::InvalidIdentity);
+        }
+        let entry = self.terms[root.0 as usize];
+        self.account_work((entry.end - entry.start) as usize)?;
+        let work = self.edges[entry.start as usize..entry.end as usize]
+            .iter()
+            .rev()
+            .map(|&term| (ambient, term))
+            .collect();
+        self.collect_normalization_roots(store, work, scope)
+    }
+
+    fn collect_normalization_roots(
+        &mut self,
+        store: &Store,
+        mut work: Vec<(ScopeId, TermId)>,
+        mut scope: impl FnMut(ScopeId, TermId, u32) -> Result<ScopeId, Error>,
+    ) -> Result<Vec<(ScopeId, TermId)>, Error> {
         let mut roots = Vec::new();
-        let mut work = vec![(ambient, root)];
         let mut seen = HashSet::new();
         while let Some((ambient, term)) = work.pop() {
             self.step()?;
@@ -39,7 +74,7 @@ impl Context {
                 continue;
             }
             let ambient = if let Constructor::Function { bound_regions, .. } = kind {
-                scope(ambient, bound_regions)?
+                scope(ambient, term, bound_regions)?
             } else {
                 ambient
             };
