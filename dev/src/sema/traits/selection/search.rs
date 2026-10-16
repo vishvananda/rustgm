@@ -1,6 +1,9 @@
 //! Iterative candidate search; each child proof commits only its resolved goal.
+mod builtins;
 mod equalities;
 mod frames;
+mod inputs;
+mod normalization;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/proof_cache.rs"]
 mod tests;
@@ -64,7 +67,7 @@ pub(super) fn prove(
         Decision::Deferred => Ok(Selection::Deferred),
         Decision::Proven(root) => {
             context
-                .equate_proved_predicate(&facts.types, goal, search.nodes[root].goal)
+                .equate_proved_predicate(&mut facts.types, goal, search.nodes[root].goal)
                 .map_err(inference)?;
             search.evidence(root).map(Selection::Proven)
         }
@@ -119,6 +122,7 @@ impl<'a> Search<'a> {
                     stack.push(child);
                 }
                 Action::Complete(decision) => {
+                    let decision = self.input_evidence(facts, frame, decision)?;
                     if let Some(key) = frame.key {
                         self.active.remove(&key);
                     }
@@ -157,8 +161,8 @@ impl<'a> Search<'a> {
         if !frame.started {
             return self.start(facts, frame);
         }
-        if frame.equality.is_some() {
-            return self.advance_equality(facts, frame);
+        if frame.normalizing() {
+            return self.advance_normalization(facts, frame);
         }
         if let Some(trial) = &mut frame.trial {
             if trial.cursor < trial.pending.len() {
@@ -171,7 +175,10 @@ impl<'a> Search<'a> {
                 return Ok(Action::Continue);
             }
             let result = if trial.next.is_empty() {
-                self.finish(facts, trial)?
+                let Some(result) = self.finish(facts, trial)? else {
+                    return Ok(Action::Descend);
+                };
+                result
             } else {
                 Decision::Deferred
             };
@@ -199,6 +206,7 @@ impl<'a> Search<'a> {
             match result {
                 Ok(()) => frame.trial = Some(trial),
                 Err(infer::Error::Mismatch | infer::Error::Occurs) => {}
+                Err(infer::Error::Normalization) => frame.deferred = true,
                 Err(error) => return Err(inference(error)),
             }
             return Ok(Action::Continue);
@@ -210,23 +218,53 @@ impl<'a> Search<'a> {
         }))
     }
     fn start(&mut self, facts: &mut Declarations, frame: &mut Frame) -> Result<Action, String> {
-        use super::Assumed;
         frame.started = true;
         frame.cycles = self.cycles;
         if frame.goal.projection_result().is_some() {
             return self.start_equality(facts, frame);
         }
+        if frame.goal.builtin_bound().is_some() {
+            if let Some(decision) = self.cached_query(facts, frame)? {
+                return Ok(Action::Complete(decision));
+            }
+            return if let Some(action) = Self::start_inputs(facts, frame)? {
+                Ok(action)
+            } else {
+                self.complete_builtin(facts, frame).map(Action::Complete)
+            };
+        }
+        let needs_normalization = match self.assume(facts, frame) {
+            Ok(Some(action)) => return Ok(action),
+            Ok(None) => false,
+            Err(infer::Error::Normalization) => true,
+            Err(error) => return Err(inference(error)),
+        };
+        if let Some(decision) = self.cached_query(facts, frame)? {
+            return Ok(Action::Complete(decision));
+        }
+        if let Some(action) = Self::start_inputs(facts, frame)? {
+            return Ok(action);
+        }
+        if needs_normalization {
+            return Ok(Action::Complete(Decision::Deferred));
+        }
+        self.candidates(facts, frame)
+    }
+    fn assume(
+        &mut self,
+        facts: &mut Declarations,
+        frame: &mut Frame,
+    ) -> Result<Option<Action>, infer::Error> {
+        use super::Assumed;
         match self
             .caller
             .assumptions
-            .select(&facts.types, &mut frame.context, &frame.goal)
-            .map_err(inference)?
+            .select(&mut facts.types, &mut frame.context, &frame.goal)?
         {
             Assumed::Proven(proof) => {
                 let goal = frame
                     .context
-                    .resolved_predicate(&mut facts.types, &frame.goal)
-                    .map_err(inference)?;
+                    .resolved_predicate(&mut facts.types, &frame.goal)?;
                 let index = self.nodes.len();
                 self.nodes.push(Node {
                     goal,
@@ -239,14 +277,18 @@ impl<'a> Search<'a> {
                     type_outlives: Vec::new(),
                     sized: Vec::new(),
                 });
-                return Ok(Action::Complete(Decision::Proven(index)));
+                return Ok(Some(Action::Complete(Decision::Proven(index))));
             }
-            Assumed::Deferred => return Ok(Action::Complete(Decision::Deferred)),
+            Assumed::Deferred => return Ok(Some(Action::Complete(Decision::Deferred))),
             Assumed::Absent => {}
         }
-        if let Some(decision) = self.cached_query(facts, frame)? {
-            return Ok(Action::Complete(decision));
-        }
+        Ok(None)
+    }
+    fn candidates(
+        &mut self,
+        facts: &mut Declarations,
+        frame: &mut Frame,
+    ) -> Result<Action, String> {
         let Some(registry) = &mut facts.generics.implementations else {
             return Ok(Action::Complete(Decision::Absent));
         };
@@ -298,8 +340,8 @@ impl<'a> Search<'a> {
         frame: &mut Frame,
         decision: Decision,
     ) -> Result<(), String> {
-        if frame.equality.is_some() {
-            return self.accept_equality(facts, frame, decision);
+        if frame.normalizing() {
+            return self.accept_normalization(facts, frame, decision);
         }
         let trial = frame
             .trial
@@ -320,7 +362,7 @@ impl<'a> Search<'a> {
                 trial
                     .context
                     .equate_proved_predicate(
-                        &facts.types,
+                        &mut facts.types,
                         &trial.instance.goals[index],
                         self.nodes[node].goal,
                     )

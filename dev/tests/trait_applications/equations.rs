@@ -138,13 +138,13 @@ fn probes_preserve_aliases_across_self_type_and_const_roots()
     )?;
     let mut probe = Context::default();
     let copied = probe.import_predicate(&store, &mut source, &predicate)?;
-    probe.equate_trait_predicate(&store, &copied, selected)?;
+    probe.equate_trait_predicate(&mut store, &copied, selected)?;
     assert_eq!(probe.resolved_predicate(&mut store, &copied)?, selected);
     assert!(matches!(
         source.resolved_predicate(&mut store, &predicate),
         Err(infer::Error::Unresolved)
     ));
-    source.equate_trait_predicate(&store, &predicate, selected)?;
+    source.equate_trait_predicate(&mut store, &predicate, selected)?;
     let (_, solved) = source.finish_with_predicates(&mut store, std::iter::once(&predicate))?;
     assert_eq!(solved, [selected]);
     Ok(())
@@ -184,7 +184,7 @@ fn lifetime_equations_remain_requirements_until_the_shared_region_proof()
     let predicate = source.instantiate_predicate(&mut store, template, &mut substitution)?;
     let mut probe = Context::default();
     let copied = probe.import_predicate(&store, &mut source, &predicate)?;
-    probe.equate_trait_predicate(&store, &copied, candidate)?;
+    probe.equate_trait_predicate(&mut store, &copied, candidate)?;
     assert!(source.region_equalities.is_empty());
     assert!(!probe.region_equalities.is_empty());
     assert!(

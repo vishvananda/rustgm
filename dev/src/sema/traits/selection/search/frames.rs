@@ -7,7 +7,7 @@ use crate::{
 };
 
 pub(super) struct Frame {
-    pub equality: Option<Box<super::equalities::Equality>>,
+    pub normalization: Option<Box<super::normalization::Normalization>>,
     pub context: Context,
     pub goal: Goal,
     pub first: u32,
@@ -32,6 +32,7 @@ pub(super) struct Trial {
     pub next: Vec<usize>,
     pub progress: bool,
     pub children: Vec<usize>,
+    pub requirements: Option<Box<super::builtins::Requirements>>,
 }
 impl Frame {
     pub fn new(
@@ -45,7 +46,7 @@ impl Frame {
             .import_predicate(&facts.types, source, goal)
             .map_err(inference)?;
         Ok(Self {
-            equality: None,
+            normalization: None,
             context,
             goal,
             first,
@@ -67,8 +68,9 @@ impl Trial {
         let goal = context
             .import_predicate(&facts.types, &mut frame.context, &frame.goal)
             .map_err(inference)?;
-        let instance = instantiation::instantiate(facts, &mut context, owner, frame.first)?;
-        let end = frame.first
+        let first = frame.available_region();
+        let instance = instantiation::instantiate(facts, &mut context, owner, first)?;
+        let end = first
             + u32::try_from(instance.regions.len()).map_err(|_| "impl region count overflow")?;
         let pending = instance
             .goals
@@ -83,13 +85,14 @@ impl Trial {
             context,
             goal,
             instance,
-            first: frame.first,
+            first,
             end,
             pending,
             cursor: 0,
             next: Vec::new(),
             progress: false,
             children: Vec::new(),
+            requirements: None,
         })
     }
 }
@@ -98,24 +101,34 @@ impl Search<'_> {
         &mut self,
         facts: &mut Declarations,
         trial: &mut Trial,
-    ) -> Result<Decision, String> {
-        let mut type_outlives = Vec::new();
-        let mut sized = Vec::new();
-        for goal in &trial.instance.goals {
+    ) -> Result<Option<Decision>, String> {
+        let mut requirements = trial.requirements.take().map(|r| *r).unwrap_or_default();
+        while let Some(goal) = trial.instance.goals.get(requirements.cursor) {
+            let index = requirements.cursor;
+            requirements.cursor += 1;
             let Some(bound) = goal.builtin_bound() else {
                 continue;
             };
             let ty = match trial.context.resolved(&mut facts.types, goal.subject()) {
                 Ok(ty) => ty,
-                Err(infer::Error::Unresolved) => return Ok(Decision::Deferred),
+                Err(infer::Error::Unresolved) => return Ok(Some(Decision::Deferred)),
                 Err(error) => return Err(inference(error)),
             };
+            if facts
+                .types
+                .contains_projections(ty)
+                .ok_or("missing builtin subject")?
+            {
+                trial.pending.push(index);
+                trial.requirements = Some(Box::new(requirements));
+                return Ok(None);
+            }
             if let Bound::Outlives(region) = bound {
-                type_outlives.push((ty, region));
+                requirements.type_outlives.push((ty, region));
             } else if !self.builtins.prove(facts, Predicate { ty, bound })? {
-                return Ok(Decision::Absent);
+                return Ok(Some(Decision::Absent));
             } else if bound == Bound::Sized && self.caller.retain_sized {
-                sized.push(ty);
+                requirements.sized.push(ty);
             }
         }
         let goal = match trial
@@ -123,12 +136,12 @@ impl Search<'_> {
             .resolved_predicate(&mut facts.types, &trial.goal)
         {
             Ok(goal) => goal,
-            Err(infer::Error::Unresolved) => return Ok(Decision::Deferred),
+            Err(infer::Error::Unresolved) => return Ok(Some(Decision::Deferred)),
             Err(error) => return Err(inference(error)),
         };
         let arguments = match trial.instance.arguments(facts, &mut trial.context) {
             Ok(arguments) => arguments,
-            Err(infer::Error::Unresolved) => return Ok(Decision::Deferred),
+            Err(infer::Error::Unresolved) => return Ok(Some(Decision::Deferred)),
             Err(error) => return Err(inference(error)),
         };
         let node = self.nodes.len();
@@ -143,9 +156,9 @@ impl Search<'_> {
             end: trial.end,
             equalities: std::mem::take(&mut trial.context.region_equalities),
             outlives: std::mem::take(&mut trial.instance.outlives),
-            type_outlives,
-            sized,
+            type_outlives: requirements.type_outlives,
+            sized: requirements.sized,
         });
-        Ok(Decision::Proven(node))
+        Ok(Some(Decision::Proven(node)))
     }
 }

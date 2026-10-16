@@ -397,3 +397,73 @@ fn result_only_parameters_and_constants_require_the_actual_environment() -> Test
     assert_eq!(environment.projection_predicates().count(), 1);
     Ok(())
 }
+
+#[test]
+fn normalized_views_preserve_original_roots_and_shared_holes() -> TestResult {
+    let mut store = Store::default();
+    let projected = projection(&mut store, BYTE, &[])?;
+    let mut context = Context::default();
+    let root = context.known(&store, projected)?;
+    let hole = context.variable(Domain::Any)?;
+    let original = context.construct(Constructor::Tuple, &[root, hole, root])?;
+    let view = context.rewritten_projections(&store, original, &[(root, WORD)].into())?;
+    let elements = store.intern_list(&[WORD, BYTE, WORD])?;
+    let expected = store.intern(Kind::Tuple(elements))?;
+    let known = context.known(&store, expected)?;
+    context.equate(&store, view, known)?;
+    assert_eq!(context.resolved(&mut store, hole)?, BYTE);
+    assert_eq!(context.resolved(&mut store, root)?, projected);
+    assert_eq!(context.resolved(&mut store, view)?, expected);
+    let elements = store.intern_list(&[projected, BYTE, projected])?;
+    let expected_original = store.intern(Kind::Tuple(elements))?;
+    assert_eq!(context.resolved(&mut store, original)?, expected_original);
+    assert!(
+        context
+            .rewritten_projections(&store, original, &[(original, WORD)].into())
+            .is_err()
+    );
+    Ok(())
+}
+
+#[test]
+fn proved_inputs_refine_independent_holes_without_inverting_projections() -> TestResult {
+    let mut store = Store::default();
+    let projected = projection(&mut store, BYTE, &[])?;
+    let id = parameter(&mut store, 0, ParameterKind::Type { sized: true })?;
+    let ty = store.intern(Kind::Parameter(id))?;
+    let elements = store.intern_list(&[projected, ty])?;
+    let ty = store.intern(Kind::Tuple(elements))?;
+    let mut context = Context::default();
+    let hole = context.variable(Domain::Any)?;
+    let mut substitution = Instantiation::new(
+        &mut context,
+        &store,
+        &[(id, infer::arguments::Argument::Type(hole))],
+    )?;
+    let goal = context.instantiate_predicate(
+        &mut store,
+        Predicate {
+            ty,
+            bound: Bound::Sized,
+        },
+        &mut substitution,
+    )?;
+    let elements = store.intern_list(&[projected, WORD])?;
+    let proof = Predicate {
+        ty: store.intern(Kind::Tuple(elements))?,
+        bound: Bound::Sized,
+    };
+    context.equate_proved_predicate(&mut store, &goal, proof)?;
+    assert_eq!(context.resolved(&mut store, hole)?, WORD);
+    let unrelated = projection(&mut store, WORD, &[])?;
+    let elements = store.intern_list(&[unrelated, WORD])?;
+    let wrong = Predicate {
+        ty: store.intern(Kind::Tuple(elements))?,
+        bound: Bound::Sized,
+    };
+    assert_eq!(
+        context.equate_proved_predicate(&mut store, &goal, wrong),
+        Err(infer::Error::Normalization)
+    );
+    Ok(())
+}

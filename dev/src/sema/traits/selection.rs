@@ -60,7 +60,12 @@ pub(in crate::sema) fn may_have_subject(
     subject: infer::TermId,
     assumptions: Option<&Assumptions>,
 ) -> Result<bool, infer::Error> {
-    let Some(subject) = super::heads::Subject::query(&facts.types, context, subject)? else {
+    let subject = match super::heads::Subject::query(&facts.types, context, subject) {
+        Ok(subject) => subject,
+        Err(infer::Error::Normalization) => return Ok(true),
+        Err(error) => return Err(error),
+    };
+    let Some(subject) = subject else {
         return Ok(true);
     };
     Ok(
@@ -103,9 +108,13 @@ fn select_from(
     if goal.projection_result().is_some() {
         return search::prove(facts, context, goal, caller, availability);
     }
-    match select_assumption(&facts.types, context, goal, &caller)? {
-        Selection::Absent => {}
-        proof => return Ok(proof),
+    match select_assumption(&mut facts.types, context, goal, &caller) {
+        Ok(Selection::Absent) => {}
+        Ok(proof) => return Ok(proof),
+        Err(infer::Error::Normalization) => {
+            return search::prove(facts, context, goal, caller, availability);
+        }
+        Err(error) => return Err(inference(error)),
     }
     if facts.generics.implementations.is_none() {
         return Ok(Selection::Absent);
@@ -115,16 +124,12 @@ fn select_from(
 
 /// A bound-selected method cannot replace that bound with an unrelated impl.
 pub(in crate::sema) fn select_assumption(
-    store: &crate::types::Store,
+    store: &mut crate::types::Store,
     context: &mut Context,
     goal: &Goal,
     caller: &Caller<'_>,
-) -> Result<Selection, String> {
-    match caller
-        .assumptions
-        .select(store, context, goal)
-        .map_err(inference)?
-    {
+) -> Result<Selection, infer::Error> {
+    match caller.assumptions.select(store, context, goal)? {
         Assumed::Proven(proof) => Ok(Selection::Proven(Evidence {
             source: Source::Assumption(proof.assumption()),
             regions: caller.first_region..caller.first_region,

@@ -117,7 +117,7 @@ fn repeated_failed_conditions_share_one_completed_chain() -> Result<(), Box<dyn 
     let Decision::Proven(root) = search.run(&mut facts, first)? else {
         return Err("failed conditions hid the unique applicable implementation".into());
     };
-    context.equate_trait_predicate(&facts.types, &goal, search.nodes[root].goal)?;
+    context.equate_trait_predicate(&mut facts.types, &goal, search.nodes[root].goal)?;
     assert_eq!(context.resolved(&mut facts.types, unknown)?, TypeId::UNIT);
     assert_eq!(search.cycles, 0);
     assert_eq!(
@@ -330,7 +330,7 @@ fn repeated_unsatisfied_equalities_share_a_scoped_negative_proof()
     let Decision::Proven(root) = search.run(&mut facts, first)? else {
         return Err("unsatisfied equalities hid the applicable implementation".into());
     };
-    context.equate_proved_predicate(&facts.types, &goal, search.nodes[root].goal)?;
+    context.equate_proved_predicate(&mut facts.types, &goal, search.nodes[root].goal)?;
     assert_eq!(context.resolved(&mut facts.types, unknown)?, TypeId::UNIT);
     assert!(search.reused);
     assert_eq!(
@@ -338,6 +338,61 @@ fn repeated_unsatisfied_equalities_share_a_scoped_negative_proof()
             .completed
             .iter()
             .filter(|(p, result)| matches!(p.bound, Bound::ProjectionEqual(_))
+                && **result == Decision::Absent)
+            .count(),
+        1
+    );
+    assert_eq!(search.cycles, 0);
+    assert!(search.steps < 20_000, "{}", search.steps);
+    Ok(())
+}
+
+#[test]
+fn repeated_projected_trait_conditions_share_a_negative_proof()
+-> Result<(), Box<dyn std::error::Error>> {
+    let mut source =
+        String::from("trait P{type Out;}impl P for u8{type Out=u16;}trait C{}trait A<U>{}");
+    for i in 0..64 {
+        write!(
+            source,
+            "impl<T:P>A<[u8;{i}]>for T where <T as P>::Out:C{{}}"
+        )?;
+    }
+    source.push_str("impl<T>A<()>for T{}");
+    let (report, mut facts) = declarations(&source)?;
+    let id = facts.types.intern_parameter(Parameter {
+        owner: ItemId(1_000_000),
+        index: 0,
+        kind: ParameterKind::Type { sized: true },
+    })?;
+    let parameter = facts.types.intern(Kind::Parameter(id))?;
+    let arguments = facts.types.intern_arguments(&[Argument::Type(parameter)])?;
+    let query = predicate(
+        &mut facts,
+        definition(&report, "A")?,
+        TypeId::primitive(Primitive::U8),
+        arguments,
+    )?;
+    let mut context = Context::default();
+    let unknown = context.variable(Domain::Any)?;
+    let mut substitution =
+        Instantiation::new(&mut context, &facts.types, &[(id, Inferred::Type(unknown))])?;
+    let goal = context.instantiate_predicate(&mut facts.types, query, &mut substitution)?;
+    let assumptions = Assumptions::default();
+    let mut search = Search::new(caller(&assumptions, None), Availability::Validated);
+    let first = Frame::new(&facts, &mut context, &goal, 1)?;
+    let Decision::Proven(root) = search.run(&mut facts, first)? else {
+        return Err("unsatisfied projected conditions hid the applicable implementation".into());
+    };
+    context.equate_proved_predicate(&mut facts.types, &goal, search.nodes[root].goal)?;
+    assert_eq!(context.resolved(&mut facts.types, unknown)?, TypeId::UNIT);
+    assert!(search.reused);
+    assert_eq!(
+        search
+            .completed
+            .iter()
+            .filter(|(p, result)| matches!(p.bound, Bound::Trait(_))
+                && facts.types.contains_projections(p.ty) == Some(true)
                 && **result == Decision::Absent)
             .count(),
         1

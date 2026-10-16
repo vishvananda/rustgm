@@ -6096,3 +6096,88 @@ Validation cleanup removed 4,304 generated files and 4.53 GiB of unshared blocks
 recorded in `obj/cleanup/1792142872116185774.jsonl`. Intermediate binaries were
 retired once the final candidate passed; `retired-prototypes.json` retains their
 hashes and reasons. Only binaries needed for the current comparison remain pinned.
+
+### Projected implementation conditions and inference
+
+Implementation selection now normalizes projected trait subjects and type
+arguments on the existing iterative proof stack. Equality premises and projected
+builtin conditions share that machinery. The original query retains its complete
+normalization evidence, selected implementation and private lifetime interval.
+Ordinary builtin premises retain their direct proof path. A suspended builtin
+continues after earlier conditions without repeating completed conditions.
+
+A normalized input view preserves the original projection graph and shares its
+ordinary inference variables. This permits an associated result beside an
+unresolved tuple element to select a trait implementation and determine that
+element. It does not infer a projection's inputs from an equal result. Canonical
+operation identity supplies congruence for unchanged opaque inputs. The original
+canonical predicate owns the memo key; proofs with private lifetime allocations
+remain ineligible for reuse across queries.
+
+An early caller-assumption lookup now preserves its typed normalization-needed
+result. The solver normalizes the requested argument and retries against the
+caller's concrete bound, including `T: A<Out = u16> + C<u16>` satisfying a
+conditional implementation that requires `T: C<<T as A>::Out>`. An opaque
+comparison that still cannot complete defers without establishing negative
+cache evidence.
+
+The permanent `projected_impl_conditions.rs` matrix has 28 independently checked
+sources. It covers nested trait/equality conditions, inferred associated outputs,
+partial and nested argument inference, inherent methods, mixed trait arguments,
+Copy/Clone/Sized conditions, exact caller assumptions, missing premises,
+inductive cycles and captured-region escapes. Two structural tests preserve
+original projection roots and shared holes while rejecting inference from unrelated
+operations. A solver invariant checks repeated unsatisfied projected conditions
+across 64 candidates reuse one negative proof. Six separate native sources check
+selected calls and methods through the external CPPGM backend against pinned
+rustc. These are maintainer regressions; no course text oracles are regenerated.
+
+Research evidence and immutable candidates are retained under
+`obj/pa20-work/solver-projected-inputs-v1/`. Earlier variants exposed the need to
+commit original input identity, normalize builtin conditions, preserve independent
+holes and retry early assumption lookup. Explicit opaque projected outlives
+bounds still encounter an earlier declaration property guard. Original callable
+formation contracts, quantified normalization, general opaque properties,
+associated colon bounds/constants and the remaining coherence/PA21 contract
+remain required. PA20 and PA21 are not activated by this checkpoint.
+
+All six targeted commands and 23 final validation commands pass, along with the
+standalone `make lint` target. The final suite has 1,086 release tests across 197
+result groups, 4,864 course cases and 47 separate native groups. The architecture
+audit checks 671 files with zero findings; all 33 harness checks pass. A frozen
+674-file source/configuration snapshot is verified after validation. The final
+candidate SHA-256 is
+`06dffa2e18642e66d3532def0d7647617bdf5432914bb31c3a8de9fa09a5c088`.
+`validation-summary-v9.json` preserves the separate counts and command statuses.
+
+Final validation cleanup removed 4,333 generated files and 4.55 GiB of unshared
+blocks, recorded in `obj/cleanup/1792147928176692023.jsonl`. Intermediate candidate
+binaries were retired with hashes and reasons in `retired-prototypes.json`.
+Only the published `92c75a5` baseline and final candidate were retained for the
+comparison; historical source snapshots, diagnostics and hashes remain available.
+
+Performance retains 3,120 observations across 120 jobs. The initial 96 jobs
+comprise 84 existing-path comparisons with `92c75a5` and twelve same-candidate
+scaling controls. They use immutable executables, frozen inputs, A/A calibration
+and five paired ABBA blocks, with full/count output equality and all source,
+executable and runner hashes verified. RustGM builds, tests and probes do not
+overlap timing. Existing-path paired median changes range from -9.40% to +14.59%,
+with calibration spreads of 1.70%–48.54% on the shared host.
+
+Every measured size and mode of the four families showing an increase above 3.5%
+was repeated in 24 confirmation jobs; the original observations remain intact.
+Confirmation paired medians range from -2.98% to +2.94%, with calibration spreads
+of 2.63%–88.94%. The largest initial increases did not recur at the same magnitude.
+These results do not establish zero overhead. Initial resident-median differences
+range from -774 to +628 KiB; confirmation differences range from -68 to +582 KiB.
+`confirmation-plan.json`, `performance-summary.json`, `confirmation-summary.json`
+and the raw observation files preserve the selection rule and both runs.
+
+Six new scaling inputs are independently accepted by pinned rustc. Their A/B
+labels intentionally use the same candidate and do not measure improvement over
+an unsupported predecessor. Combining paired observations from both labels, full
+LowIR medians at 64/256/1,024 constraints are 6.83/15.22/48.01 ms for wide projected
+bounds and 8.48/21.90/72.43 ms for nested inference queries. Resident medians at
+1,024 constraints are approximately 12.5 MiB and 10.4 MiB. These are complete
+frontend/LowIR measurements including rendering, rather than isolated solver
+measurements. `scaling-summary.json` retains the exact values.

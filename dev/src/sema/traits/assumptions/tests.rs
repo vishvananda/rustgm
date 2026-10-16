@@ -39,7 +39,7 @@ fn unrelated_rigid_subjects_do_not_make_proof_quadratic() -> Result<(), Box<dyn 
         assert!(assumptions.unambiguous_declaration(&mut store, &mut context, predicate)?);
         let goal = context.instantiate_predicate(&mut store, predicate, &mut substitution)?;
         let evidence = assumptions
-            .prove(&store, &mut context, &goal)?
+            .prove(&mut store, &mut context, &goal)?
             .ok_or("missing unique assumption")?;
         assert_eq!(evidence.assumption(), predicate);
     }
@@ -78,7 +78,11 @@ fn unknown_self_stays_unresolved_even_with_one_candidate() -> Result<(), Box<dyn
         )],
     )?;
     let goal = context.instantiate_predicate(&mut store, predicate, &mut substitution)?;
-    assert!(assumptions.prove(&store, &mut context, &goal)?.is_none());
+    assert!(
+        assumptions
+            .prove(&mut store, &mut context, &goal)?
+            .is_none()
+    );
     assert!(context.head(&store, unknown)?.is_none());
     Ok(())
 }

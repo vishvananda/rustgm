@@ -134,7 +134,7 @@ impl Assumptions {
     /// arguments may be inferred once exactly one candidate remains compatible.
     pub fn prove(
         &self,
-        store: &Store,
+        store: &mut Store,
         context: &mut Context,
         goal: &Goal,
     ) -> Result<Option<Evidence>, infer::Error> {
@@ -146,7 +146,7 @@ impl Assumptions {
 
     pub fn select(
         &self,
-        store: &Store,
+        store: &mut Store,
         context: &mut Context,
         goal: &Goal,
     ) -> Result<Selection, infer::Error> {
@@ -154,7 +154,14 @@ impl Assumptions {
         let Some((item, _)) = goal.trait_arguments() else {
             return Err(infer::Error::InvalidIdentity);
         };
-        let Some(subject) = Subject::query(store, context, goal.subject())? else {
+        let subject = match Subject::query(store, context, goal.subject()) {
+            Ok(subject) => subject,
+            Err(infer::Error::Normalization) => Some(Subject::Rigid(Head::Projection(
+                context.projection_item(store, goal.subject())?,
+            ))),
+            Err(error) => return Err(error),
+        };
+        let Some(subject) = subject else {
             return Ok(Selection::Deferred);
         };
         let mut selected = None;

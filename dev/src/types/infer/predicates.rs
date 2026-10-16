@@ -22,6 +22,55 @@ pub struct Predicate {
     requirement: Requirement,
 }
 impl Predicate {
+    /// Each input root, preserving the trait's mixed argument ordering.
+    pub fn input_roots(&self) -> impl Iterator<Item = TermId> + '_ {
+        std::iter::once(self.subject).chain(
+            self.trait_arguments()
+                .into_iter()
+                .flat_map(|(_, arguments)| arguments.iter())
+                .filter_map(|argument| {
+                    if let Argument::Type(ty) = argument {
+                        Some(*ty)
+                    } else {
+                        None
+                    }
+                }),
+        )
+    }
+    /// Construct a new input view while preserving every non-type argument.
+    /// # Errors
+    /// Propagates the input transformation's errors and rejects equality goals.
+    pub fn map_inputs(
+        &self,
+        mut map: impl FnMut(TermId) -> Result<TermId, Error>,
+    ) -> Result<Self, Error> {
+        let subject = map(self.subject)?;
+        let requirement = match &self.requirement {
+            Requirement::Builtin(bound) => Requirement::Builtin(*bound),
+            Requirement::ProjectionEqual(_) => return Err(Error::InvalidIdentity),
+            Requirement::Trait(trait_) => {
+                let arguments = trait_
+                    .arguments
+                    .iter()
+                    .map(|&argument| {
+                        Ok(if let Argument::Type(ty) = argument {
+                            Argument::Type(map(ty)?)
+                        } else {
+                            argument
+                        })
+                    })
+                    .collect::<Result<_, Error>>()?;
+                Requirement::Trait(Box::new(Trait {
+                    item: trait_.item,
+                    arguments,
+                }))
+            }
+        };
+        Ok(Self {
+            subject,
+            requirement,
+        })
+    }
     pub(super) fn trait_application(
         subject: TermId,
         item: ItemId,

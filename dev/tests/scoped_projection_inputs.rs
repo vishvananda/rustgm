@@ -160,7 +160,7 @@ fn selected_inputs_can_resolve_closed_types_but_cannot_capture_ambient_slots() -
         let hole = context.variable(Domain::Any)?;
         let input = goal(&mut context, &store, hole)?;
         let byte = canonical(&mut store, BYTE)?;
-        context.equate_trait_predicate_inside(&store, &input, byte, counts)?;
+        context.equate_trait_predicate_inside(&mut store, &input, byte, counts)?;
         assert_eq!(context.resolved(&mut store, hole)?, BYTE);
         let hole = context.variable(Domain::Any)?;
         let input = goal(&mut context, &store, hole)?;
@@ -168,7 +168,7 @@ fn selected_inputs_can_resolve_closed_types_but_cannot_capture_ambient_slots() -
         let local = reference(&mut store, RegionId::bound(depth, 0)?)?;
         let selected = canonical(&mut store, local)?;
         assert_eq!(
-            context.equate_trait_predicate_inside(&store, &input, selected, counts),
+            context.equate_trait_predicate_inside(&mut store, &input, selected, counts),
             Err(Error::Mismatch)
         );
         assert_eq!(context.resolved(&mut store, hole), Err(Error::Unresolved));
@@ -186,7 +186,7 @@ fn ambient_universals_are_rigid_and_outer_equalities_rebase() -> TestResult {
     let input = goal(&mut context, &store, a)?;
     let b = canonical(&mut store, b)?;
     assert_eq!(
-        context.equate_trait_predicate_inside(&store, &input, b, &[2]),
+        context.equate_trait_predicate_inside(&mut store, &input, b, &[2]),
         Err(Error::Mismatch)
     );
     let outer = reference(&mut store, RegionId::bound(1, 0)?)?;
@@ -194,7 +194,7 @@ fn ambient_universals_are_rigid_and_outer_equalities_rebase() -> TestResult {
     let outer = context.known(&store, outer)?;
     let input = goal(&mut context, &store, outer)?;
     let selected = canonical(&mut store, free)?;
-    context.equate_trait_predicate_inside(&store, &input, selected, &[2])?;
+    context.equate_trait_predicate_inside(&mut store, &input, selected, &[2])?;
     assert_eq!(
         context.region_equalities,
         [(RegionId::bound(0, 0)?, RegionId(3))]
@@ -221,7 +221,7 @@ fn nested_callable_slots_still_alpha_rename_beneath_rigid_ancestors() -> TestRes
     let left = context.known(&store, callables[0])?;
     let input = goal(&mut context, &store, left)?;
     let selected = canonical(&mut store, callables[1])?;
-    context.equate_trait_predicate_inside(&store, &input, selected, &[1])?;
+    context.equate_trait_predicate_inside(&mut store, &input, selected, &[1])?;
     assert!(context.region_equalities.is_empty());
     Ok(())
 }

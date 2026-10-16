@@ -92,11 +92,12 @@ impl Checker<'_> {
                 };
                 let selected = if self.call_types.assumed_obligations.contains(&index) {
                     selection::select_assumption(
-                        &self.facts.types,
+                        &mut self.facts.types,
                         &mut self.infer,
                         predicate,
                         &caller,
                     )
+                    .map_err(|error| error.to_string())
                 } else {
                     selection::select(self.facts, &mut self.infer, predicate, caller)
                 }

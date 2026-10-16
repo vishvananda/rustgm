@@ -47,6 +47,18 @@ impl Constructor {
 }
 
 impl Context {
+    /// Identify an associated operation for an exact assumption index. The result
+    /// remains opaque; this does not expose its normalized subject constructor.
+    /// # Errors
+    /// Rejects a non-projection, malformed input identities and exhausted work.
+    pub fn projection_item(&mut self, store: &Store, term: TermId) -> Result<ItemId, Error> {
+        let term = self.root(term)?;
+        let Constructor::Projection(value) = self.materialize(store, term)? else {
+            return Err(Error::InvalidIdentity);
+        };
+        Ok(value.item)
+    }
+
     /// Read Self and mixed trait/family arguments without resolving their holes.
     /// The schema supplies the declaring trait; this is not selection evidence.
     /// # Errors

@@ -1,6 +1,7 @@
 //! Suspended equations retain their roots and resume only changed associated-result leaves.
 mod normalization;
 mod occurrences;
+mod rewrite;
 use super::{Constructor, Context, Error, Kind, Store, TermId, Value};
 use std::collections::{HashMap, VecDeque};
 

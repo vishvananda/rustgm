@@ -170,7 +170,7 @@ impl State {
             };
             resolution = Some(
                 match equalities::select(
-                    &facts.types,
+                    &mut facts.types,
                     &mut self.context,
                     &inferred,
                     self.environment.as_deref(),

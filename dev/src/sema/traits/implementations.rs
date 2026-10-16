@@ -56,7 +56,14 @@ impl Implementations {
     ) -> Result<Vec<DefId>, crate::types::infer::Error> {
         use crate::types::infer::Error;
         let (item, _) = goal.trait_arguments().ok_or(Error::InvalidIdentity)?;
-        let Some(subject) = Subject::query(store, context, goal.subject())? else {
+        let subject = match Subject::query(store, context, goal.subject()) {
+            Ok(subject) => subject,
+            Err(Error::Normalization) => Some(Subject::Rigid(Head::Projection(
+                context.projection_item(store, goal.subject())?,
+            ))),
+            Err(error) => return Err(error),
+        };
+        let Some(subject) = subject else {
             return Ok(Vec::new());
         };
         let shape = match context.resolved_predicate(store, goal) {

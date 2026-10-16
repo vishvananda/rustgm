@@ -17,7 +17,7 @@ pub(in crate::sema) enum Selection {
 /// The caller separately proves the trait premise. Failed alternatives cannot
 /// constrain its inference graph; a selected result retains all input equations.
 pub(in crate::sema) fn select(
-    store: &Store,
+    store: &mut Store,
     context: &mut Context,
     application: &Application,
     environment: Option<&Environment>,

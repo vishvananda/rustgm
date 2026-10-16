@@ -19,10 +19,16 @@ impl Context {
     /// Rejects changed predicate kinds, malformed projections and failed equations.
     pub fn equate_proved_predicate(
         &mut self,
-        store: &Store,
+        store: &mut Store,
         goal: &Predicate,
         proof: Canonical,
     ) -> Result<(), Error> {
+        if let Some(bound) = goal.builtin_bound() {
+            if bound != proof.bound {
+                return Err(Error::Mismatch);
+            }
+            return self.equate_canonical_input(store, goal.subject(), proof.ty, &[]);
+        }
         let Some(result) = goal.projection_result() else {
             return self.equate_trait_predicate(store, goal, proof);
         };
@@ -174,7 +180,7 @@ impl Context {
     /// Rejects mismatched traits/arguments, invalid identities, occurs cycles and work limits.
     pub fn equate_trait_predicate(
         &mut self,
-        store: &Store,
+        store: &mut Store,
         predicate: &Predicate,
         assumption: Canonical,
     ) -> Result<(), Error> {
@@ -187,7 +193,7 @@ impl Context {
     /// Rejects input mismatch, capture of an ambient lifetime and exhausted work.
     pub fn equate_trait_predicate_inside(
         &mut self,
-        store: &Store,
+        store: &mut Store,
         predicate: &Predicate,
         assumption: Canonical,
         ambient: &[u32],
@@ -205,13 +211,15 @@ impl Context {
             return Err(Error::Mismatch);
         }
         self.account_work(1 + arguments.len())?;
-        let subject = self.known(store, assumption.ty)?;
-        self.equate_scoped_inside(store, predicate.subject, subject, ambient)?;
-        for (&inferred, canonical) in trait_.arguments.iter().zip(arguments) {
+        self.equate_canonical_input(store, predicate.subject, assumption.ty, ambient)?;
+        for (index, &inferred) in trait_.arguments.iter().enumerate() {
+            let canonical = store
+                .arguments(application.arguments)
+                .and_then(|mut arguments| arguments.nth(index))
+                .ok_or(Error::InvalidIdentity)?;
             match (inferred, canonical) {
                 (Argument::Type(term), CanonicalArgument::Type(ty)) => {
-                    let known = self.known(store, ty)?;
-                    self.equate_scoped_inside(store, term, known, ambient)?;
+                    self.equate_canonical_input(store, term, ty, ambient)?;
                 }
                 (Argument::Const(term), CanonicalArgument::Const(id)) => {
                     let known = self.known_const(store, id)?;
@@ -224,5 +232,46 @@ impl Context {
             }
         }
         Ok(())
+    }
+    // Equal canonical operations are congruent. This never guesses their inputs
+    // from result equality, and unchanged opaque inputs do not need a normal form.
+    fn equate_canonical_input(
+        &mut self,
+        store: &mut Store,
+        term: super::TermId,
+        canonical: super::TypeId,
+        ambient: &[u32],
+    ) -> Result<(), Error> {
+        if store
+            .contains_projections(canonical)
+            .ok_or(Error::InvalidIdentity)?
+        {
+            match self.resolved(store, term) {
+                Ok(original) if original == canonical => return Ok(()),
+                Ok(_) | Err(Error::Unresolved) => {}
+                Err(error) => return Err(error),
+            }
+        }
+        let known = self.known(store, canonical)?;
+        if ambient.is_empty()
+            && store
+                .contains_projections(canonical)
+                .ok_or(Error::InvalidIdentity)?
+            && !store
+                .contains_callables(canonical)
+                .ok_or(Error::InvalidIdentity)?
+        {
+            // Settle independent holes before comparing opaque operation identities.
+            // The blocked result pairs never contribute equations on their inputs.
+            let mut blocked = Vec::new();
+            self.unify(store, term, known, true, Some(&mut blocked))?;
+            for (left, right) in blocked {
+                if self.resolved(store, left)? != self.resolved(store, right)? {
+                    return Err(Error::Normalization);
+                }
+            }
+            return Ok(());
+        }
+        self.equate_scoped_inside(store, term, known, ambient)
     }
 }

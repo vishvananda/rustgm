@@ -157,7 +157,7 @@ impl Checker<'_> {
             .map_err(|e| self.error(node, e))?;
         self.infer
             .equate_trait_predicate_inside(
-                &self.facts.types,
+                &mut self.facts.types,
                 &original.predicate,
                 selected.predicate,
                 &counts,
@@ -277,7 +277,7 @@ impl Opened {
         let assumed = if matches!(source, Source::Assumption(_)) {
             use crate::sema::traits::equalities::{self, Selection};
             match equalities::select(
-                &facts.types,
+                &mut facts.types,
                 &mut self.context,
                 &self.application,
                 self.environment.as_deref(),

@@ -722,9 +722,8 @@ Projection and trait progress run before numeric fallback and body publication.
 Normalization never substitutes for the original well-formedness proof. Isolated
 method-prefix queries still reject pending projection proofs until that query mode
 supports them; body proofs cannot leak into a speculative candidate. General
-opaque-result properties, nested projected subjects and quantified equality
-premises in implementation search, associated constants and further PA20/PA21
-work remain required.
+opaque-result properties, quantified premises in implementation search,
+associated constants and further PA20/PA21 work remain required.
 
 Associated bindings in trait bounds retain resolved member identities separately
 from positional arguments. Complete ordinary trait headers before resolving
@@ -769,6 +768,28 @@ solver with independent cycle/cache state. Preserve the original projected query
 and commit its complete input equations separately from the normalized result.
 Result equations can determine output holes, never unrelated projection inputs.
 Undetermined inputs defer until other premises provide enough information.
+
+The same stack normalizes projected subjects and type arguments of trait premises,
+and projected builtin conditions after other equations settle. Retain the original
+input graph beside the selected normal-form view. Replace only independently
+proved projection roots; keep ordinary type/const holes shared, including holes
+beside a projection inside a tuple or nominal argument. A normalized result must
+never infer its projection's inputs. Exact canonical operation identity may prove
+congruence without exposing an opaque result's structure or properties.
+Preserve a typed normalization-needed result from the early assumption lookup,
+normalize the query and retry against the caller's concrete assumptions. A still
+incomparable opaque operation defers; it cannot establish cached absence.
+
+An input wrapper retains the original query, every normalization child and the
+selected implementation or assumption. Allocate implementation-private regions
+after normalization children, and preserve their complete interval through the
+parent proof. Cache the original canonical predicate, not merely the normalized
+result; partial queries become canonical only after independent holes settle.
+Builtin conditions with ordinary subjects keep their direct proof path. Suspend
+only projected ones on the shared stack, retaining pending Sized and outlives
+requirements for the caller's existing gates. General opaque outlives properties
+and original callable formation contracts remain required; normalizing a premise
+does not complete those separate declaration and lifetime responsibilities.
 
 Equality memo keys retain both canonical roots in the immutable caller environment.
 Cycle-dependent failures remain uncached, and evidence with private lifetime

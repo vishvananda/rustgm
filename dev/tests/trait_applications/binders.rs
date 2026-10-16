@@ -139,7 +139,7 @@ fn nested_inference_cannot_bind_a_local_slot_but_can_retain_closed_functions()
             &[(parameter, infer::arguments::Argument::Type(variable))],
         )?;
         let goal = context.instantiate_predicate(&mut store, template, &mut substitution)?;
-        let result = context.equate_trait_predicate(&store, &goal, assumption);
+        let result = context.equate_trait_predicate(&mut store, &goal, assumption);
         if accepted {
             result?;
             assert_eq!(context.resolved(&mut store, variable)?, closed);
@@ -170,7 +170,7 @@ fn repeated_callable_children_share_scope_work_and_charge_the_budget()
     let goal = context.instantiate_predicate(&mut store, template, &mut substitution)?;
     context.steps = 999_990;
     assert_eq!(
-        context.equate_trait_predicate(&store, &goal, assumption),
+        context.equate_trait_predicate(&mut store, &goal, assumption),
         Err(infer::Error::Budget)
     );
     let mut context = Context::default();
