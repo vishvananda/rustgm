@@ -75,9 +75,7 @@ fn write_body(body: &Body, detail: &Detail, out: &mut impl Write) -> io::Result<
             writeln!(out, " reachable={reachable}")?;
         }
     }
-    let mut words: Vec<_> = detail.regions.words().collect();
-    words.sort_unstable_by_key(|&(region, word, _)| (region.0, word));
-    for (region, word, bits) in words {
+    for (region, word, bits) in detail.regions.words() {
         writeln!(
             out,
             "  live-region g{} word={word} bits={bits:016x}",

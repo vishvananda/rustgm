@@ -1499,6 +1499,16 @@ snapshots observe the final checked transfer pass, after pruning and call
 activation. Executable verification must not allocate those snapshots or retain
 the per-body inspection arenas. Counts describe the same facts as the full view.
 
+Retain explicit whole-body runtime extents compactly. They mean exactly the
+caller's seeds at every CFG point, not a permission inferred from a region kind
+or an assumption. Propagate their closure along the proved directed requirements
+before ordinary sparse seeds; the contract-only LOCAL sentinel never connects
+runtime regions. Bound retained full-region entries, sparse words and pending
+work. Membership and logical word counts must match expanded point propagation,
+including empty bodies and partial final words. Sort the compact representation
+only for inspection, then expand full extents lazily while rendering; never
+recreate a region-by-word matrix just to print the view.
+
 Destruction consumes initialization/move facts to elaborate conditional drops.
 Async transformation accounts for borrows, pinning and cancellation cleanup.
 

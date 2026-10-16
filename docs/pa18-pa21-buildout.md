@@ -7056,3 +7056,69 @@ view takes 73.65 ms at 256. The rejected 1,024-reference input remains recorded 
 excluded, not replaced by a successful smaller case. No builds, source edits or
 compiler probes overlap timing. Standalone lint and tidy pass. Evidence lives in
 `obj/pa20-work/stored-projected-callables-v1/`. PA20 and PA21 remain planned.
+
+### Compact explicit runtime extents
+
+The stored-reference scaling limit came from representing identical whole-body
+extents as separate region/word entries. The loan checker already knows the
+external static, universal and type-parameter extents exactly; expanding each
+into individual point seeds discarded that useful fact.
+
+The point solver now accepts those explicit full extents separately. It computes
+their closure along the retained proved requirements before sparse point seeds,
+then skips redundant words for covered regions. Region kinds and assumptions
+provide no implicit extent, and LOCAL remains excluded. The existing work and
+500,000-entry storage bounds remain; compact full-region entries and pending
+work count toward those bounds. Logical word counts and membership preserve the
+expanded result. Inspection sorts compact entries and expands full regions lazily,
+so rendering does not reconstruct the large matrix in memory.
+
+The finite-set model checks both representations, reversed/duplicate sparse seeds,
+cycles and sorted word equality. Additional controls cover empty extents, partial
+final words, duplicate full seeds, foreign identities, out-of-range points,
+assumption isolation, LOCAL exclusion and exhausted work. A 4,096-region fanout
+over 65,537 points preserves 4,199,426 logical words within 100,000 work units.
+A source regression preserves the formerly rejected 1,024 stored-reference calls
+byte for byte. All twelve independently object-qualified scaling inputs now
+compile; the eleven previously supported inputs keep identical LowIR bytes.
+
+The validated compiler hash is
+`41d56fe57339ed275a2a4d59d2f11614791eb6f30608505a90a2327399627430`.
+All 27 validation commands pass: 1,126 release tests in 208 groups, 4,864 unchanged
+course comparisons, backend qualification, 56 maintainer native tests, PA16's
+304 independent acceptance checks and 119 executable comparisons (124 independent
+native-suite checks). Strict Clippy, the 689-file audit with zero findings and
+33 harness tests pass. The final binary matches the qualified prototype; all
+692 frozen source hashes agree. Validation cleanup removes 4,665 generated files
+(4.93 GiB of unshared blocks). The preceding stored-callable commit `e6f58de`
+also passes its exact-head hosted CI run.
+
+The performance study retains 44 jobs: 38 actual initial comparisons with
+`e6f58de`, two identical-candidate controls for the newly supported 1,024-call
+program, and four prescribed confirmations. All binary/source/input hashes and
+full/count output comparisons agree across 1,144 study observations and 176
+full-output qualifications. No builds, edits or compiler probes overlap timing.
+At 1,024 calls the repeated and explicit static-reference full views improve by
+54.20% and 47.88%; their peak RSS falls from approximately 26 MiB to 13 MiB.
+The formerly rejected stored-reference case completes its full view in 518.12 ms.
+The ordinary 4,096-function loan view changes by −1.69%, preserving its bytes.
+
+This is not a clean regression pass. Initial paired medians range from −57.96%
+to +9.55%, with A/A spreads of 1.44–131.76%. Two families trigger the predeclared
+3.5% repeat rule. The symbolic nested-callable repeat gives +2.93% count and −1.35%
+full; repeated projected inputs retain +8.75% count and +8.65% full increases.
+Confirmation A/A spreads range from 2.26% to 76.94%. Every original observation
+and the unresolved timing concern remain in the evidence.
+
+After the timing study and cleanup close, attribution uses the same frozen
+binaries/input: four initial hardware-counter observations, two Callgrind
+profiles, then 52 counter observations with A/A and five paired ABBA blocks per
+mode. Callgrind counts 1,602,525,998 and 1,602,558,247 instructions (+0.0020%);
+about 95% is declaration analysis and the changed point solver is below 0.001%.
+The counter study gives count-mode paired medians of −2.26% wall time, −0.15%
+cycles and +0.0018% instructions; full mode gives −0.16%, −0.62% and +0.0018%.
+All source/binary/input hashes and outputs agree. These follow-up measurements
+do not explain or reproduce the confirmed slowdown, and do not erase it. Its
+attribution remains uncertain. Both post-study cleanups remove zero generated
+files. Standalone lint and tidy pass. Evidence is retained in
+`obj/pa20-work/full-runtime-extents-v1/`; PA20 and PA21 remain planned.

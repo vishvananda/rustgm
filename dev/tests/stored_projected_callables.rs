@@ -156,3 +156,20 @@ fn stored_projected_items_execute_with_independent_rustc_results()
         .collect();
     native::check_cases("stored-projected-callables", &cases)
 }
+
+#[test]
+fn stored_static_projections_fit_the_runtime_storage_budget()
+-> Result<(), Box<dyn std::error::Error>> {
+    let mut source = String::from(
+        "static X:u8=1;trait A{type Out:Copy;}impl<'a:'static>A for &'a u8{type Out=u16;}fn f<T:A>(_:T,x:<T as A>::Out)->(<T as A>::Out,<T as A>::Out){(x,x)}fn main(){",
+    );
+    for _ in 0..1024 {
+        source.push_str("let p=f::<&u8>;let _=p(&X,73);");
+    }
+    source.push_str("}\n");
+    rustc::qualify("stored-static-projection-scaling", &source, true)?;
+    let (mut report, mut facts) = semantic::analyze(&source)?;
+    let entry = rustgm::sema::entry::select(&mut report, &facts)?;
+    rustgm::lower::instances::build(&report, &mut facts, entry)?;
+    Ok(())
+}

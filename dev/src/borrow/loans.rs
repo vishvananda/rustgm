@@ -662,14 +662,8 @@ fn finish<const RECORD: bool>(
     let external = std::iter::once(Region::STATIC)
         .chain(contract.identities.universals())
         .chain(contract.identities.parameters().map(|(_, region)| region));
-    let extents = external.flat_map(|region| (0..uses.points).map(move |p| (region, Point(p))));
-    let regions = points::infer(
-        &contract.solution,
-        uses.points,
-        seeds.into_iter().chain(extents),
-        32_000_000,
-    )
-    .map_err(error)?;
+    let regions = points::infer(&contract.solution, uses.points, seeds, external, 32_000_000)
+        .map_err(error)?;
     let mut flow = Flow {
         body,
         destruction,

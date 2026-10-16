@@ -67,7 +67,7 @@ fn check_write(source: &str, expected: bool) -> Result<(), Box<dyn std::error::E
                 .ok_or("unregistered live region")
         })
         .collect::<Result<Vec<_>, _>>()?;
-    let live = infer(&proof.solution, flow.points, seeds, 100_000)?;
+    let live = infer(&proof.solution, flow.points, seeds, [], 100_000)?;
     let block = cfg
         .blocks
         .iter()
@@ -229,7 +229,7 @@ fn fresh_implicit_reborrows_inherit_destination_use_points()
                         .ok_or("missing destination")
                 })
                 .collect::<Result<Vec<_>, _>>()?;
-            let live = infer(&proof.solution, 1, seeds, 1_000)?;
+            let live = infer(&proof.solution, 1, seeds, [], 1_000)?;
             assert!(
                 live.contains(
                     proof
