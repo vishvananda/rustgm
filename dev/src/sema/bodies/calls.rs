@@ -53,10 +53,19 @@ impl Checker<'_> {
         actual: TermId,
         expected: TermId,
     ) -> Result<(), Error> {
-        let source = if self.annotation_checks.is_empty() {
-            actual
-        } else {
+        let generic = !self.call_types.generic.is_empty()
+            || self.call_types.generic_constructors
+            || self.projections.active();
+        let partial = !self.annotation_checks.is_empty()
+            || (generic
+                && self
+                    .infer
+                    .contains_late_callables(&self.facts.types, actual)
+                    .map_err(|e| self.error(node, e))?);
+        let source = if partial {
             self.annotation_source(node, actual, expected)?
+        } else {
+            actual
         };
         self.shape_equation(node, source, expected)
     }
@@ -84,10 +93,9 @@ impl Checker<'_> {
             .ok()
             .and_then(|n| n.checked_add(1))
             .ok_or_else(|| self.error(node, "body region identity space exhausted"))?;
-        let specialized = crate::types::specialize::callables(&mut self.facts.types, ty, first)
-            .map_err(|e| self.error(node, e))?;
-        self.infer
-            .account_work(specialized.steps)
+        let specialized = self
+            .infer
+            .specialize_shape(&mut self.facts.types, ty, expected, first)
             .map_err(|e| self.error(node, e))?;
         let region = crate::sema::model::BodyRegion {
             body: self.body,

@@ -801,6 +801,19 @@ Written partial arguments, omitted arguments and omitted trailing defaults are
 distinct inputs. Alias-qualified variants retain their resolved namespace prefix
 and selected member rather than repeating path lookup in body checking.
 
+Infer partial callable shapes by opening source lifetime binders only where the
+destination supplies matching callable structure around its holes. A hole for an
+entire higher-ranked function-pointer type retains that type's own binders. Keep
+the original source for the separate directed subsumption proof. Give sibling
+callable occurrences distinct fresh lifetimes, and memoize unchanged shared
+subtrees without merging those occurrences. Charge this iterative shape walk and
+its substitutions to the same inference work budget. Detect source binders from
+the current typed graph before attempting resolution on the generic path; this
+query must not intern partial shapes or freeze answers across later bindings.
+Register projections in
+instantiated generic signatures and nominal fields in their resulting scopes;
+an earlier query for the input argument does not cover a substituted occurrence.
+
 Validate symbolic representation constraints without inventing concrete layouts
 for rigid parameters. Keep failed symbolic queries failed and permit unrelated
 queries afterward. The pinned packed-declaration restriction follows direct

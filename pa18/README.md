@@ -45,6 +45,13 @@ general arithmetic on a parameter in a type-level length remains invalid under
 the pinned stable profile. Runtime arithmetic on a scalar const parameter is
 ordinary checked arithmetic, including overflow and bounds panics.
 
+Partial callable inference also preserves the distinction between a hole for an
+entire higher-ranked function pointer and holes inside its parameters. For
+example, passing a callback with independent borrowed inputs through
+`fn pass<U>(f: fn(U)) -> fn(U)` with `U = (_, _)` must retain valid source lifetime
+relationships. Inferring `U` as `for<'a> fn(&'a u8)` must preserve that binder.
+Neither inference path permits returning a caller's borrow as `&'static u8`.
+
 ## Template proofs and concrete execution
 
 Check bodies with rigid type/const parameters and their own assumptions. The
@@ -160,8 +167,8 @@ is an accepted maintainer control awaiting PA20's grading contract.
 
 ## Validation
 
-The suite declares 431 fixtures: 268 accepted and 163 rejected. Of the accepted
-programs, 265 execute through both pinned rustc and the qualified CPPGM backend;
+The suite declares 434 fixtures: 270 accepted and 164 rejected. Of the accepted
+programs, 267 execute through both pinned rustc and the qualified CPPGM backend;
 three intentionally diverge and must only undergo code generation. Growing-instance
 rejections use rustc object generation: metadata-only success cannot qualify them.
 No compilation-only result counts as a runtime comparison. Native panic cases

@@ -184,8 +184,8 @@ is not counted as an unchanged-source native comparison. Course text oracles
 remain uninstrumented; 22 accepted counter programs check unchanged-source
 cleanup effects through both compilers. See `docs/pa17-validation.md`.
 
-PA18 has 431 generic LowIR cases: 268 accepted and 163 rejected. There are
-265 executable comparisons and three deliberately divergent codegen-only
+PA18 has 434 generic LowIR cases: 270 accepted and 164 rejected. There are
+267 executable comparisons and three deliberately divergent codegen-only
 controls. Their `native.kind: "codegen"` requires a nonempty reason and forbids
 runtime outcome fields; both compilers produce native code, but neither binary
 is executed. Counts report these separately. All other accepted LowIR cases

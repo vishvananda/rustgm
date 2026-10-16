@@ -6679,6 +6679,53 @@
         "status": 1,
         "default_lints": true
       }
+    },
+    {
+      "path": "tests/spec/callables/inferred-late-input.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.callables"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "PA18 partial callable inference preserves source lifetime binders",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/callables/inferred-higher-ranked-argument.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.callables"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "PA18 partial callable inference preserves source lifetime binders",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/callables/reject-inferred-static-result.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.callables"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "PA18 partial callable inference preserves source lifetime binders"
     }
   ]
 }

@@ -13,6 +13,7 @@ pub mod properties;
 mod regions;
 mod resolve;
 mod scoped;
+mod specialize;
 mod substitute;
 use super::{GenericArgs, ItemId, Kind, Primitive, RegionId, Store, TypeId};
 use std::collections::{HashMap, HashSet};

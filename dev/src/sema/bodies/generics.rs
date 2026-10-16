@@ -68,6 +68,9 @@ impl Checker<'_> {
             .infer
             .instantiate(&mut self.facts.types, signature, &bindings)
             .map_err(|e| self.error(node, e))?;
+        if self.projections.active() {
+            self.defer_normalization(node, crate::types::lifetime_proof::ScopeId::ROOT, signature)?;
+        }
         self.bound_obligations(node, owner, &arguments, &bindings)?;
         let term = self
             .infer

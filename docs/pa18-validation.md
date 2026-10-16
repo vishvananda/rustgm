@@ -1,10 +1,21 @@
 # PA18 release validation
 
 This document retains release and subsequent checkpoint evidence. Following PA20
-projection normalization, the active suite has 431 cases: 268 accepted and 163
-rejected. Its former associated-type boundary is retained byte-for-byte as an
+projection normalization and partial callable inference, the active suite has
+434 cases: 270 accepted and 164 rejected. Its former associated-type boundary is retained byte-for-byte as an
 accepted control in `dev/tests/projection_paths.rs`, awaiting PA20's grading contract.
 See `pa18/README.md` for the current suite counts.
+
+The partial callable inference checkpoint adds three declared source controls in
+`callables/`: independent borrowed callback inputs, an inferred whole higher-ranked
+function-pointer argument, and rejection of an escaping borrowed result. Pinned
+rustc agrees with all three declarations; the two accepted programs also execute
+value assertions through both rustc and CPPGM. The complete current PA18 check
+covers 434 declarations, 267 executions and three codegen-only comparisons, with
+one documented later-stage acceptance difference. Oracle generation adds nine
+sidecars and preserves all 1,293 preexisting sidecar hashes. Qualification and
+the hash review are retained in
+`obj/pa20-work/projected-callable-arguments-v2/`.
 
 PA18 exposes demanded generic execution through the public LowIR CLI. The
 maintainer implementation previously had the complete instance path behind a

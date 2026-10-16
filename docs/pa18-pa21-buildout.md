@@ -5228,3 +5228,119 @@ so their rejection is not counted as validation of the intended negative reason.
 Inputs and results remain in `obj/pa20-work/delayed-projection-demands-v1/`.
 These operational demands and transformed generic signatures are follow-up work,
 not completed support in this checkpoint.
+
+## Projected callable arguments and nominal fields
+
+Generic function signature and nominal field instantiation register projected
+occurrences in their resulting scopes. A query for the original argument cannot
+normalize a different graph produced by substitution beneath a callable binder.
+Both sites reuse the scoped occurrence walk and its query deduplication; they
+do not select implementations or discharge formation requirements themselves.
+
+Partial callable inference opens source lifetime binders only where the
+expected type supplies matching callable structure. A hole for an entire
+higher-ranked function-pointer type keeps that type's own binders. Sibling
+callable occurrences receive independent lifetime instances; unchanged shared
+subtrees are visited once. The original source type remains subject to a
+separate directed subsumption proof. All traversal and substitution work is
+charged to the inference budget.
+
+Generic inference first detects binders in the current typed graph without
+resolving holes or interning canonical types. Known scalar types need no worklist
+allocation; shared constructed shapes use a bounded walk. Answers are not cached
+across inference changes. The original broader activation eagerly resolved
+ordinary types and reordered eight existing PA19 text dumps. The strict course
+check caught this; the binder-presence query restores their exact bytes. No PA19
+oracle is changed. Original failures remain in the validation evidence.
+
+Thirty-four declared source controls agree with pinned rustc in the focused
+maintainer checks: 24 accept and ten reject. They cover projected argument order,
+nested function pointers, captured caller lifetimes, late binders, borrowed
+results, constructors, nominal fields and return values, inherent methods and
+qualified trait methods. Seven native programs check selected function behavior
+and returned values. Five typed controls cover whole-type binder preservation,
+partial shape opening, independent sibling instances, shared graph work bounds
+and binder detection after new bindings without canonical type insertion.
+
+The stronger native cases exposed a source lifetime leaking into inferred type
+holes. Opening every nested binder corrected that case but incorrectly erased
+whole higher-ranked types. The final shape-directed walk handles both. One
+original positive hypothesis with a nested higher-ranked input is rejected by
+rustc; its expectation was corrected before final validation. Earlier experimental
+sources, declarations, diagnostics and measurements are retained under
+`obj/pa20-work/projected-callable-arguments-v1/` and `-v2/`; the earlier experimental
+binary is not the published performance baseline.
+
+Three source regressions belong to PA18 and are now course fixtures. Pinned rustc
+qualifies their two accepted cases and one lifetime rejection. The accepted
+programs run value assertions through both rustc and CPPGM. Their nine sidecars
+are generated only after independent checks; all 1,293 preexisting PA18 sidecars
+remain byte-identical. The active PA18 suite now has 434 cases, 267 executable
+comparisons and three deliberately divergent codegen-only comparisons, with its
+one documented later-stage rustc acceptance difference.
+
+Delayed projected values and operational coercions remain follow-up work.
+Unconstrained inputs must not be inferred from projection results; queued
+conversions must retain reborrow, two-phase and discarded-repeat metadata. The
+erased-input negative here still stops at a normalization demand, so it is not
+proof of the eventual unconstrained-input diagnostic. Associated equalities,
+associated constants, general coherence and the remaining PA21 responsibilities
+are also unfinished. PA20 and PA21 remain planned.
+
+Final optimized validation passes 1,037 tests with 40 explicit native ignores.
+The affected ten-module native batch executes 50 programs; PA18 independently
+checks all 434 declarations and executes its 267 runnable cases. All 4,860 active
+course cases pass. Clippy all/pedantic, formatting, the 644-file audit with zero
+findings, 33 harness tests and upstream verification pass. The 34 new maintainer
+source controls also agree with rustc through the CLI's complete LowIR emission.
+The full suite failure before the binder-presence fix is retained separately
+from this final passing run.
+
+The frozen candidate is
+`ac4a62b05d79c05c4b626f11fe93feb4ca57cb0469dea864e1b83ad2675f7a2f`,
+with 647 source/config/test files archived in
+`obj/pa20-work/projected-callable-arguments-v2/`. Its baseline is published commit
+`477d1ba`, binary
+`5aa15338213dcd21f56c063cc0be00171c03131efd66455b812656abeef8e0b5`.
+All 126 inherited workloads retain identical full/count output in their previously
+selected modes: 117 semantic views and nine LowIR views. No comparison mode was
+changed for this checkpoint.
+
+Twenty-one independently rustc-qualified new scaling inputs cover projected
+function arguments, constructors and captured callers at 64/256/1,024, argument
+width at 64/256/512, and three binder families at 64/256/1,024: projected late
+inputs, whole higher-ranked arguments and ordinary partial tuple inputs. Their
+candidate-only measurements establish scaling and calibration, not comparisons
+against an older compiler that rejects them. Every measurement uses immutable
+binaries and inputs, verifies full/count output equality, and retains raw A/A
+calibration and paired ABBA observations. No RustGM build, test or probe overlaps
+timing; unrelated projects remain active on this host.
+
+The timing batch retains 3,822 observations. Inherited-workload paired medians
+range from -12.6% to +7.4%. Two comparisons exceed +4%: unreduced chains at 128
+(+4.8%, 19.7% A/A spread) and inferred Sized at 128 (+7.4%, 55.3% spread).
+Focused confirmations retain another 52 observations and measure -2.1% with
+1.3% spread and -0.9% with 10.7% spread, respectively. Those initial regressions
+do not persist in the confirmations; these noisy measurements do not establish
+a general speedup. Every initial observation remains in the record.
+
+Candidate-only median wall times, in milliseconds, are:
+
+| Workload | 64 | 256 | 1,024 (512 for width) |
+| --- | ---: | ---: | ---: |
+| Projected function arguments | 9.97 | 27.79 | 98.02 |
+| Projected constructors | 11.01 | 29.35 | 103.08 |
+| Captured projected callers | 16.91 | 57.57 | 260.47 |
+| Projected argument width | 8.25 | 18.82 | 35.72 |
+| Projected late-bound inputs | 17.76 | 62.65 | 275.11 |
+| Whole higher-ranked arguments | 11.83 | 32.85 | 135.89 |
+| Ordinary partial tuple inputs | 9.06 | 23.63 | 89.68 |
+
+Their resident medians range from 5,960 to 19,970 KiB. Source-level timing remains
+separate from typed work-bound assertions. Binaries are reused across samples;
+rendering scratch and probe metadata are removed. The successful validation
+wrapper pruned 3,031 generated files (2.11 GiB of unshared blocks), recorded in
+`obj/cleanup/1792111513060885191.jsonl`. The superseded experimental pin is retired;
+only the current comparison baseline and candidate remain pinned until publication.
+The final receipt is
+`obj/pa20-work/projected-callable-arguments-v2/validation-v1.json`.

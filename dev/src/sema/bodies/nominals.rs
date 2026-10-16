@@ -168,8 +168,12 @@ impl Checker<'_> {
             .map_err(|e| super::Declarations::error(report, key, e))?;
         let term = self
             .infer
-            .instantiate_with(&mut self.facts.types, ty, &mut fields.parameters);
-        term.map_err(|e| self.error(node, e))
+            .instantiate_with(&mut self.facts.types, ty, &mut fields.parameters)
+            .map_err(|e| self.error(node, e))?;
+        if self.projections.active() {
+            self.defer_normalization(node, crate::types::lifetime_proof::ScopeId::ROOT, term)?;
+        }
+        Ok(term)
     }
     fn receiver_fields(
         &mut self,
