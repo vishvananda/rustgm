@@ -547,6 +547,14 @@ identities. A projection remains a noninjective operation: its result cannot
 equate its inputs or acquire structural properties before normalization.
 Freshening its inputs is not a substitute for freshening a selected result.
 
+An isolated inference query may transport symbolic result structure back only
+while preserving every original type and const hole. Refuse input bindings,
+domain narrowing, merged distinct inputs and escaping fresh query holes before
+allocating destination terms. Reuse original variable identities through one
+shared reverse mapping, with bounded traversal of shared structure. Lifetime
+equations and semantic proofs stay with the caller; transporting a result does
+not authorize implementation selection or discharge a formation requirement.
+
 Canonical-input readiness uses dependency watches on unresolved type and const
 leaves. Unions, bindings and explicit fallback wake only affected watches; newly
 exposed compound terms add their own leaves without rescanning resolved ancestors.
@@ -587,6 +595,12 @@ Normalization never substitutes for the original well-formedness proof. Isolated
 method-prefix queries still reject pending projection proofs until that query mode
 supports them; body proofs cannot leak into a speculative candidate. Symbolic
 associated equalities and further PA20/PA21 work remain required.
+
+Apply each tuple field's coercion before checking the next field. Context inferred
+from an earlier field can establish a later mutable-reference reborrow, including
+through a block tail or nested tuple. A reference consumed before that context
+exists remains a move; independent type holes do not acquire a shared context.
+Array elements retain their common-type join before final element coercions.
 
 Caller-bound trait goals participate in the same inference graph as call arguments.
 Import each probe with one shared mapping across Self and all type/const roots.

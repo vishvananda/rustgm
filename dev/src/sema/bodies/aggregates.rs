@@ -80,6 +80,11 @@ impl Checker<'_> {
             }
             ordinal -= 1;
             let expected = self.child(node, term, if tuple { ordinal } else { 0 })?;
+            if tuple {
+                // Later fields observe the context inferred from earlier ones,
+                // including whether an existing mutable reference is reborrowed.
+                self.work.push(Work::CoerceElement(child, expected));
+            }
             self.work.push(Work::Enter(child, Some(expected)));
         }
         Ok(())
@@ -90,44 +95,41 @@ impl Checker<'_> {
         elements: List,
     ) -> Result<TermId, Error> {
         let term = self.term(node)?;
-        let tuple = matches!(self.kind(node), Kind::Tuple(_));
+        if matches!(self.kind(node), Kind::Tuple(_)) {
+            return Ok(term);
+        }
         let unit = self.report.package.unit(self.file);
-        if !tuple {
-            let element = self.child(node, term, 0)?;
-            if self.head(node, element)?.is_none() {
-                let mut common = None;
-                for child in unit.configured.ast.list(elements) {
-                    if !self.active(*child) {
-                        continue;
-                    }
-                    let current = self.term(*child)?;
-                    common = Some(if let Some(prior) = common {
-                        self.join_types(node, prior, current)?
-                    } else {
-                        current
-                    });
+        let element = self.child(node, term, 0)?;
+        if self.head(node, element)?.is_none() {
+            let mut common = None;
+            for child in unit.configured.ast.list(elements) {
+                if !self.active(*child) {
+                    continue;
                 }
-                if let Some(common) = common {
-                    self.equate(node, element, common)?;
-                }
+                let current = self.term(*child)?;
+                common = Some(if let Some(prior) = common {
+                    self.join_types(node, prior, current)?
+                } else {
+                    current
+                });
+            }
+            if let Some(common) = common {
+                self.equate(node, element, common)?;
             }
         }
-        let mut ordinal = 0;
         let mut reference_hint = false;
         for child in unit.configured.ast.list(elements) {
             if !self.active(*child) {
                 continue;
             }
-            let expected = self.child(node, term, if tuple { ordinal } else { 0 })?;
-            if !tuple && reference_hint {
+            if reference_hint {
                 self.reference_expected.insert(*child);
             }
             reference_hint |= matches!(
                 self.head(*child, self.term(*child)?)?,
                 Some(Constructor::Reference { .. })
             );
-            self.coerce(*child, expected)?;
-            ordinal += 1;
+            self.coerce(*child, element)?;
         }
         Ok(term)
     }

@@ -8,6 +8,7 @@ pub mod dependencies;
 mod freshen;
 mod import;
 pub mod predicates;
+pub mod probe;
 pub mod projections;
 pub mod properties;
 mod regions;

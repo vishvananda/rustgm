@@ -6726,6 +6726,53 @@
         "default_lints": true
       },
       "maintainer_origin": "PA18 partial callable inference preserves source lifetime binders"
+    },
+    {
+      "path": "tests/spec/aliases-runtime/tuple-later-field-reborrow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.aliases-runtime"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "PA18 tuple coercions use context established by earlier fields",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aliases-runtime/tuple-nested-field-reborrow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.aliases-runtime"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "PA18 tuple coercions use context established by earlier fields",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/aliases-runtime/reject-tuple-first-field-moved.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.aliases-runtime"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "PA18 tuple coercions use context established by earlier fields"
     }
   ]
 }

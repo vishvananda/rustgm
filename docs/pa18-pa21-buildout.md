@@ -5344,3 +5344,89 @@ wrapper pruned 3,031 generated files (2.11 GiB of unshared blocks), recorded in
 only the current comparison baseline and candidate remain pinned until publication.
 The final receipt is
 `obj/pa20-work/projected-callable-arguments-v2/validation-v1.json`.
+
+## Tuple coercion order and isolated result transport
+
+Tuple fields now finish their coercions in source order, before the next field
+is entered. In `Pair<T> = (T,T)`, initializing the first field from a mutable
+reference establishes reference context for the second. That second field then
+reborrows, including through block tails and nested tuples. The first field still
+moves when its expected type was unknown, and independent holes remain independent.
+Arrays retain their existing common-type join and final coercion pass.
+
+Seven declared source controls agree with pinned rustc: five accepted programs
+and two move rejections. Four native programs verify ordinary, block-tail, nested
+and projected reborrows with value assertions through rustc and CPPGM. Three
+ordinary alias controls join PA18, whose 437 cases comprise 272 accepted and 165
+rejected programs. The independent course run checks 269 executions and three
+codegen-only comparisons. Oracle generation adds nine sidecars and preserves all
+1,302 preexisting PA18 sidecar hashes. The one documented later-stage acceptance
+difference remains explicit in the manifest.
+
+The inference layer also gains isolated symbolic-result transport for upcoming
+partial projection queries. A probe copies all roots with shared type and const
+mappings. Export rejects input binding, domain narrowing, merging distinct input
+holes, changed source equations and fresh escaping query holes before allocating
+destination terms. Accepted results reuse original input identities; a concrete
+result alone cannot choose an unresolved input. Lifetime equations remain in the
+probe and carry no implementation-selection or formation-proof authority.
+Eight typed tests cover these contracts, const slots and bounded shared graphs.
+Ordinary imports do not pay the additional tracking cost. This API is not yet
+connected to projection selection; partial normalization remains unfinished.
+
+Follow-up investigation retains 36 independent source probes, including original
+hypotheses and three expectation corrections, under
+`obj/pa20-work/pending-projection-coercions-v1/`. Rustc rejects reversed tuple
+initializers requiring an implicit function-item or shared-reference conversion,
+even when a later numeric field fixes the input. Explicit conversions and fully
+specified alias inputs provide separate accepted controls. Retrying all deferred
+conversions after input resolution would incorrectly accept those programs.
+The current implementation still needs to retain the original projected context
+when a declaration template has normalized early, and to normalize suitable
+partially known inputs without inferring them from output equations. Symbolic
+associated equalities, associated constants, general coherence and the remaining
+PA21 responsibilities are still required. PA20 and PA21 remain planned.
+
+Final optimized validation passes 1,046 tests with 41 explicit native ignores.
+The affected eleven-module native batch executes 54 programs separately; all
+4,863 active course cases pass. Clippy all/pedantic, formatting, the 647-file
+audit with zero findings, 33 harness tests and upstream verification pass.
+The successful wrapper removes 3,044 generated files (2.12 GiB of unshared
+blocks), recorded in `obj/cleanup/1792114155721374176.jsonl`.
+
+The frozen candidate is
+`99e4c8a556b48491be92f50d26ff072d5e707fd29933e7f10e05b14a3ee31974`,
+with 650 source/config/test files archived under
+`obj/pa20-work/partial-projection-normalization-v1/`. The comparison baseline is
+published commit `948d628`, binary
+`ac4a62b05d79c05c4b626f11fe93feb4ca57cb0469dea864e1b83ad2675f7a2f`.
+All 147 inherited workloads retain identical full/count bytes in their existing
+modes. Nine new rustc-qualified source workloads cover repeated tuple reborrows
+and projected reborrows at 64/256/1,024, and wide shared-type tuples at 64/256/512.
+These newly accepted inputs use candidate-only measurements. Their timing is
+separate from the typed probe work-bound assertions. Every job uses immutable
+binaries and inputs, A/A calibration and paired ABBA observations, with no RustGM
+builds, tests or probes overlapping timing. Unrelated projects remain active on
+this host.
+
+The initial timing batch retains 4,056 observations. Inherited paired medians
+range from -15.4% to +15.2%. Six comparisons exceed +4%: concrete goals at 256,
+pointer binders at 512, unreduced repeated uses at 512 and 2,048, callable width
+at 512, and captured projected arguments at 256. Their focused confirmation
+retains another 156 observations, with respective deltas of -1.3%, -1.2%, -1.0%,
+-1.0%, +0.6% and -0.9%. Confirmation A/A spreads range from 1.4% to 7.0%.
+The initial regressions do not persist in this confirmation; these measurements
+do not establish a general speedup. Every initial sample remains retained.
+
+Candidate-only semantic-view median wall times, in milliseconds, are:
+
+| Workload | 64 | 256 | 1,024 (512 for width) |
+| --- | ---: | ---: | ---: |
+| Repeated tuple reborrows | 6.49 | 14.81 | 50.74 |
+| Shared-type tuple width | 4.42 | 6.38 | 9.49 |
+| Repeated projected reborrows | 12.72 | 39.45 | 165.68 |
+
+Their resident medians range from 5,898 to 17,212 KiB. Measurement reuses the two
+pinned compiler binaries and removes large rendering scratch after each job.
+The final receipt is
+`obj/pa20-work/partial-projection-normalization-v1/validation-v1.json`.

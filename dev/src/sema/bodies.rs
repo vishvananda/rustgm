@@ -118,6 +118,7 @@ enum Work {
     },
     Enter(NodeId, Option<TermId>),
     Exit(NodeId),
+    CoerceElement(NodeId, TermId),
     CallArguments(NodeId, Option<TermId>),
     MethodArguments(NodeId),
     AssignmentValue(NodeId),
@@ -528,6 +529,7 @@ impl Checker<'_> {
                 }
                 Work::Enter(node, expected) if self.active(node) => self.enter(node, expected)?,
                 Work::Enter(..) => {}
+                Work::CoerceElement(node, expected) => self.coerce(node, expected)?,
                 Work::CallArguments(node, expected) => self.call_arguments(node, expected)?,
                 Work::MethodArguments(node) => self.method_arguments(node)?,
                 Work::AssignmentValue(node) => {

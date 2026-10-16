@@ -1,0 +1,1 @@
+ERROR: file 0: 98: dereferenced pointer may be uninitialized or moved

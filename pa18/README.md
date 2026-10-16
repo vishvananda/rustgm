@@ -52,6 +52,13 @@ example, passing a callback with independent borrowed inputs through
 relationships. Inferring `U` as `for<'a> fn(&'a u8)` must preserve that binder.
 Neither inference path permits returning a caller's borrow as `&'static u8`.
 
+Tuple fields use context established by earlier field coercions. For
+`type Pair<T> = (T,T)`, `let pair: Pair<_> = (x,y)` moves an initially
+unconstrained mutable reference `x` but reborrows `y` after the first field fixes
+the shared type. This context propagates through nested tuples and block tails.
+Separate holes in `(_,_)` remain independent; later inference does not undo an
+earlier move.
+
 ## Template proofs and concrete execution
 
 Check bodies with rigid type/const parameters and their own assumptions. The
@@ -167,8 +174,8 @@ is an accepted maintainer control awaiting PA20's grading contract.
 
 ## Validation
 
-The suite declares 434 fixtures: 270 accepted and 164 rejected. Of the accepted
-programs, 267 execute through both pinned rustc and the qualified CPPGM backend;
+The suite declares 437 fixtures: 272 accepted and 165 rejected. Of the accepted
+programs, 269 execute through both pinned rustc and the qualified CPPGM backend;
 three intentionally diverge and must only undergo code generation. Growing-instance
 rejections use rustc object generation: metadata-only success cannot qualify them.
 No compilation-only result counts as a runtime comparison. Native panic cases

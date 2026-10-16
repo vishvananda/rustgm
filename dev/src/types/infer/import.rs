@@ -8,8 +8,8 @@ use std::collections::HashMap;
 
 #[derive(Default)]
 pub(super) struct Import {
-    types: HashMap<TermId, TermId>,
-    constants: HashMap<ConstTermId, ConstTermId>,
+    pub(super) types: HashMap<TermId, TermId>,
+    pub(super) constants: HashMap<ConstTermId, ConstTermId>,
 }
 impl Context {
     /// Import a reachable graph from another context sharing the canonical store.
