@@ -47,17 +47,13 @@ pub(super) fn prove(
     }
     for predicate in &contract.obligations {
         if let Bound::Outlives(shorter) = predicate.bound {
-            let parts = queries.components(predicate.ty)?;
-            for &longer in parts.regions {
-                constraints
-                    .outlives(longer, shorter, 0)
-                    .map_err(|e| e.to_string())?;
-            }
-            for &id in parts.parameters {
-                constraints
-                    .parameter_outlives(id, shorter, 0)
-                    .map_err(|e| e.to_string())?;
-            }
+            constraints.require_type(
+                &mut queries,
+                predicate.ty,
+                shorter,
+                crate::types::relations::ProofScope::ROOT,
+                0,
+            )?;
         }
     }
     let (

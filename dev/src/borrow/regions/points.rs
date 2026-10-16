@@ -1,4 +1,5 @@
 //! Sparse CFG-point propagation over an already proved outlives graph.
+mod verify;
 use super::graph::{Region, Solution};
 use std::collections::{HashMap, HashSet};
 
@@ -235,5 +236,6 @@ pub fn infer(
             }
         }
     }
+    solver.verify(proof)?;
     Ok(solver.result)
 }

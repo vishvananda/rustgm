@@ -92,6 +92,9 @@ pub(super) fn check_bounds(
     predicates: impl Iterator<Item = crate::types::parameters::predicates::Predicate>,
     evidence: Option<&super::traits::obligations::Obligations>,
 ) -> Result<(), String> {
+    if !assumptions.projections.is_empty() {
+        return Err("projected destructor bounds require scoped nominal contracts".into());
+    }
     let mut graph = region_graph::Graph::new(1_000_000);
     let universals: HashSet<_> = arguments.iter().copied().collect();
     let mut slots = Vec::with_capacity(implementation.parameters as usize);
@@ -129,7 +132,7 @@ pub(super) fn check_bounds(
             .copied()
             .ok_or_else(|| "missing impl lifetime slot".into())
     };
-    for &(a, b) in assumptions.regions {
+    for &(a, b) in assumptions.scalars.regions {
         graph
             .assume(resolve(a)?, resolve(b)?)
             .map_err(|e| e.to_string())?;
@@ -140,7 +143,7 @@ pub(super) fn check_bounds(
             .map_err(|e| e.to_string())?;
     }
     let mut parameters = HashMap::new();
-    for &(id, shorter) in assumptions.parameters {
+    for &(id, shorter) in assumptions.scalars.parameters {
         let longer = parameter_region(&mut graph, &mut parameters, id)?;
         graph
             .assume(longer, resolve(shorter)?)

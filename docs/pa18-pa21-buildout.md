@@ -7195,3 +7195,85 @@ supported full views take 6.86/12.48 ms at 16/64 inherited levels and 22.69/77.7
 at 64/256 declarations; the latter uses about 14 MiB peak RSS. These comparisons
 do not resolve the separately recorded earlier runtime-extents timing concern.
 Evidence is retained in `obj/pa20-work/inherited-result-abilities-v1/`.
+
+## Scoped associated result outlives proofs
+
+PA20's maintainer frontend now accepts explicit and reference-implied lifetime
+bounds on opaque associated results. The result remains a typed atom with its
+original binder depth: `&'a T::Out` implies `T::Out: 'a`, never `T: 'a`, and a
+bound on one member or application cannot justify another. Type-bound queries
+return these atoms separately from scalar lifetime/parameter components, forcing
+consumers to retain them. Instance contracts preserve and lower captured atoms
+through the existing checked lifetime substitution.
+
+The directed proof defers projected requirements until ordinary constraints and
+assumptions are complete. It accepts an applicable environment bound or the
+conjunction of all projection input bounds. Complete typed input matching retains
+conditional lifetime equalities as tests; it does not constrain inference merely
+to make an assumption applicable. Skipped callable binders and actual nested proof
+scopes remain distinct. Projections involving a local binder do not create input
+assumptions. With no applicable alternative, the sufficient input route can emit
+the ordinary constraints needed by inference.
+
+Shared, interned Boolean verification graphs survive both symbolic lifetime
+inference and CFG point checking. The same alternative must pass both phases;
+one branch cannot supply the symbolic relation while another supplies live
+points. Traversals, child lists, retained storage and sparse extent comparisons
+are bounded and iterative. Graphs without such tests retain their allocation-free
+optional verification path. Copy/Clone and type-outlives call obligations use the
+same deferred normalization worklist, preserving original formation and lifetime
+debts when a selected result erases an input.
+
+Eighteen sources were independently object-qualified with Rust 1.98 before
+changing expected outcomes: ten valid, eight invalid. The baseline rejected all
+eighteen. Nine valid programs now reach LowIR and execute through CPPGM with
+independent rustc results; all eight invalid controls still fail. These seventeen
+cases are permanent in `result_lifetimes.rs`. They include shared/mutable
+forwarding, copying a borrowed result, explicit and implied output bounds,
+all-input sufficiency, result/input and member isolation, local-storage escape,
+dangling references and a result that erases a shorter input lifetime. The tenth
+valid source, a captured projection inside a function pointer, still fails the
+earlier shape gate. It remains an investigation, not successful rejection
+coverage. Nominal projected-template substitution and projected destructor bounds
+also remain explicit unsupported boundaries; their obligations are not discarded.
+PA20 and PA21 remain planned.
+
+`outlives_verification.rs` compares symbolic alternatives with 2,048 finite-set
+models and checks deep shared graphs, budgets, partial words, empty extents and
+alternative isolation across the two phases. `opaque_outlives.rs` checks scoped
+output assumptions, complete input guards, younger versus captured lifetime
+slots, skipped callable binders and runtime equality of conditional inputs.
+Existing projection/liveness tests now assert the retained opaque atom and empty
+scalar components instead of expecting the former unsupported-query error.
+
+Validation covered 1,138 regular maintainer tests, 58 native tests, all
+4,864 PA1–PA19 course fixtures, strict all/pedantic Clippy, formatting, the
+701-file Rust audit, 33 harness checks, backend qualification, and pinned upstream
+fixtures/reference checks. The first full release run had 1,137 passes and one
+obsolete boundary assertion; its corrected, more precise assertion passed in the
+targeted release rerun. No production source changed between those runs. The
+remaining validation batch succeeded, and all 704 snapshotted source/configuration
+files matched afterward. Generated validation artifacts were pruned: the two
+cleanup receipts removed 1.90 GiB and 3.14 GiB, preserving source evidence and the
+immutable comparison binaries.
+
+Performance compares `c62794c`'s immutable compiler `673a530e…` with `df212eb3…`.
+Twelve comparisons cover ordinary/projected stored calls, trait chains, wide
+inherited abilities and nested callable semantic inspection in count/full modes.
+Twelve same-candidate jobs measure three new source families at 64/256 functions;
+all six inputs were independently object-qualified before timing. The initial
+624 study observations and 96 full-output qualifications retain A/A calibration,
+five paired ABBA blocks, CPU/RSS data and exact output hashes. Initial comparison
+medians ranged from −3.96% to +9.83%, with A/A spreads of 1.00%–73.19%.
+
+The full nested-callable workload exceeded the predeclared 3.5% repeat threshold.
+Two fresh full-output confirmations measured +1.04% and +1.20%, with A/A spreads
+of 2.03% and 3.22%; its count control measured +0.21%. These add 78 study and 12
+qualification observations. The initial noisy result remains retained; the
+slowdown did not repeat. All source/input/binary/runner hashes and full/count
+outputs matched. The new families' full-output medians at 64/256 functions were
+18.05/56.03 ms (implied borrows), 24.74/83.45 ms (explicit bounds), and
+27.98/95.85 ms (alternative bounds). These results concern this change against
+`c62794c`; they do not resolve the older runtime-extents comparison concern.
+Detailed declarations, snapshots, observations and cleanup receipts remain in
+`obj/pa20-work/projected-outlives-v1/` and `obj/cleanup/`.

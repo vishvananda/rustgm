@@ -362,6 +362,15 @@ within the runtime region budget. Independent region-set closure tests include
 reordered and duplicate seeds; a large static fanout checks bounded propagation
 without changing the point sets or raising resource limits.
 
+`result_lifetimes.rs` retains seventeen independently object-qualified associated
+result lifetime controls: nine accepted programs also execute through CPPGM and
+rustc, and eight invalid programs remain rejected. `outlives_verification.rs` and
+`opaque_outlives.rs` check conditional proofs against independent finite-set
+models, actual binder scopes and runtime extents. One further valid captured
+function-pointer source still fails the earlier shape gate and is not counted
+as successful rejection coverage. Nominal projected-template substitution and
+projected destructor contracts remain explicit implementation boundaries.
+
 ## Storage and cleanup
 
 Generated output is bounded separately from validation evidence. Builds and

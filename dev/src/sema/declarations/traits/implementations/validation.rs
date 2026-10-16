@@ -123,19 +123,15 @@ impl Checker<'_> {
         }
         for requirement in requirements.required.iter().chain(&requirements.implied) {
             if let Bound::Outlives(shorter) = requirement.bound {
-                let parts = queries
-                    .components(requirement.ty)
-                    .map_err(|e| self.error(source, e.to_string()))?;
-                for &longer in parts.regions {
-                    constraints
-                        .outlives(longer, shorter, 0)
-                        .map_err(|e| self.error(source, e.to_string()))?;
-                }
-                for &id in parts.parameters {
-                    constraints
-                        .parameter_outlives(id, shorter, 0)
-                        .map_err(|e| self.error(source, e.to_string()))?;
-                }
+                constraints
+                    .require_type(
+                        &mut queries,
+                        requirement.ty,
+                        shorter,
+                        crate::types::relations::ProofScope::ROOT,
+                        0,
+                    )
+                    .map_err(|e| self.error(source, e))?;
             }
         }
         constraints.solve().map(|_| ()).map_err(|e| {

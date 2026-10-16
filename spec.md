@@ -130,6 +130,26 @@ not reveal exact output components or imply new input assumptions from an output
 bound. Closed property queries and explicit result-outlives proof retain their
 separate normalization and scoped-evidence requirements.
 
+Type-outlives queries retain opaque associated results as typed atoms, separately
+from scalar lifetime and type-parameter components. A reference to an associated
+result implies a bound on that result only. It grants no bound on Self, another
+input or another associated member. Keep the original binder depth on each atom;
+resolve captured lifetimes in the actual proof scope, including empty binders.
+An atom involving a locally bound lifetime cannot be decomposed into input
+assumptions when it escapes that binder.
+
+Prove an opaque result bound with an applicable environment clause or with all
+of its input components. Match complete typed applications; if two applications
+can match only when their lifetimes are equal, retain that equality as a condition,
+not an inference equation. Introduce ordinary constraints for the forced input
+route when no alternative is available. Keep alternatives in a shared, bounded,
+iteratively evaluated Boolean graph. Verify them after ordinary lifetime
+inference and again against actual runtime extents. The same alternative must
+satisfy both phases; unrelated successful branches cannot supply half a proof
+each. No type verification may turn a requirement into an assumption or grant a
+projection a type parameter's implicit body extent. Ordinary graphs without
+projected tests allocate no verification arena.
+
 Projection normalization uses the common bounded type fold. Normalize inputs
 before asking semantic selection for a result; suspend with typed requests when
 selection needs the store or declaration worklist. Replacement types retain the
@@ -285,7 +305,7 @@ relative to the current traversal before clearing it, so one large query cannot
 make every later small query scan the same large allocation. Known-type queries
 keep their allocation-free path.
 
-Body calls normalize substituted `Copy`/`Clone` predicate subjects through the
+Body calls normalize substituted `Copy`/`Clone` and type-outlives predicate subjects through the
 same deferred worklist before querying builtin properties. A property of the
 selected result cannot choose its inputs or erase the original application's
 formation and lifetime obligations. Composite subjects retain their own nested

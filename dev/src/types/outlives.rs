@@ -1,5 +1,9 @@
 //! Well-formedness requirements over typed templates, with bounded recursive propagation.
+mod components;
 mod contracts;
+pub use components::LiveRegions;
+pub(crate) use components::TypeComponents;
+use components::{ComponentKind, Components};
 pub(crate) mod storage;
 use super::{GenericArgs, ItemId, Kind, RegionId, Store, TypeId};
 use super::{arguments::Argument, parameters::ParameterId};
@@ -24,8 +28,44 @@ impl Parts<'_> {
         self.regions.len().saturating_add(self.parameters.len())
     }
 }
+/// An opaque associated result at its original binder depth. Its input
+/// components are a sufficient proof route, never an implied reverse bound.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct Projection {
+    pub ty: TypeId,
+    pub depth: u16,
+}
+pub type ProjectionPair = (Projection, RegionId);
+/// Type bounds preserve opaque results separately from ordinary components.
+#[derive(Clone, Copy)]
+pub struct BoundParts<'a> {
+    pub scalars: Parts<'a>,
+    pub projections: &'a [Projection],
+}
+impl<'a> BoundParts<'a> {
+    #[must_use]
+    pub fn len(&self) -> usize {
+        self.scalars.len().saturating_add(self.projections.len())
+    }
+    #[must_use]
+    pub fn is_empty(&self) -> bool {
+        self.scalars.is_empty() && self.projections.is_empty()
+    }
+    fn scalar_only(self) -> Result<Parts<'a>, &'static str> {
+        if !self.projections.is_empty() {
+            return Err("projected lifetime components require a scoped proof");
+        }
+        Ok(self.scalars)
+    }
+}
 /// Well-formedness requirements; the caller chooses whether to assume or prove.
+#[derive(Clone, Copy)]
 pub struct Requirements<'a> {
+    pub scalars: ScalarRequirements<'a>,
+    pub projections: &'a [ProjectionPair],
+}
+#[derive(Clone, Copy)]
+pub struct ScalarRequirements<'a> {
     pub regions: &'a [Pair],
     pub parameters: &'a [ParameterPair],
 }
@@ -126,208 +166,6 @@ fn children(
     }
     budget.pending(work.len())
 }
-#[derive(Default)]
-struct Components {
-    cache: HashMap<(TypeId, u16, ComponentKind), Vec<RegionId>>,
-    parameters: HashMap<(TypeId, u16, ComponentKind), Vec<ParameterId>>,
-    work: Vec<(TypeId, u16)>,
-    seen: HashSet<(TypeId, u16)>,
-    regions: HashSet<RegionId>,
-    parameter_seen: HashSet<ParameterId>,
-}
-#[derive(Clone, Copy, PartialEq, Eq, Hash)]
-enum ComponentKind {
-    /// Minimal components, under separately required reference well-formedness.
-    Outlives,
-    /// Explicit type bounds include every referent component, even in assumptions.
-    TypeBound,
-    LiveValue,
-}
-/// All components a type bound can constrain, including nested referents and
-/// zero-length element types. Unlike owned-drop queries, Copy removes nothing.
-#[derive(Default)]
-pub(crate) struct TypeComponents {
-    components: Components,
-    budget: Budget,
-}
-impl TypeComponents {
-    pub(crate) fn get(&mut self, types: &Store, ty: TypeId) -> Result<Parts<'_>, &'static str> {
-        self.components
-            .get(types, ty, 0, ComponentKind::TypeBound, &mut self.budget)
-    }
-}
-/// Cached runtime components, including nested referents and opaque type parameters.
-/// Zero-length arrays contain no runtime reference values. Type well-formedness
-/// still checks their element types independently through `Queries`.
-#[derive(Default)]
-pub struct LiveRegions {
-    components: Components,
-    budget: Budget,
-}
-impl LiveRegions {
-    /// Queries belong to one immutable canonical type store.
-    ///
-    /// # Errors
-    /// Rejects malformed types, binder overflow and bounded traversal exhaustion.
-    pub fn get(&mut self, types: &Store, ty: TypeId) -> Result<&[RegionId], &'static str> {
-        if types.contains_parameters(ty) == Some(true)
-            || types.contains_projections(ty) == Some(true)
-        {
-            return Err("generic live-region checking requires instantiated value facts");
-        }
-        self.symbolic(types, ty).map(|parts| parts.regions)
-    }
-    /// Retain opaque type-parameter components alongside named lifetimes. The
-    /// caller must resolve both kinds in the current body's rigid environment.
-    /// This structural cache depends only on the immutable canonical type store.
-    /// # Errors
-    /// Rejects malformed types, binder overflow and bounded traversal exhaustion.
-    pub fn symbolic(&mut self, types: &Store, ty: TypeId) -> Result<Parts<'_>, &'static str> {
-        self.components
-            .get(types, ty, 0, ComponentKind::LiveValue, &mut self.budget)
-    }
-    #[must_use]
-    pub const fn steps(&self) -> usize {
-        self.budget.0
-    }
-}
-impl Components {
-    fn get(
-        &mut self,
-        types: &Store,
-        root: TypeId,
-        depth: u16,
-        kind: ComponentKind,
-        budget: &mut Budget,
-    ) -> Result<Parts<'_>, &'static str> {
-        if kind != ComponentKind::LiveValue && types.contains_projections(root) == Some(true) {
-            return Err("associated type outlives checking requires normalization");
-        }
-        if types.contains_regions(root) == Some(false)
-            && types.contains_parameters(root) == Some(false)
-        {
-            return Ok(Parts {
-                regions: &[],
-                parameters: &[],
-            });
-        }
-        let key = (root, depth, kind);
-        if !self.cache.contains_key(&key) {
-            let (values, parameters) = self.collect(types, root, depth, kind, budget)?;
-            self.cache.insert(key, values);
-            if !parameters.is_empty() {
-                self.parameters.insert(key, parameters);
-            }
-        }
-        let regions = self
-            .cache
-            .get(&key)
-            .map(Vec::as_slice)
-            .ok_or("missing outlives component cache")?;
-        Ok(Parts {
-            regions,
-            parameters: self.parameters.get(&key).map_or(&[], Vec::as_slice),
-        })
-    }
-    fn collect(
-        &mut self,
-        types: &Store,
-        root: TypeId,
-        depth: u16,
-        kind: ComponentKind,
-        budget: &mut Budget,
-    ) -> Result<(Vec<RegionId>, Vec<ParameterId>), &'static str> {
-        self.work.clear();
-        self.seen.clear();
-        self.regions.clear();
-        self.parameter_seen.clear();
-        self.work.push((root, depth));
-        let mut values = Vec::new();
-        let mut parameters = Vec::new();
-        while let Some((ty, depth)) = self.work.pop() {
-            budget.charge()?;
-            if !self.seen.insert((ty, depth)) {
-                continue;
-            }
-            match types.kind(ty).ok_or("invalid outlives component type")? {
-                Kind::Parameter(id) => {
-                    if self.parameter_seen.insert(id) {
-                        parameters.push(id);
-                    }
-                }
-                // Its referent's lifetime requirements follow transitively
-                // from this reference's own well-formedness requirements.
-                Kind::Reference {
-                    region, referent, ..
-                } => {
-                    self.record_region(region, depth, &mut values)?;
-                    if kind != ComponentKind::Outlives {
-                        self.work.push((referent, depth));
-                    }
-                }
-                Kind::Array { length: 0, .. } if kind == ComponentKind::LiveValue => {}
-                Kind::Adt(_, args)
-                | Kind::FunctionItem {
-                    arguments: args, ..
-                } => {
-                    self.arguments(
-                        types.arguments(args).ok_or("missing outlives arguments")?,
-                        depth,
-                        &mut values,
-                        budget,
-                    )?;
-                }
-                Kind::Projection(application) if kind == ComponentKind::LiveValue => {
-                    // Every input outliving a use is sufficient for its associated
-                    // result to outlive that use. This conservative liveness route
-                    // grants no declared result bound or reverse input assumption.
-                    self.arguments(
-                        types.projection_inputs(application)?,
-                        depth,
-                        &mut values,
-                        budget,
-                    )?;
-                }
-                _ => children(types, ty, depth, &mut self.work, budget)?,
-            }
-        }
-        Ok((values, parameters))
-    }
-    fn record_region(
-        &mut self,
-        region: RegionId,
-        depth: u16,
-        values: &mut Vec<RegionId>,
-    ) -> Result<(), &'static str> {
-        if let Some(region) = free(region, depth)?
-            && region != RegionId::STATIC
-            && self.regions.insert(region)
-        {
-            values.push(region);
-        }
-        Ok(())
-    }
-    fn arguments(
-        &mut self,
-        arguments: impl Iterator<Item = Argument>,
-        depth: u16,
-        values: &mut Vec<RegionId>,
-        budget: &mut Budget,
-    ) -> Result<(), &'static str> {
-        for argument in arguments {
-            budget.charge()?;
-            match argument {
-                Argument::Lifetime(region) => self.record_region(region, depth, values)?,
-                Argument::Type(ty) => {
-                    budget.pending(self.work.len().saturating_add(1))?;
-                    self.work.push((ty, depth));
-                }
-                Argument::Const(_) => {}
-            }
-        }
-        Ok(())
-    }
-}
 #[derive(Clone, Copy)]
 struct Use {
     item: ItemId,
@@ -346,6 +184,8 @@ struct Scan {
     parameter_pairs: Vec<ParameterPair>,
     unique_parameters: HashSet<ParameterPair>,
     uses: Vec<Use>,
+    projection_pairs: Vec<ProjectionPair>,
+    unique_projections: HashSet<ProjectionPair>,
 }
 impl Scan {
     fn clear(&mut self) {
@@ -355,6 +195,8 @@ impl Scan {
         self.parameter_pairs.clear();
         self.unique_parameters.clear();
         self.uses.clear();
+        self.projection_pairs.clear();
+        self.unique_projections.clear();
         self.seen.clear();
     }
     fn record(&mut self, pair: Pair) {
@@ -368,7 +210,8 @@ impl Scan {
             self.budget.charge()?;
             if !self.seen.insert((ty, depth))
                 || (types.contains_regions(ty) == Some(false)
-                    && types.contains_parameters(ty) == Some(false))
+                    && types.contains_parameters(ty) == Some(false)
+                    && types.contains_projections(ty) == Some(false))
             {
                 continue;
             }
@@ -388,18 +231,25 @@ impl Scan {
                             ComponentKind::Outlives,
                             &mut self.budget,
                         )?;
-                        for longer in components.regions {
+                        for longer in components.scalars.regions {
                             self.budget.charge()?;
                             let pair = (*longer, shorter);
                             if useful(pair) && self.unique.insert(pair) {
                                 self.pairs.push(pair);
                             }
                         }
-                        for parameter in components.parameters {
+                        for parameter in components.scalars.parameters {
                             self.budget.charge()?;
                             let pair = (*parameter, shorter);
                             if self.unique_parameters.insert(pair) {
                                 self.parameter_pairs.push(pair);
+                            }
+                        }
+                        for &projection in components.projections {
+                            self.budget.charge()?;
+                            let pair = (projection, shorter);
+                            if self.unique_projections.insert(pair) {
+                                self.projection_pairs.push(pair);
                             }
                         }
                     }
@@ -472,6 +322,7 @@ pub struct QueryCache {
     scan: Scan,
     regions: HashMap<TypeId, Vec<Pair>>,
     parameters: HashMap<TypeId, Vec<ParameterPair>>,
+    projections: HashMap<TypeId, Vec<ProjectionPair>>,
 }
 impl QueryCache {
     #[must_use]
@@ -506,16 +357,18 @@ impl<'a> Queries<'a> {
     /// # Errors
     /// Rejects inconsistent nominal facts and exhausted type traversal work.
     pub fn requirements(&mut self, ty: TypeId) -> Result<&[Pair], &'static str> {
-        if self.types.contains_parameters(ty) == Some(true) {
+        if self.types.contains_parameters(ty) == Some(true)
+            || self.types.contains_projections(ty) == Some(true)
+        {
             return Err("generic outlives checking requires a parameter environment");
         }
         self.symbolic_requirements(ty)
-            .map(|requirements| requirements.regions)
+            .map(|requirements| requirements.scalars.regions)
     }
     /// Decompose a type-outlives subject without assuming any of its components.
     /// # Errors
     /// Rejects invalid identities, escaping binder overflow and exhausted work.
-    pub fn components(&mut self, ty: TypeId) -> Result<Parts<'_>, &'static str> {
+    pub fn components(&mut self, ty: TypeId) -> Result<BoundParts<'_>, &'static str> {
         self.state.scan.components.get(
             self.types,
             ty,
@@ -570,6 +423,11 @@ impl<'a> Queries<'a> {
                 }
             }
             self.state.regions.insert(ty, self.state.scan.pairs.clone());
+            if !self.state.scan.projection_pairs.is_empty() {
+                self.state
+                    .projections
+                    .insert(ty, self.state.scan.projection_pairs.clone());
+            }
             if !self.state.scan.parameter_pairs.is_empty() {
                 self.state
                     .parameters
@@ -583,8 +441,11 @@ impl<'a> Queries<'a> {
             .map(Vec::as_slice)
             .ok_or("missing well-formedness requirements")?;
         Ok(Requirements {
-            regions,
-            parameters: self.state.parameters.get(&ty).map_or(&[], Vec::as_slice),
+            scalars: ScalarRequirements {
+                regions,
+                parameters: self.state.parameters.get(&ty).map_or(&[], Vec::as_slice),
+            },
+            projections: self.state.projections.get(&ty).map_or(&[], Vec::as_slice),
         })
     }
 }

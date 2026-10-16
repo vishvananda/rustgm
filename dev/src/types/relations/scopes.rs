@@ -6,7 +6,7 @@ use crate::types::parameters::ParameterId;
 /// its caller's signature and inference context; nested scopes preserve captures.
 #[derive(Clone, Copy)]
 pub struct ProofScope {
-    scope: Scope,
+    pub(super) scope: Scope,
     universe: u32,
 }
 impl ProofScope {

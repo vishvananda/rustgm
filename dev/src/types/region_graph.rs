@@ -1,5 +1,7 @@
 //! Bounded outlives propagation; universal assumptions never become obligations.
+mod verify;
 use std::collections::{HashMap, HashSet};
+pub use verify::VerificationId;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct Region(pub u32);
@@ -31,6 +33,9 @@ impl Kind {
 pub enum Error {
     Identity,
     Budget,
+    Verification {
+        source: u32,
+    },
     Unsatisfied {
         source: u32,
         longer: Region,
@@ -42,6 +47,7 @@ impl std::fmt::Display for Error {
         out.write_str(match self {
             Self::Identity => "invalid lifetime constraint identity",
             Self::Budget => "lifetime constraint work budget exceeded",
+            Self::Verification { .. } => "required type does not outlive its target",
             Self::Unsatisfied { .. } => "required lifetime does not outlive its target",
         })
     }
@@ -60,6 +66,7 @@ pub struct Graph {
     assumed_heads: Vec<Option<usize>>,
     obligations: Vec<Edge>,
     incoming: Vec<Option<usize>>,
+    verifications: Option<Box<verify::Verifications>>,
     limit: usize,
 }
 pub struct Solution {
@@ -167,6 +174,7 @@ impl Graph {
             assumed_heads: vec![None; 2],
             obligations: Vec::new(),
             incoming: vec![None; 2],
+            verifications: None,
             limit,
         }
     }
@@ -189,6 +197,7 @@ impl Graph {
             .len()
             .saturating_add(self.assumptions.len())
             .saturating_add(self.obligations.len())
+            .saturating_add(self.verifications.as_ref().map_or(0, |v| v.cost))
             .saturating_add(extra)
             > self.limit
         {
@@ -244,7 +253,7 @@ impl Graph {
     ///
     /// # Errors
     /// Reports an unentailed universal relationship or bounded-resource failure.
-    pub fn solve(self) -> Result<Solution, Error> {
+    pub fn solve(mut self) -> Result<Solution, Error> {
         let mut solver = Solver {
             graph: &self,
             steps: 0,
@@ -289,11 +298,17 @@ impl Graph {
                 solver.insert(longer, bound)?;
             }
         }
+        let verified = solver.verify()?;
+        let propagated = solver.reached.len();
+        let steps = solver.steps;
+        if let Some(verifications) = &mut self.verifications {
+            verifications.verified = verified;
+        }
         Ok(Solution {
             regions: self.kinds.len(),
             obligations: self.obligations.len(),
-            propagated: solver.reached.len(),
-            steps: solver.steps,
+            propagated,
+            steps,
             graph: self,
         })
     }
@@ -310,7 +325,10 @@ struct Solver<'a> {
 }
 impl Solver<'_> {
     fn charge(&mut self) -> Result<(), Error> {
-        self.steps += 1;
+        self.charge_many(1)
+    }
+    fn charge_many(&mut self, count: usize) -> Result<(), Error> {
+        self.steps = self.steps.checked_add(count).ok_or(Error::Budget)?;
         if self.steps > self.graph.limit {
             return Err(Error::Budget);
         }

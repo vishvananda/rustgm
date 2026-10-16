@@ -60,14 +60,30 @@ pub(super) fn specialize(
         &facts.lifetimes.nominal_requirements,
         &facts.lifetimes.callables,
     );
+    let mut projections = Vec::new();
     for &(_, argument) in &inputs.bindings {
         if let Argument::Type(ty) = argument {
             let requirements = queries.symbolic_requirements(ty)?;
-            if !requirements.parameters.is_empty() {
+            if !requirements.scalars.parameters.is_empty() {
                 return Err("instance contract retains generic argument requirements");
             }
-            contract.assumptions.extend_from_slice(requirements.regions);
+            contract
+                .assumptions
+                .extend_from_slice(requirements.scalars.regions);
+            projections.extend_from_slice(requirements.projections);
         }
+    }
+    let mut folds = std::collections::HashMap::new();
+    for (projection, shorter) in projections {
+        let ty = if projection.depth == 0 {
+            projection.ty
+        } else {
+            folds
+                .entry(projection.depth)
+                .or_insert_with(|| Bound::lower(projection.depth))
+                .apply(&mut facts.types, projection.ty)?
+        };
+        contract.type_assumptions.push((ty, shorter));
     }
     Ok((bound, contract))
 }

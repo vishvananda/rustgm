@@ -48,17 +48,17 @@ fn symbolic_components_do_not_depend_on_the_contains_regions_flag() -> Result<()
     let mut queries = Queries::new(&types, &bounds, &templates);
     for root in [ty, empty] {
         let parts = queries.components(root)?;
-        assert!(parts.regions.is_empty());
-        assert_eq!(parts.parameters, &[id]);
+        assert!(parts.scalars.regions.is_empty());
+        assert_eq!(parts.scalars.parameters, &[id]);
     }
     let parts = queries.components(tuple)?;
-    assert_eq!(parts.parameters, &[id, other]);
+    assert_eq!(parts.scalars.parameters, &[id, other]);
     let parts = queries.components(borrowed)?;
-    assert_eq!(parts.regions, &[a]);
-    assert_eq!(parts.parameters, &[id, other]);
+    assert_eq!(parts.scalars.regions, &[a]);
+    assert_eq!(parts.scalars.parameters, &[id, other]);
     let requirements = queries.symbolic_requirements(borrowed)?;
-    assert!(requirements.regions.is_empty());
-    assert_eq!(requirements.parameters, &[(id, a), (other, a)]);
+    assert!(requirements.scalars.regions.is_empty());
+    assert_eq!(requirements.scalars.parameters, &[(id, a), (other, a)]);
     // Closed and live-value consumers must not silently erase a generic proof.
     assert!(queries.requirements(borrowed).is_err());
     assert!(LiveRegions::default().get(&types, borrowed).is_err());
@@ -82,10 +82,13 @@ fn nested_callable_scopes_export_only_free_requirements() -> Result<(), &'static
     let templates = Templates::default();
     let mut queries = Queries::new(&types, &bounds, &templates);
     let requirements = queries.symbolic_requirements(function)?;
-    assert_eq!(requirements.parameters, &[(id, RegionId::bound(0, 0)?)]);
+    assert_eq!(
+        requirements.scalars.parameters,
+        &[(id, RegionId::bound(0, 0)?)]
+    );
     let components = queries.components(function)?;
-    assert_eq!(components.regions, &[RegionId::bound(0, 0)?]);
-    assert_eq!(components.parameters, &[id]);
+    assert_eq!(components.scalars.regions, &[RegionId::bound(0, 0)?]);
+    assert_eq!(components.scalars.parameters, &[id]);
     Ok(())
 }
 
@@ -163,14 +166,23 @@ fn shared_generic_graphs_are_iterative_cached_and_recover_after_invalid_queries(
     let templates = Templates::default();
     let mut queries = Queries::new(&types, &bounds, &templates);
     for _ in 0..100 {
-        assert_eq!(queries.symbolic_requirements(root)?.parameters, &[(id, a)]);
+        assert_eq!(
+            queries.symbolic_requirements(root)?.scalars.parameters,
+            &[(id, a)]
+        );
     }
     assert!(queries.symbolic_requirements(TypeId(u32::MAX)).is_err());
     assert_eq!(
-        queries.symbolic_requirements(borrowed)?.parameters,
+        queries.symbolic_requirements(borrowed)?.scalars.parameters,
         &[(id, a)]
     );
     assert!(queries.components(TypeId(u32::MAX)).is_err());
-    assert!(queries.components(TypeId::UNIT)?.parameters.is_empty());
+    assert!(
+        queries
+            .components(TypeId::UNIT)?
+            .scalars
+            .parameters
+            .is_empty()
+    );
     Ok(())
 }

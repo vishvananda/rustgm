@@ -259,22 +259,24 @@ fn body(
     quantified(input, queries, &mut constraints, first_proof)?;
     let proof = constraints.prove().map_err(|e| {
         let source = match e {
-            graph::Error::Unsatisfied { source, .. } => input
-                .obligations
-                .get(source as usize)
-                .or_else(|| {
-                    (source as usize)
-                        .checked_sub(input.obligations.len())
-                        .and_then(|i| provenance.get(i))
-                })
-                .map(|o| o.source)
-                .or_else(|| {
-                    (source as usize)
-                        .checked_sub(first_proof)
-                        .and_then(|i| input.proofs.get(i))
-                        .map(|(source, _)| *source)
-                })
-                .unwrap_or(input.source),
+            graph::Error::Unsatisfied { source, .. } | graph::Error::Verification { source } => {
+                input
+                    .obligations
+                    .get(source as usize)
+                    .or_else(|| {
+                        (source as usize)
+                            .checked_sub(input.obligations.len())
+                            .and_then(|i| provenance.get(i))
+                    })
+                    .map(|o| o.source)
+                    .or_else(|| {
+                        (source as usize)
+                            .checked_sub(first_proof)
+                            .and_then(|i| input.proofs.get(i))
+                            .map(|(source, _)| *source)
+                    })
+                    .unwrap_or(input.source)
+            }
             _ => input.source,
         };
         Error {
@@ -361,30 +363,20 @@ fn apply(
             .map_err(|e| e.to_string())?;
         }
         Obligation::WellFormed(ty) => {
-            let requirements = queries.symbolic_requirements(ty)?;
-            for &(a, b) in requirements.regions {
-                constraints
-                    .outlives(a, b, source)
-                    .map_err(|e| e.to_string())?;
-            }
-            for &(id, shorter) in requirements.parameters {
-                constraints
-                    .parameter_outlives(id, shorter, source)
-                    .map_err(|e| e.to_string())?;
-            }
+            constraints.require_requirements(
+                queries.symbolic_requirements(ty)?,
+                crate::types::relations::ProofScope::ROOT,
+                source,
+            )?;
         }
         Obligation::TypeOutlives { ty, shorter } => {
-            let parts = queries.components(ty)?;
-            for longer in parts.regions {
-                constraints
-                    .outlives(*longer, shorter, source)
-                    .map_err(|e| e.to_string())?;
-            }
-            for parameter in parts.parameters {
-                constraints
-                    .parameter_outlives(*parameter, shorter, source)
-                    .map_err(|e| e.to_string())?;
-            }
+            constraints.require_type(
+                queries,
+                ty,
+                shorter,
+                crate::types::relations::ProofScope::ROOT,
+                source,
+            )?;
         }
     }
     Ok(())

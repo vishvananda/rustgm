@@ -201,16 +201,9 @@ impl Checker<'_> {
             let required = queries
                 .symbolic_requirements(ty)
                 .map_err(|e| self.error(key, e))?;
-            for &(a, b) in required.regions {
-                constraints
-                    .outlives(a, b, 0)
-                    .map_err(|e| self.error(key, e.to_string()))?;
-            }
-            for &(parameter, region) in required.parameters {
-                constraints
-                    .parameter_outlives(parameter, region, 0)
-                    .map_err(|e| self.error(key, e.to_string()))?;
-            }
+            constraints
+                .require_requirements(required, crate::types::relations::ProofScope::ROOT, 0)
+                .map_err(|e| self.error(key, e))?;
         }
         constraints.solve().map(|_| ()).map_err(|e| {
             self.error(

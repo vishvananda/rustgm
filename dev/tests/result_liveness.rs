@@ -62,10 +62,15 @@ fn projected_value_inputs_retain_regions_and_rigid_types_without_output_assumpti
     assert!(live.get(&store, projected).is_err());
     let bounds = Bounds::default();
     let callables = rustgm::types::callable::Templates::default();
-    assert!(
-        Queries::new(&store, &bounds, &callables)
-            .components(projected)
-            .is_err()
+    let mut queries = Queries::new(&store, &bounds, &callables);
+    let bound = queries.components(projected)?;
+    assert!(bound.scalars.is_empty());
+    assert_eq!(
+        bound.projections,
+        &[rustgm::types::outlives::Projection {
+            ty: projected,
+            depth: 0
+        }]
     );
     let empty = store.intern(Kind::Array {
         element: projected,

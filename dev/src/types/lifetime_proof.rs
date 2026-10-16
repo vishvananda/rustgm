@@ -114,17 +114,7 @@ impl Obligations {
                 .map_err(|e| e.to_string())?;
         }
         for &(ty, shorter) in &self.types {
-            let parts = queries.components(ty)?;
-            for &longer in parts.regions {
-                constraints
-                    .scoped_outlives(longer, shorter, scope, source)
-                    .map_err(|e| e.to_string())?;
-            }
-            for &id in parts.parameters {
-                constraints
-                    .scoped_parameter_outlives(id, shorter, scope, source)
-                    .map_err(|e| e.to_string())?;
-            }
+            constraints.require_type(queries, ty, shorter, scope, source)?;
         }
         Ok(())
     }

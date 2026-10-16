@@ -1,6 +1,9 @@
 //! Directed type relations use actual region arguments and explicit binder scopes.
 mod ancestry;
+mod identity_guard;
+mod projected_bounds;
 mod scopes;
+mod type_bounds;
 use super::region_graph::{Error, Graph, Kind as RegionKind, Region, Solution};
 use crate::types::{
     Kind, RegionId, Store, TypeId,
@@ -75,6 +78,7 @@ pub struct Constraints<'a> {
     types: &'a Store,
     variances: &'a Variances,
     graph: Graph,
+    projected: Option<Box<projected_bounds::State>>,
     variables: HashMap<RegionId, Region>,
     parameters: HashMap<ParameterId, Region>,
     binders: Vec<Binder>,
@@ -118,14 +122,7 @@ impl<'a> Constraints<'a> {
         queries: &mut super::outlives::Queries<'_>,
         ty: TypeId,
     ) -> Result<(), String> {
-        let requirements = queries.symbolic_requirements(ty)?;
-        for &(a, b) in requirements.regions {
-            self.assume(a, b).map_err(|e| e.to_string())?;
-        }
-        for &(id, shorter) in requirements.parameters {
-            self.assume_parameter(id, shorter)
-                .map_err(|e| e.to_string())?;
-        }
+        self.assume_requirements(queries.symbolic_requirements(ty)?)?;
         Ok(())
     }
     /// Add the components of an explicit type-outlives assumption to this environment.
@@ -137,13 +134,16 @@ impl<'a> Constraints<'a> {
         ty: TypeId,
         shorter: RegionId,
     ) -> Result<(), String> {
-        let parts = queries.components(ty).map_err(str::to_owned)?;
-        for &longer in parts.regions {
+        let parts = queries.components(ty)?;
+        for &longer in parts.scalars.regions {
             self.assume(longer, shorter).map_err(|e| e.to_string())?;
         }
-        for &parameter in parts.parameters {
+        for &parameter in parts.scalars.parameters {
             self.assume_parameter(parameter, shorter)
                 .map_err(|e| e.to_string())?;
+        }
+        for &projection in parts.projections {
+            self.assume_projection(projection, shorter)?;
         }
         Ok(())
     }
@@ -159,6 +159,7 @@ impl<'a> Constraints<'a> {
             types,
             variances,
             graph: Graph::new(limit),
+            projected: None,
             variables: HashMap::new(),
             parameters: HashMap::new(),
             binders: Vec::new(),
@@ -633,7 +634,8 @@ impl<'a> Constraints<'a> {
     }
     /// # Errors
     /// Rejects unentailed region requirements and exhausted propagation work.
-    pub fn solve(self) -> Result<Solution, Error> {
+    pub fn solve(mut self) -> Result<Solution, Error> {
+        self.verify_projections()?;
         self.graph.solve()
     }
     /// Preserve the proved relations and body identity map for CFG lifetime use.
@@ -642,6 +644,7 @@ impl<'a> Constraints<'a> {
     /// # Errors
     /// Rejects unentailed requirements and exhausted propagation work.
     pub fn prove(mut self) -> Result<Proof, Error> {
+        self.verify_projections()?;
         let end = self.binders.first().ok_or(Error::Identity)?.end;
         self.arguments.truncate(end);
         Ok(Proof {

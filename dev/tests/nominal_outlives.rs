@@ -117,10 +117,10 @@ fn concrete_argument_requirements_keep_nested_referents_and_zero_array_types() -
     let templates = Templates::default();
     let mut queries = Queries::new(&fixture.types, &bounds, &templates);
     let required = queries.symbolic_requirements(actual)?;
-    assert!(required.parameters.is_empty());
-    assert_eq!(required.regions.len(), 3);
+    assert!(required.scalars.parameters.is_empty());
+    assert_eq!(required.scalars.regions.len(), 3);
     for pair in [(c, b), (b, RegionId::STATIC), (c, RegionId::STATIC)] {
-        assert!(required.regions.contains(&pair), "{pair:?}");
+        assert!(required.scalars.regions.contains(&pair), "{pair:?}");
     }
     Ok(())
 }
@@ -162,7 +162,13 @@ fn declared_type_bounds_propagate_even_without_a_reference_field() -> TestResult
     })?;
     let templates = Templates::default();
     let mut queries = Queries::new(&fixture.types, &bounds, &templates);
-    assert!(queries.symbolic_requirements(signature)?.regions.is_empty());
+    assert!(
+        queries
+            .symbolic_requirements(signature)?
+            .scalars
+            .regions
+            .is_empty()
+    );
     Ok(())
 }
 

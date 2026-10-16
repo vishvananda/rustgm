@@ -3,7 +3,7 @@ use super::{Checker, DefId, Error, ItemId, NodeKey, Type};
 use crate::sema::{nominals::Proof, traits::obligations::Obligations};
 use crate::types::{
     arguments::Argument,
-    outlives::{Pair, ParameterPair, Queries},
+    outlives::{Pair, ParameterPair, ProjectionPair, Queries},
     parameters::predicates::Bound,
     relations::Constraints,
 };
@@ -59,17 +59,21 @@ impl Checker<'_> {
                 .map_err(|e| self.error(source, e))?;
                 let mut regions = requirements.regions.clone();
                 let mut parameters = Vec::new();
+                let mut projections = Vec::new();
                 for &ty in &requirements.types {
                     let well_formed = queries
                         .symbolic_requirements(ty)
                         .map_err(|e| self.error(source, e))?;
                     charge(
                         &mut steps,
-                        well_formed.regions.len() + well_formed.parameters.len(),
+                        well_formed.scalars.regions.len()
+                            + well_formed.scalars.parameters.len()
+                            + well_formed.projections.len(),
                     )
                     .map_err(|e| self.error(source, e))?;
-                    regions.extend_from_slice(well_formed.regions);
-                    parameters.extend_from_slice(well_formed.parameters);
+                    regions.extend_from_slice(well_formed.scalars.regions);
+                    parameters.extend_from_slice(well_formed.scalars.parameters);
+                    projections.extend_from_slice(well_formed.projections);
                 }
                 for predicate in &requirements.required {
                     if let Bound::Outlives(shorter) = predicate.bound {
@@ -77,12 +81,19 @@ impl Checker<'_> {
                             .components(predicate.ty)
                             .map_err(|e| self.error(source, e))?;
                         charge(&mut steps, parts.len()).map_err(|e| self.error(source, e))?;
-                        regions.extend(parts.regions.iter().map(|&longer| (longer, shorter)));
-                        parameters.extend(parts.parameters.iter().map(|&id| (id, shorter)));
+                        regions.extend(
+                            parts
+                                .scalars
+                                .regions
+                                .iter()
+                                .map(|&longer| (longer, shorter)),
+                        );
+                        parameters.extend(parts.scalars.parameters.iter().map(|&id| (id, shorter)));
+                        projections.extend(parts.projections.iter().map(|&p| (p, shorter)));
                     }
                 }
-                if !regions.is_empty() || !parameters.is_empty() {
-                    pending.push((source, regions, parameters));
+                if !regions.is_empty() || !parameters.is_empty() || !projections.is_empty() {
+                    pending.push((source, regions, parameters, projections));
                 }
             }
             let proofs = self.trait_proofs.get(&owner).map_or(&[][..], Vec::as_slice);
@@ -104,8 +115,8 @@ impl Checker<'_> {
                         .require(&mut constraints, &mut queries)
                         .map_err(|e| self.error(*key, e))?;
                 }
-                for (key, regions, parameters) in pending {
-                    require_regions(&mut constraints, &regions, &parameters)
+                for (key, regions, parameters, projections) in pending {
+                    require_regions(&mut constraints, &regions, &parameters, &projections)
                         .map_err(|e| self.error(key, e))?;
                 }
                 constraints.solve().map_err(|e| {
@@ -194,15 +205,7 @@ impl Checker<'_> {
                 };
                 constraints.assume_signature(queries, signature)?;
             } else if self.facts.aggregates.get(ItemId(owner.0)).is_some() {
-                let requirements = queries.symbolic_requirements(ty)?;
-                for &(a, b) in requirements.regions {
-                    constraints.assume(a, b).map_err(|e| e.to_string())?;
-                }
-                for &(id, shorter) in requirements.parameters {
-                    constraints
-                        .assume_parameter(id, shorter)
-                        .map_err(|e| e.to_string())?;
-                }
+                constraints.assume_well_formed(queries, ty)?;
             }
         }
         for predicate in self.facts.generics.predicates_in_scope(owner) {
@@ -288,6 +291,7 @@ fn require_regions(
     constraints: &mut Constraints<'_>,
     regions: &[Pair],
     parameters: &[ParameterPair],
+    projections: &[ProjectionPair],
 ) -> Result<(), String> {
     for &(longer, shorter) in regions {
         constraints
@@ -297,6 +301,16 @@ fn require_regions(
     for &(id, shorter) in parameters {
         constraints
             .parameter_outlives(id, shorter, 0)
+            .map_err(|e| e.to_string())?;
+    }
+    for &(projection, shorter) in projections {
+        constraints
+            .require_projection(
+                projection,
+                shorter,
+                crate::types::relations::ProofScope::ROOT,
+                0,
+            )
             .map_err(|e| e.to_string())?;
     }
     Ok(())

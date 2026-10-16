@@ -44,18 +44,25 @@ impl Scan {
             self.components
                 .get(types, ty, depth, ComponentKind::TypeBound, &mut self.budget)?;
         self.budget.pending(parts.len())?;
-        for &longer in parts.regions {
+        for &longer in parts.scalars.regions {
             self.budget.charge()?;
             let pair = (longer, shorter);
             if useful(pair) && self.unique.insert(pair) {
                 self.pairs.push(pair);
             }
         }
-        for &id in parts.parameters {
+        for &id in parts.scalars.parameters {
             self.budget.charge()?;
             let pair = (id, shorter);
             if self.unique_parameters.insert(pair) {
                 self.parameter_pairs.push(pair);
+            }
+        }
+        for &projection in parts.projections {
+            self.budget.charge()?;
+            let pair = (projection, shorter);
+            if self.unique_projections.insert(pair) {
+                self.projection_pairs.push(pair);
             }
         }
         Ok(())
@@ -183,6 +190,9 @@ struct Inference {
 }
 impl Inference {
     fn enqueue(&mut self, owner: ItemId) -> Result<(), &'static str> {
+        if !self.scan.projection_pairs.is_empty() {
+            return Err("nominal projected outlives templates require scoped substitution");
+        }
         for requirement in self
             .scan
             .pairs

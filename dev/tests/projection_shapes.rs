@@ -532,11 +532,23 @@ fn projection_formation_keeps_input_requirements_separate_from_output_components
     let callables = rustgm::types::callable::Templates::default();
     let mut queries = rustgm::types::outlives::Queries::new(&store, &bounds, &callables);
     let requirements = queries.symbolic_requirements(projected)?;
-    assert!(requirements.regions.is_empty());
-    assert_eq!(requirements.parameters, &[(id, RegionId(9))]);
+    assert!(requirements.scalars.regions.is_empty());
+    assert_eq!(requirements.scalars.parameters, &[(id, RegionId(9))]);
     // The output can erase, rearrange or hide its input components. Its relation
     // to the outer borrow still requires an opaque-result or normalization proof.
-    assert!(queries.symbolic_requirements(outer).is_err());
+    let requirements = queries.symbolic_requirements(outer)?;
+    assert!(requirements.scalars.regions.is_empty());
+    assert_eq!(requirements.scalars.parameters, &[(id, RegionId(9))]);
+    assert_eq!(
+        requirements.projections,
+        &[(
+            rustgm::types::outlives::Projection {
+                ty: projected,
+                depth: 0
+            },
+            RegionId(10)
+        )]
+    );
     assert!(LiveRegions::default().get(&store, projected).is_err());
     Ok(())
 }

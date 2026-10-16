@@ -46,15 +46,25 @@ impl<T: Copy + Eq + Hash> Slices<T> {
         self.values.len()
     }
 
+    pub fn find(&self, values: &[T]) -> Option<u32> {
+        self.find_from(values, self.index.get(&fingerprint(values)).copied())
+    }
+
+    fn find_from(&self, values: &[T], mut next: Option<u32>) -> Option<u32> {
+        while let Some(id) = next {
+            if self.get(id) == Some(values) {
+                return Some(id);
+            }
+            next = self.entries[id as usize].next;
+        }
+        None
+    }
+
     pub fn intern(&mut self, values: &[T]) -> Result<u32, &'static str> {
         let hash = fingerprint(values);
         let head = self.index.get(&hash).copied();
-        let mut next = head;
-        while let Some(id) = next {
-            if self.get(id) == Some(values) {
-                return Ok(id);
-            }
-            next = self.entries[id as usize].next;
+        if let Some(id) = self.find_from(values, head) {
+            return Ok(id);
         }
         let id = u32::try_from(self.entries.len()).map_err(|_| "too many canonical lists")?;
         let start = u32::try_from(self.values.len()).map_err(|_| "too many canonical edges")?;
