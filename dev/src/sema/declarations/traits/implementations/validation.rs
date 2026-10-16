@@ -54,7 +54,11 @@ impl Checker<'_> {
         for (owner, source, predicate) in headers {
             self.validate_trait_impl_contract(owner, source, predicate)?;
             let types = self.trait_impl_types(owner, source, predicate, &types)?;
-            let methods = self.trait_impl_methods(owner, source, predicate, &members)?;
+            let definitions =
+                crate::sema::traits::conformance::Definitions::new(&self.facts, predicate, &types)
+                    .map_err(|e| self.error(source, e))?;
+            let methods =
+                self.trait_impl_methods(owner, source, predicate, &members, &definitions)?;
             self.facts
                 .generics
                 .implementations

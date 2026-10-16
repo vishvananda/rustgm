@@ -695,6 +695,21 @@ parameter identities would assume a stronger implicit Sized requirement. Prove
 the impl method's requirements under the impl owner and substituted trait method
 contract, while checking its body under its own declared assumptions.
 
+Validate associated definitions before using their normal forms in method
+conformance. Keep a local index of those checked definitions, shared by the impl's
+methods. A local result applies only to its exact declaring item, Self and complete
+trait application, shifted into the request's callable scope. This index does not
+publish a validated implementation; all method checks still precede that publication.
+
+Normalize each component of the already-opened conformance signature without
+introducing another outer function binder. Share completed normalization work
+within one fixed environment, proof scope, implementation availability and local
+definition provider. Retain nested binder mappings and every ordinary selection
+obligation in that session's proof. Repeated parameters must not rewalk the same
+captured impl receiver graph. Body callable instantiation also schedules projection
+normalization when the signature itself contains projections, including when this
+is the first projection work in the body.
+
 Match early lifetime arguments positionally. Instantiate impl late lifetimes
 existentially against universal trait late lifetimes; unused late declarations
 do not alter the contract. Share capture-safe substitution, shape equality and

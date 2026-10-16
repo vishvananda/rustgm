@@ -6429,3 +6429,113 @@ Validation cleanup removes 4,387 generated files and 4.59 GiB of unshared blocks
 The current final binary and required comparison binaries stay pinned until
 publication checks finish; superseded executables are then retired with hashes
 and reasons while source, diagnostics and measurement receipts remain.
+
+### Associated types in method contracts
+
+The maintainer now normalizes a trait's own associated types in qualified method
+parameters and results before comparing an override. Associated definitions pass
+their own conformance first; a local index shares those checked definitions across
+the impl's methods. Each lookup matches the full parent application and preserves
+its callable depth. The implementation becomes globally validated only after all
+methods pass. Ordinary selections retain their lifetime evidence, and generic
+requirements still cannot strengthen the trait's contract.
+
+Mapped conformance signatures already use the method proof's region scope. Their
+components therefore normalize independently of the outer function wrapper, with
+nested callable binders intact. One semantic normalization session shares completed
+graph work across those components while holding the environment, proof scope,
+availability and local provider fixed. It retains the proof and nested scope map
+alongside cached normal forms. Body instantiation now schedules normalization when
+the callable signature contains projections, even when no earlier projection task
+is pending. That missing trigger was a second boundary after declaration conformance.
+
+`method_contracts.rs` contains 34 independently object-qualified source outcomes
+and twelve native comparisons against pinned rustc and CPPGM. They cover concrete
+and generic impls, projected inputs/results, references, mixed trait arguments,
+function-pointer values, dot calls, equality-constrained generic calls, nested
+callables and independent method lifetimes. An ordinary input can infer `Self` and
+wake projection normalization; an associated result alone cannot infer `Self`.
+Swapped lifetime contracts, narrowed
+universal results, wrong projected types, stronger generic requirements and unchecked
+associated definitions reject. Native controls use different return values where
+needed to check which callable executes. Focused tests, strict Clippy, the file audit
+and harness checks pass. The audit caught a seventh `associated_` filename prefix;
+renaming the test to its method-contract responsibility resolves that finding
+without an exception. The original diagnostic and test source remain in
+`obj/pa20-work/associated-method-signatures-v1/`.
+
+The initial source investigation has 43 independently qualified outcomes. Six valid Rust
+programs remain outside this checkpoint: three shorthand associated-path cases,
+a call requiring original erased-input lifetime facts, opaque generic result
+forwarding, and a nested callable combining trait lifetime arguments with multiple
+impl captures. The negative erased-input escape still fails at the same body
+lifetime boundary as its valid control; it does not demonstrate completed call-site
+formation support. The multiple-capture negative also fails before conformance,
+so the successful paired method-lifetime controls provide the conformance evidence.
+These distinctions remain explicit in the qualification receipts.
+
+Four further independently object-qualified controls check inherited and unrelated
+associated results. Concrete and generic supertrait-result overrides remain
+unsupported on both published `70963bf` and this candidate. The wrong-result
+control rejects at the same normalization boundary, so it does not establish
+inherited method conformance. A closed unrelated associated result already works
+on both binaries. These four controls bring the source investigation to 47 outcomes;
+their diagnostics remain in `qualification-supertraits.json`.
+
+Seventeen scaling sources independently pass rustc object emission. Thirteen
+compile before and after session sharing: wide associated-member/method sets at
+64/256/1,024, distinct captured parameters at 64/256, and shared captured parameters
+at 64/256/1,024, including nested function components. At 1,024 distinct type
+parameters, the two projected cases reach the existing runtime-lifetime storage
+limit. Two ordinary-signature controls reproduce that limit on published `70963bf`
+as well as the prototypes. All four diagnosed failures remain recorded; they are
+excluded from successful timing comparisons. Budgets have not been raised.
+
+Final validation passes 1,094 release tests in 201 result groups, all 4,864 PA1–PA19
+course cases, backend qualification and all fifty explicit maintainer native test
+groups. Strict all-target Clippy, standalone `make lint`, 679 audited Rust files
+with zero findings, and 33 harness checks pass. The frozen snapshot contains 682
+source/configuration/test files. The final compiler matches the session-sharing
+prototype byte-for-byte, with SHA-256
+`70552976c26df34688b0d7261db9dbf0543a702da5e263edf0a5d0b3071e8f66`.
+`validation-summary.json`, source hashes and individual logs retain the evidence.
+
+Performance retains 6,284 study observations across 214 jobs, plus 856 full-output
+qualification observations. The initial study compares 146 existing jobs with
+published `70963bf` and 26 new scaling jobs with the first working method-signature
+prototype. All binary, input, runner and frozen-source hashes match; full/count
+outputs match throughout. No builds or source probes overlap measurement.
+
+Initial published-baseline paired changes range from -6.32% to +5.75%, with A/A
+spreads of 0.31%–82.58% on this shared host. The declared 3.5% rule repeats every
+size and mode of three published-baseline families and one prototype family:
+24 confirmations. The eighteen published-baseline confirmations range from
+-11.46% to +4.06%; the six wide-method prototype confirmations range from -2.88%
+to +3.30%. Every initial observation remains available.
+
+The remaining +4.06% confirmation, full semantic output for 256 concrete goals,
+prompted eighteen longer jobs: all six sizes/modes versus the published compiler,
+plus the same inputs with each binary compared to itself. Each retains fifteen
+ABBA blocks after warmup and A/A calibration. Genuine comparisons range from
+-2.24% to +3.40%, with A/A spreads of 3.03%–7.10% and resident median increases of
+184–584 KiB. Identical-binary paired changes range from -1.52% to +0.90%. The
+256-goal full-output comparison is +0.92% in this study. These results retain a
+small measured cost; they do not establish zero overhead. `focused-plan.json`,
+`focused-summary.json` and raw observations record the follow-up separately.
+
+Session sharing reduces full LowIR time for 1,024 repeated captured-parent inputs
+from about 109.82 ms to 33.00 ms; nested callable inputs fall from 111.75 ms to
+34.74 ms. Resident medians remain about 11.3 MiB. At 256 distinct captures,
+ordinary/nested cases fall from 70.75/63.49 ms to 52.36/47.55 ms. These are measured
+whole-frontend improvements over the working prototype, not comparisons with the
+published compiler, which lacks the new method-signature behavior.
+
+Full-validation cleanup removes 4,430 generated files and 4.64 GiB of unshared
+blocks (`obj/cleanup/1792160880664633141.jsonl`). The local 40 GiB reserve remains
+unchanged. Comparison executables stay pinned through publication checks; replaced
+binaries are then retired while sources, diagnostics, hashes and observations stay.
+
+Original callable formation, remaining opaque-result properties and lifetime
+proofs, inherited method contracts, shorthand paths, associated constants, remaining
+coherence and PA21 remain required work. PA20 and PA21 are still planned; course
+text oracles are unchanged.

@@ -1,5 +1,6 @@
 //! An override must implement the trait contract without strengthening its caller requirements.
 mod mapping;
+mod projections;
 mod regions;
 use crate::{
     resolve::model::DefId,
@@ -16,6 +17,7 @@ use crate::{
         },
     },
 };
+pub(in crate::sema) use projections::Definitions;
 use std::sync::Arc;
 
 struct Contract {
@@ -38,8 +40,21 @@ pub(in crate::sema) fn check(
     predicate: Predicate,
     expected: Function,
     actual: Function,
+    definitions: &Definitions,
 ) -> Result<(), String> {
-    let contract = mapping::contract(facts, owner, predicate, expected, actual)?;
+    let mut contract = mapping::contract(facts, owner, predicate, expected, actual)?;
+    let first = contract
+        .variables
+        .iter()
+        .map(|region| region.0)
+        .max()
+        .unwrap_or(0)
+        .checked_add(1)
+        .ok_or("method conformance region identity space exhausted")?;
+    let mut evidence = crate::types::lifetime_proof::Obligations::new(first);
+    contract.expected =
+        definitions.signature(facts, &contract, &mut evidence, contract.expected)?;
+    contract.actual = definitions.signature(facts, &contract, &mut evidence, contract.actual)?;
     let mut shape = crate::types::infer::Context::default();
     let actual = shape
         .known(&facts.types, contract.actual)
@@ -50,23 +65,18 @@ pub(in crate::sema) fn check(
     shape
         .equate_shape(&facts.types, actual, expected)
         .map_err(|e| e.to_string())?;
-    let first = contract
-        .variables
-        .iter()
-        .map(|region| region.0)
-        .max()
-        .unwrap_or(0)
-        .checked_add(1)
-        .ok_or("method conformance region identity space exhausted")?;
     let mut proof = Proof::for_declaration(
         Some(Arc::clone(&contract.environment)),
         contract.universals,
-        first,
+        evidence.regions.end,
     );
     for &obligation in &contract.obligations {
         if !matches!(obligation.bound, Bound::Outlives(_)) && !proof.prove(facts, obligation)? {
             return Err("implementation method imposes a stronger generic requirement".into());
         }
     }
-    regions::prove(facts, &contract, proof.take_trait_proof().as_ref())
+    if let Some(required) = proof.take_trait_proof() {
+        evidence.extend(required)?;
+    }
+    regions::prove(facts, &contract, Some(&evidence))
 }

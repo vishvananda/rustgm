@@ -48,6 +48,7 @@ impl Checker<'_> {
         source: NodeKey,
         predicate: Predicate,
         members: &Members,
+        definitions: &conformance::Definitions,
     ) -> Result<Vec<(DefId, Option<DefId>)>, Error> {
         let Bound::Trait(id) = predicate.bound else {
             return Err(self.error(source, "missing impl trait predicate"));
@@ -97,8 +98,15 @@ impl Checker<'_> {
                         "implementation method receiver presence disagrees with trait",
                     ));
                 }
-                conformance::check(&mut self.facts, owner, predicate, expected, actual)
-                    .map_err(|e| self.error(actual.node, e))?;
+                conformance::check(
+                    &mut self.facts,
+                    owner,
+                    predicate,
+                    expected,
+                    actual,
+                    definitions,
+                )
+                .map_err(|e| self.error(actual.node, e))?;
                 result.push((expected.definition, Some(actual.definition)));
             } else if expected.body.is_some() {
                 result.push((expected.definition, None));
