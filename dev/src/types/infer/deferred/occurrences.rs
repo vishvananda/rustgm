@@ -38,6 +38,16 @@ impl Context {
         ambient: ScopeId,
         mut scope: impl FnMut(ScopeId, u32) -> Result<ScopeId, Error>,
     ) -> Result<Vec<(ScopeId, TermId)>, Error> {
+        let root = self.root(root)?;
+        let value = self.terms[root.0 as usize].value;
+        if matches!(value, Value::Variable(_))
+            || matches!(value, Value::Known(ty) if store.contains_projections(ty) == Some(false))
+        {
+            // Preserve the traversal charge without allocating a worklist or
+            // visited set for the common case with no present projection.
+            self.step()?;
+            return Ok(Vec::new());
+        }
         self.collect_normalization_roots(store, vec![(ambient, root)], |parent, _, count| {
             scope(parent, count)
         })

@@ -6742,3 +6742,50 @@ The pre-feature confirmations still range from −7.27% to +9.00%, with seven jo
 above 3.5%; the earlier occurrence-proof overhead remains an open performance
 concern. Raw evidence and all original outliers remain under
 `obj/pa20-work/resolution-scratch-v1/`. PA20 and PA21 remain planned.
+
+## Normalize substituted builtin predicate subjects
+
+Instantiated `Copy` and `Clone` call predicates now request the existing deferred
+normalization worklist for their subjects. The property is checked on the selected
+result while the original application retains its formation and lifetime debts.
+The result never supplies reverse inference for `Self` or the trait arguments.
+Ordinary known types without projections and unresolved root variables preserve
+the traversal charge without allocating a worklist or visited set.
+
+Twenty-four source controls are independently object-qualified with Rust 1.98
+before selecting maintainer expectations. Thirteen LowIR controls cover eight
+acceptances and five rejections; seven accepted programs also execute through
+CPPGM and rustc, while the remaining positive checks an unused generic body.
+They include repeated values, arrays, forwarded generic predicates, composite
+predicate subjects and a Clone-only selected result. Rejections retain missing
+parent formation, erased static input requirements, invalid result abilities and
+unresolved input inference. Six valid investigation controls still fail: declared
+Copy values/repeats/predicates/supertraits, a projected borrow and a callable Copy
+predicate. They are retained as unsupported investigations, not passing coverage.
+
+The immutable compiler hash is
+`ae5b6cf937bf53690262b6194a8af12c984f4a15105e6ea201b1f48db3ccbbdf`.
+All 25 validation commands pass: 1,112 release tests in 204 groups, 4,864 PA1–PA19
+cases, backend qualification and 53 native test groups. Strict Clippy, standalone
+lint, the 684-file audit with zero findings and all 33 harness checks pass. The
+687 frozen source hashes match. Validation cleanup removes 4,554 generated files;
+two superseded or duplicate compiler binaries are retired with hash receipts.
+
+Twelve additional scaling inputs at 64/256/1,024 calls pass their declared rustc,
+baseline and candidate outcomes. The study retains 110 jobs, 2,860 observations
+and 440 full-output qualifications. Eighty initial comparisons use published
+`71b462b`; twelve identical-candidate controls measure new supported inputs without
+claiming improvements over a rejecting baseline. The predeclared 3.5% repeat rule
+selects all eighteen sizes/modes of three families. Binary, input and source hashes
+remain fixed; all full/count output comparisons agree. No RustGM builds or probes
+overlap timing. Read-only process inspection observes unrelated Vizier work on
+this shared host; no other checkout's processes are changed.
+
+Initial paired medians range from −16.47% to +11.78%; confirmations range from
+−5.51% to +5.72%. One confirmation remains above 3.5%: the 1,024-call ordinary
+composite Copy bound in count mode. Confirmation A/A spreads are 0.43–20.18%, and
+RSS differences are −704 to +74 KiB. This is recorded overhead and shared-host
+variation, not a clean performance pass. New projected-result calls and composite
+projected bounds take 43.36 and 26.96 ms at 1,024 calls in the initial full view.
+Raw observations, independent qualification and cleanup receipts remain under
+`obj/pa20-work/result-copy-permissions-v1/`. PA20 and PA21 remain planned.

@@ -268,6 +268,13 @@ relative to the current traversal before clearing it, so one large query cannot
 make every later small query scan the same large allocation. Known-type queries
 keep their allocation-free path.
 
+Body calls normalize substituted `Copy`/`Clone` predicate subjects through the
+same deferred worklist before querying builtin properties. A property of the
+selected result cannot choose its inputs or erase the original application's
+formation and lifetime obligations. Composite subjects retain their own nested
+scopes; ordinary known types and unresolved root variables need no traversal
+allocation when they contain no present projection.
+
 A full trait-proof retry can wait for input resolution when one candidate's
 matched header preserves every input hole and its remaining premises are only
 builtins. A single independent type parameter beneath already-known reference

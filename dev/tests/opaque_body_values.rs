@@ -234,16 +234,18 @@ fn opaque_callable_results_retain_each_scopes_formation_debt()
 -> Result<(), Box<dyn std::error::Error>> {
     for &(name, source, accepted) in CALLABLES {
         rustc::qualify(&format!("opaque-callables-{name}"), source, accepted)?;
-        let result = semantic::analyze(source).and_then(|(mut report, mut facts)| {
-            let entry =
-                rustgm::sema::entry::select(&mut report, &facts).map_err(|e| e.to_string())?;
-            rustgm::lower::instances::build(&report, &mut facts, entry)
-                .map(|_| ())
-                .map_err(|e| e.to_string())
-        });
+        let result = lowir(source);
         assert_eq!(result.is_ok(), accepted, "{name}: {result:?}");
     }
     Ok(())
+}
+
+fn lowir(source: &str) -> Result<(), String> {
+    let (mut report, mut facts) = semantic::analyze(source)?;
+    let entry = rustgm::sema::entry::select(&mut report, &facts).map_err(|e| e.to_string())?;
+    rustgm::lower::instances::build(&report, &mut facts, entry)
+        .map(|_| ())
+        .map_err(|e| e.to_string())
 }
 
 #[test]
@@ -285,4 +287,97 @@ fn opaque_callable_instances_execute_with_concrete_types() -> Result<(), Box<dyn
             ),
         ],
     )
+}
+
+const BUILTIN_BOUNDS: &[(&str, &str, bool)] = &[
+    (
+        "explicit-copy-value",
+        "trait A{type Out;}impl A for u8{type Out=u16;}fn dup<T:A>(x:<T as A>::Out)->(<T as A>::Out,<T as A>::Out)where<T as A>::Out:Copy{(x,x)}fn main(){let x=dup::<u8>(73);check(x.0==73&&x.1==73);}\n",
+        true,
+    ),
+    (
+        "explicit-copy-repeat",
+        "trait A{type Out;}impl A for u8{type Out=u16;}fn dup<T:A>(x:<T as A>::Out)->[<T as A>::Out;2]where<T as A>::Out:Copy{[x;2]}fn main(){let x=dup::<u8>(73);check(x[0]==73&&x[1]==73);}\n",
+        true,
+    ),
+    (
+        "explicit-copy-predicate",
+        "trait A{type Out;}impl A for u8{type Out=u16;}fn need<X:Copy>(x:X)->(X,X){(x,x)}fn dup<T:A>(x:<T as A>::Out)->(<T as A>::Out,<T as A>::Out)where<T as A>::Out:Copy{need(x)}fn main(){let x=dup::<u8>(73);check(x.0==73&&x.1==73);}\n",
+        true,
+    ),
+    (
+        "erased-input-static-accepted",
+        "trait A{type Out;}impl<'a:'static>A for &'a u8{type Out=u16;}fn need<T:A>(_:T)where<T as A>::Out:Copy{}static X:u8=1;fn main(){need(&X);}\n",
+        true,
+    ),
+    (
+        "unused-explicit-copy",
+        "trait A{type Out;}fn dup<T:A>(x:<T as A>::Out)->(<T as A>::Out,<T as A>::Out)where<T as A>::Out:Copy{(x,x)}fn main(){}\n",
+        true,
+    ),
+    (
+        "tuple-result-copy",
+        "trait A{type Out;}impl A for u8{type Out=u16;}fn need<T:A>(_:T)where(<T as A>::Out,u8):Copy{}fn main(){need(1u8);}\n",
+        true,
+    ),
+    (
+        "array-result-copy",
+        "trait A{type Out;}impl A for u8{type Out=u16;}fn need<T:A>(_:T)where[<T as A>::Out;2]:Copy{}fn main(){need(1u8);}\n",
+        true,
+    ),
+    (
+        "selected-output-clone-only",
+        "trait A{type Out;}#[derive(Clone)]struct D(u8);impl A for u8{type Out=D;}fn need<T:A>(_:T)where<T as A>::Out:Clone{}fn main(){need(1u8);}\n",
+        true,
+    ),
+    (
+        "copy-is-not-parent-formation",
+        "trait A{type Out;}fn bad<T>(x:<T as A>::Out)where<T as A>::Out:Copy{let _=(x,x);}fn main(){}\n",
+        false,
+    ),
+    (
+        "erased-input-static-rejected",
+        "trait A{type Out;}impl<'a:'static>A for &'a u8{type Out=u16;}fn need<T:A>(_:T)where<T as A>::Out:Copy{}fn main(){let x=1;need(&x);}\n",
+        false,
+    ),
+    (
+        "selected-output-not-copy",
+        "trait A{type Out;}struct D(u8);impl A for u8{type Out=D;}fn need<T:A>(_:T)where<T as A>::Out:Copy{}fn main(){need(1u8);}\n",
+        false,
+    ),
+    (
+        "no-self-inference-from-copy",
+        "trait A{type Out;}impl A for u8{type Out=u16;}fn need<T:A>()where<T as A>::Out:Copy{}fn main(){need();}\n",
+        false,
+    ),
+    (
+        "selected-output-not-clone",
+        "trait A{type Out;}struct D(u8);impl A for u8{type Out=D;}fn need<T:A>(_:T)where<T as A>::Out:Clone{}fn main(){need(1u8);}\n",
+        false,
+    ),
+];
+
+#[test]
+fn substituted_builtin_bounds_keep_projection_formation_debts()
+-> Result<(), Box<dyn std::error::Error>> {
+    for &(name, body, accepted) in BUILTIN_BOUNDS {
+        let source = format!("{}{body}", native::CHECK);
+        rustc::qualify(&format!("projected-builtin-{name}"), &source, accepted)?;
+        let result = lowir(&source);
+        assert_eq!(result.is_ok(), accepted, "{name}: {result:?}");
+    }
+    Ok(())
+}
+
+#[test]
+#[ignore = "requires the qualified external CPPGM LowIR backend"]
+fn projected_copy_and_clone_predicates_execute_with_selected_results()
+-> Result<(), Box<dyn std::error::Error>> {
+    let cases: Vec<_> = BUILTIN_BOUNDS
+        .iter()
+        .filter_map(|&(name, body, accepted)| {
+            (accepted && name != "unused-explicit-copy").then_some((name, body, false))
+        })
+        .collect();
+    native::check_cases("projected-builtin-bounds", &cases)
 }

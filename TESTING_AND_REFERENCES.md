@@ -286,6 +286,13 @@ also forge invalid typed instances after source checking: normalized signatures
 must still agree, and an erased input must retain its selected impl's lifetime
 requirement. PA20 and PA21 remain planned.
 
+The same module has thirteen LowIR controls for substituted `Copy`/`Clone`
+predicate subjects: eight accept and five reject. Seven accepted programs also
+execute through CPPGM and rustc; the remaining positive checks an unused generic
+body. Independent rustc object checks precede these expectations. Explicit result
+bounds now permit owned associated values in these controls; declared result
+abilities and projected borrows retain their separate unfinished boundaries.
+
 ## Placement and provenance
 
 Every `.rs` fixture under an active assignment's tests directory must be in its
