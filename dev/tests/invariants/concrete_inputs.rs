@@ -107,6 +107,7 @@ fn trait_arguments_and_projected_inputs_remain_part_of_closedness() -> Result<()
         projection::Schema {
             trait_item: ItemId(2),
             sized: true,
+            copies: crate::types::copy::Properties::default(),
         },
     )?;
     let trait_application = store.intern_trait_application(traits::Application {

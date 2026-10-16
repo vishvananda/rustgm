@@ -290,8 +290,18 @@ The same module has thirteen LowIR controls for substituted `Copy`/`Clone`
 predicate subjects: eight accept and five reject. Seven accepted programs also
 execute through CPPGM and rustc; the remaining positive checks an unused generic
 body. Independent rustc object checks precede these expectations. Explicit result
-bounds now permit owned associated values in these controls; declared result
-abilities and projected borrows retain their separate unfinished boundaries.
+bounds now permit owned associated values in these controls; general opaque
+destruction and projected borrows retain their separate unfinished boundaries.
+
+`declared_builtin_results.rs` adds nineteen LowIR controls for directly declared
+result abilities: nine accept and ten reject. Eight accepted programs execute
+through CPPGM and rustc; one checks an unused generic body. They distinguish
+Copy from Clone, preserve member/input identity and reject invalid implementations.
+`declared_abilities.rs` checks immutable schema promises and agreement between
+Copy, possible destruction and drop-region queries, including composite results.
+Independent rustc object qualification precedes the language expectations.
+Inherited result abilities and additional projected-value lifetime cases remain
+investigations, not passing course coverage.
 
 ## Placement and provenance
 

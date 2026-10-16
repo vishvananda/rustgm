@@ -2,11 +2,13 @@
 use super::{GenericArgs, ItemId, Properties, Property, Store, TypeId, traits::ApplicationId};
 use std::collections::{HashMap, hash_map::Entry};
 
-/// The declaring trait and result sizedness cannot change across applications.
+/// Immutable declaration promises, conditional on a well-formed application.
+/// These facts do not prove parent formation or authorize normalization.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Schema {
     pub trait_item: ItemId,
     pub sized: bool,
+    pub copies: super::copy::Properties,
 }
 
 /// Self, the trait's explicit arguments and the family's arguments remain separate.
@@ -79,8 +81,12 @@ impl Store {
 
     /// Register one immutable associated declaration before interning its applications.
     /// # Errors
-    /// Rejects a conflicting trait owner or result sizedness.
+    /// Rejects conflicting declaration facts or inconsistent builtin promises.
     pub fn declare_projection(&mut self, item: ItemId, schema: Schema) -> Result<(), &'static str> {
+        if (schema.copies.copy && !schema.copies.clone_) || (schema.copies.clone_ && !schema.sized)
+        {
+            return Err("inconsistent associated type builtin promises");
+        }
         let storage = self
             .arguments
             .get_or_insert_with(Default::default)

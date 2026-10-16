@@ -183,8 +183,15 @@ impl Copies {
                 definitions.shape(types, ty)?;
             }
             let initial = match kind {
-                Kind::Projection(_) => {
-                    return Err("associated type Copy checking requires normalization");
+                Kind::Projection(application) => {
+                    let promises = types
+                        .projection_schema(application.item)
+                        .ok_or("missing associated type declaration")?
+                        .copies;
+                    if promises == Properties::default() {
+                        return Err("associated type Copy checking requires normalization");
+                    }
+                    promises
                 }
                 Kind::Parameter(id) => {
                     let abilities = self

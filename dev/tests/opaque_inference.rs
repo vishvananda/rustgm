@@ -40,6 +40,7 @@ fn store() -> Result<Store, &'static str> {
         Schema {
             trait_item: TRAIT,
             sized: true,
+            copies: rustgm::types::copy::Properties::default(),
         },
     )?;
     Ok(types)

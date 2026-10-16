@@ -29,6 +29,7 @@ fn projection(
         Schema {
             trait_item: ItemId(1),
             sized: false,
+            copies: rustgm::types::copy::Properties::default(),
         },
     )?;
     let arguments = store.intern_arguments(arguments)?;

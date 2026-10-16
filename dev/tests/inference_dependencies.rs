@@ -17,6 +17,7 @@ fn projected_inputs_wait_for_every_mixed_argument_without_proving_a_result() -> 
         Schema {
             trait_item: ItemId(6),
             sized: true,
+            copies: rustgm::types::copy::Properties::default(),
         },
     )?;
     let mut context = Context::default();

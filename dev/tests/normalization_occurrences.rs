@@ -18,6 +18,7 @@ fn projection_store() -> Result<Store, &'static str> {
         Schema {
             trait_item: ItemId(11),
             sized: true,
+            copies: rustgm::types::copy::Properties::default(),
         },
     )?;
     Ok(store)

@@ -179,6 +179,13 @@ impl Regions {
                 } else if matches!(kind, Kind::Parameter(_) | Kind::ArrayTerm { .. }) {
                     return Err("generic drop checking requires a parameter environment");
                 }
+                if let Kind::Projection(application) = kind
+                    && !types
+                        .projection_schema(application.item)
+                        .is_some_and(|schema| schema.copies.copy)
+                {
+                    return Err("associated type drop regions require normalization");
+                }
             }
             if finish {
                 let mut values = self.finish(types, definitions, key)?;

@@ -54,6 +54,7 @@ fn equality(store: &mut Store, input: TypeId, output: TypeId) -> Result<Predicat
         Schema {
             trait_item: ItemId(2),
             sized: true,
+            copies: crate::types::copy::Properties::default(),
         },
     )?;
     let trait_application = store.intern_trait_application(traits::Application {

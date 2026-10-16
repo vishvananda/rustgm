@@ -164,6 +164,7 @@ fn schema(store: &mut Store, item: u32, sized: bool) -> Result<(), &'static str>
         Schema {
             trait_item: ItemId(10),
             sized,
+            copies: rustgm::types::copy::Properties::default(),
         },
     )
 }
@@ -240,7 +241,8 @@ fn associated_declarations_and_complete_applications_have_distinct_identities() 
                 ItemId(11),
                 Schema {
                     trait_item: ItemId(99),
-                    sized: true
+                    sized: true,
+                    copies: rustgm::types::copy::Properties::default(),
                 }
             )
             .is_err()

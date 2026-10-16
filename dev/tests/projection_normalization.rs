@@ -13,6 +13,7 @@ fn projected(store: &mut Store, subject: TypeId) -> Result<TypeId, &'static str>
         Schema {
             trait_item: ItemId(1),
             sized: true,
+            copies: rustgm::types::copy::Properties::default(),
         },
     )?;
     let trait_application = store.intern_trait_application(traits::Application {

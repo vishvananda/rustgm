@@ -50,6 +50,13 @@ impl Checker<'_> {
                     projection::Schema {
                         trait_item: ItemId(trait_item.0),
                         sized,
+                        copies: crate::types::copy::Properties {
+                            copy: bounds.builtin.contains(&Bound::Copy),
+                            clone_: bounds
+                                .builtin
+                                .iter()
+                                .any(|bound| matches!(bound, Bound::Copy | Bound::Clone)),
+                        },
                     },
                 )
                 .map_err(|e| self.error(key, e))?;

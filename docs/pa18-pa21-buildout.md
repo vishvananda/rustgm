@@ -6789,3 +6789,73 @@ variation, not a clean performance pass. New projected-result calls and composit
 projected bounds take 43.36 and 26.96 ms at 1,024 calls in the initial full view.
 Raw observations, independent qualification and cleanup receipts remain under
 `obj/pa20-work/result-copy-permissions-v1/`. PA20 and PA21 remain planned.
+
+## Direct declared associated Copy and Clone abilities
+
+Associated declaration schemas now retain direct builtin promises alongside their
+owner and sizedness. Registration precedes applications and rejects conflicting
+or inconsistent promises; Copy entails Clone and both entail Sized. These are
+conditional result properties. They do not prove parent formation, select an impl
+or infer abilities of Self or another input. Ordinary supertrait-derived promises
+remain separate work, avoiding late mutation beneath cached property queries.
+
+Copy queries consume direct promises without exposing an opaque result's fields.
+Only Copy permits absence of destruction. Drop-region queries explicitly reject
+unknown non-Copy projected components instead of silently returning an empty set.
+Clone-only results still require the missing general opaque destruction path.
+Two typed invariants check immutable registration, failure isolation, distinct
+members, non-Copy inputs and agreement across composite property/drop queries.
+Fourteen existing test constructors explicitly retain no additional promises.
+
+Twenty-three declared source outcomes are independently object-qualified with
+Rust 1.98 before adding the maintainer expectations. Nineteen LowIR controls
+include nine acceptances and ten rejections; eight accepted programs execute
+through CPPGM and rustc, and one checks an unused generic body. They cover copied
+values, repeats and nested repeats, forwarded Copy/Clone predicates, Copy implying
+Clone, a non-Copy subject and relaxed Sized syntax. Invalid definitions, missing
+parent formation, incorrect member/input inference and lifetime debts still reject.
+
+Four valid original controls remain unsupported: inherited Copy, Clone-only owned
+values, a projected borrow and a static-input implementation used through an owned
+result. Two expanded formation controls also match rustc's declared outcomes; the
+valid static-input generic builtin call still fails RustGM's lifetime check. Both
+original and reduced lifetime failures are retained as investigations, not negative
+language expectations or successful coverage. Nine scaling inputs independently
+pass object generation and candidate LowIR emission; the published baseline rejects
+them. No PA20/PA21 fixtures, oracles or release statuses change.
+
+The final compiler hash is
+`981e5a6264bb3dd96562f6149a667dbf25409131718f9deb2cf28c4966569fc3`.
+All 25 validation commands pass: 1,115 release tests in 206 groups, 4,864 PA1–PA19
+cases, backend qualification and 54 native test groups. Strict Clippy, the 686-file
+syntax-aware audit with zero findings and all 33 harness checks pass. All 689
+frozen source hashes match. The first prototype check passed Clippy but failed the
+repeated filename-prefix audit before producing a compiler; the unit module now
+uses its specific responsibility, `declared_abilities.rs`. That failed check and
+source snapshot remain available alongside the successful validation.
+
+Standalone lint passes. Validation cleanup removes 4,579 generated files (4.81 GiB
+of unshared blocks). After exact-head CI passes for published `f59b061`, the older
+`71b462b` baseline and the duplicate current prototype are retired with hash
+receipts, freeing 90,304,136 bytes and removing two empty artifact pins. The
+published comparison baseline and validated final compiler remain pinned.
+
+The performance study retains 172 jobs, 4,472 study observations and 688 full-output
+qualifications. Ninety-two initial comparisons use published `f59b061`; eighteen
+identical-candidate controls measure the nine newly supported inputs. Independent
+scaling qualification is reused only after verifying that the final compiler is
+byte-identical to the qualified prototype and every input hash matches. The
+predeclared 3.5% repeat rule selects ten families and all 62 sizes/modes. Every
+binary/source/input hash and full/count output comparison agrees. No RustGM build
+or probe overlaps timing; a read-only observation records unrelated Vizier work
+on the shared host without changing its processes.
+
+Initial paired medians range from −5.80% to +5.81%; confirmations range from
+−6.45% to +5.17%. Four confirmations remain above 3.5%: the largest bound-subject
+full view (+3.56%), the small opaque repeated-value count (+4.59%), and ordinary
+Copy calls at 64/full (+4.76%) and 256/count (+5.17%). Confirmation A/A spreads
+are 0.60–63.89%, with RSS differences of −718 to +354 KiB. These observations
+retain overhead and shared-host variation; they are not a clean performance pass.
+At 1,024 calls, the new declared Copy, composite repeat and Clone-predicate full
+views take 42.93, 44.04 and 20.64 ms respectively. Raw evidence and receipts remain
+under `obj/pa20-work/declared-result-abilities-v1/`. PA20 and PA21 remain planned.

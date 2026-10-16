@@ -160,7 +160,14 @@ impl NeedsDrop {
             } else if matches!(kind, Kind::Parameter(_) | Kind::ArrayTerm { .. }) {
                 return Err("generic destruction checking requires a parameter environment");
             }
-            if matches!(kind, Kind::Projection(_)) {
+            if let Kind::Projection(application) = kind {
+                if types
+                    .projection_schema(application.item)
+                    .is_some_and(|schema| schema.copies.copy)
+                {
+                    self.record(ty, State::Ready(false));
+                    continue;
+                }
                 return Err("associated type destruction checking requires normalization");
             }
             if matches!(kind, Kind::Adt(_, args) if types.region_args(args).is_none()) {

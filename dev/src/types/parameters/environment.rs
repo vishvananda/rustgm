@@ -376,6 +376,7 @@ mod equality_tests {
             projection::Schema {
                 trait_item: ItemId(1),
                 sized: false,
+                copies: crate::types::copy::Properties::default(),
             },
         )?;
         let trait_application = store.intern_trait_application(traits::Application {

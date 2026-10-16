@@ -33,6 +33,7 @@ fn projected_value_inputs_retain_regions_and_rigid_types_without_output_assumpti
         Schema {
             trait_item: ItemId(10),
             sized: true,
+            copies: rustgm::types::copy::Properties::default(),
         },
     )?;
     let arguments =
