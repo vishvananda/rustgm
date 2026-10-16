@@ -174,7 +174,7 @@ impl Checker<'_> {
                 let binding = match subject {
                     Subject::Parameter(id) => Some(id),
                     Subject::Associated(_) => None,
-                    Subject::Type(key) => self.direct_bound_parameter(key),
+                    Subject::Type(key) => self.bound_parameter(key, false),
                 };
                 let binding = binding
                     .filter(|id| parameters.contains(id))
@@ -197,12 +197,13 @@ impl Checker<'_> {
         }
         Ok(())
     }
-    fn direct_bound_parameter(&self, mut key: NodeKey) -> Option<DefId> {
+    fn bound_parameter(&self, mut key: NodeKey, parentheses: bool) -> Option<DefId> {
         loop {
             if let Some(Target::Definition(id)) = self.facts.node(key).and_then(|f| f.reference) {
                 return Some(id);
             }
             key.node = match self.kind(key) {
+                Kind::Group(node) if parentheses => node,
                 Kind::Type {
                     flavor: TypeFlavor::Path,
                     elements,
@@ -217,6 +218,26 @@ impl Checker<'_> {
                 _ => return None,
             };
         }
+    }
+    /// Only written bounds on the resolved Self parameter are supertraits.
+    /// An alias that later normalizes to Self is a separate required predicate.
+    pub(in super::super) fn declared_self_bounds(
+        &self,
+        owner: DefId,
+        self_definition: DefId,
+    ) -> impl Iterator<Item = Written> + '_ {
+        self.bound_syntax
+            .get(&owner)
+            .into_iter()
+            .flatten()
+            .filter_map(move |syntax| {
+                let subject = match syntax.subject {
+                    Subject::Parameter(id) => Some(id),
+                    Subject::Type(key) => self.bound_parameter(key, true),
+                    Subject::Associated(_) => None,
+                };
+                (subject == Some(self_definition)).then_some(syntax.bound)
+            })
     }
     pub(in super::super) fn trait_bound(&self, mut key: NodeKey) -> Result<Written, Error> {
         loop {

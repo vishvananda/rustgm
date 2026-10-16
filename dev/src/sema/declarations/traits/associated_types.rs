@@ -22,6 +22,7 @@ impl Checker<'_> {
     pub(in crate::sema::declarations) fn reserve_associated_type_bounds(
         &mut self,
     ) -> Result<(), Error> {
+        let mut inherited = None;
         for index in 0..self.facts.associated.members().len() {
             let member = self.facts.associated.members()[index];
             let declaration = &self.report.resolution.definitions[member.definition.0 as usize];
@@ -42,7 +43,28 @@ impl Checker<'_> {
             let ItemKind::TypeAlias { bounds, .. } = self.item(key)?.kind else {
                 return Err(self.error(key, "missing associated type syntax"));
             };
-            let (sized, bounds) = self.associated_type_bounds(member.definition, key, bounds)?;
+            let (mut sized, bounds) =
+                self.associated_type_bounds(member.definition, key, bounds)?;
+            let mut copies = crate::types::copy::Properties {
+                copy: bounds.builtin.contains(&Bound::Copy),
+                clone_: bounds
+                    .builtin
+                    .iter()
+                    .any(|bound| matches!(bound, Bound::Copy | Bound::Clone)),
+            };
+            for syntax in &bounds.syntax {
+                let Some((_, trait_)) = syntax.trait_path() else {
+                    continue;
+                };
+                if inherited.is_none() {
+                    inherited = Some(self.inherited_builtins()?);
+                }
+                if let Some(promises) = inherited.as_ref().and_then(|all| all.get(&trait_)) {
+                    sized |= promises.sized;
+                    copies.copy |= promises.copies.copy;
+                    copies.clone_ |= promises.copies.clone_;
+                }
+            }
             self.facts
                 .types
                 .declare_projection(
@@ -50,13 +72,7 @@ impl Checker<'_> {
                     projection::Schema {
                         trait_item: ItemId(trait_item.0),
                         sized,
-                        copies: crate::types::copy::Properties {
-                            copy: bounds.builtin.contains(&Bound::Copy),
-                            clone_: bounds
-                                .builtin
-                                .iter()
-                                .any(|bound| matches!(bound, Bound::Copy | Bound::Clone)),
-                        },
+                        copies,
                     },
                 )
                 .map_err(|e| self.error(key, e))?;

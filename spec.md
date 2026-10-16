@@ -62,7 +62,7 @@ force ordered node-based containers onto the lookup hot path.
 
 Associated type projections retain their declaration identity, Self, complete
 trait application and separate family arguments. Their immutable schema fixes
-the declaring trait, result sizedness and directly declared Copy/Clone promises.
+the declaring trait, result sizedness and declared Copy/Clone promises.
 A projection is not a nominal type:
 equal projected results do not establish equality of their inputs. Keep its
 inputs invariant and preserve them through parameter/lifetime substitution at
@@ -72,14 +72,21 @@ sets are not implementation evidence or an injectivity proof. Concrete layout,
 Copy/equality, destruction and lifetime queries must not infer result properties
 from an unfamiliar constructor or silently treat it as a primitive.
 
-Direct builtin promises are conditional declaration facts, not parent formation
+Builtin promises are conditional declaration facts, not parent formation
 or normalization authority. Register them before interning applications; never
 change them beneath cached queries. Copy entails Clone and both entail Sized.
 Copy queries may consume these promises without exposing the result's structure;
 only Copy can remove possible destruction and opaque drop-region requirements.
 Clone alone cannot remove those duties. Preserve separate input and lifetime
-proofs, and never infer an input ability from the result. Inherited builtin
-promises through ordinary result supertraits still require their own closure.
+proofs, and never infer an input ability from the result. Close builtin promises
+over resolved Self supertraits once, before projection schemas are registered.
+Use the already decoded declaration bounds, with a bounded monotone worklist;
+ordinary direct-builtin declarations need no closure allocation. Bounds on other
+parameters or associated members grant no Self ability. An alias that later
+normalizes to Self remains a separate required predicate, whereas parentheses
+preserve the resolved Self identity. Keep the original complete predicates for
+formation and implementation validation; these early bits are no substitute for
+those proofs and must never be patched beneath cached type properties.
 
 An associated type definition is checked under its impl's immutable environment,
 including when no caller uses it. Prove its well-formedness, declared result

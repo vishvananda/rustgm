@@ -7122,3 +7122,76 @@ do not explain or reproduce the confirmed slowdown, and do not erase it. Its
 attribution remains uncertain. Both post-study cleanups remove zero generated
 files. Standalone lint and tidy pass. Evidence is retained in
 `obj/pa20-work/full-runtime-extents-v1/`; PA20 and PA21 remain planned.
+
+### Inherited associated-result builtin abilities
+
+Associated results now retain `Sized`, `Clone` and `Copy` promises inherited
+through ordinary Self supertraits. A bounded monotone worklist closes the
+already decoded, resolved declaration bounds before projection schemas are
+registered. It follows reverse trait dependencies; each of three bits changes
+at most once per declaration. The map is local to declaration preparation and
+is allocated only when a result names a user trait. Direct builtin and
+lifetime-only result bounds need no closure allocation. Schemas remain immutable
+under cached type-property queries. Original predicates, complete applications,
+implementation conformance and lifetime debts still pass their ordinary gates.
+
+Written Self identity matters. Parenthesized `Self` preserves the inheritance
+rule, while an alias that later normalizes to Self does not grant the same early
+promise. Unrelated type arguments and associated members grant no Self ability.
+The first source declaration incorrectly expected the two alias-subject cases
+to succeed; pinned rustc object qualification rejected them. The original
+expectations, partial run and corrected qualification remain in the evidence.
+The first full validation also caught an implementation regression: the shared
+subject reader accepted parenthesized `?Sized` relaxation. Parenthesis handling
+is now enabled only for inherited-Self classification. The existing independent
+`bounds_source` rejection remains unchanged and passes in the final run.
+
+Thirty programs were independently object-qualified before successful coverage
+was declared. Seventeen valid and twelve invalid programs now form the permanent
+`inherited_result_abilities.rs` LowIR controls; their source bytes match those
+qualifications. All seventeen positives execute through CPPGM and rustc.
+Coverage includes transitive and diamond inheritance, generic and forward
+supertraits, where-Self and parenthesized bounds, relaxed sizedness, Clone-only
+obligations, stored callable use and reference-valued results. Invalid controls
+retain cyclic declarations, missing/invalid implementations, wrong subjects and
+unproved parent obligations. The static implementation's local-reference control
+reaches the actual lifetime rejection. Some other negatives still reject at the
+opaque destruction boundary; these are not claims of precise move diagnostics.
+
+One independently valid borrowed-copy program remains outside successful LowIR
+coverage: its implied associated-result outlives bound requires a distinct
+projection representation. The matching direct-Copy case already exists in the
+type-only `opaque_body_values.rs` controls. It is not reclassified as an expected
+language rejection or counted as whole-compiler acceptance. PA20 and PA21 remain
+planned, and general projected lifetime/destruction work remains incomplete.
+
+Final validation runs 26 commands successfully: strict Clippy, architecture and
+file audits (691 Rust files, zero findings), 33 harness tests, 1,127 release tests
+in 209 result groups, all 4,864 PA1–PA19 course cases with unchanged oracles,
+qualified backend execution, all 57 explicit maintainer native tests and upstream
+provenance verification. All 694 frozen source hashes match afterward. Standalone
+`make lint` and `make tidy` also pass. Cleanup after the failed prototype removes
+3,240 generated files (1.90 GiB); successful final validation removes 4,716 files
+(5.00 GiB). The prototype and superseded callable baseline are retired, freeing
+90,779,688 bytes while retaining source snapshots, diagnostics and receipts.
+
+All ten new scaling programs pass pinned rustc object qualification and the
+final candidate. They vary supertrait depth (16/64), associated-declaration
+width (64/256), and explicit versus inherited Copy promises. The six programs
+accepted by the previous compiler retain byte-identical LowIR. Timing uses the
+immutable `435f2a5` baseline and final candidate, plus identical-candidate controls
+for newly supported programs. Eighteen actual initial comparisons and eight
+new-feature controls, followed by four predeclared confirmations, retain 780
+study observations and 120 full-output qualifications. Every binary, source and
+input hash, and every full/count output comparison, agrees. No builds, edits or
+compiler probes overlap timing.
+
+Initial actual paired medians range from −7.37% to +4.17%, with A/A spreads of
+0.87–56.67%. The 64-level explicit-Copy full view triggers the 3.5% family repeat
+rule. All four prescribed depth/mode confirmations range from −4.77% to −0.84%
+(A/A spreads 1.96–8.05%); the triggering case repeats at −1.06%. No slowdown
+repeats in this increment, but all noisy initial observations remain. Newly
+supported full views take 6.86/12.48 ms at 16/64 inherited levels and 22.69/77.77 ms
+at 64/256 declarations; the latter uses about 14 MiB peak RSS. These comparisons
+do not resolve the separately recorded earlier runtime-extents timing concern.
+Evidence is retained in `obj/pa20-work/inherited-result-abilities-v1/`.

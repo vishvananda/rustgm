@@ -300,8 +300,15 @@ Copy from Clone, preserve member/input identity and reject invalid implementatio
 `declared_abilities.rs` checks immutable schema promises and agreement between
 Copy, possible destruction and drop-region queries, including composite results.
 Independent rustc object qualification precedes the language expectations.
-Inherited result abilities and additional projected-value lifetime cases remain
-investigations, not passing course coverage.
+`inherited_result_abilities.rs` adds 29 LowIR controls for result abilities
+inherited through ordinary supertraits: seventeen accept and twelve reject.
+All seventeen accepted programs execute through CPPGM and rustc. Independent
+object qualification precedes the expectations. The cases distinguish direct
+Self bounds from alias subjects, unrelated arguments and other associated
+members; cyclic declarations and unproved implementation lifetimes still fail.
+The valid borrowed-result case remains an unfinished outlives boundary, already
+represented in the type-only `opaque_body_values.rs` coverage. Neither these
+maintainer tests nor that type-only coverage activate PA20 or PA21.
 
 ## Placement and provenance
 
