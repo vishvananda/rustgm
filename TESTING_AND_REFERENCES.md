@@ -366,10 +366,10 @@ without changing the point sets or raising resource limits.
 result lifetime controls: nine accepted programs also execute through CPPGM and
 rustc, and eight invalid programs remain rejected. `outlives_verification.rs` and
 `opaque_outlives.rs` check conditional proofs against independent finite-set
-models, actual binder scopes and runtime extents. One further valid captured
-function-pointer source still fails the earlier shape gate and is not counted
-as successful rejection coverage. Nominal projected-template substitution and
-projected destructor contracts remain explicit implementation boundaries.
+models, actual binder scopes and runtime extents. The original captured
+function-pointer shape gap now has coverage in `captured_shapes.rs`. Nominal
+projected-template substitution and projected destructor contracts remain
+explicit implementation boundaries.
 
 `referent_bounds.rs` adds four independently object-qualified controls for
 references inside projection inputs. A locally bound function-pointer lifetime
@@ -378,6 +378,15 @@ while a static type input, an implied static referent bound and an independently
 bounded result through an alias accept. The corresponding typed invariant in
 `opaque_outlives.rs` also checks nested projected referents and independent result
 assumptions. These are lifetime-proof checks, not additional native executions.
+
+`captured_shapes.rs` checks seventeen independently object-qualified programs:
+eleven accept, six reject, and five accepted programs also execute through CPPGM
+and rustc. They cover captured trait and Sized premises, empty and nested
+callable binders, mixed arguments, aliases, wrong inputs, and normalization of
+Sized call obligations. Four `captured_lookup.rs` invariants check canonical
+lookup, cache isolation and bounded shared-graph work. A valid sibling-callback
+source and a valid locally bound projection still encounter separate unfinished
+proof checks; neither is classified as a language-invalid fixture.
 
 ## Storage and cleanup
 

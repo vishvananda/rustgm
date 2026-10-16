@@ -72,6 +72,17 @@ sets are not implementation evidence or an injectivity proof. Concrete layout,
 Copy/equality, destruction and lifetime queries must not infer result properties
 from an unfamiliar constructor or silently treat it as a primitive.
 
+Shape queries preserve the binder depth of captured associated inputs, including
+empty callable binders. Match trait premises and explicit Sized subjects by
+lowering only the surrounding prefix into existing canonical identities. Keep
+nested local binders unchanged; a captured local cannot become an outer premise.
+Share substitution's dependency walk and typed rebuild dispatch, but perform
+these lookups without interning or cloning the assumption environment. An
+immutable assumption already owns every canonical child of its root, so absence
+can withhold permission without asserting that the type itself cannot exist.
+Cache such misses only for that fixed environment. Keep ordinary root caches
+separate from lazily allocated scoped caches and charge all lookup work.
+
 Builtin promises are conditional declaration facts, not parent formation
 or normalization authority. Register them before interning applications; never
 change them beneath cached queries. Copy entails Clone and both entail Sized.
@@ -308,7 +319,8 @@ relative to the current traversal before clearing it, so one large query cannot
 make every later small query scan the same large allocation. Known-type queries
 keep their allocation-free path.
 
-Body calls normalize substituted `Copy`/`Clone` and type-outlives predicate subjects through the
+Body calls normalize substituted `Copy`, `Clone`, `Sized` and type-outlives
+predicate subjects through the
 same deferred worklist before querying builtin properties. A property of the
 selected result cannot choose its inputs or erase the original application's
 formation and lifetime obligations. Composite subjects retain their own nested

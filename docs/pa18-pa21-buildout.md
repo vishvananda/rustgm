@@ -7319,3 +7319,81 @@ does not resolve the earlier runtime-extents timing concern.
 Evidence remains in `obj/pa20-work/projected-input-referents-v1/`. Captured
 function-pointer shape checking, nominal projected-template substitution and
 projected destruction remain unfinished; PA20 and PA21 are still planned.
+
+## Captured associated shapes and Sized call obligations
+
+The shape checker now matches captured associated inputs against their original
+trait premises and explicit Sized bounds. Its work records every intervening
+function-pointer binder, including empty binders. Ordinary root properties keep
+their existing cache; scoped properties and lookup folders allocate lazily.
+A type seen under a local binder cannot reuse a cached outer permission merely
+because its numeric type or lifetime slot is the same.
+
+The lookup removes only the surrounding captured prefix and searches existing
+canonical types, lists and trait applications. It preserves nested local
+binders and every type, const and lifetime argument. A fixed environment's
+assumptions already own their canonical children: a missing identity withholds
+permission without allocating a replacement or scanning unrelated assumptions.
+Missing results are cached only for that immutable environment. Substitution and
+lookup share the bounded dependency walk and one typed rebuild dispatch, with
+separate mutable and read-only operations. Rebuild order remains unchanged.
+
+One qualified captured-array program then reached a separate call-site gap:
+Sized predicates were checked on an unnormalized associated result. They now
+join Copy, Clone and type-outlives predicates in the existing deferred
+normalization worklist, retaining the original formation and lifetime debts.
+
+Seventeen permanent source controls were independently object-qualified before
+their expectations were installed: eleven valid and six invalid. Five valid
+programs also execute through CPPGM and rustc. They cover captured subjects,
+mixed trait arguments, nested and empty callable binders, ordinary aliases,
+explicit result sizedness and accepted/rejected Sized calls. Four typed
+invariants check complete mixed identities, constants, local/captured cache
+isolation, immutable-environment misses and a 10,000-level shared graph with
+bounded iterative work and cached repeats.
+
+Two other independently valid programs remain unfinished. Discarding one of two
+sibling callbacks reaches a later invalid lifetime-identity check. A projection
+using a callable's own local lifetime still needs a deferred formation contract;
+it cannot borrow the outer lifetime's trait premise. The latter was initially
+declared invalid during investigation, but rustc accepted it; the original
+declaration and discrepancy remain retained. Neither becomes a negative fixture.
+Nominal projected-template substitution and projected destruction remain separate
+boundaries. PA20 and PA21 remain planned.
+
+Final validation passes strict Clippy and formatting, the 706-file Rust audit,
+33 harness checks, 1,145 regular release tests, all 59 explicit native tests,
+all 4,864 PA1–PA19 course fixtures with unchanged oracles, backend qualification,
+and upstream provenance checks. All 709 frozen source/configuration hashes
+match afterward. An initial unit-test filter selected zero tests; it is retained
+as a selection mistake, not execution evidence. The corrected filter selects
+and passes all four lookup tests, which also pass in the full release suite.
+Automatic validation cleanup removes 4,767 generated files, freeing 5.06 GiB.
+
+Performance compares immutable `004a42d` (`1cce4e27…`) with the validated
+candidate (`cbe0b58a…`). Sixteen real count/full comparisons include ordinary
+captured pointers whose relaxed type parameters obtain Sized through Copy.
+Twelve identical-candidate jobs measure newly supported captured pointers,
+nested pointers and wide assumption sets. All eight new source inputs pass
+pinned rustc object qualification; the two ordinary controls also pass the
+baseline. A/A calibration and five paired ABBA blocks retain 728 study
+observations and 112 full-output qualifications. Every full/count output and
+binary/source/input/runner hash agrees, with no edits, builds or probes during
+timing. Real paired medians range from −4.14% to +2.50%, with A/A spreads of
+1.25–11.22%; none crosses the predeclared 3.5% confirmation threshold. The
+ordinary captured controls range from −2.20% to +0.52%.
+
+New full-view medians at 64/256 functions are 26.98/89.57 ms for captured
+pointers and 29.34/96.41 ms for nested pointers. The wide-bound observations
+need more caution: the initial 64-bound full-view job shifts from about 37 ms
+to 67 ms halfway through identical-candidate samples. Three full/count/full
+repeats retain another 78 study and twelve qualification observations and
+measure 65.39/66.85/66.93 ms, with A/A spreads of 1.59–2.04%. Both modes share
+the changed throughput; no cause is assigned and stable wide-family scaling
+is not claimed. These inputs were unsupported by the earlier compiler, so
+these observations are not baseline regression comparisons. All original
+observations remain, and the older runtime-extents timing concern is likewise
+not resolved by this change.
+
+Declarations, qualifications, source snapshots, full observations and cleanup
+receipts remain in `obj/pa20-work/captured-result-shapes-v1/` and `obj/cleanup/`.

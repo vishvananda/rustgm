@@ -70,6 +70,17 @@ pub(super) struct Storage {
     constant_index: HashMap<ConstKind, ConstId>,
 }
 impl Store {
+    pub(crate) fn find_regions(&self, values: &[RegionId]) -> Option<GenericArgs> {
+        self.regions.find(values).map(GenericArgs)
+    }
+    /// The caller preserves a mixed list's argument kinds while mapping its values.
+    pub(crate) fn find_mixed_arguments(&self, values: &[Argument]) -> Option<GenericArgs> {
+        self.arguments
+            .as_ref()?
+            .mixed
+            .find(values)
+            .map(|id| GenericArgs(id | MIXED))
+    }
     /// Lifetime-only consumers must reject a mixed list rather than erase arguments.
     #[must_use]
     pub fn region_args(&self, id: GenericArgs) -> Option<&[RegionId]> {

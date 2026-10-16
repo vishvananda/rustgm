@@ -265,7 +265,7 @@ impl Checker<'_> {
                 )?;
             } else if matches!(
                 predicate.builtin_bound(),
-                Some(Bound::Copy | Bound::Clone | Bound::Outlives(_))
+                Some(Bound::Copy | Bound::Clone | Bound::Sized | Bound::Outlives(_))
             ) {
                 // The property belongs to the selected result, while the retained
                 // application still owes its original formation and lifetime proof.

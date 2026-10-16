@@ -1,6 +1,8 @@
 //! Substitute a template binder and its parameters without capturing nested binders.
 mod items;
+pub(crate) mod lookup;
 mod normalize;
+mod rewrite;
 pub use normalize::{Normalizer, Request, Resolution, Step};
 mod parameters;
 mod predicates;
@@ -359,77 +361,7 @@ impl Bound {
     }
 
     fn rebuild(&mut self, store: &mut Store, kind: Kind, depth: u16) -> Result<Kind, &'static str> {
-        Ok(match kind {
-            Kind::Never | Kind::Primitive(_) | Kind::Parameter(_) => kind,
-            Kind::Adt(item, args) => Kind::Adt(item, self.arguments(store, args, depth)?),
-            Kind::Projection(application) => {
-                let trait_ = store
-                    .trait_application(application.trait_application)
-                    .ok_or("invalid substituted projection trait")?;
-                let arguments = self.arguments(store, trait_.arguments, depth)?;
-                let trait_application =
-                    store.intern_trait_application(super::traits::Application {
-                        arguments,
-                        ..trait_
-                    })?;
-                Kind::Projection(super::projection::Application {
-                    subject: self.child(store, application.subject, depth)?,
-                    trait_application,
-                    arguments: self.arguments(store, application.arguments, depth)?,
-                    ..application
-                })
-            }
-            Kind::Tuple(list) => Kind::Tuple(self.list(store, list, depth)?),
-            Kind::Array { element, length } => Kind::Array {
-                element: self.child(store, element, depth)?,
-                length,
-            },
-            Kind::ArrayTerm { element, length } => Kind::ArrayTerm {
-                element: self.child(store, element, depth)?,
-                length: self.constant(store, length)?,
-            },
-            Kind::Slice(element) => Kind::Slice(self.child(store, element, depth)?),
-            Kind::Reference {
-                mutable,
-                region,
-                referent,
-            } => Kind::Reference {
-                mutable,
-                region: self.region(region, depth)?,
-                referent: self.child(store, referent, depth)?,
-            },
-            Kind::Pointer { mutable, pointee } => Kind::Pointer {
-                mutable,
-                pointee: self.child(store, pointee, depth)?,
-            },
-            Kind::Function {
-                bound_regions,
-                parameters,
-                result,
-                unsafe_,
-            } => {
-                let depth = nested(depth)?;
-                Kind::Function {
-                    bound_regions: if matches!(self.action, Action::Shape) {
-                        0
-                    } else {
-                        bound_regions
-                    },
-                    parameters: self.list(store, parameters, depth)?,
-                    result: self.child(store, result, depth)?,
-                    unsafe_,
-                }
-            }
-            Kind::FunctionItem {
-                item,
-                signature,
-                arguments,
-            } => Kind::FunctionItem {
-                item,
-                arguments: self.arguments(store, arguments, depth)?,
-                signature: self.child(store, signature, depth)?,
-            },
-        })
+        rewrite::rebuild(&mut rewrite::Mutable { bound: self, store }, kind, depth)
     }
     fn arguments(
         &mut self,

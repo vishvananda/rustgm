@@ -236,6 +236,12 @@ impl Default for Store {
     }
 }
 impl Store {
+    pub(crate) fn find_kind(&self, kind: Kind) -> Option<TypeId> {
+        self.index.get(&kind).copied()
+    }
+    pub(crate) fn find_list(&self, values: &[TypeId]) -> Option<ListId> {
+        self.children.find(values).map(ListId)
+    }
     #[must_use]
     pub fn kind(&self, id: TypeId) -> Option<Kind> {
         self.kinds.get(id.0 as usize).copied()

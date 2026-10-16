@@ -21,6 +21,15 @@ pub(super) struct Storage {
 }
 
 impl Store {
+    pub(crate) fn find_trait_application(&self, application: Application) -> Option<ApplicationId> {
+        self.arguments
+            .as_ref()?
+            .traits
+            .as_ref()?
+            .index
+            .get(&application)
+            .copied()
+    }
     pub(super) fn trait_properties(&self, id: ApplicationId) -> Option<Properties> {
         self.arguments
             .as_ref()?
