@@ -2,7 +2,6 @@
 use super::{Checker, Error, NodeId, Pending, Query, ScopeId, Task, TermId, WatchId};
 
 pub(super) enum Readiness {
-    Complete,
     Waiting,
     Partial,
     Resolved,
@@ -34,7 +33,7 @@ impl Checker<'_> {
     ) -> Result<Readiness, Error> {
         let node = query.node;
         let term = match query.task {
-            Task::Normalize(term) | Task::Symbolic { input: term, .. } => term,
+            Task::Normalize { input, .. } | Task::Symbolic { input, .. } => input,
             Task::Contract(_) => return Ok(Readiness::Resolved),
         };
         // An inner normal form may erase holes from this application's inputs.
@@ -46,28 +45,21 @@ impl Checker<'_> {
                 Err(error) => return Err(self.error(node, error)),
             };
         }
-        if matches!(query.task, Task::Normalize(_)) {
-            match self.infer.head(&self.facts.types, term) {
-                Ok(_) => {
-                    self.published_normalization(node, term)?;
-                    return Ok(Readiness::Complete);
-                }
-                Err(crate::types::infer::Error::Normalization) => {}
-                Err(error) => return Err(self.error(node, error)),
+        if matches!(query.task, Task::Normalize { .. })
+            && !resolved
+            && !self.projection_subject_known(node, term)?
+        {
+            let subject = self
+                .infer
+                .child(&self.facts.types, term, 0)
+                .map_err(|e| self.error(node, e))?;
+            if matches!(
+                self.infer.head(&self.facts.types, subject),
+                Err(crate::types::infer::Error::Normalization)
+            ) {
+                self.defer_input_normalizations(query, term, watch)?;
             }
-            if !resolved && !self.projection_subject_known(node, term)? {
-                let subject = self
-                    .infer
-                    .child(&self.facts.types, term, 0)
-                    .map_err(|e| self.error(node, e))?;
-                if matches!(
-                    self.infer.head(&self.facts.types, subject),
-                    Err(crate::types::infer::Error::Normalization)
-                ) {
-                    self.defer_input_normalizations(query, term, watch)?;
-                }
-                return Ok(Readiness::Waiting);
-            }
+            return Ok(Readiness::Waiting);
         }
         Ok(if resolved {
             Readiness::Resolved

@@ -774,6 +774,25 @@ Preserve the original relation kind and resume only awakened leaves; unchanged
 siblings must not repeat work or lifetime equalities. Completion rejects remaining
 equation or formation debt, including when a normalized result erased its inputs.
 
+A proved opaque associated result has an inference-term identity distinct from
+an unresolved projection operation. Retain each occurrence's original application
+and scope even when results share a canonical type. Determined inputs remain
+immutable; unresolved inputs retain their actual inference variables. Publishing
+an unchanged opaque result must still wake suspended equations. Equal opaque
+results never imply equations between distinct projection inputs. Region mapping
+creates new formation obligations; value-lifetime freshening does not rewrite an
+opaque operation's inputs as if they were exposed reference fields.
+
+Concrete body instantiation normalizes substituted associated results before
+layout, cleanup and lowering. Compare the substituted callable signature with
+the selected signature after normalization, and retain implementation lifetime
+debts in the instance contract. Map caller lifetimes using the same substitution
+context as parameter arguments. The body's signature binder is its existing
+universal scope; callable types nested inside it introduce their own binders.
+Do not copy an existing proof's quantified ancestors to a sibling proof and reuse
+its private variables there. Extensions of such scoped projection debts remain
+rejected until their original scope and allocation ownership can be preserved.
+
 Body annotations retain source callable scopes before descending into their typed
 children. Alias-local binders extend that ambient prefix. Rebase proof-private
 identities before substituting actual arguments, and preserve both prefixes when

@@ -174,6 +174,7 @@ pub(super) struct Checker<'a> {
     parameter_copies: Option<crate::types::copy::Copies>,
     parameter_shapes: Option<crate::types::parameters::shape::Shapes>,
     body_binders: u32,
+    environment_owner: Option<DefId>,
     method_constants: Option<Box<super::arguments::Cache>>,
     method_environment: Option<std::sync::Arc<crate::types::parameters::environment::Environment>>,
     trait_environment: Option<std::sync::Arc<super::traits::assumptions::Assumptions>>,
@@ -245,6 +246,7 @@ impl<'a> Checker<'a> {
             body_binders: 0,
             method_constants: None,
             method_environment: None,
+            environment_owner: None,
             trait_environment: None,
             canonical_trait_inference: None,
             annotations: super::annotations::Scratch::default(),
@@ -287,6 +289,7 @@ impl<'a> Checker<'a> {
         self.projections = projections::Pending::default();
         self.body_binders = 0;
         self.method_environment = None;
+        self.environment_owner = None;
         self.trait_environment = None;
         self.canonical_trait_inference = None;
         self.parameter_copies = None;
@@ -347,6 +350,9 @@ impl Checker<'_> {
         Declarations::error(self.report, self.key(node), message.to_string())
     }
     fn known(&mut self, node: NodeId, ty: TypeId) -> Result<TermId, Error> {
+        if self.facts.types.contains_projections(ty) == Some(true) {
+            return self.known_projection(node, ty);
+        }
         self.infer
             .known(&self.facts.types, ty)
             .map_err(|e| self.error(node, e))

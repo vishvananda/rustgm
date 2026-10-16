@@ -1,5 +1,6 @@
 //! Substitute retained typed CFGs; the result still requires an instance proof.
 mod contracts;
+mod projections;
 use super::{
     drops,
     ir::{Body, Owner, ProjectionKind, Rvalue},
@@ -23,9 +24,12 @@ pub fn body(
     template: &Template,
     instance: Instance,
 ) -> Result<(Body, drops::Requirements), &'static str> {
-    let bindings = parameters(facts, instance)?;
-    let mut substitution = Bound::parameters(&facts.types, &bindings)?;
-    materialize(facts, template, instance, &mut substitution)
+    let inputs = parameters(facts, instance)?;
+    if inputs.comparison.is_some() {
+        return Err("projected instance requires its lifetime contract");
+    }
+    let mut substitution = Bound::parameters(&facts.types, &inputs.bindings)?;
+    materialize(facts, template, instance, &mut substitution, None, None)
 }
 
 pub struct Materialized {
@@ -47,9 +51,16 @@ pub fn with_contract(
     if original.source != template.body.source {
         return Err("instance contract belongs to another template");
     }
-    let mut bindings = parameters(facts, instance)?;
-    let (mut substitution, contract) = contracts::specialize(facts, original, &mut bindings)?;
-    let (body, destruction) = materialize(facts, template, instance, &mut substitution)?;
+    let mut inputs = parameters(facts, instance)?;
+    let (mut substitution, mut contract) = contracts::specialize(facts, original, &mut inputs)?;
+    let (body, destruction) = materialize(
+        facts,
+        template,
+        instance,
+        &mut substitution,
+        Some(&mut contract),
+        inputs.comparison,
+    )?;
     Ok(Materialized {
         body,
         destruction,
@@ -62,6 +73,8 @@ fn materialize(
     template: &Template,
     instance: Instance,
     substitution: &mut Bound,
+    contract: Option<&mut super::regions::Contract>,
+    comparison: Option<(crate::types::TypeId, crate::types::TypeId)>,
 ) -> Result<(Body, drops::Requirements), &'static str> {
     let source = &template.body;
     let Owner::Function { definition, .. } = source.owner else {
@@ -101,7 +114,15 @@ fn materialize(
         statements: source.statements.clone(),
         blocks: source.blocks.clone(),
     };
-    substitute(facts, &mut body, substitution)?;
+    let projected = substitute(facts, &mut body, substitution)?;
+    if projected || comparison.is_some() {
+        projections::normalize(
+            facts,
+            &mut body,
+            contract.ok_or("projected instance requires its lifetime contract")?,
+            comparison,
+        )?;
+    }
     let mut needed = NeedsDrop::new(facts.destructors.implementations().iter().map(|i| i.item));
     if let Some(owned) = &source.owned {
         let mut concrete = Box::<drops::values::Facts>::default();
@@ -129,7 +150,11 @@ fn materialize(
 }
 
 type Binding = (crate::types::parameters::ParameterId, Argument);
-fn parameters(facts: &mut Declarations, instance: Instance) -> Result<Vec<Binding>, &'static str> {
+struct Inputs {
+    bindings: Vec<Binding>,
+    comparison: Option<(crate::types::TypeId, crate::types::TypeId)>,
+}
+fn parameters(facts: &mut Declarations, instance: Instance) -> Result<Inputs, &'static str> {
     let Some(Kind::FunctionItem {
         item,
         signature,
@@ -170,23 +195,33 @@ fn parameters(facts: &mut Declarations, instance: Instance) -> Result<Vec<Bindin
         .zip(arguments[early..].iter().copied())
         .collect::<Vec<_>>();
     let mut selected = Bound::parameters_captured(&facts.types, &bindings, regions)?;
-    if selected.apply(&mut facts.types, callable.signature)? != signature {
+    let expected = selected.apply(&mut facts.types, callable.signature)?;
+    let projected = facts.types.contains_projections(expected) == Some(true);
+    if !projected && expected != signature {
         return Err("instance signature differs from substituted template");
     }
-    Ok(bindings)
+    Ok(Inputs {
+        bindings,
+        comparison: projected.then_some((expected, signature)),
+    })
 }
 
 fn substitute(
     facts: &mut Declarations,
     body: &mut Body,
     bound: &mut Bound,
-) -> Result<(), &'static str> {
+) -> Result<bool, &'static str> {
+    let mut projected = false;
     let mut ty = |original| {
         let result = bound.apply(&mut facts.types, original)?;
         if facts.types.contains_parameters(result) != Some(false) {
             return Err("instance body retains an unresolved type or const parameter");
         }
-        facts.aggregates.prepare(&mut facts.types, result)?;
+        if facts.types.contains_projections(result) == Some(true) {
+            projected = true;
+        } else {
+            facts.aggregates.prepare(&mut facts.types, result)?;
+        }
         Ok(result)
     };
     body.result = ty(body.result)?;
@@ -203,6 +238,7 @@ fn substitute(
         match &mut value.kind {
             Rvalue::Call { signature, .. } => {
                 *signature = bound.apply(&mut facts.types, *signature)?;
+                projected |= facts.types.contains_projections(*signature) == Some(true);
             }
             Rvalue::ConstArgument(id) => {
                 let Argument::Const(actual) =
@@ -235,5 +271,5 @@ fn substitute(
             *region = actual;
         }
     }
-    Ok(())
+    Ok(projected)
 }

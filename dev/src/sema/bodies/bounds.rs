@@ -28,6 +28,7 @@ impl Checker<'_> {
         node: NodeId,
         owner: DefId,
     ) -> Result<(), Error> {
+        self.environment_owner = Some(owner);
         let mut environment = self.facts.generics.environments.get(&owner).cloned();
         self.trait_environment = None;
         self.canonical_trait_inference = None;

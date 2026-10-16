@@ -1,0 +1,151 @@
+//! Opaque result identity is separate from each occurrence's formation obligation.
+use rustgm::types::{
+    GenericArgs, ItemId, Kind, Primitive, RegionId, Store, TypeId,
+    callable::Templates,
+    infer::{
+        Context, Domain, Error,
+        arguments::Argument,
+        deferred::{Outcome, Relation},
+    },
+    projection::{Application, Schema},
+    substitute::Bound,
+    traits,
+};
+type TestResult = Result<(), Box<dyn std::error::Error>>;
+const ITEM: ItemId = ItemId(2);
+const TRAIT: ItemId = ItemId(1);
+const BYTE: TypeId = TypeId::primitive(Primitive::U8);
+
+fn store() -> Result<Store, &'static str> {
+    let mut types = Store::default();
+    types.declare_projection(
+        ITEM,
+        Schema {
+            trait_item: TRAIT,
+            sized: true,
+        },
+    )?;
+    Ok(types)
+}
+fn projected(types: &mut Store, subject: TypeId) -> Result<TypeId, &'static str> {
+    let trait_application = types.intern_trait_application(traits::Application {
+        item: TRAIT,
+        arguments: GenericArgs::EMPTY,
+    })?;
+    types.intern(Kind::Projection(Application {
+        item: ITEM,
+        subject,
+        trait_application,
+        arguments: GenericArgs::EMPTY,
+    }))
+}
+
+#[test]
+fn retained_occurrences_require_independent_normalization() -> TestResult {
+    let mut types = store()?;
+    let ty = projected(&mut types, BYTE)?;
+    let mut inference = Context::default();
+    let output = inference.known(&types, ty)?;
+    let first = inference.retain_projection(&mut types, output)?;
+    let second = inference.retain_projection(&mut types, output)?;
+    inference.apply_normalization(&mut types, output, ty)?;
+    assert!(inference.head(&types, output)?.is_some());
+    for source in [first, second] {
+        assert_eq!(inference.resolved(&mut types, source)?, ty);
+        assert_eq!(inference.head(&types, source), Err(Error::Normalization));
+    }
+    inference.apply_normalization(&mut types, first, ty)?;
+    assert!(inference.head(&types, first)?.is_some());
+    assert_eq!(inference.head(&types, second), Err(Error::Normalization));
+    Ok(())
+}
+
+#[test]
+fn unchanged_opaque_roots_wake_their_suspended_equations() -> TestResult {
+    let mut types = store()?;
+    let ty = projected(&mut types, BYTE)?;
+    let mut inference = Context::default();
+    let projection = inference.known(&types, ty)?;
+    let result = inference.variable(Domain::Any)?;
+    let Outcome::Pending(equation) =
+        inference.equate_deferred(&types, projection, result, Relation::Equality)?
+    else {
+        return Err("unproved projection equation completed".into());
+    };
+    assert!(inference.ready_equation()?.is_none());
+    inference.apply_normalization(&mut types, projection, ty)?;
+    assert_eq!(inference.ready_equation()?, Some(equation));
+    assert_eq!(
+        inference.resume_equation(&types, equation)?,
+        Outcome::Complete
+    );
+    assert!(!inference.has_deferred_equations());
+    assert_eq!(inference.resolved(&mut types, result)?, ty);
+    Ok(())
+}
+
+#[test]
+fn distinct_results_never_infer_equations_between_their_inputs() -> TestResult {
+    let mut types = store()?;
+    let left = projected(&mut types, BYTE)?;
+    let right = projected(&mut types, TypeId::UNIT)?;
+    let mut inference = Context::default();
+    let a = inference.known(&types, left)?;
+    let b = inference.known(&types, right)?;
+    inference.apply_normalization(&mut types, a, left)?;
+    inference.apply_normalization(&mut types, b, right)?;
+    assert_eq!(inference.equate(&types, a, b), Err(Error::Mismatch));
+    assert!(inference.region_equalities.is_empty());
+    let input = inference.variable(Domain::Any)?;
+    let pending = inference.projected(&types, ITEM, input, &[], &[])?;
+    assert_eq!(
+        inference.apply_normalization(&mut types, pending, left),
+        Err(Error::Unresolved)
+    );
+    assert_eq!(inference.unresolved_domain(input)?, Some(Domain::Any));
+    Ok(())
+}
+
+#[test]
+fn transformed_lifetime_inputs_receive_no_normalization_authority() -> TestResult {
+    let mut types = store()?;
+    let mut inference = Context::default();
+    let subject = inference.known(&types, BYTE)?;
+    let root = inference.projected(
+        &types,
+        ITEM,
+        subject,
+        &[Argument::Lifetime(RegionId::bound(0, 0)?)],
+        &[],
+    )?;
+    let ty = inference.resolved(&mut types, root)?;
+    inference.apply_normalization(&mut types, root, ty)?;
+    let mapped = inference.map_regions(&mut types, root, &mut Bound::new(vec![RegionId(7)]))?;
+    assert_eq!(inference.head(&types, mapped), Err(Error::Normalization));
+    let app = inference.projection_application(&types, mapped)?;
+    assert_eq!(
+        app.predicate.trait_arguments(),
+        Some((TRAIT, &[Argument::Lifetime(RegionId(7))][..]))
+    );
+    Ok(())
+}
+
+#[test]
+fn inferred_opaque_values_do_not_freshen_operation_inputs() -> TestResult {
+    let mut types = store()?;
+    let mut inference = Context::default();
+    let subject = inference.known(&types, BYTE)?;
+    let root = inference.projected(
+        &types,
+        ITEM,
+        subject,
+        &[Argument::Lifetime(RegionId(7))],
+        &[],
+    )?;
+    let ty = inference.resolved(&mut types, root)?;
+    inference.apply_normalization(&mut types, root, ty)?;
+    let (fresh, count) = inference.fresh_regions(&mut types, &Templates::default(), root, 12)?;
+    assert_eq!(count, 0);
+    assert_eq!(inference.resolved(&mut types, fresh)?, ty);
+    Ok(())
+}

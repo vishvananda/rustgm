@@ -25,7 +25,7 @@ struct Contract {
 }
 enum Task {
     Contract(Contract),
-    Normalize(TermId),
+    Normalize { input: TermId, output: TermId },
     Symbolic { input: TermId, output: TermId },
 }
 struct Query {
@@ -84,6 +84,50 @@ impl Pending {
     }
 }
 impl Checker<'_> {
+    pub(super) fn known_projection(&mut self, node: NodeId, ty: TypeId) -> Result<TermId, Error> {
+        // A canonical declaration type already has determined inputs. Keep its
+        // written body lifetimes while proving its complete nested binder tree;
+        // replacing the whole type with caller aliases would change its return contract.
+        let first = u32::try_from(self.facts.body_regions.len())
+            .ok()
+            .and_then(|n| n.checked_add(1))
+            .ok_or_else(|| self.error(node, "body projection region space exhausted"))?;
+        let mut proof = Obligations::new(first);
+        // Call arguments already use free aliases for caller universals. Their
+        // environment must use the same representation, without duplicate
+        // original/aliased assumptions. Written body types keep their binders.
+        let environment = if self.facts.types.escaping_binders(ty) == Some(0) {
+            self.projection_environment(node)?
+        } else {
+            self.environment_owner
+                .and_then(|owner| self.facts.generics.environments.get(&owner))
+                .cloned()
+        };
+        let (ty, steps) = crate::sema::projections::normalize(
+            self.facts,
+            environment.as_ref(),
+            &mut proof,
+            ScopeId::ROOT,
+            ty,
+            crate::sema::traits::implementations::Availability::Validated,
+        )
+        .map_err(|e| self.error(node, e))?;
+        self.infer
+            .account_work(steps)
+            .map_err(|e| self.error(node, e))?;
+        proof
+            .retain_body(self.facts, self.body, self.key(node))
+            .map_err(|e| self.error(node, e))?;
+        let term = self
+            .infer
+            .known(&self.facts.types, ty)
+            .map_err(|e| self.error(node, e))?;
+        self.infer
+            .apply_normalization(&mut self.facts.types, term, ty)
+            .map_err(|e| self.error(node, e))?;
+        Ok(term)
+    }
+
     pub(super) fn defer_contract(
         &mut self,
         node: NodeId,
@@ -176,16 +220,23 @@ impl Checker<'_> {
             {
                 continue;
             }
+            let input = self
+                .infer
+                .retain_projection(&mut self.facts.types, term)
+                .map_err(|e| self.error(node, e))?;
             let watch = self
                 .infer
-                .watch_changes(&[term], &[])
+                .watch_changes(&[input], &[])
                 .map_err(|e| self.error(node, e))?;
             self.projections.insert(
                 watch,
                 Query {
                     node,
                     scope,
-                    task: Task::Normalize(term),
+                    task: Task::Normalize {
+                        input,
+                        output: term,
+                    },
                     input_normalizations: false,
                 },
             );
@@ -274,6 +325,10 @@ impl Checker<'_> {
             }
         }
     }
+    #[expect(
+        clippy::too_many_lines,
+        reason = "one progress dispatch keeps the retained input, shared output and exact scope proof together across suspended and published states"
+    )]
     fn complete_projection(
         &mut self,
         mut query: Query,
@@ -282,11 +337,10 @@ impl Checker<'_> {
     ) -> Result<(Option<Query>, bool), Error> {
         let node = query.node;
         let input = match query.task {
-            Task::Normalize(term) | Task::Symbolic { input: term, .. } => Some(term),
+            Task::Normalize { output, .. } | Task::Symbolic { output, .. } => Some(output),
             Task::Contract(_) => None,
         };
         let resolved = match self.projection_readiness(&mut query, resolved, watch)? {
-            inputs::Readiness::Complete => return Ok((None, true)),
             inputs::Readiness::Waiting => return Ok((Some(query), false)),
             inputs::Readiness::Partial => false,
             inputs::Readiness::Resolved => true,
@@ -309,30 +363,41 @@ impl Checker<'_> {
             .map_err(|e| self.error(node, e))?;
         let published = match query.task {
             Task::Symbolic { input, output } => Some((input, output)),
-            Task::Normalize(_) | Task::Contract(_) => None,
+            Task::Normalize { .. } | Task::Contract(_) => None,
         };
         match query.task {
             Task::Contract(contract) => {
                 self.complete_contract(node, scope, contract, &mut proof)?;
             }
-            Task::Normalize(term) | Task::Symbolic { input: term, .. } if !resolved => {
-                let expose = matches!(query.task, Task::Normalize(_));
+            Task::Normalize { input: term, .. } | Task::Symbolic { input: term, .. }
+                if !resolved =>
+            {
+                let expose = matches!(query.task, Task::Normalize { .. });
                 match self.select_projection(node, scope, term, &mut proof, expose)? {
-                    selection::Progress::Complete => {}
+                    selection::Progress::Complete => {
+                        if let Task::Normalize { output, .. } = query.task {
+                            let ty = self
+                                .infer
+                                .resolved(&mut self.facts.types, term)
+                                .map_err(|e| self.error(node, e))?;
+                            self.infer
+                                .apply_normalization(&mut self.facts.types, output, ty)
+                                .map_err(|e| self.error(node, e))?;
+                        }
+                    }
                     selection::Progress::Symbolic(result) => {
-                        let input = self
-                            .infer
-                            .publish_projection(&self.facts.types, term, result)
-                            .map_err(|e| self.error(node, e))?;
-                        query.task = Task::Symbolic {
-                            input,
-                            output: term,
+                        let Task::Normalize { input, output } = query.task else {
+                            return Err(self.error(node, "symbolic result was already published"));
                         };
+                        self.infer
+                            .publish_projection(&self.facts.types, output, result)
+                            .map_err(|e| self.error(node, e))?;
+                        query.task = Task::Symbolic { input, output };
                         proof
                             .retain_body(self.facts, self.body, self.key(node))
                             .map_err(|e| self.error(node, e))?;
                         self.defer_normalization(node, query.scope, result)?;
-                        self.published_normalization(node, term)?;
+                        self.published_normalization(node, output)?;
                         return Ok((Some(query), true));
                     }
                     selection::Progress::AwaitInputs => {
@@ -348,14 +413,18 @@ impl Checker<'_> {
                     }
                 }
             }
-            Task::Normalize(term) | Task::Symbolic { input: term, .. } => {
+            Task::Normalize { input: term, .. } | Task::Symbolic { input: term, .. } => {
                 let ty = self
                     .infer
                     .resolved(&mut self.facts.types, term)
                     .map_err(|e| self.error(node, e))?;
                 let ty = self.normalize_body_type(node, &mut proof, scope, ty)?;
+                let target = match query.task {
+                    Task::Normalize { output, .. } => output,
+                    _ => term,
+                };
                 self.infer
-                    .apply_normalization(&mut self.facts.types, term, ty)
+                    .apply_normalization(&mut self.facts.types, target, ty)
                     .map_err(|e| self.error(node, e))?;
             }
         }

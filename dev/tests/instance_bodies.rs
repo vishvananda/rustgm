@@ -224,3 +224,171 @@ fn template_proof_rejects_invalid_unused_bodies_and_missing_promotion()
     prove(&facts, &templates)?;
     Ok(())
 }
+
+mod projections {
+    use super::semantic;
+    use rustgm::{
+        body::{
+            self,
+            regions::{Contract, Contracts},
+            templates::Template,
+        },
+        borrow,
+        sema::model::Declarations,
+        types::{
+            ItemId, Kind, Primitive, RegionId, TypeId, arguments::Argument, instance::Instance,
+        },
+    };
+    type TestResult = Result<(), Box<dyn std::error::Error>>;
+    const SOURCE: &str = "trait A{type Out;}impl<'a:'static>A for &'a u8{type Out=u16;}fn f<T:A>(p:fn(<T as A>::Out))->fn(<T as A>::Out){p}fn take(_:u16){}fn main(){let p=f::<&'static u8>(take);p(73);}";
+    struct Selected {
+        facts: Declarations,
+        template: Template,
+        contract: Contract,
+        item: ItemId,
+        signature: TypeId,
+        instance: Instance,
+    }
+    fn selected() -> Result<Selected, Box<dyn std::error::Error>> {
+        let (report, facts) = semantic::analyze(SOURCE)?;
+        let mut templates = body::templates::build(&report, &facts)?;
+        let template = templates.bodies.pop().ok_or("missing generic template")?;
+        assert!(templates.bodies.is_empty());
+        let body::ir::Owner::Function { definition, .. } = template.body.owner else {
+            return Err("missing function owner".into());
+        };
+        let item = ItemId(definition.0);
+        let contract = body::regions::collect(&facts)?
+            .bodies
+            .into_iter()
+            .find(|c| c.source == template.body.source)
+            .ok_or("missing template contract")?;
+        let ordinary = body::build_concrete(&report, &facts)?;
+        let ty = ordinary.bodies.iter().flat_map(|body| &body.values).map(|v| v.ty)
+            .find(|&ty| matches!(facts.types.kind(ty), Some(Kind::FunctionItem {item: selected, ..}) if selected==item))
+            .ok_or("missing concrete selection")?;
+        let Some(Kind::FunctionItem { signature, .. }) = facts.types.kind(ty) else {
+            return Err("missing selected signature".into());
+        };
+        let instance = Instance::new(&facts.types, ty)?;
+        Ok(Selected {
+            facts,
+            template,
+            contract,
+            item,
+            signature,
+            instance,
+        })
+    }
+    fn check(facts: &Declarations, contract: Contract) -> Result<(), String> {
+        borrow::regions::check(
+            &facts.types,
+            &facts.lifetimes.variances,
+            &Contracts {
+                bodies: vec![contract],
+                callables: &facts.lifetimes.callables,
+                nominal_requirements: &facts.lifetimes.nominal_requirements,
+            },
+        )
+        .map(|_| ())
+        .map_err(|e| e.to_string())
+    }
+
+    #[test]
+    fn concrete_selection_normalizes_the_body_and_its_contract() -> TestResult {
+        let mut selected = selected()?;
+        let materialized = body::instantiate::with_contract(
+            &mut selected.facts,
+            &selected.template,
+            selected.instance,
+            &selected.contract,
+        )?;
+        let body = materialized.body;
+        assert_eq!(body.blocks.len(), selected.template.body.blocks.len());
+        assert_eq!(
+            body.statements.len(),
+            selected.template.body.statements.len()
+        );
+        for ty in std::iter::once(body.result)
+            .chain(body.values.iter().map(|v| v.ty))
+            .chain(body.locals.iter().map(|v| v.ty))
+            .chain(body.projections.iter().map(|v| v.ty))
+        {
+            assert_eq!(selected.facts.types.contains_projections(ty), Some(false));
+        }
+        check(&selected.facts, materialized.contract)?;
+        Ok(())
+    }
+
+    #[test]
+    fn normalized_signature_comparison_rejects_a_forged_callable() -> TestResult {
+        let mut selected = selected()?;
+        let Some(Kind::FunctionItem { arguments, .. }) =
+            selected.facts.types.kind(selected.instance.ty())
+        else {
+            return Err("missing selected item".into());
+        };
+        let parameters = selected.facts.types.intern_list(&[])?;
+        let signature = selected.facts.types.intern(Kind::Function {
+            bound_regions: 0,
+            parameters,
+            result: TypeId::UNIT,
+            unsafe_: false,
+        })?;
+        let ty = selected.facts.types.intern(Kind::FunctionItem {
+            item: selected.item,
+            signature,
+            arguments,
+        })?;
+        let instance = Instance::new(&selected.facts.types, ty)?;
+        let result = body::instantiate::with_contract(
+            &mut selected.facts,
+            &selected.template,
+            instance,
+            &selected.contract,
+        );
+        assert!(matches!(
+            result,
+            Err("instance signature differs from normalized template")
+        ));
+        Ok(())
+    }
+
+    #[test]
+    fn erased_projection_inputs_keep_the_selected_implementations_lifetime_debt() -> TestResult {
+        let mut selected = selected()?;
+        let argument = selected.facts.types.intern(Kind::Reference {
+            region: RegionId(700),
+            mutable: false,
+            referent: TypeId::primitive(Primitive::U8),
+        })?;
+        let arguments = selected
+            .facts
+            .types
+            .intern_arguments(&[Argument::Type(argument)])?;
+        let ty = selected.facts.types.intern(Kind::FunctionItem {
+            item: selected.item,
+            signature: selected.signature,
+            arguments,
+        })?;
+        let instance = Instance::new(&selected.facts.types, ty)?;
+        let materialized = body::instantiate::with_contract(
+            &mut selected.facts,
+            &selected.template,
+            instance,
+            &selected.contract,
+        )?;
+        assert_eq!(
+            materialized.contract.universals,
+            selected.contract.universals + 1
+        );
+        let result = check(&selected.facts, materialized.contract);
+        assert!(
+            result
+                .as_ref()
+                .is_err_and(|e| e.contains("does not outlive")),
+            "{result:?}"
+        );
+        Ok(())
+    }
+}

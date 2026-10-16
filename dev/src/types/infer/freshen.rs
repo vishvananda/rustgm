@@ -99,6 +99,12 @@ impl Context {
                     }
                     let original = self.materialize(store, id)?;
                     if matches!(original, Constructor::Projection(_)) {
+                        if self.opaque_projection(id).is_some() {
+                            // An opaque result has no exposed reference shape.
+                            // Its operation inputs remain invariant identities.
+                            scratch.values.push(id);
+                            continue;
+                        }
                         return Err(Error::Normalization);
                     }
                     if let Constructor::FunctionItemArgs(item, args) = original {

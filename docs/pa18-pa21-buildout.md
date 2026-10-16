@@ -6629,3 +6629,71 @@ frontend median changes from 1,067.36 ms to 594.64 ms against published main
 (paired median −44.03%), with matching output. Frozen sources, runners, raw
 observations, summaries and the original validation remain under
 `obj/pa20-work/inherited-method-contracts-v1/`.
+
+## Opaque body values and concrete instance normalization
+
+The next checkpoint keeps a proved, unchanged associated result as an opaque
+inference value. Equal result identities can flow through expressions without
+equating their operation inputs. Each deferred occurrence retains its original
+application and formation obligation separately from the shared result. Result
+publication wakes dependent equations; changing lifetime inputs grants no new
+normalization authority. Ordinary known types retain their existing fast path.
+
+Written body types use their declaration environment; free caller types use the
+existing aliased environment. The first complete regression run exposed duplicate
+original/aliased assumptions in `derived_permissions`. That failed run remains
+under `full-v10-failed/`; the final implementation fixes environment selection
+without changing the existing test expectation.
+
+Concrete instantiation normalizes the substituted signature, typed CFG roots and
+lifetime contract in one fixed session using validated implementations. It keeps
+selection debts even when a result erases its input lifetimes. Normalized
+signatures must still agree before layout and destruction selection. Three typed
+instance controls include forged mismatched signatures and an erased input whose
+selected implementation requires a static lifetime. Existing projected type debts
+under non-root quantified proof scopes retain an explicit unsupported gate:
+creating sibling binders would not preserve the original private variables.
+
+`opaque_body_values.rs` contains 26 declaration/body type-checking controls,
+fifteen LowIR controls and six native callable programs. Early type checking does
+not claim ownership, lifetime or destruction acceptance. Five inference invariants
+check separate occurrence authority, wakeups, result identity and lifetime mapping.
+Independent Rust 1.98 object checks qualify the reviewed language outcomes before
+maintainer expectations are added. Nine new scaling inputs, at 64/256/1,024
+elements or instances, also pass rustc object generation and RustGM LowIR emission.
+Additional valid borrow/captured-callable investigations that still fail are kept
+as investigation evidence, not successful coverage or course fixtures.
+
+The final immutable compiler is
+`7ec7ef7b3ed94f8dd1ca57586e3355d739938bf78302fc0961ab5e3c0389d30f`.
+All 25 final commands pass: strict Clippy, 1,108 release tests in 204 groups,
+4,864 PA1–PA19 cases, backend qualification and 52 maintainer native test groups.
+The syntax-aware audit checks 684 Rust files with zero findings; all 33 harness
+checks pass. The 687-file source snapshot matches the validated tree. Standalone
+lint passes. Validation cleanup removes 4,541 generated files (4.75 GiB of
+unshared blocks); the following tidy removes another 3,217 files (1.92 GiB).
+
+General owned associated values still need opaque lifetime/drop components and
+result Copy/Clone permissions. Nested result bounds, lifetime-equivalent inputs
+and extensions of existing quantified instance proofs also remain unfinished.
+PA20/PA21, their course fixtures and their release statuses remain planned.
+
+Performance evidence retains 106 jobs, 2,756 study observations and 424 full-output
+qualification observations. The initial 50 comparisons use published `01163cb`;
+eighteen identical-candidate controls measure the nine newly supported scaling
+inputs without claiming a speedup against an unsupported baseline. The predeclared
+3.5% repeat rule selects six families and all 38 of their sizes/modes. Every binary,
+source and input hash stays fixed, and all full/count output comparisons agree.
+No local builds or qualification probes overlap the timed work.
+
+Initial paired medians range from −1.89% to +11.94%; confirmations range from
+−1.03% to +10.65%. Confirmation A/A spreads range from 0.39% to 120.68%, and RSS
+differences range from −392 to +564 KiB. Twelve confirmation jobs remain above
+3.5%, including repeated inferred applications and the largest shared-input call.
+These are recorded overhead, not a clean performance pass. The independent
+occurrence proofs are required for correctness; reusing inference-resolution
+scratch is a follow-up investigation, without discarding these observations.
+At 1,024 elements, the new repeated-value, wide-tuple and distinct-instance full
+views take 38.59, 102.94 and 122.35 ms respectively in the initial study. All
+evidence, including original failures and scaling qualification, is retained in
+`obj/pa20-work/opaque-body-values-v1/`.

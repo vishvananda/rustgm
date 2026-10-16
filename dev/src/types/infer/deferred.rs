@@ -39,6 +39,7 @@ struct Leaf {
 
 #[derive(Default)]
 pub(super) struct Storage {
+    pub(super) opaque: HashMap<TermId, super::TypeId>,
     equations: Vec<Equation>,
     leaves: Vec<Leaf>,
     waiting: HashMap<TermId, Vec<usize>>,
@@ -69,6 +70,17 @@ impl Storage {
 }
 
 impl Context {
+    pub(super) fn opaque_projection(&self, term: TermId) -> Option<super::TypeId> {
+        self.dependencies
+            .as_ref()
+            .and_then(|storage| storage.equations.opaque.get(&term))
+            .copied()
+    }
+
+    pub(super) fn needs_normalization(&self, store: &Store, term: TermId) -> Result<bool, Error> {
+        Ok(self.is_projection(store, term)? && self.opaque_projection(term).is_none())
+    }
+
     pub(super) fn is_projection(&self, store: &Store, term: TermId) -> Result<bool, Error> {
         Ok(match self.terms[term.0 as usize].value {
             Value::Known(ty) => {
@@ -133,8 +145,8 @@ impl Context {
     ) -> Result<(), Error> {
         self.account_work(blocked.len())?;
         for (left, right) in blocked {
-            let first = self.is_projection(store, left)?;
-            let second = self.is_projection(store, right)?;
+            let first = self.needs_normalization(store, left)?;
+            let second = self.needs_normalization(store, right)?;
             let storage = &mut self
                 .dependencies
                 .as_mut()

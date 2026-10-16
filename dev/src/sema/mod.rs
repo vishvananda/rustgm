@@ -19,7 +19,7 @@ pub mod model;
 mod nominals;
 pub mod pattern_view;
 pub mod patterns;
-mod projections;
+pub(crate) mod projections;
 mod regions;
 mod representation;
 mod scalar;

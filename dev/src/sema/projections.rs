@@ -78,7 +78,7 @@ pub(super) fn normalize(
 /// Completed roots share work only within one fixed environment, proof scope,
 /// implementation availability and local definition provider. Evidence stays in
 /// the borrowed proof for the whole session, including nested callable scopes.
-pub(super) struct Session<'proof, F> {
+pub(crate) struct Session<'proof, F> {
     environment: Option<Arc<Environment>>,
     proof: &'proof mut Obligations,
     ambient: ScopeId,
@@ -115,7 +115,7 @@ where
             environments: HashMap::new(),
         })
     }
-    pub(super) fn normalize(
+    pub(crate) fn normalize(
         &mut self,
         facts: &mut Declarations,
         ty: TypeId,
@@ -188,4 +188,16 @@ where
             step = self.fold.resume(&mut facts.types, request, resolution)?;
         }
     }
+}
+
+/// Instantiated types have no symbolic caller trait permissions. Selection uses
+/// validated implementations and retains all lifetime debts in the instance.
+pub(crate) type Concrete<'proof> =
+    Session<'proof, fn(&mut Declarations, Request) -> Result<Option<TypeId>, &'static str>>;
+
+pub(crate) fn concrete(
+    proof: &mut Obligations,
+    scope: ScopeId,
+) -> Result<Concrete<'_>, &'static str> {
+    Session::new(None, proof, scope, Availability::Validated, |_, _| Ok(None))
 }

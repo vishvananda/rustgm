@@ -369,8 +369,8 @@ impl Context {
                 continue;
             }
             if let Some(blocked) = &mut blocked {
-                let first = self.is_projection(store, a)?;
-                let second = self.is_projection(store, b)?;
+                let first = self.needs_normalization(store, a)?;
+                let second = self.needs_normalization(store, b)?;
                 if first || second {
                     let pair = if a.0 < b.0 { (a, b) } else { (b, a) };
                     if self.seen.insert(pair) {
@@ -409,7 +409,7 @@ impl Context {
             return Ok(None);
         }
         let kind = self.materialize(store, id)?;
-        if matches!(kind, Constructor::Projection(_)) {
+        if matches!(kind, Constructor::Projection(_)) && self.opaque_projection(id).is_none() {
             return Err(Error::Normalization);
         }
         if let Constructor::ArrayInfer(length) = kind
@@ -491,7 +491,11 @@ impl Context {
         let right = self.materialize(store, b)?;
         match (left, right) {
             (Constructor::Projection(_), _) | (_, Constructor::Projection(_)) => {
-                return Err(Error::Normalization);
+                return match (self.opaque_projection(a), self.opaque_projection(b)) {
+                    (Some(x), Some(y)) if x == y => Ok(()),
+                    (Some(_), Some(_)) => Err(Error::Mismatch),
+                    _ => Err(Error::Normalization),
+                };
             }
             (Constructor::Adt(x, known), Constructor::AdtArgs(y, inferred))
             | (Constructor::AdtArgs(y, inferred), Constructor::Adt(x, known))

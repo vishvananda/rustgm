@@ -275,6 +275,17 @@ normalization inside callable binders. The inference tests separately check root
 publication, numeric domain intersection and dependency notification invariants.
 These remain maintainer coverage for the developing PA20/PA21 contracts.
 
+`dev/tests/opaque_body_values.rs` separates 26 declaration/body type-checking
+controls from fifteen checks through LowIR and six native callable programs.
+The type-checking controls do not assert ownership, destruction or lifetime
+acceptance. Independent rustc object checks qualify their language outcomes;
+general opaque values still need those later gates before becoming course
+fixtures. `opaque_inference.rs` checks independent occurrence authority, wakeups,
+result identity and lifetime mapping. The projection cases in `instance_bodies.rs`
+also forge invalid typed instances after source checking: normalized signatures
+must still agree, and an erased input must retain its selected impl's lifetime
+requirement. PA20 and PA21 remain planned.
+
 ## Placement and provenance
 
 Every `.rs` fixture under an active assignment's tests directory must be in its

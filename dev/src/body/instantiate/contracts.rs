@@ -1,5 +1,5 @@
 //! Specialize typed obligations while separating caller and callee lifetime scopes.
-use super::{Binding, Bound, Declarations};
+use super::{Bound, Declarations, Inputs};
 use crate::{
     body::regions::{Contract, Kind},
     types::{arguments::Argument, outlives::Queries},
@@ -8,13 +8,17 @@ use crate::{
 pub(super) fn specialize(
     facts: &mut Declarations,
     original: &Contract,
-    bindings: &mut [Binding],
+    inputs: &mut Inputs,
 ) -> Result<(Bound, Contract), &'static str> {
     let mut regions = Bound::universals(original.universals);
-    for (_, argument) in bindings.iter_mut() {
+    for (_, argument) in &mut inputs.bindings {
         *argument = regions.apply_argument(&mut facts.types, *argument)?;
     }
-    let mut bound = Bound::parameters(&facts.types, bindings)?;
+    if let Some((expected, actual)) = &mut inputs.comparison {
+        *expected = regions.apply(&mut facts.types, *expected)?;
+        *actual = regions.apply(&mut facts.types, *actual)?;
+    }
+    let mut bound = Bound::parameters(&facts.types, &inputs.bindings)?;
     let mut contract = original.clone();
     contract.universals = original
         .universals
@@ -56,7 +60,7 @@ pub(super) fn specialize(
         &facts.lifetimes.nominal_requirements,
         &facts.lifetimes.callables,
     );
-    for &(_, argument) in bindings.iter() {
+    for &(_, argument) in &inputs.bindings {
         if let Argument::Type(ty) = argument {
             let requirements = queries.symbolic_requirements(ty)?;
             if !requirements.parameters.is_empty() {
