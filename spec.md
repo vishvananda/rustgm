@@ -260,6 +260,14 @@ An entirely unknown Self cannot select a caller assumption or implementation;
 wait for a known head or numeric domain before allocating query lifetime aliases
 or opening its graph. A deferred attempt must not change source provenance.
 
+Demand resolution may reuse scratch capacity within its inference body, but never
+reuse resolved results across separate requests: equations and projection
+publication can change the graph. Clear active markers and pending work after
+failed traversals as well as successful ones. Bound retained hash-table capacity
+relative to the current traversal before clearing it, so one large query cannot
+make every later small query scan the same large allocation. Known-type queries
+keep their allocation-free path.
+
 A full trait-proof retry can wait for input resolution when one candidate's
 matched header preserves every input hole and its remaining premises are only
 builtins. A single independent type parameter beneath already-known reference

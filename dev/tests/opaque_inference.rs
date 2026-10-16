@@ -16,6 +16,23 @@ const ITEM: ItemId = ItemId(2);
 const TRAIT: ItemId = ItemId(1);
 const BYTE: TypeId = TypeId::primitive(Primitive::U8);
 
+#[test]
+fn resolution_observes_later_projection_publication() -> TestResult {
+    let mut types = store()?;
+    let original = projected(&mut types, BYTE)?;
+    let mut inference = Context::default();
+    let projection = inference.known(&types, original)?;
+    let tuple = inference.construct(rustgm::types::infer::Constructor::Tuple, &[projection])?;
+    let original_fields = types.intern_list(&[original])?;
+    let original_tuple = types.intern(Kind::Tuple(original_fields))?;
+    assert_eq!(inference.resolved(&mut types, tuple)?, original_tuple);
+    inference.apply_normalization(&mut types, projection, BYTE)?;
+    let normalized_fields = types.intern_list(&[BYTE])?;
+    let normalized_tuple = types.intern(Kind::Tuple(normalized_fields))?;
+    assert_eq!(inference.resolved(&mut types, tuple)?, normalized_tuple);
+    Ok(())
+}
+
 fn store() -> Result<Store, &'static str> {
     let mut types = Store::default();
     types.declare_projection(

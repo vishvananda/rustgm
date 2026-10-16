@@ -10,6 +10,31 @@ pub(super) struct Resolution {
     work: Vec<(TermId, bool)>,
     children: Vec<TypeId>,
 }
+impl Resolution {
+    fn clear(&mut self) {
+        // Clearing a hash table visits its capacity. A wide query must not make
+        // every later tiny request clear that same wide allocation. Both sets
+        // contain nodes visited by this traversal, even when it failed early.
+        let retained = self
+            .results
+            .len()
+            .saturating_add(self.active.len())
+            .saturating_mul(4)
+            .max(64);
+        if self.results.capacity() > retained {
+            self.results = HashMap::new();
+        } else {
+            self.results.clear();
+        }
+        if self.active.capacity() > retained {
+            self.active = HashSet::new();
+        } else {
+            self.active.clear();
+        }
+        self.work.clear();
+        self.children.clear();
+    }
+}
 
 impl Context {
     /// The unresolved variable domain restricts numeric trait candidate lookup.
@@ -53,11 +78,24 @@ impl Context {
     }
     /// Resolve only the requested reachable terms. A successful result cannot
     /// change under subsequent compatible type equations; regions remain facts.
+    /// Later projection publication can replace an associated application, so
+    /// results are not cached across separate requests.
     ///
     /// # Errors
     /// Rejects unresolved variables, cycles, invalid identities and work limits.
     pub fn resolved(&mut self, store: &mut Store, root: TermId) -> Result<TypeId, Error> {
-        self.resolve_with(store, root, &mut Resolution::default())
+        let root = self.root(root)?;
+        if let Value::Known(ty) = self.terms[root.0 as usize].value {
+            self.step()?;
+            return Ok(ty);
+        }
+        // Reuse storage, never results: equations and projection publication can
+        // change the graph between requests. Failed traversals leave work too.
+        let mut scratch = self.resolution.take().unwrap_or_default();
+        let result = self.resolve_with(store, root, &mut scratch);
+        scratch.clear();
+        self.resolution = Some(scratch);
+        result
     }
 
     pub(super) fn resolve_with(
@@ -114,5 +152,44 @@ impl Context {
             }
         }
         results.get(&root).copied().ok_or(Error::InvalidIdentity)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::types::{Primitive, infer::Constructor};
+
+    #[test]
+    fn small_queries_release_disproportionate_hash_storage() -> Result<(), Error> {
+        let mut store = Store::default();
+        let mut context = Context::default();
+        let byte = context.known(&store, TypeId::primitive(Primitive::U8))?;
+        let mut wide = Vec::new();
+        for length in 0..1024 {
+            wide.push(context.construct(Constructor::Array(length), &[byte])?);
+        }
+        let tuple = context.construct(Constructor::Tuple, &wide)?;
+        context.resolved(&mut store, tuple)?;
+        let scratch = context.resolution.as_ref().ok_or(Error::InvalidIdentity)?;
+        assert!(scratch.results.capacity() >= 1024);
+        let small = context.construct(Constructor::Array(1), &[byte])?;
+        context.resolved(&mut store, small)?;
+        let scratch = context.resolution.as_ref().ok_or(Error::InvalidIdentity)?;
+        assert!(scratch.results.capacity() <= 64);
+        assert!(scratch.active.capacity() <= 64);
+        // Failed traversals must apply the same bound to their unfinished path.
+        let hole = context.variable(Domain::Any)?;
+        let mut deep = hole;
+        for _ in 0..1024 {
+            deep = context.construct(Constructor::Slice, &[deep])?;
+        }
+        assert_eq!(context.resolved(&mut store, deep), Err(Error::Unresolved));
+        let scratch = context.resolution.as_ref().ok_or(Error::InvalidIdentity)?;
+        assert!(scratch.active.capacity() >= 1024);
+        assert_eq!(context.resolved(&mut store, hole), Err(Error::Unresolved));
+        let scratch = context.resolution.as_ref().ok_or(Error::InvalidIdentity)?;
+        assert!(scratch.active.capacity() <= 64);
+        Ok(())
     }
 }

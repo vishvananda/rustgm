@@ -98,6 +98,7 @@ impl std::error::Error for Error {}
 pub struct Context {
     arguments: Option<Box<arguments::Storage>>,
     dependencies: Option<Box<dependencies::Storage>>,
+    resolution: Option<Box<resolve::Resolution>>,
     generalization: freshen::Scratch,
     terms: Vec<Term>,
     edges: Vec<TermId>,

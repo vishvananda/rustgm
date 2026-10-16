@@ -6697,3 +6697,48 @@ At 1,024 elements, the new repeated-value, wide-tuple and distinct-instance full
 views take 38.59, 102.94 and 122.35 ms respectively in the initial study. All
 evidence, including original failures and scaling qualification, is retained in
 `obj/pa20-work/opaque-body-values-v1/`.
+
+## Reuse bounded inference resolution scratch
+
+Demand resolution now retains collection capacity within its inference body.
+It clears every result, active marker, pending node and child after successful
+or failed traversal. Known types allocate no scratch. A later equation or
+projection publication must be observed by the next request; no semantic result
+cache survives between requests. Hash tables disproportionate to the current
+traversal are discarded before clearing, avoiding repeated large clears after a
+wide query. Vectors retain their spare capacity.
+
+Three new invariants cover failed traversal followed by unrelated work and later
+progress, a composite type changed by projection publication, and bounded hash
+storage after wide/deep queries followed by small successful/failed requests.
+Source review stopped the first prototype's release build to address the large
+table clearing issue. Its interrupted logs and snapshot remain under
+`unbounded-capacity-interrupted/`; no completed validation is claimed for it.
+
+The final compiler hash is
+`7b65edeb261d54cf666e633fbee69ad9d567a955bb196f14553c8bf2fba791b2`.
+All 25 validation commands pass: 1,111 release tests in 204 groups, 4,864 course
+cases, backend qualification and 52 native test groups. Strict Clippy, standalone
+lint, the 684-file audit with zero findings and all 33 harness checks pass. All
+687 frozen source hashes match. Cleanup removes 4,532 generated files (4.75 GiB
+of unshared blocks). Eight superseded opaque-value prototype binaries are retired
+with hashes and receipts after published `923d569` passes exact-head CI.
+
+The performance study retains 170 jobs, 4,420 study observations and 680 full-output
+qualification observations. It compares fifty jobs with pre-feature `01163cb` and
+68 with published `923d569`, including the nine new opaque-value scaling inputs.
+The predeclared rule repeats all sizes/modes for each affected comparison/family:
+38 confirmations against `01163cb` and fourteen against `923d569`. All input,
+binary and source hashes and every full/count output comparison agree. No local
+build or qualification probe overlaps timing.
+
+Against `923d569`, initial paired medians range from −10.29% to +7.53%; the
+fourteen confirmations range from −7.00% to +4.73%, with one small receiver count
+case above 3.5%. Confirmation A/A spreads are 1.38–64.64%, and RSS differences
+are +60 to +236 KiB. Repeated inferred applications improve in all six initial
+comparisons, including −4.09% at 1,024 applications in count mode. This is a
+targeted allocation improvement, not a uniform speedup or zero-overhead claim.
+The pre-feature confirmations still range from −7.27% to +9.00%, with seven jobs
+above 3.5%; the earlier occurrence-proof overhead remains an open performance
+concern. Raw evidence and all original outliers remain under
+`obj/pa20-work/resolution-scratch-v1/`. PA20 and PA21 remain planned.

@@ -4,6 +4,32 @@ use rustgm::types::{
 };
 
 #[test]
+fn partial_resolution_does_not_poison_later_requests() -> Result<(), Box<dyn std::error::Error>> {
+    let mut store = Store::default();
+    let mut cx = Context::default();
+    let byte = TypeId::primitive(Primitive::U8);
+    let known = cx.known(&store, byte)?;
+    let missing = cx.variable(Domain::Any)?;
+    let tuple = cx.construct(Constructor::Tuple, &[known, missing])?;
+    let independent = cx.construct(Constructor::Array(2), &[known])?;
+    let expected_array = store.intern(Kind::Array {
+        element: byte,
+        length: 2,
+    })?;
+    for _ in 0..4 {
+        assert_eq!(cx.resolved(&mut store, tuple), Err(Error::Unresolved));
+        assert_eq!(cx.resolved(&mut store, independent)?, expected_array);
+    }
+    let boolean = TypeId::primitive(Primitive::Bool);
+    let resolved = cx.known(&store, boolean)?;
+    cx.equate(&store, missing, resolved)?;
+    let fields = store.intern_list(&[byte, boolean])?;
+    let expected = store.intern(Kind::Tuple(fields))?;
+    assert_eq!(cx.resolved(&mut store, tuple)?, expected);
+    Ok(())
+}
+
+#[test]
 fn canonical_shapes_share_lists_but_preserve_semantic_identity() -> Result<(), &'static str> {
     let mut store = Store::default();
     for primitive in Primitive::ALL {
