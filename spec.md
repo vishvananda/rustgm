@@ -189,6 +189,49 @@ the original proof cannot change their scope identities. Import each required
 scope prefix once per destination evidence object; never clone the full tree for
 every requirement or drop its evidence to produce an executable type.
 
+Body projection queries also observe partial input changes. A unique validated
+implementation may determine type or const inputs from its header before numeric
+fallback; an associated result cannot choose between competing headers. Watch
+only the query's dependency leaves, coalesce queued notifications, and cancel
+completed queries. A change notification is neither canonical readiness nor proof.
+Keep canonical notifications in dependency-completion order. Deliver partial
+notifications only after pending dependency updates, so a resolved input uses
+the ordinary normalizer without a redundant partial query.
+An entirely unknown Self cannot select a caller assumption or implementation;
+wait for a known head or numeric domain before allocating query lifetime aliases
+or opening its graph. A deferred attempt must not change source provenance.
+
+A full trait-proof retry can wait for input resolution when one candidate's
+matched header preserves every input hole and its remaining premises are only
+builtins. A single independent type parameter beneath already-known reference
+or pointer heads, with no trait arguments, gives this certificate directly from
+the checked header. Other layouts use an isolated probe: binding, domain
+narrowing or merging original holes invalidates the certificate. Competing
+headers, applicable caller assumptions and recursive trait premises retain
+partial retries. The certificate only controls
+scheduling; canonical selection must still prove the complete implementation.
+Do not copy and probe a wide unchanged input graph after each leaf assignment.
+Check scheduling before opening the full query lifetime environment, and do not
+export a result graph merely to establish input preservation.
+Symbolic result transport is a separate operation and may progress before that
+complete proof; it must retain the original input and formation obligations.
+
+Run partial selection in an isolated input graph. Share one opening map with the
+caller environment shifted beneath the actual ancestor binders. Restore the
+selected input predicate before committing equations to the body: ambient slots
+are rigid, nested callable slots may alpha-rename, and an outer inference hole
+cannot capture a younger universal. Retain all selection requirements at the
+original scope before installing the normalized result. If another query has
+already normalized the same root, cancel its redundant notification without
+selecting or publishing the evidence a second time.
+
+Cache the body's projection environment with caller universals expressed as their
+existing body aliases. Declaration predicates and their aliased copies describe
+the same permissions; they must not become competing assumptions after opening.
+Use only the established universal-to-alias mapping here, not arbitrary pending
+region equations. Keep distinct caller lifetimes distinct and retain the ordinary
+lifetime proof of any equality required by a selected implementation.
+
 Check constraining lifetime positions before erasing projections through
 normalization. A lifetime occurring only inside a projected function-pointer
 input does not constrain the pointer's output, even when a selected impl would

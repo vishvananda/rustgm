@@ -123,11 +123,20 @@ impl Context {
             Constructor::FunctionItemArgs(_, args) => (args, 1),
             _ => return Err(Error::InvalidIdentity),
         };
+        self.application_arguments(term, args, offset)
+    }
+    pub(super) fn application_arguments(
+        &mut self,
+        term: TermId,
+        args: ArgumentsId,
+        offset: usize,
+    ) -> Result<Vec<Argument>, Error> {
         let count = self.slots(args)?.len();
         self.account_work(count)?;
         let entry = self.terms[term.0 as usize];
         let mut types = self.edges[entry.start as usize + offset..entry.end as usize].iter();
-        self.slots(args)?
+        let arguments = self
+            .slots(args)?
             .iter()
             .map(|slot| {
                 Ok(match *slot {
@@ -136,7 +145,11 @@ impl Context {
                     Slot::Const(id) => Argument::Const(id),
                 })
             })
-            .collect()
+            .collect::<Result<_, _>>()?;
+        if types.next().is_some() {
+            return Err(Error::InvalidIdentity);
+        }
+        Ok(arguments)
     }
     pub(super) fn materialize_arguments(
         &mut self,

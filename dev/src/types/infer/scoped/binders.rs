@@ -5,6 +5,7 @@ use std::collections::HashMap;
 struct Frame {
     scope: usize,
     counts: (u32, u32),
+    rigid: bool,
     forward: HashMap<u16, u16>,
     reverse: HashMap<u16, u16>,
 }
@@ -31,6 +32,12 @@ impl Binders {
         self.frames.last().map_or(0, |frame| frame.scope)
     }
     pub fn enter(&mut self, left: u32, right: u32) -> Result<(), Error> {
+        self.push(left, right, false)
+    }
+    pub fn enter_rigid(&mut self, count: u32) -> Result<(), Error> {
+        self.push(count, count, true)
+    }
+    fn push(&mut self, left: u32, right: u32, rigid: bool) -> Result<(), Error> {
         if self.frames.len() >= 0x7fff {
             return Err(Error::Overflow);
         }
@@ -38,6 +45,7 @@ impl Binders {
         self.frames.push(Frame {
             scope: self.next,
             counts: (left, right),
+            rigid,
             forward: HashMap::new(),
             reverse: HashMap::new(),
         });
@@ -74,6 +82,9 @@ impl Binders {
                 let frame = &mut self.frames[a];
                 if u32::from(x) >= frame.counts.0 || u32::from(y) >= frame.counts.1 {
                     return Err(Error::InvalidIdentity);
+                }
+                if frame.rigid && x != y {
+                    return Err(Error::Mismatch);
                 }
                 if frame.forward.get(&x).is_some_and(|&slot| slot != y)
                     || frame.reverse.get(&y).is_some_and(|&slot| slot != x)

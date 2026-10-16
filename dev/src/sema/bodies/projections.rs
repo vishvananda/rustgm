@@ -1,5 +1,6 @@
 //! Body-local deferred work waits for independently determined inputs before selection.
 mod contracts;
+mod selection;
 use super::{Checker, Error, NodeId, TermId};
 use crate::{
     sema::{alias_requirements::Expansion, annotations::Fields, generics::AnnotationArgument},
@@ -32,6 +33,9 @@ struct Query {
 }
 struct Data {
     scopes: Obligations,
+    environment: std::cell::OnceCell<
+        Option<std::sync::Arc<crate::types::parameters::environment::Environment>>,
+    >,
     tasks: HashMap<WatchId, Query>,
     equations: HashMap<EquationId, NodeId>,
     normalizations: HashSet<(ScopeId, TermId)>,
@@ -40,6 +44,7 @@ impl Default for Data {
     fn default() -> Self {
         Self {
             scopes: Obligations::new(1),
+            environment: std::cell::OnceCell::new(),
             tasks: HashMap::new(),
             equations: HashMap::new(),
             normalizations: HashSet::new(),
@@ -163,7 +168,7 @@ impl Checker<'_> {
             }
             let watch = self
                 .infer
-                .watch_resolution(&[term], &[])
+                .watch_changes(&[term], &[])
                 .map_err(|e| self.error(node, e))?;
             self.projections.insert(
                 watch,
@@ -213,8 +218,18 @@ impl Checker<'_> {
                     .as_mut()
                     .and_then(|d| d.tasks.remove(&watch))
                     .ok_or_else(|| self.error(body, "missing body normalization query"))?;
-                self.complete_projection(query)?;
-                progress = true;
+                let resolved = self
+                    .infer
+                    .watch_resolved(watch)
+                    .map_err(|e| self.error(body, e))?;
+                if let Some(query) = self.complete_projection(query, resolved, watch)? {
+                    self.projections.insert(watch, query);
+                } else {
+                    self.infer
+                        .cancel_watch(watch)
+                        .map_err(|e| self.error(body, e))?;
+                    progress = true;
+                }
             }
             let mut resumed = false;
             while let Some(id) = self
@@ -246,8 +261,23 @@ impl Checker<'_> {
             }
         }
     }
-    fn complete_projection(&mut self, query: Query) -> Result<(), Error> {
+    fn complete_projection(
+        &mut self,
+        query: Query,
+        resolved: bool,
+        watch: WatchId,
+    ) -> Result<Option<Query>, Error> {
         let node = query.node;
+        if let Task::Normalize(term) = query.task {
+            match self.infer.head(&self.facts.types, term) {
+                Ok(_) => return Ok(None),
+                Err(crate::types::infer::Error::Normalization) => {}
+                Err(error) => return Err(self.error(node, error)),
+            }
+            if !resolved && !self.projection_subject_known(node, term)? {
+                return Ok(Some(query));
+            }
+        }
         self.prepare_universals(node)?;
         let first = u32::try_from(self.facts.body_regions.len())
             .ok()
@@ -268,6 +298,18 @@ impl Checker<'_> {
             Task::Contract(contract) => {
                 self.complete_contract(node, scope, contract, &mut proof)?;
             }
+            Task::Normalize(term) if !resolved => {
+                match self.select_projection(node, scope, term, &mut proof)? {
+                    selection::Progress::Complete => {}
+                    selection::Progress::AwaitChange => return Ok(Some(query)),
+                    selection::Progress::AwaitResolution => {
+                        self.infer
+                            .await_resolution(watch)
+                            .map_err(|e| self.error(node, e))?;
+                        return Ok(Some(query));
+                    }
+                }
+            }
             Task::Normalize(term) => {
                 let ty = self
                     .infer
@@ -281,7 +323,8 @@ impl Checker<'_> {
         }
         proof
             .retain_body(self.facts, self.body, self.key(node))
-            .map_err(|e| self.error(node, e))
+            .map_err(|e| self.error(node, e))?;
+        Ok(None)
     }
     fn normalize_body_type(
         &mut self,
@@ -290,10 +333,11 @@ impl Checker<'_> {
         scope: ScopeId,
         ty: crate::types::TypeId,
     ) -> Result<crate::types::TypeId, Error> {
+        let environment = self.projection_environment(node)?;
         let (ty, steps) = crate::sema::projections::normalize(
             self.report,
             self.facts,
-            self.method_environment.as_ref(),
+            environment.as_ref(),
             proof,
             scope,
             ty,

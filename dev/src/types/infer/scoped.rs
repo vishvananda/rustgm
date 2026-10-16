@@ -1,7 +1,7 @@
 //! Trait equality preserves local binder correlations; only outer regions escape.
 mod binders;
 mod rebase;
-use super::{Constructor, Context, Error, Store, TermId, TypeId, Value, arguments::Slot};
+use super::{Constructor, Context, Error, Store, TermId, Value, arguments::Slot};
 use binders::Binders;
 use rebase::Rebasing;
 use std::collections::HashSet;
@@ -12,21 +12,20 @@ enum Work {
 }
 
 impl Context {
-    pub(super) fn equate_scoped(
-        &mut self,
-        store: &Store,
-        left: TermId,
-        right: TypeId,
-    ) -> Result<(), Error> {
-        let known = self.known(store, right)?;
-        self.equate_scoped_terms(store, left, known)
-    }
-
     pub(super) fn equate_scoped_terms(
         &mut self,
         store: &Store,
         left: TermId,
         right: TermId,
+    ) -> Result<(), Error> {
+        self.equate_scoped_inside(store, left, right, &[])
+    }
+    pub(super) fn equate_scoped_inside(
+        &mut self,
+        store: &Store,
+        left: TermId,
+        right: TermId,
+        ambient: &[u32],
     ) -> Result<(), Error> {
         let left = self.root(left)?;
         let right = self.root(right)?;
@@ -35,6 +34,7 @@ impl Context {
         }
         for term in [right, left] {
             if let Value::Known(ty) = self.terms[term.0 as usize].value
+                && ambient.is_empty()
                 && !store.contains_callables(ty).ok_or(Error::InvalidIdentity)?
             {
                 return self.equate(store, left, right);
@@ -42,6 +42,10 @@ impl Context {
         }
         let mut work = vec![Work::Pair(left, right)];
         let mut binders = Binders::default();
+        self.account_work(ambient.len())?;
+        for &count in ambient {
+            binders.enter_rigid(count)?;
+        }
         let mut seen = HashSet::new();
         let mut rebasing = Rebasing::default();
         while let Some(next) = work.pop() {
@@ -93,6 +97,26 @@ impl Context {
             work.extend(self.pairs.drain(..).rev().map(|(a, b)| Work::Pair(a, b)));
         }
         Ok(())
+    }
+
+    pub(super) fn equate_regions_inside(
+        &mut self,
+        left: super::RegionId,
+        right: super::RegionId,
+        ambient: &[u32],
+    ) -> Result<(), Error> {
+        if ambient.is_empty() {
+            if left != right {
+                self.region_equalities.push((left, right));
+            }
+            return Ok(());
+        }
+        let mut binders = Binders::default();
+        self.account_work(ambient.len().saturating_add(1))?;
+        for &count in ambient {
+            binders.enter_rigid(count)?;
+        }
+        binders.equate(left, right, &mut self.region_equalities)
     }
 
     /// A closed canonical subtree cannot mention the surrounding alpha mapping.

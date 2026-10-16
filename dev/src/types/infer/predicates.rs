@@ -21,6 +21,16 @@ pub struct Predicate {
     requirement: Requirement,
 }
 impl Predicate {
+    pub(super) fn trait_application(
+        subject: TermId,
+        item: ItemId,
+        arguments: Vec<Argument>,
+    ) -> Self {
+        Self {
+            subject,
+            requirement: Requirement::Trait(Box::new(Trait { item, arguments })),
+        }
+    }
     #[must_use]
     pub const fn builtin_bound(&self) -> Option<Bound> {
         match &self.requirement {

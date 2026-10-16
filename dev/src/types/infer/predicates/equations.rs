@@ -135,6 +135,20 @@ impl Context {
         predicate: &Predicate,
         assumption: Canonical,
     ) -> Result<(), Error> {
+        self.equate_trait_predicate_inside(store, predicate, assumption, &[])
+    }
+
+    /// Commit selected input equations beneath the original enclosing binders.
+    /// Ambient slots are rigid identities; only nested callable binders are alpha-renamed.
+    /// # Errors
+    /// Rejects input mismatch, capture of an ambient lifetime and exhausted work.
+    pub fn equate_trait_predicate_inside(
+        &mut self,
+        store: &Store,
+        predicate: &Predicate,
+        assumption: Canonical,
+        ambient: &[u32],
+    ) -> Result<(), Error> {
         let (Requirement::Trait(trait_), Bound::Trait(id)) =
             (&predicate.requirement, assumption.bound)
         else {
@@ -148,20 +162,20 @@ impl Context {
             return Err(Error::Mismatch);
         }
         self.account_work(1 + arguments.len())?;
-        self.equate_scoped(store, predicate.subject, assumption.ty)?;
+        let subject = self.known(store, assumption.ty)?;
+        self.equate_scoped_inside(store, predicate.subject, subject, ambient)?;
         for (&inferred, canonical) in trait_.arguments.iter().zip(arguments) {
             match (inferred, canonical) {
                 (Argument::Type(term), CanonicalArgument::Type(ty)) => {
-                    self.equate_scoped(store, term, ty)?;
+                    let known = self.known(store, ty)?;
+                    self.equate_scoped_inside(store, term, known, ambient)?;
                 }
                 (Argument::Const(term), CanonicalArgument::Const(id)) => {
                     let known = self.known_const(store, id)?;
                     self.equate_consts(term, known)?;
                 }
                 (Argument::Lifetime(a), CanonicalArgument::Lifetime(b)) => {
-                    if a != b {
-                        self.region_equalities.push((a, b));
-                    }
+                    self.equate_regions_inside(a, b, ambient)?;
                 }
                 _ => return Err(Error::Mismatch),
             }

@@ -1,5 +1,6 @@
 //! Explicit declaration and validated views share trait proofs and lifetime obligations.
 mod instantiation;
+mod readiness;
 mod search;
 use super::assumptions::{Assumptions, Selection as Assumed};
 use super::implementations::Availability;
@@ -13,6 +14,7 @@ use crate::{
         parameters::{environment::Environment, predicates::Predicate},
     },
 };
+pub(in crate::sema) use readiness::{has_known_subject, requires_resolved_inputs};
 use std::{ops::Range, sync::Arc};
 
 #[derive(Clone, Copy)]

@@ -40,6 +40,29 @@ pub(super) fn definition(
         .ok_or("selected implementation is missing the associated type")
 }
 
+pub(super) fn selected_result(
+    report: &Report,
+    facts: &mut Declarations,
+    item: ItemId,
+    source: Source,
+    selected: &Obligations,
+) -> Result<TypeId, &'static str> {
+    let Source::Implementation { owner, arguments } = source else {
+        return Err("associated type requires an unambiguous validated implementation");
+    };
+    let definition = definition(report, facts, owner, item)?;
+    let template = facts.definitions[definition.0 as usize]
+        .ok_or("missing completed associated type definition")?;
+    let ty = facts
+        .generics
+        .substitute(&mut facts.types, owner, arguments, template)?;
+    if selected.regions.is_empty() && selected.equalities.is_empty() {
+        Ok(ty)
+    } else {
+        selected.restoration()?.apply(&mut facts.types, ty)
+    }
+}
+
 pub(super) fn normalize(
     report: &Report,
     facts: &mut Declarations,
@@ -88,18 +111,10 @@ pub(super) fn normalize(
             false,
             Availability::Validated,
         )?;
-        let Some(Source::Implementation { owner, arguments }) = source else {
+        let Some(source) = source else {
             return Err("associated type requires an unambiguous validated implementation");
         };
-        let definition = definition(report, facts, owner, request.application.item)?;
-        let template = facts.definitions[definition.0 as usize]
-            .ok_or("missing completed associated type definition")?;
-        let mut ty = facts
-            .generics
-            .substitute(&mut facts.types, owner, arguments, template)?;
-        if !selected.regions.is_empty() || !selected.equalities.is_empty() {
-            ty = selected.restoration()?.apply(&mut facts.types, ty)?;
-        }
+        let ty = selected_result(report, facts, request.application.item, source, &selected)?;
         let scope = map_scopes(
             &mut scopes,
             ambient,

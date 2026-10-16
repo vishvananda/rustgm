@@ -5,6 +5,13 @@ use super::{
 };
 use crate::types::{arguments::Argument as Canonical, projection, traits};
 
+/// A projection's complete inferred input, independent of its unknown result.
+pub struct Application {
+    pub item: ItemId,
+    pub predicate: super::predicates::Predicate,
+    pub arguments: Vec<Argument>,
+}
+
 /// The combined argument layout retains the trait/family boundary. Self is child
 /// zero, followed by the layout's type edges. Identities belong to one context.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -40,6 +47,37 @@ impl Constructor {
 }
 
 impl Context {
+    /// Read Self and mixed trait/family arguments without resolving their holes.
+    /// The schema supplies the declaring trait; this is not selection evidence.
+    /// # Errors
+    /// Rejects a non-projection, malformed argument boundaries and exhausted work.
+    pub fn projection_application(
+        &mut self,
+        store: &Store,
+        term: TermId,
+    ) -> Result<Application, Error> {
+        let term = self.root(term)?;
+        let Constructor::Projection(value) = self.materialize(store, term)? else {
+            return Err(Error::InvalidIdentity);
+        };
+        let trait_item = store
+            .projection_schema(value.item)
+            .ok_or(Error::InvalidIdentity)?
+            .trait_item;
+        let subject = self.child(store, term, 0)?;
+        let mut arguments = self.application_arguments(term, value.arguments, 1)?;
+        if value.trait_arguments as usize > arguments.len() {
+            return Err(Error::InvalidIdentity);
+        }
+        let family = arguments.split_off(value.trait_arguments as usize);
+        Ok(Application {
+            item: value.item,
+            predicate: super::predicates::Predicate::trait_application(
+                subject, trait_item, arguments,
+            ),
+            arguments: family,
+        })
+    }
     /// Preserve all inputs while their type/const variables remain unresolved.
     /// This constructs a type term, not evidence that the associated result exists.
     /// # Errors

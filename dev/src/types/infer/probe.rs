@@ -70,6 +70,16 @@ impl Probe {
         &mut self.context
     }
 
+    /// Check input preservation without allocating or exporting a result graph.
+    /// This proves only that no source hole was bound, narrowed or merged.
+    ///
+    /// # Errors
+    /// Rejects changed source equations, malformed identities and exhausted work.
+    pub fn preserves_inputs(&mut self, source: &mut Context) -> Result<bool, Error> {
+        self.source_unchanged(source)?;
+        self.inputs_preserved()
+    }
+
     /// Reuse original holes in a query result, without committing any input
     /// refinement. Returns `None` if a query bound, narrowed or merged source
     /// holes, or if its result contains a fresh unbound query variable.
@@ -85,8 +95,7 @@ impl Probe {
         source: &mut Context,
         result: TermId,
     ) -> Result<Option<TermId>, Error> {
-        self.source_unchanged(source)?;
-        if !self.inputs_preserved()? {
+        if !self.preserves_inputs(source)? {
             return Ok(None);
         }
         let mut reverse = Import::default();

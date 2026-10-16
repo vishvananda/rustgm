@@ -259,6 +259,13 @@ native target include PA19; `make test-native-pa19` selects its execution lane.
 Its former associated-type rejection likewise moves to accepted maintainer
 coverage until PA20 releases its complete contract.
 
+The partial projection maintainer controls in
+`dev/tests/partial_projection_selection.rs` independently qualify 25 source
+outcomes, six native programs and wide inferred inputs against pinned rustc.
+`inference_changes.rs` and `scoped_projection_inputs.rs` check dependency
+notifications, bounded graph work and binder-safe input commitment. These tests
+do not activate the planned PA20 or PA21 grading contracts.
+
 ## Placement and provenance
 
 Every `.rs` fixture under an active assignment's tests directory must be in its
@@ -276,7 +283,7 @@ our oracle: their representation and diagnostic contracts belong to upstream.
 
 ## Release discipline
 
-PA1–PA18 are implemented drafts, not a claim of full Rust frontend conformance.
+PA1–PA19 are implemented drafts, not a claim of full Rust frontend conformance.
 Planned PA20–PA38 fail on invocation and are excluded from pass counts. Promote
 a stage only after handout/reference/fixtures are coherent, independent checks
 pass, the source-to-feature ledger is reviewed and all prior stages remain green.

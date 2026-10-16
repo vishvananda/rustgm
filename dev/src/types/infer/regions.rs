@@ -15,7 +15,7 @@ impl Context {
         regions: &[RegionId],
     ) -> Result<TermId, Error> {
         self.account_work(regions.len())?;
-        self.map_regions(store, root, Bound::new(regions.to_vec()))
+        self.map_regions(store, root, &mut Bound::new(regions.to_vec()))
     }
     pub(super) fn shift_regions(
         &mut self,
@@ -26,13 +26,17 @@ impl Context {
         if amount == 0 {
             return Ok(root);
         }
-        self.map_regions(store, root, Bound::shift(amount))
+        self.map_regions(store, root, &mut Bound::shift(amount))
     }
-    fn map_regions(
+    /// Share one binder mapping across an inferred graph and its caller environment.
+    /// Inference variables keep their identity; local callable frames remain local.
+    /// # Errors
+    /// Rejects malformed identities, invalid binder mappings and exhausted work.
+    pub fn map_regions(
         &mut self,
         store: &mut Store,
         root: TermId,
-        mut bound: Bound,
+        bound: &mut Bound,
     ) -> Result<TermId, Error> {
         let root = self.root(root)?;
         let mut work = vec![((root, 0_u16), false)];

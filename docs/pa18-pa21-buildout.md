@@ -5430,3 +5430,128 @@ Their resident medians range from 5,898 to 17,212 KiB. Measurement reuses the tw
 pinned compiler binaries and removes large rendering scratch after each job.
 The final receipt is
 `obj/pa20-work/partial-projection-normalization-v1/validation-v1.json`.
+
+
+## Partial projection selection and scoped input inference
+
+A unique validated implementation header can now determine partially known
+projection inputs before numeric fallback. This supplies source-time function
+pointer or reference context without using an associated result to choose an
+implementation. Competing headers remain deferred. The existing full selector
+proves implementation premises; partial selection does not create a second
+trait solver or treat a candidate header as evidence.
+
+Each query imports its inferred input graph into an isolated context. One
+lifetime opening map covers both the input and its shifted caller environment.
+Selected inputs are restored before their equations reach the body. Enclosing
+binder slots retain rigid identities, nested callable binders may alpha-rename,
+and outer inference variables cannot capture younger universal slots. Selection
+requirements remain attached to the original proof scope. Both canonical and
+partial paths share associated-definition substitution and result restoration.
+
+The body caches its projection environment after substituting established
+universal aliases. A caller bound and its existing aliased copy must not become
+two competing assumptions when opened. This correction accepts a matching
+caller bound while preserving rejection for a bound on an unrelated lifetime;
+it does not turn pending lifetime equations into permissions.
+
+Dependency tickets now report coalesced input changes and support cancellation.
+Only changed leaves are revisited. A scheduling certificate can switch a query
+to canonical-only notifications when exactly one validated header preserves all
+input holes and has only builtin premises. An isolated probe rejects bindings,
+domain narrowing and merged holes. This certificate never supplies proof: the
+ordinary normalizer must still discharge the complete implementation contract.
+The certificate is checked before opening a full query's lifetime environment.
+For a single independent type parameter beneath already-known reference or
+pointer heads, with no trait arguments or recursive trait premises, the checked
+header establishes input preservation without copying the input graph. Other
+layouts retain the isolated probe, whose preservation check does not export an
+unused result. The correction handles 64/256/512/1,024-field inferred tuple
+inputs within the existing work budget. An earlier candidate rejected the valid 512-field case;
+its failure receipt remains retained and its executable has been retired.
+
+Output comparison found two additional scheduling defects before publication.
+Queries on entirely unknown Self allocated lifetime aliases before they could
+select anything. Change notifications could also enter partial selection while
+their dependency counters still reflected queued updates. Unknown Self now
+waits for a head or numeric domain. Canonical completion retains its existing
+queue order; partial events arrive only after pending dependency updates. A
+naive all-events drain changed region-allocation order and was rejected by the
+same comparison. The corrected implementation matches every full output in the
+159 baseline comparisons (156 inherited inputs and three new wide inputs),
+including captured callable inputs and reborrows.
+All intermediate mismatch receipts and observations remain available under
+`obj/pa20-work/partial-projection-selection-v2/`.
+
+The new maintainer tests include 25 source controls with declared acceptance
+and rejection independently checked against pinned rustc, six native programs,
+seven dependency-ticket tests and four scoped-input tests. They cover unique
+and ambiguous headers, type/const inference, source-time reborrowing, caller
+bounds, higher-ranked slots, capture rejection, const dependencies, coalescing,
+canonical completion order and bounded work on shared graphs. The wide-input
+source regression also checks complete instance construction against rustc.
+These tests develop the future contracts without marking PA20 or PA21 active.
+
+This checkpoint does not implement general symbolic associated normal forms or
+resolve the 16 known contextual-coercion mismatches among 43 retained follow-up
+controls. Input-preserving symbolic transport must retain original formation
+obligations even when a result erases its inputs. Symbolic associated equalities,
+associated constants, general coherence and the remaining PA21 variance,
+higher-ranked, GAT, opaque-type and generic-drop responsibilities remain open.
+PA18 and PA19 remain implemented drafts; PA20 and PA21 remain planned.
+
+
+Optimized validation passes 1,059 maintainer tests, with 42 backend-dependent
+tests explicitly ignored there and all 42 executed successfully in the native
+run. All 4,863 active course cases retain their existing text oracles. Formatting,
+Clippy all/pedantic, the 652-file audit with zero findings, 33 harness tests,
+backend qualification and upstream verification pass. The 43 retained follow-up
+controls still have the same 16 mismatches as the published baseline; none is
+counted as a passing language control. The validation wrapper removes 4,124
+files and 4.36 GiB of unshared blocks, recorded in
+`obj/cleanup/1792122005325536086.jsonl`.
+
+The validated compiler is
+`feb02e8ce952f95cb603ee3139963dc837831e8b97a1291cbf213b4c39bb9fcf`,
+with 655 source/config/test files frozen under
+`obj/pa20-work/partial-projection-selection-v2/source-v5/`. The comparison
+baseline is published commit `e2fcd9f`, binary
+`99e4c8a556b48491be92f50d26ff072d5e707fd29933e7f10e05b14a3ee31974`.
+
+The initial scheduling version retained 2,964 timing observations before full
+output comparison stopped it. Its corrected successor retained 4,446 samples
+and 208 confirmation samples, exposing persistent 11–15% overhead for repeated
+inferred callable inputs and 8–10% for wider partial tuples. Both intermediate
+optimization experiments retain another 208 samples each. Moving the certificate
+before lifetime opening, avoiding unused result export, and recognizing the
+checked independent-parameter header remove unnecessary query preparation.
+The rejected candidates and every original observation remain documented;
+superseded executables are retired rather than accumulating under storage pins.
+
+
+The final batch retains 4,446 observations across 171 workloads: 156 inherited
+inputs and three new wide inputs compare the published baseline with the
+candidate, while twelve newly accepted inputs use candidate-only measurements.
+All jobs use frozen binaries and inputs, A/A calibration and paired ABBA blocks;
+full/count output bytes agree, and frozen source/binary/input hashes remain
+unchanged. No RustGM build, test or probe overlaps timing. Unrelated projects remain active on the host.
+
+The 159 comparison paired medians range from -16.5% to +3.0%. None exceeds the
++4% confirmation threshold; the largest increase has 4.2% A/A spread. These
+measurements do not establish a general speedup. All observations from the
+stopped and rejected candidates remain in the record.
+
+Candidate-only semantic-view median wall times, in milliseconds, are:
+
+| Workload | 64 | 256 | 1,024 |
+| --- | ---: | ---: | ---: |
+| Unique concrete headers | 10.23 | 29.03 | 100.23 |
+| Unique reference reborrows | 13.52 | 41.12 | 158.27 |
+| Unique higher-ranked inputs | 11.33 | 32.45 | 118.47 |
+| Unique headers with caller bounds | 16.99 | 55.29 | 211.57 |
+
+Their resident medians range from 6,086 to 20,252 KiB. Timing remains separate
+from the typed work-bound assertions and independent source/native checks.
+Measurement reuses the two current compiler binaries and removes rendering
+scratch. The final receipt is
+`obj/pa20-work/partial-projection-selection-v2/validation-v5.json`.

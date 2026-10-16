@@ -1,4 +1,4 @@
-//! Resume canonical-input queries only when one of their unresolved leaves changes.
+//! Resume input queries only when one of their unresolved leaves changes.
 mod walk;
 use super::{Context, Error, Store, TermId, constants::ConstTermId};
 use std::collections::{HashMap, HashSet, VecDeque};
@@ -13,10 +13,19 @@ pub(super) enum Dependency {
     Const(ConstTermId),
 }
 
-#[derive(Default)]
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum State {
+    Initial,
+    Observing,
+    Queued,
+    Resolved,
+    Cancelled,
+}
 struct Watch {
     remaining: usize,
     seen: HashSet<Dependency>,
+    changes: bool,
+    state: State,
 }
 
 #[derive(Default)]
@@ -26,8 +35,16 @@ pub(super) struct Storage {
     waiting: HashMap<Dependency, Vec<WatchId>>,
     work: VecDeque<(WatchId, Dependency)>,
     ready: VecDeque<WatchId>,
+    changed: VecDeque<WatchId>,
 }
 impl Storage {
+    fn notify(&mut self, id: WatchId) {
+        let watch = &mut self.watches[id.0 as usize];
+        if matches!(watch.state, State::Initial | State::Observing) {
+            watch.state = State::Queued;
+            self.changed.push_back(id);
+        }
+    }
     fn enqueue(&mut self, id: WatchId, dependency: Dependency) -> Result<(), Error> {
         let watch = &mut self.watches[id.0 as usize];
         watch.remaining = watch.remaining.checked_add(1).ok_or(Error::Overflow)?;
@@ -43,6 +60,7 @@ impl Storage {
             .ok_or(Error::InvalidIdentity)?;
         if watch.remaining == 0 {
             watch.seen = HashSet::new();
+            watch.state = State::Resolved;
             self.ready.push_back(id);
         }
         Ok(())
@@ -62,6 +80,28 @@ impl Context {
         types: &[TermId],
         constants: &[ConstTermId],
     ) -> Result<WatchId, Error> {
+        self.watch_inputs(types, constants, false)
+    }
+
+    /// Observe initial partial inputs and later changes to only their dependency leaves.
+    /// A notification carries no proof and does not imply complete resolution.
+    /// Keep the ticket until selection completes, then cancel it explicitly.
+    /// # Errors
+    /// Rejects invalid graph identities, compact overflow and exhausted work.
+    pub fn watch_changes(
+        &mut self,
+        types: &[TermId],
+        constants: &[ConstTermId],
+    ) -> Result<WatchId, Error> {
+        self.watch_inputs(types, constants, true)
+    }
+
+    fn watch_inputs(
+        &mut self,
+        types: &[TermId],
+        constants: &[ConstTermId],
+        changes: bool,
+    ) -> Result<WatchId, Error> {
         self.account_work(
             types
                 .len()
@@ -76,7 +116,12 @@ impl Context {
         }
         let storage = self.dependencies.get_or_insert_with(Default::default);
         let id = WatchId(u32::try_from(storage.watches.len()).map_err(|_| Error::Overflow)?);
-        storage.watches.push(Watch::default());
+        storage.watches.push(Watch {
+            remaining: 0,
+            seen: HashSet::new(),
+            changes,
+            state: State::Initial,
+        });
         for dependency in types
             .iter()
             .copied()
@@ -86,12 +131,60 @@ impl Context {
             storage.enqueue(id, dependency)?;
         }
         if types.is_empty() && constants.is_empty() {
+            storage.watches[id.0 as usize].state = State::Resolved;
             storage.ready.push_back(id);
         }
         Ok(id)
     }
 
-    /// Return each ready query once, traversing only newly supplied or awakened work.
+    /// Stop a query after its owner consumes the result; queued events become inert.
+    /// # Errors
+    /// Rejects an invalid watch identity and exhausted work.
+    pub fn cancel_watch(&mut self, id: WatchId) -> Result<(), Error> {
+        self.step()?;
+        let watch = self
+            .dependencies
+            .as_mut()
+            .and_then(|s| s.watches.get_mut(id.0 as usize))
+            .ok_or(Error::InvalidIdentity)?;
+        watch.state = State::Cancelled;
+        watch.seen = HashSet::new();
+        Ok(())
+    }
+
+    /// Whether the incremental walk has proved all inputs free of type/const holes.
+    /// A change notification may arrive before this proof is complete.
+    /// # Errors
+    /// Rejects invalid or cancelled tickets and exhausted work.
+    pub fn watch_resolved(&mut self, id: WatchId) -> Result<bool, Error> {
+        self.step()?;
+        let watch = self
+            .dependencies
+            .as_ref()
+            .and_then(|s| s.watches.get(id.0 as usize))
+            .filter(|watch| watch.state != State::Cancelled)
+            .ok_or(Error::InvalidIdentity)?;
+        Ok(watch.remaining == 0)
+    }
+
+    /// After consuming a partial notification, wait only for canonical inputs.
+    /// The owner must establish that further partial changes cannot complete its query.
+    /// # Errors
+    /// Rejects tickets with an unconsumed notification, cancelled tickets and exhausted work.
+    pub fn await_resolution(&mut self, id: WatchId) -> Result<(), Error> {
+        self.step()?;
+        let watch = self
+            .dependencies
+            .as_mut()
+            .and_then(|s| s.watches.get_mut(id.0 as usize))
+            .filter(|watch| watch.state == State::Observing)
+            .ok_or(Error::InvalidIdentity)?;
+        watch.changes = false;
+        Ok(())
+    }
+
+    /// Return a ready notification, traversing only newly supplied or awakened work.
+    /// Resolution tickets notify once; change tickets can notify repeatedly.
     /// Variables newly bound to compound types expose their unresolved children;
     /// unrelated equations never cause a scan of all pending queries.
     ///
@@ -115,7 +208,14 @@ impl Context {
         };
         let count = watches.len();
         for id in watches {
-            storage.watches[id.0 as usize].seen.remove(&dependency);
+            let watch = &mut storage.watches[id.0 as usize];
+            if watch.state == State::Cancelled {
+                continue;
+            }
+            watch.seen.remove(&dependency);
+            if watch.changes {
+                storage.notify(id);
+            }
             storage.work.push_back((id, dependency));
         }
         self.account_work(count)

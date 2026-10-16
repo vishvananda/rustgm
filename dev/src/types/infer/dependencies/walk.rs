@@ -1,5 +1,5 @@
 //! Discover dependency leaves, including const slots that are not type edges.
-use super::{Dependency, Storage, WatchId};
+use super::{Dependency, State, Storage, WatchId};
 use crate::types::infer::{Constructor, Context, Error, Store, Value, arguments::Slot};
 
 impl Storage {
@@ -10,12 +10,21 @@ impl Storage {
     ) -> Result<Option<WatchId>, Error> {
         loop {
             if let Some(id) = self.ready.pop_front() {
+                let watch = &mut self.watches[id.0 as usize];
+                if watch.state == State::Cancelled {
+                    context.step()?;
+                    continue;
+                }
+                watch.state = State::Observing;
                 return Ok(Some(id));
             }
             let Some((id, dependency)) = self.work.pop_front() else {
-                return Ok(None);
+                break;
             };
             context.step()?;
+            if self.watches[id.0 as usize].state == State::Cancelled {
+                continue;
+            }
             let dependency = match dependency {
                 Dependency::Type(term) => Dependency::Type(context.root(term)?),
                 Dependency::Const(term) => Dependency::Const(context.constants().root(term)?),
@@ -28,8 +37,24 @@ impl Storage {
                 self.complete(id)?;
             } else {
                 self.waiting.entry(dependency).or_default().push(id);
+                let watch = &self.watches[id.0 as usize];
+                if watch.changes && watch.state == State::Initial {
+                    self.notify(id);
+                }
             }
         }
+        // Keep canonical readiness in its original completion order. Deliver
+        // partial notifications only after all pending dependency updates.
+        while let Some(id) = self.changed.pop_front() {
+            let watch = &mut self.watches[id.0 as usize];
+            if watch.state != State::Queued {
+                context.step()?;
+                continue;
+            }
+            watch.state = State::Observing;
+            return Ok(Some(id));
+        }
+        Ok(None)
     }
 
     fn visit(

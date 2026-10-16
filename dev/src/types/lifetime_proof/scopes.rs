@@ -37,20 +37,24 @@ impl ScopePlan {
     /// A fresh query needs only its ancestor chain, never earlier sibling scopes.
     pub fn enter(
         &self,
-        mut scope: ScopeId,
+        scope: ScopeId,
         destination: &mut Obligations,
     ) -> Result<ScopeId, &'static str> {
+        let mut root = ScopeId::ROOT;
+        for count in self.counts(scope)? {
+            root = destination.scope(root, count)?;
+        }
+        Ok(root)
+    }
+    pub fn counts(&self, mut scope: ScopeId) -> Result<Vec<u32>, &'static str> {
         let mut counts = Vec::with_capacity(usize::from(self.depth(scope)?));
         while scope != ScopeId::ROOT {
             let (parent, count) = self.binder(scope)?;
             counts.push(count);
             scope = parent;
         }
-        let mut root = ScopeId::ROOT;
-        for count in counts.into_iter().rev() {
-            root = destination.scope(root, count)?;
-        }
-        Ok(root)
+        counts.reverse();
+        Ok(counts)
     }
     pub fn len(&self) -> usize {
         self.scopes.as_ref().map_or(0, |scopes| scopes.len())
