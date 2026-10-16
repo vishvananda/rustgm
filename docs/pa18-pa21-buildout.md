@@ -6995,3 +6995,64 @@ additional algorithmic work to seed collection. It also does not erase the
 original confirmed wall-time increases: their attribution remains uncertain.
 All observations, profiles and diagnostics are retained in
 `obj/pa20-work/runtime-seed-words-v1/`. PA20 and PA21 remain planned.
+
+### Stored projected callable occurrences
+
+Stored generic function items rebuilt their signatures during lifetime inference
+without registering the newly created associated-type projections. This affected
+scalar specializations too: rebuilding from the original callable template can
+introduce an unproved occurrence even when it allocates zero new lifetimes.
+A typed probe independently demonstrated that normalizing the original result
+does not normalize the reconstructed occurrence.
+
+Freshening now returns its term, fresh-region count and a conservative typed flag
+for new normalization work. The existing traversal inspects cached projection
+properties and opaque argument roots; rebuilt callable templates contribute their
+own projection fact. Ordinary reconstructed signatures do not allocate a separate
+normalization walk. Body checking registers the entire transformed graph in its
+scope after allocating the new region identities. Nested callable binders remain
+intact, and no previous result proof is copied to a new occurrence. Original
+implementation, parent-formation and lifetime obligations remain required.
+
+Twenty-two complete programs were declared and object-qualified with pinned
+rustc before maintainer expectations were added. Sixteen valid programs cover
+direct and stored calls, explicit/inferred arguments, copying, tuple/array/nominal
+storage, joins, function-pointer reification and nested binders. The published
+compiler accepted two; the candidate accepts all sixteen. Six invalid programs
+remain rejected: five now reach the actual lifetime requirement, including an
+unused invalid function and a valid/invalid sibling pair; missing implementation
+evidence still fails type analysis. The permanent regression sources preserve the
+qualified input bytes exactly. Typed invariants cover zero-region reconstruction,
+independent occurrence proofs, projected arguments with an unprojected template,
+and the ordinary callable fast path.
+
+Twelve scaling programs were independently object-qualified. Ordinary scalar and
+reference stored calls and projected scalar calls pass through 1,024 repetitions.
+Projected reference calls pass at 64 and 256, but 1,024 repetitions reach the
+existing runtime lifetime storage budget. That valid Rust program remains an
+implementation limit, not a declared language rejection or a passing performance
+case. Its input, diagnostics and qualification are retained for further work.
+
+The validated candidate is
+`cbe1511bb495ed26ffc507a37d591e6248a6535803d7e29f88147f3f688559c8`.
+All 25 validation commands pass: 1,123 release tests in 208 groups, 4,864 unchanged
+PA1–PA19 text comparisons, backend qualification and 56 explicit maintainer native
+tests. The sixteen new valid programs execute successfully against independent
+rustc results. Strict Clippy, the 689-file audit with zero findings and all 33
+harness tests pass. All 692 frozen source hashes agree; the final compiler matches
+the qualified second prototype byte for byte. Validation cleanup removes 4,664
+generated files (4.93 GiB of unshared blocks).
+
+The frozen performance study retains 38 jobs: 28 comparisons with published
+`0e97387` and ten identical-candidate controls for newly accepted programs.
+It preserves 988 study observations and 152 full-output qualifications, with
+binary/source/input hashes and full/count output equality verified. Actual paired
+medians range from −7.51% to +3.30%; no family triggers the predeclared 3.5% repeat
+rule. A/A spreads range from 1.67% to 141.97%, so the observations do not establish
+precise small speed changes. At 1,024 calls the ordinary stored-scalar and stored-
+reference full views have paired changes of +1.10% and +1.50%. The newly supported
+projected-scalar full view takes 71.64 ms at 1,024 calls; the projected-reference
+view takes 73.65 ms at 256. The rejected 1,024-reference input remains recorded and
+excluded, not replaced by a successful smaller case. No builds, source edits or
+compiler probes overlap timing. Standalone lint and tidy pass. Evidence lives in
+`obj/pa20-work/stored-projected-callables-v1/`. PA20 and PA21 remain planned.

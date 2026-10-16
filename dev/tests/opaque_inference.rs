@@ -3,7 +3,7 @@ use rustgm::types::{
     GenericArgs, ItemId, Kind, Primitive, RegionId, Store, TypeId,
     callable::Templates,
     infer::{
-        Context, Domain, Error,
+        Context, Domain, Error, FreshRegions,
         arguments::Argument,
         deferred::{Outcome, Relation},
     },
@@ -162,8 +162,115 @@ fn inferred_opaque_values_do_not_freshen_operation_inputs() -> TestResult {
     )?;
     let ty = inference.resolved(&mut types, root)?;
     inference.apply_normalization(&mut types, root, ty)?;
-    let (fresh, count) = inference.fresh_regions(&mut types, &Templates::default(), root, 12)?;
+    let FreshRegions {
+        term: fresh,
+        regions: count,
+        needs_normalization,
+    } = inference.fresh_regions(&mut types, &Templates::default(), root, 12)?;
     assert_eq!(count, 0);
+    assert!(!needs_normalization);
     assert_eq!(inference.resolved(&mut types, fresh)?, ty);
+    Ok(())
+}
+
+#[test]
+fn rebuilt_callable_results_need_fresh_occurrence_proofs_without_new_lifetimes() -> TestResult {
+    use rustgm::types::{
+        lifetime_proof::{Obligations, ScopeId},
+        parameters::{Parameter, ParameterKind},
+    };
+    let mut types = store()?;
+    let owner = ItemId(3);
+    let parameter = types.intern_parameter(Parameter {
+        owner,
+        index: 0,
+        kind: ParameterKind::Type { sized: true },
+    })?;
+    let subject = types.intern(Kind::Parameter(parameter))?;
+    let result = projected(&mut types, subject)?;
+    let parameters = types.intern_list(&[subject, result])?;
+    let signature = types.intern(Kind::Function {
+        parameters,
+        result,
+        bound_regions: 0,
+        unsafe_: false,
+    })?;
+    let mut templates = Templates::default();
+    templates.insert_generic(&types, owner, signature, 0, &[], &[parameter])?;
+    let mut inference = Context::default();
+    let byte = inference.known(&types, BYTE)?;
+    let signature =
+        inference.instantiate(&mut types, signature, &[(parameter, Argument::Type(byte))])?;
+    let mut scopes = Obligations::new(1);
+    let roots = inference.normalization_roots(&types, signature, ScopeId::ROOT, |parent, n| {
+        scopes.scope(parent, n).map_err(|_| Error::InvalidIdentity)
+    })?;
+    assert_eq!(roots.len(), 1);
+    for (_, root) in roots {
+        inference.apply_normalization(&mut types, root, BYTE)?;
+    }
+    let item = inference.function_item(owner, signature, &[Argument::Type(byte)])?;
+    let original = inference.resolved(&mut types, item)?;
+    for _ in 0..2 {
+        let fresh = inference.fresh_regions(&mut types, &templates, item, 10)?;
+        assert_eq!(fresh.regions, 0);
+        assert!(fresh.needs_normalization);
+        let roots =
+            inference.normalization_roots(&types, fresh.term, ScopeId::ROOT, |parent, n| {
+                scopes.scope(parent, n).map_err(|_| Error::InvalidIdentity)
+            })?;
+        assert_eq!(roots.len(), 1);
+        for (_, root) in roots {
+            assert_eq!(inference.head(&types, root), Err(Error::Normalization));
+            inference.apply_normalization(&mut types, root, BYTE)?;
+        }
+        assert_eq!(inference.resolved(&mut types, fresh.term)?, original);
+    }
+    Ok(())
+}
+
+#[test]
+fn projected_arguments_retain_work_even_with_unprojected_callable_templates() -> TestResult {
+    use rustgm::types::{
+        lifetime_proof::{Obligations, ScopeId},
+        parameters::{Parameter, ParameterKind},
+    };
+    let mut types = store()?;
+    let owner = ItemId(3);
+    let parameter = types.intern_parameter(Parameter {
+        owner,
+        index: 0,
+        kind: ParameterKind::Type { sized: true },
+    })?;
+    let subject = types.intern(Kind::Parameter(parameter))?;
+    let parameters = types.intern_list(&[subject])?;
+    let signature = types.intern(Kind::Function {
+        parameters,
+        result: subject,
+        bound_regions: 0,
+        unsafe_: false,
+    })?;
+    assert_eq!(types.contains_projections(signature), Some(false));
+    let mut templates = Templates::default();
+    templates.insert_generic(&types, owner, signature, 0, &[], &[parameter])?;
+    let mut inference = Context::default();
+    let result = projected(&mut types, BYTE)?;
+    let argument = inference.known(&types, result)?;
+    inference.apply_normalization(&mut types, argument, result)?;
+    let signature = inference.instantiate(
+        &mut types,
+        signature,
+        &[(parameter, Argument::Type(argument))],
+    )?;
+    let item = inference.function_item(owner, signature, &[Argument::Type(argument)])?;
+    let fresh = inference.fresh_regions(&mut types, &templates, item, 10)?;
+    assert_eq!(fresh.regions, 0);
+    assert!(fresh.needs_normalization);
+    let mut scopes = Obligations::new(1);
+    let roots = inference.normalization_roots(&types, fresh.term, ScopeId::ROOT, |parent, n| {
+        scopes.scope(parent, n).map_err(|_| Error::InvalidIdentity)
+    })?;
+    assert!(roots.iter().any(|(scope, _)| *scope != ScopeId::ROOT));
+    assert!(roots.iter().any(|(scope, _)| *scope == ScopeId::ROOT));
     Ok(())
 }

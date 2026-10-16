@@ -330,6 +330,16 @@ projected expectation supplies no reference, array-unsizing or callable hint.
 Ordinary result equalities may wait for normalization; implicit conversions and
 reborrows cannot be introduced retrospectively when later inputs become known.
 
+Freshening a stored function item reconstructs its signature from the immutable
+callable template. Register newly constructed projection occurrences even when
+no new lifetime was allocated; an earlier occurrence's proof does not authorize
+them. Retain this work as a typed result of freshening, and register the whole
+result in its enclosing scope so nested callable binders remain intact. Detect
+projected templates and arguments during the existing traversal. Ordinary
+callables must not allocate a normalization worklist merely because their
+signatures were rebuilt. New normalization duties never discharge the original
+parent application, implementation premises or caller lifetime obligations.
+
 When a header requires a nested projection's normal form, register the nested
 query at its actual callable scope and subscribe the enclosing application to
 that result. Publication wakes only those dependents; it does not discharge the

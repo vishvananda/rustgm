@@ -6,6 +6,7 @@ pub mod constants;
 pub mod deferred;
 pub mod dependencies;
 mod freshen;
+pub use freshen::FreshRegions;
 mod import;
 pub mod predicates;
 pub mod probe;

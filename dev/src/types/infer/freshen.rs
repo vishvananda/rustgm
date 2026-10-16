@@ -4,6 +4,16 @@ use super::{Constructor, Context, Error, RegionId, Store, TermId, Value};
 use crate::types::{GenericArgs, ItemId, Kind, callable::Templates, substitute::Bound};
 use std::collections::HashSet;
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct FreshRegions {
+    pub term: TermId,
+    pub regions: u32,
+    /// Rebuilt signatures may introduce new projection occurrences, even when
+    /// no lifetime changed. Register the returned graph in its enclosing scope.
+    /// False proves no new work; true does not grant normalization authority.
+    pub needs_normalization: bool,
+}
+
 enum Work {
     Enter(TermId, u16),
     Finish(TermId, Constructor, usize, u16),
@@ -36,10 +46,14 @@ impl Context {
         templates: &Templates,
         root: TermId,
         first: u32,
-    ) -> Result<(TermId, u32), Error> {
+    ) -> Result<FreshRegions, Error> {
         let root = self.root(root)?;
         if self.closed(store, root, 0)? {
-            return Ok((root, 0));
+            return Ok(FreshRegions {
+                term: root,
+                regions: 0,
+                needs_normalization: false,
+            });
         }
         let mut scratch = std::mem::take(&mut self.generalization);
         scratch.work.clear();
@@ -85,14 +99,23 @@ impl Context {
         root: TermId,
         first: u32,
         scratch: &mut Scratch,
-    ) -> Result<(TermId, u32), Error> {
+    ) -> Result<FreshRegions, Error> {
         let mut next = first;
+        let mut rebuilt_callables = false;
+        let mut projections = false;
         scratch.work.push(Work::Enter(root, 0));
         while let Some(work) = scratch.work.pop() {
             self.step()?;
             match work {
                 Work::Enter(id, depth) => {
                     let id = self.root(id)?;
+                    // Reuse the freshening walk to see projected arguments, including
+                    // closed canonical subtrees. Rebuilding may shift their binders.
+                    projections |= match self.terms[id.0 as usize].value {
+                        Value::Known(ty) => store.contains_projections(ty) == Some(true),
+                        Value::Construct(Constructor::Projection(_)) => true,
+                        _ => false,
+                    };
                     if self.closed(store, id, depth)? || scratch.closed.contains(&(id, depth)) {
                         scratch.values.push(id);
                         continue;
@@ -133,6 +156,10 @@ impl Context {
                             scratch.arguments.push(fresh(*region, depth, &mut next)?);
                         }
                         let value = self.fresh_item(store, templates, item, &scratch.arguments)?;
+                        rebuilt_callables = true;
+                        projections |= store.contains_projections(
+                            templates.get(item).ok_or(Error::InvalidIdentity)?.signature,
+                        ) == Some(true);
                         scratch.values.push(value);
                         continue;
                     }
@@ -204,6 +231,13 @@ impl Context {
                         &scratch.values[mark..],
                         &mut next,
                     )?;
+                    rebuilt_callables = true;
+                    projections |= store.contains_projections(
+                        templates
+                            .get(item.item)
+                            .ok_or(Error::InvalidIdentity)?
+                            .signature,
+                    ) == Some(true);
                     scratch.values.truncate(mark);
                     scratch.values.push(term);
                 }
@@ -213,7 +247,11 @@ impl Context {
         if !scratch.values.is_empty() {
             return Err(Error::InvalidIdentity);
         }
-        Ok((result, next.checked_sub(first).ok_or(Error::Overflow)?))
+        Ok(FreshRegions {
+            term: result,
+            regions: next.checked_sub(first).ok_or(Error::Overflow)?,
+            needs_normalization: rebuilt_callables && projections,
+        })
     }
     fn fresh_item(
         &mut self,

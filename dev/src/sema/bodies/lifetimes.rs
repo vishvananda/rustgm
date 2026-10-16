@@ -88,7 +88,7 @@ impl Checker<'_> {
             .ok()
             .and_then(|n| n.checked_add(1))
             .ok_or_else(|| self.error(node, "body region identity space exhausted"))?;
-        let (term, count) = self
+        let fresh = self
             .infer
             .fresh_regions(
                 &mut self.facts.types,
@@ -104,8 +104,15 @@ impl Checker<'_> {
         };
         self.facts
             .body_regions
-            .extend(std::iter::repeat_n(region, count as usize));
-        Ok(term)
+            .extend(std::iter::repeat_n(region, fresh.regions as usize));
+        if fresh.needs_normalization {
+            self.defer_normalization(
+                node,
+                crate::types::lifetime_proof::ScopeId::ROOT,
+                fresh.term,
+            )?;
+        }
+        Ok(fresh.term)
     }
     pub(super) fn nominal_type(
         &mut self,

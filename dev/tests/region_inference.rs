@@ -1,3 +1,4 @@
+use rustgm::types::infer::FreshRegions;
 use rustgm::types::{
     GenericArgs, ItemId, Kind, Primitive, RegionId, Store, TypeId,
     infer::{Constructor, Context, Domain, Error},
@@ -77,7 +78,11 @@ fn already_materialized_closed_dags_share_work_without_sharing_fresh_positions()
             value,
             1
         )?,
-        (value, 0)
+        FreshRegions {
+            term: value,
+            regions: 0,
+            needs_normalization: false
+        }
     );
     assert!(
         cx.steps < 400,
@@ -198,7 +203,11 @@ fn inferred_positions_are_independent_without_defaulting_numeric_referents()
         &[number],
     )?;
     let tuple = cx.construct(Constructor::Tuple, &[source, source])?;
-    let (fresh, count) = cx.fresh_regions(
+    let FreshRegions {
+        term: fresh,
+        regions: count,
+        ..
+    } = cx.fresh_regions(
         &mut store,
         &rustgm::types::callable::Templates::default(),
         tuple,
@@ -236,7 +245,11 @@ fn arrays_nominal_parameters_and_function_item_identity_keep_their_structure()
     })?;
     let mut cx = Context::default();
     let array = cx.known(&store, array)?;
-    let (array, count) = cx.fresh_regions(
+    let FreshRegions {
+        term: array,
+        regions: count,
+        ..
+    } = cx.fresh_regions(
         &mut store,
         &rustgm::types::callable::Templates::default(),
         array,
@@ -275,7 +288,11 @@ fn arrays_nominal_parameters_and_function_item_identity_keep_their_structure()
             item,
             3
         )?,
-        (item, 0)
+        FreshRegions {
+            term: item,
+            regions: 0,
+            needs_normalization: false
+        }
     );
     Ok(())
 }
@@ -306,7 +323,11 @@ fn callable_binders_preserve_bound_lifetimes_and_freshen_only_free_positions()
     assert_eq!(store.has_free_regions(signature, 1), Some(false));
     let mut cx = Context::default();
     let original = cx.known(&store, signature)?;
-    let (fresh, count) = cx.fresh_regions(
+    let FreshRegions {
+        term: fresh,
+        regions: count,
+        ..
+    } = cx.fresh_regions(
         &mut store,
         &rustgm::types::callable::Templates::default(),
         original,
@@ -341,7 +362,11 @@ fn callable_binders_preserve_bound_lifetimes_and_freshen_only_free_positions()
             closed,
             6
         )?,
-        (closed, 0)
+        FreshRegions {
+            term: closed,
+            regions: 0,
+            needs_normalization: false
+        }
     );
     Ok(())
 }
@@ -368,7 +393,7 @@ fn deep_freshening_and_closed_dags_are_bounded_and_iterative()
             deep,
             1
         )?
-        .1,
+        .regions,
         10_000
     );
     assert!(cx.steps < 25_000);
@@ -386,7 +411,11 @@ fn deep_freshening_and_closed_dags_are_bounded_and_iterative()
             known,
             10_001
         )?,
-        (known, 0)
+        FreshRegions {
+            term: known,
+            regions: 0,
+            needs_normalization: false
+        }
     );
     assert_eq!(cx.steps, before);
     let leaf = cx.known(&store, TypeId::UNIT)?;

@@ -189,9 +189,10 @@ fn fresh_function_items_rebuild_signatures_and_share_unresolved_const_arguments(
     )?;
     let mut fresh = Vec::new();
     for first in [10, 20] {
-        let (item, count) = context.fresh_regions(&mut types, &templates, item, first)?;
-        assert_eq!(count, 1);
-        fresh.push(item);
+        let rebuilt = context.fresh_regions(&mut types, &templates, item, first)?;
+        assert_eq!(rebuilt.regions, 1);
+        assert!(!rebuilt.needs_normalization);
+        fresh.push(rebuilt.term);
     }
     let value = types.intern_constant(Constant {
         ty: TypeId::primitive(Primitive::Usize),
