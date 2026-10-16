@@ -438,6 +438,108 @@ fn projections_do_not_invent_concrete_properties_or_reverse_inference() -> TestR
 }
 
 #[test]
+fn projected_shapes_require_exact_trait_inputs_and_grant_only_declared_sizedness() -> TestResult {
+    use parameters::{
+        environment::Abilities,
+        predicates::{Bound as Requirement, Predicate},
+    };
+    let mut store = Store::default();
+    schema(&mut store, 11, true)?;
+    schema(&mut store, 12, false)?;
+    let subject = parameter(&mut store, 20, 0)?;
+    let Some(Kind::Parameter(id)) = store.kind(subject) else {
+        return Err("missing shape parameter".into());
+    };
+    let kind = application(&mut store, 11, subject, &[], &[])?;
+    let Kind::Projection(input) = kind else {
+        return Err("missing shape projection".into());
+    };
+    let projected = store.intern(kind)?;
+    let relaxed = application(&mut store, 12, subject, &[], &[])?;
+    let relaxed = store.intern(relaxed)?;
+    let array = store.intern(Kind::Array {
+        element: relaxed,
+        length: 1,
+    })?;
+    let environment = Environment::new(&store, &[(id, Abilities::default())])?.with_predicates(
+        &store,
+        &[Predicate {
+            ty: subject,
+            bound: Requirement::Trait(input.trait_application),
+        }],
+    )?;
+    let environment = Arc::new(environment);
+    let mut shapes = Shapes::new(Arc::clone(&environment));
+    let result = shapes.demand(&store, projected)?;
+    assert!(result.sized && result.well_formed);
+    let result = shapes.demand(&store, relaxed)?;
+    assert!(!result.sized && result.well_formed);
+    assert!(!shapes.demand(&store, array)?.well_formed);
+    let wrong = application(&mut store, 11, TypeId::UNIT, &[], &[])?;
+    let wrong = store.intern(wrong)?;
+    assert!(shapes.demand(&store, wrong).is_err());
+    let wrong = application(
+        &mut store,
+        11,
+        subject,
+        &[Argument::Type(TypeId::UNIT)],
+        &[],
+    )?;
+    let wrong = store.intern(wrong)?;
+    assert!(shapes.demand(&store, wrong).is_err());
+    let definitions = Definitions::default();
+    let mut copies = Copies::in_environment(Arc::clone(&environment));
+    assert!(
+        copies
+            .demand(&store, &definitions, &HashMap::new(), projected)
+            .is_err()
+    );
+    assert!(
+        Layouts::default()
+            .demand(&store, &definitions, projected)
+            .is_err()
+    );
+    let environment = environment.as_ref().clone().with_predicates(
+        &store,
+        &[Predicate {
+            ty: relaxed,
+            bound: Requirement::Sized,
+        }],
+    )?;
+    assert!(
+        Shapes::new(Arc::new(environment))
+            .demand(&store, array)?
+            .well_formed
+    );
+    Ok(())
+}
+
+#[test]
+fn projection_formation_keeps_input_requirements_separate_from_output_components() -> TestResult {
+    let mut store = Store::default();
+    schema(&mut store, 11, true)?;
+    let parameter = parameter(&mut store, 20, 0)?;
+    let Some(Kind::Parameter(id)) = store.kind(parameter) else {
+        return Err("missing input parameter".into());
+    };
+    let subject = borrow(&mut store, RegionId(9), parameter)?;
+    let kind = application(&mut store, 11, subject, &[], &[])?;
+    let projected = store.intern(kind)?;
+    let outer = borrow(&mut store, RegionId(10), projected)?;
+    let bounds = rustgm::types::outlives::Bounds::default();
+    let callables = rustgm::types::callable::Templates::default();
+    let mut queries = rustgm::types::outlives::Queries::new(&store, &bounds, &callables);
+    let requirements = queries.symbolic_requirements(projected)?;
+    assert!(requirements.regions.is_empty());
+    assert_eq!(requirements.parameters, &[(id, RegionId(9))]);
+    // The output can erase, rearrange or hide its input components. Its relation
+    // to the outer borrow still requires an opaque-result or normalization proof.
+    assert!(queries.symbolic_requirements(outer).is_err());
+    assert!(LiveRegions::default().get(&store, projected).is_err());
+    Ok(())
+}
+
+#[test]
 fn one_projection_under_different_binders_has_separate_substitution_results() -> TestResult {
     let mut store = Store::default();
     schema(&mut store, 11, true)?;

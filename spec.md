@@ -591,6 +591,16 @@ where bound alone does not constrain it. Validate target and argument well-forme
 trait requirements and safety under the impl's own environment. Input types imply
 lifetime well-formedness facts, never new Copy or user-trait assumptions.
 
+Prepare raw typed impl bounds before normalizing their projected annotations, as
+for function bounds. An opaque projection can finish this declaration pass after
+its formation proof; retaining the projection must not reschedule the completed
+bound environment. Structural shape checking requires its exact Self and trait
+application in the immutable environment, checks every type input, and uses only
+the associated schema's Sizedness or an explicit Sized assumption for its result.
+Projection input well-formedness retains the surrounding callable depth. Input
+lifetime requirements are not the opaque result's outlives or live-value
+components; result properties still need their own proofs.
+
 Determine impl parameters from unreduced typed occurrences. Seed injective
 positions in Self and the trait application. An associated equality contributes
 a directed dependency from every type, const and lifetime input to the injective
@@ -662,7 +672,7 @@ Inferred associated applications retain Self and every trait/family input in
 the type graph, including shared const variables and the argument-kind boundary.
 Parameter substitution, binder mapping and isolated imports preserve these
 identities. A projection remains a noninjective operation: its result cannot
-equate its inputs or acquire structural properties before normalization.
+equate its inputs or inherit their layout, Copy or lifetime properties.
 Freshening its inputs is not a substitute for freshening a selected result.
 
 An isolated inference query may transport symbolic result structure back only

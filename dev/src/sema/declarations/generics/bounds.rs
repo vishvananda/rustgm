@@ -291,8 +291,10 @@ impl Checker<'_> {
     }
     fn bound_subject_lifetimes(&mut self, key: NodeKey, owner: DefId) -> Result<(), Error> {
         let ast = &self.report.package.unit(key.file).configured.ast;
-        let raw = self.report.resolution.definitions[owner.0 as usize].kind
-            == crate::resolve::model::DefKind::Function;
+        let raw = matches!(
+            self.report.resolution.definitions[owner.0 as usize].kind,
+            crate::resolve::model::DefKind::Function | crate::resolve::model::DefKind::SelfType
+        );
         let mut work = vec![key.node];
         let mut seen = std::collections::HashSet::new();
         while let Some(node) = work.pop() {

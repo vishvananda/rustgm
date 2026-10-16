@@ -1,5 +1,5 @@
 //! All impl kinds share generic/lifetime elaboration before their own conformance checks.
-use super::{BinderId, Checker, DefId, Error, NodeKey, regions};
+use super::{BinderId, Checker, DefId, Error, NodeKey, Work, regions};
 use crate::sema::associated::Schema;
 use crate::types::parameters::{
     constraints::Constraints,
@@ -106,11 +106,9 @@ impl Checker<'_> {
             .map_err(|e| self.error(source, e))?;
         self.owner_binders.insert(owner, header.binder);
         self.complete(owner, source, target)?;
-        self.schedule_bounds(owner, header.context)?;
+        self.work
+            .push(Work::ProjectionEnvironment(owner, header.context, false));
         self.drain(steps, limit)?;
-        self.facts
-            .generics
-            .complete_environment(&mut self.facts.types, owner)
-            .map_err(|e| self.error(source, e))
+        Ok(())
     }
 }

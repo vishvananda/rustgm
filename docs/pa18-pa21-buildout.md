@@ -6023,3 +6023,76 @@ builds, tests and probes do not overlap timing. Obsolete `aa958af` and the first
 equality-solver prototype binaries were retired after `7dae890` passed CI;
 `retired-baselines.json` retains their hashes and reasons. Current baselines remain
 pinned, while cleanup removes generated executables and retains evidence.
+
+### Opaque projected bounds in declarations
+
+Trait and inherent impl bounds now use the same staged declaration environment
+as function bounds. Their raw typed predicates exist before projected annotations
+normalize. A completed opaque bound retains its projection without re-enqueuing
+the same environment indefinitely. Logical shape checks require an exact trait
+premise, traverse all projected type inputs, and grant only declared or explicitly
+assumed Sizedness. They do not invent layout, Copy or result lifetime properties.
+
+The well-formedness walk separately visits projection inputs at their original
+callable depth. Input reference requirements remain distinct from the associated
+result's outlives and live-value components. Those result queries retain their
+normalization guards. This distinction prevents an opaque result from acquiring
+lifetime permissions merely because a lifetime appears in its inputs.
+
+Seven declaration sources are independently qualified with pinned rustc in
+`projected_bound_declarations.rs`, then checked through LowIR construction.
+They cover function, trait impl and inherent impl bounds, unsized projected array
+elements, explicit Sized evidence, and distinct arguments of the same trait.
+Two structural regressions check exact premise identity, Sized versus ?Sized,
+unchanged Copy/layout guards, input lifetime requirements and the separate
+result lifetime guard. No course fixture or text oracle changes here.
+
+Investigation sources, diagnostics and intermediate candidates remain under
+`obj/pa20-work/projected-impl-bounds-v1/`. Its twelve initial call-site probes
+still expose unsupported normalization of projected impl conditions: declaration
+acceptance alone does not establish executable support for those seven positive
+programs. Five additional lifetime probes include a corrected initial hypothesis:
+pinned rustc accepts a function that uses an implied input outlives bound even
+when the associated result normalizes to an integer. RustGM still loses that
+original input fact at the later lifetime gate. The original hypothesis and
+diagnostics are retained; this case is not counted as a passing regression.
+References to opaque associated results also need further result lifetime work.
+
+PA20 remains partial, with projected conditions at selection, coherence,
+quantified normalization, associated colon bounds/constants and opaque result
+properties still pending. PA21's advanced generic contract remains pending.
+The preceding parameter-determination checkpoint `a2c9fc7` passed exact-head
+CI run `38875981260`.
+
+All seven targeted commands and 23 final validation commands pass. The final
+suite has 4,864 course cases, 1,082 release tests and 46 separate native groups;
+the architecture audit checks 666 files with zero findings, and all 33 harness
+checks pass. Validation verifies a frozen 669-file source/configuration snapshot.
+The candidate SHA-256 is
+`d74d1b36d03eacb37f6685648ce80705e28a5c43447620f0328fc128107e0609`.
+Exact counts remain in `validation-summary.json`, without combining course
+cases, ordinary tests and native groups into a misleading assignment total.
+
+Performance retains 2,184 observations across 84 jobs, with immutable binaries,
+frozen inputs, A/A calibration, five paired ABBA blocks and full/count output
+equality. The 72 existing-path jobs compare published `a2c9fc7` against this
+candidate. Paired median wall-time changes range from -4.33% to +2.39%, with
+resident-median differences from -620 to +784 KiB. Calibration spreads range
+from 0.78% to 121.02% on the shared host. The largest positive median is the
+1,024-receiver full-view case; these results do not establish zero regression.
+
+The remaining twelve jobs measure six new inputs independently accepted by pinned
+rustc. Both timing labels intentionally use the same final candidate, so these
+are scaling controls rather than speedup comparisons with an unsupported old
+compiler. Full LowIR output for 64/256/1,024 opaque function bounds takes median
+11.54/18.80/67.89 ms; corresponding impl bounds take 13.14/37.52/140.07 ms.
+At 1,024 declarations, resident medians are approximately 14.6 MiB and 17.8 MiB.
+These timings include the complete LowIR pipeline and output rendering, rather
+than isolated bound checking. Sources, executable and runner hashes are verified
+before and after timing, with no overlapping RustGM builds, tests or probes.
+`performance-summary.json`, per-job receipts and every raw observation remain.
+
+Validation cleanup removed 4,304 generated files and 4.53 GiB of unshared blocks,
+recorded in `obj/cleanup/1792142872116185774.jsonl`. Intermediate binaries were
+retired once the final candidate passed; `retired-prototypes.json` retains their
+hashes and reasons. Only binaries needed for the current comparison remain pinned.

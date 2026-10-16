@@ -26,9 +26,6 @@ impl Shapes {
     /// # Errors
     /// Rejects invalid/foreign parameter types and exhausted graph work.
     pub fn demand(&mut self, types: &Store, ty: TypeId) -> Result<Properties, &'static str> {
-        if types.contains_projections(ty) == Some(true) {
-            return Err("associated type shape checking requires normalization");
-        }
         if let Some(value) = self.cache.get(&ty) {
             return Ok(*value);
         }
@@ -43,7 +40,16 @@ impl Shapes {
                 continue;
             }
             let kind = types.kind(ty).ok_or("invalid generic shape type")?;
-            if types.contains_parameters(ty) == Some(false) {
+            if let Kind::Projection(application) = kind
+                && !self
+                    .environment
+                    .assumes_trait(application.subject, application.trait_application)
+            {
+                return Err("associated type shape checking requires normalization");
+            }
+            if types.contains_parameters(ty) == Some(false)
+                && types.contains_projections(ty) == Some(false)
+            {
                 self.cache.insert(
                     ty,
                     Properties {
@@ -101,6 +107,7 @@ impl Shapes {
                     value.sized = types.is_sized(ty) == Some(true) || abilities.clone_;
                 }
                 Kind::Slice(_) | Kind::Primitive(Primitive::Str) => value.sized = false,
+                Kind::Projection(_) => value.sized = types.is_sized(ty) == Some(true),
                 _ => {}
             }
             value.sized |= self.environment.assumes_sized(ty);
@@ -146,29 +153,41 @@ fn children(
             ..
         } => {
             visit(signature)?;
-            for a in types
-                .arguments(arguments)
-                .ok_or("invalid shape arguments")?
-            {
-                if let crate::types::arguments::Argument::Type(ty) = a {
-                    visit(ty)?;
-                }
-            }
+            argument_types(types, arguments, &mut visit)?;
         }
         Kind::Adt(_, args) => {
             // Field declarations prove the nominal's storage shape once. Uses
             // separately prove its substituted bounds; structural WF includes
             // every written type argument even when it is stored indirectly.
-            for argument in types
-                .arguments(args)
-                .ok_or("invalid nominal shape arguments")?
-            {
-                if let crate::types::arguments::Argument::Type(ty) = argument {
-                    visit(ty)?;
-                }
-            }
+            argument_types(types, args, &mut visit)?;
+        }
+        Kind::Projection(application) => {
+            // The environment supplies the exact trait premise. Every input must
+            // still be well-formed; the opaque result grants only declared Sizedness.
+            visit(application.subject)?;
+            let trait_ = types
+                .trait_application(application.trait_application)
+                .ok_or("invalid projected shape trait")?;
+            argument_types(types, trait_.arguments, &mut visit)?;
+            argument_types(types, application.arguments, &mut visit)?;
         }
         _ => {}
+    }
+    Ok(())
+}
+
+fn argument_types(
+    types: &Store,
+    arguments: crate::types::GenericArgs,
+    mut visit: impl FnMut(TypeId) -> Result<(), &'static str>,
+) -> Result<(), &'static str> {
+    for argument in types
+        .arguments(arguments)
+        .ok_or("invalid shape arguments")?
+    {
+        if let crate::types::arguments::Argument::Type(ty) = argument {
+            visit(ty)?;
+        }
     }
     Ok(())
 }

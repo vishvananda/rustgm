@@ -330,9 +330,6 @@ impl Scan {
         }
     }
     fn visit(&mut self, types: &Store, root: TypeId) -> Result<(), &'static str> {
-        if types.contains_projections(root) == Some(true) {
-            return Err("associated type well-formedness requires normalization");
-        }
         self.work.push((root, 0));
         while let Some((ty, depth)) = self.work.pop() {
             self.budget.charge()?;
@@ -343,6 +340,10 @@ impl Scan {
                 continue;
             }
             match types.kind(ty).ok_or("invalid well-formedness type")? {
+                Kind::Projection(application) => {
+                    self.projected_inputs(types, application, depth)?;
+                    continue;
+                }
                 Kind::Reference {
                     region, referent, ..
                 } => {
@@ -393,6 +394,34 @@ impl Scan {
             children(types, ty, depth, &mut self.work, &mut self.budget)?;
         }
         Ok(())
+    }
+
+    fn projected_inputs(
+        &mut self,
+        types: &Store,
+        application: super::projection::Application,
+        depth: u16,
+    ) -> Result<(), &'static str> {
+        // Formation includes input well-formedness. It does not reveal the opaque
+        // result's outlives or live-value components, which remain separate queries.
+        self.work.push((application.subject, depth));
+        let trait_ = types
+            .trait_application(application.trait_application)
+            .ok_or("invalid well-formed projection trait")?;
+        for arguments in [trait_.arguments, application.arguments] {
+            let arguments = types
+                .arguments(arguments)
+                .ok_or("invalid projection arguments")?;
+            self.budget
+                .pending(self.work.len().saturating_add(arguments.len()))?;
+            for argument in arguments {
+                self.budget.charge()?;
+                if let Argument::Type(ty) = argument {
+                    self.work.push((ty, depth));
+                }
+            }
+        }
+        self.budget.pending(self.work.len())
     }
 }
 /// Cached requirements depend only on completed typed definitions, not on a

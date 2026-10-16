@@ -131,6 +131,9 @@ impl Checker<'_> {
         if let Some(bounds) = self.projections.raw_bounds.remove(&owner) {
             self.bound_syntax.insert(owner, bounds.syntax);
             self.complete_bounds(owner, context)?;
+            // Successfully proved opaque roots remain projections. Their rebuilt
+            // predicates must not schedule this completed normalization again.
+            self.projections.raw_bounds.remove(&owner);
         }
         self.projections.raw_environments.remove(&owner);
         Ok(())
