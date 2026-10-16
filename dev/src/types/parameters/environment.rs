@@ -22,6 +22,7 @@ pub struct Environment {
     traits: Option<Box<TraitAssumptions>>,
     equalities: Option<Box<ProjectionAssumptions>>,
     shape_assumptions: bool,
+    region_mapping: bool,
 }
 #[derive(Clone, Default)]
 struct Assumptions {
@@ -38,8 +39,15 @@ struct TraitAssumptions {
 struct ProjectionAssumptions {
     predicates: Vec<Predicate>,
     unique: std::collections::HashSet<Predicate>,
+    items: HashMap<crate::types::ItemId, Vec<usize>>,
 }
 impl Environment {
+    /// A false value certifies no outer-region mapping work. The store's region
+    /// summary conservatively includes static lifetimes as free regions.
+    pub(crate) const fn requires_region_mapping(&self) -> bool {
+        self.region_mapping
+    }
+
     /// Parameter identities and abilities contain no regions to substitute.
     /// Composite and trait predicates still need the ordinary binder mapping.
     pub(crate) fn has_only_parameters(&self) -> bool {
@@ -85,9 +93,47 @@ impl Environment {
             for predicate in &mut equalities.predicates {
                 *predicate = fold.predicate(types, *predicate)?;
             }
-            equalities.unique = equalities.predicates.iter().copied().collect();
+            equalities.unique.clear();
+            equalities
+                .predicates
+                .retain(|predicate| equalities.unique.insert(*predicate));
+            equalities.items.clear();
+            for (index, predicate) in equalities.predicates.iter().enumerate() {
+                let Some(Kind::Projection(application)) = types.kind(predicate.ty) else {
+                    return Err("mapped equality assumption lost its projected subject");
+                };
+                equalities
+                    .items
+                    .entry(application.item)
+                    .or_default()
+                    .push(index);
+            }
         }
+        result.region_mapping = result.mapped_regions(types)?;
         Ok(result)
+    }
+
+    fn mapped_regions(&self, types: &Store) -> Result<bool, &'static str> {
+        for predicate in self.trait_predicates().chain(self.projection_predicates()) {
+            if predicate.has_free_regions(types)? {
+                return Ok(true);
+            }
+        }
+        if let Some(assumptions) = &self.assumptions {
+            for &ty in assumptions
+                .sized
+                .iter()
+                .chain(assumptions.predicates.keys())
+            {
+                if types
+                    .has_free_regions(ty, 0)
+                    .ok_or("invalid mapped bound subject")?
+                {
+                    return Ok(true);
+                }
+            }
+        }
+        Ok(false)
     }
 
     /// Include every type parameter in scope, even when it has no bounds.
@@ -133,6 +179,7 @@ impl Environment {
             traits: None,
             equalities: None,
             shape_assumptions,
+            region_mapping: false,
         })
     }
 
@@ -178,15 +225,23 @@ impl Environment {
         let mut uses = super::uses::Uses::default();
         for predicate in predicates {
             uses.predicate(types, *predicate)?;
+            if !matches!(predicate.bound, Bound::Outlives(_)) {
+                self.region_mapping |= predicate.has_free_regions(types)?;
+            }
             if matches!(predicate.bound, Bound::ProjectionEqual(_)) {
-                if !matches!(types.kind(predicate.ty), Some(Kind::Projection(_))) {
+                let Some(Kind::Projection(application)) = types.kind(predicate.ty) else {
                     return Err("projection equality requires a projected subject");
-                }
+                };
                 let equalities = self.equalities.get_or_insert_with(Default::default);
                 if equalities.unique.len() >= 1_000_000 && !equalities.unique.contains(predicate) {
                     return Err("projection assumption storage budget exceeded");
                 }
                 if equalities.unique.insert(*predicate) {
+                    equalities
+                        .items
+                        .entry(application.item)
+                        .or_default()
+                        .push(equalities.predicates.len());
                     equalities.predicates.push(*predicate);
                 }
                 continue;
@@ -253,6 +308,20 @@ impl Environment {
         self.equalities
             .iter()
             .flat_map(|equalities| &equalities.predicates)
+    }
+    /// Complete input equations distinguish candidates within this member bucket.
+    pub(crate) fn projection_candidates(
+        &self,
+        item: crate::types::ItemId,
+    ) -> impl Iterator<Item = &Predicate> {
+        self.equalities.iter().flat_map(move |equalities| {
+            equalities
+                .items
+                .get(&item)
+                .into_iter()
+                .flatten()
+                .map(|&index| &equalities.predicates[index])
+        })
     }
     #[must_use]
     pub fn assumes_trait(
@@ -331,8 +400,10 @@ mod equality_tests {
         };
         let environment = Environment::new(&store, &[])?.with_predicates(&store, &[predicate])?;
         assert!(!environment.has_only_parameters());
+        assert!(environment.requires_region_mapping());
         let mut fold = substitute::Bound::open_regions(7)?;
         let opened = environment.substitute_regions(&mut store, &mut fold)?;
+        assert!(opened.requires_region_mapping());
         let expected = store.intern(Kind::Reference {
             mutable: false,
             region: RegionId(7),
@@ -358,6 +429,39 @@ mod equality_tests {
         );
         assert!(!opened.assumes_sized(ty));
         assert!(!opened.has_shape_assumptions());
+        let static_environment = environment.substitute_regions(
+            &mut store,
+            &mut substitute::Bound::new(vec![RegionId::STATIC]),
+        )?;
+        let static_predicate = *static_environment
+            .projection_predicates()
+            .next()
+            .ok_or("missing static equality assumption")?;
+        let static_result = store.intern(Kind::Reference {
+            mutable: false,
+            region: RegionId::STATIC,
+            referent: TypeId::UNIT,
+        })?;
+        assert_eq!(
+            static_predicate.bound,
+            Bound::ProjectionEqual(static_result)
+        );
+        let closed = Environment::new(&store, &[])?.with_predicates(
+            &store,
+            &[Predicate {
+                ty,
+                bound: Bound::ProjectionEqual(TypeId::UNIT),
+            }],
+        )?;
+        assert!(!closed.requires_region_mapping());
+        let both = environment.with_predicates(&store, &[static_predicate])?;
+        let merged = both.substitute_regions(
+            &mut store,
+            &mut substitute::Bound::new(vec![RegionId::STATIC]),
+        )?;
+        assert_eq!(merged.projection_candidates(ItemId(2)).count(), 1);
+        assert_eq!(merged.projection_candidates(ItemId(3)).count(), 0);
+        assert_eq!(merged.projection_predicates().count(), 1);
         Ok(())
     }
 }

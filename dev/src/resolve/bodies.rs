@@ -212,7 +212,12 @@ impl Resolver<'_> {
                 // Associated suffixes are selected from typed receiver/trait facts later.
                 self.path_arguments(c, path)
             }
-            Kind::Constraint { value, bounds, .. } => {
+            Kind::Constraint {
+                target,
+                value,
+                bounds,
+            } => {
+                self.associated_binding(c, node, target)?;
                 self.optional(c, value, Namespace::Type)?;
                 self.visit_list(c, bounds, Namespace::Type)
             }
@@ -513,6 +518,49 @@ impl Resolver<'_> {
         });
         Ok(())
     }
+    fn associated_binding(
+        &mut self,
+        c: Context,
+        node: NodeId,
+        mut target: NodeId,
+    ) -> Result<(), Error> {
+        let mut arguments = None;
+        loop {
+            let children = match self.kind(c, target) {
+                Kind::Type {
+                    flavor: TypeFlavor::Path,
+                    elements,
+                } => elements,
+                Kind::Path {
+                    absolute: false,
+                    segments,
+                } => segments,
+                Kind::Applied {
+                    base,
+                    arguments: list,
+                    output: None,
+                } if arguments.is_none() => {
+                    arguments = Some(list);
+                    target = base;
+                    continue;
+                }
+                Kind::Name(span) => {
+                    let name = self.package.name(c.file, span)?;
+                    self.facts.associated_bindings.insert(
+                        NodeKey { file: c.file, node },
+                        super::model::AssociatedBinding { name, arguments },
+                    );
+                    return Ok(());
+                }
+                _ => return Ok(()),
+            };
+            let [child] = self.package.unit(c.file).configured.ast.list(children) else {
+                return Ok(());
+            };
+            target = *child;
+        }
+    }
+
     fn path_arguments(&mut self, c: Context, node: NodeId) -> Result<(), Error> {
         match self.kind(c, node) {
             Kind::Path { segments, .. } => {

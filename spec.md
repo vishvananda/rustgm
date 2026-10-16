@@ -697,8 +697,45 @@ result once; it uses validated implementations and the existing lifetime gate.
 Projection and trait progress run before numeric fallback and body publication.
 Normalization never substitutes for the original well-formedness proof. Isolated
 method-prefix queries still reject pending projection proofs until that query mode
-supports them; body proofs cannot leak into a speculative candidate. Symbolic
-associated equalities and further PA20/PA21 work remain required.
+supports them; body proofs cannot leak into a speculative candidate. General
+opaque-result properties, equality premises in implementation search and method
+applicability, associated constants and further PA20/PA21 work remain required.
+
+Associated bindings in trait bounds retain resolved member identities separately
+from positional arguments. Complete ordinary trait headers before resolving
+header bindings through the supertrait graph, then publish all equality predicates
+before freezing environments. Discard declaration-lookup application caches at
+that transition. A member declared directly by the named trait takes precedence;
+otherwise every inherited declaration participates in ambiguity. Preserve trait
+arguments, defaults, raw identifier identity and the original projected roots.
+Equalities on Self's associated types are implied by the trait's contract; a
+requirement on another type parameter is not automatically implied.
+
+Unused generic equality assumptions may disagree, including with a result's
+declared Sized or Copy bound. Retain them without choosing a result. A requested
+normal form needs a unique matching equality and a separate trait-premise proof.
+Match complete input equations in isolated contexts; commit only the selected
+equations and retain their lifetime obligations. Never equate rigid input or
+result parameters merely because competing assumptions mention the same output.
+Closed declaration equalities need independent implementation proofs without
+using themselves as assumptions. Their normalization owns an explicit declaration
+proof scope. Body equalities use the actual body's allocator and lifetime gate.
+
+Instantiate both sides of a call's equality in the shared inference graph.
+Schedule their normalizations and a suspended equality before inference finishes;
+normalization may determine an output hole without guessing a projection's inputs.
+The result has its own well-formedness and lifetime requirements. Its separately
+retained trait premise supplies projected-subject formation. A proved opaque
+normalizer response does not bypass any remaining shape, lifetime, ownership or
+execution gate.
+
+Index equality assumptions by associated declaration, then distinguish their full
+inputs within that bucket. Remapping an environment preserves declaration order,
+deduplicates newly identical assumptions and rebuilds its index. Cache whether
+outer-region mapping may be necessary, including result-only captures. An
+environment certified to contain no such regions can use canonical inputs
+directly; unrelated equalities must not be cloned for each wide-list projection.
+The type store's region summary remains conservative for static lifetimes.
 
 Apply each tuple field's coercion before checking the next field. Context inferred
 from an earlier field can establish a later mutable-reference reborrow, including

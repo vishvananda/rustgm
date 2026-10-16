@@ -1,7 +1,6 @@
 //! A unique validated header can determine inputs before numeric fallback.
 use super::{Checker, Error, NodeId, Obligations, ScopeId, TermId};
 use crate::{
-    resolve::expansion::Report,
     sema::{
         model::Declarations,
         projections::selected_result,
@@ -135,7 +134,7 @@ impl Checker<'_> {
             proof.regions.end,
         )
         .map_err(|e| self.error(node, e))?;
-        let selected = opened.select(self.report, self.facts);
+        let selected = opened.select(self.facts);
         self.infer
             .account_work(opened.context.steps)
             .map_err(|e| self.error(node, e))?;
@@ -183,7 +182,7 @@ impl Checker<'_> {
         caller: &Caller<'_>,
     ) -> Result<Option<TermId>, Error> {
         let Some((result, selected)) =
-            selection::symbolic_result(self.report, self.facts, &mut self.infer, term, caller)
+            selection::symbolic_result(self.facts, &mut self.infer, term, caller)
                 .map_err(|e| self.error(node, e))?
         else {
             return Ok(None);
@@ -251,7 +250,7 @@ impl Opened {
         })
     }
 
-    fn select(&mut self, report: &Report, facts: &mut Declarations) -> Result<Attempt, String> {
+    fn select(&mut self, facts: &mut Declarations) -> Result<Attempt, String> {
         if !self.application.arguments.is_empty() {
             return Ok(Attempt::Retry);
         }
@@ -275,9 +274,22 @@ impl Opened {
             return Ok(Attempt::Retry);
         };
         let source = evidence.source;
-        if !matches!(source, Source::Implementation { .. }) {
-            return Ok(Attempt::Retry);
-        }
+        let assumed = if matches!(source, Source::Assumption(_)) {
+            use crate::sema::traits::equalities::{self, Selection};
+            match equalities::select(
+                &facts.types,
+                &mut self.context,
+                &self.application,
+                self.environment.as_deref(),
+            )
+            .map_err(inference)?
+            {
+                Selection::Proven(ty) => Some(ty),
+                Selection::Absent | Selection::Ambiguous => return Ok(Attempt::Retry),
+            }
+        } else {
+            None
+        };
         self.proof.append(evidence)?;
         self.proof
             .equalities
@@ -291,7 +303,11 @@ impl Opened {
         self.context
             .account_work(restoration.steps)
             .map_err(inference)?;
-        let ty = selected_result(report, facts, self.application.item, source, &self.proof)?;
+        let ty = if let Some(ty) = assumed {
+            restoration.apply(&mut facts.types, ty)?
+        } else {
+            selected_result(facts, self.application.item, source, &self.proof)?
+        };
         Ok(Attempt::Selected(Selected { predicate, ty }))
     }
 

@@ -85,6 +85,9 @@ struct Signature {
     unsafe_: bool,
 }
 struct Checker<'a> {
+    associated_type_bounds:
+        std::collections::HashMap<DefId, Vec<crate::types::parameters::predicates::Bound>>,
+    associated_bindings: generics::bindings::Pending,
     projections: projections::Pending,
     trait_proofs: trait_regions::Proofs,
     method_trait_environments: Option<
@@ -131,6 +134,8 @@ pub fn analyze(report: &Report) -> Result<Declarations, Error> {
         ));
     }
     let mut checker = Checker {
+        associated_type_bounds: std::collections::HashMap::new(),
+        associated_bindings: generics::bindings::Pending::default(),
         projections: projections::Pending::default(),
         trait_proofs: trait_regions::Proofs::default(),
         method_environments: None,

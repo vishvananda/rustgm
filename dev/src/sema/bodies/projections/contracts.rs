@@ -9,6 +9,32 @@ use crate::types::{
 };
 
 impl Checker<'_> {
+    pub(in crate::sema::bodies) fn prove_associated_equality(
+        &mut self,
+        node: NodeId,
+        left: TypeId,
+        right: TypeId,
+    ) -> Result<(), Error> {
+        let first = u32::try_from(self.facts.body_regions.len())
+            .ok()
+            .and_then(|count| count.checked_add(1))
+            .ok_or_else(|| self.error(node, "associated equality region space exhausted"))?;
+        let mut proof = Obligations::new(first);
+        let left = self.normalize_body_type(node, &mut proof, ScopeId::ROOT, left)?;
+        let right = self.normalize_body_type(node, &mut proof, ScopeId::ROOT, right)?;
+        let mut context = crate::types::infer::Context::default();
+        context
+            .equate_normal_forms(&self.facts.types, left, right)
+            .map_err(|e| self.error(node, e))?;
+        self.infer
+            .account_work(context.steps)
+            .map_err(|e| self.error(node, e))?;
+        proof.equalities.append(&mut context.region_equalities);
+        proof
+            .retain_body(self.facts, self.body, self.key(node))
+            .map_err(|e| self.error(node, e))
+    }
+
     pub(super) fn complete_contract(
         &mut self,
         node: NodeId,

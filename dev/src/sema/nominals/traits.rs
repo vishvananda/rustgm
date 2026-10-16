@@ -26,6 +26,12 @@ pub(crate) struct State {
     retain_sized: bool,
     availability: Availability,
 }
+pub(crate) struct Projected {
+    pub source: Option<selection::Source>,
+    pub resolution: Option<substitute::Resolution>,
+    pub proof: Obligations,
+    pub sized: Vec<crate::types::TypeId>,
+}
 impl State {
     pub fn new(
         facts: &mut Declarations,
@@ -92,30 +98,26 @@ impl State {
     pub(crate) fn projection(
         facts: &mut Declarations,
         environment: Option<Arc<Environment>>,
-        requirement: Predicate,
+        application: crate::types::projection::Application,
         first: u32,
         retain_sized: bool,
         availability: Availability,
-    ) -> Result<
-        (
-            Option<selection::Source>,
-            Obligations,
-            Vec<crate::types::TypeId>,
-        ),
-        &'static str,
-    > {
+    ) -> Result<Projected, &'static str> {
+        use crate::types::parameters::predicates::Bound;
+        let requirement = Predicate {
+            ty: application.subject,
+            bound: Bound::Trait(application.trait_application),
+        };
         if environment
             .as_ref()
-            .is_none_or(|env| env.has_only_parameters())
+            .is_none_or(|env| !env.requires_region_mapping())
             && !requirement.has_free_regions(&facts.types)?
         {
             let mut state = Self::new(facts, environment, None)?;
             state.obligations = Obligations::new(first);
             state.retain_sized = retain_sized;
             state.availability = availability;
-            let source = state.select_opened(facts, requirement, false)?;
-            let sized = std::mem::take(&mut state.sized);
-            return Ok((source, state.finish(), sized));
+            return state.project_opened(facts, application, requirement);
         }
         let mut fold = substitute::Bound::open_regions(first)?;
         let requirement = fold.predicate(&mut facts.types, requirement)?;
@@ -139,9 +141,61 @@ impl State {
         let mut opened: Vec<_> = fold.opened_regions().map(|(a, b)| (b, a)).collect();
         opened.sort_unstable_by_key(|(free, original)| (free.0, original.0));
         state.obligations.equalities.extend(opened);
-        let source = state.select_opened(facts, requirement, false)?;
-        let sized = std::mem::take(&mut state.sized);
-        Ok((source, state.finish(), sized))
+        state.project_opened(facts, application, requirement)
+    }
+
+    fn project_opened(
+        mut self,
+        facts: &mut Declarations,
+        application: crate::types::projection::Application,
+        requirement: Predicate,
+    ) -> Result<Projected, &'static str> {
+        use crate::sema::traits::equalities::{self, Selection};
+        let source = self.select_opened(facts, requirement, false)?;
+        let mut resolution = None;
+        if matches!(source, Some(selection::Source::Assumption(_))) {
+            if application.arguments != crate::types::GenericArgs::EMPTY {
+                return Err("associated families require advanced generic relationships");
+            }
+            let mut substitution = Instantiation::new(&mut self.context, &facts.types, &[])
+                .map_err(|_| "invalid equality assumption instantiation")?;
+            let predicate = self
+                .context
+                .instantiate_predicate(&mut facts.types, requirement, &mut substitution)
+                .map_err(|_| "invalid equality assumption inputs")?;
+            let inferred = crate::types::infer::projections::Application {
+                item: application.item,
+                predicate,
+                arguments: Vec::new(),
+            };
+            resolution = Some(
+                match equalities::select(
+                    &facts.types,
+                    &mut self.context,
+                    &inferred,
+                    self.environment.as_deref(),
+                )
+                .map_err(|_| "invalid or exhausted associated equality selection")?
+                {
+                    Selection::Absent => substitute::Resolution::Opaque,
+                    Selection::Ambiguous => {
+                        return Err("ambiguous associated type equality assumptions");
+                    }
+                    Selection::Proven(ty) => substitute::Resolution::Type(ty),
+                },
+            );
+        }
+        let sized = std::mem::take(&mut self.sized);
+        let proof = self.finish();
+        if let Some(substitute::Resolution::Type(ty)) = &mut resolution {
+            *ty = proof.restoration()?.apply(&mut facts.types, *ty)?;
+        }
+        Ok(Projected {
+            source,
+            resolution,
+            proof,
+            sized,
+        })
     }
 
     pub fn prove(
@@ -164,6 +218,56 @@ impl State {
             .map_err(|_| "declaration proof work exhausted")?;
         self.select_opened(facts, requirement, closed)
             .map(|source| source.is_some())
+    }
+
+    pub(super) fn prove_equality(
+        &mut self,
+        facts: &mut Declarations,
+        mut predicate: Predicate,
+        closed: bool,
+    ) -> Result<bool, &'static str> {
+        use crate::types::{lifetime_proof::ScopeId, parameters::predicates::Bound};
+        let Some(fold) = &mut self.fold else {
+            return Err("associated equality requires an explicit declaration proof scope");
+        };
+        let before = fold.steps;
+        predicate = fold.predicate(&mut facts.types, predicate)?;
+        self.context
+            .account_work(fold.steps.saturating_sub(before))
+            .map_err(|_| "equality proof work exhausted")?;
+        let Bound::ProjectionEqual(result) = predicate.bound else {
+            return Err("expected an associated equality obligation");
+        };
+        let environment = if closed {
+            None
+        } else {
+            self.environment.as_ref()
+        };
+        let mut normalized = [predicate.ty, result];
+        for ty in &mut normalized {
+            let (value, steps) = crate::sema::projections::normalize(
+                facts,
+                environment,
+                &mut self.obligations,
+                ScopeId::ROOT,
+                *ty,
+                self.availability,
+            )?;
+            *ty = value;
+            self.context
+                .account_work(steps)
+                .map_err(|_| "equality normalization work exhausted")?;
+        }
+        match self
+            .context
+            .equate_normal_forms(&facts.types, normalized[0], normalized[1])
+        {
+            Ok(()) => Ok(true),
+            Err(
+                crate::types::infer::Error::Mismatch | crate::types::infer::Error::Normalization,
+            ) => Ok(false),
+            Err(_) => Err("invalid or exhausted associated equality proof"),
+        }
     }
 
     fn select_opened(

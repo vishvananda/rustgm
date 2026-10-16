@@ -229,6 +229,13 @@ impl Introductions {
         false
     }
 }
+/// Associated binding names are canonical, while their member is selected from typed bounds.
+#[derive(Clone, Copy)]
+pub struct AssociatedBinding {
+    pub name: NameId,
+    pub arguments: Option<crate::syntax::ast::List>,
+}
+
 #[derive(Default)]
 pub struct Resolution {
     pub builtin_traits: BuiltinTraits,
@@ -252,6 +259,7 @@ pub struct Resolution {
     pub references: Vec<Reference>,
     pub associated_paths: HashMap<NodeKey, AssociatedPath>,
     pub qualified_paths: HashMap<NodeKey, QualifiedPath>,
+    pub associated_bindings: HashMap<NodeKey, AssociatedBinding>,
     pub method_calls: HashMap<NodeKey, MethodCall>,
     pub imports: Vec<Import>,
     pub module_scopes: Vec<ScopeId>,

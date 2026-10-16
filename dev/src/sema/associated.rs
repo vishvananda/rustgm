@@ -70,8 +70,19 @@ pub struct Inventory {
     declarations: HashMap<DefId, OwnerId>,
     schemas: HashMap<OwnerId, Schema>,
     pub(in crate::sema) types: HashMap<DefId, TypeContract>,
+    type_names: HashMap<DefId, crate::resolve::names::NameId>,
+    type_members: HashMap<(OwnerId, crate::resolve::names::NameId), DefId>,
 }
 impl Inventory {
+    /// Resolved namespace identity only; selection and conformance remain separate proofs.
+    pub(in crate::sema) fn type_definition(
+        &self,
+        owner: DefId,
+        declaration: DefId,
+    ) -> Option<DefId> {
+        let name = *self.type_names.get(&declaration)?;
+        self.type_members.get(&(self.owner(owner)?, name)).copied()
+    }
     #[must_use]
     pub fn type_contract(&self, declaration: DefId) -> Option<&TypeContract> {
         self.types.get(&declaration)
@@ -185,9 +196,16 @@ pub fn collect(report: &Report) -> Result<Inventory, Error> {
             continue;
         }
         let source = result.owners[owner.0 as usize].source;
-        let definition = identity(report, source, index)?;
-        result.declarations.insert(definition, owner);
-        result.members.push(Member { definition, owner });
+        let id = identity(report, source, index)?;
+        if definition.kind == DefKind::TypeAlias {
+            result.type_names.insert(id, definition.name);
+            result.type_members.insert((owner, definition.name), id);
+        }
+        result.declarations.insert(id, owner);
+        result.members.push(Member {
+            definition: id,
+            owner,
+        });
     }
     Ok(result)
 }

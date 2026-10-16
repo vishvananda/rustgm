@@ -1,6 +1,7 @@
 //! Generic declaration environments are elaborated once by the declaration worklist.
 mod annotations;
 mod arguments;
+pub(super) mod bindings;
 pub(super) mod bounds;
 pub(super) use crate::sema::generics::captures::Captures;
 mod constants;

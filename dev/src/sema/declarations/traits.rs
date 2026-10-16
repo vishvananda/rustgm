@@ -46,6 +46,8 @@ impl Checker<'_> {
                 .or_default();
             self.drain(steps, limit)?;
         }
+        self.reserve_associated_type_bounds()?;
+        self.associated_bindings.begin_trait_headers();
         for index in 0..self.facts.associated.owners().len() {
             let owner = self.facts.associated.owners()[index];
             let OwnerKind::Trait { definition, .. } = owner.kind else {
@@ -60,6 +62,7 @@ impl Checker<'_> {
             self.retain_trait_contract(owner, definition)?;
             self.implicit_trait_bound(owner, definition)?;
         }
+        self.complete_trait_bindings()?;
         self.complete_trait_contracts()
     }
 

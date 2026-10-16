@@ -5,43 +5,28 @@ use super::{
     traits::{implementations::Availability, selection::Source},
 };
 use crate::{
-    resolve::{
-        expansion::Report,
-        model::{DefId, DefKind, Namespace},
-    },
+    resolve::model::DefId,
     types::{
         ItemId, TypeId,
         lifetime_proof::{Obligations, ScopeId, map_scopes},
-        parameters::{
-            environment::Environment,
-            predicates::{Bound, Predicate},
-        },
+        parameters::environment::Environment,
         substitute::{self, Normalizer, Resolution, Step},
     },
 };
 use std::{collections::HashMap, sync::Arc};
 
 pub(super) fn definition(
-    report: &Report,
     facts: &Declarations,
     owner: DefId,
     item: ItemId,
 ) -> Result<DefId, &'static str> {
-    let name = report.resolution.definitions[item.0 as usize].name;
-    let scope = report.resolution.definitions[owner.0 as usize].scope;
-    report.resolution.scopes[scope.0 as usize]
-        .bindings
-        .get(&(name, Namespace::Type))
-        .map(|b| b.target)
-        .filter(|id| {
-            report.resolution.definitions[id.0 as usize].kind == DefKind::TypeAlias
-                && facts.associated.owner(*id) == facts.associated.owner(owner)
-        })
+    facts
+        .associated
+        .type_definition(owner, DefId(item.0))
         .ok_or("selected implementation is missing the associated type")
 }
 
 pub(super) fn selected_result(
-    report: &Report,
     facts: &mut Declarations,
     item: ItemId,
     source: Source,
@@ -50,7 +35,7 @@ pub(super) fn selected_result(
     let Source::Implementation { owner, arguments } = source else {
         return Err("associated type requires an unambiguous validated implementation");
     };
-    let definition = definition(report, facts, owner, item)?;
+    let definition = definition(facts, owner, item)?;
     let template = facts.definitions[definition.0 as usize]
         .ok_or("missing completed associated type definition")?;
     let ty = facts
@@ -64,12 +49,12 @@ pub(super) fn selected_result(
 }
 
 pub(super) fn normalize(
-    report: &Report,
     facts: &mut Declarations,
     environment: Option<&Arc<Environment>>,
     proof: &mut Obligations,
     ambient: ScopeId,
     ty: TypeId,
+    availability: Availability,
 ) -> Result<(TypeId, usize), &'static str> {
     let depth = proof.scope_depth(ambient)?;
     let mut fold = Normalizer::default();
@@ -99,22 +84,27 @@ pub(super) fn normalize(
             environments.insert(local, shifted.clone());
             shifted
         };
-        let predicate = Predicate {
-            ty: request.application.subject,
-            bound: Bound::Trait(request.application.trait_application),
-        };
-        let (source, selected, _) = State::projection(
+        let projected = State::projection(
             facts,
             environment,
-            predicate,
+            request.application,
             proof.regions.end,
             false,
-            Availability::Validated,
+            availability,
         )?;
-        let Some(source) = source else {
+        let Some(source) = projected.source else {
             return Err("associated type requires an unambiguous validated implementation");
         };
-        let ty = selected_result(report, facts, request.application.item, source, &selected)?;
+        let resolution = if let Some(resolution) = projected.resolution {
+            resolution
+        } else {
+            Resolution::Type(selected_result(
+                facts,
+                request.application.item,
+                source,
+                &projected.proof,
+            )?)
+        };
         let scope = map_scopes(
             &mut scopes,
             ambient,
@@ -122,7 +112,7 @@ pub(super) fn normalize(
             |id| fold.binder(id).ok_or("missing normalization binder"),
             |parent, count| proof.scope(parent, count),
         )?;
-        proof.append_at(selected, scope)?;
-        step = fold.resume(&mut facts.types, request, Resolution::Type(ty))?;
+        proof.append_at(projected.proof, scope)?;
+        step = fold.resume(&mut facts.types, request, resolution)?;
     }
 }

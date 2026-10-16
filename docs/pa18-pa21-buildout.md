@@ -5740,3 +5740,96 @@ Resident medians differ by -22 to +756 KiB across these pairs. A/A wall-time
 spreads range from 0.86% to 78.00% on the shared host; individual noisy samples
 and all block ratios remain in the receipts. These measurements do not establish
 unchanged memory use or a strict zero-regression performance guarantee.
+
+
+### Source associated equality bindings
+
+The maintainer now elaborates equality bindings such as `T: Trait<Out = U>`
+and the corresponding where-clause forms into separate typed predicates. Member
+names retain resolved identities; positional arguments, defaults and raw names
+keep their existing rules. Ordinary trait headers are completed before inherited
+binding lookup, and all equality requirements are published before environments
+freeze. A direct member of the named trait takes precedence; otherwise competing
+inherited declarations are ambiguous. Lookup caches are discarded at this phase
+transition.
+
+Normalization proves the trait premise separately, then matches complete input
+equations against indexed equality assumptions. A selected equality may determine
+the result; equal outputs do not imply equal input parameters. Scope opening,
+callable binders and result-only lifetimes retain their proof obligations. Calls
+instantiate both sides in the existing inference graph and schedule normalization
+before the suspended equality completes. Closed declaration equalities require an
+independent proof, without assuming themselves. Result formation and outlives
+requirements remain separate from the original projected subject's trait premise.
+
+Unused generic equalities may be contradictory, even with declared Sized or Copy
+promises. They are retained rather than rejected eagerly or used to grant arbitrary
+properties. A demanded normal form must be unambiguous, and an actual call must
+satisfy its requirements. Opaque normalizer responses still encounter the existing
+shape, lifetime, ownership and execution gates.
+
+The new `binding_contracts.rs` integration group independently qualifies 42 source
+outcomes with pinned rustc before checking complete template proofs. Nine native
+programs compare RustGM/CPPGM execution with rustc, covering equality parameters,
+where clauses, trait arguments/defaults, inherited equalities, closed predicates,
+raw names, borrowed results and higher-ranked function-pointer results. Negative
+controls include missing members, mismatched calls, environment isolation,
+noninjective results, inherited ambiguity, lifetime escape and missing result
+well-formedness. Existing course fixtures and text oracles are unchanged.
+
+Artifacts are retained under
+`obj/pa20-work/source-associated-bindings-v1/`. Final validation is recorded in
+`checks-v8.json` and `validation-v8-counts.json`: all 28 commands pass, including
+formatting, strict Clippy, architecture/file audits, 33 harness tests, all 4,864
+active course cases, 1,075 release tests, backend qualification and all 44 separate
+native groups. The default release suite reports those backend groups as ignored;
+the explicit native run executes them. The frozen candidate is
+`13f5d97df19e87185eb7100114d1a8341d56c708f4cc550b1a482238eb452db4`,
+with 663 source/config/test files frozen for the measurement comparison.
+
+Initial failed checks remain in the receipts. The new test was renamed as one
+cohesive group after the filename-family placement audit rejected the original
+name. A new unit assertion incorrectly treated static lifetimes as absent from
+the type store's conservative free-region summary; the corrected test checks the
+substituted type, the region-free fast path and deduplication without changing
+that established summary. No lint or audit suppression was added.
+
+This remains a partial PA20 checkpoint. The original positive investigations for
+opaque projected identity, projected Copy assumptions, equality-driven default
+methods and result-declared Copy behavior still expose missing integration.
+General equality premises in implementation search and method applicability,
+associated colon bounds/constants and opaque result properties remain required.
+PA21's full variance, higher-ranked relationships, GATs, opaque types/captures and
+generic drop checking also remain required. Neither planned assignment is
+activated or counted as passing.
+
+Validation cleanup removed 4,272 generated files and 4.47 GiB of unshared blocks;
+the receipt is `obj/cleanup/1792136160597780461.jsonl`. Frozen inputs, diagnostics,
+source snapshots and observations remain available after executable cleanup.
+
+
+Performance uses two explicit comparisons, with immutable binaries, frozen inputs,
+A/A calibration, five paired ABBA blocks per job and full/count output equality:
+
+- Against published `b7f371c`, 36 jobs retain 936 observations across eighteen
+  existing-path inputs. Median paired wall-time changes range from -9.70% to
+  +1.94%, with resident-median changes from -222 to +492 KiB. A/A spreads range
+  from 0.75% to 90.26% on the shared host; the negative deltas do not establish
+  a general speedup or a strict zero-regression guarantee.
+- Six additional jobs retain 156 observations for 64/256/1,024 associated equality
+  bindings, comparing the validated preoptimization implementation (`candidate-v5`)
+  with the final candidate. Each input is independently accepted by pinned rustc.
+  The final implementation indexes equalities by associated declaration and uses
+  a cached certificate to skip unnecessary whole-environment region remapping.
+  Full-view resident medians are approximately 6.4/7.8/10.6 MiB. Full-view wall-time
+  medians fall from 7.12/27.25/294.59 ms to 6.08/12.03/36.02 ms, with median paired
+  deltas of -13.85%/-56.27%/-87.94%. These are semantic-inspection workloads, not
+  end-to-end native compile measurements. Calibration spreads, every paired
+  block and both count/full modes remain recorded.
+
+All 1,092 timing observations are retained in `measurements/`; `perf-results.json`
+and `performance-summary.json` contain summaries. Expected binary hashes are
+checked against `binary-sha256.json`; source, input, binary and runner hashes are
+verified before and after measurement. No RustGM builds, tests or probes overlap
+timing. The wide-list comparison is against an earlier implementation of this
+new feature, not the published compiler that does not yet support these inputs.

@@ -109,8 +109,8 @@ impl Checker<'_> {
         ty: TypeId,
         bound: Bound,
     ) -> Result<(), Error> {
-        if matches!(bound, Bound::ProjectionEqual(_)) {
-            return Err(self.error(node, "projection equality requires a normalization proof"));
+        if let Bound::ProjectionEqual(result) = bound {
+            return self.prove_associated_equality(node, ty, result);
         }
         if let Bound::Outlives(shorter) = bound {
             self.facts
@@ -252,6 +252,17 @@ impl Checker<'_> {
                 .infer
                 .instantiate_predicate(&mut self.facts.types, predicate, &mut inference)
                 .map_err(|e| self.error(node, e))?;
+            if let Some(result) = predicate.projection_result() {
+                let scope = crate::types::lifetime_proof::ScopeId::ROOT;
+                self.defer_normalization(node, scope, predicate.subject())?;
+                self.defer_normalization(node, scope, result)?;
+                self.deferred_equation(
+                    node,
+                    predicate.subject(),
+                    result,
+                    crate::types::infer::deferred::Relation::Equality,
+                )?;
+            }
             self.call_types.obligations.push((node, predicate));
         }
         Ok(())

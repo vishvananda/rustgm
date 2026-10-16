@@ -12,6 +12,22 @@ enum Work {
 }
 
 impl Context {
+    /// Compare independently normalized types while preserving callable binders.
+    /// Projection inputs are never treated as injective result constructors.
+    /// Outer region equations still require the caller's lifetime proof.
+    /// # Errors
+    /// Rejects mismatched types, unresolved projections, capture and exhausted work.
+    pub fn equate_normal_forms(
+        &mut self,
+        store: &Store,
+        left: super::TypeId,
+        right: super::TypeId,
+    ) -> Result<(), Error> {
+        let left = self.known(store, left)?;
+        let right = self.known(store, right)?;
+        self.equate_scoped_terms(store, left, right)
+    }
+
     pub(super) fn equate_scoped_terms(
         &mut self,
         store: &Store,

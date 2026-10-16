@@ -83,6 +83,14 @@ impl Proof {
     ) -> Result<bool, &'static str> {
         self.trait_state(facts)?.prove(facts, requirement, true)
     }
+    pub fn prove_closed_equality(
+        &mut self,
+        facts: &mut Declarations,
+        requirement: Predicate,
+    ) -> Result<bool, &'static str> {
+        self.trait_state(facts)?
+            .prove_equality(facts, requirement, true)
+    }
     fn shape(
         &mut self,
         facts: &Declarations,
@@ -135,7 +143,8 @@ impl Proof {
     ) -> Result<bool, &'static str> {
         let valid = match requirement.bound {
             Bound::ProjectionEqual(_) => {
-                return Err("projection equality requires a normalization proof");
+                self.trait_state(facts)?
+                    .prove_equality(facts, requirement, false)?
             }
             Bound::Trait(_) => self.prove_trait(facts, requirement)?,
             Bound::Sized => self.shape(facts, requirement.ty)?.sized,

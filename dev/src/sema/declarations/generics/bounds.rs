@@ -277,6 +277,7 @@ impl Checker<'_> {
         for bound in bounds.iter().rev() {
             if let Written::User { path, definition } = bound.bound {
                 self.bound_subject_lifetimes(path, owner)?;
+                self.schedule_associated_bindings(path, context)?;
                 self.work
                     .push(Work::PathArguments(path, definition, context));
             }
@@ -370,6 +371,9 @@ impl Checker<'_> {
                 source: bound.source,
                 value,
             });
+            if let Written::User { path, .. } = bound.bound {
+                self.complete_associated_bindings(owner, path, value, original, &mut completed)?;
+            }
         }
         self.facts.generics.predicates.insert(owner, completed);
         self.retain_raw_bounds(owner, bounds)?;

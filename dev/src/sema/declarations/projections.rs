@@ -22,6 +22,11 @@ struct Selected {
     arguments: GenericArgs,
     restore: Option<Box<crate::types::substitute::Bound>>,
 }
+enum Selection {
+    Deferred,
+    Definition(Selected),
+    Resolved(Resolution),
+}
 struct Query {
     fold: Normalizer,
     context: regions::Context,
@@ -131,7 +136,7 @@ impl Checker<'_> {
             .map(|b| b.target)
             .filter(|id| {
                 self.facts.associated.trait_owner(*id) == Some(owner)
-                    && self.facts.associated.type_contract(*id).is_some()
+                    && self.facts.types.projection_schema(ItemId(id.0)).is_some()
             })
             .ok_or_else(|| self.error(key, "qualified trait has no prepared associated type"))?;
         let arguments = self.application_arguments(prefix, owner, context)?;
@@ -245,8 +250,21 @@ impl Checker<'_> {
         key: NodeKey,
         request: Request,
     ) -> Result<(), Error> {
-        let Some(selected) = self.select_projection(key, request)? else {
-            return self.defer_projection_requirement(key, request);
+        let selected = match self.select_projection(key, request)? {
+            Selection::Deferred => return self.defer_projection_requirement(key, request),
+            Selection::Definition(selected) => selected,
+            Selection::Resolved(resolution) => {
+                let query = self
+                    .projections
+                    .roots
+                    .get_mut(&key)
+                    .ok_or_else(|| Error::at(key.file, 0, "missing pending projection fold"))?;
+                let step = query
+                    .fold
+                    .resume(&mut self.facts.types, request, resolution)
+                    .map_err(|e| self.error(key, e))?;
+                return self.advance_projection(key, step);
+            }
         };
         let definition = selected.definition;
         self.projections
@@ -301,11 +319,7 @@ impl Checker<'_> {
         self.advance_projection(key, step)
     }
 
-    fn select_projection(
-        &mut self,
-        key: NodeKey,
-        request: Request,
-    ) -> Result<Option<Selected>, Error> {
+    fn select_projection(&mut self, key: NodeKey, request: Request) -> Result<Selection, Error> {
         use crate::{
             sema::{nominals::traits::State, traits::selection},
             types::parameters::predicates::{Bound, Predicate},
@@ -327,35 +341,34 @@ impl Checker<'_> {
                 .contains_projections(&self.facts.types)
                 .map_err(|e| self.error(key, e))?
         {
-            return Ok(None);
+            return Ok(Selection::Deferred);
         }
         let (environment, first) = self.scoped_projection_environment(key, request, context)?;
-        let (source, proof, sized) = State::projection(
+        let projected = State::projection(
             &mut self.facts,
             environment,
-            predicate,
+            application,
             first,
             deferred,
             crate::sema::traits::implementations::Availability::Declarations,
         )
         .map_err(|e| self.error(key, e))?;
-        let Some(source) = source else {
+        let Some(source) = projected.source else {
             if deferred {
-                return Ok(None);
+                return Ok(Selection::Deferred);
             }
             return Err(self.error(
                 key,
                 "associated type requires an unambiguous implementation",
             ));
         };
+        let proof = projected.proof;
+        if let Some(resolution) = projected.resolution {
+            self.retain_scoped_projection_proof(key, request, context, proof)?;
+            return Ok(Selection::Resolved(resolution));
+        }
         let selection::Source::Implementation { owner, arguments } = source else {
-            if deferred {
-                return Ok(None);
-            }
-            return Err(self.error(
-                key,
-                "symbolic associated types require projection equality obligations",
-            ));
+            return Err(self.error(key, "missing associated assumption normal form"));
         };
         let mut restore = if proof.regions.is_empty() && proof.equalities.is_empty() {
             None
@@ -364,12 +377,17 @@ impl Checker<'_> {
                 proof.restoration().map_err(|e| self.error(key, e))?,
             ))
         };
-        self.retain_alias_sizes(key, request, context, sized, restore.as_deref_mut())?;
+        self.retain_alias_sizes(
+            key,
+            request,
+            context,
+            projected.sized,
+            restore.as_deref_mut(),
+        )?;
         self.retain_scoped_projection_proof(key, request, context, proof)?;
-        let definition =
-            crate::sema::projections::definition(self.report, &self.facts, owner, application.item)
-                .map_err(|e| self.error(key, e))?;
-        Ok(Some(Selected {
+        let definition = crate::sema::projections::definition(&self.facts, owner, application.item)
+            .map_err(|e| self.error(key, e))?;
+        Ok(Selection::Definition(Selected {
             request,
             owner,
             definition,

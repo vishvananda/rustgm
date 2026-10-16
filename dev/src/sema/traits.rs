@@ -1,6 +1,7 @@
 //! Trait contracts retain direct predicates; applications share one capture-safe fold.
 pub(super) mod assumptions;
 pub(super) mod conformance;
+pub(in crate::sema) mod equalities;
 mod heads;
 pub(super) mod implementations;
 pub(super) mod obligations;
@@ -21,7 +22,7 @@ pub(super) struct Header {
     pub regions: Vec<crate::types::outlives::Pair>,
 }
 
-/// Only predicates whose original subject is Self are implied by a trait bound.
+/// Self bounds and equalities on Self's associated types are implied by a trait bound.
 pub(super) struct Requirements {
     pub implied: Vec<Predicate>,
     pub required: Vec<Predicate>,
@@ -38,6 +39,23 @@ pub(super) struct Contracts {
 }
 
 impl Contracts {
+    /// Associated member lookup uses only the complete ordinary supertrait graph.
+    /// Finish those declaration-time bindings before publishing environments; cached
+    /// lookup applications cannot then stand in for the final proof requirements.
+    pub fn complete_bindings(
+        &mut self,
+        additions: Vec<(ItemId, Vec<Located>)>,
+    ) -> Result<(), &'static str> {
+        for (item, predicates) in additions {
+            self.headers
+                .get_mut(&item)
+                .ok_or("missing binding trait header")?
+                .predicates
+                .extend(predicates);
+        }
+        self.applications.clear();
+        Ok(())
+    }
     pub fn declare(&mut self, item: ItemId, header: Header) -> Result<(), &'static str> {
         if self.headers.contains_key(&item) {
             return Err("trait contract already declared");
@@ -152,7 +170,11 @@ impl Contracts {
         let mut replace = substitute::Bound::parameters_captured(store, &mapping, regions)?;
         for predicate in &header.predicates {
             let value = replace.predicate(store, predicate.value)?;
-            if predicate.value.ty == header.self_type {
+            let associated_self = matches!(predicate.value.bound, Bound::ProjectionEqual(_))
+                && matches!(store.kind(predicate.value.ty),
+                    Some(crate::types::Kind::Projection(application))
+                        if application.subject == header.self_type);
+            if predicate.value.ty == header.self_type || associated_self {
                 result.implied.push(value);
             } else {
                 result.required.push(value);

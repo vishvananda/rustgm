@@ -398,12 +398,12 @@ impl Checker<'_> {
         }
         let environment = self.projection_environment(node)?;
         let (result, steps) = crate::sema::projections::normalize(
-            self.report,
             self.facts,
             environment.as_ref(),
             proof,
             scope,
             ty,
+            crate::sema::traits::implementations::Availability::Validated,
         )
         .map_err(|e| self.error(node, e))?;
         self.infer

@@ -40,6 +40,21 @@ impl Checker<'_> {
                 self.retain_bound_root(key, &mut seen, &mut roots)?;
             }
             if let Some((path, definition)) = bound.trait_path() {
+                if let Some(list) = self.associated_bindings.bindings(path) {
+                    for offset in list.start..list.end {
+                        let node = self.report.package.unit(path.file).configured.ast.edges
+                            [offset as usize];
+                        let value = self.associated_binding_value(NodeKey { node, ..path })?;
+                        self.retain_bound_root(
+                            NodeKey {
+                                node: value,
+                                ..path
+                            },
+                            &mut seen,
+                            &mut roots,
+                        )?;
+                    }
+                }
                 let (list, omitted) = self.supplied_arguments(path, definition)?;
                 if let Some(list) = list {
                     let ast = &self.report.package.unit(path.file).configured.ast;

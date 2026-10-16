@@ -16,7 +16,11 @@ impl Checker<'_> {
                 "type arguments require prepared parameter declarations",
             )
         })?;
-        let list = crate::sema::lifetimes::arguments(self.report, key, false)?;
+        let list = if let Some(positional) = self.associated_bindings.positional(key) {
+            Some(positional)
+        } else {
+            crate::sema::lifetimes::arguments(self.report, key, false)?
+        };
         let ast = &self.report.package.unit(key.file).configured.ast;
         let supplied = list.map_or(&[][..], |list| ast.list(list));
         let lifetime_count = parameters

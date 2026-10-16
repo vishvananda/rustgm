@@ -152,7 +152,14 @@ pub fn collect(facts: &Declarations) -> Result<Contracts<'_>, &'static str> {
                 .into_iter()
                 .flatten()
             {
-                add(body, predicate.source, Kind::WellFormed(predicate.value.ty))?;
+                // Associated equality formation follows its separate trait premise.
+                // The result has its own well-formedness requirements; inspecting
+                // the opaque projected subject cannot substitute for those checks.
+                let ty = match predicate.value.bound {
+                    crate::types::parameters::predicates::Bound::ProjectionEqual(result) => result,
+                    _ => predicate.value.ty,
+                };
+                add(body, predicate.source, Kind::WellFormed(ty))?;
             }
         }
     }

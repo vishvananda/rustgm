@@ -1,7 +1,7 @@
 //! Selected implementation templates share inputs while their premises remain pending.
 use super::{Caller, Context, Declarations, inference, instantiation};
 use crate::{
-    resolve::{expansion::Report, model::DefId},
+    resolve::model::DefId,
     sema::{
         projections::definition,
         traits::{heads::Subject, implementations::Availability},
@@ -24,7 +24,6 @@ struct Candidate {
 /// This returns structural equations only; the body retains the original query
 /// until the ordinary selector proves every premise with fully determined inputs.
 pub(in crate::sema) fn symbolic_result(
-    report: &Report,
     facts: &mut Declarations,
     source: &mut Context,
     root: TermId,
@@ -57,7 +56,7 @@ pub(in crate::sema) fn symbolic_result(
         && let Some(inputs) =
             super::header_inputs::independent(facts, source, goal, *owner).map_err(inference)?
     {
-        let definition = definition(report, facts, *owner, application.item)?;
+        let definition = definition(facts, *owner, application.item)?;
         let template = facts.definitions[definition.0 as usize]
             .ok_or("missing associated result definition")?;
         let mut fold = Bound::parameters_captured(&facts.types, &[], inputs.regions)?;
@@ -88,7 +87,7 @@ pub(in crate::sema) fn symbolic_result(
         return Ok(None);
     };
     let before = selected.probe.context().steps;
-    let result = selected.export(report, facts, source, application.item);
+    let result = selected.export(facts, source, application.item);
     source
         .account_work(selected.probe.context().steps.saturating_sub(before))
         .map_err(inference)?;
@@ -148,7 +147,6 @@ impl Candidate {
 
     fn export(
         &mut self,
-        report: &Report,
         facts: &mut Declarations,
         source: &mut Context,
         item: crate::types::ItemId,
@@ -156,7 +154,7 @@ impl Candidate {
         if !self.probe.preserves_inputs(source).map_err(inference)? {
             return Ok(None);
         }
-        let definition = definition(report, facts, self.instance.owner, item)?;
+        let definition = definition(facts, self.instance.owner, item)?;
         let template = facts.definitions[definition.0 as usize]
             .ok_or("missing associated result definition")?;
         let mut fold =

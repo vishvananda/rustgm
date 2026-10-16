@@ -21,10 +21,8 @@ impl Checker<'_> {
         {
             let predicate = self.facts.generics.predicates[&owner][index];
             if matches!(predicate.value.bound, Bound::ProjectionEqual(_)) {
-                return Err(self.error(
-                    predicate.source,
-                    "projection equality requires a normalization proof",
-                ));
+                self.validate_equality_bound(predicate, proof)?;
+                continue;
             }
             let ty = predicate.value.ty;
             let well_formed = proof
@@ -107,6 +105,55 @@ impl Checker<'_> {
                     "non-generic bound is not satisfied at declaration",
                 ));
             }
+        }
+        Ok(())
+    }
+
+    fn validate_equality_bound(
+        &mut self,
+        predicate: crate::sema::generics::Predicate,
+        proof: &mut Proof,
+    ) -> Result<(), Error> {
+        let Bound::ProjectionEqual(result) = predicate.value.bound else {
+            return Err(self.error(predicate.source, "missing associated equality result"));
+        };
+        // Formation of the projected subject follows its separately retained trait
+        // premise. An unused generic equality does not require its result to satisfy
+        // the associated declaration's Sized/Copy promises.
+        if !proof
+            .check(&mut self.facts, result)
+            .map_err(|e| self.error(predicate.source, e))?
+            .well_formed
+        {
+            return Err(self.error(
+                predicate.source,
+                "associated equality result must be well-formed",
+            ));
+        }
+        let original = self
+            .facts
+            .unreduced
+            .predicate(predicate.source)
+            .filter(|value| matches!(value.bound, Bound::ProjectionEqual(_)))
+            .unwrap_or(predicate.value);
+        if original
+            .contains_parameters(&self.facts.types)
+            .map_err(|e| self.error(predicate.source, e))?
+            || original
+                .escaping_binders(&self.facts.types)
+                .map_err(|e| self.error(predicate.source, e))?
+                != 0
+        {
+            return Ok(());
+        }
+        if !proof
+            .prove_closed_equality(&mut self.facts, original)
+            .map_err(|e| self.error(predicate.source, e))?
+        {
+            return Err(self.error(
+                predicate.source,
+                "closed associated equality is not satisfied",
+            ));
         }
         Ok(())
     }

@@ -13,6 +13,46 @@ use crate::{
 pub(super) use conformance::Members;
 
 impl Checker<'_> {
+    pub(in crate::sema::declarations) fn reserve_associated_type_bounds(
+        &mut self,
+    ) -> Result<(), Error> {
+        for index in 0..self.facts.associated.members().len() {
+            let member = self.facts.associated.members()[index];
+            let declaration = &self.report.resolution.definitions[member.definition.0 as usize];
+            let owner = self.facts.associated.owners()[member.owner.0 as usize];
+            let OwnerKind::Trait {
+                definition: trait_item,
+                ..
+            } = owner.kind
+            else {
+                continue;
+            };
+            if declaration.kind != DefKind::TypeAlias {
+                continue;
+            }
+            let key = declaration
+                .node
+                .ok_or_else(|| self.error(owner.source, "missing associated type source"))?;
+            let ItemKind::TypeAlias { bounds, .. } = self.item(key)?.kind else {
+                return Err(self.error(key, "missing associated type syntax"));
+            };
+            let (sized, bounds) = self.associated_type_bounds(key, bounds)?;
+            self.facts
+                .types
+                .declare_projection(
+                    ItemId(member.definition.0),
+                    projection::Schema {
+                        trait_item: ItemId(trait_item.0),
+                        sized,
+                    },
+                )
+                .map_err(|e| self.error(key, e))?;
+            self.associated_type_bounds
+                .insert(member.definition, bounds);
+        }
+        Ok(())
+    }
+
     pub(in crate::sema::declarations) fn prepare_associated_types(&mut self) -> Result<(), Error> {
         for index in 0..self.facts.associated.members().len() {
             let member = self.facts.associated.members()[index];
@@ -44,13 +84,7 @@ impl Checker<'_> {
                             "associated type defaults are not supported by the stable profile",
                         ));
                     }
-                    self.declare_associated_type(
-                        member.definition,
-                        key,
-                        owner,
-                        definition,
-                        bounds,
-                    )?;
+                    self.declare_associated_type(member.definition, key, owner, definition)?;
                     definition
                 }
                 OwnerKind::Impl {
@@ -88,23 +122,15 @@ impl Checker<'_> {
         key: NodeKey,
         owner: Owner,
         trait_item: DefId,
-        bounds: List,
     ) -> Result<(), Error> {
-        let (sized, bounds) = self.associated_type_bounds(key, bounds)?;
+        let bounds = self
+            .associated_type_bounds
+            .remove(&id)
+            .ok_or_else(|| self.error(key, "missing reserved associated type bounds"))?;
         let predicate = self.facts.generics.trait_self_bounds[&trait_item];
         let Bound::Trait(trait_application) = predicate.bound else {
             return Err(self.error(key, "missing associated type trait application"));
         };
-        self.facts
-            .types
-            .declare_projection(
-                ItemId(id.0),
-                projection::Schema {
-                    trait_item: ItemId(trait_item.0),
-                    sized,
-                },
-            )
-            .map_err(|e| self.error(key, e))?;
         let projection = self.intern(
             key,
             Type::Projection(projection::Application {
