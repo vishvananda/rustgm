@@ -85,8 +85,7 @@ struct Signature {
     unsafe_: bool,
 }
 struct Checker<'a> {
-    associated_type_bounds:
-        std::collections::HashMap<DefId, Vec<crate::types::parameters::predicates::Bound>>,
+    associated_type_bounds: std::collections::HashMap<DefId, traits::AssociatedBounds>,
     associated_bindings: generics::bindings::Pending,
     projections: projections::Pending,
     trait_proofs: trait_regions::Proofs,
@@ -187,7 +186,7 @@ impl Checker<'_> {
         self.prepare_destructors(destructors, &mut steps, work_limit)?;
         self.prepare_trait_implementations(&mut steps, work_limit)?;
         self.prepare_inherent_owners(&mut steps, work_limit)?;
-        self.prepare_associated_types()?;
+        self.prepare_associated_types(&mut steps, work_limit)?;
         for index in 0..self.report.resolution.definitions.len() {
             let id = DefId(
                 u32::try_from(index)
@@ -211,6 +210,7 @@ impl Checker<'_> {
         self.trait_defaults()?;
         self.validate_destructors()?;
         self.validate_owner_bounds()?;
+        self.validate_associated_type_bounds()?;
         self.validate_signatures()?;
         self.validate_trait_implementations()?;
         self.validate_trait_impl_owners()?;

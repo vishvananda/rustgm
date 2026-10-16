@@ -11,6 +11,7 @@ use crate::{
 #[derive(Clone, Copy)]
 pub(in super::super) enum Subject {
     Parameter(DefId),
+    Associated(DefId),
     Type(NodeKey),
 }
 #[derive(Clone, Copy)]
@@ -172,6 +173,7 @@ impl Checker<'_> {
                 }
                 let binding = match subject {
                     Subject::Parameter(id) => Some(id),
+                    Subject::Associated(_) => None,
                     Subject::Type(key) => self.direct_bound_parameter(key),
                 };
                 let binding = binding
@@ -341,13 +343,14 @@ impl Checker<'_> {
         let mut completed = Vec::with_capacity(bounds.len());
         for &bound in &bounds {
             let ty = match bound.subject {
-                Subject::Parameter(id) => self.facts.definitions[id.0 as usize]
+                Subject::Parameter(id) | Subject::Associated(id) => self.facts.definitions
+                    [id.0 as usize]
                     .ok_or_else(|| self.error(bound.source, "missing bounded parameter type"))?,
                 Subject::Type(key) => self.ty(key)?,
             };
             let original_ty = match bound.subject {
                 Subject::Type(key) => self.facts.unreduced.node(key).unwrap_or(ty),
-                Subject::Parameter(_) => ty,
+                Subject::Parameter(_) | Subject::Associated(_) => ty,
             };
             let (value, original_bound) =
                 self.bound_values(bound.bound, ty, original_ty, context)?;
@@ -423,6 +426,13 @@ impl Checker<'_> {
 }
 
 impl Syntax {
+    pub(in super::super) fn associated(source: NodeKey, owner: DefId, bound: Written) -> Self {
+        Self {
+            source,
+            subject: Subject::Associated(owner),
+            bound,
+        }
+    }
     pub(in super::super) fn trait_path(self) -> Option<(NodeKey, DefId)> {
         match self.bound {
             Written::User { path, definition } => Some((path, definition)),
@@ -432,7 +442,7 @@ impl Syntax {
     pub(in super::super) fn subject(self) -> Option<NodeKey> {
         match self.subject {
             Subject::Type(key) => Some(key),
-            Subject::Parameter(_) => None,
+            Subject::Parameter(_) | Subject::Associated(_) => None,
         }
     }
 }

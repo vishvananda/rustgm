@@ -79,6 +79,15 @@ selected definition with the validated implementation, and share lifetime querie
 across all associated definitions of that impl. An ordinary alias's deferred
 well-formedness policy must not weaken an associated type contract.
 
+Associated result bounds retain complete predicates, including the separate
+subjects of nested result equalities. Elaborate their arguments through the
+ordinary bound worklist in the owning trait's lifetime scope. Validate the bound's
+own type and lifetime requirements even when no implementation or caller exists.
+Conformance substitutes trait Self and mixed arguments together; an already
+elaborated implementation result stays in its original scope. Share that mapping
+across the implementation's result contracts and retain every resulting proof
+obligation. A result contract never adds assumptions to the implementing owner.
+
 Projection normalization uses the common bounded type fold. Normalize inputs
 before asking semantic selection for a result; suspend with typed requests when
 selection needs the store or declaration worklist. Replacement types retain the

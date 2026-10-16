@@ -6242,3 +6242,86 @@ frontend measurements include declaration checking and rendering; the linear
 structural invariants apply to the shared predicate operations, not the entire
 source pipeline. `performance-summary.json` and `scaling-summary.json` retain
 exact measurements. PA20 and PA21 remain incomplete and are not activated here.
+
+### Associated result-bound declaration contracts
+
+Associated type declarations now elaborate ordinary user-trait bounds through
+the existing bound worklist. Result contracts retain complete predicates, including
+separate projected subjects for nested result equalities. Builtin bounds keep
+their direct path. A trait's associated declaration identities exist before its
+bound arguments are elaborated; unsupported projected argument scopes retain an
+explicit boundary instead of losing their obligations.
+
+An implementation checks each required result in its own environment. One lazy
+substitution maps the trait's Self, type, const and lifetime arguments across all
+result contracts of that implementation. Actual result types already belong to
+the implementation's scope and are not substituted a second time. Definition
+well-formedness and every selected proof's lifetime obligations remain mandatory.
+
+The bound declaration itself also needs validation, independently of any impl
+or caller. Retained associated-owner predicates pass the ordinary bound checks
+and final trait-argument lifetime gate. This rejects an unsized Self or type
+argument passed to a Sized parameter, a missing trait argument bound, and a
+missing lifetime requirement even in an unused trait. An intermediate prototype
+missed those four cases; independent rustc checks exposed the gap before release.
+Their diagnostics and the corrected results remain in
+`obj/pa20-work/associated-result-bounds-v1/`.
+
+`result_bound_contracts.rs` contains 23 independently qualified declaration
+programs. They cover forward and recursive declarations, mixed substitutions,
+invalid definitions, nested equality bounds and declaration-time well-formedness.
+Three separate native programs check concrete selection, type-argument mapping
+and a nested associated local type through CPPGM against pinned rustc. The latter
+uses an ordinary method return type; associated-type method return signatures
+still require conformance normalization with retained formation evidence.
+Shorthand associated Self paths also remain required work.
+
+The full investigation has 31 object-qualified rustc programs. Eight are outside
+this declaration checkpoint: generic-body result permissions, transitive and
+recursive result-bound derivation, Copy permissions, nested generic equality
+use, their paired negative controls, and explicit result outlives. Do not add
+recursive result clauses to the eager ordinary-supertrait closure: valid
+`type Out: A` declarations require demand-driven proof. These remaining tasks,
+original callable formation contracts, associated constants, remaining coherence
+and PA21 are still part of the goal. PA20 and PA21 remain planned; course
+fixtures and text oracles are unchanged.
+
+All 25 final validation commands pass: strict all-target Clippy, architecture and
+harness checks, 1,089 release tests across 198 result groups, all 4,864 PA1–PA19
+course cases, backend qualification and 48 separate native groups. The syntax-aware
+Rust audit checks 672 files with zero findings; all 33 harness checks pass.
+The frozen 675-file source snapshot matches after validation. Candidate SHA-256:
+`527952ec921a25f1258b3fdd56a1e74bf22d524176362fcd16c5297daaa7564b`.
+The evidence directory's `validation-summary.json` records counts and command
+statuses. A preliminary Clippy check caught a 101-line conformance function;
+extracting the cohesive result-contract instantiation operation fixes the limit
+without a lint allowance. Its original snapshot and diagnostic remain available.
+
+Standalone `make lint` also passes. Validation cleanup removed 4,353 generated
+files and 4.56 GiB of unshared blocks
+(`obj/cleanup/1792153143909519219.jsonl`). Superseded prototype executables are
+retired with hashes and reasons in `retired-prototypes.json`; diagnostics, inputs
+and receipts remain. The final candidate and current published comparison baseline
+remain pinned. The local 40 GiB reserve is unchanged.
+
+Performance retains 3,796 observations in 146 jobs: 110 initial comparisons with
+immutable published `b579008`, twelve same-candidate scaling controls for the new
+result bounds, and 24 confirmations. All executable, input, runner and frozen
+source hashes match, as do full/count output hashes. RustGM builds, tests and
+source probes did not overlap timing. Initial paired median changes range from
+-6.36% to +7.19%, with A/A spreads of 0.55%–182.52% on the shared host. The
+predeclared 3.5% rule repeats every size/mode of `forward-chain`, `shared-input`,
+`wide-equalities` and `wide-projected-bounds`. Confirmation paired medians range
+from -2.82% to +3.19%, with A/A spreads of 1.30%–26.68%; no confirmation exceeds
+the threshold. This does not establish zero cost. Resident-median differences
+range from -138 to +1,348 KiB initially and -106 to +1,272 KiB in confirmation;
+the width-1,024 shared-input family retains the largest increase, about 1.2 MiB.
+Both sets of raw observations remain intact, including noisy observations.
+
+All six new scaling sources independently pass pinned rustc object generation.
+Full LowIR median times at 64/256/1,024 associated members are approximately
+5.03/9.00/27.29 ms; the corresponding independent-implementation cases take
+5.25/13.63/37.50 ms. At 1,024, resident medians are approximately 9.9 MiB and
+12.0 MiB. These are complete frontend measurements, not an isolated complexity
+proof. `performance-summary.json`, `scaling-summary.json` and the measurement
+receipts retain exact values. PA20 and PA21 remain incomplete.

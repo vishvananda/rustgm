@@ -1,5 +1,6 @@
 //! Required type declarations and their implementation contracts share resolved identities.
 mod conformance;
+use super::super::generics::bounds::Syntax;
 use super::super::{Checker, DefId, Error, ItemId, Kind, NodeKey, Type};
 use crate::{
     resolve::model::DefKind,
@@ -11,6 +12,11 @@ use crate::{
     types::{GenericArgs, parameters::predicates::Bound, projection},
 };
 pub(super) use conformance::Members;
+
+pub(in crate::sema::declarations) struct Bounds {
+    builtin: Vec<Bound>,
+    syntax: Vec<Syntax>,
+}
 
 impl Checker<'_> {
     pub(in crate::sema::declarations) fn reserve_associated_type_bounds(
@@ -36,7 +42,7 @@ impl Checker<'_> {
             let ItemKind::TypeAlias { bounds, .. } = self.item(key)?.kind else {
                 return Err(self.error(key, "missing associated type syntax"));
             };
-            let (sized, bounds) = self.associated_type_bounds(key, bounds)?;
+            let (sized, bounds) = self.associated_type_bounds(member.definition, key, bounds)?;
             self.facts
                 .types
                 .declare_projection(
@@ -53,7 +59,12 @@ impl Checker<'_> {
         Ok(())
     }
 
-    pub(in crate::sema::declarations) fn prepare_associated_types(&mut self) -> Result<(), Error> {
+    pub(in crate::sema::declarations) fn prepare_associated_types(
+        &mut self,
+        steps: &mut usize,
+        limit: usize,
+    ) -> Result<(), Error> {
+        let mut pending = Vec::new();
         for index in 0..self.facts.associated.members().len() {
             let member = self.facts.associated.members()[index];
             let definition = &self.report.resolution.definitions[member.definition.0 as usize];
@@ -85,6 +96,9 @@ impl Checker<'_> {
                         ));
                     }
                     self.declare_associated_type(member.definition, key, owner, definition)?;
+                    if self.bound_syntax.contains_key(&member.definition) {
+                        pending.push((member.definition, key));
+                    }
                     definition
                 }
                 OwnerKind::Impl {
@@ -113,6 +127,67 @@ impl Checker<'_> {
                 .parents
                 .insert(member.definition, parent);
         }
+        for (id, key) in pending {
+            let context = super::super::regions::Context {
+                binder: Some(self.owner_binders[&id]),
+                position: super::super::regions::Position::Output,
+            };
+            self.schedule_bounds(id, context)?;
+            self.drain(steps, limit)?;
+            if self.bound_environment_pending(id) {
+                return Err(self.error(
+                    key,
+                    "associated result bound arguments require scoped projection obligations",
+                ));
+            }
+            let predicates = self
+                .facts
+                .generics
+                .predicates
+                .get(&id)
+                .cloned()
+                .unwrap_or_default();
+            self.facts
+                .associated
+                .types
+                .get_mut(&id)
+                .ok_or_else(|| Error::at(key.file, 0, "missing associated type contract"))?
+                .bounds
+                .extend(predicates.into_iter().map(|predicate| predicate.value));
+        }
+        Ok(())
+    }
+
+    /// A result bound must itself be well-formed even without an implementation.
+    /// Keep its typed premises for the ordinary declaration and lifetime gates.
+    pub(in crate::sema::declarations) fn validate_associated_type_bounds(
+        &mut self,
+    ) -> Result<(), Error> {
+        for index in 0..self.facts.associated.members().len() {
+            let id = self.facts.associated.members()[index].definition;
+            if !self.facts.associated.types.contains_key(&id)
+                || !self.facts.generics.predicates.contains_key(&id)
+            {
+                continue;
+            }
+            let key = self.report.resolution.definitions[id.0 as usize]
+                .node
+                .ok_or_else(|| {
+                    Error::at(
+                        crate::resolve::unit::FileId(0),
+                        0,
+                        "missing associated bound source",
+                    )
+                })?;
+            self.facts
+                .generics
+                .complete_environment(&mut self.facts.types, id)
+                .map_err(|e| self.error(key, e))?;
+            let environment = self.facts.generics.environments.get(&id).cloned();
+            let mut proof = self.declaration_proof(id, environment);
+            self.validate_bounds(id, &mut proof)?;
+            self.retain_trait_proof(id, key, &mut proof);
+        }
         Ok(())
     }
 
@@ -140,10 +215,24 @@ impl Checker<'_> {
                 arguments: GenericArgs::EMPTY,
             }),
         )?;
-        self.facts
-            .associated
-            .types
-            .insert(id, TypeContract { projection, bounds });
+        let predicates = bounds
+            .builtin
+            .into_iter()
+            .map(|bound| crate::types::parameters::predicates::Predicate {
+                ty: projection,
+                bound,
+            })
+            .collect();
+        if !bounds.syntax.is_empty() {
+            self.bound_syntax.insert(id, bounds.syntax);
+        }
+        self.facts.associated.types.insert(
+            id,
+            TypeContract {
+                projection,
+                bounds: predicates,
+            },
+        );
         self.owner_binders
             .insert(id, self.owner_binders[&owner.self_definition]);
         self.complete(id, key, projection)
@@ -151,12 +240,14 @@ impl Checker<'_> {
 
     fn associated_type_bounds(
         &self,
+        id: DefId,
         key: NodeKey,
         bounds: List,
-    ) -> Result<(bool, Vec<Bound>), Error> {
+    ) -> Result<(bool, Bounds), Error> {
         use super::super::generics::bounds::Written;
         let ast = &self.report.package.unit(key.file).configured.ast;
         let mut required = Vec::new();
+        let mut syntax = Vec::new();
         let mut relaxed = false;
         for &node in ast.list(bounds) {
             let key = NodeKey { node, ..key };
@@ -177,7 +268,12 @@ impl Checker<'_> {
                     "higher-ranked associated bounds require advanced generic relationships",
                 ));
             }
-            let Written::Trait(bound) = self.trait_bound(NodeKey { node: value, ..key })? else {
+            let written = self.trait_bound(NodeKey { node: value, ..key })?;
+            if matches!(written, Written::User { .. }) && !optional {
+                syntax.push(Syntax::associated(key, id, written));
+                continue;
+            }
+            let Written::Trait(bound) = written else {
                 return Err(self.error(
                     key,
                     "associated trait bounds require projection obligations",
@@ -202,6 +298,12 @@ impl Checker<'_> {
         let sized = required
             .iter()
             .any(|b| matches!(b, Bound::Sized | Bound::Copy | Bound::Clone));
-        Ok((sized, required))
+        Ok((
+            sized,
+            Bounds {
+                builtin: required,
+                syntax,
+            },
+        ))
     }
 }

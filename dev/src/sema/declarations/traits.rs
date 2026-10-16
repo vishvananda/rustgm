@@ -14,6 +14,7 @@ use crate::{
         parameters::{Parameter as TypeParameter, ParameterKind},
     },
 };
+pub(super) use associated_types::Bounds as AssociatedBounds;
 
 impl Checker<'_> {
     pub(super) fn prepare_trait_owners(
