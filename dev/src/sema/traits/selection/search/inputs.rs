@@ -108,6 +108,9 @@ impl Search<'_> {
             Err(infer::Error::Normalization) => return Ok(Action::Complete(Decision::Deferred)),
             Err(error) => return Err(inference(error)),
         }
+        if let Some(action) = self.derive_result(facts, frame)? {
+            return Ok(action);
+        }
         self.candidates(facts, frame)
     }
 

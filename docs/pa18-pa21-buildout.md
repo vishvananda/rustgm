@@ -6325,3 +6325,107 @@ Full LowIR median times at 64/256/1,024 associated members are approximately
 12.0 MiB. These are complete frontend measurements, not an isolated complexity
 proof. `performance-summary.json`, `scaling-summary.json` and the measurement
 receipts retain exact values. PA20 and PA21 remain incomplete.
+
+### Deriving user-trait result permissions
+
+The selector can now use a user-trait bound declared on an opaque associated
+result. It first normalizes the original query inputs and proves their parent
+trait applications on the existing iterative proof stack. A separate result-rule
+source retains the actual selected predicate. Normalization and final body-bound
+checks preserve this evidence and its lifetime obligations; it never supplies an
+implementation body by itself. Direct, transitive and recursive result bounds use
+finite demands rather than expanding an unbounded associated-result closure.
+
+One capture-safe mapping serves both implementation conformance and result-rule
+instantiation. The ordinary-supertrait closure of each result declaration is
+indexed by trait identity before caller substitution. A query maps only candidates
+for its requested trait, retaining alternatives with distinct arguments. Pure
+mapped clauses share a cache only after the complete result and ordinary trait
+declarations are available. Full projected type identities and the requested
+trait preserve Self, trait/family arguments and lifetimes. Header changes invalidate
+that epoch. A structural invariant prewarms the cache, then checks callers with,
+without and again with the parent permission: only the permitted callers succeed.
+
+The first working selection prototype exposed a later boundary in generic
+function-item value liveness. Symbolic liveness now follows the sufficient route
+of keeping all projection input components live. It grants no explicit result
+outlives assumption, concrete property or reverse implication. Closed component
+queries still reject opaque results. The invariant tests all input regions and
+rigid type parameters, zero-length runtime arrays, shared graph work and cache
+reuse. Exact output components and alternate declared-result lifetime proofs
+remain required work.
+
+`derived_permissions.rs` includes 36 independently object-qualified source cases
+and six separately executed native comparisons with pinned rustc and CPPGM. They
+cover direct/supertrait/recursive result permissions, mixed arguments, implementation
+premises, unsized results, inference ambiguity and caller-bound preference. An
+initial expectation that caller and result clauses must be ambiguous was disproved
+by pinned rustc; the corrected accepted case and original qualification receipts
+remain in `obj/pa20-work/result-bound-derivation-v1/`. The native preference control
+uses two different return values to check the selected body.
+
+Nine independently object-qualified scaling sources combine widths 64, 256 and
+1,024 with repeated calls, distinct members and repeated queries over a wide
+result-bound list. Rebuilding the mapped index on each query exhausted the prior
+prototype's work budget at the largest wide case. Reusing pure clause mappings
+accepts all nine with unchanged budgets. Three further rustc-qualified sources
+use independent generic functions at the same widths. The per-projection cache
+still exhausted the trait work budget at width 1,024 because each distinct Self
+expanded the whole declaration. Indexing declaration templates before mapping
+addresses that separate scaling problem. Permanent width-1,024 source regressions
+and smaller warmed-cache unrelated-trait rejections cover both repeated queries
+and independent caller scopes.
+
+The broader source investigation has 39 independent outcomes. Three positive
+cases remain outside this checkpoint: builtin Copy permission, nested result
+equalities and explicit result outlives. Original callable formation contracts,
+associated-type method signatures, shorthand paths, associated constants,
+remaining coherence and PA21 also remain required. PA20 and PA21 are still planned;
+course text oracles are unchanged.
+
+The final 25-command validation passes: strict all-target Clippy, architecture
+and harness checks, 1,093 release tests across 200 result groups, all 4,864 active
+PA1–PA19 course cases, backend qualification and 49 native groups. The syntax-aware
+audit checks 677 files with zero findings; all 33 harness checks pass. Standalone
+`make lint` also passes. The final 680-file source snapshot matches after validation.
+Candidate SHA-256:
+`0a3f2845dc3dbcfd5ca71eca4821f01de63230d89ef9d4006bec7dd0651cebc5`.
+The evidence directory retains the earlier per-projection prototype's complete
+validation separately under `v4-full-*`; that passing suite did not cover the
+independent-scope scaling failure. Neither prototype failure was resolved by
+raising a work budget or changing an oracle.
+
+Performance retains 4,160 study observations in 160 jobs, plus all 640 full-output
+qualification observations. Initial jobs comprise 122 comparisons with immutable
+published `89fb1fd`, sixteen with the first working selection prototype, four with
+the per-projection cache prototype, and four same-candidate controls where an
+earlier prototype exhausted its work budget. All binary, input, runner and frozen
+source hashes match; full/count outputs match throughout. Builds, tests and source
+probes did not overlap measurements.
+
+Published-baseline paired median changes range from -4.03% to +4.43%, with A/A
+spreads of 0.49%–272.06% on the shared host. The predeclared 3.5% rule repeats all
+sizes/modes of `forward-chain` and `repeated-input-called`: fourteen confirmations
+range from -3.77% to +1.79%, with A/A spreads of 1.39%–10.91%. No confirmation
+exceeds the threshold; this is not a zero-cost claim. Published-baseline resident
+median differences range from -772 to +534 KiB initially, and -626 to +290 KiB
+in confirmation. Every initial and confirmation observation remains available.
+The same-binary controls include a +6.90% paired change, another indication of
+measurement noise; they are not comparisons with a working older implementation.
+
+At width 256, full LowIR generation for repeated queries over a wide bound list
+falls from about 108.53 ms in the first prototype to 20.61 ms. Independent caller
+scopes fall from 135.15 ms in the per-projection cache prototype to 31.07 ms, with
+resident medians falling from 31,754 to 9,384 KiB. Width-1,024 independent scopes,
+which previously failed, take about 115.40 ms and 18.1 MiB; the corresponding wide
+repeated-query control takes about 71.73 ms. These are whole-frontend observations,
+not isolated complexity proofs. Distinct-member width-1,024 retains a small measured
+cost against the first prototype: about +1.37% and +620 KiB in full-output mode.
+`performance-summary.json`, `scaling-summary.json` and their receipts retain the
+exact values and comparison identities.
+
+Validation cleanup removes 4,387 generated files and 4.59 GiB of unshared blocks
+(`obj/cleanup/1792156895917841157.jsonl`). The local 40 GiB reserve remains unchanged.
+The current final binary and required comparison binaries stay pinned until
+publication checks finish; superseded executables are then retired with hashes
+and reasons while source, diagnostics and measurement receipts remain.

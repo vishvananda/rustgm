@@ -25,6 +25,26 @@ pub(super) struct Storage {
 }
 
 impl Store {
+    /// Complete type and lifetime inputs without decomposing the projected result.
+    pub(crate) fn projection_inputs(
+        &self,
+        application: Application,
+    ) -> Result<impl Iterator<Item = super::arguments::Argument> + '_, &'static str> {
+        let trait_ = self
+            .trait_application(application.trait_application)
+            .ok_or("invalid projection trait inputs")?;
+        let trait_args = self
+            .arguments(trait_.arguments)
+            .ok_or("invalid projection trait arguments")?;
+        let own_args = self
+            .arguments(application.arguments)
+            .ok_or("invalid projection family arguments")?;
+        Ok(
+            std::iter::once(super::arguments::Argument::Type(application.subject))
+                .chain(trait_args)
+                .chain(own_args),
+        )
+    }
     pub(super) fn projection_properties(
         &self,
         application: Application,

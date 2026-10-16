@@ -153,7 +153,10 @@ impl State {
         use crate::sema::traits::equalities::{self, Selection};
         let source = self.select_opened(facts, requirement, false)?;
         let mut resolution = None;
-        if matches!(source, Some(selection::Source::Assumption(_))) {
+        if matches!(
+            source,
+            Some(selection::Source::Assumption(_) | selection::Source::ResultBound(_))
+        ) {
             if application.arguments != crate::types::GenericArgs::EMPTY {
                 return Err("associated families require advanced generic relationships");
             }

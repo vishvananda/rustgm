@@ -24,6 +24,8 @@ use std::{ops::Range, sync::Arc};
 pub(in crate::sema) enum Source {
     Equality,
     Assumption(Predicate),
+    /// A declared result bound, with its parent projection proof retained.
+    ResultBound(Predicate),
     Implementation {
         owner: DefId,
         arguments: GenericArgs,
@@ -115,9 +117,6 @@ fn select_from(
             return search::prove(facts, context, goal, caller, availability);
         }
         Err(error) => return Err(inference(error)),
-    }
-    if facts.generics.implementations.is_none() {
-        return Ok(Selection::Absent);
     }
     search::prove(facts, context, goal, caller, availability)
 }

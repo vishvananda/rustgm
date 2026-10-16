@@ -187,6 +187,9 @@ impl Checker<'_> {
         self.prepare_trait_implementations(&mut steps, work_limit)?;
         self.prepare_inherent_owners(&mut steps, work_limit)?;
         self.prepare_associated_types(&mut steps, work_limit)?;
+        if let Some(contracts) = &mut self.facts.generics.traits {
+            contracts.complete_results();
+        }
         for index in 0..self.report.resolution.definitions.len() {
             let id = DefId(
                 u32::try_from(index)

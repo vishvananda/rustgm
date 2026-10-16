@@ -5,6 +5,7 @@ pub(in crate::sema) mod equalities;
 mod heads;
 pub(super) mod implementations;
 pub(super) mod obligations;
+pub(super) mod results;
 pub(super) mod selection;
 use super::{generics::Parameter, generics::Predicate as Located, generics::parameter_id};
 use crate::types::{
@@ -35,10 +36,16 @@ pub(super) struct Contracts {
     headers: HashMap<ItemId, Header>,
     order: Vec<ItemId>,
     applications: HashMap<Predicate, Arc<Requirements>>,
+    result_rules: results::Cache,
     steps: usize,
 }
 
 impl Contracts {
+    /// All result clauses and ordinary trait headers now belong to one immutable epoch.
+    pub fn complete_results(&mut self) {
+        self.result_rules.enable();
+    }
+
     /// Associated member lookup uses only the complete ordinary supertrait graph.
     /// Finish those declaration-time bindings before publishing environments; cached
     /// lookup applications cannot then stand in for the final proof requirements.
@@ -54,12 +61,14 @@ impl Contracts {
                 .extend(predicates);
         }
         self.applications.clear();
+        self.result_rules.invalidate();
         Ok(())
     }
     pub fn declare(&mut self, item: ItemId, header: Header) -> Result<(), &'static str> {
         if self.headers.contains_key(&item) {
             return Err("trait contract already declared");
         }
+        self.result_rules.invalidate();
         self.order.push(item);
         self.headers.insert(item, header);
         Ok(())

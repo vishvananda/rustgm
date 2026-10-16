@@ -274,7 +274,7 @@ impl Opened {
             return Ok(Attempt::Retry);
         };
         let source = evidence.source;
-        let assumed = if matches!(source, Source::Assumption(_)) {
+        let assumed = if matches!(source, Source::Assumption(_) | Source::ResultBound(_)) {
             use crate::sema::traits::equalities::{self, Selection};
             match equalities::select(
                 &mut facts.types,

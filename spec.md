@@ -88,6 +88,31 @@ elaborated implementation result stays in its original scope. Share that mapping
 across the implementation's result contracts and retain every resulting proof
 obligation. A result contract never adds assumptions to the implementing owner.
 
+A user-trait bound on an opaque associated result is derived only after the
+original parent application has been proved. Retain that parent evidence with
+the result rule, including lifetime equalities and fresh region intervals.
+A derived rule records its complete selected predicate separately from caller
+assumptions and implementation bodies. Recursive result bounds are queried on
+demand; they do not extend the eager ordinary-supertrait closure.
+
+Close ordinary supertraits of result clauses once in their declaration scope,
+and index these templates by the requested trait identity. Substitute only those
+candidates into a query's projection; retain every same-trait alternative for
+inference and ambiguity checks. Mapped clauses may share a cache keyed by the
+complete canonical projection and requested trait. Enable these caches only
+after all result clauses and trait headers are complete; invalidate them if the
+headers change. They store typed clauses, never permission for a caller. Every
+query still proves its own parent application and matches every type, const and
+lifetime argument. Wide result contracts must not be expanded afresh for each
+independent caller scope.
+
+Symbolic value liveness may conservatively require every projection input to
+remain live. This sufficient route preserves Self, trait and family arguments,
+uses the bounded component walk, and respects empty runtime aggregates. It does
+not reveal exact output components or imply new input assumptions from an output
+bound. Closed property queries and explicit result-outlives proof retain their
+separate normalization and scoped-evidence requirements.
+
 Projection normalization uses the common bounded type fold. Normalize inputs
 before asking semantic selection for a result; suspend with typed requests when
 selection needs the store or declaration worklist. Replacement types retain the

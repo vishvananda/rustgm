@@ -170,7 +170,9 @@ impl LiveRegions {
     /// # Errors
     /// Rejects malformed types, binder overflow and bounded traversal exhaustion.
     pub fn get(&mut self, types: &Store, ty: TypeId) -> Result<&[RegionId], &'static str> {
-        if types.contains_parameters(ty) == Some(true) {
+        if types.contains_parameters(ty) == Some(true)
+            || types.contains_projections(ty) == Some(true)
+        {
             return Err("generic live-region checking requires instantiated value facts");
         }
         self.symbolic(types, ty).map(|parts| parts.regions)
@@ -198,7 +200,7 @@ impl Components {
         kind: ComponentKind,
         budget: &mut Budget,
     ) -> Result<Parts<'_>, &'static str> {
-        if types.contains_projections(root) == Some(true) {
+        if kind != ComponentKind::LiveValue && types.contains_projections(root) == Some(true) {
             return Err("associated type outlives checking requires normalization");
         }
         if types.contains_regions(root) == Some(false)
@@ -247,15 +249,6 @@ impl Components {
             if !self.seen.insert((ty, depth)) {
                 continue;
             }
-            let mut record = |region| -> Result<(), &'static str> {
-                if let Some(region) = free(region, depth)?
-                    && region != RegionId::STATIC
-                    && self.regions.insert(region)
-                {
-                    values.push(region);
-                }
-                Ok(())
-            };
             match types.kind(ty).ok_or("invalid outlives component type")? {
                 Kind::Parameter(id) => {
                     if self.parameter_seen.insert(id) {
@@ -267,7 +260,7 @@ impl Components {
                 Kind::Reference {
                     region, referent, ..
                 } => {
-                    record(region)?;
+                    self.record_region(region, depth, &mut values)?;
                     if kind != ComponentKind::Outlives {
                         self.work.push((referent, depth));
                     }
@@ -277,22 +270,62 @@ impl Components {
                 | Kind::FunctionItem {
                     arguments: args, ..
                 } => {
-                    for argument in types.arguments(args).ok_or("missing outlives arguments")? {
-                        budget.charge()?;
-                        match argument {
-                            Argument::Lifetime(region) => record(region)?,
-                            Argument::Type(ty) => {
-                                budget.pending(self.work.len().saturating_add(1))?;
-                                self.work.push((ty, depth));
-                            }
-                            Argument::Const(_) => {}
-                        }
-                    }
+                    self.arguments(
+                        types.arguments(args).ok_or("missing outlives arguments")?,
+                        depth,
+                        &mut values,
+                        budget,
+                    )?;
+                }
+                Kind::Projection(application) if kind == ComponentKind::LiveValue => {
+                    // Every input outliving a use is sufficient for its associated
+                    // result to outlive that use. This conservative liveness route
+                    // grants no declared result bound or reverse input assumption.
+                    self.arguments(
+                        types.projection_inputs(application)?,
+                        depth,
+                        &mut values,
+                        budget,
+                    )?;
                 }
                 _ => children(types, ty, depth, &mut self.work, budget)?,
             }
         }
         Ok((values, parameters))
+    }
+    fn record_region(
+        &mut self,
+        region: RegionId,
+        depth: u16,
+        values: &mut Vec<RegionId>,
+    ) -> Result<(), &'static str> {
+        if let Some(region) = free(region, depth)?
+            && region != RegionId::STATIC
+            && self.regions.insert(region)
+        {
+            values.push(region);
+        }
+        Ok(())
+    }
+    fn arguments(
+        &mut self,
+        arguments: impl Iterator<Item = Argument>,
+        depth: u16,
+        values: &mut Vec<RegionId>,
+        budget: &mut Budget,
+    ) -> Result<(), &'static str> {
+        for argument in arguments {
+            budget.charge()?;
+            match argument {
+                Argument::Lifetime(region) => self.record_region(region, depth, values)?,
+                Argument::Type(ty) => {
+                    budget.pending(self.work.len().saturating_add(1))?;
+                    self.work.push((ty, depth));
+                }
+                Argument::Const(_) => {}
+            }
+        }
+        Ok(())
     }
 }
 #[derive(Clone, Copy)]

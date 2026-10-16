@@ -260,7 +260,7 @@ impl Checker<'_> {
         for (index, predicate) in predicates.iter().enumerate() {
             let node = self.call_types.obligations[index].0;
             let predicate = match evidence.get(&index) {
-                Some(Source::Assumption(actual)) => *actual,
+                Some(Source::Assumption(actual) | Source::ResultBound(actual)) => *actual,
                 Some(Source::Implementation { .. }) => continue,
                 Some(Source::Equality) => {
                     return Err(self.error(node, "equality evidence cannot replace a trait goal"));

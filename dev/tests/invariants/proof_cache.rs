@@ -401,3 +401,50 @@ fn repeated_projected_trait_conditions_share_a_negative_proof()
     assert!(search.steps < 20_000, "{}", search.steps);
     Ok(())
 }
+
+#[test]
+fn cached_result_rules_never_replace_the_callers_parent_proof()
+-> Result<(), Box<dyn std::error::Error>> {
+    let (report, mut facts) = declarations("trait C{}trait A{type Out:C;}")?;
+    let projection = facts
+        .associated
+        .type_contract(definition(&report, "Out")?)
+        .ok_or("missing result contract")?
+        .projection;
+    let Some(Kind::Projection(application)) = facts.types.kind(projection) else {
+        return Err("missing projected test subject".into());
+    };
+    let parent = Predicate {
+        ty: application.subject,
+        bound: Bound::Trait(application.trait_application),
+    };
+    let query = predicate(
+        &mut facts,
+        definition(&report, "C")?,
+        projection,
+        GenericArgs::EMPTY,
+    )?;
+    // Inspecting a declaration template without any caller is intentionally possible.
+    // Reusing that immutable mapping can never stand in for the parent obligation.
+    let item = ItemId(definition(&report, "C")?.0);
+    let (first, _) = crate::sema::traits::results::traits(&mut facts, projection, item)?
+        .ok_or("missing result rules")?;
+    let (second, steps) = crate::sema::traits::results::traits(&mut facts, projection, item)?
+        .ok_or("missing cached rules")?;
+    assert!(Arc::ptr_eq(&first, &second));
+    assert_eq!(steps, 1);
+    for permitted in [true, false, true] {
+        let mut assumptions = Assumptions::default();
+        if permitted {
+            assumptions.insert(&facts.types, parent)?;
+        }
+        let (mut context, goal) = instantiate(&mut facts, query)?;
+        let result =
+            super::super::select(&mut facts, &mut context, &goal, caller(&assumptions, None))?;
+        assert_eq!(
+            matches!(result, super::super::Selection::Proven(_)),
+            permitted
+        );
+    }
+    Ok(())
+}

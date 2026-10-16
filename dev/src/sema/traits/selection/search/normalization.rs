@@ -164,7 +164,7 @@ impl Search<'_> {
                 request.application.item,
                 source,
             )?),
-            Source::Assumption(_) => {
+            Source::Assumption(_) | Source::ResultBound(_) => {
                 let application = Application {
                     item: request.application.item,
                     predicate: goal,

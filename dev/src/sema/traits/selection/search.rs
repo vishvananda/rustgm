@@ -4,6 +4,7 @@ mod equalities;
 mod frames;
 mod inputs;
 mod normalization;
+mod result_bounds;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/proof_cache.rs"]
 mod tests;

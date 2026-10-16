@@ -139,7 +139,7 @@ impl Checker<'_> {
             if !direct || !matches!(requirement.bound, Bound::Copy | Bound::Clone | Bound::Sized) {
                 if substitution.is_none() {
                     *substitution = Some(
-                        result_substitution(&self.facts, predicate)
+                        crate::sema::traits::results::substitution(&self.facts, predicate)
                             .map_err(|e| self.error(key, e))?,
                     );
                 }
@@ -219,54 +219,4 @@ impl Checker<'_> {
             )
         })
     }
-}
-
-fn result_substitution(
-    facts: &Declarations,
-    predicate: Predicate,
-) -> Result<crate::types::substitute::Bound, &'static str> {
-    use crate::{sema::generics::parameter_id, types::arguments::Argument};
-    let Bound::Trait(id) = predicate.bound else {
-        return Err("missing associated result trait");
-    };
-    let application = facts
-        .types
-        .trait_application(id)
-        .ok_or("missing associated result application")?;
-    let owner = DefId(application.item.0);
-    let schema = facts
-        .associated
-        .schema(owner)
-        .ok_or("missing associated result schema")?;
-    let parameters = facts
-        .generics
-        .parameters
-        .get(&owner)
-        .map_or(&[][..], Vec::as_slice);
-    let arguments = facts
-        .types
-        .arguments(application.arguments)
-        .ok_or("missing associated result arguments")?;
-    if parameters.len() != arguments.len() {
-        return Err("associated result argument arity mismatch");
-    }
-    let mut mapping = vec![(
-        parameter_id(&facts.types, Argument::Type(schema.self_type))?,
-        Argument::Type(predicate.ty),
-    )];
-    let mut regions = Vec::new();
-    for (formal, actual) in parameters.iter().zip(arguments) {
-        if let Argument::Lifetime(_) = formal.argument {
-            let Argument::Lifetime(region) = actual else {
-                return Err("associated result lifetime argument kind mismatch");
-            };
-            regions.push(region);
-        } else {
-            mapping.push((parameter_id(&facts.types, formal.argument)?, actual));
-        }
-    }
-    if regions.len() != schema.captures as usize {
-        return Err("associated result lifetime arity mismatch");
-    }
-    crate::types::substitute::Bound::parameters_captured(&facts.types, &mapping, regions)
 }
