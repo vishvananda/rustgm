@@ -117,3 +117,20 @@ fn proved_static_targets_execute_across_bodies_and_binders()
         .collect();
     native::check_cases("projected-static-inputs", &cases)
 }
+
+#[test]
+fn repeated_static_inputs_fit_the_runtime_region_budget() -> Result<(), Box<dyn std::error::Error>>
+{
+    let mut source = String::from(
+        "trait A{type Out:Copy;}impl<'a:'static>A for &'a u8{type Out=u16;}static X:u8=1;fn f<T:A>(_:T,x:<T as A>::Out)->(<T as A>::Out,<T as A>::Out){(x,x)}fn main(){",
+    );
+    for _ in 0..1024 {
+        source.push_str("let _=f(&X,73);");
+    }
+    source.push_str("}\n");
+    rustc::qualify("static-region-scaling", &source, true)?;
+    let (mut report, mut facts) = semantic::analyze(&source)?;
+    let entry = rustgm::sema::entry::select(&mut report, &facts)?;
+    rustgm::lower::instances::build(&report, &mut facts, entry)?;
+    Ok(())
+}

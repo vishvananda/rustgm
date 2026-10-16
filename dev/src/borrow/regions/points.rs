@@ -62,7 +62,12 @@ impl Solver {
             .ok_or("runtime lifetime work budget exceeded")?;
         Ok(())
     }
-    fn insert(&mut self, region: Region, word: u32, bits: u64) -> Result<(), &'static str> {
+    fn insert<const SEED: bool>(
+        &mut self,
+        region: Region,
+        word: u32,
+        bits: u64,
+    ) -> Result<(), &'static str> {
         self.charge(1)?;
         let old = self.result.masks.get(&(region, word)).copied().unwrap_or(0);
         let added = bits & !old;
@@ -75,11 +80,15 @@ impl Solver {
             return Err("runtime lifetime storage budget exceeded");
         }
         self.result.masks.insert((region, word), old | added);
-        self.work.push(Change {
-            region,
-            word,
-            bits: added,
-        });
+        // Initial seeds are all collected before propagation. Queue each word
+        // once, in first-seen order; subsequent propagation still carries deltas.
+        if !SEED || old == 0 {
+            self.work.push(Change {
+                region,
+                word,
+                bits: added,
+            });
+        }
         Ok(())
     }
 }
@@ -107,7 +116,15 @@ pub fn infer(
     };
     for (region, point) in seeds {
         solver.result.validate(region, point)?;
-        solver.insert(region, point.0 / 64, 1 << (point.0 % 64))?;
+        solver.insert::<true>(region, point.0 / 64, 1 << (point.0 % 64))?;
+    }
+    solver.charge(solver.work.len())?;
+    for change in &mut solver.work {
+        change.bits = *solver
+            .result
+            .masks
+            .get(&(change.region, change.word))
+            .ok_or("missing runtime lifetime seed word")?;
     }
     while let Some(change) = solver.work.pop() {
         solver.charge(1)?;
@@ -117,7 +134,7 @@ pub fn infer(
         {
             solver.charge(1)?;
             if relation.longer != Region::LOCAL {
-                solver.insert(relation.longer, change.word, change.bits)?;
+                solver.insert::<false>(relation.longer, change.word, change.bits)?;
             }
         }
     }

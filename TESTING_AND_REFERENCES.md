@@ -350,6 +350,10 @@ invariants compare reported static equalities with every satisfying small model;
 instance tests reject pre-filled resolution tables and retain forged-instance
 lifetime debts. A valid stored function item whose projection still needs
 normalization remains an explicit investigation outside successful coverage.
+An additional generated 1,024-call regression verifies shared static extents
+within the runtime region budget. Independent region-set closure tests include
+reordered and duplicate seeds; a large static fanout checks bounded propagation
+without changing the point sets or raising resource limits.
 
 ## Storage and cleanup
 

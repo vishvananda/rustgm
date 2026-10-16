@@ -6923,3 +6923,75 @@ A/A spreads of 1.71–91.60% limit precision; RSS differences are −414 to +186
 This passes the stated regression threshold without claiming precise speedups.
 Evidence, failed large-case qualification and cleanup receipts remain under
 `obj/pa20-work/projected-static-inputs-v1/`. PA20 and PA21 remain planned.
+
+## Coalesced runtime lifetime seeds
+
+The preceding static-input study exposed a runtime region budget failure at
+1,024 calls in four independently valid programs. The lifetime point solver
+already collects every use-site seed before propagation, but it queued a
+separate delta for each seed bit. Shared static extents consequently traversed
+the same obligations repeatedly within each 64-point word.
+
+Initial collection now queues each region/word once, preserving first-seen
+order. Completing those queued words from the accumulated masks precedes the
+existing propagation of new deltas. No hash-map iteration determines work order;
+the final sparse representation, local-sentinel exclusion and all storage/work
+limits remain unchanged. Collection and word completion both charge work. No
+additional map is retained in completed proofs.
+
+The independent finite-set closure test also covers reversed and duplicate seeds.
+A static fanout across 128 regions and 4,096 points fits a 100,000-unit budget
+without adding live points or authorizing an unrelated region. A generated
+1,024-call source regression exactly preserves a previously failing program's
+bytes and independent rustc qualification. All sixteen qualified scaling inputs
+now compile: the four formerly rejected 1,024-call cases succeed, and the twelve
+smaller cases preserve the published compiler's LowIR bytes.
+
+The validated compiler hash is
+`69c72e485a76bc4c49353f927dab91c5470780cf1878338501be840304502bcd`.
+All 25 main validation commands pass: 1,120 release tests in 207 groups, 4,864
+PA1–PA19 cases, backend qualification and 55 maintainer native test groups.
+Existing course output bytes are unchanged. Strict Clippy, the 688-file audit
+with zero findings and all 33 harness tests pass. The final compiler matches the
+qualified prototype byte for byte; all 691 frozen source hashes match. Validation
+cleanup removes 4,616 generated files (4.86 GiB of unshared blocks).
+
+Additional PA16 checks pass: 304 independent rustc acceptance checks and 119
+executable comparisons (124 independent native-suite checks). Standalone lint
+passes. After exact-head CI succeeds for published `92244c5`, the older `95bdb20`
+compiler and the duplicate prototype are retired with hash receipts, freeing
+90,424,840 bytes. The immutable comparison baseline and validated final remain.
+
+The performance study retains 80 jobs, 2,080 study observations and 320 full-output
+qualifications. Sixty-six initial jobs compare with published `92244c5`; eight
+identical-candidate controls cover the newly accepted 1,024-call cases. Six
+ordinary thin-reference and loan-inspection inputs are independently object-
+qualified before timing. All binary/source/input hashes and full/count output
+comparisons agree. No source edits, builds or compiler probes overlap timing.
+
+At 512 calls the four static-reference full views improve by paired medians of
+78.22–87.65%. Repeated projected-result calls take 109.75 ms versus 902.50 ms;
+separate selected functions take 207.23 ms versus 1,004.44 ms. The newly supported
+1,024-call full views take 440.47–654.38 ms without raising a resource limit.
+The 4,096-function ordinary thin-reference and loan-inspection full views have
+paired changes of +0.66% and −0.36%, respectively.
+
+One family triggers the 3.5% repeat rule: repeated projected tuple inputs. All six
+sizes/modes are repeated, retaining 1,024-element increases of +6.25% in count mode
+and +9.11% in full mode. Initial actual-comparison medians range from −87.76% to
++9.62%, with A/A spreads of 0.56–79.71%; confirmation spreads are 1.64–10.74%.
+Those results are retained as a performance concern, not a clean regression pass.
+
+A separate attribution study uses the same immutable binaries and input after the
+original study and cleanup close. Two Callgrind profiles count 1,602,990,420 and
+1,602,732,516 instructions (−0.016%). About 95% belong to declaration analysis;
+the lifetime-point routine accounts for less than 0.001%. Four initial hardware-
+counter observations are followed by 52 counter observations using A/A calibration
+and five paired ABBA blocks in each mode. Every output and source/binary hash
+matches. Count-mode paired medians are +0.25% wall time, +0.06% cycles and −0.012%
+instructions; full mode gives −16.61% wall time, −17.62% cycles and −0.011%
+instructions. This follow-up does not reproduce a stable slowdown or attribute
+additional algorithmic work to seed collection. It also does not erase the
+original confirmed wall-time increases: their attribution remains uncertain.
+All observations, profiles and diagnostics are retained in
+`obj/pa20-work/runtime-seed-words-v1/`. PA20 and PA21 remain planned.

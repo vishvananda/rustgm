@@ -78,17 +78,46 @@ fn sparse_point_propagation_matches_independent_set_closure()
             }
         }
         let proof = graph.solve()?;
-        let live = infer(&proof, 192, seeds, 10_000)?;
-        for (id, set) in sets.iter().enumerate() {
-            for point in 0..192 {
-                assert_eq!(
-                    live.contains(regions[id], Point(point))?,
-                    set.contains(&point),
-                    "{edges:?}"
-                );
+        let mut repeated = seeds.clone();
+        repeated.reverse();
+        repeated.extend_from_slice(&seeds);
+        for seeds in [seeds, repeated] {
+            let live = infer(&proof, 192, seeds, 10_000)?;
+            for (id, set) in sets.iter().enumerate() {
+                for point in 0..192 {
+                    assert_eq!(
+                        live.contains(regions[id], Point(point))?,
+                        set.contains(&point),
+                        "{edges:?}"
+                    );
+                }
             }
         }
     }
+    Ok(())
+}
+
+#[test]
+fn shared_static_extents_fit_the_sparse_propagation_budget()
+-> Result<(), Box<dyn std::error::Error>> {
+    let mut graph = Graph::new(10_000);
+    let mut regions = Vec::new();
+    for _ in 0..128 {
+        let region = graph.region(Kind::Variable { universe: 0 })?;
+        graph.require(region, Region::STATIC, 0)?;
+        regions.push(region);
+    }
+    let unrelated = graph.region(Kind::Variable { universe: 0 })?;
+    let proof = graph.solve()?;
+    let seeds = (0..4096).map(|point| (Region::STATIC, Point(point)));
+    let live = infer(&proof, 4097, seeds, 100_000)?;
+    for region in regions.into_iter().chain([Region::STATIC]) {
+        for point in [0, 63, 64, 2049, 4095] {
+            assert!(live.contains(region, Point(point))?);
+        }
+        assert!(!live.contains(region, Point(4096))?);
+    }
+    assert!(!live.contains(unrelated, Point(0))?);
     Ok(())
 }
 

@@ -1029,6 +1029,13 @@ Forward loan states use the same index for pruning, conflict checks and optional
 inspection. Rebuild the occupied-word index after dense CFG copies, clear it when
 the last loan in a word expires, and preserve two-phase activation separately.
 
+Collect initial runtime lifetime seeds into one queued entry per region and
+point word before propagating them. Seed collection already precedes propagation;
+combine its bits in first-seen order instead of walking shared static or external
+obligations separately for every point. Subsequent propagation retains only new
+deltas. Keep the sparse result representation, local-sentinel exclusion and all
+work/storage limits; charge both seed collection and completion of queued words.
+
 The executable CLI enters this template/instance pipeline before the ordinary
 inspection-only body builder. It must not duplicate promotion, constant or proof
 passes. Earlier inspection modes retain their own contracts. Once explicit and
