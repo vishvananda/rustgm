@@ -11,23 +11,25 @@ pub(super) enum Property {
     Parameters,
     Callables,
     Projections,
+    NonStaticFreeRegions,
 }
 impl Property {
-    const fn mask(self) -> u8 {
-        1 << (self as u8)
+    const fn mask(self) -> u16 {
+        1 << (self as u16)
     }
 }
-const DEPENDENCIES: u8 = Property::Regions.mask()
+const DEPENDENCIES: u16 = Property::Regions.mask()
     | Property::FreeRegions.mask()
     | Property::LateCallables.mask()
     | Property::Parameters.mask()
     | Property::Callables.mask()
-    | Property::Projections.mask();
+    | Property::Projections.mask()
+    | Property::NonStaticFreeRegions.mask();
 
 #[derive(Clone, Copy)]
 pub(super) struct Properties {
     pub escaping: u16,
-    flags: u8,
+    flags: u16,
 }
 impl Default for Properties {
     fn default() -> Self {
@@ -38,6 +40,12 @@ impl Default for Properties {
     }
 }
 impl Properties {
+    pub fn is_concrete(self) -> bool {
+        self.escaping == 0
+            && !self.has(Property::Parameters)
+            && !self.has(Property::Projections)
+            && !self.has(Property::NonStaticFreeRegions)
+    }
     pub fn has(self, property: Property) -> bool {
         self.flags & property.mask() != 0
     }
@@ -64,6 +72,13 @@ impl Properties {
             self.escaping = self.escaping.max(depth + 1);
         } else {
             self.set(Property::FreeRegions, true);
+            if region != RegionId::STATIC {
+                self.set(Property::NonStaticFreeRegions, true);
+            }
         }
     }
 }
+
+#[cfg(test)]
+#[path = "../../tests/invariants/concrete_inputs.rs"]
+mod tests;

@@ -695,6 +695,13 @@ parameter identities would assume a stronger implicit Sized requirement. Prove
 the impl method's requirements under the impl owner and substituted trait method
 contract, while checking its body under its own declared assumptions.
 
+Construct that conformance environment from the actual impl's bounds and the
+trait method's own predicates. The impl-header check already proves the containing
+trait's requirements. Reintroducing those inherited templates as substituted
+caller assumptions can hide concrete supertrait associated definitions. Preserve
+explicit method predicates, even when they repeat a parent bound: generic and
+lifetime-dependent applications can remain opaque under those predicates.
+
 Validate associated definitions before using their normal forms in method
 conformance. Keep a local index of those checked definitions, shared by the impl's
 methods. A local result applies only to its exact declaring item, Self and complete
@@ -802,6 +809,18 @@ result parameters merely because competing assumptions mention the same output.
 Closed declaration equalities need independent implementation proofs without
 using themselves as assumptions. Their normalization owns an explicit declaration
 proof scope. Body equalities use the actual body's allocator and lifetime gate.
+
+After proving a projection's trait premise, explicit equality assumptions still
+take precedence. If no equality supplies a result, a completely concrete application
+may use an independently selected impl despite a repeated caller trait bound.
+Require the entire Self/trait application to contain no type or const parameters,
+external lifetime variables or unresolved projections before this fallback. Static
+lifetimes and locally bound callable lifetimes can be concrete. Cache this
+distinction separately from the existing substitution flags, which also count
+static lifetimes as free. Select without caller assumptions, respect
+declaration/body implementation availability,
+and retain all selection evidence and result-region restoration. This rule does
+not remove explicit generic bounds or infer projection inputs from a result.
 
 Instantiate both sides of a call's equality in the shared inference graph.
 Schedule their normalizations and a suspended equality before inference finishes;

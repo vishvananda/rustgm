@@ -17,6 +17,32 @@ pub struct Predicate {
     pub bound: Bound,
 }
 impl Predicate {
+    /// Concrete inputs may contain static lifetimes and closed callable binders,
+    /// but no type/const parameters, unresolved projections or external region variables.
+    /// # Errors
+    /// Rejects unknown subject, result or trait application identities.
+    pub fn is_concrete(self, store: &crate::types::Store) -> Result<bool, &'static str> {
+        let concrete = |ty: TypeId| {
+            store
+                .properties
+                .get(ty.0 as usize)
+                .map(|p| p.is_concrete())
+                .ok_or("invalid predicate type")
+        };
+        if !concrete(self.ty)? {
+            return Ok(false);
+        }
+        Ok(match self.bound {
+            Bound::Trait(id) => store
+                .trait_properties(id)
+                .ok_or("invalid predicate trait application")?
+                .is_concrete(),
+            Bound::ProjectionEqual(result) => concrete(result)?,
+            Bound::Outlives(region) => region == crate::types::RegionId::STATIC,
+            Bound::Copy | Bound::Clone | Bound::Sized => true,
+        })
+    }
+
     /// Projections may occur in the subject or any complete trait argument.
     /// # Errors
     /// Rejects unknown subject or application identities.

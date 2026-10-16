@@ -151,7 +151,7 @@ impl State {
         requirement: Predicate,
     ) -> Result<Projected, &'static str> {
         use crate::sema::traits::equalities::{self, Selection};
-        let source = self.select_opened(facts, requirement, false)?;
+        let mut source = self.select_opened(facts, requirement, false)?;
         let mut resolution = None;
         if matches!(
             source,
@@ -180,7 +180,26 @@ impl State {
                 )
                 .map_err(|_| "invalid or exhausted associated equality selection")?
                 {
-                    Selection::Absent => substitute::Resolution::Opaque,
+                    Selection::Absent => {
+                        // A fully concrete application can use its independently
+                        // proved impl even when a caller repeats the trait bound.
+                        // Explicit generic or lifetime assumptions remain opaque.
+                        if requirement.is_concrete(&facts.types)?
+                            && let Some(selected @ selection::Source::Implementation { .. }) =
+                                self.select_opened(facts, requirement, true)?
+                        {
+                            source = Some(selected);
+                            substitute::Resolution::Type(
+                                crate::sema::projections::implementation_result(
+                                    facts,
+                                    application.item,
+                                    selected,
+                                )?,
+                            )
+                        } else {
+                            substitute::Resolution::Opaque
+                        }
+                    }
                     Selection::Ambiguous => {
                         return Err("ambiguous associated type equality assumptions");
                     }

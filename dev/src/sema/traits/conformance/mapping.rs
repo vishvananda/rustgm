@@ -180,7 +180,11 @@ pub(super) fn contract(
         .predicates_in_scope(owner)
         .map(|p| p.value)
         .collect();
-    for predicate in facts.generics.predicates_in_scope(expected.definition) {
+    // The impl header already proves the trait's parent requirements. Retain
+    // the method's own caller bounds here; synthetic inherited Self assumptions
+    // would hide the impl's concrete associated definitions during normalization.
+    let method_bounds = facts.generics.predicates.get(&expected.definition);
+    for predicate in method_bounds.into_iter().flatten() {
         assumptions.push(
             folders
                 .expected

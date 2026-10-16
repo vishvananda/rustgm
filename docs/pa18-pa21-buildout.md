@@ -6539,3 +6539,93 @@ Original callable formation, remaining opaque-result properties and lifetime
 proofs, inherited method contracts, shorthand paths, associated constants, remaining
 coherence and PA21 remain required work. PA20 and PA21 are still planned; course
 text oracles are unchanged.
+
+### Inherited method contracts and closed caller bounds
+
+The maintainer compares inherited associated method signatures using the actual
+impl's bounds and the trait method's own predicates. It no longer adds the
+containing trait's inherited predicates as new conformance assumptions: the impl
+header has already proved those requirements. Previously a synthetic `Self: A`
+assumption could hide the concrete result selected by an `A` implementation.
+Method bodies retain their own declared environments, and every impl still passes
+its complete header, associated-definition and method checks before publication.
+
+An explicit method bound remains significant. Independent rustc object checks
+rejected two initially hypothesized acceptances: a repeated bound on generic
+`[T; 1]`, and a repeated lifetime-dependent trait application on concrete `u8`.
+Both retain opaque associated results. A proposed general duplicate-bound filter
+was discarded before building it. The initial declarations, diagnostics, rejected
+proposal and reviewed expectations remain in
+`obj/pa20-work/inherited-method-contracts-v1/`; these were investigation corrections,
+not oracle updates.
+
+The supported fallback is narrower. After proving the trait premise, explicit
+associated equalities and ambiguity keep their existing priority. An absent
+equality can fall back to an independently selected implementation only when the
+entire projection application has no type/const parameters, external lifetime variables
+or projection inputs. Selection uses no caller assumptions and retains its full
+region evidence under the existing implementation-availability mode. Generic and
+lifetime-dependent explicit bounds remain opaque. The fallback also handles
+ordinary function signatures with repeated closed bounds.
+
+`inherited_methods.rs` passes 32 independently object-qualified source outcomes
+and twenty native comparisons against pinned rustc and CPPGM. Coverage includes
+concrete and generic impls, declaration order, trait arguments, reference inputs,
+captured results, own/inherited results together, method-specific bounds/equalities,
+repeated closed and transitive bounds, function pointers and dot calls. Wrong
+results and stronger generic/lifetime contracts reject. The broader investigation
+has 34 qualified outcomes: opaque forwarding and opaque destruction still reject
+two valid programs at their later body boundaries. Neither rejection establishes
+failed declaration conformance.
+
+Twenty-one scaling sources pass rustc object qualification and compile with the
+candidate. They cover 64/256/1,024 associated members, wide supertrait lists,
+repeated captured-parent parameters and nested callable components, plus ordinary
+signature controls. The first inheritance prototype rejects the six repeated-bound
+sources, which the closed fallback now accepts; all its earlier successful inputs
+remain accepted. These inputs check declarations and method bodies with an empty
+`main`; they are not native execution cases. Strict Clippy, seven existing focused
+modules, 681 audited Rust files with zero findings, and 33 harness checks pass.
+The final frozen candidate passes 1,098 release tests in 202 groups, all 4,864
+PA1–PA19 cases, backend qualification and 51 maintainer native test groups.
+All 25 final commands pass, and the 684-file source snapshot matches the checked
+tree. Standalone lint also passes. Cleanup removes 4,489 generated files (4.72 GiB
+of unshared blocks), retaining inputs, diagnostics and qualification receipts.
+PA20/PA21 and their course oracles remain planned and unchanged.
+
+A late lifetime-evidence control exposed a conservative restriction in the first
+candidate: the existing free-region metadata includes static lifetimes for
+substitution, so it also excluded a concrete static-reference receiver. A separate
+cached flag now distinguishes non-static free regions while retaining the existing
+substitution behavior. The record remains four bytes. Three typed invariants check
+that size, mixed-region accumulation order, callable binder boundaries, full trait
+arguments and unresolved projections. A static-reference program now executes
+through an implementation with a lifetime parameter; its local-reference escape
+control rejects at the lifetime proof. The earlier complete validation is retained
+under `full-v4/`; the final validation above covers the metadata change. Its
+immutable compiler hash is
+`5b539396c4d3730c1918722fee5fc7734d3b5de43158c257134f179af0774e89`.
+
+Immutable performance measurements retain 238 jobs, 6,188 study observations
+and 952 full-output qualification observations. The initial study compares 178
+jobs with published `4472116`, 24 with the earlier inheritance prototype, and
+twelve repeated-bound jobs with the earlier closed-fallback prototype. Every
+input, source snapshot and binary hash remains unchanged; full and count outputs
+match throughout. Each job includes A/A calibration and five paired ABBA blocks.
+No local RustGM builds or qualification probes overlap the timed work.
+
+Initial paired medians against published main range from −45.03% to +9.99%,
+with A/A spreads of 0.34–104.22%; all original outliers remain recorded. The
+predeclared 3.5% repeat rule selects four families and all their sizes/modes.
+The eighteen main-baseline confirmations range from −2.40% to +3.41%, and the
+six inheritance-prototype confirmations range from −1.07% to +1.59%. All are
+below the repeat threshold; this is not a claim of zero overhead. Confirmation
+RSS differences range from −18 to +130 KiB. The static-aware metadata's twelve
+comparisons against the closed-fallback prototype range from −3.22% to +2.67%.
+
+Removing synthetic inherited assumptions also reduces work on ordinary method
+signatures with wide supertrait lists. At 1,024 parents, the full-view whole
+frontend median changes from 1,067.36 ms to 594.64 ms against published main
+(paired median −44.03%), with matching output. Frozen sources, runners, raw
+observations, summaries and the original validation remain under
+`obj/pa20-work/inherited-method-contracts-v1/`.
