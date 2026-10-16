@@ -97,6 +97,9 @@ impl Search<'_> {
         let mut type_outlives = Vec::new();
         let mut sized = Vec::new();
         for goal in &trial.instance.goals {
+            if goal.projection_result().is_some() {
+                return Err("projection equality requires a normalization proof".into());
+            }
             let Some(bound) = goal.builtin_bound() else {
                 continue;
             };

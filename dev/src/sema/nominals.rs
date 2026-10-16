@@ -119,6 +119,9 @@ impl Proof {
                             "nominal type argument must implement its declared trait"
                         }
                         Bound::Outlives(_) => "nominal type argument must outlive its bound",
+                        Bound::ProjectionEqual(_) => {
+                            "associated type must equal its required result"
+                        }
                     });
                 }
             }
@@ -131,6 +134,9 @@ impl Proof {
         requirement: Predicate,
     ) -> Result<bool, &'static str> {
         let valid = match requirement.bound {
+            Bound::ProjectionEqual(_) => {
+                return Err("projection equality requires a normalization proof");
+            }
             Bound::Trait(_) => self.prove_trait(facts, requirement)?,
             Bound::Sized => self.shape(facts, requirement.ty)?.sized,
             Bound::Copy | Bound::Clone => {

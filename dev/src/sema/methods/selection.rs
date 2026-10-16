@@ -350,7 +350,10 @@ pub(super) fn applicable(
         Err(e) => return Err(inference(e)),
     }
     for predicate in facts.generics.predicates_in_scope(owner) {
-        if matches!(predicate.value.bound, Bound::Trait(_)) {
+        if matches!(
+            predicate.value.bound,
+            Bound::Trait(_) | Bound::ProjectionEqual(_)
+        ) {
             traits.push(
                 context
                     .instantiate_predicate(&mut facts.types, predicate.value, &mut substitution)
@@ -369,16 +372,25 @@ pub(super) fn applicable(
     if !trait_requirements(facts, context, &traits, caller)? {
         return Ok(false);
     }
+    builtin_requirements(facts, context, &obligations, caller.environment)
+}
+
+fn builtin_requirements(
+    facts: &mut Declarations,
+    context: &mut Context,
+    obligations: &[(TermId, Bound)],
+    environment: Option<&Arc<Environment>>,
+) -> Result<bool, &'static str> {
     if obligations.is_empty() {
         return Ok(true);
     }
-    let environment = if let Some(environment) = caller.environment {
+    let environment = if let Some(environment) = environment {
         Arc::clone(environment)
     } else {
         Arc::new(Environment::new(&facts.types, &[])?)
     };
     let mut properties = Query::new(environment);
-    for (term, bound) in obligations {
+    for &(term, bound) in obligations {
         let value = properties.demand(
             context,
             &mut facts.types,
@@ -393,6 +405,9 @@ pub(super) fn applicable(
             Bound::Outlives(_) => return Err("unexpected candidate region predicate"),
             Bound::Trait(_) => {
                 return Err("user trait candidate obligations require trait selection");
+            }
+            Bound::ProjectionEqual(_) => {
+                return Err("projection equality requires a normalization proof");
             }
         };
         if !possible {

@@ -109,6 +109,9 @@ impl Checker<'_> {
         ty: TypeId,
         bound: Bound,
     ) -> Result<(), Error> {
+        if matches!(bound, Bound::ProjectionEqual(_)) {
+            return Err(self.error(node, "projection equality requires a normalization proof"));
+        }
         if let Bound::Outlives(shorter) = bound {
             self.facts
                 .type_outlives
@@ -170,6 +173,7 @@ impl Checker<'_> {
                     Bound::Sized => "generic argument must be sized",
                     Bound::Trait(_) => "generic argument must implement its declared trait",
                     Bound::Outlives(_) => "generic argument must outlive its bound",
+                    Bound::ProjectionEqual(_) => "associated type must equal its required result",
                 },
             ))
         }

@@ -104,7 +104,10 @@ impl Probe {
             }
         }
         for predicate in facts.generics.predicates_in_scope(owner) {
-            if matches!(predicate.value.bound, Bound::Trait(_)) {
+            if matches!(
+                predicate.value.bound,
+                Bound::Trait(_) | Bound::ProjectionEqual(_)
+            ) {
                 // Structurally disjoint headers need no trait coherence proof.
                 self.trait_obligations = true;
                 continue;

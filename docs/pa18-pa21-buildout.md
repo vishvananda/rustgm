@@ -5675,3 +5675,68 @@ an actual call must still satisfy it. The original incorrect rejection hypothesi
 and its correction are retained under
 `obj/pa20-work/symbolic-associated-equalities-v1/`. These exploratory controls are
 not included in the active assignment or maintainer pass counts.
+
+
+### Typed associated equality obligations
+
+PA20 now has a canonical projection-equality predicate and an inferred result
+term that shares the subject's parameter and const graph. Parameter/const uses,
+free-lifetime and binder-capture queries, canonical substitution, inferred
+instantiation, probe import and completion all retain both roots. A normalizer
+may replace a root with its proved normal form without losing the remaining
+equality. Result equations do not infer unrelated projection inputs.
+
+Immutable environments retain these equalities separately from builtin abilities
+and trait membership. They preserve competing results, deduplicate identical
+assumptions, reject parameters or constants outside the actual scope, and open
+result-only lifetime captures with the same mapping as the rest of the caller.
+No equality grants Sized, Copy or Clone by falling through the builtin path.
+Candidate imports preserve the whole obligation, and unsupported proof paths
+reject explicitly. Both readiness paths exclude equality premises from the
+builtin-only scheduling certificate.
+
+Seven integration controls and one environment unit control cover these
+invariants, including a const used only on the right, independent input/result
+variables, a pending result equation, isolated probes and nested callable binders.
+They exercise the typed interfaces directly. The earlier 17 rustc-qualified
+source cases remain pending: this checkpoint does not yet elaborate source
+associated bindings or solve them. PA20 and PA21 remain planned, with their full
+contracts and implementation still required. Existing course fixtures and text
+oracles are unchanged.
+
+The implementation and validation artifacts are retained under
+`obj/pa20-work/typed-projection-obligations-v1/`. Initial build, lint and audit
+failures remain recorded: adding the enum variant required explicit consumers;
+method applicability now delegates its builtin proof to a cohesive helper; the
+new integration file is `equality_predicates.rs`, keeping the projection filename
+family within the existing placement limit. No lint or audit suppression was
+added.
+
+The frozen candidate is
+`63c353c3db2e07f88eb7ba706f842f919d514f58c28603a7e246cfaf4cfff096`,
+with 660 source/config/test files retained beside it. All 28 validation commands
+pass: formatting, strict Clippy, the eight targeted controls, the 657-file audit
+with zero findings, 33 harness tests and assignment discovery, all 4,864 course
+cases, 1,074 release tests, backend qualification and all 43 explicitly native
+groups. The default release run reports those 43 backend groups as ignored;
+the separate native run executes all of them successfully. Receipts are
+`validation-v2.json` and `checkpoint.json`; the initial placement failure remains
+in `validation.json` and its log.
+
+Compared with published `d17ab0c`, 36 jobs retain 936 observations over eighteen
+frozen inputs: concrete goals, bound subjects, receiver selection, inferred
+aliases, repeated inference and nested callable projections, each at three
+scales and in full/count modes. Every job includes A/A calibration and five ABBA
+blocks. Full and count outputs match byte-for-byte; source, input and binary
+hashes are checked before and after measurement. Median paired wall-time deltas
+range from -3.48% to +2.88%; this is not evidence of a general speedup. These
+measurements cover the existing paths changed by the representation and proof
+routing; source equality solving still needs its own workloads when integrated.
+The complete observations and summaries are in `measurements/`,
+`perf-results.json` and `performance-summary.json`. No RustGM builds or tests
+overlap timing. Validation cleanup removes 4,188 generated files and 4.39 GiB of
+unshared blocks, recorded in `obj/cleanup/1792131801352781286.jsonl`.
+Resident medians differ by -22 to +756 KiB across these pairs. A/A wall-time
+spreads range from 0.86% to 78.00% on the shared host; individual noisy samples
+and all block ratios remain in the receipts. These measurements do not establish
+unchanged memory use or a strict zero-regression performance guarantee.

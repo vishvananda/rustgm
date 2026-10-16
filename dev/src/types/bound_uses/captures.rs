@@ -35,6 +35,7 @@ impl Captures {
             return Ok(true);
         }
         match value.bound {
+            Bound::ProjectionEqual(result) => self.collect(store, result),
             Bound::Outlives(region) => Ok(self.region(region, 0)),
             Bound::Trait(id) => {
                 if let Some(&found) = self.applications.get(&id) {

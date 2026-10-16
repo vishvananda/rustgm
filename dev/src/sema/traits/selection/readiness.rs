@@ -71,7 +71,7 @@ pub(in crate::sema) fn requires_resolved_inputs(
     let result = if instance
         .goals
         .iter()
-        .any(|goal| goal.trait_arguments().is_some())
+        .any(|goal| goal.builtin_bound().is_none())
     {
         false
     } else {
@@ -101,7 +101,10 @@ fn transparent_subject(
     use crate::types::parameters::predicates::Bound;
     for predicate in facts.generics.declared_predicates_in_scope(owner) {
         context.account_work(1)?;
-        if matches!(predicate.value.bound, Bound::Trait(_)) {
+        if matches!(
+            predicate.value.bound,
+            Bound::Trait(_) | Bound::ProjectionEqual(_)
+        ) {
             return Ok(false);
         }
     }

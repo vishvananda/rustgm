@@ -37,6 +37,9 @@ impl Uses {
         predicate: super::predicates::Predicate,
     ) -> Result<(), &'static str> {
         self.collect(store, predicate.ty)?;
+        if let super::predicates::Bound::ProjectionEqual(result) = predicate.bound {
+            self.collect(store, result)?;
+        }
         if let super::predicates::Bound::Trait(id) = predicate.bound {
             let application = store
                 .trait_application(id)

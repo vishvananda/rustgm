@@ -178,6 +178,7 @@ fn predicates(facts: &Declarations, out: &mut impl Write) -> io::Result<()> {
 fn requirement(store: &Store, predicate: Predicate, out: &mut impl Write) -> io::Result<()> {
     write!(out, "subject={} bound=", predicate.ty.0)?;
     match predicate.bound {
+        Bound::ProjectionEqual(result) => write!(out, "projection-equal:{}", result.0),
         Bound::Sized => write!(out, "sized"),
         Bound::Copy => write!(out, "copy"),
         Bound::Clone => write!(out, "clone"),

@@ -7,6 +7,9 @@ pub enum Bound {
     Sized,
     Trait(crate::types::traits::ApplicationId),
     Outlives(crate::types::RegionId),
+    /// The projected subject equals this result; its inputs are not injective.
+    /// A discharged normalizer may replace either root with its normal form.
+    ProjectionEqual(TypeId),
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct Predicate {
@@ -21,13 +24,15 @@ impl Predicate {
         let subject = store
             .contains_projections(self.ty)
             .ok_or("invalid predicate subject")?;
-        let arguments = if let Bound::Trait(id) = self.bound {
-            store
+        let arguments = match self.bound {
+            Bound::Trait(id) => store
                 .trait_properties(id)
                 .ok_or("invalid predicate trait application")?
-                .has(crate::types::Property::Projections)
-        } else {
-            false
+                .has(crate::types::Property::Projections),
+            Bound::ProjectionEqual(result) => store
+                .contains_projections(result)
+                .ok_or("invalid projection equality result")?,
+            Bound::Copy | Bound::Clone | Bound::Sized | Bound::Outlives(_) => false,
         };
         Ok(subject || arguments)
     }
@@ -46,6 +51,9 @@ impl Predicate {
                 properties.escaping != 0 || properties.has(crate::types::Property::FreeRegions)
             }
             Bound::Outlives(region) => region != crate::types::RegionId::STATIC,
+            Bound::ProjectionEqual(result) => store
+                .has_free_regions(result, 0)
+                .ok_or("invalid projection equality result")?,
             Bound::Copy | Bound::Clone | Bound::Sized => false,
         };
         Ok(subject || arguments)
@@ -57,13 +65,15 @@ impl Predicate {
         let subject = store
             .contains_parameters(self.ty)
             .ok_or("invalid predicate subject")?;
-        let arguments = if let Bound::Trait(id) = self.bound {
-            store
+        let arguments = match self.bound {
+            Bound::Trait(id) => store
                 .trait_properties(id)
                 .ok_or("invalid predicate trait application")?
-                .has(crate::types::Property::Parameters)
-        } else {
-            false
+                .has(crate::types::Property::Parameters),
+            Bound::ProjectionEqual(result) => store
+                .contains_parameters(result)
+                .ok_or("invalid projection equality result")?,
+            Bound::Copy | Bound::Clone | Bound::Sized | Bound::Outlives(_) => false,
         };
         Ok(subject || arguments)
     }
@@ -82,6 +92,9 @@ impl Predicate {
                     .escaping
             }
             Bound::Outlives(region) => region.bound_parts().map_or(0, |(depth, _)| depth + 1),
+            Bound::ProjectionEqual(result) => store
+                .escaping_binders(result)
+                .ok_or("invalid projection equality result")?,
             Bound::Copy | Bound::Clone | Bound::Sized => 0,
         };
         Ok(subject.max(arguments))

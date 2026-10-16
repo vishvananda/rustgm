@@ -20,6 +20,12 @@ impl Checker<'_> {
             .map_or(0, Vec::len)
         {
             let predicate = self.facts.generics.predicates[&owner][index];
+            if matches!(predicate.value.bound, Bound::ProjectionEqual(_)) {
+                return Err(self.error(
+                    predicate.source,
+                    "projection equality requires a normalization proof",
+                ));
+            }
             let ty = predicate.value.ty;
             let well_formed = proof
                 .check(&mut self.facts, ty)

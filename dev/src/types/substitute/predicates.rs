@@ -19,6 +19,9 @@ impl Bound {
         let bound = match predicate.bound {
             Requirement::Trait(id) => Requirement::Trait(self.trait_application(store, id)?),
             Requirement::Outlives(region) => Requirement::Outlives(self.region(region, 0)?),
+            Requirement::ProjectionEqual(result) => {
+                Requirement::ProjectionEqual(self.apply(store, result)?)
+            }
             bound => bound,
         };
         Ok(Predicate { ty, bound })

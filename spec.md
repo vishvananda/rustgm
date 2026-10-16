@@ -139,6 +139,22 @@ projection's inputs from its result. Bounds inside nested callable binders and
 dependencies between unresolved projected assumptions require their own scoped
 normalization support.
 
+Associated result equalities are typed predicates with two retained roots. The
+right-hand side participates in parameter/const occurrence checks, lifetime
+capture queries, substitution and inference with the same mapping as the
+projected left-hand side. Import both graphs into a probe through one mapping;
+keep the probe's variables isolated from the caller. Normalizing either root
+does not discard the equality or its remaining const arguments. Result equality
+cannot establish equality of a projection's inputs.
+
+Keep equality assumptions separate from builtin abilities and trait membership.
+An equality alone grants neither Sized nor Copy/Clone, nor membership in its
+projection's trait. Preserve competing results in an immutable environment;
+unused contradictory assumptions need not have a unique normal form. Opening
+the environment must map both roots and retain the actual lifetime evidence.
+An unsupported equality proof must fail explicitly, never fall through a
+builtin-only proof loop or disappear when importing candidate obligations.
+
 Ordinary aliases and generic defaults retain conditional projection requirements
 as sealed typed dependency graphs. Instantiate a contract only at an actual use;
 an overridden default contributes no requirements. Retain dependencies even when

@@ -96,6 +96,7 @@ impl Uses {
         use super::parameters::predicates::Bound;
         self.collect(store, predicate.ty)?;
         match predicate.bound {
+            Bound::ProjectionEqual(result) => self.collect(store, result)?,
             Bound::Outlives(region) => self.region(region, 0),
             Bound::Trait(id) => {
                 let application = store

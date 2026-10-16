@@ -20,6 +20,7 @@ pub struct Environment {
     parameters: HashMap<ParameterId, Abilities>,
     assumptions: Option<Box<Assumptions>>,
     traits: Option<Box<TraitAssumptions>>,
+    equalities: Option<Box<ProjectionAssumptions>>,
     shape_assumptions: bool,
 }
 #[derive(Clone, Default)]
@@ -33,11 +34,17 @@ struct TraitAssumptions {
     unique: std::collections::HashSet<Predicate>,
     constants: std::collections::HashSet<ParameterId>,
 }
+#[derive(Clone, Default)]
+struct ProjectionAssumptions {
+    predicates: Vec<Predicate>,
+    unique: std::collections::HashSet<Predicate>,
+}
 impl Environment {
     /// Parameter identities and abilities contain no regions to substitute.
     /// Composite and trait predicates still need the ordinary binder mapping.
     pub(crate) fn has_only_parameters(&self) -> bool {
         self.assumptions.is_none()
+            && self.equalities.is_none()
             && self
                 .traits
                 .as_ref()
@@ -73,6 +80,12 @@ impl Environment {
                 *predicate = fold.predicate(types, *predicate)?;
             }
             traits.unique = traits.predicates.iter().copied().collect();
+        }
+        if let Some(equalities) = &mut result.equalities {
+            for predicate in &mut equalities.predicates {
+                *predicate = fold.predicate(types, *predicate)?;
+            }
+            equalities.unique = equalities.predicates.iter().copied().collect();
         }
         Ok(result)
     }
@@ -118,6 +131,7 @@ impl Environment {
             parameters,
             assumptions: None,
             traits: None,
+            equalities: None,
             shape_assumptions,
         })
     }
@@ -164,6 +178,19 @@ impl Environment {
         let mut uses = super::uses::Uses::default();
         for predicate in predicates {
             uses.predicate(types, *predicate)?;
+            if matches!(predicate.bound, Bound::ProjectionEqual(_)) {
+                if !matches!(types.kind(predicate.ty), Some(Kind::Projection(_))) {
+                    return Err("projection equality requires a projected subject");
+                }
+                let equalities = self.equalities.get_or_insert_with(Default::default);
+                if equalities.unique.len() >= 1_000_000 && !equalities.unique.contains(predicate) {
+                    return Err("projection assumption storage budget exceeded");
+                }
+                if equalities.unique.insert(*predicate) {
+                    equalities.predicates.push(*predicate);
+                }
+                continue;
+            }
             if matches!(predicate.bound, Bound::Trait(_)) {
                 let traits = self.traits.get_or_insert_with(Default::default);
                 if traits.unique.len() >= 1_000_000 && !traits.unique.contains(predicate) {
@@ -186,7 +213,8 @@ impl Environment {
                     properties.clone_ = true;
                 }
                 Bound::Clone => properties.clone_ = true,
-                Bound::Sized | Bound::Outlives(_) | Bound::Trait(_) => {}
+                Bound::Sized | Bound::Outlives(_) | Bound::Trait(_) | Bound::ProjectionEqual(_) => {
+                }
             }
             if let Some(Kind::Parameter(id)) = types.kind(predicate.ty) {
                 let parameter = self
@@ -218,6 +246,13 @@ impl Environment {
     /// adds its own proved predicates rather than granting arbitrary type abilities.
     pub fn trait_predicates(&self) -> impl Iterator<Item = &Predicate> {
         self.traits.iter().flat_map(|traits| &traits.predicates)
+    }
+    /// Retain all written equalities, including competing results. An unused
+    /// generic declaration need not establish a unique normal form for them.
+    pub fn projection_predicates(&self) -> impl Iterator<Item = &Predicate> {
+        self.equalities
+            .iter()
+            .flat_map(|equalities| &equalities.predicates)
     }
     #[must_use]
     pub fn assumes_trait(
@@ -255,5 +290,74 @@ impl Environment {
     #[must_use]
     pub fn abilities(&self, parameter: ParameterId) -> Option<Abilities> {
         self.parameters.get(&parameter).copied()
+    }
+}
+
+#[cfg(test)]
+mod equality_tests {
+    use super::*;
+    use crate::types::{GenericArgs, ItemId, RegionId, projection, substitute, traits};
+
+    #[test]
+    fn opening_an_environment_maps_equality_results_and_preserves_the_original()
+    -> Result<(), &'static str> {
+        let mut store = Store::default();
+        store.declare_projection(
+            ItemId(2),
+            projection::Schema {
+                trait_item: ItemId(1),
+                sized: false,
+            },
+        )?;
+        let trait_application = store.intern_trait_application(traits::Application {
+            item: ItemId(1),
+            arguments: GenericArgs::EMPTY,
+        })?;
+        let region = RegionId::bound(0, 0)?;
+        let result = store.intern(Kind::Reference {
+            mutable: false,
+            region,
+            referent: TypeId::UNIT,
+        })?;
+        let ty = store.intern(Kind::Projection(projection::Application {
+            item: ItemId(2),
+            subject: TypeId::UNIT,
+            trait_application,
+            arguments: GenericArgs::EMPTY,
+        }))?;
+        let predicate = Predicate {
+            ty,
+            bound: Bound::ProjectionEqual(result),
+        };
+        let environment = Environment::new(&store, &[])?.with_predicates(&store, &[predicate])?;
+        assert!(!environment.has_only_parameters());
+        let mut fold = substitute::Bound::open_regions(7)?;
+        let opened = environment.substitute_regions(&mut store, &mut fold)?;
+        let expected = store.intern(Kind::Reference {
+            mutable: false,
+            region: RegionId(7),
+            referent: TypeId::UNIT,
+        })?;
+        assert_eq!(
+            opened.projection_predicates().copied().collect::<Vec<_>>(),
+            [Predicate {
+                ty,
+                bound: Bound::ProjectionEqual(expected)
+            }]
+        );
+        assert_eq!(
+            environment
+                .projection_predicates()
+                .copied()
+                .collect::<Vec<_>>(),
+            [predicate]
+        );
+        assert_eq!(
+            fold.opened_regions().collect::<Vec<_>>(),
+            [(region, RegionId(7))]
+        );
+        assert!(!opened.assumes_sized(ty));
+        assert!(!opened.has_shape_assumptions());
+        Ok(())
     }
 }

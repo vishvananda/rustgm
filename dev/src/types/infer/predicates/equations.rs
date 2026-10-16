@@ -98,6 +98,9 @@ impl Context {
         let subject = self.import_with(store, source, predicate.subject, &mut mappings)?;
         let requirement = match &predicate.requirement {
             Requirement::Builtin(bound) => Requirement::Builtin(*bound),
+            Requirement::ProjectionEqual(result) => Requirement::ProjectionEqual(
+                self.import_with(store, source, *result, &mut mappings)?,
+            ),
             Requirement::Trait(trait_) => {
                 self.account_work(1 + trait_.arguments.len())?;
                 let mut arguments = Vec::with_capacity(trait_.arguments.len());

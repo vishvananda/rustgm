@@ -11,6 +11,7 @@ use crate::types::{
 enum Requirement {
     Builtin(Bound),
     Trait(Box<Trait>),
+    ProjectionEqual(TermId),
 }
 struct Trait {
     item: ItemId,
@@ -35,7 +36,7 @@ impl Predicate {
     pub const fn builtin_bound(&self) -> Option<Bound> {
         match &self.requirement {
             Requirement::Builtin(bound) => Some(*bound),
-            Requirement::Trait(_) => None,
+            Requirement::Trait(_) | Requirement::ProjectionEqual(_) => None,
         }
     }
     #[must_use]
@@ -46,7 +47,15 @@ impl Predicate {
     pub fn trait_arguments(&self) -> Option<(ItemId, &[Argument])> {
         match &self.requirement {
             Requirement::Trait(trait_) => Some((trait_.item, &trait_.arguments)),
-            Requirement::Builtin(_) => None,
+            Requirement::Builtin(_) | Requirement::ProjectionEqual(_) => None,
+        }
+    }
+    /// The result shares this predicate's parameter and const inference graph.
+    #[must_use]
+    pub const fn projection_result(&self) -> Option<TermId> {
+        match self.requirement {
+            Requirement::ProjectionEqual(result) => Some(result),
+            Requirement::Builtin(_) | Requirement::Trait(_) => None,
         }
     }
 }
@@ -85,6 +94,8 @@ impl Context {
                 item: application.item,
                 arguments: inferred,
             }))
+        } else if let Bound::ProjectionEqual(result) = predicate.bound {
+            Requirement::ProjectionEqual(self.instantiate_with(store, result, substitution)?)
         } else {
             Requirement::Builtin(predicate.bound)
         };
@@ -139,6 +150,9 @@ impl Context {
         let ty = type_of(self, store, predicate.subject)?;
         let bound = match &predicate.requirement {
             Requirement::Builtin(bound) => *bound,
+            Requirement::ProjectionEqual(result) => {
+                Bound::ProjectionEqual(type_of(self, store, *result)?)
+            }
             Requirement::Trait(trait_) => {
                 self.account_work(trait_.arguments.len())?;
                 let mut arguments = Vec::with_capacity(trait_.arguments.len());
