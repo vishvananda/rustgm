@@ -585,10 +585,24 @@ names confer no builtin Copy, Clone or Sized behavior.
 
 Trait impl headers share generic/lifetime elaboration with inherent and builtin
 Drop owners. Retain the complete trait predicate, owner and source once. Every
-owned type/const parameter must constrain Self or the trait application; a where
-bound alone does not constrain it. Validate target and argument well-formedness,
+owned type/const parameter must constrain Self, the trait application, or an
+associated result whose complete inputs are already determined. An ordinary
+where bound alone does not constrain it. Validate target and argument well-formedness,
 trait requirements and safety under the impl's own environment. Input types imply
 lifetime well-formedness facts, never new Copy or user-trait assumptions.
+
+Determine impl parameters from unreduced typed occurrences. Seed injective
+positions in Self and the trait application. An associated equality contributes
+a directed dependency from every type, const and lifetime input to the injective
+positions of its result; projected result inputs are non-injective and cannot be
+inferred backwards. Exclude an equality on the implementation's own complete
+trait predicate. A worklist wakes only dependents of newly determined parameters,
+so declaration order is irrelevant and unseeded cycles remain unconstrained.
+Use the same analysis for inherent and trait implementations, after completing
+their bound environments. Skip dependency-graph construction when the header
+already constrains every owned type/const parameter. This declaration check
+determines parameter identity; actual selection must still prove every equality
+and carry its type and lifetime evidence through the ordinary body gates.
 
 Keep prepared headers separate from validated implementations. Declaration proofs
 may use prepared headers as conditional rules, through an explicit declaration-only

@@ -1,6 +1,11 @@
 //! All impl kinds share generic/lifetime elaboration before their own conformance checks.
 use super::{BinderId, Checker, DefId, Error, NodeKey, regions};
 use crate::sema::associated::Schema;
+use crate::types::parameters::{
+    constraints::Constraints,
+    predicates::{Bound, Predicate},
+    uses::Uses,
+};
 
 pub(super) struct Header {
     pub binder: BinderId,
@@ -9,6 +14,47 @@ pub(super) struct Header {
 }
 
 impl Checker<'_> {
+    pub(super) fn impl_parameters(
+        &self,
+        owner: DefId,
+        source: NodeKey,
+        header: Predicate,
+    ) -> Result<(), Error> {
+        let error = |e| self.error(source, e);
+        let types = &self.facts.types;
+        let parameters = self
+            .facts
+            .generics
+            .parameter_ids(types, owner)
+            .map_err(error)?;
+        let mut uses = Uses::constraining();
+        uses.predicate(types, header).map_err(error)?;
+        if parameters
+            .iter()
+            .all(|id| uses.parameters.contains(id) || uses.constants.contains(id))
+        {
+            return Ok(());
+        }
+        let mut constraints = Constraints::new(types, header, uses).map_err(error)?;
+        for predicate in self.facts.generics.predicates_in_scope(owner) {
+            let original = self
+                .facts
+                .unreduced
+                .predicate(predicate.source)
+                .unwrap_or(predicate.value);
+            constraints.equality(types, original).map_err(error)?;
+        }
+        constraints.solve().map_err(error)?;
+        if parameters.into_iter().all(|id| constraints.determines(id)) {
+            return Ok(());
+        }
+        Err(error(if matches!(header.bound, Bound::Trait(_)) {
+            "impl type and const parameters must constrain Self or the trait application"
+        } else {
+            "impl type and const parameters must constrain its target"
+        }))
+    }
+
     pub(super) fn impl_header(
         &mut self,
         owner: DefId,

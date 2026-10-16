@@ -5928,3 +5928,98 @@ After published `aa958af` passed CI run `38868912591`, the superseded `b7f371c`
 executable was retired with its hash and reason retained in
 `retired-baseline.json`. Cleanup continues to preserve receipts and raw
 observations while removing rebuildable outputs.
+
+### Parameters determined by associated results
+
+Trait and inherent implementations now share parameter determination after their
+typed bound environments are complete. Injective header positions seed the
+analysis. Each associated equality supplies a directional dependency from all
+of its type, const and lifetime inputs to injective result positions. Original
+projection occurrences are retained, so normalization cannot accidentally make
+a non-injective result constrain its inputs. An equality on the implementation's
+own complete trait predicate cannot justify that implementation's parameters.
+
+The dependency graph uses a worklist indexed by newly determined parameters.
+Reverse declaration order does not force repeated scans, and unseeded cycles
+cannot bootstrap themselves. Headers which already determine every owned type
+and const parameter skip graph construction. Actual implementation selection
+still proves the equality conditions, infers the selected arguments, and retains
+the existing callable and lifetime checks before lowering.
+
+The twenty-two source controls in `impl_parameter_contracts.rs` are independently
+qualified with pinned rustc. Fourteen accepted programs construct LowIR and run
+under both rustc and the CPPGM backend. They cover result types, array-length
+consts, inherent and receiver methods, forward/reverse dependency chains,
+parameters seeded by trait arguments, tuple/callable results, trait-argument
+dependencies, distinct applications of the same trait, and lifetime dependencies.
+Rejections cover unseeded inputs and cycles, reverse inference, missing argument
+or lifetime inputs, non-injective results, self-dependent trait equalities and
+an invalid call after an otherwise valid impl. A separate 10,000-link reverse-order
+graph regression verifies bounded work and rejection of an unseeded cycle.
+
+The initial implementation passes all twenty-two declared source outcomes, strict
+Clippy, the graph regression and the native controls. Investigation inputs,
+diagnostics and receipts are retained under
+`obj/pa20-work/impl-parameter-constraints-v1/`. The preceding equality-solver
+checkpoint `7dae890` passed CI run `38873338160`.
+
+This remains partial PA20 work: projected impl-bound subjects, quantified
+normalization, associated colon bounds/constants and opaque result properties
+remain required. PA21's full advanced-generic contract remains pending. No
+course fixture, oracle, handout status or assignment activation changes here.
+
+All 23 final validation commands pass: 4,864 course cases with unchanged oracles,
+1,079 release tests, all 46 separate native groups and the backend bridge checks.
+Targeted validation also passes formatting, strict Clippy, the 665-file audit with
+zero findings and 33 harness checks. The final candidate verifies a frozen
+668-file source/configuration snapshot and has SHA-256
+`3b48fc96872b9b0b6b403793e2c507d58ac51ce31e4b03909c6bcfd7b32382d5`.
+`validation-summary.json` retains the exact command and test counts. Cleanup
+removed 4,300 generated files and 4.53 GiB of unshared blocks, recorded in
+`obj/cleanup/1792139921611575015.jsonl`.
+
+Six follow-up coherence probes preserve the distinction between overlapping and
+provably disjoint impls. Both compilers reject resolved overlaps, renamed-output
+duplicate impls and duplicate inherent methods, and accept distinct inherent
+methods. RustGM still rejects two valid disjoint trait impl pairs: one whose
+required local trait has no implementation, and one whose closed associated
+result contradicts a fixed equality. The latter was initially hypothesized to
+overlap; pinned rustc instead accepts it. That original hypothesis and diagnostic
+are preserved in `coherence-declared.json` and `coherence-qualification.json`,
+without generating or blessing an oracle. These are pending coherence cases,
+not passing regression claims.
+
+The next projected-impl-bound investigation retains twelve independently
+qualified sources under `obj/pa20-work/projected-impl-bounds-v1/`. RustGM rejects
+all seven accepted sources at the existing declaration/proof boundary; five
+negative controls are also retained. No new implementation or claimed support
+for those cases is included in this checkpoint.
+
+Performance retains 1,872 observations across 72 jobs. The 54 existing-path jobs
+compare immutable published `7dae890` and candidate binaries with frozen inputs,
+A/A calibration, five paired ABBA blocks per job and full/count output equality.
+Median paired deltas range from -2.84% to +7.30%, resident-median differences from
+-96 to +668 KiB, and calibration spreads from 0.74% to 61.58%. The largest positive
+delta, a 128-function projected-bound workload, was investigated in four
+confirmation jobs retaining another 216 observations with twelve A/A samples and
+ten ABBA blocks per job. Confirmation full/count deltas are +0.47%/+1.47% at 128
+functions and +1.93%/+1.80% at 2,048 functions. Calibration spreads of 7.28%–84.41%
+and other host activity preclude a strict zero-regression claim. Both the initial
+and confirmation observations are retained.
+
+Eighteen additional jobs measure nine independently rustc-qualified scaling
+inputs at 64/256/1,024 constraints. Their A and B labels intentionally use the
+same immutable candidate: these are repeated scaling controls, not before/after
+speedup comparisons. Forward-chain full-view medians are 5.46/9.37/24.31 ms;
+reverse-chain medians are 5.32/9.07/24.26 ms. Resident medians at 1,024 links are
+about 9.1 MiB for both orders. Many associated results sharing one input measure
+5.16/8.49/33.57 ms, reaching about 8.4 MiB at 1,024 results. These measurements
+include semantic inspection and text rendering, not just dependency traversal or
+end-to-end native compilation. `performance-summary.json`, `perf-results.json`,
+`confirmation-results.json` and raw observations preserve the distinctions.
+
+All measured source, input, binary and runner hashes remain unchanged. RustGM
+builds, tests and probes do not overlap timing. Obsolete `aa958af` and the first
+equality-solver prototype binaries were retired after `7dae890` passed CI;
+`retired-baselines.json` retains their hashes and reasons. Current baselines remain
+pinned, while cleanup removes generated executables and retains evidence.

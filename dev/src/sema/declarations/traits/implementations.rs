@@ -5,10 +5,7 @@ use super::super::{Checker, DefId, Error, ItemId, NodeKey, Work};
 use crate::{
     resolve::model::DefKind,
     sema::{associated::OwnerKind, traits::implementations::Implementation},
-    types::parameters::{
-        predicates::{Bound, Predicate},
-        uses::Uses,
-    },
+    types::parameters::predicates::{Bound, Predicate},
 };
 
 impl Checker<'_> {
@@ -89,7 +86,7 @@ impl Checker<'_> {
                 ty,
                 bound: Bound::Trait(application),
             };
-            self.trait_impl_parameters(owner.self_definition, owner.source, predicate)?;
+            self.impl_parameters(owner.self_definition, owner.source, predicate)?;
             self.facts
                 .generics
                 .implementations
@@ -126,30 +123,5 @@ impl Checker<'_> {
             return Err(self.error(path, "implementation path is not a trait"));
         };
         Ok(unsafe_)
-    }
-
-    fn trait_impl_parameters(
-        &self,
-        owner: DefId,
-        source: NodeKey,
-        predicate: Predicate,
-    ) -> Result<(), Error> {
-        let mut uses = Uses::constraining();
-        uses.predicate(&self.facts.types, predicate)
-            .map_err(|e| self.error(source, e))?;
-        for id in self
-            .facts
-            .generics
-            .parameter_ids(&self.facts.types, owner)
-            .map_err(|e| self.error(source, e))?
-        {
-            if !uses.parameters.contains(&id) && !uses.constants.contains(&id) {
-                return Err(self.error(
-                    source,
-                    "impl type and const parameters must constrain Self or the trait application",
-                ));
-            }
-        }
-        Ok(())
     }
 }

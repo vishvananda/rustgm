@@ -105,8 +105,15 @@ impl Checker<'_> {
             if !matches!(self.facts.types.kind(self_type), Some(Type::Adt(..))) {
                 return Err(self.error(target, "inherent impl requires a local nominal type"));
             }
-            self.inherent_parameters(owner.self_definition, key, self_type)?;
             self.complete_impl_owner(owner.self_definition, key, header, steps, limit)?;
+            self.impl_parameters(
+                owner.self_definition,
+                key,
+                crate::types::parameters::predicates::Predicate {
+                    ty: self_type,
+                    bound: crate::types::parameters::predicates::Bound::Sized,
+                },
+            )?;
         }
         for member in self.facts.associated.members() {
             let owner = self.facts.associated.owners()[member.owner.0 as usize];
@@ -125,25 +132,6 @@ impl Checker<'_> {
                         .trait_owner(member.definition)
                         .unwrap_or(owner.self_definition),
                 );
-            }
-        }
-        Ok(())
-    }
-    fn inherent_parameters(&self, owner: DefId, key: NodeKey, target: TypeId) -> Result<(), Error> {
-        let mut uses = crate::types::parameters::uses::Uses::constraining();
-        uses.collect(&self.facts.types, target)
-            .map_err(|e| self.error(key, e))?;
-        for id in self
-            .facts
-            .generics
-            .parameter_ids(&self.facts.types, owner)
-            .map_err(|e| self.error(key, e))?
-        {
-            if !uses.parameters.contains(&id) && !uses.constants.contains(&id) {
-                return Err(self.error(
-                    key,
-                    "impl type and const parameters must constrain its target",
-                ));
             }
         }
         Ok(())

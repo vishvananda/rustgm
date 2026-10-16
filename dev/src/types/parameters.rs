@@ -1,4 +1,5 @@
 //! Immutable generic parameter declarations; inference variables have separate identities.
+pub(crate) mod constraints;
 pub mod environment;
 pub mod predicates;
 pub mod shape;
