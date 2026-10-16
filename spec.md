@@ -698,8 +698,9 @@ Projection and trait progress run before numeric fallback and body publication.
 Normalization never substitutes for the original well-formedness proof. Isolated
 method-prefix queries still reject pending projection proofs until that query mode
 supports them; body proofs cannot leak into a speculative candidate. General
-opaque-result properties, equality premises in implementation search and method
-applicability, associated constants and further PA20/PA21 work remain required.
+opaque-result properties, nested projected subjects and quantified equality
+premises in implementation search, associated constants and further PA20/PA21
+work remain required.
 
 Associated bindings in trait bounds retain resolved member identities separately
 from positional arguments. Complete ordinary trait headers before resolving
@@ -736,6 +737,24 @@ outer-region mapping may be necessary, including result-only captures. An
 environment certified to contain no such regions can use canonical inputs
 directly; unrelated equalities must not be cloned for each wide-list projection.
 The type store's region summary remains conservative for static lifetimes.
+
+Implementation selection treats associated equalities as proof work on its existing
+iterative stack. A normalizer suspends at each trait premise and resumes from that
+selected implementation or caller assumption; it must not start a fresh recursive
+solver with independent cycle/cache state. Preserve the original projected query
+and commit its complete input equations separately from the normalized result.
+Result equations can determine output holes, never unrelated projection inputs.
+Undetermined inputs defer until other premises provide enough information.
+
+Equality memo keys retain both canonical roots in the immutable caller environment.
+Cycle-dependent failures remain uncached, and evidence with private lifetime
+allocations cannot be reused without fresh identities. Selected result lifetimes
+stay in their child proof intervals until the enclosing equality and caller's
+lifetime gate prove them. Receiver applicability may discover a candidate with
+pending requirements; the ordinary callable still proves all selected bounds.
+Normalization beneath callable binders in implementation equality premises still
+requires scoped selection evidence; the current explicit boundary must remain
+until that proof representation is integrated.
 
 Apply each tuple field's coercion before checking the next field. Context inferred
 from an earlier field can establish a later mutable-reference reborrow, including

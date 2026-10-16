@@ -32,20 +32,29 @@ pub(super) fn selected_result(
     source: Source,
     selected: &Obligations,
 ) -> Result<TypeId, &'static str> {
+    let ty = implementation_result(facts, item, source)?;
+    if selected.regions.is_empty() && selected.equalities.is_empty() {
+        Ok(ty)
+    } else {
+        selected.restoration()?.apply(&mut facts.types, ty)
+    }
+}
+
+/// Keep private result lifetimes in the selected proof's allocation interval.
+pub(super) fn implementation_result(
+    facts: &mut Declarations,
+    item: ItemId,
+    source: Source,
+) -> Result<TypeId, &'static str> {
     let Source::Implementation { owner, arguments } = source else {
         return Err("associated type requires an unambiguous validated implementation");
     };
     let definition = definition(facts, owner, item)?;
     let template = facts.definitions[definition.0 as usize]
         .ok_or("missing completed associated type definition")?;
-    let ty = facts
+    facts
         .generics
-        .substitute(&mut facts.types, owner, arguments, template)?;
-    if selected.regions.is_empty() && selected.equalities.is_empty() {
-        Ok(ty)
-    } else {
-        selected.restoration()?.apply(&mut facts.types, ty)
-    }
+        .substitute(&mut facts.types, owner, arguments, template)
 }
 
 pub(super) fn normalize(

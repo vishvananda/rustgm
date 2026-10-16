@@ -5833,3 +5833,98 @@ checked against `binary-sha256.json`; source, input, binary and runner hashes ar
 verified before and after measurement. No RustGM builds, tests or probes overlap
 timing. The wide-list comparison is against an earlier implementation of this
 new feature, not the published compiler that does not yet support these inputs.
+
+
+### Equality premises in implementation selection
+
+Associated equalities now participate in the existing iterative trait proof stack.
+A normalizer suspends at each trait premise; the selected implementation or caller
+assumption supplies its result, and the original query retains its complete input
+equations. Normal forms may determine result holes without inferring unrelated
+projection inputs. Unresolved inputs defer while other premises progress. Receiver
+method applicability uses this same selection path, and the ordinary callable and
+lifetime gates still discharge its actual requirements.
+
+Equality queries share the immutable caller's canonical memo table. Negative
+answers depend on both roots and are not retained after an inductive cycle cutoff.
+Proofs with fresh existential lifetime allocations remain nonreusable without
+rebasing. Private result lifetimes stay attached to the selected child proof until
+the enclosing result comparison and final body gate discharge them. A distinct
+equality evidence variant cannot stand in for a trait implementation or bypass
+ordinary call validation.
+
+`premise_contracts.rs` independently qualifies fifteen accepted/rejected sources
+with pinned rustc, then runs the complete LowIR construction pipeline. Nine
+accepted programs also compile and execute under rustc and the qualified CPPGM
+backend. They cover conditional trait implementations, wrapper subjects, caller
+assumptions, inherent and receiver methods, output inference, borrowed results,
+callable alpha equality and independent associated equalities. Negative controls
+cover wrong results, missing caller equality, receiver rejection, lifetime escape
+and inductive cycles. A new internal cache regression uses 64 failed equality
+conditions and one applicable candidate: the failures share one completed
+negative equality proof, do not constrain the originating output hole, and cannot
+hide the valid implementation. All seven selection-cache invariants pass.
+
+The initial sixteen-source investigation and all intermediate results are retained
+under `obj/pa20-work/solver-equality-premises-v1/`. Its accepted nested-projected-
+subject case remains unsupported and is not counted as a passing regression.
+The first test-harness attempt used the generic-template helper, which correctly
+does not check concrete bodies; the lifetime-only negative control therefore
+needed the full LowIR pipeline. The corrected test retains its original source and
+rustc-declared rejection. The initial Clippy failure for unnecessary raw-string
+hashes was corrected without a suppression.
+
+This is still partial PA20 work. Nested projected subjects, quantified projection
+normalization within implementation equality premises, associated output
+parameters that constrain an impl, associated colon bounds/constants and opaque
+result properties remain required. PA21 retains its full pending contract. No
+course fixture or text oracle is changed, and neither assignment is activated.
+
+The six targeted commands and all 23 final validation commands pass: formatting,
+strict all/pedantic Clippy, the 662-file architecture audit with zero findings,
+33 harness checks, 4,864 course cases, 1,077 release tests and all 45 separate
+native groups. The final validation verifies a frozen snapshot of 665 source and
+configuration files. The candidate's SHA-256 is
+`c83b1415f2bbd3faf04990342d9f1ef60b7dcceb70a02d6ed89c99e4dc1f1d2f`.
+`validation-summary.json` records the counts without conflating ordinary tests,
+native groups and the programs within those groups. Successful validation
+cleanup removed 4,257 generated files and 4.47 GiB of unshared blocks; its receipt
+is `obj/cleanup/1792138407563124856.jsonl`.
+
+Six additional source investigations independently confirm the next parameter
+constraint boundary: pinned rustc accepts type results, array-length const
+results and inherent impl results that are determined by an associated equality,
+while rejecting unconstrained inputs, reverse inference through non-injective
+projections and a self-dependent implemented-trait equality. RustGM still rejects
+the three accepted cases. Sources, declared outcomes and both compilers'
+diagnostics are retained in `followup-qualification.json`; these pending cases
+are not included in the passing regression counts.
+
+Performance retains 1,404 observations across 54 jobs with frozen inputs,
+immutable binaries, A/A calibration, five paired ABBA blocks per job, and full
+and count output equality. The 42 existing-path jobs compare against published
+`aa958af`; paired wall-time medians range from -3.33% to +4.78%, and resident
+median differences from -642 to +550 KiB. A/A spreads range from 0.56% to
+113.94% on this shared host. The twelve new-feature jobs compare against the
+immutable first working equality implementation, not a published or fully
+regression-validated baseline. At 1,024 repeated premises, canonical proof reuse
+reduces full-view median time from 22.77 to 19.25 ms (-15.25% paired) and count
+time from 22.19 to 18.72 ms (-15.78% paired). Independent equality-call workloads
+range from -2.55% to +1.85%; all six new inputs are accepted by pinned rustc.
+
+Four confirmation jobs retain another 216 observations, with twelve A/A samples
+and ten ABBA blocks per job. The 256/1,024 concrete-goal workloads still show
+small positive median deltas: +1.29%/+2.07% in count mode and +2.05%/+3.88% in
+full mode. Their A/A spreads are 9.20%–42.46%. These results do not establish a
+zero-regression claim; the concrete-goal overhead remains visible alongside the
+new equality functionality. Raw observations and both result sets remain in the
+checkpoint directory. A confirmation-script preflight initially compared its
+two selected binaries against the complete three-binary inventory and stopped
+before timing; the corrected subset check still verifies every inventory hash.
+Source, input, executable and runner hashes are verified before and after each
+completed run, with no overlapping RustGM builds, tests or probes.
+
+After published `aa958af` passed CI run `38868912591`, the superseded `b7f371c`
+executable was retired with its hash and reason retained in
+`retired-baseline.json`. Cleanup continues to preserve receipts and raw
+observations while removing rebuildable outputs.

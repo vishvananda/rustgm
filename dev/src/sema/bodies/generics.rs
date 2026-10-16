@@ -262,6 +262,9 @@ impl Checker<'_> {
             let predicate = match evidence.get(&index) {
                 Some(Source::Assumption(actual)) => *actual,
                 Some(Source::Implementation { .. }) => continue,
+                Some(Source::Equality) => {
+                    return Err(self.error(node, "equality evidence cannot replace a trait goal"));
+                }
                 None => *predicate,
             };
             self.prove_bound(node, predicate.ty, predicate.bound)?;

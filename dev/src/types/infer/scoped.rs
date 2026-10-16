@@ -28,7 +28,11 @@ impl Context {
         self.equate_scoped_terms(store, left, right)
     }
 
-    pub(super) fn equate_scoped_terms(
+    /// Compare inferred normal forms without treating projections as injective.
+    /// Callable-local lifetimes remain rigid and outer equations remain obligations.
+    /// # Errors
+    /// Rejects mismatch, unresolved projections, local capture and exhausted work.
+    pub fn equate_scoped_terms(
         &mut self,
         store: &Store,
         left: TermId,

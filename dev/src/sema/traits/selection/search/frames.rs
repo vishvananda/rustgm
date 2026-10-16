@@ -7,6 +7,7 @@ use crate::{
 };
 
 pub(super) struct Frame {
+    pub equality: Option<Box<super::equalities::Equality>>,
     pub context: Context,
     pub goal: Goal,
     pub first: u32,
@@ -44,6 +45,7 @@ impl Frame {
             .import_predicate(&facts.types, source, goal)
             .map_err(inference)?;
         Ok(Self {
+            equality: None,
             context,
             goal,
             first,
@@ -72,7 +74,10 @@ impl Trial {
             .goals
             .iter()
             .enumerate()
-            .filter_map(|(index, goal)| goal.trait_arguments().map(|_| index))
+            .filter_map(|(index, goal)| {
+                (goal.trait_arguments().is_some() || goal.projection_result().is_some())
+                    .then_some(index)
+            })
             .collect();
         Ok(Self {
             context,
@@ -97,9 +102,6 @@ impl Search<'_> {
         let mut type_outlives = Vec::new();
         let mut sized = Vec::new();
         for goal in &trial.instance.goals {
-            if goal.projection_result().is_some() {
-                return Err("projection equality requires a normalization proof".into());
-            }
             let Some(bound) = goal.builtin_bound() else {
                 continue;
             };

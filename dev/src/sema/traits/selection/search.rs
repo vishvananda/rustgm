@@ -1,4 +1,5 @@
 //! Iterative candidate search; each child proof commits only its resolved goal.
+mod equalities;
 mod frames;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/proof_cache.rs"]
@@ -63,7 +64,7 @@ pub(super) fn prove(
         Decision::Deferred => Ok(Selection::Deferred),
         Decision::Proven(root) => {
             context
-                .equate_trait_predicate(&facts.types, goal, search.nodes[root].goal)
+                .equate_proved_predicate(&facts.types, goal, search.nodes[root].goal)
                 .map_err(inference)?;
             search.evidence(root).map(Selection::Proven)
         }
@@ -114,14 +115,7 @@ impl<'a> Search<'a> {
             match action {
                 Action::Continue => {}
                 Action::Descend => {
-                    let trial = frame.trial.as_mut().ok_or("missing descending candidate")?;
-                    let index = trial.pending[trial.cursor];
-                    let child = Frame::new(
-                        facts,
-                        &mut trial.context,
-                        &trial.instance.goals[index],
-                        trial.end,
-                    )?;
+                    let child = frame.child(facts)?;
                     stack.push(child);
                 }
                 Action::Complete(decision) => {
@@ -162,6 +156,9 @@ impl<'a> Search<'a> {
     fn advance(&mut self, facts: &mut Declarations, frame: &mut Frame) -> Result<Action, String> {
         if !frame.started {
             return self.start(facts, frame);
+        }
+        if frame.equality.is_some() {
+            return self.advance_equality(facts, frame);
         }
         if let Some(trial) = &mut frame.trial {
             if trial.cursor < trial.pending.len() {
@@ -216,6 +213,9 @@ impl<'a> Search<'a> {
         use super::Assumed;
         frame.started = true;
         frame.cycles = self.cycles;
+        if frame.goal.projection_result().is_some() {
+            return self.start_equality(facts, frame);
+        }
         match self
             .caller
             .assumptions
@@ -244,36 +244,13 @@ impl<'a> Search<'a> {
             Assumed::Deferred => return Ok(Action::Complete(Decision::Deferred)),
             Assumed::Absent => {}
         }
-        match frame
-            .context
-            .resolved_predicate(&mut facts.types, &frame.goal)
-        {
-            Ok(goal) => {
-                frame.canonical = Some(goal);
-                if let Some(&decision) = self.completed.get(&goal) {
-                    self.reused |= matches!(decision, Decision::Proven(_));
-                    return Ok(Action::Complete(decision));
-                }
-                let before = self.shapes.steps;
-                let key = self.shapes.predicate(&mut facts.types, goal)?;
-                frame
-                    .context
-                    .account_work(self.shapes.steps.saturating_sub(before))
-                    .map_err(inference)?;
-                if !self.active.insert(key) {
-                    self.cycles += 1;
-                    return Ok(Action::Complete(Decision::Absent));
-                }
-                frame.key = Some(key);
-            }
-            Err(infer::Error::Unresolved) => {}
-            Err(error) => return Err(inference(error)),
+        if let Some(decision) = self.cached_query(facts, frame)? {
+            return Ok(Action::Complete(decision));
         }
-        frame.candidates = facts
-            .generics
-            .implementations
-            .as_mut()
-            .ok_or("missing impl registry")?
+        let Some(registry) = &mut facts.generics.implementations else {
+            return Ok(Action::Complete(Decision::Absent));
+        };
+        frame.candidates = registry
             .candidates(
                 &mut facts.types,
                 &mut frame.context,
@@ -283,12 +260,47 @@ impl<'a> Search<'a> {
             .map_err(inference)?;
         Ok(Action::Continue)
     }
+    fn cached_query(
+        &mut self,
+        facts: &mut Declarations,
+        frame: &mut Frame,
+    ) -> Result<Option<Decision>, String> {
+        match frame
+            .context
+            .resolved_predicate(&mut facts.types, &frame.goal)
+        {
+            Ok(goal) => {
+                frame.canonical = Some(goal);
+                if let Some(&decision) = self.completed.get(&goal) {
+                    self.reused |= matches!(decision, Decision::Proven(_));
+                    return Ok(Some(decision));
+                }
+                let before = self.shapes.steps;
+                let key = self.shapes.predicate(&mut facts.types, goal)?;
+                frame
+                    .context
+                    .account_work(self.shapes.steps.saturating_sub(before))
+                    .map_err(inference)?;
+                if !self.active.insert(key) {
+                    self.cycles += 1;
+                    return Ok(Some(Decision::Absent));
+                }
+                frame.key = Some(key);
+            }
+            Err(infer::Error::Unresolved) => {}
+            Err(error) => return Err(inference(error)),
+        }
+        Ok(None)
+    }
     fn accept(
         &mut self,
-        facts: &Declarations,
+        facts: &mut Declarations,
         frame: &mut Frame,
         decision: Decision,
     ) -> Result<(), String> {
+        if frame.equality.is_some() {
+            return self.accept_equality(facts, frame, decision);
+        }
         let trial = frame
             .trial
             .as_mut()
@@ -307,7 +319,7 @@ impl<'a> Search<'a> {
             Decision::Proven(node) => {
                 trial
                     .context
-                    .equate_trait_predicate(
+                    .equate_proved_predicate(
                         &facts.types,
                         &trial.instance.goals[index],
                         self.nodes[node].goal,

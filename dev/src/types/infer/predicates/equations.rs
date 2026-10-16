@@ -11,6 +11,46 @@ enum Relation {
 }
 
 impl Context {
+    /// Commit a proved predicate's inputs and result to the originating graph.
+    /// The caller must already have proved normalization and retain its evidence.
+    /// Projection input equations here identify that query; they never infer inputs
+    /// from an independently equal result.
+    /// # Errors
+    /// Rejects changed predicate kinds, malformed projections and failed equations.
+    pub fn equate_proved_predicate(
+        &mut self,
+        store: &Store,
+        goal: &Predicate,
+        proof: Canonical,
+    ) -> Result<(), Error> {
+        let Some(result) = goal.projection_result() else {
+            return self.equate_trait_predicate(store, goal, proof);
+        };
+        let Bound::ProjectionEqual(expected) = proof.bound else {
+            return Err(Error::Mismatch);
+        };
+        let Some(crate::types::Kind::Projection(application)) = store.kind(proof.ty) else {
+            return Err(Error::InvalidIdentity);
+        };
+        let original = self.projection_application(store, goal.subject())?;
+        if original.item != application.item
+            || !original.arguments.is_empty()
+            || application.arguments != crate::types::GenericArgs::EMPTY
+        {
+            return Err(Error::InvalidIdentity);
+        }
+        self.equate_trait_predicate(
+            store,
+            &original.predicate,
+            Canonical {
+                ty: application.subject,
+                bound: Bound::Trait(application.trait_application),
+            },
+        )?;
+        let expected = self.known(store, expected)?;
+        self.equate_scoped_terms(store, result, expected)
+    }
+
     /// Existential header compatibility, with lifetime proof deliberately deferred.
     /// This overapproximation may establish disjointness, never body permissions.
     /// # Errors

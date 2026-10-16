@@ -22,6 +22,7 @@ use std::{ops::Range, sync::Arc};
 
 #[derive(Clone, Copy)]
 pub(in crate::sema) enum Source {
+    Equality,
     Assumption(Predicate),
     Implementation {
         owner: DefId,
@@ -99,6 +100,9 @@ fn select_from(
     caller: Caller<'_>,
     availability: Availability,
 ) -> Result<Selection, String> {
+    if goal.projection_result().is_some() {
+        return search::prove(facts, context, goal, caller, availability);
+    }
     match select_assumption(&facts.types, context, goal, &caller)? {
         Selection::Absent => {}
         proof => return Ok(proof),
