@@ -24,6 +24,7 @@ impl Fixture {
                 owned: None,
                 storage: None,
                 promotions: None,
+                resolved_callables: None,
                 temporaries: Vec::new(),
                 guards: Vec::new(),
                 guard_places: Vec::new(),

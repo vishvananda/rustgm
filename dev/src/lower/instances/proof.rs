@@ -91,7 +91,13 @@ impl Builder {
             catalog.as_mut(),
         );
         self.recipes = catalog.map(glue::Catalog::into_cache);
-        let proof = proof?;
+        let mut proof = proof?;
+        proof
+            .resolve_callables(&mut facts.types)
+            .map_err(|message| borrow::Error {
+                node: Some(input.source),
+                message: message.into(),
+            })?;
         let index = self.bodies.len();
         self.bodies.push(proof);
         if let (Some(pending), Some(requirements)) = (&mut self.program.drops, requirements) {

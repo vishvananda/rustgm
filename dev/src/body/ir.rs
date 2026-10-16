@@ -284,6 +284,8 @@ pub struct Body {
     pub owned: Option<Box<super::drops::values::Facts>>,
     pub storage: Option<super::storage::Facts>,
     pub promotions: Option<super::promote::Facts>,
+    /// Lifetime-equivalent callable identities selected only after a complete body proof.
+    pub resolved_callables: Option<Box<ResolvedCallables>>,
     pub temporaries: Vec<Temporary>,
     pub guards: Vec<Guard>,
     /// Proof-only tested places, including places in inactive variants. Never evaluated.
@@ -299,7 +301,34 @@ pub struct Body {
     pub statements: Vec<Statement>,
     pub blocks: Vec<Block>,
 }
+#[derive(Default)]
+pub struct ResolvedCallables {
+    targets: std::collections::HashMap<
+        crate::types::instance::Instance,
+        crate::types::instance::Instance,
+    >,
+}
+impl ResolvedCallables {
+    pub(crate) fn insert(
+        &mut self,
+        original: crate::types::instance::Instance,
+        target: crate::types::instance::Instance,
+    ) {
+        self.targets.insert(original, target);
+    }
+}
 impl Body {
+    #[must_use]
+    pub fn callable_target(
+        &self,
+        original: crate::types::instance::Instance,
+    ) -> crate::types::instance::Instance {
+        self.resolved_callables
+            .as_ref()
+            .and_then(|resolved| resolved.targets.get(&original))
+            .copied()
+            .unwrap_or(original)
+    }
     #[must_use]
     pub fn statements(&self, block: &Block) -> &[Statement] {
         &self.statements[block.start as usize..block.end as usize]

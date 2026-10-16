@@ -1,5 +1,6 @@
 //! The executable boundary combines owned access, storage, contracts and loans.
 pub(crate) mod incremental;
+mod static_targets;
 use super::{loans, ownership, regions, storage};
 use crate::{
     body::ir::{Body, NodeKey, Program},
@@ -240,6 +241,12 @@ fn require_resolved_promotions(program: &Program) -> Result<(), Error> {
     Ok(())
 }
 fn require_body_promotions(body: &Body) -> Result<(), Error> {
+    if body.resolved_callables.is_some() {
+        return Err(Error {
+            node: Some(body.source),
+            message: "resolved callable targets require a completed body proof".into(),
+        });
+    }
     if body
         .promotions
         .as_ref()

@@ -114,19 +114,29 @@ fn small_graphs_agree_with_exhaustive_set_inclusion_models() -> Result<(), Error
                     }
                 }
             }
-            let satisfiable = (0_u8..16).any(|x| {
-                (0_u8..16).any(|y| {
-                    let sets = [15, 1, a_bits, b_bits, x, y];
+            let models: Vec<_> = (0_u8..16)
+                .flat_map(|x| (0_u8..16).map(move |y| [15, 1, a_bits, b_bits, x, y]))
+                .filter(|sets| {
                     edges
                         .iter()
                         .all(|&(longer, shorter)| sets[longer] & sets[shorter] == sets[shorter])
                 })
-            });
+                .collect();
+            let solved = graph.solve();
             assert_eq!(
-                graph.solve().is_ok(),
-                satisfiable,
+                solved.is_ok(),
+                !models.is_empty(),
                 "assumption={assumption} edges={edges:?}"
             );
+            if let Ok(solved) = solved {
+                for region in solved.required_static()? {
+                    let index = regions
+                        .iter()
+                        .position(|r| *r == region)
+                        .ok_or(Error::Identity)?;
+                    assert!(models.iter().all(|sets| sets[index] == 15));
+                }
+            }
         }
     }
     Ok(())
@@ -168,5 +178,32 @@ fn younger_placeholders_do_not_cover_an_older_body_extent() -> Result<(), Error>
         graph.require(placeholder, inferred, 2)?;
         assert_eq!(graph.solve().is_ok(), universe == 0);
     }
+    Ok(())
+}
+
+#[test]
+fn static_evidence_requires_a_proven_lower_bound_and_stays_in_its_graph() -> Result<(), Error> {
+    let mut graph = Graph::new(1_000);
+    let a = variable(&mut graph, 0)?;
+    let b = variable(&mut graph, 0)?;
+    let u = universal(&mut graph, 0)?;
+    let unrelated = variable(&mut graph, 0)?;
+    graph.assume(u, Region::STATIC)?;
+    graph.require(a, Region::STATIC, 1)?;
+    graph.require(b, a, 2)?;
+    graph.require(a, b, 3)?;
+    graph.require(u, b, 4)?;
+    graph.require(Region::STATIC, unrelated, 5)?;
+    let solved = graph.solve()?;
+    assert_eq!(solved.required_static()?, [a, b, u]);
+    assert_eq!(solved.required_static()?, [a, b, u]);
+    let mut other = Graph::new(1_000);
+    assert_eq!(variable(&mut other, 0)?, a);
+    assert!(other.solve()?.required_static()?.is_empty());
+    let mut invalid = Graph::new(1_000);
+    let local = variable(&mut invalid, 0)?;
+    invalid.require(Region::LOCAL, local, 1)?;
+    invalid.require(local, Region::STATIC, 2)?;
+    assert!(matches!(invalid.solve(), Err(Error::Unsatisfied { .. })));
     Ok(())
 }

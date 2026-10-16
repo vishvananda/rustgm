@@ -68,7 +68,7 @@ impl Dependencies {
                     .ok_or("invalid callable operand")?
                     .ty;
                 if matches!(facts.types.kind(ty), Some(Kind::FunctionItem { .. })) {
-                    result.push(Instance::new(&facts.types, ty)?);
+                    result.push(body.callable_target(Instance::new(&facts.types, ty)?));
                 }
             }
         }

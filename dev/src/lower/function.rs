@@ -461,7 +461,10 @@ impl Lower<'_, '_> {
                 {
                     return Err("function operand differs from its selected item");
                 }
-                return Ok(Selected::Item(Instance::new(self.context.types, value.ty)?));
+                return Ok(Selected::Item(
+                    self.body
+                        .callable_target(Instance::new(self.context.types, value.ty)?),
+                ));
             }
             Rvalue::Scalar(scalar) => self.scalar(self.body.scalars[scalar.0 as usize], ty)?,
             Rvalue::Length(place) => self.slice_length(place)?,
@@ -472,7 +475,10 @@ impl Lower<'_, '_> {
                 if matches!(representation, Representation::Scalar(Type::Void)) {
                     return Ok(
                         if let Some(Kind::FunctionItem { .. }) = self.context.types.kind(value.ty) {
-                            Selected::Item(Instance::new(self.context.types, value.ty)?)
+                            Selected::Item(
+                                self.body
+                                    .callable_target(Instance::new(self.context.types, value.ty)?),
+                            )
                         } else {
                             Selected::Unit
                         },
@@ -498,7 +504,10 @@ impl Lower<'_, '_> {
                 } else {
                     return Ok(
                         if let Some(Kind::FunctionItem { .. }) = self.context.types.kind(value.ty) {
-                            Selected::Item(Instance::new(self.context.types, value.ty)?)
+                            Selected::Item(
+                                self.body
+                                    .callable_target(Instance::new(self.context.types, value.ty)?),
+                            )
                         } else {
                             Selected::Unit
                         },

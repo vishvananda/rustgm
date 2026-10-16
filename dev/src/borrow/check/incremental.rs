@@ -17,8 +17,18 @@ pub(crate) struct Proved {
     body: Body,
     plan: Option<destruction::Plan>,
     destruction: bool,
+    static_targets: Option<Box<crate::types::substitute::Bound>>,
 }
 impl Proved {
+    pub(crate) fn resolve_callables(
+        &mut self,
+        types: &mut crate::types::Store,
+    ) -> Result<(), &'static str> {
+        if let Some(mut fold) = self.static_targets.take() {
+            super::static_targets::resolve(types, &mut self.body, &mut fold)?;
+        }
+        Ok(())
+    }
     pub(crate) const fn body(&self) -> &Body {
         &self.body
     }
@@ -97,6 +107,7 @@ impl Verifier {
             }
         };
         Ok(Proved {
+            static_targets: super::static_targets::prepare(contract).map_err(error)?,
             body,
             plan,
             destruction: self.drops.is_some(),

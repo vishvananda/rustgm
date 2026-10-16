@@ -103,6 +103,7 @@ fn materialize(
         owned: None,
         storage: source.storage.clone(),
         promotions: None,
+        resolved_callables: None,
         locals: source.locals.clone(),
         values: source.values.clone(),
         projections: source.projections.clone(),

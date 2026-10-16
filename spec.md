@@ -1171,6 +1171,16 @@ context while preserving nested binders and the template's own variables.
 Pair each specialized body with its own region proof and complete instance
 identity, even when multiple bodies share an original source location.
 
+After a caller's complete ownership, lifetime and cleanup proof, retained proved
+outlives obligations may establish that an input lifetime equals static. Resolve
+selected callable identities through those equalities before discovering demanded
+instances. Store only changed targets on that sealed body; dependency discovery
+and executable lowering consume the same table. Preserve unrelated free lifetimes
+and nested binders. Neither an unproved body nor another caller may supply this
+authority. The selected callee still proves its original template and every
+implementation requirement; do not turn required impl bounds into assumptions.
+An empty static-obligation frontier must require no traversal allocation.
+
 Schedule demanded instances iteratively, registering an instance before following
 its dependencies so finite recursion terminates. Bound active recursive growth
 separately from independent uses of one function. Check retained storage before

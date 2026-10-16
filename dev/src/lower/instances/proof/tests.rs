@@ -231,3 +231,17 @@ fn assembly_cannot_erase_a_completed_destruction_proof() -> TestResult {
     assert!(error.message.contains("inconsistent cleanup"));
     Ok(())
 }
+
+#[test]
+fn unresolved_bodies_cannot_supply_callable_proof_results() -> TestResult {
+    let mut f = fixture("fn id<T>(x:T)->T{x}fn main(){let _=id(7u8);}")?;
+    let checked = originals(&mut f.facts, &f.templates, &f.inputs)?;
+    let instance = *f.instances.first().ok_or("missing selected instance")?;
+    let (mut body, contract) = specialize(&mut f.facts, &checked, instance)?;
+    body.resolved_callables = Some(Box::default());
+    let error = prove(&mut f.facts, &checked, body, &contract)
+        .err()
+        .ok_or("unproved target table was accepted")?;
+    assert!(error.message.contains("completed body proof"));
+    Ok(())
+}

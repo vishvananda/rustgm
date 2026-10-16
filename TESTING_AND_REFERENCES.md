@@ -342,6 +342,15 @@ regenerate sidecars. A reference receipt records the compiler used to generate
 that oracle; changing compiler source does not rewrite the historical receipt
 when the output contract is unchanged.
 
+`projected_static_inputs.rs` checks that completed caller proofs preserve static
+implementation inputs through projected results, nested calls, function-pointer
+reification and separate bodies. Its sixteen independently qualified LowIR
+controls include twelve CPPGM/rustc executions and four rejections. Region-graph
+invariants compare reported static equalities with every satisfying small model;
+instance tests reject pre-filled resolution tables and retain forged-instance
+lifetime debts. A valid stored function item whose projection still needs
+normalization remains an explicit investigation outside successful coverage.
+
 ## Storage and cleanup
 
 Generated output is bounded separately from validation evidence. Builds and

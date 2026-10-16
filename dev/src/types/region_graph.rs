@@ -77,6 +77,33 @@ pub struct Requirement {
     pub source: u32,
 }
 impl Solution {
+    /// Lifetimes required to contain static by this successfully solved graph.
+    /// This conservative query follows retained obligations, not new assumptions.
+    /// # Errors
+    /// Rejects exhausted traversal work or invalid retained identities.
+    pub fn required_static(&self) -> Result<Vec<Region>, Error> {
+        if self.graph.incoming[0].is_none() {
+            return Ok(Vec::new());
+        }
+        let mut seen = HashSet::from([Region::STATIC]);
+        let mut work = vec![Region::STATIC];
+        let mut steps = 0_usize;
+        while let Some(shorter) = work.pop() {
+            for requirement in self.requirements(shorter)? {
+                steps = steps.checked_add(1).ok_or(Error::Budget)?;
+                if steps > self.graph.limit {
+                    return Err(Error::Budget);
+                }
+                if seen.insert(requirement.longer) {
+                    work.push(requirement.longer);
+                }
+            }
+        }
+        seen.remove(&Region::STATIC);
+        let mut result: Vec<_> = seen.into_iter().collect();
+        result.sort_unstable_by_key(|region| region.0);
+        Ok(result)
+    }
     /// Graph construction assigns compact identities in insertion order.
     pub fn nodes(&self) -> impl Iterator<Item = (Region, Kind)> + '_ {
         (0_u32..)

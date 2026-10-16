@@ -6859,3 +6859,67 @@ retain overhead and shared-host variation; they are not a clean performance pass
 At 1,024 calls, the new declared Copy, composite repeat and Clone-predicate full
 views take 42.93, 44.04 and 20.64 ms respectively. Raw evidence and receipts remain
 under `obj/pa20-work/declared-result-abilities-v1/`. PA20 and PA21 remain planned.
+
+## Static implementation inputs across proved callers
+
+A valid caller could satisfy an implementation's static-input requirement and
+still lose that evidence when its selected generic callee was materialized.
+Typed phase probes established that original templates and ordinary caller
+proofs succeeded; abstracting the callee's input created a fresh universal with
+no static relation. The invalid local-borrow controls already failed their caller
+proofs. The instance materializer still must reject a forged arbitrary lifetime.
+
+A solved region graph now exposes a bounded, conservative reverse traversal of
+retained obligations reaching static. Its empty frontier allocates nothing.
+Only after the complete caller ownership, lifetime and cleanup proof succeeds
+are those equalities translated into callable targets. A sparse table belongs
+to that sealed body. Demand discovery and lowering consume the same selected
+identities; fresh bodies never inherit another caller's table. Incoming unproved
+bodies with pre-filled tables reject. Callee template proofs and implementation
+requirements remain unchanged; no required bound becomes a new assumption.
+Nested binders and unrelated root lifetimes retain their identities.
+
+Seventeen source programs were independently object-qualified with Rust 1.98
+before maintainer expectations. Twelve valid controls now lower successfully,
+including nine previously rejected programs; four invalid controls still reject.
+Sixteen byte-preserved programs form the maintainer regression suite, with twelve
+native comparisons through CPPGM and rustc. A valid stored function item still
+fails projection normalization and remains an investigation, not a negative
+language expectation. Graph invariants require every reported equality to hold
+in every satisfying small finite model, and retain graph isolation and local
+storage rejection. The original forged-instance lifetime-debt test is unchanged.
+
+The validated compiler hash is
+`fb0962d859e626ee42e37f74f4c5db666f352e71a16748cd2f0f64eea335d1ac`.
+All 25 validation commands pass: 1,118 release tests in 207 groups, 4,864 PA1–PA19
+cases, backend qualification and 55 native test groups. Existing course outputs
+are unchanged. Strict Clippy, the 688-file syntax-aware audit with zero findings
+and all 33 harness checks pass. All 691 frozen source hashes match, and the final
+compiler is byte-identical to the initially qualified prototype. Validation
+cleanup removes 4,615 generated files (4.86 GiB of unshared blocks).
+
+Standalone lint and tidy pass. Two obsolete or duplicate compiler binaries are
+retired with hash receipts, freeing 90,414,392 bytes; the published comparison
+baseline and validated candidate remain pinned.
+
+The initial scaling qualification exposes a pre-existing resource ceiling before
+any timing begins: all four 1,024-call static-reference families compile with
+rustc, while both published `95bdb20` and the candidate exhaust runtime lifetime
+work. All failures, original declarations and diagnostics remain retained. The
+point solver currently queues individual seed bits before propagating them through
+static obligations. Coalescing those initial seeds is a separate follow-up; this
+increment does not raise budgets or classify these valid programs as language
+rejections. Additional 512-call inputs are declared and independently qualified.
+The measured static families therefore cover 64, 256 and 512 calls, alongside
+unchanged existing workloads at 64, 256 and 1,024.
+
+The completed study retains 54 jobs, 1,404 observations and 216 full-output
+qualifications: 36 actual comparisons with published `95bdb20`, plus 18
+identical-candidate new-feature controls. Every binary, source and input hash
+matches, and every full/count output comparison agrees. No compiler builds,
+source edits or compiler probes overlap timing. Actual paired medians range from
+−5.67% to +2.34%, so no family triggers the predeclared 3.5% confirmation rule.
+A/A spreads of 1.71–91.60% limit precision; RSS differences are −414 to +186 KiB.
+This passes the stated regression threshold without claiming precise speedups.
+Evidence, failed large-case qualification and cleanup receipts remain under
+`obj/pa20-work/projected-static-inputs-v1/`. PA20 and PA21 remain planned.
