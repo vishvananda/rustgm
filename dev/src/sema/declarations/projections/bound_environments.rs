@@ -30,24 +30,33 @@ impl Checker<'_> {
     pub(in crate::sema::declarations) fn retain_header_projection_requirements(
         &mut self,
     ) -> Result<(), Error> {
-        for owner in self.facts.associated.owners() {
+        for index in 0..self.facts.associated.owners().len() {
+            let owner = self.facts.associated.owners()[index];
             let crate::sema::associated::OwnerKind::Trait { definition, .. } = owner.kind else {
                 continue;
             };
-            if let Some(bounds) = self.projections.raw_bounds.remove(&definition) {
-                let context = regions::Context {
-                    binder: Some(self.owner_binders[&owner.self_definition]),
-                    position: regions::Position::Output,
-                };
-                for key in bounds.roots {
-                    let ty = self.ty(key)?;
-                    self.projections.deferred.push((
-                        key,
-                        context,
-                        super::scoped::Ambient::Root,
-                        ty,
-                    ));
-                }
+            let context = regions::Context {
+                binder: Some(self.owner_binders[&owner.self_definition]),
+                position: regions::Position::Output,
+            };
+            self.retain_bound_projection_requirements(definition, context)?;
+        }
+        Ok(())
+    }
+    /// Associated member clauses, like trait headers, retain their written
+    /// equations until all result contracts exist. Formation is still proved
+    /// by the ordinary deferred normalization pass in the original binder.
+    pub(in crate::sema::declarations) fn retain_bound_projection_requirements(
+        &mut self,
+        owner: DefId,
+        context: regions::Context,
+    ) -> Result<(), Error> {
+        if let Some(bounds) = self.projections.raw_bounds.remove(&owner) {
+            for key in bounds.roots {
+                let ty = self.ty(key)?;
+                self.projections
+                    .deferred
+                    .push((key, context, super::scoped::Ambient::Root, ty));
             }
         }
         Ok(())

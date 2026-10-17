@@ -66,14 +66,25 @@ impl Contracts {
     /// lookup applications cannot then stand in for the final proof requirements.
     pub fn complete_bindings(
         &mut self,
+        store: &Store,
         additions: Vec<(ItemId, Vec<Located>)>,
     ) -> Result<(), &'static str> {
         for (item, predicates) in additions {
-            self.headers
+            let header = self
+                .headers
                 .get_mut(&item)
-                .ok_or("missing binding trait header")?
-                .predicates
-                .extend(predicates);
+                .ok_or("missing binding trait header")?;
+            for predicate in predicates {
+                if let Some(member) = header.owned_result(store, item, predicate.value)? {
+                    header.results.push((member, predicate));
+                    self.result_bounds
+                        .entry(member)
+                        .or_default()
+                        .push(predicate.value);
+                } else {
+                    header.predicates.push(predicate);
+                }
+            }
         }
         self.applications.clear();
         self.result_rules.invalidate();

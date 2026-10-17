@@ -128,12 +128,26 @@ impl Dispatcher {
             .as_ref()
             .and_then(|registry| registry.method(owner, method))
             .ok_or("selected implementation lacks the trait method")?;
-        let result = if target == method {
+        let mut result = if target == method {
             ty
         } else {
             arguments.target(facts, owner, implementation, target)?
         };
         self.obligations.append(evidence)?;
+        if facts.types.contains_projections(result) == Some(true) {
+            // Selecting an override can introduce its written projections after
+            // the original operand was normalized. Keep their formation debts
+            // in this dispatch proof, including nested callable scopes.
+            let (normalized, steps) = super::projections::concrete(
+                &mut self.obligations,
+                crate::types::lifetime_proof::ScopeId::ROOT,
+            )?
+            .normalize(facts, result)?;
+            self.context
+                .account_work(steps)
+                .map_err(|e| e.to_string())?;
+            result = normalized;
+        }
         self.selected.insert(ty, result);
         Ok(result)
     }

@@ -15,11 +15,15 @@ use std::{
 #[derive(Default)]
 pub(super) struct Index {
     candidates: HashMap<ItemId, Vec<Predicate>>,
+    equalities: HashMap<ItemId, Vec<Predicate>>,
     pub(super) outlives: Vec<crate::types::RegionId>,
 }
 impl Index {
     pub(super) fn candidates(&self, item: ItemId) -> Option<&[Predicate]> {
         self.candidates.get(&item).map(Vec::as_slice)
+    }
+    pub(super) fn equalities(&self, item: ItemId) -> Option<&[Predicate]> {
+        self.equalities.get(&item).map(Vec::as_slice)
     }
 }
 
@@ -45,8 +49,9 @@ pub(super) fn for_result(
         .iter()
         .copied()
         .filter(|predicate| {
-            predicate.ty == template
-                && matches!(predicate.bound, Bound::Trait(_) | Bound::Outlives(_))
+            (predicate.ty == template
+                && matches!(predicate.bound, Bound::Trait(_) | Bound::Outlives(_)))
+                || matches!(predicate.bound, Bound::ProjectionEqual(_))
         })
         .collect();
     let mut steps = contract.bounds.len();
@@ -57,7 +62,23 @@ pub(super) fn for_result(
         if steps.saturating_add(pending.len()) > 1_000_000 {
             return Err("associated result rule work budget exceeded".into());
         }
-        if predicate.ty != template || !seen.insert(predicate) {
+        if !seen.insert(predicate) {
+            continue;
+        }
+        if let Bound::ProjectionEqual(_) = predicate.bound {
+            if let Some(crate::types::Kind::Projection(application)) =
+                facts.types.kind(predicate.ty)
+                && application.subject == template
+            {
+                index
+                    .equalities
+                    .entry(application.item)
+                    .or_default()
+                    .push(predicate);
+            }
+            continue;
+        }
+        if predicate.ty != template {
             continue;
         }
         if let Bound::Outlives(region) = predicate.bound {

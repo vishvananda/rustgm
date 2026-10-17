@@ -7,6 +7,7 @@ use crate::{
     sema::model::Declarations,
     types::{
         ItemId, Kind, TypeId,
+        infer::{Context, TermId},
         parameters::predicates::{Bound, Predicate},
     },
 };
@@ -17,6 +18,7 @@ use std::{collections::HashMap, sync::Arc};
 pub(super) struct Cache {
     enabled: bool,
     entries: HashMap<(TypeId, ItemId), Arc<Assumptions>>,
+    equalities: HashMap<(TypeId, ItemId), Arc<[Predicate]>>,
     templates: HashMap<DefId, Arc<templates::Index>>,
     steps: usize,
 }
@@ -35,6 +37,7 @@ impl Cache {
         if self
             .steps
             .saturating_add(self.entries.len())
+            .saturating_add(self.equalities.len())
             .saturating_add(self.templates.len())
             > 1_000_000
         {
@@ -109,6 +112,83 @@ pub(super) fn traits(
             steps.saturating_sub(template_steps),
         )?;
     Ok(Some((result, steps)))
+}
+
+/// These equations describe a declared result, never evidence for forming its
+/// parent application. Callers must retain that proof before selecting a value.
+#[derive(Default)]
+pub(super) struct Equations {
+    pub clauses: Option<Arc<[Predicate]>>,
+    pub steps: usize,
+}
+
+pub(super) fn equalities(
+    facts: &mut Declarations,
+    context: &mut Context,
+    subject: TermId,
+    item: ItemId,
+) -> Result<Equations, String> {
+    let Some(parent) = context
+        .projection_item(&facts.types, subject)
+        .map_err(|e| e.to_string())?
+    else {
+        return Ok(Equations::default());
+    };
+    let (templates, template_steps) = templates::for_result(facts, DefId(parent.0))?;
+    let Some(predicates) = templates.equalities(item) else {
+        // Select declaration rules before resolving a possibly deep input graph.
+        // The immutable index shares this miss without a mapped-rule allocation.
+        return Ok(Equations {
+            clauses: None,
+            steps: template_steps,
+        });
+    };
+    let ty = context
+        .resolved(&mut facts.types, subject)
+        .map_err(|e| e.to_string())?;
+    let Some(Kind::Projection(application)) = facts.types.kind(ty) else {
+        return Err("result equality subject lost its projection identity".into());
+    };
+    if let Some(rules) = facts
+        .generics
+        .traits
+        .as_ref()
+        .and_then(|contracts| contracts.result_rules.equalities.get(&(ty, item)))
+    {
+        return Ok(Equations {
+            clauses: Some(Arc::clone(rules)),
+            steps: template_steps.saturating_add(1),
+        });
+    }
+    let mut result = Vec::with_capacity(predicates.len());
+    let mut fold = substitution(
+        facts,
+        Predicate {
+            ty: application.subject,
+            bound: Bound::Trait(application.trait_application),
+        },
+    )?;
+    for &predicate in predicates {
+        result.push(fold.predicate(&mut facts.types, predicate)?);
+    }
+    let steps = template_steps
+        .saturating_add(fold.steps)
+        .saturating_add(predicates.len());
+    let result: Arc<[Predicate]> = result.into();
+    let cache = &mut facts
+        .generics
+        .traits
+        .as_mut()
+        .ok_or("missing result equality contracts")?
+        .result_rules;
+    if cache.enabled {
+        cache.account(steps.saturating_sub(template_steps))?;
+        cache.equalities.insert((ty, item), Arc::clone(&result));
+    }
+    Ok(Equations {
+        clauses: Some(result),
+        steps,
+    })
 }
 
 pub(in crate::sema) fn substitution(

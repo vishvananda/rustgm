@@ -170,14 +170,12 @@ impl Search<'_> {
                     predicate: goal,
                     arguments: Vec::new(),
                 };
-                match equalities::select(
-                    &mut facts.types,
+                match equalities::for_projection(
+                    facts,
                     &mut frame.context,
                     &application,
                     self.caller.environment.map(AsRef::as_ref),
-                )
-                .map_err(inference)?
-                {
+                )? {
                     equalities::Selection::Proven(ty) => Resolution::Type(ty),
                     equalities::Selection::Absent => Resolution::Opaque,
                     equalities::Selection::Ambiguous => {

@@ -276,14 +276,12 @@ impl Opened {
         let source = evidence.source;
         let assumed = if matches!(source, Source::Assumption(_) | Source::ResultBound(_)) {
             use crate::sema::traits::equalities::{self, Selection};
-            match equalities::select(
-                &mut facts.types,
+            match equalities::for_projection(
+                facts,
                 &mut self.context,
                 &self.application,
                 self.environment.as_deref(),
-            )
-            .map_err(inference)?
-            {
+            )? {
                 Selection::Proven(ty) => Some(ty),
                 Selection::Absent | Selection::Ambiguous => return Ok(Attempt::Retry),
             }

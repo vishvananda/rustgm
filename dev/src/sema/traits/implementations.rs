@@ -60,7 +60,9 @@ impl Implementations {
         let subject = match Subject::query(store, context, goal.subject()) {
             Ok(subject) => subject,
             Err(Error::Normalization) => Some(Subject::Rigid(Head::Projection(
-                context.projection_item(store, goal.subject())?,
+                context
+                    .projection_item(store, goal.subject())?
+                    .ok_or(Error::InvalidIdentity)?,
             ))),
             Err(error) => return Err(error),
         };

@@ -674,6 +674,13 @@ method's own early lifetimes and type/const arguments. Normalize body universals
 into fresh aliases for selection, retaining every equality, outlives requirement
 and allocated variable in that body's proof graph.
 
+Selected impl-method signatures can introduce projections after the original
+trait operand was normalized. Normalize the selected function item before caching
+or rewriting body operands, using the dispatcher's existing concrete proof and
+region allocator. Preserve nested callable scopes and every formation obligation,
+including those erased by the resulting type. A selected target with no projections
+finishes directly; repeated uses share its checked target and retained evidence.
+
 Replace actual function-item types and operand definitions throughout the concrete
 CFG and its contract, including callable types inside generic arguments. A shared
 type fold preserves nested binders and memoizes the type DAG. Promotion and demand
@@ -904,6 +911,31 @@ of additional caller assumptions. Further associated results are queried at the
 finite projection demanded by the program. Recursive declarations such as
 `trait A { type Out: A; }` and their equivalent owned header clauses must terminate
 without raising work limits or withholding promises at deeper demanded results.
+
+Bindings on an owned result, such as `Self::Out: Other<Value = X>`, belong to
+that result contract, including bindings completed after header member lookup.
+Retain the complete projected equality subject and both sets of trait arguments.
+Index direct result equalities and ordinary Self-supertrait equalities by member;
+map a demanded candidate set once per complete result application. A cached rule
+is declaration data, not permission: retain the parent proof before applying it.
+Select that bucket from the outer projection member before resolving or
+materializing its input graph. An absent bucket needs no input traversal,
+substitution or allocated empty rule list. Metadata lookup leaves unresolved
+inputs and normalization permissions untouched; later publication can change
+which outer member, if any, the term denotes.
+
+Equality candidates match complete parent inputs in isolated probes. Identical
+rules from explicit and derived evidence are harmless; conflicting complete
+matches remain ambiguous. A blocked equation involving an opaque input supplies
+no input equality and must not hide a different exact match. Without a complete
+match, keep the projection opaque; this is not negative trait evidence. Never
+infer equality of Self or its arguments from equality of associated outputs.
+
+Projected arguments in associated member bounds retain their written identities
+until the complete result contracts exist. Reuse the header formation worklist
+and original binder to discharge those requirements afterward. Keep this proof
+separate from result equations, including unused declarations and recursively
+related results; an equation cannot manufacture a missing parent implementation.
 
 Keep immutable canonical projection schemas separate from properties learned
 while typing complete headers. Share the completed conditional Copy/Clone/Sized

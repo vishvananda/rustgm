@@ -8592,3 +8592,88 @@ observations and cleanup receipts remain. Further PA20 work includes demanded
 result equalities, normalization of selected impl-method signatures, projected
 nominal storage, early constant-argument readiness, remaining coherence checks
 and the complete semantic inspection manifest and reviewed text oracles.
+
+## Result equalities and selected override signatures — qualified checkpoint
+
+Result equality candidates now come from both immutable caller assumptions and
+finite declaration templates after parent proof. Owned header bindings are retained
+with their associated result, and direct/supertrait result equations are indexed
+by member and mapped through complete arguments. Exact duplicate evidence is
+harmless; conflicting complete matches remain ambiguous. A blocked opaque input
+equation neither identifies those inputs nor hides a different exact match.
+Recursive member/header equations retain their formation obligations through the
+same deferred worklist as headers, in the original binder.
+
+Dispatch now normalizes the selected override's complete function item before
+caching and rewriting it. This retains parent obligations and nested callable
+scopes that the earlier normalization of the trait operand could not cover.
+The permanent families contain 25 override controls and 32 equality controls,
+including 34 native-positive expectations. Every declared outcome has independent
+pinned-rustc object qualification and every accepted control executes against
+rustc and the CPPGM backend. The focused V4 run matches all
+104 prior investigations, passes all 33 associated-declarations tests including
+its native groups, strict Clippy and the 734-file audit with zero findings.
+Evidence is under `obj/pa20-work/normalization-contracts-v4/`.
+
+Two separately qualified generic-body lifetime positives remain unsupported on
+both published `0867de2` and this checkpoint, with or without a Copy result bound.
+Their diagnostics point at the generic impl body, but the later V6 probes show
+that the templates themselves pass and the failures arise during specialization.
+Their original positive
+expectations and native rustc receipts remain in `projected-dispatch-lifetimes-v1`
+and `projected-dispatch-lifetimes-copy-v1`; neither became a rejection fixture.
+The Copy-only isolation hypothesis was disproved. The earlier focused V1/V2
+dispatch runs failed on those cases and are not claimed as successful validation.
+The full V5 validation passes 1,185 regular tests, all 4,863 PA1–19 cases,
+74 native test groups, strict all-target/all-feature Clippy, the 734-file audit,
+33 harness tests and backend/upstream checks. All 737 frozen source/configuration
+files retain their hashes and all 14,589 earlier oracle sidecars are unchanged.
+PA20–25 continue to reject as planned stages. Evidence is under
+`obj/pa20-work/normalization-contracts-v5/`. Its 28-job performance study qualifies
+14 frozen programs with rustc/CPPGM, retaining 728 study and 112 qualification
+observations (3,640 and 560 compiler invocations), with all output/hash checks.
+Ordinary full rendering is +1.570%, but member-result full rendering is +3.624%
+and depth-eight recursive result rendering is +9.286%; every recursive full
+paired block is slower (+7.980% to +13.987%). The latter is a regression requiring
+correction, despite substantial host noise in several other families. This V5
+candidate is not published. Its full guard removes 5,380 generated files (6.17 GiB).
+
+The follow-up changes result equality lookup to inspect the outer member identity
+and reject an absent declaration-rule bucket before resolving its complete input
+graph. The inference metadata query handles canonical and constructed projections,
+leaves unknown inputs untouched and supplies no formation authority. A work-count
+control checks 128 lookups over 4,096 nested projections without materializing
+children, as well as open inputs and later normalization publication. V6 full
+validation passes 1,186 regular tests, 4,863 course cases, all 74 native groups,
+strict Clippy/audits, harness and backend/upstream checks; its 737 source/configuration
+hashes and all 14,589 earlier oracle files remain unchanged. The frozen binary is
+`cc0210eeaee49eaebeb0406771ae27e7cec64ce8ee758dc43bd4367670c54adc` under
+`obj/pa20-work/normalization-contracts-v6/`. The 28-job main repeat and seven-job
+focused study preserve 910 study and 140 qualification observations (4,368 and
+672 invocations) with output/hash equality. Main member-result count/full changes
+are +0.015%/+0.333%; recursive count/full changes are +1.324%/+0.953%. Focused full
+AB/AA/BB comparisons are +0.349%/+0.098%/-2.748% for member results and
++1.325%/-2.611%/-0.372% for recursive results. The direct V5/V6 recursive comparison
+is -10.209%. These are noisy shared-host observations, not a tight timing bound
+or general speedup claim. The earlier member/recursive costs do not recur.
+The marker-count main run has isolated paired spikes and a +26.147% median.
+Its additional AB/AA/BB repeat is +0.338%/-0.407%/-0.494%, so that large cost does
+not recur. All earlier observations remain in the evidence. The final V6 studies
+total 988 study and 152 qualification observations, or 4,992 and 768 compiler
+invocations. Count/full output and all input, binary and frozen source hashes
+remain equal throughout. The full V6 guard removes 5,380 generated files
+(6.17 GiB); the main/focused qualification guard removes the investigation tracer
+(0.04 GiB). The immutable current candidate and required comparison pins remain
+protected until the published replacement passes CI.
+
+The V6 pre-measurement investigation independently qualifies twelve source
+outcomes, including eleven rustc native positives. Eight positives emit candidate
+LowIR; the original erased-parent case, an explicit result-outlives variation
+and a free-function call still fail. Direct template lifetime tracing passes all
+five inspected inputs, including the failing caller program. An unused override
+with the same conditional impl passes. The remaining issue therefore involves
+specialization and retained formation debts, not rejection of the generic
+method template. The earlier Copy variation remains a valid unsupported control.
+Sources, expected outcomes, object/native rustc receipts and typed contract dumps
+are retained in `projection-parent-lifetimes-v1` and the V6 investigation logs;
+none of these unsupported positives is relabeled as a negative fixture.

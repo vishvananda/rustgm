@@ -175,8 +175,8 @@ impl State {
                 arguments: Vec::new(),
             };
             resolution = Some(
-                match equalities::select(
-                    &mut facts.types,
+                match equalities::for_projection(
+                    facts,
                     &mut self.context,
                     &inferred,
                     self.environment.as_deref(),

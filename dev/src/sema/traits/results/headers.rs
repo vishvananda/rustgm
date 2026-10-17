@@ -14,7 +14,7 @@ impl super::super::Header {
         let mut retained = 0;
         for index in 0..predicates.len() {
             let predicate = predicates[index];
-            if let Some(member) = owned_header_result(store, owner, self, predicate.value)? {
+            if let Some(member) = self.owned_result(store, owner, predicate.value)? {
                 self.results.push((member, predicate));
             } else {
                 predicates[retained] = predicate;
@@ -25,35 +25,41 @@ impl super::super::Header {
         self.predicates = predicates;
         Ok(())
     }
-}
-
-fn owned_header_result(
-    store: &Store,
-    owner: ItemId,
-    header: &super::super::Header,
-    predicate: Predicate,
-) -> Result<Option<ItemId>, &'static str> {
-    if matches!(predicate.bound, Bound::ProjectionEqual(_)) {
-        return Ok(None);
-    }
-    let Some(Kind::Projection(projection)) = store.kind(predicate.ty) else {
-        return Ok(None);
-    };
-    if projection.subject != header.self_type || projection.arguments != GenericArgs::EMPTY {
-        return Ok(None);
-    }
-    let application = store
-        .trait_application(projection.trait_application)
-        .ok_or("invalid projected trait header application")?;
-    if application.item != owner {
-        return Ok(None);
-    }
-    let actual = store
-        .arguments(application.arguments)
-        .ok_or("invalid projected trait header arguments")?;
-    if actual.eq(header.parameters.iter().map(|p| p.argument)) {
-        Ok(Some(projection.item))
-    } else {
-        Ok(None)
+    pub(in crate::sema) fn owned_result(
+        &self,
+        store: &Store,
+        owner: ItemId,
+        predicate: Predicate,
+    ) -> Result<Option<ItemId>, &'static str> {
+        // A binding in `Self::Out: Other<Value = X>` belongs to the contract
+        // of this owner's Out, while its equality subject remains Other::Value.
+        let subject = if matches!(predicate.bound, Bound::ProjectionEqual(_)) {
+            let Some(Kind::Projection(equality)) = store.kind(predicate.ty) else {
+                return Err("associated equality requires a projected subject");
+            };
+            equality.subject
+        } else {
+            predicate.ty
+        };
+        let Some(Kind::Projection(projection)) = store.kind(subject) else {
+            return Ok(None);
+        };
+        if projection.subject != self.self_type || projection.arguments != GenericArgs::EMPTY {
+            return Ok(None);
+        }
+        let application = store
+            .trait_application(projection.trait_application)
+            .ok_or("invalid projected trait header application")?;
+        if application.item != owner {
+            return Ok(None);
+        }
+        let actual = store
+            .arguments(application.arguments)
+            .ok_or("invalid projected trait header arguments")?;
+        if actual.eq(self.parameters.iter().map(|p| p.argument)) {
+            Ok(Some(projection.item))
+        } else {
+            Ok(None)
+        }
     }
 }

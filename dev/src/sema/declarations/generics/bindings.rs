@@ -214,7 +214,7 @@ impl Checker<'_> {
                 .ok_or_else(|| {
                     Error::at(crate::resolve::unit::FileId(0), 0, "missing trait headers")
                 })?
-                .complete_bindings(additions)
+                .complete_bindings(&self.facts.types, additions)
                 .map_err(|e| Error::at(crate::resolve::unit::FileId(0), 0, e))?;
         }
         Ok(())

@@ -157,12 +157,7 @@ impl Checker<'_> {
             };
             self.schedule_bounds(id, context)?;
             self.drain(steps, limit)?;
-            if self.bound_environment_pending(id) {
-                return Err(self.error(
-                    key,
-                    "associated result bound arguments require scoped projection obligations",
-                ));
-            }
+            self.retain_bound_projection_requirements(id, context)?;
             let predicates = self
                 .facts
                 .generics

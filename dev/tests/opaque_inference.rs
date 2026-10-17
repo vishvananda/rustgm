@@ -17,6 +17,39 @@ const TRAIT: ItemId = ItemId(1);
 const BYTE: TypeId = TypeId::primitive(Primitive::U8);
 
 #[test]
+fn member_lookup_skips_deep_or_unresolved_inputs_without_proving_formation() -> TestResult {
+    let mut types = store()?;
+    let mut ty = BYTE;
+    for _ in 0..4096 {
+        ty = projected(&mut types, ty)?;
+    }
+    let mut inference = Context::default();
+    let root = inference.known(&types, ty)?;
+    let before = inference.steps;
+    for _ in 0..128 {
+        assert_eq!(inference.projection_item(&types, root)?, Some(ITEM));
+    }
+    assert_eq!(inference.steps - before, 128);
+    let input = inference.variable(Domain::Any)?;
+    assert_eq!(input.0, root.0 + 1, "metadata lookup materialized children");
+    assert_eq!(inference.projection_item(&types, input)?, None);
+    let open = inference.projected(&types, ITEM, input, &[], &[])?;
+    assert_eq!(inference.projection_item(&types, open)?, Some(ITEM));
+    assert_eq!(inference.unresolved_domain(input)?, Some(Domain::Any));
+    assert_eq!(inference.head(&types, open), Err(Error::Normalization));
+    let concrete = projected(&mut types, BYTE)?;
+    let occurrence = inference.known(&types, concrete)?;
+    assert_eq!(inference.projection_item(&types, occurrence)?, Some(ITEM));
+    inference.apply_normalization(&mut types, occurrence, BYTE)?;
+    assert_eq!(inference.projection_item(&types, occurrence)?, None);
+    assert_eq!(
+        inference.projection_item(&types, rustgm::types::infer::TermId(u32::MAX)),
+        Err(Error::InvalidIdentity)
+    );
+    Ok(())
+}
+
+#[test]
 fn resolution_observes_later_projection_publication() -> TestResult {
     let mut types = store()?;
     let original = projected(&mut types, BYTE)?;

@@ -161,8 +161,9 @@ generated reference diff and validate the root report's stage discovery. A plann
 stage must not acquire an unregistered executable manifest or empty-suite success.
 Student export is a later operation: this repository owns the full solution.
 
-The current maintainer implementation has substantial associated-type and solver
-coverage, but associated constants, remaining normalization/coherence work, the
-extended semantic view and the public grading suite are still required. The
-maintainer journal in `docs/pa18-pa21-buildout.md` records evidence and known gaps;
-individual checkpoints do not reduce the requirements above.
+The current maintainer implementation has substantial coverage of associated types,
+associated constants and the solver. Declaration-time constant-argument dependencies,
+remaining normalization/coherence work, the extended semantic view and the public
+grading suite are still required. The maintainer journal in
+`docs/pa18-pa21-buildout.md` records evidence and known gaps; individual checkpoints
+do not reduce the requirements above.

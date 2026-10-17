@@ -14,13 +14,35 @@ pub(in crate::sema) enum Selection {
     Proven(TypeId),
 }
 
+/// The complete parent application has already been proved in this context.
+/// Map only relevant declaration equations; their cache carries no permission.
+pub(in crate::sema) fn for_projection(
+    facts: &mut crate::sema::model::Declarations,
+    context: &mut Context,
+    application: &Application,
+    environment: Option<&Environment>,
+) -> Result<Selection, String> {
+    let extra = super::results::equalities(
+        facts,
+        context,
+        application.predicate.subject(),
+        application.item,
+    )?;
+    context
+        .account_work(extra.steps)
+        .map_err(|e| e.to_string())?;
+    let extra = extra.clauses.as_deref().unwrap_or(&[]);
+    select(&mut facts.types, context, application, environment, extra).map_err(|e| e.to_string())
+}
+
 /// The caller separately proves the trait premise. Failed alternatives cannot
 /// constrain its inference graph; a selected result retains all input equations.
-pub(in crate::sema) fn select(
+fn select(
     store: &mut Store,
     context: &mut Context,
     application: &Application,
     environment: Option<&Environment>,
+    extra: &[Predicate],
 ) -> Result<Selection, infer::Error> {
     if !application.arguments.is_empty() {
         return Err(infer::Error::InvalidIdentity);
@@ -29,6 +51,7 @@ pub(in crate::sema) fn select(
     for equality in environment
         .into_iter()
         .flat_map(|environment| environment.projection_candidates(application.item))
+        .chain(extra)
     {
         context.account_work(1)?;
         let (Some(Kind::Projection(candidate)), Bound::ProjectionEqual(result)) =
@@ -49,11 +72,16 @@ pub(in crate::sema) fn select(
         context.account_work(probe.steps)?;
         match compatible {
             Ok(()) => {
-                if selected.replace((predicate, result)).is_some() {
+                let candidate = (predicate, result);
+                if selected.is_some_and(|previous| previous != candidate) {
                     return Ok(Selection::Ambiguous);
                 }
+                selected = Some(candidate);
             }
-            Err(infer::Error::Mismatch | infer::Error::Occurs) => {}
+            // Equal outputs do not identify opaque inputs. This rule supplies
+            // no equation for the current parent; keep looking for an exact
+            // complete match, or leave its result opaque if none exists.
+            Err(infer::Error::Mismatch | infer::Error::Occurs | infer::Error::Normalization) => {}
             Err(error) => return Err(error),
         }
     }

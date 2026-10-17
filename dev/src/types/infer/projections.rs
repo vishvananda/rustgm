@@ -1,6 +1,6 @@
 //! Inferred projection inputs remain graph edges, never injective result constructors.
 use super::{
-    Constructor, Context, Error, ItemId, Kind, Store, TermId, TypeId,
+    Constructor, Context, Error, ItemId, Kind, Store, TermId, TypeId, Value,
     arguments::{Argument, ArgumentsId},
 };
 use crate::types::{arguments::Argument as Canonical, projection, traits};
@@ -47,16 +47,26 @@ impl Constructor {
 }
 
 impl Context {
-    /// Identify an associated operation for an exact assumption index. The result
-    /// remains opaque; this does not expose its normalized subject constructor.
+    /// Inspect an associated operation's identity without resolving or materializing
+    /// its input graph. Other outer shapes and unresolved variables return None.
+    /// This metadata query supplies no evidence that the projection can be formed.
     /// # Errors
-    /// Rejects a non-projection, malformed input identities and exhausted work.
-    pub fn projection_item(&mut self, store: &Store, term: TermId) -> Result<ItemId, Error> {
+    /// Rejects malformed identities and exhausted inference work.
+    pub fn projection_item(
+        &mut self,
+        store: &Store,
+        term: TermId,
+    ) -> Result<Option<ItemId>, Error> {
+        self.step()?;
         let term = self.root(term)?;
-        let Constructor::Projection(value) = self.materialize(store, term)? else {
-            return Err(Error::InvalidIdentity);
-        };
-        Ok(value.item)
+        Ok(match self.terms[term.0 as usize].value {
+            Value::Known(ty) => match store.kind(ty).ok_or(Error::InvalidIdentity)? {
+                Kind::Projection(application) => Some(application.item),
+                _ => None,
+            },
+            Value::Construct(Constructor::Projection(value)) => Some(value.item),
+            _ => None,
+        })
     }
 
     /// Read Self and mixed trait/family arguments without resolving their holes.
