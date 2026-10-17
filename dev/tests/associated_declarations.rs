@@ -5,6 +5,8 @@ mod const_arguments;
 mod discriminants;
 #[path = "harness/native_references.rs"]
 mod native;
+#[path = "associated_declarations/readiness.rs"]
+mod readiness;
 #[path = "helpers/qualify.rs"]
 mod rustc;
 #[path = "support/semantic.rs"]

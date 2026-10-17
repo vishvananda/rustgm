@@ -87,11 +87,11 @@ impl Checker<'_> {
             .ok_or_else(|| Error::at(key.file, 0, "missing selected trait method fact"))?
             .reference = Some(Target::Definition(method));
         self.work
-            .push(super::Work::ImplicitArguments(key, path.suffix));
+            .push(super::Work::MethodArguments(key, path.suffix));
         self.schedule_item_arguments(path.suffix, method, context, steps, limit, scan)?;
         Ok(())
     }
-    pub(super) fn complete_implicit_arguments(
+    pub(super) fn complete_method_arguments(
         &mut self,
         key: NodeKey,
         suffix: NodeKey,
@@ -101,7 +101,7 @@ impl Checker<'_> {
             .generics
             .item_uses
             .remove(&suffix)
-            .ok_or_else(|| self.error(key, "missing selected trait method arguments"))?;
+            .ok_or_else(|| self.error(key, "missing selected method arguments"))?;
         self.facts.generics.item_uses.insert(key, arguments);
         Ok(())
     }

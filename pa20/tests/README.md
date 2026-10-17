@@ -14,7 +14,8 @@ Required families:
   parameter-dependent values and per-caller lifetime/bound obligations; enum
   discriminants, their enclosing-generic capture restrictions and separate
   declaration-time const-argument dependencies, nested arguments and default/
-  override declaration-order permutations.
+  override declaration-order permutations; selected initializer readiness without
+  false cycles through overridden defaults, and invalid unused initializer bodies.
 - `selection`: caller assumptions, partial inference, result/argument context,
   unrelated opaque alternatives, ambiguous methods and distinct caller scopes.
 - `coherence`: local/foreign identity within the supported profile, covered

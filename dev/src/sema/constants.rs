@@ -8,13 +8,18 @@ pub(super) use discriminants::{
     Discriminant, Pending as Discriminants, finish as finish_discriminants,
 };
 mod generics;
-pub(super) use generics::argument as generic_argument;
+pub(super) use generics::{
+    Input as ArgumentInput, Progress as ArgumentProgress, advance as advance_argument,
+    argument as generic_argument,
+};
 mod instances;
 mod layouts;
 mod patterns;
 mod places;
 pub(super) mod products;
 pub(super) mod references;
+mod suspension;
+pub(super) use suspension::Continuation as ArgumentContinuation;
 pub mod values;
 use super::{
     bodies,
@@ -155,6 +160,7 @@ pub(super) struct Scratch {
     typing: bodies::Scratch,
     constants: Vec<Option<usize>>,
     indexed: usize,
+    scan: Vec<NodeKey>,
     drops: Option<Box<drops::Scratch>>,
     layouts: layouts::Scratch,
 }
@@ -294,7 +300,7 @@ impl<'a> Queries<'a> {
             states: HashMap::new(),
             work: instances::Worklist::default(),
             instances: instances::Instances::default(),
-            scan: Vec::new(),
+            scan: scratch.scan,
             steps: 0,
             limit,
             pattern_values: HashSet::new(),
@@ -310,6 +316,7 @@ impl<'a> Queries<'a> {
         Scratch {
             indexed,
             constants: self.constants,
+            scan: self.scan,
             typing: self.typing.into_scratch(),
             drops: self.drop_scratch,
             layouts: self.layout_scratch,
@@ -368,7 +375,17 @@ impl Queries<'_> {
         Ok(())
     }
     fn drain(&mut self) -> Result<(), Error> {
+        self.drain_until(None).map(|_| ())
+    }
+    fn drain_until(&mut self, ready: Option<&HashSet<DefId>>) -> Result<Option<DefId>, Error> {
         while let Some(work) = self.work.pop() {
+            if let Some(ready) = ready
+                && let Some(definition) = self.required_initializer(&work)?
+                && !ready.contains(&definition)
+            {
+                self.work.push(work);
+                return Ok(Some(definition));
+            }
             self.budget()?;
             match work {
                 Work::PrepareInstance(instance) => {
@@ -428,7 +445,7 @@ impl Queries<'_> {
                 }
             }
         }
-        Ok(())
+        Ok(None)
     }
     fn forward(&mut self, query: Query, dependency: Query) {
         self.work.push(Work::Forward(query, dependency));

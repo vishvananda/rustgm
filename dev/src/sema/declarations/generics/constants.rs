@@ -1,5 +1,5 @@
 //! Const arguments share the typed constant evaluator; symbolic terms stay unevaluated.
-use super::{Checker, DefId, Error, Kind, NodeKey, TypeId, Work, regions};
+use super::{Checker, DefId, Error, Kind, NodeKey, Work, regions};
 use crate::{
     resolve::{
         model::{DefKind, Namespace, Target},
@@ -18,12 +18,7 @@ impl Checker<'_> {
         scan: &mut Vec<NodeId>,
     ) -> Result<(), Error> {
         self.work.push(Work::ConstantArguments(key));
-        if self.schedule_trait_callable(key, context, steps, limit, scan)? {
-            return Ok(());
-        }
-        if self.constant_trait_prefix(key)
-            && self.schedule_implicit_method(key, context, steps, limit, scan)?
-        {
+        if self.schedule_method_path(key, context, steps, limit, scan)? {
             return Ok(());
         }
         if self.schedule_alias_variant(key, context, steps, limit, scan)? {
@@ -38,7 +33,6 @@ impl Checker<'_> {
     }
     pub(in super::super) fn constant_arguments(&mut self, key: NodeKey) -> Result<(), Error> {
         use crate::{sema::generics::SourceArgument, types::arguments::Argument};
-        self.constant_initializer_dependencies(key)?;
         let prefix = self
             .facts
             .generics
@@ -84,31 +78,7 @@ impl Checker<'_> {
         }
         Ok(())
     }
-    fn constant_trait_prefix(&self, key: NodeKey) -> bool {
-        self.report
-            .resolution
-            .associated_paths
-            .get(&key)
-            .is_some_and(|path| {
-                path.namespace == Namespace::Value
-                    && (matches!(
-                        self.report.resolution.definitions[path.owner.0 as usize].kind,
-                        DefKind::Generic | DefKind::Primitive
-                    ) || self.facts.associated.trait_owner(path.owner).is_some())
-            })
-    }
-    fn constant_initializer_dependencies(&mut self, key: NodeKey) -> Result<(), Error> {
-        let Some(Target::Definition(id)) = self.facts.node(key).and_then(|f| f.reference) else {
-            return Ok(());
-        };
-        if self.report.resolution.definitions[id.0 as usize].kind == DefKind::Const
-            && let Some((source, context)) = self.constant_initializer(id)?
-        {
-            self.constant_dependencies_in(source, context)?;
-        }
-        Ok(())
-    }
-    fn constant_initializer(
+    pub(in super::super) fn constant_initializer(
         &self,
         id: DefId,
     ) -> Result<Option<(NodeKey, regions::Context)>, Error> {
@@ -161,31 +131,14 @@ impl Checker<'_> {
         }
         Ok(())
     }
-    pub(super) fn const_parameter(&self, key: NodeKey) -> Option<ConstId> {
+    pub(in super::super) fn const_parameter(&self, key: NodeKey) -> Option<ConstId> {
         self.facts.const_parameter(self.report, key)
     }
-    pub(super) fn generic_constant(
+    pub(in super::super) fn constant_module(
         &mut self,
         key: NodeKey,
-        ty: TypeId,
         owner: DefId,
-    ) -> Result<ConstId, Error> {
-        let module = if self.const_parameter(key).is_some() {
-            None
-        } else {
-            Some(self.constant_module(key, owner)?)
-        };
-        crate::sema::arguments::Constants {
-            report: self.report,
-            facts: &mut self.facts,
-            captures: &mut self.constant_captures,
-            scratch: &mut self.constant_scratch,
-            discriminants: &mut self.discriminants,
-        }
-        .argument(key, ty, module)
-    }
-
-    fn constant_module(&mut self, key: NodeKey, owner: DefId) -> Result<ModuleId, Error> {
+    ) -> Result<ModuleId, Error> {
         // Non-block arguments are standalone literals/paths. Their references
         // already passed visibility checking; named initializers own their scopes.
         if !matches!(self.kind(key), Kind::Block { .. }) {
@@ -224,7 +177,7 @@ impl Checker<'_> {
         };
         self.constant_dependencies_in(root, context)
     }
-    fn constant_dependencies_in(
+    pub(in super::super) fn constant_dependencies_in(
         &mut self,
         root: NodeKey,
         context: regions::Context,
@@ -240,17 +193,6 @@ impl Checker<'_> {
             if self.constant_dependencies.len() > 1_000_000 {
                 return Err(self.error(root, "const argument dependency budget exceeded"));
             }
-            if self.constant_trait_prefix(key) {
-                self.work.push(Work::ConstantUse(key, context));
-                continue;
-            }
-            if let Some(path) = self.report.resolution.qualified_paths.get(&key)
-                && path.trait_path.is_some()
-                && path.namespace == Namespace::Value
-            {
-                self.work.push(Work::ConstantUse(key, context));
-                continue;
-            }
             match self.kind(key) {
                 Kind::Cast { ty, .. } | Kind::Let { ty: Some(ty), .. } => {
                     self.node_work(key.file, ty, context);
@@ -262,46 +204,9 @@ impl Checker<'_> {
                 }
                 _ => {}
             }
-            if let Some(Target::Definition(id)) = self.facts.node(key).and_then(|f| f.reference) {
-                match self.report.resolution.definitions[id.0 as usize].kind {
-                    DefKind::Primitive => self.work.push(Work::Definition(id, false)),
-                    DefKind::Function => {
-                        self.work.push(Work::ConstantUse(key, context));
-                        self.work.push(Work::Definition(id, false));
-                    }
-                    DefKind::Constructor | DefKind::Variant | DefKind::Struct => {
-                        self.work.push(Work::ConstantUse(key, context));
-                        self.constant_constructor(id)?;
-                    }
-                    DefKind::Enum => {
-                        self.work.push(Work::ConstantUse(key, context));
-                        self.work.push(Work::ValueType(id));
-                    }
-                    DefKind::TypeAlias | DefKind::Const | DefKind::Static => {
-                        if self.report.resolution.definitions[id.0 as usize].kind
-                            == DefKind::TypeAlias
-                            || self.facts.associated.trait_owner(id).is_some()
-                        {
-                            self.work.push(Work::ConstantUse(key, context));
-                        }
-                        self.work.push(Work::ValueType(id));
-                        self.work.push(Work::Definition(id, false));
-                        if let Some(dependency) = self.constant_initializer(id)? {
-                            work.push(dependency);
-                        }
-                    }
-                    _ => {}
-                }
-            } else if let Some(Target::Associated(owner)) =
-                self.facts.node(key).and_then(|f| f.reference)
-                && self.report.resolution.definitions[owner.0 as usize].kind == DefKind::TypeAlias
-            {
-                self.work.push(Work::ConstantUse(key, context));
-                self.work.push(Work::ValueType(owner));
-                self.work.push(Work::Definition(owner, false));
-            }
+            let associated = self.constant_reference_dependencies(key, context, &mut work)?;
             let ast = &self.report.package.unit(key.file).configured.ast;
-            if matches!(self.kind(key), Kind::Path { .. }) {
+            if associated || matches!(self.kind(key), Kind::Path { .. }) {
                 // The selected item's argument schema schedules type and const
                 // arguments separately. Nested constants own separate regions.
                 continue;
@@ -316,5 +221,79 @@ impl Checker<'_> {
             );
         }
         Ok(())
+    }
+
+    /// Resolve a value path only after its ordinary declaration/constructor prerequisites.
+    fn constant_reference_dependencies(
+        &mut self,
+        key: NodeKey,
+        context: regions::Context,
+        scan: &mut Vec<(NodeKey, regions::Context)>,
+    ) -> Result<bool, Error> {
+        let associated = self
+            .report
+            .resolution
+            .associated_paths
+            .get(&key)
+            .is_some_and(|path| path.namespace == Namespace::Value)
+            || self
+                .report
+                .resolution
+                .qualified_paths
+                .get(&key)
+                .is_some_and(|path| path.namespace == Namespace::Value);
+        let target = self.facts.node(key).and_then(|f| f.reference);
+        let owner = match target {
+            Some(Target::Definition(id)) => Some(id),
+            Some(Target::Associated(id))
+                if self.report.resolution.definitions[id.0 as usize].kind == DefKind::TypeAlias =>
+            {
+                Some(id)
+            }
+            _ => None,
+        };
+        let kind = owner.map(|id| self.report.resolution.definitions[id.0 as usize].kind);
+        if associated
+            || matches!(
+                kind,
+                Some(
+                    DefKind::Function
+                        | DefKind::Constructor
+                        | DefKind::Variant
+                        | DefKind::Struct
+                        | DefKind::Enum
+                        | DefKind::TypeAlias
+                )
+            )
+            || (kind == Some(DefKind::Const)
+                && owner.is_some_and(|id| self.facts.associated.trait_owner(id).is_some()))
+        {
+            self.work.push(Work::ConstantUse(key, context));
+        }
+        if let Some(id) = owner {
+            match kind {
+                Some(DefKind::Primitive | DefKind::Function) => {
+                    self.work.push(Work::Definition(id, false));
+                }
+                Some(DefKind::Constructor | DefKind::Variant | DefKind::Struct) => {
+                    self.constant_constructor(id)?;
+                }
+                Some(DefKind::Enum) => self.work.push(Work::ValueType(id)),
+                Some(DefKind::TypeAlias | DefKind::Const | DefKind::Static) => {
+                    self.work.push(Work::ValueType(id));
+                    self.work.push(Work::Definition(id, false));
+                    // An associated declaration can name a default that this use
+                    // overrides. The value query requests the selected body;
+                    // scanning the default here can invent a dependency cycle.
+                    if self.facts.associated.owner(id).is_none()
+                        && let Some(dependency) = self.constant_initializer(id)?
+                    {
+                        scan.push(dependency);
+                    }
+                }
+                _ => {}
+            }
+        }
+        Ok(associated)
     }
 }

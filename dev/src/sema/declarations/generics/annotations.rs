@@ -114,11 +114,7 @@ impl Checker<'_> {
                         .types
                         .const_type(id)
                         .ok_or_else(|| self.error(key, "missing const argument type"))?;
-                    AnnotationArgument::Const(self.generic_constant(
-                        NodeKey { node, ..key },
-                        ty,
-                        owner,
-                    )?)
+                    AnnotationArgument::Const(self.generic_constant(NodeKey { node, ..key }, ty)?)
                 }
                 (_, None) => AnnotationArgument::Default(
                     parameter

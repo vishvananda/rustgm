@@ -124,13 +124,17 @@ enum Work {
     MethodArguments(NodeId),
     AssignmentValue(NodeId),
 }
-/// Dense, cleared slots can be reused between short declaration-time constants.
-/// Successful body checking clears only touched nodes and bindings.
+/// Cleared storage can be reused between short declaration-time constants.
+/// Successful checks clear touched slots; caller evidence is cleared before reuse.
 #[derive(Default)]
 pub(super) struct Scratch {
     terms: Vec<Vec<Option<TermId>>>,
     diverges: Vec<bool>,
     locals: Vec<Option<TermId>>,
+    touched: Vec<NodeId>,
+    work: Vec<Work>,
+    checks: Vec<NodeId>,
+    call_types: Option<Box<calls::CallTypes>>,
 }
 pub(super) struct Checker<'a> {
     alignment: alignment::Pending,
@@ -171,7 +175,7 @@ pub(super) struct Checker<'a> {
     discarded_adjustments: std::collections::HashMap<usize, (TermId, TermId)>,
     calls: Vec<(NodeId, TermId)>,
     pending_indexes: std::collections::HashMap<NodeId, TermId>,
-    call_types: calls::CallTypes,
+    call_types: Box<calls::CallTypes>,
     parameter_copies: Option<crate::types::copy::Copies>,
     parameter_shapes: Option<crate::types::parameters::shape::Shapes>,
     body_binders: u32,
@@ -217,7 +221,7 @@ impl<'a> Checker<'a> {
             result: TypeId::UNIT,
             in_function: true,
             infer: Context::default(),
-            touched: Vec::new(),
+            touched: scratch.touched,
             bindings: Vec::new(),
             pattern_work: Vec::new(),
             pattern_types: Vec::new(),
@@ -228,9 +232,9 @@ impl<'a> Checker<'a> {
             range_work: Vec::new(),
             pattern_requirements: Vec::new(),
             matches: Vec::new(),
-            work: Vec::new(),
+            work: scratch.work,
             children: Vec::new(),
-            checks: Vec::new(),
+            checks: scratch.checks,
             negated: HashSet::new(),
             adjustments: Vec::new(),
             reference_adjustments: std::collections::HashMap::new(),
@@ -241,7 +245,7 @@ impl<'a> Checker<'a> {
             discarded_adjustments: std::collections::HashMap::new(),
             calls: Vec::new(),
             pending_indexes: std::collections::HashMap::new(),
-            call_types: calls::CallTypes::default(),
+            call_types: scratch.call_types.unwrap_or_default(),
             parameter_copies: None,
             parameter_shapes: None,
             body_binders: 0,
@@ -265,11 +269,16 @@ impl<'a> Checker<'a> {
         self.pending_patterns.is_some()
     }
     /// Consume only after successful checking; failed checks discard their slots.
-    pub(super) fn into_scratch(self) -> Scratch {
+    pub(super) fn into_scratch(mut self) -> Scratch {
+        self.call_types.clear();
         Scratch {
             terms: self.terms,
             diverges: self.diverges,
             locals: self.locals,
+            touched: self.touched,
+            work: self.work,
+            checks: self.checks,
+            call_types: Some(self.call_types),
         }
     }
     pub(super) fn constant(&mut self, key: NodeKey, ty: TypeId, owner: DefId) -> Result<(), Error> {

@@ -76,8 +76,15 @@ impl Checker<'_> {
                         ..context
                     },
                 );
-            } else {
-                self.constant_dependencies(NodeKey { node, ..key }, context)?;
+            } else if let Argument::Const(parameter) =
+                self.facts.generics.parameters[&owner][index as usize].argument
+            {
+                self.schedule_constant_argument(
+                    NodeKey { node, ..key },
+                    parameter,
+                    owner,
+                    context,
+                )?;
             }
             return Ok(());
         }
@@ -91,7 +98,7 @@ impl Checker<'_> {
                     .types
                     .const_type(id)
                     .ok_or_else(|| self.error(key, "missing const parameter type"))?;
-                Argument::Const(self.generic_constant(key, ty, owner)?)
+                Argument::Const(self.generic_constant(key, ty)?)
             }
             Argument::Lifetime(_) => return Err(self.error(key, "lifetimes cannot have defaults")),
         };

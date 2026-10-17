@@ -6,6 +6,7 @@ mod constants;
 mod contracts;
 mod deferred_arguments;
 mod destructors;
+mod evaluation;
 mod generics;
 mod impl_headers;
 mod implicit_methods;
@@ -53,9 +54,13 @@ enum SignaturePhase {
 }
 #[derive(Clone, Copy)]
 enum Work {
+    MethodPrefix(NodeKey, regions::Context),
+    InherentMethod(NodeKey, associated::Path, regions::Context),
+    EvaluateConstant(evaluation::Request, bool),
+    InitializerReady(DefId),
     TraitCallable(NodeKey, trait_paths::Callable),
     ImplicitMethod(NodeKey, regions::Context),
-    ImplicitArguments(NodeKey, NodeKey),
+    MethodArguments(NodeKey, NodeKey),
     ProjectionPath(NodeKey, regions::Context),
     ProjectionSelection(NodeKey, crate::types::substitute::Request),
     ProjectionResult(NodeKey),
@@ -110,6 +115,7 @@ struct Checker<'a> {
     constant_modules:
         Option<std::collections::HashMap<NodeKey, Option<crate::resolve::package::ModuleId>>>,
     constant_scratch: super::constants::Scratch,
+    constant_evaluations: evaluation::Pending,
     constant_dependencies: std::collections::HashSet<NodeKey>,
     constant_captures: generics::Captures,
     parameter_uses: crate::types::parameters::uses::Uses,
@@ -151,6 +157,7 @@ pub fn analyze(report: &Report) -> Result<Declarations, Error> {
         relaxed: std::collections::HashSet::new(),
         constant_modules: None,
         constant_scratch: super::constants::Scratch::default(),
+        constant_evaluations: evaluation::Pending::default(),
         constant_dependencies: std::collections::HashSet::new(),
         constant_captures: generics::Captures::default(),
         parameter_uses: crate::types::parameters::uses::Uses::default(),
@@ -249,14 +256,26 @@ impl Checker<'_> {
                 ));
             }
             match work {
+                Work::MethodPrefix(key, context) => {
+                    self.complete_method_prefix(key, context, steps, limit, &mut scan)?;
+                }
+                Work::InherentMethod(key, path, context) => {
+                    self.complete_method_path(key, &path, context, steps, limit, &mut scan)?;
+                }
+                Work::EvaluateConstant(request, resume) => {
+                    self.evaluate_constant(request, resume)?;
+                }
+                Work::InitializerReady(definition) => {
+                    self.complete_initializer_readiness(definition);
+                }
                 Work::TraitCallable(key, callable) => {
                     self.complete_trait_callable(key, callable)?;
                 }
                 Work::ImplicitMethod(key, context) => {
                     self.complete_implicit_method(key, context, steps, limit, &mut scan)?;
                 }
-                Work::ImplicitArguments(key, suffix) => {
-                    self.complete_implicit_arguments(key, suffix)?;
+                Work::MethodArguments(key, suffix) => {
+                    self.complete_method_arguments(key, suffix)?;
                 }
                 Work::ProjectionPath(key, context) => {
                     self.complete_projection_path(key, context)?;

@@ -166,13 +166,31 @@ dependency requirements and cannot borrow this later phase's validated
 implementation state.
 
 Prepare qualified and implicit trait value paths with explicit declaration work
-items for their prefix, selection and written arguments. A nested const argument
+items for their prefix, selection and written arguments, including inherent
+selection and its trait fallback. A nested const argument
 must not drain an unfinished parent declaration continuation. Reuse completed
-path facts, and prepare a demanded trait-default initializer in its own lexical
-and generic context. Const arguments reached after implementation validation may
+path facts, and prepare the selected initializer in its own lexical and generic
+context. Do not pre-scan an associated declaration's default before value
+selection: an override can remove that dependency, and eager preparation can
+invent a cycle. Unselected initializer templates still undergo their ordinary
+body and eligibility checks. Const arguments reached after implementation validation may
 use concrete value dispatch, retaining proof under their anonymous constant body.
-Earlier queries and selected override dependencies still need their own declaration
-readiness; neither an unfinished environment nor an unchecked header is evidence.
+Queue typed const-argument evaluation ahead of the consuming application. The
+application reads only a completed value keyed by source identity and expected
+type. If evaluation discovers an unprepared selected initializer, suspend with
+that exact definition and prepare its declaration dependencies in its own scope.
+Preserve expression/instance caches, active cycle states, work continuations and
+the work budget across suspension. Resume the requesting anonymous body without
+retyping it or reselecting its already inferred dependencies. Initializer path
+readiness is separate from body type checking and completed value caching.
+Reuse cleared body work vectors, the expression scan buffer and call-typing
+storage across suspension. Clear caller evidence before returning that storage;
+neither active inference nor a previous caller's permissions belongs in scratch.
+Probe completed method-path caches only after recognizing a relevant value path.
+Nested shape queries must retain declaration-cycle detection across suspension.
+Do not inspect unrelated implementation bodies or restart a long query for each
+dependency. Earlier queries still need a separate implementation-availability
+contract; neither an unfinished environment nor an unchecked header is evidence.
 
 Associated result bounds retain complete predicates, including the separate
 subjects of nested result equalities. Elaborate their arguments through the

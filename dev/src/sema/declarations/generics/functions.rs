@@ -121,7 +121,7 @@ impl Checker<'_> {
                     self.annotation_holes(key, steps, limit, scan)?;
                     self.node_work(key.file, node, context);
                 }
-                Argument::Const(_) => self.constant_dependencies(key, context)?,
+                Argument::Const(id) => self.schedule_constant_argument(key, id, owner, context)?,
                 Argument::Lifetime(_) => {
                     return Err(
                         self.error(key, "function parameter metadata contains a lifetime slot")
@@ -186,7 +186,7 @@ impl Checker<'_> {
                                 self.facts.types.const_type(id).ok_or_else(|| {
                                     self.error(key, "missing const parameter type")
                                 })?;
-                            SourceArgument::Const(self.generic_constant(key, ty, owner)?)
+                            SourceArgument::Const(self.generic_constant(key, ty)?)
                         }
                         Argument::Lifetime(_) => {
                             return Err(self.error(key, "invalid function argument metadata"));

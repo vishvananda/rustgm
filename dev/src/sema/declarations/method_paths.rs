@@ -59,14 +59,59 @@ impl Checker<'_> {
         if self.schedule_trait_callable(key, context, steps, limit, scan)? {
             return Ok(true);
         }
-        let path = if self.report.resolution.qualified_paths.contains_key(&key) {
-            self.explicit_method_path(key, context, steps, limit, scan)?
-        } else {
-            self.named_method_path(key)
-        };
+        if let Some(path) = self.report.resolution.qualified_paths.get(&key) {
+            if path.namespace != Namespace::Value
+                || path.trait_path.is_some()
+                || path.suffix.len() != 1
+            {
+                return Ok(false);
+            }
+            if self.completed_method_path(key) {
+                return Ok(true);
+            }
+            let prefix = NodeKey {
+                node: path.ty,
+                ..key
+            };
+            self.work.push(super::Work::MethodPrefix(key, context));
+            self.schedule_method_prefix(prefix, None, context, steps, limit, scan)?;
+            return Ok(true);
+        }
+        let path = self.named_method_path(key);
         let Some(path) = path else {
             return self.schedule_implicit_method(key, context, steps, limit, scan);
         };
+        self.schedule_nominal_path(key, &path, context, steps, limit, scan)
+    }
+
+    pub(super) fn complete_method_prefix(
+        &mut self,
+        key: NodeKey,
+        context: regions::Context,
+        steps: &mut usize,
+        limit: usize,
+        scan: &mut Vec<NodeId>,
+    ) -> Result<(), Error> {
+        if let Some(path) = self.explicit_method_path(key) {
+            self.schedule_nominal_path(key, &path, context, steps, limit, scan)?;
+        } else {
+            self.schedule_implicit_method(key, context, steps, limit, scan)?;
+        }
+        Ok(())
+    }
+
+    fn schedule_nominal_path(
+        &mut self,
+        key: NodeKey,
+        path: &Path,
+        context: regions::Context,
+        steps: &mut usize,
+        limit: usize,
+        scan: &mut Vec<NodeId>,
+    ) -> Result<bool, Error> {
+        if self.completed_method_path(key) {
+            return Ok(true);
+        }
         self.method_path_segments(key, path.prefix, path.suffix)?;
         if let Some(variant) =
             self.enum_variant(key, path.nominal, path.name, path.namespace, path.scope)?
@@ -74,13 +119,27 @@ impl Checker<'_> {
             if path.owner.is_some() {
                 return Ok(false);
             }
-            self.select_qualified_variant(key, &path, variant)?;
+            self.select_qualified_variant(key, path, variant)?;
             return Ok(true);
         }
-        if self.complete_method_path(key, &path, context, steps, limit, scan)? {
+        if path.namespace == Namespace::Value
+            && self
+                .facts
+                .methods
+                .inherent
+                .contains_key(&(path.nominal, path.name))
+        {
+            self.work
+                .push(super::Work::InherentMethod(key, *path, context));
+            self.schedule_method_prefix(path.prefix, path.owner, context, steps, limit, scan)?;
             return Ok(true);
         }
         self.schedule_implicit_method(key, context, steps, limit, scan)
+    }
+
+    fn completed_method_path(&self, key: NodeKey) -> bool {
+        self.facts.methods.qualified.contains_key(&key)
+            && self.facts.generics.item_uses.contains_key(&key)
     }
 
     fn named_method_path(&self, key: NodeKey) -> Option<Path> {
@@ -121,20 +180,11 @@ impl Checker<'_> {
         })
     }
 
-    fn explicit_method_path(
-        &mut self,
-        key: NodeKey,
-        context: regions::Context,
-        steps: &mut usize,
-        limit: usize,
-        scan: &mut Vec<NodeId>,
-    ) -> Result<Option<Path>, Error> {
-        let Some(path) = self.report.resolution.qualified_paths.get(&key) else {
-            return Ok(None);
-        };
+    fn explicit_method_path(&self, key: NodeKey) -> Option<Path> {
+        let path = self.report.resolution.qualified_paths.get(&key)?;
         if path.namespace != Namespace::Value || path.trait_path.is_some() || path.suffix.len() != 1
         {
-            return Ok(None);
+            return None;
         }
         let prefix = NodeKey {
             node: path.ty,
@@ -145,13 +195,8 @@ impl Checker<'_> {
             ..key
         };
         let (name, scope, namespace) = (path.suffix[0].1, path.scope, path.namespace);
-        self.annotation_holes(prefix, steps, limit, scan)?;
-        self.node_work(prefix.file, prefix.node, context);
-        self.drain(steps, limit)?;
-        let Some(nominal) = self.nominal_prefix(prefix) else {
-            return Ok(None);
-        };
-        Ok(Some(Path {
+        let nominal = self.nominal_prefix(prefix)?;
+        Some(Path {
             prefix,
             suffix,
             owner: None,
@@ -159,7 +204,7 @@ impl Checker<'_> {
             name,
             scope,
             namespace,
-        }))
+        })
     }
 
     fn nominal_prefix(&self, mut key: NodeKey) -> Option<ItemId> {
@@ -228,19 +273,6 @@ impl Checker<'_> {
         Ok(())
     }
 
-    pub(super) fn prepare_method_prefix(
-        &mut self,
-        prefix: NodeKey,
-        owner: Option<super::DefId>,
-        context: regions::Context,
-        steps: &mut usize,
-        limit: usize,
-        scan: &mut Vec<NodeId>,
-    ) -> Result<(), Error> {
-        self.schedule_method_prefix(prefix, owner, context, steps, limit, scan)?;
-        self.drain(steps, limit)
-    }
-
     pub(super) fn schedule_method_prefix(
         &mut self,
         prefix: NodeKey,
@@ -278,7 +310,7 @@ impl Checker<'_> {
         Ok(())
     }
 
-    fn complete_method_path(
+    pub(super) fn complete_method_path(
         &mut self,
         key: NodeKey,
         path: &Path,
@@ -286,20 +318,19 @@ impl Checker<'_> {
         steps: &mut usize,
         limit: usize,
         scan: &mut Vec<NodeId>,
-    ) -> Result<bool, Error> {
-        if path.namespace != Namespace::Value {
-            return Ok(false);
-        }
-        let Some(candidates) = self.facts.methods.inherent.get(&(path.nominal, path.name)) else {
-            return Ok(false);
-        };
+    ) -> Result<(), Error> {
+        let candidates = self
+            .facts
+            .methods
+            .inherent
+            .get(&(path.nominal, path.name))
+            .ok_or_else(|| self.error(key, "missing queued inherent candidates"))?;
         let unique = if let [method] = candidates.as_slice() {
             Some(*method)
         } else {
             None
         };
         let prefix = path.prefix;
-        self.prepare_method_prefix(prefix, path.owner, context, steps, limit, scan)?;
         let has_traits = self.facts.methods.trait_names.contains(&path.name);
         let method = if let Some(method) = unique.filter(|_| !has_traits) {
             method
@@ -321,7 +352,8 @@ impl Checker<'_> {
             )?;
             let Some(method) = selected else {
                 return if has_traits {
-                    Ok(false)
+                    self.schedule_implicit_method(key, context, steps, limit, scan)
+                        .map(|_| ())
                 } else {
                     Err(self.error(key, "no applicable inherent method for this prefix"))
                 };
@@ -355,15 +387,8 @@ impl Checker<'_> {
             .node_mut(key)
             .ok_or_else(|| Error::at(key.file, 0, "missing method path fact"))?
             .reference = Some(Target::Definition(method));
-        self.schedule_item_arguments(path.suffix, method, context, steps, limit, scan)?;
-        self.drain(steps, limit)?;
-        let arguments = self
-            .facts
-            .generics
-            .item_uses
-            .remove(&path.suffix)
-            .ok_or_else(|| self.error(key, "missing selected method arguments"))?;
-        self.facts.generics.item_uses.insert(key, arguments);
-        Ok(true)
+        self.work
+            .push(super::Work::MethodArguments(key, path.suffix));
+        self.schedule_item_arguments(path.suffix, method, context, steps, limit, scan)
     }
 }

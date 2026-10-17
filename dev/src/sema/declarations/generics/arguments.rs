@@ -103,8 +103,8 @@ impl Checker<'_> {
             }
             match self.facts.generics.parameters[&owner][index + omitted].argument {
                 Argument::Type(_) => self.node_work(key.file, node, context),
-                Argument::Const(_) => {
-                    self.constant_dependencies(NodeKey { node, ..key }, context)?;
+                Argument::Const(id) => {
+                    self.schedule_constant_argument(NodeKey { node, ..key }, id, owner, context)?;
                 }
                 Argument::Lifetime(_) => {}
             }
@@ -139,7 +139,7 @@ impl Checker<'_> {
             });
             let (argument, original) = if let Some(node) = node {
                 let node = NodeKey { node, ..key };
-                let argument = self.source_argument(node, owner, parameter.argument, context)?;
+                let argument = self.source_argument(node, parameter.argument, context)?;
                 let original = if matches!(argument, Argument::Type(_)) {
                     self.facts
                         .unreduced
@@ -254,7 +254,6 @@ impl Checker<'_> {
     fn source_argument(
         &mut self,
         key: NodeKey,
-        owner: DefId,
         parameter: Argument,
         context: regions::Context,
     ) -> Result<Argument, Error> {
@@ -274,7 +273,7 @@ impl Checker<'_> {
                     .types
                     .const_type(id)
                     .ok_or_else(|| self.error(key, "missing const argument type"))?;
-                Argument::Const(self.generic_constant(key, ty, owner)?)
+                Argument::Const(self.generic_constant(key, ty)?)
             }
         })
     }

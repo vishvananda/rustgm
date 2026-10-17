@@ -119,13 +119,43 @@ pub(super) struct Cache {
     pub scratch: constants::Scratch,
     pub discriminants: constants::Discriminants,
 }
+pub(super) enum Input {
+    Parameter(ConstId),
+    Expression(constants::ArgumentInput),
+}
 impl Constants<'_> {
     pub(super) fn argument(
+        &mut self,
+        key: NodeKey,
+        ty: TypeId,
+        module: Option<ModuleId>,
+    ) -> Result<ConstId, Error> {
+        let input = match self.input(key, ty, module)? {
+            Input::Parameter(parameter) => return Ok(parameter),
+            Input::Expression(input) => input,
+        };
+        let value = crate::sema::constants::generic_argument(
+            self.report,
+            self.facts,
+            self.scratch,
+            self.discriminants,
+            input.key,
+            input.ty,
+            input.module,
+        )?;
+        self.facts
+            .types
+            .intern_constant(Constant { ty, bits: value })
+            .map_err(|e| Declarations::error(self.report, key, e))
+    }
+
+    /// Preserve standalone symbolic parameters; otherwise qualify the anonymous input once.
+    pub(super) fn input(
         &mut self,
         mut key: NodeKey,
         ty: TypeId,
         module: Option<ModuleId>,
-    ) -> Result<ConstId, Error> {
+    ) -> Result<Input, Error> {
         if let Some(id) = self.facts.const_parameter(self.report, key) {
             if self.facts.types.const_type(id) != Some(ty) {
                 return Err(Declarations::error(
@@ -134,7 +164,7 @@ impl Constants<'_> {
                     "const argument has the wrong type",
                 ));
             }
-            return Ok(id);
+            return Ok(Input::Parameter(id));
         }
         if let Kind::Type {
             flavor: TypeFlavor::Path,
@@ -155,18 +185,10 @@ impl Constants<'_> {
             Declarations::error(self.report, key, "missing const argument module")
         })?;
         self.captures.check(self.report, self.facts, key, module)?;
-        let value = crate::sema::constants::generic_argument(
-            self.report,
-            self.facts,
-            self.scratch,
-            self.discriminants,
+        Ok(Input::Expression(constants::ArgumentInput {
             key,
             ty,
             module,
-        )?;
-        self.facts
-            .types
-            .intern_constant(Constant { ty, bits: value })
-            .map_err(|e| Declarations::error(self.report, key, e))
+        }))
     }
 }

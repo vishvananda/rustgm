@@ -8,6 +8,7 @@ use crate::{
     types::ItemId,
 };
 
+#[derive(Clone, Copy)]
 pub(super) struct Path {
     pub prefix: NodeKey,
     pub suffix: NodeKey,
