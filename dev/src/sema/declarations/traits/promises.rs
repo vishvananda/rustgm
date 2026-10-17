@@ -1,35 +1,12 @@
 //! Close builtin Self promises before projection identities acquire cached properties.
 use super::super::generics::bounds::Written;
 use super::super::{Checker, DefId, Error};
+pub(super) use crate::types::projection::Builtins;
 use crate::{
     sema::associated::OwnerKind,
-    types::{copy::Properties, parameters::predicates::Bound},
+    types::{ItemId, parameters::predicates::Bound},
 };
 use std::collections::HashMap;
-
-#[derive(Clone, Copy, Default, PartialEq, Eq)]
-pub(super) struct Builtins {
-    pub sized: bool,
-    pub copies: Properties,
-}
-impl Builtins {
-    fn bound(bound: Bound) -> Self {
-        Self {
-            sized: matches!(bound, Bound::Sized | Bound::Copy | Bound::Clone),
-            copies: Properties {
-                copy: bound == Bound::Copy,
-                clone_: matches!(bound, Bound::Copy | Bound::Clone),
-            },
-        }
-    }
-    fn include(&mut self, other: Self) -> bool {
-        let previous = *self;
-        self.sized |= other.sized;
-        self.copies.copy |= other.copies.copy;
-        self.copies.clone_ |= other.copies.clone_;
-        *self != previous
-    }
-}
 
 impl Checker<'_> {
     /// The decoded bounds already retain resolved declaration identities. Their
@@ -53,7 +30,7 @@ impl Checker<'_> {
                 ));
             }
             let mut result = Builtins::default();
-            for bound in self.declared_self_bounds(definition, owner.self_definition) {
+            for (_, bound) in self.declared_self_bounds(definition, owner.self_definition) {
                 match bound {
                     Written::Trait(bound) => {
                         result.include(Builtins::bound(bound));
@@ -71,6 +48,16 @@ impl Checker<'_> {
                 work.push(definition);
             }
         }
+        self.close_builtin_promises(promises, &dependents, work, steps)
+    }
+
+    fn close_builtin_promises(
+        &self,
+        mut promises: HashMap<DefId, Builtins>,
+        dependents: &HashMap<DefId, Vec<DefId>>,
+        mut work: Vec<DefId>,
+        mut steps: usize,
+    ) -> Result<HashMap<DefId, Builtins>, Error> {
         // Each of three bits changes at most once per declaration. Cycles need
         // no special assumptions here; the ordinary trait gate still rejects them.
         while let Some(parent) = work.pop() {
@@ -91,5 +78,125 @@ impl Checker<'_> {
             }
         }
         Ok(promises)
+    }
+
+    /// Complete conditional properties once, before caller environments freeze.
+    /// Canonical schemas and their already interned applications remain unchanged.
+    pub(in crate::sema::declarations) fn complete_projection_promises(
+        &mut self,
+    ) -> Result<(), Error> {
+        if self.associated_type_bounds.is_empty() {
+            return Ok(());
+        }
+        let inherited = self.typed_builtin_promises()?;
+        let mut promises = HashMap::new();
+        for (&member, bounds) in &self.associated_type_bounds {
+            let key = self.report.resolution.definitions[member.0 as usize]
+                .node
+                .ok_or_else(|| {
+                    Error::at(
+                        crate::resolve::unit::FileId(0),
+                        0,
+                        "missing result declaration source",
+                    )
+                })?;
+            let schema = self
+                .facts
+                .types
+                .projection_schema(ItemId(member.0))
+                .ok_or_else(|| self.error(key, "missing reserved result schema"))?;
+            let original = Builtins {
+                sized: schema.sized,
+                copies: schema.copies,
+            };
+            let mut result = original;
+            for syntax in &bounds.syntax {
+                if let Some((_, owner)) = syntax.trait_path()
+                    && let Some(&properties) = inherited.get(&owner)
+                {
+                    result.include(properties);
+                }
+            }
+            for predicate in self
+                .facts
+                .generics
+                .traits
+                .as_ref()
+                .ok_or_else(|| self.error(key, "missing completed trait headers"))?
+                .associated_bounds(ItemId(member.0))
+            {
+                let properties = if let Bound::Trait(id) = predicate.bound {
+                    let application = self
+                        .facts
+                        .types
+                        .trait_application(id)
+                        .ok_or_else(|| self.error(key, "missing result bound application"))?;
+                    inherited
+                        .get(&DefId(application.item.0))
+                        .copied()
+                        .unwrap_or_default()
+                } else {
+                    Builtins::bound(predicate.bound)
+                };
+                result.include(properties);
+            }
+            if result != original {
+                promises.insert(ItemId(member.0), result);
+            }
+        }
+        if !promises.is_empty() {
+            self.facts.generics.projection_promises = Some(std::sync::Arc::new(promises));
+        }
+        Ok(())
+    }
+
+    fn typed_builtin_promises(&self) -> Result<HashMap<DefId, Builtins>, Error> {
+        let Some(contracts) = &self.facts.generics.traits else {
+            return Ok(HashMap::new());
+        };
+        let mut promises = HashMap::new();
+        let mut dependents: HashMap<DefId, Vec<DefId>> = HashMap::new();
+        let mut work = Vec::new();
+        let mut steps = 0_usize;
+        for (item, header) in contracts.headers() {
+            let definition = DefId(item.0);
+            let key = self.report.resolution.definitions[item.0 as usize]
+                .node
+                .ok_or_else(|| {
+                    Error::at(
+                        crate::resolve::unit::FileId(0),
+                        0,
+                        "missing trait declaration source",
+                    )
+                })?;
+            steps = steps.saturating_add(1 + header.predicates.len());
+            if steps > 1_000_000 {
+                return Err(self.error(key, "typed builtin promise work budget exceeded"));
+            }
+            let mut result = Builtins::default();
+            for predicate in &header.predicates {
+                if !header.implies_self(predicate) {
+                    continue;
+                }
+                if let Bound::Trait(id) = predicate.value.bound {
+                    let parent = self
+                        .facts
+                        .types
+                        .trait_application(id)
+                        .ok_or_else(|| self.error(key, "missing typed Self application"))?;
+                    dependents
+                        .entry(DefId(parent.item.0))
+                        .or_default()
+                        .push(definition);
+                } else {
+                    result.include(Builtins::bound(predicate.value.bound));
+                }
+            }
+            promises.insert(definition, result);
+            if result != Builtins::default() {
+                work.push(definition);
+            }
+        }
+        self.close_builtin_promises(promises, &dependents, work, steps)
     }
 }

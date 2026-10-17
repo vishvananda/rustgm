@@ -15,7 +15,7 @@ pub(super) use conformance::Members;
 
 pub(in crate::sema::declarations) struct Bounds {
     builtin: Vec<Bound>,
-    syntax: Vec<Syntax>,
+    pub(super) syntax: Vec<Syntax>,
 }
 
 impl Checker<'_> {
@@ -277,16 +277,17 @@ impl Checker<'_> {
         let mut relaxed = false;
         for &node in ast.list(bounds) {
             let key = NodeKey { node, ..key };
+            if self.lifetime_argument(key) {
+                syntax.push(Syntax::associated(key, id, Written::Outlives(key)));
+                continue;
+            }
             let Kind::Bound {
                 optional,
                 binders,
                 value,
             } = self.kind(key)
             else {
-                return Err(self.error(
-                    key,
-                    "associated lifetime bounds require projection obligations",
-                ));
+                return Err(self.error(key, "invalid associated type bound"));
             };
             if binders.start != binders.end {
                 return Err(self.error(
@@ -294,7 +295,15 @@ impl Checker<'_> {
                     "higher-ranked associated bounds require advanced generic relationships",
                 ));
             }
-            let written = self.trait_bound(NodeKey { node: value, ..key })?;
+            let value = NodeKey { node: value, ..key };
+            if self.lifetime_argument(value) {
+                if optional {
+                    return Err(self.error(key, "associated lifetime bounds cannot be relaxed"));
+                }
+                syntax.push(Syntax::associated(key, id, Written::Outlives(value)));
+                continue;
+            }
+            let written = self.trait_bound(value)?;
             if matches!(written, Written::User { .. }) && !optional {
                 syntax.push(Syntax::associated(key, id, written));
                 continue;

@@ -160,3 +160,40 @@ pub(in crate::sema) fn substitution(
     }
     crate::types::substitute::Bound::parameters_captured(&facts.types, &mapping, regions)
 }
+
+/// Complete finite result lifetime templates before scoped lifetime validation.
+/// Recursive associated results remain demand-driven; only ordinary Self
+/// supertraits contribute to the member's own promises.
+pub(in crate::sema) fn prepare_outlives(facts: &mut Declarations) -> Result<(), String> {
+    if facts.associated.types.is_empty() {
+        return Ok(());
+    }
+    let direct = facts.associated.types.values().any(|contract| {
+        contract
+            .bounds
+            .iter()
+            .any(|p| matches!(p.bound, Bound::Outlives(_)))
+    });
+    let inherited = facts.generics.traits.as_ref().is_some_and(|contracts| {
+        contracts.headers().any(|(_, header)| {
+            header
+                .predicates
+                .iter()
+                .any(|p| header.implies_self(p) && matches!(p.value.bound, Bound::Outlives(_)))
+        })
+    });
+    if !direct && !inherited {
+        return Ok(());
+    }
+    for index in 0..facts.associated.members().len() {
+        let item = facts.associated.members()[index].definition;
+        if !facts.associated.types.contains_key(&item) {
+            continue;
+        }
+        let (templates, _) = templates::for_result(facts, item)?;
+        facts
+            .types
+            .declare_projection_outlives(ItemId(item.0), &templates.outlives)?;
+    }
+    Ok(())
+}

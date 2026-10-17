@@ -206,6 +206,8 @@ impl Checker<'_> {
         if let Some(contracts) = &mut self.facts.generics.traits {
             contracts.complete_results();
         }
+        super::traits::results::prepare_outlives(&mut self.facts)
+            .map_err(|e| Error::at(FileId(0), 0, e))?;
         for index in 0..self.report.resolution.definitions.len() {
             let id = DefId(
                 u32::try_from(index)

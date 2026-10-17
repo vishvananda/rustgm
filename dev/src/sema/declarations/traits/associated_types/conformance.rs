@@ -76,6 +76,7 @@ impl Checker<'_> {
         let environment = self.facts.generics.environments.get(&owner).cloned();
         let mut proof = self.declaration_proof(owner, environment);
         let mut result = Vec::new();
+        let mut lifetimes = Vec::new();
         let mut substitution: Option<crate::types::substitute::Bound> = None;
         for &expected in members.owners.get(&trait_owner).into_iter().flatten() {
             let name = self.report.resolution.definitions[expected.0 as usize].name;
@@ -100,6 +101,10 @@ impl Checker<'_> {
             for requirement in
                 self.associated_result_bounds(key, predicate, expected, ty, &mut substitution)?
             {
+                if let Bound::Outlives(region) = requirement.bound {
+                    lifetimes.push((key, requirement.ty, region));
+                    continue;
+                }
                 if !proof
                     .prove(&mut self.facts, requirement)
                     .map_err(|e| self.error(key, e))?
@@ -113,7 +118,7 @@ impl Checker<'_> {
             // The mapping is published only with the rest of the checked implementation.
             result.push((expected, actual));
         }
-        self.associated_type_regions(owner, source, predicate, &result)?;
+        self.associated_type_regions(owner, source, predicate, &result, &lifetimes)?;
         self.retain_trait_proof(owner, source, &mut proof);
         Ok(result)
     }
@@ -169,6 +174,7 @@ impl Checker<'_> {
         source: NodeKey,
         predicate: Predicate,
         definitions: &[(DefId, DefId)],
+        lifetimes: &[(NodeKey, crate::types::TypeId, crate::types::RegionId)],
     ) -> Result<(), Error> {
         let mut inputs = crate::types::bound_uses::Uses::constraining();
         inputs
@@ -203,6 +209,17 @@ impl Checker<'_> {
                 .map_err(|e| self.error(key, e))?;
             constraints
                 .require_requirements(required, crate::types::relations::ProofScope::ROOT, 0)
+                .map_err(|e| self.error(key, e))?;
+        }
+        for &(key, ty, region) in lifetimes {
+            constraints
+                .require_type(
+                    &mut queries,
+                    ty,
+                    region,
+                    crate::types::relations::ProofScope::ROOT,
+                    0,
+                )
                 .map_err(|e| self.error(key, e))?;
         }
         constraints.solve().map(|_| ()).map_err(|e| {

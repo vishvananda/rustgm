@@ -241,7 +241,7 @@ impl Checker<'_> {
         &self,
         owner: DefId,
         self_definition: DefId,
-    ) -> impl Iterator<Item = Written> + '_ {
+    ) -> impl Iterator<Item = (NodeKey, Written)> + '_ {
         self.bound_syntax
             .get(&owner)
             .into_iter()
@@ -252,7 +252,7 @@ impl Checker<'_> {
                     Subject::Type(key) => self.bound_parameter(key, true),
                     Subject::Associated(_) => None,
                 };
-                (subject == Some(self_definition)).then_some(syntax.bound)
+                (subject == Some(self_definition)).then_some((syntax.source, syntax.bound))
             })
     }
     pub(in super::super) fn trait_bound(&self, mut key: NodeKey) -> Result<Written, Error> {

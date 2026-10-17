@@ -11,6 +11,8 @@ mod header_projections;
 mod native;
 #[path = "associated_declarations/readiness.rs"]
 mod readiness;
+#[path = "associated_declarations/result_contracts.rs"]
+mod result_contracts;
 #[path = "helpers/qualify.rs"]
 mod rustc;
 #[path = "support/semantic.rs"]

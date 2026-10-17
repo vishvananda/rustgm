@@ -68,9 +68,13 @@ impl Checker<'_> {
                 binder: Some(self.owner_binders[&owner.self_definition]),
                 position: regions::Position::Output,
             };
+            let self_bounds = self
+                .declared_self_bounds(definition, owner.self_definition)
+                .map(|(source, _)| source)
+                .collect();
             self.schedule_bounds(definition, context)?;
             self.drain(steps, limit)?;
-            self.retain_trait_contract(owner, definition)?;
+            self.retain_trait_contract(owner, definition, self_bounds)?;
             self.implicit_trait_bound(owner, definition)?;
         }
         self.end_header_names();

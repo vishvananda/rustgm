@@ -90,10 +90,27 @@ impl Checker<'_> {
                 well_formed: true,
             });
         }
+        let projected = self.facts.types.contains_projections(ty) == Some(true);
+        if let Some(shapes) = &mut self.parameter_shapes
+            && let Some(properties) = shapes
+                .try_demand(&self.facts.types, ty)
+                .map_err(|e| self.error(node, e))?
+            && (!projected || properties.sized && properties.well_formed)
+        {
+            return Ok(properties);
+        }
+        let ty = if projected {
+            self.normalize_known_projection(node, ty)?
+        } else {
+            ty
+        };
         if let Some(shapes) = &mut self.parameter_shapes {
-            shapes
-                .demand(&self.facts.types, ty)
-                .map_err(|e| self.error(node, e))
+            (if projected {
+                shapes.normalized(&self.facts.types, ty)
+            } else {
+                shapes.demand(&self.facts.types, ty)
+            })
+            .map_err(|e| self.error(node, e))
         } else {
             Ok(Properties {
                 sized: self

@@ -15,6 +15,7 @@ use std::{
 #[derive(Default)]
 pub(super) struct Index {
     candidates: HashMap<ItemId, Vec<Predicate>>,
+    pub(super) outlives: Vec<crate::types::RegionId>,
 }
 impl Index {
     pub(super) fn candidates(&self, item: ItemId) -> Option<&[Predicate]> {
@@ -43,7 +44,10 @@ pub(super) fn for_result(
         .bounds
         .iter()
         .copied()
-        .filter(|predicate| predicate.ty == template && matches!(predicate.bound, Bound::Trait(_)))
+        .filter(|predicate| {
+            predicate.ty == template
+                && matches!(predicate.bound, Bound::Trait(_) | Bound::Outlives(_))
+        })
         .collect();
     let mut steps = contract.bounds.len();
     let mut seen = HashSet::new();
@@ -53,12 +57,16 @@ pub(super) fn for_result(
         if steps.saturating_add(pending.len()) > 1_000_000 {
             return Err("associated result rule work budget exceeded".into());
         }
+        if predicate.ty != template || !seen.insert(predicate) {
+            continue;
+        }
+        if let Bound::Outlives(region) = predicate.bound {
+            index.outlives.push(region);
+            continue;
+        }
         let Bound::Trait(application) = predicate.bound else {
             continue;
         };
-        if !seen.insert(predicate) {
-            continue;
-        }
         let application = facts
             .types
             .trait_application(application)

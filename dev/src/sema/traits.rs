@@ -18,10 +18,19 @@ use std::{collections::HashMap, sync::Arc};
 
 pub(super) struct Header {
     pub self_type: TypeId,
+    pub self_bounds: std::collections::HashSet<crate::resolve::unit::NodeKey>,
     pub parameters: Vec<Parameter>,
     pub predicates: Vec<Located>,
     pub results: Vec<(ItemId, Located)>,
     pub regions: Vec<crate::types::outlives::Pair>,
+}
+
+impl Header {
+    /// Only the written Self subject confers inheritance. An alias reducing to
+    /// Self remains a separate requirement despite its identical canonical type.
+    pub(in crate::sema) fn implies_self(&self, predicate: &Located) -> bool {
+        predicate.value.ty == self.self_type && self.self_bounds.contains(&predicate.source)
+    }
 }
 
 /// Self bounds and equalities on Self's associated types are implied by a trait bound.
@@ -44,6 +53,9 @@ pub(super) struct Contracts {
 }
 
 impl Contracts {
+    pub(super) fn headers(&self) -> impl Iterator<Item = (ItemId, &Header)> {
+        self.order.iter().map(|&item| (item, &self.headers[&item]))
+    }
     /// All result clauses and ordinary trait headers now belong to one immutable epoch.
     pub fn complete_results(&mut self) {
         self.result_rules.enable();
@@ -114,7 +126,7 @@ impl Contracts {
                 states.insert(item, false);
                 work.push((item, true));
                 for predicate in header.predicates.iter().rev() {
-                    if predicate.value.ty == header.self_type
+                    if header.implies_self(predicate)
                         && let Bound::Trait(application) = predicate.value.bound
                     {
                         let application = store
@@ -197,7 +209,7 @@ impl Contracts {
                 && matches!(store.kind(predicate.value.ty),
                     Some(crate::types::Kind::Projection(application))
                         if application.subject == header.self_type);
-            if predicate.value.ty == header.self_type || associated_self {
+            if header.implies_self(predicate) || associated_self {
                 result.implied.push(value);
             } else {
                 result.required.push(value);

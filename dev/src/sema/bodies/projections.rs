@@ -85,6 +85,21 @@ impl Pending {
 }
 impl Checker<'_> {
     pub(super) fn known_projection(&mut self, node: NodeId, ty: TypeId) -> Result<TermId, Error> {
+        let ty = self.normalize_known_projection(node, ty)?;
+        let term = self
+            .infer
+            .known(&self.facts.types, ty)
+            .map_err(|e| self.error(node, e))?;
+        self.infer
+            .apply_normalization(&mut self.facts.types, term, ty)
+            .map_err(|e| self.error(node, e))?;
+        Ok(term)
+    }
+    pub(super) fn normalize_known_projection(
+        &mut self,
+        node: NodeId,
+        ty: TypeId,
+    ) -> Result<TypeId, Error> {
         // A canonical declaration type already has determined inputs. Keep its
         // written body lifetimes while proving its complete nested binder tree;
         // replacing the whole type with caller aliases would change its return contract.
@@ -118,14 +133,7 @@ impl Checker<'_> {
         proof
             .retain_body(self.facts, self.body, self.key(node))
             .map_err(|e| self.error(node, e))?;
-        let term = self
-            .infer
-            .known(&self.facts.types, ty)
-            .map_err(|e| self.error(node, e))?;
-        self.infer
-            .apply_normalization(&mut self.facts.types, term, ty)
-            .map_err(|e| self.error(node, e))?;
-        Ok(term)
+        Ok(ty)
     }
 
     pub(super) fn defer_contract(

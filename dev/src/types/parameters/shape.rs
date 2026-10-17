@@ -10,6 +10,7 @@ pub struct Properties {
 pub struct Shapes {
     environment: Arc<Environment>,
     cache: HashMap<TypeId, Properties>,
+    normalized_queries: Option<Box<Self>>,
     scoped: Option<Box<Scoped>>,
     work: Vec<(TypeId, u16, bool)>,
     steps: usize,
@@ -25,6 +26,7 @@ impl Shapes {
         Self {
             environment,
             cache: HashMap::new(),
+            normalized_queries: None,
             scoped: None,
             work: Vec::new(),
             steps: 0,
@@ -33,8 +35,40 @@ impl Shapes {
     /// # Errors
     /// Rejects invalid/foreign parameter types and exhausted graph work.
     pub fn demand(&mut self, types: &Store, ty: TypeId) -> Result<Properties, &'static str> {
+        self.try_demand(types, ty)?
+            .ok_or("associated type shape checking requires normalization")
+    }
+    /// A complete structural proof under the fixed assumptions avoids repeating
+    /// normalization. None requests parent evidence without caching permission.
+    pub(crate) fn try_demand(
+        &mut self,
+        types: &Store,
+        ty: TypeId,
+    ) -> Result<Option<Properties>, &'static str> {
+        self.demand_with(types, ty, false)
+    }
+    /// The caller has normalized this entire root in this query's environment
+    /// and retained every parent formation proof, including nested binders.
+    pub(crate) fn normalized(
+        &mut self,
+        types: &Store,
+        ty: TypeId,
+    ) -> Result<Properties, &'static str> {
+        // Raw structural queries cannot reuse a cache populated under a
+        // separately retained normalization proof.
+        self.normalized_queries
+            .get_or_insert_with(|| Box::new(Self::new(Arc::clone(&self.environment))))
+            .demand_with(types, ty, true)?
+            .ok_or("missing normalized shape proof")
+    }
+    fn demand_with(
+        &mut self,
+        types: &Store,
+        ty: TypeId,
+        normalized: bool,
+    ) -> Result<Option<Properties>, &'static str> {
         if let Some(value) = self.cache.get(&ty) {
-            return Ok(*value);
+            return Ok(Some(*value));
         }
         self.work.clear();
         self.work.push((ty, 0, false));
@@ -48,9 +82,10 @@ impl Shapes {
             }
             let kind = types.kind(ty).ok_or("invalid generic shape type")?;
             if let Kind::Projection(application) = kind
+                && !normalized
                 && !self.assumes_trait(types, application, depth)?
             {
-                return Err("associated type shape checking requires normalization");
+                return Ok(None);
             }
             if types.contains_parameters(ty) == Some(false)
                 && types.contains_projections(ty) == Some(false)
@@ -117,7 +152,10 @@ impl Shapes {
                     value.sized = types.is_sized(ty) == Some(true) || abilities.clone_;
                 }
                 Kind::Slice(_) | Kind::Primitive(Primitive::Str) => value.sized = false,
-                Kind::Projection(_) => value.sized = types.is_sized(ty) == Some(true),
+                Kind::Projection(application) => {
+                    value.sized = types.is_sized(ty) == Some(true)
+                        || self.environment.projection_promises(application.item).sized;
+                }
                 _ => {}
             }
             value.sized = value.sized || self.assumes_sized(types, ty, depth)?;
@@ -126,6 +164,7 @@ impl Shapes {
         self.cache
             .get(&ty)
             .copied()
+            .map(Some)
             .ok_or("missing generic shape result")
     }
     fn cached(&self, ty: TypeId, depth: u16) -> Option<&Properties> {
@@ -285,4 +324,49 @@ fn argument_types(
         }
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::types::{GenericArgs, ItemId, projection, traits};
+
+    #[test]
+    fn normalized_shapes_cannot_authorize_a_raw_projection_query() -> Result<(), &'static str> {
+        let mut types = Store::default();
+        types.declare_projection(
+            ItemId(2),
+            projection::Schema {
+                trait_item: ItemId(1),
+                sized: true,
+                copies: crate::types::copy::Properties::default(),
+            },
+        )?;
+        let trait_application = types.intern_trait_application(traits::Application {
+            item: ItemId(1),
+            arguments: GenericArgs::EMPTY,
+        })?;
+        let projected = types.intern(Kind::Projection(projection::Application {
+            item: ItemId(2),
+            subject: TypeId::UNIT,
+            trait_application,
+            arguments: GenericArgs::EMPTY,
+        }))?;
+        let tuple = types.intern_list(&[projected])?;
+        let tuple = types.intern(Kind::Tuple(tuple))?;
+        let environment = Arc::new(Environment::new(&types, &[])?);
+        let mut shapes = Shapes::new(environment);
+        // Exercise the internal normalized-root entry point as its proof-owning
+        // caller would. Its cache must never become evidence in the raw path.
+        assert!(shapes.normalized(&types, tuple)?.sized);
+        for ty in [tuple, projected] {
+            assert_eq!(shapes.try_demand(&types, ty)?, None);
+            assert_eq!(
+                shapes.demand(&types, ty),
+                Err("associated type shape checking requires normalization")
+            );
+        }
+        assert!(shapes.normalized(&types, tuple)?.well_formed);
+        Ok(())
+    }
 }

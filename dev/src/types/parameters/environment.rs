@@ -21,6 +21,8 @@ pub struct Environment {
     assumptions: Option<Box<Assumptions>>,
     traits: Option<Box<TraitAssumptions>>,
     equalities: Option<Box<ProjectionAssumptions>>,
+    projection_promises:
+        Option<std::sync::Arc<HashMap<crate::types::ItemId, crate::types::projection::Builtins>>>,
     shape_assumptions: bool,
     region_mapping: bool,
 }
@@ -42,6 +44,26 @@ struct ProjectionAssumptions {
     items: HashMap<crate::types::ItemId, Vec<usize>>,
 }
 impl Environment {
+    pub(crate) fn with_projection_promises(
+        mut self,
+        promises: Option<
+            std::sync::Arc<HashMap<crate::types::ItemId, crate::types::projection::Builtins>>,
+        >,
+    ) -> Self {
+        self.projection_promises = promises;
+        self
+    }
+    /// Declaration metadata supplies no evidence for forming an application.
+    pub(crate) fn projection_promises(
+        &self,
+        item: crate::types::ItemId,
+    ) -> crate::types::projection::Builtins {
+        self.projection_promises
+            .as_ref()
+            .and_then(|promises| promises.get(&item))
+            .copied()
+            .unwrap_or_default()
+    }
     /// A false value certifies no outer-region mapping work. The store's region
     /// summary conservatively includes static lifetimes as free regions.
     pub(crate) const fn requires_region_mapping(&self) -> bool {
@@ -178,6 +200,7 @@ impl Environment {
             assumptions: None,
             traits: None,
             equalities: None,
+            projection_promises: None,
             shape_assumptions,
             region_mapping: false,
         })
@@ -352,7 +375,7 @@ impl Environment {
     }
     #[must_use]
     pub fn has_shape_assumptions(&self) -> bool {
-        self.shape_assumptions || self.assumptions.is_some()
+        self.shape_assumptions || self.assumptions.is_some() || self.projection_promises.is_some()
     }
 
     /// `None` means the parameter is outside this scope, not an unbounded type.

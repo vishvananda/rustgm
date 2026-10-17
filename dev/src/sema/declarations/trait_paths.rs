@@ -198,6 +198,7 @@ impl Checker<'_> {
         &mut self,
         owner: crate::sema::associated::Owner,
         definition: DefId,
+        self_bounds: std::collections::HashSet<NodeKey>,
     ) -> Result<(), Error> {
         let schema = self
             .facts
@@ -206,6 +207,7 @@ impl Checker<'_> {
             .ok_or_else(|| self.error(owner.source, "missing trait Self schema"))?;
         let mut header = crate::sema::traits::Header {
             self_type: schema.self_type,
+            self_bounds,
             parameters: self.facts.generics.parameters[&definition].clone(),
             predicates: self
                 .facts
@@ -242,6 +244,7 @@ impl Checker<'_> {
                     )
                 })?;
         }
+        self.complete_projection_promises()?;
         for index in 0..self.facts.associated.owners().len() {
             let owner = self.facts.associated.owners()[index];
             if let crate::sema::associated::OwnerKind::Trait { definition, .. } = owner.kind {

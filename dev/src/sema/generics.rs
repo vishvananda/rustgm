@@ -147,6 +147,8 @@ pub struct Generics {
     pub parameters: HashMap<DefId, Vec<Parameter>>,
     pub constants: HashMap<DefId, ConstId>,
     pub environments: HashMap<DefId, Arc<Environment>>,
+    pub(super) projection_promises:
+        Option<Arc<HashMap<ItemId, crate::types::projection::Builtins>>>,
     /// Sparse overrides for free universal aliases used by completed body facts.
     pub(super) body_environments: HashMap<DefId, Arc<Environment>>,
     pub item_uses: HashMap<crate::resolve::unit::NodeKey, ItemUse>,
@@ -349,7 +351,9 @@ impl Generics {
                 constants.push(id);
             }
         }
-        Environment::new(store, &assumptions)?.with_const_parameters(store, &constants)
+        Environment::new(store, &assumptions)?
+            .with_projection_promises(self.projection_promises.clone())
+            .with_const_parameters(store, &constants)
     }
     fn substitution(
         &mut self,

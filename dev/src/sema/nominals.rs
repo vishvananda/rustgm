@@ -117,11 +117,23 @@ impl Proof {
     }
     fn shape(
         &mut self,
-        facts: &Declarations,
+        facts: &mut Declarations,
         ty: TypeId,
     ) -> Result<crate::types::parameters::shape::Properties, &'static str> {
+        let projected = facts.types.contains_projections(ty) == Some(true);
+        if let Some(shapes) = &mut self.shapes
+            && let Some(properties) = shapes.try_demand(&facts.types, ty)?
+            && (!projected || properties.sized && properties.well_formed)
+        {
+            return Ok(properties);
+        }
+        let ty = self.normalize(facts, ty)?;
         if let Some(shapes) = &mut self.shapes {
-            return shapes.demand(&facts.types, ty);
+            return if projected {
+                shapes.normalized(&facts.types, ty)
+            } else {
+                shapes.demand(&facts.types, ty)
+            };
         }
         Ok(crate::types::parameters::shape::Properties {
             sized: facts
@@ -169,6 +181,7 @@ impl Proof {
         facts: &mut Declarations,
         requirement: Predicate,
     ) -> Result<bool, &'static str> {
+        let requirement = self.normalize_builtin(facts, requirement)?;
         let valid = match requirement.bound {
             Bound::ProjectionEqual(_) => {
                 self.trait_state(facts)?

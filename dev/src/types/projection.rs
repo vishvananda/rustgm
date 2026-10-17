@@ -1,6 +1,34 @@
 //! Associated type identity and complete inputs, separate from normalization evidence.
+mod outlives;
 use super::{GenericArgs, ItemId, Properties, Property, Store, TypeId, traits::ApplicationId};
 use std::collections::{HashMap, hash_map::Entry};
+
+/// Uniform declaration promises, conditional on a proved complete application.
+/// Kept separate from canonical properties when headers are typed after interning.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub(crate) struct Builtins {
+    pub sized: bool,
+    pub copies: super::copy::Properties,
+}
+impl Builtins {
+    pub(crate) fn bound(bound: super::parameters::predicates::Bound) -> Self {
+        use super::parameters::predicates::Bound;
+        Self {
+            sized: matches!(bound, Bound::Sized | Bound::Copy | Bound::Clone),
+            copies: super::copy::Properties {
+                copy: bound == Bound::Copy,
+                clone_: matches!(bound, Bound::Copy | Bound::Clone),
+            },
+        }
+    }
+    pub(crate) fn include(&mut self, other: Self) -> bool {
+        let previous = *self;
+        self.sized |= other.sized;
+        self.copies.copy |= other.copies.copy;
+        self.copies.clone_ |= other.copies.clone_;
+        *self != previous
+    }
+}
 
 /// Immutable declaration promises, conditional on a well-formed application.
 /// These facts do not prove parent formation or authorize normalization.
@@ -24,6 +52,7 @@ pub struct Application {
 #[derive(Default)]
 pub(super) struct Storage {
     schemas: HashMap<ItemId, Schema>,
+    outlives: Option<HashMap<ItemId, Box<[super::RegionId]>>>,
 }
 
 impl Store {

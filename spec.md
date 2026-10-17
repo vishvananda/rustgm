@@ -866,8 +866,11 @@ Prepare trait headers before dependent bounds. Share ordinary path argument and
 default elaboration, then instantiate each trait contract through one cached,
 capture-safe mapping of Self and its explicit parameters. Expand only requirements
 on Self into caller assumptions; parameter and composite-subject bounds require
-separate evidence. Diagnose supertrait cycles by declaration identity before
-expansion, and deduplicate diamond paths under a bounded worklist. Arbitrary trait
+separate evidence. Retain the decoded subject classification in each completed
+header: an alias that reduces to Self remains a caller requirement, even though
+its canonical type is identical. Result-rule closure and builtin/lifetime promise
+queries must use that same distinction. Diagnose supertrait cycles by declaration
+identity before expansion, and deduplicate diamond paths under a bounded worklist. Arbitrary trait
 names confer no builtin Copy, Clone or Sized behavior.
 
 Trait impl headers share generic/lifetime elaboration with inherent and builtin
@@ -882,11 +885,43 @@ Prepare raw typed impl bounds before normalizing their projected annotations, as
 for function bounds. An opaque projection can finish this declaration pass after
 its formation proof; retaining the projection must not reschedule the completed
 bound environment. Structural shape checking requires its exact Self and trait
-application in the immutable environment, checks every type input, and uses only
-the associated schema's Sizedness or an explicit Sized assumption for its result.
+application in the immutable environment or a separately retained normalization
+proof for the complete root. Keep those structural query caches separate: a
+cached shape cannot authorize a raw query without parent evidence. A complete
+shape under the caller's exact assumptions finishes directly; only a missing
+proof or an insufficient structural property demands scoped normalization. Check
+every type input, and use the associated schema, completed conditional declaration
+promises or an explicit Sized assumption for the result.
 Projection input well-formedness retains the surrounding callable depth. Input
 lifetime requirements are not the opaque result's outlives or live-value
 components; result properties still need their own proofs.
+
+Associated result contracts do not expand recursively into caller environments.
+Close ordinary Self supertraits first, then their immediate owned result clauses
+and those clauses' ordinary implications. Retain their finite equality, builtin
+and lifetime facts, while user-trait result applications use demand proofs instead
+of additional caller assumptions. Further associated results are queried at the
+finite projection demanded by the program. Recursive declarations such as
+`trait A { type Out: A; }` and their equivalent owned header clauses must terminate
+without raising work limits or withholding promises at deeper demanded results.
+
+Keep immutable canonical projection schemas separate from properties learned
+while typing complete headers. Share the completed conditional Copy/Clone/Sized
+table across immutable environments; it supplies no parent formation evidence.
+Both declaration and body property checks retain their scoped normalization debts
+before using a derived opaque result's structural properties.
+
+Decode member-written and owned-header result outlives bounds through the ordinary
+lifetime binder. Close only the result's ordinary Self supertraits when preparing
+its finite lifetime templates. A scoped outlives query maps the declared regions
+through the actual parent arguments and adds verification alternatives for that
+opaque result. These alternatives never become bounds on Self or trait inputs.
+Concrete normal forms retain their independent formation debts, so a conditional
+implementation cannot use its output promise to prove its own prerequisites.
+Unused implementations must establish every promised result lifetime under their
+actual bounds; unconstrained impl lifetimes remain rejected before normalization
+can erase their occurrences. Preserve the separate sufficient proof through live
+input components and all existing projection-identity and binder-scope guards.
 
 Determine impl parameters from unreduced typed occurrences. Seed injective
 positions in Self and the trait application. An associated equality contributes

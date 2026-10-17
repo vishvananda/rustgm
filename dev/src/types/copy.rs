@@ -184,10 +184,17 @@ impl Copies {
             }
             let initial = match kind {
                 Kind::Projection(application) => {
-                    let promises = types
+                    let mut promises = types
                         .projection_schema(application.item)
                         .ok_or("missing associated type declaration")?
                         .copies;
+                    if let Some(environment) =
+                        self.scope.as_ref().and_then(|s| s.environment.as_ref())
+                    {
+                        let extra = environment.projection_promises(application.item).copies;
+                        promises.copy |= extra.copy;
+                        promises.clone_ |= extra.clone_;
+                    }
                     if promises == Properties::default() && assumed.is_none() {
                         return Err("associated type Copy checking requires normalization");
                     }

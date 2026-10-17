@@ -8501,3 +8501,94 @@ under `obj/pa20-work/result-outlives-v1/` has 14 declared outcomes agreeing with
 pinned rustc object compilation and eight accepted native executions. It covers
 header/member equivalence, impl lifetime relations, generic results, stronger
 result lifetimes than inputs, and absence of reverse input implications.
+
+## Recursive result contracts and associated outlives
+
+Recursive owned header clauses now use finite declaration closure and demanded
+result proofs. Ordinary supertraits close first; immediate result implications
+retain their equality, builtin and lifetime facts. Derived result user-trait
+applications are not additional caller assumptions: a different opaque result
+must not block an exact proof at a deeper projection. Both member and header
+forms can supply Copy/Clone/Sized at finite demanded depths. Header-dependent
+builtin properties live in immutable shared declaration metadata, separate from
+canonical schema flags and parent formation evidence.
+
+Declaration and body shape queries first use exact immutable caller assumptions.
+An incomplete projected shape requires normalization in the existing proof scope,
+retaining every formation debt before reading opaque-result properties. Raw and
+normalized queries have separate caches; a unit control verifies that a cached
+normalized root cannot authorize a raw projection. No unfinished caller environment
+is published, no canonical properties are patched after interning, and no work
+budget is raised to accept recursive declarations.
+
+Member-written and owned-header associated outlives bounds share the ordinary
+lifetime binder. The completed result-rule index closes only ordinary Self
+supertraits to obtain finite lifetime templates. Scoped verification maps those
+promises through the actual parent arguments and uses them as alternatives for
+the opaque result, alongside existing identity-guarded assumptions and sufficient
+input-component proofs. It never grants a lifetime bound on the inputs. An impl
+must independently prove its result obligations, including unused impls and
+conditional generic results; unreduced lifetime-constraining checks remain.
+
+The first full V5 run caught an incorrect acceptance of an alias-Self Copy
+contract. Independent object qualification confirmed that bounds written on an
+alias reducing to Self are caller requirements, not inherited Self promises.
+Completed headers now retain their decoded Self-subject sources and share that
+classification across supertrait closure, required obligations, cycle checks and
+builtin/lifetime result promises. This also fixes three false acceptances already
+present in the published compiler. The six alias controls contain five invalid
+programs and one valid alias-to-associated-result program; the latter initial
+hypothesis was corrected only after rustc accepted and executed it.
+
+The permanent maintainer family declares 62 independently object-qualified
+outcomes, including 39 accepted programs executed with pinned rustc and CPPGM.
+Together with the previous 35-case header family, all 97 required outcomes agree.
+Rejections cover moved reads, missing parent proof, wrong lifetime arguments,
+unentailed conditional impl bounds and invalid unused result definitions.
+Three valid nested-equality programs and four explicit impl-method programs remain
+unsupported on both the published compiler and this checkpoint. Their paired
+default-method controls pass. These seven investigations remain positive cases,
+not substituted rejection fixtures. A subsequent 15-case dispatch investigation
+independently confirms nine more unsupported positives and six rejecting controls.
+
+The final V7 validation passes 1,183 regular tests, all 4,863 PA1–19 course cases,
+all 72 native groups, strict all/pedantic Clippy, the 732-file audit with zero
+findings, 33 harness checks and backend/upstream validation. It verifies all
+735 frozen source/configuration files and 14,589 unchanged committed oracle
+sidecars. PA20–25 still fail explicitly as planned stages. Evidence is under
+`obj/pa20-work/recursive-result-contracts-v7/`; the immutable candidate hash is
+`c1d8ccfa`. The through-PA25 goal remains unfinished.
+
+Performance validation rejected the earlier V6 implementation's unconditional
+shape normalization: a focused repeat reproduced +4.222% projected-callable and
++3.498% owned-header rendering costs. V7 restores the exact-assumption structural
+fast path while retaining scoped normalization for insufficient projected shapes.
+Ten frozen inputs execute with both rustc and CPPGM before measurement. The main
+20-job study and nine-job follow-up retain 754 timing and 116 qualification
+observations, containing 4,576 study and 704 qualification compiler invocations.
+Every binary, source and input hash and all output comparisons pass.
+
+Against published `dd6cd67`'s `8bf6a746` binary, the final focused rendering
+comparisons are:
+
+| Workload (256 functions/declarations) | A/B median | A/A median | B/B median |
+| --- | ---: | ---: | ---: |
+| Ordinary | -0.846% | +1.232% | -0.749% |
+| Projected callable | +0.488% | +0.092% | -0.161% |
+| Owned header | -0.311% | -0.538% | -0.212% |
+
+The earlier costs do not reproduce. These shared-host measurements do not establish
+speedups or tight regression bounds: individual identical-binary blocks vary
+substantially. New depth-eight recursive workloads use candidate-only controls,
+with medians around 0.76 seconds at 64 functions and 3.17–3.78 seconds at 256.
+They demonstrate executable workloads at both widths, not an old-compiler speedup
+or a precise scaling bound. Earlier default-chain, ordinary-argument and pattern
+performance concerns remain open.
+
+The full validation guard removes 5,276 generated files (5.95 GiB), and the focused
+guard removes 78 files (0.16 GiB). The final measurement/qualification guard removes
+another 18 files (0.04 GiB). Frozen inputs, diagnostics, hashes, raw timing
+observations and cleanup receipts remain. Further PA20 work includes demanded
+result equalities, normalization of selected impl-method signatures, projected
+nominal storage, early constant-argument readiness, remaining coherence checks
+and the complete semantic inspection manifest and reviewed text oracles.

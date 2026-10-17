@@ -121,15 +121,27 @@ impl Builder<'_, '_> {
         let Some(Kind::Projection(application)) = self.proof.types.kind(key.projection.ty) else {
             return Err(Error::Identity);
         };
+        let mut alternatives = Vec::new();
+        for longer in self
+            .proof
+            .types
+            .projection_outlives(application, key.projection.depth)
+            .map_err(|_| Error::Identity)?
+        {
+            self.charge(1)?;
+            if let Some(longer) = longer.map_err(|_| Error::Identity)? {
+                let longer = self.proof.region(longer, key.scope)?;
+                alternatives.push(self.proof.graph.verify_outlives(longer, key.shorter)?);
+            }
+        }
         if self
             .state
             .components
             .captures(self.proof.types, key.projection)
             .map_err(|_| Error::Identity)?
         {
-            return Ok(Vec::new());
+            return Ok(alternatives);
         }
-        let mut alternatives = Vec::new();
         for index in 0..self
             .state
             .assumptions
