@@ -275,6 +275,17 @@ normalization inside callable binders. The inference tests separately check root
 publication, numeric domain intersection and dependency notification invariants.
 These remain maintainer coverage for the developing PA20/PA21 contracts.
 
+`dev/tests/invariants/proof_cache.rs` also bounds solver work for recursive result
+chains through depth 128, with linear bounds on both work and proof graph edges.
+`projection_normalization.rs` checks linear work for appended checked subjects
+through depth 512; new arguments, replacement graphs and callable binder scopes
+still demand independent normalization. Reused normalized-input evidence must retain
+the original lifetime equations even if its first candidate is discarded, and
+fresh implementation witnesses must keep that evidence out of the cache which
+does not rebase regions. `type_inference.rs` checks that identity instantiation
+does constant work on a shared graph with mixed type/const parameters and nested
+callable lifetimes, while later actual substitution preserves the original graph.
+
 `dev/tests/opaque_body_values.rs` separates 26 declaration/body type-checking
 controls from fifteen checks through LowIR and six native callable programs.
 The type-checking controls do not assert ownership, destruction or lifetime

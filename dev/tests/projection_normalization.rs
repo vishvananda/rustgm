@@ -60,6 +60,103 @@ fn dependencies_precede_selection_and_completed_roots_reuse_results() -> TestRes
 }
 
 #[test]
+fn checked_children_make_appended_projection_work_linear() -> TestResult {
+    for depth in [8, 32, 128, 512] {
+        let mut store = Store::default();
+        let mut child = TypeId::primitive(Primitive::U8);
+        let mut steps = 0;
+        for _ in 0..depth {
+            let root = projected(&mut store, child)?;
+            let mut fold = Normalizer::default();
+            let query = request(fold.start_with_input(&mut store, root, child)?)?;
+            assert_eq!(query.application.subject, child);
+            assert!(fold.start_with_input(&mut store, root, child).is_err());
+            assert_eq!(
+                fold.resume(&mut store, query, Resolution::Opaque)?,
+                Step::Complete(root)
+            );
+            steps += fold.steps();
+            child = root;
+        }
+        assert!(steps < 16 * depth, "depth {depth}: {steps} steps");
+    }
+    Ok(())
+}
+
+#[test]
+fn checked_subjects_do_not_skip_new_arguments_or_replacement_dependencies() -> TestResult {
+    use rustgm::types::arguments::Argument;
+    let mut store = Store::default();
+    let byte = TypeId::primitive(Primitive::U8);
+    let word = TypeId::primitive(Primitive::U16);
+    let checked = projected(&mut store, byte)?;
+    let introduced = projected(&mut store, word)?;
+    let arguments = store.intern_arguments(&[Argument::Type(introduced)])?;
+    let trait_application = store.intern_trait_application(traits::Application {
+        item: ItemId(1),
+        arguments,
+    })?;
+    let root = store.intern(Kind::Projection(Application {
+        item: ItemId(10),
+        subject: checked,
+        trait_application,
+        arguments: GenericArgs::EMPTY,
+    }))?;
+    let mut fold = Normalizer::default();
+    let argument = request(fold.start_with_input(&mut store, root, checked)?)?;
+    assert_eq!(argument.application.subject, word);
+    let outer = request(fold.resume(&mut store, argument, Resolution::Type(byte))?)?;
+    assert_eq!(outer.application.subject, checked);
+    let arguments = store
+        .trait_application(outer.application.trait_application)
+        .ok_or("missing trait")?
+        .arguments;
+    assert_eq!(
+        store
+            .arguments(arguments)
+            .ok_or("missing arguments")?
+            .collect::<Vec<_>>(),
+        vec![Argument::Type(byte)]
+    );
+    let replacement = projected(&mut store, TypeId::UNIT)?;
+    let next = request(fold.resume(&mut store, outer, Resolution::Type(replacement))?)?;
+    assert_eq!(next.application.subject, TypeId::UNIT);
+    assert_eq!(
+        fold.resume(&mut store, next, Resolution::Type(word))?,
+        Step::Complete(word)
+    );
+    assert!(fold.start_with_input(&mut store, root, introduced).is_err());
+    Ok(())
+}
+
+#[test]
+fn checked_root_inputs_do_not_authorize_a_nested_callable_scope() -> TestResult {
+    let mut store = Store::default();
+    let reference = store.intern(Kind::Reference {
+        mutable: false,
+        region: RegionId::bound(0, 0)?,
+        referent: TypeId::primitive(Primitive::U8),
+    })?;
+    let checked = projected(&mut store, reference)?;
+    let parameters = store.intern_list(&[checked])?;
+    let callable = store.intern(Kind::Function {
+        bound_regions: 1,
+        parameters,
+        result: TypeId::UNIT,
+        unsafe_: false,
+    })?;
+    let mut fold = Normalizer::default();
+    let query = request(fold.start_with_input(&mut store, callable, checked)?)?;
+    assert_eq!(query.depth, 1);
+    assert_eq!(query.application.subject, reference);
+    assert_eq!(
+        fold.resume(&mut store, query, Resolution::Opaque)?,
+        Step::Complete(callable)
+    );
+    Ok(())
+}
+
+#[test]
 fn replacements_are_normalized_and_recursive_results_fail() -> TestResult {
     let mut store = Store::default();
     let byte = TypeId::primitive(Primitive::U8);

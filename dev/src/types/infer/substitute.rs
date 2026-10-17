@@ -117,6 +117,13 @@ impl Context {
         template: TypeId,
         substitution: &mut Instantiation,
     ) -> Result<TermId, Error> {
+        if substitution.parameters.is_empty() {
+            // A rigid canonical graph needs no rebuilding when no parameter is
+            // replaced. In particular, keep opaque projection inputs canonical
+            // instead of materializing and resolving their complete DAG again.
+            self.step()?;
+            return self.known(store, template);
+        }
         let root = self.known(store, template)?;
         let mut work = vec![((root, 0_u16), false)];
         let mut children = Vec::new();

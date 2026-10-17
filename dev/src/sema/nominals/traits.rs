@@ -107,15 +107,19 @@ impl State {
         Ok(assumptions)
     }
 
+    /// Both normalizer callers retain earlier request proofs, including debts
+    /// erased from the normalized inputs. Deferred alias inputs cannot use this
+    /// route until their caller has retained the original formation requirement.
     pub(crate) fn projection(
         facts: &mut Declarations,
         environment: Option<Arc<Environment>>,
-        application: crate::types::projection::Application,
+        request: substitute::Request,
         first: u32,
         retain_sized: bool,
         availability: Availability,
     ) -> Result<Projected, &'static str> {
         use crate::types::parameters::predicates::Bound;
+        let application = request.application;
         let requirement = Predicate {
             ty: application.subject,
             bound: Bound::Trait(application.trait_application),
@@ -163,7 +167,7 @@ impl State {
         requirement: Predicate,
     ) -> Result<Projected, &'static str> {
         use crate::sema::traits::equalities::{self, Selection};
-        let mut source = self.select_opened(facts, requirement, false)?;
+        let mut source = self.select_opened(facts, requirement, false, true)?;
         let mut resolution = None;
         if matches!(
             source,
@@ -198,7 +202,7 @@ impl State {
                         // Explicit generic or lifetime assumptions remain opaque.
                         if requirement.is_concrete(&facts.types)?
                             && let Some(selected @ selection::Source::Implementation { .. }) =
-                                self.select_opened(facts, requirement, true)?
+                                self.select_opened(facts, requirement, true, false)?
                         {
                             source = Some(selected);
                             substitute::Resolution::Type(
@@ -250,7 +254,7 @@ impl State {
         self.context
             .account_work(fold.steps.saturating_sub(before))
             .map_err(|_| "declaration proof work exhausted")?;
-        self.select_opened(facts, requirement, closed)
+        self.select_opened(facts, requirement, closed, false)
             .map(|source| source.is_some())
     }
 
@@ -309,6 +313,7 @@ impl State {
         facts: &mut Declarations,
         requirement: Predicate,
         closed: bool,
+        normalized_inputs: bool,
     ) -> Result<Option<selection::Source>, &'static str> {
         let mut substitution = Instantiation::new(&mut self.context, &facts.types, &[])
             .map_err(|_| "invalid declaration trait instantiation")?;
@@ -327,11 +332,16 @@ impl State {
             first_region: self.obligations.regions.end,
             retain_sized: self.retain_sized,
         };
-        let selected = match self.availability {
-            Availability::Declarations => {
+        let selected = match (normalized_inputs, self.availability) {
+            (true, availability) => {
+                selection::select_normalized(facts, &mut self.context, &goal, caller, availability)
+            }
+            (false, Availability::Declarations) => {
                 selection::select_declaration(facts, &mut self.context, &goal, caller)
             }
-            Availability::Validated => selection::select(facts, &mut self.context, &goal, caller),
+            (false, Availability::Validated) => {
+                selection::select(facts, &mut self.context, &goal, caller)
+            }
         };
         match selected.map_err(|_| "invalid or exhausted canonical trait selection")? {
             selection::Selection::Proven(mut evidence) => {

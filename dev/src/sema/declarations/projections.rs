@@ -43,6 +43,11 @@ enum Destination {
     Requirement,
     Sized,
 }
+#[derive(Clone, Copy)]
+struct Root {
+    ty: TypeId,
+    normalized_subject: Option<TypeId>,
+}
 #[derive(Default)]
 pub(super) struct Pending {
     lookup: lookup::Pending,
@@ -169,7 +174,17 @@ impl Checker<'_> {
             )?;
             self.facts.unreduced.retain_node(key, original);
         }
-        self.normalize_annotation(key, ty, context)
+        // The subject's own annotation has already retained formation evidence
+        // in this scope. Trait defaults may introduce new projections, so only
+        // the checked subject, not the newly assembled arguments, is reusable.
+        self.normalize_annotation_root(
+            key,
+            Root {
+                ty,
+                normalized_subject: Some(subject),
+            },
+            context,
+        )
     }
 
     pub(super) fn normalize_annotation(
@@ -178,6 +193,23 @@ impl Checker<'_> {
         ty: TypeId,
         context: regions::Context,
     ) -> Result<(), Error> {
+        self.normalize_annotation_root(
+            key,
+            Root {
+                ty,
+                normalized_subject: None,
+            },
+            context,
+        )
+    }
+
+    fn normalize_annotation_root(
+        &mut self,
+        key: NodeKey,
+        root: Root,
+        context: regions::Context,
+    ) -> Result<(), Error> {
+        let ty = root.ty;
         if self.facts.types.contains_projections(ty) != Some(true) {
             return self.store(key, ty);
         }
@@ -189,31 +221,29 @@ impl Checker<'_> {
         if self.projections.raw_bound_nodes.remove(&key) {
             return self.store(key, ty);
         }
-        self.start_normalization(key, ty, context, Destination::Annotation)
-    }
-
-    fn start_normalization(
-        &mut self,
-        key: NodeKey,
-        ty: TypeId,
-        context: regions::Context,
-        destination: Destination,
-    ) -> Result<(), Error> {
-        self.start_scoped_normalization(key, ty, context, destination, scoped::Ambient::Root)
+        self.start_scoped_normalization(
+            key,
+            root,
+            context,
+            Destination::Annotation,
+            scoped::Ambient::Root,
+        )
     }
 
     fn start_scoped_normalization(
         &mut self,
         key: NodeKey,
-        ty: TypeId,
+        root: Root,
         context: regions::Context,
         destination: Destination,
         ambient: scoped::Ambient,
     ) -> Result<(), Error> {
         let mut fold = Normalizer::default();
-        let step = fold
-            .start(&mut self.facts.types, ty)
-            .map_err(|e| self.error(key, e))?;
+        let step = match root.normalized_subject {
+            Some(input) => fold.start_with_input(&mut self.facts.types, root.ty, input),
+            None => fold.start(&mut self.facts.types, root.ty),
+        }
+        .map_err(|e| self.error(key, e))?;
         self.projections.roots.insert(
             key,
             Query {
@@ -354,7 +384,7 @@ impl Checker<'_> {
         let projected = State::projection(
             &mut self.facts,
             environment,
-            application,
+            request,
             first,
             deferred,
             crate::sema::traits::implementations::Availability::Declarations,

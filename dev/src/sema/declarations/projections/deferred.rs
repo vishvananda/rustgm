@@ -89,7 +89,10 @@ impl Checker<'_> {
             if let Some((key, context, ambient, ty)) = self.projections.deferred.pop() {
                 self.start_scoped_normalization(
                     key,
-                    ty,
+                    super::Root {
+                        ty,
+                        normalized_subject: None,
+                    },
                     context,
                     Destination::Requirement,
                     ambient,
@@ -97,7 +100,16 @@ impl Checker<'_> {
                 self.drain(steps, limit)?;
             } else if let Some((key, context, ambient, ty)) = self.projections.sized.pop() {
                 if self.facts.types.contains_projections(ty) == Some(true) {
-                    self.start_scoped_normalization(key, ty, context, Destination::Sized, ambient)?;
+                    self.start_scoped_normalization(
+                        key,
+                        super::Root {
+                            ty,
+                            normalized_subject: None,
+                        },
+                        context,
+                        Destination::Sized,
+                        ambient,
+                    )?;
                     self.drain(steps, limit)?;
                 } else {
                     let depth = self.ambient_depth(key, ambient)?;

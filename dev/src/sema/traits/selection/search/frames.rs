@@ -8,6 +8,9 @@ use crate::{
 
 pub(super) struct Frame {
     pub normalization: Option<Box<super::normalization::Normalization>>,
+    /// A suspended normalizer has proved these inputs in this search's scope.
+    /// Its evidence must accompany any result derived without repeating that work.
+    pub normalized_inputs: Option<NormalizedInputs>,
     pub context: Context,
     pub goal: Goal,
     pub first: u32,
@@ -20,6 +23,9 @@ pub(super) struct Frame {
     pub trial: Option<Trial>,
     pub selected: Option<usize>,
     pub deferred: bool,
+}
+pub(super) struct NormalizedInputs {
+    pub proof: Option<usize>,
 }
 pub(super) struct Trial {
     pub context: Context,
@@ -47,6 +53,7 @@ impl Frame {
             .map_err(inference)?;
         Ok(Self {
             normalization: None,
+            normalized_inputs: None,
             context,
             goal,
             first,

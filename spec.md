@@ -309,6 +309,32 @@ exhausted work. A prepared impl may supply declaration work, but its complete
 conformance remains mandatory before executable facts are published. Missing
 lifetime or equality evidence must never be dropped to manufacture a normal form.
 
+A suspended normalizer has already normalized its request's inputs. Carry that
+fact into selection instead of starting another normalization of the same graph.
+The enclosing query retains every input proof, including obligations erased from
+the resulting type. Within trait search, a derived child retains those proof
+nodes itself before it can enter the completed cache: discarding its original
+candidate must not discard its lifetime equations. Include earlier existential
+intervals when deciding whether that result is reusable without rebasing. Visit
+shared evidence nodes once. Represent accumulated input evidence with persistent
+prefix links; copying every previous child into each new result creates quadratic
+proof storage. Newly discovered implementation premises still need
+their own normalization; an input proof never grants a new trait premise.
+
+A qualified declaration projection consumes its subject's already checked type
+fact in the same annotation scope. Rewalking every previously checked prefix
+turns a linear source chain into quadratic normalization work. Retain the subject's
+formation evidence in that scope and normalize the newly assembled outer node.
+Substituted trait defaults and implementation replacements can introduce new
+projections and still require ordinary checking. A root-scope fact does not
+authorize the same graph beneath a new callable binder. Deferred alias and header
+formation requirements retain their existing delayed proof boundaries.
+
+Instantiating with no type or const bindings preserves the existing canonical
+type graph. Do not materialize, copy and re-intern rigid nested inputs for an
+identity substitution. Actual substitutions retain their usual simultaneous
+mapping and binder shifts; a later substitution cannot change the original graph.
+
 Callable boundaries in residual types create independent normalization frames.
 Requests carry their actual scope identity, parent and local lifetime count;
 depth alone cannot distinguish sibling universes. Keep suspended frames in a flat

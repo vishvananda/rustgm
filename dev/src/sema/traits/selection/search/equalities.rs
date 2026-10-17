@@ -122,7 +122,7 @@ impl Search<'_> {
         self.nodes.push(Node {
             goal,
             source: Some(Source::Equality),
-            children: std::mem::take(&mut normalization.children),
+            children: normalization.proof.into_iter().collect(),
             first: frame.first,
             end: normalization.end,
             equalities: std::mem::take(&mut frame.context.region_equalities),

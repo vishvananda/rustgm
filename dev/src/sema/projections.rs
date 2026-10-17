@@ -159,7 +159,7 @@ where
             let projected = State::projection(
                 facts,
                 environment,
-                request.application,
+                request,
                 self.proof.regions.end,
                 false,
                 self.availability,

@@ -123,6 +123,13 @@ impl Search<'_> {
         let Decision::Proven(selected) = decision else {
             return Ok(decision);
         };
+        if let Some(inputs) = frame.normalized_inputs.take() {
+            frame.context.account_work(2).map_err(inference)?;
+            self.charge(&mut frame.context)?;
+            return Ok(Decision::Proven(
+                self.inherit_inputs(selected, inputs.proof),
+            ));
+        }
         let Some(normalization) = &mut frame.normalization else {
             return Ok(decision);
         };
@@ -148,12 +155,12 @@ impl Search<'_> {
         };
         let source = self.nodes[selected].source;
         let end = normalization.end.max(self.nodes[selected].end);
-        normalization.children.push(selected);
+        let children = normalization.proof.into_iter().chain([selected]).collect();
         let index = self.nodes.len();
         self.nodes.push(Node {
             goal,
             source,
-            children: std::mem::take(&mut normalization.children),
+            children,
             first: frame.first,
             end,
             equalities: std::mem::take(&mut frame.context.region_equalities),
@@ -163,5 +170,32 @@ impl Search<'_> {
         });
         self.charge(&mut frame.context)?;
         Ok(Decision::Proven(index))
+    }
+
+    pub(super) fn inherit_inputs(&mut self, selected: usize, prefix: Option<usize>) -> usize {
+        let Some(prefix) = prefix else {
+            return selected;
+        };
+        // A completed result may outlive the candidate which normalized its
+        // inputs. Keep the complete proof graph, including earlier existential
+        // intervals: such nodes cannot enter the region-free completed cache.
+        let node = &self.nodes[selected];
+        let first = node.first.min(self.nodes[prefix].first);
+        let end = node.end.max(self.nodes[prefix].end);
+        let (goal, source) = (node.goal, node.source);
+        let index = self.nodes.len();
+        self.nodes.push(Node {
+            goal,
+            source,
+            children: vec![prefix, selected],
+            first,
+            end,
+            equalities: Vec::new(),
+            outlives: Vec::new(),
+            type_outlives: Vec::new(),
+            sized: Vec::new(),
+        });
+        self.reused = true;
+        index
     }
 }

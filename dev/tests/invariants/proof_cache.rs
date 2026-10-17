@@ -449,3 +449,212 @@ fn cached_result_rules_never_replace_the_callers_parent_proof()
     }
     Ok(())
 }
+
+#[test]
+fn recursive_result_inputs_reuse_their_completed_parent_proofs()
+-> Result<(), Box<dyn std::error::Error>> {
+    let (report, mut facts) = declarations("trait A where Self::Out:A{type Out;}")?;
+    let projection = facts
+        .associated
+        .type_contract(definition(&report, "Out")?)
+        .ok_or("missing recursive result contract")?
+        .projection;
+    let Some(Kind::Projection(mut application)) = facts.types.kind(projection) else {
+        return Err("missing recursive projection".into());
+    };
+    let parent = Predicate {
+        ty: application.subject,
+        bound: Bound::Trait(application.trait_application),
+    };
+    let mut assumptions = Assumptions::default();
+    assumptions.insert(&facts.types, parent)?;
+    for depth in [4, 8, 16, 32, 64, 128] {
+        application.subject = parent.ty;
+        for _ in 0..depth {
+            application.subject = facts.types.intern(Kind::Projection(application))?;
+        }
+        let query = Predicate {
+            ty: application.subject,
+            bound: parent.bound,
+        };
+        let (mut context, goal) = instantiate(&mut facts, query)?;
+        let mut search = Search::new(caller(&assumptions, None), Availability::Validated);
+        let first = Frame::new(&facts, &mut context, &goal, 1)?;
+        let Decision::Proven(root) = search.run(&mut facts, first)? else {
+            return Err("finite recursive result chain was not proved".into());
+        };
+        assert_eq!(search.nodes[root].goal, query);
+        assert_eq!(search.cycles, 0);
+        // Each distinct application contributes bounded selection and proof
+        // work; previously completed prefixes remain shared canonical inputs.
+        assert!(
+            search.steps < 512 * (depth + 1),
+            "depth {depth}: {} steps",
+            search.steps
+        );
+        assert!(search.nodes.len() < 5 * (depth + 1));
+        let edges: usize = search.nodes.iter().map(|node| node.children.len()).sum();
+        assert!(
+            edges < 8 * (depth + 1),
+            "depth {depth}: {edges} proof edges"
+        );
+        let evidence = search.evidence(root)?;
+        assert!(evidence.regions.is_empty());
+        assert!(evidence.equalities.is_empty());
+    }
+    Ok(())
+}
+
+#[test]
+fn cached_normalized_result_keeps_its_inputs_lifetime_equations()
+-> Result<(), Box<dyn std::error::Error>> {
+    use crate::types::RegionId;
+    let (report, mut facts) = declarations("trait A<'a>{type Out:A<'a>;}")?;
+    let projection = facts
+        .associated
+        .type_contract(definition(&report, "Out")?)
+        .ok_or("missing result contract")?
+        .projection;
+    let Some(Kind::Projection(mut application)) = facts.types.kind(projection) else {
+        return Err("missing result projection".into());
+    };
+    let item = ItemId(definition(&report, "A")?.0);
+    let mut assumptions = Assumptions::default();
+    let arguments = facts
+        .types
+        .intern_arguments(&[Argument::Lifetime(RegionId(1))])?;
+    let trait_application = facts
+        .types
+        .intern_trait_application(Application { item, arguments })?;
+    assumptions.insert(
+        &facts.types,
+        Predicate {
+            ty: application.subject,
+            bound: Bound::Trait(trait_application),
+        },
+    )?;
+    let arguments = facts
+        .types
+        .intern_arguments(&[Argument::Lifetime(RegionId(2))])?;
+    application.trait_application = facts
+        .types
+        .intern_trait_application(Application { item, arguments })?;
+    for _ in 0..4 {
+        application.subject = facts.types.intern(Kind::Projection(application))?;
+    }
+    let query = Predicate {
+        ty: application.subject,
+        bound: Bound::Trait(application.trait_application),
+    };
+    let (mut context, goal) = instantiate(&mut facts, query)?;
+    let mut caller = caller(&assumptions, None);
+    caller.first_region = 3;
+    let mut search = Search::new(caller, Availability::Validated);
+    let first = Frame::new(&facts, &mut context, &goal, 3)?;
+    assert!(matches!(
+        search.run(&mut facts, first)?,
+        Decision::Proven(_)
+    ));
+    let cached = search
+        .completed
+        .iter()
+        .find_map(|(predicate, decision)| {
+            if facts.types.contains_projections(predicate.ty) == Some(true)
+                && let Decision::Proven(index) = decision
+            {
+                Some(*index)
+            } else {
+                None
+            }
+        })
+        .ok_or("missing reusable derived result")?;
+    // This child must remain valid even if its original candidate is discarded.
+    let proof = search.evidence(cached)?;
+    assert!(proof.regions.is_empty());
+    assert!(proof.equalities.iter().any(
+        |&(a, b)| (a, b) == (RegionId(1), RegionId(2)) || (a, b) == (RegionId(2), RegionId(1))
+    ));
+    Ok(())
+}
+
+#[test]
+fn normalized_inputs_keep_fresh_impl_debts_out_of_the_reusable_cache()
+-> Result<(), Box<dyn std::error::Error>> {
+    use crate::types::RegionId;
+    let (report, mut facts) = declarations(
+        "trait P<'a>{type Value:A<'a>;}trait A<'a>{type Next:A<'a>;}impl<'a,'b:'a,T:A<'a>>P<'a>for &'b T{type Value=T;}",
+    )?;
+    let next = facts
+        .associated
+        .type_contract(definition(&report, "Next")?)
+        .ok_or("missing recursive result")?
+        .projection;
+    let Some(Kind::Projection(mut application)) = facts.types.kind(next) else {
+        return Err("missing recursive projection".into());
+    };
+    let parameter = facts.types.intern_parameter(Parameter {
+        owner: ItemId(1_000_000),
+        index: 0,
+        kind: ParameterKind::Type { sized: true },
+    })?;
+    application.subject = facts.types.intern(Kind::Parameter(parameter))?;
+    let arguments = facts
+        .types
+        .intern_arguments(&[Argument::Lifetime(RegionId(2))])?;
+    let item = ItemId(definition(&report, "A")?.0);
+    application.trait_application = facts
+        .types
+        .intern_trait_application(Application { item, arguments })?;
+    let mut assumptions = Assumptions::default();
+    assumptions.insert(
+        &facts.types,
+        Predicate {
+            ty: application.subject,
+            bound: Bound::Trait(application.trait_application),
+        },
+    )?;
+    let subject = facts.types.intern(Kind::Reference {
+        region: RegionId(1),
+        mutable: false,
+        referent: application.subject,
+    })?;
+    let item = ItemId(definition(&report, "P")?.0);
+    let trait_application = facts
+        .types
+        .intern_trait_application(Application { item, arguments })?;
+    application.subject =
+        facts
+            .types
+            .intern(Kind::Projection(crate::types::projection::Application {
+                item: ItemId(definition(&report, "Value")?.0),
+                subject,
+                trait_application,
+                arguments: GenericArgs::EMPTY,
+            }))?;
+    for _ in 0..4 {
+        application.subject = facts.types.intern(Kind::Projection(application))?;
+    }
+    let query = Predicate {
+        ty: application.subject,
+        bound: Bound::Trait(application.trait_application),
+    };
+    let (mut context, goal) = instantiate(&mut facts, query)?;
+    let mut caller = caller(&assumptions, None);
+    caller.first_region = 3;
+    let mut search = Search::new(caller, Availability::Validated);
+    let first = Frame::new(&facts, &mut context, &goal, 3)?;
+    let Decision::Proven(root) = search.run(&mut facts, first)? else {
+        return Err("missing normalized result proof".into());
+    };
+    assert!(
+        search
+            .completed
+            .iter()
+            .all(|(predicate, _)| facts.types.contains_projections(predicate.ty) == Some(false))
+    );
+    let proof = search.evidence(root)?;
+    assert!(proof.regions.end > 3);
+    assert!(!proof.outlives.is_empty());
+    assert!(!proof.equalities.is_empty());
+    Ok(())
+}

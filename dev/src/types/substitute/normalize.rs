@@ -72,6 +72,38 @@ impl Normalizer {
         self.advance(store)
     }
 
+    /// Begin a root whose child is already a normal form in this exact scope.
+    /// The caller retains the child's formation evidence, including erased debts.
+    /// Only this root-scope child is reused; new arguments, replacement types and
+    /// nested callable scopes still demand their own normalization.
+    /// # Errors
+    /// Rejects an unfinished query, invalid identities or a conflicting normal form.
+    pub fn start_with_input(
+        &mut self,
+        store: &mut Store,
+        ty: TypeId,
+        input: TypeId,
+    ) -> Result<Step, &'static str> {
+        if self.root.is_some() || self.failed {
+            return Err("normalization scope has an unfinished or failed query");
+        }
+        if ty == input || store.kind(input).is_none() || store.kind(ty).is_none() {
+            return Err("invalid completed normalization input");
+        }
+        if self
+            .frame
+            .fold
+            .completed
+            .get(&(input, 0))
+            .is_some_and(|&value| value != input)
+        {
+            return Err("completed normalization input conflicts with its previous result");
+        }
+        self.frame.fold.account_arguments(1)?;
+        self.frame.fold.completed.insert((input, 0), input);
+        self.start(store, ty)
+    }
+
     /// Continue after semantic selection; replacement types use the request's context.
     /// The replacement itself is normalized before publishing its parent result.
     /// # Errors

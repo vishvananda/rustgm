@@ -8764,3 +8764,63 @@ debts, preserved declaration variance, constructors, enums, nested and distinct
 instances, aliases, references, arrays, custom Drop, Copy and transparent layout.
 No valid input is reclassified as a negative. PA20's full manifest, inspection
 contract and remaining requirements are still pending; PA20–PA25 remain planned.
+
+### Recursive projection graph reuse (2026-10-17)
+
+The requested performance investigation found repeated work at three boundaries.
+A suspended normalizer's child selection normalized the same inputs again;
+qualified declaration annotations rewalked each already-checked subject prefix;
+and empty inference substitutions materialized rigid canonical graphs. Selection
+now consumes the requesting normalizer's checked inputs and retains their proof
+dependencies. Qualified annotations seed only their checked subject, leaving new
+trait defaults, replacements and callable scopes to ordinary normalization.
+Empty type/const substitutions preserve canonical identities.
+
+Proof prefixes use persistent graph links rather than copying every previous
+child into each new result. Cached children retain earlier lifetime equations
+and existential intervals even when the original candidate is discarded. Fresh
+implementation witnesses still exclude results from the cache that cannot rebase
+them. Work and total proof edges are bounded linearly in the recursive solver
+invariant through depth 128; appended normalizer inputs have a linear work bound
+through depth 512. Separate tests cover newly introduced arguments/replacements,
+callable scope isolation and later real substitution of shared canonical graphs.
+
+The final V5 candidate is
+`72ba69ca9ae39c58ec641ff9b4048b108c55c77144999e0b4bdfb03859f2669c`.
+Evidence is retained under `obj/pa20-work/recursive-projection-perf-v1/`.
+`validation-v5/` records thirty successful command gates, strict Clippy,
+736-file architecture/placement audit, harness, 1,195 regular tests, all 4,863
+PA1–19 cases, 75 native groups and backend/upstream checks. All 739 frozen
+source/configuration hashes and 14,589 earlier oracle sidecars agree. The
+post-validation cleanup removed 5,901 generated files, about 7.20 GiB.
+
+The paired study independently qualifies fourteen frozen native inputs with
+rustc and CPPGM, then compares published `7f11762` with V5. Sixteen jobs retain
+416 study observations and 64 before/after output observations; every full LowIR
+comparison is identical. The original depth-eight, 64-function case falls from
+about 775 ms to 75 ms, with a paired median reduction of 90.29%. Its same-binary
+AA/BB paired medians are -1.87%/+0.93%. The seven ordinary, generic, member,
+lifetime and premise-width controls have paired changes from -1.25% to -4.56%;
+small differences remain subject to shared-host noise. At depth sixteen and
+64 functions, wall medians are approximately 12.65 s and 144 ms; the baseline's
+large calibration spread prevents a precise ratio claim for that case.
+
+The depth sweeps separately execute seven ordinary and seven lifetime-parameter
+programs with both compilers. Ordinary-chain Callgrind instruction totals at
+depths 8/32/64 are 8.15/26.34/50.67 million, consistent with linear growth in this
+case. The earlier V3 candidate had 12.42/116.03 million at depths 8/32, so its
+shallower speedup had not solved the prefix scaling problem.
+
+The lifetime sweep reveals remaining repeated work: its instruction totals are
+13.31/69.04/192.90 million at depths 8/32/64. Lifetime opening and lifetime-erased
+cycle keys still rebuild growing prefixes in fresh query contexts. This
+checkpoint does not declare that path fixed. The next investigation will consume
+exact canonical premise facts before remapping a graph when no new equations
+are necessary, while preserving ambiguity, equality and scope checks.
+
+The follow-up rustc comparison driver was invoked without its required
+`prepare`/`measure` mode and stopped before producing any observations. This is
+recorded as a driver failure, not a compiler result; no updated rustc comparison
+is claimed here. The completed A/B and depth studies are unaffected. PA20–PA25
+remain planned, and the projected-storage investigation described above remains
+pending after this performance work.

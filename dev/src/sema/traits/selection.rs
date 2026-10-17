@@ -86,7 +86,7 @@ pub(in crate::sema) fn select(
     goal: &Goal,
     caller: Caller<'_>,
 ) -> Result<Selection, String> {
-    select_from(facts, context, goal, caller, Availability::Validated)
+    select_from(facts, context, goal, caller, Availability::Validated, false)
 }
 
 /// Provisional declaration proofs cannot authorize executable operations. Every
@@ -97,7 +97,27 @@ pub(in crate::sema) fn select_declaration(
     goal: &Goal,
     caller: Caller<'_>,
 ) -> Result<Selection, String> {
-    select_from(facts, context, goal, caller, Availability::Declarations)
+    select_from(
+        facts,
+        context,
+        goal,
+        caller,
+        Availability::Declarations,
+        false,
+    )
+}
+
+/// The requesting normalizer retains every input's formation and lifetime proof.
+/// Only this root uses that authority; newly discovered impl conditions still
+/// normalize independently within the search's immutable caller scope.
+pub(in crate::sema) fn select_normalized(
+    facts: &mut Declarations,
+    context: &mut Context,
+    goal: &Goal,
+    caller: Caller<'_>,
+    availability: Availability,
+) -> Result<Selection, String> {
+    select_from(facts, context, goal, caller, availability, true)
 }
 
 fn select_from(
@@ -106,19 +126,34 @@ fn select_from(
     goal: &Goal,
     caller: Caller<'_>,
     availability: Availability,
+    normalized_inputs: bool,
 ) -> Result<Selection, String> {
     if goal.projection_result().is_some() {
-        return search::prove(facts, context, goal, caller, availability);
+        return search::prove(facts, context, goal, caller, availability, false);
     }
     match select_assumption(&mut facts.types, context, goal, &caller) {
         Ok(Selection::Absent) => {}
         Ok(proof) => return Ok(proof),
         Err(infer::Error::Normalization) => {
-            return search::prove(facts, context, goal, caller, availability);
+            return search::prove(
+                facts,
+                context,
+                goal,
+                caller,
+                availability,
+                normalized_inputs,
+            );
         }
         Err(error) => return Err(inference(error)),
     }
-    search::prove(facts, context, goal, caller, availability)
+    search::prove(
+        facts,
+        context,
+        goal,
+        caller,
+        availability,
+        normalized_inputs,
+    )
 }
 
 /// A bound-selected method cannot replace that bound with an unrelated impl.

@@ -58,8 +58,14 @@ pub(super) fn prove(
     goal: &Goal,
     caller: Caller<'_>,
     availability: super::Availability,
+    normalized_inputs: bool,
 ) -> Result<Selection, String> {
-    let first = Frame::new(facts, context, goal, caller.first_region)?;
+    let mut first = Frame::new(facts, context, goal, caller.first_region)?;
+    if normalized_inputs {
+        // The enclosing normalizer owns these input proofs and retains them
+        // even when the search discards a candidate or reuses a child result.
+        first.normalized_inputs = Some(frames::NormalizedInputs { proof: None });
+    }
     let mut search = Search::new(caller, availability);
     let decision = search.run(facts, first)?;
     context.account_work(search.steps).map_err(inference)?;
@@ -243,11 +249,18 @@ impl<'a> Search<'a> {
         if let Some(decision) = self.cached_query(facts, frame)? {
             return Ok(Action::Complete(decision));
         }
-        if let Some(action) = Self::start_inputs(facts, frame)? {
+        if frame.normalized_inputs.is_none()
+            && let Some(action) = Self::start_inputs(facts, frame)?
+        {
             return Ok(action);
         }
         if needs_normalization {
             return Ok(Action::Complete(Decision::Deferred));
+        }
+        if frame.normalized_inputs.is_some()
+            && let Some(action) = self.derive_result(facts, frame)?
+        {
+            return Ok(action);
         }
         self.candidates(facts, frame)
     }

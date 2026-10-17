@@ -18,7 +18,7 @@ pub(super) struct Normalization {
     pub purpose: Purpose,
     pub goal: Option<Goal>,
     pub end: u32,
-    pub children: Vec<usize>,
+    pub proof: Option<usize>,
     pub stopped: Option<Decision>,
 }
 impl Normalization {
@@ -43,7 +43,7 @@ impl Normalization {
             purpose,
             goal: None,
             end: frame.first,
-            children: Vec::new(),
+            proof: None,
             stopped: None,
         })
     }
@@ -53,7 +53,7 @@ impl Frame {
         if let Some(normalization) = &self.normalization
             && normalization.pending()
         {
-            return Self::new(
+            let mut child = Self::new(
                 facts,
                 &mut self.context,
                 normalization
@@ -61,7 +61,11 @@ impl Frame {
                     .as_ref()
                     .ok_or("missing normalization trait premise")?,
                 normalization.end,
-            );
+            )?;
+            child.normalized_inputs = Some(super::frames::NormalizedInputs {
+                proof: normalization.proof,
+            });
+            return Ok(child);
         }
         let trial = self.trial.as_mut().ok_or("missing descending candidate")?;
         let index = trial.pending[trial.cursor];
@@ -189,7 +193,8 @@ impl Search<'_> {
         if self.nodes[node].first != self.nodes[node].end {
             equality.end = self.nodes[node].end;
         }
-        equality.children.push(node);
+        equality.proof = Some(self.inherit_inputs(node, equality.proof));
+        frame.context.account_work(2).map_err(inference)?;
         let before = equality.fold.steps();
         equality.step = equality
             .fold

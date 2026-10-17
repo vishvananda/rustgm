@@ -4,6 +4,91 @@ use rustgm::types::{
 };
 
 #[test]
+fn empty_instantiation_preserves_rigid_shared_graphs_and_later_substitution()
+-> Result<(), Box<dyn std::error::Error>> {
+    use rustgm::types::{
+        arguments::{Argument, ConstKind, Constant},
+        infer::arguments::Argument as Inferred,
+        parameters::{Parameter, ParameterKind},
+        substitute::Bound,
+    };
+    let mut store = Store::default();
+    let owner = ItemId(7);
+    let t = store.intern_parameter(Parameter {
+        owner,
+        index: 0,
+        kind: ParameterKind::Type { sized: true },
+    })?;
+    let usize_ = TypeId::primitive(Primitive::Usize);
+    let n = store.intern_parameter(Parameter {
+        owner,
+        index: 1,
+        kind: ParameterKind::Const { ty: usize_ },
+    })?;
+    let t_ty = store.intern(Kind::Parameter(t))?;
+    let length = store.intern_const(ConstKind::Parameter(n))?;
+    let array = store.intern(Kind::ArrayTerm {
+        element: t_ty,
+        length,
+    })?;
+    let local = store.intern(Kind::Reference {
+        region: RegionId::bound(0, 0)?,
+        mutable: false,
+        referent: array,
+    })?;
+    let captured = store.intern(Kind::Reference {
+        region: RegionId::bound(1, 3)?,
+        mutable: false,
+        referent: t_ty,
+    })?;
+    let parameters = store.intern_list(&[local, captured])?;
+    let mut template = store.intern(Kind::Function {
+        bound_regions: 1,
+        parameters,
+        result: t_ty,
+        unsafe_: false,
+    })?;
+    for _ in 0..12 {
+        let fields = store.intern_list(&[template, template])?;
+        template = store.intern(Kind::Tuple(fields))?;
+    }
+    let mut context = Context::default();
+    for _ in 0..128 {
+        let root = context.instantiate(&mut store, template, &[])?;
+        assert_eq!(context.resolved(&mut store, root)?, template);
+    }
+    assert!(
+        context.steps < 1024,
+        "{} steps for identity substitution",
+        context.steps
+    );
+    let byte = TypeId::primitive(Primitive::U8);
+    let count = store.intern_constant(Constant {
+        ty: usize_,
+        bits: 3,
+    })?;
+    let actual_t = context.known(&store, byte)?;
+    let actual_n = context.known_const(&store, count)?;
+    let result = context.instantiate(
+        &mut store,
+        template,
+        &[
+            (t, Inferred::Type(actual_t)),
+            (n, Inferred::Const(actual_n)),
+        ],
+    )?;
+    let expected = Bound::parameters(
+        &store,
+        &[(t, Argument::Type(byte)), (n, Argument::Const(count))],
+    )?
+    .apply(&mut store, template)?;
+    assert_eq!(context.resolved(&mut store, result)?, expected);
+    let unchanged = context.instantiate(&mut store, template, &[])?;
+    assert_eq!(context.resolved(&mut store, unchanged)?, template);
+    Ok(())
+}
+
+#[test]
 fn partial_resolution_does_not_poison_later_requests() -> Result<(), Box<dyn std::error::Error>> {
     let mut store = Store::default();
     let mut cx = Context::default();
