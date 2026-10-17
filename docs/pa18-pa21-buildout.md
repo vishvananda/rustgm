@@ -9103,3 +9103,57 @@ all hashes still agree. The combined evidence supports the dependency algorithm'
 large scaling improvement while exposing the limitations of this shared host's
 small timing comparisons. The summary is `early-associated-arguments-v12/performance-review.json`;
 raw observations and instruction profiles remain beside it.
+
+### Retained early member lifetime contracts (2026-10-17)
+
+Early associated constant selection now retains a typed conformance contract:
+selected definition, normalized expected/actual types, source identity and all
+formation debts. It checks structural compatibility immediately and consumes that
+same contract during final impl validation, after nominal variance and outlives
+facts exist. Final validation proves coercion under the impl's immutable parameter
+environment and requires the pending-contract map to be empty. A concrete caller
+using `'static` arguments cannot discharge a universally invalid impl contract.
+
+This separates readiness from proof without repeating normalization at each phase.
+The declaration-only selected-member map still grants no ordinary method access or
+whole-impl validity. Equal normalized results still owe any retained formation
+proof. Newly resolved associated constant paths also schedule their declared value
+type through the existing shared field-template worklist before body inference;
+the initial dependency scan cannot yet see those resolved identities.
+
+Fourteen independently qualified source outcomes cover both declaration orders,
+equal/stronger/shorter references, directed outlives assumptions, equal regions,
+projected types with paid or unpaid formation debts, and covariant/invariant nominal
+results. All eight positive programs additionally execute through both rustc and
+CPPGM. The permanent tests are in
+`dev/tests/associated_declarations/member_lifetimes.rs`. Earlier prototypes failed
+the covariant nominal case; those failures remain in the evidence instead of
+being reclassified as intended rejections.
+
+Broader qualification records a separate readiness gap. Ten declared outcomes
+match pinned rustc, including eight native positives. The current frontend accepts
+the two direct nominal associated values but still rejects six valid early uses
+through references or associated-type projections, including a recursive nominal
+reference graph. Those sources remain positive gaps in
+`obj/pa20-work/associated-value-shapes-v1`. Addressing them needs typed nominal
+readiness after inference reveals the receiver, preserving inference work and
+caller evidence. Repeated whole-body retries or eagerly expanding every concrete
+field graph would undermine the sharing already established. Early impl-header
+constant dependencies, the extended semantic view and the PA20 public suite also
+remain outstanding; PA20 is still planned.
+
+The final candidate is
+`865d566bcab140341254048f7b38b052c77611310010f7e62549536c46381485`.
+All 30 validation gates pass: 1,214 regular tests, 79 native groups, 4,871 PA1–19
+cases, strict Clippy, formatting, the 753-file audit, harness, upstream and backend
+checks. All 756 source/configuration hashes and 14,613 existing oracle sidecars
+remain unchanged during validation. PA20–25 still reject as planned stages.
+The evidence is `obj/pa20-work/early-member-lifetimes-v3/review.json`.
+
+Fifteen paired timing jobs retain 390 observations and 60 full-output
+qualifications. Full/count outputs and binary/source/input hashes agree. Eight
+existing controls have paired median changes of +0.11% to +0.89%; the three closed
+constant-chain controls change by -0.02% to +0.64%. Some individual blocks and
+same-binary calibration spreads remain noisy, so these results do not establish a
+tight wall-time bound. They show no large regression from retaining contracts.
+Raw observations and `performance-review.json` are beside the validation record.

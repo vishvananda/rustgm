@@ -15,6 +15,8 @@ mod equations;
 mod field_normalization;
 #[path = "associated_declarations/header_projections.rs"]
 mod header_projections;
+#[path = "associated_declarations/member_lifetimes.rs"]
+mod member_lifetimes;
 #[path = "harness/native_references.rs"]
 mod native;
 #[path = "associated_declarations/overrides.rs"]

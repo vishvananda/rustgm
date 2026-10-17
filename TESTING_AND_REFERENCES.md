@@ -505,7 +505,11 @@ caller's proof remain prerequisites.
 default-argument, generic owner and member-type dependencies, with native positive
 controls and unused-invalid-member negatives. `associated_resolution.rs` and the
 PA6 name fixtures check that associated values require qualification and preserve
-lexical target identities. Dispatch dependency invariants measure repeated caller
+lexical target identities. The [member lifetime tests](dev/tests/associated_declarations/member_lifetimes.rs)
+add fourteen independently qualified outcomes and eight native positives for retained
+member contracts: source ordering, stronger/shorter references, directed outlives
+bounds, projected formation debts and nominal covariance versus invariance.
+Dispatch dependency invariants measure repeated caller
 work and reject reuse across availability modes or incomplete dependency diamonds.
 
 ## Storage and cleanup

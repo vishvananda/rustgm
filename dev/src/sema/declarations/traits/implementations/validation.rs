@@ -14,7 +14,7 @@ impl Checker<'_> {
         &mut self,
     ) -> Result<(), Error> {
         let Some(registry) = &mut self.facts.generics.implementations else {
-            return Ok(());
+            return self.finish_constant_contracts();
         };
         let pairs = registry.take_overlap_pairs();
         let headers = registry
@@ -70,7 +70,7 @@ impl Checker<'_> {
                 .complete(owner, methods, types, constants)
                 .map_err(|e| self.error(source, e))?;
         }
-        Ok(())
+        self.finish_constant_contracts()
     }
 
     fn validate_trait_impl_contract(

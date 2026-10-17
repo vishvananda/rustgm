@@ -4,12 +4,16 @@ use crate::sema::traits::{
     conformance::Definitions,
     implementations::{Availability, ConstantRequest},
 };
-use std::{collections::HashSet, sync::Arc};
+use std::{
+    collections::{HashMap, HashSet},
+    sync::Arc,
+};
 
 #[derive(Default)]
 pub(in crate::sema::declarations) struct Readiness {
     members: Option<Arc<Members>>,
     active: HashSet<ConstantRequest>,
+    pub(super) contracts: HashMap<ConstantRequest, super::constants::Contract>,
 }
 
 impl Checker<'_> {
@@ -80,13 +84,16 @@ impl Checker<'_> {
             let mut substitution =
                 crate::sema::traits::results::substitution(&self.facts, predicate)
                     .map_err(|e| self.error(key, e))?;
-            self.constant_conformance(
+            let contract = self.constant_contract(
                 request.owner,
                 key,
                 (request.declaration, actual),
                 &mut substitution,
                 &definitions,
             )?;
+            // Selection has declaration authority only. The final impl pass
+            // consumes this exact normalized contract and proves every lifetime.
+            self.constant_members.contracts.insert(request, contract);
         } else if !matches!(
             self.item(key)?.kind,
             crate::syntax::item::ItemKind::Const { value: Some(_), .. }
@@ -105,5 +112,27 @@ impl Checker<'_> {
             .map_err(|e| self.error(key, e))?;
         self.constant_members.active.remove(&request);
         Ok(())
+    }
+    pub(super) fn finish_constant_contracts(&self) -> Result<(), Error> {
+        let Some(request) = self
+            .constant_members
+            .contracts
+            .keys()
+            .min_by_key(|request| (request.owner.0, request.declaration.0))
+        else {
+            return Ok(());
+        };
+        let definition = &self.report.resolution.definitions[request.declaration.0 as usize];
+        let key = definition.node.ok_or_else(|| {
+            Error::at(
+                crate::resolve::unit::FileId(0),
+                0,
+                "unproved constant contract has no source",
+            )
+        })?;
+        Err(self.error(
+            key,
+            "associated constant lifetime contract was not discharged",
+        ))
     }
 }

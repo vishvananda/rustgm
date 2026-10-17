@@ -134,9 +134,14 @@ input route is not the complete projected-result drop-checking contract.
 Associated constant declarations retain their types independently of optional
 initializers. Check missing and extra members by resolved owner and name. The
 validated implementation publishes the final default/override identities. A
-separate declaration-only member table may publish a checked constant after all
-candidate headers are frozen; it grants neither method access nor whole-impl
-validity. Final conformance must agree with every earlier selected identity.
+separate declaration-only member table may publish a shape-checked constant after
+all candidate headers are frozen; it grants neither method access nor whole-impl
+validity. Retain that member's normalized expected and actual types, selected
+definition and all formation debts. Final conformance consumes this exact contract
+after nominal variance/outlives facts complete, proves lifetime coercion under the
+immutable impl environment and agrees with every earlier selected identity. No
+pending member contract may escape the declaration pass. Equal normalized result
+types do not erase formation debts from their inputs.
 Substitute the trait's Self and mixed arguments into the impl environment once;
 normalize projected types using that impl's checked associated definitions.
 Structural types must agree, while reference results may satisfy the trait by
@@ -234,6 +239,11 @@ or all associated definitions to authorize one constant. Whole-impl, unused-item
 and coherence checks remain mandatory before completed facts escape. Impl-header
 constant dependencies still require a separate pending-candidate readiness graph;
 never ignore an unprepared compatible header or publish a partial environment.
+
+Once an associated constant path resolves, schedule its declared value-type
+prerequisites before anonymous body inference, just as for an ordinary constant.
+Reuse the nominal field-template worklist; do not prepare unrelated declarations
+or repeatedly expand symbolic field instances.
 
 Index inherent and trait member names before early value queries; these entries
 carry identity and owner heads, not executable authority. Obtain a declaration

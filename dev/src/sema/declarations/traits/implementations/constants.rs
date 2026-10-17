@@ -1,10 +1,11 @@
-//! Match constant declarations once and retain override identity after type conformance.
+//! Retain normalized member shapes and discharge their contracts during impl validation.
 use super::{Checker, DefId, Error, NodeKey};
 use crate::{
     resolve::{expansion::Report, model::DefKind, names::NameId},
     sema::{associated::OwnerId, model::Declarations, traits::conformance::Definitions},
     syntax::item::ItemKind,
     types::{
+        TypeId,
         infer::Context,
         lifetime_proof::Obligations,
         outlives::Queries,
@@ -12,6 +13,14 @@ use crate::{
     },
 };
 use std::collections::HashMap;
+
+/// Normalized shape and formation debts are retained until nominal facts exist.
+pub(super) struct Contract {
+    definition: DefId,
+    source: NodeKey,
+    types: [TypeId; 2],
+    evidence: Obligations,
+}
 
 #[derive(Default)]
 pub(super) struct Members {
@@ -128,13 +137,36 @@ impl Checker<'_> {
         substitution: &mut crate::types::substitute::Bound,
         definitions: &Definitions,
     ) -> Result<(), Error> {
-        let (expected, actual) = pair;
-        let key = self.report.resolution.definitions[actual.0 as usize]
+        let request = crate::sema::traits::implementations::ConstantRequest {
+            owner,
+            declaration: pair.0,
+        };
+        let contract = if let Some(contract) = self.constant_members.contracts.remove(&request) {
+            if contract.definition != pair.1 {
+                return Err(self.error(source, "constant contract changed its selected definition"));
+            }
+            contract
+        } else {
+            self.constant_contract(owner, source, pair, substitution, definitions)?
+        };
+        self.prove_constant_contract(owner, contract)
+    }
+
+    pub(super) fn constant_contract(
+        &mut self,
+        owner: DefId,
+        source: NodeKey,
+        pair: (DefId, DefId),
+        substitution: &mut crate::types::substitute::Bound,
+        definitions: &Definitions,
+    ) -> Result<Contract, Error> {
+        let (expected, definition) = pair;
+        let key = self.report.resolution.definitions[definition.0 as usize]
             .node
             .unwrap_or(source);
         let expected = self.facts.definitions[expected.0 as usize]
             .ok_or_else(|| self.error(key, "missing trait constant type"))?;
-        let actual = self.facts.definitions[actual.0 as usize]
+        let actual = self.facts.definitions[definition.0 as usize]
             .ok_or_else(|| self.error(key, "missing implementation constant type"))?;
         let expected = substitution
             .apply(&mut self.facts.types, expected)
@@ -146,21 +178,38 @@ impl Checker<'_> {
             .values(&mut self.facts, environment, &mut evidence, &mut types)
             .map_err(|e| self.error(key, e))?;
         let [expected, actual] = types;
-        // Exact canonical equality needs no coercion environment. Any erased
-        // projection debt still forces the ordinary lifetime proof below.
+        if expected != actual {
+            let mut shape = Context::default();
+            let a = shape
+                .known(&self.facts.types, actual)
+                .map_err(|e| self.error(key, e.to_string()))?;
+            let b = shape
+                .known(&self.facts.types, expected)
+                .map_err(|e| self.error(key, e.to_string()))?;
+            shape
+                .equate_shape(&self.facts.types, a, b)
+                .map_err(|e| self.error(key, e.to_string()))?;
+        }
+        Ok(Contract {
+            definition,
+            source: key,
+            types,
+            evidence,
+        })
+    }
+
+    fn prove_constant_contract(&self, owner: DefId, contract: Contract) -> Result<(), Error> {
+        let Contract {
+            source: key,
+            types: [expected, actual],
+            evidence,
+            ..
+        } = contract;
+        // Normalization can erase inputs: identical results still owe their
+        // retained formation proof. Only a genuinely empty contract is complete.
         if expected == actual && evidence.is_empty() {
             return Ok(());
         }
-        let mut shape = Context::default();
-        let a = shape
-            .known(&self.facts.types, actual)
-            .map_err(|e| self.error(key, e.to_string()))?;
-        let b = shape
-            .known(&self.facts.types, expected)
-            .map_err(|e| self.error(key, e.to_string()))?;
-        shape
-            .equate_shape(&self.facts.types, a, b)
-            .map_err(|e| self.error(key, e.to_string()))?;
         let mut queries = Queries::new(
             &self.facts.types,
             &self.facts.lifetimes.nominal_requirements,

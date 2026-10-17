@@ -41,6 +41,15 @@ impl Checker<'_> {
             .copied()
             .unwrap_or(key);
         self.constant_annotation(prefix)?;
+        if let Some(Target::Definition(owner)) =
+            self.facts.node(key).and_then(|fact| fact.reference)
+            && self.report.resolution.definitions[owner.0 as usize].kind == DefKind::Const
+        {
+            // Associated lookup can reveal this declaration only after the
+            // initial dependency scan. Its value type needs the same field
+            // templates as an ordinary constant before body inference starts.
+            self.work.push(Work::ValueType(owner));
+        }
         let Some(owner) = self.generic_use_owner(key) else {
             return Ok(());
         };
