@@ -7910,3 +7910,132 @@ Eight superseded executable copies were retired with hashes preserved, and the
 final guarded cleanup removed nine generated files, about 0.35 GiB. The current
 candidate and baselines needed for open comparisons remain pinned; empty and
 superseded pins were removed.
+
+## Selected associated constant patterns
+
+The preceding `d7982fa` checkpoint passed public CI run 39002310921. The next
+PA20 increment removes its explicit selected-pattern boundary. Qualified and
+shorthand constant patterns now use the ordinary owner-argument inference path;
+range endpoints use the same selected identities. Deferred requests retain their
+actual body, binder count and declaration environment through initializer typing.
+One shared constant-query session evaluates all bodies, while each body's fresh
+selection proof is retained with that body's lifetime obligations.
+
+Patterns can use a fixed initializer even when its complete owner arguments
+include unused type or const parameters. They reject actual parameter-dependent
+values before monomorphization. A selected dependency in a skipped branch is
+prepared for eligibility without evaluating skipped arithmetic. Caller trait
+assumptions retaining type/const parameters or free lifetimes remain opaque;
+fully global bounds can use their known implementation. Ordinary
+global aliases discover associated dependencies through the same typed evaluator.
+Nominal products read substituted aggregate field shapes while retaining their
+original field identities.
+
+Independent pinned-rustc qualification covered 42 ordinary outcomes. Forty were
+adopted as maintainer cases: 29 accept and 11 reject. The two additional custom
+PartialEq controls reach an existing unsupported name-resolution boundary and
+are not claimed as structural-pattern validation. A separate generic-result enum
+probe makes pinned rustc exit 101 during structural-match processing, confirmed
+with object emission. Its source and diagnostics remain quarantined as a reference
+failure, not a rejected-language fixture. Three initial predictions were corrected
+before adoption: an unused type parameter permits a fixed value, an explicit
+symbolic trait bound prevents selection from a blanket implementation, and a
+parameter in a skipped value branch still prevents pattern construction.
+
+All 40 adopted cases pass full frontend/LowIR checks. The 29 accepted programs
+also execute through both pinned rustc and CPPGM; repeated LowIR outputs match.
+Coverage includes defaults and overrides, inference, ranges, products, references,
+nominal generic fields, generic functions, default-value dependencies, global
+alias chains, lifetime debt, missing bounds, refutability and exhaustiveness.
+The previous two boundary controls now require successful lowering. Strict
+Clippy, formatting, the 717-file audit and all 33 harness checks pass without
+new lint or audit allowances. Full regression and performance evidence is retained
+under `obj/pa20-work/selected-constant-patterns-v1/`.
+
+PA20 and PA21 remain planned. This checkpoint does not release their public
+inspection contracts, manifests or text oracles, or complete the remaining
+projection, coherence, type-level constant and advanced-generic requirements.
+
+The frozen candidate passes 1,174 regular release tests, all 4,863 active course
+cases, 65 native groups, backend qualification and upstream provenance. All
+14,589 existing oracle sidecars remain byte-identical. Its SHA-256 is
+`3cf7c175e5f1ee5ac23ee08825e4f59a8e382db9157ca6d4cd0dae244c46ccd8`;
+the 24-command validation records 720 frozen source/configuration files. Both
+planned stages still fail explicitly without a released contract. Successful
+cleanup removed 4,994 generated files, about 5.36 GiB; source, diagnostics,
+receipts and the active immutable comparison binaries remain.
+
+The first 32-job study retained 832 study and 128 qualification observations,
+with four compiler invocations per observation (3,328 and 512 invocations).
+All binary/source/input hashes and full/count output comparisons pass. Existing
+controls have paired medians from -4.608% to +3.011%, apart from the new
+256-function inherent-pattern full-output control at +6.206%. Its count-only
+counterpart is +2.553%; both have all five paired blocks positive. A/A spreads
+and all individual outliers remain in the receipts. The inherited runner's final
+invocation-count print was hardcoded for an older eight-job study; the derived
+`count-review.json` corrects that display without altering its frozen source or
+observations.
+
+Inspection found per-body trait dispatch allocation for inherent constants with
+no associated dependencies. Their owner bounds are already retained by ordinary
+inference, so this case now enters the existing instance evaluator directly.
+Trait-owned values and values with associated dependencies still construct their
+complete selection proof. The initializer evaluator, parameter-use eligibility,
+cycle diagnostics and later lifetime/ownership checks remain required. This
+optimization is measured against both the published compiler and the first
+candidate; the original regression observations remain part of the review.
+
+The second candidate again passed 1,174 regular tests, all 4,863 course cases,
+65 native groups, backend/upstream checks and all 14,589 unchanged oracle
+sidecars. Its hash is
+`5287637e36abad259755913ee2f35e41b90c67b7085d4aef6860c9bf00259a2a`.
+The 36-job comparison retains 936 study and 144 qualification observations
+(3,744 and 576 compiler invocations). All output/hash checks pass. The flagged
+256-function inherent-pattern full-output median is +3.969% against `d7982fa`,
+with A/A spread 1.114% and all five blocks positive. Its direct before/after
+optimization median is -1.762%; other direct comparisons are mixed. The residual
+cost remains an open performance question, not a universal no-regression claim.
+The second complete batch also removed about 5.36 GiB of generated artifacts.
+
+Additional independently qualified lifetime probes then exposed five wrongly
+accepted programs in that second candidate: caller trait assumptions containing
+lifetime inputs were being bypassed, including explicit `'static` inputs. The
+selection criterion now distinguishes fully global assumptions using the shared
+parameter/free-region properties of the assumption itself. The existing free-region
+property includes `'static` and excludes lifetimes bound inside a type. The
+actual use-site goal does not determine whether the matching assumption is opaque.
+No new type-property representation or source inspection is needed.
+
+Twelve additional object-qualified controls expand the pattern table to 52 cases
+(31 accept, 21 reject). They include trait implementation lifetime debt, a proven
+bound, good/bad caller scopes, reference-valued trait constants, symbolic lifetime
+assumptions and explicit static arguments. Earlier prediction differences and all
+failing candidate results remain under the v2 evidence directory. Validity is
+checked before adopting expectations; rejected predictions were not silently
+blessed as language contracts.
+
+The final lifetime-aware candidate passes the expanded associated suite, strict
+Clippy, the 717-file audit and 33 harness tests, then all 1,174 regular release
+tests, all 4,863 course cases and 65 native groups. Backend and upstream checks
+pass. All 14,589 oracle sidecars are unchanged. The final executable SHA-256 is
+`afbad55186c661c30745ba7fae8c163523637c4b2d48fdaa11487c712e2dd294`;
+its 24-command validation and 720-file snapshot are retained under
+`selected-constant-patterns-v3`. PA20 and PA21 still fail as planned stages.
+
+The final 40-job study adds trait-instance pattern scaling controls at 64/256
+uses. It retains 1,040 study and 160 qualification observations, each containing
+four invocations (4,160 and 640 invocations). All binary, source and input hashes
+and output comparisons pass. The inherent-pattern 256/full paired median remains
++4.006% versus `d7982fa`; its direct comparison with the first candidate is
+-1.451%. That residual cost remains open. Other flagged controls, wide assumptions
+and 64-instance constant contracts, had A/A spread of 34.470% and 16.564%.
+A focused six-job follow-up uses sixteen invocations per observation and retains
+156 study and 24 qualification observations (2,496 and 384 invocations). Its
+paired medians are -1.346% to +0.983%, so those two short-run flags did not
+reproduce. All original observations remain available; the follow-up does not
+resolve the inherent-pattern cost or older open performance questions.
+
+Sample-derived count receipts accompany the studies, distinguishing observations
+from individual compiler invocations and correcting an inherited stale console
+footer. Frozen runners and observations were not rewritten. The final complete
+validation/measurement batch removed 4,998 generated files, about 5.37 GiB.

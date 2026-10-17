@@ -73,9 +73,9 @@ impl Checker<'_> {
         let value = if let Kind::Literal(index) = self.kind(literal) {
             self.literal(literal, index)?
         } else if !negative && let Some(definition) = self.pattern_constant(literal) {
-            let ty = self.pattern_constant_type(literal, definition)?;
+            let value = self.pattern_constant_term(literal, definition)?;
             self.request_pattern_constant(literal, definition, None);
-            self.known(literal, ty)?
+            value
         } else {
             return Err(self.error(
                 node,

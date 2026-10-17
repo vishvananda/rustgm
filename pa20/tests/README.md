@@ -9,7 +9,9 @@ Required families:
 - `contracts`: result bounds, equalities, inherited promises, valid/invalid impl
   conformance, unused declarations and obligations retained after normalization.
 - `constants`: required/default/overridden values, inherent values, generic
-  instantiation, selected identity, type errors, invalid values and dependency cycles.
+  instantiation, selected identity, type errors, invalid values and dependency cycles;
+  selected patterns/ranges, structural equality, coverage, unused owner parameters,
+  parameter-dependent values and per-caller lifetime/bound obligations.
 - `selection`: caller assumptions, partial inference, result/argument context,
   unrelated opaque alternatives, ambiguous methods and distinct caller scopes.
 - `coherence`: local/foreign identity within the supported profile, covered

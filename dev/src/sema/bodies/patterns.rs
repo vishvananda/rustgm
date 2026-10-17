@@ -220,7 +220,9 @@ impl Checker<'_> {
                 }
                 Ok(PatternKind::Or(Alternatives { start, end }))
             }
-            Kind::Binding { .. } | Kind::Path { .. } if self.pattern_constant(node).is_some() => {
+            Kind::Binding { .. } | Kind::Path { .. } | Kind::Qualified { .. }
+                if self.pattern_constant(node).is_some() =>
+            {
                 self.constant_pattern(node, term, id)
             }
             Kind::Binding { .. } | Kind::Path { .. } => {

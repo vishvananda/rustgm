@@ -184,6 +184,50 @@ impl Queries<'_> {
                 )
                 .map_err(|e| self.error(Query::Node(key), e))?;
         }
+        if let Some(scope) = self.pattern_scope {
+            // Inherent values already retain their owner bounds from inference.
+            // With no associated dependencies there is no implementation to select.
+            if self
+                .typing
+                .facts
+                .associated
+                .trait_owner(instance.definition)
+                .is_none()
+                && !self
+                    .typing
+                    .facts
+                    .constant_dependencies
+                    .contains_key(&instance.definition)
+            {
+                return Ok(instance);
+            }
+            if self.pattern_dispatch.is_none() {
+                let first = self
+                    .typing
+                    .facts
+                    .body_regions
+                    .len()
+                    .checked_add(1)
+                    .and_then(|n| u32::try_from(n).ok())
+                    .ok_or_else(|| {
+                        self.error(Query::Node(key), "pattern dispatch region overflow")
+                    })?;
+                self.pattern_dispatch = Some(
+                    crate::sema::dispatch::Dispatcher::pattern(
+                        self.typing.facts,
+                        scope.binders,
+                        first,
+                        scope.owner,
+                    )
+                    .map_err(|e| self.error(Query::Node(key), e))?,
+                );
+            }
+            if let Some(dispatch) = &mut self.pattern_dispatch {
+                return dispatch
+                    .constant(self.typing.facts, instance)
+                    .map_err(|e| self.error(Query::Node(key), e));
+            }
+        }
         if self
             .typing
             .facts
@@ -206,6 +250,11 @@ impl Queries<'_> {
             })
     }
     pub(super) fn enter_instance(&mut self, instance: Instance) -> Result<(), Error> {
+        let key = self.instance_source(instance)?;
+        self.forward(Query::Instance(instance), Query::Node(key));
+        self.prepare(key)
+    }
+    pub(super) fn instance_source(&mut self, instance: Instance) -> Result<NodeKey, Error> {
         let query = Query::Instance(instance);
         // Instantiations may revisit a large template with distinct arguments.
         self.limit = self.limit.max(16_000_000);
@@ -247,8 +296,6 @@ impl Queries<'_> {
             context
         };
         self.work.context = context;
-        let key = self.typing.facts.initializers[index].value;
-        self.forward(query, Query::Node(key));
-        self.prepare(key)
+        Ok(self.typing.facts.initializers[index].value)
     }
 }

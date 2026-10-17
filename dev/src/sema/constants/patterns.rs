@@ -332,10 +332,18 @@ fn child(
                 return Err("constant field exceeds constructor arity");
             }
             let field = FieldId(member.start + ordinal);
-            Ok((
-                facts.members.fields[field.0 as usize].ty,
-                Projection::Field(Selection::Nominal(field)),
-            ))
+            let shape = facts.aggregates.shape(&facts.types, ty)?;
+            let fields = shape
+                .variant(member.ordinal as usize)
+                .ok_or("missing constant variant shape")?
+                .fields;
+            let ty = facts
+                .types
+                .list(fields)
+                .and_then(|fields| fields.get(ordinal as usize))
+                .copied()
+                .ok_or("missing instantiated constant field type")?;
+            Ok((ty, Projection::Field(Selection::Nominal(field))))
         }
         _ => Err("missing constant product field type"),
     }

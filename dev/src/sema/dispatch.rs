@@ -10,10 +10,17 @@ use crate::{
     types::{
         Kind, RegionId, TypeId,
         infer::{Context, Instantiation},
+        parameters::environment::Environment,
         substitute::Bound,
     },
 };
 use std::collections::HashMap;
+use std::sync::Arc;
+
+struct Caller {
+    environment: Option<Arc<Environment>>,
+    assumptions: Assumptions,
+}
 
 pub(crate) struct Dispatcher {
     normalize: Bound,
@@ -22,6 +29,7 @@ pub(crate) struct Dispatcher {
     selected: HashMap<TypeId, TypeId>,
     constants: HashMap<super::values::Instance, super::values::Instance>,
     expanded: HashMap<super::values::Instance, bool>,
+    caller: Option<Box<Caller>>,
 }
 impl Dispatcher {
     pub(crate) fn new(universals: u32, first: u32) -> Result<Self, &'static str> {
@@ -48,7 +56,50 @@ impl Dispatcher {
             selected: HashMap::new(),
             constants: HashMap::new(),
             expanded: HashMap::new(),
+            caller: None,
         })
+    }
+    /// Patterns must select a definition before monomorphization. Rigid caller
+    /// parameters may remain in unused arguments, but an assumption is not a value.
+    pub(crate) fn pattern(
+        facts: &mut Declarations,
+        universals: u32,
+        first: u32,
+        owner: Option<DefId>,
+    ) -> Result<Self, String> {
+        let mut result = Self::new(universals, first)?;
+        let environment = owner
+            .and_then(|owner| facts.generics.environments.get(&owner))
+            .cloned()
+            .map(|environment| {
+                environment
+                    .substitute_regions(&mut facts.types, &mut result.normalize)
+                    .map(Arc::new)
+            })
+            .transpose()?;
+        result
+            .context
+            .account_work(result.normalize.steps)
+            .map_err(|e| e.to_string())?;
+        let mut assumptions = Assumptions::default();
+        for predicate in environment.iter().flat_map(|env| env.trait_predicates()) {
+            result.context.account_work(1).map_err(|e| e.to_string())?;
+            // Only a fully global bound can use its known implementation.
+            // Free lifetimes include 'static; either that input or a parameter
+            // keeps the caller assumption opaque to constant-value selection.
+            if predicate.contains_parameters(&facts.types)?
+                || predicate.has_free_regions(&facts.types)?
+            {
+                assumptions
+                    .insert(&facts.types, *predicate)
+                    .map_err(|e| e.to_string())?;
+            }
+        }
+        result.caller = Some(Box::new(Caller {
+            environment,
+            assumptions,
+        }));
+        Ok(result)
     }
     pub(crate) fn select(
         &mut self,
@@ -159,7 +210,7 @@ impl Dispatcher {
         };
         let arguments = arguments::Arguments::constant(facts, instance)?;
         let predicate = arguments.goal(facts, owner)?;
-        if predicate.contains_parameters(&facts.types)? {
+        if self.caller.is_none() && predicate.contains_parameters(&facts.types)? {
             return Err("concrete constant retains unresolved arguments".into());
         }
         let (owner, arguments, evidence) = self.implementation(facts, predicate)?;
@@ -186,6 +237,7 @@ impl Dispatcher {
         facts: &mut Declarations,
         predicate: crate::types::parameters::predicates::Predicate,
     ) -> Result<(DefId, crate::types::GenericArgs, selection::Evidence), String> {
+        let caller = self.caller.as_ref();
         let before = self.normalize.steps;
         let predicate = self.normalize.predicate(&mut facts.types, predicate)?;
         self.context
@@ -203,8 +255,8 @@ impl Dispatcher {
             &mut self.context,
             &goal,
             selection::Caller {
-                assumptions: &empty,
-                environment: None,
+                assumptions: caller.map_or(&empty, |c| &c.assumptions),
+                environment: caller.and_then(|c| c.environment.as_ref()),
                 first_region: self.obligations.regions.end,
                 retain_sized: false,
             },

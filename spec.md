@@ -1400,13 +1400,26 @@ Retain this ownership even when inference adds no new lifetime facts.
 
 Constant patterns constrain types during ordinary body inference. Retain pending
 value/range/coverage work in flat arenas with the originating file, module and
-body; finish it after initializer typing in one shared query session. Reuse
-resolved dependencies, selected operations and already computed discriminants.
-Cache demanded constant-definition values across these phases in the current
-monomorphic profile; leave ordinary node facts compact and allocate no query
+body and immutable caller environment; finish it after initializer typing in one
+shared query session. Reuse resolved dependencies, selected operations and already
+computed discriminants.
+Cache demanded ordinary definitions and complete associated instances across
+these phases; leave ordinary node facts compact and allocate no query
 storage for bodies without constant-backed patterns. Do not instantiate a
 whole-crate checker per use, repeat initializer typing, or interpret pattern
 views. Deferred checks must retain the matching module's visibility context.
+
+Associated pattern paths share expression argument inference and selection facts.
+Their values must be known before function specialization. An unused rigid type
+or const argument does not prevent a fixed initializer from supplying a pattern;
+an actual dependency on that parameter does. Prepare selected dependencies,
+including skipped branches, without evaluating skipped arithmetic. A caller's
+trait assumption cannot identify an initializer when it retains type/const
+parameters or free lifetimes, including `'static`. Fully global bounds can use
+their known implementation.
+Retain fresh selection obligations under the requesting body's lifetime proof;
+cached values never supply another caller's permissions. Translate nominal fields
+from the completed instantiated shape while preserving original field identities.
 
 Demanded tuple/array constant values use flat shared arenas. Repeats retain one
 element and their length; field/index queries select from that representation

@@ -54,6 +54,13 @@ overflow and invalid-value rules. Preserve parameter bounds and lifetimes when a
 selected value reaches an expression, initializer or supported type-level use.
 General constant statements and const functions remain PA25 responsibilities.
 
+Use selected values in constant patterns and range endpoints. Constrain their
+types during body inference, then evaluate and check structural equality and
+coverage after initializer typing. Values must be available before function
+specialization: unused owner parameters are permitted, but parameter-dependent
+initializers and opaque caller assumptions cannot supply a pattern value. Keep
+the requesting body's complete bound and lifetime proof when reusing a value.
+
 ### Selection, inference and normalization
 
 Use typed goals, explicit parameter environments and isolated candidate equations.

@@ -118,6 +118,7 @@ enum Expression {
     },
 }
 enum Work {
+    PrepareInstance(crate::sema::values::Instance),
     Layout(NodeKey, TypeId, bool),
     Alignment(super::model::ReferenceAlignment),
     Reference(places::Work),
@@ -144,6 +145,8 @@ struct Queries<'a> {
     pattern_values: HashSet<Value>,
     drop_scratch: Option<Box<drops::Scratch>>,
     layout_scratch: layouts::Scratch,
+    pattern_scope: Option<PatternScope>,
+    pattern_dispatch: Option<super::dispatch::Dispatcher>,
 }
 /// Declaration checking owns this cache; it never survives into lowering.
 #[derive(Default)]
@@ -160,30 +163,69 @@ pub(super) enum PatternValue {
     Definition(DefId),
     Literal(NodeKey),
 }
+#[derive(Clone, Copy)]
+pub(super) struct PatternScope {
+    pub body: NodeKey,
+    pub owner: Option<DefId>,
+    pub binders: u32,
+    pub end: usize,
+}
 /// Resolve pattern uses after their initializer bodies have published typed facts.
 pub(super) fn pattern_values(
     report: &Report,
     facts: &mut Declarations,
     requests: &[(NodeKey, PatternValue, Option<super::patterns::PatternId>)],
+    scopes: impl Iterator<Item = PatternScope>,
 ) -> Result<(), Error> {
     let mut queries = Queries::new(report, facts);
-    for &(key, definition, pattern) in requests {
+    let mut start = 0;
+    for scope in scopes {
+        queries.pattern_scope = Some(scope);
+        for &(key, definition, pattern) in &requests[start..scope.end] {
+            queries.pattern_value(key, definition, pattern)?;
+        }
+        if let Some(dispatch) = queries.pattern_dispatch.take() {
+            dispatch
+                .finish()
+                .retain_body(queries.typing.facts, scope.body, scope.body)
+                .map_err(|e| Declarations::error(report, scope.body, e))?;
+        }
+        start = scope.end;
+    }
+    Ok(())
+}
+impl Queries<'_> {
+    fn pattern_value(
+        &mut self,
+        key: NodeKey,
+        definition: PatternValue,
+        pattern: Option<super::patterns::PatternId>,
+    ) -> Result<(), Error> {
+        self.work.context = instances::Context::default();
         let query = match definition {
+            PatternValue::Definition(_) if self.typing.facts.constant_uses.contains_key(&key) => {
+                let instance = self.typing.facts.constant_uses[&key];
+                Query::Instance(self.selected_constant(key, instance)?)
+            }
             PatternValue::Definition(definition) => {
-                let index = queries
+                let index = self
                     .constants
                     .get(definition.0 as usize)
                     .copied()
                     .flatten()
                     .ok_or_else(|| {
-                        Declarations::error(report, key, "pattern path requires a named constant")
+                        Declarations::error(
+                            self.report,
+                            key,
+                            "pattern path requires a named constant",
+                        )
                     })?;
                 if !matches!(
-                    queries.typing.facts.initializers[index].kind,
+                    self.typing.facts.initializers[index].kind,
                     InitializerKind::Const
                 ) {
                     return Err(Declarations::error(
-                        report,
+                        self.report,
                         key,
                         "a static is not a constant pattern",
                     ));
@@ -192,28 +234,27 @@ pub(super) fn pattern_values(
             }
             PatternValue::Literal(source) => Query::Node(source),
         };
-        queries.work.push(Work::Enter(query));
+        self.work.push(Work::Enter(query));
         if let Query::Node(source) = query {
-            queries.prepare(source)?;
+            self.prepare(source)?;
         }
-        queries.drain()?;
-        let value = queries.value(query)?;
+        self.drain()?;
+        let value = self.value(query)?;
         if let Some(pattern) = pattern {
-            queries.complete_pattern(key, value)?;
-            patterns::expand(report, queries.typing.facts, pattern, value)?;
-            continue;
+            self.complete_pattern(key, value)?;
+            patterns::expand(self.report, self.typing.facts, pattern, value)?;
+            return Ok(());
         }
         let value = value
             .scalar()
-            .map_err(|e| Declarations::error(report, key, e))?;
-        queries
-            .typing
+            .map_err(|e| Declarations::error(self.report, key, e))?;
+        self.typing
             .facts
             .node_mut(key)
-            .ok_or_else(|| Declarations::error(report, key, "missing constant pattern node"))?
+            .ok_or_else(|| Declarations::error(self.report, key, "missing constant pattern node"))?
             .scalar = Some(value);
+        Ok(())
     }
-    Ok(())
 }
 impl<'a> Queries<'a> {
     fn new(report: &'a Report, facts: &'a mut Declarations) -> Self {
@@ -258,6 +299,8 @@ impl<'a> Queries<'a> {
             pattern_values: HashSet::new(),
             drop_scratch: scratch.drops,
             layout_scratch: scratch.layouts,
+            pattern_scope: None,
+            pattern_dispatch: None,
         }
     }
     fn into_scratch(self) -> Scratch {
@@ -326,6 +369,10 @@ impl Queries<'_> {
         while let Some(work) = self.work.pop() {
             self.budget()?;
             match work {
+                Work::PrepareInstance(instance) => {
+                    let source = self.instance_source(instance)?;
+                    self.prepare(source)?;
+                }
                 Work::Layout(key, ty, finish) => self.layout(key, ty, finish)?,
                 Work::Alignment(obligation) => self.check_alignment(obligation)?,
                 Work::Enter(query) => self.enter(query)?,
@@ -635,6 +682,12 @@ impl Queries<'_> {
                     self.scan.push(otherwise);
                     self.scan.push(then);
                     self.scan.push(condition);
+                }
+                Expression::Instance(instance) if self.pattern_scope.is_some() => {
+                    // A pattern's value must be available before specialization,
+                    // including parameter uses hidden in skipped dependencies.
+                    // Prepare eligibility without evaluating skipped arithmetic.
+                    self.work.push(Work::PrepareInstance(instance));
                 }
                 Expression::Value(_) | Expression::Constant(_) | Expression::Instance(_) => {}
                 Expression::Reference(expression) => {

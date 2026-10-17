@@ -7,7 +7,6 @@ use crate::{
         unit::NodeKey,
     },
     sema::patterns::PatternId,
-    types::TypeId,
 };
 
 #[derive(Default)]
@@ -23,7 +22,7 @@ pub(super) struct Pending {
     matches: Vec<u32>,
 }
 struct Scope {
-    body: NodeKey,
+    values: super::super::constants::PatternScope,
     module: ModuleId,
     ranges: usize,
     roots: usize,
@@ -47,27 +46,18 @@ impl Checker<'_> {
         (self.report.resolution.definitions[definition.0 as usize].kind == DefKind::Const)
             .then_some(definition)
     }
-    pub(super) fn pattern_constant_type(
-        &self,
+    pub(super) fn pattern_constant_term(
+        &mut self,
         node: NodeId,
         definition: DefId,
-    ) -> Result<TypeId, Error> {
-        if self.facts.associated.trait_owner(definition).is_some()
-            || (self.facts.associated.owner(definition).is_some()
-                && (self.facts.generics.has_parameters(definition)
-                    || self
-                        .facts
-                        .associated
-                        .schema(definition)
-                        .is_some_and(|schema| schema.captures != 0)))
-        {
-            return Err(self.error(
-                node,
-                "selected associated constant patterns are not implemented",
-            ));
+    ) -> Result<crate::types::infer::TermId, Error> {
+        let ty = self.facts.definitions[definition.0 as usize]
+            .ok_or_else(|| self.error(node, "missing constant pattern type"))?;
+        if self.facts.associated.owner(definition).is_some() {
+            self.associated_constant(node, definition, ty)
+        } else {
+            self.known(node, ty)
         }
-        self.facts.definitions[definition.0 as usize]
-            .ok_or_else(|| self.error(node, "missing constant pattern type"))
     }
     pub(super) fn request_pattern_constant(
         &mut self,
@@ -107,15 +97,18 @@ impl Checker<'_> {
         let definition = self
             .pattern_constant(node)
             .ok_or_else(|| self.error(node, "missing constant pattern identity"))?;
-        let ty = self.pattern_constant_type(node, definition)?;
-        if matches!(
-            self.facts.types.kind(ty),
-            Some(crate::types::Kind::Primitive(_))
-        ) {
+        let ty = self.facts.definitions[definition.0 as usize];
+        if ty.is_some_and(|ty| {
+            matches!(
+                self.facts.types.kind(ty),
+                Some(crate::types::Kind::Primitive(_))
+            )
+        }) {
             return self.scalar_pattern(node, term);
         }
-        let value = self.known(node, ty)?;
+        let value = self.pattern_constant_term(node, definition)?;
         self.equate_pattern(node, term, value)?;
+        self.save(node, value);
         self.request_pattern_constant(node, definition, Some(id));
         self.pattern_refutable = true;
         Ok(crate::sema::patterns::Kind::Pending)
@@ -125,7 +118,12 @@ impl Checker<'_> {
             return Err(self.error(self.body.node, "missing constant pattern requests"));
         };
         pending.scopes.push(Scope {
-            body: self.body,
+            values: super::super::constants::PatternScope {
+                body: self.body,
+                owner: self.environment_owner,
+                binders: self.body_binders,
+                end: pending.requests.len(),
+            },
             module: self.module,
             ranges: self.range_work.len(),
             roots: self.pattern_requirements.len(),
@@ -140,13 +138,18 @@ impl Checker<'_> {
         let Some(pending) = self.pending_patterns.take() else {
             return Ok(());
         };
-        super::super::constants::pattern_values(self.report, self.facts, &pending.requests)?;
+        super::super::constants::pattern_values(
+            self.report,
+            self.facts,
+            &pending.requests,
+            pending.scopes.iter().map(|scope| scope.values),
+        )?;
         let mut ranges = pending.ranges.into_iter();
         let mut roots = pending.roots.into_iter();
         let mut matches = pending.matches.into_iter();
         for scope in pending.scopes {
-            self.body = scope.body;
-            self.file = scope.body.file;
+            self.body = scope.values.body;
+            self.file = scope.values.body.file;
             self.module = scope.module;
             self.range_work.extend(ranges.by_ref().take(scope.ranges));
             self.pattern_requirements

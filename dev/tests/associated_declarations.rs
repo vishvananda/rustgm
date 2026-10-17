@@ -811,8 +811,7 @@ fn repeated_values_share_only_their_complete_instance() -> Result<(), Box<dyn st
 }
 
 #[test]
-fn selected_constant_patterns_remain_an_explicit_boundary() -> Result<(), Box<dyn std::error::Error>>
-{
+fn selected_constant_patterns_resolve_owner_instances() -> Result<(), Box<dyn std::error::Error>> {
     for (name, source) in [
         (
             "trait-pattern",
@@ -823,15 +822,10 @@ fn selected_constant_patterns_remain_an_explicit_boundary() -> Result<(), Box<dy
             "struct S<const N:usize>;impl<const N:usize>S<N>{const C:usize=N;}fn main(){let _=match 3usize{S::<3>::C=>true,_=>false};}",
         ),
     ] {
-        // These are valid Rust programs, not negative language fixtures.
         object_outcome(name, source, true)?;
-        let error = semantic::analyze(source)
-            .err()
-            .ok_or("pattern selection must not use the unselected declaration")?;
-        assert!(
-            error.contains("selected associated constant patterns are not implemented"),
-            "{name}: {error}"
-        );
+        let (mut report, mut facts) = semantic::analyze(source)?;
+        let entry = rustgm::sema::entry::select(&mut report, &facts)?;
+        rustgm::lower::instances::build(&report, &mut facts, entry)?;
     }
     Ok(())
 }
@@ -930,4 +924,296 @@ fn associated_constant_instances_preserve_native_values() -> Result<(), Box<dyn 
             ),
         ],
     )
+}
+
+// Object-qualified before adoption; generic result ICE probes stay quarantined.
+const PATTERN_CASES: &[(&str, &str, bool)] = &[
+    (
+        "trait-shorthand",
+        "trait A{const C:u8=7;}struct S;impl A for S{const C:u8=9;}fn f(x:u8)->bool{match x{S::C=>true,_=>false}}fn main(){check(f(9));check(!f(7))}",
+        true,
+    ),
+    (
+        "trait-qualified",
+        "trait A{const C:u8=7;}struct S;impl A for S{const C:u8=9;}fn f(x:u8)->bool{match x{<S as A>::C=>true,_=>false}}fn main(){check(f(9));check(!f(7))}",
+        true,
+    ),
+    (
+        "inherent-const",
+        "struct S<const N:usize>;impl<const N:usize>S<N>{const C:usize=N;}fn f(x:usize)->bool{match x{S::<3>::C=>true,_=>false}}fn main(){check(f(3));check(!f(5))}",
+        true,
+    ),
+    (
+        "inherent-erased",
+        "struct S<T>(T);impl<T>S<T>{const C:u8=7;}fn f(x:u8)->bool{match x{S::<u16>::C=>true,_=>false}}fn main(){check(f(7));check(!f(9))}",
+        true,
+    ),
+    (
+        "trait-const",
+        "trait A<const N:usize>{const C:usize=N;}impl<const N:usize>A<N>for u8{}fn f(x:usize)->bool{match x{<u8 as A<5>>::C=>true,_=>false}}fn main(){check(f(5));check(!f(3))}",
+        true,
+    ),
+    (
+        "trait-inferred",
+        "trait A{const C:Self;}impl A for u8{const C:Self=7;}fn f(x:u8)->bool{match x{A::C=>true,_=>false}}fn main(){check(f(7));check(!f(9))}",
+        true,
+    ),
+    (
+        "lifetime-only",
+        "struct S<'a>(&'a u8);impl<'a>S<'a>{const C:u8=7;}fn f<'a>(_:&'a u8,x:u8)->bool{match x{<S<'a>>::C=>true,_=>false}}fn main(){check(f(&0,7));check(!f(&0,9))}",
+        true,
+    ),
+    (
+        "dependent-type",
+        "struct S<T>(T);impl<T>S<T>{const C:u8=7;}fn f<T>(x:u8)->bool{match x{S::<T>::C=>true,_=>false}}fn main(){}",
+        true,
+    ),
+    (
+        "dependent-const",
+        "struct S<const N:usize>;impl<const N:usize>S<N>{const C:usize=N;}fn f<const N:usize>(x:usize)->bool{match x{S::<N>::C=>true,_=>false}}fn main(){}",
+        false,
+    ),
+    (
+        "dependent-trait",
+        "trait A{const C:u8;}fn f<T:A>(x:u8)->bool{match x{T::C=>true,_=>false}}fn main(){}",
+        false,
+    ),
+    (
+        "lifetime-bound-debt",
+        "struct S<'a>(&'a u8);impl<'a:'static>S<'a>{const C:u8=7;}fn f<'a>(_:&'a u8,x:u8)->bool{match x{<S<'a>>::C=>true,_=>false}}fn main(){}",
+        false,
+    ),
+    (
+        "missing-copy",
+        "struct S<T>(T);impl<T:Copy>S<T>{const C:u8=7;}struct N;fn f(x:u8)->bool{match x{S::<N>::C=>true,_=>false}}fn main(){}",
+        false,
+    ),
+    (
+        "product",
+        "struct S<const N:usize>;impl<const N:usize>S<N>{const C:(usize,u8)=(N,7);}fn f(x:(usize,u8))->bool{match x{S::<3>::C=>true,_=>false}}fn main(){check(f((3,7)));check(!f((5,7)))}",
+        true,
+    ),
+    (
+        "reference",
+        "struct S<const N:usize>;impl<const N:usize>S<N>{const C:&'static usize=&N;}fn f(x:&usize)->bool{match x{S::<3>::C=>true,_=>false}}fn main(){check(f(&3));check(!f(&5))}",
+        true,
+    ),
+    (
+        "global-alias",
+        "trait A{const C:u8=7;}struct S;impl A for S{const C:u8=9;}const P:u8=<S as A>::C;fn f(x:u8)->bool{match x{P=>true,_=>false}}fn main(){check(f(9));check(!f(7))}",
+        true,
+    ),
+    (
+        "range",
+        "struct S<const N:usize>;impl<const N:usize>S<N>{const C:usize=N;}fn f(x:usize)->bool{match x{S::<3>::C..=S::<5>::C=>true,_=>false}}fn main(){check(f(4));check(!f(7))}",
+        true,
+    ),
+    (
+        "erased-type-called",
+        "struct S<T>(T);impl<T>S<T>{const C:u8=7;}fn f<T>(x:u8)->bool{match x{S::<T>::C=>true,_=>false}}fn main(){check(f::<u8>(7));check(!f::<u16>(9))}",
+        true,
+    ),
+    (
+        "erased-const-called",
+        "struct S<const N:usize>;impl<const N:usize>S<N>{const C:u8=7;}fn f<const N:usize>(x:u8)->bool{match x{S::<N>::C=>true,_=>false}}fn main(){check(f::<3>(7));check(!f::<5>(9))}",
+        true,
+    ),
+    (
+        "generic-trait-owner",
+        "trait A{const C:u8=7;}struct S<T>(T);impl<T>A for S<T>{}fn f<T>(x:u8)->bool{match x{<S<T> as A>::C=>true,_=>false}}fn main(){check(f::<u8>(7));check(!f::<u16>(9))}",
+        true,
+    ),
+    (
+        "generic-bounded-owner",
+        "trait A{const C:u8=7;}struct S<T>(T);impl<T:Copy>A for S<T>{}fn f<T:Copy>(x:u8)->bool{match x{<S<T> as A>::C=>true,_=>false}}fn main(){check(f::<u8>(7));check(!f::<u16>(9))}",
+        true,
+    ),
+    (
+        "generic-missing-bound",
+        "trait A{const C:u8=7;}struct S<T>(T);impl<T:Copy>A for S<T>{}fn f<T>(x:u8)->bool{match x{<S<T> as A>::C=>true,_=>false}}fn main(){}",
+        false,
+    ),
+    (
+        "blanket-trait",
+        "trait A{const C:u8=7;}impl<T>A for T{}fn f<T>(x:u8)->bool{match x{T::C=>true,_=>false}}fn main(){check(f::<u8>(7));check(!f::<u16>(9))}",
+        true,
+    ),
+    (
+        "blanket-trait-bound",
+        "trait A{const C:u8=7;}impl<T>A for T{}fn f<T:A>(x:u8)->bool{match x{T::C=>true,_=>false}}fn main(){check(f::<u8>(7));check(!f::<u16>(9))}",
+        false,
+    ),
+    (
+        "lifetime-bound-proven",
+        "struct S<'a>(&'a u8);impl<'a:'static>S<'a>{const C:u8=7;}fn f<'a:'static>(_:&'a u8,x:u8)->bool{match x{<S<'a>>::C=>true,_=>false}}fn main(){check(f(&0,7));check(!f(&0,9))}",
+        true,
+    ),
+    (
+        "lifetime-value",
+        "struct S<'a>(&'a u8);impl<'a>S<'a>{const C:&'a u8=&7;}fn f<'a>(x:&'a u8)->bool{match x{<S<'a>>::C=>true,_=>false}}fn main(){check(f(&7));check(!f(&9))}",
+        true,
+    ),
+    (
+        "unused-branch",
+        "struct S<const N:usize>;impl<const N:usize>S<N>{const C:usize=if true{7}else{N};}fn f<const N:usize>(x:usize)->bool{match x{S::<N>::C=>true,_=>false}}fn main(){check(f::<3>(7))}",
+        false,
+    ),
+    (
+        "cancelled-value",
+        "struct S<const N:usize>;impl<const N:usize>S<N>{const C:usize=N-N;}fn f<const N:usize>(x:usize)->bool{match x{S::<N>::C=>true,_=>false}}fn main(){}",
+        false,
+    ),
+    (
+        "concrete-assumption",
+        "trait A{const C:u8=7;}struct S;impl A for S{const C:u8=9;}fn f<T>(x:u8)->bool where S:A{match x{S::C=>true,_=>false}}fn main(){check(f::<u8>(9));check(!f::<u8>(7))}",
+        true,
+    ),
+    (
+        "generic-default-dependency",
+        "trait A{const C:u8=Self::D;const D:u8=7;}struct S<T>(T);impl<T>A for S<T>{const D:u8=9;}fn f<T>(x:u8)->bool{match x{<S<T>as A>::C=>true,_=>false}}fn main(){check(f::<u8>(9));check(!f::<u8>(7))}",
+        true,
+    ),
+    (
+        "erased-enum-result",
+        "#[derive(PartialEq,Eq)]enum K{A,B}struct S<const N:usize>;impl<const N:usize>S<N>{const C:K=K::A;}fn f<const N:usize>(x:K)->bool{match x{S::<N>::C=>true,_=>false}}fn main(){check(f::<3>(K::A));check(!f::<3>(K::B))}",
+        true,
+    ),
+    (
+        "concrete-enum-result",
+        "#[derive(PartialEq,Eq)]enum K<const N:usize>{A,B}struct S<const N:usize>;impl<const N:usize>S<N>{const C:K<N>=K::A;}fn f(x:K<3>)->bool{match x{S::<3>::C=>true,_=>false}}fn main(){check(f(K::A));check(!f(K::B))}",
+        true,
+    ),
+    (
+        "nominal-product",
+        "#[derive(PartialEq,Eq)]struct K<T>(T);struct S<T>(T);impl S<u8>{const C:K<u8>=K(7);}fn f(x:K<u8>)->bool{match x{S::<u8>::C=>true,_=>false}}fn main(){check(f(K(7)));check(!f(K(9)))}",
+        true,
+    ),
+    (
+        "multi-global-alias",
+        "trait A{const C:u8=7;}struct S;impl A for S{const C:u8=9;}const P:u8=<S as A>::C;const Q:u8=P;fn f(x:u8)->bool{match x{Q=>true,_=>false}}fn main(){check(f(9));check(!f(7))}",
+        true,
+    ),
+    (
+        "nonexhaustive",
+        "trait A{const C:bool=false;}impl A for u8{const C:bool=true;}fn f(x:bool){match x{<u8 as A>::C=>()}}fn main(){}",
+        false,
+    ),
+    (
+        "exhaustive-bool",
+        "trait A{const C:bool=false;}impl A for u8{const C:bool=true;}fn f(x:bool)->u8{match x{false=>7,<u8 as A>::C=>9}}fn main(){check(f(false)==7);check(f(true)==9)}",
+        true,
+    ),
+    (
+        "refutable-binding",
+        "trait A{const C:u8=7;}impl A for u8{}fn main(){let <u8 as A>::C=7u8;}",
+        false,
+    ),
+    (
+        "skipped-dependent-constant",
+        "struct S<const N:usize>;impl<const N:usize>S<N>{const D:usize=N;const C:usize=if true{7}else{Self::D};}fn f<const N:usize>(x:usize)->bool{match x{S::<N>::C=>true,_=>false}}fn main(){check(f::<3>(7))}",
+        false,
+    ),
+    (
+        "skipped-fixed-constant",
+        "struct S<const N:usize>;impl<const N:usize>S<N>{const D:usize=9;const C:usize=if true{7}else{Self::D};}fn f<const N:usize>(x:usize)->bool{match x{S::<N>::C=>true,_=>false}}fn main(){check(f::<3>(7))}",
+        true,
+    ),
+    (
+        "skipped-fault",
+        "struct S<const N:usize>;impl<const N:usize>S<N>{const C:u8=if true{7}else{1/0};}fn f<const N:usize>(x:u8)->bool{match x{S::<N>::C=>true,_=>false}}fn main(){check(f::<3>(7))}",
+        true,
+    ),
+    (
+        "nominal-reference-product",
+        "#[derive(PartialEq,Eq)]struct K<'a>(&'a u8);struct S<'a>(&'a u8);impl<'a>S<'a>{const C:K<'a>=K(&7);}fn f<'a>(x:K<'a>)->bool{match x{<S<'a>>::C=>true,_=>false}}fn main(){check(f(K(&7)));check(!f(K(&9)))}",
+        true,
+    ),
+    (
+        "trait-lifetime-debt",
+        "trait A{const C:u8=7;}struct S<'a>(&'a u8);impl<'a:'static>A for S<'a>{const C:u8=9;}fn f<'a>(_:&'a u8,x:u8)->bool{match x{<S<'a>as A>::C=>true,_=>false}}fn main(){}",
+        false,
+    ),
+    (
+        "trait-lifetime-proven",
+        "trait A{const C:u8=7;}struct S<'a>(&'a u8);impl<'a:'static>A for S<'a>{const C:u8=9;}fn f<'a:'static>(_:&'a u8,x:u8)->bool{match x{<S<'a>as A>::C=>true,_=>false}}fn main(){check(f(&0,9));check(!f(&0,7))}",
+        true,
+    ),
+    (
+        "trait-lifetime-scopes",
+        "trait A{const C:u8=7;}struct S<'a>(&'a u8);impl<'a:'static>A for S<'a>{const C:u8=9;}fn good<'a:'static>(_:&'a u8,x:u8)->bool{match x{<S<'a>as A>::C=>true,_=>false}}fn bad<'a>(_:&'a u8,x:u8)->bool{match x{<S<'a>as A>::C=>true,_=>false}}fn main(){}",
+        false,
+    ),
+    (
+        "trait-reference-lifetime",
+        "trait A<'a>{const C:&'a u8=&7;}impl<'a>A<'a>for u8{const C:&'a u8=&9;}fn f<'a>(x:&'a u8)->bool{match x{<u8 as A<'a>>::C=>true,_=>false}}fn main(){check(f(&9));check(!f(&7))}",
+        true,
+    ),
+    (
+        "trait-lifetime-assumed",
+        "trait A{const C:u8=7;}struct S<'a>(&'a u8);impl<'a:'static>A for S<'a>{const C:u8=9;}fn f<'a>(_:&'a u8,x:u8)->bool where S<'a>:A{match x{<S<'a>as A>::C=>true,_=>false}}fn main(){check(f(&0,9));check(!f(&0,7))}",
+        false,
+    ),
+    (
+        "assumed-unrestricted-lifetime",
+        "trait A{const C:u8=7;}struct S<'a>(&'a u8);impl<'a>A for S<'a>{}fn f<'a>(_:&'a u8,x:u8)->bool where S<'a>:A{match x{<S<'a>as A>::C=>true,_=>false}}fn main(){check(f(&0,7))}",
+        false,
+    ),
+    (
+        "assumed-proven-static-lifetime",
+        "trait A{const C:u8=7;}struct S<'a>(&'a u8);impl<'a:'static>A for S<'a>{}fn f<'a:'static>(_:&'a u8,x:u8)->bool where S<'a>:A{match x{<S<'a>as A>::C=>true,_=>false}}fn main(){check(f(&0,7))}",
+        false,
+    ),
+    (
+        "concrete-static-with-assumption",
+        "trait A{const C:u8=7;}struct S<'a>(&'a u8);impl<'a>A for S<'a>{}fn f<'a>(_:&'a u8,x:u8)->bool where S<'a>:A{match x{<S<'static>as A>::C=>true,_=>false}}fn main(){check(f(&0,7))}",
+        false,
+    ),
+    (
+        "trait-lifetime-argument-assumed",
+        "trait A<'a>{const C:u8=7;}impl<'a>A<'a>for u8{}fn f<'a>(_:&'a u8,x:u8)->bool where u8:A<'a>{match x{<u8 as A<'a>>::C=>true,_=>false}}fn main(){check(f(&0,7))}",
+        false,
+    ),
+    (
+        "trait-static-argument-with-assumption",
+        "trait A<'a>{const C:u8=7;}impl<'a>A<'a>for u8{}fn f<'a>(_:&'a u8,x:u8)->bool where u8:A<'a>{match x{<u8 as A<'static>>::C=>true,_=>false}}fn main(){check(f(&0,7))}",
+        false,
+    ),
+    (
+        "closed-trait-static-argument",
+        "trait A<'a>{const C:u8=7;}impl<'a>A<'a>for u8{}fn f(x:u8)->bool where u8:A<'static>{match x{<u8 as A<'static>>::C=>true,_=>false}}fn main(){check(f(7));check(!f(9))}",
+        false,
+    ),
+    (
+        "closed-self-static-argument",
+        "trait A{const C:u8=7;}struct S<'a>(&'a u8);impl<'a>A for S<'a>{}fn f<'a>(_:&'a u8,x:u8)->bool where S<'static>:A{match x{<S<'static>as A>::C=>true,_=>false}}fn main(){check(f(&0,7));check(!f(&0,9))}",
+        false,
+    ),
+];
+
+#[test]
+fn associated_patterns_match_qualified_outcomes() -> Result<(), Box<dyn std::error::Error>> {
+    for &(name, body, accepted) in PATTERN_CASES {
+        let source = format!("{}{body}", native::CHECK);
+        object_outcome(&format!("pattern-{name}"), &source, accepted)?;
+        let result = semantic::analyze(&source).and_then(|(mut report, mut facts)| {
+            let entry =
+                rustgm::sema::entry::select(&mut report, &facts).map_err(|e| e.to_string())?;
+            rustgm::lower::instances::build(&report, &mut facts, entry)
+                .map(|_| ())
+                .map_err(|e| e.to_string())
+        });
+        assert_eq!(result.is_ok(), accepted, "{name}: {result:?}");
+    }
+    Ok(())
+}
+
+#[test]
+#[ignore = "requires the qualified external CPPGM LowIR backend"]
+fn associated_patterns_preserve_native_matching() -> Result<(), Box<dyn std::error::Error>> {
+    let cases = PATTERN_CASES
+        .iter()
+        .filter(|(_, _, accepted)| *accepted)
+        .map(|&(name, source, _)| (name, source, false))
+        .collect::<Vec<_>>();
+    native::check_cases("associated-patterns", &cases)
 }
