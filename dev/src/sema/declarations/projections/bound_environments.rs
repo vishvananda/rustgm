@@ -21,7 +21,15 @@ impl Checker<'_> {
                     DefKind::Struct | DefKind::Enum | DefKind::TypeAlias | DefKind::SelfType
                 ))
             });
-        if application || self.report.resolution.qualified_paths.contains_key(&key) {
+        if application
+            || self.report.resolution.qualified_paths.contains_key(&key)
+            || self
+                .report
+                .resolution
+                .associated_paths
+                .get(&key)
+                .is_some_and(|path| path.namespace == crate::resolve::model::Namespace::Type)
+        {
             self.projections.raw_bound_nodes.insert(key);
         }
     }

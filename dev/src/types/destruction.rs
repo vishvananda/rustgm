@@ -168,6 +168,13 @@ impl NeedsDrop {
                     self.record(ty, State::Ready(false));
                     continue;
                 }
+                // A checked generic body can move or drop an opaque associated
+                // result. Keep possible cleanup until instance normalization
+                // selects its concrete type and actual destruction requirements.
+                if self.scope.is_some() {
+                    self.record(ty, State::Ready(true));
+                    continue;
+                }
                 return Err("associated type destruction checking requires normalization");
             }
             if matches!(kind, Kind::Adt(_, args) if types.region_args(args).is_none()) {

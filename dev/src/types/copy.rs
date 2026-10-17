@@ -188,7 +188,7 @@ impl Copies {
                         .projection_schema(application.item)
                         .ok_or("missing associated type declaration")?
                         .copies;
-                    if promises == Properties::default() {
+                    if promises == Properties::default() && assumed.is_none() {
                         return Err("associated type Copy checking requires normalization");
                     }
                     promises

@@ -32,6 +32,7 @@ impl Checker<'_> {
         owner: DefId,
         key: NodeKey,
         parameters: &[NodeKey],
+        context: regions::Context,
     ) -> Result<(), Error> {
         let item = self.item(key)?;
         let mut syntax = Vec::new();
@@ -107,6 +108,17 @@ impl Checker<'_> {
             )?;
         }
         if !syntax.is_empty() {
+            for bound in &syntax {
+                let subject = match bound.subject {
+                    Subject::Parameter(id) => Some(id),
+                    Subject::Type(key) => self.bound_parameter(key, true),
+                    Subject::Associated(_) => None,
+                };
+                if let (Some(subject), Written::User { path, definition }) = (subject, bound.bound)
+                {
+                    self.retain_projection_bound(owner, subject, path, definition, context);
+                }
+            }
             self.bound_syntax.insert(owner, syntax);
         }
         Ok(())
@@ -197,7 +209,11 @@ impl Checker<'_> {
         }
         Ok(())
     }
-    fn bound_parameter(&self, mut key: NodeKey, parentheses: bool) -> Option<DefId> {
+    pub(in super::super) fn bound_parameter(
+        &self,
+        mut key: NodeKey,
+        parentheses: bool,
+    ) -> Option<DefId> {
         loop {
             if let Some(Target::Definition(id)) = self.facts.node(key).and_then(|f| f.reference) {
                 return Some(id);
@@ -312,7 +328,11 @@ impl Checker<'_> {
         self.bound_syntax.insert(owner, bounds);
         Ok(())
     }
-    fn bound_subject_lifetimes(&mut self, key: NodeKey, owner: DefId) -> Result<(), Error> {
+    pub(in super::super) fn bound_subject_lifetimes(
+        &mut self,
+        key: NodeKey,
+        owner: DefId,
+    ) -> Result<(), Error> {
         let ast = &self.report.package.unit(key.file).configured.ast;
         let raw = matches!(
             self.report.resolution.definitions[owner.0 as usize].kind,

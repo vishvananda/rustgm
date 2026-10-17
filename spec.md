@@ -107,6 +107,30 @@ selected definition with the validated implementation, and share lifetime querie
 across all associated definitions of that impl. An ordinary alias's deferred
 well-formedness policy must not weaken an associated type contract.
 
+Shorthand associated type lookup keeps naming separate from projection proof.
+Index written parameter bounds by lexical owner and resolved subject; elaborate
+only a demanded bound's positional inputs, without publishing an unfinished
+caller environment. This allows `where T: A, T::Out: B` independently of clause
+order. Ordinary alias bounds can name a member but cannot authorize its use.
+Trait Self also sees method-local Self bounds; trait-impl Self starts from its
+own trait application and supertraits, excluding unrelated impl where-bounds.
+Concrete types and inherent Self do not infer a trait qualifier. Generic defaults
+require explicit trait qualification in the pinned profile.
+
+Cache member candidates by complete predicate and canonical name, retaining
+type, const and lifetime arguments. Rebase captured lifetime slots into the use
+binder before lookup; duplicate identical applications are harmless while
+distinct applications remain ambiguous. Run the selected typed projection through
+the ordinary scoped normalizer and retain its formation and lifetime obligations.
+The candidate cache grants no permission and does not select an implementation.
+
+Opaque projected values in checked generic bodies retain move and possible-drop
+requirements unless Copy is proved. Cleanup conservatively retains every input
+lifetime and parameter, as runtime liveness already does; this sufficient route
+does not infer reverse input bounds from an associated result. Concrete execution
+still requires normalized storage and selected destruction. The conservative
+input route is not the complete projected-result drop-checking contract.
+
 Associated constant declarations retain their types independently of optional
 initializers. Check missing and extra members by resolved owner and name, then
 publish default/override identities only with the validated implementation.

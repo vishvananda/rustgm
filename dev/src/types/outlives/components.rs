@@ -32,6 +32,17 @@ pub(crate) struct TypeComponents {
     budget: Budget,
 }
 impl TypeComponents {
+    /// Every input remaining live is sufficient for an opaque result's cleanup.
+    /// This gives no reverse bound on inputs from a bound on the result.
+    pub(crate) fn live_value(
+        &mut self,
+        types: &Store,
+        ty: TypeId,
+    ) -> Result<Parts<'_>, &'static str> {
+        self.components
+            .get(types, ty, 0, ComponentKind::LiveValue, &mut self.budget)?
+            .scalar_only()
+    }
     pub(crate) const fn steps(&self) -> usize {
         self.budget.0
     }

@@ -11,6 +11,8 @@ mod readiness;
 mod rustc;
 #[path = "support/semantic.rs"]
 mod semantic;
+#[path = "associated_declarations/shorthand.rs"]
+mod shorthand;
 use rustgm::{
     resolve::model::{DefId, DefKind},
     sema::associated::{self, Inventory, OwnerId, OwnerKind},

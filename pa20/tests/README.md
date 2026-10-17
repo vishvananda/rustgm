@@ -6,6 +6,9 @@ Required families:
 
 - `projections`: qualified/shorthand paths, complete type/lifetime/const inputs,
   aliases, nominal fields, callable signatures, nested results and repeated uses.
+  Include method-local trait Self bounds versus trait-impl Self lookup, reordered
+  projected where-subjects, duplicate versus distinct trait applications, captured
+  callable lifetimes, alias proof isolation and generic-default rejection.
 - `contracts`: result bounds, equalities, inherited promises, valid/invalid impl
   conformance, unused declarations and obligations retained after normalization.
 - `constants`: required/default/overridden values, inherent values, generic

@@ -55,7 +55,7 @@ impl Checker<'_> {
             .filter(|node| unit.configured.active[node.0 as usize])
             .map(|node| self.unattributed(NodeKey { node, ..key }))
             .collect();
-        self.prepare_bounds(owner, key, &nodes)?;
+        self.prepare_bounds(owner, key, &nodes, context)?;
         if !(nodes.iter().any(|key| {
             self.generic_syntax(*key)
                 .is_ok_and(|p| p.flavor != GenericFlavor::Lifetime)

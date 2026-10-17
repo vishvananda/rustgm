@@ -45,9 +45,32 @@ impl Checker<'_> {
         path: NodeKey,
         context: regions::Context,
     ) -> Result<(), Error> {
+        let Some(list) = self.prepare_associated_bindings(path)? else {
+            return Ok(());
+        };
+        for offset in (list.start..list.end).rev() {
+            let node = self.report.package.unit(path.file).configured.ast.edges[offset as usize];
+            let key = NodeKey { node, ..path };
+            let value = self.associated_binding_value(key)?;
+            self.work.push(Work::Node(
+                NodeKey {
+                    node: value,
+                    ..path
+                },
+                false,
+                context,
+            ));
+        }
+        Ok(())
+    }
+
+    pub(in super::super) fn prepare_associated_bindings(
+        &mut self,
+        path: NodeKey,
+    ) -> Result<Option<List>, Error> {
         if !self.associated_bindings.paths.contains_key(&path) {
             let Some(list) = crate::sema::lifetimes::arguments(self.report, path, false)? else {
-                return Ok(());
+                return Ok(None);
             };
             let ast = &self.report.package.unit(path.file).configured.ast;
             let Some(first) = ast
@@ -55,7 +78,7 @@ impl Checker<'_> {
                 .iter()
                 .position(|&node| matches!(ast.node(node).kind, Kind::Constraint { .. }))
             else {
-                return Ok(());
+                return Ok(None);
             };
             let middle = list.start
                 + u32::try_from(first).map_err(|_| self.error(path, "too many bound arguments"))?;
@@ -73,21 +96,7 @@ impl Checker<'_> {
                 },
             );
         }
-        let list = self.associated_bindings.paths[&path].bindings;
-        for offset in (list.start..list.end).rev() {
-            let node = self.report.package.unit(path.file).configured.ast.edges[offset as usize];
-            let key = NodeKey { node, ..path };
-            let value = self.associated_binding_value(key)?;
-            self.work.push(Work::Node(
-                NodeKey {
-                    node: value,
-                    ..path
-                },
-                false,
-                context,
-            ));
-        }
-        Ok(())
+        Ok(Some(self.associated_bindings.paths[&path].bindings))
     }
 
     pub(in super::super) fn associated_binding_value(&self, key: NodeKey) -> Result<NodeId, Error> {

@@ -8276,3 +8276,76 @@ speedup or clear a possible small default-chain cost. Preserve the published
 `2c64b78` comparison binary, along with the older baselines for the separately
 open ordinary-argument and pattern concerns. This checkpoint restores valid
 program behavior; it does not declare the performance investigation complete.
+
+## Shorthand associated types and opaque value cleanup (2026-10-17)
+
+The maintainer now names shorthand associated types from resolved parameter
+bounds and complete trait applications. A sparse owner/subject index retains
+written naming inputs independently of the caller's proof environment. Queued
+bound preparation handles reordered projected where-subjects without publishing
+unfinished assumptions. Member lookup caches full predicates and canonical names;
+its result still passes through scoped projection normalization. Captured owner
+lifetimes are rebased before lookup, including beneath callable binders.
+
+Independent probes distinguish trait Self, trait-impl Self and ordinary type
+parameters. Trait methods see their own Self where-bounds and can become
+ambiguous; impl Self uses its own trait application and supertraits, excluding
+unrelated impl/method where-bounds. Duplicate identical applications remain valid,
+while distinct type/lifetime applications are ambiguous. Alias bounds name members
+without proving their uses. Concrete/inherent Self shorthand remains invalid.
+Rust 1.98.0 also rejects shorthand in generic defaults, even with a written bound;
+the initially proposed positive expectation was corrected from object-compilation
+evidence, before any course oracle was adopted.
+
+Opaque associated results can now move through checked generic bodies without
+requiring a Copy promise. Scoped Copy queries conservatively return no ability;
+possible destruction and input lifetime/parameter liveness remain until concrete
+instantiation. The new native destructor case verifies exactly one invocation.
+This conservative input route does not complete projected-result drop checking.
+
+The 47-case maintainer suite independently object-qualifies 26 acceptances and
+21 rejections; all 26 accepted programs execute with rustc and CPPGM. Coverage
+includes defaults/overrides, inherited and diamond bounds, mixed arguments,
+captured lifetimes, aliases, method-local bounds, bound ordering, invalid duplicate
+moves and invalid alias proof reuse. Broader positive probes remain open: projected
+trait-header predicates, projected nominal storage fields, and an opaque projection
+passed through a nested callable. Their fully qualified equivalents also fail the
+published predecessor. Retained rustc acceptance and both implementations' diagnostics
+are in `obj/pa20-work/shorthand-associated-types-v1/positive-boundary-outcomes.json`;
+implementation follow-up notes are in `shorthand-associated-types-v2/next-boundaries.md`.
+These are valid unsupported programs, not negative language fixtures.
+
+The full V2 regular run passes 1,178 tests and fails one old scoped-Copy assertion
+that required an unsupported-operation error. V3 changes only that test, asserting
+no Copy permission, possible destruction, retained input liveness and opaque layout
+rejection; all 11 projection-shape tests pass. Hash checks prove every production
+source is unchanged between those runs. The combined coverage is 1,179 regular
+tests. V3 also passes 4,863 course cases, all 69 native groups, strict lint, the
+725-file audit with zero findings, 33 harness checks and backend/upstream validation.
+Its 728 frozen source/configuration files and 14,589 oracle sidecars are verified.
+PA20 through PA25 still fail explicitly as planned assignments. No assignment
+manifest, text oracle or release status is promoted by this checkpoint.
+
+The final immutable V3 candidate is `8fef20ac`. The 22-job performance study
+retains 572 study and 88 qualification observations, with eight compiler invocations
+per observation (4,576 and 704 invocations). All eleven frozen inputs execute with
+both rustc and CPPGM before timing. Binary/source/input hashes and full/count output
+equality pass. One preliminary generator omitted a space before `for`; rustc
+rejected that setup before any timing. Its source and diagnostics remain in the
+invalid-input archive, and the corrected study starts with fresh frozen inputs.
+
+Against published `0aa94de`, ordinary-256 count/full paired medians are
+-2.314%/-2.914% (A/A 7.795%/3.258%); qualified-256 is -0.446%/+0.678%
+(A/A 15.677%/82.724%); bound-width-256 is -0.769%/-0.147%
+(A/A 45.977%/60.405%). The remaining existing-code controls also lie within
+calibration variation. Candidate-only scaling covers repeated shorthand, 64/256
+bounds and inherited depth 8/32. Identical-binary paired medians reach +13.157%
+and +20.371% in two jobs, demonstrating substantial noise beyond individual
+calibration windows. This study establishes output equality and retains measured
+scaling evidence; it supports neither a speedup claim nor a tight regression bound.
+Earlier default-chain, ordinary-argument and pattern concerns remain open.
+
+The guarded validation cleanup removes 1,783 generated files (3.74 GiB), and the
+between-batch tidy removes 3,354 more (1.90 GiB). Source, diagnostics, raw timings,
+receipts and the required comparison binaries remain. Publication and exact-head
+CI evidence are recorded under `obj/pa20-work/shorthand-associated-types-v3/`.

@@ -62,6 +62,8 @@ enum Work {
     ImplicitMethod(NodeKey, regions::Context),
     MethodArguments(NodeKey, NodeKey),
     ProjectionPath(NodeKey, regions::Context),
+    ImplicitProjection(NodeKey, regions::Context),
+    ProjectionBound(projections::lookup::Seed, bool),
     ProjectionSelection(NodeKey, crate::types::substitute::Request),
     ProjectionResult(NodeKey),
     ProjectionEnvironment(DefId, regions::Context, bool),
@@ -279,6 +281,12 @@ impl Checker<'_> {
                 }
                 Work::ProjectionPath(key, context) => {
                     self.complete_projection_path(key, context)?;
+                }
+                Work::ImplicitProjection(key, context) => {
+                    self.complete_implicit_projection(key, context)?;
+                }
+                Work::ProjectionBound(seed, finish) => {
+                    self.complete_projection_bound(seed, finish)?;
                 }
                 Work::ProjectionResult(key) => {
                     self.complete_projection_result(key)?;
@@ -610,6 +618,11 @@ impl Checker<'_> {
         }
         let kind = self.kind(key);
         if !finish {
+            if matches!(kind, Kind::Path { .. } | Kind::Qualified { .. })
+                && self.schedule_implicit_projection(key, context)?
+            {
+                return Ok(());
+            }
             if matches!(kind, Kind::Qualified { .. }) {
                 return self.schedule_projection_path(key, context);
             }

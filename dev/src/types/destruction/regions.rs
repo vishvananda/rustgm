@@ -184,6 +184,23 @@ impl Regions {
                         .projection_schema(application.item)
                         .is_some_and(|schema| schema.copies.copy)
                 {
+                    if let Some(environment) = &self.environment {
+                        let components = self.components.get_or_insert_with(Default::default);
+                        let parts = components.live_value(types, ty)?;
+                        if parts
+                            .parameters
+                            .iter()
+                            .any(|p| environment.abilities(*p).is_none())
+                        {
+                            return Err("drop projection input is outside its environment");
+                        }
+                        let mut values = Values::default();
+                        values.extend(parts);
+                        self.charge(values.parts().len())?;
+                        self.retain(2 * size_of::<(Key, State)>())?;
+                        self.publish(key, &mut values)?;
+                        continue;
+                    }
                     return Err("associated type drop regions require normalization");
                 }
             }

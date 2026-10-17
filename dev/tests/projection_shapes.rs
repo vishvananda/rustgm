@@ -491,11 +491,17 @@ fn projected_shapes_require_exact_trait_inputs_and_grant_only_declared_sizedness
     assert!(shapes.demand(&store, wrong).is_err());
     let definitions = Definitions::default();
     let mut copies = Copies::in_environment(Arc::clone(&environment));
-    assert!(
-        copies
-            .demand(&store, &definitions, &HashMap::new(), projected)
-            .is_err()
+    assert_eq!(
+        copies.demand(&store, &definitions, &HashMap::new(), projected)?,
+        rustgm::types::copy::Properties::default()
     );
+    let mut drops = NeedsDrop::in_environment([], Arc::clone(&environment));
+    assert!(drops.demand(&store, &definitions, projected)?);
+    let mut regions =
+        rustgm::types::destruction::regions::Regions::new([])?.scoped(Arc::clone(&environment));
+    let parts = regions.symbolic(&store, &definitions, projected)?;
+    assert_eq!(parts.parameters, &[id]);
+    assert!(parts.regions.is_empty());
     assert!(
         Layouts::default()
             .demand(&store, &definitions, projected)

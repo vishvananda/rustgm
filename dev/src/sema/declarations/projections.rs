@@ -3,6 +3,8 @@ mod aliases;
 mod bound_environments;
 mod deferred;
 mod environments;
+mod implicit;
+pub(super) mod lookup;
 mod proofs;
 mod scoped;
 use super::{Checker, DefId, Error, NodeKey, Type, TypeId, Work, regions};
@@ -43,6 +45,7 @@ enum Destination {
 }
 #[derive(Default)]
 pub(super) struct Pending {
+    lookup: lookup::Pending,
     sized: Vec<(NodeKey, regions::Context, scoped::Ambient, TypeId)>,
     alias_environments:
         HashMap<DefId, std::sync::Arc<crate::types::parameters::environment::Environment>>,
