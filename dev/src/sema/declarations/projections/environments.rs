@@ -91,7 +91,11 @@ impl Checker<'_> {
             self.schedule_bounds(owner, context)?;
             return Ok(());
         }
-        if self.prepare_bound_environment(owner, context)? {
+        if self.prepare_bound_environment(
+            owner,
+            context,
+            Work::ProjectionEnvironment(owner, context, true),
+        )? {
             return Ok(());
         }
         self.complete_bound_environment(owner, context)?;

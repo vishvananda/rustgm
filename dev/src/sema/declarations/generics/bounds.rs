@@ -316,7 +316,10 @@ impl Checker<'_> {
         let ast = &self.report.package.unit(key.file).configured.ast;
         let raw = matches!(
             self.report.resolution.definitions[owner.0 as usize].kind,
-            crate::resolve::model::DefKind::Function | crate::resolve::model::DefKind::SelfType
+            crate::resolve::model::DefKind::Function
+                | crate::resolve::model::DefKind::SelfType
+                | crate::resolve::model::DefKind::Struct
+                | crate::resolve::model::DefKind::Enum
         );
         let mut work = vec![key.node];
         let mut seen = std::collections::HashSet::new();

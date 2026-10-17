@@ -12,7 +12,7 @@ use rustgm::{
     },
 };
 
-type TestResult = Result<(), Box<dyn std::error::Error>>;
+type TestResult<T = ()> = Result<T, Box<dyn std::error::Error>>;
 #[derive(Default)]
 struct Fixture {
     types: Store,
@@ -546,5 +546,215 @@ fn higher_ranked_binders_do_not_capture_nominal_slots() -> TestResult {
     )?;
     assert!(f.coercion(&variances, actual, expected));
     assert!(!f.coercion(&variances, expected, actual));
+    Ok(())
+}
+
+impl Fixture {
+    fn projection(
+        &mut self,
+        subject: TypeId,
+        arguments: &[Argument],
+        family: &[Argument],
+    ) -> TestResult<TypeId> {
+        use rustgm::types::{
+            copy::Properties,
+            projection::{Application, Schema},
+            traits,
+        };
+        self.types.declare_projection(
+            ItemId(90_001),
+            Schema {
+                trait_item: ItemId(90_000),
+                sized: true,
+                copies: Properties::default(),
+            },
+        )?;
+        let arguments = self.types.intern_arguments(arguments)?;
+        let trait_application = self.types.intern_trait_application(traits::Application {
+            item: ItemId(90_000),
+            arguments,
+        })?;
+        let arguments = self.types.intern_arguments(family)?;
+        Ok(self.types.intern(Kind::Projection(Application {
+            item: ItemId(90_001),
+            subject,
+            trait_application,
+            arguments,
+        }))?)
+    }
+}
+
+#[test]
+fn retained_projected_fields_preserve_complete_input_variance_after_normalization() -> TestResult {
+    let mut fixture = Fixture::default();
+    let owner = ItemId(0);
+    let a = RegionId::bound(0, 0)?;
+    let subject = fixture.parameter(owner, 1)?;
+    let other = fixture.parameter(owner, 2)?;
+    let length = fixture.types.intern_parameter(Parameter {
+        owner,
+        index: 3,
+        kind: ParameterKind::Const {
+            ty: TypeId::primitive(Primitive::Usize),
+        },
+    })?;
+    let length = fixture.types.intern_const(ConstKind::Parameter(length))?;
+    let output = fixture.projection(
+        subject,
+        &[Argument::Lifetime(a), Argument::Type(other)],
+        &[Argument::Const(length)],
+    )?;
+    let normalized = TypeId::primitive(Primitive::U16);
+    fixture.define(
+        owner,
+        &[
+            Argument::Lifetime(a),
+            Argument::Type(subject),
+            Argument::Type(other),
+            Argument::Const(length),
+        ],
+        &[normalized],
+    )?;
+    let original = fixture.types.intern_list(&[output])?;
+    let before = fixture.types.len();
+    let raw = Variances::infer(&fixture.types, &fixture.definitions, &fixture.schemas)?;
+    assert_eq!(
+        raw.get(owner),
+        Some(
+            [
+                Variance::Bivariant,
+                Variance::Bivariant,
+                Variance::Bivariant,
+                Variance::Invariant
+            ]
+            .as_slice()
+        )
+    );
+    let inferred = Variances::infer_with_fields(
+        &fixture.types,
+        &fixture.definitions,
+        &fixture.schemas,
+        |_, _, _| original,
+    )?;
+    assert_eq!(
+        inferred.get(owner),
+        Some([Variance::Invariant; 4].as_slice())
+    );
+    assert!(inferred.steps < 100);
+    assert_eq!(fixture.types.len(), before);
+    let definition = fixture.definitions.get(owner).ok_or("missing aggregate")?;
+    assert_eq!(
+        fixture
+            .types
+            .list(fixture.definitions.variants(definition)[0].fields),
+        Some([normalized].as_slice())
+    );
+    Ok(())
+}
+
+#[test]
+fn declared_field_selection_is_per_variant_and_never_by_normalized_type() -> TestResult {
+    let mut fixture = Fixture::default();
+    let owner = ItemId(0);
+    let subject = fixture.parameter(owner, 0)?;
+    let ordinary = fixture.parameter(owner, 1)?;
+    let output = fixture.projection(subject, &[], &[])?;
+    let normalized = TypeId::primitive(Primitive::U16);
+    let first = fixture.types.intern_list(&[normalized, ordinary])?;
+    let second = fixture.types.intern_list(&[normalized])?;
+    let original = fixture.types.intern_list(&[output])?;
+    fixture.definitions.insert(
+        owner,
+        aggregate::Kind::Enum,
+        Repr::default(),
+        &[
+            Variant {
+                fields: first,
+                discriminant: 0,
+            },
+            Variant {
+                fields: second,
+                discriminant: 1,
+            },
+        ],
+    )?;
+    let arguments = fixture
+        .types
+        .intern_arguments(&[Argument::Type(subject), Argument::Type(ordinary)])?;
+    fixture.schemas.push((owner, arguments));
+    let another = fixture.parameter(ItemId(1), 0)?;
+    fixture.define(
+        ItemId(1),
+        &[Argument::Type(another)],
+        &[normalized, another],
+    )?;
+    let mut visited = Vec::new();
+    let inferred = Variances::infer_with_fields(
+        &fixture.types,
+        &fixture.definitions,
+        &fixture.schemas,
+        |item, variant, fields| {
+            visited.push((item, variant));
+            if item == owner && variant == 1 {
+                original
+            } else {
+                fields
+            }
+        },
+    )?;
+    assert_eq!(visited, [(owner, 0), (owner, 1), (ItemId(1), 0)]);
+    assert_eq!(
+        inferred.get(owner),
+        Some([Variance::Invariant, Variance::Covariant].as_slice())
+    );
+    assert_eq!(
+        inferred.get(ItemId(1)),
+        Some([Variance::Covariant].as_slice())
+    );
+    Ok(())
+}
+
+#[test]
+fn retained_field_reader_rejects_missing_or_changed_variant_arity() -> TestResult {
+    let mut fixture = Fixture::default();
+    let owner = ItemId(0);
+    let subject = fixture.parameter(owner, 0)?;
+    fixture.define(owner, &[Argument::Type(subject)], &[subject])?;
+    let wrong = fixture.types.intern_list(&[subject, subject])?;
+    for fields in [wrong, rustgm::types::ListId(u32::MAX)] {
+        assert!(
+            Variances::infer_with_fields(
+                &fixture.types,
+                &fixture.definitions,
+                &fixture.schemas,
+                |_, _, _| fields
+            )
+            .is_err()
+        );
+    }
+    Ok(())
+}
+
+#[test]
+fn retained_field_graphs_share_work_without_expanding_storage() -> TestResult {
+    let mut fixture = Fixture::default();
+    let owner = ItemId(0);
+    let subject = fixture.parameter(owner, 0)?;
+    let mut declared = fixture.projection(subject, &[], &[])?;
+    for _ in 0..4096 {
+        let fields = fixture.types.intern_list(&[declared, declared])?;
+        declared = fixture.types.intern(Kind::Tuple(fields))?;
+    }
+    let original = fixture.types.intern_list(&[declared])?;
+    fixture.define(owner, &[Argument::Type(subject)], &[TypeId::UNIT])?;
+    let inferred = Variances::infer_with_fields(
+        &fixture.types,
+        &fixture.definitions,
+        &fixture.schemas,
+        |_, _, _| original,
+    )?;
+    assert_eq!(inferred.get(owner), Some([Variance::Invariant].as_slice()));
+    assert!(inferred.steps < 100_000, "{}", inferred.steps);
+    assert_eq!(fixture.definitions.instantiation_steps(), 0);
     Ok(())
 }

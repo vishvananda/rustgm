@@ -90,6 +90,11 @@ impl Checker<'_> {
             self.schedule_bounds(owner, self.nominal_context(item))?;
             return Ok(());
         }
+        let context = self.nominal_context(item);
+        if self.prepare_bound_environment(owner, context, Work::NominalContract(item, true))? {
+            return Ok(());
+        }
+        self.complete_bound_environment(owner, context)?;
         self.facts
             .generics
             .complete_environment(&mut self.facts.types, owner)

@@ -45,10 +45,16 @@ impl Checker<'_> {
             })
             .collect::<Result<Vec<_>, _>>()
             .map_err(|e| Error::at(crate::resolve::unit::FileId(0), 0, e))?;
-        self.facts.lifetimes.variances = crate::types::variance::Variances::infer(
+        self.facts.lifetimes.variances = crate::types::variance::Variances::infer_with_fields(
             &self.facts.types,
             &self.facts.aggregates,
             &parameters,
+            |owner, variant, storage| {
+                self.facts
+                    .unreduced
+                    .fields(owner, variant)
+                    .unwrap_or(storage)
+            },
         )
         .map_err(|e| Error::at(crate::resolve::unit::FileId(0), 0, e))?;
         for (item, _) in parameters {

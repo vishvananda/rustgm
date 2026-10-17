@@ -397,9 +397,22 @@ hidden obligations, output/input separation, callable scopes, and bounded shared
 and chained graphs. `field_results.rs` adds twelve independently object-qualified
 source controls (nine accepted, three rejected), including three CPPGM/rustc
 executions. The invalid escaping reference and output-to-input bound controls reach
-lifetime proofs. Owned projected-field layout, explicit nominal result-static
-predicates and trait-declared associated lifetime bounds remain separate valid
-unsupported investigations; none is treated as a language-invalid fixture.
+lifetime proofs. General projected-field layout and trait-declared associated
+lifetime bounds remain separate valid unsupported investigations. Explicit
+nominal result-static predicates now have the additional coverage below.
+
+`aggregate_bounds.rs` checks 32 independently object-qualified nominal bound
+programs: 22 accept and ten reject, with nine CPPGM/rustc executions. The cases
+cover complete nominal bound environments, aliases, trait-argument ordering,
+defaults, closed versus generic requirements, equality-normalized storage and
+short-lived Self inputs with an equality-fixed static result. Four added
+`nominal_variance.rs` invariants check retained declaration fields, complete
+projection inputs, variant identity, arity and a 4,096-level shared graph.
+The original source probe for dependent bound roots contradicted its predicted
+rustc acceptance; it and a separately qualified valid explicit-prerequisite
+variant remain investigations outside adopted coverage. The latter still needs
+normalization between dependent assumptions. General closed projected lifetime
+requirements without a result equality also remain incomplete.
 
 ## Storage and cleanup
 

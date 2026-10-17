@@ -220,7 +220,10 @@ When a bound subject or trait argument contains a projection, elaborate its type
 identity before normalizing it, including nominal and alias wrappers.
 A private, immutable snapshot of all typed bounds supplies the
 assumptions for normalization; publish the final environment only after the bound
-roots complete. Preserve the original predicate separately from its normal form.
+roots complete. Struct and enum contracts use that same workflow, with an explicit
+typed continuation that completes the owning nominal only after its bound roots.
+Do not make an unfinished nominal environment visible merely to break a cycle.
+Preserve the original predicate separately from its normal form.
 Its original parameter/lifetime occurrences determine declaration-time versus
 instantiation-time checking and early lifetime binding. A generic projected bound
 may normalize to an unsatisfied concrete requirement without rejecting an unused
@@ -1166,6 +1169,16 @@ retain their own lifetimes. Recursive-only type/lifetime parameters remain
 unused; const slots require exact equality even when no field uses them.
 Directed region checking consumes the completed table for both lifetime and
 type arguments, after structural inference retains the actual/expected types.
+
+An equality-normalized field retains its original declaration dependencies for
+variance. Preserve sparse original field lists by nominal and variant, with the
+same arity and ordering as storage fields. Original projection inputs remain
+invariant even if their result becomes a scalar; bounds alone cannot manufacture
+field occurrences. Multiple declarations may share a normalized type without
+sharing their original inputs. Layout and value operations consume the normalized
+storage fields. Ordinary variants allocate no retained field lists, and inference
+reads the original lists through the same bounded variance graph without field
+expansion or mutation of canonical types.
 
 Generic nominal fields are instantiated from completed typed declarations, keyed
 by the canonical nominal type including every type, const and lifetime argument.

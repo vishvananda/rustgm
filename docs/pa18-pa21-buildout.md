@@ -7522,3 +7522,69 @@ medians were about 14.3/38.9 ms at 64/256 functions. Earlier scoped-result and
 runtime-extents timing concerns remain separate; this new baseline comparison
 does not resolve them. Validation cleanup removed 4,802 generated files, about
 5.10 GiB, with its deletion receipt retained under `obj/cleanup/`.
+
+
+## Nominal bound environments and retained field variance
+
+Struct and enum projected bounds now complete through the same deferred-bound
+workflow as functions and impl owners. Their raw subjects and trait arguments
+form an immutable typed snapshot before normalization. A typed continuation
+resumes the nominal contract only after all its bound roots complete. This removes
+the self-dependency that previously rejected explicit projected Copy, user-trait,
+lifetime and static requirements. Original predicates remain available for
+classifying generic versus closed requirements, so an unused conditional bound
+can survive while an actual use still has to prove it.
+
+Equality normalization exposed a second boundary: a field written as `T::Out`
+could become `u16`, making the nominal's later usage/variance pass lose T. The
+frontend now retains original field lists only for variants whose fields change.
+Variance reads those lists by owner and variant through its existing bounded
+graph; layout and value operations continue to use normalized storage. Input
+identity is retained separately from result equality, in line with the
+[Rust compiler guide's projection variance rule](https://rustc-dev-guide.rust-lang.org/variance.html#variance-and-associated-types).
+Where-clause occurrences alone still do not make an unused field parameter valid.
+No field instance expansion or canonical type mutation is needed for this proof.
+
+The source suite contains 32 independently object-qualified controls: 22 valid
+and ten invalid. Nine have independent CPPGM/rustc executions, covering records,
+enums, aliases, function-pointer fields, mixed records, nominal defaults, trait
+arguments and an equality-fixed static result with a short-lived Self input.
+Four typed invariants add complete type/lifetime/const projection inputs,
+variant-local selection, arity validation and a 4,096-node shared graph without
+altering storage fields. Evidence lives in
+`obj/pa20-work/nominal-bound-environments-v1/`.
+
+One exploratory dependent-bound source was predicted valid but pinned rustc
+rejected it with E0277. The original declaration, failed qualification and
+candidate rejection are retained. A separately declared control adding an
+explicit prerequisite passes rustc but still reaches RustGM's ambiguous-selection
+boundary. Neither source was adopted as a grading expectation. Dependent bound
+normalization and general static projected-output proof without an equality
+remain unfinished, along with projected destruction and the broader PA20/PA21
+course work. This checkpoint does not promote either assignment.
+
+The preceding 09eb45a CI run completed successfully in 14m53s against its
+15-minute limit. CI now allows 20 minutes for the additional object-qualified
+source controls. The test steps and storage reserve remain unchanged.
+
+Validation passed all 1,163 release tests, all 4,864 PA1–PA19 course fixtures,
+and all 62 explicit maintainer native tests, including the nine new programs.
+Backend and upstream checks passed. Rustfmt, Clippy all/pedantic with warnings
+denied, the 712-file Rust audit with no findings, and 33 harness tests passed.
+All 715 code/configuration hashes remained unchanged through the 25-command
+validation batch. No course oracle was regenerated.
+
+Performance used immutable 09eb45a and final-candidate binaries for twelve
+actual count/full comparisons, plus eight identical-candidate scaling jobs for
+newly supported sources. All six generated inputs passed pinned rustc object
+qualification. A/A calibration and five paired ABBA blocks retained 520 study
+observations and 80 full-output qualifications, with output equality and all
+source/input/binary/runner hashes verified. Actual paired medians ranged from
+-2.946% to +0.710%; none crossed the predeclared +3.5% confirmation threshold.
+A/A spread reached 12.21% in actual comparisons and 24.04% across all jobs, so
+these observations do not establish a speedup or blanket absence of regressions.
+New projected-bound full-view medians were 7.75/18.34 ms at 64/256 declarations;
+equality-field medians were 6.98/15.84 ms. Earlier scoped-result and runtime-extents
+timing concerns remain separate. Validation cleanup removed 4,842 generated
+files, about 5.14 GiB; performance cleanup found no remaining disposable outputs.
+Both deletion receipts and every timing observation remain under `obj/`.

@@ -1,7 +1,7 @@
 //! Variance of lifetime/type parameters from completed nominal field templates.
 mod solver;
 use super::{
-    GenericArgs, ItemId, Kind, RegionId, Store, TypeId,
+    GenericArgs, ItemId, Kind, ListId, RegionId, Store, TypeId,
     aggregate::Definitions,
     arguments::{Argument, ConstId, ConstKind},
     parameters::{ParameterId, ParameterKind},
@@ -62,6 +62,20 @@ impl Variances {
         definitions: &Definitions,
         parameters: &[(ItemId, GenericArgs)],
     ) -> Result<Self, &'static str> {
+        Self::infer_with_fields(types, definitions, parameters, |_, _, fields| fields)
+    }
+
+    /// Select retained declaration field types independently of normalized storage.
+    /// Projection inputs remain invariant even when an equality fixes their result.
+    /// The reader preserves each variant's original field count and ordering.
+    /// # Errors
+    /// Rejects malformed field lists, changed arity and exhausted inference work.
+    pub fn infer_with_fields(
+        types: &Store,
+        definitions: &Definitions,
+        parameters: &[(ItemId, GenericArgs)],
+        mut fields: impl FnMut(ItemId, u32, ListId) -> ListId,
+    ) -> Result<Self, &'static str> {
         let mut graph = Graph::default();
         for &(item, arguments) in parameters {
             graph.declaration(types, item, arguments)?;
@@ -71,12 +85,20 @@ impl Variances {
                 .get(item)
                 .ok_or("missing variance aggregate definition")?;
             graph.seen.clear();
-            for variant in definitions.variants(definition) {
+            for (ordinal, variant) in (0..).zip(definitions.variants(definition)) {
                 graph.solver.charge()?;
-                for ty in types
-                    .list(variant.fields)
-                    .ok_or("missing variance field types")?
+                let selected = fields(item, ordinal, variant.fields);
+                let declared = types.list(selected).ok_or("missing variance field types")?;
+                if selected != variant.fields
+                    && declared.len()
+                        != types
+                            .list(variant.fields)
+                            .ok_or("missing storage fields")?
+                            .len()
                 {
+                    return Err("variance declaration field count differs from storage");
+                }
+                for ty in declared {
                     graph.visit(types, item, *ty)?;
                 }
             }

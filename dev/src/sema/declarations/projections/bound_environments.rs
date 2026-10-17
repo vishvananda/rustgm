@@ -94,10 +94,11 @@ impl Checker<'_> {
         Ok(())
     }
 
-    pub(super) fn prepare_bound_environment(
+    pub(in super::super) fn prepare_bound_environment(
         &mut self,
         owner: DefId,
         context: regions::Context,
+        continuation: Work,
     ) -> Result<bool, Error> {
         if self.projections.raw_environments.contains_key(&owner) {
             return Ok(false);
@@ -115,15 +116,14 @@ impl Checker<'_> {
         self.projections
             .raw_environments
             .insert(owner, Arc::new(environment));
-        self.work
-            .push(Work::ProjectionEnvironment(owner, context, true));
+        self.work.push(continuation);
         for key in roots.into_iter().rev() {
             self.work.push(Work::NormalizeBound(key, context));
         }
         Ok(true)
     }
 
-    pub(super) fn complete_bound_environment(
+    pub(in super::super) fn complete_bound_environment(
         &mut self,
         owner: DefId,
         context: regions::Context,

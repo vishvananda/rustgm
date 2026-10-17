@@ -84,7 +84,7 @@ impl Checker<'_> {
         let mut variants = Vec::with_capacity(self.nominals.entries[index].groups.len());
         for ordinal in 0..self.nominals.entries[index].groups.len() {
             let group = self.nominals.entries[index].groups[ordinal];
-            let fields = self.fields(&group, kind == aggregate::Kind::Enum)?;
+            let (fields, declared) = self.fields(&group, kind == aggregate::Kind::Enum)?;
             self.children.clear();
             self.children.extend(fields.iter().map(|field| field.ty));
             let list = self
@@ -98,6 +98,9 @@ impl Checker<'_> {
             });
             let ordinal =
                 u32::try_from(ordinal).map_err(|_| self.error(group.key, "too many variants"))?;
+            if let Some(declared) = declared {
+                self.facts.unreduced.retain_fields(item, ordinal, declared);
+            }
             let variant = self
                 .facts
                 .members
@@ -246,9 +249,14 @@ impl Checker<'_> {
         }
         Ok(())
     }
-    fn fields(&mut self, group: &Group, enum_: bool) -> Result<Vec<Field>, Error> {
+    fn fields(
+        &mut self,
+        group: &Group,
+        enum_: bool,
+    ) -> Result<(Vec<Field>, Option<crate::types::ListId>), Error> {
         let unit = self.report.package.unit(group.key.file);
-        let mut fields = Vec::new();
+        let mut fields: Vec<Field> = Vec::new();
+        let mut declared: Option<Vec<TypeId>> = None;
         for node in unit.configured.ast.list(group.fields).iter().copied() {
             if !unit.configured.active[node.0 as usize] {
                 continue;
@@ -273,7 +281,15 @@ impl Checker<'_> {
                     u32::try_from(fields.len()).map_err(|_| self.error(key, "too many fields"))?,
                 )
             };
-            let ty = self.ty(NodeKey { node: ty, ..key })?;
+            let annotation = NodeKey { node: ty, ..key };
+            let ty = self.ty(annotation)?;
+            let original = self.facts.unreduced.node(annotation).unwrap_or(ty);
+            if original != ty && declared.is_none() {
+                declared = Some(fields.iter().map(|field| field.ty).collect());
+            }
+            if let Some(declared) = &mut declared {
+                declared.push(original);
+            }
             let access = if enum_ {
                 Access::Public
             } else {
@@ -291,7 +307,11 @@ impl Checker<'_> {
                 access,
             });
         }
-        Ok(fields)
+        let declared = declared
+            .map(|fields| self.facts.types.intern_list(&fields))
+            .transpose()
+            .map_err(|e| self.error(group.key, e))?;
+        Ok((fields, declared))
     }
     fn check_discriminant_forms(
         &self,
