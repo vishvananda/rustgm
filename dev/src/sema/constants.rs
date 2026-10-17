@@ -147,6 +147,7 @@ struct Queries<'a> {
     layout_scratch: layouts::Scratch,
     pattern_scope: Option<PatternScope>,
     pattern_dispatch: Option<super::dispatch::Dispatcher>,
+    value_scope: Option<(NodeKey, TypeId)>,
 }
 /// Declaration checking owns this cache; it never survives into lowering.
 #[derive(Default)]
@@ -301,6 +302,7 @@ impl<'a> Queries<'a> {
             layout_scratch: scratch.layouts,
             pattern_scope: None,
             pattern_dispatch: None,
+            value_scope: None,
         }
     }
     fn into_scratch(self) -> Scratch {

@@ -8039,3 +8039,71 @@ Sample-derived count receipts accompany the studies, distinguishing observations
 from individual compiler invocations and correcting an inherited stale console
 footer. Frozen runners and observations were not rewritten. The final complete
 validation/measurement batch removed 4,998 generated files, about 5.37 GiB.
+
+### Selected associated discriminants
+
+The pattern checkpoint is published on public main as `808047d`. The next
+independent investigation checks 23 type-level uses against pinned rustc 1.98
+object generation: array annotations, const arguments, defaults, nominal fields,
+signatures, aliases and discriminants. Every predicted source outcome agrees.
+RustGM still lacks the early associated-value dependency path for const arguments;
+array lengths currently support literals and direct const parameters. Anonymous
+constant capture rules are stricter than pattern rules. No array/argument success
+is claimed from these probes, whose sources and diagnostics are retained under
+`obj/pa20-work/type-constant-uses-v1/`.
+
+Discriminant finalization already follows implementation validation. It now
+selects associated defaults and overrides with ordinary concrete dispatch, then
+uses the shared instance evaluator. Fresh selection lifetime evidence belongs to
+the requesting anonymous constant body and is published immediately: lazy typing
+of the next initializer may allocate more regions. The earlier declaration-time
+query path retains its existing explicit boundary rather than admitting incomplete
+implementation headers as executable evidence.
+
+Twenty independently object-qualified discriminant cases cover defaults,
+overrides, shorthand, type/const owner arguments, selected dependencies, distinct
+owners, repeated uses, reference values, static lifetime inputs, skipped faults,
+duplicates, overflow, cycles and invalid/missing implementations. Additional
+capture probes found two wrong accepts: type and const arguments from the enclosing
+enum could be ignored by a fixed inherent initializer. Discriminants now apply
+the existing scope-based capture checker before evaluation, independently of the
+initializer's dependence on its arguments. The two rejections and a positive
+unused-enum-parameter control join the maintainer table. A lifetime-capture probe
+already fails earlier on an unsupported annotation; it remains investigation
+evidence and is not adopted as evidence for the new capture check.
+
+The resulting table has 23 cases, 14 accepted and nine rejected. Expectations were
+independently established before adoption. No public PA20 manifest or text oracle
+is released by this checkpoint; PA20 and PA21 remain planned.
+
+The final candidate passes 1,175 regular release tests, all 4,863 active course
+cases and 66 maintainer native groups, plus backend and upstream checks. Strict
+Clippy, the 718-file audit and 33 harness tests pass without new allowances.
+All 14,589 oracle sidecars remain byte-identical. The 24-command validation
+retains 721 frozen source/configuration files; the executable SHA-256 is
+`03e5bfcea375cd91d7f913667997fcd474f4237826d29b7d8adb61ea6582b1e6`.
+Both planned stages still fail explicitly for their missing public contracts.
+
+Three additional Self probes agree with rustc: closed Self is accepted and both
+generic Self cases are rejected. RustGM currently rejects the latter because the
+owner arguments cannot be inferred; these remain investigation controls, not
+additional evidence for the explicit capture-check diagnostic.
+
+Twelve immutable performance jobs compare ordinary and inherent discriminants
+with `808047d`, and measure selected-discriminant scaling at 64/256 uses. All
+sources execute successfully with pinned rustc; the new selected-value inputs also
+execute with CPPGM. The study retains 312 observations and 48 qualification
+observations, four invocations each (1,248 and 192 invocations). All source,
+input and binary hashes and full/count output comparisons pass. Existing controls
+have paired medians from -2.123% to +3.155%. The +3.155% ordinary 256/count result
+has A/A spread 5.661%; a two-job follow-up uses sixteen invocations per observation
+and retains 52 study / eight qualification observations (832 / 128 invocations).
+Its count/full medians are -0.490% / -3.176%, with substantial individual variation,
+so the initial slowdown does not reproduce. These measurements do not establish
+a speedup or resolve older open performance questions. All observations and
+sample-derived count receipts remain available.
+
+The complete regression/measurement batch removed 5,026 generated files, about
+5.43 GiB. Diagnostic sources, receipts and active immutable comparison binaries
+remain. Superseded pattern prototypes were retired after publishing `808047d`;
+their verified identities and removal receipt remain with that checkpoint.

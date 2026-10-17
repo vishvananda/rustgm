@@ -155,6 +155,16 @@ values by selected identity and complete arguments, including persistent data,
 while preserving independent callable, lifetime and destruction proofs. Bound
 both instance discovery and the expanded evaluation work.
 
+Finalize enum discriminants after implementation validation. Their associated
+values use concrete dispatch and the shared instance evaluator; retain selection
+obligations under the requesting anonymous constant body. Publish each fresh
+region interval before lazily typing another initializer, which can allocate
+additional regions. Apply the shared capture check before evaluation: a constant
+initializer that ignores its arguments does not permit a discriminant to mention
+an enclosing generic parameter. Declaration-time const arguments have separate
+dependency requirements and cannot borrow this later phase's validated
+implementation state.
+
 Associated result bounds retain complete predicates, including the separate
 subjects of nested result equalities. Elaborate their arguments through the
 ordinary bound worklist in the owning trait's lifetime scope. Validate the bound's

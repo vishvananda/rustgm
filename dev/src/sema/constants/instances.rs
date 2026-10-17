@@ -237,6 +237,9 @@ impl Queries<'_> {
         {
             return Ok(instance);
         }
+        if let Some((body, ty)) = self.value_scope {
+            return self.value_instance(key, instance, body, ty);
+        }
         self.typing
             .facts
             .constant_targets
@@ -248,6 +251,37 @@ impl Queries<'_> {
                     "dependent trait constant requires completed value selection",
                 )
             })
+    }
+    fn value_instance(
+        &mut self,
+        key: NodeKey,
+        instance: Instance,
+        body: NodeKey,
+        ty: TypeId,
+    ) -> Result<Instance, Error> {
+        let first = self
+            .typing
+            .facts
+            .body_regions
+            .len()
+            .checked_add(1)
+            .and_then(|n| u32::try_from(n).ok())
+            .ok_or_else(|| self.error(Query::Node(key), "constant dispatch region overflow"))?;
+        let mut dispatch = crate::sema::dispatch::Dispatcher::new(0, first)
+            .map_err(|e| self.error(Query::Node(key), e))?;
+        let result = dispatch
+            .constant(self.typing.facts, instance)
+            .map_err(|e| self.error(Query::Node(key), e))?;
+        let proof = dispatch.finish();
+        if !proof.is_empty() {
+            // Initializer typing can allocate more regions on the next work item.
+            // Publish this interval now, under the anonymous value's own body.
+            proof
+                .retain_body(self.typing.facts, body, key)
+                .map_err(|e| self.error(Query::Node(key), e))?;
+            self.typing.facts.anonymous_constants.insert(body, ty);
+        }
+        Ok(result)
     }
     pub(super) fn enter_instance(&mut self, instance: Instance) -> Result<(), Error> {
         let key = self.instance_source(instance)?;

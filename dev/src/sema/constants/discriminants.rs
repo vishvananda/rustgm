@@ -22,6 +22,7 @@ struct Entry {
 pub(in crate::sema) struct Pending {
     entries: Vec<Entry>,
     index: HashMap<VariantId, usize>,
+    captures: crate::sema::generics::captures::Captures,
 }
 impl Pending {
     pub(in crate::sema) fn push(&mut self, spec: Discriminant) -> Result<(), &'static str> {
@@ -97,13 +98,14 @@ pub(in crate::sema) fn finish(
     let mut queries = Queries::with_scratch(report, facts, Some(pending), std::mem::take(scratch));
     let mut used = HashSet::new();
     for index in 0..count {
-        let variant = queries
+        let spec = queries
             .discriminants
             .as_ref()
             .ok_or_else(|| Error::at(super::FileId(0), 0, "missing pending discriminants"))?
             .entries[index]
-            .spec
-            .variant;
+            .spec;
+        let variant = spec.variant;
+        queries.value_scope = spec.value.map(|key| (key, TypeId::primitive(spec.tag)));
         let query = Query::Variant(variant);
         queries.work.push(Work::Enter(query));
         queries.drain()?;
@@ -190,6 +192,11 @@ impl Queries<'_> {
             );
             let scope = self.report.resolution.definitions[owner.0 as usize].scope;
             let module = self.report.resolution.scopes[scope.0 as usize].module;
+            if let Some(pending) = &mut self.discriminants {
+                pending
+                    .captures
+                    .check(self.report, self.typing.facts, key, module)?;
+            }
             self.typing.anonymous_constant(key, ty, module)?;
             self.require_complete_patterns(query)?;
             self.forward(query, Query::Node(key));

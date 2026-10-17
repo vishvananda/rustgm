@@ -11,7 +11,9 @@ Required families:
 - `constants`: required/default/overridden values, inherent values, generic
   instantiation, selected identity, type errors, invalid values and dependency cycles;
   selected patterns/ranges, structural equality, coverage, unused owner parameters,
-  parameter-dependent values and per-caller lifetime/bound obligations.
+  parameter-dependent values and per-caller lifetime/bound obligations; enum
+  discriminants, their enclosing-generic capture restrictions and separate
+  declaration-time const-argument dependencies.
 - `selection`: caller assumptions, partial inference, result/argument context,
   unrelated opaque alternatives, ambiguous methods and distinct caller scopes.
 - `coherence`: local/foreign identity within the supported profile, covered

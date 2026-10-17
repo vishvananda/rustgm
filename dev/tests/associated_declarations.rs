@@ -1,4 +1,6 @@
 //! Associated ownership is shared metadata, independent of method selection and impl proof.
+#[path = "associated_declarations/discriminants.rs"]
+mod discriminants;
 #[path = "harness/native_references.rs"]
 mod native;
 #[path = "helpers/qualify.rs"]
