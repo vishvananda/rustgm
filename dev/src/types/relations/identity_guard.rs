@@ -1,5 +1,5 @@
 //! Conditional equality compares complete typed inputs without constraining inference.
-use super::{Argument, Constraints, Error, Kind, Region, RegionId, Scope, TypeId};
+use super::{Argument, Constraints, Error, Kind, Region, RegionId, Relation, Scope, TypeId};
 use crate::types::{GenericArgs, outlives::Projection, region_graph::VerificationId};
 use std::collections::HashSet;
 
@@ -17,6 +17,29 @@ struct Match<'a, 't> {
     guards: Vec<VerificationId>,
 }
 impl Constraints<'_> {
+    /// Equal complete inputs suffice for opaque result identity. Their equality
+    /// is a condition to verify, never an equation inferred from equal results.
+    pub(super) fn relate_projection(
+        &mut self,
+        relation: Relation,
+        source: u32,
+    ) -> Result<(), Error> {
+        let view = |ty, scope| View {
+            projection: Projection { ty, depth: 0 },
+            scope,
+        };
+        let guards = self
+            .projection_guards(
+                view(relation.actual, relation.left),
+                view(relation.expected, relation.right),
+            )?
+            .ok_or(Error::Identity)?;
+        if !guards.is_empty() {
+            let condition = self.graph.verify_all(&guards)?;
+            self.graph.require_verification(condition, source)?;
+        }
+        Ok(())
+    }
     pub(super) fn projection_guards(
         &mut self,
         left: View,

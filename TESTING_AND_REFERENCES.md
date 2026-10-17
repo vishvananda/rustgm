@@ -384,9 +384,13 @@ eleven accept, six reject, and five accepted programs also execute through CPPGM
 and rustc. They cover captured trait and Sized premises, empty and nested
 callable binders, mixed arguments, aliases, wrong inputs, and normalization of
 Sized call obligations. Four `captured_lookup.rs` invariants check canonical
-lookup, cache isolation and bounded shared-graph work. A valid sibling-callback
-source and a valid locally bound projection still encounter separate unfinished
-proof checks; neither is classified as a language-invalid fixture.
+lookup, cache isolation and bounded shared-graph work. `stored_projections.rs`
+adds twelve object-qualified callback programs: eight accept, four reject, and
+six execute through CPPGM and rustc. `scoped_result_relations.rs` checks scoped
+identity, independent lifetime equality, complete mixed inputs, local binder
+isolation and a bounded 10,000-level shared graph. These close the stored sibling
+callback gap. A valid locally bound projection still needs a separate callable
+formation proof contract; it is not classified as a language-invalid fixture.
 
 ## Storage and cleanup
 

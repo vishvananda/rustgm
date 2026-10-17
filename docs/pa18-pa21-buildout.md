@@ -7397,3 +7397,70 @@ not resolved by this change.
 
 Declarations, qualifications, source snapshots, full observations and cleanup
 receipts remain in `obj/pa20-work/captured-result-shapes-v1/` and `obj/cleanup/`.
+
+## Scoped opaque results in stored callbacks
+
+Local inference freshens the surrounding references of a stored function pointer.
+The retained lifetime relation consequently traverses two distinct callable
+scopes, even when an associated result still refers to the same outer input.
+Previously, the relation dispatcher had no projection case: a direct return
+could pass through canonical identity, while `let x = p; x` failed with an
+invalid lifetime constraint identity. Ordinary callbacks passed the same probe.
+
+The relation now reuses the existing conditional input-identity query. It
+compares the complete associated declaration, Self, trait and family arguments
+in their actual scopes, including nested local and empty binders. Matching inputs
+suffice for matching opaque results. Differing input lifetimes create retained
+verification conditions rather than inference equations; comparing outputs
+cannot manufacture input equality. These conditions survive both symbolic proof
+and runtime extent checking. Equal resolved identities need no verification
+request, and ordinary type relations keep their existing path.
+
+Twelve permanent source controls were object-qualified with pinned rustc before
+adoption: eight accept and four reject. Six accepted programs execute through
+CPPGM and rustc, including sibling callbacks with deliberately different runtime
+assertions, discarded/stored pointers, projected Self, mixed trait inputs and an
+associated return. Nested and empty binders have additional source coverage.
+The one-way-lifetime negative reaches the existing ambiguous-implementation gate;
+it is not evidence for the new relation's conditional equality rule. Five typed
+invariants independently check that rule, complete mixed type/lifetime/const
+inputs, family arguments, local-universe isolation, runtime verification and a
+10,000-level shared input DAG. The shared graph succeeds within 100,000 units of
+relation work and rejects a 1,000-unit budget without recursive traversal.
+
+Initial generated ordinary probes accidentally spelled `&'aT` rather than
+`&'a T`; their syntax rejections were retained and excluded from semantic
+coverage. Separately declared corrected inputs passed both compilers. The file
+audit requested ownership review after a seventh singular `projection` test
+prefix; `scoped_result_relations.rs` now names this public relation boundary.
+No audit exemptions or production module splits were introduced.
+
+Evidence lives under `obj/pa20-work/scoped-projection-relations-v1/`, including
+original declarations, independent qualifications, the failed audit snapshot,
+final source hashes and measurement plans. The remaining locally bound
+projection formation contract, nominal projected-template substitution and
+projected destruction boundaries remain separate work. PA20 and PA21 are still
+planned; this checkpoint does not promote either course contract.
+
+Final validation passed all 27 batch commands: 1,151 release tests, all 4,864
+PA1–PA19 course fixtures, all 60 explicit maintainer native tests, backend and
+upstream qualification, 708 audited Rust files with no findings, and 33 harness
+tests. Final rustfmt and Clippy all/pedantic passed with warnings denied. The
+711-file source/configuration snapshot was verified after validation. Cleanup
+removed 4,795 generated files, about 5.09 GiB. No course oracle was regenerated.
+
+Performance compared the immutable `71b6cc9` baseline with the final candidate:
+20 actual count/full comparisons and eight identical-candidate scaling jobs for
+newly supported sources, plus three separately declared confirmation jobs.
+All 806 study observations and 124 full-output qualification observations remain;
+source/input/binary/runner hashes and output equality passed. Initial actual
+paired medians ranged from -9.264% to +3.876%, with A/A spreads reaching 62.20%.
+The symbolic nested-callable count case crossed the predeclared +3.5% review
+threshold. Count/full/count confirmations measured -0.407%, -1.560% and +8.033%;
+the last had 70.82% A/A spread and substantial CPU and wall-time changes in both
+labels. A stable compiler-specific throughput effect is not established. These
+results make no speedup or no-regression claim; no cause is assigned to the
+observed throughput shifts. All original samples remain available for a future
+measurement in stable conditions. New stored-callback full-view medians were
+about 16.2/58.1 ms at 64/256 functions, and nested callbacks 17.2/60.0 ms; these
+are observations, not a resolved performance gate for the noisy control.

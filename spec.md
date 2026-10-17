@@ -164,6 +164,14 @@ each. No type verification may turn a requirement into an assumption or grant a
 projection a type parameter's implicit body extent. Ordinary graphs without
 projected tests allocate no verification arena.
 
+Directed callable relations may encounter the same opaque result beneath different
+actual binder scopes after local inference freshens surrounding references.
+Compare complete projection inputs in those scopes, preserving nested local
+binders and every trait and family argument. Equal inputs suffice for equal
+results; a result comparison cannot infer input lifetime equality. Retain any
+required input equality as conditional verification through both symbolic and
+runtime checking. An identical resolved input needs no verification allocation.
+
 Projection normalization uses the common bounded type fold. Normalize inputs
 before asking semantic selection for a result; suspend with typed requests when
 selection needs the store or declaration worklist. Replacement types retain the

@@ -588,6 +588,9 @@ impl<'a> Constraints<'a> {
                     ..
                 },
             ) if x == y => self.child(relation, a, b, covariant)?,
+            (Kind::Projection(_), Kind::Projection(_)) => {
+                self.relate_projection(relation, source)?;
+            }
             _ => return Err(Error::Identity),
         }
         Ok(())
