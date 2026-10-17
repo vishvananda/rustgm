@@ -38,6 +38,30 @@ impl Evidence {
 }
 
 impl Assumptions {
+    /// A sole identical canonical clause needs no inference or lifetime mapping.
+    /// Additional coarse candidates require ordinary complete-goal equations.
+    pub(super) fn exact(
+        &self,
+        store: &Store,
+        predicate: Predicate,
+    ) -> Result<Option<Evidence>, infer::Error> {
+        let Bound::Trait(id) = predicate.bound else {
+            return Err(infer::Error::InvalidIdentity);
+        };
+        let application = store
+            .trait_application(id)
+            .ok_or(infer::Error::InvalidIdentity)?;
+        let head = Head::canonical(
+            store
+                .kind(predicate.ty)
+                .ok_or(infer::Error::InvalidIdentity)?,
+        );
+        Ok(self
+            .candidates
+            .get(&(application.item, head))
+            .filter(|candidates| candidates.as_slice() == [predicate])
+            .map(|_| Evidence(predicate)))
+    }
     pub(super) fn may_have_subject(&self, item: ItemId, subject: Subject) -> bool {
         subject
             .heads()

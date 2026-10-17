@@ -14,7 +14,11 @@ use crate::{
         GenericArgs, ItemId, Kind, Primitive, TypeId,
         arguments::Argument,
         infer::{Domain, Instantiation, arguments::Argument as Inferred},
-        parameters::{Parameter, ParameterKind, environment::Environment, predicates::Bound},
+        parameters::{
+            Parameter, ParameterKind,
+            environment::{Abilities, Environment},
+            predicates::Bound,
+        },
         traits::Application,
     },
 };
@@ -656,5 +660,162 @@ fn normalized_inputs_keep_fresh_impl_debts_out_of_the_reusable_cache()
     assert!(proof.regions.end > 3);
     assert!(!proof.outlives.is_empty());
     assert!(!proof.equalities.is_empty());
+    Ok(())
+}
+
+fn checked_outer_request(
+    facts: &mut Declarations,
+    application: crate::types::projection::Application,
+) -> Result<crate::types::substitute::Request, &'static str> {
+    let outer = facts.types.intern(Kind::Projection(application))?;
+    let mut fold = crate::types::substitute::Normalizer::default();
+    let crate::types::substitute::Step::Resolve(request) =
+        fold.start_with_input(&mut facts.types, outer, application.subject)?
+    else {
+        return Err("missing checked outer projection request");
+    };
+    Ok(request)
+}
+
+#[test]
+fn exact_normalized_lifetime_premises_preserve_one_shared_canonical_graph()
+-> Result<(), Box<dyn std::error::Error>> {
+    use crate::sema::nominals::traits::State;
+    let (report, mut facts) = declarations("trait A<'a>{type Out:A<'a>;}")?;
+    let inner = facts
+        .associated
+        .type_contract(definition(&report, "Out")?)
+        .ok_or("missing recursive contract")?
+        .projection;
+    let Some(Kind::Projection(mut application)) = facts.types.kind(inner) else {
+        return Err("missing result projection".into());
+    };
+    let before = facts.types.len();
+    application.subject = inner;
+    for _ in 0..512 {
+        let request = checked_outer_request(&mut facts, application)?;
+        let projected = State::projection(
+            &mut facts,
+            None,
+            request,
+            1,
+            false,
+            Availability::Declarations,
+        )?;
+        assert!(matches!(
+            projected.source,
+            Some(super::Source::ResultBound(_))
+        ));
+        assert_eq!(
+            projected.resolution,
+            Some(crate::types::substitute::Resolution::Opaque)
+        );
+        assert!(projected.proof.is_empty());
+        application.subject = facts.types.intern(Kind::Projection(application))?;
+    }
+    assert!(
+        facts.types.len() - before < 8 * 512,
+        "{} new canonical types",
+        facts.types.len() - before
+    );
+    Ok(())
+}
+
+#[test]
+fn canonical_premises_preserve_caller_alternatives_and_mapped_lifetimes()
+-> Result<(), Box<dyn std::error::Error>> {
+    use crate::types::{RegionId, substitute::Bound as Substitution};
+    let (report, mut facts) = declarations("trait A<'a>{type Out:A<'a>;}")?;
+    let inner = facts
+        .associated
+        .type_contract(definition(&report, "Out")?)
+        .ok_or("missing recursive contract")?
+        .projection;
+    let Some(Kind::Projection(mut application)) = facts.types.kind(inner) else {
+        return Err("missing result projection".into());
+    };
+    let Some(Kind::Parameter(parameter)) = facts.types.kind(application.subject) else {
+        return Err("missing trait Self parameter".into());
+    };
+    application.subject = inner;
+    let request = checked_outer_request(&mut facts, application)?;
+    let goal = Predicate {
+        ty: inner,
+        bound: Bound::Trait(application.trait_application),
+    };
+    let environment = Environment::new(&facts.types, &[(parameter, Abilities::default())])?
+        .with_predicates(&facts.types, &[goal])?;
+    assert!(
+        matches!(super::super::opaque_normalized(&mut facts, Some(&environment), request)?, Some(super::Source::Assumption(value)) if value == goal)
+    );
+    let arguments = facts
+        .types
+        .intern_arguments(&[Argument::Lifetime(RegionId::bound(0, 1)?)])?;
+    let different = predicate(&mut facts, definition(&report, "A")?, inner, arguments)?;
+    let competing = environment
+        .clone()
+        .with_predicates(&facts.types, &[different])?;
+    assert!(super::super::opaque_normalized(&mut facts, Some(&competing), request)?.is_none());
+    let mut different_application = application;
+    let Bound::Trait(trait_application) = different.bound else {
+        return Err("missing trait".into());
+    };
+    different_application.trait_application = trait_application;
+    let different_request = checked_outer_request(&mut facts, different_application)?;
+    assert!(super::super::opaque_normalized(&mut facts, None, different_request)?.is_none());
+    let mut fold = Substitution::new(vec![RegionId(7), RegionId(8)]);
+    let mapped = environment.substitute_regions(&mut facts.types, &mut fold)?;
+    let mapped_goal = fold.predicate(&mut facts.types, goal)?;
+    let outer = facts.types.intern(Kind::Projection(application))?;
+    let outer = fold.apply(&mut facts.types, outer)?;
+    let Some(Kind::Projection(mapped_application)) = facts.types.kind(outer) else {
+        return Err("missing mapped projection".into());
+    };
+    let mapped_request = checked_outer_request(&mut facts, mapped_application)?;
+    assert!(
+        matches!(super::super::opaque_normalized(&mut facts, Some(&mapped), mapped_request)?, Some(super::Source::Assumption(value)) if value == mapped_goal)
+    );
+    let competing = competing.substitute_regions(&mut facts.types, &mut fold)?;
+    assert!(
+        super::super::opaque_normalized(&mut facts, Some(&competing), mapped_request)?.is_none()
+    );
+    Ok(())
+}
+
+#[test]
+fn exact_premises_cannot_hide_caller_or_result_equality_rules()
+-> Result<(), Box<dyn std::error::Error>> {
+    for source in [
+        "trait A<'a>{type Out:A<'a>;}",
+        "trait A<'a>{type Out:A<'a,Out=u8>;}impl<'a>A<'a>for u8{type Out=u8;}",
+    ] {
+        let (report, mut facts) = declarations(source)?;
+        let inner = facts
+            .associated
+            .type_contract(definition(&report, "Out")?)
+            .ok_or("missing recursive contract")?
+            .projection;
+        let Some(Kind::Projection(mut application)) = facts.types.kind(inner) else {
+            return Err("missing result projection".into());
+        };
+        let Some(Kind::Parameter(parameter)) = facts.types.kind(application.subject) else {
+            return Err("missing trait Self parameter".into());
+        };
+        application.subject = inner;
+        let request = checked_outer_request(&mut facts, application)?;
+        if source.contains("Out=u8") {
+            assert!(super::super::opaque_normalized(&mut facts, None, request)?.is_none());
+        }
+        let outer = facts.types.intern(Kind::Projection(application))?;
+        let equality = Predicate {
+            ty: outer,
+            bound: Bound::ProjectionEqual(TypeId::primitive(Primitive::U8)),
+        };
+        let environment = Environment::new(&facts.types, &[(parameter, Abilities::default())])?
+            .with_predicates(&facts.types, &[equality])?;
+        assert!(
+            super::super::opaque_normalized(&mut facts, Some(&environment), request)?.is_none()
+        );
+    }
     Ok(())
 }

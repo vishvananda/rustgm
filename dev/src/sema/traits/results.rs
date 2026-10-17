@@ -122,6 +122,16 @@ pub(super) struct Equations {
     pub steps: usize,
 }
 
+/// Inspect declaration metadata before mapping any growing caller input graph.
+pub(super) fn has_equalities(
+    facts: &mut Declarations,
+    parent: ItemId,
+    item: ItemId,
+) -> Result<(bool, usize), String> {
+    let (templates, steps) = templates::for_result(facts, DefId(parent.0))?;
+    Ok((templates.equalities(item).is_some(), steps))
+}
+
 pub(super) fn equalities(
     facts: &mut Declarations,
     context: &mut Context,

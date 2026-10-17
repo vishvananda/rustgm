@@ -321,6 +321,16 @@ prefix links; copying every previous child into each new result creates quadrati
 proof storage. Newly discovered implementation premises still need
 their own normalization; an input proof never grants a new trait premise.
 
+Before opening lifetime aliases for a normalized opaque subject, consult the
+immutable canonical premise indexes. A sole identical caller or result clause
+needs no equations, fresh lifetime universe or lifetime-erased cycle key. Retain
+the requesting normalizer's input evidence and publish only that exact premise.
+Index projected caller clauses by trait and associated declaration; preserve all
+competing clauses and rebuild the index when mapping an environment. Possible
+caller or result equality rules, additional candidates and nonidentical arguments
+require ordinary scoped selection. This shares structural work without caching
+permission across callers or skipping a required lifetime relationship.
+
 A qualified declaration projection consumes its subject's already checked type
 fact in the same annotation scope. Rewalking every previously checked prefix
 turns a linear source chain into quadratic normalization work. Retain the subject's

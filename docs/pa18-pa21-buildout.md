@@ -8824,3 +8824,65 @@ recorded as a driver failure, not a compiler result; no updated rustc comparison
 is claimed here. The completed A/B and depth studies are unaffected. PA20–PA25
 remain planned, and the projected-storage investigation described above remains
 pending after this performance work.
+
+### Canonical projection premises without repeated lifetime opening (2026-10-17)
+
+The lifetime follow-up removes repeated graph rebuilding at the proof boundary.
+A normalizer that retains its inputs' formation evidence can consume a sole
+identical canonical caller or result clause directly. No fresh lifetime universe
+or lifetime-erased cycle key is needed for that identity proof. Projected caller
+clauses have an index by trait and associated member; region substitution rebuilds
+that index. Competing clauses, different lifetimes, associated family arguments
+and possible caller/result equalities retain ordinary scoped selection. Mapped
+result rules remain structural data, never cached permission across callers.
+
+Three new invariants cover canonical graph growth through depth 512, competing
+caller clauses and remapped lifetimes, and equality fallbacks. A source family
+independently checks nine outcomes against rustc and executes its six positives
+through both compilers. It includes erased input lifetimes, missing and reversed
+outlives requirements, recursive result contracts, explicit caller assumptions,
+associated equalities and deferred aliases. Earlier formation debts remain in the
+requesting normalizer even when the final result no longer mentions their inputs.
+
+The candidate SHA-256 is
+`138c4534a5dd94a55d683f61d308d722b77f4602472e2306d269147234835819`.
+Evidence and the detailed review are retained in
+`obj/pa20-work/recursive-projection-premises-v1/`. Thirty validation command gates
+pass: 1,199 regular tests, 4,863 PA1–19 cases, 76 native groups, strict Clippy and
+formatting, the 738-file audit, harness, backend and upstream checks. All 741
+source/configuration hashes and 14,589 earlier oracle sidecars are unchanged.
+The focused and fully validated compiler hashes agree. Validation cleanup removes
+5,925 generated files, approximately 7.25 GiB.
+
+The paired study independently qualifies seventeen native inputs, then retains
+572 study observations and 88 before/after output observations across 22 jobs.
+Full LowIR output and all source, input and binary hashes agree. Against published
+`1d21a09`, the original recursive case has a median paired reduction of 44.36%;
+its same-binary AA/BB paired medians are +0.38%/-0.15%. Comparing the complete
+change directly with original `7f11762` gives a 93.26% paired reduction, with all
+five blocks between 90.44% and 94.84%. That window's wall medians are about
+1,151 ms and 86 ms. Shared-host load changes the absolute times substantially;
+compare binaries within the same paired window, not across journal entries.
+Small control changes and the noisy member/override results do not establish
+speedups or tight regression bounds.
+
+Seven ordinary and seven lifetime-bearing depth inputs execute correctly with
+both compilers. Ordinary-chain instructions at depths 8/32/64 are now
+5.01/12.47/22.44 million. Lifetime-chain instructions are 6.75/17.76/32.51 million,
+compared with 13.31/69.04/192.90 million before this follow-up. Lifetime depth
+32 to 64 now grows 1.83 times, previously 2.79 times. Both measured families
+are consistent with linear input growth; arbitrary trait solving and the
+equality/ambiguity fallbacks are not covered by that complexity claim.
+
+The corrected rustc driver completes six comparisons and 180 observations for
+three independently executed programs. The recursive case's direct RustGM/CPPGM
+pipeline measures about 103 ms against rustc's 188 ms, with a median paired
+rustc/RustGM ratio of 1.83. The checked Python bridge measures 232 ms against
+rustc's 187 ms in its separate window. Array/borrow/pattern and generic-reference
+direct medians are about 19/79 ms versus rustc's 143/266 ms. All hashes, stable
+outputs and before/after native assertions pass. The recursive direct A/A
+calibration spread is 83.90%, and the generic rustc spread is 49.80%; retain those
+observations and avoid treating these shared-host ratios as general Cargo or
+Rust compiler performance. Instruction scaling supplies the stronger algorithmic
+evidence. PA20–PA25 remain planned; projected storage is the next implementation
+gap described above.

@@ -36,6 +36,27 @@ struct TraitAssumptions {
     predicates: Vec<Predicate>,
     unique: std::collections::HashSet<Predicate>,
     constants: std::collections::HashSet<ParameterId>,
+    projected: HashMap<(crate::types::ItemId, crate::types::ItemId), Vec<usize>>,
+}
+impl TraitAssumptions {
+    fn index_projection(&mut self, types: &Store, index: usize) -> Result<(), &'static str> {
+        let predicate = self.predicates[index];
+        let Some(Kind::Projection(subject)) = types.kind(predicate.ty) else {
+            return Ok(());
+        };
+        let Bound::Trait(id) = predicate.bound else {
+            return Err("invalid projected trait assumption");
+        };
+        let trait_item = types
+            .trait_application(id)
+            .ok_or("missing assumed trait")?
+            .item;
+        self.projected
+            .entry((trait_item, subject.item))
+            .or_default()
+            .push(index);
+        Ok(())
+    }
 }
 #[derive(Clone, Default)]
 struct ProjectionAssumptions {
@@ -110,6 +131,10 @@ impl Environment {
                 *predicate = fold.predicate(types, *predicate)?;
             }
             traits.unique = traits.predicates.iter().copied().collect();
+            traits.projected.clear();
+            for index in 0..traits.predicates.len() {
+                traits.index_projection(types, index)?;
+            }
         }
         if let Some(equalities) = &mut result.equalities {
             for predicate in &mut equalities.predicates {
@@ -276,6 +301,7 @@ impl Environment {
                 }
                 if traits.unique.insert(*predicate) {
                     traits.predicates.push(*predicate);
+                    traits.index_projection(types, traits.predicates.len() - 1)?;
                 }
                 continue;
             }
@@ -324,6 +350,22 @@ impl Environment {
     /// adds its own proved predicates rather than granting arbitrary type abilities.
     pub fn trait_predicates(&self) -> impl Iterator<Item = &Predicate> {
         self.traits.iter().flat_map(|traits| &traits.predicates)
+    }
+    /// Coarse projected-subject buckets preserve every competing caller clause.
+    /// Only complete canonical identity can establish a match without equations.
+    pub(crate) fn projected_trait_candidates(
+        &self,
+        trait_item: crate::types::ItemId,
+        projection: crate::types::ItemId,
+    ) -> impl Iterator<Item = &Predicate> {
+        self.traits.iter().flat_map(move |traits| {
+            traits
+                .projected
+                .get(&(trait_item, projection))
+                .into_iter()
+                .flatten()
+                .map(|&index| &traits.predicates[index])
+        })
     }
     /// Retain all written equalities, including competing results. An unused
     /// generic declaration need not establish a unique normal form for them.

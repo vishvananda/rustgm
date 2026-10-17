@@ -1,6 +1,7 @@
 //! Explicit declaration and validated views share trait proofs and lifetime obligations.
 mod header_inputs;
 mod instantiation;
+mod known_premises;
 mod readiness;
 mod result_templates;
 mod search;
@@ -16,6 +17,7 @@ use crate::{
         parameters::{environment::Environment, predicates::Predicate},
     },
 };
+pub(in crate::sema) use known_premises::opaque_normalized;
 pub(in crate::sema) use readiness::{has_known_subject, requires_resolved_inputs};
 pub(in crate::sema) use result_templates::symbolic_result;
 use std::{ops::Range, sync::Arc};

@@ -285,6 +285,13 @@ fresh implementation witnesses must keep that evidence out of the cache which
 does not rebase regions. `type_inference.rs` checks that identity instantiation
 does constant work on a shared graph with mixed type/const parameters and nested
 callable lifetimes, while later actual substitution preserves the original graph.
+The canonical-premise invariants also bound canonical type growth through 512
+lifetime-bearing projections without allocating new proof lifetimes for identical
+clauses. Competing caller clauses, mapped lifetime environments and caller/result
+equality rules must retain the full selector. The nine independently qualified
+cases in `associated_declarations/canonical_queries.rs` include six native
+positives, erased formation debts, missing/reversed lifetime relationships,
+nonidentical result lifetimes, aliases and both kinds of associated equality.
 
 `dev/tests/opaque_body_values.rs` separates 26 declaration/body type-checking
 controls from fifteen checks through LowIR and six native callable programs.

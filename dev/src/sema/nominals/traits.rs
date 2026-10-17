@@ -124,6 +124,16 @@ impl State {
             ty: application.subject,
             bound: Bound::Trait(application.trait_application),
         };
+        if let Some(source) = selection::opaque_normalized(facts, environment.as_deref(), request)
+            .map_err(|_| "invalid or exhausted canonical projection premise")?
+        {
+            return Ok(Projected {
+                source: Some(source),
+                resolution: Some(substitute::Resolution::Opaque),
+                proof: Obligations::new(first),
+                sized: Vec::new(),
+            });
+        }
         if environment
             .as_ref()
             .is_none_or(|env| !env.requires_region_mapping())

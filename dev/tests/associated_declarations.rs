@@ -1,6 +1,8 @@
 //! Associated ownership is shared metadata, independent of method selection and impl proof.
 #[path = "associated_declarations/callable_projections.rs"]
 mod callable_projections;
+#[path = "associated_declarations/canonical_queries.rs"]
+mod canonical_queries;
 #[path = "associated_declarations/const_arguments.rs"]
 mod const_arguments;
 #[path = "associated_declarations/discriminants.rs"]
