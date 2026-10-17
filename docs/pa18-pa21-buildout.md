@@ -8107,3 +8107,63 @@ The complete regression/measurement batch removed 5,026 generated files, about
 5.43 GiB. Diagnostic sources, receipts and active immutable comparison binaries
 remain. Superseded pattern prototypes were retired after publishing `808047d`;
 their verified identities and removal receipt remain with that checkpoint.
+
+### Queued trait paths in constant arguments
+
+The discriminant checkpoint is published on main as `3640188`; its exact-head
+CI run `39009117911` passes. Const-argument investigation continues under
+`obj/pa20-work/qualified-constant-arguments-v1/` and `v2/`, with declared outcomes,
+pinned-rustc object qualification and all candidate diagnostics retained.
+
+Qualified trait paths now complete through declaration work items. Their prefix
+and written arguments finish before the parent const argument is evaluated;
+preparation no longer recursively drains its parent's unfinished declaration
+queue. Implicit trait paths likewise separate prefix preparation, selection and
+argument completion. Reuse completed path facts. Inherent lookup keeps its current
+precedence; the new constant-dependency path does not bypass it by choosing a
+trait with the same member name.
+
+Requested trait-default initializer syntax is prepared in its original lexical
+and generic environment, independently of source order. The outer anonymous
+constant still cannot capture enclosing parameters. Its selected values use
+validated concrete dispatch and retain fresh proof under its own body, just as
+discriminants do. No provisional implementation header becomes executable evidence.
+
+The maintainer suite adds 18 independently qualified cases: twelve accepted native
+controls and six rejections. They cover explicit and shorthand trait constants,
+defaults/overrides, mixed owner arguments, nested const arguments, projected result
+types, static lifetime inputs, ambiguity, missing bounds/impls and illegal captures.
+The source-order default case failed in the first prototype and passes after
+initializer dependency preparation; the original failure receipt is preserved.
+
+Five valid-Rust investigation cases remain outside this checkpoint's supported
+subset: early signature/default arguments, later-declared override dependencies
+(two cases), and a shorthand associated result type. They are not adopted as
+negative-language tests. Early declaration scheduling and selected override-body
+readiness still require work; neither the complete type-level constant profile nor
+PA20/PA21 is claimed finished. No public assignment manifest or oracle is released.
+
+The final queued-path candidate passes 1,176 regular release tests, all 4,863
+active course cases and 67 maintainer native groups, with backend and upstream
+checks. Strict Clippy, the 719-file audit and 33 harness tests pass without new
+allowances. All 14,589 oracle sidecars remain byte-identical. The 24-command
+validation preserves 722 frozen source/configuration files. Candidate SHA-256:
+`3f263d155240d4c88e2361590a31341e32578bceb00f1439cb35edda2383dbca`.
+Both planned stages still fail explicitly.
+
+Sixteen immutable jobs compare implicit/qualified methods and ordinary const
+arguments with `3640188`, and measure selected-argument scaling at 64/256 uses.
+All inputs execute with pinned rustc; selected-argument inputs also execute with
+CPPGM. The first timing launch failed before taking samples because its generated
+runner repeated the repository path; that failure is retained. After correcting
+only the runner, 416 study and 64 qualification observations pass binary, source,
+input and full/count-output checks (1,664 and 256 compiler invocations).
+
+Existing-control paired medians range from -3.050% to +3.218%. A two-job
+ordinary-64 follow-up uses sixteen invocations per observation and retains
+52 study/eight qualification observations (832/128 invocations). Count/full
+medians are +4.588%/+0.072%, with A/A spreads 4.432%/48.565%. The count result
+remains an unresolved possible small regression; the noisy full result cannot
+clear it. Preserve `3640188`'s baseline for follow-up. These measurements establish
+no speedup and do not resolve earlier performance concerns. Sample-derived count
+receipts, failed launches and every raw observation remain under this checkpoint.

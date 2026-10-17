@@ -34,8 +34,27 @@ impl Checker<'_> {
         if !self.facts.methods.trait_names.contains(&path.name) {
             return Ok(false);
         }
+        if self.facts.generics.trait_uses.contains_key(&key)
+            && self.facts.generics.item_uses.contains_key(&key)
+        {
+            return Ok(true);
+        }
         self.method_path_segments(key, path.prefix, path.suffix)?;
-        self.prepare_method_prefix(path.prefix, path.owner, context, steps, limit, scan)?;
+        self.work.push(super::Work::ImplicitMethod(key, context));
+        self.schedule_method_prefix(path.prefix, path.owner, context, steps, limit, scan)?;
+        Ok(true)
+    }
+    pub(super) fn complete_implicit_method(
+        &mut self,
+        key: NodeKey,
+        context: regions::Context,
+        steps: &mut usize,
+        limit: usize,
+        scan: &mut Vec<NodeId>,
+    ) -> Result<(), Error> {
+        let path = self
+            .implicit_method_path(key)
+            .ok_or_else(|| self.error(key, "missing pending trait path"))?;
         self.selection_prefix(path.prefix, path.owner, context)?;
         let environment = self.selection_environment(key, context);
         let traits = self.selection_trait_assumptions(key, context, environment.as_ref())?;
@@ -67,16 +86,24 @@ impl Checker<'_> {
             .node_mut(key)
             .ok_or_else(|| Error::at(key.file, 0, "missing selected trait method fact"))?
             .reference = Some(Target::Definition(method));
+        self.work
+            .push(super::Work::ImplicitArguments(key, path.suffix));
         self.schedule_item_arguments(path.suffix, method, context, steps, limit, scan)?;
-        self.drain(steps, limit)?;
+        Ok(())
+    }
+    pub(super) fn complete_implicit_arguments(
+        &mut self,
+        key: NodeKey,
+        suffix: NodeKey,
+    ) -> Result<(), Error> {
         let arguments = self
             .facts
             .generics
             .item_uses
-            .remove(&path.suffix)
+            .remove(&suffix)
             .ok_or_else(|| self.error(key, "missing selected trait method arguments"))?;
         self.facts.generics.item_uses.insert(key, arguments);
-        Ok(true)
+        Ok(())
     }
 
     fn implicit_method_path(&self, key: NodeKey) -> Option<Path> {

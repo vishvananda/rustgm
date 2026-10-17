@@ -53,6 +53,9 @@ enum SignaturePhase {
 }
 #[derive(Clone, Copy)]
 enum Work {
+    TraitCallable(NodeKey, trait_paths::Callable),
+    ImplicitMethod(NodeKey, regions::Context),
+    ImplicitArguments(NodeKey, NodeKey),
     ProjectionPath(NodeKey, regions::Context),
     ProjectionSelection(NodeKey, crate::types::substitute::Request),
     ProjectionResult(NodeKey),
@@ -246,6 +249,15 @@ impl Checker<'_> {
                 ));
             }
             match work {
+                Work::TraitCallable(key, callable) => {
+                    self.complete_trait_callable(key, callable)?;
+                }
+                Work::ImplicitMethod(key, context) => {
+                    self.complete_implicit_method(key, context, steps, limit, &mut scan)?;
+                }
+                Work::ImplicitArguments(key, suffix) => {
+                    self.complete_implicit_arguments(key, suffix)?;
+                }
                 Work::ProjectionPath(key, context) => {
                     self.complete_projection_path(key, context)?;
                 }
@@ -355,6 +367,7 @@ impl Checker<'_> {
                     limit,
                     &mut scan,
                 )? {
+                    self.drain(steps, limit)?;
                     continue;
                 }
                 if self.schedule_alias_variant(

@@ -13,7 +13,8 @@ Required families:
   selected patterns/ranges, structural equality, coverage, unused owner parameters,
   parameter-dependent values and per-caller lifetime/bound obligations; enum
   discriminants, their enclosing-generic capture restrictions and separate
-  declaration-time const-argument dependencies.
+  declaration-time const-argument dependencies, nested arguments and default/
+  override declaration-order permutations.
 - `selection`: caller assumptions, partial inference, result/argument context,
   unrelated opaque alternatives, ambiguous methods and distinct caller scopes.
 - `coherence`: local/foreign identity within the supported profile, covered

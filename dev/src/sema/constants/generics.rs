@@ -12,6 +12,7 @@ pub(in crate::sema) fn argument(
 ) -> Result<u128, Error> {
     let mut queries =
         Queries::with_scratch(report, facts, Some(discriminants), std::mem::take(scratch));
+    queries.value_scope = Some((key, ty));
     queries.typing.anonymous_constant(key, ty, module)?;
     queries.require_complete_patterns(Query::Node(key))?;
     queries.work.push(Work::Enter(Query::Node(key)));

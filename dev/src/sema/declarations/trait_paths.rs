@@ -11,7 +11,8 @@ use crate::{
     sema::generics::TraitUse,
 };
 
-struct Callable {
+#[derive(Clone, Copy)]
+pub(super) struct Callable {
     owner: DefId,
     method: DefId,
     prefix: NodeKey,
@@ -28,16 +29,22 @@ impl Checker<'_> {
         limit: usize,
         scan: &mut Vec<crate::syntax::ast::NodeId>,
     ) -> Result<bool, Error> {
-        let Some(Callable {
+        let Some(callable) = self.trait_callable(key)? else {
+            return Ok(false);
+        };
+        if self.facts.generics.trait_uses.contains_key(&key)
+            && self.facts.generics.item_uses.contains_key(&key)
+        {
+            return Ok(true);
+        }
+        let Callable {
             owner,
             method,
             prefix,
             suffix,
             subject,
-        }) = self.trait_callable(key)?
-        else {
-            return Ok(false);
-        };
+        } = callable;
+        self.work.push(super::Work::TraitCallable(key, callable));
         if let Some(subject) = subject {
             self.annotation_holes(subject, steps, limit, scan)?;
             self.node_work(subject.file, subject.node, context);
@@ -48,7 +55,21 @@ impl Checker<'_> {
         self.method_path_segments(key, prefix, suffix)?;
         self.schedule_item_arguments(prefix, owner, context, steps, limit, scan)?;
         self.schedule_item_arguments(suffix, method, context, steps, limit, scan)?;
-        self.drain(steps, limit)?;
+        self.work.push(super::Work::Definition(method, false));
+        Ok(true)
+    }
+    pub(super) fn complete_trait_callable(
+        &mut self,
+        key: NodeKey,
+        callable: Callable,
+    ) -> Result<(), Error> {
+        let Callable {
+            owner,
+            method,
+            prefix,
+            suffix,
+            subject,
+        } = callable;
         let trait_arguments = self
             .facts
             .generics
@@ -74,7 +95,7 @@ impl Checker<'_> {
             .node_mut(key)
             .ok_or_else(|| Error::at(key.file, 0, "missing trait callable path fact"))?
             .reference = Some(Target::Definition(method));
-        Ok(true)
+        Ok(())
     }
     fn trait_callable(&self, key: NodeKey) -> Result<Option<Callable>, Error> {
         if let Some(path) = self.report.resolution.qualified_paths.get(&key) {

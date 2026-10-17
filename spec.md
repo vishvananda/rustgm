@@ -165,6 +165,15 @@ an enclosing generic parameter. Declaration-time const arguments have separate
 dependency requirements and cannot borrow this later phase's validated
 implementation state.
 
+Prepare qualified and implicit trait value paths with explicit declaration work
+items for their prefix, selection and written arguments. A nested const argument
+must not drain an unfinished parent declaration continuation. Reuse completed
+path facts, and prepare a demanded trait-default initializer in its own lexical
+and generic context. Const arguments reached after implementation validation may
+use concrete value dispatch, retaining proof under their anonymous constant body.
+Earlier queries and selected override dependencies still need their own declaration
+readiness; neither an unfinished environment nor an unchecked header is evidence.
+
 Associated result bounds retain complete predicates, including the separate
 subjects of nested result equalities. Elaborate their arguments through the
 ordinary bound worklist in the owning trait's lifetime scope. Validate the bound's

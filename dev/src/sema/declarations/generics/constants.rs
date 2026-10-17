@@ -2,7 +2,7 @@
 use super::{Checker, DefId, Error, Kind, NodeKey, TypeId, Work, regions};
 use crate::{
     resolve::{
-        model::{DefKind, Target},
+        model::{DefKind, Namespace, Target},
         package::ModuleId,
     },
     syntax::ast::NodeId,
@@ -18,6 +18,14 @@ impl Checker<'_> {
         scan: &mut Vec<NodeId>,
     ) -> Result<(), Error> {
         self.work.push(Work::ConstantArguments(key));
+        if self.schedule_trait_callable(key, context, steps, limit, scan)? {
+            return Ok(());
+        }
+        if self.constant_trait_prefix(key)
+            && self.schedule_implicit_method(key, context, steps, limit, scan)?
+        {
+            return Ok(());
+        }
         if self.schedule_alias_variant(key, context, steps, limit, scan)? {
             return Ok(());
         }
@@ -30,6 +38,7 @@ impl Checker<'_> {
     }
     pub(in super::super) fn constant_arguments(&mut self, key: NodeKey) -> Result<(), Error> {
         use crate::{sema::generics::SourceArgument, types::arguments::Argument};
+        self.constant_initializer_dependencies(key)?;
         let prefix = self
             .facts
             .generics
@@ -74,6 +83,51 @@ impl Checker<'_> {
             self.work.extend(defaults.map(Work::ValueShape));
         }
         Ok(())
+    }
+    fn constant_trait_prefix(&self, key: NodeKey) -> bool {
+        self.report
+            .resolution
+            .associated_paths
+            .get(&key)
+            .is_some_and(|path| {
+                path.namespace == Namespace::Value
+                    && (matches!(
+                        self.report.resolution.definitions[path.owner.0 as usize].kind,
+                        DefKind::Generic | DefKind::Primitive
+                    ) || self.facts.associated.trait_owner(path.owner).is_some())
+            })
+    }
+    fn constant_initializer_dependencies(&mut self, key: NodeKey) -> Result<(), Error> {
+        let Some(Target::Definition(id)) = self.facts.node(key).and_then(|f| f.reference) else {
+            return Ok(());
+        };
+        if self.report.resolution.definitions[id.0 as usize].kind == DefKind::Const
+            && let Some((source, context)) = self.constant_initializer(id)?
+        {
+            self.constant_dependencies_in(source, context)?;
+        }
+        Ok(())
+    }
+    fn constant_initializer(
+        &self,
+        id: DefId,
+    ) -> Result<Option<(NodeKey, regions::Context)>, Error> {
+        let Some(item) = self.report.resolution.definitions[id.0 as usize].node else {
+            return Ok(None);
+        };
+        let (crate::syntax::item::ItemKind::Const {
+            value: Some(node), ..
+        }
+        | crate::syntax::item::ItemKind::Static {
+            value: Some(node), ..
+        }) = self.item(item)?.kind
+        else {
+            return Ok(None);
+        };
+        Ok(Some((
+            NodeKey { node, ..item },
+            self.local_context(item, regions::Context::ALIAS),
+        )))
     }
     fn constant_annotation(&mut self, root: NodeKey) -> Result<(), Error> {
         use crate::{sema::generics::AnnotationArgument, types::arguments::Argument};
@@ -168,6 +222,13 @@ impl Checker<'_> {
             position: regions::Position::Constant(root.node),
             ..context
         };
+        self.constant_dependencies_in(root, context)
+    }
+    fn constant_dependencies_in(
+        &mut self,
+        root: NodeKey,
+        context: regions::Context,
+    ) -> Result<(), Error> {
         let mut work = vec![(root, context)];
         let mut children = Vec::new();
         while let Some((key, context)) = work.pop() {
@@ -178,6 +239,17 @@ impl Checker<'_> {
             }
             if self.constant_dependencies.len() > 1_000_000 {
                 return Err(self.error(root, "const argument dependency budget exceeded"));
+            }
+            if self.constant_trait_prefix(key) {
+                self.work.push(Work::ConstantUse(key, context));
+                continue;
+            }
+            if let Some(path) = self.report.resolution.qualified_paths.get(&key)
+                && path.trait_path.is_some()
+                && path.namespace == Namespace::Value
+            {
+                self.work.push(Work::ConstantUse(key, context));
+                continue;
             }
             match self.kind(key) {
                 Kind::Cast { ty, .. } | Kind::Let { ty: Some(ty), .. } => {
@@ -208,24 +280,14 @@ impl Checker<'_> {
                     DefKind::TypeAlias | DefKind::Const | DefKind::Static => {
                         if self.report.resolution.definitions[id.0 as usize].kind
                             == DefKind::TypeAlias
+                            || self.facts.associated.trait_owner(id).is_some()
                         {
                             self.work.push(Work::ConstantUse(key, context));
                         }
                         self.work.push(Work::ValueType(id));
                         self.work.push(Work::Definition(id, false));
-                        if let Some(item_key) =
-                            self.report.resolution.definitions[id.0 as usize].node
-                            && let crate::syntax::item::ItemKind::Const {
-                                value: Some(node), ..
-                            }
-                            | crate::syntax::item::ItemKind::Static {
-                                value: Some(node), ..
-                            } = self.item(item_key)?.kind
-                        {
-                            work.push((
-                                NodeKey { node, ..item_key },
-                                self.local_context(item_key, regions::Context::ALIAS),
-                            ));
+                        if let Some(dependency) = self.constant_initializer(id)? {
+                            work.push(dependency);
                         }
                     }
                     _ => {}

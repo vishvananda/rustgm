@@ -237,6 +237,19 @@ impl Checker<'_> {
         limit: usize,
         scan: &mut Vec<NodeId>,
     ) -> Result<(), Error> {
+        self.schedule_method_prefix(prefix, owner, context, steps, limit, scan)?;
+        self.drain(steps, limit)
+    }
+
+    pub(super) fn schedule_method_prefix(
+        &mut self,
+        prefix: NodeKey,
+        owner: Option<super::DefId>,
+        context: regions::Context,
+        steps: &mut usize,
+        limit: usize,
+        scan: &mut Vec<NodeId>,
+    ) -> Result<(), Error> {
         if let Some(owner) = owner {
             self.facts
                 .node_mut(prefix)
@@ -257,12 +270,10 @@ impl Checker<'_> {
             } else {
                 self.node_work(prefix.file, prefix.node, context);
             }
-            self.drain(steps, limit)?;
         }
         if owner.is_none() {
             self.annotation_holes(prefix, steps, limit, scan)?;
             self.node_work(prefix.file, prefix.node, context);
-            self.drain(steps, limit)?;
         }
         Ok(())
     }
