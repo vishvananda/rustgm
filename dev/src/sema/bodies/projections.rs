@@ -65,6 +65,15 @@ pub(super) struct Pending {
     data: Option<Box<Data>>,
 }
 impl Pending {
+    /// Finishing the worklist does not remove the caller aliases introduced by
+    /// projected field/call instantiation from subsequent shape equations.
+    pub fn has_context(&self) -> bool {
+        self.active()
+            || self
+                .data
+                .as_ref()
+                .is_some_and(|data| !data.normalizations.is_empty())
+    }
     pub fn active(&self) -> bool {
         self.data
             .as_ref()

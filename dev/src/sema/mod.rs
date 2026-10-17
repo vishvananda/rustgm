@@ -26,6 +26,7 @@ mod representation;
 mod scalar;
 pub mod scopes;
 pub mod semantic_view;
+pub(crate) mod stored_fields;
 mod traits;
 pub mod type_view;
 pub mod unreduced;

@@ -80,18 +80,14 @@ impl Templates {
                         return Err("transparent aggregate has more than one nontrivial field");
                     }
                 } else if types.contains_parameters(field) == Some(false) {
-                    definitions.prepare(types, field)?;
-                    layouts
-                        .demand(types, definitions, field)
-                        .map_err(|e| e.message)?;
+                    self.demand(types, definitions, layouts, field)
+                        .map_err(|error| error.message)?;
                 }
             }
         }
         if types.contains_parameters(root) == Some(false) {
-            definitions.prepare(types, root)?;
-            layouts
-                .demand(types, definitions, root)
-                .map_err(|e| e.message)?;
+            self.demand(types, definitions, layouts, root)
+                .map_err(|error| error.message)?;
         }
         Ok(())
     }
@@ -195,18 +191,21 @@ impl Templates {
             Ok(())
         })?;
         match kind {
-            Kind::Parameter(_) | Kind::ArrayTerm { .. } => properties.known = false,
+            Kind::Parameter(_) | Kind::Projection(_) | Kind::ArrayTerm { .. } => {
+                properties.known = false;
+            }
             Kind::Pointer { pointee, .. }
             | Kind::Reference {
                 referent: pointee, ..
-            } if types.contains_parameters(pointee) == Some(true)
+            } if (types.contains_parameters(pointee) == Some(true)
+                || types.contains_projections(pointee) == Some(true))
                 && types.is_sized(pointee) != Some(true)
                 && !matches!(types.kind(pointee), Some(Kind::Slice(_))) =>
             {
                 properties.known = false;
             }
             Kind::Adt(..) => {
-                let shape = definitions.shape(types, ty)?;
+                let shape = definitions.raw_shape(types, ty)?;
                 validate_repr(shape.definition, shape.variants().len())?;
                 properties.transparent &= shape.definition.repr.representation != Representation::C;
                 if shape.definition.repr.representation == Representation::Transparent {
@@ -273,7 +272,7 @@ fn children(
             }
         }
         Kind::Adt(..) => {
-            for variant in definitions.shape(types, ty)?.variants().rev() {
+            for variant in definitions.raw_shape(types, ty)?.variants().rev() {
                 for &child in types
                     .list(variant.fields)
                     .ok_or("invalid template representation fields")?

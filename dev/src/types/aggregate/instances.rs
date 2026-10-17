@@ -1,7 +1,7 @@
 //! Typed field instances share declaration identity and discriminants.
 use super::{Definition, Variant};
 use crate::types::{Kind, ListId, Store, TypeId, substitute::Bound};
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 #[derive(Clone, Copy)]
 struct Range {
@@ -11,12 +11,43 @@ struct Range {
 #[derive(Default)]
 pub(super) struct Instances {
     index: HashMap<TypeId, Result<Range, &'static str>>,
+    projected_templates: HashMap<crate::types::ItemId, bool>,
+    projections: HashSet<TypeId>,
     fields: Vec<ListId>,
     pub prepared: HashMap<(TypeId, bool), Result<(), &'static str>>,
     pub steps: usize,
     retained: usize,
 }
 impl Instances {
+    pub(super) fn has_projections(&self, ty: TypeId) -> bool {
+        self.projections.contains(&ty)
+    }
+    pub(super) fn projected_template(
+        &mut self,
+        types: &Store,
+        item: crate::types::ItemId,
+        templates: &[Variant],
+    ) -> Result<bool, &'static str> {
+        if let Some(&projected) = self.projected_templates.get(&item) {
+            return Ok(projected);
+        }
+        let mut projected = false;
+        for template in templates {
+            let fields = types
+                .list(template.fields)
+                .ok_or("invalid field template")?;
+            self.charge(fields.len().saturating_add(1))?;
+            projected |= fields
+                .iter()
+                .any(|&field| types.contains_projections(field) == Some(true));
+        }
+        self.retain(64)?;
+        self.projected_templates.insert(item, projected);
+        Ok(projected)
+    }
+    pub(super) fn contains(&self, ty: TypeId) -> bool {
+        self.index.contains_key(&ty)
+    }
     pub(super) fn get(&self, ty: TypeId) -> Result<&[ListId], &'static str> {
         let range = *self
             .index
@@ -86,7 +117,11 @@ impl Instances {
                 let before = substitution.steps;
                 let result = substitution.apply(types, field);
                 self.charge(substitution.steps.saturating_sub(before))?;
-                fields.push(result?);
+                let result = result?;
+                if types.contains_projections(result) == Some(true) {
+                    self.projections.insert(ty);
+                }
+                fields.push(result);
             }
             variants.push(types.intern_list(&fields)?);
         }

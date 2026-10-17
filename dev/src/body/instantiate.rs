@@ -153,7 +153,7 @@ fn materialize(
         blocks: source.blocks.clone(),
     };
     let projected = substitute(facts, &mut body, substitution)?;
-    if projected || comparison.is_some() {
+    if projected || comparison.is_some() || projections::needs_field_normalization(facts, &body)? {
         let contract = contract.ok_or("projected instance requires its lifetime contract")?;
         if matches!(premises, Premises::Declared)
             && let Some(assumptions) = crate::sema::callee_premises::specialize(

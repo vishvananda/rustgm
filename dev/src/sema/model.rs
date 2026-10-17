@@ -237,6 +237,7 @@ pub struct Declarations {
     pub(super) constant_instances:
         std::collections::HashMap<super::values::Instance, super::constants::Value>,
     pub associated: super::associated::Inventory,
+    pub(crate) stored_fields: Option<Box<super::stored_fields::Registry>>,
     pub methods: super::methods::Methods,
     pub receivers: std::collections::HashMap<NodeKey, super::associated::Receiver>,
     pub destructors: super::destructors::Destructors,
@@ -320,6 +321,7 @@ impl Declarations {
             constant_uses: std::collections::HashMap::new(),
             constant_instances: std::collections::HashMap::new(),
             associated: super::associated::collect(report)?,
+            stored_fields: None,
             methods: super::methods::Methods::default(),
             receivers: std::collections::HashMap::new(),
             destructors: super::destructors::Destructors::default(),

@@ -60,7 +60,7 @@ impl Checker<'_> {
         let generic = !self.call_types.generic.is_empty()
             || !self.call_types.constants.is_empty()
             || self.call_types.generic_constructors
-            || self.projections.active();
+            || self.projections.has_context();
         let partial = !self.annotation_checks.is_empty()
             || (generic
                 && self

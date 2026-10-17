@@ -9,6 +9,8 @@ mod const_arguments;
 mod discriminants;
 #[path = "associated_declarations/equations.rs"]
 mod equations;
+#[path = "associated_declarations/field_normalization.rs"]
+mod field_normalization;
 #[path = "associated_declarations/header_projections.rs"]
 mod header_projections;
 #[path = "harness/native_references.rs"]

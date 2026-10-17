@@ -7,6 +7,7 @@ mod calls;
 mod conditions;
 mod divergence;
 mod dot_calls;
+mod field_storage;
 mod generics;
 mod item_values;
 mod lifetimes;
@@ -186,6 +187,7 @@ pub(super) struct Checker<'a> {
     canonical_trait_inference: Option<Box<Context>>,
     annotations: super::annotations::Scratch,
     projections: projections::Pending,
+    storage: Option<Box<super::stored_fields::Preparation>>,
     type_children: Vec<TermId>,
     annotation_checks: Vec<NodeId>,
     annotation_children: HashSet<NodeId>,
@@ -256,6 +258,7 @@ impl<'a> Checker<'a> {
             canonical_trait_inference: None,
             annotations: super::annotations::Scratch::default(),
             projections: projections::Pending::default(),
+            storage: None,
             type_children: Vec::new(),
             annotation_checks: Vec::new(),
             annotation_children: HashSet::new(),
@@ -308,6 +311,7 @@ impl<'a> Checker<'a> {
     fn begin_constant(&mut self, key: NodeKey, ty: TypeId, module: ModuleId) {
         self.call_types.clear();
         self.projections = projections::Pending::default();
+        self.storage = None;
         self.body_binders = 0;
         self.method_environment = None;
         self.environment_owner = None;
@@ -417,7 +421,7 @@ impl Checker<'_> {
                 || !self.call_types.generic.is_empty()
                 || !self.call_types.constants.is_empty()
                 || self.call_types.generic_constructors
-                || self.projections.active())
+                || self.projections.has_context())
         {
             (
                 self.alias_argument(node, left)?,
@@ -466,6 +470,7 @@ impl Checker<'_> {
     fn function(&mut self, function: Function) -> Result<(), Error> {
         self.call_types.clear();
         self.projections = projections::Pending::default();
+        self.storage = None;
         self.body_binders = self
             .facts
             .lifetimes
@@ -628,6 +633,7 @@ impl Checker<'_> {
                     .map(|pending| pending.arguments.as_slice()),
             )
             .map_err(|e| self.error(body, e))?;
+        self.prepare_body_storage(body, &solved)?;
         self.validate_generic_uses(&solved, &predicates, &evidence)?;
         self.publish_constant_uses(arguments)?;
         self.publish_methods(&solved);
@@ -709,20 +715,15 @@ impl Checker<'_> {
         // A generic result retains declaration lifetimes even when its expression
         // uses free aliases. Ownership queries need both canonical field contexts.
         if self.facts.types.contains_parameters(self.result) == Some(true) {
-            self.facts
-                .aggregates
-                .prepare(&mut self.facts.types, self.result)
-                .map_err(|e| self.error(body, e))?;
+            self.prepare_storage(body, self.result)?;
         }
         // An implicit dereference need not have an AST node among `touched`.
         // Its selected field receiver still supplies a concrete type query key.
         // Retain discovery order so appended canonical types are deterministic.
-        for &receiver in &self.call_types.nominal_order {
+        for index in 0..self.call_types.nominal_order.len() {
+            let receiver = self.call_types.nominal_order[index];
             let ty = solved.types[receiver.0 as usize];
-            self.facts
-                .aggregates
-                .prepare(&mut self.facts.types, ty)
-                .map_err(|e| self.error(body, e))?;
+            self.prepare_storage(body, ty)?;
         }
         for index in 0..self.touched.len() {
             let node = self.touched[index];
@@ -771,10 +772,7 @@ impl Checker<'_> {
     ) -> Result<(), Error> {
         self.nominal_requirements(node, ty, nominal_types)?;
         if self.facts.generics.has_nominal_requirements {
-            self.facts
-                .aggregates
-                .prepare(&mut self.facts.types, ty)
-                .map_err(|e| self.error(node, e))?;
+            self.prepare_storage(node, ty)?;
         }
         if !self.body_shape(node, ty)?.well_formed {
             return Err(self.error(node, "body uses an ill-formed type"));

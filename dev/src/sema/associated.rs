@@ -74,6 +74,9 @@ pub struct Inventory {
     type_members: HashMap<(OwnerId, crate::resolve::names::NameId), DefId>,
 }
 impl Inventory {
+    pub(crate) fn has_associated_types(&self) -> bool {
+        !self.types.is_empty()
+    }
     /// Resolved namespace identity only; selection and conformance remain separate proofs.
     pub(in crate::sema) fn type_definition(
         &self,

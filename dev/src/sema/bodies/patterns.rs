@@ -503,7 +503,7 @@ impl Checker<'_> {
         {
             return Ok(id);
         }
-        let expected = self.nominal_term(node, path, variant.owner)?;
+        let expected = self.nominal_term(node, path, variant.owner, None)?;
         self.equate(node, term, expected)?;
         Ok(id)
     }

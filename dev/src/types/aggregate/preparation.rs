@@ -73,7 +73,7 @@ impl Definitions {
             match types.kind(ty).ok_or("invalid field preparation type")? {
                 Kind::Adt(_, arguments) => {
                     self.instantiate(types, ty)?;
-                    let shape = self.shape(types, ty)?;
+                    let shape = self.raw_shape(types, ty)?;
                     let mut count = 0_usize;
                     for variant in shape.variants() {
                         count = count
@@ -89,7 +89,7 @@ impl Definitions {
                         .as_mut()
                         .ok_or("missing field query")?
                         .charge(count)?;
-                    for variant in self.shape(types, ty)?.variants() {
+                    for variant in self.raw_shape(types, ty)?.variants() {
                         extend(types, variant.fields, &mut work)?;
                     }
                     let arguments = types

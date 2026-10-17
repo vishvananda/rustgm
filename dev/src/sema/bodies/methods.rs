@@ -60,7 +60,7 @@ impl Checker<'_> {
         {
             self.annotation(selected.prefix.node)?
         } else {
-            self.nominal_term(node, selected.prefix.node, selected.nominal)?
+            self.nominal_term(node, selected.prefix.node, selected.nominal, None)?
         };
         let prefix = self.alias_argument(node, prefix)?;
         self.equate(node, target, prefix)

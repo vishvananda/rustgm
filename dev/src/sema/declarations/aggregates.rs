@@ -92,6 +92,10 @@ impl Checker<'_> {
                 .types
                 .intern_list(&self.children)
                 .map_err(|e| self.error(group.key, e))?;
+            self.facts
+                .aggregates
+                .index_field_projections(&self.facts.types, list)
+                .map_err(|e| self.error(group.key, e))?;
             variants.push(aggregate::Variant {
                 fields: list,
                 discriminant: 0,
@@ -168,7 +172,10 @@ impl Checker<'_> {
                 self.facts.aggregates.get(item).is_some_and(|d| {
                     d.repr.representation == aggregate::Representation::Transparent
                 });
-            if self.facts.generics.storage.is_none() && !transparent {
+            if self.facts.generics.storage.is_none()
+                && !transparent
+                && !self.facts.associated.has_associated_types()
+            {
                 self.facts
                     .layouts
                     .demand(&self.facts.types, &self.facts.aggregates, ty)

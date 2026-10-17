@@ -15,6 +15,83 @@ use crate::{
 };
 use std::collections::HashMap;
 
+/// Nominal fields can contain projections absent from the nominal's own arguments.
+pub(super) fn needs_field_normalization(
+    facts: &Declarations,
+    body: &Body,
+) -> Result<bool, &'static str> {
+    use crate::types::{Kind as Type, arguments::Argument};
+    if !facts.aggregates.has_projected_templates() {
+        return Ok(false);
+    }
+    let mut work = std::iter::once(body.result)
+        .chain(body.locals.iter().map(|local| local.ty))
+        .chain(body.values.iter().map(|value| value.ty))
+        .chain(body.projections.iter().map(|projection| projection.ty))
+        .collect::<Vec<_>>();
+    let mut seen = std::collections::HashSet::new();
+    let mut steps = 0_usize;
+    while let Some(ty) = work.pop() {
+        steps = steps.saturating_add(1);
+        if steps.saturating_add(work.len()) > 1_000_000 {
+            return Err("instance storage dependency work budget exceeded");
+        }
+        if !seen.insert(ty) {
+            continue;
+        }
+        if let Some(projected) = facts
+            .stored_fields
+            .as_ref()
+            .and_then(|fields| fields.contains_projection(ty))
+        {
+            if projected {
+                return Ok(true);
+            }
+            continue;
+        }
+        match facts
+            .types
+            .kind(ty)
+            .ok_or("invalid instance storage dependency")?
+        {
+            Type::Adt(_, arguments) => {
+                if facts.aggregates.has_projected_fields(ty) {
+                    return Ok(true);
+                }
+                for variant in facts.aggregates.raw_shape(&facts.types, ty)?.variants() {
+                    work.extend_from_slice(
+                        facts
+                            .types
+                            .list(variant.fields)
+                            .ok_or("missing instance storage fields")?,
+                    );
+                }
+                work.extend(
+                    facts
+                        .types
+                        .arguments(arguments)
+                        .ok_or("missing instance storage arguments")?
+                        .filter_map(|argument| match argument {
+                            Argument::Type(ty) => Some(ty),
+                            _ => None,
+                        }),
+                );
+            }
+            Type::Tuple(list) => work.extend_from_slice(
+                facts
+                    .types
+                    .list(list)
+                    .ok_or("missing instance storage tuple")?,
+            ),
+            Type::Array { element, .. }
+            | Type::ArrayTerm { element, .. }
+            | Type::Slice(element) => work.push(element),
+            _ => {}
+        }
+    }
+    Ok(false)
+}
+
 pub(super) fn normalize(
     facts: &mut Declarations,
     body: &mut Body,
@@ -23,22 +100,23 @@ pub(super) fn normalize(
 ) -> Result<(), &'static str> {
     let mut proof = Obligations::new(first_region(contract)?);
     let mut session = projections::concrete(&mut proof, ScopeId::ROOT)?;
+    let mut storage = crate::sema::stored_fields::Preparation::default();
     if let Some((expected, actual)) = comparison
         && session.normalize(facts, expected)?.0 != session.normalize(facts, actual)?.0
     {
         return Err("instance signature differs from normalized template");
     }
-    body.result = ty(facts, &mut session, body.result)?;
+    body.result = ty(facts, &mut session, &mut storage, body.result)?;
     for local in &mut body.locals {
-        local.ty = ty(facts, &mut session, local.ty)?;
+        local.ty = ty(facts, &mut session, &mut storage, local.ty)?;
     }
     for projection in &mut body.projections {
-        projection.ty = ty(facts, &mut session, projection.ty)?;
+        projection.ty = ty(facts, &mut session, &mut storage, projection.ty)?;
     }
     for value in &mut body.values {
-        value.ty = ty(facts, &mut session, value.ty)?;
+        value.ty = ty(facts, &mut session, &mut storage, value.ty)?;
         if let Rvalue::Call { signature, .. } = &mut value.kind {
-            *signature = ty(facts, &mut session, *signature)?;
+            *signature = ty(facts, &mut session, &mut storage, *signature)?;
         }
     }
     rewrite_contract(facts, contract, &mut session)?;
@@ -105,13 +183,18 @@ fn first_region(contract: &Contract) -> Result<u32, &'static str> {
 fn ty(
     facts: &mut Declarations,
     session: &mut Concrete<'_>,
+    storage: &mut crate::sema::stored_fields::Preparation,
     original: TypeId,
 ) -> Result<TypeId, &'static str> {
     let result = session.normalize(facts, original)?.0;
     if facts.types.contains_projections(result) != Some(false) {
         return Err("concrete instance retains an associated projection");
     }
-    facts.aggregates.prepare(&mut facts.types, result)?;
+    if facts.aggregates.has_projected_templates() {
+        storage.prepare(facts, result, session)?;
+    } else {
+        facts.aggregates.prepare(&mut facts.types, result)?;
+    }
     Ok(result)
 }
 

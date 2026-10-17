@@ -21,6 +21,7 @@ impl Checker<'_> {
         node: NodeId,
         path: NodeId,
         owner: ItemId,
+        expected: Option<TermId>,
     ) -> Result<TermId, Error> {
         if let Some(&prefix) = self.facts.generics.constructor_uses.get(&self.key(path)) {
             return self.annotation(prefix.node);
@@ -64,6 +65,13 @@ impl Checker<'_> {
                 let region = self.local_region(argument)?;
                 regions.push(self.alias_region(argument, region)?);
             }
+        } else if let Some(context) =
+            self.constructor_regions(node, owner, expected.filter(|_| count != 0))?
+        {
+            if context.len() != count {
+                return Err(self.error(node, "incorrect contextual lifetime argument count"));
+            }
+            regions = context;
         } else {
             for _ in 0..count {
                 regions.push(self.body_region(node, BodyRegionOrigin::ItemArgument)?);
@@ -104,6 +112,38 @@ impl Checker<'_> {
         self.call_types.insert_nominal(term, fields);
         Ok(term)
     }
+
+    /// A known expected nominal supplies its own input arguments. In particular,
+    /// opaque associated output equality must not infer these lifetime inputs.
+    fn constructor_regions(
+        &mut self,
+        node: NodeId,
+        owner: ItemId,
+        expected: Option<TermId>,
+    ) -> Result<Option<Vec<crate::types::RegionId>>, Error> {
+        let Some(expected) = expected.filter(|_| self.facts.aggregates.has_projected_templates())
+        else {
+            return Ok(None);
+        };
+        if !matches!(
+            self.contextual_head(node, expected)?,
+            Some(Constructor::Adt(item, _) | Constructor::AdtArgs(item, _)) if item == owner
+        ) {
+            return Ok(None);
+        }
+        let arguments = self
+            .infer
+            .item_arguments(&self.facts.types, expected)
+            .map_err(|e| self.error(node, e))?;
+        let mut regions = Vec::new();
+        for argument in arguments {
+            if let Argument::Lifetime(region) = argument {
+                regions.push(self.alias_region(node, region)?);
+            }
+        }
+        Ok(Some(regions))
+    }
+
     pub(super) fn generic_constructor(
         &mut self,
         node: NodeId,
@@ -111,7 +151,7 @@ impl Checker<'_> {
         variant: VariantId,
     ) -> Result<TermId, Error> {
         let variant = self.facts.members.variants[variant.0 as usize];
-        let nominal = self.nominal_term(node, node, variant.owner)?;
+        let nominal = self.nominal_term(node, node, variant.owner, None)?;
         let Some(Type::FunctionItem { item, .. }) = self.facts.types.kind(ty) else {
             return Ok(nominal);
         };

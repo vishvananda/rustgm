@@ -1459,6 +1459,39 @@ these canonical types; hash-map iteration must not determine type identities.
 Failed preparation cannot publish unfinished descendants as prepared. This
 availability check does not prove declaration validity, bounds or finite layout.
 
+Keep raw substituted fields distinct from normalized concrete storage fields.
+Normalize concrete fields through independently validated implementations before
+ownership, destruction or layout queries can observe them. An unresolved concrete
+field is a preparation error, not a conservative cached layout or Copy answer.
+Lifetime-only nominal arguments also require substitution when their fields
+contain projections. Cache that structural requirement once per declaration and
+instance instead of scanning every field during each property query.
+
+A normalized field list never grants another caller permission to form its raw
+projection. Index the structural dependency graph once per canonical type and
+retain its raw projection leaves in a persistent recipe DAG. Empty dependencies
+vanish; a single dependency shares its child's recipe without copying its path or
+flattening its descendants. Each body or concrete instance proves those leaves in
+its own scope, including lifetime debts erased from scalar results. Share one
+completed-recipe set and normalization session within that scope. Traverse owned
+fields and derive argument dependencies with bounded worklists, stop at pointer
+and reference referents, and publish completed structural lists separately from
+the caller's evidence. Demand published body values and selected receivers, not
+discarded provisional inference templates. Index projected declaration field
+flags so signature-only projections do not trigger storage traversal. Keep
+generic fields symbolic until actual instantiation;
+template representation checks treat unresolved projections as unknown layouts.
+Concrete instance discovery must include projections hidden in nominal fields,
+not just projections visible in the nominal's argument graph.
+
+Projected field inference retains its caller lifetime context after the pending
+normalization worklist drains. Later shape comparisons use the same universal
+aliases; queue emptiness controls progress, not the meaning of existing terms.
+For record constructors with omitted lifetimes, a known expected nominal with the
+same owner can supply those input lifetimes before field substitution. Preserve
+explicit written lifetimes and prove the usual formation and coercion debts.
+An associated output equality cannot invent equations between its inputs.
+
 Complete nominal parameter schemas and declaration contracts independently of
 field instances. Prove field and use-site predicates in their owning immutable
 parameter environment; a cached predicate list is not a cached proof across

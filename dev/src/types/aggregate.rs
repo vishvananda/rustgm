@@ -1,4 +1,5 @@
 //! Completed nominal shapes are separate from canonical, potentially recursive identity.
+mod field_forms;
 pub mod finiteness;
 mod instances;
 mod packing;
@@ -43,10 +44,12 @@ pub struct Definition {
 #[derive(Default)]
 pub struct Definitions {
     packing_checked: bool,
+    projected_templates: bool,
     entries: Vec<Definition>,
     index: HashMap<ItemId, u32>,
     variants: Vec<Variant>,
     instances: Option<Box<instances::Instances>>,
+    storage: Option<Box<field_forms::Fields>>,
 }
 impl Definitions {
     /// Instantiate immediate fields from completed templates, keyed by the full
@@ -59,26 +62,49 @@ impl Definitions {
             return Err("field instantiation requires a nominal type");
         };
         let definition = *self.get(item).ok_or("missing aggregate field template")?;
-        if types.region_args(arguments).is_some() {
+        let templates = &self.variants[definition.start as usize..definition.end as usize];
+        let instances = self.instances.get_or_insert_with(Default::default);
+        if types.region_args(arguments).is_some()
+            && !instances.projected_template(types, item, templates)?
+        {
             return Ok(());
         }
-        let templates = &self.variants[definition.start as usize..definition.end as usize];
-        self.instances
-            .get_or_insert_with(Default::default)
-            .demand(types, ty, templates)
+        instances.demand(types, ty, templates)
     }
     /// Read structural fields without allocating or repeating substitution.
-    /// Lifetime-only shapes retain the established declaration-template path.
+    /// Concrete projected fields require their independently normalized storage.
     /// # Errors
     /// Rejects missing nominal identities or undemanded type/const field instances.
     pub fn shape(&self, types: &Store, ty: TypeId) -> Result<Shape<'_>, &'static str> {
+        if let Some(fields) = self.storage.as_ref().and_then(|storage| storage.get(ty)) {
+            let raw = self.raw_shape(types, ty)?;
+            return Shape::new(raw.definition, self.variants(raw.definition), Some(fields));
+        }
+        let shape = self.raw_shape(types, ty)?;
+        if types.contains_parameters(ty) == Some(false)
+            && self
+                .instances
+                .as_ref()
+                .is_some_and(|instances| instances.has_projections(ty))
+        {
+            return Err("concrete aggregate fields require associated type normalization");
+        }
+        Ok(shape)
+    }
+    /// Raw substituted fields remain available for caller-owned formation proofs.
+    pub(crate) fn raw_shape(&self, types: &Store, ty: TypeId) -> Result<Shape<'_>, &'static str> {
         let Some(super::Kind::Adt(item, arguments)) = types.kind(ty) else {
             return Err("aggregate shape requires a nominal type");
         };
         let definition = self
             .get(item)
             .ok_or("missing completed aggregate definition")?;
-        let fields = if types.region_args(arguments).is_some() {
+        let fields = if types.region_args(arguments).is_some()
+            && !self
+                .instances
+                .as_ref()
+                .is_some_and(|instances| instances.contains(ty))
+        {
             None
         } else {
             Some(

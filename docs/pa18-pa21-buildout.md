@@ -8886,3 +8886,85 @@ observations and avoid treating these shared-host ratios as general Cargo or
 Rust compiler performance. Instruction scaling supplies the stronger algorithmic
 evidence. PA20–PA25 remain planned; projected storage is the next implementation
 gap described above.
+
+### Projected nominal storage and shared field proofs (2026-10-17)
+
+Concrete nominal fields now normalize before layout, Copy and destruction queries.
+The raw substituted fields remain separate, preserving declaration variance and
+the inputs of each caller's formation proof. Lifetime-only nominal arguments also
+substitute when fields contain projections. Template representation checks defer
+unknown projected layouts; a concrete property query cannot cache an answer from
+an unresolved projected field.
+
+The implementation indexes projected field templates as declarations publish them.
+Associated items used only in signatures do not trigger a storage graph walk.
+Each canonical storage type has a persistent dependency recipe containing its raw
+projected leaves. Empty dependencies vanish and single-child paths reuse the child
+recipe. Joins share prior nodes without copying their descendant sets. A caller
+normalizes the retained leaves in its own proof scope and checks the same normal
+form; the shared graph carries structural data, never permission from another
+caller. Failed traversal does not publish unfinished roots or caller evidence.
+
+Body preparation consumes published value types, selected receivers and method
+values. The initial prototype instead visited every solved inference term,
+including discarded constructor templates. A depth-96 source consequently created
+4,753 field instances where approximately 97 were needed. Removing that demand
+and sharing projection recipes eliminates two sources of repeated graph work.
+
+Generic record construction also retains its lifetime context after projection
+work finishes. Only actual projection normalization, or still-active work, triggers
+that persistent context; allocating an ordinary annotation scope does not. The
+first broader condition changed six PA15 region outputs. Narrowing it restores
+all 202 cases without changing their oracles. A known expected nominal of the same
+owner supplies omitted constructor lifetimes before field substitution. Written
+arguments remain authoritative, and associated output equality never infers its
+inputs. The previously unsupported generic projected Drop-field constructor now
+executes with explicit or omitted lifetimes, annotated locals and nested context.
+
+The permanent field corpus has 37 independently qualified outcomes and 28 native
+positives. It covers records, tuples, enums, aliases, arrays, references, function
+pointers, distinct instances, lifetime-only arguments, Copy, Drop and transparent
+layout. Negative controls include field types, formation debts, cross-caller proof
+isolation, variance, moves and mismatched nominal owners. Four unit invariants
+cover preserved raw fields, independent erased lifetime debts, repeated roots,
+shared diamonds through depth 256 and growing frontiers through 128 leaves. A
+source regression bounds field-instantiation work through constructor depth 96.
+
+The fully validated candidate is
+`d91af80468db20f38f711e24fe87523e82804c7db3988db47131121bf8983d11`.
+Evidence is retained under `obj/pa20-work/projected-storage-v2/`, especially
+`validation-graph2/review.json`, `performance-review.json`, `final-study/` and
+`final-growth/`. Thirty validation commands pass: 1,205 regular tests, 77 native
+groups, all 4,863 PA1–19 cases, strict Clippy, formatting, the 745-file audit,
+harness, backend and upstream checks. All 748 source/configuration hashes and
+14,589 earlier oracle sidecars agree. The wrapper terminated during cleanup after
+those checks completed; a separate successful tidy removed 9,032 generated files,
+10.21 GiB. PA20–PA25 continue to reject as planned stages.
+
+The final paired study retains 754 study observations and 116 before/after output
+observations across 29 jobs. All full LowIR comparisons and binary/source/input
+hashes agree. Seventeen existing controls compare with published `8d2e03b`; their
+median changes range from -2.71% to +1.90%. Several small differences are within
+calibration noise, and the marker control's A/A spread is 97.85%. The previously
+observed +8.83% depth-16/count-8 change is now -1.14%, with 2.08% A/A spread.
+These shared-host observations do not establish sub-percent regression bounds.
+
+The six new-storage comparisons use the pre-algorithm `d1dbd949` prototype.
+At depth 96, ordinary storage falls from about 17.17 ms to 10.20 ms (-40.62%
+paired median); shared ordinary callers fall from 26.69 ms to 16.65 ms (-37.66%).
+The shared-case AA/BB paired medians are -0.69%/+0.61%. Final instruction counts
+at depths 32/64/96 are 11.37/21.03/30.01 million for ordinary storage and
+22.87/44.17/64.72 million for shared ordinary callers. Those two families are
+consistent with linear input growth and retain byte-identical LowIR.
+
+Broader probes deliberately test separate caller contexts as well. Ten additional
+lifetime/generic programs execute independently with rustc and CPPGM and retain
+the pre-algorithm LowIR bytes. They expose remaining superlinear work: shared
+lifetime depths 32/64/96 take 91.11/252.69/475.62 million instructions, and shared
+generic depths take 55.16/156.37/299.51 million. Full canonical field instances are
+still rebuilt for distinct caller arguments. Generic destruction queries also
+revisit the storage chain during template construction, symbolic cleanup checks
+and concrete instantiation. The next algorithmic work must share declaration
+structure and demand properties only where needed while preserving each caller's
+parameter and lifetime proof. This checkpoint does not claim those families are
+linear or close PA20's remaining implementation, inspection or grading contracts.

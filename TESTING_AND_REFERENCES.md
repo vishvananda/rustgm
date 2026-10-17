@@ -292,6 +292,20 @@ equality rules must retain the full selector. The nine independently qualified
 cases in `associated_declarations/canonical_queries.rs` include six native
 positives, erased formation debts, missing/reversed lifetime relationships,
 nonidentical result lifetimes, aliases and both kinds of associated equality.
+The 37 independently qualified cases in
+`associated_declarations/field_normalization.rs` include 28 native positives for
+projected nominal fields: records, tuples, enums, nested and distinct instances,
+aliases, lifetime-only arguments, arrays, references, function pointers, Copy,
+Drop and transparent layout. Generic constructors cover explicit and omitted
+lifetimes, annotated locals and nested expected types. Negative controls retain
+field typing, lifetime, variance and moved-value failures.
+`invariants/stored_fields.rs` checks that raw
+fields remain available after storage publication, independent callers retain
+separate erased lifetime debts, and repeated shared fields take linear work
+through width 256. Shared dependency recipes bound per-caller work through depth
+256 and retain growing frontiers linearly through 128 distinct projected leaves.
+The source-level constructor regression bounds field instantiation work through
+depth 96, excluding discarded inference templates. These cases do not release PA20.
 
 `dev/tests/opaque_body_values.rs` separates 26 declaration/body type-checking
 controls from fifteen checks through LowIR and six native callable programs.

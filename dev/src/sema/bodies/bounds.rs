@@ -163,10 +163,7 @@ impl Checker<'_> {
             self.body_shape(node, ty)?.sized
         } else {
             if self.facts.generics.has_nominal_requirements {
-                self.facts
-                    .aggregates
-                    .prepare(&mut self.facts.types, ty)
-                    .map_err(|e| self.error(node, e))?;
+                self.prepare_storage(node, ty)?;
             }
             let properties = self
                 .parameter_copies

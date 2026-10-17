@@ -300,7 +300,7 @@ impl Checker<'_> {
     ) -> Result<(), Error> {
         let variant_id = self.constructor(path)?;
         let variant = self.facts.members.variants[variant_id.0 as usize];
-        let term = self.nominal_term(node, path, variant.owner)?;
+        let term = self.nominal_term(node, path, variant.owner, expected)?;
         if let Some(expected) = expected {
             self.shape_equation(node, term, expected)?;
         }
