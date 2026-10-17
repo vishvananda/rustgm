@@ -174,40 +174,68 @@ fn blocked_only_is_not_absence_or_permission() -> Result<(), Box<dyn std::error:
 #[test]
 fn unknown_argument_is_not_guessed_from_one_plain_alternative()
 -> Result<(), Box<dyn std::error::Error>> {
-    let (mut store, opaque, exact) = projected_alternatives()?;
-    let mut assumptions = Assumptions::default();
-    assumptions.insert(&store, opaque)?;
-    assumptions.insert(&store, exact)?;
-    let parameter = store.intern_parameter(Parameter {
-        owner: ItemId(5),
-        index: 0,
-        kind: ParameterKind::Type { sized: true },
-    })?;
-    let ty = store.intern(Kind::Parameter(parameter))?;
-    let arguments = store.intern_arguments(&[Argument::Type(ty)])?;
-    let predicate = Predicate {
-        ty: exact.ty,
-        bound: Bound::Trait(store.intern_trait_application(Application {
-            item: ItemId(1),
-            arguments,
-        })?),
-    };
-    let mut context = Context::default();
-    let unknown = context.variable(Domain::Any)?;
-    let mut substitution = Instantiation::new(
-        &mut context,
-        &store,
-        &[(
-            parameter,
-            crate::types::infer::arguments::Argument::Type(unknown),
-        )],
-    )?;
-    let goal = context.instantiate_predicate(&mut store, predicate, &mut substitution)?;
-    assert!(matches!(
-        assumptions.select(&mut store, &mut context, &goal),
-        Err(crate::types::infer::Error::Unresolved)
-    ));
-    assert!(context.head(&store, unknown)?.is_none());
+    for reverse in [false, true] {
+        for resolved in [
+            TypeId::primitive(Primitive::U8),
+            TypeId::primitive(Primitive::U16),
+        ] {
+            let (mut store, opaque, exact) = projected_alternatives()?;
+            let mut assumptions = Assumptions::default();
+            for predicate in if reverse {
+                [exact, opaque]
+            } else {
+                [opaque, exact]
+            } {
+                assumptions.insert(&store, predicate)?;
+            }
+            let parameter = store.intern_parameter(Parameter {
+                owner: ItemId(5),
+                index: 0,
+                kind: ParameterKind::Type { sized: true },
+            })?;
+            let ty = store.intern(Kind::Parameter(parameter))?;
+            let arguments = store.intern_arguments(&[Argument::Type(ty)])?;
+            let predicate = Predicate {
+                ty: exact.ty,
+                bound: Bound::Trait(store.intern_trait_application(Application {
+                    item: ItemId(1),
+                    arguments,
+                })?),
+            };
+            let mut context = Context::default();
+            let unknown = context.variable(Domain::Any)?;
+            let mut substitution = Instantiation::new(
+                &mut context,
+                &store,
+                &[(
+                    parameter,
+                    crate::types::infer::arguments::Argument::Type(unknown),
+                )],
+            )?;
+            let goal = context.instantiate_predicate(&mut store, predicate, &mut substitution)?;
+            assert!(matches!(
+                assumptions.select(&mut store, &mut context, &goal)?,
+                super::Selection::Deferred
+            ));
+            assert!(context.head(&store, unknown)?.is_none());
+            let known = context.known(&store, resolved)?;
+            context.equate(&store, unknown, known)?;
+            let selection = assumptions.select(&mut store, &mut context, &goal);
+            if resolved == TypeId::primitive(Primitive::U8) {
+                let super::Selection::Proven(evidence) = selection? else {
+                    return Err("deferred query did not resume after argument inference".into());
+                };
+                assert_eq!(evidence.assumption(), exact);
+            } else {
+                assert!(matches!(
+                    selection,
+                    Err(crate::types::infer::Error::Normalization)
+                ));
+            }
+            assert_eq!(context.resolved(&mut store, unknown)?, resolved);
+            assert!(context.region_equalities.is_empty());
+        }
+    }
     Ok(())
 }
 

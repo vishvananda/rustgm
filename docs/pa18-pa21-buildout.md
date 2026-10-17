@@ -7649,3 +7649,70 @@ runtime-extents timing concerns also remain separate.
 Validation cleanup removed 4,857 generated files, about 5.14 GiB. The measurement
 runners deleted each rendering scratch file after hashing and retained all raw
 observations. Their successful wrappers found no further disposable outputs.
+
+## Deferred assumption inputs and contextual method inference
+
+Prefix-only method applicability previously turned an unresolved projected trait
+argument into a fatal inference error. The assumption matcher now returns a
+deferred decision without committing any candidate. Existing applicability logic
+can then keep that method possible, while ordinary call arguments, expected
+results or function-pointer context settle its input. The completed body's
+obligation pass still requires unique evidence. Deferral is not permission to
+choose the plain alternative or to use result context to choose between different
+applicable method names.
+
+Twenty source probes matched outcomes declared before pinned-rustc object
+qualification. All twenty then matched the prototype through complete LowIR
+construction. Nineteen are new permanent cases; the context-free rejection already
+had identical source coverage. The combined source suite has 38 cases: 23 valid,
+fifteen invalid and seven native execution controls, five of them new. These add
+return and argument contexts, function pointers, receiver calls, mixed constants,
+shared arguments, projected results and lifetime requirements. Negative controls
+retain method ambiguity, independent caller scopes and missing or inconsistent
+context. Typed inference checks retry the same goal after both a matching and a
+nonmatching input, under either assumption order, without guessing the original
+hole. Evidence is in `obj/pa20-work/deferred-assumption-inference-v1/`.
+
+PA20's handout now spells out the complete implementation and release requirements,
+with fixture families for associated types, result contracts, constants,
+selection, coherence, recursion and native integration. It remains planned, with
+no grading manifest or regenerated oracles. Associated constants, remaining
+normalization/coherence, expanded semantic inspection and the public grading suite
+still block its release; PA21's full responsibilities also remain required.
+
+Validation passed all 1,168 release tests, all 4,864 PA1–PA19 text fixtures and
+all 63 native suites, including the five new programs in the existing assumption
+suite. Rustfmt, Clippy all/pedantic with warnings denied, the 713-file audit with
+zero findings, 33 harness tests, backend and upstream checks passed. The 716-file
+source/configuration snapshot stayed unchanged through 26 validation commands.
+No oracle was regenerated. PA20 and PA21 still fail explicitly as planned stages.
+
+Eight separately declared associated-constant probes matched pinned rustc:
+six valid and two invalid. Required/default/generic trait values currently stop
+at the explicit implementation-conformance boundary; simple and parameterized
+inherent values stop at value resolution. The negative probes also hit the
+unsupported trait-member gate, so they do not prove real constant conformance.
+These are recorded investigations for the next implementation block, not grading
+expectations that classify valid constants as invalid Rust.
+
+Performance used immutable f755d80/current binaries for twelve actual comparisons,
+eight identical-candidate scaling jobs for newly supported calls, and four direct
+7d5bc47/current comparisons tracking the earlier ordinary-bound cost. The 24 jobs
+retained 624 study observations and 96 full-output qualifications. Current-baseline
+paired medians ranged from -4.292% to +1.693%. A legacy 256-declaration count job
+crossed the +3.5% review threshold at +6.520%, with five positive paired blocks.
+A/A spread across the original jobs reached 240.29%, so these are noisy measurements.
+
+A separately declared confirmation of all four legacy ordinary-bound cases used
+twelve A/A observations and ten paired blocks, retaining 216 study observations
+and sixteen qualifications. The 64-declaration count/full medians were
++0.163%/+0.719%; the 256-declaration medians were -0.205%/-0.711%. Confirmation
+A/A spread reached 51.97%. This run did not reproduce the new +6.520% signal or
+the earlier small-control slowdown, but does not erase either prior observation
+or prove a blanket absence of regressions. All binary/source/input/runner hashes
+and full/count output equality checks passed. Older scoped-result and
+runtime-extents concerns remain separate; their retained evidence is unchanged.
+
+Validation cleanup removed 4,879 generated files, about 5.17 GiB. Rendering
+scratch files were deleted after each measured output was hashed. Sources,
+diagnostics and every timing observation remain under `obj/`.

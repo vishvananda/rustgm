@@ -587,7 +587,11 @@ in isolated contexts; two equatable assumptions still defer selection. If no
 assumption matches, retain the normalization requirement instead of reporting
 absence or permitting an unrelated implementation. This does not normalize the
 caller environment or infer a projection's inputs from its output. Unresolved
-inference remains unresolved. Retain inferred lifetime equalities with their
+candidate inputs defer the query without committing any alternative. Prefix
+applicability may remain possible until ordinary call argument/result constraints
+settle; a completed body still needs a unique proof. Retrying the same goal after
+inference must use its new inputs, not a cached provisional decision. Retain
+inferred lifetime equalities with their
 owning declaration or
 body; prove both directions using the ordinary region engine and completed nominal
 contracts. An outlives relation in one direction alone is not equality. Keep exact

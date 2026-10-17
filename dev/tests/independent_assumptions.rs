@@ -120,6 +120,120 @@ const CASES: &[(&str, &str, bool, bool)] = &[
         true,
         false,
     ),
+    (
+        "return-context",
+        "trait A{type Out;}trait B<U>{fn m()->U;}fn f<T:A,U:B<<T as A>::Out>+B<u8>>()->u8{U::m()}fn main(){}\n",
+        true,
+        false,
+    ),
+    (
+        "return-dispatch-run",
+        "fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}\ntrait A{type Out;}impl A for u8{type Out=u32;}trait B<U>{fn m()->U;}impl B<u8>for u16{fn m()->u8{7}}impl B<u32>for u16{fn m()->u32{43}}fn f<T:A,U:B<<T as A>::Out>+B<u8>>()->u8{U::m()}fn main(){check(f::<u8,u16>()==7);}\n",
+        true,
+        true,
+    ),
+    (
+        "reordered-return",
+        "trait A{type Out;}trait B<V>{fn m()->V;}fn f<T:A,U:B<u8>+B<<T as A>::Out>>()->u8{U::m()}fn main(){}\n",
+        true,
+        false,
+    ),
+    (
+        "argument-context",
+        "trait A{type Out;}trait B<V>{fn m(x:V)->u8;}fn f<T:A,U:B<<T as A>::Out>+B<u8>>(x:u8)->u8{U::m(x)}fn main(){}\n",
+        true,
+        false,
+    ),
+    (
+        "pointer-context-run",
+        "fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}\ntrait A{type Out;}impl A for u8{type Out=u32;}trait B<V>{fn m()->V;}impl B<u8>for u16{fn m()->u8{7}}impl B<u32>for u16{fn m()->u32{43}}fn f<T:A,U:B<<T as A>::Out>+B<u8>>()->u8{let m:fn()->u8=U::m;m()}fn main(){check(f::<u8,u16>()==7);}\n",
+        true,
+        true,
+    ),
+    (
+        "dot-context-run",
+        "fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}\ntrait A{type Out;}impl A for u8{type Out=u32;}trait B<V>{fn m(&self)->V;}impl B<u8>for u16{fn m(&self)->u8{7}}impl B<u32>for u16{fn m(&self)->u32{43}}fn f<T:A,U:B<<T as A>::Out>+B<u8>>(x:&U)->u8{x.m()}fn main(){check(f::<u8,u16>(&3)==7);}\n",
+        true,
+        true,
+    ),
+    (
+        "wrong-return",
+        "trait A{type Out;}trait B<V>{fn m()->V;}fn f<T:A,U:B<<T as A>::Out>+B<u8>>()->u16{U::m()}fn main(){}\n",
+        false,
+        false,
+    ),
+    (
+        "other-subject",
+        "trait A{type Out;}trait B<V>{fn m()->V;}fn f<T:A,U:B<<T as A>::Out>+B<u8>>()->u8{T::m()}fn main(){}\n",
+        false,
+        false,
+    ),
+    (
+        "independent-caller",
+        "trait A{type Out;}trait B<V>{fn m()->V;}fn f<T:A,U:B<<T as A>::Out>+B<u8>>()->u8{U::m()}fn g<T:A,U:B<<T as A>::Out>+B<u16>>()->u8{U::m()}fn main(){}\n",
+        false,
+        false,
+    ),
+    (
+        "method-priority",
+        "trait A{type Out;}trait B<V>{fn m()->V;}trait C{fn m()->u8;}fn f<T:A,U:B<<T as A>::Out>+B<u8>+C>()->u8{U::m()}fn main(){}\n",
+        false,
+        false,
+    ),
+    (
+        "argument-cannot-choose-trait",
+        "trait A{type Out;}trait B<V>{fn m(x:V)->u8;}trait C{fn m(x:u16)->u8;}fn f<T:A,U:B<<T as A>::Out>+B<u8>+C>()->u8{U::m(7u8)}fn main(){}\n",
+        false,
+        false,
+    ),
+    (
+        "mixed-const-run",
+        "fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}\ntrait A{type Out;}impl A for u8{type Out=u32;}trait B<V,const N:usize>{fn m()->V;}impl B<u8,3>for u16{fn m()->u8{7}}impl B<u32,2>for u16{fn m()->u32{43}}fn f<T:A,U:B<<T as A>::Out,2>+B<u8,3>>()->u8{U::m()}fn main(){check(f::<u8,u16>()==7);}\n",
+        true,
+        true,
+    ),
+    (
+        "shared-arguments",
+        "trait A{type Out;}trait B<V,W>{fn m(x:V)->W;}fn f<T:A,U:B<<T as A>::Out,<T as A>::Out>+B<u8,u8>>()->u8{U::m(7u8)}fn main(){}\n",
+        true,
+        false,
+    ),
+    (
+        "conflicting-arguments",
+        "trait A{type Out;}trait B<V,W>{fn m(x:V)->W;}fn f<T:A,U:B<<T as A>::Out,<T as A>::Out>+B<u8,u8>>()->u16{U::m(7u8)}fn main(){}\n",
+        false,
+        false,
+    ),
+    (
+        "selected-output",
+        "trait A{type Out:Copy;}trait B<V>{fn m()->V;}fn f<T:A,U:B<<T as A>::Out>+B<u8>>()-><T as A>::Out{U::m()}fn main(){}\n",
+        true,
+        false,
+    ),
+    (
+        "lifetime-correct",
+        "trait A{type Out;}trait B<'a,V>{fn m(x:&'a u8)->V;}fn f<'a,'b,T:A,U:B<'a,u8>+B<'b,<T as A>::Out>>(x:&'a u8)->u8{U::m(x)}fn main(){}\n",
+        true,
+        false,
+    ),
+    (
+        "lifetime-missing",
+        "trait A{type Out;}trait B<'a,V>{fn m(x:&'a u8)->V;}fn f<'a,'b,T:A,U:B<'a,u8>+B<'b,<T as A>::Out>>(x:&'b u8)->u8{U::m(x)}fn main(){}\n",
+        false,
+        false,
+    ),
+    (
+        "lifetime-outlives",
+        "trait A{type Out;}trait B<'a,V>{fn m(x:&'a u8)->V;}fn f<'a,'b:'a,T:A,U:B<'a,u8>+B<'b,<T as A>::Out>>(x:&'b u8)->u8{U::m(x)}fn main(){}\n",
+        true,
+        false,
+    ),
+    (
+        "two-caller-results-run",
+        "fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}\ntrait A{type Out;}impl A for u8{type Out=u32;}trait B<V>{fn m()->V;}impl B<u8>for u16{fn m()->u8{7}}impl B<u32>for u16{fn m()->u32{43}}fn f<T:A,U:B<<T as A>::Out>+B<u8>>()->u8{U::m()}fn g<T:A,U:B<<T as A>::Out>+B<u32>>()->u32{U::m()}fn main(){check(f::<u8,u16>()==7);check(g::<u8,u16>()==43);}\n",
+        true,
+        true,
+    ),
 ];
 #[test]
 fn independent_assumptions_match_rustc() -> Result<(), Box<dyn std::error::Error>> {
@@ -133,10 +247,23 @@ fn independent_assumptions_match_rustc() -> Result<(), Box<dyn std::error::Error
                 .map_err(|e| e.to_string())
         });
         assert_eq!(result.is_ok(), accepted, "{name}: {result:?}");
-        if name == "opaque-lifetime-debt" {
-            assert!(result.is_err_and(|error| {
-                error.contains("required lifetime does not outlive its target")
-            }));
+        let diagnostic = match name {
+            "opaque-lifetime-debt" | "lifetime-missing" => {
+                Some("required lifetime does not outlive its target")
+            }
+            "method-priority" | "argument-cannot-choose-trait" => {
+                Some("multiple applicable trait methods")
+            }
+            "unresolved-method-result" => Some(
+                "trait obligation requires an unambiguous matching assumption or implementation",
+            ),
+            _ => None,
+        };
+        if let Some(diagnostic) = diagnostic {
+            assert!(
+                result.is_err_and(|error| error.contains(diagnostic)),
+                "{name}"
+            );
         }
     }
     Ok(())

@@ -2,7 +2,29 @@
 
 Planned: no graded fixtures or generated reference outputs yet.
 
-Required families: projections; orphan/overlap checks; recursive goals; solver caching.
+Required families:
+
+- `projections`: qualified/shorthand paths, complete type/lifetime/const inputs,
+  aliases, nominal fields, callable signatures, nested results and repeated uses.
+- `contracts`: result bounds, equalities, inherited promises, valid/invalid impl
+  conformance, unused declarations and obligations retained after normalization.
+- `constants`: required/default/overridden values, inherent values, generic
+  instantiation, selected identity, type errors, invalid values and dependency cycles.
+- `selection`: caller assumptions, partial inference, result/argument context,
+  unrelated opaque alternatives, ambiguous methods and distinct caller scopes.
+- `coherence`: local/foreign identity within the supported profile, covered
+  parameters, overlapping and disjoint headers, conditional impls and unused impls.
+- `recursion`: successful shared subgoals, inductive cycles, failure-cache isolation,
+  retry after inference and query-budget diagnostics.
+- `integration`: selected native behavior, fields/layout, borrowing, lifetime
+  debts, destruction and constants used by initializers or executable expressions.
+
+Each family includes both semantic inspection and complete LowIR proof cases where
+applicable. Declare source acceptance, any later-proof rejection and native
+outcomes independently; do not infer them from a generated text reference.
+Pair each positive capability with nearby negative controls. Preserve imported
+source attribution and source hashes. Do not require PA21 GATs, opaque types or
+higher-ranked trait bounds implicitly in a PA20 fixture.
 
 Put required regressions here, in the earliest assignment owning all their
 features. Register every input in `manifest.json`; no undiscovered fixtures.

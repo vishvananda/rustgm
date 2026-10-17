@@ -413,14 +413,17 @@ rustc acceptance. The separately qualified explicit-prerequisite variant now has
 the additional coverage below. General closed projected lifetime requirements
 without a result equality remain incomplete.
 
-`independent_assumptions.rs` checks 19 independently object-qualified programs:
-eleven accept and eight reject, with two CPPGM/rustc executions. They distinguish
+`independent_assumptions.rs` checks 38 independently object-qualified programs:
+23 accept and fifteen reject, with seven CPPGM/rustc executions. They distinguish
 blocked opaque alternatives from independent complete matches, preserve bound
 ordering and caller scope, and retain lifetime equality obligations and ambiguity.
 Four assumption-index invariants check probe isolation, unresolved inference,
-the blocked-only outcome and selected evidence. Contextual trait-argument
-inference for an unqualified associated call remains valid unsupported work;
-those probes are not rejection fixtures.
+the blocked-only outcome and selected evidence. The unresolved-argument invariant
+now retries the same inference graph after both matching and nonmatching inputs,
+in both candidate orders. Contextual trait-argument cases cover return types,
+arguments, function pointers, receiver calls, mixed const arguments and distinct
+callers. Missing context, incompatible results, method-name ambiguity and unpaid
+lifetime debts remain rejections; selected controls check the diagnostic gate too.
 
 ## Storage and cleanup
 

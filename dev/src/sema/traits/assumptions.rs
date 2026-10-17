@@ -184,6 +184,9 @@ impl Assumptions {
                 // An opaque equation is not a second matching assumption. Keep
                 // looking, including for other fully equatable alternatives.
                 Err(infer::Error::Normalization) => needs_normalization = true,
+                // Applicability may wait for call arguments or a result type.
+                // Another alternative cannot choose this unresolved input.
+                Err(infer::Error::Unresolved) => return Ok(Selection::Deferred),
                 Err(error) => return Err(error),
             }
         }
