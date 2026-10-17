@@ -15,7 +15,7 @@ pub(crate) fn resolve(
     body: &mut Body,
     contract: &mut Contract,
 ) -> Result<(), String> {
-    if !body.values.iter().any(|value| matches!(value.kind, Rvalue::Function(id) if facts.associated.trait_owner(id).is_some())) {
+    if !body.values.iter().any(|value| matches!(value.kind, Rvalue::AssociatedConstant(_)) || matches!(value.kind, Rvalue::Function(id) if facts.associated.trait_owner(id).is_some())) {
         return Ok(());
     }
     let first = contract
@@ -40,7 +40,12 @@ pub(crate) fn resolve(
         .ok_or("dispatch region identity space exhausted")?;
     let mut dispatcher = Dispatcher::new(contract.universals, first)?;
     let mut replacements = HashMap::new();
-    for value in &body.values {
+    for value in &mut body.values {
+        if let Rvalue::AssociatedConstant(instance) = &mut value.kind {
+            let selected = dispatcher.constant(facts, *instance)?;
+            facts.constant_targets.insert(*instance, selected);
+            *instance = selected;
+        }
         if let Rvalue::Function(id) = value.kind
             && facts.associated.trait_owner(id).is_some()
         {

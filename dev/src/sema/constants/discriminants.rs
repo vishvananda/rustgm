@@ -137,7 +137,8 @@ impl Queries<'_> {
                 .set_discriminant(member.owner, member.ordinal, bits)
                 .map_err(|e| self.error(query, e))?;
         }
-        self.states.insert(query, State::Ready(value));
+        self.states
+            .insert(self.state_key(query), State::Ready(value));
         Ok(())
     }
     pub(super) fn variant_tag(&self, variant: VariantId) -> Result<Primitive, Error> {

@@ -130,11 +130,12 @@ impl Expression {
     }
 }
 impl Queries<'_> {
-    pub(super) fn product_expression(&self, key: NodeKey) -> Result<Option<Expression>, Error> {
+    pub(super) fn product_expression(&mut self, key: NodeKey) -> Result<Option<Expression>, Error> {
         let facts = self
             .typing
             .facts
             .node(key)
+            .copied()
             .ok_or_else(|| self.error(Query::Node(key), "missing constant product facts"))?;
         let child = |node| NodeKey { node, ..key };
         Ok(
@@ -166,9 +167,11 @@ impl Queries<'_> {
                     Some(Expression::Fields(statements))
                 }
                 (Kind::Repeat { value, .. }, _) => {
-                    let Some(Type::Array { length, .. }) =
-                        facts.ty.and_then(|ty| self.typing.facts.types.kind(ty))
-                    else {
+                    let ty = facts.ty.ok_or_else(|| {
+                        self.error(Query::Node(key), "missing constant repeat type")
+                    })?;
+                    let ty = self.specialized_type(key, ty)?;
+                    let Some(Type::Array { length, .. }) = self.typing.facts.types.kind(ty) else {
                         return Err(self.error(Query::Node(key), "missing constant array type"));
                     };
                     Some(Expression::Repeat {

@@ -108,7 +108,7 @@ impl Checker<'_> {
             .map_err(|e| self.error(node, e))?;
         Ok((id, self.inferred_parameter(node, id, supplied)?))
     }
-    fn inferred_parameter(
+    pub(super) fn inferred_parameter(
         &mut self,
         node: NodeId,
         id: crate::types::parameters::ParameterId,

@@ -85,6 +85,17 @@ impl Dependencies {
                 .ok_or("missing callable constant type")?;
             work.push(Work::Value(ty, value));
         }
+        for value in &body.values {
+            if let Rvalue::AssociatedConstant(instance) = value.kind {
+                self.charge(1)?;
+                work.push(Work::Value(
+                    value.ty,
+                    reader
+                        .associated(instance)
+                        .ok_or("missing completed associated constant")?,
+                ));
+            }
+        }
         if let Some(promotions) = &body.promotions {
             for (id, value) in promotions.entries() {
                 self.charge(1)?;

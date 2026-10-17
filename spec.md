@@ -129,6 +129,32 @@ constructors by retained callable identity; a function pointer to a constructor
 does not grant const-call permission. Earlier type inspection remains separate
 from this eligibility proof.
 
+Associated value uses retain a constant instance identity with the complete owner
+arguments, including parameters absent from the result type. Solve those argument
+lists with ordinary inference; do not invent function types for constants. Keep
+inherited bounds, lifetime relations and each caller's selected implementation
+proof separate from the structural value cache. Defaults and overrides enter the
+selected initializer's own argument environment.
+
+Build associated initializers as checked templates, including unused values and
+closed owners. Promotion may retain an eligible but unevaluated value; required
+constant evaluation still diagnoses its faults when demanded. The pinned profile
+also diagnoses cycles among closed trivial initializer aliases before demand.
+Selected dependency graphs include branches that value evaluation can skip.
+Retain callable dependencies in those templates as complete function-item types.
+Substitute the selected initializer's owner arguments before selecting trait
+method overrides, including function pointers nested in products. Each caller
+retains its own selection proof; a cached structural target grants no permission.
+Callable bodies are executable dependencies, not constant-evaluation edges.
+
+Evaluate the retained expression template under a distinct instance context.
+Node, place, contents and in-progress dependency states must use that context;
+ordinary constants and statics retain their global identities. Substitute stored
+types and const arguments without modifying shared source facts. Share repeated
+values by selected identity and complete arguments, including persistent data,
+while preserving independent callable, lifetime and destruction proofs. Bound
+both instance discovery and the expanded evaluation work.
+
 Associated result bounds retain complete predicates, including the separate
 subjects of nested result equalities. Elaborate their arguments through the
 ordinary bound worklist in the owning trait's lifetime scope. Validate the bound's
@@ -1083,6 +1109,12 @@ Use the shared outlives graph for lifetime and type-parameter requirements;
 unused impl lifetimes remain existential. Inherited method environments retain
 each parameter's original declaration identity. Classify such bodies as templates
 until demanded concrete instances and their destruction plans are available.
+
+Template loan checking consumes complete scoped destruction requirements. When
+no local, value or projection can need destruction and no cleanup sites remain,
+reuse the checked initialization and storage facts with the ordinary loan checker.
+Do not allocate an abstract cleanup plan for that case. Custom-Drop field move
+legality, region proofs and initialization checks remain independent requirements.
 
 Keep the checked inverse impl-to-nominal argument mapping on the completed Drop
 implementation. Selecting a method for a concrete target consumes that mapping;

@@ -73,31 +73,18 @@ pub fn concrete(report: &Report, facts: &Declarations) -> Result<Program, Error>
         )?);
     }
     for initializer in &facts.initializers {
-        let body = Body::new(
-            Owner::Initializer {
-                definition: initializer.definition,
-                kind: initializer.kind,
-            },
-            initializer.value,
-            initializer.ty,
-        );
-        let scope_plan = scopes::initializer_with_scratch(
-            report,
-            facts,
-            initializer,
-            std::mem::take(&mut scratch.scopes),
-        )?;
-        let builder = Builder::new(
+        if facts.associated.owner(initializer.definition).is_some()
+            || facts.generics.has_parameters(initializer.definition)
+        {
+            continue;
+        }
+        program.bodies.push(initializer_body(
             report,
             facts,
             &mut scratch,
-            body,
-            scope_plan,
+            initializer,
             drop_query.as_mut(),
-        );
-        program
-            .bodies
-            .push(builder.run(None).map_err(|e| report.diagnostic(e))?);
+        )?);
     }
     for (source, ty) in facts.constant_bodies() {
         let scope_plan = scopes::constant_with_scratch(
@@ -123,6 +110,30 @@ pub fn concrete(report: &Report, facts: &Declarations) -> Result<Program, Error>
     constructors::concrete(report, facts, &mut program, drop_query.as_mut())?;
     drops::finish(report, facts, &mut program, drop_query.as_mut())?;
     Ok(program)
+}
+fn initializer_body(
+    report: &Report,
+    facts: &Declarations,
+    scratch: &mut Scratch,
+    initializer: &crate::sema::model::Initializer,
+    query: Option<&mut crate::types::destruction::NeedsDrop>,
+) -> Result<Body, Error> {
+    let body = Body::new(
+        Owner::Initializer {
+            definition: initializer.definition,
+            kind: initializer.kind,
+        },
+        initializer.value,
+        initializer.ty,
+    );
+    let scope_plan = scopes::initializer_with_scratch(
+        report,
+        facts,
+        initializer,
+        std::mem::take(&mut scratch.scopes),
+    )?;
+    let builder = Builder::new(report, facts, scratch, body, scope_plan, query);
+    builder.run(None).map_err(|e| report.diagnostic(e))
 }
 fn function_body(
     report: &Report,
@@ -1217,7 +1228,16 @@ impl<'a> Builder<'a> {
                 DefKind::Function | DefKind::Constructor | DefKind::Variant => {
                     Rvalue::Function(definition)
                 }
-                DefKind::Const => Rvalue::Constant(definition),
+                DefKind::Const => {
+                    if let Some(&instance) = self.facts.constant_uses.get(&NodeKey {
+                        file: self.body.source.file,
+                        node,
+                    }) {
+                        Rvalue::AssociatedConstant(instance)
+                    } else {
+                        Rvalue::Constant(definition)
+                    }
+                }
                 DefKind::Generic => Rvalue::ConstArgument(
                     *self
                         .facts

@@ -1,0 +1,254 @@
+//! Evaluation work and dependency states belong to the selected initializer instance.
+use super::{Error, NodeKey, Queries, Query, Work};
+use crate::{
+    resolve::model::DefId,
+    sema::model::Declarations,
+    types::{GenericArgs, TypeId, arguments::Argument, substitute::Bound},
+};
+use std::collections::HashMap;
+
+/// A typed use or selected initializer. Trait declarations still require dispatch.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct Instance {
+    pub definition: DefId,
+    pub arguments: GenericArgs,
+}
+/// Initializer dependencies retain complete identities before owner substitution.
+#[derive(Clone, Copy)]
+pub(crate) enum Dependency {
+    Constant(Instance),
+    Callable(TypeId),
+}
+impl Instance {
+    /// Substitute captured arguments without rewriting the shared declaration.
+    /// # Errors
+    /// Rejects malformed argument identities and exhausted substitution work.
+    pub fn substitute(
+        self,
+        store: &mut crate::types::Store,
+        bound: &mut Bound,
+    ) -> Result<Self, &'static str> {
+        let arguments = store
+            .arguments(self.arguments)
+            .ok_or("invalid constant arguments")?
+            .collect::<Vec<_>>();
+        let mut result = Vec::with_capacity(arguments.len());
+        for argument in arguments {
+            result.push(bound.apply_argument(store, argument)?);
+        }
+        Ok(Self {
+            definition: self.definition,
+            arguments: store.intern_arguments(&result)?,
+        })
+    }
+    /// # Errors
+    /// Rejects missing or mismatched captured parameter identities.
+    pub(crate) fn substitution(self, facts: &Declarations) -> Result<Bound, &'static str> {
+        let Some(schema) = facts.associated.schema(self.definition) else {
+            return if self.arguments == GenericArgs::EMPTY {
+                Ok(Bound::new(Vec::new()))
+            } else {
+                Err("ordinary constant has captured arguments")
+            };
+        };
+        let captures = schema.captures as usize;
+        let (_, parameters) = facts
+            .generics
+            .callable_parameters(&facts.types, self.definition)?;
+        let arguments = facts
+            .types
+            .arguments(self.arguments)
+            .ok_or("invalid constant arguments")?
+            .collect::<Vec<_>>();
+        if arguments.len() != captures.saturating_add(parameters.len()) {
+            return Err("constant owner argument arity mismatch");
+        }
+        let regions = arguments[..captures]
+            .iter()
+            .map(|argument| match argument {
+                Argument::Lifetime(region) => Ok(*region),
+                _ => Err("constant owner requires lifetime arguments"),
+            })
+            .collect::<Result<Vec<_>, _>>()?;
+        let bindings = parameters
+            .into_iter()
+            .zip(arguments[captures..].iter().copied())
+            .collect::<Vec<_>>();
+        Bound::parameters_captured(&facts.types, &bindings, regions)
+    }
+}
+
+#[derive(Clone, Copy, Default, PartialEq, Eq, Hash)]
+pub(super) struct Context(pub u32);
+pub(super) struct Environment {
+    pub instance: Instance,
+    substitution: Bound,
+}
+#[derive(Default)]
+pub(super) struct Worklist {
+    pub context: Context,
+    values: Vec<(Context, Work)>,
+}
+impl Worklist {
+    pub fn push(&mut self, work: Work) {
+        self.values.push((self.context, work));
+    }
+    pub fn extend(&mut self, work: impl Iterator<Item = Work>) {
+        self.values.extend(work.map(|work| (self.context, work)));
+    }
+    pub fn pop(&mut self) -> Option<Work> {
+        let (context, work) = self.values.pop()?;
+        self.context = context;
+        Some(work)
+    }
+}
+#[derive(Default)]
+pub(super) struct Instances {
+    identities: HashMap<Instance, Context>,
+    environments: Vec<Environment>,
+}
+impl Queries<'_> {
+    pub(super) fn drop_substitution(&self) -> Result<Option<Bound>, &'static str> {
+        self.work
+            .context
+            .0
+            .checked_sub(1)
+            .map(|index| {
+                self.instances.environments[index as usize]
+                    .instance
+                    .substitution(self.typing.facts)
+            })
+            .transpose()
+    }
+    pub(super) fn state_key(&self, query: Query) -> (Context, Query) {
+        let context = if matches!(
+            query,
+            Query::Node(_) | Query::Place(_) | Query::Contents(..)
+        ) {
+            self.work.context
+        } else {
+            Context::default()
+        };
+        (context, query)
+    }
+    pub(super) fn specialized_type(&mut self, key: NodeKey, ty: TypeId) -> Result<TypeId, Error> {
+        let Some(index) = self.work.context.0.checked_sub(1) else {
+            return Ok(ty);
+        };
+        let result = self.instances.environments[index as usize]
+            .substitution
+            .apply(&mut self.typing.facts.types, ty)
+            .map_err(|e| self.error(Query::Node(key), e))?;
+        if self.typing.facts.types.contains_parameters(result) != Some(false) {
+            return Err(self.error(
+                Query::Node(key),
+                "constant value retains an unresolved parameter",
+            ));
+        }
+        if self.typing.facts.types.contains_projections(result) == Some(true) {
+            return Err(self.error(
+                Query::Node(key),
+                "constant instance projection normalization is not implemented",
+            ));
+        }
+        self.typing
+            .facts
+            .aggregates
+            .prepare(&mut self.typing.facts.types, result)
+            .map_err(|e| self.error(Query::Node(key), e))?;
+        Ok(result)
+    }
+    pub(super) fn specialized_argument(
+        &mut self,
+        key: NodeKey,
+        argument: crate::types::arguments::Argument,
+    ) -> Result<crate::types::arguments::Argument, Error> {
+        let Some(index) = self.work.context.0.checked_sub(1) else {
+            return Ok(argument);
+        };
+        self.instances.environments[index as usize]
+            .substitution
+            .apply_argument(&mut self.typing.facts.types, argument)
+            .map_err(|e| self.error(Query::Node(key), e))
+    }
+    pub(super) fn selected_constant(
+        &mut self,
+        key: NodeKey,
+        mut instance: Instance,
+    ) -> Result<Instance, Error> {
+        if let Some(index) = self.work.context.0.checked_sub(1) {
+            instance = instance
+                .substitute(
+                    &mut self.typing.facts.types,
+                    &mut self.instances.environments[index as usize].substitution,
+                )
+                .map_err(|e| self.error(Query::Node(key), e))?;
+        }
+        if self
+            .typing
+            .facts
+            .associated
+            .trait_owner(instance.definition)
+            .is_none()
+        {
+            return Ok(instance);
+        }
+        self.typing
+            .facts
+            .constant_targets
+            .get(&instance)
+            .copied()
+            .ok_or_else(|| {
+                self.error(
+                    Query::Node(key),
+                    "dependent trait constant requires completed value selection",
+                )
+            })
+    }
+    pub(super) fn enter_instance(&mut self, instance: Instance) -> Result<(), Error> {
+        let query = Query::Instance(instance);
+        // Instantiations may revisit a large template with distinct arguments.
+        self.limit = self.limit.max(16_000_000);
+        let index = self
+            .constants
+            .get(instance.definition.0 as usize)
+            .copied()
+            .flatten()
+            .ok_or_else(|| self.error(query, "selected constant has no initializer"))?;
+        if !matches!(
+            self.typing.facts.initializers[index].kind,
+            super::InitializerKind::Const
+        ) {
+            return Err(self.error(query, "constant instance requires a constant initializer"));
+        }
+        if !self.typing.facts.initializers[index].type_checked {
+            self.typing.initializer(index)?;
+            self.require_complete_patterns(query)?;
+        }
+        let context = if let Some(&context) = self.instances.identities.get(&instance) {
+            context
+        } else {
+            let substitution = instance
+                .substitution(self.typing.facts)
+                .map_err(|e| self.error(query, e))?;
+            let ordinal = self.instances.environments.len();
+            if ordinal >= 1_000_000 {
+                return Err(self.error(query, "constant instance work budget exceeded"));
+            }
+            let context = Context(
+                u32::try_from(ordinal + 1)
+                    .map_err(|_| self.error(query, "constant instance identity overflow"))?,
+            );
+            self.instances.environments.push(Environment {
+                instance,
+                substitution,
+            });
+            self.instances.identities.insert(instance, context);
+            context
+        };
+        self.work.context = context;
+        let key = self.typing.facts.initializers[index].value;
+        self.forward(query, Query::Node(key));
+        self.prepare(key)
+    }
+}

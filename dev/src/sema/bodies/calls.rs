@@ -11,6 +11,7 @@ pub(super) struct CallTypes {
     pub obligations: Vec<(NodeId, crate::types::infer::predicates::Predicate)>,
     pub assumed_obligations: HashSet<usize>,
     pub generic: Vec<(NodeId, DefId, TermId)>,
+    pub constants: Vec<super::item_values::Pending>,
     pub generic_constructors: bool,
     pub active: HashMap<NodeId, TermId>,
     pub method_owners: HashMap<NodeId, (DefId, TermId)>,
@@ -34,6 +35,7 @@ impl CallTypes {
         self.obligations.clear();
         self.assumed_obligations.clear();
         self.generic.clear();
+        self.constants.clear();
         self.generic_constructors = false;
         self.active.clear();
         self.method_owners.clear();
@@ -54,6 +56,7 @@ impl Checker<'_> {
         expected: TermId,
     ) -> Result<(), Error> {
         let generic = !self.call_types.generic.is_empty()
+            || !self.call_types.constants.is_empty()
             || self.call_types.generic_constructors
             || self.projections.active();
         let partial = !self.annotation_checks.is_empty()
@@ -353,7 +356,7 @@ impl Checker<'_> {
             })
             .map_err(|e| self.error(node, e))
     }
-    fn early_item_arguments(
+    pub(super) fn early_item_arguments(
         &mut self,
         node: NodeId,
         explicit: Option<crate::syntax::ast::List>,
@@ -385,7 +388,7 @@ impl Checker<'_> {
         }
         Ok(arguments)
     }
-    fn item_bounds(
+    pub(super) fn item_bounds(
         &mut self,
         node: NodeId,
         mapping: &[RegionId],

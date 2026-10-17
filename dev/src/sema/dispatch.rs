@@ -20,6 +20,8 @@ pub(crate) struct Dispatcher {
     context: Context,
     obligations: Obligations,
     selected: HashMap<TypeId, TypeId>,
+    constants: HashMap<super::values::Instance, super::values::Instance>,
+    expanded: HashMap<super::values::Instance, bool>,
 }
 impl Dispatcher {
     pub(crate) fn new(universals: u32, first: u32) -> Result<Self, &'static str> {
@@ -44,6 +46,8 @@ impl Dispatcher {
             context: Context::default(),
             obligations,
             selected: HashMap::new(),
+            constants: HashMap::new(),
+            expanded: HashMap::new(),
         })
     }
     pub(crate) fn select(
@@ -66,6 +70,122 @@ impl Dispatcher {
         }
         let arguments = arguments::Arguments::new(facts, ty)?;
         let predicate = arguments.goal(facts, trait_owner)?;
+        let (owner, implementation, evidence) = self.implementation(facts, predicate)?;
+        let target = facts
+            .generics
+            .implementations
+            .as_ref()
+            .and_then(|registry| registry.method(owner, method))
+            .ok_or("selected implementation lacks the trait method")?;
+        let result = if target == method {
+            ty
+        } else {
+            arguments.target(facts, owner, implementation, target)?
+        };
+        self.obligations.append(evidence)?;
+        self.selected.insert(ty, result);
+        Ok(result)
+    }
+    pub(crate) fn constant(
+        &mut self,
+        facts: &mut Declarations,
+        instance: super::values::Instance,
+    ) -> Result<super::values::Instance, String> {
+        let selected = self.select_constant(facts, instance)?;
+        facts.constant_targets.insert(instance, selected);
+        let mut work = vec![(selected, false)];
+        while let Some((current, finish)) = work.pop() {
+            self.context.account_work(1).map_err(|e| e.to_string())?;
+            if finish {
+                self.expanded.insert(current, true);
+                continue;
+            }
+            match self.expanded.get(&current) {
+                Some(true) => continue,
+                Some(false) => return Err("cycle in associated constant dependencies".into()),
+                None => {}
+            }
+            self.expanded.insert(current, false);
+            if self.expanded.len() > 1_000_000 {
+                return Err("constant selection dependency budget exceeded".into());
+            }
+            work.push((current, true));
+            let Some(dependencies) = facts
+                .constant_dependencies
+                .get(&current.definition)
+                .cloned()
+            else {
+                continue;
+            };
+            self.context
+                .account_work(dependencies.len())
+                .map_err(|e| e.to_string())?;
+            let mut substitution = current.substitution(facts)?;
+            for dependency in dependencies.into_iter().rev() {
+                let before = substitution.steps;
+                match dependency {
+                    super::values::Dependency::Constant(instance) => {
+                        let source = instance.substitute(&mut facts.types, &mut substitution)?;
+                        let target = self.select_constant(facts, source)?;
+                        facts.constant_targets.insert(source, target);
+                        work.push((target, false));
+                    }
+                    super::values::Dependency::Callable(ty) => {
+                        let source = substitution.apply(&mut facts.types, ty)?;
+                        let target = self.select(facts, source)?;
+                        facts
+                            .generics
+                            .constant_callable_targets
+                            .insert(source, target);
+                    }
+                }
+                self.context
+                    .account_work(substitution.steps - before)
+                    .map_err(|e| e.to_string())?;
+            }
+        }
+        Ok(selected)
+    }
+    fn select_constant(
+        &mut self,
+        facts: &mut Declarations,
+        instance: super::values::Instance,
+    ) -> Result<super::values::Instance, String> {
+        if let Some(&selected) = self.constants.get(&instance) {
+            return Ok(selected);
+        }
+        let Some(owner) = facts.associated.trait_owner(instance.definition) else {
+            return Ok(instance);
+        };
+        let arguments = arguments::Arguments::constant(facts, instance)?;
+        let predicate = arguments.goal(facts, owner)?;
+        if predicate.contains_parameters(&facts.types)? {
+            return Err("concrete constant retains unresolved arguments".into());
+        }
+        let (owner, arguments, evidence) = self.implementation(facts, predicate)?;
+        let definition = facts
+            .generics
+            .implementations
+            .as_ref()
+            .and_then(|registry| registry.constant(owner, instance.definition))
+            .ok_or("selected implementation lacks the trait constant")?;
+        let result = if definition == instance.definition {
+            instance
+        } else {
+            super::values::Instance {
+                definition,
+                arguments,
+            }
+        };
+        self.obligations.append(evidence)?;
+        self.constants.insert(instance, result);
+        Ok(result)
+    }
+    fn implementation(
+        &mut self,
+        facts: &mut Declarations,
+        predicate: crate::types::parameters::predicates::Predicate,
+    ) -> Result<(DefId, crate::types::GenericArgs, selection::Evidence), String> {
         let before = self.normalize.steps;
         let predicate = self.normalize.predicate(&mut facts.types, predicate)?;
         self.context
@@ -99,20 +219,7 @@ impl Dispatcher {
         else {
             return Err("concrete dispatch cannot use a symbolic assumption".into());
         };
-        let target = facts
-            .generics
-            .implementations
-            .as_ref()
-            .and_then(|registry| registry.method(owner, method))
-            .ok_or("selected implementation lacks the trait method")?;
-        let result = if target == method {
-            ty
-        } else {
-            arguments.target(facts, owner, implementation, target)?
-        };
-        self.obligations.append(evidence)?;
-        self.selected.insert(ty, result);
-        Ok(result)
+        Ok((owner, implementation, evidence))
     }
     pub(crate) fn finish(mut self) -> Obligations {
         self.obligations

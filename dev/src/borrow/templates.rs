@@ -68,13 +68,15 @@ pub fn verify<'a, S: BuildHasher>(
             node: Some(body.source),
             message: message.into(),
         };
-        let crate::body::ir::Owner::Function { definition, .. } = body.owner else {
-            return Err(error("template owner is not a function"));
+        let definition = match body.owner {
+            crate::body::ir::Owner::Function { definition, .. }
+            | crate::body::ir::Owner::Initializer { definition, .. } => definition,
+            crate::body::ir::Owner::AnonymousConstant => {
+                return Err(error("template requires a declared owner"));
+            }
         };
         if body.instance.is_some() || index.insert(ItemId(definition.0), ordinal).is_some() {
-            return Err(error(
-                "template proof requires distinct original function owners",
-            ));
+            return Err(error("template proof requires distinct original owners"));
         }
         if body.promotions.is_none()
             && body

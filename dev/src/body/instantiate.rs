@@ -241,6 +241,9 @@ fn substitute(
                 *signature = bound.apply(&mut facts.types, *signature)?;
                 projected |= facts.types.contains_projections(*signature) == Some(true);
             }
+            Rvalue::AssociatedConstant(instance) => {
+                *instance = instance.substitute(&mut facts.types, bound)?;
+            }
             Rvalue::ConstArgument(id) => {
                 let Argument::Const(actual) =
                     bound.apply_argument(&mut facts.types, Argument::Const(*id))?

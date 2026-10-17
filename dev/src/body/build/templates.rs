@@ -48,5 +48,35 @@ pub fn build(report: &Report, facts: &Declarations) -> Result<Templates, Error> 
             environment: Arc::clone(environment),
         });
     }
+    for initializer in &facts.initializers {
+        if facts.associated.owner(initializer.definition).is_none()
+            && !facts.generics.has_parameters(initializer.definition)
+        {
+            continue;
+        }
+        let environment =
+            if let Some(environment) = facts.generics.body_environment(initializer.definition) {
+                Arc::clone(environment)
+            } else {
+                Arc::new(
+                    facts
+                        .generics
+                        .parameter_environment(&facts.types, initializer.definition)
+                        .map_err(|e| Declarations::error(report, initializer.value, e))?,
+                )
+            };
+        let mut scoped = query.scoped(Arc::clone(&environment));
+        let body =
+            super::initializer_body(report, facts, &mut scratch, initializer, Some(&mut scoped))?;
+        crate::body::constants::eligibility(report, facts, &body)?;
+        let destruction = crate::body::drops::requirements(facts, &body, &mut scoped)
+            .map_err(|message| Declarations::error(report, body.source, message))?;
+        bodies.push(Template {
+            body,
+            destruction,
+            environment,
+        });
+    }
+    crate::body::constants::alias_cycles(report, facts, &bodies)?;
     Ok(Templates { bodies })
 }

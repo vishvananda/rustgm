@@ -173,10 +173,24 @@ impl Context {
     /// # Errors
     /// Reports the failures of `finish` and unresolved or invalid predicate arguments.
     pub fn finish_with_predicates<'p>(
-        mut self,
+        self,
         store: &mut Store,
         predicates: impl Iterator<Item = &'p Predicate>,
     ) -> Result<(Solved, Vec<Canonical>), Error> {
+        let (solved, predicates, _) =
+            self.finish_with_arguments(store, predicates, std::iter::empty())?;
+        Ok((solved, predicates))
+    }
+
+    /// Finish independent item argument lists without inventing a value type.
+    /// # Errors
+    /// Rejects unresolved types, constants, obligations and invalid item arguments.
+    pub fn finish_with_arguments<'p>(
+        mut self,
+        store: &mut Store,
+        predicates: impl Iterator<Item = &'p Predicate>,
+        arguments: impl Iterator<Item = &'p [Argument]>,
+    ) -> Result<(Solved, Vec<Canonical>, Vec<crate::types::GenericArgs>), Error> {
         let mut solved = self.solve_types(store)?;
         let mut completed = Vec::new();
         for predicate in predicates {
@@ -189,8 +203,32 @@ impl Context {
                     .ok_or(Error::InvalidIdentity)
             })?);
         }
+        let mut items = Vec::new();
+        for arguments in arguments {
+            self.account_work(arguments.len())?;
+            let mut values = Vec::with_capacity(arguments.len());
+            for &argument in arguments {
+                values.push(match argument {
+                    Argument::Lifetime(region) => CanonicalArgument::Lifetime(region),
+                    Argument::Type(term) => CanonicalArgument::Type(
+                        *solved
+                            .types
+                            .get(term.0 as usize)
+                            .ok_or(Error::InvalidIdentity)?,
+                    ),
+                    Argument::Const(term) => {
+                        CanonicalArgument::Const(self.resolved_const(store, term)?)
+                    }
+                });
+            }
+            items.push(
+                store
+                    .intern_arguments(&values)
+                    .map_err(|_| Error::InvalidIdentity)?,
+            );
+        }
         solved.steps = self.steps;
-        Ok((solved, completed))
+        Ok((solved, completed, items))
     }
 
     fn predicate_with(

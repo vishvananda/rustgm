@@ -30,7 +30,7 @@ impl Index {
                 continue;
             };
             let definition = &report.resolution.definitions[member.definition.0 as usize];
-            if definition.kind == DefKind::Function {
+            if matches!(definition.kind, DefKind::Function | DefKind::Const) {
                 index
                     .members
                     .entry(owner)

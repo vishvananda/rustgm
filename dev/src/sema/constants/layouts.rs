@@ -23,7 +23,8 @@ impl Queries<'_> {
         let Some(&index) = self.layout_scratch.sources.get(&key) else {
             return Ok(());
         };
-        let obligation = self.typing.facts.reference_alignment[index];
+        let mut obligation = self.typing.facts.reference_alignment[index];
+        obligation.ty = self.specialized_type(key, obligation.ty)?;
         self.work.push(Work::Alignment(obligation));
         let ty = match self.typing.facts.types.kind(obligation.ty) {
             Some(Type::Primitive(super::Primitive::Str)) => return Ok(()),

@@ -148,6 +148,7 @@ pub enum Rvalue {
     Validate(Place),
     Function(DefId),
     Constant(DefId),
+    AssociatedConstant(crate::sema::values::Instance),
     /// A canonical scalar const argument; rigid parameters remain unevaluated.
     ConstArgument(crate::types::arguments::ConstId),
     Reify(ValueId),

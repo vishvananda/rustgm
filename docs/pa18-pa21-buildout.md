@@ -7787,3 +7787,126 @@ a universal absence of regressions. Earlier ordinary-bound, scoped-result and
 runtime-extents concerns retain their separate evidence. Validation cleanup
 removed 4,902 generated files, about 5.17 GiB; measurement scratch was removed
 after hashing, and every timing observation remains available.
+
+## PA20 selected associated constant values
+
+Associated constant expressions now retain complete owner arguments separately
+from their result type. Qualified and unambiguous shorthand uses infer those
+arguments through the ordinary typed constraint system. Checked implementation
+mappings select required values, defaults and overrides, and retain each caller's
+proof independently of structural target caches. Constants have their own typed
+instance identity; no synthetic function signature carries their arguments.
+
+Associated initializers are checked templates, including closed and unused
+owners. Their captured lifetimes and parameter environments remain available to
+ownership, promotion and destruction checks. Evaluation specializes stored facts
+under an instance context without rewriting shared declaration nodes. Node,
+place, contents and active-query states retain that context; repeated demands
+share the complete selected identity. Persistent data uses the same identity, so
+erased owner parameters cannot merge distinct aggregate values.
+
+The selected dependency graph includes branches that evaluation would skip and
+has explicit cycle and work limits. Pinned rustc additionally requires early
+rejection of closed trivial initializer-alias cycles; generic or branching unused
+initializers retain demand-only evaluation. Eligible promotions can remain
+unevaluated in unused associated initializers, while required evaluation still
+reports overflow or division faults. Invalid public instance identities diagnose
+an error rather than indexing unchecked declaration storage.
+
+Focused native review caught a wrong-code bug after the first broad validation:
+a trait default constant containing `Self::f` retained the default function even
+when its implementation overrode `f`. Initializer dependencies now retain typed
+callable identities as well as constant instances. Owner substitution precedes
+ordinary trait selection, and each caller retains its proof. The selected target
+flows through nested products and persistent storage using the existing callable
+value reader. Runtime function bodies are not constant-evaluation edges; recursion
+through a pointer therefore remains valid. The failed native outputs are preserved
+in `obj/pa20-work/constant-instance-values-v1/followup-results.json`.
+
+A related probe found that shorthand trait constant patterns could silently use
+the declaration's default value. Until complete pattern instance inference and
+selection are implemented, trait and parameterized associated patterns diagnose
+an explicit implementation boundary before the legacy definition-only evaluator.
+Closed inherent patterns still execute correctly. These valid Rust sources are
+recorded as boundary controls, not negative language fixtures. Qualified pattern
+syntax and complete selected pattern support remain part of the PA20 work.
+
+Maintainer coverage adds 39 object-qualified value/cycle cases (24 accept and
+15 reject), two explicit pattern-boundary controls, a complete-argument cache
+invariant and 17 native programs. Native checks cover selected values, generic
+functions, dependencies, products, references, constructors, text, function
+pointers, required and overridden methods, mixed const arguments and runtime
+recursion. Each native source runs through both pinned rustc and CPPGM, with
+repeated LowIR byte comparisons. Independent lifetime and demanded-fault probes
+are retained alongside the original failing callable controls.
+
+PA19's former associated-constant boundary is now accepted with its exact source
+bytes in the maintainer table. Its obsolete negative fixture and three sidecars
+were retired; it will enter PA20's complete public grading contract. Official
+regeneration updated provenance after checking every remaining PA19 case. All
+3,204 remaining oracle sidecars are byte-identical. PA19 now has 1,068 cases,
+and the active course has 4,863. This retirement does not mark PA20 active or
+remove any requirement from the original PA18–PA21 goal. Selected type-level
+uses, associated patterns, remaining projection/lifetime/destruction integration,
+shorthand types and the complete semantic inspection contract remain required.
+
+The first complete validation passes 1,173 regular release tests, all 4,863 active
+course cases and 64 maintainer native groups. Formatting, strict Clippy, the 717-file
+audit, 33 harness checks, backend qualification and upstream provenance pass.
+The immutable validation snapshot records 720 source/configuration files and
+27 completed commands under `obj/pa20-work/constant-instance-values-v2/`.
+Both planned stages still exit with an explicit missing-contract failure.
+
+The first performance study compared immutable published/current binaries across
+16 existing workloads and used 16 identical-candidate controls for shared versus
+distinct constant and callable instances at 64/256 demands. It retained 832 study
+observations and 128 full-output qualifications, with binary, source, input and
+runner hashes and output equality throughout. Constant-contract controls exceeded
+the 3.5% review threshold: paired medians were +3.894% to +6.551%. Those observations
+remain in `constant-instance-values-v2`; they were not discarded after optimization.
+
+User-space cycle profiles and code inspection identified additional abstract
+cleanup work in the new initializer-template pipeline. Template checking now
+uses complete scoped destruction requirements to recognize bodies needing no
+cleanup. It reuses checked initialization and storage facts with the ordinary
+loan checker. Custom-Drop field-move legality remains an independent check, and
+region, initialization and ownership checks are preserved. Templates with any
+possible destruction retain the symbolic cleanup path. No audit or lint allowance
+was introduced for this optimization.
+
+The next immutable study in `constant-instance-values-v3/probe-study` retained
+936 study observations and 144 full-output qualifications across 36 jobs. It
+repeats the 32 controls and adds four direct comparisons with the preceding
+candidate. Constant-contract paired medians are now -0.200% to -2.814% against
+the published compiler; the direct comparison attributes -5.024% to -6.027% to
+avoiding empty cleanup plans. Two 256-global-constant controls remain flagged at
++7.237% and +3.649%, with substantial variation including A/A spread of 17.618%.
+The corresponding 1,024-constant controls stay below the review threshold.
+The eight-job focused follow-up uses four compiler invocations per observation
+and includes both published/current and preceding-candidate/current comparisons.
+All initial observations remain part of the review; a noisy control is not a
+universal performance guarantee or evidence that earlier open concerns vanished.
+
+The batched follow-up retained 832 study and 128 qualification compiler
+invocations, grouped into 208 and 32 observations respectively. All hashes and
+output equality checks pass. Paired medians against the published compiler are
+-1.019% to +0.972%, so the earlier short global-constant regression did not
+reproduce. Individual paired outliers remain, and A/A spread in one direct
+candidate comparison reaches 60.457%. These results support the targeted cleanup
+improvement without claiming a universal absence of regressions. Earlier ordinary
+bound, scoped-result and runtime-extents performance questions retain their own
+evidence and active baselines.
+
+The optimized final build again passes 1,173 regular tests, all 4,863 course cases
+and 64 native groups, plus the strict lint, 717-file audit, harness, backend and
+upstream checks. Its SHA-256 is
+`197527c969befcc2aa1eb4f4f12e21fef235d8613326e20a870cde16c74e8ac0`, exactly the
+measured candidate; all 720 source/configuration hashes match that frozen study.
+The 27-command final validation and performance-reuse receipt are retained under
+`obj/pa20-work/constant-instance-values-v3/`. PA20 and PA21 remain planned.
+Both complete validation batches removed about 5.24 GiB of generated files on
+success. Sources, diagnostics and every timing observation remain available.
+Eight superseded executable copies were retired with hashes preserved, and the
+final guarded cleanup removed nine generated files, about 0.35 GiB. The current
+candidate and baselines needed for open comparisons remain pinned; empty and
+superseded pins were removed.

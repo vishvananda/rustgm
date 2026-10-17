@@ -121,21 +121,6 @@
       "maintainer_origin": "dev/tests/trait_bounds/binders.rs:14"
     },
     {
-      "path": "tests/spec/boundaries/associated-constant.rs",
-      "exit_status": 1,
-      "features": [
-        "pa19.boundaries"
-      ],
-      "rustc": {
-        "kind": "program",
-        "status": 0,
-        "default_lints": true,
-        "reason": "This accepted Rust language feature belongs to PA20; PA19 deliberately diagnoses the unsupported later-stage operation."
-      },
-      "maintainer_origin": "PA19 public later-stage boundary",
-      "mode": "--emit-lowir"
-    },
-    {
       "path": "tests/spec/boundaries/general-constant-statements.rs",
       "exit_status": 1,
       "features": [

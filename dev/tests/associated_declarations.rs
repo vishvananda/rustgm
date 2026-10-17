@@ -1,4 +1,6 @@
 //! Associated ownership is shared metadata, independent of method selection and impl proof.
+#[path = "harness/native_references.rs"]
+mod native;
 #[path = "helpers/qualify.rs"]
 mod rustc;
 #[path = "support/semantic.rs"]
@@ -511,4 +513,421 @@ fn defaults_and_overrides_keep_distinct_declaration_identities()
     }
     assert_eq!(selections, [false, true, true, true]);
     Ok(())
+}
+
+const VALUE_CASES: &[(&str, &str, bool)] = &[
+    (
+        "boundary",
+        "trait A{const C:u8;}struct S;impl A for S{const C:u8=7;}fn main(){let _=<S as A>::C;}",
+        true,
+    ),
+    (
+        "default",
+        "trait A{const C:u8=7;}struct S;impl A for S{}fn main(){let x=<S as A>::C;let _=x+1;}",
+        true,
+    ),
+    (
+        "override",
+        "trait A{const C:u8=7;}struct S;impl A for S{const C:u8=9;}fn main(){let x=<S as A>::C;let _=x+1;}",
+        true,
+    ),
+    (
+        "inherent",
+        "struct S;impl S{const C:u8=7;}fn main(){let _=S::C;}",
+        true,
+    ),
+    (
+        "two_instances",
+        "struct S<const N:usize>;impl<const N:usize>S<N>{const C:usize=N;}fn main(){let _=S::<3>::C+S::<5>::C+S::<3>::C;}",
+        true,
+    ),
+    (
+        "generic_body",
+        "trait A{const C:u8;}impl A for u8{const C:u8=7;}fn get<T:A>()->u8{T::C}fn main(){let _=get::<u8>();}",
+        true,
+    ),
+    (
+        "two_traits",
+        "trait A{const C:u8=7;}trait B{const C:u8=9;}struct S;impl A for S{}impl B for S{}fn main(){let _=<S as A>::C+<S as B>::C;}",
+        true,
+    ),
+    (
+        "owner_const",
+        "trait A<const N:usize>{const C:usize=N;}impl<const N:usize>A<N> for u8{}fn main(){let _=<u8 as A<3>>::C+<u8 as A<5>>::C;}",
+        true,
+    ),
+    (
+        "const_override",
+        "trait A<const N:usize>{const C:usize=N;}impl<const N:usize>A<N> for u8{const C:usize=N+1;}fn main(){let _=<u8 as A<3>>::C+<u8 as A<5>>::C;}",
+        true,
+    ),
+    (
+        "tuple",
+        "struct S<const N:usize>;impl<const N:usize>S<N>{const C:(usize,u8)=(N,7);}fn main(){let _=S::<3>::C.0+S::<5>::C.0;}",
+        true,
+    ),
+    (
+        "array",
+        "struct S<const N:usize>;impl<const N:usize>S<N>{const C:[u8;N]=[7;N];}fn main(){let _=S::<3>::C[2]+S::<5>::C[4];}",
+        true,
+    ),
+    (
+        "reference",
+        "struct S<const N:usize>;impl<const N:usize>S<N>{const C:&'static usize=&N;}fn main(){let _=*S::<3>::C+*S::<5>::C;}",
+        true,
+    ),
+    (
+        "dependency",
+        "struct S<const N:usize>;impl<const N:usize>S<N>{const A:usize=N;const B:usize=Self::A+1;}fn main(){let _=S::<3>::B+S::<5>::B;}",
+        true,
+    ),
+    (
+        "global",
+        "trait A{const C:u8=7;}impl A for u8{}const X:u8=<u8 as A>::C;fn main(){let _=X;}",
+        true,
+    ),
+    (
+        "cycle",
+        "struct S;impl S{const A:u8=Self::B;const B:u8=Self::A;}fn main(){let _=S::A;}",
+        false,
+    ),
+    (
+        "bad_bound",
+        "trait A{const C:u8;}fn get<T>()->u8{<T as A>::C}fn main(){}",
+        false,
+    ),
+    (
+        "ambiguous",
+        "trait A{const C:u8=7;}trait B{const C:u8=9;}struct S;impl A for S{}impl B for S{}fn main(){let _=S::C;}",
+        false,
+    ),
+    (
+        "non_method",
+        "struct S;impl S{const C:u8=7;}fn main(){S.C();}",
+        false,
+    ),
+    (
+        "extra_args",
+        "struct S;impl S{const C:u8=7;}fn main(){let _=S::C::<u8>;}",
+        false,
+    ),
+    (
+        "bad_result",
+        "trait A{const C:u8=7;}impl A for u8{}fn main(){let _:u16=<u8 as A>::C;}",
+        false,
+    ),
+    (
+        "overflow",
+        "struct S;impl S{const C:u8=255u8+1;}fn main(){let _=S::C;}",
+        false,
+    ),
+    (
+        "unused_fault",
+        "struct S;impl S{const C:u8=1/0;}fn main(){}",
+        true,
+    ),
+    (
+        "trait_dependency",
+        "trait A{const C:u8;const D:u8=Self::C+1;}impl A for u8{const C:u8=7;}fn main(){let _=<u8 as A>::D;}",
+        true,
+    ),
+    (
+        "generic_trait_dependency",
+        "trait A<const N:usize>{const C:usize=N;const D:usize=Self::C+1;}impl<const N:usize>A<N> for u8{}fn main(){let _=<u8 as A<3>>::D+<u8 as A<5>>::D;}",
+        true,
+    ),
+    (
+        "unused_cycle",
+        "struct S;impl S{const A:u8=Self::B;const B:u8=Self::A;}fn main(){}",
+        false,
+    ),
+    (
+        "skipped_cycle",
+        "struct S;impl S{const A:u8=if true{7}else{Self::A};}fn main(){let _=S::A;}",
+        false,
+    ),
+    (
+        "unused_borrow_fault",
+        "struct S;impl S{const A:&'static u8=&(1/0);}fn main(){}",
+        true,
+    ),
+    (
+        "used_borrow_fault",
+        "struct S;impl S{const A:&'static u8=&(1/0);}fn main(){let _=S::A;}",
+        false,
+    ),
+    (
+        "qualified_lifetime",
+        "struct S<'a>(&'a u8);impl<'a>S<'a>{const C:&'a u8=&7;}fn main(){let _=*<S<'static>>::C;}",
+        true,
+    ),
+    (
+        "lifetime_escape",
+        "struct S<'a>(&'a u8);impl<'a>S<'a>{const C:&'a u8=&7;}fn f<'a>()->&'static u8{<S<'a>>::C}fn main(){}",
+        false,
+    ),
+    (
+        "private",
+        "mod m{pub struct S;impl S{const A:u8=7;}}fn main(){let _=m::S::A;}",
+        false,
+    ),
+    (
+        "infer_erased",
+        "struct S<T>(T);impl<T>S<T>{const A:u8=7;}fn main(){let _=S::A;}",
+        false,
+    ),
+    (
+        "direct_trait",
+        "trait A{const C:Self;}impl A for u8{const C:Self=7;}fn main(){let _:u8=A::C;}",
+        true,
+    ),
+    (
+        "generic_unused_call",
+        "fn f()->u8{7}struct S<T>(T);impl<T>S<T>{const C:u8=f();}fn main(){}",
+        false,
+    ),
+    (
+        "cycle-closed-unused",
+        "struct S;impl S{const A:u8=Self::B;const B:u8=Self::A;}fn main(){}",
+        false,
+    ),
+    (
+        "cycle-generic-unused",
+        "struct S<const N:usize>;impl<const N:usize>S<N>{const A:usize=Self::B;const B:usize=Self::A;}fn main(){}",
+        true,
+    ),
+    (
+        "cycle-trait-unused",
+        "trait A{const C:u8=Self::D;const D:u8=Self::C;}fn main(){}",
+        true,
+    ),
+    (
+        "cycle-trait-override",
+        "trait A{const C:u8=Self::D;const D:u8=Self::C;}impl A for u8{const D:u8=7;}fn main(){let _=<u8 as A>::C;}",
+        true,
+    ),
+    (
+        "cycle-closed-lazy",
+        "struct S;impl S{const A:u8=if true{7}else{Self::A};}fn main(){}",
+        true,
+    ),
+];
+
+fn object_outcome(
+    name: &str,
+    source: &str,
+    accepted: bool,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join(format!("../obj/constant-instances-{}", std::process::id()));
+    std::fs::create_dir_all(&root)?;
+    let source_file = root.join(format!("{name}.rs"));
+    let object = root.join(format!("{name}.o"));
+    std::fs::write(&source_file, source)?;
+    let result = std::process::Command::new("rustc")
+        .args([
+            "+1.98.0",
+            "--edition=2024",
+            "--crate-name=constant_instances",
+            "--emit=obj",
+            "--cap-lints=allow",
+            "-C",
+            "overflow-checks=yes",
+            "-C",
+            "panic=abort",
+        ])
+        .arg(&source_file)
+        .arg("-o")
+        .arg(&object)
+        .output()?;
+    std::fs::write(root.join(format!("{name}.stderr")), &result.stderr)?;
+    if object.exists() {
+        std::fs::remove_file(object)?;
+    }
+    assert_eq!(
+        result.status.code(),
+        Some(i32::from(!accepted)),
+        "{name}: {}",
+        String::from_utf8_lossy(&result.stderr)
+    );
+    Ok(())
+}
+
+#[test]
+fn constant_value_instances_match_object_qualified_outcomes()
+-> Result<(), Box<dyn std::error::Error>> {
+    for &(name, source, accepted) in VALUE_CASES {
+        object_outcome(name, source, accepted)?;
+        let result = semantic::analyze(source).and_then(|(mut report, mut facts)| {
+            let entry =
+                rustgm::sema::entry::select(&mut report, &facts).map_err(|e| e.to_string())?;
+            rustgm::lower::instances::build(&report, &mut facts, entry)
+                .map(|_| ())
+                .map_err(|e| e.to_string())
+        });
+        assert_eq!(result.is_ok(), accepted, "{name}: {result:?}");
+    }
+    Ok(())
+}
+
+#[test]
+fn repeated_values_share_only_their_complete_instance() -> Result<(), Box<dyn std::error::Error>> {
+    let source = "struct S<const N:usize>;impl<const N:usize>S<N>{const C:usize=N;}fn main(){let _=S::<3>::C+S::<5>::C+S::<3>::C;}";
+    object_outcome("value-cache-identity", source, true)?;
+    let (mut report, mut facts) = semantic::analyze(source)?;
+    let mut uses = facts
+        .constant_uses
+        .iter()
+        .map(|(key, instance)| (*key, *instance))
+        .collect::<Vec<_>>();
+    uses.sort_by_key(|(key, _)| (key.file.0, key.node.0));
+    assert_eq!(uses.len(), 3);
+    assert_eq!(uses[0].1, uses[2].1);
+    assert_ne!(uses[0].1.arguments, uses[1].1.arguments);
+    assert_eq!(uses[0].1.definition, uses[1].1.definition);
+    let entry = rustgm::sema::entry::select(&mut report, &facts)?;
+    rustgm::lower::instances::build(&report, &mut facts, entry)?;
+    let reader = rustgm::sema::values::Reader::new(&facts);
+    for (index, (_, instance)) in uses.into_iter().enumerate() {
+        assert!(reader.definition(instance.definition).is_none());
+        assert_eq!(
+            reader
+                .associated(instance)
+                .ok_or("missing instance value")?
+                .as_scalar()?,
+            rustgm::sema::model::Scalar::Integer(if index == 1 { 5 } else { 3 })
+        );
+    }
+    let invalid = rustgm::sema::values::Instance {
+        definition: DefId(u32::MAX),
+        arguments: rustgm::types::GenericArgs::EMPTY,
+    };
+    assert!(
+        rustgm::sema::values::Evaluator::new(&report, &mut facts)
+            .associated(invalid)
+            .is_err()
+    );
+    Ok(())
+}
+
+#[test]
+fn selected_constant_patterns_remain_an_explicit_boundary() -> Result<(), Box<dyn std::error::Error>>
+{
+    for (name, source) in [
+        (
+            "trait-pattern",
+            "trait A{const C:u8=7;}struct S;impl A for S{const C:u8=9;}fn main(){let _=match 9u8{S::C=>true,_=>false};}",
+        ),
+        (
+            "generic-pattern",
+            "struct S<const N:usize>;impl<const N:usize>S<N>{const C:usize=N;}fn main(){let _=match 3usize{S::<3>::C=>true,_=>false};}",
+        ),
+    ] {
+        // These are valid Rust programs, not negative language fixtures.
+        object_outcome(name, source, true)?;
+        let error = semantic::analyze(source)
+            .err()
+            .ok_or("pattern selection must not use the unselected declaration")?;
+        assert!(
+            error.contains("selected associated constant patterns are not implemented"),
+            "{name}: {error}"
+        );
+    }
+    Ok(())
+}
+
+#[test]
+#[ignore = "requires the qualified external CPPGM LowIR backend"]
+fn associated_constant_instances_preserve_native_values() -> Result<(), Box<dyn std::error::Error>>
+{
+    native::check_cases(
+        "constant-instances",
+        &[
+            (
+                "selected-values",
+                "trait A{const C:u8=7;}struct S;struct T;impl A for S{}impl A for T{const C:u8=11;}fn main(){check(<S as A>::C==7);check(<T as A>::C==11);check(<S as A>::C==7)}",
+                false,
+            ),
+            (
+                "trait-identity",
+                "trait A{const C:u8=7;}trait B{const C:u8=9;}struct S;impl A for S{}impl B for S{}fn main(){check(<S as A>::C==7);check(<S as B>::C==9)}",
+                false,
+            ),
+            (
+                "const-instances",
+                "struct S<const N:usize>;impl<const N:usize>S<N>{const A:usize=N;const B:usize=Self::A+1;}fn main(){check(S::<3>::B==4);check(S::<5>::B==6);check(S::<3>::B==4)}",
+                false,
+            ),
+            (
+                "generic-function",
+                "trait A{const C:u8;}impl A for u8{const C:u8=7;}impl A for u16{const C:u8=9;}fn get<T:A>()->u8{T::C}fn main(){check(get::<u8>()==7);check(get::<u16>()==9)}",
+                false,
+            ),
+            (
+                "trait-const-arguments",
+                "trait A<const N:usize>{const C:usize=N;const D:usize=Self::C+1;}impl<const N:usize>A<N> for u8{}impl<const N:usize>A<N> for u16{const C:usize=N+7;}fn main(){check(<u8 as A<3>>::D==4);check(<u16 as A<5>>::D==13)}",
+                false,
+            ),
+            (
+                "products",
+                "struct S<const N:usize>;impl<const N:usize>S<N>{const A:(usize,u8)=(N,7);const B:[u8;N]=[9;N];}fn main(){check(S::<3>::A.0==3);check(S::<5>::A.0==5);check(S::<3>::B[2]==9);check(S::<5>::B[4]==9)}",
+                false,
+            ),
+            (
+                "references",
+                "struct S<const N:usize>;impl<const N:usize>S<N>{const C:&'static usize=&N;}fn main(){check(*S::<3>::C==3);check(*S::<5>::C==5);check(*S::<3>::C==3)}",
+                false,
+            ),
+            (
+                "global-initializer",
+                "trait A{const C:u8=7;}impl A for u8{}const X:u8=<u8 as A>::C;fn main(){check(X==7)}",
+                false,
+            ),
+            (
+                "constructor",
+                "struct V(usize);struct S<const N:usize>;impl<const N:usize>S<N>{const C:V=V(N);}fn main(){check(S::<3>::C.0==3);check(S::<5>::C.0==5)}",
+                false,
+            ),
+            (
+                "callable",
+                "fn f()->u8{7}struct S;impl S{const C:fn()->u8=f;}fn main(){check(S::C()==7)}",
+                false,
+            ),
+            (
+                "trait-callable",
+                "trait A{fn f()->u8{7}const C:fn()->u8=Self::f;}impl A for u8{fn f()->u8{9}}impl A for u16{fn f()->u8{11}}fn main(){check(<u8 as A>::C()==9);check(<u16 as A>::C()==11)}",
+                false,
+            ),
+            (
+                "trait-callable-product",
+                "trait A{fn f()->u8{7}const C:(fn()->u8,u8)=(Self::f,3);}impl A for u8{fn f()->u8{9}}fn main(){check((<u8 as A>::C.0)()==9);check(<u8 as A>::C.1==3)}",
+                false,
+            ),
+            (
+                "trait-required-callable",
+                "trait A{fn f()->u8;const C:fn()->u8=Self::f;}impl A for u8{fn f()->u8{9}}fn main(){check(<u8 as A>::C()==9)}",
+                false,
+            ),
+            (
+                "trait-mixed-callable",
+                "trait A<const N:usize>{fn f()->usize{N}const C:fn()->usize=Self::f;}impl<const N:usize>A<N>for u8{fn f()->usize{N+1}}fn main(){check(<u8 as A<3>>::C()==4);check(<u8 as A<5>>::C()==6)}",
+                false,
+            ),
+            (
+                "trait-recursive-callable",
+                "trait A{fn f(x:u8)->u8{if x==0{7}else{Self::C(x-1)}}const C:fn(u8)->u8=Self::f;}impl A for u8{}fn main(){check(<u8 as A>::C(2)==7)}",
+                false,
+            ),
+            (
+                "inherent-pattern",
+                "struct S;impl S{const C:u8=9;}fn f(x:u8)->bool{match x{S::C=>true,_=>false}}fn main(){check(f(9));check(!f(7))}",
+                false,
+            ),
+            (
+                "text",
+                "struct S;impl S{const A:&'static str=\"foo\";const B:&'static [u8;3]=b\"bar\";}fn main(){check(match S::A{\"foo\"=>true,_=>false});check(S::B[1]==97)}",
+                false,
+            ),
+        ],
+    )
 }

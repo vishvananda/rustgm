@@ -8,6 +8,7 @@ mod conditions;
 mod divergence;
 mod dot_calls;
 mod generics;
+mod item_values;
 mod lifetimes;
 mod matches;
 mod methods;
@@ -401,6 +402,7 @@ impl Checker<'_> {
         // than becoming lifetimes owned by the nested callable.
         let (left, right) = if self.body_binders != 0
             && (!self.call_types.generic.is_empty()
+                || !self.call_types.constants.is_empty()
                 || self.call_types.generic_constructors
                 || self.projections.active())
         {
@@ -600,16 +602,21 @@ impl Checker<'_> {
             }
         }
         let evidence = self.infer_trait_obligations(body)?;
-        let (solved, predicates) = std::mem::take(&mut self.infer)
-            .finish_with_predicates(
+        let (solved, predicates, arguments) = std::mem::take(&mut self.infer)
+            .finish_with_arguments(
                 &mut self.facts.types,
                 self.call_types
                     .obligations
                     .iter()
                     .map(|(_, predicate)| predicate),
+                self.call_types
+                    .constants
+                    .iter()
+                    .map(|pending| pending.arguments.as_slice()),
             )
             .map_err(|e| self.error(body, e))?;
         self.validate_generic_uses(&solved, &predicates, &evidence)?;
+        self.publish_constant_uses(arguments)?;
         self.publish_methods(&solved);
         let body_key = self.key(body);
         self.publish_pattern_types(&solved)?;
@@ -626,6 +633,7 @@ impl Checker<'_> {
                     }),
             );
         self.publish_body_types(body, &solved)?;
+        self.publish_constant_callables()?;
         self.publish_index_bounds(&solved)?;
         self.publish_adjustments(&solved, body_key)?;
         for (node, term) in &self.calls {
@@ -1022,10 +1030,28 @@ impl Checker<'_> {
                 {
                     return self.generic_constructor(node, ty, variant);
                 }
+                if definition.kind == DefKind::Const && self.facts.associated.owner(id).is_some() {
+                    return self.associated_constant(node, id, ty);
+                }
                 if self.facts.generics.has_parameters(id)
                     || self.facts.methods.qualified.contains_key(&self.key(node))
                 {
                     return self.generic_function(node, id, ty);
+                }
+                if definition.kind == DefKind::Const
+                    && !self.in_function
+                    && let Some(owner) = self.environment_owner
+                {
+                    self.facts
+                        .constant_dependencies
+                        .entry(owner)
+                        .or_default()
+                        .push(super::values::Dependency::Constant(
+                            super::values::Instance {
+                                definition: id,
+                                arguments: crate::types::GenericArgs::EMPTY,
+                            },
+                        ));
                 }
                 let ty = self.function_item(node, id, ty)?;
                 self.ordinary_bound_obligations(node, id, ty)?;

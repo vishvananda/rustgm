@@ -18,7 +18,8 @@ impl Queries<'_> {
         let query = Query::Contents(key, id);
         let place = self.place(key, Value::Reference(id))?;
         if let Some(value) = place.value {
-            self.states.insert(query, State::Ready(value));
+            self.states
+                .insert(self.state_key(query), State::Ready(value));
         } else if let Some((base, index)) = self
             .typing
             .facts
@@ -56,7 +57,8 @@ impl Queries<'_> {
             .constant_references
             .complete(id, value)
             .map_err(|e| self.error(query, e))?;
-        self.states.insert(query, State::Ready(value));
+        self.states
+            .insert(self.state_key(query), State::Ready(value));
         Ok(())
     }
     pub(super) fn field_value(

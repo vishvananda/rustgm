@@ -66,6 +66,42 @@ impl Arguments {
                 .collect(),
         })
     }
+    pub(super) fn constant(
+        facts: &Declarations,
+        instance: crate::sema::values::Instance,
+    ) -> Result<Self, &'static str> {
+        let captures = facts
+            .associated
+            .schema(instance.definition)
+            .ok_or("missing constant owner schema")?
+            .captures as usize;
+        let (_, parameters) = facts
+            .generics
+            .callable_parameters(&facts.types, instance.definition)?;
+        let arguments = facts
+            .types
+            .arguments(instance.arguments)
+            .ok_or("invalid constant owner arguments")?
+            .collect::<Vec<_>>();
+        if arguments.len() != captures.saturating_add(parameters.len()) {
+            return Err("constant owner argument arity mismatch");
+        }
+        let regions = arguments[..captures]
+            .iter()
+            .map(|argument| match argument {
+                Argument::Lifetime(region) => Ok(*region),
+                _ => Err("invalid constant lifetime argument"),
+            })
+            .collect::<Result<Vec<_>, _>>()?;
+        Ok(Self {
+            method: instance.definition,
+            regions,
+            bindings: parameters
+                .into_iter()
+                .zip(arguments[captures..].iter().copied())
+                .collect(),
+        })
+    }
     pub(super) fn goal(
         &self,
         facts: &mut Declarations,

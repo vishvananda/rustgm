@@ -245,6 +245,18 @@ impl Implementations {
             .ok()?;
         Some(entry.value.methods[index].1.unwrap_or(declaration))
     }
+    pub fn constant(&self, owner: DefId, declaration: DefId) -> Option<DefId> {
+        let entry = &self.entries[*self.owners.get(&owner)?];
+        if !entry.validated {
+            return None;
+        }
+        let index = entry
+            .value
+            .constants
+            .binary_search_by_key(&declaration.0, |(id, _)| id.0)
+            .ok()?;
+        Some(entry.value.constants[index].1.unwrap_or(declaration))
+    }
     pub fn complete(
         &mut self,
         owner: DefId,

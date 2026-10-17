@@ -7,8 +7,10 @@ execution through both pinned rustc and the immutable CPPGM backend.
 
 Subsequent PA20 normalization work removed the obsolete associated-type rejection.
 Its exact source is now an accepted control in `dev/tests/projection_paths.rs`,
-awaiting PA20's grading contract. The active PA19 suite has 1,069 cases: 683
-accepted and 386 rejected, including 630 LowIR cases. Counts below describe the
+awaiting PA20's grading contract. Associated-constant value work similarly retains
+that former boundary verbatim in `dev/tests/associated_declarations.rs` with
+qualified native value controls. The active PA19 suite has 1,068 cases: 683
+accepted and 385 rejected, including 629 LowIR cases. Counts below describe the
 original release evidence; the current contract is in `pa19/README.md`.
 
 ## Source and expectation review

@@ -64,6 +64,17 @@ impl Checker<'_> {
                         Arc::clone(self.facts.generics.environments.get(&f.definition)?),
                     ))
                 })
+                .chain(self.facts.initializers.iter().filter_map(|initializer| {
+                    Some((
+                        initializer.value,
+                        Arc::clone(
+                            self.facts
+                                .generics
+                                .environments
+                                .get(&initializer.definition)?,
+                        ),
+                    ))
+                }))
                 .collect()
         });
         environments.get(&NodeKey { node: body, ..key }).cloned()

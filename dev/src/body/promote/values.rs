@@ -108,6 +108,29 @@ impl Engine<'_, '_> {
                 .evaluator
                 .definition(definition)
                 .map_err(Error::Constant)?,
+            Rvalue::AssociatedConstant(instance) => {
+                if self.body.instance.is_none()
+                    && match self.body.owner {
+                        crate::body::ir::Owner::Function { definition, .. } => {
+                            self.evaluator.facts().generics.has_parameters(definition)
+                        }
+                        crate::body::ir::Owner::Initializer { definition, .. } => {
+                            self.evaluator
+                                .facts()
+                                .associated
+                                .owner(definition)
+                                .is_some()
+                                || self.evaluator.facts().generics.has_parameters(definition)
+                        }
+                        crate::body::ir::Owner::AnonymousConstant => false,
+                    }
+                {
+                    return Ok(Some(Evaluated::Deferred));
+                }
+                self.evaluator
+                    .associated(instance)
+                    .map_err(Error::Constant)?
+            }
             Rvalue::ConstArgument(id) => {
                 return Ok(Some(
                     Constant::argument(&self.evaluator.facts().types, id)?
@@ -190,6 +213,7 @@ impl Engine<'_, '_> {
             | Rvalue::Text(_)
             | Rvalue::Scalar(_)
             | Rvalue::Constant(_)
+            | Rvalue::AssociatedConstant(_)
             | Rvalue::ConstArgument(_)
             | Rvalue::Function(_) => return Err("missing immediate promotion value".into()),
         };

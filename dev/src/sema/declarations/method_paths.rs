@@ -14,7 +14,7 @@ impl Checker<'_> {
                 Error::at(crate::resolve::unit::FileId(0), 0, "invalid method owner")
             })?;
             let definition = &self.report.resolution.definitions[member.definition.0 as usize];
-            if definition.kind != DefKind::Function {
+            if !matches!(definition.kind, DefKind::Function | DefKind::Const) {
                 continue;
             }
             if matches!(owner.kind, OwnerKind::Trait { .. }) {
@@ -87,7 +87,10 @@ impl Checker<'_> {
         match self.facts.node(key)?.reference? {
             Target::Associated(_) => {}
             Target::Definition(id)
-                if self.report.resolution.definitions[id.0 as usize].kind == DefKind::Function => {}
+                if matches!(
+                    self.report.resolution.definitions[id.0 as usize].kind,
+                    DefKind::Function | DefKind::Const
+                ) => {}
             _ => return None,
         }
         let path = self.report.resolution.associated_paths.get(&key)?;

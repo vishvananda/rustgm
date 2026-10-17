@@ -240,6 +240,16 @@ impl Checker<'_> {
                 regions[usize::from(*index)] = *region;
             }
         }
+        if !self.facts.lifetimes.functions.contains_key(&owner)
+            && let Some(schema) = self.facts.associated.schema(owner)
+        {
+            for argument in arguments.iter().take(schema.captures as usize) {
+                let Argument::Lifetime(region) = *argument else {
+                    return Err(self.error(node, "missing constant owner lifetime argument"));
+                };
+                regions.push(region);
+            }
+        }
         let assumed = self.bound_method_requirement(node, owner)?;
         let mut substitution = substitute::Bound::new(regions);
         let mut inference =

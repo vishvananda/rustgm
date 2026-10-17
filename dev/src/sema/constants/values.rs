@@ -1,4 +1,6 @@
 //! Typed value operations shared by source constants and CFG promotion queries.
+pub(crate) use super::instances::Dependency;
+pub use super::instances::Instance;
 use super::{
     Declarations, DefId, Error, InitializerKind, Queries, Query, Report, Type, TypeId, Value,
     VariantId, Work, arithmetic, references,
@@ -59,6 +61,14 @@ impl<'a> Reader<'a> {
     #[must_use]
     pub fn definition(self, id: DefId) -> Option<Constant> {
         self.facts.constant_values.get(&id).copied().map(Constant)
+    }
+    #[must_use]
+    pub fn associated(self, instance: crate::sema::values::Instance) -> Option<Constant> {
+        self.facts
+            .constant_instances
+            .get(&instance)
+            .copied()
+            .map(Constant)
     }
     /// # Errors
     /// Rejects missing or malformed constant arena entries.
@@ -251,6 +261,18 @@ impl<'a> Evaluator<'a> {
     /// Preserves required-constant diagnostics; runtime faults are not ignored here.
     pub fn definition(&mut self, id: DefId) -> Result<Constant, Error> {
         self.named(id, false)
+    }
+    /// Evaluate one selected associated initializer in its complete argument context.
+    /// # Errors
+    /// Reports invalid instances, cycles and required constant evaluation faults.
+    pub fn associated(
+        &mut self,
+        instance: crate::sema::values::Instance,
+    ) -> Result<Constant, Error> {
+        let query = Query::Instance(instance);
+        self.queries.work.push(Work::Enter(query));
+        self.queries.drain()?;
+        self.queries.value(query).map(Constant)
     }
     /// Demand a static's initializer without reading or moving its storage.
     /// # Errors

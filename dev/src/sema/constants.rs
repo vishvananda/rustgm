@@ -9,6 +9,7 @@ pub(super) use discriminants::{
 };
 mod generics;
 pub(super) use generics::argument as generic_argument;
+mod instances;
 mod layouts;
 mod patterns;
 mod places;
@@ -72,6 +73,7 @@ impl Value {
 enum Query {
     Variant(VariantId),
     Constant(usize),
+    Instance(crate::sema::values::Instance),
     Static(usize),
     Place(NodeKey),
     Contents(NodeKey, references::Id),
@@ -90,6 +92,7 @@ enum Expression {
     Constructor(constructors::Expression),
     Forward(NodeKey),
     Constant(usize),
+    Instance(crate::sema::values::Instance),
     Unary {
         op: Unary,
         operand: NodeKey,
@@ -131,9 +134,10 @@ struct Queries<'a> {
     typing: bodies::Checker<'a>,
     discriminants: Option<&'a mut Discriminants>,
     constants: Vec<Option<usize>>,
-    expressions: HashMap<NodeKey, Expression>,
-    states: HashMap<Query, State>,
-    work: Vec<Work>,
+    expressions: HashMap<(instances::Context, NodeKey), Expression>,
+    instances: instances::Instances,
+    states: HashMap<(instances::Context, Query), State>,
+    work: instances::Worklist,
     scan: Vec<NodeKey>,
     steps: usize,
     limit: usize,
@@ -246,7 +250,8 @@ impl<'a> Queries<'a> {
             constants: scratch.constants,
             expressions: HashMap::new(),
             states: HashMap::new(),
-            work: Vec::new(),
+            work: instances::Worklist::default(),
+            instances: instances::Instances::default(),
             scan: Vec::new(),
             steps: 0,
             limit,
@@ -274,11 +279,21 @@ impl Queries<'_> {
                 self.typing.facts.initializers[index].value
             }
             Query::Node(key) | Query::Place(key) | Query::Contents(key, _) => key,
+            Query::Instance(instance) => self
+                .report
+                .resolution
+                .definitions
+                .get(instance.definition.0 as usize)
+                .and_then(|definition| definition.node)
+                .unwrap_or(NodeKey {
+                    file: FileId(0),
+                    node: crate::syntax::ast::NodeId(0),
+                }),
         };
         Declarations::error(self.report, key, message)
     }
     fn value(&self, query: Query) -> Result<Value, Error> {
-        match self.states.get(&query) {
+        match self.states.get(&self.state_key(query)) {
             Some(State::Ready(value)) => Ok(*value),
             _ => Err(self.error(query, "missing completed constant dependency")),
         }
@@ -324,6 +339,9 @@ impl Queries<'_> {
                             .complete(id, value)
                             .map_err(|e| self.error(query, e))?;
                     }
+                    if let Query::Instance(instance) = query {
+                        self.typing.facts.constant_instances.insert(instance, value);
+                    }
                     if let Query::Constant(index) | Query::Static(index) = query {
                         let definition = self.typing.facts.initializers[index].definition;
                         self.typing.facts.constant_values.insert(definition, value);
@@ -354,8 +372,10 @@ impl Queries<'_> {
                         .map_err(|e| self.error(Query::Node(key), e))?;
                     let value = arithmetic::cast(Cast::IntegerToInteger, source, target, value)
                         .map_err(|e| self.error(Query::Node(key), e.message()))?;
-                    self.states
-                        .insert(Query::Node(key), State::Ready(Value::Scalar(value)));
+                    self.states.insert(
+                        self.state_key(Query::Node(key)),
+                        State::Ready(Value::Scalar(value)),
+                    );
                 }
             }
         }
@@ -366,7 +386,7 @@ impl Queries<'_> {
         self.work.push(Work::Enter(dependency));
     }
     fn enter(&mut self, query: Query) -> Result<(), Error> {
-        match self.states.get(&query) {
+        match self.states.get(&self.state_key(query)) {
             Some(State::Ready(_)) => return Ok(()),
             Some(State::Active) => {
                 return Err(
@@ -381,14 +401,27 @@ impl Queries<'_> {
         if let Query::Constant(index) | Query::Static(index) = query {
             let definition = self.typing.facts.initializers[index].definition;
             if let Some(&value) = self.typing.facts.constant_values.get(&definition) {
-                self.states.insert(query, State::Ready(value));
+                self.states
+                    .insert(self.state_key(query), State::Ready(value));
                 return Ok(());
             }
         }
-        self.states.insert(query, State::Active);
+        if let Query::Instance(instance) = query
+            && let Some(&value) = self.typing.facts.constant_instances.get(&instance)
+        {
+            self.states
+                .insert(self.state_key(query), State::Ready(value));
+            return Ok(());
+        }
+        self.states.insert(self.state_key(query), State::Active);
         match query {
-            Query::Variant(variant) => self.enter_variant(variant)?,
+            Query::Instance(instance) => self.enter_instance(instance)?,
+            Query::Variant(variant) => {
+                self.work.context = instances::Context::default();
+                self.enter_variant(variant)?;
+            }
             Query::Constant(index) | Query::Static(index) => {
+                self.work.context = instances::Context::default();
                 if !self.typing.facts.initializers[index].type_checked {
                     self.typing.initializer(index)?;
                     self.require_complete_patterns(query)?;
@@ -402,7 +435,8 @@ impl Queries<'_> {
             Query::Node(key) => match self.expression(key)? {
                 Expression::Reference(expression) => self.enter_reference(key, expression),
                 Expression::Value(value) => {
-                    self.states.insert(query, State::Ready(value));
+                    self.states
+                        .insert(self.state_key(query), State::Ready(value));
                 }
                 Expression::Product(expression) => {
                     self.work.push(Work::Finish(key));
@@ -418,6 +452,7 @@ impl Queries<'_> {
                 }
                 Expression::Forward(child) => self.forward(query, Query::Node(child)),
                 Expression::Constant(index) => self.forward(query, Query::Constant(index)),
+                Expression::Instance(instance) => self.forward(query, Query::Instance(instance)),
                 Expression::Unary { operand, .. } | Expression::Cast { operand, .. } => {
                     self.work.push(Work::Finish(key));
                     self.work.push(Work::Enter(Query::Node(operand)));
@@ -442,7 +477,7 @@ impl Queries<'_> {
     }
     fn expression(&self, key: NodeKey) -> Result<Expression, Error> {
         self.expressions
-            .get(&key)
+            .get(&(self.work.context, key))
             .copied()
             .ok_or_else(|| self.error(Query::Node(key), "missing typed constant expression"))
     }
@@ -469,7 +504,7 @@ impl Queries<'_> {
                     .map_err(|e| self.error(query, e))?;
                 if (op == Op::AndAnd && !condition) || (op == Op::OrOr && condition) {
                     self.states.insert(
-                        query,
+                        self.state_key(query),
                         State::Ready(Value::Scalar(Scalar::Boolean(condition))),
                     );
                 } else {
@@ -489,12 +524,14 @@ impl Queries<'_> {
         let query = Query::Node(key);
         if let Expression::Product(expression) = self.expression(key)? {
             let value = self.product_value(key, expression)?;
-            self.states.insert(query, State::Ready(value));
+            self.states
+                .insert(self.state_key(query), State::Ready(value));
             return Ok(());
         }
         if let Expression::Constructor(expression) = self.expression(key)? {
             let value = self.constructor_value(key, expression)?;
-            self.states.insert(query, State::Ready(value));
+            self.states
+                .insert(self.state_key(query), State::Ready(value));
             return Ok(());
         }
         let value = match self.expression(key)? {
@@ -550,18 +587,26 @@ impl Queries<'_> {
         }
         .map_err(|e| self.error(query, e.message()))?;
         self.states
-            .insert(query, State::Ready(Value::Scalar(value)));
+            .insert(self.state_key(query), State::Ready(Value::Scalar(value)));
         Ok(())
     }
     fn prepare(&mut self, root: NodeKey) -> Result<(), Error> {
         // Validate all branches, including ones evaluation will skip. Inference
         // has already selected their operations; this is constant eligibility.
         // Push value continuations first: preparation schedules prerequisite work.
-        let mut drops = drops::Check::new(self.typing.facts, root, self.drop_scratch.take());
+        let substitution = self
+            .drop_substitution()
+            .map_err(|e| self.error(Query::Node(root), e))?;
+        let mut drops = drops::Check::new(
+            self.typing.facts,
+            root,
+            self.drop_scratch.take(),
+            substitution,
+        );
         self.scan.push(root);
         while let Some(key) = self.scan.pop() {
             self.budget()?;
-            if self.expressions.contains_key(&key) {
+            if self.expressions.contains_key(&(self.work.context, key)) {
                 continue;
             }
             let expression = self.classify(key)?;
@@ -591,7 +636,7 @@ impl Queries<'_> {
                     self.scan.push(then);
                     self.scan.push(condition);
                 }
-                Expression::Value(_) | Expression::Constant(_) => {}
+                Expression::Value(_) | Expression::Constant(_) | Expression::Instance(_) => {}
                 Expression::Reference(expression) => {
                     expression.dependencies(|child| self.scan.push(child));
                 }
@@ -602,7 +647,8 @@ impl Queries<'_> {
                     expression.dependencies(self.report, key, |child| self.scan.push(child));
                 }
             }
-            self.expressions.insert(key, expression);
+            self.expressions
+                .insert((self.work.context, key), expression);
         }
         self.drop_scratch = drops.map(drops::Check::finish);
         Ok(())
@@ -617,6 +663,7 @@ impl Queries<'_> {
             .typing
             .facts
             .node(key)
+            .copied()
             .ok_or_else(|| self.error(query, "missing constant facts"))?;
         let child = |node| NodeKey { node, ..key };
         if let Some(value) = facts.scalar {
@@ -662,6 +709,7 @@ impl Queries<'_> {
             && let Some(Type::FunctionItem { item, .. }) = self.typing.facts.types.kind(ty)
             && facts.reference == Some(Target::Definition(DefId(item.0)))
         {
+            let ty = self.specialized_type(key, ty)?;
             let instance = crate::types::instance::Instance::new(&self.typing.facts.types, ty)
                 .map_err(|e| self.error(Query::Node(key), e))?;
             return Ok(Expression::Value(Value::Function(instance)));
@@ -705,6 +753,36 @@ impl Queries<'_> {
                     let Some(Target::Definition(id)) = facts.reference else {
                         return Err(self.error(query, "missing constant path identity"));
                     };
+                    if let Some(&instance) = self.typing.facts.constant_uses.get(&key) {
+                        return self
+                            .selected_constant(key, instance)
+                            .map(Expression::Instance);
+                    }
+                    if let Some(&id) = self.typing.facts.generics.constants.get(&id) {
+                        let crate::types::arguments::Argument::Const(id) = self
+                            .specialized_argument(
+                                key,
+                                crate::types::arguments::Argument::Const(id),
+                            )?
+                        else {
+                            return Err(
+                                self.error(query, "constant parameter changed argument kind")
+                            );
+                        };
+                        let value = values::Constant::argument(&self.typing.facts.types, id)
+                            .map_err(|e| self.error(query, e))?
+                            .ok_or_else(|| {
+                                self.error(
+                                    query,
+                                    "constant value retains an unresolved const parameter",
+                                )
+                            })?;
+                        return Ok(Expression::Value(Value::Scalar(
+                            value
+                                .as_scalar()
+                                .map_err(|e| self.error(query, e.message()))?,
+                        )));
+                    }
                     let index = self.constants[id.0 as usize].ok_or_else(|| {
                         self.error(query, "constant expression cannot read this declaration")
                     })?;

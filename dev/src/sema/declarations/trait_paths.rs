@@ -38,12 +38,6 @@ impl Checker<'_> {
         else {
             return Ok(false);
         };
-        if self.report.resolution.definitions[method.0 as usize].kind == DefKind::Const {
-            return Err(self.error(
-                key,
-                "associated constant value selection is not implemented",
-            ));
-        }
         if let Some(subject) = subject {
             self.annotation_holes(subject, steps, limit, scan)?;
             self.node_work(subject.file, subject.node, context);

@@ -16,7 +16,14 @@ impl Engine<'_, '_> {
             if finish {
                 let value = match self.finish(key) {
                     Ok(value) => value,
-                    Err(Error::Evaluation(Failure::Fault(_))) => None,
+                    Err(Error::Evaluation(Failure::Fault(_))) => {
+                        let deferred = matches!(self.body.owner, crate::body::ir::Owner::Initializer { definition, .. } if self.evaluator.facts().associated.owner(definition).is_some());
+                        deferred.then_some(Ready {
+                            value: super::Evaluated::Deferred,
+                            immediate: false,
+                            constant_assignment: false,
+                        })
+                    }
                     Err(error) => return Err(error),
                 };
                 self.states
@@ -104,6 +111,7 @@ impl Engine<'_, '_> {
                 | Rvalue::Scalar(_)
                 | Rvalue::Text(_)
                 | Rvalue::Constant(_)
+                | Rvalue::AssociatedConstant(_)
                 | Rvalue::ConstArgument(_)
                 | Rvalue::Function(_) => Ok(true),
             },

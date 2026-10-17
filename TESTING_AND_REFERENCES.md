@@ -250,14 +250,14 @@ rejection and output failure propagation. It shares declaration/body inference w
 the type view and reports pending lifetime constraints explicitly; complete
 execution proof remains in `--emit-lowir`.
 
-PA19 has 1,069 cases: 439 semantic inspection and 630 LowIR cases, with 247
-accepted native programs and no skipped executions. Four later-stage boundaries,
+PA19 has 1,068 cases: 439 semantic inspection and 629 LowIR cases, with 247
+accepted native programs and no skipped executions. Three later-stage boundaries,
 one inspection-only lifetime control and three redundant-binder compiler
 differences have explicit independent statuses and reasons. See
 [the validation review](docs/pa19-validation.md). `make test-rustc` and the root
 native target include PA19; `make test-native-pa19` selects its execution lane.
-Its former associated-type rejection likewise moves to accepted maintainer
-coverage until PA20 releases its complete contract.
+Its former associated-type and associated-constant rejections have accepted
+maintainer coverage until PA20 releases its complete contract.
 
 The partial projection maintainer controls in
 `dev/tests/partial_projection_selection.rs` independently qualify 25 source
@@ -433,9 +433,21 @@ missing bounds, invalid declaration/body types and unused non-const calls. Const
 remain eligible; function pointers and calls in skipped branches do not. Unused evaluation faults use
 explicit lint attributes so default rustc lints remain enabled. A separate typed
 invariant checks that default and override identities remain distinct and that
-conformance alone does not evaluate their values. Associated constant expression
-lookup and per-instance evaluation remain required PA20 work; these declaration
-tests do not constitute executable associated-value coverage or a public release.
+conformance alone does not evaluate their values.
+
+The same suite adds 39 object-qualified value/cycle controls and 17 native
+programs for associated constant expressions. They cover selected defaults and
+overrides, complete owner arguments, repeated instances, dependent constants,
+products, references, constructors, function pointers and invalid demanded
+evaluation. Trait function pointers must select overrides even inside products;
+runtime recursion through a pointer is not a constant dependency cycle. A typed
+invariant distinguishes erased owner arguments in the evaluated-value cache.
+Two separately named boundary controls establish rustc acceptance while checking
+an explicit unsupported diagnostic for trait/generic constant patterns, preventing
+silent evaluation of an unselected declaration. Closed inherent patterns retain
+native coverage. These maintainer checks do not constitute PA20's public release;
+selected patterns, type-level uses and the complete associated-item inspection
+contract remain required work.
 
 ## Storage and cleanup
 

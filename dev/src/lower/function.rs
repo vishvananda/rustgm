@@ -393,6 +393,20 @@ impl Lower<'_, '_> {
             .constants
             .definition(definition)
             .ok_or("named constant was not evaluated")?;
+        self.constant_value(
+            super::data::Key::Definition(definition),
+            value,
+            ty,
+            representation,
+        )
+    }
+    fn constant_value(
+        &mut self,
+        key: super::data::Key,
+        value: crate::sema::values::Constant,
+        ty: TypeId,
+        representation: Representation,
+    ) -> Result<Selected, &'static str> {
         match self.context.constants.view(value)? {
             View::Scalar(scalar) => self
                 .scalar(scalar, representation.result())
@@ -410,12 +424,7 @@ impl Lower<'_, '_> {
                 if matches!(representation, Representation::Scalar(Type::Void)) {
                     return Ok(Selected::Unit);
                 }
-                let global = self.context.constant_data(
-                    super::data::Key::Definition(definition),
-                    value,
-                    ty,
-                    true,
-                )?;
+                let global = self.context.constant_data(key, value, ty, true)?;
                 let source = Address {
                     operand: Operand::Global(global),
                     align: self.context.layout(ty)?.align,
@@ -516,6 +525,19 @@ impl Lower<'_, '_> {
             }
             Rvalue::Constant(definition) => {
                 return self.constant(definition, value.ty, representation);
+            }
+            Rvalue::AssociatedConstant(instance) => {
+                let constant = self
+                    .context
+                    .constants
+                    .associated(instance)
+                    .ok_or("associated constant was not evaluated")?;
+                return self.constant_value(
+                    super::data::Key::Associated(instance),
+                    constant,
+                    value.ty,
+                    representation,
+                );
             }
             Rvalue::ConstArgument(id) => {
                 let constant = crate::sema::values::Constant::argument(self.context.types, id)?

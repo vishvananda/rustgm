@@ -82,7 +82,8 @@ impl Queries<'_> {
                             .constant_references
                             .static_place(initializer.definition, initializer.ty)
                             .map_err(|e| self.error(Query::Place(key), e))?;
-                        self.states.insert(Query::Place(key), State::Ready(value));
+                        self.states
+                            .insert(self.state_key(Query::Place(key)), State::Ready(value));
                         return Ok(());
                     }
                     InitializerKind::Static { mutable: true } => {
@@ -133,8 +134,9 @@ impl Queries<'_> {
                 (Query::Place(key), value)
             }
             Work::Borrow { key, operand } => {
+                let ty = self.place_type(key)?;
                 if matches!(
-                    self.typing.facts.types.kind(self.place_type(key)?),
+                    self.typing.facts.types.kind(ty),
                     Some(Type::Reference { mutable: true, .. })
                 ) {
                     return Err(self.error(
@@ -184,7 +186,8 @@ impl Queries<'_> {
                 let location = self.value(Query::Place(key))?;
                 let place = self.place(key, location)?;
                 if !matches!(place.access, Access::Owned) {
-                    self.check_copy_read(Query::Node(key), self.place_type(key)?)?;
+                    let ty = self.place_type(key)?;
+                    self.check_copy_read(Query::Node(key), ty)?;
                 }
                 if let Some(value) = place.value {
                     (Query::Node(key), value)
@@ -196,15 +199,18 @@ impl Queries<'_> {
                 }
             }
         };
-        self.states.insert(query, State::Ready(value));
+        self.states
+            .insert(self.state_key(query), State::Ready(value));
         Ok(())
     }
-    fn place_type(&self, key: NodeKey) -> Result<TypeId, Error> {
-        self.typing
+    fn place_type(&mut self, key: NodeKey) -> Result<TypeId, Error> {
+        let ty = self
+            .typing
             .facts
             .node(key)
             .and_then(|f| f.ty)
-            .ok_or_else(|| self.error(Query::Place(key), "missing constant place type"))
+            .ok_or_else(|| self.error(Query::Place(key), "missing constant place type"))?;
+        self.specialized_type(key, ty)
     }
     pub(super) fn place(&self, key: NodeKey, value: Value) -> Result<Place, Error> {
         self.typing
@@ -300,7 +306,8 @@ impl Queries<'_> {
             .constant_references
             .project(base, index, Place { value, ty, ..place })
             .map_err(|e| self.error(Query::Place(key), e))?;
-        self.states.insert(Query::Place(key), State::Ready(value));
+        self.states
+            .insert(self.state_key(Query::Place(key)), State::Ready(value));
         Ok(())
     }
     fn check_static_projection(&self, key: NodeKey, ty: TypeId, index: u64) -> Result<(), Error> {

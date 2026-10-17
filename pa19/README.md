@@ -195,23 +195,23 @@ the same safe Rust, Clippy and syntax-aware audit requirements as earlier stages
 Associated types/constants, projections, normalization and extended coherence
 belong to PA20. Higher-ranked trait bounds, GATs, opaque captures and advanced
 generic relationships belong to PA21. General unsized types, trait objects and
-constant statements remain PA22, PA23 and PA25 respectively. The four explicit
+constant statements remain PA22, PA23 and PA25 respectively. The three explicit
 later-stage boundary fixtures record rustc acceptance and this stage's rejection.
 
 ## Validation
 
-The manifest contains 1,069 cases: 683 accepted and 386 rejected. There are 439
-semantic inspection cases and 630 LowIR cases. The LowIR lane has 247 accepted
-programs, all with declared clean execution through rustc and CPPGM, and 383
+The manifest contains 1,068 cases: 683 accepted and 385 rejected. There are 439
+semantic inspection cases and 629 LowIR cases. The LowIR lane has 247 accepted
+programs, all with declared clean execution through rustc and CPPGM, and 382
 rejections. No accepted native control is silently skipped.
 
-Eight acceptance differences are explicit: four later-stage boundaries, one
+Seven acceptance differences are explicit: three later-stage boundaries, one
 pending-lifetime inspection control and three redundant-binder compiler
 differences. They are excluded from default-rustc acceptance-parity claims.
 The migrated PA17/PA18 inherent boundaries and PA18 trait-method boundary retain
 their original source bytes in accepted fixtures.
-The former associated-type boundary now passes as an accepted maintainer control
-and will join PA20's complete grading contract.
+The former associated-type and associated-constant boundaries now pass as accepted
+maintainer controls and will join PA20's complete grading contract.
 
 Run `make test-pa19`, `make test-rustc`, `make test-native-pa19` and
 `make lint audit-rust test-harness test-upstream`. The root report includes PA19;

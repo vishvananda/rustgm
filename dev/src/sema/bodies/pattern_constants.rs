@@ -52,6 +52,20 @@ impl Checker<'_> {
         node: NodeId,
         definition: DefId,
     ) -> Result<TypeId, Error> {
+        if self.facts.associated.trait_owner(definition).is_some()
+            || (self.facts.associated.owner(definition).is_some()
+                && (self.facts.generics.has_parameters(definition)
+                    || self
+                        .facts
+                        .associated
+                        .schema(definition)
+                        .is_some_and(|schema| schema.captures != 0)))
+        {
+            return Err(self.error(
+                node,
+                "selected associated constant patterns are not implemented",
+            ));
+        }
         self.facts.definitions[definition.0 as usize]
             .ok_or_else(|| self.error(node, "missing constant pattern type"))
     }

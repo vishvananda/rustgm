@@ -265,6 +265,11 @@ fn rvalue(body: &Body, value: Rvalue, out: &mut impl Write) -> io::Result<()> {
         }
         Rvalue::Function(id) => write!(out, "function def={}", id.0),
         Rvalue::Constant(id) => write!(out, "constant def={}", id.0),
+        Rvalue::AssociatedConstant(instance) => write!(
+            out,
+            "associated-constant def={} args={}",
+            instance.definition.0, instance.arguments.0
+        ),
         Rvalue::ConstArgument(id) => write!(out, "const-argument const={}", id.0),
         Rvalue::Reify(value) => write!(out, "reify v{}", value.0),
         Rvalue::Constrain(value) => write!(out, "constrain v{}", value.0),

@@ -29,33 +29,27 @@ fn prepare<'a>(
 ) -> Result<(), Error> {
     let mut seen = HashSet::new();
     let mut demands = Vec::new();
+    let mut associated_seen = HashSet::new();
+    let mut associated = Vec::new();
     let mut demand = |id, static_| {
         if seen.insert(id) {
             demands.push((id, static_));
         }
     };
     for body in bodies {
-        // Eligibility is checked even when no value is demanded. Constructor
-        // identities are eligible; other calls need the const-function assignment.
-        if matches!(
-            body.owner,
-            super::ir::Owner::Initializer { .. } | super::ir::Owner::AnonymousConstant
-        ) && body
-            .values
-            .iter()
-            .any(|value| function_call(facts, body, value.kind))
-        {
-            return Err(report.diagnostic(Declarations::error(
-                report,
-                body.source,
-                "non-const calls are not allowed in constant initializers",
-            )));
+        eligibility(report, facts, body)?;
+        for value in &body.values {
+            if let Rvalue::AssociatedConstant(instance) = value.kind
+                && associated_seen.insert(instance)
+            {
+                associated.push(instance);
+            }
         }
         for (id, static_) in references(body) {
             demand(id, static_);
         }
     }
-    if demands.is_empty() {
+    if demands.is_empty() && associated.is_empty() {
         return Ok(());
     }
     let mut evaluator = Evaluator::new(report, facts);
@@ -66,7 +60,33 @@ fn prepare<'a>(
             evaluator.definition(id)?;
         }
     }
+    for instance in associated {
+        evaluator.associated(instance)?;
+    }
     evaluator.complete_static_storage()?;
+    Ok(())
+}
+pub(crate) fn eligibility(
+    report: &Report,
+    facts: &Declarations,
+    body: &super::ir::Body,
+) -> Result<(), Error> {
+    // Eligibility is checked even when no value is demanded. Constructor
+    // identities are eligible; other calls need the const-function assignment.
+    if matches!(
+        body.owner,
+        super::ir::Owner::Initializer { .. } | super::ir::Owner::AnonymousConstant
+    ) && body
+        .values
+        .iter()
+        .any(|value| function_call(facts, body, value.kind))
+    {
+        return Err(report.diagnostic(Declarations::error(
+            report,
+            body.source,
+            "non-const calls are not allowed in constant initializers",
+        )));
+    }
     Ok(())
 }
 fn function_call(facts: &Declarations, body: &super::ir::Body, value: Rvalue) -> bool {
@@ -117,4 +137,84 @@ pub fn references(
         }
     });
     values.chain(projections).chain(statements)
+}
+
+/// Closed, trivial aliases are checked before demand by the pinned Rust profile.
+/// Branching and generic initializers retain demand-only value evaluation.
+pub(crate) fn alias_cycles(
+    report: &Report,
+    facts: &Declarations,
+    templates: &[super::templates::Template],
+) -> Result<(), Error> {
+    use super::ir::{Owner, Terminator};
+    let mut aliases = std::collections::HashMap::new();
+    let mut order = Vec::new();
+    for template in templates {
+        let body = &template.body;
+        let Owner::Initializer { definition, .. } = body.owner else {
+            continue;
+        };
+        if facts.generics.has_parameters(definition) {
+            continue;
+        }
+        let mut returns = body.blocks.iter().filter_map(|block| {
+            if let Terminator::Return(value) = block.terminator {
+                Some(value)
+            } else {
+                None
+            }
+        });
+        let Some(mut value) = returns.next() else {
+            continue;
+        };
+        if returns.next().is_some() {
+            continue;
+        }
+        let mut steps = 0;
+        loop {
+            steps += 1;
+            if steps > body.values.len() {
+                return Err(Declarations::error(
+                    report,
+                    body.source,
+                    "cycle in constant alias value graph",
+                ));
+            }
+            match body.values[value.0 as usize].kind {
+                Rvalue::Constrain(source) => value = source,
+                Rvalue::AssociatedConstant(crate::sema::values::Instance {
+                    definition: target,
+                    ..
+                })
+                | Rvalue::Constant(target)
+                    if !facts.generics.has_parameters(target) =>
+                {
+                    aliases.insert(definition, target);
+                    order.push((definition, body.source));
+                    break;
+                }
+                _ => break,
+            }
+        }
+    }
+    let mut done = HashSet::new();
+    let mut active = HashSet::new();
+    for (mut current, source) in order {
+        active.clear();
+        while let Some(&next) = aliases.get(&current) {
+            if done.contains(&current) {
+                break;
+            }
+            if !active.insert(current) {
+                return Err(Declarations::error(
+                    report,
+                    source,
+                    "cycle in closed constant aliases",
+                ));
+            }
+            current = next;
+        }
+        done.extend(active.iter().copied());
+    }
+    Ok(())
 }

@@ -16,6 +16,7 @@ pub(super) struct Scratch {
     places: HashMap<NodeKey, Option<NodeKey>>,
 }
 pub(super) struct Check {
+    substitution: Option<crate::types::substitute::Bound>,
     scopes: Option<scopes::Facts>,
     root: NodeKey,
     scratch: Box<Scratch>,
@@ -26,6 +27,7 @@ impl Check {
         facts: &Declarations,
         root: NodeKey,
         scratch: Option<Box<Scratch>>,
+        substitution: Option<crate::types::substitute::Bound>,
     ) -> Option<Self> {
         let count = facts.destructors.declared().len();
         if count == 0 {
@@ -46,6 +48,7 @@ impl Check {
             scratch.declared_owners = count;
         }
         Some(Self {
+            substitution,
             scopes: None,
             root,
             scratch,
@@ -62,7 +65,7 @@ impl Check {
     pub(super) fn expression(
         &mut self,
         report: &Report,
-        facts: &Declarations,
+        facts: &mut Declarations,
         key: NodeKey,
         expression: Expression,
     ) -> Result<(), Error> {
@@ -92,7 +95,12 @@ impl Check {
         }
         Ok(())
     }
-    fn place(&mut self, report: &Report, facts: &Declarations, key: NodeKey) -> Result<(), Error> {
+    fn place(
+        &mut self,
+        report: &Report,
+        facts: &mut Declarations,
+        key: NodeKey,
+    ) -> Result<(), Error> {
         let mut current = key;
         let mut visited = Vec::new();
         let root;
@@ -155,14 +163,21 @@ impl Check {
     fn temporary(
         &mut self,
         report: &Report,
-        facts: &Declarations,
+        facts: &mut Declarations,
         key: NodeKey,
     ) -> Result<(), Error> {
         let error = |message| Declarations::error(report, key, message);
-        let ty = facts
+        let mut ty = facts
             .node(key)
             .and_then(|f| f.ty)
             .ok_or_else(|| error("missing constant type"))?;
+        if let Some(substitution) = &mut self.substitution {
+            ty = substitution.apply(&mut facts.types, ty).map_err(error)?;
+            facts
+                .aggregates
+                .prepare(&mut facts.types, ty)
+                .map_err(error)?;
+        }
         if !self
             .scratch
             .needs_drop

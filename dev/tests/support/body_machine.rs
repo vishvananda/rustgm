@@ -128,6 +128,10 @@ impl Machine<'_> {
             };
         }
     }
+    #[expect(
+        clippy::too_many_lines,
+        reason = "One typed value dispatch keeps scalar execution and its unsupported operations together"
+    )]
     fn evaluate(
         &mut self,
         frame: &Frame<'_>,
@@ -137,6 +141,7 @@ impl Machine<'_> {
         let value = &frame.body.values[value.0 as usize];
         let data = match value.kind {
             Rvalue::Borrow { .. }
+            | Rvalue::AssociatedConstant(_)
             | Rvalue::Text(_)
             | Rvalue::Aggregate { .. }
             | Rvalue::Length(_)
@@ -145,7 +150,10 @@ impl Machine<'_> {
             | Rvalue::Validate(_)
             | Rvalue::Repeat { .. }
             | Rvalue::Read(Place::Temporary(_) | Place::Projection(_)) => {
-                return Err("scalar test executor does not implement aggregates".into());
+                return Err(
+                    "scalar test executor does not implement aggregates or associated values"
+                        .into(),
+                );
             }
             Rvalue::Unit => Data::Unit,
             Rvalue::Scalar(id) => match frame.body.scalars[id.0 as usize] {

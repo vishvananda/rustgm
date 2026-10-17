@@ -2,8 +2,18 @@
 use super::Analysis;
 use crate::{
     body::templates::Templates,
-    borrow::{Error, ownership::BodyFacts, regions, storage},
-    types::{Store, outlives::LiveRegions},
+    borrow::{
+        Error,
+        destruction::symbolic,
+        ownership::{BodyFacts, initialization},
+        regions, storage,
+    },
+    types::{
+        Store,
+        copy::Copies,
+        destruction::{NeedsDrop, regions::Regions},
+        outlives::LiveRegions,
+    },
 };
 use std::collections::HashMap;
 
@@ -22,13 +32,6 @@ pub fn verify<S: std::hash::BuildHasher>(
         crate::body::ir::Selection,
     ) -> Result<(u32, u32), &'static str>,
 ) -> Result<Vec<Analysis>, Error> {
-    use crate::{
-        borrow::{destruction::symbolic, ownership::initialization},
-        types::{
-            copy::Copies,
-            destruction::{NeedsDrop, regions::Regions},
-        },
-    };
     let error = |message: &str| Error {
         node: None,
         message: message.into(),
@@ -71,21 +74,38 @@ pub fn verify<S: std::hash::BuildHasher>(
             node: Some(e.node),
             message: e.message.into(),
         })?;
-        let mut needed = needed.scoped(std::sync::Arc::clone(&template.environment));
-        let mut drops = drops.scoped(std::sync::Arc::clone(&template.environment));
-        let plan = symbolic::select(
-            environment.types,
-            environment.definitions,
-            &mut needed,
-            &facts,
-            |item| custom.contains(&item),
-            &position,
-        )
-        .map_err(|e| Error {
-            node: Some(e.node),
-            message: e.message.into(),
-        })?;
-        results.push(
+        let analysis = if no_cleanup(&template.destruction) {
+            // Scoped requirements prove the absence of destruction. Moves from
+            // custom-Drop containers still need their independent legality check.
+            facts
+                .destructor_moves(environment.types, |item| custom.contains(&item))
+                .map_err(|e| Error {
+                    node: Some(e.node),
+                    message: e.message.into(),
+                })?;
+            super::check(
+                environment.types,
+                &mut components,
+                body,
+                contract,
+                &facts.ownership,
+                &facts.storage,
+            )
+        } else {
+            let mut needed = needed.scoped(std::sync::Arc::clone(&template.environment));
+            let mut drops = drops.scoped(std::sync::Arc::clone(&template.environment));
+            let plan = symbolic::select(
+                environment.types,
+                environment.definitions,
+                &mut needed,
+                &facts,
+                |item| custom.contains(&item),
+                &position,
+            )
+            .map_err(|e| Error {
+                node: Some(e.node),
+                message: e.message.into(),
+            })?;
             super::check_schedule(
                 environment.types,
                 environment.definitions,
@@ -95,13 +115,20 @@ pub fn verify<S: std::hash::BuildHasher>(
                 contract,
                 plan.schedule(),
             )
-            .map_err(|e| Error {
-                node: Some(e.node),
-                message: e.message.into(),
-            })?,
-        );
+        };
+        results.push(analysis.map_err(|e| Error {
+            node: Some(e.node),
+            message: e.message.into(),
+        })?);
     }
     Ok(results)
+}
+
+fn no_cleanup(requirements: &crate::body::drops::Requirements) -> bool {
+    !requirements.locals.contains(&true)
+        && !requirements.values.contains(&true)
+        && !requirements.projections.contains(&true)
+        && requirements.sites.is_empty()
 }
 
 fn validate(template: &crate::body::templates::Template) -> Result<(), &'static str> {

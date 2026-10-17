@@ -1,1 +1,0 @@
-trait A{const C:u8;}struct S;impl A for S{const C:u8=7;}fn main(){let _=<S as A>::C;}

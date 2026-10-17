@@ -229,6 +229,13 @@ pub struct Declarations {
     pub generics: super::generics::Generics,
     /// Repeat operands selected as constant paths before runtime coercion wrappers.
     pub constant_repeats: std::collections::HashSet<NodeKey>,
+    pub(crate) constant_targets:
+        std::collections::HashMap<super::values::Instance, super::values::Instance>,
+    pub(crate) constant_dependencies:
+        std::collections::HashMap<DefId, Vec<super::values::Dependency>>,
+    pub constant_uses: std::collections::HashMap<NodeKey, super::values::Instance>,
+    pub(super) constant_instances:
+        std::collections::HashMap<super::values::Instance, super::constants::Value>,
     pub associated: super::associated::Inventory,
     pub methods: super::methods::Methods,
     pub receivers: std::collections::HashMap<NodeKey, super::associated::Receiver>,
@@ -308,6 +315,10 @@ impl Declarations {
             constant_annotation_bodies: std::collections::HashSet::new(),
             generics: super::generics::Generics::default(),
             constant_repeats: std::collections::HashSet::new(),
+            constant_targets: std::collections::HashMap::new(),
+            constant_dependencies: std::collections::HashMap::new(),
+            constant_uses: std::collections::HashMap::new(),
+            constant_instances: std::collections::HashMap::new(),
             associated: super::associated::collect(report)?,
             methods: super::methods::Methods::default(),
             receivers: std::collections::HashMap::new(),

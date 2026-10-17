@@ -23,6 +23,7 @@ use std::collections::HashMap;
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub(super) enum Key {
     Definition(DefId),
+    Associated(crate::sema::values::Instance),
     Location(LocationId),
     Temporary(usize, ValueId),
     Bytes(crate::sema::text::Id),
