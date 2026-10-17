@@ -76,6 +76,7 @@ pub(super) fn prepare(
     let mut visited = HashSet::new();
     let mut dependencies = Dependencies::default();
     let mut budget = Budget::default();
+    let mut cleanup = body::instantiate::Cleanup::new(facts);
     while let Some(action) = work.pop() {
         let Work::Enter(instance, source) = action else {
             if let Work::Leave(item) = action {
@@ -102,7 +103,7 @@ pub(super) fn prepare(
             budget.enter(item, &template.body, input).map_err(error)?;
             let mut materialized =
                 // Entered dependencies come only from a body sealed by Builder::push.
-                body::instantiate::from_checked_caller(facts, template, instance, input)
+                body::instantiate::from_checked_caller(facts, template, instance, input, &mut cleanup)
                     .map_err(error)?;
             body::dispatch::resolve(facts, &mut materialized.body, &mut materialized.contract)
                 .map_err(|e| error(&e))?;

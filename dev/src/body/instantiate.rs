@@ -20,6 +20,27 @@ enum Premises {
     Declared,
 }
 
+/// Concrete structural answers share one append-only type store and immutable
+/// destructor registry. Caller proofs and scoped symbolic answers stay separate.
+pub(crate) struct Cleanup {
+    needed: NeedsDrop,
+}
+impl Cleanup {
+    pub(crate) fn new(facts: &Declarations) -> Self {
+        Self {
+            needed: NeedsDrop::new(facts.destructors.implementations().iter().map(|i| i.item)),
+        }
+    }
+    #[cfg(test)]
+    pub(crate) const fn steps(&self) -> usize {
+        self.needed.steps
+    }
+}
+struct Context<'a> {
+    premises: Premises,
+    cleanup: &'a mut Cleanup,
+}
+
 /// Materialize one selected body without resolving, parsing or inferring syntax.
 /// Original source identities and control flow remain unchanged. Promotion values
 /// are recomputed from the specialized DAG, never copied across argument contexts.
@@ -35,6 +56,7 @@ pub fn body(
         return Err("projected instance requires its lifetime contract");
     }
     let mut substitution = Bound::parameters(&facts.types, &inputs.bindings)?;
+    let mut cleanup = Cleanup::new(facts);
     materialize(
         facts,
         template,
@@ -42,7 +64,10 @@ pub fn body(
         &mut substitution,
         None,
         None,
-        Premises::Required,
+        Context {
+            premises: Premises::Required,
+            cleanup: &mut cleanup,
+        },
     )
 }
 
@@ -62,7 +87,17 @@ pub fn with_contract(
     instance: Instance,
     original: &super::regions::Contract,
 ) -> Result<Materialized, &'static str> {
-    with_premises(facts, template, instance, original, Premises::Required)
+    let mut cleanup = Cleanup::new(facts);
+    with_premises(
+        facts,
+        template,
+        instance,
+        original,
+        Context {
+            premises: Premises::Required,
+            cleanup: &mut cleanup,
+        },
+    )
 }
 
 /// Only demand from a fully proved caller may inherit its checked callee premises.
@@ -72,8 +107,18 @@ pub(crate) fn from_checked_caller(
     template: &Template,
     instance: Instance,
     original: &super::regions::Contract,
+    cleanup: &mut Cleanup,
 ) -> Result<Materialized, &'static str> {
-    with_premises(facts, template, instance, original, Premises::Declared)
+    with_premises(
+        facts,
+        template,
+        instance,
+        original,
+        Context {
+            premises: Premises::Declared,
+            cleanup,
+        },
+    )
 }
 
 fn with_premises(
@@ -81,7 +126,7 @@ fn with_premises(
     template: &Template,
     instance: Instance,
     original: &super::regions::Contract,
-    premises: Premises,
+    context: Context<'_>,
 ) -> Result<Materialized, &'static str> {
     if original.source != template.body.source {
         return Err("instance contract belongs to another template");
@@ -95,7 +140,7 @@ fn with_premises(
         &mut substitution,
         Some(&mut contract),
         inputs.comparison,
-        premises,
+        context,
     )?;
     Ok(Materialized {
         body,
@@ -111,8 +156,9 @@ fn materialize(
     substitution: &mut Bound,
     contract: Option<&mut super::regions::Contract>,
     comparison: Option<(crate::types::TypeId, crate::types::TypeId)>,
-    premises: Premises,
+    context: Context<'_>,
 ) -> Result<(Body, drops::Requirements), &'static str> {
+    let Context { premises, cleanup } = context;
     let source = &template.body;
     let Owner::Function { definition, .. } = source.owner else {
         return Err("instance template is not a function");
@@ -169,7 +215,7 @@ fn materialize(
         }
         projections::normalize(facts, &mut body, contract, comparison)?;
     }
-    let mut needed = NeedsDrop::new(facts.destructors.implementations().iter().map(|i| i.item));
+    let needed = &mut cleanup.needed;
     if let Some(owned) = &source.owned {
         let mut concrete = Box::<drops::values::Facts>::default();
         for &temporary in &owned.created {
@@ -191,7 +237,7 @@ fn materialize(
             body.owned = Some(concrete);
         }
     }
-    let requirements = drops::requirements(facts, &body, &mut needed)?;
+    let requirements = drops::requirements(facts, &body, needed)?;
     Ok((body, requirements))
 }
 

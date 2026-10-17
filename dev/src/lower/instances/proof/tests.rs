@@ -18,6 +18,59 @@ use crate::{
 use std::path::Path;
 
 type TestResult<T = ()> = Result<T, Box<dyn std::error::Error>>;
+
+#[test]
+fn instance_cleanup_shares_completed_types_across_distinct_callees() -> TestResult {
+    use std::fmt::Write as _;
+    for depth in [4, 16, 64] {
+        let mut source = String::from("struct S0<T>(T);");
+        for level in 1..=depth {
+            write!(source, "struct S{level}<T>(S{}<T>);", level - 1)?;
+        }
+        for index in 0..depth {
+            write!(source, "fn id{index}<T>(x:S{depth}<T>)->S{depth}<T>{{x}}")?;
+        }
+        source.push_str("fn main(){");
+        for index in 0..depth {
+            write!(
+                source,
+                "let f{index}:fn(S{depth}<u8>)->S{depth}<u8>=id{index}::<u8>;"
+            )?;
+        }
+        source.push('}');
+        let mut f = fixture(&source)?;
+        let checked = originals(&mut f.facts, &f.templates, &f.inputs)?;
+        assert_eq!(f.instances.len(), depth);
+        let mut cleanup = body::instantiate::Cleanup::new(&f.facts);
+        let mut complete = None;
+        for instance in f.instances {
+            let Some(Kind::FunctionItem { item, .. }) = f.facts.types.kind(instance.ty()) else {
+                return Err("missing selected function".into());
+            };
+            let result = body::instantiate::from_checked_caller(
+                &mut f.facts,
+                checked.get(item).ok_or("missing template")?,
+                instance,
+                checked.input(item).ok_or("missing contract")?,
+                &mut cleanup,
+            )?;
+            assert!(!result.destruction.locals.contains(&true));
+            assert!(!result.destruction.values.contains(&true));
+            assert!(result.body.owned.is_none());
+            if let Some(steps) = complete {
+                assert_eq!(
+                    cleanup.steps(),
+                    steps,
+                    "another callee reopened shared fields"
+                );
+            }
+            complete = Some(cleanup.steps());
+        }
+        assert!(cleanup.steps() <= 10 * depth + 64);
+    }
+    Ok(())
+}
+
 struct NoFiles;
 impl Sources for NoFiles {
     fn read(&mut self, _: &Path) -> Result<Option<InputFile>, String> {

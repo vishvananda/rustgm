@@ -8968,3 +8968,55 @@ and concrete instantiation. The next algorithmic work must share declaration
 structure and demand properties only where needed while preserving each caller's
 parameter and lifetime proof. This checkpoint does not claim those families are
 linear or close PA20's remaining implementation, inspection or grading contracts.
+
+### Shared concrete destruction queries and initialized cleanup demand (2026-10-17)
+
+The instance scheduler now keeps one concrete destruction-property cache across
+its demanded bodies. Previously each callee reopened the same concrete field
+graph and allocated a new query table. The shared answers depend only on full
+canonical types, completed normalized storage and the immutable destructor
+registry. Each body still normalizes its fields and retains its own formation
+debts first. Symbolic environments and manual instantiation queries stay separate.
+
+Symbolic cleanup now reads proved initialization before demanding a type's
+destruction properties, including sparse children of partially moved aggregates.
+A definitely moved value has no cleanup access and requires no recursive query.
+Live and conditional paths retain their type, destructor and lifetime checks;
+typing, initialization and custom-Drop move legality remain independent proofs.
+
+The new source-based unit invariant checks distinct callees sharing wrapper
+chains through depth 64: later callees perform no additional type traversal.
+Six independently qualified source controls exercise moved roots and live
+branches at depths 4, 16 and 64. Moved roots use zero destruction-query steps;
+live branches still inspect their fields. The full validation passes all 30
+command gates: 1,207 regular tests, 77 native groups, 4,863 PA1–19 cases, strict
+Clippy, formatting, the 746-file audit, harness, backend and upstream checks.
+All 749 source/configuration hashes and 14,589 earlier oracle sidecars agree.
+PA20–PA25 remain planned stages.
+
+Evidence is under `obj/pa20-work/declaration-structure-v1/`; the candidate hash is
+`57261cbbffcd4b5e9b6e7e47845be81c0413c56704d014dd321e491bc936cfed`.
+The paired study compares with published `69723ab`, retains 494 study observations
+and 76 output qualifications across 19 jobs, and verifies full/count LowIR and
+all binary/source/input hashes. Projected generic callers at depth 96 improve
+19.25% by paired median, with 1.18% A/A spread; ordinary generic callers improve
+20.79%, with 3.73% spread. The corresponding AA/BB paired medians are
++0.41%/+0.40% and -0.17%/-0.26%. The projected A/A window has substantial shared-host
+noise, so these observations do not establish tight general regression bounds.
+
+Fifteen instruction profiles retain byte-identical LowIR from independently
+executed inputs. Projected generic callers at depths 32/64/96 now take
+47.04/124.21/228.07 million instructions, previously 55.16/156.37/299.51 million.
+Ordinary generic callers take 36.25/99.39/186.49 million, previously
+42.67/124.59/242.15 million. At projected depth 96, destruction queries fall from
+108.79 million to 37.45 million instructions: two repeated traversal phases have
+been removed, leaving template construction's scoped queries.
+
+These complete frontend families remain superlinear. Eager field preparation
+still expands full instances for distinct caller parameters, and lifetime callers
+remain near 475 million instructions at depth 96. Ordinary Copy-constrained
+wrappers show the same underlying preparation problem, so it predates projected
+storage. Further work needs shared declaration-level property/dependency summaries
+and demand-specific preparation, preserving composite Copy assumptions, custom
+Drop, zero-array alignment and each caller's projection formation debts. Erasing
+parameter or lifetime identities to reuse permissions would be incorrect.

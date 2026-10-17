@@ -108,8 +108,10 @@ pub fn select(
                 }
                 .ok_or("invalid abstract cleanup place")?;
                 let tracked = candidate.path.map_or(Tracking::External, Tracking::Path);
-                let live = builder.needed.demand(types, definitions, ty)?
-                    && builder.status(tracked, point)? != Status::Never;
+                // Initialization is already proved. A moved value has no
+                // cleanup access, so it demands no recursive type property.
+                let live = builder.status(tracked, point)? != Status::Never
+                    && builder.needed.demand(types, definitions, ty)?;
                 let access = live && builder.access(ty, tracked, point)?;
                 builder.retain(size_of::<Cleanup>())?;
                 builder.plan.cleanups.push(Cleanup {
@@ -179,11 +181,8 @@ impl<C: Fn(ItemId) -> bool> Builder<'_, C> {
         self.push(ty, tracked)?;
         while let Some((ty, tracked)) = self.work.pop() {
             self.charge(1)?;
-            if !self.needed.demand(self.types, self.definitions, ty)? {
-                continue;
-            }
             let status = self.status(tracked, point)?;
-            if status == Status::Never {
+            if status == Status::Never || !self.needed.demand(self.types, self.definitions, ty)? {
                 continue;
             }
             if status == Status::Always || !matches!(tracked, Tracking::Path(_)) {

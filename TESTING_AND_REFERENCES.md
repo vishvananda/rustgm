@@ -307,6 +307,14 @@ through width 256. Shared dependency recipes bound per-caller work through depth
 The source-level constructor regression bounds field instantiation work through
 depth 96, excluding discarded inference templates. These cases do not release PA20.
 
+Concrete instance cleanup has a work invariant in
+`dev/src/lower/instances/proof/tests.rs`: distinct callees sharing a wrapper chain
+reuse the completed destruction query through depth 64. The source controls in
+`dev/tests/moved_cleanup.rs` independently qualify both moved and possibly live
+generic values. Proved moved roots demand no recursive cleanup properties; live
+branches still query the full type. Existing template, instance, field-move and
+native destruction suites check the separate permission and execution contracts.
+
 `dev/tests/opaque_body_values.rs` separates 26 declaration/body type-checking
 controls from fifteen checks through LowIR and six native callable programs.
 The type-checking controls do not assert ownership, destruction or lifetime

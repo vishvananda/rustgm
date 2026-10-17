@@ -1316,6 +1316,12 @@ reuse the checked initialization and storage facts with the ordinary loan checke
 Do not allocate an abstract cleanup plan for that case. Custom-Drop field move
 legality, region proofs and initialization checks remain independent requirements.
 
+When cleanup candidates do remain, inspect their proved initialization before
+demanding recursive destruction properties. A definitely moved root or sparse
+child has no cleanup access. Keep conditional and live paths on the ordinary
+type, destructor and lifetime checks; this ordering cannot replace their earlier
+typing, move legality or initialization proof.
+
 Keep the checked inverse impl-to-nominal argument mapping on the completed Drop
 implementation. Selecting a method for a concrete target consumes that mapping;
 it does not repeat source matching. A runtime callable retains only target
@@ -1333,6 +1339,14 @@ Separate retained recipe/query state from short-lived semantic borrows so new
 instances can be discovered without rebuilding completed recipes. Actual cleanup
 selection, original template proofs and instance ownership/lifetime/loan proofs
 remain separate requirements before executable generic destruction.
+
+The concrete instance scheduler also retains one unscoped destruction-property
+cache across its demanded bodies. Full canonical types and completed normalized
+fields determine these answers under one immutable custom-Drop registry. Each
+body must still normalize its storage and retain its own formation debts before
+consulting that cache. Independent symbolic environments keep separate queries,
+and manual instantiation entrypoints start their own concrete cache. Sharing
+structural answers never transfers a caller's lifetime or trait permission.
 
 Prove each concrete body once as demand discovers it. Keep the immutable owned
 body with its selected cleanup plan until executable assembly; match its source,
