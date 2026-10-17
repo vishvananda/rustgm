@@ -409,10 +409,18 @@ short-lived Self inputs with an equality-fixed static result. Four added
 `nominal_variance.rs` invariants check retained declaration fields, complete
 projection inputs, variant identity, arity and a 4,096-level shared graph.
 The original source probe for dependent bound roots contradicted its predicted
-rustc acceptance; it and a separately qualified valid explicit-prerequisite
-variant remain investigations outside adopted coverage. The latter still needs
-normalization between dependent assumptions. General closed projected lifetime
-requirements without a result equality also remain incomplete.
+rustc acceptance. The separately qualified explicit-prerequisite variant now has
+the additional coverage below. General closed projected lifetime requirements
+without a result equality remain incomplete.
+
+`independent_assumptions.rs` checks 19 independently object-qualified programs:
+eleven accept and eight reject, with two CPPGM/rustc executions. They distinguish
+blocked opaque alternatives from independent complete matches, preserve bound
+ordering and caller scope, and retain lifetime equality obligations and ambiguity.
+Four assumption-index invariants check probe isolation, unresolved inference,
+the blocked-only outcome and selected evidence. Contextual trait-argument
+inference for an unqualified associated call remains valid unsupported work;
+those probes are not rejection fixtures.
 
 ## Storage and cleanup
 

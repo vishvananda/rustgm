@@ -7588,3 +7588,64 @@ equality-field medians were 6.98/15.84 ms. Earlier scoped-result and runtime-ext
 timing concerns remain separate. Validation cleanup removed 4,842 generated
 files, about 5.14 GiB; performance cleanup found no remaining disposable outputs.
 Both deletion receipts and every timing observation remain under `obj/`.
+
+## Independent assumptions beside opaque alternatives
+
+The dependent-bound investigation exposed a shared assumption-matcher boundary.
+An isolated equation against an opaque alternative returned a normalization
+request immediately, hiding a later complete match. A temporary trace confirmed
+that path for both nominal bounds and function declarations. The matcher now
+continues isolated probes after a blocked opaque equation. Exactly one complete
+match supplies evidence; two complete matches still defer selection. With no
+match, the normalization request remains distinct from absence. The caller's
+immutable environment is unchanged, and only the selected probe's equations
+enter its lifetime proof. This is not general normalization of all assumptions.
+
+Nineteen source controls were independently object-qualified before adoption:
+eleven valid and eight invalid, including two native execution controls. They
+cover reordered dependent bounds, generic opaque arguments, distinct normal
+forms, independent caller scopes, explicit method dispatch, ambiguity and
+two-way lifetime equality requirements. Four typed invariants check the selected
+predicate, blocked-only outcomes, unresolved argument isolation and lifetime
+equation isolation. The existing unrelated-subject scaling invariant remains.
+
+An initial probe predicted that a return-context-inferred `U::m()` would fail;
+pinned rustc accepted it. A separately declared executable control confirmed
+that acceptance, while RustGM still rejects both. They remain valid unsupported
+investigations, not rejection fixtures. A second exploratory source accidentally
+omitted whitespace after `where`; the original failed qualification is retained
+beside a separately qualified corrected source. The initial typed inference test
+also expected a deferred answer where the existing API returns `Unresolved`;
+the final invariant checks that explicit outcome and that no hole was guessed.
+Evidence is under `obj/pa20-work/assumption-selection-v1/`. PA20 and PA21 remain
+planned; this checkpoint does not change their completion requirements.
+
+Validation passed 1,168 release tests, all 4,864 PA1–PA19 text fixtures and all
+63 explicit maintainer native suites. Backend and upstream qualification passed.
+Rustfmt, Clippy all/pedantic with warnings denied, the 713-file audit with zero
+findings and all 33 harness tests passed. All 716 code/configuration hashes stayed
+unchanged through the 25-command validation batch. No course oracle changed.
+The preceding 7d5bc47 checkpoint's CI passed in 15m07s under the new 20-minute
+limit, confirming that its former 15-minute limit would have been insufficient.
+
+Performance retained immutable 7d5bc47/final-candidate binaries and frozen inputs.
+Twelve actual count/full comparisons and eight identical-candidate scaling jobs
+used A/A calibration and five paired ABBA blocks: 520 study observations and 80
+full-output qualifications. Actual paired medians ranged from -2.172% to +3.468%,
+but A/A spread reached 92.70%. The 64-declaration ordinary-bound count case was
+slower in all five blocks, close to the predeclared +3.5% review threshold.
+
+A separately declared confirmation retained the original observations and tested
+both ordinary-bound sizes and both projected-nominal views with twelve A/A
+observations and ten paired blocks. Its 324 study and 24 qualification observations
+again verified output equality and source/input/binary/runner hashes. The small
+ordinary-bound count median was +4.026%; its full-view median was +1.815%, and
+the 256-declaration count/full medians were +2.172%/+1.971%. Projected-nominal
+medians were -0.854%/+0.149%. Confirmation A/A spread reached 66.67%. The repeated
+small-control slowdown remains an unresolved performance cost; these noisy runs
+do not establish a blanket regression-free result. Earlier scoped-result and
+runtime-extents timing concerns also remain separate.
+
+Validation cleanup removed 4,857 generated files, about 5.14 GiB. The measurement
+runners deleted each rendering scratch file after hashing and retained all raw
+observations. Their successful wrappers found no further disposable outputs.

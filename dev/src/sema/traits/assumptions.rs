@@ -165,6 +165,7 @@ impl Assumptions {
             return Ok(Selection::Deferred);
         };
         let mut selected = None;
+        let mut needs_normalization = false;
         for &candidate in subject
             .heads()
             .flat_map(|head| self.candidates.get(&(item, head)).into_iter().flatten())
@@ -180,12 +181,17 @@ impl Assumptions {
                     }
                 }
                 Err(infer::Error::Mismatch | infer::Error::Occurs) => {}
+                // An opaque equation is not a second matching assumption. Keep
+                // looking, including for other fully equatable alternatives.
+                Err(infer::Error::Normalization) => needs_normalization = true,
                 Err(error) => return Err(error),
             }
         }
         if let Some(assumption) = selected {
             context.equate_trait_predicate(store, goal, assumption)?;
             Ok(Selection::Proven(Evidence(assumption)))
+        } else if needs_normalization {
+            Err(infer::Error::Normalization)
         } else {
             Ok(Selection::Absent)
         }

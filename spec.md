@@ -581,7 +581,14 @@ indexing. A missing match for a rigid goal excludes a candidate; unresolved evid
 may remain possible until the selected call has all argument/result constraints.
 Only proved evidence authorizes a body operation. Canonical nominal and trait
 argument requirements use the same complete-goal matcher under rigid caller
-parameters. Retain inferred lifetime equalities with their owning declaration or
+parameters. A blocked opaque equation against one caller assumption does not
+invalidate an independently equatable assumption. Continue probing alternatives
+in isolated contexts; two equatable assumptions still defer selection. If no
+assumption matches, retain the normalization requirement instead of reporting
+absence or permitting an unrelated implementation. This does not normalize the
+caller environment or infer a projection's inputs from its output. Unresolved
+inference remains unresolved. Retain inferred lifetime equalities with their
+owning declaration or
 body; prove both directions using the ordinary region engine and completed nominal
 contracts. An outlives relation in one direction alone is not equality. Keep exact
 assumption lookups cheap and build broader indexes only when needed. Drop coverage
