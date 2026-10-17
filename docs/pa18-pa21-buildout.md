@@ -8349,3 +8349,73 @@ The guarded validation cleanup removes 1,783 generated files (3.74 GiB), and the
 between-batch tidy removes 3,354 more (1.90 GiB). Source, diagnostics, raw timings,
 receipts and the required comparison binaries remain. Publication and exact-head
 CI evidence are recorded under `obj/pa20-work/shorthand-associated-types-v3/`.
+
+## Projected callable lifetime congruence (2026-10-17)
+
+A fully determined function pointer can contain an opaque associated result with
+caller lifetime inputs. Opening its callable binder already rebases those inputs
+to caller aliases. Previously its argument could retain equivalent bound slots:
+`fn apply<'a,T:A<'a>>(f:fn(T::Out)->T::Out,x:T::Out)->T::Out { f(x) }`
+was rejected. An unrelated generic call before `f(x)` made it pass; placing that
+call afterwards did not. Independent object compilation and execution establish
+that both programs are valid Rust.
+
+The body's cleared call workspace now records when it opens a projected callable.
+Shape equations then reuse the established universal substitution cache, even
+without a pending generic call or projection. Ordinary nonprojected calls retain
+their existing path. Written return contracts and lifetime proofs remain intact;
+the change neither identifies unrelated lifetimes nor infers projection inputs
+from equal results.
+
+The first broader prototype aligned operands whenever any universal mapping
+existed. Its regular tests passed, but the full course check caught an extra
+unused reference type in PA19's `trait-headers/generic-owners.rs` semantic dump.
+The corrected trigger identifies an actually opened projected callable. The
+committed oracle was not changed. Failed-prototype evidence remains under
+`obj/pa20-work/projected-callable-congruence-v2/`.
+
+The new maintainer family has 13 independently object-qualified cases: 11 accepted
+programs execute with rustc and CPPGM, and two negative controls preserve distinct
+lifetimes and projected subjects. Cases cover free functions, trait methods,
+captured Self, ordinary callable controls, repeated and borrowed projections,
+explicit equal results, and the before/after generic-call trigger.
+
+The corrected V3 run passes 1,180 regular tests, all 4,863 PA1–19 course cases,
+70 native groups, strict lint, the 726-file audit with zero findings, 33 harness
+checks, and backend/upstream validation. All 729 frozen source/configuration files
+and 14,589 committed oracle sidecars are verified. PA20–25 still fail explicitly
+as planned stages; this checkpoint promotes no manifest or grading contract.
+
+The immutable candidate is `6c489d04`, compared with published `09e695f`'s binary
+`8fef20ac`. The 22-job study retains 572 study and 88 qualification observations,
+with eight compiler invocations per observation. All eleven frozen input programs
+execute with rustc and CPPGM before timing. Source, binary and input hashes and
+full/count output equality pass. Ordinary-256 count/full medians are
+-1.797%/-1.363%, against A/A spreads of 3.814%/9.732%.
+
+The existing marker-projection-256 workload initially reports +4.537%/+6.225%
+count/full medians, slightly beyond its 3.418%/5.273% A/A spreads. An identical
+candidate control also reports -5.813% with only 1.229% initial A/A spread.
+A separate six-job follow-up therefore repeats that exact workload with A/B,
+A/A and B/B controls. It retains another 156 study and 24 qualification
+observations. A/B medians are -0.083%/-1.156% (A/A 3.811%/1.321%); identical-binary
+control medians range from -1.089% to +0.256%, with individual paired blocks
+varying more widely. The workload's full semantic dump and semantic count also
+match byte-for-byte. The initial slowdown did not reproduce; shared-host noise
+precludes a tight regression bound or speedup claim. Earlier default-chain,
+ordinary-argument and pattern measurement concerns remain open.
+
+The full validation cleanup removes 5,172 generated files (5.73 GiB), the
+between-batch tidy removes 3,369 more (1.94 GiB), and the first study cleanup removes
+26 generated files (0.05 GiB). A superseded initializer-readiness comparison
+binary is retired after verifying its replacement's passing exact-head CI.
+Sources, diagnostics, raw observations and receipts remain under
+`obj/pa20-work/projected-callable-congruence-v3/`, including publication/CI evidence.
+
+The next trait-header investigation retains 20 declared outcomes under
+`obj/pa20-work/trait-header-projections-v1/`: pinned rustc agrees with all of them
+and executes the 13 positives. RustGM currently rejects these valid programs
+during header preparation. The seven negatives must be rechecked after fixing
+that earlier failure. Header naming, complete result contracts, unused impl
+conformance, projected nominal storage and the PA20 inspection contract remain
+required work; the goal still extends through PA25.

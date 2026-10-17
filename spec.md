@@ -533,6 +533,16 @@ Use only the established universal-to-alias mapping here, not arbitrary pending
 region equations. Keep distinct caller lifetimes distinct and retain the ordinary
 lifetime proof of any equality required by a selected implementation.
 
+Opening a fully determined projected callable can introduce caller aliases
+without a generic call or pending projection. Record that event in the body's
+cleared call workspace and compare shape-equation operands in that same
+representation, reusing the existing substitution cache. Ordinary nonprojected
+calls need no new work. Otherwise an opaque projected argument may retain
+bound slots while its callable parameter uses equivalent aliases, making valid
+code depend on an unrelated earlier generic call. Preserve the written return
+contract and ordinary lifetime proof; this alignment grants no equality between
+different projection inputs or unrelated lifetimes.
+
 Check constraining lifetime positions before erasing projections through
 normalization. A lifetime occurring only inside a projected function-pointer
 input does not constrain the pointer's output, even when a selected impl would

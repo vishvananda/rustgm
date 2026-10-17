@@ -409,8 +409,12 @@ impl Checker<'_> {
         // Generic holes also occur beneath callable binders. Once an argument
         // solves such a hole, caller universals must remain free there rather
         // than becoming lifetimes owned by the nested callable.
+        // Opening a fully determined projected callable also introduces aliases.
+        // Its projected arguments must use the same identities even when no
+        // generic call or unresolved projection triggered their preparation.
         let (left, right) = if self.body_binders != 0
-            && (!self.call_types.generic.is_empty()
+            && (self.call_types.opened_projection_call
+                || !self.call_types.generic.is_empty()
                 || !self.call_types.constants.is_empty()
                 || self.call_types.generic_constructors
                 || self.projections.active())

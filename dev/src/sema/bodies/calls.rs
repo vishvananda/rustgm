@@ -13,6 +13,7 @@ pub(super) struct CallTypes {
     pub generic: Vec<(NodeId, DefId, TermId)>,
     pub constants: Vec<super::item_values::Pending>,
     pub generic_constructors: bool,
+    pub opened_projection_call: bool,
     pub active: HashMap<NodeId, TermId>,
     pub method_owners: HashMap<NodeId, (DefId, TermId)>,
     pub methods: Vec<(NodeId, super::dot_calls::Pending)>,
@@ -37,6 +38,7 @@ impl CallTypes {
         self.generic.clear();
         self.constants.clear();
         self.generic_constructors = false;
+        self.opened_projection_call = false;
         self.active.clear();
         self.method_owners.clear();
         self.methods.clear();
@@ -198,6 +200,8 @@ impl Checker<'_> {
         if bound_regions == 0 && self.facts.types.escaping_binders(ty) == Some(0) {
             return Ok(term);
         }
+        self.call_types.opened_projection_call |=
+            self.facts.types.contains_projections(ty) == Some(true);
         let signature = self.instantiate_call(node, ty)?;
         self.known(node, signature)
     }
