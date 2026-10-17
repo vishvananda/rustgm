@@ -1189,7 +1189,21 @@ assumptions. Propagate by-value parameter requirements over declaration template
 to reject infinite storage without expanding growing recursive instances.
 Zero-length arrays still require their element alignment. Infer field-implied
 outlives requirements over the same symbolic arguments, retaining type-parameter
-requirements as well as lifetime pairs.
+requirements as well as lifetime pairs. Retain opaque associated results as
+separate predicates, with complete Self, trait and family arguments. Propagate
+these templates through nominal uses using shared joint substitution; do not
+normalize during inference or infer input bounds from a result requirement.
+Captured callable predicates lift to the owning scope, while predicates involving
+callable locals remain deferred.
+
+Prepare projected requirements for requested canonical roots before immutable
+lifetime proofs, including generated constructor and specialized body contracts.
+Cache substitutions by complete nominal arguments and charge traversal, capture
+queries and mapping to bounded work. Preparation follows structural inputs without
+expanding nominal fields; ordinary contracts allocate no projected state. Cache
+requirements, never proof permission. Static field requirements remain obligations
+against explicit and independently implied premises. Scalar-only query interfaces
+must reject hidden projected debts even when the nominal root has closed arguments.
 
 Nominal requirements inside function pointer types retain their callable binder
 depth. Defer predicates mentioning a surrounding late-bound lifetime, as required

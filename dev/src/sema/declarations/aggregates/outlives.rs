@@ -17,8 +17,8 @@ impl Checker<'_> {
             .iter()
             .filter(|(owner, _)| self.facts.aggregates.get(ItemId(owner.0)).is_some())
             .flat_map(|(owner, predicates)| predicates.iter().map(|p| (ItemId(owner.0), p.value)));
-        let bounds = Bounds::infer_with_predicates(
-            &self.facts.types,
+        let mut bounds = Bounds::infer_with_predicates(
+            &mut self.facts.types,
             &self.facts.aggregates,
             &self.facts.lifetimes.nominal_bounds,
             predicates,
@@ -30,6 +30,11 @@ impl Checker<'_> {
         }
         let mut components = TypeComponents::default();
         for entry in &self.nominals.entries {
+            let ty = self.facts.definitions[entry.item.0 as usize]
+                .ok_or_else(|| self.error(entry.key, "missing nominal requirement root"))?;
+            bounds
+                .prepare(&mut self.facts.types, ty)
+                .map_err(|e| self.error(entry.key, e))?;
             self.nominal_static_bounds(entry.item, &bounds, &explicit, &mut components)
                 .map_err(|e| self.error(entry.key, e))?;
         }
@@ -51,8 +56,15 @@ impl Checker<'_> {
             .ok_or("missing nominal type lifetime requirements")?;
         if !pairs.iter().any(|pair| pair.1 == RegionId::STATIC)
             && !parameters.iter().any(|pair| pair.1 == RegionId::STATIC)
+            && !bounds
+                .projections(item)
+                .iter()
+                .any(|pair| pair.1 == RegionId::STATIC)
         {
             return Ok(());
+        }
+        if !bounds.projections(item).is_empty() {
+            return self.projected_static_bounds(item, bounds, explicit);
         }
         let mut proof = Proof::new();
         for &pair in pairs {
@@ -83,6 +95,90 @@ impl Checker<'_> {
             }
         }
         proof.graph.solve().map_err(|e| e.to_string())?;
+        Ok(())
+    }
+    fn projected_static_bounds(
+        &self,
+        item: ItemId,
+        bounds: &Bounds,
+        explicit: &HashMap<ItemId, Vec<Pair>>,
+    ) -> Result<(), String> {
+        use crate::types::{
+            Kind,
+            arguments::Argument,
+            outlives::{Queries, Requirements, ScalarRequirements},
+            relations::{Constraints, ProofScope},
+        };
+        let owner = DefId(item.0);
+        let count = u32::try_from(
+            self.facts
+                .lifetimes
+                .parameters
+                .get(&owner)
+                .map_or(0, Vec::len),
+        )
+        .map_err(|_| "too many nominal lifetime parameters")?;
+        let mut proof = Constraints::new(
+            &self.facts.types,
+            &self.facts.lifetimes.variances,
+            count,
+            1_000_000,
+        )
+        .map_err(|e| e.to_string())?;
+        for parameter in self.facts.generics.parameters_in_scope(owner) {
+            if let Argument::Type(ty) = parameter.argument
+                && let Some(Kind::Parameter(id)) = self.facts.types.kind(ty)
+            {
+                proof.parameter(id).map_err(|e| e.to_string())?;
+            }
+        }
+        for &(longer, shorter) in bounds
+            .get(item)
+            .ok_or("missing nominal region requirements")?
+        {
+            if shorter == RegionId::STATIC {
+                proof.outlives(longer, shorter, 0)
+            } else {
+                proof.assume(longer, shorter)
+            }
+            .map_err(|e| e.to_string())?;
+        }
+        for &(id, shorter) in bounds
+            .parameters(item)
+            .ok_or("missing nominal parameter requirements")?
+        {
+            if shorter == RegionId::STATIC {
+                proof.parameter_outlives(id, shorter, 0)
+            } else {
+                proof.assume_parameter(id, shorter)
+            }
+            .map_err(|e| e.to_string())?;
+        }
+        for &(projection, shorter) in bounds.projections(item) {
+            if shorter == RegionId::STATIC {
+                proof
+                    .require_projection(projection, shorter, ProofScope::ROOT, 0)
+                    .map_err(|e| e.to_string())?;
+            } else {
+                proof.assume_requirements(Requirements {
+                    scalars: ScalarRequirements {
+                        regions: &[],
+                        parameters: &[],
+                    },
+                    projections: &[(projection, shorter)],
+                })?;
+            }
+        }
+        for &(longer, shorter) in explicit.get(&item).into_iter().flatten() {
+            proof.assume(longer, shorter).map_err(|e| e.to_string())?;
+        }
+        let mut queries = Queries::new(&self.facts.types, bounds, &self.facts.lifetimes.callables);
+        for predicate in self.facts.generics.predicates_in_scope(owner) {
+            if let Bound::Outlives(shorter) = predicate.value.bound {
+                proof.assume_type_outlives(&mut queries, predicate.value.ty, shorter)?;
+            }
+        }
+        proof.solve().map_err(|e| e.to_string())?;
         Ok(())
     }
 }

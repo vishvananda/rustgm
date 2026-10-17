@@ -77,7 +77,7 @@ fn mutually_recursive_templates_remap_both_parameter_and_lifetime_slots() -> Tes
         fixture.define(owner, &[next, field])?;
     }
     let before = fixture.types.len();
-    let bounds = Bounds::infer(&fixture.types, &fixture.definitions, &[])?;
+    let bounds = Bounds::infer(&mut fixture.types, &fixture.definitions, &[])?;
     for (owner, (t, u)) in (0..).zip(ids) {
         let mut actual = bounds
             .parameters(ItemId(owner))
@@ -112,7 +112,7 @@ fn concrete_argument_requirements_keep_nested_referents_and_zero_array_types() -
         0,
         &[Argument::Lifetime(RegionId::STATIC), Argument::Type(empty)],
     )?;
-    let bounds = Bounds::infer(&fixture.types, &fixture.definitions, &[])?;
+    let bounds = Bounds::infer(&mut fixture.types, &fixture.definitions, &[])?;
     assert_eq!(bounds.parameters(ItemId(0)), Some([(id, a)].as_slice()));
     let templates = Templates::default();
     let mut queries = Queries::new(&fixture.types, &bounds, &templates);
@@ -146,7 +146,7 @@ fn declared_type_bounds_propagate_even_without_a_reference_field() -> TestResult
         },
     )];
     let bounds =
-        Bounds::infer_with_predicates(&fixture.types, &fixture.definitions, &[], declared)?;
+        Bounds::infer_with_predicates(&mut fixture.types, &fixture.definitions, &[], declared)?;
     assert_eq!(
         bounds.get(ItemId(1)),
         Some([(a, RegionId::STATIC)].as_slice())
@@ -188,7 +188,7 @@ fn forward_dependencies_propagate_once_without_instantiating_fields() -> TestRes
         fixture.define(owner, &[field])?;
     }
     let before = fixture.types.len();
-    let bounds = Bounds::infer(&fixture.types, &fixture.definitions, &[])?;
+    let bounds = Bounds::infer(&mut fixture.types, &fixture.definitions, &[])?;
     for (item, id) in (0..).zip(ids) {
         assert_eq!(bounds.parameters(ItemId(item)), Some([(id, a)].as_slice()));
     }

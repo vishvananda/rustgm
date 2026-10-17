@@ -367,9 +367,8 @@ result lifetime controls: nine accepted programs also execute through CPPGM and
 rustc, and eight invalid programs remain rejected. `outlives_verification.rs` and
 `opaque_outlives.rs` check conditional proofs against independent finite-set
 models, actual binder scopes and runtime extents. The original captured
-function-pointer shape gap now has coverage in `captured_shapes.rs`. Nominal
-projected-template substitution and projected destructor contracts remain
-explicit implementation boundaries.
+function-pointer shape gap now has coverage in `captured_shapes.rs`. Projected destructor contracts remain an explicit implementation boundary.
+Nominal projected-template substitution now has coverage below.
 
 `referent_bounds.rs` adds four independently object-qualified controls for
 references inside projection inputs. A locally bound function-pointer lifetime
@@ -391,6 +390,16 @@ identity, independent lifetime equality, complete mixed inputs, local binder
 isolation and a bounded 10,000-level shared graph. These close the stored sibling
 callback gap. A valid locally bound projection still needs a separate callable
 formation proof contract; it is not classified as a language-invalid fixture.
+
+`field_outlives.rs` adds six typed invariants for projected nominal lifetime
+contracts: complete mixed arguments through recursive uses, requested preparation,
+hidden obligations, output/input separation, callable scopes, and bounded shared
+and chained graphs. `field_results.rs` adds twelve independently object-qualified
+source controls (nine accepted, three rejected), including three CPPGM/rustc
+executions. The invalid escaping reference and output-to-input bound controls reach
+lifetime proofs. Owned projected-field layout, explicit nominal result-static
+predicates and trait-declared associated lifetime bounds remain separate valid
+unsupported investigations; none is treated as a language-invalid fixture.
 
 ## Storage and cleanup
 

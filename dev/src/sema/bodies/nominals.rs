@@ -170,7 +170,9 @@ impl Checker<'_> {
             .infer
             .instantiate_with(&mut self.facts.types, ty, &mut fields.parameters)
             .map_err(|e| self.error(node, e))?;
-        if self.projections.active() {
+        if self.facts.types.contains_projections(template) == Some(true)
+            || self.projections.active()
+        {
             self.defer_normalization(node, crate::types::lifetime_proof::ScopeId::ROOT, term)?;
         }
         Ok(term)

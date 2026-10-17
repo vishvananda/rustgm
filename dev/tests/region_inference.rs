@@ -521,7 +521,7 @@ fn item_templates_preserve_formal_identity_even_when_original_arguments_are_equa
 fn fresh_callable_types_retain_their_declarations_well_formedness_requirements()
 -> Result<(), Box<dyn std::error::Error>> {
     use rustgm::types::outlives::{Bounds, Queries};
-    let (_, facts) =
+    let (_, mut facts) =
         semantic::analyze("fn g<'a:'static>()->&'a u8{loop{}}fn f(){let p=g::<'static>;}")?;
     let converted = facts
         .coercions
@@ -542,11 +542,12 @@ fn fresh_callable_types_retain_their_declarations_well_formedness_requirements()
         .ok_or("missing inferred arguments")?;
     assert_eq!(arguments.len(), 1);
     assert_ne!(arguments[0], RegionId::STATIC);
-    let bounds = Bounds::infer(&facts.types, &facts.aggregates, &[])?;
+    let region = arguments[0];
+    let bounds = Bounds::infer(&mut facts.types, &facts.aggregates, &[])?;
     let mut queries = Queries::new(&facts.types, &bounds, &facts.lifetimes.callables);
     assert_eq!(
         queries.requirements(converted.expected)?,
-        &[(arguments[0], RegionId::STATIC)]
+        &[(region, RegionId::STATIC)]
     );
     Ok(())
 }

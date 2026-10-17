@@ -1,7 +1,7 @@
 //! Finite nominal requirements propagate through argument substitutions, never field expansion.
 use super::{
-    Argument, ComponentKind, HashMap, HashSet, ItemId, Pair, ParameterPair, RegionId, Scan, Store,
-    Use, free, useful,
+    Argument, ComponentKind, HashMap, HashSet, ItemId, Pair, ParameterPair, ProjectionPair,
+    RegionId, Scan, Store, Use, free, useful,
 };
 use crate::types::{
     TypeId,
@@ -9,7 +9,11 @@ use crate::types::{
     parameters::predicates::{Bound, Predicate},
 };
 
-fn region(types: &Store, use_: Use, region: RegionId) -> Result<Option<RegionId>, &'static str> {
+pub(super) fn region(
+    types: &Store,
+    use_: Use,
+    region: RegionId,
+) -> Result<Option<RegionId>, &'static str> {
     if region == RegionId::STATIC {
         return Ok(Some(region));
     }
@@ -96,6 +100,7 @@ impl Scan {
 enum Requirement {
     Region(Pair),
     Parameter(ParameterPair),
+    Projection(ProjectionPair),
 }
 #[derive(Default)]
 struct Inferred {
@@ -105,6 +110,7 @@ struct Inferred {
 #[derive(Default)]
 pub struct Bounds {
     items: HashMap<ItemId, Inferred>,
+    pub(super) projected: Option<Box<super::instances::Projected>>,
     pub steps: usize,
 }
 impl Bounds {
@@ -112,7 +118,7 @@ impl Bounds {
     /// # Errors
     /// Rejects malformed templates and exhausted propagation work.
     pub fn infer(
-        types: &Store,
+        types: &mut Store,
         definitions: &Definitions,
         explicit: &[(ItemId, Pair)],
     ) -> Result<Self, &'static str> {
@@ -123,7 +129,7 @@ impl Bounds {
     /// # Errors
     /// Rejects malformed templates and exhausted propagation work.
     pub fn infer_with_predicates(
-        types: &Store,
+        types: &mut Store,
         definitions: &Definitions,
         explicit: &[(ItemId, Pair)],
         predicates: impl IntoIterator<Item = (ItemId, Predicate)>,
@@ -143,7 +149,7 @@ impl Bounds {
                     inference.scan.visit(types, ty)?;
                 }
             }
-            inference.enqueue(definition.item)?;
+            inference.enqueue(types, definition.item)?;
             for &use_ in &inference.scan.uses {
                 inference.scan.budget.charge()?;
                 if use_.callable {
@@ -159,14 +165,14 @@ impl Bounds {
         for &(item, pair) in explicit {
             inference.scan.clear();
             inference.scan.record(pair);
-            inference.enqueue(item)?;
+            inference.enqueue(types, item)?;
         }
         for (item, predicate) in predicates {
             inference.scan.budget.charge()?;
             if let Bound::Outlives(shorter) = predicate.bound {
                 inference.scan.clear();
                 inference.scan.type_bound(types, predicate.ty, shorter, 0)?;
-                inference.enqueue(item)?;
+                inference.enqueue(types, item)?;
             }
         }
         inference.solve(types)
@@ -187,37 +193,44 @@ struct Inference {
     work: Vec<(ItemId, Requirement)>,
     reverse: HashMap<ItemId, Vec<(ItemId, Use)>>,
     scan: Scan,
+    projected: Option<Box<super::instances::Mapping>>,
 }
 impl Inference {
-    fn enqueue(&mut self, owner: ItemId) -> Result<(), &'static str> {
-        if !self.scan.projection_pairs.is_empty() {
-            return Err("nominal projected outlives templates require scoped substitution");
-        }
-        for requirement in self
-            .scan
-            .pairs
-            .iter()
-            .copied()
-            .map(Requirement::Region)
-            .chain(
-                self.scan
-                    .parameter_pairs
-                    .iter()
-                    .copied()
-                    .map(Requirement::Parameter),
-            )
-        {
-            self.scan.budget.charge()?;
-            if self.unique.insert((owner, requirement)) {
-                self.scan
-                    .budget
-                    .pending(self.work.len().saturating_add(1))?;
-                self.work.push((owner, requirement));
+    fn enqueue(&mut self, types: &mut Store, owner: ItemId) -> Result<(), &'static str> {
+        for index in 0..self.scan.projection_pairs.len() {
+            let (projection, shorter) = self.scan.projection_pairs[index];
+            // Predicates mentioning a surrounding callable local remain deferred.
+            // Captured predicates lift to the nominal owner's original scope.
+            if let Some(projection) = self.projected.get_or_insert_with(Default::default).lift(
+                types,
+                projection,
+                &mut self.scan.budget,
+            )? {
+                self.push(owner, Requirement::Projection((projection, shorter)))?;
             }
+        }
+        for index in 0..self.scan.pairs.len() {
+            self.push(owner, Requirement::Region(self.scan.pairs[index]))?;
+        }
+        for index in 0..self.scan.parameter_pairs.len() {
+            self.push(
+                owner,
+                Requirement::Parameter(self.scan.parameter_pairs[index]),
+            )?;
         }
         Ok(())
     }
-    fn solve(mut self, types: &Store) -> Result<Bounds, &'static str> {
+    fn push(&mut self, owner: ItemId, requirement: Requirement) -> Result<(), &'static str> {
+        self.scan.budget.charge()?;
+        if self.unique.insert((owner, requirement)) {
+            self.scan
+                .budget
+                .pending(self.work.len().saturating_add(1))?;
+            self.work.push((owner, requirement));
+        }
+        Ok(())
+    }
+    fn solve(mut self, types: &mut Store) -> Result<Bounds, &'static str> {
         while let Some((item, requirement)) = self.work.pop() {
             self.scan.budget.charge()?;
             let output = self
@@ -228,6 +241,14 @@ impl Inference {
             match requirement {
                 Requirement::Region(pair) => output.regions.push(pair),
                 Requirement::Parameter(pair) => output.parameters.push(pair),
+                Requirement::Projection(pair) => self
+                    .result
+                    .projected
+                    .get_or_insert_with(Default::default)
+                    .templates
+                    .entry(item)
+                    .or_default()
+                    .push(pair),
             }
             for index in 0..self.reverse.get(&item).map_or(0, Vec::len) {
                 let (owner, use_) = self.reverse[&item][index];
@@ -240,8 +261,17 @@ impl Inference {
                         }
                     }
                     Requirement::Parameter(pair) => self.scan.apply_parameter(types, use_, pair)?,
+                    Requirement::Projection((projection, shorter)) => {
+                        if let Some(shorter) = region(types, use_, shorter)? {
+                            let projection = self
+                                .projected
+                                .get_or_insert_with(Default::default)
+                                .apply(types, use_, projection, &mut self.scan.budget)?;
+                            self.scan.projection_pairs.push((projection, shorter));
+                        }
+                    }
                 }
-                self.enqueue(owner)?;
+                self.enqueue(types, owner)?;
             }
         }
         self.result.steps = self.scan.budget.0;

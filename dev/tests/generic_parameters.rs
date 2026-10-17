@@ -266,7 +266,7 @@ fn closed_proofs_require_generic_environments_instead_of_fabricated_facts()
             .get(&store, &definitions, parameter)
             .is_err()
     );
-    let bounds = Bounds::infer(&store, &definitions, &[])?;
+    let bounds = Bounds::infer(&mut store, &definitions, &[])?;
     let callables = Templates::default();
     assert!(
         Queries::new(&store, &bounds, &callables)

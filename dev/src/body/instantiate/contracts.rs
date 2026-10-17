@@ -55,6 +55,14 @@ pub(super) fn specialize(
     // Instantiation sites have checked argument well-formedness. Retain those
     // structural relations as assumptions in this separate proof universe,
     // including arguments absent from the signature's runtime parameters.
+    for &(_, argument) in &inputs.bindings {
+        if let Argument::Type(ty) = argument {
+            facts
+                .lifetimes
+                .nominal_requirements
+                .prepare(&mut facts.types, ty)?;
+        }
+    }
     let mut queries = Queries::new(
         &facts.types,
         &facts.lifetimes.nominal_requirements,

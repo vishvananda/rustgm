@@ -1,6 +1,7 @@
 //! Well-formedness requirements over typed templates, with bounded recursive propagation.
 mod components;
 mod contracts;
+mod instances;
 pub use components::LiveRegions;
 pub(crate) use components::TypeComponents;
 use components::{ComponentKind, Components};
@@ -84,6 +85,11 @@ impl Budget {
         if self.0.saturating_add(count) > LIMIT {
             return Err("type outlives work budget exceeded");
         }
+        Ok(())
+    }
+    fn work(&mut self, count: usize) -> Result<(), &'static str> {
+        self.pending(count)?;
+        self.0 += count;
         Ok(())
     }
 }
@@ -362,8 +368,11 @@ impl<'a> Queries<'a> {
         {
             return Err("generic outlives checking requires a parameter environment");
         }
-        self.symbolic_requirements(ty)
-            .map(|requirements| requirements.scalars.regions)
+        let requirements = self.symbolic_requirements(ty)?;
+        if !requirements.projections.is_empty() || !requirements.scalars.parameters.is_empty() {
+            return Err("nominal outlives checking requires a parameter environment");
+        }
+        Ok(requirements.scalars.regions)
     }
     /// Decompose a type-outlives subject without assuming any of its components.
     /// # Errors
@@ -419,6 +428,21 @@ impl<'a> Queries<'a> {
                         .ok_or("missing nominal parameter requirements")?
                     {
                         self.state.scan.apply_parameter(self.types, use_, pair)?;
+                    }
+                    for &(projection, shorter) in self.bounds.instance(use_.item, use_.arguments)? {
+                        self.state.scan.budget.charge()?;
+                        if let Some(shorter) = free(shorter, use_.depth)? {
+                            let pair = (
+                                Projection {
+                                    depth: use_.depth,
+                                    ..projection
+                                },
+                                shorter,
+                            );
+                            if self.state.scan.unique_projections.insert(pair) {
+                                self.state.scan.projection_pairs.push(pair);
+                            }
+                        }
                     }
                 }
             }

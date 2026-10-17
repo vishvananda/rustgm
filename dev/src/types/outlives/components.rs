@@ -32,6 +32,9 @@ pub(crate) struct TypeComponents {
     budget: Budget,
 }
 impl TypeComponents {
+    pub(crate) const fn steps(&self) -> usize {
+        self.budget.0
+    }
     pub(crate) fn captures(
         &mut self,
         types: &Store,

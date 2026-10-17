@@ -31,6 +31,11 @@ pub fn build(
         .bodies;
     body::templates::constructors(report, facts, &mut templates, &mut inputs)?;
     body::promote::analyze_templates(report, facts, &mut templates)?;
+    for input in &inputs {
+        input
+            .prepare_outlives(&mut facts.types, &mut facts.lifetimes.nominal_requirements)
+            .map_err(|e| diagnostic(report, Some(input.source), e.into()))?;
+    }
     let contracts = Contracts {
         bodies: inputs,
         callables: &facts.lifetimes.callables,

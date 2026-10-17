@@ -7464,3 +7464,61 @@ observed throughput shifts. All original samples remain available for a future
 measurement in stable conditions. New stored-callback full-view medians were
 about 16.2/58.1 ms at 64/256 functions, and nested callbacks 17.2/60.0 ms; these
 are observations, not a resolved performance gate for the noisy control.
+
+
+## Inferred projected nominal lifetime contracts
+
+A field such as `&'a <T as A>::Out` now contributes the result predicate
+`<T as A>::Out: 'a` to its nominal declaration. A bounded worklist propagates
+that opaque requirement through nested and recursive nominal uses, retaining
+complete type, lifetime and const arguments. Joint substitutions share work;
+field instances are not expanded. Captured callable inputs lift out of surrounding
+binders, including empty binders; predicates mentioning local callable inputs
+remain deferred and grant no outer assumptions.
+
+Requested canonical roots prepare their projected requirements before read-only
+proofs. Generated constructor templates and specialized body contracts participate
+in that preparation. Missing preparation fails explicitly, and scalar-only queries
+reject hidden projection obligations. Ordinary nominal contracts allocate no
+projected preparation state. Static inferred obligations are checked against the
+owning declared environment rather than assumed. Field inference also schedules
+projection normalization when the field itself needs it, independently of pending
+work elsewhere in the body.
+
+Six typed tests check full recursive substitution, cache behavior, hidden debts,
+output/input separation, binder coordinates, and 2,048-node shared/dependency
+graphs. Twelve source cases were independently object-qualified before permanent
+expectations were adopted: nine valid and three invalid. Three accepted programs
+have native execution tests. The escaping reference now reaches a lifetime failure;
+previously it stopped at an unsupported projection gate. Evidence is under
+`obj/pa20-work/nominal-result-contracts-v1/`.
+
+Other qualified probes remain valid unsupported work: owned projected-field
+layout, a short-lived input with an independently static projected output,
+explicit nominal result-static predicates and trait-declared associated lifetime
+bounds. The last two stop at existing declaration scheduling/elaboration gates.
+They are retained as investigations, not rejection fixtures. This checkpoint
+does not promote PA20 or PA21 or resolve projected destruction contracts.
+
+Validation passed 1,158 release tests, all 4,864 PA1–PA19 text fixtures and all
+61 explicit maintainer native tests. Backend and upstream qualification passed;
+rustfmt, Clippy all/pedantic with warnings denied, 711 audited Rust files and
+33 harness tests passed. The 714-file source/configuration snapshot remained
+unchanged through all 25 validation commands. No course oracle was regenerated.
+The first lint/audit attempts identified overly terse test variable names and an
+overloaded `nominal` filename prefix. The new `field_outlives.rs` and
+`field_results.rs` tests name their responsibility; no exemptions were added.
+
+Performance used the immutable `c0cf20e` baseline and final candidate: twelve
+actual count/full comparisons and four identical-candidate jobs for new nominal
+support. All four generated scaling sources passed pinned rustc object
+qualification; the ordinary controls also passed the baseline. A/A calibration
+and five paired ABBA blocks retained 416 study observations and 64 full-output
+qualifications, with all output and source/input/binary/runner hashes equal.
+Actual paired medians ranged from -4.832% to +2.010%; none crossed the predeclared
++3.5% confirmation threshold. A/A spread reached 12.82%, so these observations
+make no speedup or blanket no-regression claim. New projected-nominal full-view
+medians were about 14.3/38.9 ms at 64/256 functions. Earlier scoped-result and
+runtime-extents timing concerns remain separate; this new baseline comparison
+does not resolve them. Validation cleanup removed 4,802 generated files, about
+5.10 GiB, with its deletion receipt retained under `obj/cleanup/`.

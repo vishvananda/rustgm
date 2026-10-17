@@ -13,6 +13,11 @@ impl Checker<'_> {
         ty: TypeId,
         checked: &mut crate::sema::nominals::Requirements,
     ) -> Result<(), Error> {
+        self.facts
+            .lifetimes
+            .nominal_requirements
+            .prepare(&mut self.facts.types, ty)
+            .map_err(|e| self.error(node, e))?;
         if !self.facts.generics.has_nominal_requirements {
             return Ok(());
         }

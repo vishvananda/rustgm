@@ -56,6 +56,12 @@ impl Builder {
         input: &Contract,
         requirements: Option<drops::Requirements>,
     ) -> Result<usize, borrow::Error> {
+        input
+            .prepare_outlives(&mut facts.types, &mut facts.lifetimes.nominal_requirements)
+            .map_err(|message| borrow::Error {
+                node: Some(input.source),
+                message: message.into(),
+            })?;
         let mut queries = std::mem::take(&mut self.queries).attach(
             &facts.types,
             &facts.lifetimes.nominal_requirements,

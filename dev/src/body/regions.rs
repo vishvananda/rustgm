@@ -45,6 +45,24 @@ pub struct Contract {
     pub proofs: Vec<(NodeKey, crate::types::lifetime_proof::Obligations)>,
 }
 impl Contract {
+    /// Materialize demanded nominal requirements before borrowing immutable proof facts.
+    /// # Errors
+    /// Rejects malformed types and exhausted nominal preparation resources.
+    pub fn prepare_outlives(
+        &self,
+        types: &mut crate::types::Store,
+        bounds: &mut crate::types::outlives::Bounds,
+    ) -> Result<(), &'static str> {
+        if let Some(signature) = self.signature {
+            bounds.prepare(types, signature)?;
+        }
+        for obligation in &self.obligations {
+            if let Kind::WellFormed(ty) = obligation.kind {
+                bounds.prepare(types, ty)?;
+            }
+        }
+        Ok(())
+    }
     fn constant(source: NodeKey) -> Self {
         Self {
             source,

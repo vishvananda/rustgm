@@ -115,6 +115,10 @@ impl Proof {
         facts: &mut Declarations,
         ty: TypeId,
     ) -> Result<crate::types::parameters::shape::Properties, &'static str> {
+        facts
+            .lifetimes
+            .nominal_requirements
+            .prepare(&mut facts.types, ty)?;
         if facts.generics.has_nominal_requirements {
             for requirement in requirements(facts, ty, &mut self.checked)? {
                 let valid = self.prove(facts, requirement)?;
