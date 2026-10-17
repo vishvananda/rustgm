@@ -21,6 +21,8 @@ mod member_lifetimes;
 mod native;
 #[path = "associated_declarations/overrides.rs"]
 mod overrides;
+#[path = "associated_declarations/proof_streams.rs"]
+mod proof_streams;
 #[path = "associated_declarations/readiness.rs"]
 mod readiness;
 #[path = "associated_declarations/result_contracts.rs"]

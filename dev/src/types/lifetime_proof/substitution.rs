@@ -57,7 +57,7 @@ impl Obligations {
 
     /// Reserve real private identities before introducing any actual caller arguments.
     pub(crate) fn rebase(&mut self, store: &mut Store, first: u32) -> Result<usize, &'static str> {
-        let old = self.regions.clone();
+        let old = self.template_interval()?;
         let mut fold = Bound::rebase_free_regions(old.clone(), first)?;
         self.substitute(store, &mut fold)?;
         self.regions = first..first + (old.end - old.start);

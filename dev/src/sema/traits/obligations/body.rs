@@ -14,7 +14,9 @@ impl Obligations {
         body: NodeKey,
         source: NodeKey,
     ) -> Result<(), &'static str> {
-        if usize::try_from(self.regions.start).ok() != facts.body_regions.len().checked_add(1) {
+        if self.has_gaps()
+            || usize::try_from(self.regions.start).ok() != facts.body_regions.len().checked_add(1)
+        {
             return Err("trait proof has foreign body region identities");
         }
         let region = BodyRegion {

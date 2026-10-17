@@ -58,6 +58,9 @@ impl Checker<'_> {
     ) -> Result<Sink, Error> {
         if let regions::Position::Local(body) | regions::Position::Constant(body) = context.position
         {
+            if usize::try_from(first).ok() != self.facts.body_regions.len().checked_add(1) {
+                return Err(self.error(key, "scoped proof has foreign body region identities"));
+            }
             if context
                 .binder
                 .is_some_and(|binder| self.regions.parent(binder).is_some())
@@ -70,9 +73,7 @@ impl Checker<'_> {
             if matches!(context.position, regions::Position::Constant(_)) {
                 self.facts.constant_annotation_bodies.insert(body);
             }
-            if let Some(&index) = self.projections.body_sinks.get(&body)
-                && self.facts.quantified_proofs[index].proof.regions.end == first
-            {
+            if let Some(&index) = self.projections.body_sinks.get(&body) {
                 return Ok(Sink::Body(index));
             }
             let index = self.facts.quantified_proofs.len();
@@ -113,6 +114,9 @@ impl Checker<'_> {
             Sink::Declaration(index) => &mut self.projections.proofs[index].2,
             Sink::Body(index) => &mut self.facts.quantified_proofs[index].proof,
         };
+        if let Sink::Body(_) = sink {
+            destination.resume_at(proof.regions.start)?;
+        }
         let root = match query.ambient {
             Ambient::Root => ScopeId::ROOT,
             Ambient::Alias { plan, scope } => self

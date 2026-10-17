@@ -7,6 +7,7 @@ impl Obligations {
     /// Restore only components anchored in the caller, preserving every equation
     /// in this proof. `require` must still discharge them before publication.
     pub(crate) fn restoration(&self) -> Result<Bound, &'static str> {
+        self.template_interval()?;
         if self.equalities.len() > 1_000_000 {
             return Err("lifetime restoration work budget exceeded");
         }

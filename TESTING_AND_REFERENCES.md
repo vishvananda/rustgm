@@ -292,6 +292,16 @@ equality rules must retain the full selector. The nine independently qualified
 cases in `associated_declarations/canonical_queries.rs` include six native
 positives, erased formation debts, missing/reversed lifetime relationships,
 nonidentical result lifetimes, aliases and both kinds of associated equality.
+`associated_declarations/proof_streams.rs` qualifies eight outcomes for callable
+projections whose selected definitions demand nested associated constants. Four
+accepted cases execute through rustc and CPPGM. An early constant argument forces
+actual interleaving, while the same projected callable alias is also used in the
+ordinary body. Widths 4, 16 and 48 retain two proof objects and 16, 64 and 192
+callable scopes, crossing 28, 112 and 336 foreign region identities respectively.
+The test requires both interleaving and linear retained scope storage; late-only
+annotations cannot establish that contract. Unit tests check private ownership,
+caller substitution, sibling binders, template rebasing rejection and a foreign
+interval exceeding 500 million IDs that must allocate no private variables.
 The 37 independently qualified cases in
 `associated_declarations/field_normalization.rs` include 28 native positives for
 projected nominal fields: records, tuples, enums, nested and distinct instances,

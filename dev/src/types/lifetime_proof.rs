@@ -2,6 +2,7 @@
 mod graft;
 mod quantified;
 mod scopes;
+mod stream;
 mod substitution;
 use crate::types::{
     RegionId, TypeId,
@@ -15,6 +16,7 @@ use std::ops::Range;
 
 #[derive(Clone)]
 pub struct Obligations {
+    /// Allocation envelope. Streamed body evidence can exclude foreign intervals.
     pub regions: Range<u32>,
     pub equalities: Vec<Pair>,
     pub outlives: Vec<Pair>,
@@ -36,9 +38,14 @@ impl Obligations {
     pub fn has_quantified(&self) -> bool {
         self.quantified.is_some()
     }
+    /// Retained lexical scopes, excluding the caller's root scope.
+    #[must_use]
+    pub fn scope_count(&self) -> usize {
+        self.quantified.as_ref().map_or(0, |q| q.scopes.len())
+    }
     #[must_use]
     pub fn is_empty(&self) -> bool {
-        self.regions.is_empty()
+        self.owned_regions().next().is_none()
             && self.equalities.is_empty()
             && self.outlives.is_empty()
             && self.types.is_empty()
@@ -83,9 +90,9 @@ impl Obligations {
         source: u32,
     ) -> Result<(), String> {
         if let Some(quantified) = &self.quantified {
-            quantified.require(self.regions.clone(), constraints, queries, source)?;
+            quantified.require(self, constraints, queries, source)?;
         } else {
-            for id in self.regions.clone() {
+            for id in self.owned_regions().flatten() {
                 constraints
                     .variable(RegionId(id))
                     .map_err(|e| e.to_string())?;

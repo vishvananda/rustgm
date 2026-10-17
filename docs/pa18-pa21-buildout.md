@@ -9245,3 +9245,65 @@ large, so no tight wall-time bound is claimed. The change retains a small measur
 overhead for resumable inference and exact readiness. It does not erase the
 existing dependency-closure scaling improvement. All outputs and source, binary
 and input hashes agree; `performance-review.json` retains the combined review.
+
+
+### Interleaved callable proof allocations
+
+Declaration normalization now keeps its body proof and binder mapping when a
+selected associated definition requires nested declaration work. Previously,
+intervening global region allocations forced a new proof sink and reset the
+query's binder mapping. Repeated pauses could reconstruct progressively longer
+prefixes of the same callable scope plan.
+
+The retained proof records foreign allocation intervals lazily in its existing
+quantified storage. Ordinary proof objects keep their previous size. Resuming
+appends or coalesces only the new interval; lifetime checking merges owned
+intervals and scoped blocks in one forward pass. A numeric envelope never grants
+ownership of its gaps. Actual caller substitution preserves the segments, while
+fresh declaration-template rebasing, grafting and restoration reject streamed
+body evidence. Publication checks the real global allocator frontier. Selection
+permissions and final lifetime validation are unchanged.
+
+The source regression forms a tuple of projected callable types inside an early
+constant argument. Each selected definition types a separate associated constant,
+which allocates regions under another body. A late-only annotation did not exercise
+this boundary; the permanent test explicitly requires foreign allocations inside
+the retained envelope. Widths 4, 16 and 48 retain exactly two proof objects with
+16, 64 and 192 scopes, crossing 28, 112 and 336 foreign region IDs. Eight declared
+source outcomes are independently checked; all four accepted cases execute with
+rustc and CPPGM. Seven ownership units cover gaps, caller substitution, sibling
+scopes, rejected template operations, repeated resumptions and a gap exceeding
+500 million IDs with only two owned variables.
+
+This is a prerequisite for resumable body projection selection. It does not yet
+bridge a body's missing associated definition request, extend quantified instance
+projection debts, or complete PA20's assignment contract.
+
+Full validation passed 27 command gates: 1,226 regular maintainer tests, 81 native
+groups, all 4,871 PA1–19 cases, strict Clippy, formatting, file/architecture audits,
+harness, backend and upstream checks. The audit covers 760 Rust files with no
+findings; all 763 frozen source/configuration hashes and 14,613 oracle sidecars
+are unchanged. PA20–25 still reject as planned stages. Evidence and immutable
+snapshots are in `obj/pa20-work/streamed-proof-final`.
+
+The frozen comparison against published `71498f8` profiles eight existing controls
+and the new widths 4, 16 and 48. Observed existing-control instruction changes
+range from -0.079% to +0.184%. The new family uses 8,836,034, 26,353,389 and
+72,291,505 instructions, versus 8,843,784, 26,512,294 and 73,692,936 previously:
+reductions of 0.09%, 0.60% and 1.90%. The source work invariant establishes linear
+retained scope storage; these total-frontend measurements do not establish that
+every pass is linear.
+
+Fifteen paired timing jobs retain 390 study and 60 full-output qualification
+observations, each with four executions (1,560 study and 240 qualification
+invocations). Same-binary paired medians range from -3.54% to +12.05%, with
+calibration spreads reaching 130%. Wall-time results are inconclusive under these
+conditions; no precise wall-time speedup or regression is claimed. Every full/count
+output comparison and input/source/binary hash check agrees. Raw observations,
+instruction profiles and `performance-review.json` retain the complete evidence.
+
+The eight exact frozen source files were also qualified independently after the
+study: four positives execute through rustc and CPPGM, and four negatives reject
+in both frontends. Their full LowIR matches both the published baseline and the
+study's full-output hashes. Generated test and measurement executables were pruned;
+only the current comparison pins, source snapshots and evidence are retained.

@@ -88,8 +88,12 @@ impl Checker<'_> {
     ) -> Result<crate::sema::alias_requirements::Expansion, Error> {
         let mut expansion = contract.expansion;
         let plan = expansion.proof.scope_plan();
-        let mut fresh = Bound::rebase_free_regions(expansion.proof.regions.clone(), first)
+        let interval = expansion
+            .proof
+            .template_interval()
             .map_err(|e| self.error(node, e))?;
+        let mut fresh =
+            Bound::rebase_free_regions(interval, first).map_err(|e| self.error(node, e))?;
         let rebasing = expansion
             .proof
             .rebase(&mut self.facts.types, first)

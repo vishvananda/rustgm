@@ -10,6 +10,7 @@ impl Obligations {
         root: ScopeId,
     ) -> Result<Vec<ScopeId>, &'static str> {
         self.scope_depth(root)?;
+        proof.template_interval()?;
         if proof.regions.start != self.regions.end || proof.regions.end < proof.regions.start {
             return Err("invalid grafted proof interval");
         }

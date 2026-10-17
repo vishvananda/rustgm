@@ -27,6 +27,7 @@ pub(super) struct Block {
 pub(super) struct Quantified {
     pub scopes: Arc<Vec<Binder>>,
     pub blocks: Vec<Block>,
+    pub gaps: Vec<Range<u32>>,
 }
 impl Quantified {
     pub fn is_empty(&self) -> bool {
@@ -48,11 +49,14 @@ impl Quantified {
         }
         Arc::make_mut(&mut self.scopes).extend(incoming);
         self.blocks.extend(other.blocks);
+        for gap in other.gaps {
+            self.exclude(gap);
+        }
         Ok(())
     }
     pub fn require(
         &self,
-        regions: Range<u32>,
+        proof: &Obligations,
         constraints: &mut Constraints<'_>,
         queries: &mut Queries<'_>,
         source: u32,
@@ -69,19 +73,43 @@ impl Quantified {
                     .map_err(|e| e.to_string())?,
             );
         }
-        let mut next = regions.start;
+        let mut owned = proof.owned_regions().peekable();
+        let mut next = proof.regions.start;
         for block in &self.blocks {
-            if block.proof.regions.start < next || block.proof.regions.end > regions.end {
+            if block.proof.regions.start < next || block.proof.regions.end > proof.regions.end {
                 return Err("quantified proof intervals disagree".into());
             }
-            for id in next..block.proof.regions.start {
-                constraints
-                    .variable(RegionId(id))
-                    .map_err(|e| e.to_string())?;
+            while let Some(interval) = owned.peek_mut()
+                && interval.start < block.proof.regions.start
+            {
+                let end = interval.end.min(block.proof.regions.start);
+                for id in interval.start..end {
+                    constraints
+                        .variable(RegionId(id))
+                        .map_err(|e| e.to_string())?;
+                }
+                interval.start = end;
+                if interval.start == interval.end {
+                    owned.next();
+                }
             }
             let scope = *scopes
                 .get(block.scope.0 as usize)
                 .ok_or("invalid quantified proof scope")?;
+            if !block.proof.regions.is_empty() {
+                let interval = owned
+                    .peek_mut()
+                    .ok_or("unowned quantified proof interval")?;
+                if interval.start != block.proof.regions.start
+                    || interval.end < block.proof.regions.end
+                {
+                    return Err("unowned quantified proof interval".into());
+                }
+                interval.start = block.proof.regions.end;
+                if interval.start == interval.end {
+                    owned.next();
+                }
+            }
             for id in block.proof.regions.clone() {
                 constraints
                     .scoped_variable(RegionId(id), scope)
@@ -89,7 +117,7 @@ impl Quantified {
             }
             next = block.proof.regions.end;
         }
-        for id in next..regions.end {
+        for id in owned.flatten() {
             constraints
                 .variable(RegionId(id))
                 .map_err(|e| e.to_string())?;
@@ -150,6 +178,7 @@ impl Obligations {
             return self.extend(proof);
         }
         if proof.has_quantified()
+            || proof.has_gaps()
             || proof.regions.start != self.regions.end
             || proof.regions.end < proof.regions.start
         {

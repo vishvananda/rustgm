@@ -73,7 +73,7 @@ fn witnesses(
         let region = universal(index)?;
         mapping.insert(region, region);
     }
-    for id in proof.regions.clone() {
+    for id in proof.owned_regions().flatten() {
         mapping.insert(RegionId(id), universal(result.universals)?);
         result.universals += 1;
     }

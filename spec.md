@@ -1184,6 +1184,17 @@ intervals and the ownership of nested witnesses. Synchronous body normalization
 reserves intervals in its exclusive local proof before publishing the contiguous
 result once; it uses validated implementations and the existing lifetime gate.
 
+Declaration normalization can publish selected evidence before waiting for an
+associated definition whose dependencies allocate regions in other bodies. Keep
+the same body proof and query-to-binder map across those waits. Record foreign
+allocation intervals explicitly; an enclosing numeric range does not own its
+holes. Append only newly allocated evidence and exclude those holes when building
+the lifetime graph. Traverse owned intervals and scoped blocks together once,
+without rebuilding earlier binder prefixes at every dependency. Keep ordinary
+proof storage unchanged until interleaving actually occurs. Caller substitution
+preserves this ownership; streamed body evidence cannot enter the fresh declaration
+template rebasing or grafting paths.
+
 Projection and trait progress run before numeric fallback and body publication.
 Normalization never substitutes for the original well-formedness proof. Isolated
 method-prefix queries still reject pending projection proofs until that query mode

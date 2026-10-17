@@ -195,8 +195,7 @@ impl Checker<'_> {
             .and_then(|&binder| self.regions.owner(binder))
             .map(|owner| self.projection_scope_owner(owner));
         let mut mapping: HashMap<_, _> = proof
-            .regions
-            .clone()
+            .template_interval()?
             .map(|id| (RegionId(id), RegionId(id)))
             .collect();
         let mut count = 0_u32;

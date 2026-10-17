@@ -13,7 +13,7 @@ impl Obligations {
         if self.has_quantified() {
             return Err("alias direct proof already contains quantifiers");
         }
-        let mut fresh = Bound::rebase_free_regions(self.regions.clone(), first)?;
+        let mut fresh = Bound::rebase_free_regions(self.template_interval()?, first)?;
         let mut result = Self::new(first);
         result.regions.end = first + (self.regions.end - self.regions.start);
         let mut region = |id| parameters.region(fresh.region(id, 0)?, depth);
