@@ -1,4 +1,5 @@
 //! Written parameter bounds name members before the caller's proof environment is complete.
+mod headers;
 use super::{Checker, DefId, Error, NodeKey, Work, regions};
 use crate::types::{
     parameters::predicates::{Bound, Predicate},
@@ -17,6 +18,7 @@ pub(in super::super) struct Seed {
 
 #[derive(Default)]
 pub(super) struct Pending {
+    headers: Option<Box<headers::Headers>>,
     pub(super) members: HashMap<
         (Predicate, crate::resolve::names::NameId),
         Option<crate::types::projection::Application>,
@@ -55,6 +57,7 @@ impl Checker<'_> {
         key: NodeKey,
         subject: DefId,
         context: regions::Context,
+        name: crate::resolve::names::NameId,
     ) -> Result<(), Error> {
         if self.projections.lookup.queries.contains_key(&key) {
             return Err(self.error(key, "cycle in shorthand associated type inputs"));
@@ -68,12 +71,17 @@ impl Checker<'_> {
             owner = self.regions.owner(current);
             binder = self.regions.parent(current);
         }
+        owner = owner.map(|owner| self.projection_scope_owner(owner));
         let mut seeds = Vec::new();
         while let Some(current) = owner {
             if let Some(bounds) = self.projections.lookup.bounds.get(&(current, subject)) {
                 seeds.extend_from_slice(bounds);
             }
             owner = self.facts.generics.parents.get(&current).copied();
+        }
+        if let Some(headers) = &mut self.projections.lookup.headers {
+            headers.reach(name).map_err(|e| Error::at(key.file, 0, e))?;
+            seeds.retain(|seed| headers.reachable[&name].contains(&seed.definition));
         }
         for seed in seeds.iter().rev() {
             self.work.push(Work::ProjectionBound(*seed, false));

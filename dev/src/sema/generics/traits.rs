@@ -38,11 +38,12 @@ impl Generics {
                 .as_mut()
                 .ok_or("missing trait contracts")?
                 .requirements(store, predicate.value)?;
-            steps = steps.saturating_add(1 + requirements.implied.len());
+            steps =
+                steps.saturating_add(1 + requirements.implied.len() + requirements.results.len());
             if steps > 1_000_000 {
                 return Err("supertrait assumption work budget exceeded");
             }
-            for &value in &requirements.implied {
+            for &value in requirements.implied.iter().chain(&requirements.results) {
                 if seen.insert(value) {
                     work.push(Predicate {
                         source: predicate.source,

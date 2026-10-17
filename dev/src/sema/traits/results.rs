@@ -1,4 +1,5 @@
 //! Associated result rules share capture-safe trait argument substitution.
+mod headers;
 mod templates;
 use super::assumptions::Assumptions;
 use crate::{

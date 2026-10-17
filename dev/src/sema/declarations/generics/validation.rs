@@ -24,7 +24,9 @@ impl Checker<'_> {
                 self.validate_equality_bound(predicate, proof)?;
                 continue;
             }
-            let ty = predicate.value.ty;
+            let ty = proof
+                .normalize(&mut self.facts, predicate.value.ty)
+                .map_err(|e| self.error(predicate.source, e))?;
             let well_formed = proof
                 .check(&mut self.facts, ty)
                 .map_err(|e| self.error(predicate.source, e))?

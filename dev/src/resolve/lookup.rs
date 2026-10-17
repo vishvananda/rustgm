@@ -145,7 +145,7 @@ impl Resolver<'_> {
                 ));
             }
             if let Some(binding) = frame.bindings.get(&(name, namespace))
-                && binding.is_lexical(&self.facts.definitions)
+                && binding.is_lexical(&self.facts.definitions, frame.associated)
                 && (barriers == 0
                     || !self.facts.definitions[binding.target.0 as usize]
                         .kind

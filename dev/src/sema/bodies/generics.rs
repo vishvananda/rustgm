@@ -65,11 +65,14 @@ impl Checker<'_> {
         self.bind_method_owner(node, &arguments, &bindings)?;
         self.bind_trait_arguments(node, &arguments, &bindings)?;
         let projected_signature = self.facts.types.contains_projections(signature) == Some(true);
+        let mut substitution =
+            infer::Instantiation::new(&mut self.infer, &self.facts.types, &bindings)
+                .map_err(|e| self.error(node, e))?;
         let signature = self
             .infer
-            .instantiate(&mut self.facts.types, signature, &bindings)
+            .instantiate_with(&mut self.facts.types, signature, &mut substitution)
             .map_err(|e| self.error(node, e))?;
-        if projected_signature || self.projections.active() {
+        if projected_signature || substitution.shifted_projections() || self.projections.active() {
             self.defer_normalization(node, crate::types::lifetime_proof::ScopeId::ROOT, signature)?;
         }
         self.bound_obligations(node, owner, &arguments, &bindings)?;

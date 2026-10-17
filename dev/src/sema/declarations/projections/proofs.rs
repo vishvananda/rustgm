@@ -20,6 +20,7 @@ impl Checker<'_> {
         let mut environment = None;
         while let Some(current) = binder {
             if let Some(owner) = self.regions.owner(current) {
+                let owner = self.projection_scope_owner(owner);
                 environment = self
                     .facts
                     .generics
@@ -191,7 +192,8 @@ impl Checker<'_> {
         }
         let owner = binders
             .last()
-            .and_then(|&binder| self.regions.owner(binder));
+            .and_then(|&binder| self.regions.owner(binder))
+            .map(|owner| self.projection_scope_owner(owner));
         let mut mapping: HashMap<_, _> = proof
             .regions
             .clone()

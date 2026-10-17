@@ -99,6 +99,9 @@ impl Checker<'_> {
             }
         }
         for &requirement in requirements.required.iter().chain(&requirements.implied) {
+            let requirement = proof
+                .normalize_builtin(&mut self.facts, requirement)
+                .map_err(|e| self.error(source, e))?;
             if !matches!(requirement.bound, Bound::Outlives(_))
                 && !proof
                     .prove(&mut self.facts, requirement)

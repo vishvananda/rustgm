@@ -121,11 +121,12 @@ pub struct Binding {
     pub ambiguous: bool,
 }
 impl Binding {
-    /// Variant members are available through a qualified path or import, not
-    /// implicitly in the lexical scope of their enum's discriminants.
-    pub(crate) fn is_lexical(self, definitions: &[Definition]) -> bool {
+    /// Variants and associated type members do not shadow enclosing lexical
+    /// names. Their qualified member lookup uses the scope directly.
+    pub(crate) fn is_lexical(self, definitions: &[Definition], associated: bool) -> bool {
         self.origin != Origin::Direct
-            || definitions[self.target.0 as usize].kind != DefKind::Variant
+            || (definitions[self.target.0 as usize].kind != DefKind::Variant
+                && !(associated && definitions[self.target.0 as usize].kind == DefKind::TypeAlias))
     }
 }
 pub struct Scope {

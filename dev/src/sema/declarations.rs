@@ -63,6 +63,7 @@ enum Work {
     MethodArguments(NodeKey, NodeKey),
     ProjectionPath(NodeKey, regions::Context),
     ImplicitProjection(NodeKey, regions::Context),
+    HeaderProjection(NodeKey, regions::Context),
     ProjectionBound(projections::lookup::Seed, bool),
     ProjectionSelection(NodeKey, crate::types::substitute::Request),
     ProjectionResult(NodeKey),
@@ -284,6 +285,9 @@ impl Checker<'_> {
                 }
                 Work::ImplicitProjection(key, context) => {
                     self.complete_implicit_projection(key, context)?;
+                }
+                Work::HeaderProjection(key, context) => {
+                    self.complete_header_projection(key, context)?;
                 }
                 Work::ProjectionBound(seed, finish) => {
                     self.complete_projection_bound(seed, finish)?;

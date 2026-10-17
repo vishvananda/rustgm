@@ -238,7 +238,7 @@ impl Checker<'_> {
                 arguments: GenericArgs::EMPTY,
             }),
         )?;
-        let predicates = bounds
+        let mut predicates: Vec<_> = bounds
             .builtin
             .into_iter()
             .map(|bound| crate::types::parameters::predicates::Predicate {
@@ -246,6 +246,9 @@ impl Checker<'_> {
                 bound,
             })
             .collect();
+        if let Some(contracts) = &self.facts.generics.traits {
+            predicates.extend_from_slice(contracts.associated_bounds(ItemId(id.0)));
+        }
         if !bounds.syntax.is_empty() {
             self.bound_syntax.insert(id, bounds.syntax);
         }

@@ -192,7 +192,7 @@ impl Hygiene {
                 }
             }
             if let Some(binding) = frame.bindings.get(&(query.name, query.namespace))
-                && binding.is_lexical(&facts.definitions)
+                && binding.is_lexical(&facts.definitions, frame.associated)
                 && (barriers == 0
                     || !facts.definitions[binding.target.0 as usize].kind.is_local()
                     || (barriers == 1

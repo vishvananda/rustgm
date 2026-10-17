@@ -16,8 +16,16 @@ pub struct Instantiation {
     parameters: HashMap<ParameterId, Argument>,
     completed: HashMap<(TermId, u16), TermId>,
     shifted: HashMap<(TermId, u16), TermId>,
+    shifted_projections: bool,
 }
 impl Instantiation {
+    /// Binder shifts can rebuild projections supplied through a type parameter,
+    /// even when its template contains none. Register those new occurrences in
+    /// their destination scope; this flag supplies no normalization permission.
+    #[must_use]
+    pub fn shifted_projections(&self) -> bool {
+        self.shifted_projections
+    }
     /// Retrieve an existing actual argument without inventing a new inference variable.
     #[must_use]
     pub(crate) fn binding(&self, id: ParameterId) -> Option<Argument> {
@@ -50,6 +58,7 @@ impl Instantiation {
             parameters,
             completed: HashMap::new(),
             shifted: HashMap::new(),
+            shifted_projections: false,
         })
     }
 }
@@ -131,8 +140,9 @@ impl Context {
                     shifted
                 } else {
                     let shifted = self.shift_regions(store, value, depth)?;
-                    substitution.shifted.insert((value, depth), shifted);
-                    shifted
+                    substitution.shifted_projections |= shifted.projections;
+                    substitution.shifted.insert((value, depth), shifted.term);
+                    shifted.term
                 };
                 substitution.completed.insert((term, depth), value);
                 continue;

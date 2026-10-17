@@ -216,6 +216,25 @@ Do not inspect unrelated implementation bodies or restart a long query for each
 dependency. Earlier queries still need a separate implementation-availability
 contract; neither an unfinished environment nor an unchecked header is evidence.
 
+Trait-header member naming uses a temporary graph of decoded Self supertrait
+identities, separate from proof contracts. Reject identity cycles before expanding
+arguments. Index declarations by member name and prepare complete positional inputs
+only along routes reaching that name. This permits `trait A: B<Self::Out>` without
+demanding B's arguments while naming A's own result. Map the trait's synthetic
+Self binder to its actual declaration owner for bound lookup and proof scope.
+All written header predicates must be typed before publishing immutable caller
+environments. Retain raw projected roots for later formation proofs after impl
+declarations are available, even if normalization erases the original inputs.
+
+Classify an owned header result promise by its complete formal parent application,
+including Self and every type, const and lifetime argument. Feed that promise to
+the associated result contract and impl conformance, separately from required input
+predicates. A bound on an inherited result remains an explicit caller requirement.
+Closed builtin-property checks normalize in the existing declaration proof scope
+and retain selected lifetime obligations; structural caches grant no permissions.
+Associated type names participate in qualified member lookup without shadowing
+enclosing lexical aliases, including hygienic lookup.
+
 Associated result bounds retain complete predicates, including the separate
 subjects of nested result equalities. Elaborate their arguments through the
 ordinary bound worklist in the owning trait's lifetime scope. Validate the bound's
@@ -613,6 +632,13 @@ method's arguments. Infer inherited Self and omitted arguments through the ordin
 callable graph; explicit prefixes and ordered defaults constrain those same slots.
 Generic bodies retain the trait declaration as a symbolic callable and prove its
 complete requirements without guessing an implementation for a rigid parameter.
+
+A type argument can introduce projections into a signature whose template contains
+none. Record those occurrences during the existing argument binder-shift traversal
+and register the instantiated signature for scoped normalization. Unknown variables
+retain their dependency identities; the traversal summary is scheduling information,
+never proof that a projected result exists. Ordinary generic calls keep their path
+without a second graph scan.
 
 Fully qualified `<T as Trait>::method` paths consume the resolver's retained Self
 annotation, trait identity and canonical member name. Select a direct method from

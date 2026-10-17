@@ -3,6 +3,11 @@ use super::{Constructor, Context, Error, RegionId, Store, TermId, Value};
 use crate::types::substitute::Bound;
 use std::collections::HashMap;
 
+pub(super) struct MappedRegions {
+    pub term: TermId,
+    pub projections: bool,
+}
+
 impl Context {
     /// Replace one surrounding region binder while retaining unsolved type and
     /// const variables. Nested callable binders remain local to their signatures.
@@ -22,11 +27,14 @@ impl Context {
         store: &mut Store,
         root: TermId,
         amount: u16,
-    ) -> Result<TermId, Error> {
+    ) -> Result<MappedRegions, Error> {
         if amount == 0 {
-            return Ok(root);
+            return Ok(MappedRegions {
+                term: root,
+                projections: false,
+            });
         }
-        self.map_regions(store, root, &mut Bound::shift(amount))
+        self.map_regions_tracked(store, root, &mut Bound::shift(amount))
     }
     /// Share one binder mapping across an inferred graph and its caller environment.
     /// Inference variables keep their identity; local callable frames remain local.
@@ -38,10 +46,20 @@ impl Context {
         root: TermId,
         bound: &mut Bound,
     ) -> Result<TermId, Error> {
+        self.map_regions_tracked(store, root, bound)
+            .map(|mapped| mapped.term)
+    }
+    fn map_regions_tracked(
+        &mut self,
+        store: &mut Store,
+        root: TermId,
+        bound: &mut Bound,
+    ) -> Result<MappedRegions, Error> {
         let root = self.root(root)?;
         let mut work = vec![((root, 0_u16), false)];
         let mut results = HashMap::new();
         let mut children = Vec::new();
+        let mut projections = false;
         while let Some(((id, depth), finish)) = work.pop() {
             self.step()?;
             let id = self.root(id)?;
@@ -55,6 +73,7 @@ impl Context {
                     continue;
                 }
                 Value::Known(ty) => {
+                    projections |= store.contains_projections(ty) == Some(true);
                     let before = bound.steps;
                     let ty = bound
                         .apply_inside(store, ty, depth)
@@ -66,6 +85,7 @@ impl Context {
                 }
                 Value::Construct(kind) => kind,
             };
+            projections |= matches!(kind, Constructor::Projection(_));
             let child_depth = if matches!(kind, Constructor::Function { .. }) {
                 depth.checked_add(1).ok_or(Error::Overflow)?
             } else {
@@ -98,10 +118,11 @@ impl Context {
             })?;
             results.insert((id, depth), value);
         }
-        results
+        let term = results
             .get(&(root, 0))
             .copied()
-            .ok_or(Error::InvalidIdentity)
+            .ok_or(Error::InvalidIdentity)?;
+        Ok(MappedRegions { term, projections })
     }
     pub(super) fn map_constructor_regions(
         &mut self,

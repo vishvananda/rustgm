@@ -9,6 +9,49 @@ pub(super) struct Bounds {
     roots: Vec<NodeKey>,
 }
 impl Checker<'_> {
+    pub(super) fn header_projection_context(&self, context: regions::Context) -> bool {
+        if !self.header_names_active() {
+            return false;
+        }
+        let mut binder = context.binder;
+        while let Some(current) = binder {
+            if let Some(owner) = self.regions.owner(current) {
+                return self.report.resolution.definitions[owner.0 as usize].kind
+                    == crate::resolve::model::DefKind::SelfType
+                    && self.facts.associated.trait_owner(owner).is_some();
+            }
+            binder = self.regions.parent(current);
+        }
+        false
+    }
+
+    /// The complete written environment stays immutable. Formation proofs are
+    /// demanded after implementation declarations, even if a result erases inputs.
+    pub(in crate::sema::declarations) fn retain_header_projection_requirements(
+        &mut self,
+    ) -> Result<(), Error> {
+        for owner in self.facts.associated.owners() {
+            let crate::sema::associated::OwnerKind::Trait { definition, .. } = owner.kind else {
+                continue;
+            };
+            if let Some(bounds) = self.projections.raw_bounds.remove(&definition) {
+                let context = regions::Context {
+                    binder: Some(self.owner_binders[&owner.self_definition]),
+                    position: regions::Position::Output,
+                };
+                for key in bounds.roots {
+                    let ty = self.ty(key)?;
+                    self.projections.deferred.push((
+                        key,
+                        context,
+                        super::scoped::Ambient::Root,
+                        ty,
+                    ));
+                }
+            }
+        }
+        Ok(())
+    }
     pub(in super::super) fn defer_bound_type(&mut self, key: NodeKey) {
         use crate::resolve::model::{DefKind, Target};
         let application = self

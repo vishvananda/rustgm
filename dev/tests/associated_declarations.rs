@@ -5,6 +5,8 @@ mod callable_projections;
 mod const_arguments;
 #[path = "associated_declarations/discriminants.rs"]
 mod discriminants;
+#[path = "associated_declarations/header_projections.rs"]
+mod header_projections;
 #[path = "harness/native_references.rs"]
 mod native;
 #[path = "associated_declarations/readiness.rs"]

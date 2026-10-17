@@ -8419,3 +8419,85 @@ during header preparation. The seven negatives must be rechecked after fixing
 that earlier failure. Header naming, complete result contracts, unused impl
 conformance, projected nominal storage and the PA20 inspection contract remain
 required work; the goal still extends through PA25.
+
+### Projected trait headers and instantiated qualified calls
+
+Trait headers now support owned and inherited associated projections, including
+forward declarations, parameter-bound subjects, mixed arguments, aliases, and
+`trait A: B<Self::Out>`. Member naming uses decoded Self-supertrait identities
+and name reachability before demanding the positional arguments on relevant
+routes. This temporary naming graph is separate from proof contracts. Identity
+cycles reject before argument expansion; an unrelated projected parent argument
+cannot invent a naming dependency on itself.
+
+The synthetic trait Self binder maps to its declaration owner for parameter-bound
+lookup and proof scope. All written header predicates are typed before immutable
+environments are published. Raw projection roots retain their later formation
+proofs after impl declarations are available. Closed builtin-property queries
+normalize under their existing declaration proof and retain selected lifetime
+requirements; cached structural results do not grant caller permissions.
+
+Owned result promises are classified by the entire formal parent application.
+They reach associated result contracts, impl conformance and caller assumptions
+separately from required input predicates. A bound on an inherited member remains
+an explicit caller requirement. Unused invalid implementations still reject.
+Lexical lookup also permits a module alias with the same name as an associated
+type; qualified member lookup keeps the associated declaration.
+
+The qualified-call cases exposed an existing inference gap as well: substituting
+an opaque associated type for a callee's Self parameter can create a projected
+signature even when the original signature has no projections. Binder shifting
+now reports those occurrences while performing its existing traversal. The caller
+registers the resulting signature for scoped normalization, preserving ordinary
+generic calls without an extra graph scan. The same fix handles member-written
+result bounds, captured lifetimes and non-Copy projected arguments.
+
+The maintainer family declares 35 independently object-qualified outcomes,
+including 24 programs executed with both rustc and CPPGM. It covers valid and
+invalid owned/inherited contracts, ambiguity, growing cycles, module aliases,
+qualified calls, distinct result/input requirements, and moved unique references.
+The V6 validation passes 1,181 regular tests, all 4,863 PA1–19 course cases,
+71 native groups, strict all/pedantic Clippy, the 730-file audit with zero findings,
+33 harness checks, and backend/upstream validation. All 733 frozen source and
+configuration files and 14,589 unchanged committed oracle sidecars are verified.
+PA20–25 still fail explicitly as planned stages. Evidence is retained under
+`obj/pa20-work/trait-header-projections-v6/`.
+
+Independent follow-up controls confirm a remaining result-outlives gap:
+`type Out: 'a` and the equivalent owned header clause need complete region-proof
+integration. Valid programs are retained as unsupported positive investigations,
+not relabeled rejection fixtures. Their negative controls must be rechecked after
+the unsupported-operation gate is removed. Projected nominal storage, early
+constant-argument readiness, the remaining PA20 contracts and its complete
+inspection manifest/oracles also remain; the active goal still extends through
+PA25.
+
+The immutable candidate is `8bf6a746`, compared with published `8798212`'s
+`6c489d04`. Ten frozen performance inputs execute with rustc and CPPGM before
+timing. The 20-job study retains 520 timed and 80 qualification observations;
+the six-job follow-up retains another 156 timed and 24 qualification observations.
+Each observation contains eight compiler invocations: 5,408 study and 832
+qualification invocations overall. All source, binary and input hashes and
+full/count output equality pass. Newly accepted header workloads use identical
+candidate controls at 64 and 256 declarations; supported common workloads use
+the published baseline.
+
+Generic-reference-256 count/full medians are -0.921%/-0.457%, against A/A spreads
+of 2.662%/11.689%. Existing member-contract-256 medians are +0.639%/+1.446%,
+against A/A 4.892%/2.465%. Ordinary-256 full rendering initially reports +3.410%
+(A/A 1.571%), and marker-projection-256 count reports +6.259% (A/A 17.936%).
+The focused repeat checks those exact inputs with A/B, A/A and B/B comparisons.
+A/B medians are -0.383% and -1.161%; the identical-binary control medians range
+from -0.316% to +0.955%. Both initial slowdowns fail to reproduce. Individual
+identical-binary paired blocks in the main study vary substantially, so these
+shared-host observations establish neither a tight regression bound nor a speedup.
+Earlier default-chain, ordinary-argument and pattern concerns remain open.
+
+The full validation cleanup removes 5,198 generated files (5.79 GiB); the
+between-batch tidy finds no remaining unpinned disposable files. The main study
+cleanup removes another 16 files (0.03 GiB). Frozen sources, diagnostics, hashes,
+raw measurements and cleanup receipts remain. The next result-outlives corpus
+under `obj/pa20-work/result-outlives-v1/` has 14 declared outcomes agreeing with
+pinned rustc object compilation and eight accepted native executions. It covers
+header/member equivalence, impl lifetime relations, generic results, stronger
+result lifetimes than inputs, and absence of reverse input implications.

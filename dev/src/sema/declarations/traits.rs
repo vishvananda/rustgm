@@ -49,6 +49,15 @@ impl Checker<'_> {
             self.drain(steps, limit)?;
         }
         self.reserve_associated_type_bounds()?;
+        self.begin_header_names()?;
+        if self.header_names_active() {
+            for index in 0..self.facts.associated.owners().len() {
+                let owner = self.facts.associated.owners()[index];
+                if let OwnerKind::Trait { definition, .. } = owner.kind {
+                    self.reserve_trait_application(owner, definition)?;
+                }
+            }
+        }
         self.associated_bindings.begin_trait_headers();
         for index in 0..self.facts.associated.owners().len() {
             let owner = self.facts.associated.owners()[index];
@@ -64,8 +73,11 @@ impl Checker<'_> {
             self.retain_trait_contract(owner, definition)?;
             self.implicit_trait_bound(owner, definition)?;
         }
+        self.end_header_names();
         self.complete_trait_bindings()?;
-        self.complete_trait_contracts()
+        self.complete_trait_contracts()?;
+        self.retain_header_projection_requirements()?;
+        Ok(())
     }
 
     /// Drop headers consume trait contracts but retain their own conformance path.
@@ -156,10 +168,37 @@ impl Checker<'_> {
         owner: crate::sema::associated::Owner,
         definition: crate::resolve::model::DefId,
     ) -> Result<(), Error> {
+        self.reserve_trait_application(owner, definition)?;
+        let value = self.facts.generics.trait_self_bounds[&definition];
+        self.facts
+            .generics
+            .predicates
+            .entry(definition)
+            .or_default()
+            .push(crate::sema::generics::Predicate {
+                source: owner.source,
+                value,
+            });
+        Ok(())
+    }
+
+    fn reserve_trait_application(
+        &mut self,
+        owner: crate::sema::associated::Owner,
+        definition: crate::resolve::model::DefId,
+    ) -> Result<(), Error> {
         use crate::types::{
             parameters::predicates::{Bound, Predicate},
             traits::Application,
         };
+        if self
+            .facts
+            .generics
+            .trait_self_bounds
+            .contains_key(&definition)
+        {
+            return Ok(());
+        }
         let arguments = self.facts.generics.parameters[&definition]
             .iter()
             .map(|parameter| parameter.argument)
@@ -191,15 +230,6 @@ impl Checker<'_> {
             .generics
             .trait_self_bounds
             .insert(definition, value);
-        self.facts
-            .generics
-            .predicates
-            .entry(definition)
-            .or_default()
-            .push(crate::sema::generics::Predicate {
-                source: owner.source,
-                value,
-            });
         Ok(())
     }
 

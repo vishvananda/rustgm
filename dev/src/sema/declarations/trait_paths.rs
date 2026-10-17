@@ -204,7 +204,7 @@ impl Checker<'_> {
             .associated
             .schema(definition)
             .ok_or_else(|| self.error(owner.source, "missing trait Self schema"))?;
-        let header = crate::sema::traits::Header {
+        let mut header = crate::sema::traits::Header {
             self_type: schema.self_type,
             parameters: self.facts.generics.parameters[&definition].clone(),
             predicates: self
@@ -214,8 +214,14 @@ impl Checker<'_> {
                 .get(&definition)
                 .cloned()
                 .unwrap_or_default(),
+            results: Vec::new(),
             regions: schema.bounds.clone(),
         };
+        if !self.associated_type_bounds.is_empty() {
+            header
+                .partition_results(&self.facts.types, ItemId(definition.0))
+                .map_err(|e| self.error(owner.source, e))?;
+        }
         self.facts
             .generics
             .traits
@@ -277,6 +283,9 @@ impl Checker<'_> {
             ) {
                 continue; // Proved with the completed nominal lifetime contracts.
             }
+            let requirement = proof
+                .normalize_builtin(&mut self.facts, requirement)
+                .map_err(|e| self.error(predicate.source, e))?;
             if !proof
                 .prove(&mut self.facts, requirement)
                 .map_err(|e| self.error(predicate.source, e))?

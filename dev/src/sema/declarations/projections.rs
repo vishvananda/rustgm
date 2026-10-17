@@ -182,6 +182,10 @@ impl Checker<'_> {
             return self.store(key, ty);
         }
         self.facts.unreduced.retain_node(key, ty);
+        if self.header_projection_context(context) {
+            self.projections.raw_bound_nodes.remove(&key);
+            return self.store(key, ty);
+        }
         if self.projections.raw_bound_nodes.remove(&key) {
             return self.store(key, ty);
         }

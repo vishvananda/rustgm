@@ -19,6 +19,30 @@ pub(super) struct Proof {
     provisional: bool,
 }
 impl Proof {
+    pub(super) fn normalize(
+        &mut self,
+        facts: &mut Declarations,
+        ty: TypeId,
+    ) -> Result<TypeId, &'static str> {
+        if facts.types.contains_projections(ty) != Some(true) {
+            return Ok(ty);
+        }
+        self.trait_state(facts)?.normalize(facts, ty)
+    }
+
+    pub(super) fn normalize_builtin(
+        &mut self,
+        facts: &mut Declarations,
+        mut requirement: Predicate,
+    ) -> Result<Predicate, &'static str> {
+        if matches!(
+            requirement.bound,
+            Bound::Copy | Bound::Clone | Bound::Sized | Bound::Outlives(_)
+        ) {
+            requirement.ty = self.normalize(facts, requirement.ty)?;
+        }
+        Ok(requirement)
+    }
     pub(super) fn for_coherence(
         environment: std::sync::Arc<crate::types::parameters::environment::Environment>,
     ) -> Self {

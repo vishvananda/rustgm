@@ -108,7 +108,7 @@ impl Checker<'_> {
                 .reference = Some(crate::resolve::model::Target::Definition(path.owner));
         }
         if self.projection_uses_parameter_bounds(path.owner) {
-            self.schedule_projection_bounds(key, path.owner, context)?;
+            self.schedule_projection_bounds(key, path.owner, context, path.name)?;
         }
         self.work.push(Work::Node(path.prefix, false, context));
         Ok(true)
@@ -130,6 +130,21 @@ impl Checker<'_> {
         if self.report.resolution.definitions[path.owner.0 as usize].kind == DefKind::SelfType {
             predicates.push(self.self_projection_candidate(key, path.owner, context)?);
         }
+        if self.header_names_active() {
+            return self.schedule_header_projection(key, context, path.name, predicates);
+        }
+        self.finish_implicit_projection(key, context, predicates)
+    }
+
+    pub(super) fn finish_implicit_projection(
+        &mut self,
+        key: NodeKey,
+        context: regions::Context,
+        predicates: Vec<Predicate>,
+    ) -> Result<(), Error> {
+        let path = self
+            .implicit_projection_path(key)?
+            .ok_or_else(|| self.error(key, "missing completed shorthand path"))?;
         let application = self.lookup_projection_member(key, path.name, predicates)?;
         if application.subject != self.ty(path.prefix)? {
             return Err(self.error(key, "shorthand projection subject does not match its bound"));
@@ -261,6 +276,10 @@ impl Checker<'_> {
                     return Err(self.error(key, "ambiguous shorthand associated type"));
                 }
                 selected = Some(candidate);
+            }
+            if self.header_names_active() {
+                work.extend(self.header_projection_parents(key, name, predicate)?);
+                continue;
             }
             let requirements = self
                 .facts

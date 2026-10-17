@@ -1,4 +1,5 @@
 //! Canonical declaration goals enter inference only after their outer binder becomes free.
+mod normalization;
 use crate::{
     sema::{
         model::Declarations,
@@ -17,6 +18,7 @@ use crate::{
 use std::sync::Arc;
 
 pub(crate) struct State {
+    normalized: std::collections::HashMap<crate::types::TypeId, crate::types::TypeId>,
     assumptions: Assumptions,
     environment: Option<Arc<Environment>>,
     context: Context,
@@ -71,6 +73,7 @@ impl State {
         }
         let assumptions = Self::assumptions(facts, environment.as_deref())?;
         Ok(Self {
+            normalized: std::collections::HashMap::new(),
             assumptions,
             environment,
             context,

@@ -20,12 +20,14 @@ pub(super) struct Header {
     pub self_type: TypeId,
     pub parameters: Vec<Parameter>,
     pub predicates: Vec<Located>,
+    pub results: Vec<(ItemId, Located)>,
     pub regions: Vec<crate::types::outlives::Pair>,
 }
 
 /// Self bounds and equalities on Self's associated types are implied by a trait bound.
 pub(super) struct Requirements {
     pub implied: Vec<Predicate>,
+    pub results: Vec<Predicate>,
     pub required: Vec<Predicate>,
     pub types: Vec<TypeId>,
     pub regions: Vec<crate::types::outlives::Pair>,
@@ -37,6 +39,7 @@ pub(super) struct Contracts {
     order: Vec<ItemId>,
     applications: HashMap<Predicate, Arc<Requirements>>,
     result_rules: results::Cache,
+    result_bounds: HashMap<ItemId, Vec<Predicate>>,
     steps: usize,
 }
 
@@ -68,10 +71,20 @@ impl Contracts {
         if self.headers.contains_key(&item) {
             return Err("trait contract already declared");
         }
+        for &(member, predicate) in &header.results {
+            self.result_bounds
+                .entry(member)
+                .or_default()
+                .push(predicate.value);
+        }
         self.result_rules.invalidate();
         self.order.push(item);
         self.headers.insert(item, header);
         Ok(())
+    }
+
+    pub fn associated_bounds(&self, member: ItemId) -> &[Predicate] {
+        self.result_bounds.get(&member).map_or(&[], Vec::as_slice)
     }
 
     /// Check definition identities before expansion, including argument-growing cycles.
@@ -141,7 +154,7 @@ impl Contracts {
         }
         self.steps = self
             .steps
-            .saturating_add(1 + arguments.len() + header.predicates.len());
+            .saturating_add(1 + arguments.len() + header.predicates.len() + header.results.len());
         if self.steps > 1_000_000 {
             return Err("trait contract work budget exceeded");
         }
@@ -150,6 +163,7 @@ impl Contracts {
         let mut regions = Vec::new();
         let mut result = Requirements {
             implied: Vec::new(),
+            results: Vec::new(),
             required: Vec::new(),
             types: Vec::new(),
             regions: Vec::new(),
@@ -188,6 +202,11 @@ impl Contracts {
             } else {
                 result.required.push(value);
             }
+        }
+        for (_, predicate) in &header.results {
+            result
+                .results
+                .push(replace.predicate(store, predicate.value)?);
         }
         for &(longer, shorter) in &header.regions {
             let (Argument::Lifetime(longer), Argument::Lifetime(shorter)) = (
