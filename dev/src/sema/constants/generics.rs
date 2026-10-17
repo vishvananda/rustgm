@@ -27,6 +27,7 @@ pub(in crate::sema) fn advance(
     ready: &std::collections::HashSet<crate::resolve::model::DefId>,
 ) -> Result<Progress, Error> {
     let Input { key, ty, module } = input;
+    scratch.typing.resumable();
     let mut queries =
         Queries::with_scratch(report, facts, Some(discriminants), std::mem::take(scratch));
     if queries
@@ -41,10 +42,24 @@ pub(in crate::sema) fn advance(
             crate::sema::traits::implementations::Availability::Declarations;
     }
     queries.value_scope = Some((key, ty));
+    let fresh = continuation.is_none();
     if let Some(continuation) = continuation {
         queries.resume(*continuation);
-    } else {
-        queries.typing.anonymous_constant(key, ty, module)?;
+    }
+    if fresh || queries.typing.pending_root() {
+        let dependency = if queries.typing.pending_root() {
+            queries.typing.advance_body()?
+        } else {
+            queries.typing.start_anonymous_constant(key, ty, module)?
+        };
+        if let Some(dependency) = dependency {
+            let (saved, continuation) = queries.suspend();
+            *scratch = saved;
+            return Ok(Progress::Prepare(
+                super::suspension::Dependency::Nominal(dependency),
+                continuation,
+            ));
+        }
         queries.require_complete_patterns(Query::Node(key))?;
         queries.work.push(Work::Enter(Query::Node(key)));
         queries.work.push(Work::PrepareNode(key));

@@ -1453,6 +1453,29 @@ defaults. Nested const arguments own their dependency work and lifetime context.
 Determine value readiness from each nominal declaration's field templates once;
 follow actual type arguments separately. Do not expand symbolic field instances
 to discover these prerequisites. Instantiate concrete fields after inference.
+Prepare nominal declaration requirements separately by following canonical type
+edges, including reference referents and trait-path inputs, without following
+field definitions. Share completed requirement readiness by canonical type and
+nominal identity. An active dependency is not a completed requirement or proof.
+An unused referent must not demand its field layout merely to form its type.
+Distinguish inferred annotation terms from value nodes. Annotation terms retain
+their formation and lifetime checks without demanding field storage. Constructor
+expressions remain values even when their type comes from an annotation. Keep
+field receivers separate from cached nominal substitution environments: creating
+an environment does not imply that any field was selected.
+
+When inference discovers a missing field declaration, suspend at that exact
+operation with the prepared receiver, inference graph, caller environment and
+pending proof intact. Resume through the declaration worklist without replaying
+the body or recursively draining declarations. Publish initializer typing only
+after completion, and reject a dependency on an active initializer. Suspended
+bodies retain sparse node and binding slots proportional to their own work;
+neither parking nor constructing a replacement checker allocates whole-crate
+slot arrays. Ordinary completed bodies may reuse dense scratch storage. Storage
+selection must not change which implementation evidence is available.
+Reuse the immutable source-work budget across declaration queries and resumptions;
+reconstructing a query must not rescan all source units for each dependency.
+
 Before evaluating a const argument, reject references to enclosing generic
 parameters while allowing lifetimes bound inside the constant. Cache syntax
 capture summaries using scope ancestry, preserving syntactic captures even when

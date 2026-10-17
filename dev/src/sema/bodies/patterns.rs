@@ -29,7 +29,7 @@ impl Checker<'_> {
         &mut self,
         solved: &crate::types::infer::Solved,
     ) -> Result<(), Error> {
-        for (id, term) in self.pattern_types.drain(..) {
+        for (id, term) in self.state.pattern_types.drain(..) {
             let ty = solved.types[term.0 as usize];
             let pattern = &mut self.facts.patterns.nodes[id.0 as usize];
             pattern.ty = Some(ty);
@@ -94,21 +94,21 @@ impl Checker<'_> {
             .patterns
             .reserve(self.key(node))
             .map_err(|e| self.error(node, e))?;
-        self.pattern_work.push(Work {
+        self.state.pattern_work.push(Work {
             node,
             term,
             id,
             mode,
             rest,
         });
-        self.pattern_types.push((id, term));
+        self.state.pattern_types.push((id, term));
         Ok(id)
     }
     pub(super) fn pattern(&mut self, root: NodeId, term: TermId, valid: bool) -> Result<(), Error> {
-        let mark = self.range_work.len();
+        let mark = self.state.range_work.len();
         let root = self.selected_pattern(root, term)?;
-        if self.range_work.len() != mark || self.pattern_refutable {
-            self.pattern_requirements.push((root, valid));
+        if self.state.range_work.len() != mark || self.state.pattern_refutable {
+            self.state.pattern_requirements.push((root, valid));
         }
         Ok(())
     }
@@ -117,7 +117,7 @@ impl Checker<'_> {
         root: NodeId,
         term: TermId,
     ) -> Result<PatternId, Error> {
-        self.pattern_refutable = false;
+        self.state.pattern_refutable = false;
         let id = self.reserve_pattern(root, term, Mode::Value)?;
         self.facts.patterns.roots.insert(self.key(root), id);
         let mut steps = 0;
@@ -127,17 +127,17 @@ impl Checker<'_> {
             id,
             mode,
             rest,
-        }) = self.pattern_work.pop()
+        }) = self.state.pattern_work.pop()
         {
             steps += 1;
             if steps > 1_000_000 {
                 return Err(self.error(root, "pattern type work budget exceeded"));
             }
             self.save(node, term);
-            let mark = self.pattern_work.len();
+            let mark = self.state.pattern_work.len();
             let (id, term, mode) = self.pattern_adjust(node, term, id, mode, &mut steps)?;
             let kind = self.pattern_kind(node, term, id, mode, rest)?;
-            self.pattern_work[mark..].reverse();
+            self.state.pattern_work[mark..].reverse();
             self.facts.patterns.nodes[id.0 as usize].kind = kind;
         }
         Ok(id)
@@ -209,7 +209,7 @@ impl Checker<'_> {
                 ..
             } => {
                 let start = self.pattern_index(node, self.facts.patterns.alternatives.len())?;
-                let unit = self.report.package.unit(self.file);
+                let unit = self.report.package.unit(self.state.file);
                 for child in unit.configured.ast.list(elements) {
                     let id = self.reserve_pattern(*child, term, mode)?;
                     self.facts.patterns.alternatives.push(id);
@@ -258,7 +258,7 @@ impl Checker<'_> {
             .filter(|n| *n < 0x8000_0000)
             .ok_or_else(|| self.error(node, "body region identity space exhausted"))?;
         self.facts.body_regions.push(BodyRegion {
-            body: self.body,
+            body: self.state.body,
             source: self.key(node),
             origin,
         });
@@ -320,7 +320,7 @@ impl Checker<'_> {
                     .patterns
                     .reserve(self.key(node))
                     .map_err(|e| self.error(node, e))?;
-                self.pattern_types.push((child, term));
+                self.state.pattern_types.push((child, term));
                 self.facts.patterns.nodes[id.0 as usize].kind = PatternKind::Dereference {
                     mutable,
                     implicit: true,
@@ -357,6 +357,7 @@ impl Checker<'_> {
             Mode::Reference { mutable } => {
                 let region = self.body_region(node, BodyRegionOrigin::PatternBorrow)?;
                 let local = self
+                    .state
                     .infer
                     .construct(Constructor::Reference { mutable, region }, &[term])
                     .map_err(|e| self.error(node, e))?;
@@ -368,11 +369,11 @@ impl Checker<'_> {
             .node(self.key(node))
             .and_then(|fact| fact.binding)
             .ok_or_else(|| self.error(node, "missing pattern binding identity"))?;
-        if let Some(prior) = self.locals[definition.0 as usize] {
+        if let Some(prior) = self.state.locals[definition.0 as usize] {
             self.equate(node, prior, local)?;
         } else {
-            self.locals[definition.0 as usize] = Some(local);
-            self.bindings.push(definition);
+            self.state.locals[definition.0 as usize] = Some(local);
+            self.state.bindings.push(definition);
         }
         let subpattern = subpattern
             .map(|child| self.schedule_pattern(child, term, mode, rest))
@@ -402,6 +403,7 @@ impl Checker<'_> {
             let region = self.body_region(node, BodyRegionOrigin::PatternInput)?;
             let referent = self.variable(node, Domain::Any)?;
             let reference = self
+                .state
                 .infer
                 .construct(Constructor::Reference { mutable, region }, &[referent])
                 .map_err(|e| self.error(node, e))?;
@@ -434,7 +436,7 @@ impl Checker<'_> {
     ) -> Result<PatternKind, Error> {
         let minimum = u64::try_from(elements.len() - usize::from(rest.is_some()))
             .map_err(|_| self.error(node, "slice pattern arity overflow"))?;
-        self.pattern_refutable |= rest.is_none() || minimum != 0;
+        self.state.pattern_refutable |= rest.is_none() || minimum != 0;
         let element = self.child(node, term, 0)?;
         let start = self.pattern_index(node, self.facts.patterns.fields.len())?;
         for (index, &child) in elements.iter().enumerate() {
@@ -491,7 +493,7 @@ impl Checker<'_> {
             .get(variant.owner)
             .ok_or_else(|| self.error(node, "missing pattern constructor shape"))?;
         if definition.end - definition.start != 1 {
-            self.pattern_refutable = true;
+            self.state.pattern_refutable = true;
         }
         if let Some(Constructor::Adt(owner, _) | Constructor::AdtArgs(owner, _)) =
             self.head(node, term)?
@@ -515,7 +517,7 @@ impl Checker<'_> {
         variant: Option<VariantId>,
         mode: Mode,
     ) -> Result<PatternKind, Error> {
-        let unit = self.report.package.unit(self.file);
+        let unit = self.report.package.unit(self.state.file);
         let elements = unit.configured.ast.list(elements);
         let rest = elements
             .iter()
@@ -535,21 +537,23 @@ impl Checker<'_> {
             (variant.end - variant.start) as usize
         } else {
             if self.head(node, term)?.is_none() && rest.is_none() {
-                self.type_children.clear();
+                self.state.type_children.clear();
                 for _ in 0..explicit {
                     let child = self.variable(node, Domain::Any)?;
-                    self.type_children.push(child);
+                    self.state.type_children.push(child);
                 }
                 let tuple = self
+                    .state
                     .infer
-                    .construct(Constructor::Tuple, &self.type_children)
+                    .construct(Constructor::Tuple, &self.state.type_children)
                     .map_err(|e| self.error(node, e))?;
                 self.equate(node, term, tuple)?;
             }
             if self.head(node, term)? != Some(Constructor::Tuple) {
                 return Err(self.error(node, "tuple pattern requires a known tuple type"));
             }
-            self.infer
+            self.state
+                .infer
                 .arity(&self.facts.types, term)
                 .map_err(|e| self.error(node, e))?
                 .ok_or_else(|| self.error(node, "missing tuple pattern arity"))?
@@ -607,11 +611,12 @@ impl Checker<'_> {
     ) -> Result<PatternKind, Error> {
         let variant_id = self.pattern_constructor(node, path, term)?;
         let variant = self.facts.members.variants[variant_id.0 as usize];
-        self.field_seen.clear();
-        self.field_seen
+        self.state.field_seen.clear();
+        self.state
+            .field_seen
             .resize((variant.end - variant.start) as usize, false);
         let start = self.pattern_index(node, self.facts.patterns.fields.len())?;
-        let unit = self.report.package.unit(self.file);
+        let unit = self.report.package.unit(self.state.file);
         for &wrapper in unit.configured.ast.list(fields) {
             if !self.active(wrapper) {
                 continue;
@@ -631,7 +636,7 @@ impl Checker<'_> {
                 .ok_or_else(|| self.error(field_node, "unknown pattern field"))?;
             self.accessible(field_node, field)?;
             if std::mem::replace(
-                &mut self.field_seen[(field.0 - variant.start) as usize],
+                &mut self.state.field_seen[(field.0 - variant.start) as usize],
                 true,
             ) {
                 return Err(self.error(field_node, "duplicate pattern field"));
@@ -645,7 +650,7 @@ impl Checker<'_> {
                 pattern,
             });
         }
-        if !rest && self.field_seen.contains(&false) {
+        if !rest && self.state.field_seen.contains(&false) {
             return Err(self.error(node, "missing pattern fields without rest"));
         }
         let end = self.pattern_index(node, self.facts.patterns.fields.len())?;
@@ -673,7 +678,7 @@ impl Checker<'_> {
         elements: List,
         mode: Mode,
     ) -> Result<PatternKind, Error> {
-        let unit = self.report.package.unit(self.file);
+        let unit = self.report.package.unit(self.state.file);
         let elements = unit.configured.ast.list(elements);
         let mut rest = None;
         for (index, &child) in elements.iter().enumerate() {
@@ -686,6 +691,7 @@ impl Checker<'_> {
         if self.head(node, term)?.is_none() && rest.is_none() {
             let element = self.variable(node, Domain::Any)?;
             let array = self
+                .state
                 .infer
                 .construct(Constructor::Array(explicit), &[element])
                 .map_err(|e| self.error(node, e))?;
@@ -713,6 +719,7 @@ impl Checker<'_> {
                 }
                 let remaining = length - explicit;
                 let ty = self
+                    .state
                     .infer
                     .construct(Constructor::Array(remaining), &[element])
                     .map_err(|e| self.error(child, e))?;

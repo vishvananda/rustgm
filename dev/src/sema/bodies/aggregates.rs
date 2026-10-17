@@ -10,6 +10,13 @@ use crate::{
     types::aggregate,
 };
 
+#[derive(Clone, Copy)]
+pub(super) struct Field {
+    receiver: TermId,
+    name: Name,
+    kind: Constructor,
+}
+
 impl Checker<'_> {
     pub(super) fn selected(&mut self, node: NodeId, operation: Operation) -> Result<(), Error> {
         let key = self.key(node);
@@ -28,8 +35,9 @@ impl Checker<'_> {
         expected: Option<TermId>,
     ) -> Result<TermId, Error> {
         let term = self
+            .state
             .infer
-            .construct(constructor, &self.type_children)
+            .construct(constructor, &self.state.type_children)
             .map_err(|e| self.error(node, e))?;
         if let Some(expected) = expected {
             // Borrowing can supply a slice element type before reference unsizing.
@@ -37,7 +45,7 @@ impl Checker<'_> {
                 && self.contextual_head(node, expected)? == Some(Constructor::Slice)
             {
                 let element = self.child(node, expected, 0)?;
-                self.shape_equation(node, self.type_children[0], element)?;
+                self.shape_equation(node, self.state.type_children[0], element)?;
             } else {
                 self.shape_equation(node, term, expected)?;
             }
@@ -52,7 +60,7 @@ impl Checker<'_> {
         expected: Option<TermId>,
     ) -> Result<(), Error> {
         let tuple = matches!(self.kind(node), Kind::Tuple(_));
-        let unit = self.report.package.unit(self.file);
+        let unit = self.report.package.unit(self.state.file);
         let count = unit
             .configured
             .ast
@@ -60,10 +68,10 @@ impl Checker<'_> {
             .iter()
             .filter(|n| self.active(**n))
             .count();
-        self.type_children.clear();
+        self.state.type_children.clear();
         for _ in 0..if tuple { count } else { 1 } {
             let child = self.variable(node, Domain::Any)?;
-            self.type_children.push(child);
+            self.state.type_children.push(child);
         }
         let constructor = if tuple {
             Constructor::Tuple
@@ -83,9 +91,9 @@ impl Checker<'_> {
             if tuple {
                 // Later fields observe the context inferred from earlier ones,
                 // including whether an existing mutable reference is reborrowed.
-                self.work.push(Work::CoerceElement(child, expected));
+                self.state.work.push(Work::CoerceElement(child, expected));
             }
-            self.work.push(Work::Enter(child, Some(expected)));
+            self.state.work.push(Work::Enter(child, Some(expected)));
         }
         Ok(())
     }
@@ -98,7 +106,7 @@ impl Checker<'_> {
         if matches!(self.kind(node), Kind::Tuple(_)) {
             return Ok(term);
         }
-        let unit = self.report.package.unit(self.file);
+        let unit = self.report.package.unit(self.state.file);
         let element = self.child(node, term, 0)?;
         if self.head(node, element)?.is_none() {
             let mut common = None;
@@ -123,7 +131,7 @@ impl Checker<'_> {
                 continue;
             }
             if reference_hint {
-                self.reference_expected.insert(*child);
+                self.state.reference_expected.insert(*child);
             }
             reference_hint |= matches!(
                 self.head(*child, self.term(*child)?)?,
@@ -151,28 +159,30 @@ impl Checker<'_> {
             Constructor::Array(declarations::array_length(self.report, self.key(count))?)
         };
         let element = self.variable(node, Domain::Any)?;
-        self.type_children.clear();
-        self.type_children.push(element);
+        self.state.type_children.clear();
+        self.state.type_children.push(element);
         let term = self.shape(node, constructor, expected)?;
         let expected = self.child(node, term, 0)?;
-        self.work.push(Work::Enter(value, Some(expected)));
+        self.state.work.push(Work::Enter(value, Some(expected)));
         Ok(())
     }
     pub(super) fn finish_repeat(&mut self, node: NodeId, value: NodeId) -> Result<TermId, Error> {
         let term = self.term(node)?;
         let element = self.child(node, term, 0)?;
-        let mark = self.adjustments.len();
+        let mark = self.state.adjustments.len();
         self.coerce(value, element)?;
         if self.head(node, term)? == Some(Constructor::Array(0)) {
             // No element is stored. Keep higher-ranked type compatibility while
             // removing the discarded value's free storage-lifetime obligations.
-            for index in mark..self.adjustments.len() {
-                let original = self.adjustments[index].actual;
-                let target = self.adjustments[index].expected;
+            for index in mark..self.state.adjustments.len() {
+                let original = self.state.adjustments[index].actual;
+                let target = self.state.adjustments[index].expected;
                 let actual = self.inferred_regions(value, original)?;
                 let expected = self.inferred_regions(value, target)?;
                 if actual != original || expected != target {
-                    self.discarded_adjustments.insert(index, (actual, expected));
+                    self.state
+                        .discarded_adjustments
+                        .insert(index, (actual, expected));
                 }
             }
         }
@@ -201,6 +211,7 @@ impl Checker<'_> {
         if repeats
             && !constant
             && !self
+                .state
                 .parameter_copies
                 .as_mut()
                 .unwrap_or(&mut self.facts.copies)
@@ -260,7 +271,7 @@ impl Checker<'_> {
         let spelling = self
             .report
             .package
-            .unit(self.file)
+            .unit(self.state.file)
             .spelling(span)
             .map_err(|e| self.error(node, e.message))?;
         if spelling.as_bytes().first().is_some_and(u8::is_ascii_digit) {
@@ -284,7 +295,7 @@ impl Checker<'_> {
     pub(super) fn accessible(&self, node: NodeId, field: FieldId) -> Result<(), Error> {
         let access = self.facts.members.fields[field.0 as usize].access;
         if let Access::Within(module) = access
-            && !self.report.package.is_descendant(self.module, module)
+            && !self.report.package.is_descendant(self.state.module, module)
         {
             return Err(self.error(node, "aggregate field is private"));
         }
@@ -311,8 +322,9 @@ impl Checker<'_> {
                 variant: variant_id,
             },
         )?;
-        self.field_seen.clear();
-        self.field_seen
+        self.state.field_seen.clear();
+        self.state
+            .field_seen
             .resize((variant.end - variant.start) as usize, false);
         if let Some(base) = base {
             let definition = self
@@ -326,9 +338,9 @@ impl Checker<'_> {
             for index in variant.start..variant.end {
                 self.accessible(node, FieldId(index))?;
             }
-            self.work.push(Work::Enter(base, Some(term)));
+            self.state.work.push(Work::Enter(base, Some(term)));
         }
-        let unit = self.report.package.unit(self.file);
+        let unit = self.report.package.unit(self.state.file);
         for wrapper in unit.configured.ast.list(fields).iter().rev().copied() {
             if !self.active(wrapper) {
                 continue;
@@ -348,7 +360,7 @@ impl Checker<'_> {
                 .ok_or_else(|| self.error(field_node, "unknown aggregate field"))?;
             self.accessible(field_node, field)?;
             if std::mem::replace(
-                &mut self.field_seen[(field.0 - variant.start) as usize],
+                &mut self.state.field_seen[(field.0 - variant.start) as usize],
                 true,
             ) {
                 return Err(self.error(field_node, "duplicate field initializer"));
@@ -356,9 +368,9 @@ impl Checker<'_> {
             self.selected(field_node, Operation::FieldInit { field })?;
             let expected = self.instance_field(field_node, term, field)?;
             self.save(field_node, expected);
-            self.work.push(Work::Enter(wrapper, Some(expected)));
+            self.state.work.push(Work::Enter(wrapper, Some(expected)));
         }
-        if base.is_none() && self.field_seen.contains(&false) {
+        if base.is_none() && self.state.field_seen.contains(&false) {
             return Err(self.error(node, "missing aggregate field initializer"));
         }
         Ok(())
@@ -394,17 +406,52 @@ impl Checker<'_> {
         value: NodeId,
         name: Span,
     ) -> Result<TermId, Error> {
+        let field = self.prepare_field(node, value, name)?;
+        self.complete_field(node, field)
+    }
+    pub(super) fn prepare_field(
+        &mut self,
+        node: NodeId,
+        value: NodeId,
+        name: Span,
+    ) -> Result<Field, Error> {
         let name = self.member_name(node, name)?;
         let receiver = self.autoderef(node, self.term(value)?)?;
-        let (selection, ty) = match self.head(node, receiver)? {
-            Some(Constructor::Tuple) => {
+        let kind = self.head(node, receiver)?.ok_or_else(|| {
+            self.error(node, "field access requires a known tuple or struct type")
+        })?;
+        Ok(Field {
+            receiver,
+            name,
+            kind,
+        })
+    }
+    pub(super) fn field_dependency(&self, field: &Field) -> Option<crate::types::ItemId> {
+        let (Constructor::Adt(item, _) | Constructor::AdtArgs(item, _)) = field.kind else {
+            return None;
+        };
+        let definition = &self.report.resolution.definitions[item.0 as usize];
+        (definition.kind == DefKind::Struct
+            && definition
+                .node
+                .is_some_and(|key| self.facts.members.at_node(key).is_none()))
+        .then_some(item)
+    }
+    pub(super) fn complete_field(&mut self, node: NodeId, field: Field) -> Result<TermId, Error> {
+        let Field {
+            receiver,
+            name,
+            kind,
+        } = field;
+        let (selection, ty) = match kind {
+            Constructor::Tuple => {
                 let Name::Index(index) = name else {
                     return Err(self.error(node, "tuple field requires a numeric index"));
                 };
                 let ty = self.child(node, receiver, index as usize)?;
                 (Selection::Tuple(index), ty)
             }
-            Some(Constructor::Adt(item, _) | Constructor::AdtArgs(item, _)) => {
+            Constructor::Adt(item, _) | Constructor::AdtArgs(item, _) => {
                 let variant = self.struct_variant(node, item)?;
                 let field = self
                     .facts
@@ -430,7 +477,7 @@ impl Checker<'_> {
         let operation = match self.head(node, array)? {
             Some(Constructor::Array(length)) => Some(Operation::Index { length }),
             Some(Constructor::ArrayTerm(_) | Constructor::ArrayInfer(_)) => {
-                self.pending_indexes.insert(node, array);
+                self.state.pending_indexes.insert(node, array);
                 None
             }
             Some(Constructor::Slice) => Some(Operation::IndexSlice),
@@ -447,7 +494,7 @@ impl Checker<'_> {
         &mut self,
         solved: &crate::types::infer::Solved,
     ) -> Result<(), Error> {
-        for (&node, &array) in &self.pending_indexes {
+        for (&node, &array) in &self.state.pending_indexes {
             let length =
                 crate::types::length::Length::of(&self.facts.types, solved.types[array.0 as usize])
                     .map_err(|e| self.error(node, e))?;
@@ -464,7 +511,7 @@ impl Checker<'_> {
                 }
             });
         }
-        self.pending_indexes.clear();
+        self.state.pending_indexes.clear();
         Ok(())
     }
     pub(super) fn assignment_target(
@@ -472,7 +519,7 @@ impl Checker<'_> {
         node: NodeId,
         left: NodeId,
     ) -> Result<Option<DefId>, Error> {
-        if self.pending_indexes.contains_key(&left)
+        if self.state.pending_indexes.contains_key(&left)
             || self.facts.node(self.key(left)).is_some_and(|f| {
                 matches!(
                     f.operation,

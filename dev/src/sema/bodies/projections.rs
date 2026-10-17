@@ -96,10 +96,12 @@ impl Checker<'_> {
     pub(super) fn known_projection(&mut self, node: NodeId, ty: TypeId) -> Result<TermId, Error> {
         let ty = self.normalize_known_projection(node, ty)?;
         let term = self
+            .state
             .infer
             .known(&self.facts.types, ty)
             .map_err(|e| self.error(node, e))?;
-        self.infer
+        self.state
+            .infer
             .apply_normalization(&mut self.facts.types, term, ty)
             .map_err(|e| self.error(node, e))?;
         Ok(term)
@@ -123,7 +125,8 @@ impl Checker<'_> {
         let environment = if self.facts.types.escaping_binders(ty) == Some(0) {
             self.projection_environment(node)?
         } else {
-            self.environment_owner
+            self.state
+                .environment_owner
                 .and_then(|owner| self.facts.generics.environments.get(&owner))
                 .cloned()
         };
@@ -136,11 +139,12 @@ impl Checker<'_> {
             self.availability,
         )
         .map_err(|e| self.error(node, e))?;
-        self.infer
+        self.state
+            .infer
             .account_work(steps)
             .map_err(|e| self.error(node, e))?;
         proof
-            .retain_body(self.facts, self.body, self.key(node))
+            .retain_body(self.facts, self.state.body, self.key(node))
             .map_err(|e| self.error(node, e))?;
         Ok(ty)
     }
@@ -163,7 +167,8 @@ impl Checker<'_> {
             uses.collect(&self.facts.types, ty)
                 .map_err(|e| self.error(node, e))?;
         }
-        self.infer
+        self.state
+            .infer
             .account_work(uses.steps)
             .map_err(|e| self.error(node, e))?;
         let mut ids = uses
@@ -188,6 +193,7 @@ impl Checker<'_> {
             }
         }
         let watch = self
+            .state
             .infer
             .watch_resolution(&types, &constants)
             .map_err(|e| self.error(node, e))?;
@@ -198,7 +204,7 @@ impl Checker<'_> {
                 _ => None,
             })
             .collect();
-        self.projections.insert(
+        self.state.projections.insert(
             watch,
             Query {
                 node,
@@ -220,15 +226,18 @@ impl Checker<'_> {
         term: TermId,
     ) -> Result<(), Error> {
         let roots = self
+            .state
             .infer
             .normalization_roots(&self.facts.types, term, scope, |parent, count| {
-                self.projections
+                self.state
+                    .projections
                     .scope(parent, count)
                     .map_err(|_| crate::types::infer::Error::InvalidIdentity)
             })
             .map_err(|e| self.error(node, e))?;
         for (scope, term) in roots {
             if !self
+                .state
                 .projections
                 .data
                 .get_or_insert_with(Default::default)
@@ -238,14 +247,16 @@ impl Checker<'_> {
                 continue;
             }
             let input = self
+                .state
                 .infer
                 .retain_projection(&mut self.facts.types, term)
                 .map_err(|e| self.error(node, e))?;
             let watch = self
+                .state
                 .infer
                 .watch_changes(&[input], &[])
                 .map_err(|e| self.error(node, e))?;
-            self.projections.insert(
+            self.state.projections.insert(
                 watch,
                 Query {
                     node,
@@ -268,11 +279,13 @@ impl Checker<'_> {
         relation: Relation,
     ) -> Result<(), Error> {
         if let Outcome::Pending(id) = self
+            .state
             .infer
             .equate_deferred(&self.facts.types, left, right, relation)
             .map_err(|e| self.error(node, e))?
         {
-            self.projections
+            self.state
+                .projections
                 .data
                 .get_or_insert_with(Default::default)
                 .equations
@@ -281,32 +294,36 @@ impl Checker<'_> {
         Ok(())
     }
     pub(super) fn advance_projections(&mut self, body: NodeId) -> Result<bool, Error> {
-        if !self.projections.active() {
+        if !self.state.projections.active() {
             return Ok(false);
         }
         let mut progress = false;
         loop {
             while let Some(watch) = self
+                .state
                 .infer
                 .ready_resolution(&self.facts.types)
                 .map_err(|e| self.error(body, e))?
             {
                 let query = self
+                    .state
                     .projections
                     .data
                     .as_mut()
                     .and_then(|d| d.tasks.remove(&watch))
                     .ok_or_else(|| self.error(body, "missing body normalization query"))?;
                 let resolved = self
+                    .state
                     .infer
                     .watch_resolved(watch)
                     .map_err(|e| self.error(body, e))?;
                 let (query, advanced) = self.complete_projection(query, resolved, watch)?;
                 progress |= advanced;
                 if let Some(query) = query {
-                    self.projections.insert(watch, query);
+                    self.state.projections.insert(watch, query);
                 } else {
-                    self.infer
+                    self.state
+                        .infer
                         .cancel_watch(watch)
                         .map_err(|e| self.error(body, e))?;
                     progress = true;
@@ -314,11 +331,13 @@ impl Checker<'_> {
             }
             let mut resumed = false;
             while let Some(id) = self
+                .state
                 .infer
                 .ready_equation()
                 .map_err(|e| self.error(body, e))?
             {
                 let node = self
+                    .state
                     .projections
                     .data
                     .as_ref()
@@ -326,11 +345,12 @@ impl Checker<'_> {
                     .copied()
                     .ok_or_else(|| self.error(body, "missing suspended body equation"))?;
                 let outcome = self
+                    .state
                     .infer
                     .resume_equation(&self.facts.types, id)
                     .map_err(|e| self.error(node, e))?;
                 if outcome == Outcome::Complete
-                    && let Some(data) = &mut self.projections.data
+                    && let Some(data) = &mut self.state.projections.data
                 {
                     data.equations.remove(&id);
                 }
@@ -368,6 +388,7 @@ impl Checker<'_> {
             .and_then(|n| n.checked_add(1))
             .ok_or_else(|| self.error(node, "body projection region space exhausted"))?;
         let plan = self
+            .state
             .projections
             .data
             .as_ref()
@@ -394,10 +415,12 @@ impl Checker<'_> {
                     selection::Progress::Complete => {
                         if let Task::Normalize { output, .. } = query.task {
                             let ty = self
+                                .state
                                 .infer
                                 .resolved(&mut self.facts.types, term)
                                 .map_err(|e| self.error(node, e))?;
-                            self.infer
+                            self.state
+                                .infer
                                 .apply_normalization(&mut self.facts.types, output, ty)
                                 .map_err(|e| self.error(node, e))?;
                         }
@@ -406,12 +429,13 @@ impl Checker<'_> {
                         let Task::Normalize { input, output } = query.task else {
                             return Err(self.error(node, "symbolic result was already published"));
                         };
-                        self.infer
+                        self.state
+                            .infer
                             .publish_projection(&self.facts.types, output, result)
                             .map_err(|e| self.error(node, e))?;
                         query.task = Task::Symbolic { input, output };
                         proof
-                            .retain_body(self.facts, self.body, self.key(node))
+                            .retain_body(self.facts, self.state.body, self.key(node))
                             .map_err(|e| self.error(node, e))?;
                         self.defer_normalization(node, query.scope, result)?;
                         self.published_normalization(node, output)?;
@@ -423,7 +447,8 @@ impl Checker<'_> {
                     }
                     selection::Progress::AwaitChange => return Ok((Some(query), false)),
                     selection::Progress::AwaitResolution => {
-                        self.infer
+                        self.state
+                            .infer
                             .await_resolution(watch)
                             .map_err(|e| self.error(node, e))?;
                         return Ok((Some(query), false));
@@ -432,6 +457,7 @@ impl Checker<'_> {
             }
             Task::Normalize { input: term, .. } | Task::Symbolic { input: term, .. } => {
                 let ty = self
+                    .state
                     .infer
                     .resolved(&mut self.facts.types, term)
                     .map_err(|e| self.error(node, e))?;
@@ -440,7 +466,8 @@ impl Checker<'_> {
                     Task::Normalize { output, .. } => output,
                     _ => term,
                 };
-                self.infer
+                self.state
+                    .infer
                     .apply_normalization(&mut self.facts.types, target, ty)
                     .map_err(|e| self.error(node, e))?;
             }
@@ -449,7 +476,7 @@ impl Checker<'_> {
             self.deferred_equation(node, input, output, Relation::Equality)?;
         }
         proof
-            .retain_body(self.facts, self.body, self.key(node))
+            .retain_body(self.facts, self.state.body, self.key(node))
             .map_err(|e| self.error(node, e))?;
         if published.is_none()
             && let Some(input) = input
@@ -475,6 +502,7 @@ impl Checker<'_> {
             && self.facts.types.has_free_regions(ty, 0) == Some(false);
         if cacheable
             && let Some(&result) = self
+                .state
                 .projections
                 .data
                 .as_ref()
@@ -492,11 +520,13 @@ impl Checker<'_> {
             self.availability,
         )
         .map_err(|e| self.error(node, e))?;
-        self.infer
+        self.state
+            .infer
             .account_work(steps)
             .map_err(|e| self.error(node, e))?;
         if cacheable && proof.is_empty() {
-            self.projections
+            self.state
+                .projections
                 .data
                 .get_or_insert_with(Default::default)
                 .normal_forms

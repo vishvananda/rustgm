@@ -9157,3 +9157,91 @@ constant-chain controls change by -0.02% to +0.64%. Some individual blocks and
 same-binary calibration spreads remain noisy, so these results do not establish a
 tight wall-time bound. They show no large regression from retaining contracts.
 Raw observations and `performance-review.json` are beside the validation record.
+
+
+### Resumable declaration bodies and separate nominal readiness (2026-10-17)
+
+Declaration-time inference can now yield an exact missing field dependency while
+retaining its owned inference graph, receiver term, worklist, caller environment
+and proof state. The declaration scheduler completes the requested template, then
+resumes the pending field operation. Anonymous constants and selected initializer
+bodies use the same continuation; they do not restart inference. Initializer
+states distinguish unseen, active and completed typing, so an interleaved demand
+cannot mistake an unfinished initializer for a reusable result.
+
+Suspended bodies retain sparse node, divergence and binding slots. Storage is
+selected before checker construction, independently of implementation evidence;
+ordinary completed bodies keep reusable dense scratch. Constant query scratch
+also retains the immutable source-work budget instead of rescanning every source
+unit on each resumption. Counters distinguish completed body work, suspensions and
+concurrently retained slot capacity. The capacity counter covers those slot tables,
+not every allocation in the inference state.
+
+Nominal formation requirements now have a separate shared traversal through
+canonical type edges, including reference referents and written trait inputs.
+It prepares immutable nominal contracts without following their field templates
+or discharging caller obligations. This permits an unused referent whose fields
+depend on the enclosing constant. Actual field access still requests the fields;
+real constant/field cycles remain errors.
+
+Qualification exposed an additional dependency error: publishing a body's types
+prepared storage for annotation terms and cached nominal substitution environments,
+including a trait's Self type. Annotation terms now retain formation and lifetime
+checks separately from storage demands. Actual constructor expressions remain
+values, and explicit field receivers retain their own ordered storage requests,
+including implicit dereferences. Merely constructing a substitution environment
+no longer requests the nominal's fields.
+
+The permanent value-readiness cases declare 22 independently checked outcomes:
+15 native positives and seven negatives. They cover direct and referenced values,
+repeated dereferences, nested declaration constants, initializer suspension, both
+source orders, unused referents, lifetime conformance across suspensions and actual
+cycles. Separate growth invariants vary the number of field dependencies, nested
+suspended bodies and unrelated declarations at sizes 8, 24 and 72. Earlier failed
+Clippy runs and the generic-owner storage regression remain recorded under
+`obj/pa20-work/body-readiness-v1` through `body-readiness-v9`.
+
+The broader frozen shape corpus still records nine valid programs rejected at
+`missing completed associated type definition`. These are positive gaps requiring
+selected-definition readiness for body normalization; they are not negative
+language fixtures. Early impl-header constant dependencies, the semantic-view
+extension and the public PA20 suite also remain outstanding. PA20–25 remain
+planned stages. The owned continuation is an algorithmic prerequisite for those
+features, not a claim that every generic/lifetime frontend path is linear.
+
+
+The final candidate is
+`4d0c13faa2825f3535c154b5732d07416f51772564723ea472c1231b43c5574f`.
+All 30 validation gates pass: 1,217 regular tests, 80 native groups, 4,871 PA1–19
+cases, strict Clippy, formatting, the 757-file audit, harness, upstream and backend
+checks. All 760 source/configuration hashes and 14,613 existing oracle sidecars
+agree. PA20–25 still reject as planned stages. The record is
+`obj/pa20-work/body-readiness-v6/review.json`.
+
+Work/storage counters support the intended continuation scaling. At sizes 8, 24
+and 72, nested bodies take 259, 675 and 1,923 work steps and retain 48, 144 and
+432 slots at peak. Growing unrelated source from 3,661 to 30,285 nodes leaves
+body work at 133 steps and retained capacity at six slots. Whole-frontend
+instruction profiles for the new field-demand family are 7.86, 20.39 and 58.43
+million; nested dependencies take 9.75, 26.57 and 77.69 million. Unrelated-source
+controls take 40.87, 109.49 and 321.69 million instructions. These observations
+are consistent with linear growth over the tested range, while all nine full
+LowIR outputs match their independently native-qualified controls. Raw profiles,
+input hashes and `body-work.json` remain beside the validation record.
+
+
+The first timing study retains 390 observations and 60 full-output qualifications
+across 15 jobs. Some existing controls show 3–7% median increases, alongside noisy
+same-binary calibration. Followup instruction profiles cover all eleven existing
+A/B controls in the same emit/count modes: changes range from -0.22% to +2.15%.
+The closed constant-chain sizes 32, 128 and 256 retain their growth curve, with
+1.82%, 1.73% and 1.78% additional instructions respectively.
+
+Six followup timing jobs retain 156 batched observations and 24 full-output
+qualifications, each with four executions. Ordinary and size-256 constant-chain
+A/B medians increase by 1.46% and 1.64%; their same-binary paired medians range
+from +0.10% to +0.58%. Some individual blocks and calibration spreads remain
+large, so no tight wall-time bound is claimed. The change retains a small measured
+overhead for resumable inference and exact readiness. It does not erase the
+existing dependency-closure scaling improvement. All outputs and source, binary
+and input hashes agree; `performance-review.json` retains the combined review.

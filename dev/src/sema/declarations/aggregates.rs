@@ -1,5 +1,6 @@
 //! Complete nominal declarations after reserving their recursive identities.
 mod derives;
+mod formation;
 mod headers;
 mod outlives;
 mod readiness;

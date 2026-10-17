@@ -26,12 +26,13 @@ impl Checker<'_> {
         context
             .equate_normal_forms(&self.facts.types, left, right)
             .map_err(|e| self.error(node, e))?;
-        self.infer
+        self.state
+            .infer
             .account_work(context.steps)
             .map_err(|e| self.error(node, e))?;
         proof.equalities.append(&mut context.region_equalities);
         proof
-            .retain_body(self.facts, self.body, self.key(node))
+            .retain_body(self.facts, self.state.body, self.key(node))
             .map_err(|e| self.error(node, e))
     }
 
@@ -97,10 +98,12 @@ impl Checker<'_> {
         for (id, argument) in contract.arguments {
             let value = match argument {
                 Argument::Type(term) => self
+                    .state
                     .infer
                     .resolved(&mut self.facts.types, term)
                     .map(Canonical::Type),
                 Argument::Const(term) => self
+                    .state
                     .infer
                     .resolved_const(&mut self.facts.types, term)
                     .map(Canonical::Const),
@@ -133,7 +136,7 @@ impl Checker<'_> {
         }
         // Caller universals are interpreted below both the source callable and
         // alias-local binders; local quantified slots must never become body aliases.
-        let mut universals = Bound::new(self.call_types.universal_arguments());
+        let mut universals = Bound::new(self.state.call_types.universal_arguments());
         expansion
             .proof
             .substitute_inside(&mut self.facts.types, &mut universals, depth)
@@ -150,7 +153,8 @@ impl Checker<'_> {
                 .apply_inside(&mut self.facts.types, *ty, depth)
                 .map_err(|e| self.error(node, e))?;
         }
-        self.infer
+        self.state
+            .infer
             .account_work(
                 rebasing
                     .saturating_add(fresh.steps)
@@ -163,6 +167,7 @@ impl Checker<'_> {
 
     fn prove_projection_size(&mut self, node: NodeId, depth: u16, ty: TypeId) -> Result<(), Error> {
         let environment = self
+            .state
             .method_environment
             .as_ref()
             .map(|env| {

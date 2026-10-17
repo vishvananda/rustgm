@@ -47,7 +47,7 @@ impl Checker<'_> {
         let literal = self
             .report
             .package
-            .unit(self.file)
+            .unit(self.state.file)
             .configured
             .ast
             .literals
@@ -73,7 +73,7 @@ impl Checker<'_> {
             .unwrap_or(literal);
         self.equate_pattern(node, literal, term)?;
         self.request_pattern_literal(node, id);
-        self.pattern_refutable = true;
+        self.state.pattern_refutable = true;
         Ok(Pattern::Pending)
     }
     pub(super) fn array_reference_slice(
@@ -101,10 +101,12 @@ impl Checker<'_> {
         }
         let element = self.child(node, source, 0)?;
         let slice = self
+            .state
             .infer
             .construct(Constructor::Slice, &[element])
             .map_err(|e| self.error(node, e))?;
         let reference = self
+            .state
             .infer
             .construct(Constructor::Reference { mutable: a, region }, &[slice])
             .map_err(|e| self.error(node, e))?;

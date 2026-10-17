@@ -12,18 +12,18 @@ pub(super) enum CoercionWork {
 
 impl Checker<'_> {
     pub(super) fn finish_reference_coercions(&mut self) -> Result<(), Error> {
-        while let Some(work) = self.reference_work.pop() {
-            self.reference_steps += 1;
+        while let Some(work) = self.state.reference_work.pop() {
+            self.state.reference_steps += 1;
             let node = match work {
                 CoercionWork::Enter(node, ..) | CoercionWork::Finish(node, ..) => node,
             };
-            if self.reference_steps > 1_000_000 {
+            if self.state.reference_steps > 1_000_000 {
                 return Err(self.error(node, "reference coercion propagation budget exceeded"));
             }
             match work {
                 CoercionWork::Enter(node, expected, identity_reborrow, contextual) => {
                     if contextual {
-                        self.reference_expected.insert(node);
+                        self.state.reference_expected.insert(node);
                     }
                     self.coerce_one(node, expected, identity_reborrow)?;
                 }
@@ -31,7 +31,7 @@ impl Checker<'_> {
                     // The result is supplied by the coerced branch/tail, so no
                     // read of an unadjusted mutable reference precedes its borrow.
                     self.save(node, expected);
-                    self.adjustments.push(super::PendingAdjustment {
+                    self.state.adjustments.push(super::PendingAdjustment {
                         node,
                         actual: expected,
                         expected,
@@ -51,7 +51,7 @@ impl Checker<'_> {
     ) -> Result<bool, Error> {
         // A block typed without an expected reference has already consumed its
         // tail. A later join can coerce that result, but cannot undo its move.
-        let contextual = self.reference_expected.contains(&node);
+        let contextual = self.state.reference_expected.contains(&node);
         if !contextual
             && !matches!(
                 self.kind(node),
@@ -73,21 +73,22 @@ impl Checker<'_> {
         ) {
             return Ok(false);
         }
-        self.reference_work
+        self.state
+            .reference_work
             .push(CoercionWork::Finish(node, expected));
         let enter = |node| CoercionWork::Enter(node, expected, identity_reborrow, contextual);
         match self.kind(node) {
             Kind::Group(value) | Kind::Attributed { value, .. } | Kind::Label { value, .. } => {
-                self.reference_work.push(enter(value));
+                self.state.reference_work.push(enter(value));
             }
             Kind::Block { tail, .. } | Kind::Expansion { tail, .. } => {
-                self.reference_work.extend(tail.map(enter));
+                self.state.reference_work.extend(tail.map(enter));
             }
             Kind::If {
                 then, otherwise, ..
             } => {
-                self.reference_work.extend(otherwise.map(enter));
-                self.reference_work.push(enter(then));
+                self.state.reference_work.extend(otherwise.map(enter));
+                self.state.reference_work.push(enter(then));
             }
             Kind::Match { .. } => {
                 let id = *self
@@ -98,18 +99,19 @@ impl Checker<'_> {
                     .ok_or_else(|| self.error(node, "missing reference match selection"))?;
                 let decision = &self.facts.patterns.decisions[id as usize];
                 for index in (decision.start..decision.end).rev() {
-                    self.reference_work
+                    self.state
+                        .reference_work
                         .push(enter(self.facts.patterns.arms[index as usize].value.node));
                 }
             }
             _ => {}
         }
-        let mut site = self.break_roots.get(&node).copied();
+        let mut site = self.state.break_roots.get(&node).copied();
         while let Some(index) = site {
-            if let Some(value) = self.breaks[index].value {
-                self.reference_work.push(enter(value));
+            if let Some(value) = self.state.breaks[index].value {
+                self.state.reference_work.push(enter(value));
             }
-            site = self.breaks[index].next;
+            site = self.state.breaks[index].next;
         }
         Ok(true)
     }
@@ -157,11 +159,13 @@ impl Checker<'_> {
             };
             let referent = self.child(node, expected, 0)?;
             let borrow = self
+                .state
                 .infer
                 .construct(Constructor::Reference { mutable, region }, &[referent])
                 .map_err(|e| self.error(node, e))?;
-            self.reference_adjustments
-                .insert(self.adjustments.len(), (selection, borrow));
+            self.state
+                .reference_adjustments
+                .insert(self.state.adjustments.len(), (selection, borrow));
             AdjustmentKind::Reborrow
         };
         self.record_adjustment(node, expected, kind)?;
@@ -234,13 +238,15 @@ impl Checker<'_> {
         }
         let referent = if unsize {
             let element = self.child(node, source, 0)?;
-            self.infer
+            self.state
+                .infer
                 .construct(Constructor::Slice, &[element])
                 .map_err(|e| self.error(node, e))?
         } else {
             source
         };
         let converted = self
+            .state
             .infer
             .construct(
                 Constructor::Reference {
@@ -305,7 +311,7 @@ impl Checker<'_> {
         } else {
             None
         };
-        self.work.push(Work::Enter(operand, referent));
+        self.state.work.push(Work::Enter(operand, referent));
         Ok(())
     }
     pub(super) fn borrow(
@@ -315,18 +321,19 @@ impl Checker<'_> {
         mutable: bool,
     ) -> Result<TermId, Error> {
         let referent = self.term(operand)?;
-        let region = if self.in_function {
+        let region = if self.state.in_function {
             self.body_region(node, BodyRegionOrigin::ExpressionBorrow)?
         } else {
             // Constant inspection still checks promotion eligibility when demanded.
             RegionId::STATIC
         };
         let term = self
+            .state
             .infer
             .construct(Constructor::Reference { mutable, region }, &[referent])
             .map_err(|e| self.error(node, e))?;
         self.selected(node, Operation::Borrow)?;
-        self.alignment.borrows.push((node, operand));
+        self.state.alignment.borrows.push((node, operand));
         Ok(term)
     }
     pub(super) fn dereference(&mut self, node: NodeId, operand: NodeId) -> Result<TermId, Error> {
@@ -342,6 +349,7 @@ impl Checker<'_> {
     }
     pub(super) fn autoderef(&mut self, node: NodeId, term: TermId) -> Result<TermId, Error> {
         let (term, count) = self
+            .state
             .infer
             .reference_target(&self.facts.types, term)
             .map_err(|e| self.error(node, e))?;

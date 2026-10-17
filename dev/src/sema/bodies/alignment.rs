@@ -26,7 +26,8 @@ fn capped(a: Option<u32>, b: Option<u32>) -> Option<u32> {
 }
 impl Checker<'_> {
     fn alignment_step(&mut self, node: NodeId, count: usize) -> Result<(), Error> {
-        self.alignment.steps = self
+        self.state.alignment.steps = self
+            .state
             .alignment
             .steps
             .checked_add(count)
@@ -42,10 +43,10 @@ impl Checker<'_> {
         }
     }
     fn packed_place(&mut self, mut node: NodeId) -> Result<Option<u32>, Error> {
-        self.alignment.place_work.clear();
+        self.state.alignment.place_work.clear();
         let mut pack = loop {
             self.alignment_step(node, 1)?;
-            if let Some(&pack) = self.alignment.places.get(&node) {
+            if let Some(&pack) = self.state.alignment.places.get(&node) {
                 break pack;
             }
             let (base, field) = match self.kind(node) {
@@ -70,15 +71,15 @@ impl Checker<'_> {
                 ty = referent;
             }
             let cap = if field { self.packed_type(ty) } else { None };
-            self.alignment.place_work.push((node, cap));
+            self.state.alignment.place_work.push((node, cap));
             if dereferences != 0 {
                 break None;
             }
             node = base;
         };
-        while let Some((node, cap)) = self.alignment.place_work.pop() {
+        while let Some((node, cap)) = self.state.alignment.place_work.pop() {
             pack = capped(pack, cap);
-            self.alignment.places.insert(node, pack);
+            self.state.alignment.places.insert(node, pack);
         }
         Ok(pack)
     }
@@ -106,8 +107,8 @@ impl Checker<'_> {
         packed: Option<u32>,
         guard: bool,
     ) -> Result<(), Error> {
-        self.alignment.pattern_work.push((root, packed));
-        while let Some((id, pack)) = self.alignment.pattern_work.pop() {
+        self.state.alignment.pattern_work.push((root, packed));
+        while let Some((id, pack)) = self.state.alignment.pattern_work.pop() {
             let pattern = &self.facts.patterns.nodes[id.0 as usize];
             let source = pattern.source.node;
             let kind = pattern.kind;
@@ -125,16 +126,16 @@ impl Checker<'_> {
                         self.alignment_requirement(source, ty, pack, guard)?;
                     }
                     if let Some(id) = subpattern {
-                        self.alignment.pattern_work.push((id, pack));
+                        self.state.alignment.pattern_work.push((id, pack));
                     }
                 }
                 Pattern::Dereference { pattern, .. } => {
-                    self.alignment.pattern_work.push((pattern, None));
+                    self.state.alignment.pattern_work.push((pattern, None));
                 }
                 Pattern::Product { fields, .. } | Pattern::Slice { fields, .. } => {
                     let cap = capped(pack, self.packed_type(ty));
                     self.alignment_step(source, (fields.end - fields.start) as usize)?;
-                    self.alignment.pattern_work.extend(
+                    self.state.alignment.pattern_work.extend(
                         self.facts
                             .patterns
                             .fields(fields)
@@ -145,7 +146,7 @@ impl Checker<'_> {
                 }
                 Pattern::Or(alternatives) => {
                     self.alignment_step(source, (alternatives.end - alternatives.start) as usize)?;
-                    self.alignment.pattern_work.extend(
+                    self.state.alignment.pattern_work.extend(
                         self.facts
                             .patterns
                             .alternatives(alternatives)
@@ -160,18 +161,18 @@ impl Checker<'_> {
         Ok(())
     }
     pub(super) fn publish_reference_alignment(&mut self) -> Result<(), Error> {
-        for i in 0..self.alignment.borrows.len() {
-            let (source, operand) = self.alignment.borrows[i];
+        for i in 0..self.state.alignment.borrows.len() {
+            let (source, operand) = self.state.alignment.borrows[i];
             let packed = self.packed_place(operand)?;
             self.alignment_requirement(source, self.ty(operand)?, packed, false)?;
         }
-        for i in 0..self.alignment.patterns.len() {
-            let (id, input) = self.alignment.patterns[i];
+        for i in 0..self.state.alignment.patterns.len() {
+            let (id, input) = self.state.alignment.patterns[i];
             let packed = input.map(|n| self.packed_place(n)).transpose()?.flatten();
             self.pattern_alignment(id, packed, false)?;
         }
-        for i in 0..self.matches.len() {
-            let decision = &self.facts.patterns.decisions[self.matches[i] as usize];
+        for i in 0..self.state.matches.len() {
+            let decision = &self.facts.patterns.decisions[self.state.matches[i] as usize];
             let (input, start, end) = (decision.scrutinee.node, decision.start, decision.end);
             let packed = self.packed_place(input)?;
             for index in start..end {
@@ -181,10 +182,10 @@ impl Checker<'_> {
                 }
             }
         }
-        self.alignment.borrows.clear();
-        self.alignment.patterns.clear();
-        self.alignment.places.clear();
-        self.alignment.steps = 0;
+        self.state.alignment.borrows.clear();
+        self.state.alignment.patterns.clear();
+        self.state.alignment.places.clear();
+        self.state.alignment.steps = 0;
         Ok(())
     }
 }

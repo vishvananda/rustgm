@@ -96,7 +96,10 @@ impl Queries<'_> {
         Ok(pending)
     }
 
-    pub(super) fn member_readiness(&mut self, work: &Work) -> Result<Vec<ConstantRequest>, Error> {
+    pub(super) fn member_readiness(
+        &mut self,
+        work: &Work,
+    ) -> Result<Option<super::suspension::Dependency>, Error> {
         let (query, index, instance) = match *work {
             Work::Enter(query @ (Query::Constant(index) | Query::Static(index))) => {
                 (query, index, None)
@@ -111,15 +114,23 @@ impl Queries<'_> {
                     .ok_or_else(|| self.error(query, "selected constant has no initializer"))?;
                 (query, index, Some(instance))
             }
-            _ => return Ok(Vec::new()),
+            _ => return Ok(None),
         };
-        if !self.checked_members.insert(query) {
-            return Ok(Vec::new());
+        if self.checked_members.contains(&query) {
+            return Ok(None);
         }
-        if !self.typing.facts.initializers[index].type_checked {
-            self.typing.initializer(index)?;
+        if !self.typing.facts.initializers[index].type_checked() {
+            let dependency = if self.typing.pending_body() {
+                self.typing.advance_body()?
+            } else {
+                self.typing.start_initializer(index)?
+            };
+            if let Some(dependency) = dependency {
+                return Ok(Some(super::suspension::Dependency::Nominal(dependency)));
+            }
             self.require_complete_patterns(query)?;
         }
+        self.checked_members.insert(query);
         let definition = self.typing.facts.initializers[index].definition;
         let instances = self
             .typing
@@ -137,6 +148,7 @@ impl Queries<'_> {
             .map(|instance| instance.substitution(self.typing.facts))
             .transpose()
             .map_err(|e| self.error(query, e))?;
-        self.demand_members(instances, substitution)
+        let members = self.demand_members(instances, substitution)?;
+        Ok((!members.is_empty()).then_some(super::suspension::Dependency::Members(members)))
     }
 }

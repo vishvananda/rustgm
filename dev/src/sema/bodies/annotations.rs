@@ -4,9 +4,9 @@ use crate::sema::annotations::{Fields, Host};
 
 impl Checker<'_> {
     pub(super) fn annotation(&mut self, root: NodeId) -> Result<TermId, Error> {
-        let mut scratch = std::mem::take(&mut self.annotations);
+        let mut scratch = std::mem::take(&mut self.state.annotations);
         let result = scratch.infer(self, self.key(root));
-        self.annotations = scratch;
+        self.state.annotations = scratch;
         result
     }
 }
@@ -18,22 +18,26 @@ impl Host for Checker<'_> {
         self.facts
     }
     fn inference(&mut self) -> (&mut Declarations, &mut Context) {
-        (self.facts, &mut self.infer)
+        (self.facts, &mut self.state.infer)
     }
     fn cached(&self, key: NodeKey) -> Option<TermId> {
-        self.terms[key.file.0 as usize][key.node.0 as usize]
+        self.state.terms.get(key)
     }
     fn save(&mut self, key: NodeKey, term: TermId) {
         self.save(key.node, term);
+        self.state.type_annotations.insert(key.node);
     }
     fn nominal(&mut self, term: TermId, fields: Fields) {
-        self.call_types.insert_nominal(term, fields);
+        self.state.call_types.insert_nominal(term, fields);
     }
     fn requirement(&mut self, key: NodeKey, predicate: crate::types::infer::predicates::Predicate) {
-        self.call_types.obligations.push((key.node, predicate));
+        self.state
+            .call_types
+            .obligations
+            .push((key.node, predicate));
     }
     fn callable(&mut self, key: NodeKey) {
-        self.annotation_checks.push(key.node);
+        self.state.annotation_checks.push(key.node);
     }
     fn scope(
         &mut self,
@@ -41,7 +45,8 @@ impl Host for Checker<'_> {
         parent: crate::types::lifetime_proof::ScopeId,
         count: u32,
     ) -> Result<crate::types::lifetime_proof::ScopeId, Error> {
-        self.projections
+        self.state
+            .projections
             .scope(parent, count)
             .map_err(|e| self.error(key.node, e))
     }
@@ -64,9 +69,9 @@ impl Host for Checker<'_> {
         self.defer_normalization(key.node, scope, term)
     }
     fn child(&mut self, key: NodeKey) {
-        self.annotation_children.insert(key.node);
+        self.state.annotation_children.insert(key.node);
     }
     fn pending_normalization(&self) -> bool {
-        self.projections.active()
+        self.state.projections.active()
     }
 }

@@ -48,10 +48,11 @@ impl Checker<'_> {
         term: TermId,
     ) -> Result<bool, Error> {
         let subject = self
+            .state
             .infer
             .child(&self.facts.types, term, 0)
             .map_err(|e| self.error(node, e))?;
-        selection::has_known_subject(&self.facts.types, &mut self.infer, subject)
+        selection::has_known_subject(&self.facts.types, &mut self.state.infer, subject)
             .map_err(|e| self.error(node, e))
     }
 
@@ -60,6 +61,7 @@ impl Checker<'_> {
         node: NodeId,
     ) -> Result<Option<Arc<Environment>>, Error> {
         if let Some(environment) = self
+            .state
             .projections
             .data
             .as_ref()
@@ -67,12 +69,13 @@ impl Checker<'_> {
         {
             return Ok(environment.clone());
         }
-        let mut fold = Bound::new(self.call_types.universal_arguments());
+        let mut fold = Bound::new(self.state.call_types.universal_arguments());
         let environment = self
+            .state
             .method_environment
             .as_ref()
             .map(|env| {
-                if self.body_binders == 0 || env.has_only_parameters() {
+                if self.state.body_binders == 0 || env.has_only_parameters() {
                     Ok(Arc::clone(env))
                 } else {
                     env.substitute_regions(&mut self.facts.types, &mut fold)
@@ -81,10 +84,12 @@ impl Checker<'_> {
             })
             .transpose()
             .map_err(|e| self.error(node, e))?;
-        self.infer
+        self.state
+            .infer
             .account_work(fold.steps)
             .map_err(|e| self.error(node, e))?;
-        self.projections
+        self.state
+            .projections
             .data
             .get_or_insert_with(Default::default)
             .environment
@@ -102,15 +107,16 @@ impl Checker<'_> {
         expose: bool,
     ) -> Result<Progress, Error> {
         let environment = self.projection_environment(node)?;
-        let assumptions = caller_assumptions(self.facts, &mut self.infer, environment.as_ref())
-            .map_err(|e| self.error(node, e))?;
+        let assumptions =
+            caller_assumptions(self.facts, &mut self.state.infer, environment.as_ref())
+                .map_err(|e| self.error(node, e))?;
         let caller = Caller {
             assumptions: &assumptions,
             environment: environment.as_ref(),
             first_region: proof.regions.end,
             retain_sized: false,
         };
-        if selection::requires_resolved_inputs(self.facts, &mut self.infer, term, &caller)
+        if selection::requires_resolved_inputs(self.facts, &mut self.state.infer, term, &caller)
             .map_err(|e| self.error(node, e))?
         {
             if expose
@@ -127,7 +133,7 @@ impl Checker<'_> {
         let depth = proof.scope_depth(scope).map_err(|e| self.error(node, e))?;
         let mut opened = Opened::new(
             self.facts,
-            &mut self.infer,
+            &mut self.state.infer,
             term,
             environment.as_ref(),
             depth,
@@ -135,7 +141,8 @@ impl Checker<'_> {
         )
         .map_err(|e| self.error(node, e))?;
         let selected = opened.select(self.facts, self.availability);
-        self.infer
+        self.state
+            .infer
             .account_work(opened.context.steps)
             .map_err(|e| self.error(node, e))?;
         let selected = match selected.map_err(|e| self.error(node, e))? {
@@ -152,10 +159,12 @@ impl Checker<'_> {
             }
         };
         let original = self
+            .state
             .infer
             .projection_application(&self.facts.types, term)
             .map_err(|e| self.error(node, e))?;
-        self.infer
+        self.state
+            .infer
             .equate_trait_predicate_inside(
                 &mut self.facts.types,
                 &original.predicate,
@@ -167,7 +176,8 @@ impl Checker<'_> {
             .append_at(opened.proof, scope)
             .map_err(|e| self.error(node, e))?;
         let ty = self.normalize_body_type(node, proof, scope, selected.ty)?;
-        self.infer
+        self.state
+            .infer
             .apply_normalization(&mut self.facts.types, term, ty)
             .map_err(|e| self.error(node, e))?;
         Ok(Progress::Complete)
@@ -182,7 +192,7 @@ impl Checker<'_> {
         caller: &Caller<'_>,
     ) -> Result<Option<TermId>, Error> {
         let Some((result, selected)) =
-            selection::symbolic_result(self.facts, &mut self.infer, term, caller)
+            selection::symbolic_result(self.facts, &mut self.state.infer, term, caller)
                 .map_err(|e| self.error(node, e))?
         else {
             return Ok(None);

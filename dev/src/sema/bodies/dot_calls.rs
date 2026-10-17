@@ -33,13 +33,13 @@ impl Checker<'_> {
             .copied()
             .ok_or_else(|| self.error(node, "missing resolved method call site"))?;
         let term = self.term(site.receiver)?;
-        let environment = self.method_environment.clone();
+        let environment = self.state.method_environment.clone();
         let traits = self.trait_assumptions(node)?;
         let key = self.key(node);
         let selected = receiver::choose(
             self.report,
             self.facts,
-            &mut self.infer,
+            &mut self.state.infer,
             key,
             term,
             site,
@@ -60,7 +60,8 @@ impl Checker<'_> {
                 .and_then(|id| self.facts.associated.get(id))
                 .ok_or_else(|| self.error(node, "missing selected receiver owner"))?
                 .self_definition;
-            self.call_types
+            self.state
+                .call_types
                 .method_owners
                 .insert(node, (implementation, subject));
         }
@@ -79,7 +80,7 @@ impl Checker<'_> {
             actual
         };
         self.shape_equation(node, converted, expected)?;
-        self.call_types.methods.push((
+        self.state.call_types.methods.push((
             node,
             Pending {
                 method: selected.method,
@@ -91,7 +92,7 @@ impl Checker<'_> {
                 unsize: selected.unsize,
             },
         ));
-        self.call_types.active.insert(node, signature);
+        self.state.call_types.active.insert(node, signature);
         self.schedule_call_arguments(node, signature, site.arguments, 1)
     }
 
@@ -102,10 +103,12 @@ impl Checker<'_> {
         let array = self.child(node, actual, 0)?;
         let element = self.child(node, array, 0)?;
         let slice = self
+            .state
             .infer
             .construct(Constructor::Slice, &[element])
             .map_err(|e| self.error(node, e))?;
-        self.infer
+        self.state
+            .infer
             .construct(reference, &[slice])
             .map_err(|e| self.error(node, e))
     }
@@ -131,17 +134,18 @@ impl Checker<'_> {
             borrow = Some(mutable);
         }
         let borrow = if let Some(mutable) = borrow {
-            let region = if self.in_function {
+            let region = if self.state.in_function {
                 self.body_region(node, BodyRegionOrigin::ExpressionBorrow)?
             } else {
                 RegionId::STATIC
             };
             let value = self
+                .state
                 .infer
                 .construct(Constructor::Reference { mutable, region }, &[actual])
                 .map_err(|e| self.error(node, e))?;
             if dereferences == 0 {
-                self.alignment.borrows.push((node, source));
+                self.state.alignment.borrows.push((node, source));
             }
             actual = value;
             Some(value)
@@ -152,8 +156,8 @@ impl Checker<'_> {
     }
 
     pub(super) fn publish_methods(&mut self, solved: &Solved) {
-        for index in 0..self.call_types.methods.len() {
-            let (node, pending) = &self.call_types.methods[index];
+        for index in 0..self.state.call_types.methods.len() {
+            let (node, pending) = &self.state.call_types.methods[index];
             let key = self.key(*node);
             let actual = solved.types[pending.actual.0 as usize];
             let expected = solved.types[pending.expected.0 as usize];
@@ -168,7 +172,7 @@ impl Checker<'_> {
                 },
             );
             self.facts.retain_coercion(Coercion {
-                body: self.body,
+                body: self.state.body,
                 source: key,
                 actual,
                 expected,

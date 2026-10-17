@@ -8,6 +8,19 @@ use crate::{
     syntax::ast::NodeId,
     types::arguments::ConstId,
 };
+#[derive(Clone, Copy)]
+enum Readiness {
+    Value,
+    Contract,
+}
+impl Readiness {
+    fn work(self, ty: crate::types::TypeId) -> Work {
+        match self {
+            Self::Value => Work::ValueShape(ty),
+            Self::Contract => Work::ValueContract(ty, false),
+        }
+    }
+}
 impl Checker<'_> {
     pub(in super::super) fn constant_use(
         &mut self,
@@ -40,7 +53,8 @@ impl Checker<'_> {
             .get(&key)
             .copied()
             .unwrap_or(key);
-        self.constant_annotation(prefix)?;
+        self.constant_annotation(prefix, Readiness::Value)?;
+        self.constant_trait_contracts(key)?;
         if let Some(Target::Definition(owner)) =
             self.facts.node(key).and_then(|fact| fact.reference)
             && self.report.resolution.definitions[owner.0 as usize].kind == DefKind::Const
@@ -69,7 +83,7 @@ impl Checker<'_> {
             })
             .collect::<Vec<_>>();
         for annotation in annotations {
-            self.constant_annotation(annotation)?;
+            self.constant_annotation(annotation, Readiness::Value)?;
         }
         if supplied != 0 {
             let defaults = self.facts.generics.parameters[&owner]
@@ -108,7 +122,33 @@ impl Checker<'_> {
             self.local_context(item, regions::Context::ALIAS),
         )))
     }
-    fn constant_annotation(&mut self, root: NodeKey) -> Result<(), Error> {
+    fn constant_trait_contracts(&mut self, key: NodeKey) -> Result<(), Error> {
+        use crate::sema::generics::SourceArgument;
+        let Some(use_) = self.facts.generics.trait_uses.get(&key) else {
+            return Ok(());
+        };
+        let annotations = use_
+            .subject
+            .into_iter()
+            .chain(
+                use_.arguments
+                    .iter()
+                    .flat_map(|use_| &use_.arguments)
+                    .filter_map(|argument| {
+                        if let SourceArgument::Type(key) = argument {
+                            Some(*key)
+                        } else {
+                            None
+                        }
+                    }),
+            )
+            .collect::<Vec<_>>();
+        for annotation in annotations {
+            self.constant_annotation(annotation, Readiness::Contract)?;
+        }
+        Ok(())
+    }
+    fn constant_annotation(&mut self, root: NodeKey, readiness: Readiness) -> Result<(), Error> {
         use crate::{sema::generics::AnnotationArgument, types::arguments::Argument};
         let mut work = vec![root];
         let mut children = Vec::new();
@@ -119,14 +159,21 @@ impl Checker<'_> {
                 return Err(self.error(root, "constant annotation dependency work budget exceeded"));
             }
             if let Some(ty) = self.facts.node(key).and_then(|f| f.ty) {
-                self.work.push(Work::ValueShape(ty));
+                self.work.push(readiness.work(ty));
             } else if let Some(use_) = self.facts.generics.annotation_uses.get(&key) {
-                self.work.push(Work::ValueType(use_.owner));
+                match readiness {
+                    Readiness::Value => self.work.push(Work::ValueType(use_.owner)),
+                    Readiness::Contract => {
+                        let ty = self.facts.definitions[use_.owner.0 as usize]
+                            .ok_or_else(|| self.error(key, "missing constant type identity"))?;
+                        self.work.push(readiness.work(ty));
+                    }
+                }
                 for argument in &use_.arguments {
                     match *argument {
                         AnnotationArgument::Type(key) => work.push(key),
                         AnnotationArgument::Default(Argument::Type(ty)) => {
-                            self.work.push(Work::ValueShape(ty));
+                            self.work.push(readiness.work(ty));
                         }
                         _ => {}
                     }

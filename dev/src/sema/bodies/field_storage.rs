@@ -14,17 +14,20 @@ impl Checker<'_> {
         if !self.facts.aggregates.has_projected_templates() {
             return Ok(());
         }
-        let mut roots = vec![self.result];
-        for &node in &self.touched {
-            roots.push(solved.types[self.term(node)?.0 as usize]);
+        let mut roots = vec![self.state.result];
+        for &node in &self.state.touched {
+            if !self.state.type_annotations.contains(&node) {
+                roots.push(solved.types[self.term(node)?.0 as usize]);
+            }
         }
         roots.extend(
-            self.call_types
-                .nominal_order
+            self.state
+                .call_types
+                .field_receivers
                 .iter()
                 .map(|term| solved.types[term.0 as usize]),
         );
-        for (_, method) in &self.call_types.methods {
+        for (_, method) in &self.state.call_types.methods {
             roots.extend(method.value_types(solved));
         }
         self.prepare_storage_batch(node, &roots)
@@ -62,13 +65,14 @@ impl Checker<'_> {
         )
         .map_err(|error| self.error(node, error))?;
         for &ty in types {
-            self.storage
+            self.state
+                .storage
                 .get_or_insert_with(Default::default)
                 .prepare(self.facts, ty, &mut session)
                 .map_err(|error| self.error(node, error))?;
         }
         proof
-            .retain_body(self.facts, self.body, self.key(node))
+            .retain_body(self.facts, self.state.body, self.key(node))
             .map_err(|error| self.error(node, error))
     }
 }

@@ -35,7 +35,8 @@ impl Checker<'_> {
         left: crate::types::infer::TermId,
         right: crate::types::infer::TermId,
     ) -> Result<(), Error> {
-        self.infer
+        self.state
+            .infer
             .equate_pattern(&self.facts.types, left, right)
             .map_err(|e| self.error(node, e))
     }
@@ -66,7 +67,8 @@ impl Checker<'_> {
         pattern: Option<PatternId>,
     ) {
         let key = self.key(node);
-        self.pending_patterns
+        self.state
+            .pending_patterns
             .get_or_insert_with(Box::default)
             .requests
             .push((
@@ -74,11 +76,12 @@ impl Checker<'_> {
                 super::super::constants::PatternValue::Definition(definition),
                 pattern,
             ));
-        self.pattern_constants = true;
+        self.state.pattern_constants = true;
     }
     pub(super) fn request_pattern_literal(&mut self, node: NodeId, pattern: PatternId) {
         let key = self.key(node);
-        self.pending_patterns
+        self.state
+            .pending_patterns
             .get_or_insert_with(Box::default)
             .requests
             .push((
@@ -86,7 +89,7 @@ impl Checker<'_> {
                 super::super::constants::PatternValue::Literal(key),
                 Some(pattern),
             ));
-        self.pattern_constants = true;
+        self.state.pattern_constants = true;
     }
     pub(super) fn constant_pattern(
         &mut self,
@@ -110,32 +113,32 @@ impl Checker<'_> {
         self.equate_pattern(node, term, value)?;
         self.save(node, value);
         self.request_pattern_constant(node, definition, Some(id));
-        self.pattern_refutable = true;
+        self.state.pattern_refutable = true;
         Ok(crate::sema::patterns::Kind::Pending)
     }
     pub(super) fn defer_pattern_checks(&mut self) -> Result<(), Error> {
-        let Some(pending) = &mut self.pending_patterns else {
-            return Err(self.error(self.body.node, "missing constant pattern requests"));
+        let Some(pending) = &mut self.state.pending_patterns else {
+            return Err(self.error(self.state.body.node, "missing constant pattern requests"));
         };
         pending.scopes.push(Scope {
             values: super::super::constants::PatternScope {
-                body: self.body,
-                owner: self.environment_owner,
-                binders: self.body_binders,
+                body: self.state.body,
+                owner: self.state.environment_owner,
+                binders: self.state.body_binders,
                 end: pending.requests.len(),
             },
-            module: self.module,
-            ranges: self.range_work.len(),
-            roots: self.pattern_requirements.len(),
-            matches: self.matches.len(),
+            module: self.state.module,
+            ranges: self.state.range_work.len(),
+            roots: self.state.pattern_requirements.len(),
+            matches: self.state.matches.len(),
         });
-        pending.ranges.append(&mut self.range_work);
-        pending.roots.append(&mut self.pattern_requirements);
-        pending.matches.append(&mut self.matches);
+        pending.ranges.append(&mut self.state.range_work);
+        pending.roots.append(&mut self.state.pattern_requirements);
+        pending.matches.append(&mut self.state.matches);
         Ok(())
     }
     pub(super) fn complete_constant_patterns(&mut self) -> Result<(), Error> {
-        let Some(pending) = self.pending_patterns.take() else {
+        let Some(pending) = self.state.pending_patterns.take() else {
             return Ok(());
         };
         super::super::constants::pattern_values(
@@ -148,13 +151,18 @@ impl Checker<'_> {
         let mut roots = pending.roots.into_iter();
         let mut matches = pending.matches.into_iter();
         for scope in pending.scopes {
-            self.body = scope.values.body;
-            self.file = scope.values.body.file;
-            self.module = scope.module;
-            self.range_work.extend(ranges.by_ref().take(scope.ranges));
-            self.pattern_requirements
+            self.state.body = scope.values.body;
+            self.state.file = scope.values.body.file;
+            self.state.module = scope.module;
+            self.state
+                .range_work
+                .extend(ranges.by_ref().take(scope.ranges));
+            self.state
+                .pattern_requirements
                 .extend(roots.by_ref().take(scope.roots));
-            self.matches.extend(matches.by_ref().take(scope.matches));
+            self.state
+                .matches
+                .extend(matches.by_ref().take(scope.matches));
             self.finish_patterns()?;
         }
         Ok(())

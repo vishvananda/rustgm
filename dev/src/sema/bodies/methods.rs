@@ -10,7 +10,7 @@ impl Checker<'_> {
         bindings: &[(ParameterId, Argument)],
     ) -> Result<(), Error> {
         let selected = self.facts.methods.qualified.get(&self.key(node)).copied();
-        let dot = self.call_types.method_owners.get(&node).copied();
+        let dot = self.state.call_types.method_owners.get(&node).copied();
         let Some(implementation) = selected
             .map(|s| s.implementation)
             .or_else(|| dot.map(|d| d.0))
@@ -39,6 +39,7 @@ impl Checker<'_> {
             .apply(&mut self.facts.types, target)
             .map_err(|e| self.error(node, e))?;
         let target = self
+            .state
             .infer
             .instantiate(&mut self.facts.types, target, bindings)
             .map_err(|e| self.error(node, e))?;

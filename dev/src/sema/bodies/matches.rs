@@ -48,7 +48,7 @@ impl Checker<'_> {
             .patterns
             .ranges
             .push(Interval { lower: 0, upper: 0 });
-        self.range_work.push(RangeWork {
+        self.state.range_work.push(RangeWork {
             id,
             source: node,
             start,
@@ -64,8 +64,8 @@ impl Checker<'_> {
             operand,
         } = self.kind(node)
         {
-            self.negated.insert(operand);
-            self.checks.push(node);
+            self.state.negated.insert(operand);
+            self.state.checks.push(node);
             (operand, true)
         } else {
             (node, false)
@@ -100,7 +100,7 @@ impl Checker<'_> {
         };
         let term = self.term(value)?;
         let start = self.arm_index(node)?;
-        let unit = self.report.package.unit(self.file);
+        let unit = self.report.package.unit(self.state.file);
         for &wrapper in unit.configured.ast.list(arms) {
             if !self.active(wrapper) {
                 continue;
@@ -132,12 +132,14 @@ impl Checker<'_> {
             work: 0,
             uninhabited: false,
         });
-        self.matches.push(id);
-        self.work.extend((start..end).rev().map(|index| Work::Arm {
-            index,
-            term,
-            expected,
-        }));
+        self.state.matches.push(id);
+        self.state
+            .work
+            .extend((start..end).rev().map(|index| Work::Arm {
+                index,
+                term,
+                expected,
+            }));
         Ok(())
     }
     fn arm_index(&self, node: NodeId) -> Result<u32, Error> {
@@ -156,11 +158,11 @@ impl Checker<'_> {
         };
         let pattern = self.selected_pattern(pattern, term)?;
         self.facts.patterns.arms[index as usize].pattern = Some(pattern);
-        self.work.push(Work::Exit(arm.source.node));
-        self.work.push(Work::Enter(arm.value.node, expected));
+        self.state.work.push(Work::Exit(arm.source.node));
+        self.state.work.push(Work::Enter(arm.value.node, expected));
         if let Some(guard) = arm.guard {
             let boolean = self.known(guard.node, TypeId::primitive(Primitive::Bool))?;
-            self.work.push(Work::Enter(guard.node, Some(boolean)));
+            self.state.work.push(Work::Enter(guard.node, Some(boolean)));
         }
         Ok(())
     }
@@ -171,7 +173,7 @@ impl Checker<'_> {
         arms: List,
     ) -> Result<TermId, Error> {
         let mut common = self.known(node, TypeId::NEVER)?;
-        let unit = self.report.package.unit(self.file);
+        let unit = self.report.package.unit(self.state.file);
         for &wrapper in unit.configured.ast.list(arms) {
             if !self.active(wrapper) {
                 continue;
@@ -192,7 +194,7 @@ impl Checker<'_> {
         let mut reference_hint = false;
         for index in decision.start..decision.end {
             let value = self.facts.patterns.arms[index as usize].value.node;
-            let contextual = self.reference_expected.contains(&value);
+            let contextual = self.state.reference_expected.contains(&value);
             self.coerce_one(value, common, contextual || reference_hint)?;
             self.finish_reference_coercions()?;
             reference_hint |= matches!(
@@ -207,11 +209,11 @@ impl Checker<'_> {
         }
     }
     pub(super) fn finish_patterns(&mut self) -> Result<(), Error> {
-        if std::mem::take(&mut self.pattern_constants) {
+        if std::mem::take(&mut self.state.pattern_constants) {
             return self.defer_pattern_checks();
         }
         // Solved node facts were published before scalar literal validation.
-        for work in std::mem::take(&mut self.range_work) {
+        for work in std::mem::take(&mut self.state.range_work) {
             let ty = work
                 .start
                 .or(work.end)
@@ -251,10 +253,10 @@ impl Checker<'_> {
             }
             self.facts.patterns.ranges[work.id.0 as usize] = Interval { lower, upper };
         }
-        for (root, valid) in std::mem::take(&mut self.pattern_requirements) {
+        for (root, valid) in std::mem::take(&mut self.state.pattern_requirements) {
             self.require_irrefutable(root, valid)?;
         }
-        for id in std::mem::take(&mut self.matches) {
+        for id in std::mem::take(&mut self.state.matches) {
             self.check_match(id)?;
         }
         Ok(())
@@ -406,13 +408,13 @@ impl Checker<'_> {
         let mut coverage = patterns::coverage::Coverage::new(
             self.facts,
             report,
-            self.module,
+            self.state.module,
             ty,
             valid,
             patterns::coverage::Roots::Arms(
                 &self.facts.patterns.arms[start as usize..end as usize],
             ),
-            &mut self.coverage_cache,
+            &mut self.state.coverage_cache,
         )
         .map_err(error)?;
         let mut usefulness = Vec::new();
@@ -446,11 +448,11 @@ impl Checker<'_> {
         let mut coverage = patterns::coverage::Coverage::new(
             self.facts,
             report,
-            self.module,
+            self.state.module,
             ty,
             valid,
             patterns::coverage::Roots::Pattern(root),
-            &mut self.coverage_cache,
+            &mut self.state.coverage_cache,
         )
         .map_err(error)?;
         coverage.arm(root, false).map_err(error)?;

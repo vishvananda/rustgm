@@ -150,6 +150,7 @@ struct Queries<'a> {
     scan: Vec<NodeKey>,
     steps: usize,
     limit: usize,
+    source_work: usize,
     pattern_values: HashSet<Value>,
     drop_scratch: Option<Box<drops::Scratch>>,
     layout_scratch: layouts::Scratch,
@@ -164,6 +165,7 @@ pub(super) struct Scratch {
     typing: bodies::Scratch,
     constants: Vec<Option<usize>>,
     indexed: usize,
+    source_work: Option<usize>,
     scan: Vec<NodeKey>,
     drops: Option<Box<drops::Scratch>>,
     layouts: layouts::Scratch,
@@ -286,14 +288,16 @@ impl<'a> Queries<'a> {
                 scratch.constants[initializer.definition.0 as usize] = Some(index);
             }
         }
-        let limit = report
-            .package
-            .units
-            .iter()
-            .fold(discriminants.as_ref().map_or(0, |d| d.len()), |n, unit| {
+        // Scratch belongs to one immutable report. Resuming a body must not
+        // rescan every source unit merely to reconstruct its work budget.
+        let source_work = *scratch.source_work.get_or_insert_with(|| {
+            report.package.units.iter().fold(0_usize, |n, unit| {
                 n.saturating_add(unit.configured.ast.nodes.len())
                     .saturating_add(unit.configured.ast.edges.len())
             })
+        });
+        let limit = source_work
+            .saturating_add(discriminants.as_ref().map_or(0, |d| d.len()))
             .saturating_mul(16);
         Self {
             report,
@@ -307,6 +311,7 @@ impl<'a> Queries<'a> {
             scan: scratch.scan,
             steps: 0,
             limit,
+            source_work,
             pattern_values: HashSet::new(),
             drop_scratch: scratch.drops,
             layout_scratch: scratch.layouts,
@@ -317,15 +322,23 @@ impl<'a> Queries<'a> {
         }
     }
     fn into_scratch(self) -> Scratch {
+        self.into_storage().0
+    }
+    fn into_storage(self) -> (Scratch, Option<Box<bodies::State>>) {
         let indexed = self.typing.facts.initializers.len();
-        Scratch {
-            indexed,
-            constants: self.constants,
-            scan: self.scan,
-            typing: self.typing.into_scratch(),
-            drops: self.drop_scratch,
-            layouts: self.layout_scratch,
-        }
+        let (typing, body) = self.typing.into_storage();
+        (
+            Scratch {
+                indexed,
+                source_work: Some(self.source_work),
+                constants: self.constants,
+                scan: self.scan,
+                typing,
+                drops: self.drop_scratch,
+                layouts: self.layout_scratch,
+            },
+            body,
+        )
     }
 }
 impl Queries<'_> {
@@ -394,12 +407,11 @@ impl Queries<'_> {
                 self.work.push(work);
                 return Ok(Some(suspension::Dependency::Initializer(definition)));
             }
-            if ready.is_some() {
-                let members = self.member_readiness(&work)?;
-                if !members.is_empty() {
-                    self.work.push(work);
-                    return Ok(Some(suspension::Dependency::Members(members)));
-                }
+            if ready.is_some()
+                && let Some(dependency) = self.member_readiness(&work)?
+            {
+                self.work.push(work);
+                return Ok(Some(dependency));
             }
             self.budget()?;
             match work {
@@ -504,7 +516,7 @@ impl Queries<'_> {
             }
             Query::Constant(index) | Query::Static(index) => {
                 self.work.context = instances::Context::default();
-                if !self.typing.facts.initializers[index].type_checked {
+                if !self.typing.facts.initializers[index].type_checked() {
                     self.typing.initializer(index)?;
                     self.require_complete_patterns(query)?;
                 }

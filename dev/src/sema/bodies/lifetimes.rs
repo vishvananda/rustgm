@@ -16,7 +16,7 @@ impl Checker<'_> {
         solved: &crate::types::infer::Solved,
         body_key: crate::resolve::unit::NodeKey,
     ) -> Result<(), Error> {
-        for (index, adjustment) in self.adjustments.iter().enumerate() {
+        for (index, adjustment) in self.state.adjustments.iter().enumerate() {
             let key = self.key(adjustment.node);
             let target = solved.types[adjustment.expected.0 as usize];
             let actual = solved.types[adjustment.actual.0 as usize];
@@ -30,6 +30,7 @@ impl Checker<'_> {
                     .map_err(|e| self.error(adjustment.node, e))?;
             }
             let (proof_actual, proof_expected) = self
+                .state
                 .discarded_adjustments
                 .get(&index)
                 .map_or((actual, target), |(a, b)| {
@@ -42,11 +43,12 @@ impl Checker<'_> {
                 expected: proof_expected,
                 kind,
                 reference: self
+                    .state
                     .reference_adjustments
                     .get(&index)
                     .map(|(conversion, _)| *conversion),
             });
-            if let Some((_, borrow)) = self.reference_adjustments.get(&index) {
+            if let Some((_, borrow)) = self.state.reference_adjustments.get(&index) {
                 // Runtime reborrows have a fresh region. Keep its relation to
                 // the proof destination as well as the source-place conversion.
                 // A discarded repeat uses the freshened proof type here, not
@@ -68,7 +70,7 @@ impl Checker<'_> {
             }
             facts.adjustment = (kind != AdjustmentKind::Equality || facts.ty != Some(target))
                 .then_some(Adjustment { kind, target });
-            if let Some((conversion, borrow)) = self.reference_adjustments.get(&index) {
+            if let Some((conversion, borrow)) = self.state.reference_adjustments.get(&index) {
                 self.facts.reference_adjustments.insert(
                     key,
                     ReferenceAdjustment {
@@ -89,6 +91,7 @@ impl Checker<'_> {
             .and_then(|n| n.checked_add(1))
             .ok_or_else(|| self.error(node, "body region identity space exhausted"))?;
         let fresh = self
+            .state
             .infer
             .fresh_regions(
                 &mut self.facts.types,
@@ -98,7 +101,7 @@ impl Checker<'_> {
             )
             .map_err(|e| self.error(node, e))?;
         let region = BodyRegion {
-            body: self.body,
+            body: self.state.body,
             source: self.key(node),
             origin: BodyRegionOrigin::Inference,
         };
@@ -141,7 +144,7 @@ impl Checker<'_> {
         }
         let mut arguments = Vec::with_capacity(count);
         if let Some(list) = list {
-            let ast = &self.report.package.unit(self.file).configured.ast;
+            let ast = &self.report.package.unit(self.state.file).configured.ast;
             let nodes = ast.list(list);
             if nodes.len() != count {
                 return Err(self.error(node, "incorrect number of lifetime arguments"));
@@ -182,7 +185,7 @@ impl Checker<'_> {
         let name = self
             .report
             .package
-            .unit(self.file)
+            .unit(self.state.file)
             .spelling(span)
             .map_err(|e| self.error(node, e.message))?;
         match name {
@@ -211,6 +214,7 @@ impl Checker<'_> {
         field: FieldId,
     ) -> Result<TermId, Error> {
         let template = self.facts.members.fields[field.0 as usize].ty;
+        self.state.call_types.demand_fields(receiver);
         let ty = match self.head(node, receiver)? {
             Some(Constructor::Adt(_, arguments)) => self
                 .facts

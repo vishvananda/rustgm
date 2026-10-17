@@ -54,7 +54,7 @@ impl Checker<'_> {
             let nodes = self
                 .report
                 .package
-                .unit(self.file)
+                .unit(self.state.file)
                 .configured
                 .ast
                 .list(list);
@@ -94,7 +94,7 @@ impl Checker<'_> {
         }
         let mut fields = Fields {
             regions: Bound::new(regions),
-            parameters: Instantiation::new(&mut self.infer, &self.facts.types, &bindings)
+            parameters: Instantiation::new(&mut self.state.infer, &self.facts.types, &bindings)
                 .map_err(|e| self.error(node, e))?,
         };
         if !supplied.is_empty() {
@@ -106,10 +106,11 @@ impl Checker<'_> {
             }
         }
         let term = self
+            .state
             .infer
             .nominal(owner, &arguments)
             .map_err(|e| self.error(node, e))?;
-        self.call_types.insert_nominal(term, fields);
+        self.state.call_types.insert_nominal(term, fields);
         Ok(term)
     }
 
@@ -132,6 +133,7 @@ impl Checker<'_> {
             return Ok(None);
         }
         let arguments = self
+            .state
             .infer
             .item_arguments(&self.facts.types, expected)
             .map_err(|e| self.error(node, e))?;
@@ -155,7 +157,7 @@ impl Checker<'_> {
         let Some(Type::FunctionItem { item, .. }) = self.facts.types.kind(ty) else {
             return Ok(nominal);
         };
-        self.call_types.generic_constructors = true;
+        self.state.call_types.generic_constructors = true;
         self.facts.generics.referenced_constructors.insert(item);
         let mut children = Vec::with_capacity((variant.end - variant.start) as usize + 1);
         for index in variant.start..variant.end {
@@ -163,6 +165,7 @@ impl Checker<'_> {
         }
         children.push(nominal);
         let signature = self
+            .state
             .infer
             .construct(
                 Constructor::Function {
@@ -174,10 +177,12 @@ impl Checker<'_> {
             )
             .map_err(|e| self.error(node, e))?;
         let arguments = self
+            .state
             .infer
             .item_arguments(&self.facts.types, nominal)
             .map_err(|e| self.error(node, e))?;
-        self.infer
+        self.state
+            .infer
             .function_item(item, signature, &arguments)
             .map_err(|e| self.error(node, e))
     }
@@ -188,14 +193,19 @@ impl Checker<'_> {
         owner: ItemId,
         template: TypeId,
     ) -> Result<TermId, Error> {
-        let root = self.infer.root(receiver).map_err(|e| self.error(node, e))?;
-        if !self.call_types.nominal_receivers.contains_key(&root) {
+        let root = self
+            .state
+            .infer
+            .root(receiver)
+            .map_err(|e| self.error(node, e))?;
+        if !self.state.call_types.nominal_receivers.contains_key(&root) {
             let fields = self.receiver_fields(node, root, owner)?;
-            self.call_types.insert_nominal(root, fields);
+            self.state.call_types.insert_nominal(root, fields);
         }
         let key = self.key(node);
         let report = self.report;
         let fields = self
+            .state
             .call_types
             .nominal_receivers
             .get_mut(&root)
@@ -207,11 +217,12 @@ impl Checker<'_> {
             .apply(&mut self.facts.types, template)
             .map_err(|e| super::Declarations::error(report, key, e))?;
         let term = self
+            .state
             .infer
             .instantiate_with(&mut self.facts.types, ty, &mut fields.parameters)
             .map_err(|e| self.error(node, e))?;
         if self.facts.types.contains_projections(template) == Some(true)
-            || self.projections.active()
+            || self.state.projections.active()
         {
             self.defer_normalization(node, crate::types::lifetime_proof::ScopeId::ROOT, term)?;
         }
@@ -224,6 +235,7 @@ impl Checker<'_> {
         owner: ItemId,
     ) -> Result<Fields, Error> {
         let arguments = self
+            .state
             .infer
             .item_arguments(&self.facts.types, receiver)
             .map_err(|e| self.error(node, e))?;
@@ -262,7 +274,7 @@ impl Checker<'_> {
         }
         Ok(Fields {
             regions: Bound::new(regions),
-            parameters: Instantiation::new(&mut self.infer, &self.facts.types, &bindings)
+            parameters: Instantiation::new(&mut self.state.infer, &self.facts.types, &bindings)
                 .map_err(|e| self.error(node, e))?,
         })
     }

@@ -3,11 +3,13 @@ use super::{DefId, Error, Expression, NodeKey, Queries, Query, Scratch, State, W
 use std::collections::HashMap;
 
 pub(in crate::sema) enum Dependency {
+    Nominal(crate::sema::bodies::Dependency),
     Initializer(DefId),
     Members(Vec<crate::sema::traits::implementations::ConstantRequest>),
 }
 
 pub(in crate::sema) struct Continuation {
+    typing: Option<Box<crate::sema::bodies::State>>,
     expressions: HashMap<(instances::Context, NodeKey), Expression>,
     instances: instances::Instances,
     states: HashMap<(instances::Context, Query), State>,
@@ -18,9 +20,10 @@ pub(in crate::sema) struct Continuation {
 }
 
 impl Queries<'_> {
-    /// Suspension occurs between complete body checks, never during inference.
+    /// Retain unfinished inference as well as the enclosing value query graph.
     pub(super) fn suspend(mut self) -> (Scratch, Box<Continuation>) {
-        let continuation = Continuation {
+        let mut continuation = Continuation {
+            typing: None,
             expressions: std::mem::take(&mut self.expressions),
             instances: std::mem::take(&mut self.instances),
             states: std::mem::take(&mut self.states),
@@ -29,10 +32,15 @@ impl Queries<'_> {
             limit: self.limit,
             checked_members: std::mem::take(&mut self.checked_members),
         };
-        (self.into_scratch(), Box::new(continuation))
+        let (scratch, typing) = self.into_storage();
+        continuation.typing = typing;
+        (scratch, Box::new(continuation))
     }
 
     pub(super) fn resume(&mut self, continuation: Continuation) {
+        if let Some(typing) = continuation.typing {
+            self.typing.restore_body(*typing);
+        }
         self.expressions = continuation.expressions;
         self.instances = continuation.instances;
         self.states = continuation.states;
@@ -59,6 +67,6 @@ impl Queries<'_> {
             _ => return Ok(None),
         };
         let initializer = self.typing.facts.initializers[index];
-        Ok((!initializer.type_checked).then_some(initializer.definition))
+        Ok((!initializer.type_checked()).then_some(initializer.definition))
     }
 }

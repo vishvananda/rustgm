@@ -20,6 +20,7 @@ pub(in super::super) struct Pending {
     pub(super) entries: Vec<Entry>,
     pub(super) index: HashMap<ItemId, usize>,
     constructors: HashMap<DefId, ItemId>,
+    pub(super) contracts: HashMap<TypeId, State>,
     shapes: HashSet<TypeId>,
     value_templates: HashSet<ItemId>,
 }
@@ -120,6 +121,11 @@ impl Checker<'_> {
     }
     pub(in super::super) fn constant_value_shape(&mut self, ty: TypeId) -> Result<(), Error> {
         if self.nominals.shapes.contains(&ty) {
+            return Ok(());
+        }
+        if self.nominals.contracts.get(&ty) != Some(&State::Complete) {
+            self.work.push(Work::ValueShape(ty));
+            self.work.push(Work::ValueContract(ty, false));
             return Ok(());
         }
         if let Some(Type::Adt(item, _)) = self.facts.types.kind(ty) {

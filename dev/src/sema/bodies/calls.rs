@@ -18,15 +18,19 @@ pub(super) struct CallTypes {
     pub method_owners: HashMap<NodeId, (DefId, TermId)>,
     pub methods: Vec<(NodeId, super::dot_calls::Pending)>,
     pub nominal_receivers: HashMap<TermId, super::nominals::Fields>,
-    pub nominal_order: Vec<TermId>,
+    pub field_receivers: Vec<TermId>,
+    field_receiver_set: HashSet<TermId>,
     signatures: HashMap<TermId, TypeId>,
     universal_regions: Vec<RegionId>,
     universals: Option<Bound>,
 }
 impl CallTypes {
     pub fn insert_nominal(&mut self, term: TermId, fields: super::nominals::Fields) {
-        if self.nominal_receivers.insert(term, fields).is_none() {
-            self.nominal_order.push(term);
+        self.nominal_receivers.insert(term, fields);
+    }
+    pub fn demand_fields(&mut self, term: TermId) {
+        if self.field_receiver_set.insert(term) {
+            self.field_receivers.push(term);
         }
     }
     pub fn universal_arguments(&self) -> Vec<RegionId> {
@@ -43,7 +47,8 @@ impl CallTypes {
         self.method_owners.clear();
         self.methods.clear();
         self.nominal_receivers.clear();
-        self.nominal_order.clear();
+        self.field_receivers.clear();
+        self.field_receiver_set.clear();
         self.signatures.clear();
         self.universal_regions.clear();
         self.universals = None;
@@ -57,13 +62,14 @@ impl Checker<'_> {
         actual: TermId,
         expected: TermId,
     ) -> Result<(), Error> {
-        let generic = !self.call_types.generic.is_empty()
-            || !self.call_types.constants.is_empty()
-            || self.call_types.generic_constructors
-            || self.projections.has_context();
-        let partial = !self.annotation_checks.is_empty()
+        let generic = !self.state.call_types.generic.is_empty()
+            || !self.state.call_types.constants.is_empty()
+            || self.state.call_types.generic_constructors
+            || self.state.projections.has_context();
+        let partial = !self.state.annotation_checks.is_empty()
             || (generic
                 && self
+                    .state
                     .infer
                     .contains_late_callables(&self.facts.types, actual)
                     .map_err(|e| self.error(node, e))?);
@@ -80,12 +86,12 @@ impl Checker<'_> {
         actual: TermId,
         expected: TermId,
     ) -> Result<TermId, Error> {
-        match self.infer.resolved(&mut self.facts.types, expected) {
+        match self.state.infer.resolved(&mut self.facts.types, expected) {
             Ok(_) => return Ok(actual),
             Err(infer::Error::Unresolved) => {}
             Err(e) => return Err(self.error(node, e)),
         }
-        let ty = match self.infer.resolved(&mut self.facts.types, actual) {
+        let ty = match self.state.infer.resolved(&mut self.facts.types, actual) {
             Ok(ty) => ty,
             Err(infer::Error::Unresolved) => return Ok(actual),
             Err(e) => return Err(self.error(node, e)),
@@ -99,11 +105,12 @@ impl Checker<'_> {
             .and_then(|n| n.checked_add(1))
             .ok_or_else(|| self.error(node, "body region identity space exhausted"))?;
         let specialized = self
+            .state
             .infer
             .specialize_shape(&mut self.facts.types, ty, expected, first)
             .map_err(|e| self.error(node, e))?;
         let region = crate::sema::model::BodyRegion {
-            body: self.body,
+            body: self.state.body,
             source: self.key(node),
             origin: BodyRegionOrigin::Inference,
         };
@@ -113,10 +120,10 @@ impl Checker<'_> {
         self.known(node, specialized.ty)
     }
     pub(super) fn prepare_universals(&mut self, node: NodeId) -> Result<(), Error> {
-        if self.call_types.universals.is_some() {
+        if self.state.call_types.universals.is_some() {
             return Ok(());
         }
-        for index in 0..self.body_binders {
+        for index in 0..self.state.body_binders {
             let bound = RegionId::bound(
                 0,
                 u16::try_from(index)
@@ -124,10 +131,11 @@ impl Checker<'_> {
             )
             .map_err(|e| self.error(node, e))?;
             let alias = self.body_region(node, BodyRegionOrigin::UniversalAlias)?;
-            self.call_types.universal_regions.push(alias);
-            self.infer.region_equalities.push((alias, bound));
+            self.state.call_types.universal_regions.push(alias);
+            self.state.infer.region_equalities.push((alias, bound));
         }
-        self.call_types.universals = Some(Bound::new(self.call_types.universal_regions.clone()));
+        self.state.call_types.universals =
+            Some(Bound::new(self.state.call_types.universal_regions.clone()));
         Ok(())
     }
     pub(super) fn alias_region(
@@ -145,7 +153,8 @@ impl Checker<'_> {
             ));
         }
         self.prepare_universals(node)?;
-        self.call_types
+        self.state
+            .call_types
             .universal_regions
             .get(usize::from(index))
             .copied()
@@ -156,7 +165,7 @@ impl Checker<'_> {
             return Ok(ty);
         }
         self.prepare_universals(node)?;
-        let Some(substitution) = self.call_types.universals.as_mut() else {
+        let Some(substitution) = self.state.call_types.universals.as_mut() else {
             return Err(self.error(node, "missing universal substitution"));
         };
         substitution
@@ -170,7 +179,7 @@ impl Checker<'_> {
         predicate: crate::types::parameters::predicates::Predicate,
     ) -> Result<crate::types::parameters::predicates::Predicate, Error> {
         self.prepare_universals(node)?;
-        let Some(substitution) = self.call_types.universals.as_mut() else {
+        let Some(substitution) = self.state.call_types.universals.as_mut() else {
             return Err(self.error(node, "missing universal predicate substitution"));
         };
         substitution
@@ -182,11 +191,15 @@ impl Checker<'_> {
         let Some(Constructor::Function { bound_regions, .. }) = self.head(node, term)? else {
             return Err(self.error(node, "call requires a known function type"));
         };
-        let root = self.infer.root(term).map_err(|e| self.error(node, e))?;
-        let ty = if let Some(ty) = self.call_types.signatures.get(&root) {
+        let root = self
+            .state
+            .infer
+            .root(term)
+            .map_err(|e| self.error(node, e))?;
+        let ty = if let Some(ty) = self.state.call_types.signatures.get(&root) {
             *ty
         } else {
-            let ty = match self.infer.resolved(&mut self.facts.types, root) {
+            let ty = match self.state.infer.resolved(&mut self.facts.types, root) {
                 Ok(ty) => ty,
                 // Without a late binder, argument checking can retain the graph.
                 // Otherwise instantiate its regions without solving type holes.
@@ -194,13 +207,13 @@ impl Checker<'_> {
                 Err(infer::Error::Unresolved) => return self.instantiate_call_term(node, term),
                 Err(error) => return Err(self.error(node, error)),
             };
-            self.call_types.signatures.insert(root, ty);
+            self.state.call_types.signatures.insert(root, ty);
             ty
         };
         if bound_regions == 0 && self.facts.types.escaping_binders(ty) == Some(0) {
             return Ok(term);
         }
-        self.call_types.opened_projection_call |=
+        self.state.call_types.opened_projection_call |=
             self.facts.types.contains_projections(ty) == Some(true);
         let signature = self.instantiate_call(node, ty)?;
         self.known(node, signature)
@@ -299,7 +312,7 @@ impl Checker<'_> {
         if captures != 0
             && self.facts.associated.trait_owner(owner).is_none()
             && !self.facts.methods.qualified.contains_key(&self.key(node))
-            && !self.call_types.method_owners.contains_key(&node)
+            && !self.state.call_types.method_owners.contains_key(&node)
         {
             return Err(self.error(node, "method lifetime captures require a selected owner"));
         }
@@ -371,7 +384,7 @@ impl Checker<'_> {
             let nodes = self
                 .report
                 .package
-                .unit(self.file)
+                .unit(self.state.file)
                 .configured
                 .ast
                 .list(list);
@@ -412,7 +425,7 @@ impl Checker<'_> {
             let (longer, shorter) = (replace(longer)?, replace(shorter)?);
             if longer != shorter && longer != RegionId::STATIC {
                 self.facts.outlives.push(Outlives {
-                    body: self.body,
+                    body: self.state.body,
                     source: self.key(node),
                     longer,
                     shorter,

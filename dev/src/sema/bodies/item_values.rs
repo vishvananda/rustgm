@@ -18,7 +18,8 @@ pub(super) struct Pending {
 }
 impl Checker<'_> {
     pub(in crate::sema) fn constant_instances(&self) -> Result<Vec<Instance>, Error> {
-        self.call_types
+        self.state
+            .call_types
             .constants
             .iter()
             .map(|pending| {
@@ -75,14 +76,15 @@ impl Checker<'_> {
             .map_err(|e| self.error(node, e))?;
         let projected = self.facts.types.contains_projections(ty) == Some(true);
         let term = self
+            .state
             .infer
             .instantiate(&mut self.facts.types, ty, &bindings)
             .map_err(|e| self.error(node, e))?;
-        if projected || self.projections.active() {
+        if projected || self.state.projections.active() {
             self.defer_normalization(node, ScopeId::ROOT, term)?;
         }
         self.bound_obligations(node, owner, &arguments, &bindings)?;
-        self.call_types.constants.push(Pending {
+        self.state.call_types.constants.push(Pending {
             node,
             owner,
             arguments,
@@ -93,11 +95,14 @@ impl Checker<'_> {
         &mut self,
         arguments: Vec<GenericArgs>,
     ) -> Result<(), Error> {
-        if arguments.len() != self.call_types.constants.len() {
-            return Err(self.error(self.body.node, "incomplete constant argument inference"));
+        if arguments.len() != self.state.call_types.constants.len() {
+            return Err(self.error(
+                self.state.body.node,
+                "incomplete constant argument inference",
+            ));
         }
         for (index, arguments) in arguments.into_iter().enumerate() {
-            let Pending { node, owner, .. } = self.call_types.constants[index];
+            let Pending { node, owner, .. } = self.state.call_types.constants[index];
             let (_, parameters) = self
                 .facts
                 .generics
@@ -134,8 +139,8 @@ impl Checker<'_> {
                 arguments,
             };
             self.facts.constant_uses.insert(self.key(node), instance);
-            if !self.in_function
-                && let Some(owner) = self.environment_owner
+            if !self.state.in_function
+                && let Some(owner) = self.state.environment_owner
             {
                 self.facts
                     .constant_dependencies
@@ -147,14 +152,13 @@ impl Checker<'_> {
         Ok(())
     }
     pub(super) fn publish_constant_callables(&mut self) -> Result<(), Error> {
-        let Some(owner) = self
-            .environment_owner
-            .filter(|&owner| !self.in_function && self.facts.associated.owner(owner).is_some())
-        else {
+        let Some(owner) = self.state.environment_owner.filter(|&owner| {
+            !self.state.in_function && self.facts.associated.owner(owner).is_some()
+        }) else {
             return Ok(());
         };
         let mut seen = std::collections::HashSet::new();
-        for &node in &self.touched {
+        for &node in &self.state.touched {
             let ty = self.ty(node)?;
             let Some(crate::types::Kind::FunctionItem { item, .. }) = self.facts.types.kind(ty)
             else {

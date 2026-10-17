@@ -38,7 +38,10 @@ impl Checker<'_> {
                         .types
                         .const_type(formal)
                         .ok_or_else(|| self.error(node, "missing const parameter type"))?;
-                    let cache = self.method_constants.get_or_insert_with(Default::default);
+                    let cache = self
+                        .state
+                        .method_constants
+                        .get_or_insert_with(Default::default);
                     let argument = arguments::Constants {
                         report: self.report,
                         facts: self.facts,
@@ -46,7 +49,7 @@ impl Checker<'_> {
                         scratch: &mut cache.scratch,
                         discriminants: &mut cache.discriminants,
                     }
-                    .argument(key, ty, Some(self.module))?;
+                    .argument(key, ty, Some(self.state.module))?;
                     SourceArgument::Const(argument)
                 }
                 _ => return Err(self.error(node, "method argument has the wrong generic kind")),

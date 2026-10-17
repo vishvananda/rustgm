@@ -16,14 +16,14 @@ impl Checker<'_> {
             self.variable(node, Domain::Any)?
         };
         let never = self.known(otherwise, TypeId::NEVER)?;
-        self.work.push(Work::Enter(otherwise, Some(never)));
-        self.work.push(Work::Conditional {
+        self.state.work.push(Work::Enter(otherwise, Some(never)));
+        self.state.work.push(Work::Conditional {
             node,
             pattern,
             value,
             expected: Some(expected),
         });
-        self.work.push(Work::Enter(value, Some(expected)));
+        self.state.work.push(Work::Enter(value, Some(expected)));
         Ok(())
     }
     pub(super) fn conditional_pattern(
@@ -47,7 +47,7 @@ impl Checker<'_> {
             }
         };
         let pattern = self.selected_pattern(pattern, term)?;
-        self.alignment.patterns.push((pattern, Some(value)));
+        self.state.alignment.patterns.push((pattern, Some(value)));
         let otherwise = match self.kind(node) {
             Kind::Let { otherwise, .. } => otherwise.map(|n| self.key(n)),
             Kind::LetCondition { .. } => {

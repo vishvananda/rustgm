@@ -33,6 +33,8 @@ mod semantic;
 mod shorthand;
 #[path = "associated_declarations/specialization.rs"]
 mod specialization;
+#[path = "associated_declarations/value_readiness.rs"]
+mod value_readiness;
 use rustgm::{
     resolve::model::{DefId, DefKind},
     sema::associated::{self, Inventory, OwnerId, OwnerKind},

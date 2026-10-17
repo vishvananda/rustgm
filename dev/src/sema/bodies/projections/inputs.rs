@@ -39,7 +39,7 @@ impl Checker<'_> {
         // An inner normal form may erase holes from this application's inputs.
         // Its own retained query still owns those holes and their formation proof.
         if !resolved && query.input_normalizations {
-            resolved = match self.infer.resolved(&mut self.facts.types, term) {
+            resolved = match self.state.infer.resolved(&mut self.facts.types, term) {
                 Ok(_) => true,
                 Err(crate::types::infer::Error::Unresolved) => false,
                 Err(error) => return Err(self.error(node, error)),
@@ -50,11 +50,12 @@ impl Checker<'_> {
             && !self.projection_subject_known(node, term)?
         {
             let subject = self
+                .state
                 .infer
                 .child(&self.facts.types, term, 0)
                 .map_err(|e| self.error(node, e))?;
             if matches!(
-                self.infer.head(&self.facts.types, subject),
+                self.state.infer.head(&self.facts.types, subject),
                 Err(crate::types::infer::Error::Normalization)
             ) {
                 self.defer_input_normalizations(query, term, watch)?;
@@ -76,13 +77,15 @@ impl Checker<'_> {
     ) -> Result<(), Error> {
         let node = query.node;
         let roots = self
+            .state
             .infer
             .normalization_input_roots(
                 &self.facts.types,
                 term,
                 query.scope,
                 |parent, term, count| {
-                    self.projections
+                    self.state
+                        .projections
                         .input_scope(parent, term, count)
                         .map_err(|_| crate::types::infer::Error::InvalidIdentity)
                 },
@@ -90,7 +93,8 @@ impl Checker<'_> {
             .map_err(|e| self.error(node, e))?;
         query.input_normalizations |= !roots.is_empty();
         for (scope, root) in roots {
-            self.projections
+            self.state
+                .projections
                 .data
                 .get_or_insert_with(Default::default)
                 .normalization_waiters
@@ -108,6 +112,7 @@ impl Checker<'_> {
         root: TermId,
     ) -> Result<(), Error> {
         let waiters = self
+            .state
             .projections
             .data
             .as_mut()
@@ -117,7 +122,8 @@ impl Checker<'_> {
         let mut waiters = waiters.into_iter().flatten().collect::<Vec<_>>();
         waiters.sort_unstable();
         for watch in waiters {
-            self.infer
+            self.state
+                .infer
                 .retry_watch(watch)
                 .map_err(|e| self.error(node, e))?;
         }

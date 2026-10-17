@@ -35,6 +35,7 @@ impl Checker<'_> {
                 .ok_or_else(|| self.error(node, "missing qualified trait Self schema"))?
                 .self_type;
             let target = self
+                .state
                 .infer
                 .instantiate(&mut self.facts.types, target, bindings)
                 .map_err(|e| self.error(node, e))?;
@@ -75,10 +76,12 @@ impl Checker<'_> {
                 }
                 (Some(SourceArgument::Const(id)), Argument::Const(term)) => {
                     let supplied = self
+                        .state
                         .infer
                         .known_const(&self.facts.types, id)
                         .map_err(|e| self.error(node, e))?;
-                    self.infer
+                    self.state
+                        .infer
                         .equate_consts(term, supplied)
                         .map_err(|e| self.error(node, e))?;
                 }
@@ -96,18 +99,14 @@ impl Checker<'_> {
         }
         let regions = arguments
             .iter()
-            .take_while(|argument| matches!(argument, Argument::Lifetime(_)))
-            .filter_map(|argument| {
-                if let Argument::Lifetime(region) = *argument {
-                    Some(region)
-                } else {
-                    None
-                }
+            .map_while(|argument| match *argument {
+                Argument::Lifetime(region) => Some(region),
+                _ => None,
             })
             .collect();
         let mut fields = Fields {
             regions: Bound::new(regions),
-            parameters: Instantiation::new(&mut self.infer, &self.facts.types, bindings)
+            parameters: Instantiation::new(&mut self.state.infer, &self.facts.types, bindings)
                 .map_err(|e| self.error(node, e))?,
         };
         for (default, actual) in defaults {

@@ -74,6 +74,7 @@ enum Work {
     Fields(ItemId, bool),
     Constructor(DefId),
     ValueType(DefId),
+    ValueContract(TypeId, bool),
     ValueShape(TypeId),
     ConstantUse(NodeKey, regions::Context),
     ConstantArguments(NodeKey),
@@ -309,6 +310,7 @@ impl Checker<'_> {
                 Work::Fields(item, finish) => self.nominal_fields(item, finish)?,
                 Work::Constructor(id) => self.constructor(id)?,
                 Work::ValueType(id) => self.constant_value_type(id),
+                Work::ValueContract(ty, finish) => self.constant_type_contract(ty, finish)?,
                 Work::ValueShape(ty) => self.constant_value_shape(ty)?,
                 Work::ConstantUse(key, context) => {
                     self.constant_use(key, context, steps, limit, &mut scan)?;
@@ -589,7 +591,7 @@ impl Checker<'_> {
         let value =
             value.ok_or_else(|| self.error(key, "constant or static requires an initializer"))?;
         self.facts.initializers.push(Initializer {
-            type_checked: false,
+            typing: super::model::InitializerTyping::Unseen,
             definition: id,
             node: key,
             value: NodeKey {

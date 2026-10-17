@@ -18,8 +18,11 @@ mod owner_arguments;
 mod pattern_constants;
 mod patterns;
 mod projections;
+mod readiness;
+pub(super) use readiness::Dependency;
 mod references;
 mod selected_arguments;
+mod slots;
 mod text;
 mod trait_goals;
 use super::{
@@ -57,7 +60,7 @@ pub fn analyze(report: &Report, mut facts: Declarations) -> Result<Declarations,
             .map_err(|error| report.diagnostic(error))?;
     }
     for index in 0..checker.facts.initializers.len() {
-        if !checker.facts.initializers[index].type_checked {
+        if !checker.facts.initializers[index].type_checked() {
             checker
                 .initializer(index)
                 .map_err(|e| report.diagnostic(e))?;
@@ -120,6 +123,7 @@ enum Work {
     },
     Enter(NodeId, Option<TermId>),
     Exit(NodeId),
+    Field(NodeId, aggregates::Field),
     CoerceElement(NodeId, TermId),
     CallArguments(NodeId, Option<TermId>),
     MethodArguments(NodeId),
@@ -129,9 +133,9 @@ enum Work {
 /// Successful checks clear touched slots; caller evidence is cleared before reuse.
 #[derive(Default)]
 pub(super) struct Scratch {
-    terms: Vec<Vec<Option<TermId>>>,
-    diverges: Vec<bool>,
-    locals: Vec<Option<TermId>>,
+    terms: slots::Terms,
+    diverges: slots::Slots<bool>,
+    locals: slots::Slots<Option<TermId>>,
     touched: Vec<NodeId>,
     work: Vec<Work>,
     checks: Vec<NodeId>,
@@ -139,9 +143,14 @@ pub(super) struct Scratch {
 }
 pub(super) struct Checker<'a> {
     pub(super) availability: super::traits::implementations::Availability,
-    alignment: alignment::Pending,
     report: &'a Report,
     pub(super) facts: &'a mut Declarations,
+    state: State,
+}
+pub(super) struct State {
+    steps: usize,
+    completion: readiness::Completion,
+    alignment: alignment::Pending,
     file: FileId,
     body: NodeKey,
     module: ModuleId,
@@ -149,9 +158,9 @@ pub(super) struct Checker<'a> {
     result: TypeId,
     in_function: bool,
     infer: Context,
-    terms: Vec<Vec<Option<TermId>>>,
-    diverges: Vec<bool>,
-    locals: Vec<Option<TermId>>,
+    terms: slots::Terms,
+    diverges: slots::Slots<bool>,
+    locals: slots::Slots<Option<TermId>>,
     touched: Vec<NodeId>,
     bindings: Vec<DefId>,
     pattern_work: Vec<patterns::Work>,
@@ -192,10 +201,21 @@ pub(super) struct Checker<'a> {
     type_children: Vec<TermId>,
     annotation_checks: Vec<NodeId>,
     annotation_children: HashSet<NodeId>,
+    type_annotations: HashSet<NodeId>,
     frames: Vec<Frame>,
     pending_label: Option<(NodeId, DefId)>,
     assignments: Vec<(NodeId, Option<DefId>, Option<Op>)>,
     breaks: Vec<BreakSite>,
+}
+impl Scratch {
+    /// Start from cleared reusable slots; suspended bodies keep their own sparse state.
+    pub(super) fn resumable(&mut self) {
+        if !matches!(self.terms, slots::Terms::Sparse(_)) {
+            self.terms = slots::Terms::sparse();
+            self.diverges = slots::Slots::sparse();
+            self.locals = slots::Slots::sparse();
+        }
+    }
 }
 impl<'a> Checker<'a> {
     pub(super) fn new(report: &'a Report, facts: &'a mut Declarations) -> Self {
@@ -206,126 +226,121 @@ impl<'a> Checker<'a> {
         facts: &'a mut Declarations,
         mut scratch: Scratch,
     ) -> Self {
-        scratch.terms.resize_with(facts.nodes.len(), Vec::new);
+        scratch.terms.files(facts.nodes.len());
         Self {
             availability: super::traits::implementations::Availability::Validated,
-            alignment: alignment::Pending::default(),
             report,
-            terms: scratch.terms,
-            diverges: scratch.diverges,
-            locals: scratch.locals,
             facts,
-            file: FileId(0),
-            body: NodeKey {
+            state: State {
+                steps: 0,
+                completion: readiness::Completion::Inactive,
+                alignment: alignment::Pending::default(),
+                terms: scratch.terms,
+                diverges: scratch.diverges,
+                locals: scratch.locals,
                 file: FileId(0),
-                node: NodeId(0),
+                body: NodeKey {
+                    file: FileId(0),
+                    node: NodeId(0),
+                },
+                module: ModuleId(0),
+                field_seen: Vec::new(),
+                result: TypeId::UNIT,
+                in_function: true,
+                infer: Context::default(),
+                touched: scratch.touched,
+                bindings: Vec::new(),
+                pattern_work: Vec::new(),
+                pattern_types: Vec::new(),
+                pattern_refutable: false,
+                pending_patterns: None,
+                pattern_constants: false,
+                coverage_cache: super::patterns::coverage::Cache::default(),
+                range_work: Vec::new(),
+                pattern_requirements: Vec::new(),
+                matches: Vec::new(),
+                work: scratch.work,
+                children: Vec::new(),
+                checks: scratch.checks,
+                negated: HashSet::new(),
+                adjustments: Vec::new(),
+                reference_adjustments: std::collections::HashMap::new(),
+                reference_expected: HashSet::new(),
+                reference_work: Vec::new(),
+                reference_steps: 0,
+                break_roots: std::collections::HashMap::new(),
+                discarded_adjustments: std::collections::HashMap::new(),
+                calls: Vec::new(),
+                pending_indexes: std::collections::HashMap::new(),
+                call_types: scratch.call_types.unwrap_or_default(),
+                parameter_copies: None,
+                parameter_shapes: None,
+                body_binders: 0,
+                method_constants: None,
+                method_environment: None,
+                environment_owner: None,
+                trait_environment: None,
+                canonical_trait_inference: None,
+                annotations: super::annotations::Scratch::default(),
+                projections: projections::Pending::default(),
+                storage: None,
+                type_children: Vec::new(),
+                annotation_checks: Vec::new(),
+                annotation_children: HashSet::new(),
+                type_annotations: HashSet::new(),
+                frames: Vec::new(),
+                pending_label: None,
+                assignments: Vec::new(),
+                breaks: Vec::new(),
             },
-            module: ModuleId(0),
-            field_seen: Vec::new(),
-            result: TypeId::UNIT,
-            in_function: true,
-            infer: Context::default(),
-            touched: scratch.touched,
-            bindings: Vec::new(),
-            pattern_work: Vec::new(),
-            pattern_types: Vec::new(),
-            pattern_refutable: false,
-            pending_patterns: None,
-            pattern_constants: false,
-            coverage_cache: super::patterns::coverage::Cache::default(),
-            range_work: Vec::new(),
-            pattern_requirements: Vec::new(),
-            matches: Vec::new(),
-            work: scratch.work,
-            children: Vec::new(),
-            checks: scratch.checks,
-            negated: HashSet::new(),
-            adjustments: Vec::new(),
-            reference_adjustments: std::collections::HashMap::new(),
-            reference_expected: HashSet::new(),
-            reference_work: Vec::new(),
-            reference_steps: 0,
-            break_roots: std::collections::HashMap::new(),
-            discarded_adjustments: std::collections::HashMap::new(),
-            calls: Vec::new(),
-            pending_indexes: std::collections::HashMap::new(),
-            call_types: scratch.call_types.unwrap_or_default(),
-            parameter_copies: None,
-            parameter_shapes: None,
-            body_binders: 0,
-            method_constants: None,
-            method_environment: None,
-            environment_owner: None,
-            trait_environment: None,
-            canonical_trait_inference: None,
-            annotations: super::annotations::Scratch::default(),
-            projections: projections::Pending::default(),
-            storage: None,
-            type_children: Vec::new(),
-            annotation_checks: Vec::new(),
-            annotation_children: HashSet::new(),
-            frames: Vec::new(),
-            pending_label: None,
-            assignments: Vec::new(),
-            breaks: Vec::new(),
         }
     }
     pub(super) fn has_pending_patterns(&self) -> bool {
-        self.pending_patterns.is_some()
+        self.state.pending_patterns.is_some()
     }
     /// Consume only after successful checking; failed checks discard their slots.
     pub(super) fn into_scratch(mut self) -> Scratch {
-        self.call_types.clear();
+        self.state.call_types.clear();
         Scratch {
-            terms: self.terms,
-            diverges: self.diverges,
-            locals: self.locals,
-            touched: self.touched,
-            work: self.work,
-            checks: self.checks,
-            call_types: Some(self.call_types),
+            terms: self.state.terms,
+            diverges: self.state.diverges,
+            locals: self.state.locals,
+            touched: self.state.touched,
+            work: self.state.work,
+            checks: self.state.checks,
+            call_types: Some(self.state.call_types),
         }
     }
-    pub(super) fn constant(&mut self, key: NodeKey, ty: TypeId, owner: DefId) -> Result<(), Error> {
+    fn prepare_constant(&mut self, key: NodeKey, ty: TypeId, owner: DefId) -> Result<(), Error> {
         let scope = self.report.resolution.definitions[owner.0 as usize].scope;
         self.begin_constant(
             key,
             ty,
             self.report.resolution.scopes[scope.0 as usize].module,
         );
-        self.body_binders = self
+        self.state.body_binders = self
             .facts
             .associated
             .schema(owner)
             .map_or(0, |s| s.captures);
-        self.prepare_bound_environment(key.node, owner)?;
-        self.body(key.node)
-    }
-    pub(super) fn constant_in_module(
-        &mut self,
-        key: NodeKey,
-        ty: TypeId,
-        module: ModuleId,
-    ) -> Result<(), Error> {
-        self.begin_constant(key, ty, module);
-        self.body(key.node)
+        self.prepare_bound_environment(key.node, owner)
     }
     fn begin_constant(&mut self, key: NodeKey, ty: TypeId, module: ModuleId) {
-        self.call_types.clear();
-        self.projections = projections::Pending::default();
-        self.storage = None;
-        self.body_binders = 0;
-        self.method_environment = None;
-        self.environment_owner = None;
-        self.trait_environment = None;
-        self.canonical_trait_inference = None;
-        self.parameter_copies = None;
-        self.parameter_shapes = None;
-        self.body = key;
+        self.state.call_types.clear();
+        self.state.projections = projections::Pending::default();
+        self.state.storage = None;
+        self.state.body_binders = 0;
+        self.state.method_environment = None;
+        self.state.environment_owner = None;
+        self.state.trait_environment = None;
+        self.state.canonical_trait_inference = None;
+        self.state.parameter_copies = None;
+        self.state.parameter_shapes = None;
+        self.state.body = key;
         self.prepare_file(key.file);
-        self.module = module;
-        self.result = ty;
-        self.in_function = false;
+        self.state.module = module;
+        self.state.result = ty;
+        self.state.in_function = false;
     }
     pub(super) fn anonymous_constant(
         &mut self,
@@ -333,42 +348,28 @@ impl<'a> Checker<'a> {
         ty: TypeId,
         module: ModuleId,
     ) -> Result<(), Error> {
-        if let Some(&prior) = self.facts.anonymous_constants.get(&key) {
-            return if prior == ty {
-                Ok(())
-            } else {
-                Err(self.error(key.node, "anonymous constant changed its result type"))
-            };
-        }
-        let before = self.facts.lifetime_fact_count();
-        self.constant_in_module(key, ty, module)?;
-        let annotations = self.facts.constant_annotation_bodies.remove(&key);
-        if self.facts.lifetime_fact_count() != before || annotations {
-            self.facts.anonymous_constants.insert(key, ty);
-        }
-        Ok(())
+        let progress = self.start_anonymous_constant(key, ty, module)?;
+        self.require_complete_body(progress)
     }
     pub(super) fn initializer(&mut self, index: usize) -> Result<(), Error> {
-        let initializer = self.facts.initializers[index];
-        self.constant(initializer.value, initializer.ty, initializer.definition)?;
-        self.facts.initializers[index].type_checked = true;
-        self.facts
-            .dispatch_dependencies
-            .complete(initializer.definition);
-        Ok(())
+        let progress = self.start_initializer(index)?;
+        self.require_complete_body(progress)
     }
 }
 impl Checker<'_> {
     fn prepare_file(&mut self, file: FileId) {
-        self.locals.resize(self.facts.definitions.len(), None);
-        self.file = file;
-        self.terms[file.0 as usize].resize(self.facts.nodes[file.0 as usize].len(), None);
-        self.diverges
+        self.state.locals.resize(self.facts.definitions.len(), None);
+        self.state.file = file;
+        self.state
+            .terms
+            .prepare(file, self.facts.nodes[file.0 as usize].len());
+        self.state
+            .diverges
             .resize(self.facts.nodes[file.0 as usize].len(), false);
     }
     fn key(&self, node: NodeId) -> NodeKey {
         NodeKey {
-            file: self.file,
+            file: self.state.file,
             node,
         }
     }
@@ -382,27 +383,30 @@ impl Checker<'_> {
         if self.facts.types.contains_projections(ty) == Some(true) {
             return self.known_projection(node, ty);
         }
-        self.infer
+        self.state
+            .infer
             .known(&self.facts.types, ty)
             .map_err(|e| self.error(node, e))
     }
     fn variable(&mut self, node: NodeId, domain: Domain) -> Result<TermId, Error> {
-        self.infer.variable(domain).map_err(|e| self.error(node, e))
+        self.state
+            .infer
+            .variable(domain)
+            .map_err(|e| self.error(node, e))
     }
     fn term(&self, node: NodeId) -> Result<TermId, Error> {
-        self.terms[self.file.0 as usize][node.0 as usize]
+        self.state
+            .terms
+            .get(self.key(node))
             .ok_or_else(|| self.error(node, "missing body type constraint"))
     }
     fn save(&mut self, node: NodeId, term: TermId) {
-        if self.terms[self.file.0 as usize][node.0 as usize]
-            .replace(term)
-            .is_none()
-        {
-            self.touched.push(node);
+        if self.state.terms.insert(self.key(node), term).is_none() {
+            self.state.touched.push(node);
         }
     }
     fn equate(&mut self, node: NodeId, left: TermId, right: TermId) -> Result<(), Error> {
-        if self.projections.active() {
+        if self.state.projections.active() {
             return self.deferred_equation(
                 node,
                 left,
@@ -410,7 +414,8 @@ impl Checker<'_> {
                 crate::types::infer::deferred::Relation::Equality,
             );
         }
-        self.infer
+        self.state
+            .infer
             .equate(&self.facts.types, left, right)
             .map_err(|e| self.error(node, e))
     }
@@ -421,12 +426,12 @@ impl Checker<'_> {
         // Opening a fully determined projected callable also introduces aliases.
         // Its projected arguments must use the same identities even when no
         // generic call or unresolved projection triggered their preparation.
-        let (left, right) = if self.body_binders != 0
-            && (self.call_types.opened_projection_call
-                || !self.call_types.generic.is_empty()
-                || !self.call_types.constants.is_empty()
-                || self.call_types.generic_constructors
-                || self.projections.has_context())
+        let (left, right) = if self.state.body_binders != 0
+            && (self.state.call_types.opened_projection_call
+                || !self.state.call_types.generic.is_empty()
+                || !self.state.call_types.constants.is_empty()
+                || self.state.call_types.generic_constructors
+                || self.state.projections.has_context())
         {
             (
                 self.alias_argument(node, left)?,
@@ -435,7 +440,7 @@ impl Checker<'_> {
         } else {
             (left, right)
         };
-        if self.projections.active() {
+        if self.state.projections.active() {
             return self.deferred_equation(
                 node,
                 left,
@@ -443,13 +448,15 @@ impl Checker<'_> {
                 crate::types::infer::deferred::Relation::Shape,
             );
         }
-        self.infer
+        self.state
+            .infer
             .equate_shape(&self.facts.types, left, right)
             .map_err(|e| self.error(node, e))
     }
     fn head(&mut self, node: NodeId, term: TermId) -> Result<Option<Constructor>, Error> {
         self.advance_projections(node)?;
-        self.infer
+        self.state
+            .infer
             .head(&self.facts.types, term)
             .map_err(|e| self.error(node, e))
     }
@@ -459,30 +466,31 @@ impl Checker<'_> {
         term: TermId,
     ) -> Result<Option<Constructor>, Error> {
         self.advance_projections(node)?;
-        match self.infer.head(&self.facts.types, term) {
+        match self.state.infer.head(&self.facts.types, term) {
             Err(crate::types::infer::Error::Normalization) => Ok(None),
             result => result.map_err(|e| self.error(node, e)),
         }
     }
     fn child(&mut self, node: NodeId, term: TermId, index: usize) -> Result<TermId, Error> {
-        self.infer
+        self.state
+            .infer
             .child(&self.facts.types, term, index)
             .map_err(|e| self.error(node, e))
     }
     fn active(&self, node: NodeId) -> bool {
-        self.report.package.unit(self.file).configured.active[node.0 as usize]
+        self.report.package.unit(self.state.file).configured.active[node.0 as usize]
     }
     fn function(&mut self, function: Function) -> Result<(), Error> {
-        self.call_types.clear();
-        self.projections = projections::Pending::default();
-        self.storage = None;
-        self.body_binders = self
+        self.state.call_types.clear();
+        self.state.projections = projections::Pending::default();
+        self.state.storage = None;
+        self.state.body_binders = self
             .facts
             .lifetimes
             .functions
             .get(&function.definition)
             .map_or(0, |f| f.total);
-        self.in_function = true;
+        self.state.in_function = true;
         let Some(body) = function.body else {
             if self
                 .facts
@@ -499,15 +507,15 @@ impl Checker<'_> {
             ));
         };
         self.prepare_file(body.file);
-        self.body = body;
+        self.state.body = body;
         self.prepare_bound_environment(body.node, function.definition)?;
         let scope = self.report.resolution.definitions[function.definition.0 as usize].scope;
-        self.module = self.report.resolution.scopes[scope.0 as usize].module;
+        self.state.module = self.report.resolution.scopes[scope.0 as usize].module;
         let Some(Type::Function { result, .. }) = self.facts.types.kind(function.signature) else {
             return Err(self.error(body.node, "missing function signature"));
         };
-        self.result = result;
-        let unit = self.report.package.unit(self.file);
+        self.state.result = result;
+        let unit = self.report.package.unit(self.state.file);
         for mut node in unit
             .configured
             .ast
@@ -523,8 +531,8 @@ impl Checker<'_> {
             }
             if let Some(receiver) = self.facts.receivers.get(&self.key(node)).copied() {
                 let term = self.known(node, receiver.ty)?;
-                self.locals[receiver.definition.0 as usize] = Some(term);
-                self.bindings.push(receiver.definition);
+                self.state.locals[receiver.definition.0 as usize] = Some(term);
+                self.state.bindings.push(receiver.definition);
                 self.save(receiver.binding.node, term);
                 self.save(node, term);
                 continue;
@@ -548,12 +556,16 @@ impl Checker<'_> {
         self.body(body.node)
     }
     fn body(&mut self, body: NodeId) -> Result<(), Error> {
-        let expected = self.known(body, self.result)?;
-        self.work.push(Work::Enter(body, Some(expected)));
-        let mut steps = 0_usize;
-        while let Some(work) = self.work.pop() {
-            steps += 1;
-            if steps > 1_000_000 {
+        self.state.completion = readiness::Completion::Ordinary;
+        self.start_body(body)?;
+        let progress = self.advance_body()?;
+        self.require_complete_body(progress)
+    }
+    pub(super) fn advance_body(&mut self) -> Result<Option<Dependency>, Error> {
+        let body = self.state.body.node;
+        while let Some(work) = self.state.work.pop() {
+            self.state.steps += 1;
+            if self.state.steps > 1_000_000 {
                 return Err(self.error(body, "body type work budget exceeded"));
             }
             match work {
@@ -589,50 +601,79 @@ impl Checker<'_> {
                         return Err(self.error(node, "invalid assignment work"));
                     };
                     let expected = self.term(left)?;
-                    self.work.push(Work::Enter(right, Some(expected)));
+                    self.state.work.push(Work::Enter(right, Some(expected)));
                 }
                 Work::Exit(node) => {
-                    let term = self.expression(node)?;
-                    self.save(node, term);
-                    let mut local_exit = false;
-                    if self
-                        .frames
-                        .last()
-                        .is_some_and(|f| f.node == node && f.kind == FrameKind::Block)
-                    {
-                        let frame = self
-                            .frames
-                            .pop()
-                            .ok_or_else(|| self.error(node, "missing block control frame"))?;
-                        local_exit = frame.breaks.is_some();
-                        let result = self.finish_frame(frame, Some(term))?;
-                        self.save(node, result);
-                    }
-                    self.finish_divergence(node, local_exit)?;
+                    let term = if let Kind::Field { value, name } = self.kind(node) {
+                        let field = self.prepare_field(node, value, name)?;
+                        if let Some(item) = self.field_dependency(&field) {
+                            self.state.work.push(Work::Field(node, field));
+                            return Ok(Some(Dependency {
+                                item,
+                                source: self.key(node),
+                            }));
+                        }
+                        self.complete_field(node, field)?
+                    } else {
+                        self.expression(node)?
+                    };
+                    self.exit_expression(node, term)?;
+                }
+                Work::Field(node, field) => {
+                    let term = self.complete_field(node, field)?;
+                    self.exit_expression(node, term)?;
                 }
             }
         }
-        let expected = self.known(body, self.result)?;
+        let expected = self.known(body, self.state.result)?;
         self.coerce(body, expected)?;
-        self.finish(body)
+        self.finish(body)?;
+        self.complete_body();
+        Ok(None)
     }
+    fn exit_expression(&mut self, node: NodeId, term: TermId) -> Result<(), Error> {
+        self.state.type_annotations.remove(&node);
+        self.save(node, term);
+        let mut local_exit = false;
+        if self
+            .state
+            .frames
+            .last()
+            .is_some_and(|f| f.node == node && f.kind == FrameKind::Block)
+        {
+            let frame = self
+                .state
+                .frames
+                .pop()
+                .ok_or_else(|| self.error(node, "missing block control frame"))?;
+            local_exit = frame.breaks.is_some();
+            let result = self.finish_frame(frame, Some(term))?;
+            self.save(node, result);
+        }
+        self.finish_divergence(node, local_exit)?;
+        Ok(())
+    }
+
     fn finish(&mut self, body: NodeId) -> Result<(), Error> {
-        for adjustment in &self.adjustments {
+        for adjustment in &self.state.adjustments {
             if adjustment.kind == AdjustmentKind::Never {
-                self.infer
+                self.state
+                    .infer
                     .default_never(adjustment.expected)
                     .map_err(|e| self.error(body, e))?;
             }
         }
         let evidence = self.infer_trait_obligations(body)?;
-        let (solved, predicates, arguments) = std::mem::take(&mut self.infer)
+        let (solved, predicates, arguments) = std::mem::take(&mut self.state.infer)
             .finish_with_arguments(
                 &mut self.facts.types,
-                self.call_types
+                self.state
+                    .call_types
                     .obligations
                     .iter()
                     .map(|(_, predicate)| predicate),
-                self.call_types
+                self.state
+                    .call_types
                     .constants
                     .iter()
                     .map(|pending| pending.arguments.as_slice()),
@@ -660,7 +701,7 @@ impl Checker<'_> {
         self.publish_constant_callables()?;
         self.publish_index_bounds(&solved)?;
         self.publish_adjustments(&solved, body_key)?;
-        for (node, term) in &self.calls {
+        for (node, term) in &self.state.calls {
             let key = self.key(*node);
             self.facts
                 .node_mut(key)
@@ -669,12 +710,13 @@ impl Checker<'_> {
                 signature: solved.types[term.0 as usize],
             });
         }
-        for node in &self.annotation_checks {
+        for node in &self.state.annotation_checks {
             crate::types::bound_uses::check_pointer(&self.facts.types, self.ty(*node)?)
                 .map_err(|e| self.error(*node, e))?;
         }
-        self.annotation_checks.clear();
-        self.annotation_children.clear();
+        self.state.annotation_checks.clear();
+        self.state.annotation_children.clear();
+        self.state.type_annotations.clear();
         self.validate_operations()?;
         self.validate_assignments()?;
         self.validate_values()?;
@@ -683,7 +725,7 @@ impl Checker<'_> {
         // Canonical nominal checks may allocate universal aliases after the main
         // inference graph has finished. Publish them under this body's identity.
         self.facts.region_equalities.extend(
-            std::mem::take(&mut self.infer.region_equalities)
+            std::mem::take(&mut self.state.infer.region_equalities)
                 .into_iter()
                 .map(|(left, right)| RegionEquality {
                     body: body_key,
@@ -691,23 +733,26 @@ impl Checker<'_> {
                     right,
                 }),
         );
-        for node in self.touched.drain(..) {
-            self.terms[self.file.0 as usize][node.0 as usize] = None;
-            self.diverges[node.0 as usize] = false;
+        for node in self.state.touched.drain(..) {
+            self.state.terms.remove(NodeKey {
+                file: self.state.file,
+                node,
+            });
+            self.state.diverges.remove(node.0 as usize);
         }
-        self.bindings.clear();
-        self.checks.clear();
-        self.negated.clear();
-        self.adjustments.clear();
-        self.reference_adjustments.clear();
-        self.reference_expected.clear();
-        self.reference_work.clear();
-        self.reference_steps = 0;
-        self.break_roots.clear();
-        self.discarded_adjustments.clear();
-        self.calls.clear();
-        self.assignments.clear();
-        self.breaks.clear();
+        self.state.bindings.clear();
+        self.state.checks.clear();
+        self.state.negated.clear();
+        self.state.adjustments.clear();
+        self.state.reference_adjustments.clear();
+        self.state.reference_expected.clear();
+        self.state.reference_work.clear();
+        self.state.reference_steps = 0;
+        self.state.break_roots.clear();
+        self.state.discarded_adjustments.clear();
+        self.state.calls.clear();
+        self.state.assignments.clear();
+        self.state.breaks.clear();
         Ok(())
     }
     fn publish_body_types(
@@ -719,19 +764,19 @@ impl Checker<'_> {
         let mut nominal_types = super::nominals::Requirements::default();
         // A generic result retains declaration lifetimes even when its expression
         // uses free aliases. Ownership queries need both canonical field contexts.
-        if self.facts.types.contains_parameters(self.result) == Some(true) {
-            self.prepare_storage(body, self.result)?;
+        if self.facts.types.contains_parameters(self.state.result) == Some(true) {
+            self.prepare_storage(body, self.state.result)?;
         }
         // An implicit dereference need not have an AST node among `touched`.
         // Its selected field receiver still supplies a concrete type query key.
         // Retain discovery order so appended canonical types are deterministic.
-        for index in 0..self.call_types.nominal_order.len() {
-            let receiver = self.call_types.nominal_order[index];
+        for index in 0..self.state.call_types.field_receivers.len() {
+            let receiver = self.state.call_types.field_receivers[index];
             let ty = solved.types[receiver.0 as usize];
             self.prepare_storage(body, ty)?;
         }
-        for index in 0..self.touched.len() {
-            let node = self.touched[index];
+        for index in 0..self.state.touched.len() {
+            let node = self.state.touched[index];
             let term = self.term(node)?;
             let key = self.key(node);
             let ty = solved.types[term.0 as usize];
@@ -741,8 +786,8 @@ impl Checker<'_> {
                 .ok_or_else(|| Declarations::error(self.report, key, "invalid body node"))?
                 .ty = Some(ty);
         }
-        for index in 0..self.call_types.methods.len() {
-            let (node, pending) = &self.call_types.methods[index];
+        for index in 0..self.state.call_types.methods.len() {
+            let (node, pending) = &self.state.call_types.methods[index];
             let (node, types) = (*node, pending.value_types(solved));
             // Receiver reads and lifetime conversions are runtime values even
             // when no expression node has their precise instantiated type.
@@ -752,13 +797,13 @@ impl Checker<'_> {
         }
         // Call inputs need their instantiated contracts even when an argument
         // diverges and therefore has no value node with the parameter's type.
-        for index in 0..self.calls.len() {
-            let (node, term) = self.calls[index];
+        for index in 0..self.state.calls.len() {
+            let (node, term) = self.state.calls[index];
             self.nominal_requirements(node, solved.types[term.0 as usize], &mut nominal_types)?;
         }
-        for index in 0..self.bindings.len() {
-            let id = self.bindings[index];
-            if let Some(term) = self.locals[id.0 as usize].take() {
+        for index in 0..self.state.bindings.len() {
+            let id = self.state.bindings[index];
+            if let Some(term) = self.state.locals.remove(id.0 as usize) {
                 let ty = solved.types[term.0 as usize];
                 if !self.body_shape(body, ty)?.sized {
                     return Err(self.error(body, "local bindings must be sized"));
@@ -776,7 +821,9 @@ impl Checker<'_> {
         nominal_types: &mut super::nominals::Requirements,
     ) -> Result<(), Error> {
         self.nominal_requirements(node, ty, nominal_types)?;
-        if self.facts.generics.has_nominal_requirements {
+        if self.facts.generics.has_nominal_requirements
+            && !self.state.type_annotations.contains(&node)
+        {
             self.prepare_storage(node, ty)?;
         }
         if !self.body_shape(node, ty)?.well_formed {
@@ -784,11 +831,11 @@ impl Checker<'_> {
         }
         if (self.facts.types.contains_regions(ty) == Some(true)
             || self.facts.types.contains_parameters(ty) == Some(true))
-            && !self.annotation_children.contains(&node)
+            && !self.state.annotation_children.contains(&node)
             && well_formed.insert(ty)
         {
             self.facts.well_formed.push(super::model::WellFormed {
-                body: self.body,
+                body: self.state.body,
                 source: self.key(node),
                 ty,
             });
@@ -808,7 +855,7 @@ impl Checker<'_> {
                 .unwrap_or(true);
             self.pattern(node, term, valid)?;
             let root = self.facts.patterns.roots[&self.key(node)];
-            self.alignment.patterns.push((root, input));
+            self.state.alignment.patterns.push((root, input));
             return Ok(());
         }
         while let Kind::Attributed { value, .. } | Kind::Group(value) = self.kind(node) {
@@ -826,8 +873,8 @@ impl Checker<'_> {
                     .node(self.key(node))
                     .and_then(|f| f.binding)
                     .ok_or_else(|| self.error(node, "missing resolved binding"))?;
-                self.locals[id.0 as usize] = Some(term);
-                self.bindings.push(id);
+                self.state.locals[id.0 as usize] = Some(term);
+                self.state.bindings.push(id);
             }
             Kind::Wildcard => {}
             _ => return Err(self.error(node, "compound patterns require pattern semantics")),
@@ -846,21 +893,21 @@ impl Checker<'_> {
                 Some(Constructor::Reference { .. })
             )
         {
-            self.reference_expected.insert(node);
+            self.state.reference_expected.insert(node);
         }
-        if let Some(frame) = self.frames.last_mut()
+        if let Some(frame) = self.state.frames.last_mut()
             && frame.kind == FrameKind::While
             && frame.body == node
         {
             frame.in_condition = false;
         }
         self.enter_control(node, expected)?;
-        self.work.push(Work::Exit(node));
-        self.children.clear();
+        self.state.work.push(Work::Exit(node));
+        self.state.children.clear();
         match self.kind(node) {
             Kind::Match { value, .. } => {
-                self.work.push(Work::MatchArms { node, expected });
-                self.work.push(Work::Enter(value, None));
+                self.state.work.push(Work::MatchArms { node, expected });
+                self.state.work.push(Work::Enter(value, None));
                 return Ok(());
             }
             Kind::Unary {
@@ -893,13 +940,14 @@ impl Checker<'_> {
                 if self.simple_pattern(pattern) {
                     self.binding(pattern, term, value)?;
                 } else {
-                    self.work.push(Work::BindPattern {
+                    self.state.work.push(Work::BindPattern {
                         pattern,
                         term,
                         value,
                     });
                 }
-                self.work
+                self.state
+                    .work
                     .extend(value.map(|value| Work::Enter(value, Some(term))));
                 return Ok(());
             }
@@ -912,24 +960,24 @@ impl Checker<'_> {
                 return self.enter_let_else(node, pattern, ty, value, otherwise);
             }
             Kind::LetCondition { pattern, value } => {
-                self.work.push(Work::Conditional {
+                self.state.work.push(Work::Conditional {
                     node,
                     pattern,
                     value,
                     expected: None,
                 });
-                self.work.push(Work::Enter(value, None));
+                self.state.work.push(Work::Enter(value, None));
                 return Ok(());
             }
             Kind::Cast { value, ty } => {
                 self.annotation(ty)?;
-                self.children.push(value);
+                self.state.children.push(value);
             }
             Kind::FieldInit { value, .. }
             | Kind::Group(value)
             | Kind::Attributed { value, .. }
             | Kind::Label { value, .. } => {
-                self.work.push(Work::Enter(value, expected));
+                self.state.work.push(Work::Enter(value, expected));
                 return Ok(());
             }
             Kind::Block {
@@ -939,10 +987,11 @@ impl Checker<'_> {
                 children: statements,
                 tail,
             } => {
-                self.work
+                self.state
+                    .work
                     .extend(tail.map(|value| Work::Enter(value, expected)));
-                let unit = self.report.package.unit(self.file);
-                self.work.extend(
+                let unit = self.report.package.unit(self.state.file);
+                self.state.work.extend(
                     unit.configured
                         .ast
                         .list(statements)
@@ -957,15 +1006,17 @@ impl Checker<'_> {
                 then,
                 otherwise,
             } => {
-                self.work
+                self.state
+                    .work
                     .extend(otherwise.map(|n| Work::Enter(n, expected)));
-                self.work.push(Work::Enter(then, expected));
-                self.work.push(Work::Enter(condition, None));
+                self.state.work.push(Work::Enter(then, expected));
+                self.state.work.push(Work::Enter(condition, None));
                 return Ok(());
             }
             Kind::Return(value) => {
-                let result = self.known(node, self.result)?;
-                self.work
+                let result = self.known(node, self.state.result)?;
+                self.state
+                    .work
                     .extend(value.map(|n| Work::Enter(n, Some(result))));
                 return Ok(());
             }
@@ -974,30 +1025,35 @@ impl Checker<'_> {
                 left,
                 ..
             } => {
-                self.work.push(Work::AssignmentValue(node));
-                self.work.push(Work::Enter(left, None));
+                self.state.work.push(Work::AssignmentValue(node));
+                self.state.work.push(Work::Enter(left, None));
                 return Ok(());
             }
             Kind::MethodCall { receiver, .. } | Kind::GenericMethodCall { receiver, .. } => {
-                self.work.push(Work::MethodArguments(node));
-                self.work.push(Work::Enter(receiver, None));
+                self.state.work.push(Work::MethodArguments(node));
+                self.state.work.push(Work::Enter(receiver, None));
                 return Ok(());
             }
             Kind::Call { callee, .. } => {
-                self.work.push(Work::CallArguments(node, expected));
-                self.work.push(Work::Enter(callee, None));
+                self.state.work.push(Work::CallArguments(node, expected));
+                self.state.work.push(Work::Enter(callee, None));
                 return Ok(());
             }
             _ => self
                 .report
                 .package
-                .unit(self.file)
+                .unit(self.state.file)
                 .configured
                 .ast
-                .push_children(node, &mut self.children),
+                .push_children(node, &mut self.state.children),
         }
-        self.work
-            .extend(self.children.iter().rev().map(|n| Work::Enter(*n, None)));
+        self.state.work.extend(
+            self.state
+                .children
+                .iter()
+                .rev()
+                .map(|n| Work::Enter(*n, None)),
+        );
         Ok(())
     }
     #[expect(
@@ -1021,7 +1077,7 @@ impl Checker<'_> {
                 else {
                     return Err(self.error(node, "missing value resolution"));
                 };
-                if let Some(term) = self.locals[id.0 as usize] {
+                if let Some(term) = self.state.locals[id.0 as usize] {
                     return Ok(term);
                 }
                 let definition = &self.report.resolution.definitions[id.0 as usize];
@@ -1055,8 +1111,8 @@ impl Checker<'_> {
                     return self.generic_function(node, id, ty);
                 }
                 if definition.kind == DefKind::Const
-                    && !self.in_function
-                    && let Some(owner) = self.environment_owner
+                    && !self.state.in_function
+                    && let Some(owner) = self.state.environment_owner
                 {
                     self.facts
                         .constant_dependencies
@@ -1088,11 +1144,11 @@ impl Checker<'_> {
                 if let Some(tail) = tail {
                     return self.term(tail);
                 }
-                let unit = self.report.package.unit(self.file);
+                let unit = self.report.package.unit(self.state.file);
                 let mut diverges = false;
                 for statement in unit.configured.ast.list(statements) {
                     if self.active(*statement) {
-                        diverges |= self.diverges[statement.0 as usize];
+                        diverges |= self.state.diverges[statement.0 as usize];
                     }
                 }
                 self.known(
@@ -1128,7 +1184,7 @@ impl Checker<'_> {
                 }
                 let mut diverges = false;
                 if let Some(value) = value {
-                    diverges = self.diverges[value.0 as usize];
+                    diverges = self.state.diverges[value.0 as usize];
                     // Compound patterns were constrained after their initializer
                     // by BindPattern; a literal's node type may now be adjusted.
                     if otherwise.is_none() && self.simple_pattern(pattern) {
@@ -1156,9 +1212,9 @@ impl Checker<'_> {
                     }
                 ) && let Some(literal) = self.literal_operand(operand)
                 {
-                    self.negated.insert(literal);
+                    self.state.negated.insert(literal);
                 }
-                self.checks.push(node);
+                self.state.checks.push(node);
                 self.term(operand)
             }
             Kind::Unary {
@@ -1197,10 +1253,10 @@ impl Checker<'_> {
             Kind::Break { label, value } => self.transfer(node, label.is_some(), value, false),
             Kind::Continue(label) => self.transfer(node, label.is_some(), None, true),
             Kind::Return(value) => {
-                if !self.in_function {
+                if !self.state.in_function {
                     return Err(self.error(node, "return is outside a function"));
                 }
-                let expected = self.known(node, self.result)?;
+                let expected = self.known(node, self.state.result)?;
                 if let Some(value) = value {
                     self.coerce(value, expected)?;
                 } else {
@@ -1236,7 +1292,7 @@ impl Checker<'_> {
                     let signature = self.child(node, source, 0)?;
                     self.callable_shape(node, signature, target)?;
                 }
-                self.checks.push(node);
+                self.state.checks.push(node);
                 Ok(target)
             }
             _ => Err(self.error(
@@ -1249,7 +1305,7 @@ impl Checker<'_> {
         let value = self
             .report
             .package
-            .unit(self.file)
+            .unit(self.state.file)
             .literal(index)
             .map_err(|e| self.error(node, e.message))?;
         let primitive = match value {
@@ -1280,7 +1336,11 @@ impl Checker<'_> {
         self.known(node, TypeId::primitive(primitive))
     }
     fn coerce(&mut self, source: NodeId, expected: TermId) -> Result<(), Error> {
-        self.coerce_one(source, expected, self.reference_expected.contains(&source))?;
+        self.coerce_one(
+            source,
+            expected,
+            self.state.reference_expected.contains(&source),
+        )?;
         self.finish_reference_coercions()
     }
     fn record_adjustment(
@@ -1289,7 +1349,7 @@ impl Checker<'_> {
         expected: TermId,
         kind: AdjustmentKind,
     ) -> Result<(), Error> {
-        self.adjustments.push(PendingAdjustment {
+        self.state.adjustments.push(PendingAdjustment {
             node,
             actual: self.term(node)?,
             expected,
@@ -1306,8 +1366,8 @@ impl Checker<'_> {
     ) -> Result<(), Error> {
         let actual = self.term(source)?;
         self.advance_projections(source)?;
-        let actual_head = self.infer.head(&self.facts.types, actual);
-        let expected_head = self.infer.head(&self.facts.types, expected);
+        let actual_head = self.state.infer.head(&self.facts.types, actual);
+        let expected_head = self.state.infer.head(&self.facts.types, expected);
         for head in [&actual_head, &expected_head] {
             if let Err(error) = head
                 && *error != crate::types::infer::Error::Normalization
@@ -1406,6 +1466,7 @@ impl Checker<'_> {
                 a_item
                     && b_item
                     && self
+                        .state
                         .infer
                         .incompatible(&self.facts.types, a, b)
                         .map_err(|e| self.error(node, e))?
@@ -1435,7 +1496,7 @@ impl Checker<'_> {
         }
         let a = self.term(left)?;
         let b = self.term(right)?;
-        self.checks.push(node);
+        self.state.checks.push(node);
         match op {
             Op::AndAnd | Op::OrOr => {
                 let boolean = self.known(node, TypeId::primitive(Primitive::Bool))?;
@@ -1476,6 +1537,7 @@ impl Checker<'_> {
     }
     fn call(&mut self, node: NodeId, _callee: NodeId, arguments: List) -> Result<TermId, Error> {
         let term = self
+            .state
             .call_types
             .active
             .remove(&node)
@@ -1494,7 +1556,7 @@ impl Checker<'_> {
                 "unsafe or lifetime-polymorphic calls require later implementation",
             ));
         }
-        let unit = self.report.package.unit(self.file);
+        let unit = self.report.package.unit(self.state.file);
         let mut count = usize::from(matches!(
             self.kind(node),
             Kind::MethodCall { .. } | Kind::GenericMethodCall { .. }
@@ -1511,14 +1573,14 @@ impl Checker<'_> {
                 self.head(node, expected)?,
                 Some(Constructor::Reference { mutable: true, .. })
             );
-            let mark = self.adjustments.len();
+            let mark = self.state.adjustments.len();
             self.coerce(*argument, expected)?;
             let mut site = *argument;
             while let Kind::Group(value) | Kind::Attributed { value, .. } = self.kind(site) {
                 site = value;
             }
-            for index in mark..self.adjustments.len() {
-                if self.adjustments[index].node == site
+            for index in mark..self.state.adjustments.len() {
+                if self.state.adjustments[index].node == site
                     && !matches!(
                         self.kind(site),
                         Kind::Unary {
@@ -1526,7 +1588,7 @@ impl Checker<'_> {
                             ..
                         }
                     )
-                    && let Some((adjustment, _)) = self.reference_adjustments.get_mut(&index)
+                    && let Some((adjustment, _)) = self.state.reference_adjustments.get_mut(&index)
                 {
                     adjustment.two_phase = exclusive && adjustment.dereferences == 1;
                 }
@@ -1536,12 +1598,16 @@ impl Checker<'_> {
         if count != parameters as usize {
             return Err(self.error(node, "too few call arguments"));
         }
-        self.calls.push((node, term));
+        self.state.calls.push((node, term));
         self.child(node, term, count)
     }
     fn enter_control(&mut self, node: NodeId, expected: Option<TermId>) -> Result<(), Error> {
-        let label = if self.pending_label.is_some_and(|(target, _)| target == node) {
-            self.pending_label.take().map(|(_, label)| label)
+        let label = if self
+            .state
+            .pending_label
+            .is_some_and(|(target, _)| target == node)
+        {
+            self.state.pending_label.take().map(|(_, label)| label)
         } else {
             None
         };
@@ -1555,7 +1621,7 @@ impl Checker<'_> {
                     .node(self.key(node))
                     .and_then(|f| f.binding)
                     .ok_or_else(|| self.error(node, "missing label definition"))?;
-                self.pending_label = Some((value, label));
+                self.state.pending_label = Some((value, label));
                 return Ok(());
             }
             _ => return Ok(()),
@@ -1565,7 +1631,7 @@ impl Checker<'_> {
         } else {
             self.variable(node, Domain::Any)?
         };
-        self.frames.push(Frame {
+        self.state.frames.push(Frame {
             node,
             body,
             kind,
@@ -1588,6 +1654,7 @@ impl Checker<'_> {
         condition: Option<NodeId>,
     ) -> Result<TermId, Error> {
         let frame = self
+            .state
             .frames
             .pop()
             .ok_or_else(|| self.error(node, "missing loop control frame"))?;
@@ -1599,8 +1666,8 @@ impl Checker<'_> {
         if let Some(condition) = condition {
             let boolean = self.known(node, TypeId::primitive(Primitive::Bool))?;
             self.coerce(condition, boolean)?;
-            self.diverges[node.0 as usize] =
-                frame.breaks.is_none() && self.diverges[condition.0 as usize];
+            self.state.diverges[node.0 as usize] =
+                frame.breaks.is_none() && self.state.diverges[condition.0 as usize];
         }
         self.finish_frame(
             frame,
@@ -1613,7 +1680,7 @@ impl Checker<'_> {
     }
     fn finish_frame(&mut self, frame: Frame, base: Option<TermId>) -> Result<TermId, Error> {
         if let Some(root) = frame.breaks {
-            self.break_roots.insert(frame.node, root);
+            self.state.break_roots.insert(frame.node, root);
         }
         let expected = self.frame_expected(frame)?;
         let mut common = if frame.breaks.is_some() {
@@ -1623,8 +1690,8 @@ impl Checker<'_> {
         };
         let mut site = frame.breaks;
         while let Some(index) = site {
-            let value = self.breaks[index].value;
-            let node = self.breaks[index].node;
+            let value = self.state.breaks[index].value;
+            let node = self.state.breaks[index].node;
             let term = if let Some(value) = value {
                 self.term(value)?
             } else {
@@ -1635,7 +1702,7 @@ impl Checker<'_> {
             } else {
                 term
             });
-            site = self.breaks[index].next;
+            site = self.state.breaks[index].next;
         }
         let common = if let Some(common) = common {
             common
@@ -1647,7 +1714,7 @@ impl Checker<'_> {
             self.contextual_head(frame.node, common)?,
             Some(Constructor::Reference { .. })
         );
-        let identity_reborrow = self.reference_expected.contains(&frame.node);
+        let identity_reborrow = self.state.reference_expected.contains(&frame.node);
         if frame.kind == FrameKind::Block {
             if reference
                 && let Kind::Block {
@@ -1655,7 +1722,7 @@ impl Checker<'_> {
                 } = self.kind(frame.node)
             {
                 if frame.breaks.is_some() {
-                    self.reference_expected.insert(tail);
+                    self.state.reference_expected.insert(tail);
                 }
                 self.coerce_one(
                     tail,
@@ -1669,15 +1736,15 @@ impl Checker<'_> {
         }
         let mut site = frame.breaks;
         while let Some(index) = site {
-            if let Some(value) = self.breaks[index].value {
+            if let Some(value) = self.state.breaks[index].value {
                 self.coerce_one(
                     value,
                     if reference { frame.result } else { common },
-                    identity_reborrow || self.reference_expected.contains(&value),
+                    identity_reborrow || self.state.reference_expected.contains(&value),
                 )?;
                 self.finish_reference_coercions()?;
             }
-            site = self.breaks[index].next;
+            site = self.state.breaks[index].next;
         }
         Ok(frame.result)
     }
@@ -1707,7 +1774,7 @@ impl Checker<'_> {
             term = self.child(node, term, 0)?;
         }
         term = self.call_signature(node, term)?;
-        self.call_types.active.insert(node, term);
+        self.state.call_types.active.insert(node, term);
         let Some(Constructor::Function { parameters, .. }) = self.head(node, term)? else {
             return Err(self.error(node, "call requires a known function type"));
         };
@@ -1727,7 +1794,7 @@ impl Checker<'_> {
         let Some(Constructor::Function { parameters, .. }) = self.head(node, term)? else {
             return Err(self.error(node, "call requires a known function type"));
         };
-        let unit = self.report.package.unit(self.file);
+        let unit = self.report.package.unit(self.state.file);
         let count = unit
             .configured
             .ast
@@ -1743,7 +1810,7 @@ impl Checker<'_> {
             if self.active(*argument) {
                 index -= 1;
                 let expected = self.child(node, term, index)?;
-                self.work.push(Work::Enter(*argument, Some(expected)));
+                self.state.work.push(Work::Enter(*argument, Some(expected)));
             }
         }
         Ok(())
@@ -1761,12 +1828,15 @@ impl Checker<'_> {
             else {
                 return Err(self.error(node, "missing control label resolution"));
             };
-            self.frames.iter().rposition(|f| f.label == Some(label))
+            self.state
+                .frames
+                .iter()
+                .rposition(|f| f.label == Some(label))
         } else {
-            self.frames.len().checked_sub(1)
+            self.state.frames.len().checked_sub(1)
         }
         .ok_or_else(|| self.error(node, "break or continue is outside a loop"))?;
-        let frame = self.frames[index];
+        let frame = self.state.frames[index];
         if !labeled && (frame.kind == FrameKind::Block || frame.in_condition) {
             return Err(self.error(
                 node,
@@ -1787,20 +1857,20 @@ impl Checker<'_> {
                     self.head(value, expected)?,
                     Some(Constructor::Reference { .. })
                 ) {
-                    self.reference_expected.insert(value);
+                    self.state.reference_expected.insert(value);
                 }
                 self.coerce(value, expected)?;
             } else {
                 let unit = self.known(node, TypeId::UNIT)?;
                 self.equate(node, unit, expected)?;
             }
-            let site = self.breaks.len();
-            self.breaks.push(BreakSite {
+            let site = self.state.breaks.len();
+            self.state.breaks.push(BreakSite {
                 node,
                 value,
                 next: frame.breaks,
             });
-            self.frames[index].breaks = Some(site);
+            self.state.frames[index].breaks = Some(site);
         }
         let key = self.key(node);
         self.facts
@@ -1834,12 +1904,12 @@ impl Checker<'_> {
         } else {
             self.coerce(right, a)?;
         }
-        self.assignments.push((node, target, operator));
+        self.state.assignments.push((node, target, operator));
         let never = self.head(node, b)? == Some(Constructor::Never);
         self.known(node, if never { TypeId::NEVER } else { TypeId::UNIT })
     }
     fn validate_assignments(&mut self) -> Result<(), Error> {
-        for (node, target, operator) in &self.assignments {
+        for (node, target, operator) in &self.state.assignments {
             let Kind::Binary { left, right, .. } = self.kind(*node) else {
                 return Err(self.error(*node, "invalid assignment syntax"));
             };
@@ -1893,7 +1963,7 @@ impl Checker<'_> {
         }
     }
     fn validate_operations(&mut self) -> Result<(), Error> {
-        for node in &self.checks {
+        for node in &self.state.checks {
             let operation = match self.kind(*node) {
                 Kind::Unary { op, operand } => {
                     if !scalar::unary(op, self.primitive(operand)?) {
@@ -1961,7 +2031,7 @@ impl Checker<'_> {
             } = operation
             {
                 self.facts.retain_coercion(super::model::Coercion {
-                    body: self.body,
+                    body: self.state.body,
                     source: key,
                     actual: source,
                     expected: target,
@@ -1978,8 +2048,8 @@ impl Checker<'_> {
     }
     fn validate_values(&mut self) -> Result<(), Error> {
         // Keep only negated literal IDs; no per-function copy of the file's AST.
-        for index in 0..self.touched.len() {
-            let node = self.touched[index];
+        for index in 0..self.state.touched.len() {
+            let node = self.state.touched[index];
             if let Kind::Repeat { value, .. } = self.kind(node) {
                 self.validate_repeat(node, value)?;
                 continue;
@@ -1987,14 +2057,14 @@ impl Checker<'_> {
             let Kind::Literal(index) = self.kind(node) else {
                 continue;
             };
-            let unit = self.report.package.unit(self.file);
+            let unit = self.report.package.unit(self.state.file);
             let value = unit
                 .literal(index)
                 .map_err(|e| self.error(node, e.message))?;
             if matches!(value, Value::String(_) | Value::ByteString(_)) {
                 continue;
             }
-            let negated = self.negated.contains(&node);
+            let negated = self.state.negated.contains(&node);
             let scalar = scalar::literal(&value, self.primitive(node)?, negated)
                 .map_err(|e| self.error(node, e))?;
             let key = self.key(node);

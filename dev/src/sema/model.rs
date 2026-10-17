@@ -135,12 +135,23 @@ pub enum InitializerKind {
 }
 #[derive(Clone, Copy)]
 pub struct Initializer {
-    pub(super) type_checked: bool,
+    pub(super) typing: InitializerTyping,
     pub definition: DefId,
     pub node: NodeKey,
     pub value: NodeKey,
     pub ty: TypeId,
     pub kind: InitializerKind,
+}
+#[derive(Clone, Copy)]
+pub(super) enum InitializerTyping {
+    Unseen,
+    Active,
+    Complete,
+}
+impl Initializer {
+    pub(super) fn type_checked(&self) -> bool {
+        matches!(self.typing, InitializerTyping::Complete)
+    }
 }
 #[derive(Clone, Copy)]
 pub struct RegionEquality {
@@ -221,7 +232,16 @@ pub struct ReferenceAlignment {
     pub packed: u32,
     pub guard: bool,
 }
+/// Work observations are not language facts and are never part of a text oracle.
+#[derive(Default)]
+pub struct BodyWork {
+    pub steps: usize,
+    pub suspensions: usize,
+    pub suspended_slots: usize,
+    pub peak_suspended_slots: usize,
+}
 pub struct Declarations {
+    pub body_work: BodyWork,
     pub alias_requirements: super::alias_requirements::Requirements,
     pub unreduced: super::unreduced::Types,
     pub(super) anonymous_constants: std::collections::HashMap<NodeKey, TypeId>,
@@ -311,6 +331,7 @@ impl Declarations {
     }
     pub(super) fn new(report: &Report) -> Result<Self, Error> {
         let mut value = Self {
+            body_work: BodyWork::default(),
             alias_requirements: super::alias_requirements::Requirements::default(),
             unreduced: super::unreduced::Types::default(),
             anonymous_constants: std::collections::HashMap::new(),

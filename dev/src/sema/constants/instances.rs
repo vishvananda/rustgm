@@ -311,7 +311,7 @@ impl Queries<'_> {
         ) {
             return Err(self.error(query, "constant instance requires a constant initializer"));
         }
-        if !self.typing.facts.initializers[index].type_checked {
+        if !self.typing.facts.initializers[index].type_checked() {
             self.typing.initializer(index)?;
             self.require_complete_patterns(query)?;
         }

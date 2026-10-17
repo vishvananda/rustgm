@@ -66,21 +66,26 @@ impl Checker<'_> {
         self.bind_trait_arguments(node, &arguments, &bindings)?;
         let projected_signature = self.facts.types.contains_projections(signature) == Some(true);
         let mut substitution =
-            infer::Instantiation::new(&mut self.infer, &self.facts.types, &bindings)
+            infer::Instantiation::new(&mut self.state.infer, &self.facts.types, &bindings)
                 .map_err(|e| self.error(node, e))?;
         let signature = self
+            .state
             .infer
             .instantiate_with(&mut self.facts.types, signature, &mut substitution)
             .map_err(|e| self.error(node, e))?;
-        if projected_signature || substitution.shifted_projections() || self.projections.active() {
+        if projected_signature
+            || substitution.shifted_projections()
+            || self.state.projections.active()
+        {
             self.defer_normalization(node, crate::types::lifetime_proof::ScopeId::ROOT, signature)?;
         }
         self.bound_obligations(node, owner, &arguments, &bindings)?;
         let term = self
+            .state
             .infer
             .function_item(item, signature, &arguments)
             .map_err(|e| self.error(node, e))?;
-        self.call_types.generic.push((node, owner, term));
+        self.state.call_types.generic.push((node, owner, term));
         Ok(term)
     }
     fn callable_parameters(
@@ -138,8 +143,10 @@ impl Checker<'_> {
             }
             ParameterKind::Const { ty } => {
                 let term = match supplied {
-                    SourceArgument::Const(id) => self.infer.known_const(&self.facts.types, id),
-                    SourceArgument::Infer => self.infer.const_variable(&self.facts.types, ty),
+                    SourceArgument::Const(id) => {
+                        self.state.infer.known_const(&self.facts.types, id)
+                    }
+                    SourceArgument::Infer => self.state.infer.const_variable(&self.facts.types, ty),
                     SourceArgument::Type(_) => {
                         return Err(self.error(node, "const parameter requires a const argument"));
                     }
@@ -150,21 +157,22 @@ impl Checker<'_> {
         })
     }
     pub(super) fn alias_argument(&mut self, node: NodeId, term: TermId) -> Result<TermId, Error> {
-        let transformed = match self.infer.resolved(&mut self.facts.types, term) {
+        let transformed = match self.state.infer.resolved(&mut self.facts.types, term) {
             Ok(ty) => {
                 let ty = self.alias_type(node, ty)?;
                 self.known(node, ty)
             }
             Err(infer::Error::Unresolved) => {
                 self.prepare_universals(node)?;
-                let regions = self.call_types.universal_arguments();
-                self.infer
+                let regions = self.state.call_types.universal_arguments();
+                self.state
+                    .infer
                     .substitute_regions(&mut self.facts.types, term, &regions)
                     .map_err(|e| self.error(node, e))
             }
             Err(e) => Err(self.error(node, e)),
         }?;
-        if self.projections.active() && transformed != term {
+        if self.state.projections.active() && transformed != term {
             self.defer_normalization(
                 node,
                 crate::types::lifetime_proof::ScopeId::ROOT,
@@ -194,12 +202,14 @@ impl Checker<'_> {
         for index in 0..=parameters {
             let child = self.child(node, term, index as usize)?;
             let child = self
+                .state
                 .infer
                 .substitute_regions(&mut self.facts.types, child, &arguments)
                 .map_err(|e| self.error(node, e))?;
             children.push(self.alias_argument(node, child)?);
         }
-        self.infer
+        self.state
+            .infer
             .construct(
                 Constructor::Function {
                     bound_regions: 0,
@@ -216,8 +226,8 @@ impl Checker<'_> {
         predicates: &[crate::types::parameters::predicates::Predicate],
         evidence: &std::collections::HashMap<usize, Source>,
     ) -> Result<(), Error> {
-        for index in 0..self.call_types.generic.len() {
-            let (node, owner, term) = self.call_types.generic[index];
+        for index in 0..self.state.call_types.generic.len() {
+            let (node, owner, term) = self.state.call_types.generic[index];
             let ty = *solved
                 .types
                 .get(term.0 as usize)
@@ -262,7 +272,7 @@ impl Checker<'_> {
             }
         }
         for (index, predicate) in predicates.iter().enumerate() {
-            let node = self.call_types.obligations[index].0;
+            let node = self.state.call_types.obligations[index].0;
             let predicate = match evidence.get(&index) {
                 Some(Source::Assumption(actual) | Source::ResultBound(actual)) => *actual,
                 Some(Source::Implementation { .. }) => continue,

@@ -33,10 +33,10 @@ impl Checker<'_> {
         node: NodeId,
         owner: DefId,
     ) -> Result<(), Error> {
-        self.environment_owner = Some(owner);
+        self.state.environment_owner = Some(owner);
         let mut environment = self.facts.generics.environments.get(&owner).cloned();
-        self.trait_environment = None;
-        self.canonical_trait_inference = None;
+        self.state.trait_environment = None;
+        self.state.canonical_trait_inference = None;
         // Body calls express caller universals as free aliases. Add the same
         // assumptions in that context before either query cache is constructed.
         // Original subjects remain available for declaration-context annotations.
@@ -73,12 +73,12 @@ impl Checker<'_> {
                     .insert(owner, std::sync::Arc::clone(environment));
             }
         }
-        self.method_environment.clone_from(&environment);
-        self.parameter_shapes = environment
+        self.state.method_environment.clone_from(&environment);
+        self.state.parameter_shapes = environment
             .as_ref()
             .filter(|e| e.has_shape_assumptions())
             .map(|e| crate::types::parameters::shape::Shapes::new(std::sync::Arc::clone(e)));
-        self.parameter_copies = environment.map(crate::types::copy::Copies::in_environment);
+        self.state.parameter_copies = environment.map(crate::types::copy::Copies::in_environment);
         Ok(())
     }
     pub(super) fn body_shape(&mut self, node: NodeId, ty: TypeId) -> Result<Properties, Error> {
@@ -91,7 +91,7 @@ impl Checker<'_> {
             });
         }
         let projected = self.facts.types.contains_projections(ty) == Some(true);
-        if let Some(shapes) = &mut self.parameter_shapes
+        if let Some(shapes) = &mut self.state.parameter_shapes
             && let Some(properties) = shapes
                 .try_demand(&self.facts.types, ty)
                 .map_err(|e| self.error(node, e))?
@@ -104,7 +104,7 @@ impl Checker<'_> {
         } else {
             ty
         };
-        if let Some(shapes) = &mut self.parameter_shapes {
+        if let Some(shapes) = &mut self.state.parameter_shapes {
             (if projected {
                 shapes.normalized(&self.facts.types, ty)
             } else {
@@ -139,7 +139,7 @@ impl Checker<'_> {
             self.facts
                 .type_outlives
                 .push(crate::sema::model::TypeOutlives {
-                    body: self.body,
+                    body: self.state.body,
                     source: self.key(node),
                     ty,
                     shorter,
@@ -148,6 +148,7 @@ impl Checker<'_> {
         }
         if let Bound::Trait(application) = bound {
             if self
+                .state
                 .method_environment
                 .as_ref()
                 .is_some_and(|environment| environment.assumes_trait(ty, application))
@@ -166,6 +167,7 @@ impl Checker<'_> {
                 self.prepare_storage(node, ty)?;
             }
             let properties = self
+                .state
                 .parameter_copies
                 .as_mut()
                 .unwrap_or(&mut self.facts.copies)
@@ -266,19 +268,24 @@ impl Checker<'_> {
         }
         let assumed = self.bound_method_requirement(node, owner)?;
         let mut substitution = substitute::Bound::new(regions);
-        let mut inference =
-            crate::types::infer::Instantiation::new(&mut self.infer, &self.facts.types, bindings)
-                .map_err(|e| self.error(node, e))?;
+        let mut inference = crate::types::infer::Instantiation::new(
+            &mut self.state.infer,
+            &self.facts.types,
+            bindings,
+        )
+        .map_err(|e| self.error(node, e))?;
         for predicate in predicates {
             if assumed == Some(predicate.value) {
-                self.call_types
+                self.state
+                    .call_types
                     .assumed_obligations
-                    .insert(self.call_types.obligations.len());
+                    .insert(self.state.call_types.obligations.len());
             }
             let predicate = substitution
                 .predicate(&mut self.facts.types, predicate.value)
                 .map_err(|e| self.error(node, e))?;
             let predicate = self
+                .state
                 .infer
                 .instantiate_predicate(&mut self.facts.types, predicate, &mut inference)
                 .map_err(|e| self.error(node, e))?;
@@ -304,7 +311,7 @@ impl Checker<'_> {
                     predicate.subject(),
                 )?;
             }
-            self.call_types.obligations.push((node, predicate));
+            self.state.call_types.obligations.push((node, predicate));
         }
         Ok(())
     }

@@ -122,6 +122,9 @@ impl Checker<'_> {
                 );
                 self.work.push(Work::EvaluateConstant(request, true));
                 match dependency {
+                    constants::ArgumentDependency::Nominal(dependency) => {
+                        self.work.push(Work::ValueType(DefId(dependency.item.0)));
+                    }
                     constants::ArgumentDependency::Initializer(definition) => {
                         self.require_initializer_readiness(key, definition)?;
                     }

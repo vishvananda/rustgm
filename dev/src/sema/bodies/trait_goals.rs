@@ -18,6 +18,7 @@ impl Checker<'_> {
         let first_region = self.trait_region_start(node)?;
         let key = self.key(node);
         let context = self
+            .state
             .canonical_trait_inference
             .get_or_insert_with(Default::default);
         let mut substitution =
@@ -35,7 +36,7 @@ impl Checker<'_> {
             &goal,
             Caller {
                 assumptions: &assumptions,
-                environment: self.method_environment.as_ref(),
+                environment: self.state.method_environment.as_ref(),
                 first_region,
                 retain_sized: false,
             },
@@ -53,7 +54,7 @@ impl Checker<'_> {
             .region_equalities
             .extend(equalities.into_iter().map(|(left, right)| {
                 crate::sema::model::RegionEquality {
-                    body: self.body,
+                    body: self.state.body,
                     left,
                     right,
                 }
@@ -66,6 +67,7 @@ impl Checker<'_> {
         body: NodeId,
     ) -> Result<HashMap<usize, Source>, Error> {
         let mut pending: Vec<_> = self
+            .state
             .call_types
             .obligations
             .iter()
@@ -73,28 +75,28 @@ impl Checker<'_> {
             .filter_map(|(index, (_, predicate))| predicate.trait_arguments().map(|_| index))
             .collect();
         let mut evidence = HashMap::new();
-        if pending.is_empty() && !self.projections.active() {
+        if pending.is_empty() && !self.state.projections.active() {
             return Ok(evidence);
         }
         let assumptions = self.trait_assumptions(body)?.unwrap_or_default();
-        while !pending.is_empty() || self.projections.active() {
+        while !pending.is_empty() || self.state.projections.active() {
             let progress = self.advance_projections(body)?;
             let before = pending.len();
             let mut next = Vec::new();
             for index in pending {
                 let first_region = self.trait_region_start(body)?;
-                let (node, predicate) = &self.call_types.obligations[index];
+                let (node, predicate) = &self.state.call_types.obligations[index];
                 let node = *node;
                 let caller = Caller {
                     assumptions: &assumptions,
-                    environment: self.method_environment.as_ref(),
+                    environment: self.state.method_environment.as_ref(),
                     first_region,
                     retain_sized: false,
                 };
-                let selected = if self.call_types.assumed_obligations.contains(&index) {
+                let selected = if self.state.call_types.assumed_obligations.contains(&index) {
                     selection::select_assumption(
                         &mut self.facts.types,
-                        &mut self.infer,
+                        &mut self.state.infer,
                         predicate,
                         &caller,
                     )
@@ -102,7 +104,7 @@ impl Checker<'_> {
                 } else {
                     selection::select_available(
                         self.facts,
-                        &mut self.infer,
+                        &mut self.state.infer,
                         predicate,
                         caller,
                         self.availability,
@@ -115,9 +117,12 @@ impl Checker<'_> {
                     next.push(index);
                 }
             }
-            if next.len() == before && !progress && (!next.is_empty() || self.projections.active())
+            if next.len() == before
+                && !progress
+                && (!next.is_empty() || self.state.projections.active())
             {
                 if self
+                    .state
                     .infer
                     .default_numbers()
                     .map_err(|e| self.error(body, e))?
@@ -128,7 +133,7 @@ impl Checker<'_> {
                 let Some(&index) = next.first() else {
                     return Err(self.error(body, "associated projection inputs remain unresolved"));
                 };
-                let node = self.call_types.obligations[index].0;
+                let node = self.state.call_types.obligations[index].0;
                 return Err(self.error(node,"trait obligation requires an unambiguous matching assumption or implementation"));
             }
             pending = next;
@@ -150,7 +155,7 @@ impl Checker<'_> {
         let mut proof = crate::sema::traits::obligations::Obligations::new(evidence.regions.start);
         proof.append(evidence).map_err(|e| self.error(node, e))?;
         proof
-            .retain_body(self.facts, self.body, source)
+            .retain_body(self.facts, self.state.body, source)
             .map_err(|e| self.error(node, e))?;
         if let Source::Implementation { owner, arguments } = selected {
             self.facts
@@ -167,10 +172,11 @@ impl Checker<'_> {
         &mut self,
         node: NodeId,
     ) -> Result<Option<Arc<Assumptions>>, Error> {
-        if let Some(assumptions) = &self.trait_environment {
+        if let Some(assumptions) = &self.state.trait_environment {
             return Ok(Some(Arc::clone(assumptions)));
         }
         let predicates: Vec<_> = self
+            .state
             .method_environment
             .iter()
             .flat_map(|environment| environment.trait_predicates())
@@ -195,7 +201,7 @@ impl Checker<'_> {
                 .map_err(|e| self.error(node, e))?;
         }
         let assumptions = Arc::new(assumptions);
-        self.trait_environment = Some(Arc::clone(&assumptions));
+        self.state.trait_environment = Some(Arc::clone(&assumptions));
         Ok(Some(assumptions))
     }
 }

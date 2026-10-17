@@ -509,6 +509,14 @@ lexical target identities. The [member lifetime tests](dev/tests/associated_decl
 add fourteen independently qualified outcomes and eight native positives for retained
 member contracts: source ordering, stronger/shorter references, directed outlives
 bounds, projected formation debts and nominal covariance versus invariance.
+The [value readiness tests](dev/tests/associated_declarations/value_readiness.rs)
+declare 22 outcomes for suspended anonymous and named initializer bodies, repeated
+reference dereferences, nested field dependencies, source ordering, unused
+referents, retained lifetime debts and real dependency cycles. Independent rustc
+outcomes and native execution complement counters for
+body work and concurrently retained node/binding slots. Grow dependency count and
+depth separately from unrelated source size; retained slot capacity measures
+those slot tables, not the complete inference heap.
 Dispatch dependency invariants measure repeated caller
 work and reject reuse across availability modes or incomplete dependency diamonds.
 

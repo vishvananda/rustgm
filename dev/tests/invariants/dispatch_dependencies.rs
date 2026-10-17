@@ -38,7 +38,7 @@ fn facts(
     let mut facts = crate::sema::bodies::analyze(&report, facts)?;
     facts.dispatch_dependencies = Dependencies::default();
     for initializer in &facts.initializers {
-        assert!(initializer.type_checked);
+        assert!(initializer.type_checked());
         facts.dispatch_dependencies.complete(initializer.definition);
     }
     Ok((report, facts))
