@@ -126,7 +126,11 @@ impl Binding {
     pub(crate) fn is_lexical(self, definitions: &[Definition], associated: bool) -> bool {
         self.origin != Origin::Direct
             || (definitions[self.target.0 as usize].kind != DefKind::Variant
-                && !(associated && definitions[self.target.0 as usize].kind == DefKind::TypeAlias))
+                && !(associated
+                    && matches!(
+                        definitions[self.target.0 as usize].kind,
+                        DefKind::TypeAlias | DefKind::Const | DefKind::Function
+                    )))
     }
 }
 pub struct Scope {

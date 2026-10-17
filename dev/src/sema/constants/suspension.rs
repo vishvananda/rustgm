@@ -2,6 +2,11 @@
 use super::{DefId, Error, Expression, NodeKey, Queries, Query, Scratch, State, Work, instances};
 use std::collections::HashMap;
 
+pub(in crate::sema) enum Dependency {
+    Initializer(DefId),
+    Members(Vec<crate::sema::traits::implementations::ConstantRequest>),
+}
+
 pub(in crate::sema) struct Continuation {
     expressions: HashMap<(instances::Context, NodeKey), Expression>,
     instances: instances::Instances,
@@ -9,6 +14,7 @@ pub(in crate::sema) struct Continuation {
     work: instances::Worklist,
     steps: usize,
     limit: usize,
+    checked_members: std::collections::HashSet<Query>,
 }
 
 impl Queries<'_> {
@@ -21,6 +27,7 @@ impl Queries<'_> {
             work: std::mem::take(&mut self.work),
             steps: self.steps,
             limit: self.limit,
+            checked_members: std::mem::take(&mut self.checked_members),
         };
         (self.into_scratch(), Box::new(continuation))
     }
@@ -32,6 +39,7 @@ impl Queries<'_> {
         self.work = continuation.work;
         self.steps = continuation.steps;
         self.limit = self.limit.max(continuation.limit);
+        self.checked_members = continuation.checked_members;
     }
 
     pub(super) fn required_initializer(&self, work: &Work) -> Result<Option<DefId>, Error> {

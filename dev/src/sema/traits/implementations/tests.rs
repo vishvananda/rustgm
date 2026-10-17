@@ -136,3 +136,45 @@ fn erased_lifetime_arguments_still_require_an_overlap_probe()
     );
     Ok(())
 }
+
+#[test]
+fn checked_constants_do_not_authorize_unvalidated_operations()
+-> Result<(), Box<dyn std::error::Error>> {
+    let mut store = Store::default();
+    let mut registry = Implementations::default();
+    let header = header(&mut store, 0, &[])?;
+    let owner = header.owner;
+    registry.prepare(&mut store, ItemId(1), header)?;
+    let declaration = DefId(99);
+    let selected = DefId(100);
+    let request = super::ConstantRequest { owner, declaration };
+    assert!(registry.complete_constant(request, selected).is_err());
+    registry.finish_constant_headers();
+    registry.complete_constant(request, selected)?;
+    assert!(registry.complete_constant(request, DefId(101)).is_err());
+    assert!(!registry.is_validated(owner));
+    assert_eq!(registry.method(owner, declaration), None);
+    assert_eq!(registry.constant(owner, declaration), None);
+    assert_eq!(
+        registry.available_constant(owner, declaration, super::Availability::Validated),
+        None
+    );
+    assert_eq!(
+        registry.available_constant(owner, declaration, super::Availability::Declarations),
+        Some(selected)
+    );
+    assert!(
+        registry
+            .complete(owner, Vec::new(), Vec::new(), vec![(declaration, None)])
+            .is_err()
+    );
+    assert!(!registry.is_validated(owner));
+    registry.complete(
+        owner,
+        Vec::new(),
+        Vec::new(),
+        vec![(declaration, Some(selected))],
+    )?;
+    assert_eq!(registry.constant(owner, declaration), Some(selected));
+    Ok(())
+}

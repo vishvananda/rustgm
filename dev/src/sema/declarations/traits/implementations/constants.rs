@@ -19,6 +19,20 @@ pub(super) struct Members {
     names: HashMap<(OwnerId, NameId), DefId>,
 }
 impl Members {
+    pub(super) fn selected(
+        &self,
+        facts: &Declarations,
+        report: &Report,
+        owner: DefId,
+        declaration: DefId,
+    ) -> Result<Option<DefId>, &'static str> {
+        let owner = facts
+            .associated
+            .owner(owner)
+            .ok_or("missing constant implementation owner")?;
+        let name = report.resolution.definitions[declaration.0 as usize].name;
+        Ok(self.names.get(&(owner, name)).copied())
+    }
     pub(super) fn new(report: &Report, facts: &Declarations) -> Self {
         let mut result = Self::default();
         for member in facts.associated.members() {
@@ -106,7 +120,7 @@ impl Checker<'_> {
         Ok(result)
     }
 
-    fn constant_conformance(
+    pub(super) fn constant_conformance(
         &mut self,
         owner: DefId,
         source: NodeKey,
@@ -132,6 +146,11 @@ impl Checker<'_> {
             .values(&mut self.facts, environment, &mut evidence, &mut types)
             .map_err(|e| self.error(key, e))?;
         let [expected, actual] = types;
+        // Exact canonical equality needs no coercion environment. Any erased
+        // projection debt still forces the ordinary lifetime proof below.
+        if expected == actual && evidence.is_empty() {
+            return Ok(());
+        }
         let mut shape = Context::default();
         let a = shape
             .known(&self.facts.types, actual)

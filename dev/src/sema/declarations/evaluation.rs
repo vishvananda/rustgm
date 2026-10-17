@@ -112,7 +112,7 @@ impl Checker<'_> {
                     .map_err(|e| self.error(key, e))?;
                 self.constant_evaluations.completed.insert((key, ty), id);
             }
-            constants::ArgumentProgress::Prepare(definition, continuation) => {
+            constants::ArgumentProgress::Prepare(dependency, continuation) => {
                 self.constant_evaluations.suspended.insert(
                     (key, ty),
                     Suspended {
@@ -121,7 +121,19 @@ impl Checker<'_> {
                     },
                 );
                 self.work.push(Work::EvaluateConstant(request, true));
-                self.require_initializer_readiness(key, definition)?;
+                match dependency {
+                    constants::ArgumentDependency::Initializer(definition) => {
+                        self.require_initializer_readiness(key, definition)?;
+                    }
+                    constants::ArgumentDependency::Members(members) => {
+                        self.work.extend(
+                            members
+                                .into_iter()
+                                .rev()
+                                .map(|request| Work::ConstantMember(request, false)),
+                        );
+                    }
+                }
             }
         }
         Ok(())

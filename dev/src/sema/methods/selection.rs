@@ -25,6 +25,7 @@ use std::{collections::HashMap, sync::Arc};
 
 #[derive(Clone, Copy)]
 pub(in crate::sema) struct Caller<'a> {
+    pub availability: crate::sema::traits::implementations::Availability,
     pub environment: Option<&'a Arc<Environment>>,
     pub traits: Option<&'a Assumptions>,
 }
@@ -436,7 +437,7 @@ fn trait_requirements(
         let before = pending.len();
         let mut next = Vec::new();
         for goal in pending {
-            match selection::select(
+            match selection::select_available(
                 facts,
                 context,
                 goal,
@@ -447,6 +448,7 @@ fn trait_requirements(
 
                     retain_sized: false,
                 },
+                caller.availability,
             )
             .map_err(|_| "invalid or exhausted method trait selection")?
             {

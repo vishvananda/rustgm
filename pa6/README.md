@@ -41,6 +41,11 @@ the match can see them. Guard bindings can shadow the arm's pattern bindings.
 Or-patterns must agree on binding names/modes. Constants and constructors in
 patterns are references rather than invented local variables.
 
+Associated functions, constants and type aliases require qualified paths; they
+do not shadow bare lexical items of the same name. Ordinary items nested inside
+a method still introduce lexical bindings in that body. Method-call syntax is
+type-directed and belongs to the later method-selection contract.
+
 For a bare generic argument, prefer an available type name; if no type exists,
 resolve a single-segment const parameter or named constant in the value namespace.
 An explicit const block resolves its contents as expressions, so `{N}` selects

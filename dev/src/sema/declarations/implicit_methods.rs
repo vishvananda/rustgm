@@ -56,7 +56,7 @@ impl Checker<'_> {
             .implicit_method_path(key)
             .ok_or_else(|| self.error(key, "missing pending trait path"))?;
         self.selection_prefix(path.prefix, path.owner, context)?;
-        let environment = self.selection_environment(key, context);
+        let environment = self.selection_environment(context);
         let traits = self.selection_trait_assumptions(key, context, environment.as_ref())?;
         let method = selection::choose_trait_path(
             self.report,
@@ -65,6 +65,7 @@ impl Checker<'_> {
             path.prefix,
             (path.scope, path.name),
             Caller {
+                availability: crate::sema::traits::implementations::Availability::Declarations,
                 environment: environment.as_ref(),
                 traits: traits.as_deref(),
             },

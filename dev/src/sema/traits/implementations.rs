@@ -1,10 +1,12 @@
 //! Prepared headers may discharge declaration obligations; bodies require completed impls.
+mod member_contracts;
 pub(in crate::sema) mod overlap;
 use super::heads::{Head, Subject};
 use crate::{
     resolve::{model::DefId, unit::NodeKey},
     types::{ItemId, Kind, Store, parameters::predicates::Predicate, substitute},
 };
+pub(in crate::sema) use member_contracts::ConstantRequest;
 use std::collections::HashMap;
 #[cfg(test)]
 mod tests;
@@ -29,9 +31,11 @@ pub struct Implementation {
 struct Entry {
     value: Implementation,
     validated: bool,
+    checked_constants: HashMap<DefId, DefId>,
 }
 #[derive(Default)]
 pub(in crate::sema) struct Implementations {
+    constant_headers_ready: bool,
     entries: Vec<Entry>,
     owners: HashMap<DefId, usize>,
     traits: HashMap<ItemId, Vec<usize>>,
@@ -136,6 +140,9 @@ impl Implementations {
         item: ItemId,
         value: Implementation,
     ) -> Result<(), &'static str> {
+        if self.constant_headers_ready {
+            return Err("implementation candidate headers are already frozen");
+        }
         if self.owners.contains_key(&value.owner) {
             return Err("trait implementation was prepared twice");
         }
@@ -203,6 +210,7 @@ impl Implementations {
         self.entries.push(Entry {
             value,
             validated: false,
+            checked_constants: HashMap::new(),
         });
         Ok(())
     }
@@ -285,6 +293,14 @@ impl Implementations {
         constants.sort_unstable_by_key(|(declaration, _)| declaration.0);
         if constants.windows(2).any(|pair| pair[0].0 == pair[1].0) {
             return Err("implementation repeats an associated constant declaration");
+        }
+        for (&declaration, &selected) in &entry.checked_constants {
+            let index = constants
+                .binary_search_by_key(&declaration.0, |(id, _)| id.0)
+                .map_err(|_| "checked constant is absent from completed implementation")?;
+            if constants[index].1.unwrap_or(declaration) != selected {
+                return Err("completed implementation changed a checked constant selection");
+            }
         }
         entry.value.methods = methods;
         entry.value.types = types;

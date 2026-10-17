@@ -17,6 +17,19 @@ pub(super) struct Pending {
     pub arguments: Vec<Argument>,
 }
 impl Checker<'_> {
+    pub(in crate::sema) fn constant_instances(&self) -> Result<Vec<Instance>, Error> {
+        self.call_types
+            .constants
+            .iter()
+            .map(|pending| {
+                self.facts
+                    .constant_uses
+                    .get(&self.key(pending.node))
+                    .copied()
+                    .ok_or_else(|| self.error(pending.node, "missing inferred constant instance"))
+            })
+            .collect()
+    }
     pub(super) fn associated_constant(
         &mut self,
         node: NodeId,

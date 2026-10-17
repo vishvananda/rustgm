@@ -7,6 +7,8 @@ mod canonical_queries;
 mod const_arguments;
 #[path = "associated_declarations/discriminants.rs"]
 mod discriminants;
+#[path = "associated_declarations/early_values.rs"]
+mod early_values;
 #[path = "associated_declarations/equations.rs"]
 mod equations;
 #[path = "associated_declarations/field_normalization.rs"]

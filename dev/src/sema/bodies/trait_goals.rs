@@ -29,7 +29,7 @@ impl Checker<'_> {
             .map_err(|e| {
                 crate::sema::model::Declarations::error(self.report, key, e.to_string())
             })?;
-        let evidence = selection::select(
+        let evidence = selection::select_available(
             self.facts,
             context,
             &goal,
@@ -39,6 +39,7 @@ impl Checker<'_> {
                 first_region,
                 retain_sized: false,
             },
+            self.availability,
         );
         let equalities = std::mem::take(&mut context.region_equalities);
         let Selection::Proven(evidence) = evidence.map_err(|e| self.error(node, e))? else {
@@ -99,7 +100,13 @@ impl Checker<'_> {
                     )
                     .map_err(|error| error.to_string())
                 } else {
-                    selection::select(self.facts, &mut self.infer, predicate, caller)
+                    selection::select_available(
+                        self.facts,
+                        &mut self.infer,
+                        predicate,
+                        caller,
+                        self.availability,
+                    )
                 }
                 .map_err(|e| self.error(node, e))?;
                 if let Selection::Proven(proof) = selected {

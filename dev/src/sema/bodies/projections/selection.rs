@@ -134,7 +134,7 @@ impl Checker<'_> {
             proof.regions.end,
         )
         .map_err(|e| self.error(node, e))?;
-        let selected = opened.select(self.facts);
+        let selected = opened.select(self.facts, self.availability);
         self.infer
             .account_work(opened.context.steps)
             .map_err(|e| self.error(node, e))?;
@@ -250,7 +250,11 @@ impl Opened {
         })
     }
 
-    fn select(&mut self, facts: &mut Declarations) -> Result<Attempt, String> {
+    fn select(
+        &mut self,
+        facts: &mut Declarations,
+        availability: crate::sema::traits::implementations::Availability,
+    ) -> Result<Attempt, String> {
         if !self.application.arguments.is_empty() {
             return Ok(Attempt::Retry);
         }
@@ -264,11 +268,12 @@ impl Opened {
             first_region: self.proof.regions.end,
             retain_sized: false,
         };
-        let selected = selection::select(
+        let selected = selection::select_available(
             facts,
             &mut self.context,
             &self.application.predicate,
             caller,
+            availability,
         )?;
         let Selection::Proven(evidence) = selected else {
             return Ok(Attempt::Retry);

@@ -267,8 +267,15 @@ impl Queries<'_> {
             .checked_add(1)
             .and_then(|n| u32::try_from(n).ok())
             .ok_or_else(|| self.error(Query::Node(key), "constant dispatch region overflow"))?;
-        let mut dispatch = crate::sema::dispatch::Dispatcher::new(0, first)
-            .map_err(|e| self.error(Query::Node(key), e))?;
+        let mut dispatch = match self.typing.availability {
+            crate::sema::traits::implementations::Availability::Declarations => {
+                crate::sema::dispatch::Dispatcher::declaration(first)
+            }
+            crate::sema::traits::implementations::Availability::Validated => {
+                crate::sema::dispatch::Dispatcher::new(0, first)
+            }
+        }
+        .map_err(|e| self.error(Query::Node(key), e))?;
         let result = dispatch
             .constant(self.typing.facts, instance)
             .map_err(|e| self.error(Query::Node(key), e))?;

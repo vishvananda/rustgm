@@ -125,7 +125,7 @@ fn selected_initializers_match_qualified_outcomes() -> Result<(), Box<dyn std::e
 #[test]
 #[ignore = "requires the qualified external CPPGM LowIR backend"]
 fn selected_initializers_preserve_native_values() -> Result<(), Box<dyn std::error::Error>> {
-    let chain = dependency_chain(32)?;
+    let chain = dependency_chain(32, false)?;
     let mut cases = CASES
         .iter()
         .filter(|(_, _, accepted)| *accepted)
@@ -135,10 +135,15 @@ fn selected_initializers_preserve_native_values() -> Result<(), Box<dyn std::err
     native::check_cases("initializer-readiness", &cases)
 }
 
-fn dependency_chain(length: usize) -> Result<String, std::fmt::Error> {
+fn dependency_chain(length: usize, early: bool) -> Result<String, std::fmt::Error> {
     let mut source = String::from(
         "trait A{const C:usize;}struct X<const N:usize>([u8;N]);fn main(){let x:X<{<S0 as A>::C}>=X([7;3]);check(x.0[2]==7);}",
     );
+    if early {
+        source = String::from(
+            "trait A{const C:usize;}struct X<const N:usize>([u8;N]);fn f()->X<{<S0 as A>::C}>{X([7;3])}fn main(){check(f().0[2]==7);}",
+        );
+    }
     for index in 0..length {
         write!(
             source,
@@ -158,11 +163,13 @@ fn dependency_chain(length: usize) -> Result<String, std::fmt::Error> {
 fn selected_dependency_chains_resume_without_recursive_declaration_draining()
 -> Result<(), Box<dyn std::error::Error>> {
     for length in [32, 96] {
-        let source = format!("{}{}", native::CHECK, dependency_chain(length)?);
-        object_outcome(&format!("readiness-chain-{length}"), &source, true)?;
-        let (mut report, mut facts) = semantic::analyze(&source)?;
-        let entry = rustgm::sema::entry::select(&mut report, &facts)?;
-        rustgm::lower::instances::build(&report, &mut facts, entry)?;
+        for early in [false, true] {
+            let source = format!("{}{}", native::CHECK, dependency_chain(length, early)?);
+            object_outcome(&format!("readiness-chain-{length}-{early}"), &source, true)?;
+            let (mut report, mut facts) = semantic::analyze(&source)?;
+            let entry = rustgm::sema::entry::select(&mut report, &facts)?;
+            rustgm::lower::instances::build(&report, &mut facts, entry)?;
+        }
     }
     Ok(())
 }

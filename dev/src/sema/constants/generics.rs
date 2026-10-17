@@ -12,7 +12,7 @@ pub(in crate::sema) struct Input {
 pub(in crate::sema) enum Progress {
     Complete(u128),
     Prepare(
-        crate::resolve::model::DefId,
+        super::suspension::Dependency,
         Box<super::suspension::Continuation>,
     ),
 }
@@ -29,6 +29,17 @@ pub(in crate::sema) fn advance(
     let Input { key, ty, module } = input;
     let mut queries =
         Queries::with_scratch(report, facts, Some(discriminants), std::mem::take(scratch));
+    if queries
+        .typing
+        .facts
+        .generics
+        .implementations
+        .as_ref()
+        .is_some_and(|registry| registry.constant_headers_ready())
+    {
+        queries.typing.availability =
+            crate::sema::traits::implementations::Availability::Declarations;
+    }
     queries.value_scope = Some((key, ty));
     if let Some(continuation) = continuation {
         queries.resume(*continuation);
@@ -36,7 +47,17 @@ pub(in crate::sema) fn advance(
         queries.typing.anonymous_constant(key, ty, module)?;
         queries.require_complete_patterns(Query::Node(key))?;
         queries.work.push(Work::Enter(Query::Node(key)));
-        queries.prepare(key)?;
+        queries.work.push(Work::PrepareNode(key));
+        let instances = queries.typing.constant_instances()?;
+        let members = queries.demand_members(instances, None)?;
+        if !members.is_empty() {
+            let (saved, continuation) = queries.suspend();
+            *scratch = saved;
+            return Ok(Progress::Prepare(
+                super::suspension::Dependency::Members(members),
+                continuation,
+            ));
+        }
     }
     if let Some(definition) = queries.drain_until(Some(ready))? {
         let (saved, continuation) = queries.suspend();

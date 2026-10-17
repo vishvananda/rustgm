@@ -231,6 +231,7 @@ pub struct Declarations {
     pub constant_repeats: std::collections::HashSet<NodeKey>,
     pub(crate) constant_targets:
         std::collections::HashMap<super::values::Instance, super::values::Instance>,
+    pub(crate) dispatch_dependencies: super::dispatch::Dependencies,
     pub(crate) constant_dependencies:
         std::collections::HashMap<DefId, Vec<super::values::Dependency>>,
     pub constant_uses: std::collections::HashMap<NodeKey, super::values::Instance>,
@@ -317,6 +318,7 @@ impl Declarations {
             generics: super::generics::Generics::default(),
             constant_repeats: std::collections::HashSet::new(),
             constant_targets: std::collections::HashMap::new(),
+            dispatch_dependencies: super::dispatch::Dependencies::default(),
             constant_dependencies: std::collections::HashMap::new(),
             constant_uses: std::collections::HashMap::new(),
             constant_instances: std::collections::HashMap::new(),

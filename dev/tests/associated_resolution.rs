@@ -165,3 +165,83 @@ fn expanded_trait_members_and_anonymous_imports_keep_their_owner_provenance()
     );
     Ok(())
 }
+
+#[test]
+fn associated_values_require_qualification_and_do_not_shadow_lexical_items()
+-> Result<(), Box<dyn std::error::Error>> {
+    for (name, source, accepted) in [
+        (
+            "associated-outer-constant",
+            "const C:u8=7;struct S;impl S{const C:u8=C;}fn main(){let _=S::C;}",
+            true,
+        ),
+        (
+            "associated-outer-function",
+            "fn f()->u8{7}struct S;impl S{fn f()->u8{f()}}fn main(){let _=S::f();}",
+            true,
+        ),
+        (
+            "associated-constructor",
+            "struct V(u8);trait A{const V:V=V(7);}impl A for u8{}fn main(){let _=<u8 as A>::V;}",
+            true,
+        ),
+        (
+            "associated-nested-item",
+            "struct S;impl S{const C:u8=7;fn f(){const C:u8=8;let _=C;}}fn main(){S::f();}",
+            true,
+        ),
+        (
+            "associated-unqualified-trait-constant",
+            "trait A{const C:u8=7;const D:u8=C;}fn main(){}",
+            false,
+        ),
+        (
+            "associated-unqualified-trait-function",
+            "trait A{fn f()->u8;fn g()->u8{f()}}fn main(){}",
+            false,
+        ),
+        (
+            "associated-unqualified-impl-constant",
+            "struct S;impl S{const C:u8=7;const D:u8=C;}fn main(){}",
+            false,
+        ),
+        (
+            "associated-unqualified-impl-function",
+            "struct S;impl S{fn f(){}fn g(){f()}}fn main(){}",
+            false,
+        ),
+    ] {
+        rustc::qualify(name, source, accepted)?;
+        for expanded in [false, true] {
+            let result = names::resolve(source, expanded);
+            assert_eq!(result.is_ok(), accepted, "{name}");
+            if let Ok(report) = result {
+                let (spelling, kind) = match name {
+                    "associated-outer-function" => ("f", DefKind::Function),
+                    "associated-constructor" => ("V", DefKind::Constructor),
+                    _ => ("C", DefKind::Const),
+                };
+                let facts = &report.resolution;
+                let target = facts
+                    .definitions
+                    .iter()
+                    .position(|definition| {
+                        report.package.names.get(definition.name) == spelling
+                            && definition.kind == kind
+                            && !facts.scopes[definition.scope.0 as usize].associated
+                    })
+                    .ok_or("missing lexical definition")?;
+                let target = rustgm::resolve::model::Target::Definition(
+                    rustgm::resolve::model::DefId(u32::try_from(target)?),
+                );
+                assert!(
+                    facts
+                        .references
+                        .iter()
+                        .any(|reference| reference.target == target)
+                );
+            }
+        }
+    }
+    Ok(())
+}

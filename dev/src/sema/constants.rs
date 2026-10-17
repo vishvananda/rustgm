@@ -14,12 +14,14 @@ pub(super) use generics::{
 };
 mod instances;
 mod layouts;
+mod member_readiness;
 mod patterns;
 mod places;
 pub(super) mod products;
 pub(super) mod references;
 mod suspension;
 pub(super) use suspension::Continuation as ArgumentContinuation;
+pub(super) use suspension::Dependency as ArgumentDependency;
 pub mod values;
 use super::{
     bodies,
@@ -123,6 +125,7 @@ enum Expression {
     },
 }
 enum Work {
+    PrepareNode(NodeKey),
     PrepareInstance(crate::sema::values::Instance),
     Layout(NodeKey, TypeId, bool),
     Alignment(super::model::ReferenceAlignment),
@@ -153,6 +156,7 @@ struct Queries<'a> {
     pattern_scope: Option<PatternScope>,
     pattern_dispatch: Option<super::dispatch::Dispatcher>,
     value_scope: Option<(NodeKey, TypeId)>,
+    checked_members: HashSet<Query>,
 }
 /// Declaration checking owns this cache; it never survives into lowering.
 #[derive(Default)]
@@ -309,6 +313,7 @@ impl<'a> Queries<'a> {
             pattern_scope: None,
             pattern_dispatch: None,
             value_scope: None,
+            checked_members: HashSet::new(),
         }
     }
     fn into_scratch(self) -> Scratch {
@@ -377,17 +382,28 @@ impl Queries<'_> {
     fn drain(&mut self) -> Result<(), Error> {
         self.drain_until(None).map(|_| ())
     }
-    fn drain_until(&mut self, ready: Option<&HashSet<DefId>>) -> Result<Option<DefId>, Error> {
+    fn drain_until(
+        &mut self,
+        ready: Option<&HashSet<DefId>>,
+    ) -> Result<Option<suspension::Dependency>, Error> {
         while let Some(work) = self.work.pop() {
             if let Some(ready) = ready
                 && let Some(definition) = self.required_initializer(&work)?
                 && !ready.contains(&definition)
             {
                 self.work.push(work);
-                return Ok(Some(definition));
+                return Ok(Some(suspension::Dependency::Initializer(definition)));
+            }
+            if ready.is_some() {
+                let members = self.member_readiness(&work)?;
+                if !members.is_empty() {
+                    self.work.push(work);
+                    return Ok(Some(suspension::Dependency::Members(members)));
+                }
             }
             self.budget()?;
             match work {
+                Work::PrepareNode(key) => self.prepare(key)?,
                 Work::PrepareInstance(instance) => {
                     let source = self.instance_source(instance)?;
                     self.prepare(source)?;

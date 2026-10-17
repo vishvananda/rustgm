@@ -132,8 +132,11 @@ still requires normalized storage and selected destruction. The conservative
 input route is not the complete projected-result drop-checking contract.
 
 Associated constant declarations retain their types independently of optional
-initializers. Check missing and extra members by resolved owner and name, then
-publish default/override identities only with the validated implementation.
+initializers. Check missing and extra members by resolved owner and name. The
+validated implementation publishes the final default/override identities. A
+separate declaration-only member table may publish a checked constant after all
+candidate headers are frozen; it grants neither method access nor whole-impl
+validity. Final conformance must agree with every earlier selected identity.
 Substitute the trait's Self and mixed arguments into the impl environment once;
 normalize projected types using that impl's checked associated definitions.
 Structural types must agree, while reference results may satisfy the trait by
@@ -170,6 +173,15 @@ Substitute the selected initializer's owner arguments before selecting trait
 method overrides, including function pointers nested in products. Each caller
 retains its own selection proof; a cached structural target grants no permission.
 Callable bodies are executable dependencies, not constant-evaluation edges.
+
+Share completed dependency closures by the selected instance's complete arguments
+and implementation-availability mode when their proof is empty. Every transitive
+initializer must have completed typing; an absent dependency list before that
+point is not an empty graph. Propagate incompleteness through shared diamonds.
+Caller environments, universal mappings and outstanding lifetime debts disable
+this cross-caller reuse. Root selection still proves the requesting use, and
+nonempty proofs still belong to their caller. This removes repeated traversal
+of closed dependency chains without treating cached target identities as evidence.
 
 Evaluate the retained expression template under a distinct instance context.
 Node, place, contents and in-progress dependency states must use that context;
@@ -213,8 +225,21 @@ neither active inference nor a previous caller's permissions belongs in scratch.
 Probe completed method-path caches only after recognizing a relevant value path.
 Nested shape queries must retain declaration-cycle detection across suspension.
 Do not inspect unrelated implementation bodies or restart a long query for each
-dependency. Earlier queries still need a separate implementation-availability
-contract; neither an unfinished environment nor an unchecked header is evidence.
+dependency. Early signature and default-argument queries use the frozen-header,
+declaration-only mode explicitly. Suspend the existing value continuation for
+exact member-type requests, preserving typed root facts and selected-instance
+readiness. Normalize only that member's type dependencies: unrelated associated
+definitions can depend on its value. Do not eagerly require all method signatures
+or all associated definitions to authorize one constant. Whole-impl, unused-item
+and coherence checks remain mandatory before completed facts escape. Impl-header
+constant dependencies still require a separate pending-candidate readiness graph;
+never ignore an unprepared compatible header or publish a partial environment.
+
+Index inherent and trait member names before early value queries; these entries
+carry identity and owner heads, not executable authority. Obtain a declaration
+caller's immutable environment directly from its binder owner. A whole-crate
+snapshot made during an early query can miss later declarations and must not be
+repeatedly rebuilt to compensate.
 
 Trait-header member naming uses a temporary graph of decoded Self supertrait
 identities, separate from proof contracts. Reject identity cycles before expanding

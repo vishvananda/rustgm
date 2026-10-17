@@ -44,6 +44,7 @@ impl Checker<'_> {
             term,
             site,
             Caller {
+                availability: self.availability,
                 environment: environment.as_ref(),
                 traits: traits.as_deref(),
             },

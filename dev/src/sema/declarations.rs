@@ -54,6 +54,7 @@ enum SignaturePhase {
 }
 #[derive(Clone, Copy)]
 enum Work {
+    ConstantMember(crate::sema::traits::implementations::ConstantRequest, bool),
     MethodPrefix(NodeKey, regions::Context),
     InherentMethod(NodeKey, associated::Path, regions::Context),
     EvaluateConstant(evaluation::Request, bool),
@@ -97,18 +98,13 @@ struct Signature {
     unsafe_: bool,
 }
 struct Checker<'a> {
+    constant_members: traits::ConstantReadiness,
     associated_type_bounds: std::collections::HashMap<DefId, traits::AssociatedBounds>,
     associated_bindings: generics::bindings::Pending,
     projections: projections::Pending,
     trait_proofs: trait_regions::Proofs,
     method_trait_environments: Option<
         std::collections::HashMap<NodeKey, std::sync::Arc<super::traits::assumptions::Assumptions>>,
-    >,
-    method_environments: Option<
-        std::collections::HashMap<
-            NodeKey,
-            std::sync::Arc<crate::types::parameters::environment::Environment>,
-        >,
     >,
     nominals: aggregates::Pending,
     defaults: generics::Defaults,
@@ -147,11 +143,11 @@ pub fn analyze(report: &Report) -> Result<Declarations, Error> {
         ));
     }
     let mut checker = Checker {
+        constant_members: traits::ConstantReadiness::default(),
         associated_type_bounds: std::collections::HashMap::new(),
         associated_bindings: generics::bindings::Pending::default(),
         projections: projections::Pending::default(),
         trait_proofs: trait_regions::Proofs::default(),
-        method_environments: None,
         method_trait_environments: None,
         nominals: aggregates::Pending::default(),
         defaults: generics::Defaults::default(),
@@ -202,6 +198,7 @@ impl Checker<'_> {
         self.prepare_destructors(destructors, &mut steps, work_limit)?;
         self.prepare_trait_implementations(&mut steps, work_limit)?;
         self.prepare_inherent_owners(&mut steps, work_limit)?;
+        self.index_inherent_methods()?;
         self.prepare_associated_types(&mut steps, work_limit)?;
         if let Some(contracts) = &mut self.facts.generics.traits {
             contracts.complete_results();
@@ -236,7 +233,6 @@ impl Checker<'_> {
         self.validate_trait_implementations()?;
         self.validate_trait_impl_owners()?;
         self.validate_trait_regions()?;
-        self.index_inherent_methods()?;
         self.validate_inherent_overlaps()?;
         self.local_annotations(&mut steps, work_limit)?;
         self.complete_alias_normalizations(&mut steps, work_limit)?;
@@ -261,6 +257,9 @@ impl Checker<'_> {
                 ));
             }
             match work {
+                Work::ConstantMember(request, finish) => {
+                    self.constant_member(request, finish)?;
+                }
                 Work::MethodPrefix(key, context) => {
                     self.complete_method_prefix(key, context, steps, limit, &mut scan)?;
                 }

@@ -501,6 +501,13 @@ continues to reject a forged instance with unpaid implementation lifetime debts.
 and preserves unused Drop proof slots. The ordinary template gate and each
 caller's proof remain prerequisites.
 
+`associated_declarations/early_values.rs` independently qualifies early signature,
+default-argument, generic owner and member-type dependencies, with native positive
+controls and unused-invalid-member negatives. `associated_resolution.rs` and the
+PA6 name fixtures check that associated values require qualification and preserve
+lexical target identities. Dispatch dependency invariants measure repeated caller
+work and reject reuse across availability modes or incomplete dependency diamonds.
+
 ## Storage and cleanup
 
 Generated output is bounded separately from validation evidence. Builds and

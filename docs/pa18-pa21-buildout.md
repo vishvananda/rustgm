@@ -9020,3 +9020,86 @@ storage. Further work needs shared declaration-level property/dependency summari
 and demand-specific preparation, preserving composite Copy assumptions, custom
 Drop, zero-array alignment and each caller's projection formation debts. Erasing
 parameter or lifetime identities to reuse permissions would be incorrect.
+
+### Early constant member readiness and shared dependency closures (2026-10-17)
+
+Signature and generic-default arguments can now demand an associated constant
+before all implementation method signatures have completed. A frozen candidate
+registry and an explicit declaration mode authorize a separate checked-member
+map. The ordinary validated map remains unavailable until complete conformance,
+coherence and unused-item checks finish. The final map must agree with every
+early selection. Member readiness normalizes just the demanded member's type;
+requiring unrelated associated definitions first would invent cycles when those
+definitions use the constant's value.
+
+The anonymous expression is typed once. Its typed constant instances request
+member readiness through the existing suspended evaluation worklist. Selected
+initializer bodies retain their own arguments and dependencies, while selection
+proofs belong to the requesting anonymous body. Member-name indexes are prepared
+earlier without granting executable authority. Caller environments now come
+directly from retained binder ownership; the earlier whole-crate snapshot could
+miss declarations introduced after an early query.
+
+Independent qualification covers 33 declared source outcomes, including 20 native
+positives. It exercises signature/default uses, default-versus-override selection,
+generic `Self::D`, associated definitions depending on constants, source ordering,
+cycles, ambiguity and unused invalid members. Eight PA6 fixtures additionally
+correct lexical lookup: associated functions and constants require qualification
+and do not hide module functions, constants or tuple constructors. The pinned
+Reference's scope rule supports this distinction. All 630 existing PA6 sidecars
+remain unchanged; the 24 added sidecars were reviewed for lexical target identity
+and unresolved-name diagnostics.
+
+A separate scaling study found quadratic work in repeated dependency selection:
+with both chain depth and caller count at 32/64/128/256, the first readiness
+prototype used 73.00/231.84/828.04/3,092.33 million instructions. Root selection now
+reuses completed dependency-closure summaries keyed by full instance identity and
+availability mode. A summary is reusable only when every transitive initializer
+has completed typing and the proof is empty. Unknown dependencies propagate
+through diamonds; caller environments, universal mappings and lifetime debts
+prevent this cross-caller reuse. Cached target identities alone remain insufficient.
+
+The same inputs now use 33.71/66.55/133.09/265.60 million instructions, consistent
+with linear input growth and an approximately 91.4% reduction at size 256. Twelve
+independently compiled and executed source controls preserve complete LowIR bytes.
+Separate depth-only and caller-only growth controls isolate the two dimensions.
+Unit invariants check bounded repeated-caller work, availability-mode separation,
+incomplete diamonds and retained per-caller lifetime debts.
+
+This is still a PA20 checkpoint, not its release. A further independently qualified
+probe accepts equal-lifetime reference constants but still rejects a valid stronger
+`'static` override used in an early generic argument: nontrivial coercion needs
+nominal outlives facts that are not yet available. A shorter-lifetime invalid
+override remains rejected. The next readiness work must retain and later discharge
+that typed lifetime contract. Early impl-header constant arguments also still need
+a pending-candidate graph. The semantic-view extension and public PA20 suite remain
+outstanding. Separate generic/lifetime field-expansion families remain superlinear;
+this dependency-closure result does not establish linearity for the whole frontend.
+
+The final binary is
+`f286a07b1518aaee293a68ce3d0570e9b5ac87ac91bd7114e12fcb63044a21d8`.
+The validation record is `obj/pa20-work/early-associated-arguments-v12/review.json`.
+All 31 gates pass: 1,213 regular tests, 78 native groups, 4,871 PA1–19 cases,
+strict Clippy, formatting, the 752-file audit, harness, upstream and backend
+checks. All 755 source/configuration hashes and 14,613 oracle sidecars agree.
+The final PA6 receipt matches that frozen source snapshot. PA20–25 still reject
+as planned stages.
+
+The initial paired study retains 416 observations and 64 full-output qualifications
+across 16 jobs. At coupled size 256, wall time falls from about 1,178 ms to 131 ms,
+an 89.41% paired median reduction. Full/count output and binary/source/input hashes
+agree. Shared-host timing is unstable: the same-binary baseline control has an
+8.78% paired median change and large within-study drift. Ordinary controls range
+from -1.82% to +9.12%, with substantial A/A spread in several cases. These readings
+require instruction-count and batched-timing followup rather than a claim of tight
+regression bounds.
+
+The followup profiles all eight existing controls: instruction changes range from
+-0.02% to +0.36%. Nine batched timing jobs retain another 234 observations and
+36 output qualifications, each with four executions. The three repeated A/B
+controls change by +4.23%, +0.11% and +1.35%; the ordinary case still has large
+individual-block noise, so no tight wall-time bound is claimed. Full output and
+all hashes still agree. The combined evidence supports the dependency algorithm's
+large scaling improvement while exposing the limitations of this shared host's
+small timing comparisons. The summary is `early-associated-arguments-v12/performance-review.json`;
+raw observations and instruction profiles remain beside it.

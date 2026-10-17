@@ -138,6 +138,7 @@ pub(super) struct Scratch {
     call_types: Option<Box<calls::CallTypes>>,
 }
 pub(super) struct Checker<'a> {
+    pub(super) availability: super::traits::implementations::Availability,
     alignment: alignment::Pending,
     report: &'a Report,
     pub(super) facts: &'a mut Declarations,
@@ -207,6 +208,7 @@ impl<'a> Checker<'a> {
     ) -> Self {
         scratch.terms.resize_with(facts.nodes.len(), Vec::new);
         Self {
+            availability: super::traits::implementations::Availability::Validated,
             alignment: alignment::Pending::default(),
             report,
             terms: scratch.terms,
@@ -350,6 +352,9 @@ impl<'a> Checker<'a> {
         let initializer = self.facts.initializers[index];
         self.constant(initializer.value, initializer.ty, initializer.definition)?;
         self.facts.initializers[index].type_checked = true;
+        self.facts
+            .dispatch_dependencies
+            .complete(initializer.definition);
         Ok(())
     }
 }

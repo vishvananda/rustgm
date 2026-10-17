@@ -336,7 +336,7 @@ impl Checker<'_> {
             method
         } else {
             self.selection_prefix(prefix, path.owner, context)?;
-            let environment = self.selection_environment(key, context);
+            let environment = self.selection_environment(context);
             let traits = self.selection_trait_assumptions(key, context, environment.as_ref())?;
             let selected = crate::sema::methods::selection::choose(
                 self.report,
@@ -346,6 +346,7 @@ impl Checker<'_> {
                 (path.nominal, path.name),
                 path.scope,
                 crate::sema::methods::selection::Caller {
+                    availability: crate::sema::traits::implementations::Availability::Declarations,
                     environment: environment.as_ref(),
                     traits: traits.as_deref(),
                 },

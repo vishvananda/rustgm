@@ -109,6 +109,16 @@ pub(in crate::sema) fn select_declaration(
     )
 }
 
+pub(in crate::sema) fn select_available(
+    facts: &mut Declarations,
+    context: &mut Context,
+    goal: &Goal,
+    caller: Caller<'_>,
+    availability: Availability,
+) -> Result<Selection, String> {
+    select_from(facts, context, goal, caller, availability, false)
+}
+
 /// The requesting normalizer retains every input's formation and lifetime proof.
 /// Only this root uses that authority; newly discovered impl conditions still
 /// normalize independently within the search's immutable caller scope.

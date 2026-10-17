@@ -1,5 +1,6 @@
 //! Concrete trait callables select checked overrides while retaining their lifetime proof.
 mod arguments;
+mod dependencies;
 pub(crate) use super::traits::obligations::Obligations;
 use super::{
     model::Declarations,
@@ -14,6 +15,7 @@ use crate::{
         substitute::Bound,
     },
 };
+pub(crate) use dependencies::Dependencies;
 use std::collections::HashMap;
 use std::sync::Arc;
 
@@ -22,13 +24,20 @@ struct Caller {
     assumptions: Assumptions,
 }
 
+enum Expansion {
+    Active,
+    Complete { ready: bool },
+}
+
 pub(crate) struct Dispatcher {
+    availability: super::traits::implementations::Availability,
+    share_constants: bool,
     normalize: Bound,
     context: Context,
     obligations: Obligations,
     selected: HashMap<TypeId, TypeId>,
     constants: HashMap<super::values::Instance, super::values::Instance>,
-    expanded: HashMap<super::values::Instance, bool>,
+    expanded: HashMap<super::values::Instance, Expansion>,
     caller: Option<Box<Caller>>,
 }
 impl Dispatcher {
@@ -50,6 +59,8 @@ impl Dispatcher {
                 .push((region, RegionId::bound(0, slot)?));
         }
         Ok(Self {
+            availability: super::traits::implementations::Availability::Validated,
+            share_constants: universals == 0,
             normalize: Bound::new(regions),
             context: Context::default(),
             obligations,
@@ -58,6 +69,26 @@ impl Dispatcher {
             expanded: HashMap::new(),
             caller: None,
         })
+    }
+    pub(in crate::sema) fn declaration(first: u32) -> Result<Self, &'static str> {
+        let mut result = Self::new(0, first)?;
+        result.availability = super::traits::implementations::Availability::Declarations;
+        Ok(result)
+    }
+
+    /// Request a checked member without publishing a value or completing its impl.
+    pub(in crate::sema) fn constant_owner(
+        &mut self,
+        facts: &mut Declarations,
+        instance: super::values::Instance,
+    ) -> Result<Option<DefId>, String> {
+        let Some(owner) = facts.associated.trait_owner(instance.definition) else {
+            return Ok(None);
+        };
+        let predicate = arguments::Arguments::constant(facts, instance)?.goal(facts, owner)?;
+        let (owner, _, evidence) = self.implementation(facts, predicate)?;
+        self.obligations.append(evidence)?;
+        Ok(Some(owner))
     }
     /// Patterns must select a definition before monomorphization. Rigid caller
     /// parameters may remain in unused arguments, but an assumption is not a value.
@@ -158,23 +189,59 @@ impl Dispatcher {
     ) -> Result<super::values::Instance, String> {
         let selected = self.select_constant(facts, instance)?;
         facts.constant_targets.insert(instance, selected);
-        let mut work = vec![(selected, false)];
+        let share = self.share_constants && self.caller.is_none();
+        let mut incomplete = 0;
+        let mut work = vec![(selected, None)];
         while let Some((current, finish)) = work.pop() {
             self.context.account_work(1).map_err(|e| e.to_string())?;
-            if finish {
-                self.expanded.insert(current, true);
+            if let Some(before) = finish {
+                self.expanded.insert(
+                    current,
+                    Expansion::Complete {
+                        ready: before == incomplete,
+                    },
+                );
+                // Missing typed dependencies are not an empty completed graph.
+                // An empty proof permits sharing across callers only when no
+                // caller environment or universal mapping participated.
+                if share
+                    && before == incomplete
+                    && self.obligations.is_empty()
+                    && self.context.region_equalities.is_empty()
+                {
+                    facts
+                        .dispatch_dependencies
+                        .insert(self.availability, current);
+                }
+                continue;
+            }
+            if share
+                && facts
+                    .dispatch_dependencies
+                    .contains(self.availability, current)
+            {
+                self.expanded
+                    .insert(current, Expansion::Complete { ready: true });
                 continue;
             }
             match self.expanded.get(&current) {
-                Some(true) => continue,
-                Some(false) => return Err("cycle in associated constant dependencies".into()),
+                Some(Expansion::Complete { ready }) => {
+                    incomplete += usize::from(!ready);
+                    continue;
+                }
+                Some(Expansion::Active) => {
+                    return Err("cycle in associated constant dependencies".into());
+                }
                 None => {}
             }
-            self.expanded.insert(current, false);
+            self.expanded.insert(current, Expansion::Active);
             if self.expanded.len() > 1_000_000 {
                 return Err("constant selection dependency budget exceeded".into());
             }
-            work.push((current, true));
+            work.push((current, Some(incomplete)));
+            if !facts.dispatch_dependencies.ready(current.definition) {
+                incomplete += 1;
+            }
             let Some(dependencies) = facts
                 .constant_dependencies
                 .get(&current.definition)
@@ -193,7 +260,7 @@ impl Dispatcher {
                         let source = instance.substitute(&mut facts.types, &mut substitution)?;
                         let target = self.select_constant(facts, source)?;
                         facts.constant_targets.insert(source, target);
-                        work.push((target, false));
+                        work.push((target, None));
                     }
                     super::values::Dependency::Callable(ty) => {
                         let source = substitution.apply(&mut facts.types, ty)?;
@@ -232,7 +299,9 @@ impl Dispatcher {
             .generics
             .implementations
             .as_ref()
-            .and_then(|registry| registry.constant(owner, instance.definition))
+            .and_then(|registry| {
+                registry.available_constant(owner, instance.definition, self.availability)
+            })
             .ok_or("selected implementation lacks the trait constant")?;
         let result = if definition == instance.definition {
             instance
@@ -264,7 +333,7 @@ impl Dispatcher {
             .instantiate_predicate(&mut facts.types, predicate, &mut substitution)
             .map_err(|e| e.to_string())?;
         let empty = Assumptions::default();
-        let selected = selection::select(
+        let selected = selection::select_available(
             facts,
             &mut self.context,
             &goal,
@@ -274,6 +343,7 @@ impl Dispatcher {
                 first_region: self.obligations.regions.end,
                 retain_sized: false,
             },
+            self.availability,
         )?;
         let selection::Selection::Proven(evidence) = selected else {
             return Err("trait callable requires an unambiguous concrete implementation".into());

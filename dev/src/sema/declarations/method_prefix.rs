@@ -47,37 +47,17 @@ impl Checker<'_> {
     }
 
     pub(super) fn selection_environment(
-        &mut self,
-        key: NodeKey,
+        &self,
         context: regions::Context,
     ) -> Option<Arc<Environment>> {
-        let regions::Position::Local(body) = context.position else {
+        if !matches!(context.position, regions::Position::Local(_)) {
             return None;
-        };
-        let environments = self.method_environments.get_or_insert_with(|| {
-            self.facts
-                .functions
-                .iter()
-                .filter_map(|f| {
-                    Some((
-                        f.body?,
-                        Arc::clone(self.facts.generics.environments.get(&f.definition)?),
-                    ))
-                })
-                .chain(self.facts.initializers.iter().filter_map(|initializer| {
-                    Some((
-                        initializer.value,
-                        Arc::clone(
-                            self.facts
-                                .generics
-                                .environments
-                                .get(&initializer.definition)?,
-                        ),
-                    ))
-                }))
-                .collect()
-        });
-        environments.get(&NodeKey { node: body, ..key }).cloned()
+        }
+        // The declaration context already identifies its immutable caller.
+        // A whole-crate snapshot here misses bodies declared after an early
+        // constant query and would need repeated rebuilding as items complete.
+        let owner = self.regions.owner(context.binder?)?;
+        self.facts.generics.environments.get(&owner).cloned()
     }
 
     pub(super) fn selection_prefix(

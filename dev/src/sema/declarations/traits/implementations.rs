@@ -1,6 +1,8 @@
 //! Retain complete impl applications; headers alone do not prove an implementation.
 mod constants;
 mod methods;
+mod readiness;
+pub(in crate::sema::declarations) use readiness::Readiness;
 mod validation;
 use super::super::{Checker, DefId, Error, ItemId, NodeKey, Work};
 use crate::{
@@ -104,6 +106,9 @@ impl Checker<'_> {
                     },
                 )
                 .map_err(|e| self.error(owner.source, e))?;
+        }
+        if let Some(registry) = &mut self.facts.generics.implementations {
+            registry.finish_constant_headers();
         }
         Ok(())
     }

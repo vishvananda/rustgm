@@ -133,7 +133,7 @@ impl Checker<'_> {
             &mut proof,
             ScopeId::ROOT,
             ty,
-            crate::sema::traits::implementations::Availability::Validated,
+            self.availability,
         )
         .map_err(|e| self.error(node, e))?;
         self.infer
@@ -489,7 +489,7 @@ impl Checker<'_> {
             proof,
             scope,
             ty,
-            crate::sema::traits::implementations::Availability::Validated,
+            self.availability,
         )
         .map_err(|e| self.error(node, e))?;
         self.infer
