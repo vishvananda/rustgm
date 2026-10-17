@@ -52,6 +52,33 @@ impl Definitions {
         shift.apply(&mut facts.types, result).map(Some)
     }
 
+    /// Constant types are roots in the impl binder, without a callable's outer binder.
+    pub(in crate::sema) fn values(
+        &self,
+        facts: &mut Declarations,
+        environment: Option<std::sync::Arc<crate::types::parameters::environment::Environment>>,
+        proof: &mut Obligations,
+        types: &mut [TypeId],
+    ) -> Result<(), &'static str> {
+        if types
+            .iter()
+            .all(|&ty| facts.types.contains_projections(ty) == Some(false))
+        {
+            return Ok(());
+        }
+        let mut session = crate::sema::projections::Session::new(
+            environment,
+            proof,
+            ScopeId::ROOT,
+            crate::sema::traits::implementations::Availability::Declarations,
+            |facts, request| self.resolve(facts, request),
+        )?;
+        for ty in types {
+            *ty = session.normalize(facts, *ty)?.0;
+        }
+        Ok(())
+    }
+
     pub(super) fn signature(
         &self,
         facts: &mut Declarations,

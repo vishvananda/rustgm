@@ -7716,3 +7716,74 @@ runtime-extents concerns remain separate; their retained evidence is unchanged.
 Validation cleanup removed 4,879 generated files, about 5.17 GiB. Rendering
 scratch files were deleted after each measured output was hashed. Sources,
 diagnostics and every timing observation remain under `obj/`.
+
+## PA20 associated constant declarations and conformance
+
+Associated constant annotations and initializer bodies now retain their owner's
+generic and lifetime context. Constants introduce no parameters or bounds, so
+they share the completed parent's immutable environment. Required trait constants
+retain a type without an artificial initializer. Implementations must supply
+required values, may inherit defaults and must not add unrelated members.
+The checked implementation retains distinct default and override identities.
+
+Conformance substitutes trait Self and mixed arguments once into the impl scope,
+then normalizes projected types using the impl's checked associated definitions.
+It checks structural types and directed lifetime compatibility, including
+invariant positions. Pinned rustc confirmed that an override's reference result
+may outlive the trait's declared result; forcing identical lifetimes would reject
+valid code. Required declarations may name unsized types, while actual values
+must be sized. Type formation and lifetime requirements are checked even when a
+declaration has no initializer. Initializer CFG contracts retain captured
+lifetimes and owner assumptions without inventing a function signature.
+
+The associated-declaration suite adds 46 independently object-qualified source
+cases: 22 accept and 24 reject through complete LowIR construction. They cover
+unused required/default/override and inherent declarations, generic and projected
+types, mixed const parameters, lifetime debts, covariance and invariant references.
+A typed invariant verifies selected declaration identities and that conformance
+does not populate the evaluated-value cache. These are declaration and initializer
+controls, not executable coverage of associated constant uses.
+
+The investigation also exposed an older eligibility gap: unused global and
+associated initializers could call ordinary functions and reach LowIR. The
+constant-body gate now rejects those calls independently of value demand,
+including calls in skipped branches. It recognizes direct tuple/enum constructor
+identities, preserving construction without allowing constructor function-pointer
+calls. Earlier type inspection continues to retain typed facts without claiming
+constant eligibility. Explicit lint attributes keep the valid unused division
+fault controls separate from default rustc lint rejection.
+
+Associated value lookup, default selection at uses and per-instance evaluation
+remain required. The eight earlier use probes were rerun: six valid programs
+still stop at lookup; wrong-type and missing-value controls now fail actual
+conformance. PA19's associated-constant boundary still rejects, with a precise
+value-selection diagnostic replacing the old blanket impl-member gate. Its
+source, manifest and expected exit status are unchanged. Official regeneration
+updated that one stderr oracle and the provenance receipt; every other PA19
+oracle byte was checked unchanged. PA20 and PA21 still fail explicitly as planned.
+
+Final validation passes 1,170 release tests, all 4,864 PA1–PA19 fixtures and all
+63 explicitly selected maintainer native suites. Formatting, strict Clippy,
+the 715-file audit, 33 harness checks, upstream provenance and the backend check
+pass. The validation snapshot hashes 718 source/configuration files and records
+28 completed commands. Evidence is retained under
+`obj/pa20-work/associated-constant-contracts-v2/`; initial qualification,
+prototype diagnostics and the first PA19 diagnostic mismatch remain in `v1`.
+No milestone has been marked complete or removed from the original goal.
+
+Performance used immutable 27cbec8/current binaries, pinned inputs, A/A calibration
+and five paired ABBA blocks per job. Twelve existing-workload comparisons cover
+symbolic callables, wide assumptions, ordinary nominal bounds and 256/1,024 global
+constants. Four identical-candidate jobs measure the new constant contracts at
+64/256 impls; those are scaling controls, not comparisons against the unsupported
+old frontend. The sixteen jobs retain 416 study observations and 64 full-output
+qualifications. All source, binary, input and runner hashes, and all full/count
+output equality checks, pass.
+
+Existing-workload paired medians range from -2.592% to +1.527%, with no median
+crossing the +3.5% review threshold. A/A spread reaches 29.97% on existing controls
+and 60.67% across all jobs, so these measurements do not establish a speedup or
+a universal absence of regressions. Earlier ordinary-bound, scoped-result and
+runtime-extents concerns retain their separate evidence. Validation cleanup
+removed 4,902 generated files, about 5.17 GiB; measurement scratch was removed
+after hashing, and every timing observation remains available.

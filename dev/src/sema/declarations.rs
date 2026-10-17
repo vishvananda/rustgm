@@ -2,6 +2,7 @@
 mod aggregates;
 mod annotations;
 mod associated;
+mod constants;
 mod contracts;
 mod deferred_arguments;
 mod destructors;
@@ -118,6 +119,7 @@ struct Checker<'a> {
     discriminants: super::constants::Discriminants,
     nominal_regions: std::collections::HashMap<ItemId, regions::Context>,
     function_binders: std::collections::HashMap<NodeKey, BinderId>,
+    constant_binders: std::collections::HashMap<NodeKey, BinderId>,
     owner_binders: std::collections::HashMap<DefId, BinderId>,
 }
 /// Resolve declaration types and shape-affecting constants without reparsing source.
@@ -158,6 +160,7 @@ pub fn analyze(report: &Report) -> Result<Declarations, Error> {
         discriminants: super::constants::Discriminants::default(),
         nominal_regions: std::collections::HashMap::new(),
         function_binders: std::collections::HashMap::new(),
+        constant_binders: std::collections::HashMap::new(),
         owner_binders: std::collections::HashMap::new(),
     };
     checker.run().map_err(|error| report.diagnostic(error))?;
@@ -498,7 +501,11 @@ impl Checker<'_> {
                     self.node_work(key.file, ty, context);
                     self.declaration_parameters(id, key, context)?;
                 }
-                ItemKind::Const { ty, .. } | ItemKind::Static { ty, .. } => {
+                ItemKind::Const { ty, .. } => {
+                    let context = self.constant_context(id, key)?;
+                    self.node_work(key.file, ty, context);
+                }
+                ItemKind::Static { ty, .. } => {
                     self.node_work(key.file, ty, regions::Context::STATIC);
                 }
                 _ => return Err(self.error(key, "unsupported type declaration")),
@@ -531,6 +538,9 @@ impl Checker<'_> {
             ItemKind::Static { value, mutable, .. } => (value, InitializerKind::Static { mutable }),
             _ => return Ok(()),
         };
+        if value.is_none() && self.facts.associated.trait_owner(id).is_some() {
+            return Ok(());
+        }
         let value =
             value.ok_or_else(|| self.error(key, "constant or static requires an initializer"))?;
         self.facts.initializers.push(Initializer {

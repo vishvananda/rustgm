@@ -18,8 +18,8 @@ impl Checker<'_> {
             } => (body, self.function_binders.get(&key).copied()),
             crate::syntax::item::ItemKind::Const {
                 value: Some(body), ..
-            }
-            | crate::syntax::item::ItemKind::Static {
+            } => (body, self.constant_binders.get(&key).copied()),
+            crate::syntax::item::ItemKind::Static {
                 value: Some(body), ..
             } => (body, None),
             _ => return inherited,

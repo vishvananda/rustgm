@@ -1,4 +1,5 @@
 //! Retain complete impl applications; headers alone do not prove an implementation.
+mod constants;
 mod methods;
 mod validation;
 use super::super::{Checker, DefId, Error, ItemId, NodeKey, Work};
@@ -47,7 +48,6 @@ impl Checker<'_> {
                     "trait and implementation safety declarations disagree",
                 ));
             }
-            // Associated constants retain their explicit elaboration boundary.
             let unsupported = unsupported.get_or_insert_with(|| {
                 self.facts
                     .associated
@@ -56,7 +56,7 @@ impl Checker<'_> {
                     .filter(|member| {
                         !matches!(
                             self.report.resolution.definitions[member.definition.0 as usize].kind,
-                            DefKind::Function | DefKind::TypeAlias
+                            DefKind::Function | DefKind::TypeAlias | DefKind::Const
                         )
                     })
                     .map(|member| member.owner)
@@ -100,6 +100,7 @@ impl Checker<'_> {
                         predicate,
                         methods: Vec::new(),
                         types: Vec::new(),
+                        constants: Vec::new(),
                     },
                 )
                 .map_err(|e| self.error(owner.source, e))?;

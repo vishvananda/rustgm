@@ -24,6 +24,7 @@ pub struct Implementation {
     pub methods: Vec<(DefId, Option<DefId>)>,
     /// Trait associated type identity paired with the implementing definition.
     pub types: Vec<(DefId, DefId)>,
+    pub constants: Vec<(DefId, Option<DefId>)>,
 }
 struct Entry {
     value: Implementation,
@@ -249,6 +250,7 @@ impl Implementations {
         owner: DefId,
         mut methods: Vec<(DefId, Option<DefId>)>,
         mut types: Vec<(DefId, DefId)>,
+        mut constants: Vec<(DefId, Option<DefId>)>,
     ) -> Result<(), &'static str> {
         let index = *self
             .owners
@@ -266,8 +268,13 @@ impl Implementations {
         if types.windows(2).any(|pair| pair[0].0 == pair[1].0) {
             return Err("implementation repeats an associated type declaration");
         }
+        constants.sort_unstable_by_key(|(declaration, _)| declaration.0);
+        if constants.windows(2).any(|pair| pair[0].0 == pair[1].0) {
+            return Err("implementation repeats an associated constant declaration");
+        }
         entry.value.methods = methods;
         entry.value.types = types;
+        entry.value.constants = constants;
         entry.validated = true;
         Ok(())
     }

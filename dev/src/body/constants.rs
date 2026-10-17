@@ -35,6 +35,22 @@ fn prepare<'a>(
         }
     };
     for body in bodies {
+        // Eligibility is checked even when no value is demanded. Constructor
+        // identities are eligible; other calls need the const-function assignment.
+        if matches!(
+            body.owner,
+            super::ir::Owner::Initializer { .. } | super::ir::Owner::AnonymousConstant
+        ) && body
+            .values
+            .iter()
+            .any(|value| function_call(facts, body, value.kind))
+        {
+            return Err(report.diagnostic(Declarations::error(
+                report,
+                body.source,
+                "non-const calls are not allowed in constant initializers",
+            )));
+        }
         for (id, static_) in references(body) {
             demand(id, static_);
         }
@@ -52,6 +68,22 @@ fn prepare<'a>(
     }
     evaluator.complete_static_storage()?;
     Ok(())
+}
+fn function_call(facts: &Declarations, body: &super::ir::Body, value: Rvalue) -> bool {
+    let Rvalue::Call { callee, .. } = value else {
+        return false;
+    };
+    let Some(crate::types::Kind::FunctionItem { item, .. }) = body
+        .values
+        .get(callee.0 as usize)
+        .and_then(|value| facts.types.kind(value.ty))
+    else {
+        return true;
+    };
+    !facts
+        .members
+        .constructors
+        .contains_key(&crate::resolve::model::DefId(item.0))
 }
 /// Named values used by this CFG, with static storage distinguished from constants.
 pub fn references(

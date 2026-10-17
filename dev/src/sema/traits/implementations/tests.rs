@@ -36,6 +36,7 @@ fn header(
         },
         methods: Vec::new(),
         types: Vec::new(),
+        constants: Vec::new(),
     })
 }
 
@@ -92,7 +93,7 @@ fn unrelated_closed_arguments_do_not_create_overlap_probes()
     assert!(context.steps - before < 100);
     assert!(!registry.is_validated(owner));
     assert_eq!(registry.validated().count(), 0);
-    registry.complete(owner, Vec::new(), Vec::new())?;
+    registry.complete(owner, Vec::new(), Vec::new(), Vec::new())?;
     let before = context.steps;
     assert_eq!(
         registry.candidates(
@@ -125,12 +126,12 @@ fn erased_lifetime_arguments_still_require_an_overlap_probe()
     }
     assert_eq!(registry.take_overlap_pairs().len(), 1);
     assert!(!registry.is_validated(DefId(10)));
-    registry.complete(DefId(10), Vec::new(), Vec::new())?;
+    registry.complete(DefId(10), Vec::new(), Vec::new(), Vec::new())?;
     assert!(registry.is_validated(DefId(10)));
     assert_eq!(registry.validated().count(), 1);
     assert!(
         registry
-            .complete(DefId(10), Vec::new(), Vec::new())
+            .complete(DefId(10), Vec::new(), Vec::new(), Vec::new())
             .is_err()
     );
     Ok(())

@@ -425,6 +425,18 @@ arguments, function pointers, receiver calls, mixed const arguments and distinct
 callers. Missing context, incompatible results, method-name ambiguity and unpaid
 lifetime debts remain rejections; selected controls check the diagnostic gate too.
 
+The constant-contract cases in `associated_declarations.rs` check 46 object-qualified programs through
+complete LowIR construction: 22 accept and 24 reject. These cover unused
+required/default/override declarations, inherent constants, mixed owner arguments,
+projected types, captured initializer lifetimes, covariance, invariant references,
+missing bounds, invalid declaration/body types and unused non-const calls. Constructors
+remain eligible; function pointers and calls in skipped branches do not. Unused evaluation faults use
+explicit lint attributes so default rustc lints remain enabled. A separate typed
+invariant checks that default and override identities remain distinct and that
+conformance alone does not evaluate their values. Associated constant expression
+lookup and per-instance evaluation remain required PA20 work; these declaration
+tests do not constitute executable associated-value coverage or a public release.
+
 ## Storage and cleanup
 
 Generated output is bounded separately from validation evidence. Builds and

@@ -38,6 +38,12 @@ impl Checker<'_> {
         else {
             return Ok(false);
         };
+        if self.report.resolution.definitions[method.0 as usize].kind == DefKind::Const {
+            return Err(self.error(
+                key,
+                "associated constant value selection is not implemented",
+            ));
+        }
         if let Some(subject) = subject {
             self.annotation_holes(subject, steps, limit, scan)?;
             self.node_work(subject.file, subject.node, context);
@@ -96,8 +102,10 @@ impl Checker<'_> {
                 .get(&(path.suffix[0].1, Namespace::Value))
                 .map(|binding| binding.target)
                 .filter(|id| {
-                    self.report.resolution.definitions[id.0 as usize].kind == DefKind::Function
-                        && self.facts.associated.trait_owner(*id) == Some(owner)
+                    matches!(
+                        self.report.resolution.definitions[id.0 as usize].kind,
+                        DefKind::Function | DefKind::Const
+                    ) && self.facts.associated.trait_owner(*id) == Some(owner)
                 })
                 .ok_or_else(|| self.error(key, "qualified trait has no such method"))?;
             return Ok(Some(Callable {

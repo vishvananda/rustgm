@@ -89,7 +89,13 @@ impl Checker<'_> {
         }
         for index in 0..self.facts.initializers.len() {
             let initializer = self.facts.initializers[index];
-            let mut proof = self.declaration_proof(initializer.definition, None);
+            let environment = self
+                .facts
+                .generics
+                .environments
+                .get(&initializer.definition)
+                .cloned();
+            let mut proof = self.declaration_proof(initializer.definition, environment);
             let shape = proof
                 .check(&mut self.facts, initializer.ty)
                 .map_err(|e| self.error(initializer.node, e))?;
@@ -101,6 +107,7 @@ impl Checker<'_> {
             }
             self.retain_trait_proof(initializer.definition, initializer.node, &mut proof);
         }
+        self.validate_constant_declarations()?;
         Ok(())
     }
 }

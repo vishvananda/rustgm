@@ -107,6 +107,28 @@ selected definition with the validated implementation, and share lifetime querie
 across all associated definitions of that impl. An ordinary alias's deferred
 well-formedness policy must not weaken an associated type contract.
 
+Associated constant declarations retain their types independently of optional
+initializers. Check missing and extra members by resolved owner and name, then
+publish default/override identities only with the validated implementation.
+Substitute the trait's Self and mixed arguments into the impl environment once;
+normalize projected types using that impl's checked associated definitions.
+Structural types must agree, while reference results may satisfy the trait by
+outliving its declared result. Preserve invariant positions and every proof debt.
+
+Constants introduce no parameters or predicates of their own, so their annotation
+and initializer checks share the completed owner's immutable generic environment.
+Retain captured lifetime binders in both semantic checking and initializer CFG
+contracts. Required declarations may name unsized types, but actual initializers
+must produce sized values. Check type formation and lifetime requirements even
+for unused declarations with no value. Type checking is separate from demanded
+evaluation: an unused associated constant must not be evaluated merely because
+its declaration or implementation was checked.
+Before executable lowering, reject non-const calls in every initializer, including
+unused values and branches that evaluation would skip. Recognize tuple/enum
+constructors by retained callable identity; a function pointer to a constructor
+does not grant const-call permission. Earlier type inspection remains separate
+from this eligibility proof.
+
 Associated result bounds retain complete predicates, including the separate
 subjects of nested result equalities. Elaborate their arguments through the
 ordinary bound worklist in the owning trait's lifetime scope. Validate the bound's

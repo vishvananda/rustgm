@@ -122,8 +122,10 @@ impl Checker<'_> {
                 .associated
                 .schema(owner.self_definition)
                 .is_some()
-                && self.report.resolution.definitions[member.definition.0 as usize].kind
-                    == DefKind::Function
+                && matches!(
+                    self.report.resolution.definitions[member.definition.0 as usize].kind,
+                    DefKind::Function | DefKind::Const
+                )
             {
                 self.facts.generics.parents.insert(
                     member.definition,

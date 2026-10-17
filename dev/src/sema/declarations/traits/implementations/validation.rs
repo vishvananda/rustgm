@@ -51,6 +51,7 @@ impl Checker<'_> {
         }
         let members = Members::new(self.report, &self.facts);
         let types = super::super::associated_types::Members::new(self.report, &self.facts);
+        let constants = super::constants::Members::new(self.report, &self.facts);
         for (owner, source, predicate) in headers {
             self.validate_trait_impl_contract(owner, source, predicate)?;
             let types = self.trait_impl_types(owner, source, predicate, &types)?;
@@ -59,12 +60,14 @@ impl Checker<'_> {
                     .map_err(|e| self.error(source, e))?;
             let methods =
                 self.trait_impl_methods(owner, source, predicate, &members, &definitions)?;
+            let constants =
+                self.trait_impl_constants(owner, source, predicate, &constants, &definitions)?;
             self.facts
                 .generics
                 .implementations
                 .as_mut()
                 .ok_or_else(|| Error::at(source.file, 0, "missing trait impl registry"))?
-                .complete(owner, methods, types)
+                .complete(owner, methods, types, constants)
                 .map_err(|e| self.error(source, e))?;
         }
         Ok(())

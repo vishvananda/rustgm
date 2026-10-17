@@ -97,7 +97,7 @@ pub fn collect(facts: &Declarations) -> Result<Contracts<'_>, &'static str> {
     }
     for initializer in &facts.initializers {
         index.insert(initializer.value, bodies.len());
-        bodies.push(Contract::constant(initializer.value));
+        bodies.push(initializer_contract(facts, initializer)?);
     }
     for (source, _) in facts.constant_bodies() {
         if index.insert(source, bodies.len()).is_some() {
@@ -249,9 +249,21 @@ fn function_contract(
 ) -> Result<Contract, &'static str> {
     let owner = function.definition;
     let scheme = facts.lifetimes.functions.get(&owner);
-    let mut contract = parameter_contract(facts, owner, source, function.signature)?;
+    let mut contract = parameter_contract(facts, owner, source, Some(function.signature))?;
     contract.universals = scheme.map_or(0, |s| s.total);
     contract.assumptions = scheme.map_or_else(Vec::new, |s| s.bounds.clone());
+    Ok(contract)
+}
+fn initializer_contract(
+    facts: &Declarations,
+    initializer: &crate::sema::model::Initializer,
+) -> Result<Contract, &'static str> {
+    let Some(schema) = facts.associated.schema(initializer.definition) else {
+        return Ok(Contract::constant(initializer.value));
+    };
+    let mut contract = parameter_contract(facts, initializer.definition, initializer.value, None)?;
+    contract.universals = schema.captures;
+    contract.assumptions.clone_from(&schema.bounds);
     Ok(contract)
 }
 pub(super) fn constructor(
@@ -267,7 +279,7 @@ pub(super) fn constructor(
         facts,
         crate::resolve::model::DefId(variant.owner.0),
         variant.node,
-        signature,
+        Some(signature),
     )?;
     contract.universals = bound_regions;
     // Signature well-formedness contributes the completed nominal requirements.
@@ -277,7 +289,7 @@ fn parameter_contract(
     facts: &Declarations,
     owner: crate::resolve::model::DefId,
     source: NodeKey,
-    signature: TypeId,
+    signature: Option<TypeId>,
 ) -> Result<Contract, &'static str> {
     let mut parameters = Vec::new();
     for parameter in facts.generics.parameters_in_scope(owner) {
@@ -301,7 +313,7 @@ fn parameter_contract(
         .collect();
     Ok(Contract {
         source,
-        signature: Some(signature),
+        signature,
         universals: 0,
         assumptions: Vec::new(),
         parameters,

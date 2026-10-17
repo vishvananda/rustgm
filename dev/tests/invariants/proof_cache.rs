@@ -244,6 +244,7 @@ fn provisional_headers_never_authorize_validated_queries() -> Result<(), Box<dyn
             predicate: root,
             methods: Vec::new(),
             types: Vec::new(),
+            constants: Vec::new(),
         },
     )?;
     facts.generics.implementations = Some(Box::new(registry));
@@ -266,7 +267,7 @@ fn provisional_headers_never_authorize_validated_queries() -> Result<(), Box<dyn
         .implementations
         .as_mut()
         .ok_or("missing registry")?
-        .complete(owner, Vec::new(), Vec::new())?;
+        .complete(owner, Vec::new(), Vec::new(), Vec::new())?;
     let (mut context, goal) = instantiate(&mut facts, root)?;
     let result = super::super::select(&mut facts, &mut context, &goal, caller(&assumptions, None))?;
     assert!(matches!(result, super::super::Selection::Proven(_)));

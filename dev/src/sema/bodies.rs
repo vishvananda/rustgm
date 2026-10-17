@@ -273,11 +273,18 @@ impl<'a> Checker<'a> {
     }
     pub(super) fn constant(&mut self, key: NodeKey, ty: TypeId, owner: DefId) -> Result<(), Error> {
         let scope = self.report.resolution.definitions[owner.0 as usize].scope;
-        self.constant_in_module(
+        self.begin_constant(
             key,
             ty,
             self.report.resolution.scopes[scope.0 as usize].module,
-        )
+        );
+        self.body_binders = self
+            .facts
+            .associated
+            .schema(owner)
+            .map_or(0, |s| s.captures);
+        self.prepare_bound_environment(key.node, owner)?;
+        self.body(key.node)
     }
     pub(super) fn constant_in_module(
         &mut self,
@@ -285,6 +292,10 @@ impl<'a> Checker<'a> {
         ty: TypeId,
         module: ModuleId,
     ) -> Result<(), Error> {
+        self.begin_constant(key, ty, module);
+        self.body(key.node)
+    }
+    fn begin_constant(&mut self, key: NodeKey, ty: TypeId, module: ModuleId) {
         self.call_types.clear();
         self.projections = projections::Pending::default();
         self.body_binders = 0;
@@ -299,7 +310,6 @@ impl<'a> Checker<'a> {
         self.module = module;
         self.result = ty;
         self.in_function = false;
-        self.body(key.node)
     }
     pub(super) fn anonymous_constant(
         &mut self,
