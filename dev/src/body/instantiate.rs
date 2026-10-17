@@ -14,6 +14,12 @@ use crate::{
     },
 };
 
+#[derive(Clone, Copy)]
+enum Premises {
+    Required,
+    Declared,
+}
+
 /// Materialize one selected body without resolving, parsing or inferring syntax.
 /// Original source identities and control flow remain unchanged. Promotion values
 /// are recomputed from the specialized DAG, never copied across argument contexts.
@@ -29,7 +35,15 @@ pub fn body(
         return Err("projected instance requires its lifetime contract");
     }
     let mut substitution = Bound::parameters(&facts.types, &inputs.bindings)?;
-    materialize(facts, template, instance, &mut substitution, None, None)
+    materialize(
+        facts,
+        template,
+        instance,
+        &mut substitution,
+        None,
+        None,
+        Premises::Required,
+    )
 }
 
 pub struct Materialized {
@@ -48,6 +62,27 @@ pub fn with_contract(
     instance: Instance,
     original: &super::regions::Contract,
 ) -> Result<Materialized, &'static str> {
+    with_premises(facts, template, instance, original, Premises::Required)
+}
+
+/// Only demand from a fully proved caller may inherit its checked callee premises.
+/// Unsealed/manual instances continue to require every implementation lifetime debt.
+pub(crate) fn from_checked_caller(
+    facts: &mut Declarations,
+    template: &Template,
+    instance: Instance,
+    original: &super::regions::Contract,
+) -> Result<Materialized, &'static str> {
+    with_premises(facts, template, instance, original, Premises::Declared)
+}
+
+fn with_premises(
+    facts: &mut Declarations,
+    template: &Template,
+    instance: Instance,
+    original: &super::regions::Contract,
+    premises: Premises,
+) -> Result<Materialized, &'static str> {
     if original.source != template.body.source {
         return Err("instance contract belongs to another template");
     }
@@ -60,6 +95,7 @@ pub fn with_contract(
         &mut substitution,
         Some(&mut contract),
         inputs.comparison,
+        premises,
     )?;
     Ok(Materialized {
         body,
@@ -75,6 +111,7 @@ fn materialize(
     substitution: &mut Bound,
     contract: Option<&mut super::regions::Contract>,
     comparison: Option<(crate::types::TypeId, crate::types::TypeId)>,
+    premises: Premises,
 ) -> Result<(Body, drops::Requirements), &'static str> {
     let source = &template.body;
     let Owner::Function { definition, .. } = source.owner else {
@@ -117,12 +154,20 @@ fn materialize(
     };
     let projected = substitute(facts, &mut body, substitution)?;
     if projected || comparison.is_some() {
-        projections::normalize(
-            facts,
-            &mut body,
-            contract.ok_or("projected instance requires its lifetime contract")?,
-            comparison,
-        )?;
+        let contract = contract.ok_or("projected instance requires its lifetime contract")?;
+        if matches!(premises, Premises::Declared)
+            && let Some(assumptions) = crate::sema::callee_premises::specialize(
+                facts,
+                definition,
+                substitution,
+                contract.universals,
+            )?
+        {
+            contract.universals = assumptions.universals;
+            contract.assumptions.extend(assumptions.regions);
+            contract.type_assumptions.extend(assumptions.types);
+        }
+        projections::normalize(facts, &mut body, contract, comparison)?;
     }
     let mut needed = NeedsDrop::new(facts.destructors.implementations().iter().map(|i| i.item));
     if let Some(owned) = &source.owned {
@@ -152,6 +197,7 @@ fn materialize(
 
 type Binding = (crate::types::parameters::ParameterId, Argument);
 struct Inputs {
+    instance: Instance,
     bindings: Vec<Binding>,
     comparison: Option<(crate::types::TypeId, crate::types::TypeId)>,
 }
@@ -202,6 +248,7 @@ fn parameters(facts: &mut Declarations, instance: Instance) -> Result<Inputs, &'
         return Err("instance signature differs from substituted template");
     }
     Ok(Inputs {
+        instance,
         bindings,
         comparison: projected.then_some((expected, signature)),
     })

@@ -8677,3 +8677,90 @@ method template. The earlier Copy variation remains a valid unsupported control.
 Sources, expected outcomes, object/native rustc receipts and typed contract dumps
 are retained in `projection-parent-lifetimes-v1` and the V6 investigation logs;
 none of these unsupported positives is relabeled as a negative fixture.
+
+## Specialization retains declared lifetime premises
+
+The erased-parent probes exposed two distinct losses during specialization.
+Imported lifetimes in actual type arguments were disconnected from the original
+early body slots, and concrete normalization rediscovered implementation lifetime
+conditions without retaining the function's declared trait premise. Template
+verification itself passed. The correction reconnects only already imported
+early lifetimes, preserving late binders and unused slots. Static arguments do
+not create imported universals. Drop callables use their existing nominal coverage
+mapping, which preserves permuted captures and unused impl lifetime witnesses.
+
+Declared trait premises enter specialization only through demand from a caller
+already sealed by the complete body proof. Selection uses validated implementations
+and complete substituted predicates in an independent scope. Its private lifetime
+witnesses become fresh constrained universals, retaining equality, outlives and
+type-outlives conditions. These assumptions belong to that specialized body;
+normalization still retains all newly discovered debts. The public/manual
+`with_contract` path continues to require implementation conditions, including the
+existing forged-instance rejection. Lifetime-free predicates do not create a
+selection scope, and ordinary nonprojected instances avoid this premise selection.
+
+`associated_declarations/specialization.rs` declares thirty independently
+object-qualified source outcomes: twenty-one positive programs also execute with
+rustc and CPPGM. They cover distinct and equal lifetimes, explicit and inherited
+bounds, defaults/overrides, inherent methods, aliases, function pointers, products,
+early slots after late declarations, nested callable binders, private impl
+witnesses, repeated callers and missing/reversed/equality/escape rejections.
+`instance_regions.rs` checks early identity without caller authority.
+`destructor_instances.rs` separately checks that a type argument reconnects only
+to the correct original Drop slot. Existing forged-instance and unused-lifetime
+checks remain intact.
+
+The V5 full attempt found four Drop failures across three targets because an
+ordinary callable scheme was incorrectly used for the compact destructor capture
+order. The retained `specialization-formation-v5/failure-review.json` records
+1,183 passing tests and those four failures. The corrected V7 candidate is
+`dcf1fdc50bb83ffe57dc6f5c13a12195f55d6313c7aeb0a818f9073c4c03eb50` under
+`obj/pa20-work/specialization-formation-v7/`. Its strict Clippy, file/architecture
+checks, harness, targeted Drop native checks, new native family, 1,188 regular
+tests, all 4,863 PA1–19 cases, all 75 native groups and backend/upstream checks
+pass. The audit reports 736 files with no findings; the harness has 33 passing
+tests. All 739 frozen source/configuration hashes and 14,589 earlier oracle
+sidecars remain unchanged.
+
+The main study independently executes eleven frozen sources with rustc and CPPGM.
+Eight inputs are also accepted by the published baseline with identical full
+LowIR; the other three measure the new premise-width cases at 1, 8 and 32 bounds
+with 64 instances each. Count and full modes retain 572 study observations and
+88 qualification observations. Six focused marker/lifetime AB, AA and BB jobs
+add 156 and 24 observations, respectively. Across both studies there are 2,288
+study compiler invocations and 352 qualification invocations; all source, input,
+binary and output checks pass.
+
+Ordinary/generic-reference, override and member-contract main paired medians
+range from +0.09% to +1.22%; recursive projection count/full are -0.20%/+1.61%.
+The marker count's initial +12.86% does not recur in the focused AB median
+(+0.03%), while same-binary AA/BB medians are +0.85%/+13.88%. These noisy controls
+preclude a tight regression bound. Retaining lifetime evidence has a modest
+observed cost: lifetime-projection main medians are +2.70% to +3.75%; the focused
+full-output AB median is +4.67%, versus AA/BB +1.69%/-0.30%. The additional proof
+work is explicit, not reported as a speedup. New premise-width full-output
+medians are approximately 52/84/184 ms for widths 1/8/32; peak RSS stays below
+14 MiB in those measurements. Evidence is in `study/` and `study-followup/`.
+
+A separate requested rustc comparison lives at
+`obj/rustc-comparison-2026-10-17/`. All nine complete inputs execute correctly
+with both compilers before and after timing; 810 observations remain recorded.
+The recursive-projection case takes roughly 796 ms through the direct RustGM
+and CPPGM pipeline versus 125 ms through rustc. This is an existing performance
+gap, not introduced by the specialization correction. The checked Python backend
+bridge also consumes much of the direct pipeline's advantage on small programs.
+Single-CPU shared-host timings do not establish a general Rust compilation ratio.
+
+The next storage investigation is independently qualified in
+`obj/pa20-work/projected-storage-v1/`: 22 declared outcomes, including 17 rustc
+native positives. All seventeen positives remain unsupported by current LowIR
+lowering because nominal field instances retain projections for layout or
+NeedsDrop. The transparent side-field case fails earlier in declaration layout;
+the other sixteen pass semantic inspection. Five negative inputs reject, but the
+move-twice case currently stops at the missing normalization gate, so that result
+is not yet evidence of its intended ownership diagnostic. Required follow-up
+covers field normalization before immutable property caches, caller-owned proof
+debts, preserved declaration variance, constructors, enums, nested and distinct
+instances, aliases, references, arrays, custom Drop, Copy and transparent layout.
+No valid input is reclassified as a negative. PA20's full manifest, inspection
+contract and remaining requirements are still pending; PA20–PA25 remain planned.

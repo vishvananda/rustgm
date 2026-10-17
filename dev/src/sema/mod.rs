@@ -6,6 +6,7 @@ pub mod bodies;
 mod constants;
 pub use constants::values;
 mod arguments;
+pub(crate) mod callee_premises;
 pub mod declarations;
 pub mod destructors;
 pub(crate) mod dispatch;

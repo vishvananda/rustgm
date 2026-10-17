@@ -1491,8 +1491,23 @@ specializing its retained CFG. Substitute parameters by their declaration
 identities; callable argument positions need not include late lifetime slots.
 Abstract lifetimes inside actual type arguments into a fresh instance proof
 context while preserving nested binders and the template's own variables.
+Reconnect each imported early argument with its original body slot, including
+captured owner slots and noncontiguous early slots after late declarations.
+Inspect the existing abstraction map; static and unused arguments need no fresh
+universal. Drop callables use their checked nominal coverage mapping to reconnect
+permuted captures, preserving unused impl proof slots.
 Pair each specialized body with its own region proof and complete instance
 identity, even when multiple bodies share an original source location.
+
+Demand from a fully proved caller may retain the callee's exact declared trait
+premises during projected specialization. Select their validated implementations
+in a separate scope after substituting complete arguments. Retain existential
+lifetime witnesses as independent constrained universals, with every equality,
+outlives and type-outlives condition; keep nested callable binders local. These
+givens belong only to that specialized body. A manually constructed instance
+has no caller authority and must still discharge the selected implementation's
+lifetime debts. Ordinary bodies without projected specialization do not perform
+this selection, and lifetime-free predicates need no witness scope.
 
 After a caller's complete ownership, lifetime and cleanup proof, retained proved
 outlives obligations may establish that an input lifetime equals static. Resolve
@@ -1501,7 +1516,8 @@ instances. Store only changed targets on that sealed body; dependency discovery
 and executable lowering consume the same table. Preserve unrelated free lifetimes
 and nested binders. Neither an unproved body nor another caller may supply this
 authority. The selected callee still proves its original template and every
-implementation requirement; do not turn required impl bounds into assumptions.
+implementation requirement. Requirements absent from its declared premises
+remain obligations, never new assumptions supplied by normalization.
 An empty static-obligation frontier must require no traversal allocation.
 
 Schedule demanded instances iteratively, registering an instance before following

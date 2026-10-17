@@ -50,6 +50,17 @@ impl Bound {
         }));
         bound
     }
+    /// Inspect the universal already assigned to a free argument lifetime.
+    /// Static and unused lifetimes have no imported universal. This does not
+    /// allocate lifetimes or alter nested callable binders.
+    #[must_use]
+    pub fn universal_image(&self, original: RegionId) -> Option<RegionId> {
+        let Action::Universals(mapping) = &self.action else {
+            return None;
+        };
+        mapping.replacements.get(&original).copied()
+    }
+
     #[must_use]
     pub fn universal_count(&self) -> usize {
         match &self.action {

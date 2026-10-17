@@ -35,6 +35,15 @@ pub(crate) struct Projected {
     pub sized: Vec<crate::types::TypeId>,
 }
 impl State {
+    pub(crate) fn instance(
+        facts: &mut Declarations,
+        universals: u32,
+    ) -> Result<Self, &'static str> {
+        let mut state = Self::new(facts, None, Some((universals, 1)))?;
+        state.availability = Availability::Validated;
+        Ok(state)
+    }
+
     pub fn new(
         facts: &mut Declarations,
         environment: Option<Arc<Environment>>,

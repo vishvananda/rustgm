@@ -101,7 +101,8 @@ pub(super) fn prepare(
                 .ok_or_else(|| error("missing checked template input"))?;
             budget.enter(item, &template.body, input).map_err(error)?;
             let mut materialized =
-                body::instantiate::with_contract(facts, template, instance, input)
+                // Entered dependencies come only from a body sealed by Builder::push.
+                body::instantiate::from_checked_caller(facts, template, instance, input)
                     .map_err(error)?;
             body::dispatch::resolve(facts, &mut materialized.body, &mut materialized.contract)
                 .map_err(|e| error(&e))?;

@@ -113,6 +113,11 @@ fn argument_lifetimes_are_checked_in_distinct_instance_contexts()
 -> Result<(), Box<dyn std::error::Error>> {
     let cases = [
         (
+            "projected-early-identity",
+            "trait A<'a>{type Out;}impl<'a,'b:'a>A<'a>for &'b u8{type Out=u16;}fn f<'a,T:A<'a>>(x:T::Out)->T::Out{x}fn use_<'a>(_:&'a u8)->u16{f::<'a,&'a u8>(7)}",
+            1,
+        ),
+        (
             "identity",
             "fn id<T>(x:T)->T{x}fn use_<'a,'b>(x:&'a u8,y:&'b u16)->(&'a u8,&'b u16){(id(x),id(y))}",
             2,

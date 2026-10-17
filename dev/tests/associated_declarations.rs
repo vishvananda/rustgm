@@ -23,6 +23,8 @@ mod rustc;
 mod semantic;
 #[path = "associated_declarations/shorthand.rs"]
 mod shorthand;
+#[path = "associated_declarations/specialization.rs"]
+mod specialization;
 use rustgm::{
     resolve::model::{DefId, DefKind},
     sema::associated::{self, Inventory, OwnerId, OwnerKind},

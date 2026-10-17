@@ -449,6 +449,18 @@ native coverage. These maintainer checks do not constitute PA20's public release
 selected patterns, type-level uses and the complete associated-item inspection
 contract remain required work.
 
+`associated_declarations/specialization.rs` declares thirty independent lifetime
+outcomes, including twenty-one native positives. It covers early-slot identity,
+distinct outlives relations, selected defaults/overrides, inherited bounds,
+function pointers, nested late binders, private impl witnesses and caller
+isolation. All sources are checked with pinned rustc object generation; accepted
+native controls execute with both rustc and CPPGM. `instance_regions.rs` also
+checks early identity without caller authority, while `instance_bodies.rs`
+continues to reject a forged instance with unpaid implementation lifetime debts.
+`destructor_instances.rs` separately checks the nominal-to-impl capture mapping
+and preserves unused Drop proof slots. The ordinary template gate and each
+caller's proof remain prerequisites.
+
 ## Storage and cleanup
 
 Generated output is bounded separately from validation evidence. Builds and

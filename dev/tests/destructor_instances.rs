@@ -117,11 +117,13 @@ fn first_parameter(
         .ok_or("target")
 }
 
+const PERMUTED_LIFETIMES: &str = "struct S<'a,'b,T>(&'a u8,&'b u8,T)where 'a:'b;impl<'x,'y,'u,T> Drop for S<'y,'x,T>where 'y:'u,'u:'x{fn drop(&mut self){}}fn consume<'a,'b>(s:S<'a,'b,&'b u8>)where 'a:'b{}";
+
 #[test]
 fn selected_receiver_keeps_distinct_target_lifetimes_through_permuted_capture_slots()
 -> Result<(), Box<dyn std::error::Error>> {
     use rustgm::types::{Primitive, RegionId, TypeId};
-    let source = "struct S<'a,'b,T>(&'a u8,&'b u8,T)where 'a:'b;impl<'x,'y,'u,T> Drop for S<'y,'x,T>where 'y:'u,'u:'x{fn drop(&mut self){}}fn consume<'a,'b>(s:S<'a,'b,&'b u8>)where 'a:'b{}";
+    let source = PERMUTED_LIFETIMES;
     rustc::qualify("distinct-drop-lifetimes", source, true)?;
     let (report, mut facts) = semantic::analyze(source)?;
     let target = first_parameter(&report, &facts, "consume")?;
@@ -204,6 +206,38 @@ fn selected_receiver_keeps_distinct_target_lifetimes_through_permuted_capture_sl
             region: RegionId::bound(1, b_index)?,
             referent: TypeId::primitive(Primitive::U8),
         })
+    );
+    Ok(())
+}
+
+#[test]
+fn imported_drop_arguments_reconnect_only_their_original_body_slots()
+-> Result<(), Box<dyn std::error::Error>> {
+    use rustgm::types::RegionId;
+    rustc::qualify("permuted-drop-lifetime-import", PERMUTED_LIFETIMES, true)?;
+    let (report, mut facts) = semantic::analyze(PERMUTED_LIFETIMES)?;
+    let target = first_parameter(&report, &facts, "consume")?;
+    let instance = sema::destructors::select(&mut facts, target)?.ok_or("selected destructor")?;
+    let templates = body::templates::build(&report, &facts)?;
+    let template = templates.bodies.first().ok_or("missing Drop template")?;
+    let contracts = body::regions::collect(&facts)?;
+    let input = contracts
+        .bodies
+        .iter()
+        .find(|c| c.source == template.body.source)
+        .ok_or("missing Drop input")?
+        .clone();
+    assert_eq!(input.universals, 4);
+    let materialized = body::instantiate::with_contract(&mut facts, template, instance, &input)?;
+    // The type argument imports only 'b, which is the original impl's 'x slot.
+    // Its permuted 'y and unused 'u retain the original proof identities.
+    assert_eq!(materialized.contract.universals, 5);
+    assert_eq!(
+        &materialized.contract.assumptions[input.assumptions.len()..],
+        &[
+            (RegionId::bound(0, 0)?, RegionId::bound(0, 4)?),
+            (RegionId::bound(0, 4)?, RegionId::bound(0, 0)?)
+        ],
     );
     Ok(())
 }

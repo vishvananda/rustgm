@@ -2,7 +2,7 @@
 use super::{Bound, Declarations, Inputs};
 use crate::{
     body::regions::{Contract, Kind},
-    types::{arguments::Argument, outlives::Queries},
+    types::{Kind as Type, RegionId, arguments::Argument, instance::Instance, outlives::Queries},
 };
 
 pub(super) fn specialize(
@@ -20,6 +20,7 @@ pub(super) fn specialize(
     }
     let mut bound = Bound::parameters(&facts.types, &inputs.bindings)?;
     let mut contract = original.clone();
+    early_identities(facts, inputs.instance, &regions, &mut contract)?;
     contract.universals = original
         .universals
         .checked_add(
@@ -94,4 +95,128 @@ pub(super) fn specialize(
         contract.type_assumptions.push((ty, shorter));
     }
     Ok((bound, contract))
+}
+
+/// Reconnect imported argument lifetimes with the template's original early slots.
+/// The call already supplies these exact identities; its late binders remain local.
+fn early_identities(
+    facts: &Declarations,
+    instance: Instance,
+    regions: &Bound,
+    contract: &mut Contract,
+) -> Result<(), &'static str> {
+    if regions.universal_count() == 0 {
+        return Ok(());
+    }
+    let Some(Type::FunctionItem {
+        item, arguments, ..
+    }) = facts.types.kind(instance.ty())
+    else {
+        return Err("instance lifetime mapping requires a function item");
+    };
+    let callable = facts
+        .lifetimes
+        .callables
+        .get(item)
+        .ok_or("missing instance callable")?;
+    if let Some(implementation) = facts
+        .destructors
+        .method(crate::resolve::model::DefId(item.0))
+    {
+        return destructor_identities(
+            facts,
+            implementation,
+            arguments,
+            callable.parameters,
+            regions,
+            contract,
+        );
+    }
+    let scheme = facts
+        .lifetimes
+        .functions
+        .get(&crate::resolve::model::DefId(item.0));
+    if let Some(scheme) = scheme
+        && scheme.captures as usize + scheme.early.len() != callable.parameters as usize
+    {
+        return Err("instance early lifetime slots disagree with its template");
+    }
+    for (index, argument) in facts
+        .types
+        .arguments(arguments)
+        .ok_or("invalid instance lifetime arguments")?
+        .take(callable.parameters as usize)
+        .enumerate()
+    {
+        let Argument::Lifetime(actual) = argument else {
+            return Err("instance early argument is not a lifetime");
+        };
+        let Some(actual) = regions.universal_image(actual) else {
+            continue;
+        };
+        let slot = if let Some(scheme) = scheme {
+            if index < scheme.captures as usize {
+                u16::try_from(index).map_err(|_| "too many captured instance lifetimes")?
+            } else {
+                scheme
+                    .early
+                    .get(index - scheme.captures as usize)
+                    .ok_or("missing instance early lifetime slot")?
+                    .1
+            }
+        } else {
+            // Tuple constructors retain their nominal lifetime declaration order.
+            u16::try_from(index).map_err(|_| "too many constructor lifetimes")?
+        };
+        connect(contract, slot, actual)?;
+    }
+    Ok(())
+}
+
+fn destructor_identities(
+    facts: &Declarations,
+    implementation: &crate::sema::destructors::Implementation,
+    arguments: crate::types::GenericArgs,
+    early: u32,
+    regions: &Bound,
+    contract: &mut Contract,
+) -> Result<(), &'static str> {
+    // Drop callables use nominal argument order. Coverage retains the inverse
+    // mapping to original impl slots, including slots absent from the callable.
+    for (slot, &region) in implementation.coverage.regions.iter().enumerate() {
+        let Some((0, index)) = region.bound_parts() else {
+            return Err("invalid destructor instance capture mapping");
+        };
+        if u32::from(index) >= early {
+            continue;
+        }
+        let Some(Argument::Lifetime(actual)) = facts
+            .types
+            .arguments(arguments)
+            .and_then(|mut args| args.nth(usize::from(index)))
+        else {
+            return Err("missing destructor instance lifetime argument");
+        };
+        if let Some(actual) = regions.universal_image(actual) {
+            connect(
+                contract,
+                u16::try_from(slot).map_err(|_| "too many destructor capture slots")?,
+                actual,
+            )?;
+        }
+    }
+    Ok(())
+}
+
+fn connect(contract: &mut Contract, slot: u16, actual: RegionId) -> Result<(), &'static str> {
+    if u32::from(slot) >= contract.universals {
+        return Err("instance early lifetime is outside its body binder");
+    }
+    let formal = RegionId::bound(0, slot)?;
+    if actual != formal {
+        contract
+            .assumptions
+            .extend([(formal, actual), (actual, formal)]);
+    }
+    Ok(())
 }
