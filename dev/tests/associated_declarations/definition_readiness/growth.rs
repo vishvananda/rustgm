@@ -44,6 +44,19 @@ fn initializer_waits_share_work_across_repeated_callers() -> Result<(), Box<dyn 
             let source = format!("{}{}", native::CHECK, program(width, callers)?);
             let (report, facts) = semantic::analyze(&source)?;
             let work = &facts.body_work;
+            let dispatch = facts.dispatch_work();
+            println!(
+                "dispatch {family}-{size}: selections={} shared={} proofs={} expansions={} member_edges={}",
+                dispatch.selections,
+                dispatch.shared_selections,
+                dispatch.closed_proofs,
+                dispatch.dependency_expansions,
+                dispatch.member_dependencies
+            );
+            assert_eq!(dispatch.selections, width + 2);
+            assert!(dispatch.shared_selections <= 8 * (width + callers) + 8);
+            assert!(dispatch.member_dependencies <= 8 * (width + callers) + 8);
+            assert!(dispatch.dependency_expansions <= 16 * (width + callers) + 32);
             let body = facts
                 .initializers
                 .iter()

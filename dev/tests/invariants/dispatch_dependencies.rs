@@ -135,10 +135,102 @@ fn incomplete_diamond_never_publishes_a_completed_parent() -> Result<(), Box<dyn
 }
 
 #[test]
-fn lifetime_debts_are_retained_for_each_requesting_body() -> Result<(), Box<dyn std::error::Error>>
-{
+fn closed_lifetime_proofs_share_without_leaking_private_arguments()
+-> Result<(), Box<dyn std::error::Error>> {
     let (_, mut facts) = facts(
         "trait A<'a,'b>{const C:usize;}struct S;impl<'a:'b,'b>A<'a,'b>for S{const C:usize=3;}fn main(){let _=<S as A<'static,'static>>::C;}",
+    )?;
+    let instance = *facts
+        .constant_uses
+        .values()
+        .next()
+        .ok_or("missing constant use")?;
+    let mut target = None;
+    for first in [1, 10, 100] {
+        let mut dispatch = Dispatcher::new(0, first)?;
+        let selected = dispatch.constant(&mut facts, instance)?;
+        assert!(dispatch.finish().is_empty());
+        assert!(facts.types.arguments_are_concrete(selected.arguments)?);
+        assert_eq!(*target.get_or_insert(selected), selected);
+        assert!(
+            facts
+                .dispatch_dependencies
+                .contains(Availability::Validated, selected)
+        );
+        assert_eq!(facts.dispatch_work().selections, 1);
+        assert_eq!(facts.dispatch_work().closed_proofs, 1);
+        assert_eq!(facts.dispatch_work().dependency_expansions, 1);
+    }
+    assert_eq!(facts.dispatch_work().shared_selections, 2);
+    let mut pattern = Dispatcher::pattern(&mut facts, 0, 10, None)?;
+    pattern.constant(&mut facts, instance)?;
+    assert!(
+        !pattern.finish().is_empty(),
+        "caller scopes retain their proof"
+    );
+    Ok(())
+}
+
+#[test]
+fn lifetime_debts_are_retained_for_each_requesting_body() -> Result<(), Box<dyn std::error::Error>>
+{
+    use crate::types::{RegionId, outlives::Queries, relations::Constraints};
+    let (_, mut facts) = facts(
+        "trait A<'a,'b>{const C:usize;}struct S;impl<'a:'b,'b>A<'a,'b>for S{const C:usize=3;}fn main(){let _=<S as A<'static,'static>>::C;}",
+    )?;
+    let instance = *facts
+        .constant_uses
+        .values()
+        .next()
+        .ok_or("missing constant use")?;
+    Dispatcher::new(0, 1)?.constant(&mut facts, instance)?;
+    let a = RegionId::bound(0, 0)?;
+    let b = RegionId::bound(0, 1)?;
+    for (first, equal, paid) in [(1, false, true), (10, false, false), (100, true, false)] {
+        let mut values = facts
+            .types
+            .arguments(instance.arguments)
+            .ok_or("missing arguments")?
+            .collect::<Vec<_>>();
+        values[0] = Argument::Lifetime(a);
+        values[1] = Argument::Lifetime(if equal { a } else { b });
+        let instance = Instance {
+            arguments: facts.types.intern_arguments(&values)?,
+            ..instance
+        };
+        let mut dispatch = Dispatcher::new(2, first)?;
+        let selected = dispatch.constant(&mut facts, instance)?;
+        let proof = dispatch.finish();
+        assert!(!proof.is_empty());
+        assert_eq!(proof.regions.start, first);
+        assert!(
+            !facts
+                .dispatch_dependencies
+                .contains(Availability::Validated, selected)
+        );
+        let mut constraints =
+            Constraints::new(&facts.types, &facts.lifetimes.variances, 2, 1_000_000)?;
+        if paid {
+            constraints.assume(a, b)?;
+        }
+        let mut queries = Queries::new(
+            &facts.types,
+            &facts.lifetimes.nominal_requirements,
+            &facts.lifetimes.callables,
+        );
+        proof.require(&mut constraints, &mut queries)?;
+        assert_eq!(constraints.solve().is_ok(), paid || equal);
+    }
+    assert_eq!(facts.dispatch_work().closed_proofs, 1);
+    assert_eq!(facts.dispatch_work().shared_selections, 0);
+    Ok(())
+}
+
+#[test]
+fn unanchored_private_arguments_keep_the_original_proof() -> Result<(), Box<dyn std::error::Error>>
+{
+    let (_, mut facts) = facts(
+        "trait A{const C:usize;}struct S;impl<'a>A for S{const C:usize=3;}fn main(){let _=<S as A>::C;}",
     )?;
     let instance = *facts
         .constant_uses
@@ -148,13 +240,49 @@ fn lifetime_debts_are_retained_for_each_requesting_body() -> Result<(), Box<dyn 
     for first in [1, 10] {
         let mut dispatch = Dispatcher::new(0, first)?;
         let selected = dispatch.constant(&mut facts, instance)?;
-        assert!(!dispatch.obligations.is_empty());
-        assert_eq!(dispatch.obligations.regions.start, first);
+        let proof = dispatch.finish();
+        assert!(!proof.is_empty());
+        assert_eq!(proof.regions.start, first);
+        assert!(!facts.types.arguments_are_concrete(selected.arguments)?);
         assert!(
             !facts
                 .dispatch_dependencies
                 .contains(Availability::Validated, selected)
         );
     }
+    assert_eq!(
+        facts.dispatch_work().selections,
+        2,
+        "fallback never reselects"
+    );
+    assert_eq!(facts.dispatch_work().closed_proofs, 0);
+    Ok(())
+}
+
+#[test]
+fn inherent_free_arguments_do_not_publish_an_independent_closure()
+-> Result<(), Box<dyn std::error::Error>> {
+    let (_, mut facts) = facts(
+        "struct R<'a>(&'a u8);impl<'a>R<'a>{const C:usize=3;}fn main(){let _=<R<'static>>::C;}",
+    )?;
+    let instance = *facts
+        .constant_uses
+        .values()
+        .next()
+        .ok_or("missing constant use")?;
+    let instance = Instance {
+        arguments: facts
+            .types
+            .intern_arguments(&[Argument::Lifetime(crate::types::RegionId(1))])?,
+        ..instance
+    };
+    let mut dispatch = Dispatcher::new(0, 10)?;
+    let target = dispatch.constant(&mut facts, instance)?;
+    assert!(dispatch.finish().is_empty());
+    assert!(
+        !facts
+            .dispatch_dependencies
+            .contains(Availability::Validated, target)
+    );
     Ok(())
 }

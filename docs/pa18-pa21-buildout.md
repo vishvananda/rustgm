@@ -9435,3 +9435,83 @@ make precise wall-time attribution inappropriate. These timings are inconclusive
 no wall-time speedup or regression is claimed. The instruction profiles, every
 observation, source snapshots and receipts remain available. Disposable execution
 artifacts are removed after validation, retaining only current comparison pins.
+
+
+### Independent closed dispatch proofs
+
+Closed static constant uses previously rebuilt an implementation proof and its
+transitive initializer dependencies for every caller. Dispatch now shares an
+independently discharged proof under the complete predicate and explicit
+implementation-availability mode. Candidate headers must be frozen. Selection
+uses an isolated inference context with no caller assumptions or universal map,
+retains all committed equations, restores the complete selected arguments and
+checks every lifetime obligation in an empty environment. A target is published
+only if no private lifetime remains in its arguments. Unanchored arguments keep
+the original caller-owned evidence without re-selection; ordinary caller scopes
+and lifetime mappings also retain their existing obligations.
+
+This makes lifetime-bearing closed selections eligible for the existing completed
+dependency closure cache. Its publication additionally requires closed complete
+instance arguments, including inherent constants that perform no trait selection.
+Missing initializers, incomplete diamonds and declaration-versus-validated modes
+retain their separate boundaries. Mandatory declaration conformance still checks
+unused implementations and associated results.
+
+The first prototype's counters exposed a second cross-product: selection calls
+became linear, but member readiness still scanned the same initializer edges for
+every caller. At 48 definitions and 48 callers, it performed 2,542 shared selection
+lookups. Member readiness now consumes a completed independent closure before
+collecting its dependency edges. Root selection still proves the requesting use;
+a structural target or evaluated value alone cannot skip this work. Permanent
+growth assertions include cache hits and scanned edges, so a quadratic traversal
+cannot be hidden by cheap successful lookups.
+
+Ten additional source controls cover complete generic arguments, local callable
+binders, default and overridden constants, paid/unpaid caller lifetimes,
+unanchored private arguments and unused invalid result contracts. Six internal
+dependency groups additionally verify availability separation, incomplete diamonds,
+caller scopes and external lifetime arguments. These tests preserve the existing
+safe Rust and strict Clippy/audit requirements. The two storage continuation gaps
+and the remaining PA20–25 implementation and release work are unchanged.
+
+The final focused growth tests observe N+2 implementation selections and N scanned
+member edges at N=4/16/48. Increasing only callers keeps both counts unchanged.
+With both axes increasing, shared lookups are 22/94/286 and expanded closure nodes
+are 12/36/100. These counters establish bounded work for the affected dispatch and
+readiness paths; they do not account for every frontend operation. All 56 focused
+associated-declaration groups, including native execution, and all six internal
+dependency groups pass, along with strict Clippy and the 769-file Rust audit.
+
+Full validation passes 28 gates: 1,237 regular tests, 84 native groups, all 4,871
+PA1–19 cases, strict Clippy, formatting, file/architecture audits, harness, backend
+and upstream checks. All 772 frozen source/configuration hashes and 14,613 oracle
+sidecars agree; planned stages PA20–25 still reject explicitly. The 66 frozen
+source controls include 50 rustc-positive programs and 16 rejections. The candidate
+executes 48 positives through CPPGM; the two known valid storage gaps remain
+recorded separately. Every positive accepted by baseline `7834480` retains
+byte-identical full LowIR. Evidence is retained in
+`obj/pa20-work/closed-dispatch-final`.
+
+Fifteen immutable instruction comparisons retain matching outputs. The largest
+paired case, 48 definitions and 48 callers, falls from 527.57 million to 116.56
+million instructions, a 77.91% reduction. The repeated constant-chain control
+improves by 15.01%; the other instruction increases are at most 0.38%. New combined
+counts at sizes 4/16/48 are 11.96/40.60/116.56 million. Each is within 0.79% of the
+sum predicted by the independent definition and caller axes, after subtracting
+the shared base. The previous largest combined count exceeded that sum by 214.35%.
+This demonstrates removal of the measured cross-product; it does not prove every
+frontend operation linear for every program.
+
+Nineteen paired timing jobs retain 494 study and 76 full-output qualification
+observations, each containing four executions. All source, input and binary hashes
+and full/count outputs agree. The largest case's five paired blocks improve by
+68.88–69.31%, with a median improvement of 68.95%. Median four-execution batches
+are 382.92 ms before and 119.14 ms after, corresponding to observed per-invocation
+values of 95.73 ms and 29.78 ms. Same-binary paired medians range from -1.74% to
++0.88%, but individual blocks vary and calibration spreads reach 52.13%; later
+absolute timings also drift. The large workload-specific gain is supported by
+both paired observations and instruction/work counts. Small control timing
+changes remain inconclusive, and these absolute times are not general forecasts.
+All observations are retained; no profiling analysis overlapped timed runs.
+Generated validation artifacts are pruned, and only the current comparison
+binaries remain pinned.

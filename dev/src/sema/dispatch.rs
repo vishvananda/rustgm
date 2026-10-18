@@ -1,6 +1,7 @@
 //! Concrete trait callables select checked overrides while retaining their lifetime proof.
 mod arguments;
 mod dependencies;
+mod implementation;
 pub(crate) use super::traits::obligations::Obligations;
 use super::{
     model::Declarations,
@@ -9,9 +10,7 @@ use super::{
 use crate::{
     resolve::model::DefId,
     types::{
-        Kind, RegionId, TypeId,
-        infer::{Context, Instantiation},
-        parameters::environment::Environment,
+        Kind, RegionId, TypeId, infer::Context, parameters::environment::Environment,
         substitute::Bound,
     },
 };
@@ -87,7 +86,7 @@ impl Dispatcher {
         };
         let predicate = arguments::Arguments::constant(facts, instance)?.goal(facts, owner)?;
         let (owner, _, evidence) = self.implementation(facts, predicate)?;
-        self.obligations.append(evidence)?;
+        self.obligations.extend(evidence)?;
         Ok(Some(owner))
     }
     /// Patterns must select a definition before monomorphization. Rigid caller
@@ -164,7 +163,7 @@ impl Dispatcher {
         } else {
             arguments.target(facts, owner, implementation, target)?
         };
-        self.obligations.append(evidence)?;
+        self.obligations.extend(evidence)?;
         if facts.types.contains_projections(result) == Some(true) {
             // Selecting an override can introduce its written projections after
             // the original operand was normalized. Keep their formation debts
@@ -208,6 +207,7 @@ impl Dispatcher {
                     && before == incomplete
                     && self.obligations.is_empty()
                     && self.context.region_equalities.is_empty()
+                    && facts.types.arguments_are_concrete(current.arguments)?
                 {
                     facts
                         .dispatch_dependencies
@@ -235,6 +235,7 @@ impl Dispatcher {
                 None => {}
             }
             self.expanded.insert(current, Expansion::Active);
+            facts.dispatch_dependencies.work.dependency_expansions += 1;
             if self.expanded.len() > 1_000_000 {
                 return Err("constant selection dependency budget exceeded".into());
             }
@@ -311,7 +312,7 @@ impl Dispatcher {
                 arguments,
             }
         };
-        self.obligations.append(evidence)?;
+        self.obligations.extend(evidence)?;
         self.constants.insert(instance, result);
         Ok(result)
     }
@@ -319,43 +320,65 @@ impl Dispatcher {
         &mut self,
         facts: &mut Declarations,
         predicate: crate::types::parameters::predicates::Predicate,
-    ) -> Result<(DefId, crate::types::GenericArgs, selection::Evidence), String> {
-        let caller = self.caller.as_ref();
+    ) -> Result<(DefId, crate::types::GenericArgs, Obligations), String> {
         let before = self.normalize.steps;
         let predicate = self.normalize.predicate(&mut facts.types, predicate)?;
         self.context
-            .account_work(self.normalize.steps - before)
+            .account_work(self.normalize.steps - before + 1)
             .map_err(|e| e.to_string())?;
-        let mut substitution =
-            Instantiation::new(&mut self.context, &facts.types, &[]).map_err(|e| e.to_string())?;
-        let goal = self
-            .context
-            .instantiate_predicate(&mut facts.types, predicate, &mut substitution)
-            .map_err(|e| e.to_string())?;
+        let closed = self.share_constants
+            && self.caller.is_none()
+            && facts
+                .generics
+                .implementations
+                .as_ref()
+                .is_some_and(|registry| registry.constant_headers_ready())
+            && predicate.is_concrete(&facts.types)?;
+        let first = self.obligations.regions.end;
+        if closed
+            && let Some(target) = facts
+                .dispatch_dependencies
+                .selection(self.availability, predicate)
+        {
+            facts.dispatch_dependencies.work.shared_selections += 1;
+            return Ok((target.owner, target.arguments, Obligations::new(first)));
+        }
         let empty = Assumptions::default();
-        let selected = selection::select_available(
-            facts,
-            &mut self.context,
-            &goal,
-            selection::Caller {
-                assumptions: caller.map_or(&empty, |c| &c.assumptions),
-                environment: caller.and_then(|c| c.environment.as_ref()),
-                first_region: self.obligations.regions.end,
-                retain_sized: false,
-            },
-            self.availability,
-        )?;
-        let selection::Selection::Proven(evidence) = selected else {
-            return Err("trait callable requires an unambiguous concrete implementation".into());
+        let caller = self.caller.as_ref();
+        let caller = selection::Caller {
+            assumptions: caller.map_or(&empty, |c| &c.assumptions),
+            environment: caller.and_then(|c| c.environment.as_ref()),
+            first_region: first,
+            retain_sized: false,
         };
-        let selection::Source::Implementation {
-            owner,
-            arguments: implementation,
-        } = evidence.source
-        else {
-            return Err("concrete dispatch cannot use a symbolic assumption".into());
+        let (target, proof) = if closed {
+            // No inference term or private identity from a discharged closed
+            // query survives into this dispatcher's other selections.
+            let mut context = Context::default();
+            let (target, proof) =
+                implementation::select(facts, &mut context, predicate, caller, self.availability)?;
+            let certified = implementation::certify(facts, &mut context, target, &proof)?;
+            self.context
+                .account_work(context.steps)
+                .map_err(|e| e.to_string())?;
+            if let Some(target) = certified {
+                facts
+                    .dispatch_dependencies
+                    .certify(self.availability, predicate, target);
+                (target, Obligations::new(first))
+            } else {
+                (target, proof)
+            }
+        } else {
+            implementation::select(
+                facts,
+                &mut self.context,
+                predicate,
+                caller,
+                self.availability,
+            )?
         };
-        Ok((owner, implementation, evidence))
+        Ok((target.owner, target.arguments, proof))
     }
     pub(crate) fn finish(mut self) -> Obligations {
         self.obligations

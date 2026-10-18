@@ -246,6 +246,17 @@ pub struct BodyWork {
     pub suspended_slots: usize,
     pub peak_suspended_slots: usize,
 }
+/// Actual dispatch operations, excluding selection elsewhere in the frontend.
+/// These observations are never serialized into course text oracles.
+#[derive(Default)]
+pub struct DispatchWork {
+    pub selections: usize,
+    pub shared_selections: usize,
+    pub closed_proofs: usize,
+    pub dependency_expansions: usize,
+    /// Typed initializer edges visited to demand checked constant members.
+    pub member_dependencies: usize,
+}
 pub struct Declarations {
     pub body_work: BodyWork,
     pub alias_requirements: super::alias_requirements::Requirements,
@@ -334,6 +345,11 @@ impl Declarations {
         {
             self.coercions.push(coercion);
         }
+    }
+    /// Read-only counters for dispatch selection and dependency traversal.
+    #[must_use]
+    pub fn dispatch_work(&self) -> &DispatchWork {
+        &self.dispatch_dependencies.work
     }
     pub(super) fn new(report: &Report) -> Result<Self, Error> {
         let mut value = Self {

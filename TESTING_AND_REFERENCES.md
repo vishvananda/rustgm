@@ -558,6 +558,26 @@ retained witness: registration succeeds, unpaid outlives debt still rejects at i
 original source, an explicit caller assumption pays that debt, and a foreign
 identity remains invalid.
 
+Closed dispatch controls in
+`dev/tests/associated_declarations/independent_selections.rs` declare ten outcomes:
+static reuse, paid and unpaid caller lifetimes, equal lifetime arguments, default
+and override constants, complete mixed arguments, local callable binders,
+unanchored impl lifetimes and unused invalid result contracts. Pinned rustc
+object checks qualify both acceptance and rejection; accepted programs execute
+through CPPGM. The lifetime gate is exercised through full instance lowering,
+including unused templates, rather than stopping after body inference.
+
+The dispatch dependency invariants separately cover availability modes, incomplete
+diamonds, universally mapped callers, caller scopes, private-argument fallback,
+and inherent constants with external lifetime arguments. The definition/caller
+growth controls now observe actual dispatch selections, shared lookups, expanded
+closure nodes and scanned member edges in addition to the body projection cursor.
+They require N+2 dispatch selections for N definitions in this family and bounded
+work when both definitions and callers increase. A high cache-hit count can still
+represent a quadratic traversal, so hits and edge scans have explicit bounds too.
+Only completed, independently proved closures may bypass member readiness scans;
+reusing an evaluated constant alone never authorizes that shortcut.
+
 ## Storage and cleanup
 
 Generated output is bounded separately from validation evidence. Builds and

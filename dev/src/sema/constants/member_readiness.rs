@@ -119,6 +119,17 @@ impl Queries<'_> {
         if self.checked_members.contains(&query) {
             return Ok(None);
         }
+        // Root selection retains any caller-specific proof before entering the
+        // selected value. A completed independent closure already proves every
+        // transitive member ready; do not scan its edges again for each caller.
+        if instance.is_some_and(|instance| {
+            self.typing
+                .facts
+                .dispatch_dependencies
+                .contains(self.typing.availability, instance)
+        }) {
+            return Ok(None);
+        }
         if !self.typing.facts.initializers[index].type_checked() {
             let dependency = if self.typing.pending_body() {
                 self.typing.advance_body()?
@@ -132,13 +143,19 @@ impl Queries<'_> {
         }
         self.checked_members.insert(query);
         let definition = self.typing.facts.initializers[index].definition;
-        let instances = self
+        let dependencies = self
             .typing
             .facts
             .constant_dependencies
             .get(&definition)
-            .into_iter()
-            .flatten()
+            .map_or(&[][..], Vec::as_slice);
+        self.typing
+            .facts
+            .dispatch_dependencies
+            .work
+            .member_dependencies += dependencies.len();
+        let instances = dependencies
+            .iter()
             .filter_map(|dependency| match dependency {
                 Dependency::Constant(instance) => Some(*instance),
                 Dependency::Callable(_) => None,

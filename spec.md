@@ -179,14 +179,30 @@ method overrides, including function pointers nested in products. Each caller
 retains its own selection proof; a cached structural target grants no permission.
 Callable bodies are executable dependencies, not constant-evaluation edges.
 
-Share completed dependency closures by the selected instance's complete arguments
-and implementation-availability mode when their proof is empty. Every transitive
-initializer must have completed typing; an absent dependency list before that
-point is not an empty graph. Propagate incompleteness through shared diamonds.
-Caller environments, universal mappings and outstanding lifetime debts disable
-this cross-caller reuse. Root selection still proves the requesting use, and
-nonempty proofs still belong to their caller. This removes repeated traversal
-of closed dependency chains without treating cached target identities as evidence.
+Share completed dependency closures by the selected instance's complete, closed
+arguments and implementation-availability mode when their proof is empty. Every
+transitive initializer must have completed typing; an absent dependency list
+before that point is not an empty graph. Propagate incompleteness through shared
+diamonds. Caller environments, universal mappings and outstanding lifetime debts
+disable this cross-caller reuse. Root selection still proves the requesting use.
+Member readiness consumes the completed closure before collecting its edges;
+a cached value alone cannot skip those checks. Counting only fresh selections
+would miss a quadratic scan whose every selection is a cache hit.
+
+Closed dispatch goals may share an independently established implementation proof
+once candidate headers are frozen. Key that proof by the complete predicate and
+availability mode. Select in an isolated inference context, retain every committed
+equality, restore all implementation arguments through the proof's equality
+components, and require every lifetime obligation in an empty environment.
+Structural closedness only establishes independence; it never grants permission.
+Type-outlives requirements decompose actual components without assuming unfinished
+nominal formation contracts. All declaration conformance gates remain mandatory.
+Publish only targets whose complete arguments contain no private or external
+identities. Otherwise retain the original proof and selected arguments in the
+requesting body without repeating selection. Caller scopes and universal mappings
+keep their own proof even when an independently checked closed target exists.
+This lets static lifetime-bearing constants reuse both selection and dependency
+work without promoting a cached structural target into implementation evidence.
 
 Evaluate the retained expression template under a distinct instance context.
 Node, place, contents and in-progress dependency states must use that context;
@@ -785,8 +801,10 @@ CFG and its contract, including callable types inside generic arguments. A share
 type fold preserves nested binders and memoizes the type DAG. Promotion and demand
 then consume these selected identities. Initializer selections also supply the
 constant value reader's callable targets, so named constants and statics cannot
-retain a declaration-only symbol. Cache dispatch only within its body proof scope;
-generic templates and their source facts remain reusable by other instances.
+retain a declaration-only symbol. Caller-dependent dispatch caches belong to the
+body proof scope; independently proved closed selections use the separate shared
+certificate described above. Generic templates and their source facts remain
+reusable by other instances.
 
 Validate unused inherent methods for overlap after completing owner signatures.
 Use isolated existential header equations, preserving repeated type and const

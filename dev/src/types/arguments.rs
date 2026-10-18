@@ -223,6 +223,15 @@ impl Store {
             _ => false,
         }
     }
+    /// Whether complete arguments contain no caller parameters, external regions
+    /// or unresolved projections. This structural fact is not implementation evidence.
+    /// # Errors
+    /// Rejects unknown argument lists or type identities.
+    pub fn arguments_are_concrete(&self, args: GenericArgs) -> Result<bool, &'static str> {
+        let mut properties = super::Properties::default();
+        self.argument_properties(args, &mut properties)?;
+        Ok(properties.is_concrete())
+    }
     pub(super) fn argument_properties(
         &self,
         args: GenericArgs,

@@ -89,6 +89,7 @@ fn trait_arguments_and_projected_inputs_remain_part_of_closedness() -> Result<()
     ] {
         let arguments =
             store.intern_arguments(&[argument, Argument::Lifetime(RegionId::STATIC)])?;
+        assert_eq!(store.arguments_are_concrete(arguments)?, expected);
         let application = store.intern_trait_application(traits::Application {
             item: ItemId(2),
             arguments,
