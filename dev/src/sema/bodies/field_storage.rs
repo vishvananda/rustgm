@@ -59,9 +59,12 @@ impl Checker<'_> {
             .and_then(|count| count.checked_add(1))
             .ok_or_else(|| self.error(node, "storage proof region identity space exhausted"))?;
         let mut proof = Obligations::new(first);
-        let mut session = crate::sema::projections::concrete(
+        let mut session = crate::sema::projections::Concrete::new(
+            None,
             &mut proof,
             crate::types::lifetime_proof::ScopeId::ROOT,
+            self.availability,
+            |_, _| Ok(None),
         )
         .map_err(|error| self.error(node, error))?;
         for &ty in types {

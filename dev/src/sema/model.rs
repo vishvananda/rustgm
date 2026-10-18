@@ -235,6 +235,12 @@ pub struct ReferenceAlignment {
 /// Work observations are not language facts and are never part of a text oracle.
 #[derive(Default)]
 pub struct BodyWork {
+    /// Exact definition dependencies yielded by owned body projection queries.
+    pub projection_waits: usize,
+    /// Cursor resolver requests and isolated partial-input selection attempts.
+    pub projection_selections: usize,
+    /// Type-fold work reported by owned body normalization cursors.
+    pub projection_steps: usize,
     pub steps: usize,
     pub suspensions: usize,
     pub suspended_slots: usize,

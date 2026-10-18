@@ -9348,3 +9348,90 @@ sharing across waits; neither they nor these measurements establish linearity of
 every frontend pass. All raw observations, output hashes and source/input/binary
 receipts remain available; generated execution artifacts are cleaned after the
 batch.
+
+### Owned body projection dependencies
+
+Declaration-time anonymous and named initializer bodies now yield exact selected
+associated-definition dependencies to the declaration worklist. The body keeps
+its inference graph and the produced expression term at an explicit completion
+boundary. Each projection keeps the shared semantic cursor, caller environment,
+selected arguments, restoration mapping and lifetime evidence until its result
+can finish. Partial inference commits its selected input equations once, then
+continues result substitution and nested normalization without probing the header
+again. Completed initializer facts remain shared by repeated callers.
+
+Before yielding, the body reserves only the newly emitted proof interval. On
+resumption, allocation continues at the global frontier, excluding intervening
+foreign identities. Publication retains the whole proof once. Partially inferred
+inputs may introduce fresh existential lifetimes that had no original caller
+identity; their restoration is restricted to the exact owned selection interval.
+Strict declaration restoration still rejects unmapped lifetimes and streamed
+body evidence. The lifetime checker registers ordinary variables, then retained
+proof witnesses, before ordinary relations can use those witnesses. Original
+constraint source indexes remain intact, and obligations never become assumptions.
+
+The permanent definition-readiness controls declare 30 source outcomes, including
+partial headers, definition cycles, source-order permutations and paid/unpaid
+lifetime contracts. Accepted controls execute through the existing CPPGM backend.
+Growth controls vary definition count and caller count separately at 4, 16 and 48.
+They require exactly N waits and N selections for N distinct definitions, bounded
+fold/body work, and unchanged normalization work and suspended-slot capacity when
+only callers increase. Each retained proof's owned IDs belong to its actual body;
+the controls require intervening foreign allocations rather than merely simulating
+an uninterrupted query. Suspended-slot capacity measures the body's sparse node
+maps, not every allocation in inference.
+
+Storage-only projected fields still have two independently qualified positive
+source gaps: an unused projected field and an unselected enum payload. Their
+shared storage graph and body finalization need owned continuations and stable
+recipe publication across interleaved queries. These cases remain valid Rust,
+not negative fixtures. Alias-contract and other synchronous normalization
+consumers also retain their explicit boundaries. This checkpoint does not complete
+early impl-header constant dependencies, PA20's semantic view, public manifest or
+remaining solver/coherence work; PA20–25 remain planned.
+
+Full validation passes 27 gates: 1,233 regular tests, 83 native groups, all 4,871
+PA1–19 cases, strict Clippy, formatting, file/architecture audits, harness, backend
+and upstream checks. The audit covers 767 Rust files with no findings. All 770
+frozen source/configuration hashes and 14,613 earlier oracle sidecars agree;
+PA20–25 still reject as planned stages. The additional phase-order gate passes
+all eight quantified-proof groups. Evidence is in
+`obj/pa20-work/body-projections-final`.
+
+The declared outcomes of all 56 frozen source files are independently confirmed:
+pinned rustc accepts 43 programs and rejects 13. The candidate executes 41 positives through CPPGM; the two remaining
+positive storage gaps are recorded explicitly. All 16 positives accepted by the
+published `090bca4` baseline retain byte-identical full LowIR. The candidate newly
+accepts 25 corpus entries, including nine growth inputs. Unpaid associated-result
+lifetimes now reach their actual conformance error, and the selected-definition
+cycle reaches a recursive-alias diagnostic. No earlier source or oracle was
+changed to make these outcomes pass.
+
+Twelve immutable instruction controls against `090bca4` range from -0.232% to
++0.575%, with matching outputs. The new definition-only family uses
+11.71/38.41/109.21 million instructions at sizes 4/16/48; the caller-only family
+uses 15.37/29.91/69.09 million. Both independent axes are roughly linear over
+this range. However, increasing both together uses 15.42/87.35/523.68 million
+instructions. The combined family remains superlinear despite the linear body
+projection counters. Its source and LowIR size grow with definitions plus callers,
+so output size does not explain this cross-product cost.
+
+The combined profile attributes 53.7% inclusively to dispatch implementation
+selection. Declaration-time member readiness and later body dispatch both repeat
+work. The existing globally shared constant-dependency closure requires empty
+lifetime evidence; even closed static applications can introduce fresh impl
+witnesses. This prevents reuse across callers. The next algorithmic investigation
+must share independently established closed proofs and dependency work while
+retaining caller-dependent debts and availability/readiness boundaries. Removing
+the empty-proof guard or caching a target identity alone would be unsound. This
+follow-up takes priority over the remaining storage-query continuation; the body
+bridge is not evidence that the full frontend is linear.
+
+Eighteen paired timing jobs retain 468 study and 72 full-output qualification
+observations, each with four executions. All hashes and full/count outputs agree.
+Same-binary paired medians range from -6.77% to +1.66%, with calibration spreads
+reaching 76.26%. Concurrent host activity and read-only profile analysis also
+make precise wall-time attribution inappropriate. These timings are inconclusive;
+no wall-time speedup or regression is claimed. The instruction profiles, every
+observation, source snapshots and receipts remain available. Disposable execution
+artifacts are removed after validation, retaining only current comparison pins.

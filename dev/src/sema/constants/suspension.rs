@@ -3,7 +3,7 @@ use super::{DefId, Error, Expression, NodeKey, Queries, Query, Scratch, State, W
 use std::collections::HashMap;
 
 pub(in crate::sema) enum Dependency {
-    Nominal(crate::sema::bodies::Dependency),
+    Body(crate::sema::bodies::Dependency),
     Initializer(DefId),
     Members(Vec<crate::sema::traits::implementations::ConstantRequest>),
 }

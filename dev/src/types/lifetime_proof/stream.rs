@@ -28,7 +28,8 @@ impl Obligations {
         Ok(self.regions.clone())
     }
 
-    pub(crate) fn owned_regions(&self) -> impl Iterator<Item = Range<u32>> + '_ {
+    /// Actual owned identity intervals; the envelope may also contain foreign allocations.
+    pub fn owned_regions(&self) -> impl Iterator<Item = Range<u32>> + '_ {
         let mut next = self.regions.start;
         self.quantified
             .iter()

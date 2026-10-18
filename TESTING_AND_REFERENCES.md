@@ -540,6 +540,24 @@ allocation intervals and require the final lifetime proof to reject unpaid
 outlives bounds. These are internal scheduling/ownership invariants; they do not
 claim the body worklist can yet suspend every normalization consumer.
 
+The body integration controls in
+`dev/tests/associated_declarations/definition_readiness.rs` independently qualify
+source outcomes for selected definition waits, declaration ordering, partial
+inference and paid/unpaid lifetime contracts, then execute accepted cases through
+the CPPGM backend. Its growth controls vary definition count and repeated callers
+independently. Each distinct definition must cause exactly one wait and one
+selection; adding callers must leave normalization work and suspended-slot capacity
+unchanged. The proof inspection checks ownership across actual foreign allocations,
+and the ordinary body-work bound includes the added callers. These counters do not
+measure the entire inference heap. Separate restoration invariants permit fresh
+existentials only inside the retained selection proof and reject foreign identities
+and streamed declaration templates. Storage-only missing-definition paths remain
+separate implementation work; they are not accepted negative language fixtures.
+`quantified_lifetime_proofs.rs` also checks ordinary body relations that use a
+retained witness: registration succeeds, unpaid outlives debt still rejects at its
+original source, an explicit caller assumption pays that debt, and a foreign
+identity remains invalid.
+
 ## Storage and cleanup
 
 Generated output is bounded separately from validation evidence. Builds and

@@ -240,23 +240,28 @@ fn body(
         .transpose()
         .map_err(|message| error(message.into()))?
         .unwrap_or_default();
-    for (index, obligation) in input.obligations.iter().chain(&provenance).enumerate() {
-        let source = u32::try_from(index)
-            .map_err(|_| error("too many lifetime constraint sources".into()))?;
-        apply(
+    let first_proof = input.obligations.len().saturating_add(provenance.len());
+    let obligations = || input.obligations.iter().chain(&provenance).enumerate();
+    if !input.proofs.is_empty() {
+        // An inferred input can contain a fresh existential owned by a retained
+        // selection. Register ordinary variables before proof debts, then proof
+        // variables before ordinary relations. Keep original diagnostic indexes.
+        require_obligations(
+            obligations().filter(|(_, o)| matches!(o.kind, Obligation::Variable { .. })),
             queries,
             &mut constraints,
-            obligation.kind,
-            source,
             cfg.is_some(),
-        )
-        .map_err(|message| Error {
-            source: Some(obligation.source),
-            message,
-        })?;
+        )?;
+        quantified(input, queries, &mut constraints, first_proof)?;
     }
-    let first_proof = input.obligations.len().saturating_add(provenance.len());
-    quantified(input, queries, &mut constraints, first_proof)?;
+    require_obligations(
+        obligations().filter(|(_, o)| {
+            input.proofs.is_empty() || !matches!(o.kind, Obligation::Variable { .. })
+        }),
+        queries,
+        &mut constraints,
+        cfg.is_some(),
+    )?;
     let proof = constraints.prove().map_err(|e| {
         let source = match e {
             graph::Error::Unsatisfied { source, .. } | graph::Error::Verification { source } => {
@@ -290,6 +295,30 @@ fn body(
         solution: proof.solution,
         identities: proof.identities,
     })
+}
+fn require_obligations<'a>(
+    obligations: impl Iterator<Item = (usize, &'a crate::body::regions::Obligation)>,
+    queries: &mut Queries<'_>,
+    constraints: &mut Constraints<'_>,
+    has_provenance: bool,
+) -> Result<(), Error> {
+    for (index, obligation) in obligations {
+        let error = |message| Error {
+            source: Some(obligation.source),
+            message,
+        };
+        let source = u32::try_from(index)
+            .map_err(|_| error("too many lifetime constraint sources".into()))?;
+        apply(
+            queries,
+            constraints,
+            obligation.kind,
+            source,
+            has_provenance,
+        )
+        .map_err(error)?;
+    }
+    Ok(())
 }
 fn quantified(
     input: &Contract,

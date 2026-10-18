@@ -11,7 +11,9 @@ enum Mode {
         source: std::ops::Range<u32>,
         first: u32,
     },
-    Restore,
+    Restore {
+        retained: std::ops::Range<u32>,
+    },
 }
 pub(super) struct Mapping {
     mode: Mode,
@@ -60,6 +62,11 @@ impl Mapping {
                 .ok_or("opened lifetime identity space exhausted")?;
             self.replacements.insert(key, replacement);
             replacement
+        } else if let Mode::Restore { retained } = &self.mode
+            && key.bound_parts().is_none()
+            && retained.contains(&key.0)
+        {
+            key
         } else {
             return Err("selected type retains an unmapped lifetime");
         };
@@ -123,9 +130,18 @@ impl Bound {
     /// equality used to construct the mapping. Unknown lifetimes are errors.
     #[must_use]
     pub fn restore_regions(replacements: HashMap<RegionId, RegionId>) -> Self {
+        Self::restore_owned_regions(replacements, 0..0)
+    }
+
+    /// A body retaining the whole selection proof may keep its fresh existentials.
+    /// All other unmapped identities remain errors, including later allocations.
+    pub(crate) fn restore_owned_regions(
+        replacements: HashMap<RegionId, RegionId>,
+        retained: std::ops::Range<u32>,
+    ) -> Self {
         let mut fold = Self::new(Vec::new());
         fold.action = Action::Regions(Box::new(Mapping {
-            mode: Mode::Restore,
+            mode: Mode::Restore { retained },
             replacements,
         }));
         fold
@@ -137,7 +153,7 @@ impl Bound {
         match &self.action {
             Action::Regions(mapping) => match mapping.mode {
                 Mode::Open { next, .. } => Some(next),
-                Mode::Restore | Mode::Rebase { .. } => None,
+                Mode::Restore { .. } | Mode::Rebase { .. } => None,
             },
             _ => None,
         }

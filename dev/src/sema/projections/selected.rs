@@ -2,7 +2,7 @@
 use super::{Declarations, DefId, ItemId, Source, TypeId};
 use crate::types::GenericArgs;
 
-pub(super) struct Definition {
+pub(in crate::sema) struct Definition {
     pub id: DefId,
     owner: DefId,
     arguments: GenericArgs,

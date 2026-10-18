@@ -17,7 +17,7 @@ use crate::{
     },
 };
 pub(super) use cursor::{Cursor, Progress};
-use selected::Definition;
+pub(super) use selected::Definition;
 use std::sync::Arc;
 
 pub(super) fn definition(
@@ -29,20 +29,6 @@ pub(super) fn definition(
         .associated
         .type_definition(owner, DefId(item.0))
         .ok_or("selected implementation is missing the associated type")
-}
-
-pub(super) fn selected_result(
-    facts: &mut Declarations,
-    item: ItemId,
-    source: Source,
-    selected: &Obligations,
-) -> Result<TypeId, &'static str> {
-    let ty = implementation_result(facts, item, source)?;
-    if selected.regions.is_empty() && selected.equalities.is_empty() {
-        Ok(ty)
-    } else {
-        selected.restoration()?.apply(&mut facts.types, ty)
-    }
 }
 
 /// Keep private result lifetimes in the selected proof's allocation interval.

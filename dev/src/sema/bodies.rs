@@ -19,7 +19,7 @@ mod pattern_constants;
 mod patterns;
 mod projections;
 mod readiness;
-pub(super) use readiness::Dependency;
+pub(super) use readiness::{Dependency, Requirement};
 mod references;
 mod selected_arguments;
 mod slots;
@@ -123,6 +123,7 @@ enum Work {
     },
     Enter(NodeId, Option<TermId>),
     Exit(NodeId),
+    CompleteExpression(NodeId, TermId),
     Field(NodeId, aggregates::Field),
     CoerceElement(NodeId, TermId),
     CallArguments(NodeId, Option<TermId>),
@@ -563,7 +564,18 @@ impl Checker<'_> {
     }
     pub(super) fn advance_body(&mut self) -> Result<Option<Dependency>, Error> {
         let body = self.state.body.node;
-        while let Some(work) = self.state.work.pop() {
+        loop {
+            if matches!(
+                self.availability,
+                super::traits::implementations::Availability::Declarations
+            ) && let projections::Advance::Definition(dependency) =
+                self.poll_projections(body)?
+            {
+                return Ok(Some(dependency));
+            }
+            let Some(work) = self.state.work.pop() else {
+                break;
+            };
             self.state.steps += 1;
             if self.state.steps > 1_000_000 {
                 return Err(self.error(body, "body type work budget exceeded"));
@@ -609,7 +621,7 @@ impl Checker<'_> {
                         if let Some(item) = self.field_dependency(&field) {
                             self.state.work.push(Work::Field(node, field));
                             return Ok(Some(Dependency {
-                                item,
+                                requirement: Requirement::Nominal(item),
                                 source: self.key(node),
                             }));
                         }
@@ -617,12 +629,13 @@ impl Checker<'_> {
                     } else {
                         self.expression(node)?
                     };
-                    self.exit_expression(node, term)?;
+                    self.schedule_expression_completion(node, term)?;
                 }
                 Work::Field(node, field) => {
                     let term = self.complete_field(node, field)?;
-                    self.exit_expression(node, term)?;
+                    self.schedule_expression_completion(node, term)?;
                 }
+                Work::CompleteExpression(node, term) => self.exit_expression(node, term)?,
             }
         }
         let expected = self.known(body, self.state.result)?;
@@ -630,6 +643,18 @@ impl Checker<'_> {
         self.finish(body)?;
         self.complete_body();
         Ok(None)
+    }
+    fn schedule_expression_completion(&mut self, node: NodeId, term: TermId) -> Result<(), Error> {
+        if matches!(
+            self.availability,
+            super::traits::implementations::Availability::Declarations
+        ) && self.state.projections.active()
+        {
+            self.state.work.push(Work::CompleteExpression(node, term));
+            Ok(())
+        } else {
+            self.exit_expression(node, term)
+        }
     }
     fn exit_expression(&mut self, node: NodeId, term: TermId) -> Result<(), Error> {
         self.state.type_annotations.remove(&node);

@@ -170,3 +170,73 @@ fn deep_captures_resolve_the_exact_ancestor_without_flattening_scopes() -> TestR
     constraints.solve()?;
     Ok(())
 }
+
+#[test]
+fn body_relations_can_use_retained_witnesses_without_granting_their_debts() -> TestResult {
+    use rustgm::{
+        body::regions::{Contract, Contracts, Kind, Obligation},
+        resolve::unit::{FileId, NodeKey},
+        syntax::ast::NodeId,
+    };
+    let store = Store::default();
+    let variances = Variances::default();
+    let bounds = Bounds::default();
+    let callables = rustgm::types::callable::Templates::default();
+    let source = NodeKey {
+        file: FileId(0),
+        node: NodeId(1),
+    };
+    let debt = NodeKey {
+        node: NodeId(2),
+        ..source
+    };
+    let universal = RegionId::bound(0, 0)?;
+    let mut contracts = Contracts {
+        callables: &callables,
+        nominal_requirements: &bounds,
+        bodies: vec![Contract {
+            source,
+            signature: None,
+            universals: 1,
+            assumptions: Vec::new(),
+            parameters: Vec::new(),
+            type_assumptions: Vec::new(),
+            proofs: vec![(source, equal(10, RegionId::STATIC))],
+            obligations: vec![
+                Obligation {
+                    source,
+                    kind: Kind::Variable {
+                        id: RegionId(1),
+                        needs_provenance: false,
+                    },
+                },
+                Obligation {
+                    source,
+                    kind: Kind::Equality((RegionId(1), RegionId(10))),
+                },
+                Obligation {
+                    source: debt,
+                    kind: Kind::Outlives((universal, RegionId(1))),
+                },
+            ],
+        }],
+    };
+    let error = rustgm::borrow::regions::check(&store, &variances, &contracts)
+        .err()
+        .ok_or("unpaid retained witness was accepted")?;
+    assert_eq!(error.source, Some(debt));
+    assert_eq!(
+        error.message,
+        "required lifetime does not outlive its target"
+    );
+    contracts.bodies[0]
+        .assumptions
+        .push((universal, RegionId::STATIC));
+    rustgm::borrow::regions::check(&store, &variances, &contracts)?;
+    contracts.bodies[0].obligations[1].kind = Kind::Equality((RegionId(1), RegionId(11)));
+    let error = rustgm::borrow::regions::check(&store, &variances, &contracts)
+        .err()
+        .ok_or("foreign retained witness was accepted")?;
+    assert_eq!(error.message, "invalid lifetime constraint identity");
+    Ok(())
+}

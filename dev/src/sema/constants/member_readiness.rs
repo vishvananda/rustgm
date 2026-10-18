@@ -126,7 +126,7 @@ impl Queries<'_> {
                 self.typing.start_initializer(index)?
             };
             if let Some(dependency) = dependency {
-                return Ok(Some(super::suspension::Dependency::Nominal(dependency)));
+                return Ok(Some(super::suspension::Dependency::Body(dependency)));
             }
             self.require_complete_patterns(query)?;
         }

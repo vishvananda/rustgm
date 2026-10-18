@@ -396,17 +396,35 @@ depth alone cannot distinguish sibling universes. Keep suspended frames in a fla
 worklist, charge their combined storage and work, and preserve empty binders.
 Shift caller assumptions beneath the complete ambient prefix before selection.
 Retain scoped evidence immediately in the actual declaration or body allocator,
-reserving fresh intervals before another query can use them. Only contiguous
-intervals for the same body can share an evidence object.
+reserving fresh intervals before another query can use them. A body evidence
+stream can span interleaved allocations only with explicit excluded intervals;
+it never owns the foreign identities between its segments.
 
 Open surrounding projection lifetimes with a single checked mapping shared by
 the goal and its assumptions. Preserve nested local binders and reserve existing
 body inference identities before allocating selection variables. Restore a
-selected result only through equality components anchored in the caller or
-static; an unanchored result lifetime is an error. Shift restored captures beneath
+fully determined result only through equality components anchored in the caller or
+static; an unanchored result lifetime is an error. Partial body inference may
+instead determine an unknown input containing fresh existential lifetimes. Retain
+those identities only within the selected proof's exact owned interval, and keep
+that whole proof in the body. This does not permit unmapped foreign identities or
+change declaration-template restoration. Shift restored captures beneath
 the result's nested binders without capturing their local slots. Substitution is
 not proof: retain every equality, outlives and type-outlives obligation used during
 selection, including when the result no longer mentions their lifetimes.
+
+Declaration-time body projections retain their exact query, selected member,
+complete arguments, restoration map and proof while awaiting a definition. Commit
+partial-input equations once, before yielding; resume result substitution and its
+nested normalization without selecting the implementation again. Keep the produced
+expression term at an explicit completion boundary so waits do not replay body
+inference. Reserve only newly emitted proof identities before each wait, resume
+allocation at the current global frontier and publish retained evidence once.
+Repeated callers of an already typed initializer reuse its completed facts.
+Structural work and retained state must grow with distinct dependencies, rather
+than the product of dependency depth and the number of callers. Storage preparation
+and other synchronous consumers require their own owned operation boundaries;
+this body projection continuation does not make them resumable implicitly.
 
 Group declaration projection obligations by their actual binder and discharge
 them against the completed owning environment. Independent annotations in the

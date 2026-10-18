@@ -1,11 +1,15 @@
 //! A declaration body yields exact nominal dependencies while retaining its inference graph.
 use super::{Checker, Error, ModuleId, NodeId, NodeKey, Scratch, State, TypeId, Work};
-use crate::sema::model::InitializerTyping;
 use crate::types::ItemId;
+use crate::{resolve::model::DefId, sema::model::InitializerTyping};
 
 pub(in crate::sema) struct Dependency {
-    pub item: ItemId,
+    pub requirement: Requirement,
     pub source: NodeKey,
+}
+pub(in crate::sema) enum Requirement {
+    Nominal(ItemId),
+    Definition(DefId),
 }
 #[derive(Clone, Copy)]
 pub(super) enum Completion {
@@ -89,7 +93,11 @@ impl Checker<'_> {
         dependency: Option<Dependency>,
     ) -> Result<(), Error> {
         if let Some(dependency) = dependency {
-            return Err(self.error(dependency.source.node, "missing struct member facts"));
+            let message = match dependency.requirement {
+                Requirement::Nominal(_) => "missing struct member facts",
+                Requirement::Definition(_) => "missing completed associated type definition",
+            };
+            return Err(self.error(dependency.source.node, message));
         }
         Ok(())
     }

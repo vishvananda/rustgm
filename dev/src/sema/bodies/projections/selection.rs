@@ -3,7 +3,7 @@ use super::{Checker, Error, NodeId, Obligations, ScopeId, TermId};
 use crate::{
     sema::{
         model::Declarations,
-        projections::selected_result,
+        projections::Definition,
         traits::{
             assumptions::Assumptions,
             selection::{self, Caller, Selection, Source},
@@ -26,13 +26,37 @@ struct Opened {
 }
 struct Selected {
     predicate: Predicate,
-    ty: TypeId,
+    result: ResultType,
+}
+pub(super) enum ResultType {
+    Type(TypeId),
+    Definition(Box<Pending>),
+}
+pub(super) struct Pending {
+    pub definition: Definition,
+    restoration: Bound,
+}
+impl Pending {
+    pub fn result(
+        &mut self,
+        facts: &mut Declarations,
+    ) -> Result<Option<(TypeId, usize)>, &'static str> {
+        self.definition
+            .result(facts)?
+            .map(|ty| {
+                let before = self.restoration.steps;
+                let ty = self.restoration.apply(&mut facts.types, ty)?;
+                Ok((ty, self.restoration.steps.saturating_sub(before)))
+            })
+            .transpose()
+    }
 }
 pub(super) enum Progress {
     AwaitChange,
     AwaitInputs,
     AwaitResolution,
     Complete,
+    Normalize(ResultType),
     Symbolic(TermId),
 }
 enum Attempt {
@@ -175,7 +199,16 @@ impl Checker<'_> {
         proof
             .append_at(opened.proof, scope)
             .map_err(|e| self.error(node, e))?;
-        let ty = self.normalize_body_type(node, proof, scope, selected.ty)?;
+        if matches!(
+            self.availability,
+            crate::sema::traits::implementations::Availability::Declarations
+        ) {
+            return Ok(Progress::Normalize(selected.result));
+        }
+        let ResultType::Type(ty) = selected.result else {
+            return Err(self.error(node, "missing completed associated type definition"));
+        };
+        let ty = self.normalize_body_type(node, proof, scope, ty)?;
         self.state
             .infer
             .apply_normalization(&mut self.facts.types, term, ty)
@@ -278,6 +311,7 @@ impl Opened {
             first_region: self.proof.regions.end,
             retain_sized: false,
         };
+        facts.body_work.projection_selections += 1;
         let selected = selection::select_available(
             facts,
             &mut self.context,
@@ -311,17 +345,31 @@ impl Opened {
             .context
             .resolved_predicate(&mut facts.types, &self.application.predicate)
             .map_err(inference)?;
-        let mut restoration = self.proof.restoration()?;
+        let mut restoration = self.proof.body_restoration()?;
         let predicate = restoration.predicate(&mut facts.types, predicate)?;
+        let result = if let Some(ty) = assumed {
+            ResultType::Type(restoration.apply(&mut facts.types, ty)?)
+        } else {
+            let definition = Definition::select(facts, self.application.item, source)?;
+            if let Some(ty) = definition.result(facts)? {
+                ResultType::Type(restoration.apply(&mut facts.types, ty)?)
+            } else {
+                self.context
+                    .account_work(restoration.steps)
+                    .map_err(inference)?;
+                return Ok(Attempt::Selected(Selected {
+                    predicate,
+                    result: ResultType::Definition(Box::new(Pending {
+                        definition,
+                        restoration,
+                    })),
+                }));
+            }
+        };
         self.context
             .account_work(restoration.steps)
             .map_err(inference)?;
-        let ty = if let Some(ty) = assumed {
-            restoration.apply(&mut facts.types, ty)?
-        } else {
-            selected_result(facts, self.application.item, source, &self.proof)?
-        };
-        Ok(Attempt::Selected(Selected { predicate, ty }))
+        Ok(Attempt::Selected(Selected { predicate, result }))
     }
 
     // Nested input projections need their own normalization before selection can

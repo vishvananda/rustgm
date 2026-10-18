@@ -5,6 +5,8 @@ mod callable_projections;
 mod canonical_queries;
 #[path = "associated_declarations/const_arguments.rs"]
 mod const_arguments;
+#[path = "associated_declarations/definition_readiness.rs"]
+mod definition_readiness;
 #[path = "associated_declarations/discriminants.rs"]
 mod discriminants;
 #[path = "associated_declarations/early_values.rs"]

@@ -56,7 +56,7 @@ pub(in crate::sema) fn advance(
             let (saved, continuation) = queries.suspend();
             *scratch = saved;
             return Ok(Progress::Prepare(
-                super::suspension::Dependency::Nominal(dependency),
+                super::suspension::Dependency::Body(dependency),
                 continuation,
             ));
         }

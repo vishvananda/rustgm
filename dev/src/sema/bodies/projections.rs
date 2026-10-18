@@ -1,6 +1,8 @@
 //! Body-local deferred work waits for independently determined inputs before selection.
 mod contracts;
+mod evidence;
 mod inputs;
+mod normalization;
 mod selection;
 use super::{Checker, Error, NodeId, TermId};
 use crate::{
@@ -34,8 +36,21 @@ struct Query {
     task: Task,
     input_normalizations: bool,
 }
+pub(super) enum Advance {
+    Ready(bool),
+    Definition(super::Dependency),
+}
+enum Completion {
+    Waiting(Query, bool),
+    Complete,
+    Definition(
+        crate::resolve::model::DefId,
+        Box<normalization::Continuation>,
+    ),
+}
 struct Data {
     scopes: Obligations,
+    continuation: Option<Box<normalization::Continuation>>,
     environment: std::cell::OnceCell<
         Option<std::sync::Arc<crate::types::parameters::environment::Environment>>,
     >,
@@ -50,6 +65,7 @@ impl Default for Data {
     fn default() -> Self {
         Self {
             scopes: Obligations::new(1),
+            continuation: None,
             environment: std::cell::OnceCell::new(),
             tasks: HashMap::new(),
             equations: HashMap::new(),
@@ -75,9 +91,9 @@ impl Pending {
                 .is_some_and(|data| !data.normalizations.is_empty())
     }
     pub fn active(&self) -> bool {
-        self.data
-            .as_ref()
-            .is_some_and(|data| !data.tasks.is_empty() || !data.equations.is_empty())
+        self.data.as_ref().is_some_and(|data| {
+            data.continuation.is_some() || !data.tasks.is_empty() || !data.equations.is_empty()
+        })
     }
     pub fn scope(&mut self, parent: ScopeId, count: u32) -> Result<ScopeId, &'static str> {
         self.data
@@ -294,10 +310,33 @@ impl Checker<'_> {
         Ok(())
     }
     pub(super) fn advance_projections(&mut self, body: NodeId) -> Result<bool, Error> {
+        match self.poll_projections(body)? {
+            Advance::Ready(progress) => Ok(progress),
+            Advance::Definition(dependency) => {
+                self.require_complete_body(Some(dependency))?;
+                Ok(false)
+            }
+        }
+    }
+    pub(super) fn poll_projections(&mut self, body: NodeId) -> Result<Advance, Error> {
         if !self.state.projections.active() {
-            return Ok(false);
+            return Ok(Advance::Ready(false));
         }
         let mut progress = false;
+        if let Some(continuation) = self
+            .state
+            .projections
+            .data
+            .as_mut()
+            .and_then(|data| data.continuation.take())
+        {
+            let watch = continuation.watch;
+            let completion = self.resume_projection(*continuation)?;
+            match self.accept_projection(body, watch, completion)? {
+                Advance::Ready(advanced) => progress |= advanced,
+                dependency @ Advance::Definition(_) => return Ok(dependency),
+            }
+        }
         loop {
             while let Some(watch) = self
                 .state
@@ -317,16 +356,10 @@ impl Checker<'_> {
                     .infer
                     .watch_resolved(watch)
                     .map_err(|e| self.error(body, e))?;
-                let (query, advanced) = self.complete_projection(query, resolved, watch)?;
-                progress |= advanced;
-                if let Some(query) = query {
-                    self.state.projections.insert(watch, query);
-                } else {
-                    self.state
-                        .infer
-                        .cancel_watch(watch)
-                        .map_err(|e| self.error(body, e))?;
-                    progress = true;
+                let completion = self.complete_projection(query, resolved, watch)?;
+                match self.accept_projection(body, watch, completion)? {
+                    Advance::Ready(advanced) => progress |= advanced,
+                    dependency @ Advance::Definition(_) => return Ok(dependency),
                 }
             }
             let mut resumed = false;
@@ -358,7 +391,39 @@ impl Checker<'_> {
             }
             progress |= resumed;
             if !resumed {
-                return Ok(progress);
+                return Ok(Advance::Ready(progress));
+            }
+        }
+    }
+    fn accept_projection(
+        &mut self,
+        body: NodeId,
+        watch: WatchId,
+        completion: Completion,
+    ) -> Result<Advance, Error> {
+        match completion {
+            Completion::Waiting(query, advanced) => {
+                self.state.projections.insert(watch, query);
+                Ok(Advance::Ready(advanced))
+            }
+            Completion::Complete => {
+                self.state
+                    .infer
+                    .cancel_watch(watch)
+                    .map_err(|e| self.error(body, e))?;
+                Ok(Advance::Ready(true))
+            }
+            Completion::Definition(definition, continuation) => {
+                let source = self.key(continuation.query.node);
+                self.state
+                    .projections
+                    .data
+                    .get_or_insert_with(Default::default)
+                    .continuation = Some(continuation);
+                Ok(Advance::Definition(super::Dependency {
+                    requirement: super::Requirement::Definition(definition),
+                    source,
+                }))
             }
         }
     }
@@ -371,14 +436,14 @@ impl Checker<'_> {
         mut query: Query,
         resolved: bool,
         watch: WatchId,
-    ) -> Result<(Option<Query>, bool), Error> {
+    ) -> Result<Completion, Error> {
         let node = query.node;
         let input = match query.task {
             Task::Normalize { output, .. } | Task::Symbolic { output, .. } => Some(output),
             Task::Contract(_) => None,
         };
         let resolved = match self.projection_readiness(&mut query, resolved, watch)? {
-            inputs::Readiness::Waiting => return Ok((Some(query), false)),
+            inputs::Readiness::Waiting => return Ok(Completion::Waiting(query, false)),
             inputs::Readiness::Partial => false,
             inputs::Readiness::Resolved => true,
         };
@@ -387,16 +452,15 @@ impl Checker<'_> {
             .ok()
             .and_then(|n| n.checked_add(1))
             .ok_or_else(|| self.error(node, "body projection region space exhausted"))?;
-        let plan = self
+        let mut proof = Obligations::new(first);
+        let scope = self
             .state
             .projections
             .data
             .as_ref()
             .ok_or_else(|| self.error(node, "missing source proof scopes"))?
             .scopes
-            .scope_plan();
-        let mut proof = Obligations::new(first);
-        let scope = plan
+            .scope_plan()
             .enter(query.scope, &mut proof)
             .map_err(|e| self.error(node, e))?;
         let published = match query.task {
@@ -412,6 +476,15 @@ impl Checker<'_> {
             {
                 let expose = matches!(query.task, Task::Normalize { .. });
                 match self.select_projection(node, scope, term, &mut proof, expose)? {
+                    selection::Progress::Normalize(result) => {
+                        return self.start_projection_normalization(
+                            query,
+                            watch,
+                            proof,
+                            scope,
+                            normalization::Input::Selected(result),
+                        );
+                    }
                     selection::Progress::Complete => {
                         if let Task::Normalize { output, .. } = query.task {
                             let ty = self
@@ -439,19 +512,21 @@ impl Checker<'_> {
                             .map_err(|e| self.error(node, e))?;
                         self.defer_normalization(node, query.scope, result)?;
                         self.published_normalization(node, output)?;
-                        return Ok((Some(query), true));
+                        return Ok(Completion::Waiting(query, true));
                     }
                     selection::Progress::AwaitInputs => {
                         self.defer_input_normalizations(&mut query, term, watch)?;
-                        return Ok((Some(query), false));
+                        return Ok(Completion::Waiting(query, false));
                     }
-                    selection::Progress::AwaitChange => return Ok((Some(query), false)),
+                    selection::Progress::AwaitChange => {
+                        return Ok(Completion::Waiting(query, false));
+                    }
                     selection::Progress::AwaitResolution => {
                         self.state
                             .infer
                             .await_resolution(watch)
                             .map_err(|e| self.error(node, e))?;
-                        return Ok((Some(query), false));
+                        return Ok(Completion::Waiting(query, false));
                     }
                 }
             }
@@ -461,6 +536,18 @@ impl Checker<'_> {
                     .infer
                     .resolved(&mut self.facts.types, term)
                     .map_err(|e| self.error(node, e))?;
+                if matches!(
+                    self.availability,
+                    crate::sema::traits::implementations::Availability::Declarations
+                ) {
+                    return self.start_projection_normalization(
+                        query,
+                        watch,
+                        proof,
+                        scope,
+                        normalization::Input::Resolved(ty),
+                    );
+                }
                 let ty = self.normalize_body_type(node, &mut proof, scope, ty)?;
                 let target = match query.task {
                     Task::Normalize { output, .. } => output,
@@ -483,7 +570,7 @@ impl Checker<'_> {
         {
             self.published_normalization(node, input)?;
         }
-        Ok((None, true))
+        Ok(Completion::Complete)
     }
     fn normalize_body_type(
         &mut self,

@@ -122,8 +122,15 @@ impl Checker<'_> {
                 );
                 self.work.push(Work::EvaluateConstant(request, true));
                 match dependency {
-                    constants::ArgumentDependency::Nominal(dependency) => {
-                        self.work.push(Work::ValueType(DefId(dependency.item.0)));
+                    constants::ArgumentDependency::Body(dependency) => {
+                        self.work.push(match dependency.requirement {
+                            crate::sema::bodies::Requirement::Nominal(item) => {
+                                Work::ValueType(DefId(item.0))
+                            }
+                            crate::sema::bodies::Requirement::Definition(definition) => {
+                                Work::Definition(definition, false)
+                            }
+                        });
                     }
                     constants::ArgumentDependency::Initializer(definition) => {
                         self.require_initializer_readiness(key, definition)?;
