@@ -38,6 +38,11 @@ pub(crate) struct Projected {
     pub sized: Vec<crate::types::TypeId>,
 }
 impl State {
+    #[cfg(test)]
+    pub(crate) const fn selection_steps(&self) -> usize {
+        self.context.steps
+    }
+
     pub(crate) fn instance(
         facts: &mut Declarations,
         universals: u32,

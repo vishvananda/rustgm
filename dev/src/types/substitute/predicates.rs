@@ -101,6 +101,7 @@ impl Bound {
         id: ApplicationId,
         depth: u16,
     ) -> Result<ApplicationId, &'static str> {
+        let depth = self.cache_depth(depth);
         if let Some(result) = self
             .applications
             .as_ref()

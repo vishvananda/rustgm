@@ -6,7 +6,7 @@ pub(in crate::sema) mod overlap;
 use super::heads::{Head, Subject};
 use crate::{
     resolve::{model::DefId, unit::NodeKey},
-    types::{ItemId, Kind, Store, parameters::predicates::Predicate, substitute},
+    types::{ItemId, Kind, Store, parameters::predicates::Predicate, shape_key::ShapeKey},
 };
 pub(in crate::sema) use member_contracts::ConstantRequest;
 use std::collections::HashMap;
@@ -44,8 +44,7 @@ pub(in crate::sema) struct Implementations {
     traits: HashMap<ItemId, Vec<usize>>,
     heads: HashMap<(ItemId, Option<Head>), Vec<usize>>,
     open: HashMap<(ItemId, Option<Head>), Vec<usize>>,
-    closed: HashMap<(ItemId, Predicate), Vec<usize>>,
-    shapes: Option<Box<substitute::Bound>>,
+    closed: HashMap<(ItemId, ShapeKey), Vec<usize>>,
     pairs: Vec<(usize, usize)>,
 }
 impl Implementations {
@@ -99,14 +98,8 @@ impl Implementations {
                     .contains_parameters(store)
                     .map_err(|_| Error::InvalidIdentity)? =>
             {
-                let folder = self
-                    .shapes
-                    .get_or_insert_with(|| Box::new(substitute::Bound::shape()));
-                let before = folder.steps;
-                let shape = folder
-                    .predicate(store, value)
-                    .map_err(|_| Error::InvalidIdentity)?;
-                context.account_work(folder.steps.saturating_sub(before))?;
+                let (shape, work) = store.shape_key(value).map_err(|_| Error::InvalidIdentity)?;
+                context.account_work(work)?;
                 Some(shape)
             }
             Ok(_) | Err(Error::Unresolved) => None,
@@ -181,11 +174,7 @@ impl Implementations {
         let shape = if value.predicate.contains_parameters(store)? {
             None
         } else {
-            Some(
-                self.shapes
-                    .get_or_insert_with(|| Box::new(substitute::Bound::shape()))
-                    .predicate(store, value.predicate)?,
-            )
+            Some(store.shape_key(value.predicate)?.0)
         };
         let (first, second, third) = if let Some(shape) = shape {
             (

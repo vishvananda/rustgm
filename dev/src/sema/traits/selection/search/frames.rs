@@ -3,7 +3,7 @@ use super::{Context, Decision, Declarations, Goal, Node, Predicate, Search, Sour
 use crate::{
     resolve::model::DefId,
     sema::traits::selection::instantiation::{self, Instance},
-    types::{infer, parameters::predicates::Bound},
+    types::{infer, parameters::predicates::Bound, shape_key::ShapeKey},
 };
 
 pub(super) struct Frame {
@@ -15,7 +15,7 @@ pub(super) struct Frame {
     pub goal: Goal,
     pub first: u32,
     pub started: bool,
-    pub key: Option<Predicate>,
+    pub key: Option<ShapeKey>,
     pub canonical: Option<Predicate>,
     pub cycles: usize,
     pub candidates: Vec<DefId>,

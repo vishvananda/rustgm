@@ -21,6 +21,9 @@ mod quantified_tests;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/proof_cache.rs"]
 mod tests;
+#[cfg(test)]
+#[path = "../../../../tests/invariants/universal_work.rs"]
+mod universal_work;
 use super::{
     Caller, Context, Declarations, Evidence, Goal, Predicate, Selection, Source, inference,
 };
@@ -307,12 +310,8 @@ impl Search<'_> {
                     self.query.reused |= matches!(decision, Decision::Proven(_));
                     return Ok(Some(decision));
                 }
-                let before = self.query.shapes.steps;
-                let key = self.query.shapes.predicate(&mut facts.types, goal)?;
-                frame
-                    .context
-                    .account_work(self.query.shapes.steps.saturating_sub(before))
-                    .map_err(inference)?;
+                let (key, work) = facts.types.shape_key(goal)?;
+                frame.context.account_work(work).map_err(inference)?;
                 if !self.query.active.insert(key) {
                     self.query.cycles += 1;
                     return Ok(Some(Decision::Absent));

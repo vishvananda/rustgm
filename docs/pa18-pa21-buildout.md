@@ -10056,3 +10056,31 @@ and 148 qualification observations remain retained, with equal outputs and no
 portable speedup claim. Essentially unchanged paired heap/stack peaks do not
 explain the +34..220 KiB RSS deltas. Cleanup reclaimed 6.90 GiB. See
 `docs/pa21-validation.md` for the complete evidence and remaining boundaries.
+
+
+## PA21 distinct universal-goal work
+
+The next candidate removes repeated binder opening and structural-key traversal
+across distinct universal obligations. Shared requirement scopes preserve each
+selection's private witnesses and final lifetime debts. Trait keys use a lazy
+canonical-store cache with an opaque result; proof answers remain query-local.
+Lifetime-erased callable tails no longer create a cache entry at each enclosing
+binder depth. Capture-sensitive substitution remains unchanged.
+
+At 128 growing reference-tail goals, charged work falls from 57,856 to 8,321 and
+canonical type growth from 8,384 to 256. The candidate remains linear through
+512 goals (33,281 steps and 1,024 types). A separate nested-callable family falls
+from 25,408 to 770 steps at width 128. These are kernel work/storage invariants,
+not whole-frontend timing claims. All 146 library invariants, strict lint, the
+813-file audit and harness pass; twelve rustc object controls qualify eight
+accepted and four rejected sources. All 28 full functional gates pass: 1,321
+regular tests, 91 native groups and 6,218 earlier course cases, with 816 frozen
+source/configuration hashes and 18,654 unchanged sidecars. Immutable instruction
+changes span −1.28%..+0.29%; paired wall changes span −5.74%..+2.19%, with no
+positive investigation-threshold crossing. Two fixed heap/stack comparisons
+change combined peaks by +64 and +248 bytes; their heap peaks are unchanged or
+slightly lower. All 806 study and 124 qualification observations remain retained,
+with equal outputs and verified hashes. Cleanup reclaimed 6.90 GiB. Candidate
+SHA-256: `d5d955a9eed168e09a9dae94a5b33fba1ef09423773e4146edcad887f0508f6f`.
+PA21 remains planned while source/instance integration continues; these ordinary
+regression results are not higher-ranked source or native-execution coverage.

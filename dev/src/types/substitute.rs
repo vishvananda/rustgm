@@ -77,6 +77,16 @@ impl Bound {
         bound
     }
 
+    // Erasure has no lexical context. Repeated callable tails must not acquire
+    // a separate structural cache entry for every enclosing binder depth.
+    fn cache_depth(&self, depth: u16) -> u16 {
+        if matches!(self.action, Action::Shape) {
+            0
+        } else {
+            depth
+        }
+    }
+
     /// Substitute a type written inside the removed binder. Bound arguments are
     /// interpreted in the destination context and shifted beneath nested binders.
     ///
@@ -91,7 +101,7 @@ impl Bound {
         ty: TypeId,
         depth: u16,
     ) -> Result<TypeId, &'static str> {
-        let key = (ty, depth);
+        let key = (ty, self.cache_depth(depth));
         if let Some(result) = self.result(store, key)? {
             return Ok(result);
         }
@@ -144,6 +154,7 @@ impl Bound {
     }
 
     fn result(&self, store: &Store, key: Key) -> Result<Option<TypeId>, &'static str> {
+        let key = (key.0, self.cache_depth(key.1));
         if matches!(self.action, Action::Normalize) {
             return if store
                 .contains_projections(key.0)
@@ -214,7 +225,7 @@ impl Bound {
         if self.work.len().saturating_add(self.steps) >= WORK_LIMIT {
             return Err("lifetime substitution work budget exceeded");
         }
-        self.work.push(((ty, depth), false));
+        self.work.push(((ty, self.cache_depth(depth)), false));
         Ok(())
     }
 

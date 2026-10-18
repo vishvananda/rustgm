@@ -16,6 +16,7 @@ pub mod projection;
 mod properties;
 pub mod region_graph;
 pub mod relations;
+pub(crate) mod shape_key;
 pub mod specialize;
 pub mod substitute;
 pub mod traits;
@@ -206,6 +207,7 @@ pub struct Store {
     children: Slices<TypeId>,
     regions: Slices<RegionId>,
     arguments: Option<Box<arguments::Storage>>,
+    shapes: Option<Box<substitute::Bound>>,
 }
 impl Default for Store {
     fn default() -> Self {
@@ -232,6 +234,7 @@ impl Default for Store {
             children: Slices::default(),
             regions: Slices::default(),
             arguments: None,
+            shapes: None,
         }
     }
 }

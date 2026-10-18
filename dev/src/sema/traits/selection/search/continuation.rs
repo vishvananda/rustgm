@@ -1,7 +1,7 @@
 //! Retain the exact candidate and proof frontier while a header is prepared.
 use super::{Action, Caller, Decision, Declarations, Frame, Node, Predicate, Search};
 use crate::{
-    resolve::model::DefId, sema::traits::implementations::Availability, types::substitute,
+    resolve::model::DefId, sema::traits::implementations::Availability, types::shape_key::ShapeKey,
 };
 use std::collections::{HashMap, HashSet};
 
@@ -15,12 +15,11 @@ pub(super) struct Query {
     pub allocations: super::allocations::Allocations,
     pub availability: Availability,
     pub nodes: Vec<Node>,
-    pub active: HashSet<Predicate>,
+    pub active: HashSet<ShapeKey>,
     // Completed answers belong to one immutable caller, mode and region scope.
     pub completed: HashMap<Predicate, Decision>,
     pub cycles: usize,
     pub reused: bool,
-    pub shapes: substitute::Bound,
     pub steps: usize,
     pub builtins: crate::sema::nominals::Proof,
     stack: Vec<Frame>,
@@ -52,7 +51,6 @@ impl<'a> Search<'a> {
                 completed: HashMap::new(),
                 cycles: 0,
                 reused: false,
-                shapes: substitute::Bound::shape(),
                 steps: 0,
                 stack: Vec::new(),
                 waiting: None,

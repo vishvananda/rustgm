@@ -56,12 +56,7 @@ fn unrelated_closed_arguments_do_not_create_overlap_probes()
     assert!(registry.take_overlap_pairs().is_empty());
     assert_eq!(registry.headers().count(), 4096);
     assert_eq!(registry.validated().count(), 0);
-    assert!(
-        registry
-            .shapes
-            .as_ref()
-            .is_some_and(|folder| folder.steps < 50_000)
-    );
+    assert!(store.shape_key_steps() < 50_000);
     let owner = DefId(4105);
     let predicate = registry
         .header(owner)

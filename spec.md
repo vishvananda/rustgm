@@ -1196,6 +1196,16 @@ compatibility. Lifetime erasure may establish structural disjointness, never bod
 permissions. Charge candidate-pair storage before allocation and equation work
 during probes; predicate-sensitive coherence remains a separate proof.
 
+Trait application index and cycle keys share one lazy structural fold owned by
+the canonical type store. Its result is an opaque comparable key, never a usable
+predicate or lifetime proof. Erasure has no lexical context: shared callable
+tails use the same structural cache entry at every binder depth. Ordinary
+substitution still distinguishes those depths. The fold retains its cumulative
+one-million-step resource limit, bounding derived index growth; requesting
+queries also charge the incremental transformation work. Restore the cache on
+failure. Candidate availability, active cycles and completed selection answers
+remain separate caller/query facts and cannot be cached in the type store.
+
 Method conformance checks unused implementations too. Match direct members by
 owner and name, require every nondefault method, and reject extra members. The
 trait method's type/const parameters are rigid proof inputs; using the impl's
@@ -1607,6 +1617,17 @@ not share permission: only the selected application exports its evidence and
 owned aliases. Flat selection entry points reject environments they cannot consume
 without binder ownership. Projection and body consumers retain quantified origin
 explicitly; validation must confirm the original clause belongs to that caller.
+
+Independent conjunctive universal goals in one immutable canonical declaration
+state may share a universal scope and opening fold when their binder arity,
+closed/open mode and implementation availability agree. These scopes contain
+requirements only; they introduce no local hypotheses. Each selection keeps its
+own inference and fresh implementation witnesses at the actual allocation
+frontier. Commit a fresh scope only after selection succeeds, and retain every
+goal's lifetime debts even when its selection is subsequently reused. Separate
+callers, outer substitutions and binder arities cannot share this permission.
+Measure both structural work and canonical storage across distinct goals with
+growing shared tails; memoizing repeated identical goals alone is insufficient.
 
 Separate generic parameter identity, alias expansion and default-template
 readiness. Explicit arguments demand no unrelated defaults. Omitted arguments

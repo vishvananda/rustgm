@@ -306,3 +306,98 @@ Callgrind and four Massif executions. All 813 source/configuration hashes and
 compared outputs remain fixed. Full validation cleanup reclaimed 6.90 GiB.
 Receipts and raw observations are under
 `obj/pa21-work/universal-environments-final/`.
+
+
+## Distinct universal goals and shared structural keys
+
+A growing family of distinct `for<'a> u8: A<TailN<'a>>` obligations exposed two
+quadratic costs. At 16, 32, 64 and 128 goals, the published kernel charged
+1,856, 5,248, 16,640 and 57,856 steps and created 152, 560, 2,144 and 8,384
+canonical types. All semantic and final lifetime checks succeeded; the new
+linear-growth invariant failed. Sharing only the universal opening reduced type
+growth to 32, 64, 128 and 256 but left work at 1,361, 3,233, 8,513 and 25,217.
+Every independent selection was still rebuilding its structural key graph.
+
+The candidate shares openings only for independent conjunctive requirements in
+one immutable State, grouped by arity and proof mode. These scopes add no local
+hypotheses. Selections keep private inference and fresh witnesses, and commit a
+new scope only after success. Empty binders, outer captures and caller permission
+remain explicit. All selected lifetime debts remain obligations for the final
+proof, including on a completed-query hit.
+
+Trait index and cycle keys now share a lazy canonical-store fold. Its opaque key
+cannot be used as a predicate. Actual success/failure answers, active cycles,
+caller assumptions and header availability stay outside this cache. The original
+one-million-step cumulative folding limit bounds its derived storage, and each
+request charges the incremental transformation work. A failed request restores
+the previously completed structural cache.
+
+With both changes, the reference-tail family takes 1,041, 2,081, 4,161 and 8,321
+steps and creates 32, 64, 128 and 256 types. At 256 and 512 goals, the expanded
+probe takes 16,641 and 33,281 steps and creates 512 and 1,024 types. This is
+linear growth for this family, not a claim about the whole frontend.
+
+A separate nested-callable family exposed unnecessary binder-depth entries in
+the lifetime-erasure fold: 488, 1,744, 6,560 and 25,408 steps at widths 16 through
+128. Erased keys are context-free, so only that fold now canonicalizes its cache
+depth. Capture-sensitive substitution continues to distinguish binder depth.
+The corrected fold takes 98, 194, 386 and 770 steps on the same family,
+with a retained invariant enforcing linear work.
+
+Nine added invariants cover the two growth families, independent structural-key
+requests, malformed requests, complete non-lifetime inputs, goal order, unpaid
+static debts, independent/captured slots, empty and mixed-arity scopes, nested
+callable captures and interleaved absent/ordinary goals. Existing caller,
+availability, cycle and suspension tests remain required. The focused run passes
+all 146 library invariants, strict Clippy, formatting,
+the 813-file audit with zero findings and the harness checks. Twelve pinned
+rustc object controls match their independently declared outcomes: eight accept
+and four reject. The original capture negative also had an unrelated explicit
+late-lifetime argument error; its source
+and receipt remain retained, and a corrected control plus positive caller were
+qualified separately; the corrected rejection reports only the intended E0277.
+
+PA21 remains planned. This does not activate HRTB source support or establish
+native execution of these source controls. Probes and raw observations are under
+`obj/pa21-work/universal-growth-v1/`; the full immutable regression study is
+retained under `obj/pa21-work/universal-growth-final/`.
+
+
+Full functional validation passes all 28 gates: **1,321 regular tests**, **91
+native groups**, **6,218 PA1–PA20 exact cases**, formatting, strict Clippy,
+the **813-file audit with zero findings**, harness, backend and upstream checks.
+All **816 source/configuration hashes** and **18,654 oracle sidecars** remain
+fixed. PA21–PA25 still fail explicitly as planned. The frozen candidate is
+`d5d955a9eed168e09a9dae94a5b33fba1ef09423773e4146edcad887f0508f6f`,
+compared with published `19a33f7` /
+`0de3223807e3c80b281d84a6114dfc3aad9f1856087aa6bfed289416da2b3f94`.
+The immutable study completes all 31 timing jobs and 27 instruction pairs.
+Instruction changes range from **−1.28% to +0.29%**, with no increase above the
+1% investigation threshold. Main paired wall medians range from **−5.74% to
++2.19%**; none crosses the predeclared 3% follow-up threshold. Same-binary
+medians range from **−1.45% to +1.05%**, and the largest A/A spread is **17.46%**.
+Median peak RSS deltas span **−116 to +100 KiB**. All outputs and binary, input
+and source hashes match. No extra wall runs were selected by the fixed policy.
+
+The two predeclared Massif comparisons record these peaks:
+
+| Workload | Baseline heap bytes | Candidate heap bytes | Baseline combined heap/overhead/stack | Candidate combined |
+| --- | ---: | ---: | ---: | ---: |
+| ordinary-256 | 2,432,261 | 2,432,261 | 2,524,192 | 2,524,256 |
+| constant-chain-uses-256 | 5,382,097 | 5,381,921 | 5,544,032 | 5,544,280 |
+
+These two storage peaks are essentially unchanged. The ELF text/data/BSS sum
+increases by 16,344 bytes. Neither measurement establishes the cause of the
+−116..+100 KiB RSS range or a portable wall-time improvement.
+
+The study retains **806 timing observations** and **124 qualification
+observations**, comprising **3,224 timed** and **496 qualification compiler
+invocations**, plus **54 Callgrind** and **four Massif** executions. No observations
+were discarded and no measurements were repeated until favorable. All source,
+input, output and binary hashes agree. Full-batch cleanup reclaimed **6.90 GiB**.
+Receipts and complete observations remain in
+`obj/pa21-work/universal-growth-final/`. This comparison uses `19a33f7` as its
+baseline; it does not resolve the earlier streamed-proof wall-time effect against
+`b1410a8`. Source formation, declaration producers, scoped implementation
+conditions and concrete instance witness integration remain required before
+PA21 source activation.
