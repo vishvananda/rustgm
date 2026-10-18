@@ -1,6 +1,7 @@
 //! Canonical declaration goals enter inference only after their outer binder becomes free.
 pub(in crate::sema) mod normal_form;
 mod normalization;
+mod quantified;
 use crate::{
     sema::{
         model::Declarations,
@@ -12,7 +13,7 @@ use crate::{
     types::{
         RegionId,
         infer::{Context, Instantiation},
-        parameters::{environment::Environment, predicates::Predicate},
+        parameters::{clauses::Clause, environment::Environment, predicates::Predicate},
         substitute,
     },
 };
@@ -28,6 +29,7 @@ pub(crate) struct State {
     sized: Vec<crate::types::TypeId>,
     retain_sized: bool,
     availability: Availability,
+    quantified: Option<Box<quantified::Queries>>,
 }
 pub(crate) struct Projected {
     pub source: Option<selection::Source>,
@@ -92,6 +94,7 @@ impl State {
             sized: Vec::new(),
             retain_sized: false,
             availability: Availability::Declarations,
+            quantified: None,
         })
     }
 
@@ -114,6 +117,21 @@ impl State {
         requirement: Predicate,
         closed: bool,
     ) -> Result<bool, &'static str> {
+        self.prove_clause(facts, Clause::Predicate(requirement), closed)
+    }
+
+    /// Quantified selection retains a universal proof scope; success still needs
+    /// the caller's final directed lifetime proof, just like an ordinary premise.
+    pub fn prove_clause(
+        &mut self,
+        facts: &mut Declarations,
+        requirement: Clause,
+        closed: bool,
+    ) -> Result<bool, &'static str> {
+        let requirement = match requirement {
+            Clause::Predicate(predicate) => predicate,
+            Clause::ForAll(id) => return self.prove_quantified(facts, id, closed),
+        };
         let Some(fold) = &mut self.fold else {
             return self
                 .assumptions
@@ -187,12 +205,6 @@ impl State {
         closed: bool,
         normalized_inputs: bool,
     ) -> Result<Option<selection::Source>, &'static str> {
-        let mut substitution = Instantiation::new(&mut self.context, &facts.types, &[])
-            .map_err(|_| "invalid declaration trait instantiation")?;
-        let goal = self
-            .context
-            .instantiate_predicate(&mut facts.types, requirement, &mut substitution)
-            .map_err(|_| "invalid declaration trait goal")?;
         let empty = Assumptions::default();
         let caller = selection::Caller {
             assumptions: if closed { &empty } else { &self.assumptions },
@@ -204,20 +216,15 @@ impl State {
             first_region: self.obligations.regions.end,
             retain_sized: self.retain_sized,
         };
-        let selected = match (normalized_inputs, self.availability) {
-            (true, availability) => {
-                selection::select_normalized(facts, &mut self.context, &goal, caller, availability)
-            }
-            (false, Availability::Declarations) => {
-                selection::select_declaration(facts, &mut self.context, &goal, caller)
-            }
-            (false, Availability::Validated) => {
-                selection::select(facts, &mut self.context, &goal, caller)
-            }
-        };
-        self.accept_selection(
-            selected.map_err(|_| "invalid or exhausted canonical trait selection")?,
-        )
+        let selected = select_requirement(
+            facts,
+            &mut self.context,
+            requirement,
+            caller,
+            self.availability,
+            normalized_inputs,
+        )?;
+        self.accept_selection(selected)
     }
 
     fn accept_selection(
@@ -241,4 +248,29 @@ impl State {
             .append(&mut self.context.region_equalities);
         self.obligations
     }
+}
+
+fn select_requirement(
+    facts: &mut Declarations,
+    context: &mut Context,
+    requirement: Predicate,
+    caller: selection::Caller<'_>,
+    availability: Availability,
+    normalized_inputs: bool,
+) -> Result<selection::Selection, &'static str> {
+    let mut substitution = Instantiation::new(context, &facts.types, &[])
+        .map_err(|_| "invalid declaration trait instantiation")?;
+    let goal = context
+        .instantiate_predicate(&mut facts.types, requirement, &mut substitution)
+        .map_err(|_| "invalid declaration trait goal")?;
+    let selected = match (normalized_inputs, availability) {
+        (true, availability) => {
+            selection::select_normalized(facts, context, &goal, caller, availability)
+        }
+        (false, Availability::Declarations) => {
+            selection::select_declaration(facts, context, &goal, caller)
+        }
+        (false, Availability::Validated) => selection::select(facts, context, &goal, caller),
+    };
+    selected.map_err(|_| "invalid or exhausted canonical trait selection")
 }

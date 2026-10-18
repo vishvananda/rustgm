@@ -9998,3 +9998,35 @@ is inferred. Median RSS rises 186–314 KiB, including +172 KiB in the focused r
 Two Massif comparisons show essentially unchanged heap/stack peaks; they do not
 establish the cause of the RSS increase. The detailed validation document retains
 these limits and all counts. Validation cleanup reclaimed 6.90 GiB.
+
+## PA21 scoped universal obligations
+
+The canonical clause now enters an isolated trait-selection context whose aliases
+and implementation witnesses remain beneath a universal lifetime-proof scope.
+Final directed lifetime checking rejects static-only and incorrectly correlated
+implementations. A lazy declaration-local cache retains pending proof debts while
+sharing repeated identical queries; ordinary states allocate no such cache.
+Builtin roots retain explicit provenance separate from trait-method evidence.
+
+Ten kernel invariants cover subjects, complete trait arguments, associated equality
+results, nested callable binders, outer captures, ordinary versus universal
+premises, scope/mode isolation and a shared repeated implementation chain.
+Twenty-five independent rustc object controls qualify the corresponding intended
+rules (twelve accepted, thirteen rejected); these are not RustGM HRTB source or
+native-execution coverage. Declaration producers, universal assumptions and
+concrete instance witness integration remain required before source activation.
+
+All 28 validation gates pass: 1,296 regular tests, 91 native groups, 6,218 exact
+earlier course cases, strict lint, the 805-file audit, harness/backend/upstream,
+808 source/config hashes and 18,654 unchanged oracle sidecars. Candidate SHA-256:
+`cc023bac2ba771e9050ffe5cb4a8b5d831177f839397590a0033d07f7fef83cf`.
+PA21 remains planned; PA22–PA25 are still part of the active implementation goal.
+
+Immutable instruction changes span −0.13%..+0.60%; main wall changes span
+−3.01%..+3.69%. One fixed follow-up retains +2.16% for constant-chain uses and
++4.32% for streamed proofs, whose noisy same-binary controls leave the wall-time
+effect unresolved. Near-equal heap/stack peaks on two inputs do not establish
+the cause of the +36..234 KiB RSS change. The detailed review retains all 962
+study and 148 qualification observations, 27 instruction pairs and four Massif
+runs, with no repeated-until-favorable measurement. Cleanup reclaimed 6.90 GiB.
+See `docs/pa21-validation.md` for the complete results and limitations.

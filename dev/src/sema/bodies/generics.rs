@@ -279,6 +279,9 @@ impl Checker<'_> {
                 Some(Source::Equality) => {
                     return Err(self.error(node, "equality evidence cannot replace a trait goal"));
                 }
+                Some(Source::Builtin) => {
+                    return Err(self.error(node, "builtin evidence cannot replace a trait goal"));
+                }
                 None => *predicate,
             };
             self.prove_bound(node, predicate.ty, predicate.bound)?;

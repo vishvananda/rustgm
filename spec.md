@@ -968,6 +968,23 @@ selected impl owner and its typed arguments at the body use. Failed alternatives
 must not publish variables or constrain the caller; possible applicability alone
 still cannot authorize an operation in a completed body.
 
+Prove canonical universally quantified obligations in an isolated selection context.
+Open their whole predicate with fresh private aliases, equate those aliases to local
+universals inside a retained proof scope, and graft every selected implementation
+witness into that scope. Enclosing captures remain in their ancestor universe.
+Structural selection success still requires the final directed lifetime proof;
+static-only or correlated implementations cannot grant a stronger universal bound.
+Builtin root evidence has its own provenance and cannot stand for a trait method.
+
+Repeated quantified obligations in one declaration state may share the proof already
+retained there. Key this reuse by the complete substituted clause and selection
+mode; the caller environment and outer substitution stay immutable. Retain even
+unsatisfied pending lifetime debts, and never cache absent, deferred or exhausted
+selection as successful evidence. Ordinary states allocate no quantified cache.
+This canonical route cannot export a child's inferred type/const binding to a
+caller hole, flatten scoped alias Sized requirements, or substitute for instantiating
+a universal caller assumption.
+
 Dot calls retain the resolved receiver, canonical method name, lexical scope and
 written arguments. Type the receiver before selection. For each built-in reference
 dereference level, probe the value, shared borrow and mutable borrow in that order.

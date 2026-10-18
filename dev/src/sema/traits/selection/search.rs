@@ -13,6 +13,9 @@ mod result_bounds;
 mod suspension;
 pub(in crate::sema) use suspension::{Pending, Progress, begin, begin_normalized};
 #[cfg(test)]
+#[path = "../../../../tests/invariants/quantified_obligations.rs"]
+mod quantified_tests;
+#[cfg(test)]
 #[path = "../../../../tests/invariants/proof_cache.rs"]
 mod tests;
 use super::{

@@ -189,6 +189,7 @@ impl Search<'_> {
                 }
             }
             Source::Equality => return Err("equality evidence cannot prove a trait premise".into()),
+            Source::Builtin => return Err("builtin evidence cannot prove a trait premise".into()),
         };
         if self.query.nodes[node].first != self.query.nodes[node].end {
             equality.end = self.query.nodes[node].end;

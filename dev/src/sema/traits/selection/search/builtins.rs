@@ -35,7 +35,7 @@ impl Search<'_> {
         let node = self.query.nodes.len();
         self.query.nodes.push(Node {
             goal,
-            source: None,
+            source: Some(super::Source::Builtin),
             children: Vec::new(),
             first: frame.first,
             end: frame.available_region(),

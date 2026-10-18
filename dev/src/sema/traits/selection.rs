@@ -26,6 +26,8 @@ use std::sync::Arc;
 #[derive(Clone, Copy)]
 pub(in crate::sema) enum Source {
     Equality,
+    /// A language-provided bound, never a trait method or implementation target.
+    Builtin,
     Assumption(Predicate),
     /// A declared result bound, with its parent projection proof retained.
     ResultBound(Predicate),
@@ -144,8 +146,17 @@ fn select_from(
     availability: Availability,
     normalized_inputs: bool,
 ) -> Result<Selection, String> {
-    if goal.projection_result().is_some() {
-        return search::prove(facts, context, goal, caller, availability, false);
+    if goal.projection_result().is_some() || goal.builtin_bound().is_some() {
+        // Builtin permissions use the caller's ordinary ability environment;
+        // they cannot enter the user-trait assumption index.
+        return search::prove(
+            facts,
+            context,
+            goal,
+            caller,
+            availability,
+            normalized_inputs && goal.projection_result().is_none(),
+        );
     }
     match select_assumption(&mut facts.types, context, goal, &caller) {
         Ok(Selection::Absent) => {}

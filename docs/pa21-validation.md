@@ -56,9 +56,10 @@ development requirements, not passing PA21 course cases.
 
 ## Remaining proof integration
 
-Declaration environments must retain the explicit quantified carrier. Proving a
-universal obligation needs fresh scoped universals and escape checks; using a
-universal assumption needs fresh instantiation in the actual caller scope.
+Declaration environments must retain the explicit quantified carrier. The
+canonical universal-goal kernel described below retains scoped universals and
+isolates inference. Using a universal assumption still needs fresh instantiation
+in the actual caller scope.
 Normalization, pending implementation headers, selected evidence and concrete
 instance witnesses must retain those scopes. Existing unsupported-feature gates
 remain until their consumers implement those obligations. GATs, opaque capture
@@ -125,3 +126,94 @@ every compared output is equal. Receipts, per-invocation observations, profiles
 and the predeclared follow-up policy remain under `binder-carrier-final/`.
 Full validation cleanup reclaimed 6.90 GiB; only the current baseline and candidate
 remain pinned until publication and exact-head CI permit retirement.
+
+## Scoped universal-obligation implementation
+
+The next checkpoint connects the explicit clause to canonical declaration/instance
+trait selection. It substitutes enclosing arguments beneath the local binder,
+opens the whole predicate with private aliases, and selects in a fresh inference
+context. The retained lifetime proof puts those aliases and all implementation
+witnesses beneath the corresponding universal scope. Selected equations still
+need the ordinary directed lifetime proof; selection alone does not establish
+that a static-only implementation works for every lifetime.
+
+A lazy cache reuses a completed selection only within the same declaration state,
+substituted clause, closed/open environment mode and implementation-availability
+mode. Its pending lifetime proof stays in that state, including debts that will
+fail final verification. Repeated selection does not allocate another scope or
+replay a recursive implementation chain. Absent/deferred selections are not
+cached. Ordinary states allocate no cache. Root builtin requirements now retain
+explicit builtin provenance, which cannot authorize a user-trait method.
+
+Ten invariants in `dev/tests/invariants/quantified_obligations.rs` exercise actual
+lifetime-proof discharge: general, static-only, restricted and reflexive impls;
+independent slots and enclosing captures; empty binders; ordinary versus universal
+premises; closed/open and separate caller caches; a 16-level implementation chain
+queried 512 times; type-outlives requirements; correlated reference subjects;
+associated equality results; and nested callable binders. The repeated-chain test
+checks one retained scope and bounded private identities without canonical type
+growth. Invalid cached results still fail lifetime verification.
+
+Twenty-five full programs independently qualify the corresponding intended rules
+with pinned rustc object compilation: twelve accept and thirteen reject. These
+are source controls for the kernel invariants, not RustGM source acceptance or
+native execution coverage. The initial additional equality controls contained an
+unrelated explicit late-bound lifetime call and hit E0794; corrected controls
+infer that lifetime from a reference argument, preserving their intended outcomes.
+Both attempts and diagnostics remain under
+`obj/pa21-work/scoped-obligations-v1/`.
+
+This route requires canonical inputs and an explicit caller scope. It rejects
+scoped alias Sized retention instead of flattening those obligations. Source
+bound collection, universal caller-assumption instantiation, pending scoped
+normalization and concrete instance witness import still need integration.
+No source feature gate or course oracle changes in this checkpoint.
+
+All 28 validation gates pass: 1,296 regular maintainer tests, 91 native groups,
+6,218 exact earlier course cases, strict Clippy/formatting, the 805-file audit with
+zero findings, harness, backend and upstream checks. All 808 frozen source/config
+hashes and 18,654 oracle sidecars remain unchanged; PA21–PA25 fail as planned.
+The frozen candidate SHA-256 is
+`cc023bac2ba771e9050ffe5cb4a8b5d831177f839397590a0033d07f7fef83cf`.
+Receipts are under `obj/pa21-work/scoped-obligations-final/`; the baseline is
+published carrier `b1410a8`, binary `7c12528f948ab00d88fb03980fe1d6fd864c222af1ae9769f9c59655215db5a1`.
+The main immutable comparison passes all 31 timing jobs and 27 instruction
+comparisons. Instruction changes range from −0.13% to +0.60%, paired wall medians
+from −3.01% to +3.69%, and median peak RSS deltas from +36 to +234 KiB.
+Same-binary medians range from −1.98% to −0.09%; the largest A/A spread is 15.95%.
+All full/count outputs and frozen hashes agree. The main study retains 806 study
+and 124 qualification observations at batch four.
+
+Two wall increases trigger the predeclared single follow-up at batch sixteen:
+
+| Workload | Original paired wall change | Follow-up AB | Follow-up A/A | Follow-up B/B | Instruction change |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Constant-chain uses, 256 | +3.69% | +2.16% | −0.47% | −0.12% | +0.10% |
+| Streamed proofs, 48 | +3.06% | +4.32% | −2.30% | +0.26% | +0.24% |
+
+The streamed-proof result remains above the 3% investigation threshold. Its five
+follow-up AB blocks range from −3.02% to +5.04%; the corresponding same-binary
+paired blocks range from −25.31% to +4.28%. This noisy host does not establish the
+cause of the positive wall median. Instruction counts alone do not rule out a
+wall-time regression; no throughput-parity claim is made for this workload.
+There is no second follow-up or selective removal of observations.
+
+The two fixed Massif heap/stack comparisons retain these measured peaks:
+
+| Workload | Baseline heap bytes | Candidate heap bytes | Baseline combined heap/overhead/stack | Candidate combined |
+| --- | ---: | ---: | ---: | ---: |
+| ordinary-256 | 2,432,253 | 2,432,253 | 2,524,208 | 2,524,224 |
+| constant-chain-uses-256 | 5,381,905 | 5,382,073 | 5,543,848 | 5,543,584 |
+
+Storage peaks are essentially unchanged on these two inputs. The ELF text/data/BSS
+sum grows by 28,692 bytes. Neither result establishes the cause of the +36..234 KiB
+RSS observations; focused RSS deltas remain +186 KiB and +78 KiB, respectively
+for constant-chain uses and streamed proofs.
+
+All outputs and source/input/binary hashes agree. The combined studies retain
+962 study observations and 148 qualification observations, comprising 5,720 timed
+and 880 qualification compiler invocations, plus 54 Callgrind and four Massif
+executions. Full validation/performance cleanup reclaimed 6.90 GiB. These are
+ordinary-source regression measurements; quantified source integration remains
+incomplete. The repeated-clause invariant does not establish scaling for many
+distinct quantified goals with growing shared type graphs.
