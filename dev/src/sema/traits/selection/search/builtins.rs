@@ -27,13 +27,13 @@ impl Search<'_> {
         let mut sized = Vec::new();
         if let Bound::Outlives(region) = goal.bound {
             type_outlives.push((goal.ty, region));
-        } else if !self.builtins.prove(facts, goal)? {
+        } else if !self.query.builtins.prove(facts, goal)? {
             return Ok(Decision::Absent);
         } else if goal.bound == Bound::Sized && self.caller.retain_sized {
             sized.push(goal.ty);
         }
-        let node = self.nodes.len();
-        self.nodes.push(Node {
+        let node = self.query.nodes.len();
+        self.query.nodes.push(Node {
             goal,
             source: None,
             children: Vec::new(),

@@ -1,10 +1,12 @@
 //! Resolve call goals before inference completion, retaining actual assumption evidence.
+mod inference;
 use super::{Checker, Error, NodeId};
 use crate::sema::traits::{
     assumptions::Assumptions,
+    obligations::Reservation,
     selection::{self, Caller, Evidence, Selection, Source},
 };
-use std::collections::HashMap;
+pub(super) use inference::{Pending, Progress};
 use std::sync::Arc;
 
 impl Checker<'_> {
@@ -62,85 +64,6 @@ impl Checker<'_> {
         Ok(())
     }
 
-    pub(super) fn infer_trait_obligations(
-        &mut self,
-        body: NodeId,
-    ) -> Result<HashMap<usize, Source>, Error> {
-        let mut pending: Vec<_> = self
-            .state
-            .call_types
-            .obligations
-            .iter()
-            .enumerate()
-            .filter_map(|(index, (_, predicate))| predicate.trait_arguments().map(|_| index))
-            .collect();
-        let mut evidence = HashMap::new();
-        if pending.is_empty() && !self.state.projections.active() {
-            return Ok(evidence);
-        }
-        let assumptions = self.trait_assumptions(body)?.unwrap_or_default();
-        while !pending.is_empty() || self.state.projections.active() {
-            let progress = self.advance_projections(body)?;
-            let before = pending.len();
-            let mut next = Vec::new();
-            for index in pending {
-                let first_region = self.trait_region_start(body)?;
-                let (node, predicate) = &self.state.call_types.obligations[index];
-                let node = *node;
-                let caller = Caller {
-                    assumptions: &assumptions,
-                    environment: self.state.method_environment.as_ref(),
-                    first_region,
-                    retain_sized: false,
-                };
-                let selected = if self.state.call_types.assumed_obligations.contains(&index) {
-                    selection::select_assumption(
-                        &mut self.facts.types,
-                        &mut self.state.infer,
-                        predicate,
-                        &caller,
-                    )
-                    .map_err(|error| error.to_string())
-                } else {
-                    selection::select_available(
-                        self.facts,
-                        &mut self.state.infer,
-                        predicate,
-                        caller,
-                        self.availability,
-                    )
-                }
-                .map_err(|e| self.error(node, e))?;
-                if let Selection::Proven(proof) = selected {
-                    evidence.insert(index, self.retain_trait_evidence(node, proof)?);
-                } else {
-                    next.push(index);
-                }
-            }
-            if next.len() == before
-                && !progress
-                && (!next.is_empty() || self.state.projections.active())
-            {
-                if self
-                    .state
-                    .infer
-                    .default_numbers()
-                    .map_err(|e| self.error(body, e))?
-                {
-                    pending = next;
-                    continue;
-                }
-                let Some(&index) = next.first() else {
-                    return Err(self.error(body, "associated projection inputs remain unresolved"));
-                };
-                let node = self.state.call_types.obligations[index].0;
-                return Err(self.error(node,"trait obligation requires an unambiguous matching assumption or implementation"));
-            }
-            pending = next;
-        }
-        Ok(evidence)
-    }
-
     fn trait_region_start(&self, node: NodeId) -> Result<u32, Error> {
         u32::try_from(self.facts.body_regions.len())
             .ok()
@@ -150,12 +73,19 @@ impl Checker<'_> {
     }
 
     fn retain_trait_evidence(&mut self, node: NodeId, evidence: Evidence) -> Result<Source, Error> {
+        self.retain_reserved_trait_evidence(node, evidence, Reservation::default())
+    }
+
+    fn retain_reserved_trait_evidence(
+        &mut self,
+        node: NodeId,
+        evidence: Evidence,
+        reservation: Reservation,
+    ) -> Result<Source, Error> {
         let source = self.key(node);
         let selected = evidence.source;
-        let mut proof = crate::sema::traits::obligations::Obligations::new(evidence.regions.start);
-        proof.append(evidence).map_err(|e| self.error(node, e))?;
-        proof
-            .retain_body(self.facts, self.state.body, source)
+        reservation
+            .publish(evidence.proof, self.facts, self.state.body, source)
             .map_err(|e| self.error(node, e))?;
         if let Source::Implementation { owner, arguments } = selected {
             self.facts

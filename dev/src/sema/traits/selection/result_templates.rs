@@ -49,9 +49,12 @@ pub(in crate::sema) fn symbolic_result(
     let Some(registry) = &mut facts.generics.implementations else {
         return Ok(None);
     };
-    let owners = registry
+    let crate::sema::traits::implementations::Candidates::Ready(owners) = registry
         .candidates(&mut facts.types, source, goal, Availability::Validated)
-        .map_err(inference)?;
+        .map_err(inference)?
+    else {
+        return Ok(None);
+    };
     if let [owner] = owners.as_slice()
         && let Some(inputs) =
             super::header_inputs::independent(facts, source, goal, *owner).map_err(inference)?

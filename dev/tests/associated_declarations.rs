@@ -17,6 +17,8 @@ mod equations;
 mod field_normalization;
 #[path = "associated_declarations/header_projections.rs"]
 mod header_projections;
+#[path = "associated_declarations/header_readiness.rs"]
+mod header_readiness;
 #[path = "associated_declarations/independent_selections.rs"]
 mod independent_selections;
 #[path = "associated_declarations/member_lifetimes.rs"]

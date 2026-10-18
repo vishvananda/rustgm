@@ -48,9 +48,12 @@ pub(in crate::sema) fn requires_resolved_inputs(
     let Some(registry) = &mut facts.generics.implementations else {
         return Ok(false);
     };
-    let candidates = registry
+    let crate::sema::traits::implementations::Candidates::Ready(candidates) = registry
         .candidates(&mut facts.types, context, goal, Availability::Validated)
-        .map_err(inference)?;
+        .map_err(inference)?
+    else {
+        return Ok(false);
+    };
     let [owner] = candidates.as_slice() else {
         return Ok(false);
     };

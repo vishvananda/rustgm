@@ -15,6 +15,21 @@ impl Obligations {
         Ok(())
     }
 
+    /// Membership is logarithmic in interleaved foreign intervals.
+    pub(crate) fn owns_region(&self, region: crate::types::RegionId) -> bool {
+        if !self.regions.contains(&region.0) {
+            return false;
+        }
+        let Some(quantified) = &self.quantified else {
+            return true;
+        };
+        let index = quantified.gaps.partition_point(|gap| gap.end <= region.0);
+        quantified
+            .gaps
+            .get(index)
+            .is_none_or(|gap| gap.start > region.0)
+    }
+
     pub(crate) fn has_gaps(&self) -> bool {
         self.quantified.as_ref().is_some_and(|q| !q.gaps.is_empty())
     }

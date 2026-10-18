@@ -201,6 +201,7 @@ pub(super) struct State {
     projections: projections::Pending,
     storage: Option<Box<super::stored_fields::Preparation>>,
     finalization: Option<Box<finalization::Finalization>>,
+    trait_goals: Option<Box<trait_goals::Pending>>,
     type_children: Vec<TermId>,
     annotation_checks: Vec<NodeId>,
     annotation_children: HashSet<NodeId>,
@@ -288,6 +289,7 @@ impl<'a> Checker<'a> {
                 projections: projections::Pending::default(),
                 storage: None,
                 finalization: None,
+                trait_goals: None,
                 type_children: Vec::new(),
                 annotation_checks: Vec::new(),
                 annotation_children: HashSet::new(),
@@ -334,6 +336,7 @@ impl<'a> Checker<'a> {
         self.state.projections = projections::Pending::default();
         self.state.storage = None;
         self.state.finalization = None;
+        self.state.trait_goals = None;
         self.state.body_binders = 0;
         self.state.method_environment = None;
         self.state.environment_owner = None;
@@ -490,6 +493,7 @@ impl Checker<'_> {
         self.state.projections = projections::Pending::default();
         self.state.storage = None;
         self.state.finalization = None;
+        self.state.trait_goals = None;
         self.state.body_binders = self
             .facts
             .lifetimes
@@ -571,6 +575,9 @@ impl Checker<'_> {
         let body = self.state.body.node;
         if let Some(finalization) = self.state.finalization.take() {
             return self.resume_finalization(*finalization);
+        }
+        if self.state.trait_goals.is_some() {
+            return self.finish(body);
         }
         loop {
             if matches!(

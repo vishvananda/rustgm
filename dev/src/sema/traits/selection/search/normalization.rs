@@ -49,7 +49,7 @@ impl Normalization {
     }
 }
 impl Frame {
-    pub(super) fn child(&mut self, facts: &mut Declarations) -> Result<Self, String> {
+    pub(super) fn child(&mut self, facts: &mut Declarations, floor: u32) -> Result<Self, String> {
         if let Some(normalization) = &self.normalization
             && normalization.pending()
         {
@@ -60,7 +60,7 @@ impl Frame {
                     .goal
                     .as_ref()
                     .ok_or("missing normalization trait premise")?,
-                normalization.end,
+                normalization.end.max(floor),
             )?;
             child.normalized_inputs = Some(super::frames::NormalizedInputs {
                 proof: normalization.proof,
@@ -73,7 +73,7 @@ impl Frame {
             facts,
             &mut trial.context,
             &trial.instance.goals[index],
-            trial.end,
+            trial.end.max(floor),
         )
     }
     pub(super) fn available_region(&self) -> u32 {
@@ -157,9 +157,9 @@ impl Search<'_> {
             .ok_or("missing equality trait premise")?;
         frame
             .context
-            .equate_trait_predicate(&mut facts.types, &goal, self.nodes[node].goal)
+            .equate_trait_predicate(&mut facts.types, &goal, self.query.nodes[node].goal)
             .map_err(inference)?;
-        let source = self.nodes[node]
+        let source = self.query.nodes[node]
             .source
             .ok_or("missing equality premise evidence")?;
         let resolution = match source {
@@ -190,8 +190,8 @@ impl Search<'_> {
             }
             Source::Equality => return Err("equality evidence cannot prove a trait premise".into()),
         };
-        if self.nodes[node].first != self.nodes[node].end {
-            equality.end = self.nodes[node].end;
+        if self.query.nodes[node].first != self.query.nodes[node].end {
+            equality.end = self.query.nodes[node].end;
         }
         equality.proof = Some(self.inherit_inputs(node, equality.proof));
         frame.context.account_work(2).map_err(inference)?;

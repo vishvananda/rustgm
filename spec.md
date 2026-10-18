@@ -134,10 +134,12 @@ input route is not the complete projected-result drop-checking contract.
 Associated constant declarations retain their types independently of optional
 initializers. Check missing and extra members by resolved owner and name. The
 validated implementation publishes the final default/override identities. A
-separate declaration-only member table may publish a shape-checked constant after
-all candidate headers are frozen; it grants neither method access nor whole-impl
-validity. Retain that member's normalized expected and actual types, selected
-definition and all formation debts. Final conformance consumes this exact contract
+separate declaration-only member table may publish one prepared owner's
+shape-checked constant. Request that owner through an exhaustive compatible
+candidate query; unrelated pending headers do not delay its member contract.
+This grants neither method access nor whole-impl validity. Retain that member's
+normalized expected and actual types, selected definition and all formation debts.
+Final conformance consumes this exact contract
 after nominal variance/outlives facts complete, proves lifetime coercion under the
 immutable impl environment and agrees with every earlier selected identity. No
 pending member contract may escape the declaration pass. Equal normalized result
@@ -246,15 +248,32 @@ neither active inference nor a previous caller's permissions belongs in scratch.
 Probe completed method-path caches only after recognizing a relevant value path.
 Nested shape queries must retain declaration-cycle detection across suspension.
 Do not inspect unrelated implementation bodies or restart a long query for each
-dependency. Early signature and default-argument queries use the frozen-header,
-declaration-only mode explicitly. Suspend the existing value continuation for
+dependency. Early signature and default-argument queries use declaration-only
+selection explicitly. Suspend the existing value continuation for
 exact member-type requests, preserving typed root facts and selected-instance
 readiness. Normalize only that member's type dependencies: unrelated associated
 definitions can depend on its value. Do not eagerly require all method signatures
 or all associated definitions to authorize one constant. Whole-impl, unused-item
-and coherence checks remain mandatory before completed facts escape. Impl-header
-constant dependencies still require a separate pending-candidate readiness graph;
-never ignore an unprepared compatible header or publish a partial environment.
+and coherence checks remain mandatory before completed facts escape.
+
+Reserve resolved implementation trait identities and conservative outer subject
+heads before elaborating headers. Share the iterative raw-head query with Drop;
+aliases and defaults must not evaluate constants or construct semantic types just
+to exclude an unrelated owner. Unknown heads remain possible candidates. Index
+pending owners by trait and head, retire them without scanning other buckets, and
+withhold a candidate answer until every compatible header is prepared. Header
+completion does not validate its implementation or authorize executable operations.
+
+When body trait selection needs a header, retain its immutable caller environment,
+candidate cursor, isolated trial equations, proof graph and inference round.
+Yield the exact owner through the existing declaration worklist. Repeated polls
+of the same unresolved owner do no solver work. Reserve every allocated trial
+lifetime before yielding, including discarded alternatives, then advance the
+allocation floor past intervening declaration work. Record foreign gaps without
+walking or rebasing earlier frames. Final evidence carries explicit owned intervals;
+result restoration and lifetime proof must not claim identities in those gaps.
+Keep the contiguous synchronous path and caller-assumption shortcut. Globally
+shared closed-dispatch proofs still require the frozen candidate inventory.
 
 Once an associated constant path resolves, schedule its declared value-type
 prerequisites before anonymous body inference, just as for an ordinary constant.

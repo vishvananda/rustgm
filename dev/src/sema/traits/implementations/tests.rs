@@ -1,5 +1,5 @@
 //! Closed application partitions must avoid pairwise scans of unrelated arguments.
-use super::{Implementation, Implementations};
+use super::{Candidates, Implementation, Implementations};
 use crate::{
     resolve::{
         model::DefId,
@@ -70,15 +70,14 @@ fn unrelated_closed_arguments_do_not_create_overlap_probes()
     let mut context = crate::types::infer::Context::default();
     let mut substitution = crate::types::infer::Instantiation::new(&mut context, &store, &[])?;
     let goal = context.instantiate_predicate(&mut store, predicate, &mut substitution)?;
-    assert!(
-        registry
-            .candidates(
-                &mut store,
-                &mut context,
-                &goal,
-                super::Availability::Validated
-            )?
-            .is_empty()
+    assert_eq!(
+        registry.candidates(
+            &mut store,
+            &mut context,
+            &goal,
+            super::Availability::Validated
+        )?,
+        Candidates::Ready(Vec::new())
     );
     let before = context.steps;
     assert_eq!(
@@ -88,7 +87,7 @@ fn unrelated_closed_arguments_do_not_create_overlap_probes()
             &goal,
             super::Availability::Declarations
         )?,
-        [owner]
+        Candidates::Ready(vec![owner])
     );
     assert!(context.steps - before < 100);
     assert!(!registry.is_validated(owner));
@@ -102,7 +101,7 @@ fn unrelated_closed_arguments_do_not_create_overlap_probes()
             &goal,
             super::Availability::Validated
         )?,
-        [owner]
+        Candidates::Ready(vec![owner])
     );
     assert!(context.steps - before < 100, "{}", context.steps - before);
     Ok(())
@@ -148,9 +147,20 @@ fn checked_constants_do_not_authorize_unvalidated_operations()
     let declaration = DefId(99);
     let selected = DefId(100);
     let request = super::ConstantRequest { owner, declaration };
-    assert!(registry.complete_constant(request, selected).is_err());
-    registry.finish_constant_headers();
+    assert!(
+        registry
+            .complete_constant(
+                super::ConstantRequest {
+                    owner: DefId(999),
+                    declaration
+                },
+                selected
+            )
+            .is_err()
+    );
+    assert!(!registry.constant_headers_ready());
     registry.complete_constant(request, selected)?;
+    assert!(!registry.constant_headers_ready());
     assert!(registry.complete_constant(request, DefId(101)).is_err());
     assert!(!registry.is_validated(owner));
     assert_eq!(registry.method(owner, declaration), None);

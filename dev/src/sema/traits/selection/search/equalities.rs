@@ -118,8 +118,8 @@ impl Search<'_> {
             Err(infer::Error::Unresolved) => return Ok(Decision::Deferred),
             Err(error) => return Err(inference(error)),
         };
-        let node = self.nodes.len();
-        self.nodes.push(Node {
+        let node = self.query.nodes.len();
+        self.query.nodes.push(Node {
             goal,
             source: Some(Source::Equality),
             children: normalization.proof.into_iter().collect(),

@@ -30,17 +30,9 @@ pub(in crate::sema) fn advance(
     scratch.typing.resumable();
     let mut queries =
         Queries::with_scratch(report, facts, Some(discriminants), std::mem::take(scratch));
-    if queries
-        .typing
-        .facts
-        .generics
-        .implementations
-        .as_ref()
-        .is_some_and(|registry| registry.constant_headers_ready())
-    {
-        queries.typing.availability =
-            crate::sema::traits::implementations::Availability::Declarations;
-    }
+    // Declaration bodies may prove a goal once its compatible candidate inventory
+    // is complete. A pending header yields through the body's owned continuation.
+    queries.typing.availability = crate::sema::traits::implementations::Availability::Declarations;
     queries.value_scope = Some((key, ty));
     let fresh = continuation.is_none();
     if let Some(continuation) = continuation {

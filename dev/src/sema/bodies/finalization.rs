@@ -18,15 +18,20 @@ pub(super) struct Finalization {
 }
 impl Checker<'_> {
     pub(super) fn finish(&mut self, body: NodeId) -> Result<Option<Dependency>, Error> {
-        for adjustment in &self.state.adjustments {
-            if adjustment.kind == AdjustmentKind::Never {
-                self.state
-                    .infer
-                    .default_never(adjustment.expected)
-                    .map_err(|e| self.error(body, e))?;
+        if self.state.trait_goals.is_none() {
+            for adjustment in &self.state.adjustments {
+                if adjustment.kind == AdjustmentKind::Never {
+                    self.state
+                        .infer
+                        .default_never(adjustment.expected)
+                        .map_err(|e| self.error(body, e))?;
+                }
             }
         }
-        let evidence = self.infer_trait_obligations(body)?;
+        let evidence = match self.infer_trait_obligations(body)? {
+            super::trait_goals::Progress::Ready(evidence) => evidence,
+            super::trait_goals::Progress::Prepare(dependency) => return Ok(Some(dependency)),
+        };
         let (solved, predicates, arguments) = std::mem::take(&mut self.state.infer)
             .finish_with_arguments(
                 &mut self.facts.types,

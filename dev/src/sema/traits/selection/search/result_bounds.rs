@@ -39,8 +39,8 @@ impl Search<'_> {
             .context
             .resolved_predicate(&mut facts.types, &frame.goal)
             .map_err(inference)?;
-        let index = self.nodes.len();
-        self.nodes.push(Node {
+        let index = self.query.nodes.len();
+        self.query.nodes.push(Node {
             goal,
             source: Some(Source::ResultBound(selected)),
             children: Vec::new(),

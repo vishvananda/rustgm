@@ -9605,3 +9605,89 @@ a separate investigation before claiming additive whole-frontend scaling.
 Early impl-header constant dependencies, other synchronous normalization consumers,
 the extended semantic view, remaining solver/coherence work and the public PA20
 manifest/oracles also remain outstanding. PA20 through PA25 remain planned.
+
+
+## Implementation headers retain their pending selection and lifetime evidence
+
+A const argument in an implementation header can now use a trait constant whose
+implementation appears later. For example, `impl B for X<{<u8 as A>::C}>` waits
+for the compatible `A` header, checks its selected constant and resumes the
+original header. Trait arguments, nested const arguments, generic implementation
+bounds, defaulted aliases and overridden defaults use the same path. A disjoint
+implementation of the same trait does not create a dependency on itself.
+
+The declaration worklist owns each implementation header's parameter, target,
+publication and argument phases. A reserved inventory records resolved trait
+identities and conservative outer subject heads before semantic elaboration.
+The iterative alias/default head query is shared with Drop. Pending candidates
+are indexed by trait and head; unknown heads remain possible. Publication checks
+that the typed header agrees with its reservation and removes that pending owner
+without scanning unrelated owners. Selection waits for every compatible header
+before accepting or excluding a candidate. Member identity reservation does not
+publish an incomplete caller environment.
+
+A suspended trait query owns its candidate cursor, isolated trial equations,
+normalization frontier, completed goals and proof graph. Immutable assumptions
+and environments are retained through Arc ownership. Body inference retains its
+round and completed evidence, yielding an exact implementation-header dependency
+through the existing constant/declaration continuation. Repeated polls of an
+unfinished owner perform no solver work. Caller-assumption selection and ordinary
+synchronous queries retain their fast paths.
+
+Before yielding, selection reserves its allocation high watermark, including
+failed alternatives. Resumption advances an allocation floor past foreign
+allocations without rebasing or walking earlier frames. Selection results now
+carry the existing typed lifetime proof, including its actual owned intervals.
+Restoration uses logarithmic interval membership and rejects foreign gap IDs.
+Projection and selection publication share the body reservation helper. Fresh
+declaration-template rebasing still rejects proofs with foreign gaps.
+
+Checking one prepared owner's constant member no longer requires a global header
+freeze. Exhaustive selection supplies the owner; the member check supplies its
+contract. Neither authorizes methods or validates the whole implementation.
+Final conformance, unused-item checks and coherence remain mandatory. Globally
+shared closed-dispatch proofs still require the frozen candidate inventory.
+
+The maintained source controls independently qualify eight newly accepted cases
+and five relevant rejections with pinned rustc. They also qualify a source where
+preparing a nested header allocates lifetimes in another anonymous body while the
+parent trait proof is suspended. Ten positive programs execute with both rustc
+and CPPGM, including that interleaving and a chain of 32 dependencies. Chains of
+8, 32 and 128 dependencies use 85, 157 and 445 body-work steps and exactly 8, 32
+and 128 suspensions. These are body-work counts, not whole-frontend complexity
+claims. Internal tests additionally cover 4096 unrelated candidate heads,
+competing inference alternatives, retained normalized inputs, repeated polling,
+and interleaved private lifetimes through 128 nested conditions.
+
+Full validation passes 1,260 regular tests, 86 native groups and all 4,871 PA1–PA19
+cases. Strict Clippy, formatting, the 784-file audit, harness, backend and upstream
+checks pass. All 14,613 public oracle sidecars are unchanged, and PA20–PA25 still
+reject as planned stages. The snapshot records 787 source/toolchain hashes and
+candidate binary `3d49bc0bb42062c058a2775d46dbac840d4a3e20fa3c158800e3d7419f2e1260`.
+Validation evidence is under `obj/pa20-work/header-readiness-final/`.
+
+This closes eight of the twelve qualified positive header-readiness probes.
+The two early inherent-constant cases still lack value resolution; the projected
+constant-type and projected implementation-subject cases still need associated
+type readiness. The sixth original negative probe involves unsupported inherent
+lookup and is not counted as new negative coverage. Other normalization consumers,
+remaining solver/coherence work, the extended semantic view and the public PA20
+manifest/oracles remain outstanding. PA20 through PA25 remain planned.
+
+The performance comparison uses immutable published `cbd0ca3`/`ecdeec4f` and
+candidate `3d49bc0b` binaries on fifteen frozen controls. Full and count LowIR
+outputs agree before and after measurement. Nineteen paired timing jobs, including
+four same-binary controls, retain 494 study observations and 76 full-output
+qualification observations; each observation contains four compiler invocations.
+The fifteen instruction profiles range from -0.07% to +1.83% against the published
+compiler. The constant-chain control costs +1.61% instructions and has a +2.90%
+paired median wall-time change. Other paired medians range from -4.84% to +1.10%;
+shared-host noise prevents interpreting those small changes as speedups. Calibration
+spreads reach 52.65%, and same-binary paired medians range from -0.61% to +1.27%.
+Measured median peak RSS rises by 28–628 KiB across the controls. This is a measured
+cost of the checkpoint, not a claim of zero overhead. No other RustGM validation
+or profiling overlaps the wall-time study. The original published compiler rejects
+the new header cases, so they have source qualification and structural-work bounds,
+not a claimed published-baseline speedup. The storage guard removed 6.74 GiB of
+executables/objects from full validation; only the current comparison binaries
+remain pinned.

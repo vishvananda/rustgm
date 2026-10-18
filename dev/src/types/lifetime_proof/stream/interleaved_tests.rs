@@ -114,7 +114,10 @@ fn extension_keeps_holes_and_rebasing_cannot_turn_them_into_private_variables() 
             .instantiate_at(&mut store, &mut Bound::new(Vec::new()), 20, 0)
             .is_err()
     );
-    assert!(first.restoration().is_err());
+    let mut restore = first.restoration()?;
+    assert_eq!(restore.region(RegionId(1), 0)?, RegionId::STATIC);
+    assert_eq!(restore.region(RegionId(8), 0)?, RegionId::STATIC);
+    assert!(restore.region(RegionId(4), 0).is_err());
     let mut destination = Obligations::new(1);
     assert!(destination.graft(first.clone(), ScopeId::ROOT).is_err());
     assert!(first.resume_at(2).is_err());

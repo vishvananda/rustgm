@@ -2,7 +2,7 @@
 pub(super) mod assumptions;
 pub(super) mod conformance;
 pub(in crate::sema) mod equalities;
-mod heads;
+pub(super) mod heads;
 pub(super) mod implementations;
 pub(super) mod obligations;
 pub(super) mod results;

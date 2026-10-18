@@ -130,6 +130,9 @@ impl Checker<'_> {
                             crate::sema::bodies::Requirement::Definition(definition) => {
                                 Work::Definition(definition, false)
                             }
+                            crate::sema::bodies::Requirement::ImplHeader(owner) => {
+                                Work::ImplHeader(owner, super::impl_headers::Phase::Begin)
+                            }
                         });
                     }
                     constants::ArgumentDependency::Initializer(definition) => {

@@ -12,8 +12,25 @@ enum Mode {
         first: u32,
     },
     Restore {
-        retained: std::ops::Range<u32>,
+        retained: Retained,
     },
+}
+enum Retained {
+    Interval(std::ops::Range<u32>),
+    Stream(Vec<std::ops::Range<u32>>),
+}
+impl Retained {
+    fn contains(&self, region: u32) -> bool {
+        match self {
+            Self::Interval(interval) => interval.contains(&region),
+            Self::Stream(intervals) => {
+                let index = intervals.partition_point(|interval| interval.end <= region);
+                intervals
+                    .get(index)
+                    .is_some_and(|interval| interval.start <= region)
+            }
+        }
+    }
 }
 pub(super) struct Mapping {
     mode: Mode,
@@ -64,7 +81,7 @@ impl Mapping {
             replacement
         } else if let Mode::Restore { retained } = &self.mode
             && key.bound_parts().is_none()
-            && retained.contains(&key.0)
+            && retained.contains(key.0)
         {
             key
         } else {
@@ -141,10 +158,38 @@ impl Bound {
     ) -> Self {
         let mut fold = Self::new(Vec::new());
         fold.action = Action::Regions(Box::new(Mapping {
-            mode: Mode::Restore { retained },
+            mode: Mode::Restore {
+                retained: Retained::Interval(retained),
+            },
             replacements,
         }));
         fold
+    }
+
+    /// Keep only validated owned segments; foreign gaps are never retained.
+    pub(crate) fn restore_streamed_regions(
+        replacements: HashMap<RegionId, RegionId>,
+        retained: Vec<std::ops::Range<u32>>,
+    ) -> Result<Self, &'static str> {
+        if retained.len() > 1_000_000 {
+            return Err("retained lifetime interval budget exceeded");
+        }
+        let mut end = 1;
+        for interval in &retained {
+            if interval.start < end || interval.end <= interval.start || interval.end >= 0x8000_0000
+            {
+                return Err("invalid retained lifetime intervals");
+            }
+            end = interval.end;
+        }
+        let mut fold = Self::new(Vec::new());
+        fold.action = Action::Regions(Box::new(Mapping {
+            mode: Mode::Restore {
+                retained: Retained::Stream(retained),
+            },
+            replacements,
+        }));
+        Ok(fold)
     }
 
     /// The allocated interval ends here; subsequent selection must start here.
@@ -170,5 +215,37 @@ impl Bound {
             _ => None,
         };
         replacements.into_iter().flatten().map(|(&a, &b)| (a, b))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn retained_intervals_reject_invalid_or_overlapping_free_identity_ranges() {
+        for (start, end) in [(0, 2), (2, 2), (4, 3), (1, 0x8000_0000)] {
+            let intervals = std::iter::once(start..end).collect();
+            assert!(Bound::restore_streamed_regions(HashMap::new(), intervals).is_err());
+        }
+        for intervals in [vec![1..4, 3..6], vec![5..7, 1..3]] {
+            assert!(Bound::restore_streamed_regions(HashMap::new(), intervals).is_err());
+        }
+    }
+
+    #[test]
+    fn retained_interval_boundaries_exclude_every_gap() -> Result<(), &'static str> {
+        let intervals = (1..4096).step_by(3).map(|start| start..start + 2).collect();
+        let mut fold = Bound::restore_streamed_regions(HashMap::new(), intervals)?;
+        for id in 1..4096 {
+            if id % 3 == 0 {
+                assert!(fold.region(RegionId(id), 0).is_err());
+            } else {
+                assert_eq!(fold.region(RegionId(id), 0)?, RegionId(id));
+            }
+        }
+        assert!(fold.region(RegionId(4096), 0).is_err());
+        assert_eq!(fold.region(RegionId::STATIC, 0)?, RegionId::STATIC);
+        Ok(())
     }
 }

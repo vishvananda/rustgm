@@ -1,0 +1,204 @@
+//! Candidate completeness is independent of source order and member conformance.
+use super::{Candidates, Header, Pending};
+use crate::{
+    resolve::{
+        model::DefId,
+        unit::{FileId, NodeKey},
+    },
+    sema::traits::{
+        heads::{Head, Subject},
+        implementations::{Availability, Implementation, Implementations},
+    },
+    syntax::ast::NodeId,
+    types::{
+        ItemId, Kind, Primitive, Store, TypeId,
+        infer::{Context, Instantiation},
+        parameters::predicates::{Bound, Predicate},
+        traits::Application,
+    },
+};
+
+fn header(owner: u32, item: u32, head: Option<Head>) -> Header {
+    Header {
+        owner: DefId(owner),
+        item: ItemId(item),
+        head,
+    }
+}
+fn implementation(
+    store: &mut Store,
+    owner: u32,
+    item: u32,
+    ty: TypeId,
+) -> Result<Implementation, &'static str> {
+    Ok(Implementation {
+        owner: DefId(owner),
+        source: NodeKey {
+            file: FileId(0),
+            node: NodeId(owner),
+        },
+        predicate: Predicate {
+            ty,
+            bound: Bound::Trait(store.intern_trait_application(Application {
+                item: ItemId(item),
+                arguments: crate::types::GenericArgs::EMPTY,
+            })?),
+        },
+        methods: Vec::new(),
+        types: Vec::new(),
+        constants: Vec::new(),
+    })
+}
+
+#[test]
+fn selection_waits_for_all_compatible_headers_without_unrelated_owners()
+-> Result<(), Box<dyn std::error::Error>> {
+    let mut store = Store::default();
+    let mut registry = Implementations::default();
+    registry.reserve(vec![
+        header(10, 1, Some(Head::Primitive(Primitive::U8))),
+        header(11, 1, Some(Head::Primitive(Primitive::U8))),
+        header(12, 1, Some(Head::Primitive(Primitive::U16))),
+        header(13, 1, None),
+        header(14, 2, Some(Head::Primitive(Primitive::U8))),
+    ])?;
+    let first = implementation(&mut store, 10, 1, TypeId::primitive(Primitive::U8))?;
+    let predicate = first.predicate;
+    registry.prepare(&mut store, ItemId(1), first)?;
+    let mut context = Context::default();
+    let mut substitution = Instantiation::new(&mut context, &store, &[])?;
+    let goal = context.instantiate_predicate(&mut store, predicate, &mut substitution)?;
+    assert_eq!(
+        registry.candidates(&mut store, &mut context, &goal, Availability::Declarations)?,
+        Candidates::Pending(vec![DefId(11), DefId(13)])
+    );
+    assert!(registry.finish_constant_headers().is_err());
+    assert!(!registry.constant_headers_ready());
+    let projected = implementation(&mut store, 13, 1, TypeId::primitive(Primitive::U16))?;
+    registry.prepare(&mut store, ItemId(1), projected)?;
+    assert_eq!(
+        registry.candidates(&mut store, &mut context, &goal, Availability::Declarations)?,
+        Candidates::Pending(vec![DefId(11)])
+    );
+    let alternative = implementation(&mut store, 11, 1, predicate.ty)?;
+    registry.prepare(&mut store, ItemId(1), alternative)?;
+    assert_eq!(
+        registry.candidates(&mut store, &mut context, &goal, Availability::Declarations)?,
+        Candidates::Ready(vec![DefId(10), DefId(11)])
+    );
+    assert_eq!(
+        registry.candidates(&mut store, &mut context, &goal, Availability::Validated)?,
+        Candidates::Ready(Vec::new())
+    );
+    assert!(registry.may_have_subject(ItemId(2), Subject::Rigid(Head::Primitive(Primitive::U8))));
+    assert!(!registry.may_have_subject(ItemId(2), Subject::Rigid(Head::Primitive(Primitive::U16))));
+    assert!(registry.finish_constant_headers().is_err());
+    for (owner, item, primitive) in [(12, 1, Primitive::U16), (14, 2, Primitive::U8)] {
+        let value = implementation(&mut store, owner, item, TypeId::primitive(primitive))?;
+        registry.prepare(&mut store, ItemId(item), value)?;
+    }
+    registry.finish_constant_headers()?;
+    assert!(registry.constant_headers_ready());
+    assert!(registry.pending.is_none());
+    assert_eq!(registry.validated().count(), 0);
+    Ok(())
+}
+
+#[test]
+fn pending_queries_and_retirement_do_not_walk_unrelated_headers()
+-> Result<(), Box<dyn std::error::Error>> {
+    let mut headers: Vec<_> = (0..4096)
+        .map(|id| header(id, 1, Some(Head::Nominal(ItemId(id)))))
+        .collect();
+    headers.push(header(4096, 1, None));
+    let mut pending = Pending::new(headers)?;
+    let mut context = Context::default();
+    for id in (0..4096).rev() {
+        let before = context.steps;
+        assert_eq!(
+            pending.candidates(
+                &mut context,
+                ItemId(1),
+                Some(Subject::Rigid(Head::Nominal(ItemId(id))))
+            )?,
+            [DefId(id), DefId(4096)]
+        );
+        assert_eq!(context.steps - before, 4);
+        pending.complete(DefId(id));
+    }
+    assert_eq!(pending.owners.len(), 1);
+    assert_eq!(pending.heads.len(), 1);
+    pending.complete(DefId(4096));
+    assert!(pending.is_empty());
+    assert!(pending.traits.is_empty());
+    assert!(pending.heads.is_empty());
+    Ok(())
+}
+
+#[test]
+fn unknown_projection_and_numeric_domains_keep_every_possible_candidate()
+-> Result<(), Box<dyn std::error::Error>> {
+    let pending = Pending::new(vec![
+        header(9, 1, None),
+        header(8, 1, Some(Head::Primitive(Primitive::F64))),
+        header(7, 1, Some(Head::Primitive(Primitive::I32))),
+        header(6, 1, Some(Head::Primitive(Primitive::U8))),
+        header(5, 1, Some(Head::Nominal(ItemId(2)))),
+        header(4, 2, None),
+    ])?;
+    let mut context = Context::default();
+    assert_eq!(
+        pending.candidates(&mut context, ItemId(1), Some(Subject::Integer))?,
+        [DefId(6), DefId(7), DefId(9)]
+    );
+    assert_eq!(
+        pending.candidates(&mut context, ItemId(1), Some(Subject::Float))?,
+        [DefId(8), DefId(9)]
+    );
+    for subject in [None, Some(Subject::Rigid(Head::Projection(ItemId(2))))] {
+        assert_eq!(
+            pending.candidates(&mut context, ItemId(1), subject)?,
+            [DefId(5), DefId(6), DefId(7), DefId(8), DefId(9)]
+        );
+    }
+    assert!(pending.may_have_subject(ItemId(1), Subject::Rigid(Head::Projection(ItemId(2)))));
+    assert!(
+        pending
+            .candidates(&mut context, ItemId(3), None)?
+            .is_empty()
+    );
+    Ok(())
+}
+
+#[test]
+fn header_publication_checks_reserved_identity_before_removing_dependencies()
+-> Result<(), Box<dyn std::error::Error>> {
+    let mut store = Store::default();
+    let mut registry = Implementations::default();
+    registry.reserve(vec![header(10, 1, Some(Head::Primitive(Primitive::U8)))])?;
+    assert!(registry.reserve(Vec::new()).is_err());
+    for (owner, item, ty) in [
+        (10, 2, Primitive::U8),
+        (10, 1, Primitive::U16),
+        (11, 1, Primitive::U8),
+    ] {
+        let value = implementation(&mut store, owner, item, TypeId::primitive(ty))?;
+        assert!(registry.prepare(&mut store, ItemId(item), value).is_err());
+        assert_eq!(registry.headers().count(), 0);
+        assert!(registry.finish_constant_headers().is_err());
+    }
+    let value = implementation(&mut store, 10, 1, TypeId::primitive(Primitive::U8))?;
+    registry.prepare(&mut store, ItemId(1), value)?;
+    registry.finish_constant_headers()?;
+    assert!(registry.reserve(Vec::new()).is_err());
+    let extra = implementation(&mut store, 11, 1, TypeId::primitive(Primitive::U8))?;
+    assert!(registry.prepare(&mut store, ItemId(1), extra).is_err());
+    assert!(
+        Pending::new(vec![
+            header(1, 1, None),
+            header(1, 2, Some(Head::canonical(Kind::Never)))
+        ])
+        .is_err()
+    );
+    Ok(())
+}

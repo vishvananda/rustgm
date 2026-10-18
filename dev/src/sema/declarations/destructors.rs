@@ -1,9 +1,8 @@
 //! Elaborate destructor targets once and retain their lifetime environments.
 mod coverage;
 mod headers;
-mod heads;
 mod receivers;
-use super::{Checker, Error, Type};
+use super::{Checker, Error, Type, heads};
 use crate::{sema::destructors::Implementation, types::outlives::Queries};
 
 pub(super) struct Pending {

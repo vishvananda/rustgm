@@ -1,5 +1,7 @@
 //! Prepared headers may discharge declaration obligations; bodies require completed impls.
 mod member_contracts;
+mod pending;
+pub(in crate::sema) use pending::{Candidates, Header as PendingHeader};
 pub(in crate::sema) mod overlap;
 use super::heads::{Head, Subject};
 use crate::{
@@ -36,6 +38,7 @@ struct Entry {
 #[derive(Default)]
 pub(in crate::sema) struct Implementations {
     constant_headers_ready: bool,
+    pending: Option<Box<pending::Pending>>,
     entries: Vec<Entry>,
     owners: HashMap<DefId, usize>,
     traits: HashMap<ItemId, Vec<usize>>,
@@ -46,8 +49,19 @@ pub(in crate::sema) struct Implementations {
     pairs: Vec<(usize, usize)>,
 }
 impl Implementations {
+    /// Reserve the complete source inventory before any early candidate selection.
+    pub fn reserve(&mut self, headers: Vec<PendingHeader>) -> Result<(), &'static str> {
+        if self.pending.is_some() || !self.entries.is_empty() || self.constant_headers_ready {
+            return Err("implementation candidate inventory is already initialized");
+        }
+        self.pending = Some(Box::new(pending::Pending::new(headers)?));
+        Ok(())
+    }
     pub(super) fn may_have_subject(&self, item: ItemId, subject: Subject) -> bool {
-        self.heads.contains_key(&(item, None))
+        self.pending
+            .as_ref()
+            .is_some_and(|pending| pending.may_have_subject(item, subject))
+            || self.heads.contains_key(&(item, None))
             || subject
                 .heads()
                 .any(|head| self.heads.contains_key(&(item, Some(head))))
@@ -58,7 +72,7 @@ impl Implementations {
         context: &mut crate::types::infer::Context,
         goal: &crate::types::infer::predicates::Predicate,
         availability: Availability,
-    ) -> Result<Vec<DefId>, crate::types::infer::Error> {
+    ) -> Result<Candidates, crate::types::infer::Error> {
         use crate::types::infer::Error;
         let (item, _) = goal.trait_arguments().ok_or(Error::InvalidIdentity)?;
         let subject = match Subject::query(store, context, goal.subject()) {
@@ -70,8 +84,14 @@ impl Implementations {
             ))),
             Err(error) => return Err(error),
         };
+        if let Some(pending) = &self.pending {
+            let owners = pending.candidates(context, item, subject)?;
+            if !owners.is_empty() {
+                return Ok(Candidates::Pending(owners));
+            }
+        }
         let Some(subject) = subject else {
-            return Ok(Vec::new());
+            return Ok(Candidates::Ready(Vec::new()));
         };
         let shape = match context.resolved_predicate(store, goal) {
             Ok(value)
@@ -116,7 +136,7 @@ impl Implementations {
             &mut result,
         )?;
         result.sort_unstable_by_key(|id| id.0);
-        Ok(result)
+        Ok(Candidates::Ready(result))
     }
     fn append_candidates(
         &self,
@@ -155,6 +175,9 @@ impl Implementations {
         } else {
             Some(Head::canonical(kind))
         };
+        if let Some(pending) = &self.pending {
+            pending.validate(value.owner, item, head)?;
+        }
         let shape = if value.predicate.contains_parameters(store)? {
             None
         } else {
@@ -206,6 +229,9 @@ impl Implementations {
             self.closed.entry((item, shape)).or_default().push(index);
         } else {
             self.open.entry((item, head)).or_default().push(index);
+        }
+        if let Some(pending) = &mut self.pending {
+            pending.complete(value.owner);
         }
         self.entries.push(Entry {
             value,

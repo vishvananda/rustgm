@@ -19,6 +19,7 @@ pub(super) struct Frame {
     pub canonical: Option<Predicate>,
     pub cycles: usize,
     pub candidates: Vec<DefId>,
+    pub pending_headers: Option<std::vec::IntoIter<DefId>>,
     pub cursor: usize,
     pub trial: Option<Trial>,
     pub selected: Option<usize>,
@@ -62,6 +63,7 @@ impl Frame {
             canonical: None,
             cycles: 0,
             candidates: Vec::new(),
+            pending_headers: None,
             cursor: 0,
             trial: None,
             selected: None,
@@ -70,12 +72,17 @@ impl Frame {
     }
 }
 impl Trial {
-    pub fn new(facts: &mut Declarations, frame: &mut Frame, owner: DefId) -> Result<Self, String> {
+    pub fn new(
+        facts: &mut Declarations,
+        frame: &mut Frame,
+        owner: DefId,
+        floor: u32,
+    ) -> Result<Self, String> {
         let mut context = Context::default();
         let goal = context
             .import_predicate(&facts.types, &mut frame.context, &frame.goal)
             .map_err(inference)?;
-        let first = frame.available_region();
+        let first = frame.available_region().max(floor);
         let instance = instantiation::instantiate(facts, &mut context, owner, first)?;
         let end = first
             + u32::try_from(instance.regions.len()).map_err(|_| "impl region count overflow")?;
@@ -132,7 +139,7 @@ impl Search<'_> {
             }
             if let Bound::Outlives(region) = bound {
                 requirements.type_outlives.push((ty, region));
-            } else if !self.builtins.prove(facts, Predicate { ty, bound })? {
+            } else if !self.query.builtins.prove(facts, Predicate { ty, bound })? {
                 return Ok(Some(Decision::Absent));
             } else if bound == Bound::Sized && self.caller.retain_sized {
                 requirements.sized.push(ty);
@@ -151,8 +158,8 @@ impl Search<'_> {
             Err(infer::Error::Unresolved) => return Ok(Some(Decision::Deferred)),
             Err(error) => return Err(inference(error)),
         };
-        let node = self.nodes.len();
-        self.nodes.push(Node {
+        let node = self.query.nodes.len();
+        self.query.nodes.push(Node {
             goal,
             source: Some(Source::Implementation {
                 owner: trial.instance.owner,

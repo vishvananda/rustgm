@@ -1,4 +1,5 @@
 //! Exact outer constructors, before const arguments or field graphs are evaluated.
+use crate::sema::traits::heads::Head as Rigid;
 use crate::{
     resolve::{
         expansion::Report,
@@ -11,13 +12,16 @@ use crate::{
         ast::{Kind, TypeFlavor},
         item::{GenericFlavor, ItemKind},
     },
-    types::ItemId,
+    types::{ItemId, Primitive},
 };
 use std::collections::HashMap;
+#[cfg(test)]
+#[path = "../../../tests/invariants/header_heads.rs"]
+mod tests;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum Head {
-    Nominal(ItemId),
+    Known(Rigid),
     Parameter(DefId),
     Other,
 }
@@ -73,6 +77,19 @@ impl<'a> Heads<'a> {
         }
     }
     pub(super) fn target(&mut self, key: NodeKey) -> Result<Option<ItemId>, Error> {
+        Ok(match self.shape(key)? {
+            Some(Rigid::Nominal(item)) => Some(item),
+            _ => None,
+        })
+    }
+    /// Only exact resolved outer constructors exclude pending candidates.
+    pub(super) fn shape(&mut self, key: NodeKey) -> Result<Option<Rigid>, Error> {
+        Ok(match self.demand(key)? {
+            Head::Known(head) => Some(head),
+            Head::Parameter(_) | Head::Other => None,
+        })
+    }
+    fn demand(&mut self, key: NodeKey) -> Result<Head, Error> {
         let query = Query::Node(key);
         self.work.push(Work::Enter(query));
         while let Some(work) = self.work.pop() {
@@ -104,10 +121,7 @@ impl<'a> Heads<'a> {
                 }
             }
         }
-        Ok(match self.value(query)? {
-            Head::Nominal(item) => Some(item),
-            Head::Parameter(_) | Head::Other => None,
-        })
+        self.value(query)
     }
     fn error(&self, key: NodeKey, message: &'static str) -> Error {
         Declarations::error(self.report, key, message)
@@ -173,13 +187,28 @@ impl<'a> Heads<'a> {
             self.forward(query, Query::Node(NodeKey { node, ..key }));
             return;
         }
+        if let Some(head) = Self::syntax_shape(ast.node(key.node).kind) {
+            self.complete(query, Head::Known(head));
+            return;
+        }
         let Some(Target::Definition(id)) = self.facts.node(key).and_then(|f| f.reference) else {
             self.complete(query, Head::Other);
             return;
         };
         let head = match self.report.resolution.definitions[id.0 as usize].kind {
-            DefKind::Struct | DefKind::Enum => Head::Nominal(ItemId(id.0)),
-            DefKind::TypeAlias => {
+            DefKind::Struct | DefKind::Enum => Head::Known(Rigid::Nominal(ItemId(id.0))),
+            DefKind::Primitive => Primitive::ALL
+                .into_iter()
+                .find(|p| {
+                    p.name()
+                        == self
+                            .report
+                            .package
+                            .names
+                            .get(self.report.resolution.definitions[id.0 as usize].name)
+                })
+                .map_or(Head::Other, |p| Head::Known(Rigid::Primitive(p))),
+            DefKind::TypeAlias if self.facts.associated.owner(id).is_none() => {
                 self.work.push(Work::Apply(query, key, id));
                 self.work.push(Work::Enter(Query::Alias(id)));
                 return;
@@ -191,12 +220,33 @@ impl<'a> Heads<'a> {
         };
         self.complete(query, head);
     }
+    fn syntax_shape(kind: Kind) -> Option<Rigid> {
+        Some(match kind {
+            Kind::Type { flavor, .. } => match flavor {
+                TypeFlavor::Path => return None,
+                TypeFlavor::Tuple => Rigid::Tuple,
+                TypeFlavor::Slice => Rigid::Slice,
+                TypeFlavor::Array => Rigid::Array,
+                TypeFlavor::Ref => Rigid::Reference(false),
+                TypeFlavor::RefMut => Rigid::Reference(true),
+                TypeFlavor::PointerConst => Rigid::Pointer(false),
+                TypeFlavor::PointerMut => Rigid::Pointer(true),
+            },
+            Kind::FunctionType(_) => Rigid::Function,
+            Kind::NeverType => Rigid::Never,
+            _ => return None,
+        })
+    }
     fn alias(&mut self, id: DefId) -> Result<Alias, Error> {
         if let Some(alias) = self.aliases.get(&id) {
             return Ok(*alias);
         }
         let source = self.key(Query::Alias(id))?;
-        let item = super::headers::item(self.report, source)?;
+        let ast = &self.report.package.unit(source.file).configured.ast;
+        let Kind::Item(index) = ast.node(source.node).kind else {
+            return Err(self.error(source, "missing alias head item"));
+        };
+        let item = ast.items[index as usize];
         let ItemKind::TypeAlias { ty: Some(node), .. } = item.kind else {
             return Err(self.error(source, "missing alias head template"));
         };

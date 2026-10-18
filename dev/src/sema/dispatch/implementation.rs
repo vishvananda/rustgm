@@ -39,8 +39,7 @@ pub(super) fn select(
     let selection::Source::Implementation { owner, arguments } = evidence.source else {
         return Err("concrete dispatch cannot use a symbolic assumption".into());
     };
-    let mut proof = Obligations::new(evidence.regions.start);
-    proof.append(evidence)?;
+    let mut proof = evidence.proof;
     proof
         .equalities
         .extend(context.region_equalities.drain(before..));

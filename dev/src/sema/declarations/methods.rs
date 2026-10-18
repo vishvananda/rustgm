@@ -87,46 +87,31 @@ impl Checker<'_> {
     ) -> Result<(), Error> {
         for index in 0..self.facts.associated.owners().len() {
             let owner = self.facts.associated.owners()[index];
-            let OwnerKind::Impl {
-                target,
-                trait_type: None,
-                unsafe_,
-                negative,
-            } = owner.kind
-            else {
-                continue;
-            };
-            let key = owner.source;
-            if unsafe_ || negative {
-                return Err(self.error(key, "inherent impls cannot be unsafe or negative"));
+            if matches!(
+                owner.kind,
+                OwnerKind::Impl {
+                    trait_type: None,
+                    ..
+                }
+            ) {
+                self.work.push(super::Work::ImplHeader(
+                    owner.self_definition,
+                    super::impl_headers::Phase::Begin,
+                ));
+                self.drain(steps, limit)?;
             }
-            let header = self.impl_header(owner.self_definition, key, target, steps, limit)?;
-            let self_type = header.schema.self_type;
-            if !matches!(self.facts.types.kind(self_type), Some(Type::Adt(..))) {
-                return Err(self.error(target, "inherent impl requires a local nominal type"));
-            }
-            self.complete_impl_owner(owner.self_definition, key, header, steps, limit)?;
-            self.impl_parameters(
-                owner.self_definition,
-                key,
-                crate::types::parameters::predicates::Predicate {
-                    ty: self_type,
-                    bound: crate::types::parameters::predicates::Bound::Sized,
-                },
-            )?;
         }
+        Ok(())
+    }
+
+    /// Resolved ownership does not imply that the owner's environment is ready.
+    pub(super) fn reserve_member_parents(&mut self) {
         for member in self.facts.associated.members() {
             let owner = self.facts.associated.owners()[member.owner.0 as usize];
-            if self
-                .facts
-                .associated
-                .schema(owner.self_definition)
-                .is_some()
-                && matches!(
-                    self.report.resolution.definitions[member.definition.0 as usize].kind,
-                    DefKind::Function | DefKind::Const
-                )
-            {
+            if matches!(
+                self.report.resolution.definitions[member.definition.0 as usize].kind,
+                DefKind::Function | DefKind::Const
+            ) {
                 self.facts.generics.parents.insert(
                     member.definition,
                     self.facts
@@ -136,7 +121,6 @@ impl Checker<'_> {
                 );
             }
         }
-        Ok(())
     }
     pub(super) fn signature_binder(
         &mut self,

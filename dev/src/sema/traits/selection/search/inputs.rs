@@ -146,18 +146,22 @@ impl Search<'_> {
             // Projection inputs were already resolved before normalization began.
             frame
                 .context
-                .equate_proved_predicate(&mut facts.types, &frame.goal, self.nodes[selected].goal)
+                .equate_proved_predicate(
+                    &mut facts.types,
+                    &frame.goal,
+                    self.query.nodes[selected].goal,
+                )
                 .map_err(inference)?;
             frame
                 .context
                 .resolved_predicate(&mut facts.types, &inputs.original)
                 .map_err(inference)?
         };
-        let source = self.nodes[selected].source;
-        let end = normalization.end.max(self.nodes[selected].end);
+        let source = self.query.nodes[selected].source;
+        let end = normalization.end.max(self.query.nodes[selected].end);
         let children = normalization.proof.into_iter().chain([selected]).collect();
-        let index = self.nodes.len();
-        self.nodes.push(Node {
+        let index = self.query.nodes.len();
+        self.query.nodes.push(Node {
             goal,
             source,
             children,
@@ -179,12 +183,12 @@ impl Search<'_> {
         // A completed result may outlive the candidate which normalized its
         // inputs. Keep the complete proof graph, including earlier existential
         // intervals: such nodes cannot enter the region-free completed cache.
-        let node = &self.nodes[selected];
-        let first = node.first.min(self.nodes[prefix].first);
-        let end = node.end.max(self.nodes[prefix].end);
+        let node = &self.query.nodes[selected];
+        let first = node.first.min(self.query.nodes[prefix].first);
+        let end = node.end.max(self.query.nodes[prefix].end);
         let (goal, source) = (node.goal, node.source);
-        let index = self.nodes.len();
-        self.nodes.push(Node {
+        let index = self.query.nodes.len();
+        self.query.nodes.push(Node {
             goal,
             source,
             children: vec![prefix, selected],
@@ -195,7 +199,7 @@ impl Search<'_> {
             type_outlives: Vec::new(),
             sized: Vec::new(),
         });
-        self.reused = true;
+        self.query.reused = true;
         index
     }
 }

@@ -40,8 +40,8 @@ impl Subject {
 }
 
 /// Coarse candidate keys exclude lifetimes and children; complete equations still prove equality.
-#[derive(Clone, Copy, PartialEq, Eq, Hash)]
-pub(super) enum Head {
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub(in crate::sema) enum Head {
     Primitive(Primitive),
     Parameter(crate::types::parameters::ParameterId),
     Projection(ItemId),

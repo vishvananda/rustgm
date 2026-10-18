@@ -8,8 +8,17 @@ pub(in crate::sema) struct ConstantRequest {
 }
 
 impl Implementations {
-    pub(in crate::sema) fn finish_constant_headers(&mut self) {
+    pub(in crate::sema) fn finish_constant_headers(&mut self) -> Result<(), &'static str> {
+        if self
+            .pending
+            .as_ref()
+            .is_some_and(|pending| !pending.is_empty())
+        {
+            return Err("implementation candidate inventory still has pending headers");
+        }
+        self.pending = None;
         self.constant_headers_ready = true;
+        Ok(())
     }
 
     pub(in crate::sema) fn constant_headers_ready(&self) -> bool {
@@ -38,9 +47,9 @@ impl Implementations {
         request: ConstantRequest,
         definition: DefId,
     ) -> Result<(), &'static str> {
-        if !self.constant_headers_ready {
-            return Err("constant readiness requires complete candidate headers");
-        }
+        // This records one owner's checked contract, not selection authority.
+        // The requester selects that owner through the exhaustive candidate query;
+        // unrelated pending headers need not block this member's validation.
         let index = *self
             .owners
             .get(&request.owner)

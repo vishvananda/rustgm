@@ -162,8 +162,10 @@ stage must not acquire an unregistered executable manifest or empty-suite succes
 Student export is a later operation: this repository owns the full solution.
 
 The current maintainer implementation has substantial coverage of associated types,
-associated constants and the solver. Declaration-time constant-argument dependencies,
-remaining normalization/coherence work, the extended semantic view and the public
-grading suite are still required. The maintainer journal in
+associated constants and the solver. Trait constants in implementation headers can
+wait for compatible headers while preserving inference and lifetime evidence.
+Remaining work includes early inherent-constant lookup, associated-type readiness
+inside implementation headers, further normalization/coherence work, the extended
+semantic view and the public grading suite. The maintainer journal in
 `docs/pa18-pa21-buildout.md` records evidence and known gaps; individual checkpoints
 do not reduce the requirements above.

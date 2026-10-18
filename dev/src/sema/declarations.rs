@@ -8,6 +8,7 @@ mod deferred_arguments;
 mod destructors;
 mod evaluation;
 mod generics;
+mod heads;
 mod impl_headers;
 mod implicit_methods;
 mod lifetimes;
@@ -54,6 +55,7 @@ enum SignaturePhase {
 }
 #[derive(Clone, Copy)]
 enum Work {
+    ImplHeader(DefId, impl_headers::Phase),
     ConstantMember(crate::sema::traits::implementations::ConstantRequest, bool),
     MethodPrefix(NodeKey, regions::Context),
     InherentMethod(NodeKey, associated::Path, regions::Context),
@@ -99,6 +101,7 @@ struct Signature {
     unsafe_: bool,
 }
 struct Checker<'a> {
+    impl_headers: impl_headers::Pending,
     constant_members: traits::ConstantReadiness,
     associated_type_bounds: std::collections::HashMap<DefId, traits::AssociatedBounds>,
     associated_bindings: generics::bindings::Pending,
@@ -144,6 +147,7 @@ pub fn analyze(report: &Report) -> Result<Declarations, Error> {
         ));
     }
     let mut checker = Checker {
+        impl_headers: impl_headers::Pending::default(),
         constant_members: traits::ConstantReadiness::default(),
         associated_type_bounds: std::collections::HashMap::new(),
         associated_bindings: generics::bindings::Pending::default(),
@@ -178,7 +182,9 @@ pub fn analyze(report: &Report) -> Result<Declarations, Error> {
 }
 impl Checker<'_> {
     fn run(&mut self) -> Result<(), Error> {
+        self.reserve_member_parents();
         self.reserve_nominals()?;
+        self.reserve_implementation_candidates()?;
         let mut steps = 0_usize;
         // Linear declaration work is bounded by the input graph, not by a fixed
         // whole-crate size. Alias states diagnose cycles independently.
@@ -258,6 +264,7 @@ impl Checker<'_> {
                 ));
             }
             match work {
+                Work::ImplHeader(owner, phase) => self.advance_impl_header(owner, phase)?,
                 Work::ConstantMember(request, finish) => {
                     self.constant_member(request, finish)?;
                 }

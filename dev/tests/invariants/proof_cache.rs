@@ -30,7 +30,9 @@ impl Sources for NoFiles {
         Ok(None)
     }
 }
-fn declarations(source: &str) -> Result<(Report, Declarations), Box<dyn std::error::Error>> {
+pub(super) fn declarations(
+    source: &str,
+) -> Result<(Report, Declarations), Box<dyn std::error::Error>> {
     let report = resolve::analyze_expanded(resolve::expansion::analyze(
         InputFile {
             identity: "cache.rs".into(),
@@ -43,7 +45,7 @@ fn declarations(source: &str) -> Result<(Report, Declarations), Box<dyn std::err
     let facts = crate::sema::declarations::analyze(&report)?;
     Ok((report, facts))
 }
-fn definition(report: &Report, name: &str) -> Result<DefId, Box<dyn std::error::Error>> {
+pub(super) fn definition(report: &Report, name: &str) -> Result<DefId, Box<dyn std::error::Error>> {
     let index = report
         .resolution
         .definitions
@@ -52,7 +54,7 @@ fn definition(report: &Report, name: &str) -> Result<DefId, Box<dyn std::error::
         .ok_or("missing test declaration")?;
     Ok(DefId(u32::try_from(index)?))
 }
-fn predicate(
+pub(super) fn predicate(
     facts: &mut Declarations,
     item: DefId,
     ty: TypeId,
@@ -66,7 +68,7 @@ fn predicate(
         })?),
     })
 }
-fn instantiate(
+pub(super) fn instantiate(
     facts: &mut Declarations,
     predicate: Predicate,
 ) -> Result<(Context, Goal), crate::types::infer::Error> {
@@ -75,7 +77,7 @@ fn instantiate(
     let goal = context.instantiate_predicate(&mut facts.types, predicate, &mut substitution)?;
     Ok((context, goal))
 }
-fn caller<'a>(
+pub(super) fn caller<'a>(
     assumptions: &'a Assumptions,
     environment: Option<&'a Arc<Environment>>,
 ) -> Caller<'a> {
@@ -121,18 +123,19 @@ fn repeated_failed_conditions_share_one_completed_chain() -> Result<(), Box<dyn 
     let Decision::Proven(root) = search.run(&mut facts, first)? else {
         return Err("failed conditions hid the unique applicable implementation".into());
     };
-    context.equate_trait_predicate(&mut facts.types, &goal, search.nodes[root].goal)?;
+    context.equate_trait_predicate(&mut facts.types, &goal, search.query.nodes[root].goal)?;
     assert_eq!(context.resolved(&mut facts.types, unknown)?, TypeId::UNIT);
-    assert_eq!(search.cycles, 0);
+    assert_eq!(search.query.cycles, 0);
     assert_eq!(
         search
+            .query
             .completed
             .values()
             .filter(|d| **d == Decision::Absent)
             .count(),
         32
     );
-    assert!(search.steps < 30_000, "{}", search.steps);
+    assert!(search.query.steps < 30_000, "{}", search.query.steps);
     Ok(())
 }
 
@@ -152,9 +155,9 @@ fn inductive_cycle_does_not_publish_negative_answers() -> Result<(), Box<dyn std
     let mut search = Search::new(caller(&assumptions, None), Availability::Validated);
     let first = Frame::new(&facts, &mut context, &goal, 1)?;
     assert_eq!(search.run(&mut facts, first)?, Decision::Absent);
-    assert_eq!(search.cycles, 1);
-    assert!(search.completed.is_empty());
-    assert!(search.active.is_empty());
+    assert_eq!(search.query.cycles, 1);
+    assert!(search.query.completed.is_empty());
+    assert!(search.query.active.is_empty());
     Ok(())
 }
 
@@ -292,13 +295,13 @@ fn exhausted_work_does_not_become_a_negative_result() -> Result<(), Box<dyn std:
     let (mut context, goal) = instantiate(&mut facts, root)?;
     let assumptions = Assumptions::default();
     let mut search = Search::new(caller(&assumptions, None), Availability::Validated);
-    search.steps = 1_000_000;
+    search.query.steps = 1_000_000;
     let first = Frame::new(&facts, &mut context, &goal, 1)?;
     assert_eq!(
         search.run(&mut facts, first),
         Err("trait selection work budget exceeded".into())
     );
-    assert!(search.completed.is_empty());
+    assert!(search.query.completed.is_empty());
     Ok(())
 }
 
@@ -335,11 +338,12 @@ fn repeated_unsatisfied_equalities_share_a_scoped_negative_proof()
     let Decision::Proven(root) = search.run(&mut facts, first)? else {
         return Err("unsatisfied equalities hid the applicable implementation".into());
     };
-    context.equate_proved_predicate(&mut facts.types, &goal, search.nodes[root].goal)?;
+    context.equate_proved_predicate(&mut facts.types, &goal, search.query.nodes[root].goal)?;
     assert_eq!(context.resolved(&mut facts.types, unknown)?, TypeId::UNIT);
-    assert!(search.reused);
+    assert!(search.query.reused);
     assert_eq!(
         search
+            .query
             .completed
             .iter()
             .filter(|(p, result)| matches!(p.bound, Bound::ProjectionEqual(_))
@@ -347,8 +351,8 @@ fn repeated_unsatisfied_equalities_share_a_scoped_negative_proof()
             .count(),
         1
     );
-    assert_eq!(search.cycles, 0);
-    assert!(search.steps < 20_000, "{}", search.steps);
+    assert_eq!(search.query.cycles, 0);
+    assert!(search.query.steps < 20_000, "{}", search.query.steps);
     Ok(())
 }
 
@@ -389,11 +393,12 @@ fn repeated_projected_trait_conditions_share_a_negative_proof()
     let Decision::Proven(root) = search.run(&mut facts, first)? else {
         return Err("unsatisfied projected conditions hid the applicable implementation".into());
     };
-    context.equate_proved_predicate(&mut facts.types, &goal, search.nodes[root].goal)?;
+    context.equate_proved_predicate(&mut facts.types, &goal, search.query.nodes[root].goal)?;
     assert_eq!(context.resolved(&mut facts.types, unknown)?, TypeId::UNIT);
-    assert!(search.reused);
+    assert!(search.query.reused);
     assert_eq!(
         search
+            .query
             .completed
             .iter()
             .filter(|(p, result)| matches!(p.bound, Bound::Trait(_))
@@ -402,8 +407,8 @@ fn repeated_projected_trait_conditions_share_a_negative_proof()
             .count(),
         1
     );
-    assert_eq!(search.cycles, 0);
-    assert!(search.steps < 20_000, "{}", search.steps);
+    assert_eq!(search.query.cycles, 0);
+    assert!(search.query.steps < 20_000, "{}", search.query.steps);
     Ok(())
 }
 
@@ -487,24 +492,29 @@ fn recursive_result_inputs_reuse_their_completed_parent_proofs()
         let Decision::Proven(root) = search.run(&mut facts, first)? else {
             return Err("finite recursive result chain was not proved".into());
         };
-        assert_eq!(search.nodes[root].goal, query);
-        assert_eq!(search.cycles, 0);
+        assert_eq!(search.query.nodes[root].goal, query);
+        assert_eq!(search.query.cycles, 0);
         // Each distinct application contributes bounded selection and proof
         // work; previously completed prefixes remain shared canonical inputs.
         assert!(
-            search.steps < 512 * (depth + 1),
+            search.query.steps < 512 * (depth + 1),
             "depth {depth}: {} steps",
-            search.steps
+            search.query.steps
         );
-        assert!(search.nodes.len() < 5 * (depth + 1));
-        let edges: usize = search.nodes.iter().map(|node| node.children.len()).sum();
+        assert!(search.query.nodes.len() < 5 * (depth + 1));
+        let edges: usize = search
+            .query
+            .nodes
+            .iter()
+            .map(|node| node.children.len())
+            .sum();
         assert!(
             edges < 8 * (depth + 1),
             "depth {depth}: {edges} proof edges"
         );
         let evidence = search.evidence(root)?;
-        assert!(evidence.regions.is_empty());
-        assert!(evidence.equalities.is_empty());
+        assert!(evidence.proof.regions.is_empty());
+        assert!(evidence.proof.equalities.is_empty());
     }
     Ok(())
 }
@@ -560,6 +570,7 @@ fn cached_normalized_result_keeps_its_inputs_lifetime_equations()
         Decision::Proven(_)
     ));
     let cached = search
+        .query
         .completed
         .iter()
         .find_map(|(predicate, decision)| {
@@ -574,8 +585,8 @@ fn cached_normalized_result_keeps_its_inputs_lifetime_equations()
         .ok_or("missing reusable derived result")?;
     // This child must remain valid even if its original candidate is discarded.
     let proof = search.evidence(cached)?;
-    assert!(proof.regions.is_empty());
-    assert!(proof.equalities.iter().any(
+    assert!(proof.proof.regions.is_empty());
+    assert!(proof.proof.equalities.iter().any(
         |&(a, b)| (a, b) == (RegionId(1), RegionId(2)) || (a, b) == (RegionId(2), RegionId(1))
     ));
     Ok(())
@@ -652,14 +663,15 @@ fn normalized_inputs_keep_fresh_impl_debts_out_of_the_reusable_cache()
     };
     assert!(
         search
+            .query
             .completed
             .iter()
             .all(|(predicate, _)| facts.types.contains_projections(predicate.ty) == Some(false))
     );
     let proof = search.evidence(root)?;
-    assert!(proof.regions.end > 3);
-    assert!(!proof.outlives.is_empty());
-    assert!(!proof.equalities.is_empty());
+    assert!(proof.proof.regions.end > 3);
+    assert!(!proof.proof.outlives.is_empty());
+    assert!(!proof.proof.equalities.is_empty());
     Ok(())
 }
 

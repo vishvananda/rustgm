@@ -7,20 +7,21 @@ mod result_templates;
 mod search;
 use super::assumptions::{Assumptions, Selection as Assumed};
 use super::implementations::Availability;
+use super::obligations::Obligations;
 use crate::{
     resolve::model::DefId,
     sema::model::Declarations,
     types::{
         GenericArgs, RegionId, TypeId,
         infer::{self, Context, predicates::Predicate as Goal},
-        outlives::Pair,
         parameters::{environment::Environment, predicates::Predicate},
     },
 };
 pub(in crate::sema) use known_premises::opaque_normalized;
 pub(in crate::sema) use readiness::{has_known_subject, requires_resolved_inputs};
 pub(in crate::sema) use result_templates::symbolic_result;
-use std::{ops::Range, sync::Arc};
+pub(in crate::sema) use search::{Pending, Progress, begin};
+use std::sync::Arc;
 
 #[derive(Clone, Copy)]
 pub(in crate::sema) enum Source {
@@ -35,10 +36,7 @@ pub(in crate::sema) enum Source {
 }
 pub(in crate::sema) struct Evidence {
     pub source: Source,
-    pub regions: Range<u32>,
-    pub equalities: Vec<Pair>,
-    pub outlives: Vec<Pair>,
-    pub type_outlives: Vec<(TypeId, RegionId)>,
+    pub proof: Obligations,
     pub sized: Vec<TypeId>,
 }
 pub(in crate::sema) enum Selection {
@@ -52,6 +50,12 @@ pub(in crate::sema) struct Caller<'a> {
     /// First unused free region identity in the caller's eventual proof graph.
     pub first_region: u32,
     /// Alias normalization retains builtin premises whose implicit parameter bounds are unenforced.
+    pub retain_sized: bool,
+}
+pub(in crate::sema) struct OwnedCaller {
+    pub assumptions: Arc<Assumptions>,
+    pub environment: Option<Arc<Environment>>,
+    pub first_region: u32,
     pub retain_sized: bool,
 }
 
@@ -178,10 +182,7 @@ pub(in crate::sema) fn select_assumption(
     match caller.assumptions.select(store, context, goal)? {
         Assumed::Proven(proof) => Ok(Selection::Proven(Evidence {
             source: Source::Assumption(proof.assumption()),
-            regions: caller.first_region..caller.first_region,
-            equalities: Vec::new(),
-            outlives: Vec::new(),
-            type_outlives: Vec::new(),
+            proof: Obligations::new(caller.first_region),
             sized: Vec::new(),
         })),
         Assumed::Deferred => Ok(Selection::Deferred),

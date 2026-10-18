@@ -454,7 +454,7 @@ fn trait_requirements(
             {
                 Selection::Absent => return Ok(false),
                 Selection::Deferred => next.push(goal),
-                Selection::Proven(proof) => first_region = proof.regions.end,
+                Selection::Proven(proof) => first_region = proof.proof.regions.end,
             }
         }
         if next.len() == before {

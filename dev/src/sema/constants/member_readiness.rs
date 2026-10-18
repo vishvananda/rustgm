@@ -33,25 +33,6 @@ impl Queries<'_> {
         let mut pending = HashSet::new();
         for mut instance in instances {
             self.budget()?;
-            if self
-                .typing
-                .facts
-                .associated
-                .trait_owner(instance.definition)
-                .is_some()
-                && !self
-                    .typing
-                    .facts
-                    .generics
-                    .implementations
-                    .as_ref()
-                    .is_some_and(|registry| registry.constant_headers_ready())
-            {
-                return Err(self.error(
-                    query,
-                    "constant selection requires complete candidate headers",
-                ));
-            }
             if let Some(fold) = &mut substitution {
                 instance = instance
                     .substitute(&mut self.typing.facts.types, fold)

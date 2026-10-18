@@ -17,7 +17,6 @@ impl Obligations {
     }
 
     fn restore(&self, retain_private: bool) -> Result<Bound, &'static str> {
-        let owned = self.template_interval()?;
         if self.equalities.len() > 1_000_000 {
             return Err("lifetime restoration work budget exceeded");
         }
@@ -39,8 +38,8 @@ impl Obligations {
             let mut anchor: Option<RegionId> = None;
             while let Some(region) = pending.pop() {
                 component.push(region);
-                if !self.regions.contains(&region.0) {
-                    if region.bound_parts().is_none() && region.0 >= self.regions.end {
+                if !self.owns_region(region) {
+                    if region.bound_parts().is_none() && region.0 >= self.regions.start {
                         return Err("lifetime restoration contains a foreign free identity");
                     }
                     if anchor.is_none_or(|previous| region.0 < previous.0) {
@@ -59,17 +58,48 @@ impl Obligations {
                 }
             }
         }
-        Ok(if retain_private {
-            Bound::restore_owned_regions(replacements, owned)
+        if !retain_private {
+            Ok(Bound::restore_regions(replacements))
+        } else if self.has_gaps() {
+            Bound::restore_streamed_regions(replacements, self.owned_regions().collect())
         } else {
-            Bound::restore_regions(replacements)
-        })
+            Ok(Bound::restore_owned_regions(
+                replacements,
+                self.regions.clone(),
+            ))
+        }
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn streamed_components_restore_caller_anchors_without_admitting_foreign_ids()
+    -> Result<(), &'static str> {
+        let mut proof = Obligations::new(10);
+        proof.regions.end = 12;
+        proof.resume_at(20)?;
+        proof.regions.end = 22;
+        proof.equalities.extend([
+            (RegionId(10), RegionId(20)),
+            (RegionId(20), RegionId(3)),
+            (RegionId(11), RegionId(21)),
+        ]);
+        let mut anchored = proof.restoration()?;
+        assert_eq!(anchored.region(RegionId(10), 0)?, RegionId(3));
+        assert_eq!(anchored.region(RegionId(20), 0)?, RegionId(3));
+        assert!(anchored.region(RegionId(21), 0).is_err());
+        let mut retained = proof.body_restoration()?;
+        assert_eq!(retained.region(RegionId(11), 0)?, RegionId(11));
+        assert_eq!(retained.region(RegionId(21), 0)?, RegionId(21));
+        for region in 12..20 {
+            assert!(retained.region(RegionId(region), 0).is_err());
+        }
+        assert!(retained.region(RegionId(22), 0).is_err());
+        Ok(())
+    }
 
     #[test]
     fn partial_input_restoration_keeps_only_owned_existentials() -> Result<(), &'static str> {
@@ -99,7 +129,17 @@ mod tests {
             [(RegionId(10), caller), (RegionId(11), RegionId(12))]
         );
         proof.resume_at(20)?;
+        proof.regions.end = 22;
+        let mut restore = proof.body_restoration()?;
+        assert_eq!(restore.region(RegionId(11), 0)?, RegionId(11));
+        assert_eq!(restore.region(RegionId(20), 0)?, RegionId(20));
+        for id in 13..20 {
+            assert!(restore.region(RegionId(id), 0).is_err());
+        }
+        assert!(proof.template_interval().is_err());
+        proof.equalities.push((RegionId(21), RegionId(15)));
         assert!(proof.body_restoration().is_err());
+        assert!(proof.restoration().is_err());
         Ok(())
     }
 }

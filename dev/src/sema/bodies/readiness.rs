@@ -10,6 +10,7 @@ pub(in crate::sema) struct Dependency {
 pub(in crate::sema) enum Requirement {
     Nominal(ItemId),
     Definition(DefId),
+    ImplHeader(DefId),
 }
 #[derive(Clone, Copy)]
 pub(super) enum Completion {
@@ -97,6 +98,7 @@ impl Checker<'_> {
             let message = match dependency.requirement {
                 Requirement::Nominal(_) => "missing struct member facts",
                 Requirement::Definition(_) => "missing completed associated type definition",
+                Requirement::ImplHeader(_) => "missing prepared implementation header",
             };
             return Err(self.error(dependency.source.node, message));
         }
