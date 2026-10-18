@@ -2,6 +2,7 @@
 pub(super) mod assumptions;
 pub(super) mod conformance;
 pub(in crate::sema) mod equalities;
+pub(super) mod formation;
 pub(super) mod heads;
 pub(super) mod implementations;
 pub(super) mod obligations;
@@ -87,6 +88,7 @@ pub(super) struct Contracts {
     headers: HashMap<ItemId, Header>,
     order: Vec<ItemId>,
     applications: HashMap<Predicate, Arc<Requirements>>,
+    formation: Option<Box<formation::Cache>>,
     result_rules: results::Cache,
     result_bounds: HashMap<ItemId, Vec<Clause>>,
     steps: usize,
@@ -127,6 +129,7 @@ impl Contracts {
             }
         }
         self.applications.clear();
+        self.formation = None;
         self.result_rules.invalidate();
         Ok(())
     }

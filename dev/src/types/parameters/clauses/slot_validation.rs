@@ -2,6 +2,77 @@ use super::*;
 use crate::types::{Kind, RegionId, TypeId, parameters::predicates::Bound};
 
 #[test]
+fn definition_satisfaction_distinguishes_unused_nonempty_and_empty_quantifiers()
+-> Result<(), &'static str> {
+    let mut store = Store::default();
+    let predicate = Predicate {
+        ty: TypeId::UNIT,
+        bound: Bound::Copy,
+    };
+    assert!(Clause::Predicate(predicate).requires_definition_proof(&store)?);
+    for count in [0, 1, 3] {
+        let id = store.intern_quantified(Quantified {
+            bound_regions: count,
+            predicate,
+        })?;
+        assert_eq!(
+            Clause::ForAll(id).requires_definition_proof(&store)?,
+            count == 0
+        );
+    }
+    let ty = store.intern(Kind::Reference {
+        mutable: false,
+        region: RegionId::bound(1, 0)?,
+        referent: TypeId::UNIT,
+    })?;
+    let id = store.intern_quantified(Quantified {
+        bound_regions: 0,
+        predicate: Predicate { ty, ..predicate },
+    })?;
+    assert!(!Clause::ForAll(id).requires_definition_proof(&store)?);
+    Ok(())
+}
+
+#[test]
+fn closed_binder_flags_reach_subjects_trait_arguments_and_equality_results()
+-> Result<(), &'static str> {
+    use crate::types::{ItemId, arguments::Argument, traits::Application};
+    let mut store = Store::default();
+    let parameters = store.intern_list(&[])?;
+    for count in [0, 1] {
+        let function = store.intern(Kind::Function {
+            parameters,
+            result: TypeId::UNIT,
+            bound_regions: count,
+            unsafe_: false,
+        })?;
+        assert_eq!(store.escaping_binders(function), Some(0));
+        let arguments = store.intern_arguments(&[Argument::Type(function)])?;
+        let application = store.intern_trait_application(Application {
+            item: ItemId(99),
+            arguments,
+        })?;
+        for predicate in [
+            Predicate {
+                ty: function,
+                bound: Bound::Copy,
+            },
+            Predicate {
+                ty: TypeId::UNIT,
+                bound: Bound::Trait(application),
+            },
+            Predicate {
+                ty: TypeId::UNIT,
+                bound: Bound::ProjectionEqual(function),
+            },
+        ] {
+            assert_eq!(predicate.requires_definition_proof(&store)?, count == 0);
+        }
+    }
+    Ok(())
+}
+
+#[test]
 fn distinct_clauses_share_slot_summaries_instead_of_rescanning_growing_tails()
 -> Result<(), &'static str> {
     let mut previous = 0;

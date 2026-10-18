@@ -33,6 +33,13 @@ arbitrary permissions on other argument types. Detect supertrait cycles by trait
 identity and share diamond expansion. Defaults referring to parameters keep the
 same capture-safe substitution rules as PA18.
 
+A closed bound requires satisfaction at its definition only when it contains no
+generic input or nonempty lifetime binder, including binders nested inside
+function-pointer subjects or trait arguments. A deferred bound is still required
+at each use; declaring an unused function never proves that bound. A callable
+with only explicit static inputs has no local lifetime binder and keeps the
+definition-time check. Associated equality results follow the same rule in PA20.
+
 Prepare impl headers before declaration proofs that depend on them, including
 forward impls and well-formedness cycles. Before publishing usable facts, validate
 all impl headers, required members, signatures and bodies. Missing methods need
@@ -200,9 +207,9 @@ later-stage boundary fixtures record rustc acceptance and this stage's rejection
 
 ## Validation
 
-The manifest contains 1,068 cases: 683 accepted and 385 rejected. There are 439
-semantic inspection cases and 629 LowIR cases. The LowIR lane has 247 accepted
-programs, all with declared clean execution through rustc and CPPGM, and 382
+The manifest contains 1,080 cases: 690 accepted and 390 rejected. There are 439
+semantic inspection cases and 641 LowIR cases. The LowIR lane has 254 accepted
+programs, all with declared clean execution through rustc and CPPGM, and 387
 rejections. No accepted native control is silently skipped.
 
 Seven acceptance differences are explicit: three later-stage boundaries, one
@@ -210,11 +217,11 @@ pending-lifetime inspection control and three redundant-binder compiler
 differences. They are excluded from default-rustc acceptance-parity claims.
 The migrated PA17/PA18 inherent boundaries and PA18 trait-method boundary retain
 their original source bytes in accepted fixtures.
-The former associated-type and associated-constant boundaries now pass as accepted
-maintainer controls and will join PA20's complete grading contract.
+The former associated-type and associated-constant boundaries are covered by
+PA20's associated-item contract.
 
 Run `make test-pa19`, `make test-rustc`, `make test-native-pa19` and
 `make lint audit-rust test-harness test-upstream`. The root report includes PA19;
-PA20–PA38 remain planned and fail explicitly. See
+PA21–PA38 remain planned and fail explicitly. See
 [the validation review](../docs/pa19-validation.md) for qualifications, reference
 review, native evidence and the distinction between inspection and execution.

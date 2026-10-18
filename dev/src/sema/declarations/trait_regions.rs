@@ -4,7 +4,7 @@ use crate::sema::{nominals::Proof, traits::obligations::Obligations};
 use crate::types::{
     arguments::Argument,
     outlives::{Pair, ParameterPair, ProjectionPair, Queries},
-    parameters::predicates::Bound,
+    parameters::{clauses::Clause, predicates::Bound},
     relations::Constraints,
 };
 pub(super) type Proofs = std::collections::HashMap<DefId, Vec<(NodeKey, Obligations)>>;
@@ -52,15 +52,15 @@ impl Checker<'_> {
             for (source, requirements) in requirements {
                 charge(
                     &mut steps,
-                    1 + requirements.regions.len()
-                        + requirements.types.len()
-                        + requirements.required.len(),
+                    1 + requirements.regions().len()
+                        + requirements.types().len()
+                        + requirements.required().len(),
                 )
                 .map_err(|e| self.error(source, e))?;
-                let mut regions = requirements.regions.clone();
+                let mut regions = requirements.regions().to_vec();
                 let mut parameters = Vec::new();
                 let mut projections = Vec::new();
-                for &ty in &requirements.types {
+                for &ty in requirements.types() {
                     let well_formed = queries
                         .symbolic_requirements(ty)
                         .map_err(|e| self.error(source, e))?;
@@ -75,7 +75,7 @@ impl Checker<'_> {
                     parameters.extend_from_slice(well_formed.scalars.parameters);
                     projections.extend_from_slice(well_formed.projections);
                 }
-                for predicate in &requirements.required {
+                for predicate in requirements.required() {
                     let predicate = predicate.ordinary().map_err(|e| self.error(source, e))?;
                     if let Bound::Outlives(shorter) = predicate.bound {
                         let parts = queries
@@ -134,7 +134,7 @@ impl Checker<'_> {
     fn owner_trait_requirements(
         &mut self,
         owner: DefId,
-    ) -> Result<Vec<(NodeKey, std::sync::Arc<crate::sema::traits::Requirements>)>, Error> {
+    ) -> Result<Vec<(NodeKey, crate::sema::traits::formation::Formation)>, Error> {
         let predicates: Vec<_> = self
             .facts
             .generics
@@ -142,12 +142,21 @@ impl Checker<'_> {
             .get(&owner)
             .map_or(&[][..], Vec::as_slice)
             .iter()
-            .map(|p| p.value.ordinary().map(|value| (p.source, value)))
-            .collect::<Result<Vec<_>, _>>()
-            .map_err(|e| Error::at(crate::resolve::unit::FileId(0), 0, e))?;
+            .map(|p| (p.source, p.value))
+            .collect();
         let mut requirements = Vec::with_capacity(predicates.len());
         for (source, predicate) in predicates {
-            if !matches!(predicate.bound, Bound::Trait(_)) {
+            let body = match predicate {
+                Clause::Predicate(body) => body,
+                Clause::ForAll(id) => {
+                    self.facts
+                        .types
+                        .quantified(id)
+                        .ok_or_else(|| self.error(source, "invalid trait formation clause"))?
+                        .predicate
+                }
+            };
+            if !matches!(body.bound, Bound::Trait(_)) {
                 continue;
             }
             let contract = self
@@ -156,7 +165,7 @@ impl Checker<'_> {
                 .traits
                 .as_mut()
                 .ok_or_else(|| Error::at(source.file, 0, "missing trait contracts"))?
-                .requirements(&mut self.facts.types, predicate)
+                .formation(&mut self.facts.types, predicate)
                 .map_err(|e| self.error(source, e))?;
             requirements.push((source, contract));
         }

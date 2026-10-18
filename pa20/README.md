@@ -2,9 +2,9 @@
 
 Status: **implemented-draft**. Prerequisite: PA19. The bounded source profile is
 Rust 1.98.0, edition 2024, Linux x86-64, panic abort, overflow checks enabled and
-debug assertions disabled. The public suite has 1,343 text-oracle cases across
-797 distinct source programs: 546 semantic inspections and 797 complete LowIR
-checks, including 483 independently executed positive programs.
+debug assertions disabled. The public suite has 1,345 text-oracle cases across
+799 distinct source programs: 546 semantic inspections and 799 complete LowIR
+checks, including 484 independently executed positive programs.
 
 ## Required implementation
 
@@ -26,6 +26,12 @@ including inherited contracts and associated equalities. An impl must establish
 the promised result under its actual parameter environment. A caller can use that
 promise only after proving the parent trait application. A requirement on an
 associated result does not imply the same requirement on its inputs.
+
+Definition-time bound classification also examines the associated equality's
+result. A nested nonempty function-pointer lifetime binder defers satisfaction
+of that equality until use, even if no lifetime escapes the callable. Such a
+declaration grants no proof to callers; incompatible equalities still reject
+when demanded. PA19 owns the corresponding subject and trait-argument rule.
 
 Normalize projections through aliases, nominal fields, callable signatures,
 method contracts and demanded bodies. Preserve declaration-time formation and

@@ -51,9 +51,9 @@ repository with pinned reference tools. It has not been built yet.
   destructor instances, with 438 course cases, 270 native executions and three
   explicit code-generation-only controls.
 - PA19 provides trait/method semantic inspection and checked static dispatch, with
-  1,072 cases and 249 native execution controls.
+  1,080 cases and 254 native execution controls.
 - PA20 adds associated types/constants, normalized trait contracts and recursive
-  selection, with 1,343 text-oracle cases and 483 native execution controls.
+  selection, with 1,345 text-oracle cases and 484 native execution controls.
 - PA21–PA38 have buildout briefs and Makefiles. Their suites and implementation
   are not complete; invoking an unbuilt assignment fails explicitly.
 

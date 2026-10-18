@@ -8695,6 +8695,40 @@
       "mode": "--emit-lowir"
     },
     {
+      "path": "tests/spec/contracts/equations/lowir/equality-result-binder-defers-closed-equality.rs",
+      "exit_status": 0,
+      "features": [
+        "pa20.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "authored controls for nested callable binder definition proofs; docs/pa21-validation.md",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/contracts/equations/lowir/equality-result-binder-fails-when-called.rs",
+      "exit_status": 1,
+      "features": [
+        "pa20.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "authored controls for nested callable binder definition proofs; docs/pa21-validation.md",
+      "mode": "--emit-lowir"
+    },
+    {
       "path": "tests/spec/contracts/equations/lowir/header-formed.rs",
       "exit_status": 0,
       "features": [

@@ -1,12 +1,20 @@
 # PA20 trait solving validation
 
-PA20 publishes 1,343 text-oracle cases from 797 independently qualified source
+The PA20 release published 1,343 text-oracle cases from 797 independently qualified source
 programs. Its separate `trait-semantics 1` format preserves PA19's original
 `semantic-crate 1` contract. The public suite contains 546 semantic inspections
 (484 accepted, 62 rejected) and 797 full LowIR checks (483 accepted, 314 rejected).
 Every accepted LowIR program executes successfully through both pinned rustc
 1.98.0 and the qualified CPPGM backend, with clean stdout, stderr and exit zero.
 There are no compilation-only or skipped accepted LowIR cases.
+
+The later callable-definition correction adds two associated equality controls
+under `contracts/equations/lowir`: an unused declaration with a nested callable
+binder accepts, while demanding its incompatible equality rejects. The accepted
+control also executes through both compilers. The current suite has 1,345 cases
+from 799 sources, with 546 semantic inspections, 799 LowIR checks and 484 native
+executions. Every earlier sidecar remains unchanged. Counts below record the
+original release evidence; see [PA21 validation](pa21-validation.md) for this fix.
 
 ## Language and phase boundaries
 

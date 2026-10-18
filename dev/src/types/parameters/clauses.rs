@@ -25,6 +25,22 @@ impl From<Predicate> for Clause {
 }
 
 impl Clause {
+    /// Nonempty quantifiers defer satisfaction until use even when their slots
+    /// are unused. Empty quantifiers still retain their structural binder depth.
+    /// # Errors
+    /// Rejects malformed clauses and invalid predicate inputs.
+    pub fn requires_definition_proof(self, store: &Store) -> Result<bool, &'static str> {
+        match self {
+            Self::Predicate(predicate) => predicate.requires_definition_proof(store),
+            Self::ForAll(id) => {
+                let value = store
+                    .quantified(id)
+                    .ok_or("invalid definition bound clause")?;
+                Ok(value.bound_regions == 0 && value.predicate.requires_definition_proof(store)?)
+            }
+        }
+    }
+
     /// Flat consumers must reject quantified input until they own its complete scope.
     /// # Errors
     /// Rejects a quantified clause rather than exposing its unbound body.

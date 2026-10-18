@@ -632,3 +632,110 @@ generated files. This comparison does not resolve the earlier
 streamed-proof wall-time effect against `b1410a8`. Whole-clause declaration
 formation, ambiguity, nominal outlives propagation, conformance and concrete-body
 integration remain required before source activation. PA21–PA25 remain planned.
+
+
+## Declaration formation and nested callable definition bounds
+
+Quantified trait formation now has its own cached structural result, separate
+from logical implication and implementation selection. It defers each whole
+subject/type argument containing the clause's local lifetime and lifts independent
+inputs, requirements and region pairs to the surrounding owner. Independent trait
+arguments remain checked even when Self contains a local. Nested requirement and
+callable binders retain their identities, including empty binders. Ordinary
+queries reuse the existing requirements cache; the scoped cache is allocated on
+demand and invalidated with completed header bindings.
+
+Five typed invariants cover subject/argument independence, captured versus local
+requirements, nested and empty binders, cache invalidation, exhausted budgets and
+shared tails. Widths 16–512 take exactly `14n` counted steps and `n` new canonical
+types in this family; repeated requests add no traversal work. These are internal
+query counters, not whole-frontend complexity or source-level HRTB coverage.
+
+The pinned compiler investigation corrected five initial expectation mismatches.
+In particular, an unused nonempty binder defers a false global bound, whereas an
+empty binder does not; and a local-dependent quantified trait subject defers its
+whole formation input, even if it contains independent nominal requirements.
+An explicit nominal type used in a body still requires its normal proof. The
+original expectations and diagnostics are retained. Revised controls reuse all
+26 original sources and add five independent-input cases: all 31 match pinned
+rustc object outcomes (17 accepted, 14 rejected). The exact pinned implementation
+supports the distinction between [trait-input formation](https://github.com/rust-lang/rust/blob/88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_trait_selection/src/traits/wf.rs#L417)
+and [false global bounds](https://github.com/rust-lang/rust/blob/88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_hir_analysis/src/check/wfcheck.rs#L2379).
+Source hashes and investigation receipts are retained in
+`obj/pa21-work/formation-v1/`. The earlier implied-static reference-formation
+qualification remains separate.
+
+That investigation exposed an existing source-level bug in supported function
+pointer bounds. The published compiler rejects five valid unused declarations
+because it checks escaping lifetime depth but misses nested callable binders.
+Definition classification now reads cached properties of the original subject,
+complete trait arguments and equality result. Two additional typed invariants
+check all roots, captured lifetimes and unused/empty quantifier identities.
+Closed projections remain eligible for subsequent normalization and proof.
+
+Ten authored source controls were independently qualified before reference
+generation: six accepted, four rejected. Eight are installed in PA19's
+`declaration-proofs` cluster; two associated equality controls belong to PA20's
+`contracts/equations/lowir` cluster. Their source bytes are unchanged from the
+qualified controls. The candidate accepts the five previously rejected unused
+declarations, rejects the unsatisfied use sites and accepts the implementation
+positive. All six accepted programs execute with matching clean outcomes through
+rustc and CPPGM. Generated LowIR emits only demanded functions; unused invalid
+conditions never enter the executable. Every old oracle sidecar remains unchanged.
+PA19 now has 1,080 cases and 254 native executions; PA20 has 1,345 cases and 484
+native executions, for 6,228 active course cases overall.
+
+This checkpoint does not open PA21 source gates. Declaration ambiguity, scoped
+lifetime consumers, conformance and concrete-body integration still need their
+whole-clause implementations; independent language controls do not substitute for
+RustGM source/native coverage of those paths.
+
+
+Full validation passes all 33 recorded gates: **1,367 regular tests**, **91 native
+groups**, **6,228 PA1–PA20 exact cases**, formatting, strict Clippy, the 831-file
+zero-finding audit, harness, backend and upstream checks. The four affected
+language/native gates retain their successful earlier receipts for the identical
+candidate bytes, manifests, sources and harness configuration rather than repeating
+them. PA21–PA25 discovery still fails as planned. The expanded frozen snapshot
+verifies **7,171 source/configuration hashes** and **18,684 oracle sidecars**.
+The immutable candidate is
+`02d6034bf8c2c14673a909fffec3d8ca0406491cc661ccf2e081ba9b513bbfc0`,
+compared with published `3c71c4c` /
+`1f9f6c170c6494d8cca516e6fa29e2837566ba7e02408a4c3be575b7ebd44229`.
+
+All 33 timing jobs and 29 instruction pairs complete. On the existing 27 inputs,
+instruction deltas span **−0.40% to +0.32%** and paired wall medians span
+**−7.15% to +1.52%**. Two added, predeclared workloads repeat unused callable
+bounds whose implementation is available, so both binaries accept and emit equal
+LowIR. They independently pass pinned rustc object generation:
+
+| Repeated declarations | Baseline instructions | Candidate instructions | Instruction change | Paired wall change |
+| --- | ---: | ---: | ---: | ---: |
+| 64 | 14,004,782 | 9,849,509 | −29.67% | −17.79% |
+| 256 | 53,957,653 | 37,342,264 | −30.79% | −24.43% |
+
+These workloads exercise removal of definition-time satisfaction work for bounds
+that defer satisfaction until use. They do not measure real-library compilation.
+No instruction increase exceeds the 1% investigation threshold, and no paired wall
+increase exceeds 3%; the predeclared policy therefore selects no timing follow-ups.
+Same-binary medians span **−0.64% to +0.65%**, but the largest A/A spread is
+**102.22%**. Shared-host timings do not establish a portable speedup. Median peak
+RSS deltas span **+28 to +146 KiB**. All full/count outputs and frozen hashes match.
+
+| Workload | Baseline heap bytes | Candidate heap bytes | Baseline combined heap/overhead/stack | Candidate combined |
+| --- | ---: | ---: | ---: | ---: |
+| ordinary-256 | 2,432,261 | 2,432,261 | 2,528,288 | 2,528,288 |
+| constant-chain-uses-256 | 5,381,873 | 5,381,881 | 5,540,136 | 5,540,168 |
+
+The fixed ordinary heap/combined peaks are unchanged. The constant-chain heap
+increases by eight bytes and its combined peak by 32 bytes; ELF text/data/BSS
+increases by 4,128 bytes. These samples do not explain the broader RSS range.
+All **858 study observations** and **132 qualification observations** are retained,
+comprising **3,432 timed** and **528 qualification compiler invocations**, plus
+**58 Callgrind** and **four Massif** runs. No observations were discarded or
+repeated until favorable. Receipts remain in `obj/pa21-work/formation-final/`.
+The earlier streamed-proof wall-time effect against `b1410a8` remains unresolved.
+PA21–PA25 remain planned; no unsupported source gate was opened by this checkpoint.
+
+Successful guarded cleanup reclaimed **6.90 GiB** from 5,753 generated files;
+timing observations, diagnostics and the current immutable comparison pins remain.

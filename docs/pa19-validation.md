@@ -9,8 +9,8 @@ Subsequent PA20 normalization work removed the obsolete associated-type rejectio
 Its exact source is now an accepted control in `dev/tests/projection_paths.rs`,
 awaiting PA20's grading contract. Associated-constant value work similarly retains
 that former boundary verbatim in `dev/tests/associated_declarations.rs` with
-qualified native value controls. The active PA19 suite has 1,068 cases: 683
-accepted and 385 rejected, including 629 LowIR cases. Counts below describe the
+qualified native value controls. The active PA19 suite has 1,080 cases: 690
+accepted and 390 rejected, including 641 LowIR cases. Counts below describe the
 original release evidence; the current contract is in `pa19/README.md`.
 
 ## Source and expectation review
@@ -117,3 +117,11 @@ these nine differences acceptance differences, covering both phase boundaries
 and the documented default-solver discrepancy.
 
 The final receipt is `obj/pa19-work/course-v1/release-validation-v1.json`.
+
+
+The later callable-definition correction adds eight independently object-qualified
+controls in `declaration-proofs`, including five native executions. It covers
+nested and elided binders, closed/static negatives, trait arguments and actual
+use-site obligations. All earlier sidecars are unchanged. See the declaration
+formation review in [PA21 validation](pa21-validation.md) for the source bug,
+independent evidence and the distinction from source-level higher-ranked traits.

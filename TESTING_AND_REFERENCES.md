@@ -250,7 +250,7 @@ rejection and output failure propagation. It shares declaration/body inference w
 the type view and reports pending lifetime constraints explicitly; complete
 execution proof remains in `--emit-lowir`.
 
-PA19 has 1,068 cases: 439 semantic inspection and 629 LowIR cases, with 247
+PA19 has 1,080 cases: 439 semantic inspection and 641 LowIR cases, with 254
 accepted native programs and no skipped executions. Three later-stage boundaries,
 one inspection-only lifetime control and three redundant-binder compiler
 differences have explicit independent statuses and reasons. See
@@ -637,8 +637,8 @@ requires a restored binary whose hash matches. Old path references in historical
 validation notes do not imply that disposable executables still exist.
 
 PA20 introduces `--emit-trait-semantics` and `--count-trait-semantics`, preserving
-PA19's separate semantic text contract. Its 1,343 registered cases cover 546
-semantic inspections and 797 LowIR checks, with 483 independent native executions.
+PA19's separate semantic text contract. Its 1,345 registered cases cover 546
+semantic inspections and 799 LowIR checks, with 484 independent native executions.
 One explicitly classified semantic-positive case defers an escaping-reference
 error to the complete proof. See `docs/pa20-validation.md` for the seven families,
 source provenance, count/row checks and reference review. `make test-native` and

@@ -1880,6 +1880,27 @@ clauses remain proof obligations; the separate ordinary lifetime-contract lane
 does not discharge them. Formation retains universal evidence until the caller's
 final lifetime gate and requires an explicit proof scope.
 
+Declaration formation for a quantified trait bound is a separate structural
+query from using its logical implications. Under the pinned compiler's rules,
+defer formation of each entire subject or type argument that mentions the
+clause's own local lifetime. Lift independent inputs and individual inherited
+requirements to the surrounding declaration without capturing nested binders.
+An independent type argument still requires formation when the subject is local.
+No deferred input supplies a caller assumption. Equality results and type-outlives
+subjects keep their recursive term-formation rules rather than this whole-input
+filter. Cache scoped formation by canonical clause within the trait-header epoch;
+reuse the ordinary requirements cache and allocate scoped state only on demand.
+Charge shared capture/lowering work and invalidate it when header bindings change.
+
+Classify definition-time satisfaction from the original complete clause using
+cached properties. Generic inputs, free lifetimes and nonempty local lifetime
+binders defer satisfaction, including binders nested inside callable subjects,
+trait arguments or equality results. A nonempty unused clause binder also defers;
+an empty binder does not. Escaping-lifetime depth alone cannot detect a closed
+callable's local binders. Closed projections still require normalization before
+their independent definition proof. This classification is neither a formation
+proof nor permission to omit the obligation when the declaration is used.
+
 Constructor and pattern inference retain unresolved mixed arguments. Reuse one
 substitution session across the selected receiver's field templates; do not
 resolve the receiver before its fields have constrained it. Substitution under

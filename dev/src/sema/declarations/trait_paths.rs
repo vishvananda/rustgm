@@ -262,19 +262,26 @@ impl Checker<'_> {
         predicate: crate::sema::generics::Predicate,
         proof: &mut crate::sema::nominals::Proof,
     ) -> Result<(), Error> {
-        let value = predicate
-            .value
-            .ordinary()
-            .map_err(|e| self.error(predicate.source, e))?;
+        use crate::types::parameters::{clauses::Clause, predicates::Bound as Requirement};
         let requirements = self
             .facts
             .generics
             .traits
             .as_mut()
             .ok_or_else(|| Error::at(predicate.source.file, 0, "missing trait contracts"))?
-            .requirements(&mut self.facts.types, value)
+            .formation(&mut self.facts.types, predicate.value)
             .map_err(|e| self.error(predicate.source, e))?;
-        for &ty in &requirements.types {
+        // Ordinary subjects were checked by validate_bounds. Quantified subjects
+        // require the independently lifted input, if formation was not deferred.
+        let subject = if matches!(predicate.value, Clause::ForAll(_)) {
+            requirements.subject()
+        } else {
+            None
+        };
+        for ty in subject
+            .into_iter()
+            .chain(requirements.types().iter().copied())
+        {
             if !proof
                 .check(&mut self.facts, ty)
                 .map_err(|e| self.error(predicate.source, e))?
@@ -283,21 +290,19 @@ impl Checker<'_> {
                 return Err(self.error(predicate.source, "trait argument must be well-formed"));
             }
         }
-        for &requirement in &requirements.required {
-            let requirement = requirement
-                .ordinary()
-                .map_err(|e| self.error(predicate.source, e))?;
-            if matches!(
-                requirement.bound,
-                crate::types::parameters::predicates::Bound::Outlives(_)
-            ) {
-                continue; // Proved with the completed nominal lifetime contracts.
-            }
-            let requirement = proof
-                .normalize_builtin(&mut self.facts, requirement)
-                .map_err(|e| self.error(predicate.source, e))?;
+        for &requirement in requirements.required() {
+            let requirement = match requirement {
+                Clause::Predicate(value) if matches!(value.bound, Requirement::Outlives(_)) => {
+                    continue; // Proved with the completed nominal lifetime contracts.
+                }
+                Clause::Predicate(value) => proof
+                    .normalize_builtin(&mut self.facts, value)
+                    .map_err(|e| self.error(predicate.source, e))?
+                    .into(),
+                Clause::ForAll(_) => requirement,
+            };
             if !proof
-                .prove(&mut self.facts, requirement)
+                .prove_clause(&mut self.facts, requirement)
                 .map_err(|e| self.error(predicate.source, e))?
             {
                 return Err(self.error(

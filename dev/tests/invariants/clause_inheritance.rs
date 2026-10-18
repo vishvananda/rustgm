@@ -1,4 +1,6 @@
 //! Declaration closure must preserve quantifiers and distinguish assumptions from requirements.
+#[path = "clause_inheritance/formation.rs"]
+mod formation;
 #[path = "clause_inheritance/ownership.rs"]
 mod ownership;
 use super::{Contracts, Header};

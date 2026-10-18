@@ -60,13 +60,9 @@ impl Checker<'_> {
                 .unwrap_or(predicate.value)
                 .ordinary()
                 .map_err(|error| self.error(predicate.source, error))?;
-            if original
-                .contains_parameters(&self.facts.types)
+            if !original
+                .requires_definition_proof(&self.facts.types)
                 .map_err(|e| self.error(predicate.source, e))?
-                || original
-                    .escaping_binders(&self.facts.types)
-                    .map_err(|e| self.error(predicate.source, e))?
-                    != 0
             {
                 continue;
             }
@@ -154,13 +150,9 @@ impl Checker<'_> {
             .map_err(|error| self.error(predicate.source, error))?
             .filter(|value| matches!(value.bound, Bound::ProjectionEqual(_)))
             .unwrap_or(value);
-        if original
-            .contains_parameters(&self.facts.types)
+        if !original
+            .requires_definition_proof(&self.facts.types)
             .map_err(|e| self.error(predicate.source, e))?
-            || original
-                .escaping_binders(&self.facts.types)
-                .map_err(|e| self.error(predicate.source, e))?
-                != 0
         {
             return Ok(());
         }

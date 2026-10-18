@@ -1702,6 +1702,21 @@
       }
     },
     {
+      "path": "tests/spec/declaration-proofs/closed-callable-without-binder-requires-proof.rs",
+      "exit_status": 1,
+      "features": [
+        "pa19.declaration-proofs"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "authored controls for nested callable binder definition proofs; docs/pa21-validation.md",
+      "mode": "--emit-lowir"
+    },
+    {
       "path": "tests/spec/declaration-proofs/conditional-outlives.rs",
       "exit_status": 0,
       "features": [
@@ -2283,6 +2298,97 @@
       "mode": "--emit-lowir"
     },
     {
+      "path": "tests/spec/declaration-proofs/deeply-nested-binder-defers-closed-bound.rs",
+      "exit_status": 0,
+      "features": [
+        "pa19.declaration-proofs"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "authored controls for nested callable binder definition proofs; docs/pa21-validation.md",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/declaration-proofs/elided-callable-binder-defers-closed-bound.rs",
+      "exit_status": 0,
+      "features": [
+        "pa19.declaration-proofs"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "authored controls for nested callable binder definition proofs; docs/pa21-validation.md",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/declaration-proofs/nested-binder-defers-closed-trait-bound.rs",
+      "exit_status": 0,
+      "features": [
+        "pa19.declaration-proofs"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "authored controls for nested callable binder definition proofs; docs/pa21-validation.md",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/declaration-proofs/nested-binder-false-bound-fails-on-use.rs",
+      "exit_status": 1,
+      "features": [
+        "pa19.declaration-proofs"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "authored controls for nested callable binder definition proofs; docs/pa21-validation.md",
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/declaration-proofs/nested-binder-implementation-allows-use.rs",
+      "exit_status": 0,
+      "features": [
+        "pa19.declaration-proofs"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "authored controls for nested callable binder definition proofs; docs/pa21-validation.md",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
       "path": "tests/spec/declaration-proofs/nominal-borrow.rs",
       "exit_status": 0,
       "features": [
@@ -2294,6 +2400,40 @@
         "default_lints": true
       },
       "maintainer_origin": "dev/tests/trait_bounds/declarations.rs",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/declaration-proofs/static-callable-without-binder-requires-proof.rs",
+      "exit_status": 1,
+      "features": [
+        "pa19.declaration-proofs"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "authored controls for nested callable binder definition proofs; docs/pa21-validation.md",
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/declaration-proofs/trait-argument-binder-defers-closed-bound.rs",
+      "exit_status": 0,
+      "features": [
+        "pa19.declaration-proofs"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "authored controls for nested callable binder definition proofs; docs/pa21-validation.md",
       "mode": "--emit-lowir",
       "native": {
         "kind": "execute",

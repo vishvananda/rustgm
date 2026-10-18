@@ -17,6 +17,45 @@ pub struct Predicate {
     pub bound: Bound,
 }
 impl Predicate {
+    /// Definition-time satisfaction excludes generic inputs and every nonempty
+    /// callable binder, even when no lifetime escapes from that callable.
+    /// This classifies a bound; it does not establish formation or satisfaction.
+    /// # Errors
+    /// Rejects unknown subject, result and application identities.
+    pub fn requires_definition_proof(
+        self,
+        store: &crate::types::Store,
+    ) -> Result<bool, &'static str> {
+        use crate::types::Property;
+        let closed = |properties: crate::types::properties::Properties| {
+            properties.escaping == 0
+                && !properties.has(Property::Parameters)
+                && !properties.has(Property::LateCallables)
+                && !properties.has(Property::NonStaticFreeRegions)
+        };
+        let ty = |ty: TypeId| {
+            store
+                .properties
+                .get(ty.0 as usize)
+                .copied()
+                .map(closed)
+                .ok_or("invalid definition bound type")
+        };
+        if !ty(self.ty)? {
+            return Ok(false);
+        }
+        Ok(match self.bound {
+            Bound::Trait(id) => closed(
+                store
+                    .trait_properties(id)
+                    .ok_or("invalid definition bound application")?,
+            ),
+            Bound::ProjectionEqual(result) => ty(result)?,
+            Bound::Outlives(region) => region == crate::types::RegionId::STATIC,
+            Bound::Copy | Bound::Clone | Bound::Sized => true,
+        })
+    }
+
     /// Concrete inputs may contain static lifetimes and closed callable binders,
     /// but no type/const parameters, unresolved projections or external region variables.
     /// # Errors
