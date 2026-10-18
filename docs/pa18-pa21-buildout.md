@@ -9307,3 +9307,44 @@ study: four positives execute through rustc and CPPGM, and four negatives reject
 in both frontends. Their full LowIR matches both the published baseline and the
 study's full-output hashes. Generated test and measurement executables were pruned;
 only the current comparison pins, source snapshots and evidence are retained.
+
+
+### Owned semantic normalization cursor
+
+The synchronous semantic projection session now wraps an owned cursor. A pending
+selected definition retains the exact request, owner, complete arguments and
+lifetime restoration alongside the unfinished shared type fold. It also retains
+the immutable caller environment, shifted-environment cache and callable scope
+mapping. The completed-definition path shares this implementation; only an
+actual definition wait allocates its boxed selection continuation.
+
+Three new unit groups check the continuation independently of a body scheduler.
+Shared projection diamonds at 8, 32 and 128 nodes select exactly N distinct
+applications despite eight extra polls per dependency. Fold work is bounded by
+24N + 32, and reusing each completed root takes at most two additional fold steps.
+Mixed type/const arguments survive a wait even after the implementation registry
+is removed, proving that resumption consumes the retained selection. Sixteen
+callable scopes survive interleaved foreign allocations, restore their written
+bound lifetimes, and still reject unpaid outlives requirements.
+
+This checkpoint supplies the shared cursor for the next body-worklist bridge.
+Synchronous callers still diagnose unfinished definitions. It does not yet fix
+the nine valid source probes that need body-level associated-definition waits,
+and PA20–25 remain planned.
+
+Full validation passes 27 gates: 1,229 regular tests, 81 native groups, all 4,871
+PA1–19 cases, strict lint, file/architecture audits, harness, backend and upstream
+checks. The audit covers 763 Rust files; all 766 frozen source/configuration hashes
+and 14,613 oracle sidecars agree. Evidence and immutable inputs are retained in
+`obj/pa20-work/projection-cursor-final`.
+
+Nine instruction comparisons against published `98a6bd8` range from -0.135% to
++0.190%, with matching outputs. Thirteen paired timing jobs retain 338 study and
+52 full-output qualification observations, each containing four executions.
+A/B paired medians range from -2.93% to +4.80%; same-binary paired medians range
+from -7.23% to +0.56%, and calibration spreads reach 66.47%. These timings do not
+establish a speedup or regression. The work invariants establish retained graph
+sharing across waits; neither they nor these measurements establish linearity of
+every frontend pass. All raw observations, output hashes and source/input/binary
+receipts remain available; generated execution artifacts are cleaned after the
+batch.

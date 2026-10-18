@@ -530,6 +530,16 @@ those slot tables, not the complete inference heap.
 Dispatch dependency invariants measure repeated caller
 work and reject reuse across availability modes or incomplete dependency diamonds.
 
+The [semantic cursor invariants](dev/src/sema/projections/continuation_tests.rs)
+exercise selected-definition waits using retained typed declarations. Shared graphs
+of 8, 32 and 128 nodes must select each projection once, tolerate repeated waiting
+without new selections, and reuse completed roots with constant additional fold
+work. A separate test removes the implementation registry after selection and
+checks retained mixed type/const arguments. Callable tests interleave foreign
+allocation intervals and require the final lifetime proof to reject unpaid
+outlives bounds. These are internal scheduling/ownership invariants; they do not
+claim the body worklist can yet suspend every normalization consumer.
+
 ## Storage and cleanup
 
 Generated output is bounded separately from validation evidence. Builds and

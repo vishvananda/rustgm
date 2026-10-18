@@ -344,6 +344,16 @@ exhausted work. A prepared impl may supply declaration work, but its complete
 conformance remains mandatory before executable facts are published. Missing
 lifetime or equality evidence must never be dropped to manufacture a normal form.
 
+Keep semantic normalization in an owned cursor shared by synchronous and resumable
+consumers. A selected-definition wait retains the exact owner, member, complete
+arguments, lifetime restoration and unfinished fold. Resumption consumes that
+selection without invoking its provider or probing implementations again. Preserve
+the shifted environments and callable scope map across waits and completed roots.
+The owner reserves emitted proof regions before other work allocates identities,
+then resumes the same proof at the new frontier with explicit foreign gaps.
+A synchronous consumer still requires every selected definition to be complete;
+an owned cursor alone does not make its calling operation resumable.
+
 A suspended normalizer has already normalized its request's inputs. Carry that
 fact into selection instead of starting another normalization of the same graph.
 The enclosing query retains every input proof, including obligations erased from
