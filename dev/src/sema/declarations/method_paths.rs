@@ -304,22 +304,37 @@ impl Checker<'_> {
         let method = if let Some(method) = unique.filter(|_| !has_traits) {
             method
         } else {
-            self.selection_prefix(prefix, path.owner, context)?;
-            let environment = self.selection_environment(context);
-            let traits = self.selection_trait_assumptions(key, context, environment.as_ref())?;
-            let selected = crate::sema::methods::selection::choose(
-                self.report,
-                &mut self.facts,
+            use crate::sema::methods::selection::{PathCaller, PathProgress, PathQuery};
+            let query = if let Some(query) = self.method_queries.remove(&key) {
+                *query
+            } else {
+                self.selection_prefix(prefix, path.owner, context)?;
+                let environment = self.selection_environment(context);
+                let traits =
+                    self.selection_trait_assumptions(key, context, environment.as_ref())?;
+                PathQuery::inherent(
+                    self.report,
+                    &mut self.facts,
+                    key,
+                    prefix,
+                    (path.nominal, path.name),
+                    path.scope,
+                    PathCaller {
+                        availability:
+                            crate::sema::traits::implementations::Availability::Declarations,
+                        environment,
+                        traits,
+                    },
+                )?
+            };
+            let selected = match self.poll_method_query(
                 key,
-                prefix,
-                (path.nominal, path.name),
-                path.scope,
-                crate::sema::methods::selection::Caller {
-                    availability: crate::sema::traits::implementations::Availability::Declarations,
-                    environment: environment.as_ref(),
-                    traits: traits.as_deref(),
-                },
-            )?;
+                query,
+                Work::InherentMethod(key, *path, context),
+            )? {
+                PathProgress::Ready(selected) => selected,
+                PathProgress::Pending(_) => return Ok(()),
+            };
             let Some(method) = selected else {
                 return if has_traits {
                     self.schedule_implicit_method(key, context, steps, limit, scan)

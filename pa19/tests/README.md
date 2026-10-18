@@ -1,6 +1,6 @@
 # PA19 fixture ownership
 
-The manifest owns 1,070 fixtures: 439 semantic inspection cases and 631 LowIR
+The manifest owns 1,072 fixtures: 439 semantic inspection cases and 633 LowIR
 cases. Expected outcomes were recorded before compiler probes and reference
 creation. The source corpus comes from the independently qualified maintainer
 trait/method tests, with `maintainer_origin` preserving each source's origin.
@@ -12,7 +12,7 @@ conformance, impl selection, caller assumptions, qualified and implicit paths,
 lexical visibility, default/required dispatch, receiver adjustments, callable
 binders, lifetime equality, generic Drop requirements and execution. Native
 programs use the same `check`/`fail` helper as their original maintainer checks.
-All 247 accepted LowIR programs require clean execution; the other 384 LowIR
+All 249 accepted LowIR programs require clean execution; the other 384 LowIR
 cases are required rejections. Semantic inspection contributes 436 accepted
 cases and three required early rejections.
 

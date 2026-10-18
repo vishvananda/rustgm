@@ -23,6 +23,8 @@ mod header_readiness;
 mod independent_selections;
 #[path = "associated_declarations/inherent_headers.rs"]
 mod inherent_headers;
+#[path = "associated_declarations/lookup_readiness.rs"]
+mod lookup_readiness;
 #[path = "associated_declarations/member_lifetimes.rs"]
 mod member_lifetimes;
 #[path = "harness/native_references.rs"]

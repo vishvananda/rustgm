@@ -9763,3 +9763,70 @@ body-work bounds; the published baseline rejects them, so no comparative speedup
 is claimed for those sources. Validation cleanup removed 6.80 GiB of generated
 executables and objects. Only the current published and candidate binaries remain
 pinned for this comparison.
+
+### Suspended method applicability
+
+Type-qualified method lookup now retains its inferred prefix, candidate position,
+isolated equations and trait-proof continuation when a compatible implementation
+header is not ready. The declaration worklist prepares that exact dependency and
+resumes the same query. Candidate binding and builtin conditions remain shared
+with synchronous receiver lookup. Inherent precedence, bound-before-lexical trait
+groups, privacy and same-group ambiguity retain their existing rules.
+
+Probe evidence is disposable: it cannot publish body regions or grant a caller
+permission. Resumption allocates beyond the retained private watermark and any
+intervening body allocations. The selected ordinary operation still proves its
+complete bounds and lifetimes. An internal test delays every header through 128
+conditions, polls each wait repeatedly and interleaves foreign allocations; it
+checks that the prefix, trial and completed work remain unchanged and that no
+probe evidence enters the body proof tables.
+
+Eighteen independently qualified maintained source controls cover trait fallback,
+trait-only shorthand, bounded inherent members with a competing trait name,
+compatible and ambiguous trait alternatives, missing bounds and caller lifetime
+isolation. Eleven accepted controls plus a 32-condition chain execute through
+rustc and CPPGM. Chains of 8, 32 and 96 conditions each use one candidate probe,
+with 483, 1,659 and 4,795 method-selection steps respectively. These counters cover
+lookup work, not whole-frontend complexity. An initially malformed chain generator
+was corrected before qualification; its failed run is retained as test-development
+evidence, not a compiler regression or a passing test.
+
+Lifetime-only applied prefixes now use ordinary annotation substitution and
+formation checks. Four PA19 fixtures cover inherent and trait calls, lifetime
+arity and unmet caller outlives requirements; both accepted programs execute
+through both compilers. The existing invalid `T::<u8>` prefix remains rejected
+(independently confirmed by rustc E0109), but now reaches argument validation.
+Its diagnostic is the sole changed existing oracle; twelve new sidecars accompany
+the four new fixtures. Existing successful programs keep their text contracts.
+
+Associated-type readiness inside implementation headers, further normalization
+and coherence work, the extended semantic view and the public PA20 suite remain
+unfinished. PA20–PA25 remain planned.
+
+Full validation passes 1,268 regular tests, 89 native groups and all 4,875
+PA1–PA19 cases. Formatting, strict Clippy, the 793-file audit, harness, backend
+and upstream checks pass. PA20–PA25 still reject as planned stages. The reviewed
+oracle update leaves 14,612 preexisting sidecars unchanged and changes only the
+qualified invalid-prefix diagnostic; all 14,625 resulting sidecars remain fixed
+during full validation. The snapshot records 796 source/toolchain hashes and
+candidate binary
+`1508b435a5a8d24f4f9f5fd124ff0f4ab16926fe54242fc6b5ad20bd7ae38079`.
+Validation and reference-review evidence is retained under
+`obj/pa20-work/method-readiness-final/`.
+
+Performance compares immutable published `ed15199`/`75eb8169` and candidate
+`1508b435` binaries on eighteen frozen workloads. Twenty-two paired timing jobs
+include four same-binary controls, with 572 study observations and 88 full-output
+qualification observations; every observation contains four compiler invocations.
+Full and count outputs agree, and binary, input and compiler-source hashes remain
+unchanged throughout measurement.
+
+Instruction changes range from -0.31% to +0.46%; the three inherent-name controls
+range from +0.002% to +0.154%. Paired median wall-time changes range from -3.60%
+to +2.34%, same-binary controls from -0.63% to +0.78%, and A/A calibration spreads
+reach 102.91%. These noisy timings do not establish a speedup. Median peak-RSS
+differences range from -176 to +36 KiB. Newly accepted lookup programs have
+independent source/native qualification and structural-work bounds; the published
+compiler rejects those sources, so there is no comparative speedup claim for them.
+Full-validation cleanup removed 6.85 GiB of generated executables and objects.
+Only the published baseline and current candidate remain pinned.

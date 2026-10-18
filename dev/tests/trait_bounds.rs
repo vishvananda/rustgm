@@ -31,6 +31,8 @@ mod implicit_scope;
 mod inference;
 #[path = "harness/native_references.rs"]
 mod native;
+#[path = "trait_bounds/prefix_lifetimes.rs"]
+mod prefix_lifetimes;
 #[path = "trait_bounds/qualification.rs"]
 mod qualification;
 #[path = "trait_bounds/qualification_native.rs"]

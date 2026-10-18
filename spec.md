@@ -865,6 +865,22 @@ the typed prefix across header work, and freeze source ordering separately from
 the order in which dependencies complete. A resolved name or raw head is never
 an applicability proof.
 
+Type-qualified path applicability owns its inferred prefix, candidate iterator,
+isolated trial equations and deferred predicate cursor. A pending trait header
+resumes that exact search after the declaration worklist prepares the requested
+owner. Completed candidates and proof ancestors must not be replayed. Preserve
+inherent precedence, bound-before-lexical groups and same-group ambiguity.
+Receiver lookup shares candidate binding and conditions, but remains synchronous.
+
+Applicability proofs are disposable probes. Their immutable caller and prefix
+predate the wait; resume fresh allocation beyond both the private watermark and
+the current body-region frontier. Do not publish those trial regions or create a
+body reservation for them. The selected ordinary operation must independently
+prove every bound and lifetime requirement. This private-probe rule does not apply
+to authorizing body or projection evidence, whose regions require reservations.
+Lifetime-only applied prefixes use ordinary annotation argument substitution and
+formation checks, including lifetime arity and caller outlives obligations.
+
 Retain the candidate partition built for overlap checking instead of maintaining
 a duplicate header table. Early lookup can build that same partition for a complete
 nominal/name bucket before whole-crate overlap validation. Closed prefix lookup

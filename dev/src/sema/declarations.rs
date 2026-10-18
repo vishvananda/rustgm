@@ -102,6 +102,7 @@ struct Signature {
     unsafe_: bool,
 }
 struct Checker<'a> {
+    method_queries: std::collections::HashMap<NodeKey, Box<super::methods::selection::PathQuery>>,
     inherent_headers: inherent_headers::Pending,
     impl_headers: impl_headers::Pending,
     constant_members: traits::ConstantReadiness,
@@ -149,6 +150,7 @@ pub fn analyze(report: &Report) -> Result<Declarations, Error> {
         ));
     }
     let mut checker = Checker {
+        method_queries: std::collections::HashMap::new(),
         inherent_headers: inherent_headers::Pending::default(),
         impl_headers: impl_headers::Pending::default(),
         constant_members: traits::ConstantReadiness::default(),
@@ -254,6 +256,13 @@ impl Checker<'_> {
             &mut self.discriminants,
             &mut self.constant_scratch,
         )?;
+        if !self.method_queries.is_empty() {
+            return Err(Error::at(
+                FileId(0),
+                0,
+                "unfinished method applicability queries",
+            ));
+        }
         self.complete_layouts()
     }
     fn drain(&mut self, steps: &mut usize, limit: usize) -> Result<(), Error> {
@@ -636,8 +645,10 @@ impl Checker<'_> {
         }
         let kind = self.kind(key);
         if !finish {
-            if matches!(kind, Kind::Path { .. } | Kind::Qualified { .. })
-                && self.schedule_implicit_projection(key, context)?
+            if matches!(
+                kind,
+                Kind::Path { .. } | Kind::Applied { .. } | Kind::Qualified { .. }
+            ) && self.schedule_implicit_projection(key, context)?
             {
                 return Ok(());
             }
@@ -663,7 +674,7 @@ impl Checker<'_> {
                 Kind::Group(node) | Kind::Attributed { value: node, .. } => {
                     self.node_work(key.file, node, context);
                 }
-                Kind::Path { .. } | Kind::Name(_) => {
+                Kind::Path { .. } | Kind::Applied { .. } | Kind::Name(_) => {
                     self.schedule_type_path(key, context)?;
                 }
                 Kind::Type { flavor, elements } => {
@@ -698,7 +709,7 @@ impl Checker<'_> {
                 file: key.file,
                 node,
             })?,
-            Kind::Path { .. } | Kind::Name(_) => {
+            Kind::Path { .. } | Kind::Applied { .. } | Kind::Name(_) => {
                 let Some(Target::Definition(id)) =
                     self.facts.node(key).and_then(|facts| facts.reference)
                 else {

@@ -7,7 +7,7 @@ use crate::{
     },
     sema::{
         generics::TraitUse,
-        methods::selection::{self, Caller},
+        methods::selection::{PathCaller, PathProgress, PathQuery},
     },
 };
 
@@ -55,21 +55,33 @@ impl Checker<'_> {
         let path = self
             .implicit_method_path(key)
             .ok_or_else(|| self.error(key, "missing pending trait path"))?;
-        self.selection_prefix(path.prefix, path.owner, context)?;
-        let environment = self.selection_environment(context);
-        let traits = self.selection_trait_assumptions(key, context, environment.as_ref())?;
-        let method = selection::choose_trait_path(
-            self.report,
-            &mut self.facts,
-            key,
-            path.prefix,
-            (path.scope, path.name),
-            Caller {
-                availability: crate::sema::traits::implementations::Availability::Declarations,
-                environment: environment.as_ref(),
-                traits: traits.as_deref(),
-            },
-        )?;
+        let query = if let Some(query) = self.method_queries.remove(&key) {
+            *query
+        } else {
+            self.selection_prefix(path.prefix, path.owner, context)?;
+            let environment = self.selection_environment(context);
+            let traits = self.selection_trait_assumptions(key, context, environment.as_ref())?;
+            PathQuery::traits(
+                self.report,
+                &mut self.facts,
+                key,
+                path.prefix,
+                (path.scope, path.name),
+                PathCaller {
+                    availability: crate::sema::traits::implementations::Availability::Declarations,
+                    environment,
+                    traits,
+                },
+            )?
+        };
+        let method =
+            match self.poll_method_query(key, query, super::Work::ImplicitMethod(key, context))? {
+                PathProgress::Ready(Some(method)) => method,
+                PathProgress::Ready(None) => {
+                    return Err(self.error(key, "no applicable trait method for this prefix"));
+                }
+                PathProgress::Pending(_) => return Ok(()),
+            };
         let owner = self
             .facts
             .associated

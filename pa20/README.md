@@ -166,8 +166,11 @@ associated constants and the solver. Trait constants in implementation headers c
 wait for compatible headers while preserving inference and lifetime evidence.
 Inherent names and nominal heads are reserved before header elaboration, so early
 constant uses can prepare compatible owner headers before selecting a member.
-Remaining work includes suspended method-applicability queries and trait fallback,
-associated-type readiness inside implementation headers, further normalization
-and coherence work, the extended semantic view and the public grading suite. The maintainer journal in
+Type-qualified method applicability retains its prefix, candidate and pending trait
+query across header dependencies, including inherent-to-trait fallback. Receiver
+lookup still uses its existing synchronous applicability path.
+Remaining work includes associated-type readiness inside implementation headers,
+further normalization and coherence work, the extended semantic view and the
+public grading suite. The maintainer journal in
 `docs/pa18-pa21-buildout.md` records evidence and known gaps; individual checkpoints
 do not reduce the requirements above.

@@ -6661,6 +6661,52 @@
       "mode": "--emit-lowir"
     },
     {
+      "path": "tests/spec/implicit-paths/inherent-lifetime-only-arity.rs",
+      "exit_status": 1,
+      "features": [
+        "pa19.implicit-paths"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/trait_bounds/prefix_lifetimes.rs",
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/implicit-paths/inherent-lifetime-only-debt.rs",
+      "exit_status": 1,
+      "features": [
+        "pa19.implicit-paths"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/trait_bounds/prefix_lifetimes.rs",
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/implicit-paths/inherent-lifetime-only-turbofish.rs",
+      "exit_status": 0,
+      "features": [
+        "pa19.implicit-paths"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/trait_bounds/prefix_lifetimes.rs",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
       "path": "tests/spec/implicit-paths/nominal-type-path.rs",
       "exit_status": 0,
       "features": [
@@ -6980,6 +7026,24 @@
         "default_lints": true
       },
       "maintainer_origin": "dev/tests/trait_bounds/implicit_paths.rs"
+    },
+    {
+      "path": "tests/spec/implicit-paths/trait-lifetime-only-turbofish.rs",
+      "exit_status": 0,
+      "features": [
+        "pa19.implicit-paths"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "dev/tests/trait_bounds/prefix_lifetimes.rs",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
     },
     {
       "path": "tests/spec/implicit-paths/type-ambiguity.rs",

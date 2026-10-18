@@ -10,6 +10,27 @@ use crate::{
 use std::sync::Arc;
 
 impl Checker<'_> {
+    pub(super) fn poll_method_query(
+        &mut self,
+        key: NodeKey,
+        mut query: crate::sema::methods::selection::PathQuery,
+        resume: super::Work,
+    ) -> Result<crate::sema::methods::selection::PathProgress, Error> {
+        use crate::sema::methods::selection::PathProgress;
+        let progress = query
+            .poll(self.report, &mut self.facts, key)
+            .map_err(|message| self.error(key, message))?;
+        if let PathProgress::Pending(owner) = &progress {
+            self.method_queries.insert(key, Box::new(query));
+            self.work.push(resume);
+            self.work.push(super::Work::ImplHeader(
+                *owner,
+                super::impl_headers::Phase::Begin,
+            ));
+        }
+        Ok(progress)
+    }
+
     pub(super) fn selection_trait_assumptions(
         &mut self,
         key: NodeKey,
