@@ -1,0 +1,1 @@
+trait A{type Out;}impl<T>A for T{type Out=T;}fn main(){}

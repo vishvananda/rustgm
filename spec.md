@@ -1308,8 +1308,9 @@ Projection and trait progress run before numeric fallback and body publication.
 Normalization never substitutes for the original well-formedness proof. Isolated
 method-prefix queries still reject pending projection proofs until that query mode
 supports them; body proofs cannot leak into a speculative candidate. General
-opaque-result properties, quantified premises in implementation search,
-associated constants and further PA20/PA21 work remain required.
+opaque-result properties and quantified premises in implementation search remain
+PA21 responsibilities. Associated constants use the retained declaration, selected
+initializer and complete-instance machinery described above.
 
 Associated bindings in trait bounds retain resolved member identities separately
 from positional arguments. Complete ordinary trait headers before resolving
@@ -2221,3 +2222,20 @@ this view. Region/loan constraints remain explicitly pending: inspection succeed
 at the inference boundary, while LowIR emission retains every template, lifetime,
 ownership, loan, cleanup and demanded-instance proof. The new view must not change
 that execution boundary or mutate the analyzed facts.
+
+## Trait semantic inspection
+
+PA19 keeps `semantic-crate 1`. PA20 has a separate `trait-semantics 1` view,
+sharing the earlier typed records and appending associated type/constant members,
+result contracts, selected default/override identities, completed constant
+dispatches and retained original/normalized type pairs. Read the existing sparse
+unreduced-type store; do not introduce a duplicate normalization journal or rerun
+selection to manufacture display facts. Count mode reads the same facts without
+rendering or sorting. Full output sorts sparse maps by canonical source or
+declaration identity at the presentation boundary.
+
+A typed associated constant use can precede value dispatch. Show only dispatches
+that have actually completed. Symbolic normal forms can remain opaque, and
+lifetime obligations remain pending at this inspection boundary. Full LowIR
+emission proves the later region, ownership, destruction and layout requirements.
+The PA20 handout fixes row spellings, ordering and count meanings.

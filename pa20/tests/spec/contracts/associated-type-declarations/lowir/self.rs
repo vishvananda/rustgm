@@ -1,0 +1,1 @@
+trait A{type Out;}impl A for u8{type Out=Self;}fn main(){}

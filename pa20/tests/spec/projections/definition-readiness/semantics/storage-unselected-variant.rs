@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+struct X<const N:usize>([u8;N]);struct V(u8);fn f()->X<{(<u8 as A>::C,3usize).1}>{X([7;3])}trait P{type Out;}impl P for u8{type Out=V;}struct W<T:P>{v:T::Out}enum O<T>{None,Some(T)}trait A{const C:O<W<u8>>;}impl A for u8{const C:O<W<u8>>=O::None;}fn main(){check(f().0[2]==7);}

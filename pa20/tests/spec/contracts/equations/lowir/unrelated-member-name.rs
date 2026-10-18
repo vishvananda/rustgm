@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+trait A{type Out:B<Out=u8>;}trait B{type Out;}impl A for u8{type Out=u16;}impl B for u16{type Out=u8;}trait Other{type Out;}fn wrong<T:A>(x:<<T as A>::Out as Other>::Out)->u8 where T::Out:Other{x}fn main(){}

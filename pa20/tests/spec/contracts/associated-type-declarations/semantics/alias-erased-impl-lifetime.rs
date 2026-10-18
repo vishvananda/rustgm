@@ -1,0 +1,1 @@
+type Erase<'a>=u8;trait A{type Out;}impl<'a>A for u8{type Out=Erase<'a>;}fn main(){}

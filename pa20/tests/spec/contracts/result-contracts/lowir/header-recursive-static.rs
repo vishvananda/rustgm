@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+trait A where Self::Out:A+'static{type Out;}impl A for u8{type Out=u8;}impl<'a>A for &'a u8{type Out=u8;}fn keep<T:'static>(_:T){}fn use_it<T:A>(x:<<<T as A>::Out as A>::Out as A>::Out){keep(x)}fn scope<'a>(_:&'a u8){use_it::<&'a u8>(7)}fn main(){let x=7u8;scope(&x);}

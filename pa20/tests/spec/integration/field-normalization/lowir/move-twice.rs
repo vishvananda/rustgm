@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+struct D;impl Drop for D{fn drop(&mut self){}}trait A{type Out;}impl A for u8{type Out=D;}struct W<T:A>{v:T::Out}fn main(){let w=W::<u8>{v:D};let _a=w.v;let _b=w.v;}

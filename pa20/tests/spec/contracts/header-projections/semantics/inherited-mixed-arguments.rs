@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+trait A<T:Copy,const N:usize>:B<T,N> where Self::Out:Copy{}trait B<T:Copy,const N:usize>{type Out;}impl<T:Copy,const N:usize>B<T,N>for u8{type Out=[T;N];}impl<T:Copy,const N:usize>A<T,N>for u8{}fn main(){}

@@ -51,8 +51,10 @@ repository with pinned reference tools. It has not been built yet.
   destructor instances, with 438 course cases, 270 native executions and three
   explicit code-generation-only controls.
 - PA19 provides trait/method semantic inspection and checked static dispatch, with
-  1,069 cases and 247 native execution controls.
-- PA20–PA38 have buildout briefs and Makefiles. Their suites and implementation
+  1,072 cases and 249 native execution controls.
+- PA20 adds associated types/constants, normalized trait contracts and recursive
+  selection, with 1,343 text-oracle cases and 483 native execution controls.
+- PA21–PA38 have buildout briefs and Makefiles. Their suites and implementation
   are not complete; invoking an unbuilt assignment fails explicitly.
 
 Read [ROADMAP.md](ROADMAP.md), [spec.md](spec.md),
@@ -88,7 +90,9 @@ wrapper `dev/rustgm-ref` invokes the same maintained solution. Override
 against the committed oracles without regenerating them.
 
 The maintainer also provides `--emit-semantics` and `--count-semantics` for
-PA19 trait/method inspection. Its LowIR lane retains complete execution proofs.
+PA19 trait/method inspection. PA20 uses `--emit-trait-semantics` and
+`--count-trait-semantics` to expose associated contracts and retained normal forms.
+Both LowIR lanes retain complete execution proofs.
 
 ## CPPGM backend
 

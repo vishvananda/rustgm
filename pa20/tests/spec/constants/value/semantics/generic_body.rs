@@ -1,0 +1,1 @@
+trait A{const C:u8;}impl A for u8{const C:u8=7;}fn get<T:A>()->u8{T::C}fn main(){let _=get::<u8>();}

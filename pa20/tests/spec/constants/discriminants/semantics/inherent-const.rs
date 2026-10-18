@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+struct S<const N:isize>;impl<const N:isize>S<N>{const C:isize=N;}enum E{A=S::<3>::C,B=S::<5>::C,C}fn main(){check(E::A as isize==3);check(E::B as isize==5);check(E::C as isize==6);}

@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+trait A{type Out;}impl A for u8{type Out=u16;}trait Use<T:A>{fn take(x:T::Out)->T::Out;}impl<T:A>Use<T>for u32{fn take(x:T::Out)->T::Out{x}}fn main(){let f:fn(u16)->u16=<u32 as Use<u8>>::take;check(f(7)==7);}

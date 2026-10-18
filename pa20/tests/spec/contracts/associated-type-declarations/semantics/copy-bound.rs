@@ -1,0 +1,1 @@
+trait A{type Out:Copy;}impl<T:Copy>A for T{type Out=T;}fn main(){}

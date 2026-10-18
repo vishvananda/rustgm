@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+struct V<const N:usize>([u8;N]); trait A{const C:usize=<u16 as B>::C;} trait B{const C:usize=<u8 as A>::C;} impl A for u8{} impl B for u16{} fn f()->V<{<u16 as B>::C}>{V([7;3])} fn main(){check(f().0[2]==7);}

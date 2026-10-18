@@ -1,0 +1,1 @@
+trait A{type Out;}impl<T:Copy>A for T{type Out=T;}type P<T>=(T,<T as A>::Out);fn main(){let p:P<_>=(0,7u8);let _:u8=p.0;}

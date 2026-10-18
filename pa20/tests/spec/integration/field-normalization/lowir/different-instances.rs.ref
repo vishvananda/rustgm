@@ -1,0 +1,72 @@
+function @rg.23() -> void {
+  slot $s0 : obj<2x2>
+  slot $s1 : obj<8x4>
+  slot $s2 : obj<2x2>
+  slot $s3 : obj<8x4>
+  slot $s4 : obj<8x4>
+  block ^b0:
+    store u16 7, $s2
+    %t0 = addr $s2
+    %t1 = addr $s0
+    copyobj 2x2 %t0, %t1
+    store u8 9, $s3
+    %t2 = addr $s3
+    %t3 = index u8 %t2, 4
+    store u32 11, %t3
+    %t4 = addr $s3
+    %t5 = addr $s4
+    copyobj 8x4 %t4, %t5
+    %t6 = addr $s4
+    %t7 = addr $s1
+    copyobj 8x4 %t6, %t7
+    %t8 = load u16 $s0
+    %t9 = cmp eq u16 %t8, 7
+    %t10 = convert trunc i1 i64 %t9
+    call void @rg.13(%t10)
+    %t11 = load u8 $s1
+    %t12 = cmp eq u8 %t11, 9
+    %t13 = convert trunc i1 i64 %t12
+    call void @rg.13(%t13)
+    %t14 = addr $s1
+    %t15 = index u8 %t14, 4
+    %t16 = load u32 %t15
+    %t17 = cmp eq u32 %t16, 11
+    %t18 = convert trunc i1 i64 %t17
+    call void @rg.13(%t18)
+    return void
+}
+function @rg.13(%p0 : i1) -> void {
+  slot $s0 : i1
+  block ^b0:
+    store i1 %p0, $s0
+    %t0 = load i1 $s0
+    %t1 = unary not i1 %t0
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    jump ^b3
+  block ^b1:
+    %t2 = call u8 @rg.14(0)
+    jump ^b3
+  block ^b3:
+    return void
+}
+function @rg.14(%p0 : u8) -> u8 {
+  slot $s0 : u8
+  block ^b0:
+    store u8 %p0, $s0
+    %t0 = load u8 $s0
+    %t1 = cmp eq u8 %t0, 0
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    %t2 = binary udiv u8 1, %t0
+    return u8 %t2
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+declare function @abort() -> void [return=noreturn]
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.23()
+    return i64 0
+}

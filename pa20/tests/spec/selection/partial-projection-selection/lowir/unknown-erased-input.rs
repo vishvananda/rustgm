@@ -1,0 +1,1 @@
+trait A{type Out;}impl<T>A for T{type Out=u8;}type Q<T>=<T as A>::Out;fn main(){let _:Q<_>=7u8;}

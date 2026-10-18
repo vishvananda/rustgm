@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+trait A<'a>{type Out;}impl<'a>A<'a>for u8{type Out=&'a u8;}fn apply<'a,T:A<'a>>(f:fn(&'a T::Out)->&'a T::Out,x:&'a T::Out)->&'a T::Out{f(x)}fn keep<'a>(x:&'a &'a u8)->&'a &'a u8{x}fn main(){let x=7u8;let r=&x;check(**apply::<u8>(keep,&r)==7);}

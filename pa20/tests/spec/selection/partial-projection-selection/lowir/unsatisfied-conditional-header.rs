@@ -1,0 +1,1 @@
+struct W<T>(T);struct C;trait B{}trait A<T>{type Out;}impl<T:B>A<T>for W<u8>{type Out=fn(u8);}type P<T>=(W<T>,<W<T>as A<C>>::Out);fn g(_:u8){}fn main(){let p:P<_>=(W(0),g);(p.1)(7);}

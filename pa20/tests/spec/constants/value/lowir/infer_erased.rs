@@ -1,0 +1,1 @@
+struct S<T>(T);impl<T>S<T>{const A:u8=7;}fn main(){let _=S::A;}

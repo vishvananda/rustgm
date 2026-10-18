@@ -1,0 +1,1 @@
+trait A<'a>{const C:&'a u8;}impl<'a,'b>A<'a>for &'b u8 where 'a:'b,'b:'a{const C:&'b u8=&7;}fn main(){}

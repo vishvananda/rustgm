@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+trait A:B+C where <Self as B>::Out:Copy{}trait B{type Out;}trait C{type Out;}impl B for u8{type Out=u16;}impl C for u8{type Out=&'static mut u8;}impl A for u8{}fn main(){}

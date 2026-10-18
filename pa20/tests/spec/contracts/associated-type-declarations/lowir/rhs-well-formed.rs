@@ -1,0 +1,1 @@
+trait A{type Out:?Sized;}impl A for u8{type Out=[[u8];1];}fn main(){}

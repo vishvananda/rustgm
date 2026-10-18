@@ -1,0 +1,1 @@
+trait A{type Out;}impl<'a>A for u8{type Out=fn(&'a u8);}fn main(){}

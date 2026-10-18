@@ -1,0 +1,1 @@
+ERROR: file 0: 282: implementation constant type does not satisfy trait: required lifetime does not outlive its target

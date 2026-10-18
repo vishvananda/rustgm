@@ -1,0 +1,1 @@
+trait A<U>{}trait B{}impl<T:Copy>B for T{}struct N;impl<T:B>A<u8>for T{}impl<T:A<u8>>A<u16>for &T{}impl<T>A<()>for T{}fn get<T:A<U>,U>(_:T){}fn first(){get::<_,_>(N)}fn second<T:Copy>(x:T){get::<_,u8>(x)}fn main(){first();second(7u8)}

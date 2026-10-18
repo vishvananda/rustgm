@@ -1,0 +1,1 @@
+trait A{const C:u8=Self::D;const D:u8=Self::C;}fn main(){}

@@ -1,0 +1,1 @@
+ERROR: file 0: 204: trait argument lifetime requirement is not satisfied: required lifetime does not outlive its target

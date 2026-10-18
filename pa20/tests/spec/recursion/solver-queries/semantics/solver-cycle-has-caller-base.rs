@@ -1,0 +1,1 @@
+trait A{}trait B{}impl<T:B>A for T{}impl<T:A>B for T{}fn get<T:A>(_:T){}fn caller<T:B>(x:T){get(x)}fn main(){}

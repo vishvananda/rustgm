@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+#[derive(PartialEq,Eq)]enum K{A,B}struct S<const N:usize>;impl<const N:usize>S<N>{const C:K=K::A;}fn f<const N:usize>(x:K)->bool{match x{S::<N>::C=>true,_=>false}}fn main(){check(f::<3>(K::A));check(!f::<3>(K::B))}

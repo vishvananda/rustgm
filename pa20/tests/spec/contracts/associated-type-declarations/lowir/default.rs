@@ -1,0 +1,1 @@
+trait A{type Out=u8;}fn main(){}

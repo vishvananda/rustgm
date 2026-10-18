@@ -1,4 +1,8 @@
 //! The PA19 inspection view reports selection while preserving later proof boundaries.
+#[path = "harness/native_references.rs"]
+mod native;
+#[path = "semantic_view/relationships.rs"]
+mod relationships;
 #[path = "helpers/qualify.rs"]
 mod rustc;
 #[path = "support/semantic.rs"]

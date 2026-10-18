@@ -1,0 +1,1 @@
+trait A{type Out;}impl<T,const N:usize>A for [T;N]{type Out=[T;N];}fn main(){}

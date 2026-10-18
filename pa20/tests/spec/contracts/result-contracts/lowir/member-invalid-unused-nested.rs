@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+trait A{type Out:B;}trait B{type Out:'static;}impl A for u8{type Out=u16;}impl B for u16{type Out=&'static mut u8;}fn wrong<'a>(x:&'a mut u8)-><u16 as B>::Out{x}fn main(){}

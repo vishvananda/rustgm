@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+trait A<'a>{type Out;}impl<'a,'b:'a>A<'a>for &'b u8{type Out=u16;}fn value<'a,T:A<'a>>(x:T::Out)->T::Out{x}fn main(){check(value::<'static,&'static u8>(7)==7);}

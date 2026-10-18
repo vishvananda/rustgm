@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+trait A<'a,'b> where Self::Out:'b{type Out;}impl<'a,'b>A<'a,'b>for u8{type Out=&'b u8;}fn keep<'b,T:'b>(_:T){}fn use_it<'a,'b,T:A<'a,'b>>(x:T::Out){keep::<'b,_>(x)}fn main(){let x=7u8;use_it::<u8>(&x);}

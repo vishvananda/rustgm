@@ -9904,3 +9904,64 @@ these sampled depths, consistent with the internal retained-query invariants.
 The published compiler rejects these programs, so they establish new-capability
 scaling, not an A/B speedup. Full-validation cleanup removed 6.89 GiB; only the
 published baseline and final candidate remain pinned.
+
+## PA20 public trait contract and course activation
+
+PA20 now has a separate `--emit-trait-semantics` / `--count-trait-semantics`
+contract. The writer shares PA19's existing records, then exposes associated
+members, result contracts, impl constant selections, completed value dispatches
+and retained original/normalized type pairs. It reads existing typed stores and
+adds no normalization log or semantic replay. The unchanged PA19 mode remains
+available. Hand-checked tests cover selected identities and complete mixed
+arguments, while the semantic boundary explicitly retains pending lifetime proof.
+
+The public suite promotes already qualified maintainer cases and adds coherence
+and recursive-header controls. It has 1,343 registered cases from 797 distinct
+source programs: 546 semantic inspections and 797 LowIR checks. All 483 accepted
+LowIR programs execute through rustc and CPPGM; one semantic-positive case records
+an explicit later lifetime rejection. Every source has a declared outcome and
+origin. Positive semantic and LowIR twins use separate manifest identities.
+
+The first qualification pass caught three inherited lint-wrapper dependencies
+and one duplicate test name. Explicit `allow(unconditional_panic)` attributes
+preserve the unused-fault tests' intended policy; distinct paths retain both
+same-named programs. The original failed pass remains in `course-v1`. The corrected
+797-program pass and sixteen additional semantic-negative controls pass fully.
+No source acceptance expectation was changed to match the compiler.
+
+All 4,029 new sidecars match the qualified output bytes. Review also counts every
+added row against its declared total. All 14,625 earlier oracle sidecars are
+unchanged. PA20 activation updates the root report, independent language checks
+and native target together. PA21–PA25 remain planned; this checkpoint does not
+complete the goal through PA25. See `docs/pa20-validation.md` for the release
+contract and `obj/pa20-work/course-final` for the full validation/performance
+receipts. Further PA21 investigation is isolated under `obj/pa21-work` and has
+not changed the frozen compiler.
+
+Full validation passes 1,278 regular maintainer tests, 91 native groups and all
+6,218 PA1–PA20 course cases. The installed PA20 harness passes 1,343 independent
+rustc checks and 797 complete LowIR checks, including 483 clean native executions.
+Its one documented semantic lifetime exception remains explicit. Formatting,
+strict Clippy, the 800-file audit, harness, backend and upstream checks pass.
+All 803 frozen source/configuration hashes and all 18,654 oracle sidecars remain
+fixed; PA21–PA25 still fail as planned assignments. The thirty completed gate
+receipts and final candidate hash are recorded in `course-final`.
+
+The validated candidate SHA-256 is
+`fd2864f065b8c72a0e4f48ac92bb2b79bc0570fd8a6a84b8cccd6dc8775ba292`.
+
+PA20's immutable comparison with published `c13f64c` keeps all existing outputs
+identical. Twenty-one existing workloads have instruction deltas −0.06%..+0.23%
+and median RSS deltas −350..+196 KiB. Main wall medians span −5.36%..+6.14%; a
+single focused repeat of the three positive outliers measures +0.97%, −0.25% and
+−1.89%, alongside same-input A/A and B/B controls. The earlier +4.75%..+6.14%
+increases did not recur. Shared-host timing noise establishes no portable speedup.
+
+New trait-view depths 8/32/96 take count-mode 9.13/12.74/22.27 ms and full-mode
+8.97/12.94/22.87 ms, including startup. Corresponding instruction counts are
+5.79/15.62/40.88M and 6.11/16.43/43.03M, approximately linear across these sampled
+chains. All full/count equality and binary/input/source hash checks pass. Receipts
+retain 31 main wall jobs, 27 instruction comparisons and nine focused wall jobs:
+1,040 timing plus 160 qualification observations, with main batch four and focused
+batch sixteen. Full validation cleanup removed 6.90 GiB. Detailed tables and
+limitations are in `docs/pa20-validation.md`; no performance observation was dropped.

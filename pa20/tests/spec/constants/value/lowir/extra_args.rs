@@ -1,0 +1,1 @@
+struct S;impl S{const C:u8=7;}fn main(){let _=S::C::<u8>;}

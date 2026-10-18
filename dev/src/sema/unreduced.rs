@@ -19,6 +19,23 @@ struct Data {
     fields: HashMap<(ItemId, u32), ListId>,
 }
 impl Types {
+    pub(super) fn node_entries(&self) -> impl Iterator<Item = (NodeKey, TypeId)> + '_ {
+        self.data
+            .iter()
+            .flat_map(|data| &data.nodes)
+            .map(|(&key, &ty)| (key, ty))
+    }
+    pub(super) fn definition_entries(&self) -> impl Iterator<Item = (DefId, TypeId)> + '_ {
+        self.data
+            .iter()
+            .flat_map(|data| &data.definitions)
+            .map(|(&key, &ty)| (key, ty))
+    }
+    pub(super) fn normalization_counts(&self) -> (usize, usize) {
+        self.data
+            .as_ref()
+            .map_or((0, 0), |data| (data.nodes.len(), data.definitions.len()))
+    }
     #[must_use]
     pub fn is_empty(&self) -> bool {
         self.data.is_none()

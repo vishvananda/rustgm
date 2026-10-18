@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+trait A<'a,T,const N:usize>{const C:usize=2;}struct R<'a>(&'a u8);impl<'a,T:'a,const N:usize>A<'a,T,N>for R<'a>{const C:usize=N;}fn main(){check(<R<'static>as A<'static,u8,3>>::C==3);check(<R<'static>as A<'static,u16,7>>::C==7);}

@@ -1,0 +1,17 @@
+function @rg.24() -> void {
+  block ^b0:
+    %t0 = call u16 @rg.17.i3(7)
+    return void
+}
+function @rg.17.i3(%p0 : u16) -> u16 {
+  slot $s0 : u16
+  block ^b0:
+    store u16 %p0, $s0
+    %t0 = load u16 $s0
+    return u16 %t0
+}
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.24()
+    return i64 0
+}

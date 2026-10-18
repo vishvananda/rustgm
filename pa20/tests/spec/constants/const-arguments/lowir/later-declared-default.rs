@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+struct X<const N:usize>([u8;N]);fn main(){let x:X<{<u8 as A>::D}>=X([7;4]);check(x.0[3]==7);}trait A{const C:usize=3;const D:usize=Self::C+1;}impl A for u8{}

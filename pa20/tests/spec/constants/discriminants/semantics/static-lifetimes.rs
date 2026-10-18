@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+trait A<'a>{const C:isize=3;}struct S<'a>(&'a u8);impl<'a:'static>A<'a>for S<'a>{}enum E{A=<S<'static>as A<'static>>::C,B}fn main(){check(E::B as isize==4);}

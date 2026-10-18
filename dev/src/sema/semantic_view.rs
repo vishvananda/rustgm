@@ -1,4 +1,5 @@
 //! Deterministic associated-item inspection consumes completed typed facts.
+pub mod relationships;
 use super::{associated::OwnerKind, model::Declarations, type_view};
 use crate::{
     resolve::{expansion::Report, model::Target, unit::NodeKey},
@@ -15,6 +16,12 @@ use std::io::{self, Write};
 /// Propagates output errors and inconsistent retained identities.
 pub fn write(report: &Report, facts: &Declarations, out: &mut impl Write) -> io::Result<()> {
     writeln!(out, "semantic-crate 1")?;
+    records(report, facts, out)?;
+    write!(out, "eof ")?;
+    count(facts, out)
+}
+
+fn records(report: &Report, facts: &Declarations, out: &mut impl Write) -> io::Result<()> {
     type_view::types(&facts.types, out)?;
     type_view::definitions(report, facts, out)?;
     owners(report, facts, out)?;
@@ -39,15 +46,19 @@ pub fn write(report: &Report, facts: &Declarations, out: &mut impl Write) -> io:
         type_view::region(bound.shorter, out)?;
         writeln!(out, " pending")?;
     }
-    write!(out, "eof ")?;
-    count(facts, out)
+    Ok(())
 }
 
 /// Count the same retained facts without rendering their text or rerunning inference.
 /// # Errors
 /// Propagates output errors.
 pub fn count(facts: &Declarations, out: &mut impl Write) -> io::Result<()> {
-    writeln!(
+    totals(facts, out)?;
+    writeln!(out)
+}
+
+fn totals(facts: &Declarations, out: &mut impl Write) -> io::Result<()> {
+    write!(
         out,
         "owners={} members={} parameters={} predicates={} impls={} calls={} paths={} impl-uses={}",
         facts.associated.owners().len(),

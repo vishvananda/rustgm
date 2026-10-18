@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+struct D<'a>(&'a mut u8);impl<'a>Drop for D<'a>{fn drop(&mut self){*self.0+=1;}}trait A<'a>{type Out;}impl<'a>A<'a>for u8{type Out=D<'a>;}fn consume<'a,T:A<'a>>(x:T::Out){}fn main(){let mut x=0u8;consume::<u8>(D(&mut x));check(x==1);}

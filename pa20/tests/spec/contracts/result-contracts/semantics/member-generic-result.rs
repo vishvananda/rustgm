@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+trait A<'a>{type Out:'a;}struct S<T>(T);impl<'a,T:'a>A<'a>for S<T>{type Out=T;}fn main(){let x:<S<u16> as A<'_>>::Out=7;check(x==7);}

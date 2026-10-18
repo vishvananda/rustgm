@@ -1,0 +1,1 @@
+trait B<U>{}impl B<u16>for u8{}trait A<U>{}impl<T:B<u8>>A<u8>for T{}impl<T:B<u16>>A<u16>for T{}fn get<T:A<U>,U>(_:T){}fn main(){get::<_,_>(7u8)}

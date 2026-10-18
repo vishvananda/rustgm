@@ -1,0 +1,1 @@
+struct S<const N:usize>;impl<const N:usize>S<N>{const C:usize=N;}fn main(){let _=S::<3>::C+S::<5>::C+S::<3>::C;}

@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+trait A<'a>{const C:&'a u8=&7;}impl<'a>A<'a>for u8{const C:&'a u8=&9;}fn f<'a>(x:&'a u8)->bool{match x{<u8 as A<'a>>::C=>true,_=>false}}fn main(){check(f(&9));check(!f(&7))}

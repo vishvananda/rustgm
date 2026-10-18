@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+trait A<'a>where Self::Out:Need{type Out;}trait Need:Sized{fn value(self)->u8;}fn use_it<'a,T:A<'a>>(x:T::Out)->u8{let _=<T::Out as Need>::value(x);<T::Out as Need>::value(x)}fn main(){}

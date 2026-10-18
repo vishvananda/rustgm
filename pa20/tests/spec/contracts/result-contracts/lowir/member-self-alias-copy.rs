@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+type Id<T>=T;trait C where Id<Self>:Copy{}trait A{type Out:C;}impl C for u16{}impl A for u8{type Out=u16;}fn dup<T:A>(x:T::Out)->(T::Out,T::Out){(x,x)}fn main(){let p=dup::<u8>(7);check(p.0==7&&p.1==7);}

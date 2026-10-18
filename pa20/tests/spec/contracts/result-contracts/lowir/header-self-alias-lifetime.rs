@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+type Id<T>=T;trait C where Id<Self>:'static{}trait A where Self::Out:C{type Out;}impl C for u16{}impl A for u8{type Out=u16;}fn keep<T:'static>(x:T)->T{x}fn use_it<T:A>(x:T::Out)->T::Out{keep(x)}fn main(){check(use_it::<u8>(7)==7);}

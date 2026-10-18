@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+trait A{type Out;}impl<'a>A for &'a u8{type Out=u8;}struct W<T:A>(T::Out);fn make<'a>(_:&'a u8)->W<&'a u8>{W(1)}const C:W<&'static u8>=W(3);fn bad<'a>(x:&'a u8)->W<&'static u8>{let mut w=C;w=make(x);w}fn main(){}

@@ -1,0 +1,1 @@
+trait A{const C:u8=7;}trait B{const C:u8=9;}struct S;impl A for S{}impl B for S{}fn main(){let _=S::C;}

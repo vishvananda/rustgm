@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+trait B{type Out;}trait A:B{type Out;fn f()-><Self as A>::Out;}struct S;impl B for S{type Out=u8;}impl A for S{type Out=u16;fn f()->Self::Out{7}}fn main(){}

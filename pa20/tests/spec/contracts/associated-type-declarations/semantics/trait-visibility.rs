@@ -1,0 +1,1 @@
+trait A{pub type Out;}fn main(){}

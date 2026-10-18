@@ -1,0 +1,1 @@
+struct S;impl S{const A:u8=Self::B;const B:u8=Self::A;}fn main(){}

@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+trait A where Self::Out:B{type Out;}trait B where Self::Out:'static{type Out;}impl A for u8{type Out=u16;}impl B for u16{type Out=u32;}fn keep<T:'static>(_:T){}fn use_it<T:A>(x:<<T as A>::Out as B>::Out){keep(x)}fn main(){use_it::<u8>(7);}

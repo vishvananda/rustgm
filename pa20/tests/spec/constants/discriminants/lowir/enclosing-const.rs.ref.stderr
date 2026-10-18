@@ -1,0 +1,1 @@
+ERROR: file 0: 156: constant expression cannot use an enclosing generic parameter

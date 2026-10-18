@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+trait Need<'a>:'a{}impl<'a>Need<'a>for &'a u8{}trait A<'a>{type Out:Need<'a>;}impl<'a>A<'a>for u8{type Out=&'a u8;}fn require<'a,X:'a>(x:X)->X{x}fn use_it<'a,T:A<'a>>(x:T::Out)->T::Out{require::<'a,T::Out>(x)}fn main(){let x=7u8;check(*use_it::<u8>(&x)==7);}

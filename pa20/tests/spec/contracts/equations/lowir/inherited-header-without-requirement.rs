@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+trait C{type Out;}trait B{type Out:C;}trait A:B where Self::Out:C<Out=u8>{}impl C for u16{type Out=u8;}impl B for u8{type Out=u16;}impl A for u8{}fn value<T:A>(x:<<T as B>::Out as C>::Out)->u8{x}fn main(){check(value::<u8>(7)==7);}

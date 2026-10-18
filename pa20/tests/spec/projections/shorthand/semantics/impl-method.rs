@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+trait A{type Out;fn value()-><Self as A>::Out;}impl A for u8{type Out=usize;fn value()->Self::Out{3}}fn main(){check(<u8 as A>::value()==3);}

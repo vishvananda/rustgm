@@ -1,0 +1,1 @@
+struct S;impl S{type Out=u8;}fn main(){}

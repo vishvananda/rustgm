@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+trait A<'a>{type Out;}impl<'a,'b:'a>A<'a>for &'b u8{type Out=u16;}fn value<'a,T:A<'a>>(x:T::Out)->T::Out{x}fn call<'a,'b:'a>(_:&'a u8,_:&'b u8)->u16{value::<'a,&'b u8>(7)}fn main(){let x=7u8;check(call(&x,&x)==7);}fn wrong<'c,'d>(_:&'c u8,_:&'d u8)->u16{value::<'c,&'d u8>(9)}

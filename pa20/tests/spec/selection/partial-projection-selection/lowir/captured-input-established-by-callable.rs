@@ -1,0 +1,1 @@
+trait A{type Out;}impl<T:Copy>A for T{type Out=T;}type P<T>=(fn(<T as A>::Out),T);fn take<T>(_:T){}fn f<'a>(x:&'a u8){let _:P<_>=(take::<&'a u8>,x);}fn main(){}

@@ -52,6 +52,7 @@ fn options() -> Result<Options, String> {
                     | "expanded-crate"
                     | "types"
                     | "semantics"
+                    | "trait-semantics"
                     | "patterns"
                     | "layouts"
                     | "body-ir"
@@ -114,6 +115,7 @@ fn compile(options: &Options) -> Result<(), String> {
             | "--emit-expanded-crate"
             | "--emit-types"
             | "--emit-semantics"
+            | "--emit-trait-semantics"
             | "--emit-patterns"
             | "--emit-layouts"
             | "--emit-body-ir"
@@ -134,6 +136,8 @@ fn compile(options: &Options) -> Result<(), String> {
                 modules::Mode::Patterns
             } else if options.mode == "--emit-semantics" {
                 modules::Mode::Semantics
+            } else if options.mode == "--emit-trait-semantics" {
+                modules::Mode::Relationships
             } else if options.mode == "--emit-types" {
                 modules::Mode::Types
             } else if options.mode == "--emit-layouts" {

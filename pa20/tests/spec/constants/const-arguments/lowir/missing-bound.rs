@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+trait A{const C:usize=3;}struct S<T>(T);struct U;impl<T:Copy>A for S<T>{}struct X<const N:usize>([u8;N]);fn main(){let _x:X<{<S<U>as A>::C}>=X([7;3]);}

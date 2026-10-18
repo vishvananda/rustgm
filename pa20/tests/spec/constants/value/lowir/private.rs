@@ -1,0 +1,1 @@
+mod m{pub struct S;impl S{const A:u8=7;}}fn main(){let _=m::S::A;}

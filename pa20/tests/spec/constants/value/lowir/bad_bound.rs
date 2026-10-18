@@ -1,0 +1,1 @@
+trait A{const C:u8;}fn get<T>()->u8{<T as A>::C}fn main(){}

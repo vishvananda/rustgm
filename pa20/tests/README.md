@@ -1,8 +1,11 @@
 # PA20 fixture ownership
 
-Planned: no graded fixtures or generated reference outputs yet.
+The manifest registers 1,343 exact text-oracle cases from 797 source programs.
+The semantic lane has 484 accepted and 62 rejected cases; the LowIR lane has
+483 accepted native executions and 314 rejected programs. One semantic-positive
+fixture deliberately retains a lifetime error rejected by LowIR and rustc.
 
-Required families:
+Fixture families:
 
 - `projections`: qualified/shorthand paths, complete type/lifetime/const inputs,
   aliases, nominal fields, callable signatures, nested results and repeated uses.
@@ -37,3 +40,26 @@ higher-ranked trait bounds implicitly in a PA20 fixture.
 
 Put required regressions here, in the earliest assignment owning all their
 features. Register every input in `manifest.json`; no undiscovered fixtures.
+
+All sources are original RustGM controls; `maintainer_origin` records promoted
+tests. Positive programs have separate semantic and LowIR identities so each
+mode has its own exact text oracle. No accepted LowIR fixture is skipped or
+classified as compilation-only. Three unused-fault fixtures explicitly allow
+`unconditional_panic`, preserving their original maintainer wrapper policy while
+keeping other default lints enabled. Two originally identically named selection
+controls have distinct paths and preserve both source programs.
+
+| Family | Semantic | LowIR | Native executions |
+| --- | ---: | ---: | ---: |
+| coherence | 14 | 14 | 5 |
+| constants | 168 | 261 | 156 |
+| contracts | 119 | 167 | 97 |
+| integration | 41 | 57 | 39 |
+| projections | 77 | 108 | 69 |
+| recursion | 27 | 44 | 25 |
+| selection | 100 | 146 | 92 |
+
+The maintainer invariants additionally exercise solver budgets, completed proof
+reuse, failure-cache isolation, suspended-query ownership and linear work/storage
+bounds. These internal algorithm checks supplement the public language contract;
+work counters never appear in text oracles.

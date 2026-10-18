@@ -1,0 +1,21 @@
+function @rg.23() -> void {
+  block ^b0:
+    %t0 = convert zext i16 u8 7
+    %t1 = convert zext i16 u8 9
+    %t2 = binary add i16 %t0, %t1
+    %t3 = convert trunc u8 i16 %t2
+    %t4 = convert zext i16 u8 %t3
+    %t5 = cmp ne i16 %t2, %t4
+    branch %t5, ^b1, ^b2
+  block ^b2:
+    return void
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+declare function @abort() -> void [return=noreturn]
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.23()
+    return i64 0
+}

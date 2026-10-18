@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+trait A{type Out;}trait B:A{}trait C:A{}trait D:B+C{fn keep(x:Self::Out)->Self::Out{x}}impl A for u8{type Out=u16;}impl B for u8{}impl C for u8{}impl D for u8{}fn main(){check(<u8 as D>::keep(7)==7);}

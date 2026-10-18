@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+trait A{fn f(x:Self::Out)->Self::Out where Self:B{x}}trait B{type Out;}impl B for u8{type Out=u16;}impl A for u8{}fn main(){let _:u16=<u8 as A>::f(7);}

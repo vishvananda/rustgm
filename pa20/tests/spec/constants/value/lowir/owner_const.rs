@@ -1,0 +1,1 @@
+trait A<const N:usize>{const C:usize=N;}impl<const N:usize>A<N> for u8{}fn main(){let _=<u8 as A<3>>::C+<u8 as A<5>>::C;}

@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+trait A{const C:isize=3;}struct S<T>(T);impl<T:Copy>A for S<T>{const C:isize=7;}enum E{A=<S<u8>as A>::C,B}fn main(){check(E::B as isize==8);}

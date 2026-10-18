@@ -1,0 +1,88 @@
+trait-semantics 1
+type 0 never
+type 1 tuple []
+type 2 primitive bool
+type 3 primitive char
+type 4 primitive str
+type 5 primitive i8
+type 6 primitive i16
+type 7 primitive i32
+type 8 primitive i64
+type 9 primitive i128
+type 10 primitive isize
+type 11 primitive u8
+type 12 primitive u16
+type 13 primitive u32
+type 14 primitive u64
+type 15 primitive u128
+type 16 primitive usize
+type 17 primitive f32
+type 18 primitive f64
+type 19 aggregate def=15 arguments=[const-parameter:15:0]
+type 20 parameter def=19 index=0
+type 21 function binders=0 parameters=[2] result=1 unsafe=false
+type 22 function-item def=13 signature=21
+type 23 function binders=0 parameters=[11] result=11 unsafe=false
+type 24 function-item def=14 signature=23
+type 25 function binders=0 parameters=[] result=1 unsafe=false
+type 26 function-item def=17 signature=25
+type 27 array element=11 length=parameter:15:0
+type 28 function binders=0 parameters=[27] result=19 unsafe=false
+type 29 function-item def=16 signature=28
+type 30 aggregate def=15 arguments=[const:16:0x00000000000000000000000000000003]
+type 31 array element=11 length=3
+type 32 function binders=0 parameters=[31] result=30 unsafe=false
+type 33 function-item def=16 signature=32 arguments=[const:16:0x00000000000000000000000000000003]
+def 13 type=22 name="check" source=0:19
+def 14 type=24 name="fail" source=0:35
+def 15 type=19 name="X" source=0:47
+def 16 type=29 name="X" source=0:47
+def 17 type=26 name="main" source=0:83
+def 19 type=20 name="Self" source=0:88
+def 20 type=16 name="C" source=0:87
+def 21 type=11 name="Self" source=0:100
+def 22 type=16 name="C" source=0:99
+def 23 type=12 name="Self" source=0:114
+def 24 type=16 name="C" source=0:113
+def 25 type=2 name="bool"
+def 26 type=3 name="char"
+def 27 type=4 name="str"
+def 28 type=5 name="i8"
+def 29 type=6 name="i16"
+def 30 type=7 name="i32"
+def 31 type=8 name="i64"
+def 32 type=9 name="i128"
+def 33 type=10 name="isize"
+def 34 type=11 name="u8"
+def 35 type=12 name="u16"
+def 36 type=13 name="u32"
+def 37 type=14 name="u64"
+def 38 type=15 name="u128"
+def 39 type=16 name="usize"
+def 40 type=17 name="f32"
+def 41 type=18 name="f64"
+def 42 type=16 name="N" source=0:39
+def 43 type=2 name="ok" source=0:2
+def 44 type=11 name="x" source=0:22
+def 45 type=30 name="x" source=0:50
+associated-owner 0 kind=trait self-def=19 self=20 source=0:88 trait=18 unsafe=false name="A"
+associated-owner 1 kind=trait-impl self-def=21 self=11 source=0:100 unsafe=false
+associated-owner 2 kind=trait-impl self-def=23 self=12 source=0:114 unsafe=false
+associated-member def=20 owner=0
+associated-member def=22 owner=1
+associated-member def=24 owner=2
+parameter owner=15 binding=42 argument=const-parameter:15:0 default=-
+parameter owner=19 binding=19 argument=type:20 default=-
+predicate owner=18 source=0:88 subject=20 bound=trait:18 arguments=[]
+impl owner=21 source=0:100 subject=11 bound=trait:18 arguments=[]
+impl owner=23 source=0:114 subject=12 bound=trait:18 arguments=[]
+trait-path source=0:59 method=20 trait=18 qualifier=explicit origin=ordinary subject-source=0:54
+implementation-use source=0:59 owner=21 arguments=[]
+associated-constant def=20 type=16
+associated-constant def=22 type=16
+associated-constant def=24 type=16
+impl-constant owner=21 declaration=20 selected=22 default=false
+impl-constant owner=23 declaration=20 selected=24 default=false
+constant-use source=0:59 definition=20 arguments=[type:11]
+constant-dispatch declaration=20 arguments=[type:11] selected=22 arguments=[]
+eof owners=3 members=3 parameters=2 predicates=1 impls=2 calls=0 paths=1 impl-uses=1 type-members=0 constant-members=3 result-contracts=0 result-bounds=0 impl-constants=2 constant-uses=1 constant-dispatches=1 normalized-nodes=0 normalized-definitions=0

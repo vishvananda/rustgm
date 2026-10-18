@@ -1,0 +1,1 @@
+struct S<const N:usize>;impl<const N:usize>S<N>{const C:[u8;N]=[7;N];}fn main(){let _=S::<3>::C[2]+S::<5>::C[4];}

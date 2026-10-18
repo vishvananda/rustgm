@@ -1,0 +1,1 @@
+trait A{type X;type Y;}impl A for u8{type Y=u16;type X=u32;}fn main(){}

@@ -1,0 +1,130 @@
+trait-semantics 1
+type 0 never
+type 1 tuple []
+type 2 primitive bool
+type 3 primitive char
+type 4 primitive str
+type 5 primitive i8
+type 6 primitive i16
+type 7 primitive i32
+type 8 primitive i64
+type 9 primitive i128
+type 10 primitive isize
+type 11 primitive u8
+type 12 primitive u16
+type 13 primitive u32
+type 14 primitive u64
+type 15 primitive u128
+type 16 primitive usize
+type 17 primitive f32
+type 18 primitive f64
+type 19 aggregate def=15 regions=[bound:0:0]
+type 20 parameter def=24 index=1
+type 21 aggregate def=24 arguments=[region:bound:0:0,type:20]
+type 22 parameter def=25 index=1
+type 23 aggregate def=25 arguments=[region:bound:0:0,type:22]
+type 24 parameter def=20 index=0
+type 25 projection def=21 self=24 trait=19 arguments=[region:bound:0:0] family arguments=[]
+type 26 function binders=0 parameters=[2] result=1 unsafe=false
+type 27 function-item def=13 signature=26
+type 28 function binders=0 parameters=[11] result=11 unsafe=false
+type 29 function-item def=14 signature=28
+type 30 reference mutable=true region=bound:0:1 referent=19
+type 31 function binders=2 parameters=[30] result=1 unsafe=false
+type 32 function-item def=18 signature=31
+type 33 function binders=0 parameters=[] result=1 unsafe=false
+type 34 function-item def=26 signature=33
+type 35 reference mutable=true region=bound:0:0 referent=11
+type 36 projection def=21 self=20 trait=19 arguments=[region:bound:0:0] family arguments=[]
+type 37 array element=36 length=0
+type 38 aggregate def=24 arguments=[region:bound:0:0,type:22]
+type 39 function binders=1 parameters=[35] result=19 unsafe=false
+type 40 reference mutable=true region=bound:1:0 referent=11
+type 41 aggregate def=15 regions=[bound:1:0]
+type 42 function binders=0 parameters=[40] result=41 unsafe=false
+type 43 function-item def=16 signature=39
+type 44 aggregate def=24 arguments=[region:region:1,type:22]
+type 45 projection def=21 self=20 trait=19 arguments=[region:region:1] family arguments=[]
+type 46 array element=45 length=0
+type 47 projection def=21 self=11 trait=19 arguments=[region:region:1] family arguments=[]
+type 48 aggregate def=15 regions=[region:2]
+type 49 aggregate def=15 regions=[region:1]
+type 50 aggregate def=25 arguments=[region:region:1,type:11]
+type 51 aggregate def=24 arguments=[region:region:1,type:11]
+type 52 array element=49 length=0
+type 53 array element=47 length=0
+type 54 aggregate def=15 regions=[region:3]
+def 13 type=27 name="check" source=0:19
+def 14 type=29 name="fail" source=0:35
+def 15 type=19 name="D" source=0:43
+def 16 type=43 name="D" source=0:43
+def 17 type=19 name="Self" source=0:67
+def 18 type=32 name="drop" source=0:66
+def 20 type=24 name="Self" source=0:70
+def 21 type=25 name="Out" source=0:69
+def 22 type=11 name="Self" source=0:86
+def 23 type=19 name="Out" source=0:85
+def 24 type=21 name="W" source=0:101
+def 25 type=23 name="X" source=0:118
+def 26 type=34 name="main" source=0:142
+def 27 type=2 name="bool"
+def 28 type=3 name="char"
+def 29 type=4 name="str"
+def 30 type=5 name="i8"
+def 31 type=6 name="i16"
+def 32 type=7 name="i32"
+def 33 type=8 name="i64"
+def 34 type=9 name="i128"
+def 35 type=10 name="isize"
+def 36 type=11 name="u8"
+def 37 type=12 name="u16"
+def 38 type=13 name="u32"
+def 39 type=14 name="u64"
+def 40 type=15 name="u128"
+def 41 type=16 name="usize"
+def 42 type=17 name="f32"
+def 43 type=18 name="f64"
+def 49 type=20 name="T" source=0:93
+def 51 type=22 name="T" source=0:108
+def 52 type=2 name="ok" source=0:2
+def 53 type=11 name="x" source=0:22
+def 58 type=30 name="self" source=0:55
+def 59 type=50 name="_x" source=0:121
+associated-owner 0 kind=trait-impl self-def=17 self=19 source=0:67 unsafe=false
+associated-owner 1 kind=trait self-def=20 self=24 source=0:70 trait=19 unsafe=false name="A"
+associated-owner 2 kind=trait-impl self-def=22 self=11 source=0:86 unsafe=false
+associated-member def=18 owner=0 receiver=30 references=1
+associated-member def=21 owner=1
+associated-member def=23 owner=2
+parameter owner=19 binding=46 argument=region:bound:0:0 default=-
+parameter owner=20 binding=20 argument=type:24 default=-
+parameter owner=24 binding=48 argument=region:bound:0:0 default=-
+parameter owner=24 binding=49 argument=type:20 default=-
+parameter owner=25 binding=50 argument=region:bound:0:0 default=-
+parameter owner=25 binding=51 argument=type:22 default=-
+predicate owner=19 source=0:70 subject=24 bound=trait:19 arguments=[region:bound:0:0]
+predicate owner=24 source=0:92 subject=20 bound=trait:19 arguments=[region:bound:0:0]
+predicate owner=25 source=0:107 subject=22 bound=trait:19 arguments=[region:bound:0:0]
+impl owner=22 source=0:86 subject=11 bound=trait:19 arguments=[region:bound:0:0]
+impl-type owner=22 declaration=21 definition=23
+implementation-use source=0:121 owner=22 arguments=[region:region:4]
+implementation-use source=0:133 owner=22 arguments=[region:region:5]
+region-var region:1 body=0:141 source=0:134 origin=item-argument pending
+region-var region:2 body=0:141 source=0:131 origin=inference pending
+region-var region:3 body=0:141 source=0:141 origin=inference pending
+region-var region:4 body=0:141 source=0:121 origin=inference pending
+region-var region:5 body=0:141 source=0:133 origin=inference pending
+region-equal body=0:141 left=region:1 right=region:1
+region-equal body=0:141 left=region:1 right=region:2
+region-equal body=0:141 left=region:1 right=region:1
+region-equal body=0:141 left=region:1 right=region:3
+region-equal body=0:141 left=region:1 right=region:4
+region-equal body=0:141 left=region:1 right=region:5
+associated-type def=21 type=25
+result-contract def=21 projection=25
+result-bound def=21 index=0 subject=25 bound=sized
+associated-type def=23 type=19
+normalized-node source=0:96 original=36 result=36
+normalized-node source=0:97 original=36 result=36
+normalized-node source=0:99 original=37 result=37
+eof owners=3 members=3 parameters=6 predicates=3 impls=1 calls=0 paths=0 impl-uses=2 type-members=2 constant-members=0 result-contracts=1 result-bounds=1 impl-constants=0 constant-uses=0 constant-dispatches=0 normalized-nodes=3 normalized-definitions=0

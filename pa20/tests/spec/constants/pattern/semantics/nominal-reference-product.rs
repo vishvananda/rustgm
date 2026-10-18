@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+#[derive(PartialEq,Eq)]struct K<'a>(&'a u8);struct S<'a>(&'a u8);impl<'a>S<'a>{const C:K<'a>=K(&7);}fn f<'a>(x:K<'a>)->bool{match x{<S<'a>>::C=>true,_=>false}}fn main(){check(f(K(&7)));check(!f(K(&9)))}

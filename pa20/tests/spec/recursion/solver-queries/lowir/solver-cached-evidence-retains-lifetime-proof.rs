@@ -1,0 +1,1 @@
+trait A<'a>{}impl<'a,T:'a>A<'a>for T{}fn get<T:A<'static>>(_:T){}fn main(){let x=7u8;get(&x)}

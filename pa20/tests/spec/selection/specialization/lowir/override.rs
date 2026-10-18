@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+trait A<'a>{type Out;}impl<'a,'b:'a>A<'a>for &'b u8{type Out=u16;}trait Use<'a,T:A<'a>>{fn take(x:T::Out)->T::Out;}impl<'a,T:A<'a>>Use<'a,T>for u32{fn take(x:T::Out)->T::Out{x}}fn call<'a,'b:'a>(_:&'a u8,_:&'b u8)->u16{<u32 as Use<'a,&'b u8>>::take(7)}fn main(){let x=7u8;check(call(&x,&x)==7);}

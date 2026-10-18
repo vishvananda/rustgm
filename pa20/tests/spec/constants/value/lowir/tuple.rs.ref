@@ -1,0 +1,41 @@
+global @rg.data.0 : obj<16x8> [storage=readonly] = {
+  i64 3
+  u8 7
+  zero 7
+}
+global @rg.data.1 : obj<16x8> [storage=readonly] = {
+  i64 5
+  u8 7
+  zero 7
+}
+function @rg.17() -> void {
+  slot $s0 : obj<16x8>
+  slot $s1 : obj<16x8>
+  block ^b0:
+    %t0 = addr @rg.data.0
+    %t1 = addr $s0
+    copyobj 16x8 %t0, %t1
+    %t2 = load i64 $s0
+    %t3 = addr @rg.data.1
+    %t4 = addr $s1
+    copyobj 16x8 %t3, %t4
+    %t5 = load i64 $s1
+    %t6 = convert zext i128 i64 %t2
+    %t7 = convert zext i128 i64 %t5
+    %t8 = binary add i128 %t6, %t7
+    %t9 = convert trunc i64 i128 %t8
+    %t10 = convert zext i128 i64 %t9
+    %t11 = cmp ne i128 %t8, %t10
+    branch %t11, ^b1, ^b2
+  block ^b2:
+    return void
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+declare function @abort() -> void [return=noreturn]
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.17()
+    return i64 0
+}

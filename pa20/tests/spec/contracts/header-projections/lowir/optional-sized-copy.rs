@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+trait A where Self::Out:Copy{type Out:?Sized;}impl A for u8{type Out=u16;}fn take<T:A>(x:T::Out)->T::Out{let _y=x;x}fn main(){check(take::<u8>(7)==7);}

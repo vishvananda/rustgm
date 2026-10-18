@@ -1,0 +1,1 @@
+trait A{const C:u8=7;}struct S;impl A for S{const C:u8=9;}fn main(){let x=<S as A>::C;let _=x+1;}

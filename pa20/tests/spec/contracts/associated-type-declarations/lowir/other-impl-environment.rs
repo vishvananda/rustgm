@@ -1,0 +1,1 @@
+struct N;trait A{type Out:Copy;}impl A for u8{type Out=u8;}impl A for u16{type Out=N;}fn main(){}

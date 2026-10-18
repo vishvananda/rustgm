@@ -1,0 +1,1 @@
+struct W<T>(T);trait A<'a>{type Out;}impl<'a>A<'a>for W<&'a u8>{type Out=u8;}type F<T>=for<'a>fn(<W<T>as A<'a>>::Out);fn g(_:u8){}fn main(){let _:F<_>=g;}

@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+trait A<'a>:B<'a> where Self::Out:Copy{fn twice(x:Self::Out)->(Self::Out,Self::Out){(x,x)}}trait B<'a>{type Out;}impl<'a>B<'a>for u8{type Out=&'a u8;}impl<'a>A<'a>for u8{}fn main(){let x=7u8;let pair=<u8 as A<'_>>::twice(&x);check(*pair.0==7&&*pair.1==7);}

@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+trait A{type Out:Copy;}impl A for u8{type Out=u16;}#[derive(Clone,Copy)]struct W<T:A>{v:T::Out}fn main(){let w=W::<u8>{v:7};let a=w;let b=w;check(a.v==7&&b.v==7);}

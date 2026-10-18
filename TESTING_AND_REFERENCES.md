@@ -635,3 +635,11 @@ Retire old pins after replacing the baseline. Historical binary copies may be
 pruned; their recorded hashes and observations remain, but rerunning a measurement
 requires a restored binary whose hash matches. Old path references in historical
 validation notes do not imply that disposable executables still exist.
+
+PA20 introduces `--emit-trait-semantics` and `--count-trait-semantics`, preserving
+PA19's separate semantic text contract. Its 1,343 registered cases cover 546
+semantic inspections and 797 LowIR checks, with 483 independent native executions.
+One explicitly classified semantic-positive case defers an escaping-reference
+error to the complete proof. See `docs/pa20-validation.md` for the seven families,
+source provenance, count/row checks and reference review. `make test-native` and
+`make test-rustc` include PA20; PA21–PA38 remain planned and fail explicitly.

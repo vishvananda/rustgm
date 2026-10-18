@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+trait B<const N:usize>{type Out;}trait A{type Out:B<2,Out=[u8;2]>;}impl B<2>for u16{type Out=[u8;2];}impl A for u8{type Out=u16;}fn value<T:A>(x:<<T as A>::Out as B<2>>::Out)->[u8;2]{x}fn main(){let p=value::<u8>([7,9]);check(p[0]==7&&p[1]==9);}

@@ -1,0 +1,1 @@
+trait A{}impl A for u8{}struct S<T>(T);impl<T:A>A for S<T>{}fn get<T:A>(_:T){}fn main(){get(S(S(S(7u8))))}

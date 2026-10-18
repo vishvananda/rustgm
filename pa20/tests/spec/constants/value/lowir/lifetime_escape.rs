@@ -1,0 +1,1 @@
+struct S<'a>(&'a u8);impl<'a>S<'a>{const C:&'a u8=&7;}fn f<'a>()->&'static u8{<S<'a>>::C}fn main(){}

@@ -1,0 +1,1 @@
+ERROR: file 0: 22: associated type lifetime requirement is not satisfied: required lifetime does not outlive its target

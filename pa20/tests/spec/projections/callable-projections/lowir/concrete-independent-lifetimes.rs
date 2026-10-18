@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+trait A<'a>{type Out;}impl<'a>A<'a>for u8{type Out=&'a u8;}fn apply<'a,'b>(f:fn(<u8 as A<'a>>::Out)-><u8 as A<'a>>::Out,x:<u8 as A<'b>>::Out)-><u8 as A<'a>>::Out{f(x)}fn main(){}

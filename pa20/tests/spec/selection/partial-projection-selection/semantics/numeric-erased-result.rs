@@ -1,0 +1,1 @@
+trait A{type Out;}impl<T:Copy>A for T{type Out=bool;}type P<T>=(T,<T as A>::Out);fn main(){let p:P<_>=(0,true);let _:i32=p.0;}

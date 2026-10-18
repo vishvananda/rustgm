@@ -1,0 +1,1 @@
+trait B<const N:usize>{}impl B<2>for u8{}trait A<U>{}impl<T:B<1>>A<u8>for T{}impl<T:B<2>>A<u16>for T{}fn get<T:A<U>,U>(_:T){}fn main(){get::<_,_>(7u8)}

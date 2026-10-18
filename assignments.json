@@ -295,15 +295,16 @@
       "number": 20,
       "path": "pa20",
       "title": "Trait solving",
-      "mode": "--emit-semantics",
-      "status": "planned",
+      "mode": "--emit-trait-semantics",
+      "status": "implemented-draft",
       "scope": "Obligations, associated items, normalization and coherence",
       "test_families": [
         "projections",
         "orphan/overlap checks",
         "recursive goals",
         "solver caching"
-      ]
+      ],
+      "additional_modes": ["--emit-lowir"]
     },
     {
       "number": 21,

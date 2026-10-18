@@ -1,0 +1,1 @@
+struct W<T>(T);trait A<'a>{type Out;}impl<'a>A<'a>for W<u8>{type Out=&'a mut u8;}type P<'a,T>=(W<T>,<W<T>as A<'a>>::Out);fn f(x:&mut u8){let p:P<'_,_>=(W(0),x);*p.1=19;*x=73;}fn main(){}

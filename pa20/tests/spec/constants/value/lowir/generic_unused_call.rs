@@ -1,0 +1,1 @@
+fn f()->u8{7}struct S<T>(T);impl<T>S<T>{const C:u8=f();}fn main(){}

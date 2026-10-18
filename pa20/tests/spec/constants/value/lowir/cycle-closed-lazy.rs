@@ -1,0 +1,1 @@
+struct S;impl S{const A:u8=if true{7}else{Self::A};}fn main(){}

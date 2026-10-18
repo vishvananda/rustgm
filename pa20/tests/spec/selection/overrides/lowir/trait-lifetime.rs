@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+trait A<'a>{type Out:Copy+'a;}impl<'a>A<'a>for u8{type Out=&'a u8;}trait Use<'a,T:A<'a>>{fn take(x:T::Out)->T::Out;}impl<'a,T:A<'a>>Use<'a,T>for u32{fn take(x:T::Out)->T::Out{x}}fn scope<'a>(x:&'a u8)->&'a u8{<u32 as Use<'a,u8>>::take(x)}fn main(){let x=7u8;check(*scope(&x)==7);}

@@ -1,0 +1,1 @@
+trait A{const C:u8=Self::D;const D:u8=Self::C;}impl A for u8{const D:u8=7;}fn main(){let _=<u8 as A>::C;}

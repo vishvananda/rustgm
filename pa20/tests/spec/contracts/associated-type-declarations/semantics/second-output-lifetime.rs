@@ -1,0 +1,1 @@
+trait A<'a>{type X;type Y;}impl<'a,T>A<'a>for T{type X=u8;type Y=&'a T;}fn main(){}

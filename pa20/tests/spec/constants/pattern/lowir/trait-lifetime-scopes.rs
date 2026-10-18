@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+trait A{const C:u8=7;}struct S<'a>(&'a u8);impl<'a:'static>A for S<'a>{const C:u8=9;}fn good<'a:'static>(_:&'a u8,x:u8)->bool{match x{<S<'a>as A>::C=>true,_=>false}}fn bad<'a>(_:&'a u8,x:u8)->bool{match x{<S<'a>as A>::C=>true,_=>false}}fn main(){}

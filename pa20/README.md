@@ -1,10 +1,10 @@
 # RustGM Programming Assignment 20: Trait solving
 
-Status: **planned**. These are implementation and release requirements, not a
-released grading contract. Prerequisite: PA19. The bounded source profile is
+Status: **implemented-draft**. Prerequisite: PA19. The bounded source profile is
 Rust 1.98.0, edition 2024, Linux x86-64, panic abort, overflow checks enabled and
-debug assertions disabled. PA20 must continue to fail as an unimplemented course
-stage until its complete manifest and reviewed text oracles ship.
+debug assertions disabled. The public suite has 1,343 text-oracle cases across
+797 distinct source programs: 546 semantic inspections and 797 complete LowIR
+checks, including 483 independently executed positive programs.
 
 ## Required implementation
 
@@ -109,16 +109,68 @@ Repeated subgoals should share work without sharing permissions across callers.
 
 ## Tool surface
 
-Extend `dev/rustgm --emit-semantics -o OUTPUT SOURCE` and `--count-semantics`.
+Use `dev/rustgm --emit-trait-semantics -o OUTPUT SOURCE` and
+`--count-trait-semantics`. PA19 keeps its separate `--emit-semantics` byte contract.
 Preserve PA19's inspection boundary: pending lifetime facts are not proof that
 the whole program can execute. The semantic view must expose the retained
 associated declarations, result contracts, selected definitions and normalized
 uses that later phases consume. Count mode must read the same typed facts.
 
-The exact added row vocabulary, ordering, version/count changes and example
-outputs are still to be implemented and frozen. Existing PA19 rows alone do not
-fulfil this requirement. Keep deterministic output ordering separate from hash
-lookup order, and do not serialize work counters as language decisions.
+The maintainer view starts with `trait-semantics 1`, shares PA19's typed records,
+then adds the rows below before `eof` and one count line. The manifest declares
+which inspection applies to each source; all three reference sidecars are graded
+byte for byte.
+
+| Row | Retained fact |
+| --- | --- |
+| `associated-type def=D type=T` | An associated type declaration's formal projection or an impl definition's type. |
+| `associated-constant def=D type=T` | The member's declared type. |
+| `result-contract def=D projection=T` | The trait member's formal result application. |
+| `result-bound def=D index=I subject=T bound=B` | A result requirement in retained contract order, using PA19's predicate vocabulary. |
+| `impl-constant owner=O declaration=D selected=S default=BOOL` | A validated impl's selected override or checked trait default. |
+| `constant-use source=F:N definition=D arguments=[...]` | A typed associated use with complete lifetime, Self, type and const arguments. |
+| `constant-dispatch declaration=D arguments=[...] selected=S arguments=[...]` | A completed value dispatch with the original and selected initializer's arguments. |
+| `normalized-node source=F:N original=T result=U` | A retained original source type paired with its current normal form. |
+| `normalized-definition def=D original=T result=U` | A retained original declaration template paired with its current normal form. |
+
+Type/member records follow associated declaration order. Impl constants follow
+impl and member order. Uses and normalized nodes sort by file/node identity;
+normalized definitions sort by declaration identity. Completed value dispatches
+sort by declaration and canonical argument identity. Generic argument spelling
+uses the existing canonical writer. Hash iteration must not determine any row order.
+
+For a minimal example, [this fixture](tests/spec/contracts/associated-type-declarations/semantics/concrete.rs)
+defines `trait A { type Out; }` and implements `A` for `u8` with `Out = u16`.
+Its [complete oracle](tests/spec/contracts/associated-type-declarations/semantics/concrete.rs.ref)
+contains these retained relationships:
+
+```text
+impl-type owner=16 declaration=15 definition=17
+associated-type def=15 type=20
+result-contract def=15 projection=20
+result-bound def=15 index=0 subject=20 bound=sized
+associated-type def=17 type=12
+```
+
+The preceding type and definition rows identify `20` as the trait's formal
+projection and `12` as `u16`; the implementation mapping connects the declared
+member to its selected definition. The full oracle also includes the other
+shared records and the exact count line.
+
+The count line retains PA19's fields, then appends `type-members`,
+`constant-members`, `result-contracts`, `result-bounds`, `impl-constants`,
+`constant-uses`, `constant-dispatches`, `normalized-nodes` and
+`normalized-definitions`, in that order. Each counts the corresponding added row.
+Count mode reads these same facts without rendering, sorting or selecting again.
+
+A constant use is not necessarily a completed value dispatch: ordinary executable
+uses may wait for specialization, whereas a declaration-time const argument may
+already demand a selected initializer. Report only dispatches that actually exist.
+A symbolic normal form may remain an opaque projection, including an unchanged
+original/result identity. These records expose retained source and declaration
+normalizations, not every transient internal fold. Keep their original types so
+erased inputs and later proof obligations remain inspectable. Work counters are
+not language decisions and must never be serialized into the grading contract.
 
 The supplemental `--emit-lowir` lane is required. It runs complete body, lifetime,
 ownership, destruction and layout checks before emitting the existing LowIR
@@ -131,11 +183,11 @@ rejection exits 1 with empty stdout. Signals, timeouts, panics and exit 86 are
 implementation failures, never acceptable negative language outcomes. Earlier
 stage views and their committed byte contracts remain available.
 
-## Tests to develop with the reference
+## Tests and reference
 
-Develop the families listed in [tests/README.md](tests/README.md). Each family
-needs positive, negative and cross-feature controls; a successful isolated type
-query cannot stand in for complete source-to-native validation.
+The families listed in [tests/README.md](tests/README.md) include positive, negative
+and cross-feature controls. See [the validation review](../docs/pa20-validation.md)
+for independent language checks, native execution and the semantic phase boundary.
 
 Add spec fixtures, positive/negative controls and cross-feature regressions in
 the earliest owning assignment. Use the course reference for text oracles and
@@ -167,16 +219,16 @@ generated reference diff and validate the root report's stage discovery. A plann
 stage must not acquire an unregistered executable manifest or empty-suite success.
 Student export is a later operation: this repository owns the full solution.
 
-The current maintainer implementation has substantial coverage of associated types,
-associated constants and the solver. Trait constants in implementation headers can
-wait for compatible headers while preserving inference and lifetime evidence.
-Inherent names and nominal heads are reserved before header elaboration, so early
-constant uses can prepare compatible owner headers before selecting a member.
-Type-qualified method applicability retains its prefix, candidate and pending trait
-query across header dependencies, including inherent-to-trait fallback. Receiver
-lookup still uses its existing synchronous applicability path.
-Remaining work includes associated-type readiness inside implementation headers,
-further normalization and coherence work, the extended semantic view and the
-public grading suite. The maintainer journal in
-`docs/pa18-pa21-buildout.md` records evidence and known gaps; individual checkpoints
-do not reduce the requirements above.
+The maintainer implementation retains exact header and selected-definition waits,
+complete generic arguments and scoped lifetime evidence. Declaration-time constant,
+projection and type-qualified method queries resume their pending work without
+restarting normalization. Receiver lookup uses its existing synchronous applicability
+path. The semantic writer reads retained typed facts; it neither runs selection
+again nor adds a second normalization history.
+
+PA21 owns higher-ranked trait premises, GATs, opaque types and complete generic
+projection drop checking. PA22 and PA23 own unsized execution and trait objects.
+PA25 extends constant evaluation with const functions and general statements.
+Library/crate metadata and the Cargo ecosystem remain later work. The maintainer
+journal in `docs/pa18-pa21-buildout.md` records earlier implementation checkpoints;
+those historical planned-stage statements describe their original checkpoints.

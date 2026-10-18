@@ -1,0 +1,1 @@
+ERROR: file 0: 45: associated type uses an impl lifetime not constrained by Self or the trait arguments

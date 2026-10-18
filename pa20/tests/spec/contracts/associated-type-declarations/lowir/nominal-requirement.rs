@@ -1,0 +1,1 @@
+struct W<T:Copy>(T);trait A{type Out;}impl<T>A for T{type Out=W<T>;}fn main(){}

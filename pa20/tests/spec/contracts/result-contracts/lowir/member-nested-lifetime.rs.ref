@@ -1,0 +1,27 @@
+function @rg.27() -> void {
+  slot $s0 : u8
+  block ^b0:
+    store u8 7, $s0
+    %t0 = addr $s0
+    call void @rg.26.i3(%t0)
+    return void
+}
+function @rg.26.i3(%p0 : ptr) -> void {
+  slot $s0 : ptr
+  block ^b0:
+    store ptr %p0, $s0
+    %t0 = load ptr $s0
+    call void @rg.25.i4(%t0)
+    return void
+}
+function @rg.25.i4(%p0 : ptr) -> void {
+  slot $s0 : ptr
+  block ^b0:
+    store ptr %p0, $s0
+    return void
+}
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.27()
+    return i64 0
+}
