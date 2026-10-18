@@ -5,7 +5,7 @@ permissions:
 jobs:
   frontend:
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v6
       - name: Pinned Rust
@@ -13,6 +13,6 @@ jobs:
       - name: Build and course tests
         run: make test lint
       - name: Release invariants
-        run: CARGO_TARGET_DIR="$PWD/obj/rust" cargo test --manifest-path dev/Cargo.toml --release --locked
+        run: CARGO_TARGET_DIR="$PWD/obj/rust" python3 scripts/storage.py run -- cargo test --manifest-path dev/Cargo.toml --release --locked
       - name: Architecture and harness
         run: make setup-audit audit-rust test-harness test-upstream test-rustc
