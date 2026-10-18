@@ -1548,6 +1548,23 @@ Trait solver caches include parameter environment, binder universe and mode;
 negative results need equally complete keys. Each demanded fact is computed
 once; cycle detection and explicit solver budgets are part of the contract.
 
+A quantified clause binds the whole predicate: its subject, complete trait inputs,
+outlives requirement and equality result share one local lifetime scope. Retain
+an explicit clause variant and an interned binder body, leaving ordinary flat
+predicates and inferred goals compact. Allocate binder storage only on demand.
+Canonical identity validates representation; it supplies no formation or selection
+evidence. Cache required local slot counts over shared type graphs, independently
+of the enclosing clause's declared count. A new clause must not rescan a growing
+shared tail merely to validate its binder. Reuse the existing occurrence fold for
+capture detection and slot summaries, with their distinct summary operations.
+
+Substitution of enclosing arguments preserves the clause's own binder, including
+an empty binder that changes captured depth. Transform every predicate root at
+that same depth, shifting inserted type arguments beneath nested callable scopes.
+Separate root and scoped trait-application caches; a canonical application can
+have different results at different binder depths. Opening a universal obligation
+or instantiating a universal assumption requires a separate scoped proof operation.
+
 Separate generic parameter identity, alias expansion and default-template
 readiness. Explicit arguments demand no unrelated defaults. Omitted arguments
 demand each needed template through the bounded declaration worklist; a default

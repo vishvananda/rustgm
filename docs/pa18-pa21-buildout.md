@@ -9965,3 +9965,36 @@ retain 31 main wall jobs, 27 instruction comparisons and nine focused wall jobs:
 1,040 timing plus 160 qualification observations, with main batch four and focused
 batch sixteen. Full validation cleanup removed 6.90 GiB. Detailed tables and
 limitations are in `docs/pa20-validation.md`; no performance observation was dropped.
+
+## PA21 quantified clause foundation
+
+PA20 publication `ef7021c` passed exact-head CI. PA21 remains planned. Its expanded
+handout and seven fixture families describe the required quantified relationships,
+GATs, opaque capture, variance and drop checking, with a separately proposed
+generic-semantic view and a LowIR execution lane.
+
+The typed foundation now retains whole-predicate quantifiers and substitutes
+enclosing lifetime/type/const arguments without capturing local or nested callable
+lifetimes. Root and scoped application caches remain distinct. Local slot checks
+reuse shared DAG summaries instead of rescanning every preceding tail for each
+new clause. Six integration invariants and two unit invariants cover binder
+identity, invalid slots, mixed inputs, projection equalities, empty binders,
+cache separation and bounded shared work.
+
+All 28 validation gates pass: 1,286 regular tests, 91 native groups, 6,218 earlier
+course cases, strict lint/audit/harness/backend/upstream checks, 806 frozen source
+hashes and 18,654 unchanged oracle sidecars. Candidate SHA-256:
+`7c12528f948ab00d88fb03980fe1d6fd864c222af1ae9769f9c59655215db5a1`.
+The ten independently accepted PA21 source
+requirements remain implementation gaps; this representation checkpoint does not
+claim source-level higher-ranked support. See `docs/pa21-validation.md`.
+
+Immutable comparisons against published PA20 preserve every full/count output.
+Instruction changes span −0.12%..+0.49%; main wall medians span −5.04%..+3.14%,
+with noisy same-binary controls. The only predeclared positive outlier changes
+from +3.14% to −0.25% in one focused follow-up (A/A +0.53%, B/B −1.19%). All
+884 study and 136 qualification observations remain available; no portable speedup
+is inferred. Median RSS rises 186–314 KiB, including +172 KiB in the focused run.
+Two Massif comparisons show essentially unchanged heap/stack peaks; they do not
+establish the cause of the RSS increase. The detailed validation document retains
+these limits and all counts. Validation cleanup reclaimed 6.90 GiB.

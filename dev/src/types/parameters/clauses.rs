@@ -1,0 +1,88 @@
+//! Quantification binds a whole predicate, including its subject and result.
+use super::predicates::Predicate;
+use crate::types::{Store, bound_uses::captures::Slots};
+use std::collections::HashMap;
+#[cfg(test)]
+mod slot_validation;
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct QuantifiedId(pub u32);
+
+/// Ordinary predicates retain their compact representation. Reading a quantified
+/// body requires an explicit binder operation; its identity is not proof evidence.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub enum Clause {
+    Predicate(Predicate),
+    ForAll(QuantifiedId),
+}
+
+/// The body is written inside one binder, including when no local slot occurs.
+/// Enclosing captures therefore retain their depth through an empty binder.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct Quantified {
+    pub bound_regions: u32,
+    pub predicate: Predicate,
+}
+
+#[derive(Default)]
+pub(in crate::types) struct Storage {
+    values: Vec<Quantified>,
+    index: HashMap<Quantified, QuantifiedId>,
+    slots: Slots,
+}
+
+impl Store {
+    #[must_use]
+    pub fn quantified(&self, id: QuantifiedId) -> Option<Quantified> {
+        self.arguments
+            .as_ref()?
+            .clauses
+            .as_ref()?
+            .values
+            .get(id.0 as usize)
+            .copied()
+    }
+
+    /// Intern a canonical binder after validating its local slot references.
+    /// This validates representation only, not formation, satisfaction or scope
+    /// permissions. Declaration checking supplies the lifetime slot ordering.
+    /// # Errors
+    /// Rejects unknown children, unbound locals, exhausted occurrence work and
+    /// counts or identities outside the compact representation.
+    pub fn intern_quantified(&mut self, value: Quantified) -> Result<QuantifiedId, &'static str> {
+        if let Some(&id) = self
+            .arguments
+            .as_ref()
+            .and_then(|storage| storage.clauses.as_ref())
+            .and_then(|storage| storage.index.get(&value))
+        {
+            return Ok(id);
+        }
+        if value.bound_regions > u32::from(u16::MAX) + 1 {
+            return Err("too many quantified lifetime slots");
+        }
+        // Reuse summaries across different predicates with shared type graphs.
+        // The required count belongs to the graph, not to this binder's arity.
+        let mut slots = self
+            .arguments
+            .as_mut()
+            .and_then(|storage| storage.clauses.as_mut())
+            .map_or_else(Slots::default, |storage| std::mem::take(&mut storage.slots));
+        let required = slots.predicate(self, value.predicate);
+        let storage = self
+            .arguments
+            .get_or_insert_with(Default::default)
+            .clauses
+            .get_or_insert_with(Default::default);
+        storage.slots = slots;
+        if required? > value.bound_regions {
+            return Err("quantified predicate references an unbound lifetime");
+        }
+        let id = QuantifiedId(
+            u32::try_from(storage.values.len()).map_err(|_| "too many quantified predicates")?,
+        );
+        storage.values.push(value);
+        storage.index.insert(value, id);
+        Ok(id)
+    }
+}

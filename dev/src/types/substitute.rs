@@ -32,11 +32,7 @@ pub struct Bound {
     action: Action,
     parameters: Option<Box<parameters::Bindings>>,
     completed: HashMap<Key, TypeId>,
-    #[expect(
-        clippy::box_collection,
-        reason = "trait-free substitution folders retain one pointer instead of an inline hash table"
-    )]
-    applications: Option<Box<HashMap<super::traits::ApplicationId, super::traits::ApplicationId>>>,
+    applications: Option<Box<predicates::Applications>>,
     work: Vec<(Key, bool)>,
     children: Vec<TypeId>,
     regions: Vec<RegionId>,

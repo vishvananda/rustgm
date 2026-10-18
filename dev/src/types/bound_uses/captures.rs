@@ -1,4 +1,4 @@
-//! Memoized occurrence queries for a fixed range of surrounding callable binders.
+//! Shared DAG folds for captured binders and the required local lifetime slot count.
 use crate::types::{
     GenericArgs, Kind, RegionId, Store, TypeId,
     arguments::Argument,
@@ -9,17 +9,70 @@ use std::collections::HashMap;
 
 type Key = (TypeId, u16);
 
-pub(crate) struct Captures {
+pub(crate) struct Surrounding {
     count: u16,
-    completed: HashMap<Key, bool>,
-    applications: HashMap<ApplicationId, bool>,
+}
+pub(crate) struct LocalSlots;
+pub(crate) type Captures = Occurrences<Surrounding>;
+pub(crate) type Slots = Occurrences<LocalSlots>;
+
+pub(crate) trait Query {
+    type Value: Copy + Default;
+    fn merge(a: Self::Value, b: Self::Value) -> Self::Value;
+    fn decisive(value: Self::Value) -> bool;
+    fn region(&self, region: RegionId, depth: u16) -> Self::Value;
+}
+impl Query for Surrounding {
+    type Value = bool;
+    fn merge(a: bool, b: bool) -> bool {
+        a | b
+    }
+    fn decisive(value: bool) -> bool {
+        value
+    }
+    fn region(&self, region: RegionId, depth: u16) -> bool {
+        region
+            .bound_parts()
+            .is_some_and(|(binder, _)| binder >= depth && binder - depth < self.count)
+    }
+}
+impl Query for LocalSlots {
+    type Value = u32;
+    fn merge(a: u32, b: u32) -> u32 {
+        a.max(b)
+    }
+    fn decisive(_: u32) -> bool {
+        false
+    }
+    fn region(&self, region: RegionId, depth: u16) -> u32 {
+        match region.bound_parts() {
+            Some((binder, index)) if binder == depth => u32::from(index) + 1,
+            _ => 0,
+        }
+    }
+}
+
+pub(crate) struct Occurrences<Q: Query> {
+    query: Q,
+    completed: HashMap<Key, Q::Value>,
+    applications: HashMap<ApplicationId, Q::Value>,
     work: Vec<(Key, bool)>,
     pub(crate) steps: usize,
 }
 impl Captures {
     pub(crate) fn new(count: u16) -> Self {
+        Self::query(Surrounding { count })
+    }
+}
+impl Default for Slots {
+    fn default() -> Self {
+        Self::query(LocalSlots)
+    }
+}
+impl<Q: Query> Occurrences<Q> {
+    fn query(query: Q) -> Self {
         Self {
-            count,
+            query,
             completed: HashMap::new(),
             applications: HashMap::new(),
             work: Vec::new(),
@@ -30,39 +83,42 @@ impl Captures {
         &mut self,
         store: &Store,
         value: Predicate,
-    ) -> Result<bool, &'static str> {
-        if self.collect(store, value.ty)? {
-            return Ok(true);
+    ) -> Result<Q::Value, &'static str> {
+        let subject = self.collect(store, value.ty)?;
+        if Q::decisive(subject) {
+            return Ok(subject);
         }
-        match value.bound {
+        let bound = match value.bound {
             Bound::ProjectionEqual(result) => self.collect(store, result),
             Bound::Outlives(region) => Ok(self.region(region, 0)),
             Bound::Trait(id) => {
                 if let Some(&found) = self.applications.get(&id) {
-                    return Ok(found);
+                    return Ok(Q::merge(subject, found));
                 }
                 let application = store
                     .trait_application(id)
                     .ok_or("invalid capture trait application")?;
-                let mut found = false;
+                let mut found = Q::Value::default();
                 let arguments = store
                     .arguments(application.arguments)
                     .ok_or("invalid capture trait arguments")?;
                 self.account(arguments.len())?;
                 for argument in arguments {
-                    found |= match argument {
+                    let value = match argument {
                         Argument::Lifetime(region) => self.region(region, 0),
                         Argument::Type(ty) => self.collect(store, ty)?,
-                        Argument::Const(_) => false,
+                        Argument::Const(_) => Q::Value::default(),
                     };
+                    found = Q::merge(found, value);
                 }
                 self.applications.insert(id, found);
                 Ok(found)
             }
-            Bound::Copy | Bound::Clone | Bound::Sized => Ok(false),
-        }
+            Bound::Copy | Bound::Clone | Bound::Sized => Ok(Q::Value::default()),
+        }?;
+        Ok(Q::merge(subject, bound))
     }
-    pub(crate) fn collect(&mut self, store: &Store, ty: TypeId) -> Result<bool, &'static str> {
+    pub(crate) fn collect(&mut self, store: &Store, ty: TypeId) -> Result<Q::Value, &'static str> {
         let root = (ty, 0);
         if let Some(found) = self.result(store, root)? {
             return Ok(found);
@@ -83,17 +139,17 @@ impl Captures {
         }
         self.result(store, root)?.ok_or("missing capture result")
     }
-    fn result(&self, store: &Store, key: Key) -> Result<Option<bool>, &'static str> {
+    fn result(&self, store: &Store, key: Key) -> Result<Option<Q::Value>, &'static str> {
         if store
             .escaping_binders(key.0)
             .ok_or("invalid capture type")?
             <= key.1
         {
-            return Ok(Some(false));
+            return Ok(Some(Q::Value::default()));
         }
         Ok(self.completed.get(&key).copied())
     }
-    fn child(&mut self, store: &Store, key: Key, finish: bool) -> Result<bool, &'static str> {
+    fn child(&mut self, store: &Store, key: Key, finish: bool) -> Result<Q::Value, &'static str> {
         if let Some(found) = self.result(store, key)? {
             return Ok(found);
         }
@@ -102,21 +158,23 @@ impl Captures {
         }
         self.account(1)?;
         self.work.push((key, false));
-        Ok(false)
+        Ok(Q::Value::default())
     }
     fn inspect(
         &mut self,
         store: &Store,
         (ty, depth): Key,
         finish: bool,
-    ) -> Result<bool, &'static str> {
-        let mut found = false;
+    ) -> Result<Q::Value, &'static str> {
+        let mut found = Q::Value::default();
         let list = match store.kind(ty).ok_or("invalid capture type")? {
             Kind::Reference {
                 region, referent, ..
             } => {
-                found =
-                    self.region(region, depth) | self.child(store, (referent, depth), finish)?;
+                found = Q::merge(
+                    self.region(region, depth),
+                    self.child(store, (referent, depth), finish)?,
+                );
                 None
             }
             Kind::Array { element, .. }
@@ -146,9 +204,13 @@ impl Captures {
                 let trait_ = store
                     .trait_application(application.trait_application)
                     .ok_or("invalid capture projection trait")?;
-                found = self.child(store, (application.subject, depth), finish)?
-                    | self.arguments(store, trait_.arguments, depth, finish)?
-                    | self.arguments(store, application.arguments, depth, finish)?;
+                found = Q::merge(
+                    self.child(store, (application.subject, depth), finish)?,
+                    Q::merge(
+                        self.arguments(store, trait_.arguments, depth, finish)?,
+                        self.arguments(store, application.arguments, depth, finish)?,
+                    ),
+                );
                 None
             }
             Kind::FunctionItem {
@@ -156,8 +218,10 @@ impl Captures {
                 arguments,
                 ..
             } => {
-                found = self.arguments(store, arguments, depth, finish)?
-                    | self.child(store, (signature, depth), finish)?;
+                found = Q::merge(
+                    self.arguments(store, arguments, depth, finish)?,
+                    self.child(store, (signature, depth), finish)?,
+                );
                 None
             }
             Kind::Never | Kind::Primitive(_) | Kind::Parameter(_) => None,
@@ -166,7 +230,7 @@ impl Captures {
             let children = store.list(list).ok_or("invalid capture type list")?;
             self.account(children.len())?;
             for &child in children {
-                found |= self.child(store, (child, depth), finish)?;
+                found = Q::merge(found, self.child(store, (child, depth), finish)?);
             }
         }
         Ok(found)
@@ -177,23 +241,22 @@ impl Captures {
         args: GenericArgs,
         depth: u16,
         finish: bool,
-    ) -> Result<bool, &'static str> {
+    ) -> Result<Q::Value, &'static str> {
         let arguments = store.arguments(args).ok_or("invalid capture arguments")?;
         self.account(arguments.len())?;
-        let mut found = false;
+        let mut found = Q::Value::default();
         for argument in arguments {
-            found |= match argument {
+            let value = match argument {
                 Argument::Lifetime(region) => self.region(region, depth),
                 Argument::Type(ty) => self.child(store, (ty, depth), finish)?,
-                Argument::Const(_) => false,
+                Argument::Const(_) => Q::Value::default(),
             };
+            found = Q::merge(found, value);
         }
         Ok(found)
     }
-    fn region(&self, region: RegionId, depth: u16) -> bool {
-        region
-            .bound_parts()
-            .is_some_and(|(binder, _)| binder >= depth && binder - depth < self.count)
+    fn region(&self, region: RegionId, depth: u16) -> Q::Value {
+        self.query.region(region, depth)
     }
     fn account(&mut self, count: usize) -> Result<(), &'static str> {
         self.steps = self.steps.saturating_add(count);

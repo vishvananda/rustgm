@@ -310,15 +310,19 @@
       "number": 21,
       "path": "pa21",
       "title": "Advanced generic relationships",
-      "mode": "--emit-semantics",
+      "mode": "--emit-generic-semantics",
       "status": "planned",
       "scope": "Variance, higher-ranked bounds, GATs, opaque types and generic drop checking",
       "test_families": [
-        "binder universes",
-        "lifetime capture",
-        "associated families",
-        "dropck"
-      ]
+        "binders",
+        "contracts",
+        "families",
+        "opaque",
+        "variance",
+        "dropck",
+        "integration"
+      ],
+      "additional_modes": ["--emit-lowir"]
     },
     {
       "number": 22,

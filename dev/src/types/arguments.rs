@@ -65,6 +65,7 @@ pub(super) struct Storage {
     pub(super) parameters: super::parameters::Storage,
     pub(super) traits: Option<Box<super::traits::Storage>>,
     pub(super) projections: Option<Box<super::projection::Storage>>,
+    pub(super) clauses: Option<Box<super::parameters::clauses::Storage>>,
     mixed: Slices<Argument>,
     constants: Vec<ConstKind>,
     constant_index: HashMap<ConstKind, ConstId>,
