@@ -1079,3 +1079,91 @@ Successful guarded cleanup removed 5,751 generated files (6.90 GiB unshared),
 receipt `obj/cleanup/1792350213766578672.jsonl`; about 450 GiB remained free.
 Only the current comparison binaries stay pinned. The preceding pin was retired
 after exact public-baseline CI passed, with both binary hashes recorded.
+
+
+### Retained instance projection debts
+
+Concrete instance normalization now extends each retained lifetime proof inside
+its existing scope. It resumes at the actual allocator frontier and excludes
+intervening intervals owned by other proofs. Original universal identities and
+private witnesses remain connected; a fresh sibling quantifier cannot replace
+them. Selected implementation lifetime requirements remain debts for the final
+body proof, including those discovered beneath nested callable binders.
+
+Type-debt positions identify an existing vector element or scoped block element.
+The normalizer snapshots those positions before extending the proof, then checks
+and replaces exactly those roots. New evidence keeps its own raw types and target
+lifetimes. Appending root-level debts cannot redirect a saved scoped position;
+stale positions fail explicitly. These positions are local mutation locations,
+not permission tokens that authorize a different proof.
+
+Roots are grouped once by their actual proof scope, with one shared normalization
+session per group. Work includes root visits and structural normalization. At
+8, 64 and 512 roots, separate shared-graph, sibling-scope and nested-depth families
+stay below 128 × root count steps. Tests distinguish scope identity even when
+canonical type IDs match, preserve foreign allocation gaps, and reject unpaid
+static requirements at the original body source. This is a bound on the measured
+normalization work, not whole-frontend complexity.
+
+Seven predeclared source controls match pinned rustc: four accept and three
+reject. The ordinary callback example already succeeds on published `f7dfb90`;
+it is a compatibility control, not a newly supported source program. Its LowIR
+matches the focused candidate byte-for-byte. The other controls qualify the
+universal result/target and implementation lifetime rules used by the typed tests.
+No public fixture or oracle was changed, and PA21 source gates remain closed.
+
+Focused validation passes 233 library tests, 11 caller-outlives tests, seven
+instance-body tests, eight quantified-lifetime tests, strict Clippy, the 856-file
+audit with zero findings, harness checks and both affected course suites.
+Receipts remain in `obj/pa21-work/instance-proof-scopes-v1/`. The first two attempts
+caught test-code mistakes (a nonexistent boolean type constant and an unnecessary
+Result wrapper); those were corrected without lint allowances. Successful cleanup
+removed three generated executables, receipt
+`obj/cleanup/1792350803994193985.jsonl`; earlier qualification objects were removed
+with their own hash receipt. The full validation run also includes the added
+outer-capture/empty-binder invariant and independent callback execution.
+
+
+Full instance-proof checkpoint validation passes all **33 gates**: **1,428 regular
+tests** (including 234 library invariants), **91 native groups**, and **6,228
+course cases**, strict Clippy, formatting, the **856-file audit with zero findings**,
+harness, backend and upstream checks. The added outer-capture invariant passes
+for both empty and nonempty binders. The existing callback control has identical
+872-byte LowIR on baseline and candidate; CPPGM and pinned rustc executables both
+exit cleanly with the independently declared result. PA19 source / LowIR / native
+counts remain 1,080 / 641 / 254 and PA20 counts remain 1,345 / 799 / 484, including
+the same seven plus one documented acceptance differences. All **7,197 frozen
+source/configuration hashes** and **18,684 oracle sidecars** are stable.
+
+Immutable candidate `44f2289ed952d0b9eb9cef0c62eb4d90f7f0333643976af3ba02d42f083f0d3f`
+was compared with public `f7dfb90` / binary `28d7ec53f8bf`. Across 33 wall jobs
+and 29 instruction pairs, instruction changes range **−0.3771% to +0.7794%**;
+none crosses the 1% investigation threshold. Original paired wall medians range
+−1.2935% to +4.6406%; same-binary medians range −0.5206% to +1.0094%, with a
+maximum A/A spread of 70.2129%. Shared-host timings do not establish a portable
+speedup or isolate small changes.
+
+The fixed >3% policy selected two inputs for one batch-16 AB/AA/BB follow-up:
+trait-view-8-count measures +1.0430%, and callers-48 measures −0.0810%.
+Their same-binary medians range −1.4731% to −0.0254%, and maximum follow-up A/A
+spread is 6.1828%. Both original >3% increases did not repeat in that scheduled
+comparison; all original and follow-up observations remain available. The earlier
+streamed-proof effect against `b1410` remains a separate unresolved measurement.
+
+Observed RSS differences range −124 to +38 KiB. Fixed Massif ordinary and
+constant-chain heap peaks remain 2,432,261 and 5,381,881 bytes. Combined
+heap/overhead/stack peaks change by +256 and +496 bytes respectively. Reported
+ELF text/data/BSS size decreases by 36 bytes. Evidence retains **1,014 study
+observations**, **156 qualification observations**, **5,928 timed invocations**,
+**912 qualification invocations**, 58 Callgrind profiles and four Massif profiles.
+Every compared output matches, and all frozen binary, input and source hashes
+remain unchanged.
+
+Receipts remain in `obj/pa21-work/instance-proof-final/`. Final-summary SHA-256:
+`a4636376e46cc78761147ab8c1181468a0fa0a38fe106ea7ed7fe4332aa4ec28`. PA21–PA25 remain planned; this checkpoint does not release a new source
+or grading contract.
+
+Successful guarded cleanup removed 5,753 generated files (6.91 GiB unshared),
+receipt `obj/cleanup/1792352484998281343.jsonl`. Only the current comparison
+baseline and candidate binaries remain pinned; superseded pins are retired after
+their replacement passes exact-commit CI, with hash and publication receipts.

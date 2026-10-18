@@ -2,6 +2,7 @@
 mod graft;
 mod placement;
 mod quantified;
+mod roots;
 mod scopes;
 mod stream;
 mod substitution;
@@ -11,6 +12,7 @@ use crate::types::{
     relations::{Constraints, ProofScope},
 };
 pub use quantified::ScopeId;
+pub(crate) use roots::TypeRoot;
 pub(crate) use scopes::ScopePlan;
 pub(crate) use scopes::map_scopes;
 use std::ops::Range;

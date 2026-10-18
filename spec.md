@@ -2020,6 +2020,15 @@ permuted captures, preserving unused impl proof slots.
 Pair each specialized body with its own region proof and complete instance
 identity, even when multiple bodies share an original source location.
 
+Normalize retained instance type debts inside their original proof scopes.
+Resume each proof at the actual allocation frontier, excluding intervals owned
+by other proofs, and preserve its existing universal and private identities.
+Group roots once by scope and share a normalization session within each group;
+charge both root visits and structural work. Snapshot stable type-debt positions
+before appending evidence and update only those positions afterward. Newly
+emitted formation and lifetime debts keep their own types, targets and scopes.
+Check shared graph width, independent scope width and binder depth separately.
+
 Demand from a fully proved caller may retain the callee's exact declared trait
 premises during projected specialization. Select their validated implementations
 in a separate scope after substituting complete arguments. Retain existential

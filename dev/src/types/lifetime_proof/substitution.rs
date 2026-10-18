@@ -3,12 +3,7 @@ use super::{Obligations, ScopeId};
 use crate::types::{Store, substitute::Bound};
 impl Obligations {
     pub(crate) fn type_roots(&self) -> impl Iterator<Item = (ScopeId, crate::types::TypeId)> + '_ {
-        self.types.iter().map(|&(ty, _)| (ScopeId::ROOT, ty)).chain(
-            self.quantified
-                .iter()
-                .flat_map(|q| &q.blocks)
-                .flat_map(|block| block.proof.types.iter().map(|&(ty, _)| (block.scope, ty))),
-        )
+        self.type_root_positions().map(|root| (root.scope, root.ty))
     }
     pub(crate) fn map_type_roots(
         &mut self,

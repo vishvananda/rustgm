@@ -1,4 +1,5 @@
 //! Concrete projection results retain their selection debts in the instance contract.
+mod debts;
 use crate::{
     body::{
         ir::{Body, Rvalue},
@@ -13,7 +14,6 @@ use crate::{
         lifetime_proof::{Obligations, ScopeId},
     },
 };
-use std::collections::HashMap;
 
 /// Nominal fields can contain projections absent from the nominal's own arguments.
 pub(super) fn needs_field_normalization(
@@ -120,40 +120,11 @@ pub(super) fn normalize(
         }
     }
     rewrite_contract(facts, contract, &mut session)?;
-    let mut next = proof.regions.end;
+    let next = proof.regions.end;
     if !proof.is_empty() {
         contract.proofs.push((body.source, proof));
     }
-    let mut additions = Vec::new();
-    for (source, original) in &mut contract.proofs {
-        let mut roots = Vec::new();
-        for (scope, ty) in original.type_roots() {
-            if facts.types.contains_projections(ty) == Some(true) {
-                // A new sibling forall cannot own the existing proof's private
-                // variables. Keep this gate until extensions can share that
-                // actual proof scope and its discontiguous allocation intervals.
-                if scope != ScopeId::ROOT {
-                    return Err("quantified instance projection debt requires its original scope");
-                }
-                roots.push(ty);
-            }
-        }
-        if roots.is_empty() {
-            continue;
-        }
-        let mut mapped = HashMap::new();
-        let mut proof = Obligations::new(next);
-        let mut session = projections::concrete(&mut proof, ScopeId::ROOT)?;
-        for root in roots {
-            mapped.insert(root, session.normalize(facts, root)?.0);
-        }
-        next = proof.regions.end;
-        if !proof.is_empty() {
-            additions.push((*source, proof));
-        }
-        original.map_type_roots(|_, root| mapped.get(&root).copied().unwrap_or(root));
-    }
-    contract.proofs.extend(additions);
+    debts::normalize(facts, contract, next)?;
     Ok(())
 }
 
