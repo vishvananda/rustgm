@@ -1,7 +1,7 @@
 //! Sparse declaration types retain projection inputs independently of their normal forms.
 use crate::{
     resolve::{model::DefId, unit::NodeKey},
-    types::{GenericArgs, ItemId, ListId, TypeId, parameters::predicates::Predicate},
+    types::{GenericArgs, ItemId, ListId, TypeId, parameters::clauses::Clause},
 };
 use std::collections::HashMap;
 
@@ -15,7 +15,7 @@ struct Data {
     definitions: HashMap<DefId, TypeId>,
     arguments: HashMap<NodeKey, GenericArgs>,
     defaults: HashMap<DefId, TypeId>,
-    predicates: HashMap<NodeKey, Predicate>,
+    predicates: HashMap<NodeKey, Clause>,
     fields: HashMap<(ItemId, u32), ListId>,
 }
 impl Types {
@@ -57,7 +57,7 @@ impl Types {
         self.data.as_ref()?.defaults.get(&parameter).copied()
     }
     #[must_use]
-    pub fn predicate(&self, key: NodeKey) -> Option<Predicate> {
+    pub fn predicate(&self, key: NodeKey) -> Option<Clause> {
         self.data.as_ref()?.predicates.get(&key).copied()
     }
     #[must_use]
@@ -70,7 +70,7 @@ impl Types {
             .fields
             .insert((owner, variant), fields);
     }
-    pub(super) fn retain_predicate(&mut self, key: NodeKey, predicate: Predicate) {
+    pub(super) fn retain_predicate(&mut self, key: NodeKey, predicate: Clause) {
         self.data
             .get_or_insert_with(Default::default)
             .predicates

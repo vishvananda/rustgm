@@ -57,8 +57,12 @@ impl Checker<'_> {
                 .map_err(|e| self.error(source, e))?;
             for &index in subjects.get(&id).into_iter().flatten() {
                 let predicate = self.facts.generics.predicates[&owner][index];
+                let value = predicate
+                    .value
+                    .ordinary()
+                    .map_err(|e| self.error(source, e))?;
                 let bound = replace
-                    .predicate(&mut self.facts.types, predicate.value)
+                    .predicate(&mut self.facts.types, value)
                     .map_err(|e| self.error(source, e))?;
                 if !bound
                     .contains_parameters(&self.facts.types)
@@ -147,7 +151,8 @@ impl Checker<'_> {
             .flatten()
             .enumerate()
         {
-            if matches!(predicate.value.bound, Bound::Outlives(_))
+            let value = predicate.value.ordinary()?;
+            if matches!(value.bound, Bound::Outlives(_))
                 || predicate.value.escaping_binders(&self.facts.types)? != 0
             {
                 continue;
@@ -156,7 +161,7 @@ impl Checker<'_> {
                 id
             } else {
                 let mut uses = Uses::default();
-                uses.predicate(&self.facts.types, predicate.value)?;
+                uses.predicate(&self.facts.types, value)?;
                 steps = steps.saturating_add(uses.steps);
                 if steps > 1_000_000 {
                     return Err("default bound subject work budget exceeded");

@@ -17,7 +17,6 @@ enum Arguments {
 }
 pub(super) struct Bindings {
     arguments: Arguments,
-    shifts: HashMap<u16, Bound>,
 }
 impl Bound {
     /// Replace explicit parameter identities simultaneously, preserving lifetime binders.
@@ -60,7 +59,6 @@ impl Bound {
         }
         bound.parameters = Some(Box::new(Bindings {
             arguments: Arguments::Mapped(mappings),
-            shifts: HashMap::new(),
         }));
         Ok(bound)
     }
@@ -76,7 +74,6 @@ impl Bound {
                 owner,
                 values: Vec::new(),
             },
-            shifts: HashMap::new(),
         }));
         substitution
     }
@@ -176,7 +173,6 @@ impl Bound {
                 owner,
                 values: arguments,
             },
-            shifts: HashMap::new(),
         }));
         Ok(substitution)
     }
@@ -222,7 +218,6 @@ impl Bound {
         substitution.action = Action::Shift(0);
         substitution.parameters = Some(Box::new(Bindings {
             arguments: Arguments::Single(id, argument),
-            shifts: HashMap::new(),
         }));
         Ok(substitution)
     }
@@ -239,20 +234,9 @@ impl Bound {
         if depth == 0 || store.escaping_binders(ty) == Some(0) {
             return Ok(Some(ty));
         }
-        let bindings = self
-            .parameters
-            .as_mut()
-            .ok_or("missing parameter substitution")?;
-        let shift = bindings.shifts.entry(depth).or_insert_with(|| {
-            let mut shift = Self::new(Vec::new());
-            shift.action = Action::Shift(depth);
-            shift
-        });
-        let before = shift.steps;
-        let result = shift.apply(store, ty);
-        let work = shift.steps.saturating_sub(before);
+        let (result, work) = store.shift_type(ty, depth)?;
         self.account_arguments(work)?;
-        result.map(Some)
+        Ok(Some(result))
     }
     pub(super) fn constant(&self, store: &Store, id: ConstId) -> Result<ConstId, &'static str> {
         let kind = store

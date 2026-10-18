@@ -179,7 +179,11 @@ fn predicates(facts: &Declarations, out: &mut impl Write) -> io::Result<()> {
                 "predicate owner={} source={}:{} ",
                 owner.0, predicate.source.file.0, predicate.source.node.0
             )?;
-            requirement(&facts.types, predicate.value, out)?;
+            requirement(
+                &facts.types,
+                predicate.value.ordinary().map_err(io::Error::other)?,
+                out,
+            )?;
             writeln!(out)?;
         }
     }

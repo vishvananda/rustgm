@@ -264,14 +264,17 @@ pub(in crate::sema) fn prepare_outlives(facts: &mut Declarations) -> Result<(), 
             .iter()
             .any(|p| matches!(p.bound, Bound::Outlives(_)))
     });
-    let inherited = facts.generics.traits.as_ref().is_some_and(|contracts| {
-        contracts.headers().any(|(_, header)| {
-            header
-                .predicates
-                .iter()
-                .any(|p| header.implies_self(p) && matches!(p.value.bound, Bound::Outlives(_)))
-        })
-    });
+    let mut inherited = false;
+    if let Some(contracts) = &facts.generics.traits {
+        for (_, header) in contracts.headers() {
+            for predicate in &header.predicates {
+                if header.implies_self(&facts.types, predicate)? {
+                    let predicate = predicate.value.ordinary()?;
+                    inherited |= matches!(predicate.bound, Bound::Outlives(_));
+                }
+            }
+        }
+    }
     if !direct && !inherited {
         return Ok(());
     }

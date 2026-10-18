@@ -95,24 +95,22 @@ pub(super) fn prepare(
         Err(e) => return Err(inference(e)),
     }
     for predicate in facts.generics.predicates_in_scope(owner) {
-        if matches!(
-            predicate.value.bound,
-            Bound::Trait(_) | Bound::ProjectionEqual(_)
-        ) {
+        let predicate = predicate.value.ordinary()?;
+        if matches!(predicate.bound, Bound::Trait(_) | Bound::ProjectionEqual(_)) {
             traits.push(
                 context
-                    .instantiate_predicate(&mut facts.types, predicate.value, &mut substitution)
+                    .instantiate_predicate(&mut facts.types, predicate, &mut substitution)
                     .map_err(inference)?,
             );
             continue;
         }
-        if matches!(predicate.value.bound, Bound::Outlives(_)) {
+        if matches!(predicate.bound, Bound::Outlives(_)) {
             continue;
         }
         let term = context
-            .instantiate_with(&mut facts.types, predicate.value.ty, &mut substitution)
+            .instantiate_with(&mut facts.types, predicate.ty, &mut substitution)
             .map_err(inference)?;
-        obligations.push((term, predicate.value.bound));
+        obligations.push((term, predicate.bound));
     }
     Ok(Some(Conditions {
         builtins: obligations,

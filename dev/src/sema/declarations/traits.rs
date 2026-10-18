@@ -182,7 +182,7 @@ impl Checker<'_> {
             .or_default()
             .push(crate::sema::generics::Predicate {
                 source: owner.source,
-                value,
+                value: value.into(),
             });
         Ok(())
     }

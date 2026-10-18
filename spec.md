@@ -1592,6 +1592,30 @@ Separate root and scoped trait-application caches; a canonical application can
 have different results at different binder depths. Opening a universal obligation
 or instantiating a universal assumption requires a separate scoped proof operation.
 
+Declaration predicates, their original pre-normalization forms and trait-header
+consequences retain whole clauses. A metadata query may inspect a bound subject
+or member owner without granting the unbound body as a premise. Associated-result
+ownership compares the complete formal parent, shifting its lifetime parameters
+beneath the result clause's binder. Consumers that do not own a quantified scope
+must reject it explicitly; filtering it away is not successful validation.
+
+Elaborating a universally quantified supertrait preserves its surrounding binder.
+Adjacent universal binders can compose only through capture-safe slot remapping:
+append inner locals after outer locals, lower the removed parent depth, and keep
+nested callable locals distinct. Validate outer slots before merging so an invalid
+parent index cannot become a newly appended inner slot. Share validation and
+opening folds across the immutable elaboration batch, charge their work and retain
+non-Self requirements separately from inherited caller assumptions.
+
+Inserting a canonical type argument under binders is independent of its parameter
+mapping. Share these structural capture shifts in the canonical store, keyed by
+shift amount with type identity and nested binder depth inside each fold. Keep
+replacements simultaneous: another parameter mapping must not rewrite an inserted
+argument. Allocate this cache lazily, retain completed work and budget on errors,
+and reject further work after exhaustion. Charge incremental shift work to each
+requesting substitution as well as the cumulative store budget. No trait selection,
+formation proof, caller hypothesis or implementation availability belongs here.
+
 Immutable caller environments expose whole trait clauses. Keep ordinary predicates
 compact and allocate quantified storage lazily; retain mixed declaration order
 through capture substitution. Mapping an enclosing scope preserves every local

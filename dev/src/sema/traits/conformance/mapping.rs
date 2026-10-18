@@ -178,8 +178,8 @@ pub(super) fn contract(
     let mut assumptions: Vec<_> = facts
         .generics
         .predicates_in_scope(owner)
-        .map(|p| p.value)
-        .collect();
+        .map(|p| p.value.ordinary())
+        .collect::<Result<_, _>>()?;
     // The impl header already proves the trait's parent requirements. Retain
     // the method's own caller bounds here; synthetic inherited Self assumptions
     // would hide the impl's concrete associated definitions during normalization.
@@ -188,7 +188,7 @@ pub(super) fn contract(
         assumptions.push(
             folders
                 .expected
-                .predicate(&mut facts.types, predicate.value)?,
+                .predicate(&mut facts.types, predicate.value.ordinary()?)?,
         );
     }
     let obligations = method_requirements(
@@ -266,7 +266,7 @@ fn method_requirements(
 ) -> Result<Vec<Predicate>, &'static str> {
     let mut obligations = Vec::new();
     for predicate in facts.generics.predicates.get(&method).into_iter().flatten() {
-        obligations.push(folder.predicate(&mut facts.types, predicate.value)?);
+        obligations.push(folder.predicate(&mut facts.types, predicate.value.ordinary()?)?);
     }
     for (_, implementation) in method_parameters {
         if let Argument::Type(ty) = implementation.argument {

@@ -6,7 +6,10 @@ use super::{
 use crate::types::{
     TypeId,
     aggregate::Definitions,
-    parameters::predicates::{Bound, Predicate},
+    parameters::{
+        clauses::Clause,
+        predicates::{Bound, Predicate},
+    },
 };
 
 pub(super) fn region(
@@ -134,6 +137,25 @@ impl Bounds {
         explicit: &[(ItemId, Pair)],
         predicates: impl IntoIterator<Item = (ItemId, Predicate)>,
     ) -> Result<Self, &'static str> {
+        Self::infer_with_clauses(
+            types,
+            definitions,
+            explicit,
+            predicates
+                .into_iter()
+                .map(|(item, predicate)| (item, Clause::Predicate(predicate))),
+        )
+    }
+    /// Keep whole declaration clauses at the boundary without materializing a flat copy.
+    /// # Errors
+    /// Quantified requirements need scoped nominal inference, which is not yet supported.
+    /// Also rejects malformed templates and exhausted propagation work.
+    pub fn infer_with_clauses(
+        types: &mut Store,
+        definitions: &Definitions,
+        explicit: &[(ItemId, Pair)],
+        predicates: impl IntoIterator<Item = (ItemId, Clause)>,
+    ) -> Result<Self, &'static str> {
         let mut inference = Inference::default();
         for definition in definitions {
             inference
@@ -169,6 +191,7 @@ impl Bounds {
         }
         for (item, predicate) in predicates {
             inference.scan.budget.charge()?;
+            let predicate = predicate.ordinary()?;
             if let Bound::Outlives(shorter) = predicate.bound {
                 inference.scan.clear();
                 inference.scan.type_bound(types, predicate.ty, shorter, 0)?;

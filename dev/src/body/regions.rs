@@ -173,9 +173,10 @@ pub fn collect(facts: &Declarations) -> Result<Contracts<'_>, &'static str> {
                 // Associated equality formation follows its separate trait premise.
                 // The result has its own well-formedness requirements; inspecting
                 // the opaque projected subject cannot substitute for those checks.
-                let ty = match predicate.value.bound {
+                let value = predicate.value.ordinary()?;
+                let ty = match value.bound {
                     crate::types::parameters::predicates::Bound::ProjectionEqual(result) => result,
-                    _ => predicate.value.ty,
+                    _ => value.ty,
                 };
                 add(body, predicate.source, Kind::WellFormed(ty))?;
             }
@@ -300,17 +301,13 @@ fn parameter_contract(
             parameters.push(id);
         }
     }
-    let type_assumptions = facts
-        .generics
-        .predicates_in_scope(owner)
-        .filter_map(|p| {
-            if let crate::types::parameters::predicates::Bound::Outlives(region) = p.value.bound {
-                Some((p.value.ty, region))
-            } else {
-                None
-            }
-        })
-        .collect();
+    let mut type_assumptions = Vec::new();
+    for predicate in facts.generics.predicates_in_scope(owner) {
+        let predicate = predicate.value.ordinary()?;
+        if let crate::types::parameters::predicates::Bound::Outlives(region) = predicate.bound {
+            type_assumptions.push((predicate.ty, region));
+        }
+    }
     Ok(Contract {
         source,
         signature,

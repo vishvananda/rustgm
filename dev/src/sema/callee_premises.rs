@@ -24,12 +24,15 @@ pub(crate) fn specialize(
     substitution: &mut Bound,
     universals: u32,
 ) -> Result<Option<Assumptions>, &'static str> {
-    let predicates = facts
-        .generics
-        .predicates_in_scope(owner)
-        .filter(|p| matches!(p.value.bound, PredicateBound::Trait(_)))
-        .map(|p| p.value)
-        .collect::<Vec<_>>();
+    let mut predicates = Vec::new();
+    for predicate in facts.generics.predicates_in_scope(owner) {
+        // Importing an instance's quantified witnesses needs their use-specific
+        // scope. Do not turn a raw binder body into an ordinary body assumption.
+        let predicate = predicate.value.ordinary()?;
+        if matches!(predicate.bound, PredicateBound::Trait(_)) {
+            predicates.push(predicate);
+        }
+    }
     let mut state = None;
     for predicate in predicates {
         let predicate = substitution.predicate(&mut facts.types, predicate)?;

@@ -1,7 +1,8 @@
 //! Only a result of this complete formal parent is an owned associated promise.
 use crate::types::{
     GenericArgs, ItemId, Kind, Store,
-    parameters::predicates::{Bound, Predicate},
+    arguments::Argument,
+    parameters::{clauses::Clause, predicates::Bound},
 };
 
 impl super::super::Header {
@@ -29,8 +30,20 @@ impl super::super::Header {
         &self,
         store: &Store,
         owner: ItemId,
-        predicate: Predicate,
+        clause: Clause,
     ) -> Result<Option<ItemId>, &'static str> {
+        // Only inspect ownership here. The returned member retains the whole
+        // clause; its binder is never discarded from the resulting contract.
+        let (predicate, depth) = match clause {
+            Clause::Predicate(predicate) => (predicate, 0),
+            Clause::ForAll(id) => (
+                store
+                    .quantified(id)
+                    .ok_or("invalid associated result clause")?
+                    .predicate,
+                1,
+            ),
+        };
         // A binding in `Self::Out: Other<Value = X>` belongs to the contract
         // of this owner's Out, while its equality subject remains Other::Value.
         let subject = if matches!(predicate.bound, Bound::ProjectionEqual(_)) {
@@ -56,10 +69,32 @@ impl super::super::Header {
         let actual = store
             .arguments(application.arguments)
             .ok_or("invalid projected trait header arguments")?;
-        if actual.eq(self.parameters.iter().map(|p| p.argument)) {
-            Ok(Some(projection.item))
-        } else {
-            Ok(None)
+        if actual.len() != self.parameters.len() {
+            return Ok(None);
         }
+        for (actual, formal) in actual.zip(&self.parameters) {
+            // Formal header inputs are parameter identities, not default values.
+            // Type/const parameter IDs are binder-independent; lifetimes capture.
+            let expected = match formal.argument {
+                Argument::Lifetime(region) => {
+                    let region = if let Some((binder, index)) = region.bound_parts() {
+                        crate::types::RegionId::bound(
+                            binder
+                                .checked_add(depth)
+                                .ok_or("trait header capture depth overflow")?,
+                            index,
+                        )?
+                    } else {
+                        region
+                    };
+                    Argument::Lifetime(region)
+                }
+                argument => argument,
+            };
+            if actual != expected {
+                return Ok(None);
+            }
+        }
+        Ok(Some(projection.item))
     }
 }

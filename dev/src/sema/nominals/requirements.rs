@@ -218,7 +218,7 @@ fn instance(
         .map_or(&[][..], Vec::as_slice);
     let count = predicates.len();
     for index in 0..count {
-        let predicate = facts.generics.predicates[&owner][index].value;
+        let predicate = facts.generics.predicates[&owner][index].value.ordinary()?;
         if matches!(predicate.bound, Bound::Outlives(_)) {
             continue;
         }

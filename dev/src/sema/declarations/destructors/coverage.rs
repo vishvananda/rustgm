@@ -160,9 +160,10 @@ impl Checker<'_> {
             .facts
             .generics
             .predicates_in_scope(method)
-            .filter(|p| !matches!(p.value.bound, Bound::Outlives(_)))
-            .map(|p| p.value)
-            .collect::<Vec<_>>();
+            .map(|p| p.value.ordinary())
+            .collect::<Result<Vec<_>, _>>()
+            .map_err(|e| self.error(key, e))?;
+        requirements.retain(|p| !matches!(p.bound, Bound::Outlives(_)));
         for parameter in self.facts.generics.parameters_in_scope(owner) {
             if let Argument::Type(ty) = parameter.argument
                 && let Some(Kind::Parameter(id)) = self.facts.types.kind(ty)

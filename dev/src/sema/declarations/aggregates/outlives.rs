@@ -17,7 +17,7 @@ impl Checker<'_> {
             .iter()
             .filter(|(owner, _)| self.facts.aggregates.get(ItemId(owner.0)).is_some())
             .flat_map(|(owner, predicates)| predicates.iter().map(|p| (ItemId(owner.0), p.value)));
-        let mut bounds = Bounds::infer_with_predicates(
+        let mut bounds = Bounds::infer_with_clauses(
             &mut self.facts.types,
             &self.facts.aggregates,
             &self.facts.lifetimes.nominal_bounds,
@@ -84,8 +84,9 @@ impl Checker<'_> {
             .into_iter()
             .flatten()
         {
-            if let Bound::Outlives(shorter) = predicate.value.bound {
-                let parts = components.get(&self.facts.types, predicate.value.ty)?;
+            let predicate = predicate.value.ordinary()?;
+            if let Bound::Outlives(shorter) = predicate.bound {
+                let parts = components.get(&self.facts.types, predicate.ty)?;
                 for &longer in parts.regions {
                     proof.regions((longer, shorter), true)?;
                 }
@@ -174,8 +175,9 @@ impl Checker<'_> {
         }
         let mut queries = Queries::new(&self.facts.types, bounds, &self.facts.lifetimes.callables);
         for predicate in self.facts.generics.predicates_in_scope(owner) {
-            if let Bound::Outlives(shorter) = predicate.value.bound {
-                proof.assume_type_outlives(&mut queries, predicate.value.ty, shorter)?;
+            let predicate = predicate.value.ordinary()?;
+            if let Bound::Outlives(shorter) = predicate.bound {
+                proof.assume_type_outlives(&mut queries, predicate.ty, shorter)?;
             }
         }
         proof.solve().map_err(|e| e.to_string())?;

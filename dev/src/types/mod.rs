@@ -1,6 +1,7 @@
 //! Immutable canonical type shapes and interned child lists; no source/text keys.
 pub mod aggregate;
 pub mod arguments;
+mod binder_shift;
 pub mod bound_uses;
 pub mod callable;
 pub mod copy;
@@ -208,6 +209,7 @@ pub struct Store {
     regions: Slices<RegionId>,
     arguments: Option<Box<arguments::Storage>>,
     shapes: Option<Box<substitute::Bound>>,
+    shifts: Option<Box<binder_shift::Shifts>>,
 }
 impl Default for Store {
     fn default() -> Self {
@@ -235,6 +237,7 @@ impl Default for Store {
             regions: Slices::default(),
             arguments: None,
             shapes: None,
+            shifts: None,
         }
     }
 }

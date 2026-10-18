@@ -104,10 +104,9 @@ fn transparent_subject(
     use crate::types::parameters::predicates::Bound;
     for predicate in facts.generics.declared_predicates_in_scope(owner) {
         context.account_work(1)?;
-        if matches!(
-            predicate.value.bound,
-            Bound::Trait(_) | Bound::ProjectionEqual(_)
-        ) {
+        if !matches!(predicate.value, crate::types::parameters::clauses::Clause::Predicate(value)
+            if !matches!(value.bound, Bound::Trait(_) | Bound::ProjectionEqual(_)))
+        {
             return Ok(false);
         }
     }

@@ -104,22 +104,20 @@ impl Probe {
             }
         }
         for predicate in facts.generics.predicates_in_scope(owner) {
-            if matches!(
-                predicate.value.bound,
-                Bound::Trait(_) | Bound::ProjectionEqual(_)
-            ) {
+            let predicate = predicate.value.ordinary()?;
+            if matches!(predicate.bound, Bound::Trait(_) | Bound::ProjectionEqual(_)) {
                 // Structurally disjoint headers need no trait coherence proof.
                 self.trait_obligations = true;
                 continue;
             }
-            if matches!(predicate.value.bound, Bound::Outlives(_)) {
+            if matches!(predicate.bound, Bound::Outlives(_)) {
                 continue;
             }
             let term = self
                 .context
-                .instantiate_with(&mut facts.types, predicate.value.ty, &mut substitution)
+                .instantiate_with(&mut facts.types, predicate.ty, &mut substitution)
                 .map_err(inference_error)?;
-            self.obligations.push((term, predicate.value.bound));
+            self.obligations.push((term, predicate.bound));
         }
         Ok(target)
     }

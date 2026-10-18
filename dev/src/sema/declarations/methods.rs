@@ -63,11 +63,11 @@ impl Checker<'_> {
             .assume_signature(&mut queries, function.signature)
             .map_err(|e| self.error(key, e))?;
         for predicate in self.facts.generics.predicates_in_scope(function.definition) {
-            if let crate::types::parameters::predicates::Bound::Outlives(shorter) =
-                predicate.value.bound
+            let predicate = predicate.value.ordinary().map_err(|e| self.error(key, e))?;
+            if let crate::types::parameters::predicates::Bound::Outlives(shorter) = predicate.bound
             {
                 constraints
-                    .assume_type_outlives(&mut queries, predicate.value.ty, shorter)
+                    .assume_type_outlives(&mut queries, predicate.ty, shorter)
                     .map_err(|e| self.error(key, e))?;
             }
         }

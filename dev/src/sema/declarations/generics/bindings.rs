@@ -171,9 +171,13 @@ impl Checker<'_> {
                 Predicate {
                     ty: original_ty,
                     bound: Bound::ProjectionEqual(original_result),
-                },
+                }
+                .into(),
             );
-            output.push(crate::sema::generics::Predicate { source, value });
+            output.push(crate::sema::generics::Predicate {
+                source,
+                value: value.into(),
+            });
         }
         Ok(())
     }
@@ -290,13 +294,12 @@ impl Checker<'_> {
                 })?
                 .requirements(&mut self.facts.types, predicate)
                 .map_err(|e| self.error(source, e))?;
-            work.extend(
-                requirements
-                    .implied
-                    .iter()
-                    .copied()
-                    .filter(|p| matches!(p.bound, Bound::Trait(_))),
-            );
+            for clause in &requirements.implied {
+                let implied = clause.ordinary().map_err(|e| self.error(source, e))?;
+                if matches!(implied.bound, Bound::Trait(_)) {
+                    work.push(implied);
+                }
+            }
         }
         selected.ok_or_else(|| self.error(source, "trait bound has no such associated type"))
     }

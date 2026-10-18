@@ -11,7 +11,10 @@ use super::{generics::Parameter, generics::Predicate as Located, generics::param
 use crate::types::{
     ItemId, Store, TypeId,
     arguments::Argument,
-    parameters::predicates::{Bound, Predicate},
+    parameters::{
+        clauses::Clause,
+        predicates::{Bound, Predicate},
+    },
     substitute,
 };
 use std::{collections::HashMap, sync::Arc};
@@ -28,16 +31,53 @@ pub(super) struct Header {
 impl Header {
     /// Only the written Self subject confers inheritance. An alias reducing to
     /// Self remains a separate requirement despite its identical canonical type.
-    pub(in crate::sema) fn implies_self(&self, predicate: &Located) -> bool {
-        predicate.value.ty == self.self_type && self.self_bounds.contains(&predicate.source)
+    pub(in crate::sema) fn implies_self(
+        &self,
+        store: &Store,
+        predicate: &Located,
+    ) -> Result<bool, &'static str> {
+        if !self.self_bounds.contains(&predicate.source) {
+            return Ok(false);
+        }
+        // Classification of the written Self subject does not open its clause.
+        let subject = match predicate.value {
+            Clause::Predicate(value) => value.ty,
+            Clause::ForAll(id) => {
+                store
+                    .quantified(id)
+                    .ok_or("invalid Self clause")?
+                    .predicate
+                    .ty
+            }
+        };
+        Ok(subject == self.self_type)
+    }
+    /// Classify only the subject identity; the caller retains the complete clause.
+    fn implies(&self, store: &Store, predicate: &Located) -> Result<bool, &'static str> {
+        if self.implies_self(store, predicate)? {
+            return Ok(true);
+        }
+        let body = match predicate.value {
+            Clause::Predicate(body) => body,
+            Clause::ForAll(id) => {
+                store
+                    .quantified(id)
+                    .ok_or("invalid trait requirement clause")?
+                    .predicate
+            }
+        };
+        Ok(matches!(body.bound, Bound::ProjectionEqual(_))
+            && matches!(store.kind(body.ty),
+                Some(crate::types::Kind::Projection(application))
+                    if application.subject == self.self_type))
     }
 }
 
 /// Self bounds and equalities on Self's associated types are implied by a trait bound.
 pub(super) struct Requirements {
-    pub implied: Vec<Predicate>,
-    pub results: Vec<Predicate>,
-    pub required: Vec<Predicate>,
+    pub implied: Vec<Clause>,
+    pub results: Vec<Clause>,
+    pub required: Vec<Clause>,
     pub types: Vec<TypeId>,
     pub regions: Vec<crate::types::outlives::Pair>,
 }
@@ -48,7 +88,7 @@ pub(super) struct Contracts {
     order: Vec<ItemId>,
     applications: HashMap<Predicate, Arc<Requirements>>,
     result_rules: results::Cache,
-    result_bounds: HashMap<ItemId, Vec<Predicate>>,
+    result_bounds: HashMap<ItemId, Vec<Clause>>,
     steps: usize,
 }
 
@@ -106,7 +146,7 @@ impl Contracts {
         Ok(())
     }
 
-    pub fn associated_bounds(&self, member: ItemId) -> &[Predicate] {
+    pub fn associated_bounds(&self, member: ItemId) -> &[Clause] {
         self.result_bounds.get(&member).map_or(&[], Vec::as_slice)
     }
 
@@ -137,8 +177,19 @@ impl Contracts {
                 states.insert(item, false);
                 work.push((item, true));
                 for predicate in header.predicates.iter().rev() {
-                    if header.implies_self(predicate)
-                        && let Bound::Trait(application) = predicate.value.bound
+                    let value = match predicate.value {
+                        Clause::Predicate(value) => value,
+                        Clause::ForAll(id) => {
+                            store
+                                .quantified(id)
+                                .ok_or((item, "invalid supertrait clause"))?
+                                .predicate
+                        }
+                    };
+                    if header
+                        .implies_self(store, predicate)
+                        .map_err(|error| (item, error))?
+                        && let Bound::Trait(application) = value.bound
                     {
                         let application = store
                             .trait_application(application)
@@ -206,30 +257,27 @@ impl Contracts {
                     store.parameter(id).map(|p| p.kind),
                     Some(crate::types::parameters::ParameterKind::Type { sized: true })
                 ) {
-                    result.required.push(Predicate {
-                        ty,
-                        bound: Bound::Sized,
-                    });
+                    result.required.push(
+                        Predicate {
+                            ty,
+                            bound: Bound::Sized,
+                        }
+                        .into(),
+                    );
                 }
             }
         }
         let mut replace = substitute::Bound::parameters_captured(store, &mapping, regions)?;
         for predicate in &header.predicates {
-            let value = replace.predicate(store, predicate.value)?;
-            let associated_self = matches!(predicate.value.bound, Bound::ProjectionEqual(_))
-                && matches!(store.kind(predicate.value.ty),
-                    Some(crate::types::Kind::Projection(application))
-                        if application.subject == header.self_type);
-            if header.implies_self(predicate) || associated_self {
+            let value = replace.clause(store, predicate.value)?;
+            if header.implies(store, predicate)? {
                 result.implied.push(value);
             } else {
                 result.required.push(value);
             }
         }
         for (_, predicate) in &header.results {
-            result
-                .results
-                .push(replace.predicate(store, predicate.value)?);
+            result.results.push(replace.clause(store, predicate.value)?);
         }
         for &(longer, shorter) in &header.regions {
             let (Argument::Lifetime(longer), Argument::Lifetime(shorter)) = (
@@ -249,3 +297,7 @@ impl Contracts {
         Ok(result)
     }
 }
+
+#[cfg(test)]
+#[path = "../../tests/invariants/clause_inheritance.rs"]
+mod clause_inheritance_tests;

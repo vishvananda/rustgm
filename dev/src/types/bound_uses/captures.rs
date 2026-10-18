@@ -12,7 +12,7 @@ type Key = (TypeId, u16);
 pub(crate) struct Surrounding {
     count: u16,
 }
-pub(crate) struct LocalSlots;
+pub(crate) struct LocalSlots(u16);
 pub(crate) type Captures = Occurrences<Surrounding>;
 pub(crate) type Slots = Occurrences<LocalSlots>;
 
@@ -46,7 +46,9 @@ impl Query for LocalSlots {
     }
     fn region(&self, region: RegionId, depth: u16) -> u32 {
         match region.bound_parts() {
-            Some((binder, index)) if binder == depth => u32::from(index) + 1,
+            Some((binder, index)) if Some(binder) == depth.checked_add(self.0) => {
+                u32::from(index) + 1
+            }
             _ => 0,
         }
     }
@@ -66,7 +68,13 @@ impl Captures {
 }
 impl Default for Slots {
     fn default() -> Self {
-        Self::query(LocalSlots)
+        Self::at(0)
+    }
+}
+impl Slots {
+    /// Summarize one fixed surrounding binder, keeping nested callable locals separate.
+    pub(crate) fn at(depth: u16) -> Self {
+        Self::query(LocalSlots(depth))
     }
 }
 impl<Q: Query> Occurrences<Q> {

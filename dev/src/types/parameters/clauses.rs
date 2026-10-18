@@ -1,6 +1,8 @@
 //! Quantification binds a whole predicate, including its subject and result.
+mod composition;
 use super::predicates::Predicate;
 use crate::types::{Store, bound_uses::captures::Slots};
+pub use composition::Quantifier;
 use std::collections::HashMap;
 #[cfg(test)]
 mod slot_validation;
@@ -16,7 +18,37 @@ pub enum Clause {
     ForAll(QuantifiedId),
 }
 
+impl From<Predicate> for Clause {
+    fn from(predicate: Predicate) -> Self {
+        Self::Predicate(predicate)
+    }
+}
+
 impl Clause {
+    /// Flat consumers must reject quantified input until they own its complete scope.
+    /// # Errors
+    /// Rejects a quantified clause rather than exposing its unbound body.
+    pub fn ordinary(self) -> Result<Predicate, &'static str> {
+        match self {
+            Self::Predicate(predicate) => Ok(predicate),
+            Self::ForAll(_) => Err("quantified clause requires a scoped consumer"),
+        }
+    }
+
+    /// Lifetime quantification does not bind type or const parameters.
+    /// # Errors
+    /// Rejects malformed clauses, types or trait applications.
+    pub fn contains_parameters(self, store: &Store) -> Result<bool, &'static str> {
+        match self {
+            Self::Predicate(predicate) => predicate.contains_parameters(store),
+            Self::ForAll(id) => store
+                .quantified(id)
+                .ok_or("invalid quantified clause")?
+                .predicate
+                .contains_parameters(store),
+        }
+    }
+
     /// Local quantified slots do not require substitution of the caller's scope.
     /// # Errors
     /// Rejects unknown clause, type or application identities.

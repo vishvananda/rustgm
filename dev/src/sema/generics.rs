@@ -120,7 +120,7 @@ pub struct AnnotationUse {
 #[derive(Clone, Copy)]
 pub struct Predicate {
     pub source: crate::resolve::unit::NodeKey,
-    pub value: crate::types::parameters::predicates::Predicate,
+    pub value: crate::types::parameters::clauses::Clause,
 }
 #[derive(Default)]
 pub struct Generics {
@@ -217,9 +217,9 @@ impl Generics {
     ) -> Result<std::collections::HashSet<u16>, &'static str> {
         let mut uses = crate::types::bound_uses::Uses::default();
         for predicate in self.predicates.get(&owner).into_iter().flatten() {
-            uses.predicate(types, predicate.value)?;
+            uses.clause(types, predicate.value)?;
             if let Some(original) = originals.predicate(predicate.source) {
-                uses.predicate(types, original)?;
+                uses.clause(types, original)?;
             }
         }
         Ok(uses.indices)
@@ -325,7 +325,7 @@ impl Generics {
             .map(|p| p.value)
             .collect::<Vec<_>>();
         self.parameter_scope(store, owner)?
-            .with_predicates(store, &predicates)
+            .with_clauses(store, &predicates)
     }
     /// Declare parameters without granting the unenforced written bounds of an alias.
     /// # Errors

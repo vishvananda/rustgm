@@ -262,13 +262,17 @@ impl Checker<'_> {
         predicate: crate::sema::generics::Predicate,
         proof: &mut crate::sema::nominals::Proof,
     ) -> Result<(), Error> {
+        let value = predicate
+            .value
+            .ordinary()
+            .map_err(|e| self.error(predicate.source, e))?;
         let requirements = self
             .facts
             .generics
             .traits
             .as_mut()
             .ok_or_else(|| Error::at(predicate.source.file, 0, "missing trait contracts"))?
-            .requirements(&mut self.facts.types, predicate.value)
+            .requirements(&mut self.facts.types, value)
             .map_err(|e| self.error(predicate.source, e))?;
         for &ty in &requirements.types {
             if !proof
@@ -280,6 +284,9 @@ impl Checker<'_> {
             }
         }
         for &requirement in &requirements.required {
+            let requirement = requirement
+                .ordinary()
+                .map_err(|e| self.error(predicate.source, e))?;
             if matches!(
                 requirement.bound,
                 crate::types::parameters::predicates::Bound::Outlives(_)

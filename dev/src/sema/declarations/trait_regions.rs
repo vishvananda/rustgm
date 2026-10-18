@@ -76,6 +76,7 @@ impl Checker<'_> {
                     projections.extend_from_slice(well_formed.projections);
                 }
                 for predicate in &requirements.required {
+                    let predicate = predicate.ordinary().map_err(|e| self.error(source, e))?;
                     if let Bound::Outlives(shorter) = predicate.bound {
                         let parts = queries
                             .components(predicate.ty)
@@ -141,20 +142,23 @@ impl Checker<'_> {
             .get(&owner)
             .map_or(&[][..], Vec::as_slice)
             .iter()
-            .filter(|p| matches!(p.value.bound, Bound::Trait(_)))
-            .copied()
-            .collect();
+            .map(|p| p.value.ordinary().map(|value| (p.source, value)))
+            .collect::<Result<Vec<_>, _>>()
+            .map_err(|e| Error::at(crate::resolve::unit::FileId(0), 0, e))?;
         let mut requirements = Vec::with_capacity(predicates.len());
-        for predicate in predicates {
+        for (source, predicate) in predicates {
+            if !matches!(predicate.bound, Bound::Trait(_)) {
+                continue;
+            }
             let contract = self
                 .facts
                 .generics
                 .traits
                 .as_mut()
-                .ok_or_else(|| Error::at(predicate.source.file, 0, "missing trait contracts"))?
-                .requirements(&mut self.facts.types, predicate.value)
-                .map_err(|e| self.error(predicate.source, e))?;
-            requirements.push((predicate.source, contract));
+                .ok_or_else(|| Error::at(source.file, 0, "missing trait contracts"))?
+                .requirements(&mut self.facts.types, predicate)
+                .map_err(|e| self.error(source, e))?;
+            requirements.push((source, contract));
         }
         Ok(requirements)
     }
@@ -209,8 +213,9 @@ impl Checker<'_> {
             }
         }
         for predicate in self.facts.generics.predicates_in_scope(owner) {
-            if let Bound::Outlives(shorter) = predicate.value.bound {
-                constraints.assume_type_outlives(queries, predicate.value.ty, shorter)?;
+            let predicate = predicate.value.ordinary()?;
+            if let Bound::Outlives(shorter) = predicate.bound {
+                constraints.assume_type_outlives(queries, predicate.ty, shorter)?;
             }
         }
         Ok(constraints)

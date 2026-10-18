@@ -89,7 +89,7 @@ pub(super) fn check_bounds(
     arguments: &[RegionId],
     assumptions: &crate::types::outlives::Requirements<'_>,
     types: &crate::types::Store,
-    predicates: impl Iterator<Item = crate::types::parameters::predicates::Predicate>,
+    predicates: impl Iterator<Item = crate::types::parameters::clauses::Clause>,
     evidence: Option<&super::traits::obligations::Obligations>,
 ) -> Result<(), String> {
     if !assumptions.projections.is_empty() {
@@ -154,6 +154,7 @@ pub(super) fn check_bounds(
     }
     let mut components = crate::types::outlives::TypeComponents::default();
     for predicate in predicates {
+        let predicate = predicate.ordinary()?;
         let crate::types::parameters::predicates::Bound::Outlives(shorter) = predicate.bound else {
             continue;
         };

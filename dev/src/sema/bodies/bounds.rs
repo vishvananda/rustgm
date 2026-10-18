@@ -40,21 +40,31 @@ impl Checker<'_> {
         // Body calls express caller universals as free aliases. Add the same
         // assumptions in that context before either query cache is constructed.
         // Original subjects remain available for declaration-context annotations.
-        let mut predicates = self
-            .facts
-            .generics
-            .predicates_in_scope(owner)
-            .filter(|p| !matches!(p.value.bound, Bound::Outlives(_)))
-            .filter(|p| {
-                p.value
-                    .escaping_binders(&self.facts.types)
-                    .is_ok_and(|n| n != 0)
-            })
-            .map(|p| p.value)
-            .collect::<Vec<_>>();
+        let mut predicates = Vec::new();
+        for predicate in self.facts.generics.predicates_in_scope(owner) {
+            if matches!(
+                predicate.value,
+                crate::types::parameters::clauses::Clause::Predicate(
+                    crate::types::parameters::predicates::Predicate {
+                        bound: Bound::Outlives(_),
+                        ..
+                    }
+                )
+            ) {
+                continue;
+            }
+            if predicate
+                .value
+                .escaping_binders(&self.facts.types)
+                .map_err(|error| self.error(node, error))?
+                != 0
+            {
+                predicates.push(predicate.value);
+            }
+        }
         if !predicates.is_empty() {
             for predicate in &mut predicates {
-                *predicate = self.alias_predicate(node, *predicate)?;
+                *predicate = self.alias_clause(node, *predicate)?;
             }
             let original = environment
                 .as_ref()
@@ -63,7 +73,7 @@ impl Checker<'_> {
                 original
                     .as_ref()
                     .clone()
-                    .with_predicates(&self.facts.types, &predicates)
+                    .with_clauses(&self.facts.types, &predicates)
                     .map_err(|e| self.error(node, e))?,
             ));
             if let Some(environment) = &environment {
@@ -275,14 +285,18 @@ impl Checker<'_> {
         )
         .map_err(|e| self.error(node, e))?;
         for predicate in predicates {
-            if assumed == Some(predicate.value) {
+            let value = predicate
+                .value
+                .ordinary()
+                .map_err(|error| self.error(node, error))?;
+            if assumed == Some(value) {
                 self.state
                     .call_types
                     .assumed_obligations
                     .insert(self.state.call_types.obligations.len());
             }
             let predicate = substitution
-                .predicate(&mut self.facts.types, predicate.value)
+                .predicate(&mut self.facts.types, value)
                 .map_err(|e| self.error(node, e))?;
             let predicate = self
                 .state

@@ -289,13 +289,12 @@ impl Checker<'_> {
                 .ok_or_else(|| Error::at(key.file, 0, "missing shorthand trait contracts"))?
                 .requirements(&mut self.facts.types, predicate)
                 .map_err(|e| self.error(key, e))?;
-            work.extend(
-                requirements
-                    .implied
-                    .iter()
-                    .copied()
-                    .filter(|p| p.ty == predicate.ty && matches!(p.bound, Bound::Trait(_))),
-            );
+            for clause in &requirements.implied {
+                let implied = clause.ordinary().map_err(|e| self.error(key, e))?;
+                if implied.ty == predicate.ty && matches!(implied.bound, Bound::Trait(_)) {
+                    work.push(implied);
+                }
+            }
         }
         self.projections
             .lookup

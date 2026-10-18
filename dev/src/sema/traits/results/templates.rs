@@ -105,7 +105,9 @@ pub(super) fn for_result(
             .as_mut()
             .ok_or("missing result trait requirements")?
             .requirements(&mut facts.types, predicate)?;
-        pending.extend(requirements.implied.iter().copied());
+        for clause in &requirements.implied {
+            pending.push(clause.ordinary()?);
+        }
     }
     let index = Arc::new(index);
     let cache = &mut facts

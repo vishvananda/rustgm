@@ -414,11 +414,11 @@ impl Checker<'_> {
             {
                 self.facts
                     .unreduced
-                    .retain_predicate(bound.source, original);
+                    .retain_predicate(bound.source, original.into());
             }
             completed.push(crate::sema::generics::Predicate {
                 source: bound.source,
-                value,
+                value: value.into(),
             });
             if let Written::User { path, .. } = bound.bound {
                 self.complete_associated_bindings(owner, path, value, original, &mut completed)?;

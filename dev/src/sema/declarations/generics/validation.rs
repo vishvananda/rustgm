@@ -20,12 +20,16 @@ impl Checker<'_> {
             .map_or(0, Vec::len)
         {
             let predicate = self.facts.generics.predicates[&owner][index];
-            if matches!(predicate.value.bound, Bound::ProjectionEqual(_)) {
+            let value = predicate
+                .value
+                .ordinary()
+                .map_err(|error| self.error(predicate.source, error))?;
+            if matches!(value.bound, Bound::ProjectionEqual(_)) {
                 self.validate_equality_bound(predicate, proof)?;
                 continue;
             }
             let ty = proof
-                .normalize(&mut self.facts, predicate.value.ty)
+                .normalize(&mut self.facts, value.ty)
                 .map_err(|e| self.error(predicate.source, e))?;
             let well_formed = proof
                 .check(&mut self.facts, ty)
@@ -34,7 +38,7 @@ impl Checker<'_> {
             if !well_formed {
                 return Err(self.error(predicate.source, "bound subject must be well-formed"));
             }
-            if matches!(predicate.value.bound, Bound::Trait(_)) {
+            if matches!(value.bound, Bound::Trait(_)) {
                 self.trait_requirements(predicate, proof)?;
                 if traits.is_none() {
                     traits = Some(self.declared_trait_assumptions(owner)?);
@@ -46,14 +50,16 @@ impl Checker<'_> {
                     predicate,
                 )?;
             }
-            if matches!(predicate.value.bound, Bound::Outlives(_)) {
+            if matches!(value.bound, Bound::Outlives(_)) {
                 continue;
             }
             let original = self
                 .facts
                 .unreduced
                 .predicate(predicate.source)
-                .unwrap_or(predicate.value);
+                .unwrap_or(predicate.value)
+                .ordinary()
+                .map_err(|error| self.error(predicate.source, error))?;
             if original
                 .contains_parameters(&self.facts.types)
                 .map_err(|e| self.error(predicate.source, e))?
@@ -64,9 +70,9 @@ impl Checker<'_> {
             {
                 continue;
             }
-            if matches!(predicate.value.bound, Bound::Trait(_)) {
+            if matches!(value.bound, Bound::Trait(_)) {
                 if !proof
-                    .prove_closed_trait(&mut self.facts, predicate.value)
+                    .prove_closed_trait(&mut self.facts, value)
                     .map_err(|e| self.error(predicate.source, e))?
                 {
                     return Err(self.error(
@@ -76,31 +82,9 @@ impl Checker<'_> {
                 }
                 continue;
             }
-            let valid = if predicate.value.bound == Bound::Sized {
-                self.facts.types.is_sized(ty) == Some(true)
-            } else {
-                if self.facts.generics.has_nominal_requirements {
-                    self.facts
-                        .aggregates
-                        .prepare(&mut self.facts.types, ty)
-                        .map_err(|e| self.error(predicate.source, e))?;
-                }
-                let properties = self
-                    .facts
-                    .copies
-                    .demand(
-                        &self.facts.types,
-                        &self.facts.aggregates,
-                        &self.facts.derives,
-                        ty,
-                    )
-                    .map_err(|e| self.error(predicate.source, e))?;
-                if predicate.value.bound == Bound::Copy {
-                    properties.copy
-                } else {
-                    properties.clone_
-                }
-            };
+            let valid = self
+                .closed_builtin_bound(ty, value.bound)
+                .map_err(|e| self.error(predicate.source, e))?;
             if !valid {
                 return Err(self.error(
                     predicate.source,
@@ -111,12 +95,41 @@ impl Checker<'_> {
         Ok(())
     }
 
+    /// Closed builtin bounds have no caller assumptions to supply their abilities.
+    fn closed_builtin_bound(
+        &mut self,
+        ty: crate::types::TypeId,
+        bound: Bound,
+    ) -> Result<bool, &'static str> {
+        if bound == Bound::Sized {
+            return Ok(self.facts.types.is_sized(ty) == Some(true));
+        }
+        if self.facts.generics.has_nominal_requirements {
+            self.facts.aggregates.prepare(&mut self.facts.types, ty)?;
+        }
+        let properties = self.facts.copies.demand(
+            &self.facts.types,
+            &self.facts.aggregates,
+            &self.facts.derives,
+            ty,
+        )?;
+        Ok(if bound == Bound::Copy {
+            properties.copy
+        } else {
+            properties.clone_
+        })
+    }
+
     fn validate_equality_bound(
         &mut self,
         predicate: crate::sema::generics::Predicate,
         proof: &mut Proof,
     ) -> Result<(), Error> {
-        let Bound::ProjectionEqual(result) = predicate.value.bound else {
+        let value = predicate
+            .value
+            .ordinary()
+            .map_err(|error| self.error(predicate.source, error))?;
+        let Bound::ProjectionEqual(result) = value.bound else {
             return Err(self.error(predicate.source, "missing associated equality result"));
         };
         // Formation of the projected subject follows its separately retained trait
@@ -136,8 +149,11 @@ impl Checker<'_> {
             .facts
             .unreduced
             .predicate(predicate.source)
+            .map(crate::types::parameters::clauses::Clause::ordinary)
+            .transpose()
+            .map_err(|error| self.error(predicate.source, error))?
             .filter(|value| matches!(value.bound, Bound::ProjectionEqual(_)))
-            .unwrap_or(predicate.value);
+            .unwrap_or(value);
         if original
             .contains_parameters(&self.facts.types)
             .map_err(|e| self.error(predicate.source, e))?
@@ -163,9 +179,19 @@ impl Checker<'_> {
     fn declared_trait_assumptions(&self, owner: DefId) -> Result<TraitEvidence, Error> {
         let mut assumptions = crate::sema::traits::assumptions::Assumptions::default();
         for predicate in self.facts.generics.predicates_in_scope(owner) {
-            if matches!(predicate.value.bound, Bound::Trait(_)) {
+            let value = match predicate.value {
+                crate::types::parameters::clauses::Clause::Predicate(value) => value,
+                crate::types::parameters::clauses::Clause::ForAll(id) => {
+                    self.facts
+                        .types
+                        .quantified(id)
+                        .ok_or_else(|| self.error(predicate.source, "invalid declaration clause"))?
+                        .predicate
+                }
+            };
+            if matches!(value.bound, Bound::Trait(_)) {
                 assumptions
-                    .insert(&self.facts.types, predicate.value)
+                    .insert_clause(&self.facts.types, predicate.value)
                     .map_err(|e| self.error(predicate.source, e.to_string()))?;
             }
         }
@@ -180,9 +206,13 @@ impl Checker<'_> {
         state: &mut TraitEvidence,
         predicate: crate::sema::generics::Predicate,
     ) -> Result<(), Error> {
+        let value = predicate
+            .value
+            .ordinary()
+            .map_err(|error| self.error(predicate.source, error))?;
         if !state
             .assumptions
-            .unambiguous_declaration(&mut self.facts.types, &mut state.context, predicate.value)
+            .unambiguous_declaration(&mut self.facts.types, &mut state.context, value)
             .map_err(|e| self.error(predicate.source, e.to_string()))?
         {
             return Err(self.error(

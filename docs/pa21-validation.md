@@ -401,3 +401,83 @@ baseline; it does not resolve the earlier streamed-proof wall-time effect agains
 `b1410a8`. Source formation, declaration producers, scoped implementation
 conditions and concrete instance witness integration remain required before
 PA21 source activation.
+
+
+## Quantified declaration carriers and supertrait composition
+
+The next checkpoint carries whole clauses through generic declarations, retained
+original predicates, trait headers and body-environment capture substitution.
+Supertrait closure composes adjacent universal binders without dropping their
+subjects, trait inputs, equality results or enclosing captures. Associated-result
+classification checks the complete captured formal parent. Flat declaration,
+conformance, nominal and body consumers explicitly reject quantified input until
+they have a scoped implementation. Source syntax gates remain closed, and PA21
+remains planned.
+
+Four composition invariants and six carrier/ownership invariants cover multiple
+universal slots, empty binders, nested callables, non-Self requirements, caller
+isolation, application memoization at different depths and malformed parent slots.
+The isolated composition family uses `6n+1` folder steps plus `2n` store validation
+steps and creates `n` canonical types through width 512.
+
+A broader supertrait expansion test found an additional quadratic walk: each
+parameter mapping independently shifted the same growing argument tails beneath
+an inner binder. At widths 16, 32, 64 and 128 this cost 528, 1,568, 5,184 and
+18,560 contract steps (`n²+17n`). Moving context-free shifts to a lazy canonical
+store cache reduces this family to `18n+1` steps: 289, 577, 1,153, 2,305, 4,609
+and 9,217 through width 512, with `n` new canonical types. Three shift invariants
+check distinct amounts, nested callable locals, simultaneous parameter mappings
+and retained state after failures. These work counts are internal scaling
+measurements, not whole-frontend speedups.
+
+Eleven independent pinned-rustc object controls qualify seven accepted and four
+rejected sources. An initial negative expectation for diagonal use was corrected:
+a universal lifetime can be instantiated with an enclosing lifetime; the reverse
+does not prove independence. A separate generic reference-formation example
+receives rustc's explicit current-type-system-limitation/implied-static diagnostic.
+Its language/profile meaning remains an investigation rather than a declared
+invalid fixture. The original controls and diagnostics are retained alongside the
+corrected set in `obj/pa21-work/quantified-contracts-v1/`.
+
+All 28 full functional gates pass: **1,335 regular tests**, **91 native groups**,
+and **6,218 PA1–PA20 text-oracle cases**, plus formatting, strict Clippy, the
+820-file audit, harness, backend qualification and upstream verification. All
+**823 source/configuration hashes** and **18,654 oracle sidecars** remain fixed;
+PA21–PA25 still fail explicitly as planned. The frozen candidate is
+`af86f1d5dc81d8532cbae134ddadbcd94452e52badb661b955a6afa459098cc9`,
+compared with published `76587c4` / `d5d955a9eed168e09a9dae94a5b33fba1ef09423773e4146edcad887f0508f6f`.
+The main study completes all 31 timing jobs and 27 instruction pairs. Instruction
+changes range from **−0.59% to +0.24%**, with no increase above the 1% investigation
+threshold. Paired wall medians range from **−18.99% to +5.68%**; same-binary medians
+range from **−2.74% to +2.27%**, with a largest A/A spread of **131.24%**. The large
+apparent wall improvements are not reliable speedup evidence. Median peak RSS
+deltas span **−164 to +22 KiB**. All output and binary, input and source hashes match.
+
+The predeclared follow-up selects `trait-view-96-count` (+5.68%), `pending-chain-8`
+(+5.05%) and `trait-view-8-count` (+4.19%) for one AB/AA/BB batch each. The follow-up
+AB changes are **−0.17%, +1.31% and +1.90%**, respectively. Corresponding same-binary
+AA/BB medians are +0.24%/+0.16%, +0.92%/−0.83% and +0.19%/−2.45%. The initial
+above-threshold increases do not recur in this fixed batch. No additional timing
+repeats were selected.
+
+The two fixed Massif comparisons record:
+
+| Workload | Baseline heap bytes | Candidate heap bytes | Baseline combined heap/overhead/stack | Candidate combined |
+| --- | ---: | ---: | ---: | ---: |
+| ordinary-256 | 2,432,261 | 2,432,261 | 2,524,256 | 2,528,240 |
+| constant-chain-uses-256 | 5,381,921 | 5,381,873 | 5,544,248 | 5,540,008 |
+
+Heap peaks are unchanged or 48 bytes lower; combined peaks change by +3,984 and
+−4,240 bytes. The ELF text/data/BSS sum increases by 24,592 bytes. These measurements
+do not establish the cause of the RSS range or a portable wall-time improvement.
+
+All **1,040 study observations** and **160 qualification observations** are retained,
+comprising **6,968 timed** and **1,072 qualification compiler invocations**, plus
+**54 Callgrind** and **four Massif** executions. All source, binary, input and output
+hashes agree; no observations were discarded or repeated until favorable. Main-run
+cleanup reclaimed **6.90 GiB**. Receipts remain in
+`obj/pa21-work/quantified-contracts-final/`. This comparison does not resolve the
+earlier streamed-proof wall-time effect against `b1410a8`. These functional and
+regression results do not establish end-to-end RustGM HRTB source or native
+acceptance; scoped implementation conditions, formation and concrete body witness
+integration remain required before source activation.

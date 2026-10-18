@@ -56,7 +56,7 @@ pub struct Uses {
     opaque_projections: bool,
     pub indices: HashSet<u16>,
     seen: HashSet<(TypeId, u16)>,
-    applications: HashSet<super::traits::ApplicationId>,
+    applications: HashSet<(super::traits::ApplicationId, u16)>,
     work: Vec<(TypeId, u16)>,
     pub steps: usize,
 }
@@ -75,14 +75,22 @@ impl Uses {
     /// # Errors
     /// Rejects invalid canonical data and exhausted traversal resources.
     pub fn collect(&mut self, store: &Store, root: TypeId) -> Result<(), &'static str> {
+        self.collect_inside(store, root, 0)
+    }
+    fn collect_inside(
+        &mut self,
+        store: &Store,
+        root: TypeId,
+        depth: u16,
+    ) -> Result<(), &'static str> {
         if store
             .escaping_binders(root)
             .ok_or("invalid bound-use type")?
-            == 0
+            <= depth
         {
             return Ok(());
         }
-        self.push(root, 0)?;
+        self.push(root, depth)?;
         self.drain(store)
     }
     /// Include direct outlives regions and lifetimes appearing only in trait arguments.
@@ -93,17 +101,42 @@ impl Uses {
         store: &Store,
         predicate: super::parameters::predicates::Predicate,
     ) -> Result<(), &'static str> {
+        self.predicate_inside(store, predicate, 0)
+    }
+    /// Collect only the enclosing binder's uses, excluding quantified locals.
+    /// # Errors
+    /// Rejects malformed clauses and exhausted occurrence work.
+    pub fn clause(
+        &mut self,
+        store: &Store,
+        clause: super::parameters::clauses::Clause,
+    ) -> Result<(), &'static str> {
+        use super::parameters::clauses::Clause;
+        match clause {
+            Clause::Predicate(predicate) => self.predicate_inside(store, predicate, 0),
+            Clause::ForAll(id) => {
+                let value = store.quantified(id).ok_or("invalid bound-use clause")?;
+                self.predicate_inside(store, value.predicate, 1)
+            }
+        }
+    }
+    fn predicate_inside(
+        &mut self,
+        store: &Store,
+        predicate: super::parameters::predicates::Predicate,
+        depth: u16,
+    ) -> Result<(), &'static str> {
         use super::parameters::predicates::Bound;
-        self.collect(store, predicate.ty)?;
+        self.collect_inside(store, predicate.ty, depth)?;
         match predicate.bound {
-            Bound::ProjectionEqual(result) => self.collect(store, result)?,
-            Bound::Outlives(region) => self.region(region, 0),
+            Bound::ProjectionEqual(result) => self.collect_inside(store, result, depth)?,
+            Bound::Outlives(region) => self.region(region, depth),
             Bound::Trait(id) => {
                 let application = store
                     .trait_application(id)
                     .ok_or("invalid bound-use trait application")?;
-                if self.applications.insert(id) {
-                    self.arguments(store, application.arguments, 0)?;
+                if self.applications.insert((id, depth)) {
+                    self.arguments(store, application.arguments, depth)?;
                     self.drain(store)?;
                 }
             }
@@ -221,3 +254,7 @@ impl Uses {
         }
     }
 }
+
+#[cfg(test)]
+#[path = "../../tests/invariants/clause_captures.rs"]
+mod clause_tests;

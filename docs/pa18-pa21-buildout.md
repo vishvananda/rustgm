@@ -10084,3 +10084,29 @@ with equal outputs and verified hashes. Cleanup reclaimed 6.90 GiB. Candidate
 SHA-256: `d5d955a9eed168e09a9dae94a5b33fba1ef09423773e4146edcad887f0508f6f`.
 PA21 remains planned while source/instance integration continues; these ordinary
 regression results are not higher-ranked source or native-execution coverage.
+
+
+## PA21 declaration clauses and binder composition
+
+Generic declarations and trait-header consequences now retain whole quantified
+clauses. Supertrait closure composes their universal binders with checked slot
+remapping and shared folds; associated-result ownership retains captured formal
+parent arguments. Consumers without scoped proof support reject quantified inputs
+explicitly. The source gates remain closed pending their integration.
+
+The broader expansion invariant exposed repeated capture shifts across independent
+parameter mappings. A lazy store-owned structural cache reduces contract work
+from `n²+17n` to `18n+1` over growing argument tails, checked through 512 applications.
+The focused 160 library tests, strict lint, 820-file audit and harness pass; eleven
+independent object controls qualify seven accepted and four rejected sources.
+All 28 full functional gates pass: 1,335 regular tests, 91 native groups and 6,218
+earlier course cases. All 823 frozen source/configuration hashes and 18,654 oracle
+sidecars remain fixed. Instruction changes span −0.59%..+0.24%. Main wall timing is
+noisy (largest A/A spread 131.24%); one fixed follow-up of the three positive
+outliers records −0.17%, +1.31% and +1.90%, without another threshold crossing.
+The two fixed heap peaks are unchanged or 48 bytes lower; combined storage peaks
+change by +3,984 and −4,240 bytes. All 1,040 study and 160 qualification observations
+remain retained with matching outputs and hashes. Cleanup reclaimed 6.90 GiB.
+Candidate SHA-256: `af86f1d5dc81d8532cbae134ddadbcd94452e52badb661b955a6afa459098cc9`.
+See the PA21 validation record for corrected control expectations and the unresolved
+reference-formation investigation. PA21–PA25 remain unfinished.

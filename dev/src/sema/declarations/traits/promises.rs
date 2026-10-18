@@ -125,6 +125,7 @@ impl Checker<'_> {
                 .ok_or_else(|| self.error(key, "missing completed trait headers"))?
                 .associated_bounds(ItemId(member.0))
             {
+                let predicate = predicate.ordinary().map_err(|e| self.error(key, e))?;
                 let properties = if let Bound::Trait(id) = predicate.bound {
                     let application = self
                         .facts
@@ -175,10 +176,14 @@ impl Checker<'_> {
             }
             let mut result = Builtins::default();
             for predicate in &header.predicates {
-                if !header.implies_self(predicate) {
+                if !header
+                    .implies_self(&self.facts.types, predicate)
+                    .map_err(|e| self.error(key, e))?
+                {
                     continue;
                 }
-                if let Bound::Trait(id) = predicate.value.bound {
+                let predicate = predicate.value.ordinary().map_err(|e| self.error(key, e))?;
+                if let Bound::Trait(id) = predicate.bound {
                     let parent = self
                         .facts
                         .types
@@ -189,7 +194,7 @@ impl Checker<'_> {
                         .or_default()
                         .push(definition);
                 } else {
-                    result.include(Builtins::bound(predicate.value.bound));
+                    result.include(Builtins::bound(predicate.bound));
                 }
             }
             promises.insert(definition, result);

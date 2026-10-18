@@ -99,6 +99,7 @@ impl Checker<'_> {
             }
         }
         for &requirement in requirements.required.iter().chain(&requirements.implied) {
+            let requirement = requirement.ordinary().map_err(|e| self.error(source, e))?;
             let requirement = proof
                 .normalize_builtin(&mut self.facts, requirement)
                 .map_err(|e| self.error(source, e))?;
@@ -128,6 +129,7 @@ impl Checker<'_> {
                 .map_err(|e| self.error(source, e.to_string()))?;
         }
         for requirement in requirements.required.iter().chain(&requirements.implied) {
+            let requirement = requirement.ordinary().map_err(|e| self.error(source, e))?;
             if let Bound::Outlives(shorter) = requirement.bound {
                 constraints
                     .require_type(

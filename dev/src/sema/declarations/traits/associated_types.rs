@@ -165,13 +165,20 @@ impl Checker<'_> {
                 .get(&id)
                 .cloned()
                 .unwrap_or_default();
-            self.facts
+            let contract = self
+                .facts
                 .associated
                 .types
                 .get_mut(&id)
-                .ok_or_else(|| Error::at(key.file, 0, "missing associated type contract"))?
-                .bounds
-                .extend(predicates.into_iter().map(|predicate| predicate.value));
+                .ok_or_else(|| Error::at(key.file, 0, "missing associated type contract"))?;
+            for predicate in predicates {
+                contract.bounds.push(
+                    predicate
+                        .value
+                        .ordinary()
+                        .map_err(|e| Error::at(key.file, 0, e))?,
+                );
+            }
         }
         Ok(())
     }
@@ -242,7 +249,9 @@ impl Checker<'_> {
             })
             .collect();
         if let Some(contracts) = &self.facts.generics.traits {
-            predicates.extend_from_slice(contracts.associated_bounds(ItemId(id.0)));
+            for clause in contracts.associated_bounds(ItemId(id.0)) {
+                predicates.push(clause.ordinary().map_err(|e| self.error(key, e))?);
+            }
         }
         if !bounds.syntax.is_empty() {
             self.bound_syntax.insert(id, bounds.syntax);
