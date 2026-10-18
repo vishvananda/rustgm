@@ -856,9 +856,19 @@ current implementations, separately from compatible-world coherence queries.
 After selection, ordinary body inference commits owner arguments and performs
 the complete ownership, lifetime and lowering checks.
 
+Reserve inherent member names and conservative nominal heads before elaborating
+implementation headers. A declaration-time lookup waits for the matching
+nominal/name owners and owners whose raw head is unknown. Index those dependencies
+by name and nominal identity; do not scan unrelated implementations on each use.
+Publish members only after their owner's complete environment is ready. Retain
+the typed prefix across header work, and freeze source ordering separately from
+the order in which dependencies complete. A resolved name or raw head is never
+an applicability proof.
+
 Retain the candidate partition built for overlap checking instead of maintaining
-a duplicate header table. Closed prefix lookup consumes that partition; unknown
-prefixes use bounded probes within the nominal/name bucket. Reuse the same shape
+a duplicate header table. Early lookup can build that same partition for a complete
+nominal/name bucket before whole-crate overlap validation. Closed prefix lookup
+consumes that partition; unknown prefixes use bounded probes within the nominal/name bucket. Reuse the same shape
 folder across headers and prefixes, so repeated aliases do not repeatedly traverse
 their type DAG. Property queries cache known and unknown subtrees only after a
 probe's equations are fixed and under its immutable environment.

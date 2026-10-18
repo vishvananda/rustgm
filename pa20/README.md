@@ -164,8 +164,10 @@ Student export is a later operation: this repository owns the full solution.
 The current maintainer implementation has substantial coverage of associated types,
 associated constants and the solver. Trait constants in implementation headers can
 wait for compatible headers while preserving inference and lifetime evidence.
-Remaining work includes early inherent-constant lookup, associated-type readiness
-inside implementation headers, further normalization/coherence work, the extended
-semantic view and the public grading suite. The maintainer journal in
+Inherent names and nominal heads are reserved before header elaboration, so early
+constant uses can prepare compatible owner headers before selecting a member.
+Remaining work includes suspended method-applicability queries and trait fallback,
+associated-type readiness inside implementation headers, further normalization
+and coherence work, the extended semantic view and the public grading suite. The maintainer journal in
 `docs/pa18-pa21-buildout.md` records evidence and known gaps; individual checkpoints
 do not reduce the requirements above.

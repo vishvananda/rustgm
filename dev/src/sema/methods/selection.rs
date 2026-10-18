@@ -262,6 +262,7 @@ pub(super) fn candidates(
     }
     match context.resolved(&mut facts.types, prefix) {
         Ok(ty) if facts.types.contains_parameters(ty) == Some(false) => {
+            prepare_candidates(facts, key)?;
             let shapes = facts
                 .methods
                 .shapes
@@ -291,6 +292,44 @@ pub(super) fn candidates(
             .ok_or("missing method bucket"),
         Err(_) => Err("invalid method prefix inference graph"),
     }
+}
+
+/// Header-time lookup may precede the whole-crate overlap pass. Its complete
+/// bucket can build the same shape index without authorizing unchecked owners.
+fn prepare_candidates(facts: &mut Declarations, key: (ItemId, NameId)) -> Result<(), &'static str> {
+    if facts.methods.indices.contains_key(&key) {
+        return Ok(());
+    }
+    let shapes = facts
+        .methods
+        .shapes
+        .get_or_insert_with(|| Box::new(crate::types::substitute::Bound::shape()));
+    let mut index = super::Candidates::default();
+    for &member in facts
+        .methods
+        .inherent
+        .get(&key)
+        .ok_or("missing method bucket")?
+    {
+        let ty = facts
+            .associated
+            .schema(member)
+            .ok_or("missing method owner schema")?
+            .self_type;
+        if facts.types.contains_parameters(ty) == Some(false) {
+            let before = shapes.steps;
+            let shape = shapes.apply(&mut facts.types, ty)?;
+            facts.methods.selection_shape_steps = facts
+                .methods
+                .selection_shape_steps
+                .saturating_add(shapes.steps.saturating_sub(before));
+            index.closed.entry(shape).or_default().push(member);
+        } else {
+            index.open.push(member);
+        }
+    }
+    facts.methods.indices.insert(key, index);
+    Ok(())
 }
 
 pub(super) fn applicable(

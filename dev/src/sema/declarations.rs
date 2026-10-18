@@ -11,6 +11,7 @@ mod generics;
 mod heads;
 mod impl_headers;
 mod implicit_methods;
+mod inherent_headers;
 mod lifetimes;
 mod method_overlap;
 mod method_paths;
@@ -101,6 +102,7 @@ struct Signature {
     unsafe_: bool,
 }
 struct Checker<'a> {
+    inherent_headers: inherent_headers::Pending,
     impl_headers: impl_headers::Pending,
     constant_members: traits::ConstantReadiness,
     associated_type_bounds: std::collections::HashMap<DefId, traits::AssociatedBounds>,
@@ -147,6 +149,7 @@ pub fn analyze(report: &Report) -> Result<Declarations, Error> {
         ));
     }
     let mut checker = Checker {
+        inherent_headers: inherent_headers::Pending::default(),
         impl_headers: impl_headers::Pending::default(),
         constant_members: traits::ConstantReadiness::default(),
         associated_type_bounds: std::collections::HashMap::new(),
@@ -185,6 +188,7 @@ impl Checker<'_> {
         self.reserve_member_parents();
         self.reserve_nominals()?;
         self.reserve_implementation_candidates()?;
+        self.reserve_inherent_headers()?;
         let mut steps = 0_usize;
         // Linear declaration work is bounded by the input graph, not by a fixed
         // whole-crate size. Alias states diagnose cycles independently.

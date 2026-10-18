@@ -21,7 +21,7 @@ pub struct Qualified {
 pub struct Methods {
     visible: Option<Box<visible::Index>>,
     pub(super) trait_names: HashSet<NameId>,
-    /// Members enter each bucket in resolver declaration order.
+    /// Published owner members; frozen in resolver order after header preparation.
     pub(super) inherent: HashMap<(ItemId, NameId), Vec<DefId>>,
     pub(super) indices: HashMap<(ItemId, NameId), Candidates>,
     pub(super) shapes: Option<Box<crate::types::substitute::Bound>>,

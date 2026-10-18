@@ -102,6 +102,7 @@ impl Checker<'_> {
                             bound: Bound::Sized,
                         },
                     )?;
+                    self.publish_inherent_members(id, owner.source)?;
                     self.finish_header_state(id);
                 }
             }

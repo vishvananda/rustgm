@@ -9691,3 +9691,75 @@ the new header cases, so they have source qualification and structural-work boun
 not a claimed published-baseline speedup. The storage guard removed 6.74 GiB of
 executables/objects from full validation; only the current comparison binaries
 remain pinned.
+
+### Inherent member readiness
+
+Inherent function and constant names now reserve their owner dependencies before
+implementation-header elaboration. The shared raw-head query supplies conservative
+nominal identities without evaluating constants or constructing semantic types.
+Pending buckets are keyed by nominal identity and member name; unknown heads stay
+possible for that name. Each owner retains its member list, so completion removes
+only its own entries. Looking up one nominal does not scan unrelated owners.
+
+An early qualified use keeps its typed prefix while the declaration worklist
+prepares compatible owner headers. Members enter the ordinary lookup buckets only
+after their owner's parameter environment is complete. Closed-prefix selection
+can build the existing shape partition for a completed bucket before the global
+overlap pass. The final pass still checks unused declarations and conflicting
+members; raw names, prepared headers and shape matches do not authorize a body.
+Final source ordering is independent of dependency-completion order.
+
+Independent rustc qualification and CPPGM execution establish ten newly working
+programs: named and explicitly qualified forward uses, generic owners, explicit
+alias defaults, trait-dependent owner arguments, forward bounds, unrelated owners
+with the same name, inherent precedence, nested values and disjoint concrete
+arguments. Six maintained rejection controls cover inferred alias value syntax,
+privacy, overlapping members, missing bounds, cyclic headers and invalid unused
+values. Chains of 8, 32 and 128 inherent values use 85, 157 and 445 body-work steps;
+these count body work rather than all frontend operations. Eleven positive
+programs execute through both compilers, including the chain of 32 values.
+Internal index tests cover 4096 unrelated owners, unknown heads, distinct names,
+multiple declarations and owner retirement.
+
+The independent investigation also corrected two proposed Rust expectations:
+`Alias::C` does not supply a generic alias's default type in that value position,
+whereas `<Alias>::C` does; an associated-type projection is not a valid nominal
+inherent-impl target. The latter source still reaches RustGM's parser rejection
+and is not claimed as new semantic rejection coverage.
+
+Trait fallback remains incomplete when a prefix must reject an inherent candidate
+and then wait for a trait implementation header. That path still uses synchronous
+method-applicability selection. Associated-type readiness inside implementation
+headers, other outstanding solver/coherence work, the extended semantic view and
+the public PA20 manifest/oracles also remain unfinished. PA20–PA25 remain planned.
+
+Full validation passes 1,264 regular tests, 87 native groups and all 4,871
+PA1–PA19 cases. Formatting, strict Clippy, the 787-file audit, harness, backend
+and upstream checks pass. All 14,613 public oracle sidecars are unchanged, and
+PA20–PA25 still reject as planned stages. Three further native controls independently
+qualify 256 distinct nominal owners, 256 disjoint closed impls of one nominal and
+256 members of one owner before performance measurement. The frozen snapshot
+records 790 source/toolchain hashes and candidate binary
+`75eb816924c04325d71d9b49bb556d5cfce7277e3f6bf5d0d92e2a55997a803f`.
+Evidence is retained under `obj/pa20-work/inherent-readiness-final/`.
+
+Performance compares immutable published `c91554f`/`3d49bc0b` and candidate
+`75eb8169` binaries across eighteen frozen workloads. Twenty-two paired timing
+jobs include four same-binary controls and retain 572 study observations plus
+88 full-output qualification observations; each observation contains four
+compiler invocations. Full and count LowIR outputs match before and after the
+study, and all binary, compiler-source and input hashes remain unchanged.
+
+The fifteen existing instruction controls range from -0.10% to +0.79%. The focused
+inherent workloads cost +3.19% for distinct nominal owners, +2.18% for disjoint
+closed impls and +1.58% for many members of one owner. Their paired median wall-time
+changes are +2.20%, +2.14% and +0.31%. Across all eighteen workloads, paired wall-time
+medians range from -3.45% to +2.20%; same-binary controls range from -1.18% to +0.76%
+and A/A calibration spreads reach 33.96%. Those noisy wall-time changes do not
+establish speedups. Median peak-RSS differences range from -92 to +96 KiB.
+The extra owner-readiness indexing has a measured cost, rather than zero overhead.
+Newly accepted header programs have independent language/native qualification and
+body-work bounds; the published baseline rejects them, so no comparative speedup
+is claimed for those sources. Validation cleanup removed 6.80 GiB of generated
+executables and objects. Only the current published and candidate binaries remain
+pinned for this comparison.

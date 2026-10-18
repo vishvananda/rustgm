@@ -3,51 +3,11 @@ use super::associated::Path;
 use super::{Checker, DefKind, Error, Kind, NodeId, NodeKey, Target, Type, Work, regions};
 use crate::{
     resolve::model::{Access, Namespace},
-    sema::{associated::OwnerKind, methods::Qualified},
+    sema::methods::Qualified,
     types::ItemId,
 };
 
 impl Checker<'_> {
-    pub(super) fn index_inherent_methods(&mut self) -> Result<(), Error> {
-        for member in self.facts.associated.members() {
-            let owner = self.facts.associated.get(member.owner).ok_or_else(|| {
-                Error::at(crate::resolve::unit::FileId(0), 0, "invalid method owner")
-            })?;
-            let definition = &self.report.resolution.definitions[member.definition.0 as usize];
-            if !matches!(definition.kind, DefKind::Function | DefKind::Const) {
-                continue;
-            }
-            if matches!(owner.kind, OwnerKind::Trait { .. }) {
-                self.facts.methods.trait_names.insert(definition.name);
-                continue;
-            }
-            if !matches!(
-                owner.kind,
-                OwnerKind::Impl {
-                    trait_type: None,
-                    ..
-                }
-            ) {
-                continue;
-            }
-            let schema = self
-                .facts
-                .associated
-                .schema(member.definition)
-                .ok_or_else(|| self.error(owner.source, "missing inherent owner schema"))?;
-            let Some(Type::Adt(nominal, _)) = self.facts.types.kind(schema.self_type) else {
-                return Err(self.error(owner.source, "missing inherent nominal target"));
-            };
-            self.facts
-                .methods
-                .inherent
-                .entry((nominal, definition.name))
-                .or_default()
-                .push(member.definition);
-        }
-        Ok(())
-    }
-
     pub(super) fn schedule_method_path(
         &mut self,
         key: NodeKey,
@@ -123,11 +83,12 @@ impl Checker<'_> {
             return Ok(true);
         }
         if path.namespace == Namespace::Value
-            && self
-                .facts
-                .methods
-                .inherent
-                .contains_key(&(path.nominal, path.name))
+            && (self.inherent_headers.contains(path.nominal, path.name)
+                || self
+                    .facts
+                    .methods
+                    .inherent
+                    .contains_key(&(path.nominal, path.name)))
         {
             self.work
                 .push(super::Work::InherentMethod(key, *path, context));
@@ -319,12 +280,20 @@ impl Checker<'_> {
         limit: usize,
         scan: &mut Vec<NodeId>,
     ) -> Result<(), Error> {
-        let candidates = self
-            .facts
-            .methods
-            .inherent
-            .get(&(path.nominal, path.name))
-            .ok_or_else(|| self.error(key, "missing queued inherent candidates"))?;
+        let pending = self.inherent_headers.dependencies(path.nominal, path.name);
+        if !pending.is_empty() {
+            self.work.push(Work::InherentMethod(key, *path, context));
+            for owner in pending.into_iter().rev() {
+                self.work
+                    .push(Work::ImplHeader(owner, super::impl_headers::Phase::Begin));
+            }
+            return Ok(());
+        }
+        let Some(candidates) = self.facts.methods.inherent.get(&(path.nominal, path.name)) else {
+            return self
+                .schedule_implicit_method(key, context, steps, limit, scan)
+                .map(|_| ());
+        };
         let unique = if let [method] = candidates.as_slice() {
             Some(*method)
         } else {
