@@ -1890,6 +1890,33 @@ folds across canonical clauses, charge their work, and allocate scoped state
 only when demanded. This implication filter is separate from elaborating an
 explicit caller assumption and must not replace that consumer's rules.
 
+Explicit caller outlives assumptions retain the whole quantified predicate.
+A direct type parameter bounded by a local quantified target supplies an
+all-lifetimes bound; a composite subject with that target supplies no component
+bounds. For an independent target, elaborate only independent scalar components
+and preserve opaque results without inferring permissions for their inputs.
+Empty and unused quantifiers still lift owner captures correctly.
+
+Match universal projected premises against complete typed inputs. Preserve
+repeated-slot identity, input/target correlations, fixed captures, member and
+family arguments, and nested callable binders. An outer premise slot cannot
+capture a requested callable's local lifetime. Captured-input equalities are
+conditional tests, never inferred equations. Index lifetime-erased rigid shapes
+only to select candidates; full structural matching remains the proof. Cache
+matching recipes by both inputs, binder depth and actual proof scope. Share type,
+list and argument traversal, persistent slot bindings and conditional guard sets
+so growing shared prefixes do not require repeated walks or copying. Keep this
+state lazy for ordinary environments. The source boundary remains closed until
+all producers and consumers preserve these scopes and qualified source behavior.
+
+Declaration lifetime validation retains inherited quantified outlives clauses
+until the graph opens their fresh universal scopes. Requirements cannot become
+caller assumptions. Method receiver and nominal static checks use the same
+caller-clause consumer; ordinary scalar nominal checks retain their fast path.
+Occurrence queries for captures and local slot counts also share argument and
+callable-parameter list summaries by binder depth, across different owning types
+and traits. A shared list never collapses its different surrounding scopes.
+
 Declaration formation for a quantified trait bound is a separate structural
 query from using its logical implications. Under the pinned compiler's rules,
 defer formation of each entire subject or type argument that mentions the

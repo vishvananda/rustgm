@@ -2,12 +2,23 @@
 use super::{Checker, DefId, Error, ItemId, NodeKey, Type};
 use crate::sema::{nominals::Proof, traits::obligations::Obligations};
 use crate::types::{
+    Store,
     arguments::Argument,
     outlives::{Pair, ParameterPair, ProjectionPair, Queries},
     parameters::{clauses::Clause, predicates::Bound},
     relations::Constraints,
 };
 pub(super) type Proofs = std::collections::HashMap<DefId, Vec<(NodeKey, Obligations)>>;
+#[cfg(test)]
+#[path = "../../../tests/invariants/formation_lifetimes.rs"]
+mod tests;
+struct Pending {
+    source: NodeKey,
+    regions: Vec<Pair>,
+    parameters: Vec<ParameterPair>,
+    projections: Vec<ProjectionPair>,
+    clauses: Vec<Clause>,
+}
 
 impl Checker<'_> {
     pub(super) fn declaration_proof(
@@ -50,57 +61,22 @@ impl Checker<'_> {
             );
             let mut pending = Vec::new();
             for (source, requirements) in requirements {
-                charge(
+                if let Some(value) = Pending::collect(
+                    &self.facts.types,
+                    source,
+                    &requirements,
+                    &mut queries,
                     &mut steps,
-                    1 + requirements.regions().len()
-                        + requirements.types().len()
-                        + requirements.required().len(),
                 )
-                .map_err(|e| self.error(source, e))?;
-                let mut regions = requirements.regions().to_vec();
-                let mut parameters = Vec::new();
-                let mut projections = Vec::new();
-                for &ty in requirements.types() {
-                    let well_formed = queries
-                        .symbolic_requirements(ty)
-                        .map_err(|e| self.error(source, e))?;
-                    charge(
-                        &mut steps,
-                        well_formed.scalars.regions.len()
-                            + well_formed.scalars.parameters.len()
-                            + well_formed.projections.len(),
-                    )
-                    .map_err(|e| self.error(source, e))?;
-                    regions.extend_from_slice(well_formed.scalars.regions);
-                    parameters.extend_from_slice(well_formed.scalars.parameters);
-                    projections.extend_from_slice(well_formed.projections);
-                }
-                for predicate in requirements.required() {
-                    let predicate = predicate.ordinary().map_err(|e| self.error(source, e))?;
-                    if let Bound::Outlives(shorter) = predicate.bound {
-                        let parts = queries
-                            .components(predicate.ty)
-                            .map_err(|e| self.error(source, e))?;
-                        charge(&mut steps, parts.len()).map_err(|e| self.error(source, e))?;
-                        regions.extend(
-                            parts
-                                .scalars
-                                .regions
-                                .iter()
-                                .map(|&longer| (longer, shorter)),
-                        );
-                        parameters.extend(parts.scalars.parameters.iter().map(|&id| (id, shorter)));
-                        projections.extend(parts.projections.iter().map(|&p| (p, shorter)));
-                    }
-                }
-                if !regions.is_empty() || !parameters.is_empty() || !projections.is_empty() {
-                    pending.push((source, regions, parameters, projections));
+                .map_err(|e| self.error(source, e))?
+                {
+                    pending.push(value);
                 }
             }
             let proofs = self.trait_proofs.get(&owner).map_or(&[][..], Vec::as_slice);
             if let Some(source) = pending
                 .first()
-                .map(|p| p.0)
+                .map(|p| p.source)
                 .or_else(|| proofs.first().map(|p| p.0))
             {
                 let mut constraints = self
@@ -116,9 +92,10 @@ impl Checker<'_> {
                         .require(&mut constraints, &mut queries)
                         .map_err(|e| self.error(*key, e))?;
                 }
-                for (key, regions, parameters, projections) in pending {
-                    require_regions(&mut constraints, &regions, &parameters, &projections)
-                        .map_err(|e| self.error(key, e))?;
+                for value in pending {
+                    value
+                        .require(&mut constraints, &mut queries)
+                        .map_err(|e| self.error(value.source, e))?;
                 }
                 constraints.solve().map_err(|e| {
                     self.error(
@@ -222,10 +199,7 @@ impl Checker<'_> {
             }
         }
         for predicate in self.facts.generics.predicates_in_scope(owner) {
-            let predicate = predicate.value.ordinary()?;
-            if let Bound::Outlives(shorter) = predicate.bound {
-                constraints.assume_type_outlives(queries, predicate.ty, shorter)?;
-            }
+            constraints.assume_outlives_clause(queries, predicate.value)?;
         }
         Ok(constraints)
     }
@@ -290,6 +264,98 @@ impl Checker<'_> {
             constraints.assume_well_formed(queries, ty)?;
         }
         Ok(())
+    }
+}
+
+impl Pending {
+    fn require(
+        &self,
+        constraints: &mut Constraints<'_>,
+        queries: &mut Queries<'_>,
+    ) -> Result<(), String> {
+        require_regions(
+            constraints,
+            &self.regions,
+            &self.parameters,
+            &self.projections,
+        )?;
+        for &clause in &self.clauses {
+            constraints.require_outlives_clause(queries, clause, 0)?;
+        }
+        Ok(())
+    }
+    /// Ordinary components retain the existing fast path. Quantified requirements
+    /// keep their whole binder until the graph introduces a fresh proof scope.
+    fn collect(
+        types: &Store,
+        source: NodeKey,
+        requirements: &crate::sema::traits::formation::Formation,
+        queries: &mut Queries<'_>,
+        steps: &mut usize,
+    ) -> Result<Option<Self>, &'static str> {
+        charge(
+            steps,
+            1 + requirements.regions().len()
+                + requirements.types().len()
+                + requirements.required().len(),
+        )?;
+        let mut value = Self {
+            source,
+            regions: requirements.regions().to_vec(),
+            parameters: Vec::new(),
+            projections: Vec::new(),
+            clauses: Vec::new(),
+        };
+        for &ty in requirements.types() {
+            let well_formed = queries.symbolic_requirements(ty)?;
+            charge(
+                steps,
+                well_formed.scalars.regions.len()
+                    + well_formed.scalars.parameters.len()
+                    + well_formed.projections.len(),
+            )?;
+            value.regions.extend_from_slice(well_formed.scalars.regions);
+            value
+                .parameters
+                .extend_from_slice(well_formed.scalars.parameters);
+            value.projections.extend_from_slice(well_formed.projections);
+        }
+        for &clause in requirements.required() {
+            let predicate = match clause {
+                Clause::Predicate(predicate) => predicate,
+                Clause::ForAll(id) => {
+                    let quantified = types
+                        .quantified(id)
+                        .ok_or("invalid trait lifetime requirement clause")?;
+                    if matches!(quantified.predicate.bound, Bound::Outlives(_)) {
+                        value.clauses.push(clause);
+                    }
+                    continue;
+                }
+            };
+            if let Bound::Outlives(shorter) = predicate.bound {
+                let parts = queries.components(predicate.ty)?;
+                charge(steps, parts.len())?;
+                value.regions.extend(
+                    parts
+                        .scalars
+                        .regions
+                        .iter()
+                        .map(|&longer| (longer, shorter)),
+                );
+                value
+                    .parameters
+                    .extend(parts.scalars.parameters.iter().map(|&id| (id, shorter)));
+                value
+                    .projections
+                    .extend(parts.projections.iter().map(|&p| (p, shorter)));
+            }
+        }
+        Ok((!value.regions.is_empty()
+            || !value.parameters.is_empty()
+            || !value.projections.is_empty()
+            || !value.clauses.is_empty())
+        .then_some(value))
     }
 }
 

@@ -1,14 +1,23 @@
 //! Shared DAG folds for captured binders and the required local lifetime slot count.
 use crate::types::{
-    GenericArgs, Kind, RegionId, Store, TypeId,
+    GenericArgs, Kind, ListId, RegionId, Store, TypeId,
     arguments::Argument,
     parameters::predicates::{Bound, Predicate},
     traits::ApplicationId,
 };
 use std::collections::HashMap;
+#[cfg(test)]
+#[path = "../../../tests/invariants/slot_groups.rs"]
+mod tests;
 
 type Key = (TypeId, u16);
 type ScopedApplications<V> = HashMap<(ApplicationId, u16), V>;
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+enum Group {
+    Arguments(GenericArgs),
+    Types(ListId),
+}
+type Groups<V> = HashMap<(Group, u16), V>;
 
 pub(crate) struct Surrounding {
     count: u16,
@@ -61,6 +70,7 @@ pub(crate) struct Occurrences<Q: Query> {
     applications: HashMap<ApplicationId, Q::Value>,
     // Ordinary capture queries never allocate the scoped application table.
     scoped_applications: Option<Box<ScopedApplications<Q::Value>>>,
+    groups: Option<Box<Groups<Q::Value>>>,
     work: Vec<(Key, bool)>,
     pub(crate) steps: usize,
 }
@@ -101,6 +111,7 @@ impl<Q: Query> Occurrences<Q> {
             completed: HashMap::new(),
             applications: HashMap::new(),
             scoped_applications: None,
+            groups: None,
             work: Vec::new(),
             steps: 0,
         }
@@ -139,19 +150,9 @@ impl<Q: Query> Occurrences<Q> {
                 let application = store
                     .trait_application(id)
                     .ok_or("invalid capture trait application")?;
-                let mut found = Q::Value::default();
-                let arguments = store
-                    .arguments(application.arguments)
-                    .ok_or("invalid capture trait arguments")?;
-                self.account(arguments.len())?;
-                for argument in arguments {
-                    let value = match argument {
-                        Argument::Lifetime(region) => self.region(region, depth),
-                        Argument::Type(ty) => self.collect_inside(store, ty, depth)?,
-                        Argument::Const(_) => Q::Value::default(),
-                    };
-                    found = Q::merge(found, value);
-                }
+                self.arguments(store, application.arguments, depth, false)?;
+                self.drain(store)?;
+                let found = self.arguments(store, application.arguments, depth, true)?;
                 if depth == 0 {
                     self.applications.insert(id, found);
                 } else {
@@ -179,6 +180,10 @@ impl<Q: Query> Occurrences<Q> {
             return Ok(found);
         }
         self.work.push((root, false));
+        self.drain(store)?;
+        self.result(store, root)?.ok_or("missing capture result")
+    }
+    fn drain(&mut self, store: &Store) -> Result<(), &'static str> {
         while let Some((key, finish)) = self.work.pop() {
             self.account(1)?;
             if self.result(store, key)?.is_some() {
@@ -192,7 +197,7 @@ impl<Q: Query> Occurrences<Q> {
                 self.completed.insert(key, found);
             }
         }
-        self.result(store, root)?.ok_or("missing capture result")
+        Ok(())
     }
     fn result(&self, store: &Store, key: Key) -> Result<Option<Q::Value>, &'static str> {
         if store
@@ -282,12 +287,41 @@ impl<Q: Query> Occurrences<Q> {
             Kind::Never | Kind::Primitive(_) | Kind::Parameter(_) => None,
         };
         if let Some((list, depth)) = list {
-            let children = store.list(list).ok_or("invalid capture type list")?;
-            self.account(children.len())?;
-            for &child in children {
-                found = Q::merge(found, self.child(store, (child, depth), finish)?);
-            }
+            found = Q::merge(found, self.list(store, list, depth, finish)?);
         }
+        Ok(found)
+    }
+    fn cached_group(&self, group: Group, depth: u16) -> Option<Q::Value> {
+        self.groups.as_ref()?.get(&(group, depth)).copied()
+    }
+    fn remember_group(&mut self, group: Group, depth: u16, value: Q::Value, finish: bool) {
+        if finish {
+            self.groups
+                .get_or_insert_with(Default::default)
+                .insert((group, depth), value);
+        }
+    }
+    fn list(
+        &mut self,
+        store: &Store,
+        list: ListId,
+        depth: u16,
+        finish: bool,
+    ) -> Result<Q::Value, &'static str> {
+        let key = Group::Types(list);
+        if let Some(found) = self.cached_group(key, depth) {
+            return Ok(found);
+        }
+        let children = store.list(list).ok_or("invalid capture type list")?;
+        if children.is_empty() {
+            return Ok(Q::Value::default());
+        }
+        self.account(children.len())?;
+        let mut found = Q::Value::default();
+        for &child in children {
+            found = Q::merge(found, self.child(store, (child, depth), finish)?);
+        }
+        self.remember_group(key, depth, found, finish);
         Ok(found)
     }
     fn arguments(
@@ -297,6 +331,13 @@ impl<Q: Query> Occurrences<Q> {
         depth: u16,
         finish: bool,
     ) -> Result<Q::Value, &'static str> {
+        if args == GenericArgs::EMPTY {
+            return Ok(Q::Value::default());
+        }
+        let key = Group::Arguments(args);
+        if let Some(found) = self.cached_group(key, depth) {
+            return Ok(found);
+        }
         let arguments = store.arguments(args).ok_or("invalid capture arguments")?;
         self.account(arguments.len())?;
         let mut found = Q::Value::default();
@@ -308,6 +349,7 @@ impl<Q: Query> Occurrences<Q> {
             };
             found = Q::merge(found, value);
         }
+        self.remember_group(key, depth, found, finish);
         Ok(found)
     }
     fn region(&self, region: RegionId, depth: u16) -> Q::Value {

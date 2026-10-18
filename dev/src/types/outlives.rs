@@ -387,6 +387,17 @@ impl<'a> Queries<'a> {
             &mut self.state.scan.budget,
         )
     }
+    /// Caller-assumption elaboration omits local region components while retaining
+    /// independent parameters. Opaque projections keep their original binder depth.
+    pub(crate) fn clause_components(&mut self, ty: TypeId) -> Result<BoundParts<'_>, &'static str> {
+        self.state.scan.components.get(
+            self.types,
+            ty,
+            1,
+            ComponentKind::TypeBound,
+            &mut self.state.scan.budget,
+        )
+    }
     /// Generic requirements retain rigid parameter identities for a scoped proof.
     /// # Errors
     /// Rejects malformed templates, unsupported nominal fields and exhausted work.

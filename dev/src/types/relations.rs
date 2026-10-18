@@ -1,9 +1,13 @@
 //! Directed type relations use actual region arguments and explicit binder scopes.
 mod ancestry;
+mod clauses;
 mod identity_guard;
+mod persistent;
 mod projected_bounds;
 mod scopes;
+mod structural;
 mod type_bounds;
+mod universal_bounds;
 use super::region_graph::{Error, Graph, Kind as RegionKind, Region, Solution};
 use crate::types::{
     Kind, RegionId, Store, TypeId,

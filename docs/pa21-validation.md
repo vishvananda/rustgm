@@ -916,3 +916,84 @@ remain unfinished. PA21–PA25 remain planned.
 
 Successful guarded cleanup reclaimed **6.90 GiB** from **5,751 generated files**.
 Inputs, diagnostics, observations and the current comparison binaries remain.
+
+
+### Quantified caller lifetime consumers
+
+The next checkpoint adds typed caller outlives assumptions and scoped required
+clauses. Direct parameter bounds over every lifetime retain their meaning;
+composite bounds do not accidentally distribute across a locally bound target.
+Projected premises preserve complete inputs, repeated-slot identity and target
+correlations. Fixed captures become conditional equality tests, never equations
+introduced by a trial match. Independent universal requirements use fresh graph
+scopes. Declaration trait lifetimes, receiver compatibility and nominal static
+requirements now consume these whole clauses. Source HRTB, conformance and body
+integration remain incomplete; this does not release PA21 or its source tests.
+
+The matcher indexes rigid lifetime-erased shapes and then checks complete typed
+structure. Its shared recipes include type pairs, argument lists and callable
+parameter lists, with the requesting proof scope in the cache key. Canonical
+persistent radix maps retain slot bindings and guard conjunctions without copying
+growing prefixes. Radix recursion is bounded by the 32-bit key space; type walks
+are iterative and budgeted. Ordinary projection equality shares its exhaustive
+structural dispatch while retaining its existing proof behavior.
+
+A new wide-input invariant exposed an earlier quadratic walk in quantified slot
+validation: 1,024 nominal owners sharing 1,024 arguments exhausted the capture
+budget before reaching the matcher. Capture/slot occurrence queries now cache
+argument and callable-list summaries by binder depth. The same setup takes
+4n slot-validation steps at widths 16, 64, 256 and 1,024. Matching work at those
+widths is 699 / 2,891 / 12,043 / 50,187 steps. Matched growing reference tails use
+846 / 3,470 / 14,350 / 59,406 steps for local substitutions and
+842 / 3,448 / 14,214 / 58,692 for fixed-capture guards. Repeated matching roots add
+less than 3n work. These are typed-query invariants, not whole-frontend linearity
+or compile-time speedup claims. Persistent-map unions are independently checked
+against ordinary maps, including conflicts, insertion order and 32-bit endpoints.
+
+Independent source investigation remains recorded under
+`obj/pa21-work/outlives-consumers-v1/`. The 28 late-matching controls qualify
+12 acceptances and 16 rejections with pinned rustc. Pinned rustc rejects four ordinary nested-callable controls accepted by both
+current RustGM and its preceding immutable baseline; thus these differences
+were not introduced by nominal implication. Reusing one
+callable alias and spelling two equivalent aliases can differ in rustc's late
+syntactic matcher. Six subsequent concrete controls preserve three incorrect
+initial hypotheses: a lifetime-generic monomorphic function-pointer impl does
+not automatically cover a higher-ranked pointer, and the mono/poly impl overlap
+control produces the historical `coherence_leak_check` warning. No source oracle
+is blessed from these hypotheses. The generic nested-slot acceptance alone does
+not authorize leaking an inner placeholder into an outer premise substitution.
+These compatibility boundaries remain explicit before source activation.
+
+Full validation passes all 32 gates: 1,415 regular tests (including 221 library
+and 11 new caller-outlives tests), 91 native groups, all 6,228 course cases,
+strict all/pedantic Clippy, the 852-file audit, harness, upstream/backend checks,
+and fresh PA19/PA20 independent source/native checks. PA19 retains 1,080 source,
+641 LowIR and 254 native cases; PA20 retains 1,345 source, 799 LowIR and 484 native
+cases. Their seven plus one documented acceptance differences remain unchanged.
+The frozen run verifies 7,192 source/config hashes and 18,684 unchanged oracle
+sidecars. Planned PA21–PA25 discovery continues to fail deliberately.
+
+Immutable candidate
+`8b840ce8a8eb04657370ba5cfae9ff099a70ea0cbaf195ef6b3cc1fb5d9e39ea`
+was compared with published `a83ce00` / binary
+`67c2184be0481681688bafde1fe7576e0c003b0dd872083313cd9482f0310091`.
+Across 33 wall jobs and 29 instruction pairs, instructions change
+−0.2634% to +0.2537% and paired wall medians −2.6949% to +1.5556%.
+Same-binary medians range −0.5646% to +1.7101%, with maximum within-job A/A
+spread 16.3340%; these results do not establish a portable speedup. No >3% wall
+or >1% instruction trigger fired, so the fixed follow-up policy selected zero
+jobs. RSS changes +24 to +148 KiB. Fixed Massif ordinary/constant-chain heap
+peaks are unchanged at 2,432,261 / 5,381,881 bytes; combined heap/overhead/stack
+peaks change +32 / +96 bytes. Reported ELF text/data/bss size grows 61,436 bytes.
+The comparison retains 858 study and 132 qualification observations, 3,432 timed
+and 528 qualification invocations, 58 Callgrind profiles and four Massif profiles.
+Every compared output matches and binary/input/source hashes remain stable.
+This does not resolve the previously documented streamed-proof effect versus
+`b1410`; it measures the immediate published baseline.
+
+Evidence: `obj/pa21-work/universal-outlives-final/`, with final-summary SHA-256
+`d5a091ff96918e48486686f169840963a9fa71833ff7aa0b5c54d1631e5e2340`.
+Successful wrapper cleanup removed 5,751 generated files (6.90 GiB unshared),
+receipt `obj/cleanup/1792347678739943842.jsonl`. About 453 GiB remained free.
+Only the current baseline and candidate pins are retained; the superseded pin
+is retired after the replacement commit passes CI.

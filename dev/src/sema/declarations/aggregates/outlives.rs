@@ -3,7 +3,7 @@ use super::{Checker, DefId, Error, ItemId};
 use crate::types::{
     RegionId,
     outlives::{Bounds, Pair, ParameterPair, TypeComponents},
-    parameters::{ParameterId, predicates::Bound},
+    parameters::{ParameterId, clauses::Clause, predicates::Bound},
     region_graph::{self, Graph, Region},
 };
 use std::collections::HashMap;
@@ -63,7 +63,17 @@ impl Checker<'_> {
         {
             return Ok(());
         }
-        if !bounds.projections(item).is_empty() {
+        let predicates = self
+            .facts
+            .generics
+            .predicates
+            .get(&DefId(item.0))
+            .map_or(&[][..], Vec::as_slice);
+        if !bounds.projections(item).is_empty()
+            || predicates
+                .iter()
+                .any(|predicate| matches!(predicate.value, Clause::ForAll(_)))
+        {
             return self.projected_static_bounds(item, bounds, explicit);
         }
         let mut proof = Proof::new();
@@ -76,14 +86,7 @@ impl Checker<'_> {
         for &pair in explicit.get(&item).into_iter().flatten() {
             proof.regions(pair, true)?;
         }
-        for predicate in self
-            .facts
-            .generics
-            .predicates
-            .get(&DefId(item.0))
-            .into_iter()
-            .flatten()
-        {
+        for predicate in predicates {
             let predicate = predicate.value.ordinary()?;
             if let Bound::Outlives(shorter) = predicate.bound {
                 let parts = components.get(&self.facts.types, predicate.ty)?;
@@ -175,10 +178,7 @@ impl Checker<'_> {
         }
         let mut queries = Queries::new(&self.facts.types, bounds, &self.facts.lifetimes.callables);
         for predicate in self.facts.generics.predicates_in_scope(owner) {
-            let predicate = predicate.value.ordinary()?;
-            if let Bound::Outlives(shorter) = predicate.bound {
-                proof.assume_type_outlives(&mut queries, predicate.ty, shorter)?;
-            }
+            proof.assume_outlives_clause(&mut queries, predicate.value)?;
         }
         proof.solve().map_err(|e| e.to_string())?;
         Ok(())

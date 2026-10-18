@@ -25,6 +25,7 @@ pub(super) struct State {
     unique: HashSet<Assumption>,
     pub pending: Vec<Request>,
     components: TypeComponents,
+    pub(super) quantified: Option<Box<super::universal_bounds::State>>,
 }
 impl State {
     pub fn assume(&mut self, item: ItemId, view: View, longer: Region) {
@@ -141,6 +142,20 @@ impl Builder<'_, '_> {
             .map_err(|_| Error::Identity)?
         {
             return Ok(alternatives);
+        }
+        if let Some(patterns) = &mut self.state.quantified {
+            let before = patterns.steps();
+            let found = patterns.alternatives(
+                self.proof,
+                View {
+                    projection: key.projection,
+                    scope: key.scope,
+                },
+                key.shorter,
+            );
+            let work = patterns.steps().saturating_sub(before);
+            self.charge(work)?;
+            alternatives.extend(found?);
         }
         for index in 0..self
             .state
