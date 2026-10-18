@@ -10,6 +10,17 @@ use crate::types::{
 use std::collections::{HashMap, HashSet, hash_map::Entry};
 
 impl Generics {
+    /// Body lifetime formation consumes the declaration's already filtered inputs.
+    pub(crate) fn trait_formation_inputs(
+        &self,
+        id: crate::types::parameters::clauses::QuantifiedId,
+    ) -> Result<impl Iterator<Item = crate::types::TypeId> + '_, &'static str> {
+        self.traits
+            .as_ref()
+            .ok_or("missing completed trait contracts")?
+            .completed_formation_inputs(id)
+    }
+
     pub(super) fn elaborate_trait_bounds(
         &mut self,
         store: &mut Store,

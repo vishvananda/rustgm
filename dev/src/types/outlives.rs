@@ -1,8 +1,11 @@
 //! Well-formedness requirements over typed templates, with bounded recursive propagation.
+mod clause_requirements;
 mod clauses;
 mod components;
 mod contracts;
 mod instances;
+mod requirements;
+pub(crate) use clause_requirements::Formation;
 pub use components::LiveRegions;
 pub(crate) use components::TypeComponents;
 use components::{ComponentKind, Components};
@@ -213,7 +216,16 @@ impl Scan {
         }
     }
     fn visit(&mut self, types: &Store, root: TypeId) -> Result<(), &'static str> {
-        self.work.push((root, 0));
+        self.visit_with(types, root, 0, &mut requirements::Ordinary)
+    }
+    fn visit_with(
+        &mut self,
+        types: &Store,
+        root: TypeId,
+        depth: u16,
+        demand: &mut impl requirements::Demand,
+    ) -> Result<(), &'static str> {
+        self.work.push((root, depth));
         while let Some((ty, depth)) = self.work.pop() {
             self.budget.charge()?;
             if !self.seen.insert((ty, depth))
@@ -232,34 +244,14 @@ impl Scan {
                     region, referent, ..
                 } => {
                     if let Some(shorter) = free(region, depth)? {
-                        let components = self.components.get(
+                        demand.require(
+                            self,
                             types,
                             referent,
+                            shorter,
                             depth,
                             ComponentKind::Outlives,
-                            &mut self.budget,
                         )?;
-                        for longer in components.scalars.regions {
-                            self.budget.charge()?;
-                            let pair = (*longer, shorter);
-                            if useful(pair) && self.unique.insert(pair) {
-                                self.pairs.push(pair);
-                            }
-                        }
-                        for parameter in components.scalars.parameters {
-                            self.budget.charge()?;
-                            let pair = (*parameter, shorter);
-                            if self.unique_parameters.insert(pair) {
-                                self.parameter_pairs.push(pair);
-                            }
-                        }
-                        for &projection in components.projections {
-                            self.budget.charge()?;
-                            let pair = (projection, shorter);
-                            if self.unique_projections.insert(pair) {
-                                self.projection_pairs.push(pair);
-                            }
-                        }
                     }
                 }
                 Kind::Adt(item, arguments) if arguments != GenericArgs::EMPTY => {
@@ -402,6 +394,10 @@ impl<'a> Queries<'a> {
             &mut self.state.scan.budget,
         )
     }
+    /// Independent formation work is shared only within the consuming body.
+    pub(crate) fn formation(&self) -> Formation<'a> {
+        Formation::new(self.types, self.bounds, self.callables)
+    }
     /// Generic requirements retain rigid parameter identities for a scoped proof.
     /// # Errors
     /// Rejects malformed templates, unsupported nominal fields and exhausted work.
@@ -409,59 +405,12 @@ impl<'a> Queries<'a> {
         if !self.state.regions.contains_key(&ty) {
             self.state.scan.clear();
             self.state.scan.visit(self.types, ty)?;
-            for index in 0..self.state.scan.uses.len() {
-                let use_ = self.state.scan.uses[index];
-                let pairs = if use_.callable {
-                    let template = self
-                        .callables
-                        .get(use_.item)
-                        .ok_or("missing callable lifetime template")?;
-                    if self.types.arguments(use_.arguments).is_none_or(|args| {
-                        args.filter(|arg| matches!(arg, Argument::Lifetime(_)))
-                            .count()
-                            != template.parameters as usize
-                    }) {
-                        return Err("callable lifetime argument arity mismatch");
-                    }
-                    self.callables
-                        .bounds(use_.item)
-                        .ok_or("missing callable lifetime bounds")?
-                } else {
-                    self.bounds
-                        .get(use_.item)
-                        .ok_or("missing nominal outlives facts")?
-                };
-                for pair in pairs {
-                    self.state.scan.budget.charge()?;
-                    if let Some(pair) = contracts::instantiate(self.types, use_, *pair)? {
-                        self.state.scan.record(pair);
-                    }
-                }
-                if !use_.callable {
-                    for &pair in self
-                        .bounds
-                        .parameters(use_.item)
-                        .ok_or("missing nominal parameter requirements")?
-                    {
-                        self.state.scan.apply_parameter(self.types, use_, pair)?;
-                    }
-                    for &(projection, shorter) in self.bounds.instance(use_.item, use_.arguments)? {
-                        self.state.scan.budget.charge()?;
-                        if let Some(shorter) = free(shorter, use_.depth)? {
-                            let pair = (
-                                Projection {
-                                    depth: use_.depth,
-                                    ..projection
-                                },
-                                shorter,
-                            );
-                            if self.state.scan.unique_projections.insert(pair) {
-                                self.state.scan.projection_pairs.push(pair);
-                            }
-                        }
-                    }
-                }
-            }
+            self.state.scan.demands(
+                self.types,
+                self.bounds,
+                self.callables,
+                &mut requirements::Ordinary,
+            )?;
             self.state.regions.insert(ty, self.state.scan.pairs.clone());
             if !self.state.scan.projection_pairs.is_empty() {
                 self.state

@@ -12,6 +12,11 @@ pub(super) struct Components {
     parameters: HashMap<(TypeId, u16, ComponentKind), Vec<ParameterId>>,
     projections: HashMap<(TypeId, u16, ComponentKind), Vec<Projection>>,
     captures: HashMap<u16, crate::types::bound_uses::captures::Captures>,
+    walk: Walk,
+}
+/// Incremental component traversal for roots with one target and component policy.
+#[derive(Default)]
+pub(super) struct Walk {
     work: Vec<(TypeId, u16)>,
     seen: HashSet<(TypeId, u16)>,
     regions: HashSet<RegionId>,
@@ -204,6 +209,43 @@ impl Components {
         kind: ComponentKind,
         budget: &mut Budget,
     ) -> Result<ComponentLists, &'static str> {
+        self.walk.work.clear();
+        self.walk.seen.clear();
+        self.walk.regions.clear();
+        self.walk.parameter_seen.clear();
+        self.walk.extend(types, roots, depth, kind, budget)
+    }
+    pub(super) fn captures(
+        &mut self,
+        types: &Store,
+        ty: TypeId,
+        depth: u16,
+        budget: &mut Budget,
+    ) -> Result<bool, &'static str> {
+        if depth == 0 {
+            return Ok(false);
+        }
+        let query = self
+            .captures
+            .entry(depth)
+            .or_insert_with(|| crate::types::bound_uses::captures::Captures::new(depth));
+        let before = query.steps;
+        let result = query.collect(types, ty)?;
+        let work = query.steps.saturating_sub(before);
+        budget.pending(work)?;
+        budget.0 += work;
+        Ok(result)
+    }
+}
+impl Walk {
+    pub(super) fn extend(
+        &mut self,
+        types: &Store,
+        roots: &[TypeId],
+        depth: u16,
+        kind: ComponentKind,
+        budget: &mut Budget,
+    ) -> Result<ComponentLists, &'static str> {
         budget.pending(roots.len())?;
         let expanded = if kind == ComponentKind::ProjectionInputs {
             let [root] = roots else {
@@ -214,9 +256,6 @@ impl Components {
             None
         };
         self.work.clear();
-        self.seen.clear();
-        self.regions.clear();
-        self.parameter_seen.clear();
         self.work.extend(roots.iter().map(|&root| (root, depth)));
         let mut values = Vec::new();
         let mut parameters = Vec::new();
@@ -274,27 +313,6 @@ impl Components {
             }
         }
         Ok((values, parameters, projections))
-    }
-    fn captures(
-        &mut self,
-        types: &Store,
-        ty: TypeId,
-        depth: u16,
-        budget: &mut Budget,
-    ) -> Result<bool, &'static str> {
-        if depth == 0 {
-            return Ok(false);
-        }
-        let query = self
-            .captures
-            .entry(depth)
-            .or_insert_with(|| crate::types::bound_uses::captures::Captures::new(depth));
-        let before = query.steps;
-        let result = query.collect(types, ty)?;
-        let work = query.steps.saturating_sub(before);
-        budget.pending(work)?;
-        budget.0 += work;
-        Ok(result)
     }
     fn record_region(
         &mut self,

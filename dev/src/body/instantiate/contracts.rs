@@ -44,6 +44,9 @@ pub(super) fn specialize(
                 *actual = bound.apply(&mut facts.types, *actual)?;
                 *expected = bound.apply(&mut facts.types, *expected)?;
             }
+            Kind::ScopedWellFormed { ty, .. } => {
+                *ty = bound.apply_inside(&mut facts.types, *ty, 1)?;
+            }
             Kind::WellFormed(ty) | Kind::TypeOutlives { ty, .. } => {
                 *ty = bound.apply(&mut facts.types, *ty)?;
             }

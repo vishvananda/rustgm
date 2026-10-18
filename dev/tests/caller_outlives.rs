@@ -1,6 +1,8 @@
 //! Caller quantifiers preserve input correlations without introducing new premises.
 #[path = "caller_outlives/correlations.rs"]
 mod correlations;
+#[path = "caller_outlives/contract_formation.rs"]
+mod formation;
 #[path = "caller_outlives/universes.rs"]
 mod universes;
 use rustgm::types::{

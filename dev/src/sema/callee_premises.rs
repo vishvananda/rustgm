@@ -30,6 +30,9 @@ pub(crate) fn specialize(
 ) -> Result<Option<Assumptions>, &'static str> {
     let mut predicates = Vec::new();
     for predicate in facts.generics.predicates_in_scope(owner) {
+        if predicate.value.is_outlives(&facts.types)? {
+            continue;
+        }
         // Importing an instance's quantified witnesses needs their use-specific
         // scope. Do not turn a raw binder body into an ordinary body assumption.
         let predicate = predicate.value.ordinary()?;

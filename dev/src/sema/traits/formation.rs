@@ -76,6 +76,21 @@ impl Default for Cache {
     }
 }
 impl Contracts {
+    pub fn completed_formation_inputs(
+        &self,
+        id: QuantifiedId,
+    ) -> Result<impl Iterator<Item = TypeId> + '_, &'static str> {
+        let inputs = self
+            .formation
+            .as_ref()
+            .and_then(|cache| cache.completed.get(&id))
+            .ok_or("body trait formation requires completed declaration facts")?;
+        Ok(inputs
+            .subject
+            .into_iter()
+            .chain(inputs.types.iter().copied()))
+    }
+
     /// Formation is distinct from using a trait bound or proving its implementation.
     /// A quantified input mentioning a local defers that whole input's formation;
     /// independent inputs and requirements are lifted to the surrounding caller.
@@ -190,3 +205,7 @@ impl Cache {
 fn local(region: RegionId) -> bool {
     region.bound_parts().is_some_and(|(depth, _)| depth == 0)
 }
+
+#[cfg(test)]
+#[path = "../../../tests/invariants/body_formation_collection.rs"]
+mod body_tests;

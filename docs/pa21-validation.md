@@ -1270,3 +1270,82 @@ Successful cleanup removed **5,753 generated files (6.91 GiB)**; receipt
 `obj/cleanup/1792356093283230403.jsonl`. Only the current baseline and candidate
 remain pinned. Qualified probe objects and the preceding pin were retired with
 separate hash receipts under the storage guard.
+
+## Scoped body formation and shared requirement traversal
+
+Body contracts now retain equality-result and outlives-subject formation together
+with the complete clause binder. Trait clauses consume the declaration's cached
+whole-input filter. Substitution and dispatch preserve local lifetimes while
+lifting actual argument captures; final region checking defers a whole
+local-dependent outlives debt before component decomposition and still visits
+independent requirements nested in references, nominal arguments, callable
+binders and projected Self/type arguments. Formation supplies no new permission.
+
+One body-owned query streams newly discovered debts with their actual source.
+Structural visits and component cursors share graph edges per lifetime target
+and component policy, keeping binder depth distinct; no flattened prefix vectors
+are retained. Four structural controls measure 290, 2,306, 18,434 and 73,730 steps
+for 16, 128, 1,024 and 4,096 prefixes with two targets (`18n + 2`). Repeated roots
+still validate their binder arity and consume budget. This is a structural work
+invariant, not a source compile-time speedup measurement.
+
+Concrete specialization detects projections occurring only in a lifetime contract,
+including manually constructed contracts with no interned declaration clauses.
+Normalization shares an actual proof scope/session within each binder arity,
+retains every selected implementation debt, and adds no assumptions. Regressions
+cover a restrictive implementation, empty binders, captured actual arguments,
+source attribution and separation between body environments.
+
+Thirty predeclared pinned rustc 1.98.0 controls all match: seventeen accepted and
+thirteen rejected. Hypotheses, sources and diagnostics remain in
+`obj/pa21-work/body-formation-v1/{source,debt,projection-input}-controls/`. The
+public HRTB syntax gate remains intentional. PA21 still needs its remaining
+canonical body requirements, quantified call inference and witness consumers,
+associated families, opaque types, remaining destruction integration, and reviewed
+course contract. PA21–PA25 remain planned.
+
+All **34 functional gates pass**: **1,447 regular tests** (including 242 library
+invariants), **91 native groups**, **6,228 PA1–PA20 course cases**, strict
+format/Clippy checks, the **866-file audit with zero findings**, harness, upstream
+and backend checks. Eleven new maintainer tests cover the formation/query and
+specialization paths. Independent PA19 checks cover 1,080 sources and 641 LowIR
+programs with 254 executable comparisons; PA20 covers 1,345 sources and 799 LowIR
+programs with 484 executable comparisons. Their existing seven and one documented
+acceptance differences remain. All **7,239 frozen source/config hashes** and
+**18,684 oracle sidecars** match; PA21–PA25 discovery continues to reject planned
+assignments.
+
+Against published `ecad7ad`, **33 immutable wall-time jobs** and **29 instruction
+pairs** retain full/count output equality. Paired wall medians range from
+**−2.851% to +1.086%**, same-binary medians from **−0.742% to −0.098%**, with
+maximum A/A spread **22.641%**. No paired baseline/candidate result crosses the
+predeclared 3% follow-up threshold, so no follow-ups were selected. Instruction
+changes range from **−0.250% to +0.021%**, with none above the 1% review threshold.
+These supported-source controls establish no portable compile-time speedup; the
+new quantified formation path's structural test uses two fixed lifetime targets.
+It does not establish a general bound when target count also grows, and that
+separate scaling family remains to be investigated before PA21 release. This
+comparison does not settle the earlier `b1410` streamed-proof performance question.
+
+The two fixed Massif controls record heap peaks of **2,432,261 → 2,432,261 bytes**
+and **5,381,701 → 5,381,881 bytes**. Simultaneous combined peaks are
+**2,528,304 → 2,528,304 bytes** and **5,540,104 → 5,540,072 bytes**. Stack peaks
+are **69,304 → 70,848 bytes** and **83,976 → 82,832 bytes**. These small sampled
+differences establish no general memory improvement. Median RSS changes range
+from −178 to −18 KiB. ELF totals are **6,359,037 → 6,375,421 bytes** (+16,384).
+All **858 study observations**, **132 qualification observations**, **3,432 timed
+invocations**, **528 qualification invocations**, **58 Callgrind invocations** and
+**four Massif invocations** remain retained.
+
+Receipts are in `obj/pa21-work/body-formation-final/`. Final-summary SHA-256:
+`3b890502aef8c5e7db2c2645c2e7291f44211b36bec3dc553157b5e1dc7dece4`.
+Candidate SHA-256:
+`d5bc985cc02c02b844e9f5f9ed6ed4aa49ead133c0bd05cf13d0220053ddb16c`;
+comparison baseline:
+`1e4a4ee04b08b92344c36a0ccdcd8268e5427ead16be40f8e7d3b52148857d1d`.
+
+Successful cleanup removed **5,753 generated files (6.91 GiB)**; receipt
+`obj/cleanup/1792359183261286808.jsonl`. The preceding `44f2289e` pin was retired
+only after `ecad7ad` passed exact-commit CI, with verified replacement hashes in
+`obj/pa21-work/body-formation-v1/baseline-retirement.json`. Keep only the current
+baseline and candidate pins until this replacement passes its exact-commit CI.

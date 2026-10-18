@@ -141,6 +141,9 @@ fn rewrite(
                 *actual = fold.apply(&mut facts.types, *actual)?;
                 *expected = fold.apply(&mut facts.types, *expected)?;
             }
+            Kind::ScopedWellFormed { ty, .. } => {
+                *ty = fold.apply_inside(&mut facts.types, *ty, 1)?;
+            }
             Kind::WellFormed(ty) | Kind::TypeOutlives { ty, .. } => {
                 *ty = fold.apply(&mut facts.types, *ty)?;
             }

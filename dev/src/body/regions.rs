@@ -1,4 +1,5 @@
 //! Group typed lifetime facts by body without repeating resolution or inference.
+mod clause_terms;
 use super::ir::NodeKey;
 use crate::{
     sema::model::{AdjustmentKind, BodyRegionOrigin, Declarations},
@@ -23,6 +24,11 @@ pub enum Kind {
         reference: Option<crate::sema::model::ReferenceConversion>,
     },
     WellFormed(TypeId),
+    /// Declaration formation under one preserved clause binder, not a universal use.
+    ScopedWellFormed {
+        ty: TypeId,
+        bound_regions: u32,
+    },
     TypeOutlives {
         ty: TypeId,
         shorter: RegionId,
@@ -57,7 +63,7 @@ impl Contract {
             bounds.prepare(types, signature)?;
         }
         for obligation in &self.obligations {
-            if let Kind::WellFormed(ty) = obligation.kind {
+            if let Kind::WellFormed(ty) | Kind::ScopedWellFormed { ty, .. } = obligation.kind {
                 bounds.prepare(types, ty)?;
             }
         }
@@ -163,23 +169,9 @@ pub fn collect(facts: &Declarations) -> Result<Contracts<'_>, &'static str> {
     }
     for function in &facts.functions {
         if let Some(body) = function.body {
-            for predicate in facts
-                .generics
-                .predicates
-                .get(&function.definition)
-                .into_iter()
-                .flatten()
-            {
-                // Associated equality formation follows its separate trait premise.
-                // The result has its own well-formedness requirements; inspecting
-                // the opaque projected subject cannot substitute for those checks.
-                let value = predicate.value.ordinary()?;
-                let ty = match value.bound {
-                    crate::types::parameters::predicates::Bound::ProjectionEqual(result) => result,
-                    _ => value.ty,
-                };
-                add(body, predicate.source, Kind::WellFormed(ty))?;
-            }
+            clause_terms::collect(facts, function.definition, |source, kind| {
+                add(body, source, kind)
+            })?;
         }
     }
     collect_proofs(facts, &mut bodies, &index)?;

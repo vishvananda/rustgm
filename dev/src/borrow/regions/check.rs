@@ -300,6 +300,7 @@ fn require_obligations<'a>(
     constraints: &mut Constraints<'_>,
     has_provenance: bool,
 ) -> Result<(), Error> {
+    let mut formation = None;
     for (index, obligation) in obligations {
         let error = |message| Error {
             source: Some(obligation.source),
@@ -313,6 +314,7 @@ fn require_obligations<'a>(
             obligation.kind,
             source,
             has_provenance,
+            &mut formation,
         )
         .map_err(error)?;
     }
@@ -337,12 +339,13 @@ fn quantified(
     }
     Ok(())
 }
-fn apply(
-    queries: &mut Queries<'_>,
+fn apply<'a>(
+    queries: &mut Queries<'a>,
     constraints: &mut Constraints<'_>,
     obligation: Obligation,
     source: u32,
     has_provenance: bool,
+    formation: &mut Option<Box<crate::types::outlives::Formation<'a>>>,
 ) -> Result<(), String> {
     match obligation {
         Obligation::Variable {
@@ -388,6 +391,15 @@ fn apply(
                 constraints.coerce(actual, expected, unsize, source)
             }
             .map_err(|e| e.to_string())?;
+        }
+        Obligation::ScopedWellFormed { ty, bound_regions } => {
+            constraints.require_requirements(
+                formation
+                    .get_or_insert_with(|| Box::new(queries.formation()))
+                    .requirements(ty, bound_regions)?,
+                crate::types::relations::ProofScope::ROOT,
+                source,
+            )?;
         }
         Obligation::WellFormed(ty) => {
             constraints.require_requirements(

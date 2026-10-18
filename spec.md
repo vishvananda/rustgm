@@ -1974,6 +1974,27 @@ formation shape caches separate from ordinary use checks and from shape answers
 requiring retained normalization evidence. Neither a deferred condition nor a
 completed structural shape supplies a lifetime well-formedness proof.
 
+Body lifetime formation retains each equality result or outlives subject together
+with its clause binder. Defer an individual outlives debt mentioning any local
+before decomposing its type; still traverse child types for independent nested
+debts, including projected Self/type inputs and nominal arguments. Trait clauses
+instead consume the completed declaration's whole-input formation filter. None
+of these formation checks grants a caller permission.
+
+Within one body, stream only newly discovered formation requirements from each
+actual source root. Share structural visits and component walks per target and
+component policy, keeping binder depth in the visited key. Do not cache a flattened
+requirement vector for every growing prefix. Validate each root's local slot count
+even when its graph was visited before; charge repeated roots and capture work.
+A fresh body needs fresh formation state and a separate assumption environment.
+
+Specialization and dispatch preserve the formation binder during substitution.
+Normalize projected formation terms inside real binder scopes and retain every
+new selection debt until the final region proof. Detect projections present only
+in lifetime contracts, including manually constructed contracts; declaration
+cache population is not authority to skip them. Share concrete normalization
+within each arity group, without converting its debts into assumptions.
+
 Scoped term normalization opens enclosing owner captures beneath the clause
 binder, preserving its local and nested callable identities. Related roots share
 one cursor per fixed environment, universal arity and implementation availability;

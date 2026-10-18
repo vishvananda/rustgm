@@ -47,9 +47,19 @@ impl Scan {
         shorter: RegionId,
         depth: u16,
     ) -> Result<(), &'static str> {
-        let parts =
-            self.components
-                .get(types, ty, depth, ComponentKind::TypeBound, &mut self.budget)?;
+        self.component_bound(types, ty, shorter, depth, ComponentKind::TypeBound)
+    }
+    pub(super) fn component_bound(
+        &mut self,
+        types: &Store,
+        ty: TypeId,
+        shorter: RegionId,
+        depth: u16,
+        kind: ComponentKind,
+    ) -> Result<(), &'static str> {
+        let parts = self
+            .components
+            .get(types, ty, depth, kind, &mut self.budget)?;
         self.budget.pending(parts.len())?;
         for &longer in parts.scalars.regions {
             self.budget.charge()?;
@@ -80,6 +90,20 @@ impl Scan {
         use_: Use,
         (id, shorter): ParameterPair,
     ) -> Result<(), &'static str> {
+        self.parameter_with(
+            types,
+            use_,
+            (id, shorter),
+            &mut super::requirements::Ordinary,
+        )
+    }
+    pub(super) fn parameter_with(
+        &mut self,
+        types: &Store,
+        use_: Use,
+        (id, shorter): ParameterPair,
+        demand: &mut impl super::requirements::Demand,
+    ) -> Result<(), &'static str> {
         self.budget.charge()?;
         let parameter = types.parameter(id).ok_or("missing outlives parameter")?;
         if parameter.owner != use_.item {
@@ -95,7 +119,14 @@ impl Scan {
         let Some(Argument::Type(ty)) = argument else {
             return Err("outlives type argument kind or arity mismatch");
         };
-        self.type_bound(types, ty, shorter, use_.depth)
+        demand.require(
+            self,
+            types,
+            ty,
+            shorter,
+            use_.depth,
+            ComponentKind::TypeBound,
+        )
     }
 }
 

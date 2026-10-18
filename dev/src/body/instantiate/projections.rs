@@ -1,6 +1,7 @@
 //! Concrete projection results retain their selection debts in the instance contract.
 mod assumptions;
 mod debts;
+mod term_debts;
 use crate::{
     body::{
         ir::{Body, Rvalue},
@@ -15,6 +16,31 @@ use crate::{
         lifetime_proof::{Obligations, ScopeId},
     },
 };
+
+pub(super) fn needs_clause_normalization(
+    facts: &Declarations,
+    contract: &Contract,
+) -> Result<bool, &'static str> {
+    for obligation in &contract.obligations {
+        if let Kind::ScopedWellFormed { ty, .. } = obligation.kind
+            && facts.types.contains_projections(ty) == Some(true)
+        {
+            return Ok(true);
+        }
+    }
+    for &clause in &contract.type_assumptions {
+        if let crate::types::parameters::clauses::Clause::ForAll(id) = clause {
+            let value = facts
+                .types
+                .quantified(id)
+                .ok_or("invalid instance caller clause")?;
+            if facts.types.contains_projections(value.predicate.ty) == Some(true) {
+                return Ok(true);
+            }
+        }
+    }
+    Ok(false)
+}
 
 /// Nominal fields can contain projections absent from the nominal's own arguments.
 pub(super) fn needs_field_normalization(
@@ -120,8 +146,11 @@ pub(super) fn normalize(
             *signature = ty(facts, &mut session, &mut storage, *signature)?;
         }
     }
-    rewrite_contract(facts, contract, &mut session)?;
+    let scoped_terms = rewrite_contract(facts, contract, &mut session)?;
     assumptions::normalize(facts, contract, &mut proof)?;
+    if scoped_terms {
+        term_debts::normalize(facts, contract, &mut proof)?;
+    }
     let next = proof.regions.end;
     if !proof.is_empty() {
         contract.proofs.push((body.source, proof));
@@ -175,7 +204,7 @@ fn rewrite_contract(
     facts: &mut Declarations,
     contract: &mut Contract,
     session: &mut Concrete<'_>,
-) -> Result<(), &'static str> {
+) -> Result<bool, &'static str> {
     if let Some(signature) = &mut contract.signature {
         // This binder is the body's existing universal scope, not a fresh
         // nested callable scope. Its parameter/result roots live at ROOT.
@@ -211,6 +240,7 @@ fn rewrite_contract(
             predicate.ty = session.normalize(facts, predicate.ty)?.0;
         }
     }
+    let mut scoped_terms = false;
     for obligation in &mut contract.obligations {
         match &mut obligation.kind {
             Kind::Coercion {
@@ -219,11 +249,14 @@ fn rewrite_contract(
                 *actual = session.normalize(facts, *actual)?.0;
                 *expected = session.normalize(facts, *expected)?.0;
             }
+            Kind::ScopedWellFormed { ty, .. } => {
+                scoped_terms |= facts.types.contains_projections(*ty) == Some(true);
+            }
             Kind::WellFormed(ty) | Kind::TypeOutlives { ty, .. } => {
                 *ty = session.normalize(facts, *ty)?.0;
             }
             _ => {}
         }
     }
-    Ok(())
+    Ok(scoped_terms)
 }
