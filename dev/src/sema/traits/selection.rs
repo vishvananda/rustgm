@@ -20,7 +20,7 @@ use crate::{
 pub(in crate::sema) use known_premises::opaque_normalized;
 pub(in crate::sema) use readiness::{has_known_subject, requires_resolved_inputs};
 pub(in crate::sema) use result_templates::symbolic_result;
-pub(in crate::sema) use search::{Pending, Progress, begin};
+pub(in crate::sema) use search::{Pending, Progress, begin, begin_normalized};
 use std::sync::Arc;
 
 #[derive(Clone, Copy)]

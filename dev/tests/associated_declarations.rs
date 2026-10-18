@@ -7,6 +7,8 @@ mod canonical_queries;
 mod const_arguments;
 #[path = "associated_declarations/definition_readiness.rs"]
 mod definition_readiness;
+#[path = "associated_declarations/dependent_outputs.rs"]
+mod dependent_outputs;
 #[path = "associated_declarations/discriminants.rs"]
 mod discriminants;
 #[path = "associated_declarations/early_values.rs"]

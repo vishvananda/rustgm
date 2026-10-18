@@ -181,6 +181,9 @@ fn shared_graphs_resume_each_selection_once_and_reuse_completed_roots() -> TestR
         let mut waited = HashSet::new();
         let steps = loop {
             match cursor.advance(&mut facts, &mut proof, &mut provider)? {
+                Progress::Header(_) => {
+                    return Err("validated registry has an unfinished header".into());
+                }
                 Progress::Definition(definition) => {
                     assert!(waited.insert(definition));
                     // Polling an unfinished dependency must not walk or select again.
@@ -279,6 +282,9 @@ fn callable_proofs_survive_interleaved_waits_without_gaining_permissions() -> Te
         let mut waits = 0;
         loop {
             match cursor.advance(&mut facts, &mut proof, &mut provider)? {
+                Progress::Header(_) => {
+                    return Err("validated registry has an unfinished header".into());
+                }
                 Progress::Definition(definition) => {
                     waits += 1;
                     assert!(proof.regions.end > proof.regions.start);

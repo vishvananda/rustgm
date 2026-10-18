@@ -30,6 +30,28 @@ pub(in crate::sema) fn begin(
     caller: OwnedCaller,
     availability: Availability,
 ) -> Result<Progress, String> {
+    begin_with_inputs(facts, context, goal, caller, availability, false)
+}
+
+/// The enclosing normalizer retains the complete formation proof of these inputs.
+pub(in crate::sema) fn begin_normalized(
+    facts: &mut Declarations,
+    context: &mut Context,
+    goal: &Goal,
+    caller: OwnedCaller,
+    availability: Availability,
+) -> Result<Progress, String> {
+    begin_with_inputs(facts, context, goal, caller, availability, true)
+}
+
+fn begin_with_inputs(
+    facts: &mut Declarations,
+    context: &mut Context,
+    goal: &Goal,
+    caller: OwnedCaller,
+    availability: Availability,
+    normalized_inputs: bool,
+) -> Result<Progress, String> {
     if goal.projection_result().is_none() {
         match crate::sema::traits::selection::select_assumption(
             &mut facts.types,
@@ -42,7 +64,10 @@ pub(in crate::sema) fn begin(
             Err(error) => return Err(error.to_string()),
         }
     }
-    let first = Frame::new(facts, context, goal, caller.first_region)?;
+    let mut first = Frame::new(facts, context, goal, caller.first_region)?;
+    if normalized_inputs && goal.projection_result().is_none() {
+        first.normalized_inputs = Some(super::frames::NormalizedInputs { proof: None });
+    }
     let mut search = Search::new(caller.borrowed(), availability);
     let progress = search.begin(facts, first)?;
     match progress {

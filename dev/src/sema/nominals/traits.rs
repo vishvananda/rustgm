@@ -1,4 +1,5 @@
 //! Canonical declaration goals enter inference only after their outer binder becomes free.
+pub(in crate::sema) mod normal_form;
 mod normalization;
 use crate::{
     sema::{
@@ -105,145 +106,6 @@ impl State {
                 .map_err(|_| "invalid declaration trait assumption index")?;
         }
         Ok(assumptions)
-    }
-
-    /// Both normalizer callers retain earlier request proofs, including debts
-    /// erased from the normalized inputs. Deferred alias inputs cannot use this
-    /// route until their caller has retained the original formation requirement.
-    pub(crate) fn projection(
-        facts: &mut Declarations,
-        environment: Option<Arc<Environment>>,
-        request: substitute::Request,
-        first: u32,
-        retain_sized: bool,
-        availability: Availability,
-    ) -> Result<Projected, &'static str> {
-        use crate::types::parameters::predicates::Bound;
-        let application = request.application;
-        let requirement = Predicate {
-            ty: application.subject,
-            bound: Bound::Trait(application.trait_application),
-        };
-        if let Some(source) = selection::opaque_normalized(facts, environment.as_deref(), request)
-            .map_err(|_| "invalid or exhausted canonical projection premise")?
-        {
-            return Ok(Projected {
-                source: Some(source),
-                resolution: Some(substitute::Resolution::Opaque),
-                proof: Obligations::new(first),
-                sized: Vec::new(),
-            });
-        }
-        if environment
-            .as_ref()
-            .is_none_or(|env| !env.requires_region_mapping())
-            && !requirement.has_free_regions(&facts.types)?
-        {
-            let mut state = Self::new(facts, environment, None)?;
-            state.obligations = Obligations::new(first);
-            state.retain_sized = retain_sized;
-            state.availability = availability;
-            return state.project_opened(facts, application, requirement);
-        }
-        let mut fold = substitute::Bound::open_regions(first)?;
-        let requirement = fold.predicate(&mut facts.types, requirement)?;
-        let environment = environment
-            .map(|env| {
-                env.substitute_regions(&mut facts.types, &mut fold)
-                    .map(Arc::new)
-            })
-            .transpose()?;
-        let mut state = Self::new(facts, environment, None)?;
-        state.retain_sized = retain_sized;
-        state.availability = availability;
-        state
-            .context
-            .account_work(fold.steps)
-            .map_err(|_| "projection proof work exhausted")?;
-        state.obligations.regions = first
-            ..fold
-                .next_region()
-                .ok_or("missing projection region interval")?;
-        let mut opened: Vec<_> = fold.opened_regions().map(|(a, b)| (b, a)).collect();
-        opened.sort_unstable_by_key(|(free, original)| (free.0, original.0));
-        state.obligations.equalities.extend(opened);
-        state.project_opened(facts, application, requirement)
-    }
-
-    fn project_opened(
-        mut self,
-        facts: &mut Declarations,
-        application: crate::types::projection::Application,
-        requirement: Predicate,
-    ) -> Result<Projected, &'static str> {
-        use crate::sema::traits::equalities::{self, Selection};
-        let mut source = self.select_opened(facts, requirement, false, true)?;
-        let mut resolution = None;
-        if matches!(
-            source,
-            Some(selection::Source::Assumption(_) | selection::Source::ResultBound(_))
-        ) {
-            if application.arguments != crate::types::GenericArgs::EMPTY {
-                return Err("associated families require advanced generic relationships");
-            }
-            let mut substitution = Instantiation::new(&mut self.context, &facts.types, &[])
-                .map_err(|_| "invalid equality assumption instantiation")?;
-            let predicate = self
-                .context
-                .instantiate_predicate(&mut facts.types, requirement, &mut substitution)
-                .map_err(|_| "invalid equality assumption inputs")?;
-            let inferred = crate::types::infer::projections::Application {
-                item: application.item,
-                predicate,
-                arguments: Vec::new(),
-            };
-            resolution = Some(
-                match equalities::for_projection(
-                    facts,
-                    &mut self.context,
-                    &inferred,
-                    self.environment.as_deref(),
-                )
-                .map_err(|_| "invalid or exhausted associated equality selection")?
-                {
-                    Selection::Absent => {
-                        // A fully concrete application can use its independently
-                        // proved impl even when a caller repeats the trait bound.
-                        // Explicit generic or lifetime assumptions remain opaque.
-                        if requirement.is_concrete(&facts.types)?
-                            && let Some(selected @ selection::Source::Implementation { .. }) =
-                                self.select_opened(facts, requirement, true, false)?
-                        {
-                            source = Some(selected);
-                            substitute::Resolution::Type(
-                                crate::sema::projections::implementation_result(
-                                    facts,
-                                    application.item,
-                                    selected,
-                                )?,
-                            )
-                        } else {
-                            substitute::Resolution::Opaque
-                        }
-                    }
-                    Selection::Ambiguous => {
-                        return Err("ambiguous associated type equality assumptions");
-                    }
-                    Selection::Proven(ty) => substitute::Resolution::Type(ty),
-                },
-            );
-        }
-        let sized = std::mem::take(&mut self.sized);
-        let proof = self.finish();
-        if let Some(substitute::Resolution::Type(ty)) = &mut resolution {
-            *ty = proof.restoration()?.apply(&mut facts.types, *ty)?;
-        }
-        Ok(Projected {
-            source,
-            resolution,
-            proof,
-            sized,
-        })
     }
 
     pub fn prove(
@@ -353,7 +215,16 @@ impl State {
                 selection::select(facts, &mut self.context, &goal, caller)
             }
         };
-        match selected.map_err(|_| "invalid or exhausted canonical trait selection")? {
+        self.accept_selection(
+            selected.map_err(|_| "invalid or exhausted canonical trait selection")?,
+        )
+    }
+
+    fn accept_selection(
+        &mut self,
+        selected: selection::Selection,
+    ) -> Result<Option<selection::Source>, &'static str> {
+        match selected {
             selection::Selection::Proven(mut evidence) => {
                 let source = evidence.source;
                 self.sized.append(&mut evidence.sized);

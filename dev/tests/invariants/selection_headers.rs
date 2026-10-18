@@ -1,4 +1,6 @@
 //! Header waits retain inference, nested goals and completed proof nodes.
+#[path = "selection_headers/normalization.rs"]
+mod normalization;
 use super::{Decision, Declarations, Frame, Search, continuation::Progress, tests};
 use crate::{
     resolve::model::DefId,

@@ -9830,3 +9830,77 @@ independent source/native qualification and structural-work bounds; the publishe
 compiler rejects those sources, so there is no comparative speedup claim for them.
 Full-validation cleanup removed 6.85 GiB of generated executables and objects.
 Only the published baseline and current candidate remain pinned.
+
+
+### Projection selection across header dependencies
+
+Canonical projection selection now keeps its opened caller, inference goal,
+immutable environment and owned trait-search continuation while the declaration
+worklist prepares an exact compatible impl header. Both body normalization and
+declaration annotation consumers retain that query. A later selected-definition
+wait consumes the selected identity and arguments without calling the local
+provider or selecting again. The existing synchronous and exact-premise paths
+remain available.
+
+A pending child has an allocation watermark distinct from its parent's published
+proof interval. Body consumers reserve it before yielding, then skip intervening
+allocations when the same child resumes. Flat streamed evidence attaches its
+owned intervals under the existing callable scope; constraints attach once, and
+large foreign gaps are never scanned or granted as variables. Declaration-only
+queries use a private namespace and restore arguments/results before rebasing
+completed evidence. Body annotations use a dedicated sink after suspension so
+another completed query cannot advance their parent proof over a live child.
+
+Sixteen independently rustc-qualified source controls cover projected constant
+types and impl subjects, nested/generic definitions, conditional result bounds,
+static lifetimes, missing implementations, cycles, overlap and unused lifetime
+or bound violations. All nine accepted programs execute through both rustc and
+CPPGM. Maintained source chains of 8, 32 and 96 conditions reach complete lowering;
+a 32-condition chain also executes through both compilers. These controls live
+in `dev/tests/associated_declarations/dependent_outputs.rs`.
+
+Internal tests delay each header through 128 nested conditions and poll each wait
+eight times. They verify one local provider invocation, stable pending type-store
+size, unchanged parent proof until completion, one callable scope and exact owned
+variable counts. A restricted-lifetime counterpart rejects in the ordinary proof.
+Other tests restore a declaration template before fresh rebasing, ensure closed
+fallback cannot borrow caller assumptions, and reject evidence for a foreign ID
+inside a gap spanning roughly half a billion identities.
+
+This closes the qualified associated-result/header readiness cases. PA20's
+extended semantic inspection contract and public grading suite remain unfinished;
+PA20–PA25 still remain planned. Full validation and performance receipts for this
+checkpoint are retained under `obj/pa20-work/projection-readiness-final/`.
+
+Full validation passes 1,274 regular tests, 90 native groups and all 4,875
+PA1–PA19 cases. Formatting, strict Clippy, the 798-file audit, harness, backend
+and upstream checks pass. All 14,625 earlier oracle sidecars remain unchanged,
+and all 801 frozen source/toolchain hashes remain fixed. PA20–PA25 still fail
+as planned assignments. The validated candidate is
+`1cbe6b9c7cf71a39e698637b15dc9921d58b56ec0cd686ec6eda0135afcd9c8d`.
+
+Performance compares immutable published `5cbc1d0`/`1508b435` and candidate
+`1cbe6b9c` binaries. Eighteen existing workloads cover ordinary and generic
+compilation, recursive projections, lifetime/storage depth, shared callers,
+constant dependencies and inherent lookup. Their instruction counts range from
+-0.70% to +0.70%. Main paired wall-time medians range from -2.35% to +5.84%, while
+same-binary controls range from -3.77% to +5.15%; A/A spreads reach 65.96% across
+the study. Median peak-RSS differences range from -546 to +224 KiB.
+
+The +5.84% lifetime-depth result prompted a focused repeat with sixteen compiler
+invocations per observation. It measured +0.18% for A/B, -0.66% for A/A and +0.17%
+for B/B; the earlier increase did not recur. These shared-host timings establish
+no portable speedup. All full/count outputs and source, input and binary hashes
+remain equal/fixed throughout both studies. The main study retains 650 timing and
+100 qualification observations with four invocations each; the repeat retains
+78 timing and twelve qualification observations with sixteen invocations each.
+Twenty-one instruction comparisons include three candidate-only depth controls.
+
+The newly accepted header/projection chain is independently compiled and executed
+through rustc and CPPGM at depths 8, 32 and 96. Candidate count-LowIR timings,
+including process startup and source reading, are 9.61, 12.43 and 22.93 ms.
+Instruction counts are 6.13M, 15.96M and 41.22M: approximately linear growth across
+these sampled depths, consistent with the internal retained-query invariants.
+The published compiler rejects these programs, so they establish new-capability
+scaling, not an A/B speedup. Full-validation cleanup removed 6.89 GiB; only the
+published baseline and final candidate remain pinned.

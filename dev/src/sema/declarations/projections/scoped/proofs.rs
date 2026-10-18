@@ -2,10 +2,58 @@
 use super::{Ambient, Checker, Error, NodeKey, Plan, Request, ScopeId, Sink, map_binders, regions};
 use crate::{
     sema::model::{BodyRegion, BodyRegionOrigin, QuantifiedProof},
+    sema::traits::obligations::Reservation,
     types::lifetime_proof::Obligations,
 };
 
 impl Checker<'_> {
+    pub(in super::super) fn retain_reserved_projection_proof(
+        &mut self,
+        key: NodeKey,
+        request: Request,
+        context: regions::Context,
+        proof: Obligations,
+        mut reservation: Reservation,
+    ) -> Result<(), Error> {
+        let (regions::Position::Local(body) | regions::Position::Constant(body)) = context.position
+        else {
+            return Err(self.error(key, "body reservation requires a body projection"));
+        };
+        if self.projection_alias_owner(context).is_some()
+            || context
+                .binder
+                .is_some_and(|binder| self.regions.parent(binder).is_some())
+        {
+            return Err(self.error(key, "body projection reservation has a declaration binder"));
+        }
+        let body = NodeKey { node: body, ..key };
+        reservation
+            .reserve(&mut self.facts, body, key, proof.regions.clone())
+            .map_err(|e| self.error(key, e))?;
+        if matches!(context.position, regions::Position::Constant(_)) {
+            self.facts.constant_annotation_bodies.insert(body);
+        }
+        let query = self
+            .projections
+            .roots
+            .get_mut(&key)
+            .ok_or_else(|| Error::at(key.file, 0, "missing reserved projection query"))?;
+        let index = if let Some(index) = query.reserved_sink {
+            index
+        } else {
+            let index = self.facts.quantified_proofs.len();
+            self.facts.quantified_proofs.push(QuantifiedProof {
+                body,
+                source: key,
+                proof: Obligations::new(proof.regions.start),
+            });
+            query.reserved_sink = Some(index);
+            index
+        };
+        self.append_scoped_projection(key, request, Sink::Body(index), proof)
+            .map_err(|e| self.error(key, e))
+    }
+
     pub(in super::super) fn retain_scoped_projection_proof(
         &mut self,
         key: NodeKey,
@@ -24,17 +72,26 @@ impl Checker<'_> {
                 .direct(template.owner, template.parameters, proof, scope)
                 .map_err(|e| self.error(key, e));
         }
-        let ambient = self
+        let query = self
             .projections
             .roots
             .get(&key)
-            .ok_or_else(|| self.error(key, "missing scoped projection proof query"))?
-            .ambient;
-        if request.depth == 0 && self.ambient_depth(key, ambient)? == 0 {
+            .ok_or_else(|| self.error(key, "missing scoped projection proof query"))?;
+        let reserved = query.reserved_sink;
+        if reserved.is_none() && request.depth == 0 && self.ambient_depth(key, query.ambient)? == 0
+        {
             return self.retain_projection_proof(key, context, proof);
         }
         let allocated = proof.regions.clone();
-        let sink = self.projection_sink(key, context, allocated.start)?;
+        let sink = if let Some(index) = reserved {
+            if usize::try_from(allocated.start).ok() != self.facts.body_regions.len().checked_add(1)
+            {
+                return Err(self.error(key, "unreserved projection proof has foreign identities"));
+            }
+            Sink::Body(index)
+        } else {
+            self.projection_sink(key, context, allocated.start)?
+        };
         self.append_scoped_projection(key, request, sink, proof)
             .map_err(|e| self.error(key, e))?;
         if let Sink::Body(index) = sink {
@@ -137,7 +194,7 @@ impl Checker<'_> {
             request.scope,
             |parent, count| destination.scope(parent, count),
         )?;
-        destination.append_at(proof, scope)
+        destination.append_streamed_at(proof, scope)
     }
 }
 

@@ -692,7 +692,7 @@ fn checked_outer_request(
 #[test]
 fn exact_normalized_lifetime_premises_preserve_one_shared_canonical_graph()
 -> Result<(), Box<dyn std::error::Error>> {
-    use crate::sema::nominals::traits::State;
+    use crate::sema::nominals::traits::normal_form::{self, Progress};
     let (report, mut facts) = declarations("trait A<'a>{type Out:A<'a>;}")?;
     let inner = facts
         .associated
@@ -706,14 +706,17 @@ fn exact_normalized_lifetime_premises_preserve_one_shared_canonical_graph()
     application.subject = inner;
     for _ in 0..512 {
         let request = checked_outer_request(&mut facts, application)?;
-        let projected = State::projection(
+        let Progress::Ready(projected) = normal_form::begin(
             &mut facts,
             None,
             request,
             1,
             false,
             Availability::Declarations,
-        )?;
+        )?
+        else {
+            return Err("an exact opaque premise waited for an implementation".into());
+        };
         assert!(matches!(
             projected.source,
             Some(super::Source::ResultBound(_))

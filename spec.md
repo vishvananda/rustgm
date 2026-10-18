@@ -389,6 +389,24 @@ then resumes the same proof at the new frontier with explicit foreign gaps.
 A synchronous consumer still requires every selected definition to be complete;
 an owned cursor alone does not make its calling operation resumable.
 
+A projection waiting for an implementation header retains its opened caller,
+inference goal, immutable environment and exact selection continuation. Its local
+provider runs once. Keep a live child's allocation watermark separate from the
+parent's published proof interval; reserve both before yielding and resume the
+child beyond foreign allocations. A completed child attaches its owned intervals
+under the existing callable scope without scanning gaps or duplicating constraints.
+Discarded alternatives contribute no lifetime authority. Concrete fallback lookup
+remains independent of caller assumptions, and may subsequently wait for its
+selected associated definition.
+
+Declaration-only queries may instead own a private canonical lifetime namespace.
+Restore selected arguments and result identities before rebasing their completed
+evidence into the declaration sink. Such a private template cannot reserve or
+authorize body identities. Body annotation queries use actual reservations and
+retain a dedicated scoped sink across waits so another query's completion cannot
+advance their proof over a live child. Keep the synchronous path allocation-light;
+the resumable interface does not require copying ordinary caller environments.
+
 A suspended normalizer has already normalized its request's inputs. Carry that
 fact into selection instead of starting another normalization of the same graph.
 The enclosing query retains every input proof, including obligations erased from

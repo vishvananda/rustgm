@@ -170,3 +170,28 @@ fn repeated_resumptions_share_one_binder_tree() -> ResultTest {
     }
     Ok(())
 }
+
+#[test]
+fn streamed_projection_children_attach_once_without_claiming_foreign_intervals() -> ResultTest {
+    let next = 1 << 29;
+    let local = RegionId::bound(0, 0)?;
+    let mut child = equal(1, local);
+    child.resume_at(next)?;
+    child.extend(equal(next, local))?;
+    let mut parent = Obligations::new(1);
+    let scope = parent.scope(ScopeId::ROOT, 1)?;
+    parent.append_streamed_at(child.clone(), scope)?;
+    assert_eq!(parent.scope_count(), 1);
+    assert_eq!(
+        parent.owned_regions().collect::<Vec<_>>(),
+        vec![1..2, next..next + 1]
+    );
+    assert_eq!(check(&[parent])?.variables().len(), 2);
+
+    child.equalities.push((RegionId(2), RegionId::STATIC));
+    let mut invalid = Obligations::new(1);
+    let scope = invalid.scope(ScopeId::ROOT, 1)?;
+    invalid.append_streamed_at(child, scope)?;
+    assert!(check(&[invalid]).is_err());
+    Ok(())
+}

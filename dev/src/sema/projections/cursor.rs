@@ -1,7 +1,10 @@
 //! An owned semantic cursor retains the exact fold and selection across definition waits.
 use super::{Declarations, DefId, Definition, Obligations, ScopeId, TypeId};
 use crate::{
-    sema::{nominals::traits::State, traits::implementations::Availability},
+    sema::{
+        nominals::traits::{Projected, normal_form},
+        traits::implementations::Availability,
+    },
     types::{
         lifetime_proof::map_scopes,
         parameters::environment::Environment,
@@ -14,6 +17,12 @@ use std::{collections::HashMap, sync::Arc};
 pub(in crate::sema) enum Progress {
     Complete { ty: TypeId, steps: usize },
     Definition(DefId),
+    Header(DefId),
+}
+struct Header {
+    request: Request,
+    query: Box<normal_form::Query>,
+    frontier: Option<u32>,
 }
 struct Selected {
     request: Request,
@@ -35,6 +44,7 @@ pub(in crate::sema) struct Cursor {
     environments: HashMap<u16, Option<Arc<Environment>>>,
     step: Option<Step>,
     selected: Option<Box<Selected>>,
+    header: Option<Header>,
     before: usize,
 }
 impl Cursor {
@@ -54,17 +64,36 @@ impl Cursor {
             environments: HashMap::new(),
             step: None,
             selected: None,
+            header: None,
             before: 0,
         })
     }
 
     pub fn start(&mut self, facts: &mut Declarations, ty: TypeId) -> Result<(), &'static str> {
-        if self.step.is_some() || self.selected.is_some() {
+        if self.step.is_some() || self.selected.is_some() || self.header.is_some() {
             return Err("normalization cursor has an unfinished query");
         }
         self.before = self.fold.steps();
         self.step = Some(self.fold.start(&mut facts.types, ty)?);
         Ok(())
+    }
+
+    pub fn allocation_end(&self, proof: &Obligations) -> u32 {
+        self.header
+            .as_ref()
+            .map_or(proof.regions.end, |header| header.query.allocation_end())
+    }
+
+    pub fn resume_at(&mut self, proof: &mut Obligations, first: u32) -> Result<(), &'static str> {
+        if let Some(header) = &mut self.header {
+            if first < header.query.allocation_end() {
+                return Err("projection cursor allocation frontier moved backwards");
+            }
+            header.frontier = Some(first);
+            Ok(())
+        } else {
+            proof.resume_at(first)
+        }
     }
 
     pub fn advance<F>(
@@ -88,6 +117,8 @@ impl Cursor {
                     .resume(&mut facts.types, selected.request, Resolution::Type(ty))?;
             self.selected = None;
             step
+        } else if let Some(header) = &self.header {
+            Step::Resolve(header.request)
         } else {
             self.step.take().ok_or("normalization cursor is inactive")?
         };
@@ -101,50 +132,40 @@ impl Cursor {
                 }
                 Step::Resolve(request) => request,
             };
-            if let Some(ty) = local(facts, request)? {
-                step = self
-                    .fold
-                    .resume(&mut facts.types, request, Resolution::Type(ty))?;
-                continue;
-            }
-            let environment = self.environment(facts, request.depth)?;
-            let projected = State::projection(
-                facts,
-                environment,
-                request,
-                proof.regions.end,
-                false,
-                self.availability,
-            )?;
-            let source = projected
-                .source
-                .ok_or("associated type requires an unambiguous validated implementation")?;
-            let resolution = if let Some(resolution) = projected.resolution {
-                Some(resolution)
+            let progress = if let Some(header) = self.header.take() {
+                let first = header
+                    .frontier
+                    .ok_or("projection cursor was not resumed after a header wait")?;
+                header.query.resume(facts, first)?
             } else {
-                let definition = Definition::select(facts, request.application.item, source)?;
-                if let Some(mut ty) = definition.result(facts)? {
-                    if !projected.proof.regions.is_empty() || !projected.proof.equalities.is_empty()
-                    {
-                        ty = projected.proof.restoration()?.apply(&mut facts.types, ty)?;
-                    }
-                    Some(Resolution::Type(ty))
-                } else {
-                    let restore = if projected.proof.regions.is_empty()
-                        && projected.proof.equalities.is_empty()
-                    {
-                        None
-                    } else {
-                        Some(projected.proof.restoration()?)
-                    };
-                    self.selected = Some(Box::new(Selected {
+                if let Some(ty) = local(facts, request)? {
+                    step = self
+                        .fold
+                        .resume(&mut facts.types, request, Resolution::Type(ty))?;
+                    continue;
+                }
+                let environment = self.environment(facts, request.depth)?;
+                normal_form::begin(
+                    facts,
+                    environment,
+                    request,
+                    proof.regions.end,
+                    false,
+                    self.availability,
+                )?
+            };
+            let projected = match progress {
+                normal_form::Progress::Ready(projected) => projected,
+                normal_form::Progress::Pending(owner, query) => {
+                    self.header = Some(Header {
                         request,
-                        definition,
-                        restore,
-                    }));
-                    None
+                        query,
+                        frontier: None,
+                    });
+                    return Ok(Progress::Header(owner));
                 }
             };
+            let resolution = self.selected_resolution(facts, request, &projected)?;
             let scope = map_scopes(
                 &mut self.scopes,
                 self.ambient,
@@ -152,7 +173,7 @@ impl Cursor {
                 |id| self.fold.binder(id).ok_or("missing normalization binder"),
                 |parent, count| proof.scope(parent, count),
             )?;
-            proof.append_at(projected.proof, scope)?;
+            proof.append_streamed_at(projected.proof, scope)?;
             if let Some(resolution) = resolution {
                 step = self.fold.resume(&mut facts.types, request, resolution)?;
             } else {
@@ -162,6 +183,40 @@ impl Cursor {
                     .map(|selected| Progress::Definition(selected.definition.id))
                     .ok_or("missing retained projection selection");
             }
+        }
+    }
+
+    fn selected_resolution(
+        &mut self,
+        facts: &mut Declarations,
+        request: Request,
+        projected: &Projected,
+    ) -> Result<Option<Resolution>, &'static str> {
+        let source = projected
+            .source
+            .ok_or("associated type requires an unambiguous validated implementation")?;
+        if let Some(resolution) = projected.resolution {
+            return Ok(Some(resolution));
+        }
+        let definition = Definition::select(facts, request.application.item, source)?;
+        let mut restore =
+            if projected.proof.regions.is_empty() && projected.proof.equalities.is_empty() {
+                None
+            } else {
+                Some(projected.proof.restoration()?)
+            };
+        if let Some(mut ty) = definition.result(facts)? {
+            if let Some(restore) = &mut restore {
+                ty = restore.apply(&mut facts.types, ty)?;
+            }
+            Ok(Some(Resolution::Type(ty)))
+        } else {
+            self.selected = Some(Box::new(Selected {
+                request,
+                definition,
+                restore,
+            }));
+            Ok(None)
         }
     }
 

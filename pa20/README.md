@@ -82,6 +82,12 @@ Keep immutable environments fixed for each query; do not publish an unfinished
 declaration environment to break a dependency cycle. Structural type caches must
 not become caches of permission learned from a particular caller.
 
+Projection selection during header elaboration must wait for the exact compatible
+impl header and then the selected associated definition. Resume the retained
+query, including opened lifetimes and input proofs, rather than restarting the
+normalizer. Interleaved body allocations remain outside its proof. Generic and
+lifetime-bearing results must retain unused declaration debts after normalization.
+
 ### Coherence and recursive obligations
 
 Validate all impls, including unused ones, for orphan legality and overlap within

@@ -7,6 +7,7 @@ mod implicit;
 pub(super) mod lookup;
 mod proofs;
 mod scoped;
+mod selection;
 use super::{Checker, DefId, Error, NodeKey, Type, TypeId, Work, regions};
 use crate::{
     resolve::model::{DefKind, Namespace},
@@ -26,6 +27,7 @@ struct Selected {
 }
 enum Selection {
     Deferred,
+    Header(DefId),
     Definition(Selected),
     Resolved(Resolution),
 }
@@ -33,6 +35,8 @@ struct Query {
     fold: Normalizer,
     context: regions::Context,
     selected: Option<Selected>,
+    pending: Option<selection::Pending>,
+    reserved_sink: Option<usize>,
     destination: Destination,
     ambient: scoped::Ambient,
     scopes: scoped::Mapping,
@@ -250,6 +254,8 @@ impl Checker<'_> {
                 fold,
                 context,
                 selected: None,
+                pending: None,
+                reserved_sink: None,
                 destination,
                 ambient,
                 scopes: scoped::Mapping::default(),
@@ -289,6 +295,12 @@ impl Checker<'_> {
     ) -> Result<(), Error> {
         let selected = match self.select_projection(key, request)? {
             Selection::Deferred => return self.defer_projection_requirement(key, request),
+            Selection::Header(owner) => {
+                self.work.push(Work::ProjectionSelection(key, request));
+                self.work
+                    .push(Work::ImplHeader(owner, super::impl_headers::Phase::Begin));
+                return Ok(());
+            }
             Selection::Definition(selected) => selected,
             Selection::Resolved(resolution) => {
                 let query = self
@@ -354,82 +366,5 @@ impl Checker<'_> {
             )
             .map_err(|e| self.error(key, e))?;
         self.advance_projection(key, step)
-    }
-
-    fn select_projection(&mut self, key: NodeKey, request: Request) -> Result<Selection, Error> {
-        use crate::{
-            sema::{nominals::traits::State, traits::selection},
-            types::parameters::predicates::{Bound, Predicate},
-        };
-        let application = request.application;
-        let predicate = Predicate {
-            ty: application.subject,
-            bound: Bound::Trait(application.trait_application),
-        };
-        let context = self
-            .projections
-            .roots
-            .get(&key)
-            .ok_or_else(|| self.error(key, "missing projection scope"))?
-            .context;
-        let deferred = self.may_defer_projection(key, context, predicate)?;
-        if deferred
-            && predicate
-                .contains_projections(&self.facts.types)
-                .map_err(|e| self.error(key, e))?
-        {
-            return Ok(Selection::Deferred);
-        }
-        let (environment, first) = self.scoped_projection_environment(key, request, context)?;
-        let projected = State::projection(
-            &mut self.facts,
-            environment,
-            request,
-            first,
-            deferred,
-            crate::sema::traits::implementations::Availability::Declarations,
-        )
-        .map_err(|e| self.error(key, e))?;
-        let Some(source) = projected.source else {
-            if deferred {
-                return Ok(Selection::Deferred);
-            }
-            return Err(self.error(
-                key,
-                "associated type requires an unambiguous implementation",
-            ));
-        };
-        let proof = projected.proof;
-        if let Some(resolution) = projected.resolution {
-            self.retain_scoped_projection_proof(key, request, context, proof)?;
-            return Ok(Selection::Resolved(resolution));
-        }
-        let selection::Source::Implementation { owner, arguments } = source else {
-            return Err(self.error(key, "missing associated assumption normal form"));
-        };
-        let mut restore = if proof.regions.is_empty() && proof.equalities.is_empty() {
-            None
-        } else {
-            Some(Box::new(
-                proof.restoration().map_err(|e| self.error(key, e))?,
-            ))
-        };
-        self.retain_alias_sizes(
-            key,
-            request,
-            context,
-            projected.sized,
-            restore.as_deref_mut(),
-        )?;
-        self.retain_scoped_projection_proof(key, request, context, proof)?;
-        let definition = crate::sema::projections::definition(&self.facts, owner, application.item)
-            .map_err(|e| self.error(key, e))?;
-        Ok(Selection::Definition(Selected {
-            request,
-            owner,
-            definition,
-            arguments,
-            restore,
-        }))
     }
 }

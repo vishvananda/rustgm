@@ -96,6 +96,9 @@ where
         match self.cursor.advance(facts, self.proof, &mut self.local)? {
             Progress::Complete { ty, steps } => Ok((ty, steps)),
             Progress::Definition(_) => Err("missing completed associated type definition"),
+            Progress::Header(_) => {
+                Err("projection selection requires a prepared implementation header")
+            }
         }
     }
 }

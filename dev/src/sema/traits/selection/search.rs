@@ -11,7 +11,7 @@ mod inputs;
 mod normalization;
 mod result_bounds;
 mod suspension;
-pub(in crate::sema) use suspension::{Pending, Progress, begin};
+pub(in crate::sema) use suspension::{Pending, Progress, begin, begin_normalized};
 #[cfg(test)]
 #[path = "../../../../tests/invariants/proof_cache.rs"]
 mod tests;

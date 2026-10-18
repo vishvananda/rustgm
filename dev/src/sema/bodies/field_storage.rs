@@ -75,7 +75,7 @@ impl Checker<'_> {
             }
             batch
                 .evidence
-                .reserve(self.facts, body, body)
+                .reserve_normalization(self.facts, body, body, &batch.cursor)
                 .map_err(|e| self.error(body.node, e))?;
         }
         Ok(requirement)
@@ -138,7 +138,7 @@ pub(super) struct Batch {
 }
 impl Batch {
     pub fn resume(&mut self, facts: &Declarations) -> Result<(), &'static str> {
-        self.evidence.resume(facts)
+        self.evidence.resume_normalization(facts, &mut self.cursor)
     }
     pub fn publish(self, facts: &mut Declarations, body: NodeKey) -> Result<(), &'static str> {
         self.evidence.publish(facts, body, body)
@@ -168,6 +168,9 @@ impl Batch {
                 match progress? {
                     Normalization::Definition(definition) => {
                         return Ok(Some(Requirement::Definition(definition)));
+                    }
+                    Normalization::Header(owner) => {
+                        return Ok(Some(Requirement::ImplHeader(owner)));
                     }
                     Normalization::Complete { ty, steps } => {
                         facts.body_work.storage_steps += steps;

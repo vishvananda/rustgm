@@ -43,10 +43,7 @@ pub(super) enum Advance {
 enum Completion {
     Waiting(Query, bool),
     Complete,
-    Definition(
-        crate::resolve::model::DefId,
-        Box<normalization::Continuation>,
-    ),
+    Dependency(super::Requirement, Box<normalization::Continuation>),
 }
 struct Data {
     scopes: Obligations,
@@ -413,7 +410,7 @@ impl Checker<'_> {
                     .map_err(|e| self.error(body, e))?;
                 Ok(Advance::Ready(true))
             }
-            Completion::Definition(definition, continuation) => {
+            Completion::Dependency(requirement, continuation) => {
                 let source = self.key(continuation.query.node);
                 self.state
                     .projections
@@ -421,7 +418,7 @@ impl Checker<'_> {
                     .get_or_insert_with(Default::default)
                     .continuation = Some(continuation);
                 Ok(Advance::Definition(super::Dependency {
-                    requirement: super::Requirement::Definition(definition),
+                    requirement,
                     source,
                 }))
             }

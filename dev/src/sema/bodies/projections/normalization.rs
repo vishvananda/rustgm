@@ -79,7 +79,7 @@ impl Checker<'_> {
     ) -> Result<Completion, Error> {
         continuation
             .evidence
-            .resume(self.facts)
+            .resume_normalization(self.facts, &mut continuation.cursor)
             .map_err(|e| self.error(continuation.query.node, e))?;
         self.advance_projection_normalization(continuation)
     }
@@ -95,7 +95,10 @@ impl Checker<'_> {
                 .map_err(|e| self.error(node, e))?
             else {
                 let definition = selected.definition.id;
-                return self.suspend_projection(continuation, definition);
+                return self.suspend_projection(
+                    continuation,
+                    super::super::Requirement::Definition(definition),
+                );
             };
             self.state
                 .infer
@@ -118,7 +121,13 @@ impl Checker<'_> {
         );
         self.facts.body_work.projection_selections += selections;
         match progress.map_err(|e| self.error(node, e))? {
-            Progress::Definition(definition) => self.suspend_projection(continuation, definition),
+            Progress::Definition(definition) => self.suspend_projection(
+                continuation,
+                super::super::Requirement::Definition(definition),
+            ),
+            Progress::Header(owner) => {
+                self.suspend_projection(continuation, super::super::Requirement::ImplHeader(owner))
+            }
             Progress::Complete { ty, steps } => {
                 self.facts.body_work.projection_steps += steps;
                 self.state
@@ -149,15 +158,20 @@ impl Checker<'_> {
     fn suspend_projection(
         &mut self,
         mut continuation: Continuation,
-        definition: crate::resolve::model::DefId,
+        requirement: super::super::Requirement,
     ) -> Result<Completion, Error> {
         self.facts.body_work.projection_waits += 1;
         let node = continuation.query.node;
         continuation
             .evidence
-            .reserve(self.facts, self.state.body, self.key(node))
+            .reserve_normalization(
+                self.facts,
+                self.state.body,
+                self.key(node),
+                &continuation.cursor,
+            )
             .map_err(|e| self.error(node, e))?;
-        Ok(Completion::Definition(definition, Box::new(continuation)))
+        Ok(Completion::Dependency(requirement, Box::new(continuation)))
     }
 
     fn publish_projection_query(

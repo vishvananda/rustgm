@@ -2,6 +2,38 @@
 use super::{Obligations, Range};
 
 impl Obligations {
+    /// Attach a flat streamed child in one existing universe. Each owned interval
+    /// contributes variables once; constraints remain together after all intervals.
+    pub(crate) fn append_streamed_at(
+        &mut self,
+        mut proof: Self,
+        scope: super::ScopeId,
+    ) -> Result<(), &'static str> {
+        if scope == super::ScopeId::ROOT || !proof.has_gaps() {
+            return self.append_at(proof, scope);
+        }
+        if proof.regions.start != self.regions.end
+            || proof
+                .quantified
+                .as_ref()
+                .is_some_and(|q| !q.scopes.is_empty() || !q.blocks.is_empty())
+        {
+            return Err("invalid scoped streamed projection evidence");
+        }
+        self.scope_depth(scope)?;
+        let end = proof.regions.end;
+        for interval in proof.owned_regions() {
+            self.resume_at(interval.start)?;
+            let mut chunk = Self::new(interval.start);
+            chunk.regions.end = interval.end;
+            self.append_at(chunk, scope)?;
+        }
+        self.resume_at(end)?;
+        proof.quantified = None;
+        proof.regions = end..end;
+        self.append_at(proof, scope)
+    }
+
     /// Continue a body proof after other queries have reserved their identities.
     /// This records only the new gap, never copies an earlier proof or scope prefix.
     pub(crate) fn resume_at(&mut self, first: u32) -> Result<(), &'static str> {
