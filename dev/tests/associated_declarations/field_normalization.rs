@@ -37,6 +37,16 @@ fn completed_body_demands_do_not_expand_discarded_constructor_templates()
 
 const CASES: &[(&str, &str, bool)] = &[
     (
+        "mixed-variance-still-infers-local-lifetime",
+        "trait A{type Out;}impl A for u8{type Out=u8;}struct W<'b,T:A>(T::Out,&'b u8);trait Q{const C:W<'static,u8>;}impl Q for u8{const C:W<'static,u8>=W(3,&9);}fn main(){let x=7;let mut w=<u8 as Q>::C;w=W::<u8>(4,&x);check(w.0==4&&*w.1==7);}",
+        true,
+    ),
+    (
+        "invariant-erased-input-cannot-change-on-assignment",
+        "trait A{type Out;}impl<'a>A for &'a u8{type Out=u8;}struct W<T:A>(T::Out);fn make<'a>(_:&'a u8)->W<&'a u8>{W(1)}const C:W<&'static u8>=W(3);fn bad<'a>(x:&'a u8)->W<&'static u8>{let mut w=C;w=make(x);w}fn main(){}",
+        false,
+    ),
+    (
         "generic-lifetime-omitted",
         "struct D<'a>(&'a mut u8);impl<'a>Drop for D<'a>{fn drop(&mut self){*self.0+=1;}}trait A<'a>{type Out;}impl<'a>A<'a>for u8{type Out=D<'a>;}struct W<'a,T:A<'a>>{v:T::Out}fn make<'a,T:A<'a>>(x:T::Out)->W<'a,T>{W{v:x}}fn main(){let mut n=0u8;{let _w=make::<u8>(D(&mut n));}check(n==1);}",
         true,

@@ -1,4 +1,5 @@
 //! Variance of lifetime/type parameters from completed nominal field templates.
+mod rigidity;
 mod solver;
 use super::{
     GenericArgs, ItemId, Kind, ListId, RegionId, Store, TypeId,
@@ -6,6 +7,7 @@ use super::{
     arguments::{Argument, ConstId, ConstKind},
     parameters::{ParameterId, ParameterKind},
 };
+pub(crate) use rigidity::RigidInputs;
 use solver::{Solver, Term};
 use std::collections::{HashMap, HashSet};
 
@@ -122,6 +124,7 @@ enum Slot {
 }
 #[derive(Default)]
 struct Graph {
+    skip_external_nominals: bool,
     result: Variances,
     slots: Vec<Slot>,
     variables: Vec<Term>,
@@ -372,11 +375,13 @@ impl Graph {
         let arguments = types
             .arguments(nominal.1)
             .ok_or("invalid variance arguments")?;
-        let &(start, end) = self
-            .result
-            .ranges
-            .get(&nominal.0)
-            .ok_or("missing nominal variance parameters")?;
+        let Some(&(start, end)) = self.result.ranges.get(&nominal.0) else {
+            if self.skip_external_nominals {
+                // An unfinished external declaration grants no invariant-slot hint.
+                return Ok(());
+            }
+            return Err("missing nominal variance parameters");
+        };
         if arguments.len() != end - start {
             return Err("incorrect nominal variance arity");
         }

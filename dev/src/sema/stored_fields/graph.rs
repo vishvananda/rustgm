@@ -1,5 +1,6 @@
-//! Persistent proof dependencies omit field paths with no projection work.
-use super::{Concrete, Declarations, TypeId, dependencies};
+//! Append-only structural recipes remain stable while other queries publish completed nodes.
+use super::{Declarations, TypeId, dependencies::Reader};
+use crate::types::{ItemId, Kind, ListId};
 use std::collections::{HashMap, HashSet};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -20,10 +21,17 @@ pub(crate) struct Registry {
     retained: usize,
 }
 impl Registry {
+    pub(crate) fn work(&self) -> crate::sema::model::StoredFieldWork {
+        crate::sema::model::StoredFieldWork {
+            steps: self.steps,
+            recipes: self.recipes.len(),
+            retained_bytes: self.retained,
+        }
+    }
+
     pub(crate) fn contains_projection(&self, ty: TypeId) -> Option<bool> {
         self.roots.get(&ty).map(|&id| id != RecipeId::EMPTY)
     }
-
     pub(super) fn recipe(&self, id: RecipeId) -> Result<&Recipe, &'static str> {
         id.0.checked_sub(1)
             .and_then(|index| self.recipes.get(index))
@@ -45,159 +53,189 @@ impl Registry {
             .ok_or("storage proof recipes exceed 64 MB budget")?;
         Ok(())
     }
-    pub(super) fn demand(
-        &mut self,
-        facts: &mut Declarations,
-        root: TypeId,
-        session: &mut Concrete<'_>,
-    ) -> Result<RecipeId, &'static str> {
-        if let Some(&recipe) = self.roots.get(&root) {
-            return Ok(recipe);
-        }
-        let mut build = Build::default();
-        let recipe = build.walk(self, facts, root, session)?;
-        for (ty, fields) in build.shapes {
-            facts
-                .aggregates
-                .complete_storage(&facts.types, ty, fields)?;
-        }
-        // Publish only after the entire structural graph completed. No caller's
-        // proof is retained here; a new scope replays the raw field recipes.
-        self.roots.extend(build.roots);
-        self.fields.extend(build.fields);
-        self.recipes.extend(build.recipes);
-        Ok(recipe)
-    }
-}
-
-#[derive(Default)]
-struct Build {
-    roots: HashMap<TypeId, RecipeId>,
-    fields: HashMap<TypeId, RecipeId>,
-    recipes: Vec<Recipe>,
-    shapes: Vec<(TypeId, Vec<crate::types::ListId>)>,
-}
-enum Work {
-    Enter(TypeId),
-    Finish {
-        ty: TypeId,
-        children: Vec<TypeId>,
-        recipes: Vec<RecipeId>,
-    },
-}
-impl Build {
-    fn root(&self, registry: &Registry, ty: TypeId) -> Option<RecipeId> {
-        self.roots
-            .get(&ty)
-            .or_else(|| registry.roots.get(&ty))
-            .copied()
-    }
-    fn push(&mut self, registry: &mut Registry, recipe: Recipe) -> Result<RecipeId, &'static str> {
+    fn push(&mut self, recipe: Recipe) -> Result<RecipeId, &'static str> {
         let children = match &recipe {
             Recipe::Join(children) => children.len(),
             Recipe::Field { .. } => 0,
         };
-        registry.retain(
+        self.retain(
             size_of::<Recipe>().saturating_add(children.saturating_mul(size_of::<RecipeId>())),
         )?;
         self.recipes.push(recipe);
-        Ok(RecipeId(registry.recipes.len() + self.recipes.len()))
+        Ok(RecipeId(self.recipes.len()))
     }
-    fn field(
-        &mut self,
-        registry: &mut Registry,
-        ty: TypeId,
-        normalized: TypeId,
-    ) -> Result<RecipeId, &'static str> {
-        if let Some(&id) = self.fields.get(&ty).or_else(|| registry.fields.get(&ty)) {
-            return Ok(id);
+    fn field(&mut self, input: TypeId, normalized: TypeId) -> Result<RecipeId, &'static str> {
+        if let Some(&id) = self.fields.get(&input) {
+            return if matches!(self.recipe(id)?, Recipe::Field { normalized: prior, .. } if *prior == normalized)
+            {
+                Ok(id)
+            } else {
+                Err("independent storage normalization changed a completed field")
+            };
         }
-        registry.retain(64)?;
-        let id = self.push(
-            registry,
-            Recipe::Field {
-                raw: ty,
-                normalized,
-            },
-        )?;
-        self.fields.insert(ty, id);
+        self.retain(64)?;
+        let id = self.push(Recipe::Field {
+            raw: input,
+            normalized,
+        })?;
+        self.fields.insert(input, id);
         Ok(id)
     }
-    fn join(
-        &mut self,
-        registry: &mut Registry,
-        mut children: Vec<RecipeId>,
-    ) -> Result<RecipeId, &'static str> {
-        registry.charge(children.len())?;
+    fn join(&mut self, mut children: Vec<RecipeId>) -> Result<RecipeId, &'static str> {
+        self.charge(children.len())?;
         let mut seen = HashSet::new();
         children.retain(|&id| id != RecipeId::EMPTY && seen.insert(id));
         match children.as_slice() {
             [] => Ok(RecipeId::EMPTY),
             [child] => Ok(*child),
-            _ => self.push(registry, Recipe::Join(children)),
+            _ => self.push(Recipe::Join(children)),
         }
     }
-    fn walk(
+    fn publish(&mut self, facts: &mut Declarations, finish: Finish) -> Result<(), &'static str> {
+        if let Some(fields) = finish.shape {
+            facts
+                .aggregates
+                .complete_storage(&facts.types, finish.ty, fields)?;
+        }
+        // Another query may have completed this root while its field resolver
+        // was suspended. Its stable recipe already names the same checked shape.
+        if self.roots.contains_key(&finish.ty) {
+            return Ok(());
+        }
+        let mut recipes = finish.recipes;
+        for child in finish.children {
+            recipes.push(
+                *self
+                    .roots
+                    .get(&child)
+                    .ok_or("unfinished storage dependency")?,
+            );
+        }
+        let recipe = self.join(recipes)?;
+        self.retain(64)?;
+        self.roots.insert(finish.ty, recipe);
+        Ok(())
+    }
+}
+struct Finish {
+    ty: TypeId,
+    children: Vec<TypeId>,
+    recipes: Vec<RecipeId>,
+    shape: Option<Vec<ListId>>,
+}
+enum Work {
+    Enter(TypeId),
+    Finish(Finish),
+}
+pub(super) enum Progress {
+    Complete(RecipeId),
+    Normalize(TypeId),
+    Nominal(ItemId),
+}
+pub(super) struct Build {
+    root: TypeId,
+    started: bool,
+    work: Vec<Work>,
+    active: HashSet<TypeId>,
+    reader: Option<(TypeId, Reader)>,
+}
+impl Build {
+    pub fn new(root: TypeId) -> Self {
+        Self {
+            root,
+            started: false,
+            work: Vec::new(),
+            active: HashSet::new(),
+            reader: None,
+        }
+    }
+    pub fn normalized(&mut self, facts: &Declarations, normal: TypeId) -> Result<(), &'static str> {
+        self.reader
+            .as_mut()
+            .ok_or("storage graph has no pending field")?
+            .1
+            .normalized(facts, normal)
+    }
+    pub fn advance(
         &mut self,
         registry: &mut Registry,
         facts: &mut Declarations,
-        root: TypeId,
-        session: &mut Concrete<'_>,
-    ) -> Result<RecipeId, &'static str> {
-        let mut work = vec![Work::Enter(root)];
-        let mut active = HashSet::new();
-        while let Some(task) = work.pop() {
-            registry.charge(1)?;
-            match task {
-                Work::Enter(ty) => {
-                    if self.root(registry, ty).is_some() {
-                        continue;
-                    }
-                    if !active.insert(ty) {
-                        return Err("cycle in storage dependencies");
-                    }
-                    registry.retain(64)?;
-                    let dependencies = dependencies::read(registry, facts, ty, session)?;
-                    let recipes = dependencies
-                        .fields
-                        .into_iter()
-                        .map(|(raw, normalized)| self.field(registry, raw, normalized))
-                        .collect::<Result<Vec<_>, _>>()?;
-                    if let Some(fields) = dependencies.shape {
-                        self.shapes.push((ty, fields));
-                    }
-                    let start = work.len();
-                    work.extend(dependencies.children.iter().rev().copied().map(Work::Enter));
-                    work.insert(
-                        start,
-                        Work::Finish {
-                            ty,
-                            children: dependencies.children,
-                            recipes,
-                        },
-                    );
+    ) -> Result<Progress, &'static str> {
+        if !self.started {
+            if let Some(&recipe) = registry.roots.get(&self.root) {
+                return Ok(Progress::Complete(recipe));
+            }
+            self.work.push(Work::Enter(self.root));
+            self.started = true;
+        }
+        loop {
+            if let Some((ty, reader)) = &mut self.reader {
+                // Finish an outstanding normalization before reusing interleaved
+                // structural publication; its caller evidence must not be dropped.
+                if !reader.pending() && registry.roots.contains_key(ty) {
+                    self.active.remove(ty);
+                    self.reader = None;
+                    continue;
                 }
-                Work::Finish {
+                if let Some(raw) = reader.advance(registry, facts)? {
+                    return Ok(Progress::Normalize(raw));
+                }
+                let (ty, reader) = self
+                    .reader
+                    .take()
+                    .ok_or("missing completed storage reader")?;
+                let dependencies = reader.finish();
+                let recipes = dependencies
+                    .fields
+                    .into_iter()
+                    .map(|(raw, normal)| registry.field(raw, normal))
+                    .collect::<Result<Vec<_>, _>>()?;
+                let finish = Finish {
                     ty,
-                    children,
-                    mut recipes,
-                } => {
-                    for child in children {
-                        recipes.push(
-                            self.root(registry, child)
-                                .ok_or("unfinished storage dependency")?,
-                        );
+                    children: dependencies.children,
+                    recipes,
+                    shape: dependencies.shape,
+                };
+                let start = self.work.len();
+                self.work
+                    .extend(finish.children.iter().rev().copied().map(Work::Enter));
+                self.work.insert(start, Work::Finish(finish));
+            } else {
+                let Some(task) = self.work.pop() else {
+                    break;
+                };
+                registry.charge(1)?;
+                match task {
+                    Work::Enter(ty) => {
+                        if registry.roots.contains_key(&ty) {
+                            continue;
+                        }
+                        if let Some(Kind::Adt(item, _)) = facts.types.kind(ty)
+                            && facts.aggregates.get(item).is_none()
+                        {
+                            self.work.push(Work::Enter(ty));
+                            return Ok(Progress::Nominal(item));
+                        }
+                        if !self.active.insert(ty) {
+                            return Err("cycle in storage dependencies");
+                        }
+                        self.reader = Some((ty, Reader::new(registry, facts, ty)?));
                     }
-                    let recipe = self.join(registry, recipes)?;
-                    active.remove(&ty);
-                    self.roots.insert(ty, recipe);
+                    Work::Finish(finish) => {
+                        self.active.remove(&finish.ty);
+                        registry.publish(facts, finish)?;
+                    }
                 }
             }
-            if work.len().saturating_add(self.roots.len()) > 1_000_000 {
+            if self.work.len().saturating_add(self.active.len()) > 1_000_000 {
                 return Err("storage dependency pending graph budget exceeded");
             }
         }
-        self.root(registry, root)
+        registry
+            .roots
+            .get(&self.root)
+            .copied()
+            .map(Progress::Complete)
             .ok_or("missing storage dependency root")
     }
 }

@@ -29,6 +29,8 @@ mod overrides;
 mod proof_streams;
 #[path = "associated_declarations/readiness.rs"]
 mod readiness;
+#[path = "associated_declarations/recipe_frontiers.rs"]
+mod recipe_frontiers;
 #[path = "associated_declarations/result_contracts.rs"]
 mod result_contracts;
 #[path = "helpers/qualify.rs"]

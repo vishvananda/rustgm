@@ -47,6 +47,17 @@ impl Context {
         root: TermId,
         first: u32,
     ) -> Result<FreshRegions, Error> {
+        self.fresh_regions_with(store, templates, root, first, &mut |_, _| Ok(false))
+    }
+    /// Preserve inputs already proved invariant before allocating fresh regions.
+    pub(crate) fn fresh_regions_with(
+        &mut self,
+        store: &mut Store,
+        templates: &Templates,
+        root: TermId,
+        first: u32,
+        rigid: &mut impl FnMut(&Store, ItemId) -> Result<bool, Error>,
+    ) -> Result<FreshRegions, Error> {
         let root = self.root(root)?;
         if self.closed(store, root, 0)? {
             return Ok(FreshRegions {
@@ -59,7 +70,7 @@ impl Context {
         scratch.work.clear();
         scratch.values.clear();
         scratch.closed.clear();
-        let result = self.fresh_walk(store, templates, root, first, &mut scratch);
+        let result = self.fresh_walk(store, templates, root, first, &mut scratch, rigid);
         self.generalization = scratch;
         result
     }
@@ -99,6 +110,7 @@ impl Context {
         root: TermId,
         first: u32,
         scratch: &mut Scratch,
+        rigid: &mut impl FnMut(&Store, ItemId) -> Result<bool, Error>,
     ) -> Result<FreshRegions, Error> {
         let mut next = first;
         let mut rebuilt_callables = false;
@@ -121,6 +133,13 @@ impl Context {
                         continue;
                     }
                     let original = self.materialize(store, id)?;
+                    if let Constructor::Adt(item, _) | Constructor::AdtArgs(item, _) = original
+                        && rigid(store, item)?
+                    {
+                        scratch.closed.insert((id, depth));
+                        scratch.values.push(id);
+                        continue;
+                    }
                     if matches!(original, Constructor::Projection(_)) {
                         if self.opaque_projection(id).is_some() {
                             // An opaque result has no exposed reference shape.

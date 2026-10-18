@@ -105,6 +105,16 @@ const CASES: &[(&str, &str, bool)] = &[
         false,
     ),
     (
+        "storage-unused-projection",
+        "struct X<const N:usize>([u8;N]);struct V(u8);fn f()->X<{(<u8 as A>::C,3usize).1}>{X([7;3])}trait P{type Out;}impl P for u8{type Out=V;}struct W<T:P>{v:T::Out}trait A{const C:W<u8>;}impl A for u8{const C:W<u8>=W{v:V(3)};}fn main(){check(f().0[2]==7);}",
+        true,
+    ),
+    (
+        "storage-unselected-variant",
+        "struct X<const N:usize>([u8;N]);struct V(u8);fn f()->X<{(<u8 as A>::C,3usize).1}>{X([7;3])}trait P{type Out;}impl P for u8{type Out=V;}struct W<T:P>{v:T::Out}enum O<T>{None,Some(T)}trait A{const C:O<W<u8>>;}impl A for u8{const C:O<W<u8>>=O::None;}fn main(){check(f().0[2]==7);}",
+        true,
+    ),
+    (
         "reference-only",
         "struct X<const N:usize>([u8;N]);struct V(u8);fn f()->X<{(<u8 as A>::C,3usize).1}>{X([7;3])}trait P{type Out;}impl P for u8{type Out=V;}struct W<T:P>{v:T::Out}enum O<T>{None,Some(T)}trait A{const C:O<&'static W<u8>>;}impl A for u8{const C:O<&'static W<u8>>=O::None;}fn main(){check(f().0[2]==7);}",
         true,

@@ -90,16 +90,36 @@ impl Checker<'_> {
             .ok()
             .and_then(|n| n.checked_add(1))
             .ok_or_else(|| self.error(node, "body region identity space exhausted"))?;
-        let fresh = self
-            .state
-            .infer
-            .fresh_regions(
+        let fresh = if self.facts.aggregates.has_projected_templates() {
+            let facts = &mut *self.facts;
+            self.state.infer.fresh_regions_with(
+                &mut facts.types,
+                &facts.lifetimes.callables,
+                term,
+                first,
+                &mut |types, item| {
+                    facts
+                        .lifetimes
+                        .rigid_inputs
+                        .get_or_insert_with(Default::default)
+                        .demand(
+                            types,
+                            &facts.aggregates,
+                            item,
+                            facts.definitions.get(item.0 as usize).copied().flatten(),
+                        )
+                        .map_err(|_| crate::types::infer::Error::InvalidIdentity)
+                },
+            )
+        } else {
+            self.state.infer.fresh_regions(
                 &mut self.facts.types,
                 &self.facts.lifetimes.callables,
                 term,
                 first,
             )
-            .map_err(|e| self.error(node, e))?;
+        }
+        .map_err(|e| self.error(node, e))?;
         let region = BodyRegion {
             body: self.state.body,
             source: self.key(node),

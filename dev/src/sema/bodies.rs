@@ -8,6 +8,7 @@ mod conditions;
 mod divergence;
 mod dot_calls;
 mod field_storage;
+mod finalization;
 mod generics;
 mod item_values;
 mod lifetimes;
@@ -199,6 +200,7 @@ pub(super) struct State {
     annotations: super::annotations::Scratch,
     projections: projections::Pending,
     storage: Option<Box<super::stored_fields::Preparation>>,
+    finalization: Option<Box<finalization::Finalization>>,
     type_children: Vec<TermId>,
     annotation_checks: Vec<NodeId>,
     annotation_children: HashSet<NodeId>,
@@ -285,6 +287,7 @@ impl<'a> Checker<'a> {
                 annotations: super::annotations::Scratch::default(),
                 projections: projections::Pending::default(),
                 storage: None,
+                finalization: None,
                 type_children: Vec::new(),
                 annotation_checks: Vec::new(),
                 annotation_children: HashSet::new(),
@@ -330,6 +333,7 @@ impl<'a> Checker<'a> {
         self.state.call_types.clear();
         self.state.projections = projections::Pending::default();
         self.state.storage = None;
+        self.state.finalization = None;
         self.state.body_binders = 0;
         self.state.method_environment = None;
         self.state.environment_owner = None;
@@ -485,6 +489,7 @@ impl Checker<'_> {
         self.state.call_types.clear();
         self.state.projections = projections::Pending::default();
         self.state.storage = None;
+        self.state.finalization = None;
         self.state.body_binders = self
             .facts
             .lifetimes
@@ -564,6 +569,9 @@ impl Checker<'_> {
     }
     pub(super) fn advance_body(&mut self) -> Result<Option<Dependency>, Error> {
         let body = self.state.body.node;
+        if let Some(finalization) = self.state.finalization.take() {
+            return self.resume_finalization(*finalization);
+        }
         loop {
             if matches!(
                 self.availability,
@@ -638,11 +646,7 @@ impl Checker<'_> {
                 Work::CompleteExpression(node, term) => self.exit_expression(node, term)?,
             }
         }
-        let expected = self.known(body, self.state.result)?;
-        self.coerce(body, expected)?;
-        self.finish(body)?;
-        self.complete_body();
-        Ok(None)
+        self.finish(body)
     }
     fn schedule_expression_completion(&mut self, node: NodeId, term: TermId) -> Result<(), Error> {
         if matches!(
@@ -679,107 +683,6 @@ impl Checker<'_> {
         Ok(())
     }
 
-    fn finish(&mut self, body: NodeId) -> Result<(), Error> {
-        for adjustment in &self.state.adjustments {
-            if adjustment.kind == AdjustmentKind::Never {
-                self.state
-                    .infer
-                    .default_never(adjustment.expected)
-                    .map_err(|e| self.error(body, e))?;
-            }
-        }
-        let evidence = self.infer_trait_obligations(body)?;
-        let (solved, predicates, arguments) = std::mem::take(&mut self.state.infer)
-            .finish_with_arguments(
-                &mut self.facts.types,
-                self.state
-                    .call_types
-                    .obligations
-                    .iter()
-                    .map(|(_, predicate)| predicate),
-                self.state
-                    .call_types
-                    .constants
-                    .iter()
-                    .map(|pending| pending.arguments.as_slice()),
-            )
-            .map_err(|e| self.error(body, e))?;
-        self.prepare_body_storage(body, &solved)?;
-        self.validate_generic_uses(&solved, &predicates, &evidence)?;
-        self.publish_constant_uses(arguments)?;
-        self.publish_methods(&solved);
-        let body_key = self.key(body);
-        self.publish_pattern_types(&solved)?;
-        self.facts
-            .region_equalities
-            .extend(
-                solved
-                    .region_equalities
-                    .iter()
-                    .map(|(left, right)| RegionEquality {
-                        body: body_key,
-                        left: *left,
-                        right: *right,
-                    }),
-            );
-        self.publish_body_types(body, &solved)?;
-        self.publish_constant_callables()?;
-        self.publish_index_bounds(&solved)?;
-        self.publish_adjustments(&solved, body_key)?;
-        for (node, term) in &self.state.calls {
-            let key = self.key(*node);
-            self.facts
-                .node_mut(key)
-                .ok_or_else(|| Declarations::error(self.report, key, "invalid call node"))?
-                .operation = Some(Operation::Call {
-                signature: solved.types[term.0 as usize],
-            });
-        }
-        for node in &self.state.annotation_checks {
-            crate::types::bound_uses::check_pointer(&self.facts.types, self.ty(*node)?)
-                .map_err(|e| self.error(*node, e))?;
-        }
-        self.state.annotation_checks.clear();
-        self.state.annotation_children.clear();
-        self.state.type_annotations.clear();
-        self.validate_operations()?;
-        self.validate_assignments()?;
-        self.validate_values()?;
-        self.publish_reference_alignment()?;
-        self.finish_patterns()?;
-        // Canonical nominal checks may allocate universal aliases after the main
-        // inference graph has finished. Publish them under this body's identity.
-        self.facts.region_equalities.extend(
-            std::mem::take(&mut self.state.infer.region_equalities)
-                .into_iter()
-                .map(|(left, right)| RegionEquality {
-                    body: body_key,
-                    left,
-                    right,
-                }),
-        );
-        for node in self.state.touched.drain(..) {
-            self.state.terms.remove(NodeKey {
-                file: self.state.file,
-                node,
-            });
-            self.state.diverges.remove(node.0 as usize);
-        }
-        self.state.bindings.clear();
-        self.state.checks.clear();
-        self.state.negated.clear();
-        self.state.adjustments.clear();
-        self.state.reference_adjustments.clear();
-        self.state.reference_expected.clear();
-        self.state.reference_work.clear();
-        self.state.reference_steps = 0;
-        self.state.break_roots.clear();
-        self.state.discarded_adjustments.clear();
-        self.state.calls.clear();
-        self.state.assignments.clear();
-        self.state.breaks.clear();
-        Ok(())
-    }
     fn publish_body_types(
         &mut self,
         body: NodeId,

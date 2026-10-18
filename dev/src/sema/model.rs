@@ -235,6 +235,11 @@ pub struct ReferenceAlignment {
 /// Work observations are not language facts and are never part of a text oracle.
 #[derive(Default)]
 pub struct BodyWork {
+    /// Field storage preparation uses its own cursor after consuming inference.
+    pub storage_waits: usize,
+    pub storage_definition_waits: usize,
+    pub storage_selections: usize,
+    pub storage_steps: usize,
     /// Exact definition dependencies yielded by owned body projection queries.
     pub projection_waits: usize,
     /// Cursor resolver requests and isolated partial-input selection attempts.
@@ -256,6 +261,14 @@ pub struct DispatchWork {
     pub dependency_expansions: usize,
     /// Typed initializer edges visited to demand checked constant members.
     pub member_dependencies: usize,
+}
+/// Shared field-graph work is independent of each caller's proof traversal.
+#[derive(Default)]
+pub struct StoredFieldWork {
+    pub steps: usize,
+    pub recipes: usize,
+    /// Charged recipe storage budget, not a measurement of allocator overhead.
+    pub retained_bytes: usize,
 }
 pub struct Declarations {
     pub body_work: BodyWork,
@@ -350,6 +363,14 @@ impl Declarations {
     #[must_use]
     pub fn dispatch_work(&self) -> &DispatchWork {
         &self.dispatch_dependencies.work
+    }
+    /// Read-only, nonserialized structural storage observations.
+    #[must_use]
+    pub fn stored_field_work(&self) -> StoredFieldWork {
+        self.stored_fields.as_deref().map_or_else(
+            StoredFieldWork::default,
+            super::stored_fields::Registry::work,
+        )
     }
     pub(super) fn new(report: &Report) -> Result<Self, Error> {
         let mut value = Self {

@@ -1,5 +1,7 @@
 //! Shared storage shapes do not authorize another caller's erased lifetime inputs.
 use super::Preparation;
+#[path = "suspended_recipes.rs"]
+mod waits;
 use crate::{
     expand::config::Config,
     resolve::{

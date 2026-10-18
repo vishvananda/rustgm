@@ -23,6 +23,7 @@ pub struct FunctionRegions {
 
 #[derive(Default)]
 pub struct Lifetimes {
+    pub(crate) rigid_inputs: Option<Box<crate::types::variance::RigidInputs>>,
     pub callables: crate::types::callable::Templates,
     pub nominal_bounds: Vec<(crate::types::ItemId, crate::types::outlives::Pair)>,
     /// Completed field and declared requirements; all consumers share this result.

@@ -1,6 +1,6 @@
 //! Body-local deferred work waits for independently determined inputs before selection.
 mod contracts;
-mod evidence;
+pub(super) mod evidence;
 mod inputs;
 mod normalization;
 mod selection;

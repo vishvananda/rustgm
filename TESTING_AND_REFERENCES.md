@@ -551,8 +551,8 @@ unchanged. The proof inspection checks ownership across actual foreign allocatio
 and the ordinary body-work bound includes the added callers. These counters do not
 measure the entire inference heap. Separate restoration invariants permit fresh
 existentials only inside the retained selection proof and reject foreign identities
-and streamed declaration templates. Storage-only missing-definition paths remain
-separate implementation work; they are not accepted negative language fixtures.
+and streamed declaration templates. Storage-only missing-definition paths retain
+positive controls for unused projected fields and unselected enum payloads.
 `quantified_lifetime_proofs.rs` also checks ordinary body relations that use a
 retained witness: registration succeeds, unpaid outlives debt still rejects at its
 original source, an explicit caller assumption pays that debt, and a foreign
@@ -577,6 +577,30 @@ work when both definitions and callers increase. A high cache-hit count can stil
 represent a quadratic traversal, so hits and edge scans have explicit bounds too.
 Only completed, independently proved closures may bypass member readiness scans;
 reusing an evaluated constant alone never authorizes that shortcut.
+
+The storage continuation invariants in
+`dev/tests/invariants/suspended_recipes.rs` exercise child publication while a
+parent query waits, append-only recipe identities, missing nominal templates,
+reference referents and failed caller proofs. Deep shared diamonds force a wait
+at each distinct projected field; repeated polling must perform no additional
+structural or caller proof traversal. A completed structural recipe never grants
+another caller permission to use its projections.
+
+The source controls in `dev/tests/associated_declarations/recipe_frontiers.rs`
+vary fields and callers separately, checking actual declaration suspensions and
+proof identity ownership before native execution against rustc. Shared recipe
+count is exactly fields + 1 for this family; structural steps and retained budget
+bytes have separate additive bounds. These bytes are charged storage accounting,
+not allocator measurements. Caller selections still grow as fields × (callers + 1),
+so these tests do not establish whole-frontend linearity.
+
+Early invariant-input controls in `dev/tests/invariants/invariant_inputs.rs`
+compare conservative hints with the full variance solver. Missing templates must
+remain uncached, external nominal edges grant no hint, and repeated completed
+queries must take constant work. The field-normalization source controls retain
+local-lifetime inference for mixed-variance owners and reject incompatible
+assignments when a projected field erases an invariant input. Full declaration
+variance validation and each caller's formation/lifetime proof remain required.
 
 ## Storage and cleanup
 

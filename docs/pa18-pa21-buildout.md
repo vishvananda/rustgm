@@ -1,6 +1,6 @@
 # PA18–PA21 implementation and validation
 
-The active goal is to implement all four assignments. PA18 now has its public
+This journal covers PA18–PA21 within the active goal through PA25. PA18 has its public
 CLI, handout and grading manifest; its release evidence is recorded in
 [pa18-validation.md](pa18-validation.md). PA19 is also implemented-draft, with
 [pa19-validation.md](pa19-validation.md) recording its course release. PA20 and
@@ -9515,3 +9515,93 @@ changes remain inconclusive, and these absolute times are not general forecasts.
 All observations are retained; no profiling analysis overlapped timed runs.
 Generated validation artifacts are pruned, and only the current comparison
 binaries remain pinned.
+
+### Owned storage preparation and invariant inputs
+
+Storage preparation now yields an exact associated-definition or nominal-template
+prerequisite while retaining its graph walk, current variant/field and caller
+proof frontier. Body finalization owns the solved types, canonical predicates,
+complete constant arguments and selected evidence after consuming inference.
+It resumes preparation without repeating body inference or completed fields, then
+publishes the remaining body facts once. The existing streamed proof helper
+reserves only new IDs before suspension and excludes child declarations' IDs.
+
+Shared structural recipes have append-only global identities. A child declaration
+can complete the parent's storage root while the parent waits; its pending
+normalization and caller proof still finish. Completed shapes are published
+separately from caller permission. Failed proof replay commits no visited prefix.
+Shared recipe joins retain their DAG structure without copying descendant sets.
+The synchronous adapter remains for callers with completed declaration facts.
+
+The source growth gate exposed a second algorithmic problem upstream of storage:
+unconstrained expected types freshened every nominal lifetime position, even
+where projected fields made all inputs invariant. The resulting distinct type
+identities defeated structural sharing across callers. With 48 fields, the
+initial continuation prototype created 1,278 canonical types for one caller and
+28,491 for 48 callers. These observations describe that intermediate prototype,
+not the previous published compiler, which rejected these source programs.
+
+A conservative early query now reuses the existing variance graph and solver on
+completed raw projected fields. It preserves an entire nominal input only when
+every argument slot is proved invariant. External nominal edges supply no early
+hint, unknown templates are not cached, and full declaration variance validation
+remains mandatory. Ordinary freshening and callable signature/argument coupling
+remain unchanged. This shares invariant type identities without granting any
+caller a projection or lifetime proof learned elsewhere.
+
+At 4, 16 and 48 fields, the shared graph retains exactly 5, 17 and 49 recipes.
+With 48 fields, increasing callers from one to 48 increases structural steps
+from 1,440 to 1,534 and charged recipe storage from 11,736 to 14,744 bytes.
+These charged bytes are the work-budget accounting, not allocator measurements.
+The regression bounds retain separate graph and caller metrics. Caller projection
+selection still grows as fields × (callers + 1), reaching 2,352 selections in
+the largest case; this change does not establish whole-frontend linearity.
+
+The permanent tests cover child publication during a parent wait, stable recipe
+identities, incomplete nominal templates, reference referents, failed proof
+prefixes, and shared diamonds with a wait at every distinct projected leaf.
+Eight repeated polls per leaf add no structural or caller traversal work. Early
+invariant hints are checked against completed variance, including a deliberately
+conservative external-nominal miss, callable binder depth, mixed variance and
+constant-work repeated queries. Source controls retain local-lifetime inference
+for mixed owners and rejection of incompatible invariant assignments.
+
+Full validation passes 28 command gates: 1,244 regular tests, 85 native groups,
+all 4,871 PA1–19 cases, strict Clippy, formatting, the 774-file audit, harness,
+backend and upstream checks. All 777 frozen source/configuration hashes and
+14,613 earlier oracle sidecars agree. The 74 independently qualified source
+controls contain 57 native positives and 17 rejections, with no remaining gap in
+that corpus. All 49 programs accepted by published `d7c7df5` retain byte-identical
+LowIR. Candidate SHA-256 is
+`ecdeec4f335406beb319d8efd923a30f51ccfaf97d0cf27c49783be9f357effc`;
+the focused and final builds agree. Evidence is retained under
+`obj/pa20-work/storage-continuation-final`.
+
+Fifteen instruction comparisons against the published compiler range from -2.43%
+to +2.12%. The increase is the shared generic-depth control; its paired wall
+median also increases by 4.80%, so the continuation machinery is not cost-free.
+The six newly supported storage inputs instead compare the first working
+continuation prototype with the final invariant-input sharing change. The largest,
+48 fields and 48 callers, falls from 956.68 million to 409.14 million instructions
+(-57.23%). The published compiler rejected these programs, so this is not a
+published-baseline speedup. Full LowIR matches the independently executed prototype
+for all six inputs.
+
+Twenty-two timing jobs retain 572 study and 88 full-output qualification
+observations, each containing four executions. All binary, source and input hashes
+and full/count outputs agree. The largest new storage case has a paired median
+reduction of 56.86%; all five paired blocks improve by 56.09–57.72%. Four-execution
+batch medians fall from 775.53 ms to 335.14 ms, corresponding to approximately
+193.88 ms and 83.78 ms per invocation in that window. Its same-binary AA/BB paired
+medians are +0.56%/+1.33%, although one BB block varies by 44.20%. Median measured
+peak RSS falls from 23,440 KiB to 13,572 KiB. Small wall-time differences on other
+controls remain affected by shared-host noise; calibration spreads reach 23.27%.
+No profiling or other RustGM validation overlapped the wall-time study.
+
+Whole-frontend work still grows faster than the shared structural graph. Combined
+field/caller instruction counts at sizes 4/16/48 are 12.38/68.90/409.14 million;
+caller projection selections remain fields × (callers + 1). Those proofs require
+a separate investigation before claiming additive whole-frontend scaling.
+Early impl-header constant dependencies, other synchronous normalization consumers,
+the extended semantic view, remaining solver/coherence work and the public PA20
+manifest/oracles also remain outstanding. PA20 through PA25 remain planned.

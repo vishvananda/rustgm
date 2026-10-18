@@ -5,7 +5,7 @@ use crate::{
     types::lifetime_proof::Obligations,
 };
 
-pub(super) struct Evidence {
+pub(in crate::sema::bodies) struct Evidence {
     pub proof: Obligations,
     reserved: Option<u32>,
 }

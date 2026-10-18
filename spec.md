@@ -1613,6 +1613,22 @@ template representation checks treat unresolved projections as unknown layouts.
 Concrete instance discovery must include projections hidden in nominal fields,
 not just projections visible in the nominal's argument graph.
 
+A storage query owns its traversal and exact pending field while declaration work
+completes. Release the shared registry before resolving a field or yielding a
+dependency. Publish completed structural nodes with append-only recipe identities;
+a child may complete the suspended parent's root without invalidating its pending
+IDs. Incomplete shapes remain unavailable. Keep the caller's proof frontier and
+expected raw-to-normal pairs separate, and publish its completed-recipe set only
+after the entire proof succeeds. A shared structural root cannot erase a pending
+normalization's obligations.
+
+Body finalization owns solved types, predicates, item arguments and selected
+evidence after consuming inference. Its storage batch retains one normalizer and
+proof across roots and waits. Reserve only new proof intervals before yielding,
+exclude intervening declarations' allocations on resume, and publish the body
+facts once after preparation completes. Do not replay inference or completed
+fields to recover a missing definition.
+
 Projected field inference retains its caller lifetime context after the pending
 normalization worklist drains. Later shape comparisons use the same universal
 aliases; queue emptiness controls progress, not the meaning of existing terms.
@@ -1620,6 +1636,14 @@ For record constructors with omitted lifetimes, a known expected nominal with th
 same owner can supply those input lifetimes before field substitution. Preserve
 explicit written lifetimes and prove the usual formation and coercion debts.
 An associated output equality cannot invent equations between its inputs.
+
+Before freshening a nominal value's lifetime inputs, preserve its existing identity
+when completed raw projected fields prove every input invariant. Reuse the variance
+solver for that conservative hint; unfinished external nominal edges grant no
+information. An unknown or partially varying owner still uses ordinary inference.
+Cache only completed-owner results, and keep full declaration variance validation
+mandatory. This avoids cloning the same invariant input graph for each caller; it
+does not cache projection permission or remove the caller's formation proof.
 
 Complete nominal parameter schemas and declaration contracts independently of
 field instances. Prove field and use-site predicates in their owning immutable
