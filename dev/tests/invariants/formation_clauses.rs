@@ -1,4 +1,8 @@
 //! Nominal clauses retain their own binder while lifting only independent callable captures.
+#[path = "formation_clauses/declarations.rs"]
+mod declarations;
+#[path = "formation_clauses/terms.rs"]
+mod terms;
 use super::{Declarations, quantified_tests, tests};
 use crate::{
     resolve::{expansion::Report, model::DefId},

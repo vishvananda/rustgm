@@ -78,6 +78,36 @@ impl Openings {
     }
 }
 impl Assumptions {
+    pub fn has_quantified(&self) -> bool {
+        self.quantified.is_some()
+    }
+
+    /// Check an independently formed declaration requirement against caller
+    /// premises only. Scratch equations never become executable proof evidence.
+    pub fn unambiguous_scoped_declaration(
+        &self,
+        store: &mut Store,
+        context: &mut Context,
+        source: Clause,
+        predicate: Predicate,
+        first: u32,
+    ) -> Result<bool, infer::Error> {
+        context.account_work(1)?;
+        let present = match source {
+            Clause::Predicate(value) => value == predicate && self.seen.contains(&value),
+            Clause::ForAll(id) => self.contains_quantified(id),
+        };
+        if !present || first == 0 || first >= 0x8000_0000 {
+            return Err(infer::Error::InvalidIdentity);
+        }
+        let mut scratch = Context::default();
+        let mut substitution = infer::Instantiation::new(&mut scratch, store, &[])?;
+        let goal = scratch.instantiate_predicate(store, predicate, &mut substitution)?;
+        let result = self.select_scoped(store, &mut scratch, &goal, first);
+        context.account_work(scratch.steps)?;
+        Ok(matches!(result?, Selection::Proven(_)))
+    }
+
     pub fn contains_quantified(&self, clause: QuantifiedId) -> bool {
         self.quantified
             .as_ref()

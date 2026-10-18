@@ -1,5 +1,7 @@
 //! Nominal use requirements are instantiated once; proofs belong to the caller's environment.
+mod formation;
 mod requirements;
+mod terms;
 pub(crate) mod traits;
 use super::model::Declarations;
 use crate::types::{
@@ -15,6 +17,7 @@ pub(super) use requirements::{Requirements, requirements};
 pub(super) struct Proof {
     environment: Option<std::sync::Arc<crate::types::parameters::environment::Environment>>,
     shapes: Option<crate::types::parameters::shape::Shapes>,
+    term_shapes: Option<Box<crate::types::parameters::shape::Shapes>>,
     copies: crate::types::copy::Copies,
     checked: Requirements,
     traits: Option<Box<traits::State>>,
@@ -54,6 +57,7 @@ impl Proof {
             shapes: Some(crate::types::parameters::shape::Shapes::new(
                 std::sync::Arc::clone(&environment),
             )),
+            term_shapes: None,
             copies: crate::types::copy::Copies::for_coherence(environment),
             checked: Requirements::default(),
             traits: None,
@@ -76,6 +80,7 @@ impl Proof {
         Self {
             environment,
             shapes,
+            term_shapes: None,
             copies,
             checked: Requirements::default(),
             traits: None,
@@ -110,6 +115,13 @@ impl Proof {
     ) -> Result<bool, &'static str> {
         self.trait_state(facts)?.prove(facts, requirement, true)
     }
+    /// A scratch declaration query starts beyond this proof's retained witnesses.
+    pub fn region_frontier(&mut self, facts: &mut Declarations) -> Result<u32, &'static str> {
+        if self.scope.is_none() {
+            return Err("scoped declaration queries require an explicit proof scope");
+        }
+        Ok(self.trait_state(facts)?.region_frontier())
+    }
     pub fn prove_closed_equality(
         &mut self,
         facts: &mut Declarations,
@@ -123,19 +135,57 @@ impl Proof {
         facts: &mut Declarations,
         ty: TypeId,
     ) -> Result<crate::types::parameters::shape::Properties, &'static str> {
+        self.shape_inside(facts, ty, None)
+    }
+    fn shape_inside(
+        &mut self,
+        facts: &mut Declarations,
+        ty: TypeId,
+        count: Option<u32>,
+    ) -> Result<crate::types::parameters::shape::Properties, &'static str> {
+        let depth = u16::from(count.is_some());
+        if count.is_some() && self.term_shapes.is_none() {
+            let environment = if let Some(environment) = &self.environment {
+                std::sync::Arc::clone(environment)
+            } else {
+                std::sync::Arc::new(crate::types::parameters::environment::Environment::new(
+                    &facts.types,
+                    &[],
+                )?)
+            };
+            self.term_shapes = Some(Box::new(
+                crate::types::parameters::shape::Shapes::for_clause_terms(environment),
+            ));
+        }
         let projected = facts.types.contains_projections(ty) == Some(true);
-        if let Some(shapes) = &mut self.shapes
-            && let Some(properties) = shapes.try_demand(&facts.types, ty)?
+        let shapes = if count.is_some() {
+            self.term_shapes.as_deref_mut()
+        } else {
+            self.shapes.as_mut()
+        };
+        if let Some(shapes) = shapes
+            && let Some(properties) = shapes.try_demand_inside(&facts.types, ty, depth)?
             && (!projected || properties.sized && properties.well_formed)
         {
             return Ok(properties);
         }
-        let ty = self.normalize(facts, ty)?;
-        if let Some(shapes) = &mut self.shapes {
+        let ty = if let Some(count) = count {
+            self.normalize_clause_term(facts, ty, count)?
+        } else {
+            self.normalize(facts, ty)?
+        };
+        let shapes = if count.is_some() {
+            self.term_shapes.as_deref_mut()
+        } else {
+            self.shapes.as_mut()
+        };
+        if let Some(shapes) = shapes {
             return if projected {
-                shapes.normalized(&facts.types, ty)
+                shapes.normalized_inside(&facts.types, ty, depth)
             } else {
-                shapes.demand(&facts.types, ty)
+                shapes
+                    .try_demand_inside(&facts.types, ty, depth)?
+                    .ok_or("associated type shape checking requires normalization")
             };
         }
         Ok(crate::types::parameters::shape::Properties {
@@ -154,12 +204,25 @@ impl Proof {
         facts: &mut Declarations,
         ty: TypeId,
     ) -> Result<crate::types::parameters::shape::Properties, &'static str> {
+        self.check_inside(facts, ty, None)
+    }
+    fn check_inside(
+        &mut self,
+        facts: &mut Declarations,
+        ty: TypeId,
+        count: Option<u32>,
+    ) -> Result<crate::types::parameters::shape::Properties, &'static str> {
         facts
             .lifetimes
             .nominal_requirements
             .prepare(&mut facts.types, ty)?;
         if facts.generics.has_nominal_requirements {
-            for requirement in requirements(facts, ty, &mut self.checked)? {
+            for requirement in requirements::requirements_inside(
+                facts,
+                ty,
+                u16::from(count.is_some()),
+                &mut self.checked,
+            )? {
                 let valid = self.prove_clause(facts, requirement)?;
                 if !valid {
                     let Clause::Predicate(requirement) = requirement else {
@@ -180,7 +243,7 @@ impl Proof {
                 }
             }
         }
-        self.shape(facts, ty)
+        self.shape_inside(facts, ty, count)
     }
     pub fn prove_clause(
         &mut self,

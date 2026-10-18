@@ -257,63 +257,6 @@ impl Checker<'_> {
         Ok(())
     }
 
-    pub(super) fn trait_requirements(
-        &mut self,
-        predicate: crate::sema::generics::Predicate,
-        proof: &mut crate::sema::nominals::Proof,
-    ) -> Result<(), Error> {
-        use crate::types::parameters::{clauses::Clause, predicates::Bound as Requirement};
-        let requirements = self
-            .facts
-            .generics
-            .traits
-            .as_mut()
-            .ok_or_else(|| Error::at(predicate.source.file, 0, "missing trait contracts"))?
-            .formation(&mut self.facts.types, predicate.value)
-            .map_err(|e| self.error(predicate.source, e))?;
-        // Ordinary subjects were checked by validate_bounds. Quantified subjects
-        // require the independently lifted input, if formation was not deferred.
-        let subject = if matches!(predicate.value, Clause::ForAll(_)) {
-            requirements.subject()
-        } else {
-            None
-        };
-        for ty in subject
-            .into_iter()
-            .chain(requirements.types().iter().copied())
-        {
-            if !proof
-                .check(&mut self.facts, ty)
-                .map_err(|e| self.error(predicate.source, e))?
-                .well_formed
-            {
-                return Err(self.error(predicate.source, "trait argument must be well-formed"));
-            }
-        }
-        for &requirement in requirements.required() {
-            let requirement = match requirement {
-                Clause::Predicate(value) if matches!(value.bound, Requirement::Outlives(_)) => {
-                    continue; // Proved with the completed nominal lifetime contracts.
-                }
-                Clause::Predicate(value) => proof
-                    .normalize_builtin(&mut self.facts, value)
-                    .map_err(|e| self.error(predicate.source, e))?
-                    .into(),
-                Clause::ForAll(_) => requirement,
-            };
-            if !proof
-                .prove_clause(&mut self.facts, requirement)
-                .map_err(|e| self.error(predicate.source, e))?
-            {
-                return Err(self.error(
-                    predicate.source,
-                    "trait argument does not satisfy its declaration requirements",
-                ));
-            }
-        }
-        Ok(())
-    }
-
     pub(super) fn trait_path(
         &mut self,
         path: NodeKey,

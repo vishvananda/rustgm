@@ -5,25 +5,37 @@ use crate::types::{
     arguments::Argument,
     bound_uses::captures::Captures,
     outlives::Pair,
-    parameters::clauses::{Clause, QuantifiedId},
+    parameters::{
+        clauses::{Clause, QuantifiedId},
+        predicates::Predicate,
+    },
     substitute::Bound,
 };
 use std::{collections::HashMap, sync::Arc};
 
 pub(in crate::sema) enum Formation {
-    Ordinary(TypeId, Arc<Requirements>),
+    Ordinary(Predicate, Arc<Requirements>),
     Quantified(Arc<Inputs>),
 }
 pub(in crate::sema) struct Inputs {
+    declaration: Option<Predicate>,
     subject: Option<TypeId>,
     types: Vec<TypeId>,
     required: Vec<Clause>,
     regions: Vec<Pair>,
 }
 impl Formation {
+    /// The trait's own selection requirement is deferred when it mentions a local.
+    /// This query classifies declaration formation; it does not prove a use.
+    pub fn declaration(&self) -> Option<Predicate> {
+        match self {
+            Self::Ordinary(predicate, _) => Some(*predicate),
+            Self::Quantified(inputs) => inputs.declaration,
+        }
+    }
     pub fn subject(&self) -> Option<TypeId> {
         match self {
-            Self::Ordinary(ty, _) => Some(*ty),
+            Self::Ordinary(predicate, _) => Some(predicate.ty),
             Self::Quantified(inputs) => inputs.subject,
         }
     }
@@ -78,7 +90,7 @@ impl Contracts {
         let Clause::ForAll(id) = clause else {
             let predicate = clause.ordinary()?;
             return Ok(Formation::Ordinary(
-                predicate.ty,
+                predicate,
                 self.requirements(store, predicate)?,
             ));
         };
@@ -95,7 +107,7 @@ impl Contracts {
         let requirements = self.requirements(store, value.predicate)?;
         let cache = self.formation.get_or_insert_with(Default::default);
         let before = cache.steps();
-        let result = cache.prepare(store, value.predicate.ty, &requirements);
+        let result = cache.prepare(store, value.predicate, &requirements);
         self.steps = self
             .steps
             .saturating_add(cache.steps().saturating_sub(before));
@@ -123,7 +135,7 @@ impl Cache {
     fn prepare(
         &mut self,
         store: &mut Store,
-        subject: TypeId,
+        predicate: Predicate,
         requirements: &Requirements,
     ) -> Result<Inputs, &'static str> {
         self.work = self.work.saturating_add(
@@ -135,7 +147,12 @@ impl Cache {
             return Err("trait formation work budget exceeded");
         }
         let mut result = Inputs {
-            subject: self.input(store, subject)?,
+            declaration: if self.captures.predicate(store, predicate)? {
+                None
+            } else {
+                Some(self.lower.predicate(store, predicate)?)
+            },
+            subject: self.input(store, predicate.ty)?,
             types: Vec::new(),
             required: Vec::new(),
             regions: Vec::new(),

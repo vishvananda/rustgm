@@ -51,11 +51,13 @@ fn formation_defers_whole_local_subjects_but_keeps_independent_arguments() -> Te
     let input = predicate(&mut store, item, tuple, &[Argument::Type(captured)])?;
     let ordinary = contracts.formation(&mut store, input.into())?;
     assert_eq!(ordinary.subject(), Some(tuple));
+    assert_eq!(ordinary.declaration(), Some(input));
     assert_eq!(ordinary.types(), &[captured]);
     assert!(contracts.formation.is_none());
     let value = clause(&mut store, 1, input)?;
     let formed = contracts.formation(&mut store, value)?;
     assert_eq!(formed.subject(), None);
+    assert_eq!(formed.declaration(), None);
     assert_eq!(formed.types(), &[local]);
     // The lowered capture has the same representation as the previous local,
     // but belongs to the caller now. Cached metadata confers no permissions.
@@ -63,6 +65,7 @@ fn formation_defers_whole_local_subjects_but_keeps_independent_arguments() -> Te
     let reverse = clause(&mut store, 1, reverse)?;
     let reverse = contracts.formation(&mut store, reverse)?;
     assert_eq!(reverse.subject(), Some(local));
+    assert_eq!(reverse.declaration(), None);
     assert!(reverse.types().is_empty());
     let again = contracts.formation(&mut store, input.into())?;
     assert_eq!(again.subject(), Some(tuple));

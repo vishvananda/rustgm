@@ -169,6 +169,56 @@ fn shape_cache_separates_root_captures_and_local_binders() -> Result {
     Ok(())
 }
 #[test]
+fn explicit_term_depth_uses_captured_assumptions_without_publishing_normalization_authority()
+-> Result {
+    let mut store = Store::default();
+    let root = projected(&mut store, 0)?;
+    let capture = projected(&mut store, 1)?;
+    let nested = projected(&mut store, 2)?;
+    let Kind::Projection(application) = store.kind(root).ok_or("missing projection")? else {
+        return Err("unexpected projection kind");
+    };
+    let environment = Environment::new(&store, &[])?.with_predicates(
+        &store,
+        &[
+            Predicate {
+                ty: TypeId::UNIT,
+                bound: Bound::Trait(application.trait_application),
+            },
+            Predicate {
+                ty: root,
+                bound: Bound::Sized,
+            },
+        ],
+    )?;
+    let count = store.len();
+    for reverse in [false, true] {
+        let mut shapes = Shapes::new(Arc::new(environment.clone()));
+        if reverse {
+            assert!(shapes.demand(&store, root)?.sized);
+        }
+        assert!(
+            shapes
+                .try_demand_inside(&store, capture, 1)?
+                .ok_or("missing captured shape")?
+                .sized
+        );
+        assert!(
+            shapes
+                .try_demand_inside(&store, nested, 2)?
+                .ok_or("missing nested shape")?
+                .sized
+        );
+        assert_eq!(shapes.try_demand_inside(&store, root, 1)?, None);
+        assert!(shapes.normalized_inside(&store, root, 1)?.well_formed);
+        assert_eq!(shapes.try_demand_inside(&store, root, 1)?, None);
+        assert!(shapes.demand(&store, capture).is_err());
+        assert!(shapes.demand(&store, root)?.sized);
+    }
+    assert_eq!(store.len(), count);
+    Ok(())
+}
+#[test]
 fn absent_canonical_targets_cannot_add_permissions_to_a_frozen_environment() -> Result {
     let mut store = Store::default();
     let shifted = reference(&mut store, 2)?;

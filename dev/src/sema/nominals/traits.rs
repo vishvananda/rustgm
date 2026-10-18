@@ -2,6 +2,7 @@
 pub(in crate::sema) mod normal_form;
 mod normalization;
 mod quantified;
+mod term_normalization;
 use crate::{
     sema::{
         model::Declarations,
@@ -30,6 +31,7 @@ pub(crate) struct State {
     retain_sized: bool,
     availability: Availability,
     quantified: Option<Box<quantified::Queries>>,
+    terms: Option<Box<term_normalization::Terms>>,
 }
 pub(crate) struct Projected {
     pub source: Option<selection::Source>,
@@ -38,6 +40,9 @@ pub(crate) struct Projected {
     pub sized: Vec<crate::types::TypeId>,
 }
 impl State {
+    pub(super) const fn region_frontier(&self) -> u32 {
+        self.obligations.regions.end
+    }
     #[cfg(test)]
     pub(crate) const fn selection_steps(&self) -> usize {
         self.context.steps
@@ -100,6 +105,7 @@ impl State {
             retain_sized: false,
             availability: Availability::Declarations,
             quantified: None,
+            terms: None,
         })
     }
 

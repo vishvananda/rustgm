@@ -1,6 +1,8 @@
 //! Structural well-formedness and sizedness under one immutable bound environment.
 use super::environment::Environment;
-use crate::types::{Kind, Primitive, Store, TypeId, substitute::lookup::Lookup};
+use crate::types::{
+    Kind, Primitive, Store, TypeId, bound_uses::captures::Captures, substitute::lookup::Lookup,
+};
 use std::{collections::HashMap, sync::Arc};
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Properties {
@@ -14,13 +16,23 @@ pub struct Shapes {
     scoped: Option<Box<Scoped>>,
     work: Vec<(TypeId, u16, bool)>,
     steps: usize,
+    defer_local_sized: bool,
 }
 #[derive(Default)]
 struct Scoped {
     cache: HashMap<(TypeId, u16), Properties>,
     lookups: HashMap<u16, Lookup>,
+    captures: HashMap<u16, Captures>,
 }
 impl Shapes {
+    #[cfg(test)]
+    pub(crate) fn steps(&self) -> usize {
+        self.steps
+            + self
+                .normalized_queries
+                .as_ref()
+                .map_or(0, |queries| queries.steps())
+    }
     #[must_use]
     pub fn new(environment: Arc<Environment>) -> Self {
         Self {
@@ -30,7 +42,15 @@ impl Shapes {
             scoped: None,
             work: Vec::new(),
             steps: 0,
+            defer_local_sized: false,
         }
+    }
+    /// Declaration formation may defer a Sized requirement mentioning a local
+    /// binder. Its result still reports actual sizedness; it grants no use proof.
+    pub(crate) fn for_clause_terms(environment: Arc<Environment>) -> Self {
+        let mut shapes = Self::new(environment);
+        shapes.defer_local_sized = true;
+        shapes
     }
     /// # Errors
     /// Rejects invalid/foreign parameter types and exhausted graph work.
@@ -45,7 +65,16 @@ impl Shapes {
         types: &Store,
         ty: TypeId,
     ) -> Result<Option<Properties>, &'static str> {
-        self.demand_with(types, ty, false)
+        self.try_demand_inside(types, ty, 0)
+    }
+    /// The root is written beneath an explicit prefix of surrounding binders.
+    pub(crate) fn try_demand_inside(
+        &mut self,
+        types: &Store,
+        ty: TypeId,
+        depth: u16,
+    ) -> Result<Option<Properties>, &'static str> {
+        self.demand_with(types, ty, depth, false)
     }
     /// The caller has normalized this entire root in this query's environment
     /// and retained every parent formation proof, including nested binders.
@@ -54,24 +83,38 @@ impl Shapes {
         types: &Store,
         ty: TypeId,
     ) -> Result<Properties, &'static str> {
+        self.normalized_inside(types, ty, 0)
+    }
+    pub(crate) fn normalized_inside(
+        &mut self,
+        types: &Store,
+        ty: TypeId,
+        depth: u16,
+    ) -> Result<Properties, &'static str> {
         // Raw structural queries cannot reuse a cache populated under a
         // separately retained normalization proof.
         self.normalized_queries
-            .get_or_insert_with(|| Box::new(Self::new(Arc::clone(&self.environment))))
-            .demand_with(types, ty, true)?
+            .get_or_insert_with(|| {
+                let mut queries = Self::new(Arc::clone(&self.environment));
+                queries.defer_local_sized = self.defer_local_sized;
+                Box::new(queries)
+            })
+            .demand_with(types, ty, depth, true)?
             .ok_or("missing normalized shape proof")
     }
     fn demand_with(
         &mut self,
         types: &Store,
         ty: TypeId,
+        depth: u16,
         normalized: bool,
     ) -> Result<Option<Properties>, &'static str> {
-        if let Some(value) = self.cache.get(&ty) {
+        let depth = cache_depth(types, ty, depth);
+        if let Some(value) = self.cached(ty, depth) {
             return Ok(Some(*value));
         }
         self.work.clear();
-        self.work.push((ty, 0, false));
+        self.work.push((ty, depth, false));
         while let Some((ty, depth, finish)) = self.work.pop() {
             self.steps += 1;
             if self.steps.saturating_add(self.work.len()) > 1_000_000 {
@@ -89,6 +132,7 @@ impl Shapes {
             }
             if types.contains_parameters(ty) == Some(false)
                 && types.contains_projections(ty) == Some(false)
+                && (!self.defer_local_sized || types.is_well_formed(ty) == Some(true))
             {
                 let sized =
                     types.is_sized(ty) == Some(true) || self.assumes_sized(types, ty, depth)?;
@@ -114,58 +158,91 @@ impl Shapes {
                 })?;
                 continue;
             }
-            let mut value = Properties {
-                sized: true,
-                well_formed: true,
-            };
-            let mut index = 0;
-            let tuple_len = if let Kind::Tuple(list) = kind {
-                types.list(list).ok_or("invalid shape tuple")?.len()
-            } else {
-                0
-            };
-            children(types, kind, depth, |child, depth| {
-                let child = self
-                    .cached(child, cache_depth(types, child, depth))
-                    .ok_or("missing child shape")?;
-                value.well_formed &= child.well_formed;
-                match kind {
-                    Kind::Tuple(_) => {
-                        value.sized &= child.sized;
-                        value.well_formed &= child.sized || index + 1 == tuple_len;
-                    }
-                    Kind::Array { .. } | Kind::ArrayTerm { .. } | Kind::Slice(_) => {
-                        value.sized &= child.sized;
-                        value.well_formed &= child.sized;
-                    }
-                    _ => {}
-                }
-                index += 1;
-                Ok(())
-            })?;
-            match kind {
-                Kind::Parameter(id) => {
-                    let abilities = self
-                        .environment
-                        .abilities(id)
-                        .ok_or("shape parameter is outside its environment")?;
-                    value.sized = types.is_sized(ty) == Some(true) || abilities.clone_;
-                }
-                Kind::Slice(_) | Kind::Primitive(Primitive::Str) => value.sized = false,
-                Kind::Projection(application) => {
-                    value.sized = types.is_sized(ty) == Some(true)
-                        || self.environment.projection_promises(application.item).sized;
-                }
-                _ => {}
-            }
-            value.sized = value.sized || self.assumes_sized(types, ty, depth)?;
+            let value = self.composite(types, ty, kind, depth)?;
             self.save(ty, depth, value);
         }
-        self.cache
-            .get(&ty)
+        self.cached(ty, depth)
             .copied()
             .map(Some)
             .ok_or("missing generic shape result")
+    }
+    fn composite(
+        &mut self,
+        types: &Store,
+        ty: TypeId,
+        kind: Kind,
+        depth: u16,
+    ) -> Result<Properties, &'static str> {
+        let mut value = Properties {
+            sized: true,
+            well_formed: true,
+        };
+        let mut index = 0;
+        let tuple_len = if let Kind::Tuple(list) = kind {
+            types.list(list).ok_or("invalid shape tuple")?.len()
+        } else {
+            0
+        };
+        children(types, kind, depth, |child, depth| {
+            let properties = *self
+                .cached(child, cache_depth(types, child, depth))
+                .ok_or("missing child shape")?;
+            value.well_formed &= properties.well_formed;
+            match kind {
+                Kind::Tuple(_) => {
+                    value.sized &= properties.sized;
+                    value.well_formed &= properties.sized
+                        || index + 1 == tuple_len
+                        || self.defers_sized(types, child, depth)?;
+                }
+                Kind::Array { .. } | Kind::ArrayTerm { .. } | Kind::Slice(_) => {
+                    value.sized &= properties.sized;
+                    value.well_formed &=
+                        properties.sized || self.defers_sized(types, child, depth)?;
+                }
+                _ => {}
+            }
+            index += 1;
+            Ok(())
+        })?;
+        match kind {
+            Kind::Parameter(id) => {
+                let abilities = self
+                    .environment
+                    .abilities(id)
+                    .ok_or("shape parameter is outside its environment")?;
+                value.sized = types.is_sized(ty) == Some(true) || abilities.clone_;
+            }
+            Kind::Slice(_) | Kind::Primitive(Primitive::Str) => value.sized = false,
+            Kind::Projection(application) => {
+                value.sized = types.is_sized(ty) == Some(true)
+                    || self.environment.projection_promises(application.item).sized;
+            }
+            _ => {}
+        }
+        value.sized = value.sized || self.assumes_sized(types, ty, depth)?;
+        Ok(value)
+    }
+    fn defers_sized(
+        &mut self,
+        types: &Store,
+        ty: TypeId,
+        depth: u16,
+    ) -> Result<bool, &'static str> {
+        if !self.defer_local_sized || depth == 0 {
+            return Ok(false);
+        }
+        let captures = self
+            .scoped
+            .get_or_insert_with(Default::default)
+            .captures
+            .entry(depth)
+            .or_insert_with(|| Captures::new(depth));
+        let before = captures.steps;
+        let result = captures.collect(types, ty);
+        let work = captures.steps.saturating_sub(before);
+        self.account_lookup(work)?;
+        result
     }
     fn cached(&self, ty: TypeId, depth: u16) -> Option<&Properties> {
         if depth == 0 {

@@ -35,8 +35,14 @@ pub(super) fn choose<C, E>(
         context.account_work(probe.steps)?;
         match result {
             Ok(()) => {
-                if selected.replace((predicate, evidence)).is_some() {
-                    return Ok(Selection::Deferred);
+                match &selected {
+                    Some((previous, _)) if *previous != predicate => {
+                        return Ok(Selection::Deferred);
+                    }
+                    // Opening equivalent clauses may erase only unused local slots.
+                    // Keep one actual premise and its owned instantiation interval.
+                    Some(_) => {}
+                    None => selected = Some((predicate, evidence)),
                 }
             }
             Err(infer::Error::Mismatch | infer::Error::Occurs) => {}

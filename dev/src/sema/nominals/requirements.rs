@@ -76,7 +76,17 @@ pub(in crate::sema) fn requirements(
     root: TypeId,
     checked: &mut Requirements,
 ) -> Result<Vec<Clause>, &'static str> {
-    let mut work = vec![(root, 0_u16)];
+    requirements_inside(facts, root, 0, checked)
+}
+
+/// Equality results and outlives subjects recurse beneath their whole-clause binder.
+pub(super) fn requirements_inside(
+    facts: &mut Declarations,
+    root: TypeId,
+    depth: u16,
+    checked: &mut Requirements,
+) -> Result<Vec<Clause>, &'static str> {
+    let mut work = vec![(root, depth)];
     let mut predicates = Vec::new();
     let mut unique = HashSet::new();
     while let Some((ty, depth)) = work.pop() {

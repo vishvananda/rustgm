@@ -739,3 +739,96 @@ PA21–PA25 remain planned; no unsupported source gate was opened by this checkp
 
 Successful guarded cleanup reclaimed **6.90 GiB** from 5,753 generated files;
 timing observations, diagnostics and the current immutable comparison pins remain.
+
+
+## Whole-clause declaration consumers
+
+This checkpoint keeps the PA21 source gates closed. Declaration ambiguity,
+trait-input formation and recursive equality/outlives term formation now consume
+whole clauses without discarding their binders. An independent own-trait
+requirement is checked against caller assumptions in scratch inference; local
+conditions remain deferred until use. Canonically identical opened alternatives
+keep a real source premise and its owned interval. Distinct correlations remain
+ambiguous when demanded, and scratch equations grant no permissions.
+
+Recursive terms retain independent nominal requirements beneath local references.
+Scoped shape lookup handles captured assumptions at the actual root depth, with
+separate formation, ordinary-use and normalized caches. A constructor's local
+Sized requirement may defer, but the type remains unsized for use checks.
+Scoped projection normalization shares its cursor and opening/closing folds
+across roots, preserves nested and empty binders and retains selected lifetime
+evidence until the final region proof. Closing immutable owner aliases avoids
+repeated scans of an accumulated proof. Foreign free identities fail.
+
+The ambiguity investigation qualifies 28 pinned-rustc source controls (20 accepted,
+8 rejected), and the recursive nominal investigation qualifies 13 (8 accepted,
+5 rejected). Twelve corrected projection/Sized controls qualify (5 accepted,
+7 rejected). Original hypothesis mismatches and controls rejected for E0582 are
+retained. Static-only projected outlives and equality controls trigger internal
+compiler errors in pinned rustc 1.98.0; they are excluded from semantic oracle
+evidence, not counted as language rejections. Typed static-only projection tests
+remain internal proof-soundness checks. No PA21 source or native success is claimed.
+
+The new typed tests exercise actual declaration, nominal, projection and lifetime
+consumers. Declaration ambiguity widths 64–1024 take 12n counted steps without new
+canonical types. Adding the independent own-trait goal makes the earlier formation
+family take 17n steps and n new types. Growing scoped projection terms at widths
+16–1024 take 11n+9 counted steps and 3n+1 new types; repeated roots add request work
+but no new types or scopes. These are bounded internal families, not a proof of
+whole-frontend linearity. The focused run passes 213 library tests, strict Clippy,
+the 837-file zero-finding audit and every PA19/20 text oracle.
+
+Full validation passes all **32 recorded gates**: **1,388 regular tests**,
+**91 native groups**, **6,228 PA1–PA20 exact cases**, formatting, strict Clippy,
+the **837-file zero-finding audit**, harness, backend and upstream checks.
+Fresh PA19/PA20 independent runs check **1,080/1,345 source cases** and execute
+**254/484 native comparisons**. The seven/one documented acceptance differences
+are unchanged. All **7,177 source/configuration hashes** and **18,684 oracle
+sidecars** match. PA21–PA25 discovery still fails as planned.
+
+The frozen candidate is
+`db33c1af84ff6db968a508d6351983a8b447def9183ed81c81e2ad88d89ae3c5`,
+compared with published `328f419` /
+`02d6034bf8c2c14673a909fffec3d8ca0406491cc661ccf2e081ba9b513bbfc0`.
+All **33 timing jobs** and **29 instruction pairs** complete with matching outputs.
+Instruction deltas span **−0.34% to +0.70%**; none exceeds the 1% investigation
+threshold. Initial paired wall medians span **−21.16% to +9.38%**, while same-binary
+medians span **−10.84% to +0.38%** and the largest A/A spread is **64.69%**.
+These shared-host measurements do not establish portable wall-time changes.
+Median peak RSS deltas span **−58 to +68 KiB**.
+
+Four initial timing increases exceed 3%. The predeclared policy selects the three
+largest once, with batch-16 A/B, A/A and B/B follow-ups:
+
+| Workload | Initial A/B change | Follow-up A/B | Follow-up A/A | Follow-up B/B |
+| --- | ---: | ---: | ---: | ---: |
+| recursive-copy-64 | +9.38% | −0.02% | +0.25% | +0.35% |
+| trait-view-32-full | +7.96% | −2.87% | −2.61% | −1.32% |
+| shared-depth-callers-96 | +5.08% | −4.67% | +1.90% | −2.94% |
+
+Those three increases are not reproduced by their fixed follow-ups. The fourth,
+`coupled-48` at **+3.63%**, remains recorded without an additional run under the
+three-input policy. No observation is discarded or repeated until favorable.
+The earlier streamed-proof wall-time effect against `b1410a8` remains unresolved.
+
+| Workload | Baseline heap bytes | Candidate heap bytes | Baseline combined heap/overhead/stack | Candidate combined |
+| --- | ---: | ---: | ---: | ---: |
+| ordinary-256 | 2,432,261 | 2,432,021 | 2,528,288 | 2,528,360 |
+| constant-chain-uses-256 | 5,381,881 | 5,381,521 | 5,540,072 | 5,540,080 |
+
+The fixed combined peaks increase by **72/8 bytes**, while observed heap peaks
+fall by **240/360 bytes**. These samples are not an explanation of the broader
+RSS range. ELF text/data/BSS increases by **28,656 bytes**. Retained evidence totals
+**1,092 study observations**, **168 qualification observations**, **7,176 timed**
+and **1,104 qualification compiler invocations**, plus **58 Callgrind** and
+**four Massif** runs. All outputs, frozen sources and binary hashes agree.
+Receipts remain in `obj/pa21-work/clause-consumers-final/`; language investigations
+remain in `obj/pa21-work/ambiguity-v1/` and `obj/pa21-work/term-formation-v1/`.
+
+Scoped lifetime assumptions, nominal outlives propagation, conformance, body
+integration and binder-aware source production remain unfinished. Independent
+source controls and typed proof tests do not establish end-to-end PA21 acceptance.
+PA21–PA25 remain planned.
+
+Successful guarded cleanup reclaimed **6.90 GiB** from **5,751 generated files**.
+Inputs, diagnostics, observations and current immutable comparison pins remain.

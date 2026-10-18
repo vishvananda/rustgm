@@ -1892,6 +1892,32 @@ filter. Cache scoped formation by canonical clause within the trait-header epoch
 reuse the ordinary requirements cache and allocate scoped state only on demand.
 Charge shared capture/lowering work and invalidate it when header bindings change.
 
+Keep an independent own-trait formation requirement separate from the logical
+clause. A clause-local input defers that declaration ambiguity check; it does not
+make a later ambiguous goal usable. Check remaining declaration requirements
+against only the caller assumption index in isolated inference, retaining no
+trial equations or implementation permission. Equivalent already-opened goals
+may keep one real premise and its owned lifetime interval. Distinct correlations
+remain alternatives, and source membership and allocation-frontier checks precede
+selection.
+
+Recursive equality/outlives term formation starts at its actual clause depth.
+Lift independent nominal requirements individually, including beneath a local
+reference; defer only a requirement mentioning a surrounding local. A local
+Sized requirement may be deferred without reporting the type as sized. Keep
+formation shape caches separate from ordinary use checks and from shape answers
+requiring retained normalization evidence. Neither a deferred condition nor a
+completed structural shape supplies a lifetime well-formedness proof.
+
+Scoped term normalization opens enclosing owner captures beneath the clause
+binder, preserving its local and nested callable identities. Related roots share
+one cursor per fixed environment, universal arity and implementation availability;
+each selected implementation still owns fresh witnesses. Retain all scoped
+evidence until the final directed lifetime proof. Restore private selection
+identities before closing the immutable owner aliases. Share opening, structural
+normalization and closing folds across roots instead of scanning the accumulated
+proof or a growing type prefix for each request. Unknown free identities fail.
+
 Classify definition-time satisfaction from the original complete clause using
 cached properties. Generic inputs, free lifetimes and nonempty local lifetime
 binders defer satisfaction, including binders nested inside callable subjects,

@@ -17,6 +17,9 @@ use std::{
 };
 pub(in crate::sema) use universal::{ScopedEvidence, ScopedSelection};
 #[cfg(test)]
+#[path = "../../../tests/invariants/declaration_assumptions.rs"]
+mod declaration_tests;
+#[cfg(test)]
 mod tests;
 
 #[derive(Default)]
