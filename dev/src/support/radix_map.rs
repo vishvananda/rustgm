@@ -1,18 +1,32 @@
 //! Canonical radix maps share matching requirements without copying growing prefixes.
-use super::Error;
 use std::{collections::HashMap, hash::Hash};
 #[cfg(test)]
-#[path = "../../../tests/invariants/outlives_maps.rs"]
+#[path = "../../tests/invariants/outlives_maps.rs"]
 mod tests;
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) enum Error {
+    Identity,
+    Budget,
+}
+impl std::fmt::Display for Error {
+    fn fmt(&self, out: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        out.write_str(match self {
+            Self::Identity => "invalid persistent map identity",
+            Self::Budget => "persistent map work budget exceeded",
+        })
+    }
+}
+impl std::error::Error for Error {}
+
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash)]
-pub(super) struct Id(u32);
+pub(crate) struct Id(u32);
 impl Id {
     pub const EMPTY: Self = Self(0);
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
-pub(super) enum Node<V> {
+pub(crate) enum Node<V> {
     Leaf(u32, V),
     Branch {
         prefix: u32,
@@ -35,7 +49,7 @@ impl<V: Copy> Node<V> {
     }
 }
 
-pub(super) struct Map<V> {
+pub(crate) struct Map<V> {
     nodes: Vec<Node<V>>,
     index: HashMap<Node<V>, Id>,
     unions: HashMap<(Id, Id), Option<Id>>,

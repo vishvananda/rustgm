@@ -246,3 +246,82 @@ fn projected_self_and_type_arguments_keep_their_independent_nested_reference_deb
     }
     Ok(())
 }
+
+#[test]
+fn growing_prefixes_with_distinct_targets_finish_the_actual_body_proof() -> Result {
+    let mut f = Fixture::default();
+    let t = f.parameter()?;
+    let mut c = contract(&f, t);
+    c.universals = 4096;
+    c.obligations.clear();
+    let mut root = t;
+    for slot in 0..4096 {
+        root = f.tuple(&[root, t])?;
+        let ty = f.reference(RegionId::bound(1, slot)?, root)?;
+        c.obligations.push(Obligation {
+            source: source(u32::from(slot) + 2),
+            kind: ObligationKind::ScopedWellFormed {
+                ty,
+                bound_regions: 0,
+            },
+        });
+    }
+    let mut paid = c.clone();
+    paid.type_assumptions.push(
+        Predicate {
+            ty: t,
+            bound: Bound::Outlives(RegionId::STATIC),
+        }
+        .into(),
+    );
+    valid(&f, paid.clone(), true, 0);
+    // One unpaid debt has a unique source; the order in which several distinct
+    // failing targets are diagnosed is not part of the formation contract.
+    let other = f.parameter()?;
+    let ty = f.reference(RegionId::bound(1, 0)?, other)?;
+    paid.parameters.clone_from(&f.parameters);
+    paid.obligations.push(Obligation {
+        source: source(5000),
+        kind: ObligationKind::ScopedWellFormed {
+            ty,
+            bound_regions: 0,
+        },
+    });
+    valid(&f, paid, false, 5000);
+    Ok(())
+}
+
+#[test]
+fn promotion_keeps_the_first_source_of_an_unpaid_debt() -> Result {
+    let mut f = Fixture::default();
+    let t = f.parameter()?;
+    let root = f.reference(RegionId::bound(1, 0)?, t)?;
+    let other = f.reference(RegionId::bound(1, 1)?, t)?;
+    let mut c = contract(&f, root);
+    c.obligations.push(Obligation {
+        source: source(3),
+        kind: ObligationKind::ScopedWellFormed {
+            ty: other,
+            bound_regions: 1,
+        },
+    });
+    // Distinct structure revisits the original component after promotion.
+    let prefix = f.tuple(&[t, t])?;
+    let repeated = f.reference(RegionId::bound(1, 0)?, prefix)?;
+    c.obligations.push(Obligation {
+        source: source(4),
+        kind: ObligationKind::ScopedWellFormed {
+            ty: repeated,
+            bound_regions: 1,
+        },
+    });
+    c.type_assumptions.push(
+        Predicate {
+            ty: t,
+            bound: Bound::Outlives(RegionId::bound(0, 1)?),
+        }
+        .into(),
+    );
+    valid(&f, c, false, 2);
+    Ok(())
+}

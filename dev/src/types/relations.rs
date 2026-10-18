@@ -2,13 +2,13 @@
 mod ancestry;
 mod clauses;
 mod identity_guard;
-mod persistent;
 mod projected_bounds;
 mod scopes;
 mod structural;
 mod type_bounds;
 mod universal_bounds;
 use super::region_graph::{Error, Graph, Kind as RegionKind, Region, Solution};
+use crate::support::radix_map as persistent;
 use crate::types::{
     Kind, RegionId, Store, TypeId,
     arguments::Argument,
@@ -662,5 +662,14 @@ impl<'a> Constraints<'a> {
                 parameters: self.parameters,
             },
         })
+    }
+}
+
+impl From<persistent::Error> for Error {
+    fn from(error: persistent::Error) -> Self {
+        match error {
+            persistent::Error::Identity => Self::Identity,
+            persistent::Error::Budget => Self::Budget,
+        }
     }
 }

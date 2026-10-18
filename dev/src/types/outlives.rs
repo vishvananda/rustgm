@@ -1,6 +1,7 @@
 //! Well-formedness requirements over typed templates, with bounded recursive propagation.
 mod clause_requirements;
 mod clauses;
+mod component_sets;
 mod components;
 mod contracts;
 mod instances;

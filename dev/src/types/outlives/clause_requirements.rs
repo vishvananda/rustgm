@@ -1,7 +1,10 @@
 //! Stream independent clause-formation debts once per body, preserving their first source.
 use super::{
-    Bounds, ComponentKind, HashMap, Projection, RegionId, Requirements, ScalarRequirements, Scan,
-    Store, TypeId, components::Walk, requirements::Demand,
+    Bounds, ComponentKind, Projection, RegionId, Requirements, ScalarRequirements, Scan, Store,
+    TypeId,
+    component_sets::{Atom, Sets},
+    components::Walk,
+    requirements::Demand,
 };
 use crate::types::{bound_uses::captures::Slots, callable::Templates};
 #[cfg(test)]
@@ -63,11 +66,48 @@ impl<'a> Formation<'a> {
     }
 }
 
-/// Distinct targets and policies must not reuse one another's component visits.
-/// Each cursor retains graph nodes, never flattened results for every prefix.
-#[derive(Default)]
-struct Deferred {
-    walks: HashMap<(RegionId, ComponentKind), Walk>,
+/// Share structural component sets while retaining target-specific debt publication.
+enum Deferred {
+    Single {
+        key: Option<(RegionId, ComponentKind)>,
+        walk: Walk,
+    },
+    Shared(Box<Sets>),
+}
+impl Default for Deferred {
+    fn default() -> Self {
+        Self::Single {
+            key: None,
+            walk: Walk::default(),
+        }
+    }
+}
+impl Deferred {
+    fn record(
+        scan: &mut Scan,
+        shorter: RegionId,
+        atoms: impl Iterator<Item = Atom>,
+    ) -> Result<(), &'static str> {
+        for atom in atoms {
+            scan.budget.charge()?;
+            match atom {
+                Atom::Region(longer) => scan.record((longer, shorter)),
+                Atom::Parameter(parameter) => {
+                    let pair = (parameter, shorter);
+                    if scan.unique_parameters.insert(pair) {
+                        scan.parameter_pairs.push(pair);
+                    }
+                }
+                Atom::Projection(projection) => {
+                    let pair = (projection, shorter);
+                    if scan.unique_projections.insert(pair) {
+                        scan.projection_pairs.push(pair);
+                    }
+                }
+            }
+        }
+        Ok(())
+    }
 }
 impl Demand for Deferred {
     fn require(
@@ -87,29 +127,35 @@ impl Demand for Deferred {
         {
             return Ok(());
         }
-        let (regions, parameters, projections) = self
-            .walks
-            .entry((shorter, kind))
-            .or_default()
-            .extend(types, &[ty], depth, kind, &mut scan.budget)?;
-        scan.budget
-            .work(regions.len() + parameters.len() + projections.len())?;
-        for longer in regions {
-            scan.record((longer, shorter));
+        let requested = (shorter, kind);
+        if let Self::Single { key: Some(key), .. } = self
+            && *key != requested
+        {
+            // One cursor is linear for a single target/policy. Promote once when
+            // sharing across targets becomes necessary; published debt identities
+            // stay in Scan, preserving the first source even after this rebuild.
+            *self = Self::Shared(Box::default());
         }
-        for parameter in parameters {
-            let pair = (parameter, shorter);
-            if scan.unique_parameters.insert(pair) {
-                scan.parameter_pairs.push(pair);
+        match self {
+            Self::Single { key, walk } => {
+                *key = Some(requested);
+                let (regions, parameters, projections) =
+                    walk.extend(types, &[ty], depth, kind, &mut scan.budget)?;
+                Self::record(
+                    scan,
+                    shorter,
+                    regions
+                        .into_iter()
+                        .map(Atom::Region)
+                        .chain(parameters.into_iter().map(Atom::Parameter))
+                        .chain(projections.into_iter().map(Atom::Projection)),
+                )
+            }
+            Self::Shared(sets) => {
+                let atoms = sets.extend(types, ty, depth, kind, shorter, &mut scan.budget)?;
+                Self::record(scan, shorter, atoms.into_iter())
             }
         }
-        for projection in projections {
-            let pair = (projection, shorter);
-            if scan.unique_projections.insert(pair) {
-                scan.projection_pairs.push(pair);
-            }
-        }
-        Ok(())
     }
     fn projection(
         &mut self,

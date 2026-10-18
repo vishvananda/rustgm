@@ -1982,10 +1982,19 @@ instead consume the completed declaration's whole-input formation filter. None
 of these formation checks grants a caller permission.
 
 Within one body, stream only newly discovered formation requirements from each
-actual source root. Share structural visits and component walks per target and
-component policy, keeping binder depth in the visited key. Do not cache a flattened
-requirement vector for every growing prefix. Validate each root's local slot count
-even when its graph was visited before; charge repeated roots and capture work.
+actual source root. Share structural visits and canonical persistent component
+sets across targets, keeping binder depth and component policy in structural keys.
+Keep the incremental component walk while there is only one target/policy pair;
+promote once to shared sets when another appears, retaining already published
+debt identities and their first source. Reuse the bounded radix-map implementation
+for set unions. Target cursors visit
+shared set nodes, so repeated components in growing type prefixes do not cause a
+fresh structural walk for each lifetime. Shared argument and callable-parameter
+lists also have summaries. Charge structural edges, unions and published debts;
+when both components and targets grow, the actual output relation can grow as
+their product. Do not cache a flattened requirement vector for every growing
+prefix. Validate each root's local slot count even when its graph was visited
+before; charge repeated roots and capture work.
 A fresh body needs fresh formation state and a separate assumption environment.
 
 Specialization and dispatch preserve the formation binder during substitution.

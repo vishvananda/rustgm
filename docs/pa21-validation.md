@@ -1349,3 +1349,112 @@ Successful cleanup removed **5,753 generated files (6.91 GiB)**; receipt
 only after `ecad7ad` passed exact-commit CI, with verified replacement hashes in
 `obj/pa21-work/body-formation-v1/baseline-retirement.json`. Keep only the current
 baseline and candidate pins until this replacement passes its exact-commit CI.
+
+## Shared formation components across lifetime targets
+
+This maintainer change fixes repeated traversal in PA21 body formation. It does
+not activate PA21's source or grading contract; PA21–PA25 remain planned.
+A typed body probe with growing tuple prefixes containing only `T`, distinct
+captured lifetime targets and the caller assumption `T: 'static` declared ten
+positive outcomes before execution. The published compiler exhausted its
+one-million-step traversal budget at 1,024 and 4,096 distinct targets, although
+4,096 prefixes with a common target passed. The actual requirement output was
+linear in target count; the per-target structural walks repeated shared prefixes.
+
+Formation now uses canonical component sets shared across targets. The existing
+radix-map implementation moved from `types/relations` to `support/radix_map`, with
+its own compact error type and conversion back to lifetime-constraint errors;
+its map algorithm and invariants are unchanged. Structural summaries distinguish
+types, argument groups, parameter lists, binder depth and component policy. Each
+target visits shared set nodes instead of walking the original prefix again.
+One target/policy retains the incremental walk, promoting once when another pair
+appears. Published debt identities survive promotion, preserving their original
+source. This avoids flattened component vectors for every prefix.
+
+Whole-debt local-capture filtering still precedes decomposition. Independent
+nested formation, opaque projection identities/depths, repeated-root slot
+validation and separate body permissions remain intact. Seven new maintainer
+tests cover independent growth axes, comparison with the original component
+walk across scopes/policies, shared wide parameter lists, late promotion, policy
+changes and the actual 4,096-target body proof with a uniquely sourced unpaid
+debt. Both policy orders and source retention after promotion are exercised.
+
+The charged-work invariants include:
+
+| Prefix family | Scale | New parameter debts | Charged steps |
+| --- | ---: | ---: | ---: |
+| Repeated component, distinct targets | 1,024 | 1,024 | 23,564 |
+| Repeated component, distinct targets | 4,096 | 4,096 | 94,220 |
+| Distinct components, common target | 4,096 | 4,096 | 45,056 |
+| Distinct components and targets | 128 | 8,256 | 28,617 |
+
+The last family has quadratic output. These controls establish the
+bounds for these prefix families, not a universal linearity claim for every type
+graph or caller population. No resource limit was raised. The preexisting
+4,096-prefix/two-target control passes at 118,793 charged steps.
+
+A frozen typed driver compares the actual body proof on inputs both compilers
+accept. Initial unconditional set construction improved distinct targets but
+regressed the common-4,096 case by 31.51% wall time; those observations remain in
+`obj/pa21-work/formation-targets-v1/probe-comparison`. The revised strategy's nine
+jobs retain 234 observations and 936 invocations, A/A calibration, five paired
+ABBA blocks and same-binary controls. Every recorded output hash matches its
+exact declared accepted output; ten separate correctness cases also match.
+
+| Typed driver case | Paired wall change | Instruction change |
+| --- | ---: | ---: |
+| Common target, 128 prefixes | +0.86% | −1.44% |
+| Common target, 1,024 prefixes | −1.80% | −1.88% |
+| Common target, 4,096 prefixes | +0.64% | −2.00% |
+| Distinct targets, 128 prefixes | −32.97% | −72.80% |
+| Distinct targets, 512 prefixes | −82.55% | −92.44% |
+
+Same-binary medians span −2.06% to +1.86%; the largest calibration spread is
+21.33%. These are typed-probe measurements, not general source compile-time
+numbers or a rustc comparison. Four Massif profiles include graph construction
+and the body proof: common-4,096 peak heap changes from 1,617,209 to 1,616,641
+bytes, while distinct-512 changes from 3,840,231 to 303,935 bytes. Combined peaks
+change from 1,624,984 to 1,624,528 and 3,867,168 to 312,520 bytes, respectively.
+
+Full validation in `obj/pa21-work/formation-targets-final` passes 35 gates:
+strict formatting and all/pedantic Clippy, the 868-file audit with zero findings,
+harness/backend/upstream checks, 1,454 maintainer tests (247 library invariants),
+91 native groups and all 6,228 released course cases. PA19 independently checks
+1,080 sources and 641 LowIR cases, including 254 executable comparisons; PA20
+checks 1,345 sources and 799 LowIR cases, including 484 executable comparisons.
+The existing seven plus one documented acceptance differences remain unchanged.
+Planned PA21–PA25 discovery still fails explicitly. The run verifies 7,256 frozen
+source/configuration hashes and 18,684 unchanged oracle sidecars.
+
+The broader immutable compiler comparison has 33 timing jobs and 29 instruction
+pairs, with full/count output equality. Paired wall medians range from −0.68% to
++3.44%, same-binary medians from −1.51% to +1.11%, and instructions from −0.139%
+to +0.087%. The largest original A/A spread is 102.89%, so shared-host timings
+support no portable speedup claim. The sole above-3% case, shared-depth-callers-96,
+receives the predeclared batch-16 AB/AA/BB follow-up: +1.27%, −0.19% and +2.41%,
+respectively, with at most 15.39% calibration spread. All original observations
+remain. No instruction increase exceeds 1%.
+
+RSS medians decrease by 88–268 KiB; they do not establish a general heap saving.
+The ordinary-input Massif heap peak is unchanged at 2,432,261 bytes, with a
+16-byte combined-peak increase. The constant-chain heap peak decreases by 180
+bytes and its combined peak by 240 bytes. ELF text/data/BSS totals grow from
+6,375,421 to 6,391,801 bytes. The broad study and its fixed follow-up retain 936
+study observations, 144 qualification observations, 4,680 timed invocations,
+720 qualification invocations, 58 Callgrind runs and four Massif runs, separate
+from the typed driver measurements above. This incremental comparison does not
+settle the earlier b1410 streamed-proof baseline question.
+
+The frozen application hashes are baseline
+`d5bc985cc02c02b844e9f5f9ed6ed4aa49ead133c0bd05cf13d0220053ddb16c`
+and candidate
+`01d66e6c9c87843b82754bb09d143299a4050fd34861e19d99d8e010edb97f1e`.
+The final typed driver rebuild matches the measured candidate exactly:
+`3c6f51a91aa39d4d6cf7f688dd678caa8b31ffd7b1b1deb63dd375beb561b674`.
+The complete summary SHA-256 is
+`4ab471fbc75d848689788ddb8219560475265404eb3e914c8748309d587a9aa8`.
+The older caller-clause baseline was retired only after exact-commit CI succeeded
+for its published replacement, with verified binary hashes and a retained receipt.
+
+The successful storage wrapper removed 5,753 generated files (6.91 GiB of
+unshared blocks); receipt: `obj/cleanup/1792361976441780011.jsonl`.
