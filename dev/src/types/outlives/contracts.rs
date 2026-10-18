@@ -146,10 +146,11 @@ impl Bounds {
                 .map(|(item, predicate)| (item, Clause::Predicate(predicate))),
         )
     }
-    /// Keep whole declaration clauses at the boundary without materializing a flat copy.
+    /// Infer only binder-independent outlives consequences of declaration clauses.
+    /// A dependent quantified requirement remains an obligation of nominal formation;
+    /// it supplies no implied scalar or projected bound here.
     /// # Errors
-    /// Quantified requirements need scoped nominal inference, which is not yet supported.
-    /// Also rejects malformed templates and exhausted propagation work.
+    /// Rejects malformed templates, clauses and exhausted propagation work.
     pub fn infer_with_clauses(
         types: &mut Store,
         definitions: &Definitions,
@@ -189,9 +190,13 @@ impl Bounds {
             inference.scan.record(pair);
             inference.enqueue(types, item)?;
         }
-        for (item, predicate) in predicates {
+        let mut clauses = super::clauses::Declarations::default();
+        for (item, clause) in predicates {
             inference.scan.budget.charge()?;
-            let predicate = predicate.ordinary()?;
+            let Some(predicate) = clauses.outlives(types, clause, &mut inference.scan.budget)?
+            else {
+                continue;
+            };
             if let Bound::Outlives(shorter) = predicate.bound {
                 inference.scan.clear();
                 inference.scan.type_bound(types, predicate.ty, shorter, 0)?;

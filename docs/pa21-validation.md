@@ -832,3 +832,87 @@ PA21–PA25 remain planned.
 
 Successful guarded cleanup reclaimed **6.90 GiB** from **5,751 generated files**.
 Inputs, diagnostics, observations and current immutable comparison pins remain.
+
+
+## Binder-independent nominal implication — 2026-10-18
+
+Nominal outlives inference now distinguishes a complete quantified obligation
+from a lifetime bound implied by a nominal input. It filters a predicate that
+mentions its own local lifetime before extracting any components. Independent
+components of that filtered predicate do not become caller assumptions. Empty
+and unused quantifiers lift into the owner scope without capturing nested
+callable locals. Quantified trait conditions do not obstruct independently
+implied field lifetimes; formation still checks those trait conditions.
+
+This follows the pinned compiler's
+[implied-outlives query](https://github.com/rust-lang/rust/blob/88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_trait_selection/src/traits/query/type_op/implied_outlives_bounds.rs),
+which filters the complete normalized predicate before extracting components.
+The ordinary nominal propagation worklist is unchanged. The new scoped helper
+is allocated on demand and shares capture summaries, lowering folds and complete
+clause results. It caches inferred requirements, never permission to use them.
+
+Independent pinned-rustc qualification contains **48 controls: 31 accepted and
+17 rejected**, with no mismatches or infrastructure failures. All nine ordinary
+controls also match the published `db33c1af84ff` compiler. Earlier incorrect
+hypotheses remain alongside their diagnostics in the investigation records.
+For example, an explicit `for<'a> T: 'a` assumption can justify `T: 'static`,
+but a nominal carrying that condition does not grant the same assumption to
+its caller. An ordinary nominal `T: 'static` condition can be implied by an
+input type; declaring a nested field still has its separate formation proof.
+
+Explicit caller assumptions require their own rules. The pinned
+[environment elaborator](https://github.com/rust-lang/rust/blob/88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_type_ir/src/elaborate.rs)
+does not decompose a predicate with a locally bound target. With a nonlocal
+target it can retain independent components. The original predicate remains
+available to the
+[outlives verifier](https://github.com/rust-lang/rust/blob/88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_infer/src/infer/outlives/verify.rs).
+The nominal implication filter must not substitute for that separate consumer.
+
+Eight new integration tests cover whole-predicate filtering, empty and unused
+binders, independent fields, nominal argument substitutions, opaque projections,
+nested callable scopes, invalid identities and shared captured type graphs.
+The existing universal nominal formation test now verifies both the absence of
+an inferred scalar bound and retention of the actual quantified obligation;
+its non-static instance still fails the final lifetime proof.
+
+For growing opaque projected subjects with duplicate clauses, widths 16 through
+1,024 use exactly **18 × width work steps** and **2 × width new types**.
+This establishes additive capture/lowering work for that family; it does not
+establish whole-frontend linearity or remove the cost of arbitrary component
+collection. Focused validation passes 23 integration tests, 213 library tests,
+strict Clippy, the 839-file audit with zero findings, and harness checks.
+
+Full validation passes all **32 gates**: **1,396 regular tests**, **91 native
+groups**, **6,228 exact PA1–20 course cases**, formatting, strict Clippy, the
+839-file audit, harness, backend and upstream checks. Fresh PA19 qualification
+covers 1,080 source checks, 641 LowIR checks and 254 native executions; PA20
+covers 1,345 source checks, 799 LowIR checks and 484 native executions. The same
+seven PA19 and one PA20 documented acceptance differences remain. All **7,179
+source/configuration hashes** and **18,684 oracle sidecars** are unchanged.
+
+The immutable candidate is `67c2184be048`; the baseline is published
+`db33c1af84ff`. Across **33 timing jobs** and **29 instruction-count pairs**,
+instruction changes range from **−0.45% to +0.19%**. Paired wall-time changes
+range from **−10.61% to +1.51%**; same-binary comparisons range from **−0.66% to
++1.12%**, with maximum A/A spread **19.10%**. No positive timing median crosses
+the predeclared 3% follow-up threshold, and no instruction increase crosses 1%.
+These shared-host timings do not establish a portable speedup. The earlier
+streamed-proof wall-time effect against `b1410a8` remains unresolved.
+
+Observed RSS changes range from **−186 to +150 KiB**. Fixed Massif comparisons
+measure ordinary-input heap 2,432,021 → 2,432,261 bytes and combined
+heap/overhead/stack 2,528,360 → 2,528,288 bytes; the constant-chain input measures
+heap 5,381,521 → 5,381,701 and combined 5,539,648 → 5,539,832 bytes. These samples
+do not explain the broader RSS range. ELF text/data/BSS increases by **8,184
+bytes**. Evidence retains **858 study observations**, **132 qualification
+observations**, **3,432 timed** and **528 qualification compiler invocations**,
+**58 Callgrind** and **four Massif** runs. All outputs and frozen hashes agree.
+Receipts remain in `obj/pa21-work/implied-outlives-final/`; language controls and
+pinned compiler-source provenance remain in `obj/pa21-work/outlives-consumers-v1/`.
+
+PA21 source gates remain closed. Caller assumptions, declaration region
+consumers, conformance, body integration and binder-aware source production
+remain unfinished. PA21–PA25 remain planned.
+
+Successful guarded cleanup reclaimed **6.90 GiB** from **5,751 generated files**.
+Inputs, diagnostics, observations and the current comparison binaries remain.

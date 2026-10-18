@@ -1,4 +1,6 @@
 //! Nominal contracts substitute rigid components without expanding recursive fields.
+#[path = "nominal_outlives/clauses.rs"]
+mod clauses;
 use rustgm::types::{
     ItemId, Kind, RegionId, Store, TypeId,
     aggregate::{self, Definitions, Repr, Variant},

@@ -263,6 +263,14 @@ fn quantified_outlives_is_a_nominal_obligation_not_an_omitted_ordinary_contract(
             .ok_or("missing nominal")?[0]
             .value = clause;
         facts.generics.nominal_requirements.clear();
+        let bounds = crate::types::outlives::Bounds::infer_with_clauses(
+            &mut facts.types,
+            &facts.aggregates,
+            &[],
+            [(ItemId(owner.0), clause)],
+        )?;
+        assert_eq!(bounds.parameters(ItemId(owner.0)), Some([].as_slice()));
+        assert_eq!(bounds.get(ItemId(owner.0)), Some([].as_slice()));
         let argument = facts.types.intern(Kind::Reference {
             mutable: false,
             region,

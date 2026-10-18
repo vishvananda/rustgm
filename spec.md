@@ -1880,6 +1880,16 @@ clauses remain proof obligations; the separate ordinary lifetime-contract lane
 does not discharge them. Formation retains universal evidence until the caller's
 final lifetime gate and requires an explicit proof scope.
 
+Nominal implication filters each complete outlives clause before extracting its
+components. A predicate mentioning its own quantified lifetime contributes no
+implied scalar or projected bound, even when other components are independent.
+Lift an empty or unused quantifier without capturing nested callable locals.
+Ignore non-outlives clauses only in this implication query; nominal formation
+still checks their complete contracts. Share capture summaries and lowering
+folds across canonical clauses, charge their work, and allocate scoped state
+only when demanded. This implication filter is separate from elaborating an
+explicit caller assumption and must not replace that consumer's rules.
+
 Declaration formation for a quantified trait bound is a separate structural
 query from using its logical implications. Under the pinned compiler's rules,
 defer formation of each entire subject or type argument that mentions the
