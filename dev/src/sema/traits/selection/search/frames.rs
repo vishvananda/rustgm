@@ -3,7 +3,7 @@ use super::{Context, Decision, Declarations, Goal, Node, Predicate, Search, Sour
 use crate::{
     resolve::model::DefId,
     sema::traits::selection::instantiation::{self, Instance},
-    types::{infer, parameters::predicates::Bound, shape_key::ShapeKey},
+    types::{infer, lifetime_proof::ScopeId, parameters::predicates::Bound, shape_key::ShapeKey},
 };
 
 pub(super) struct Frame {
@@ -14,6 +14,7 @@ pub(super) struct Frame {
     pub context: Context,
     pub goal: Goal,
     pub first: u32,
+    pub scope: ScopeId,
     pub started: bool,
     pub key: Option<ShapeKey>,
     pub canonical: Option<Predicate>,
@@ -33,6 +34,7 @@ pub(super) struct Trial {
     pub goal: Goal,
     pub instance: Instance,
     pub first: u32,
+    pub scope: ScopeId,
     pub end: u32,
     pub pending: Vec<usize>,
     pub cursor: usize,
@@ -58,6 +60,7 @@ impl Frame {
             context,
             goal,
             first,
+            scope: ScopeId::ROOT,
             started: false,
             key: None,
             canonical: None,
@@ -100,6 +103,7 @@ impl Trial {
             goal,
             instance,
             first,
+            scope: frame.scope,
             end,
             pending,
             cursor: 0,
@@ -145,34 +149,36 @@ impl Search<'_> {
                 requirements.sized.push(ty);
             }
         }
-        let goal = match trial
-            .context
-            .resolved_predicate(&mut facts.types, &trial.goal)
-        {
-            Ok(goal) => goal,
+        let (goal, arguments) = match trial.resolved_parent(facts) {
+            Ok(resolved) => resolved,
             Err(infer::Error::Unresolved) => return Ok(Some(Decision::Deferred)),
             Err(error) => return Err(inference(error)),
         };
-        let arguments = match trial.instance.arguments(facts, &mut trial.context) {
-            Ok(arguments) => arguments,
-            Err(infer::Error::Unresolved) => return Ok(Some(Decision::Deferred)),
-            Err(error) => return Err(inference(error)),
-        };
-        let node = self.query.nodes.len();
-        self.query.nodes.push(Node {
-            goal,
-            source: Some(Source::Implementation {
-                owner: trial.instance.owner,
-                arguments,
-            }),
-            children: std::mem::take(&mut trial.children),
-            first: trial.first,
-            end: trial.end,
-            equalities: std::mem::take(&mut trial.context.region_equalities),
-            outlives: std::mem::take(&mut trial.instance.outlives),
-            type_outlives: requirements.type_outlives,
-            sized: requirements.sized,
-        });
+        if !self.conditions(facts, trial, arguments)? {
+            trial.requirements = Some(Box::new(requirements));
+            return Ok(None);
+        }
+        let owned_end = trial.first
+            + u32::try_from(trial.instance.regions.len())
+                .map_err(|_| "impl region count overflow")?;
+        let node = self.query.push(
+            Node {
+                goal,
+                source: Some(Source::Implementation {
+                    owner: trial.instance.owner,
+                    arguments,
+                }),
+                children: std::mem::take(&mut trial.children),
+                first: trial.first,
+                end: trial.end,
+                equalities: std::mem::take(&mut trial.context.region_equalities),
+                outlives: std::mem::take(&mut trial.instance.outlives),
+                type_outlives: requirements.type_outlives,
+                sized: requirements.sized,
+            },
+            trial.scope,
+            trial.first..owned_end,
+        );
         Ok(Some(Decision::Proven(node)))
     }
 }

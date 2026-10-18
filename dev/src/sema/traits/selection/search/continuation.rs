@@ -12,6 +12,7 @@ pub(super) enum Progress {
 }
 
 pub(super) struct Query {
+    pub scopes: Option<Box<super::scopes::Scopes>>,
     pub allocations: super::allocations::Allocations,
     pub availability: Availability,
     pub nodes: Vec<Node>,
@@ -43,6 +44,7 @@ impl<'a> Search<'a> {
         Self {
             caller,
             query: Query {
+                scopes: None,
                 allocations: super::allocations::Allocations::new(first),
                 availability,
                 builtins,
@@ -114,7 +116,11 @@ impl<'a> Search<'a> {
                     return Ok(Progress::Pending(owner));
                 }
                 Action::Descend => {
-                    let child = frame.child(facts, self.query.allocations.floor())?;
+                    let child = if let Some(child) = self.condition_child(facts, frame)? {
+                        child
+                    } else {
+                        frame.child(facts, self.query.allocations.floor())?
+                    };
                     stack.push(child);
                 }
                 Action::Complete(decision) => {
@@ -122,13 +128,13 @@ impl<'a> Search<'a> {
                     if let Some(key) = frame.key {
                         self.query.active.remove(&key);
                     }
-                    let (canonical, cycles) = (frame.canonical, frame.cycles);
+                    let (canonical, cycles, scope) = (frame.canonical, frame.cycles, frame.scope);
                     stack.pop();
                     let Some(parent) = stack.last_mut() else {
                         self.query.decision = Some(decision);
                         return Ok(Progress::Ready(decision));
                     };
-                    self.remember(canonical, cycles, decision);
+                    self.remember(canonical, cycles, decision, scope);
                     self.accept(facts, parent, decision)?;
                 }
             }

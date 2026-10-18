@@ -10110,3 +10110,29 @@ remain retained with matching outputs and hashes. Cleanup reclaimed 6.90 GiB.
 Candidate SHA-256: `af86f1d5dc81d8532cbae134ddadbcd94452e52badb661b955a6afa459098cc9`.
 See the PA21 validation record for corrected control expectations and the unresolved
 reference-formation investigation. PA21–PA25 remain unfinished.
+
+## PA21 implementation condition scopes
+
+Quantified implementation conditions now descend on the existing iterative trait
+search. Ordinary equations resolve the parent first; one retained canonical parent
+and shared opening folds avoid repeated work across its universal conditions.
+Selected scope ownership survives header waits and is assembled from an ordered
+allocation ledger. Discarded candidates publish no constraints, separate trials
+keep distinct universes, and empty quantifiers cannot enter the flat proof cache.
+
+All 178 library invariants, strict Clippy and the 828-file audit pass. Sixteen
+independent rustc object controls qualify eight accepted and eight rejected cases.
+Work scales as `65n+30` over shared tails through 512 conditions, `53n+73` over wide
+parents through 128 arguments, and `61n+44` over 128 nested universals. All 28 full
+functional gates pass: 1,353 regular tests, 91 native groups and 6,218 earlier course
+cases, with 831 frozen source/configuration hashes and 18,654 unchanged sidecars.
+Instruction changes span −0.18%..+0.44%, with none above the 1% investigation
+threshold. Shared-host wall timing is noisy; the three original positive outliers
+do not recur in the fixed follow-up (−0.70%, −2.16%, −1.87%). Both measured heap
+peaks are unchanged; combined peaks are unchanged or 96 bytes lower. All 1,040
+study and 160 qualification observations remain retained with matching outputs
+and hashes. Candidate SHA-256:
+`8bfcf38b30b22cc6f723896f64b87cd0f1f860ae265464096fb9b1036ef76618`.
+Cleanup reclaimed 6.90 GiB. See the PA21 validation record for boundaries: source
+activation and concrete-body integration remain required, and parent inference
+relying solely on a quantified equality remains deferred. PA21–PA25 are unfinished.

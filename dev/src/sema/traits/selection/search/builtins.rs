@@ -32,18 +32,21 @@ impl Search<'_> {
         } else if goal.bound == Bound::Sized && self.caller.retain_sized {
             sized.push(goal.ty);
         }
-        let node = self.query.nodes.len();
-        self.query.nodes.push(Node {
-            goal,
-            source: Some(super::Source::Builtin),
-            children: Vec::new(),
-            first: frame.first,
-            end: frame.available_region(),
-            equalities: std::mem::take(&mut frame.context.region_equalities),
-            outlives: Vec::new(),
-            type_outlives,
-            sized,
-        });
+        let node = self.query.push(
+            Node {
+                goal,
+                source: Some(super::Source::Builtin),
+                children: Vec::new(),
+                first: frame.first,
+                end: frame.available_region(),
+                equalities: std::mem::take(&mut frame.context.region_equalities),
+                outlives: Vec::new(),
+                type_outlives,
+                sized,
+            },
+            frame.scope,
+            frame.first..frame.first,
+        );
         Ok(Decision::Proven(node))
     }
 }

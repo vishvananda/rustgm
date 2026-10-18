@@ -1,6 +1,10 @@
 //! Iterative candidate search; each child proof commits only its resolved goal.
 mod allocations;
 mod builtins;
+#[cfg(test)]
+#[path = "../../../../tests/invariants/implementation_conditions.rs"]
+mod condition_tests;
+pub(super) mod conditions;
 mod continuation;
 mod equalities;
 mod frames;
@@ -10,6 +14,7 @@ mod header_tests;
 mod inputs;
 mod normalization;
 mod result_bounds;
+mod scopes;
 mod suspension;
 pub(in crate::sema) use suspension::{Pending, Progress, begin, begin_normalized};
 #[cfg(test)]
@@ -27,7 +32,7 @@ mod universal_work;
 use super::{
     Caller, Context, Declarations, Evidence, Goal, Predicate, Selection, Source, inference,
 };
-use crate::types::{infer, outlives::Pair};
+use crate::types::{infer, lifetime_proof::ScopeId, outlives::Pair};
 use continuation::Query;
 use frames::{Frame, Trial};
 
@@ -108,20 +113,26 @@ impl Search<'_> {
         }
         Ok(())
     }
-    fn remember(&mut self, canonical: Option<Predicate>, cycles: usize, decision: Decision) {
+    fn remember(
+        &mut self,
+        canonical: Option<Predicate>,
+        cycles: usize,
+        decision: Decision,
+        scope: ScopeId,
+    ) {
         match decision {
             Decision::Proven(index) => {
                 let node = &self.query.nodes[index];
                 // Reusing existential evidence requires fresh region rebasing.
-                if node.first == node.end {
-                    self.query.completed.insert(node.goal, decision);
+                if node.first == node.end && self.query.cacheable(index) {
+                    self.query.remember(scope, node.goal, decision);
                 }
             }
             Decision::Absent if cycles == self.query.cycles => {
                 // A cycle cutoff is relative to the active proof stack, not a
                 // negative fact. Neither it nor any ancestor may cache failure.
                 if let Some(goal) = canonical {
-                    self.query.completed.insert(goal, decision);
+                    self.query.remember(scope, goal, decision);
                 }
             }
             Decision::Absent | Decision::Deferred => {}
@@ -172,6 +183,7 @@ impl Search<'_> {
             frame.cursor += 1;
             let mut trial = Trial::new(facts, frame, owner, self.query.allocations.floor())?;
             self.query.allocations.record(trial.end);
+            self.query.reserve(trial.scope, trial.first..trial.end)?;
             let result =
                 trial
                     .context
@@ -248,18 +260,24 @@ impl Search<'_> {
                 let goal = frame
                     .context
                     .resolved_predicate(&mut facts.types, &frame.goal)?;
-                let index = self.query.nodes.len();
-                self.query.nodes.push(Node {
-                    goal,
-                    source: Some(Source::assumed(&proof)?),
-                    children: Vec::new(),
-                    first: frame.first,
-                    end: proof.regions.end,
-                    equalities: std::mem::take(&mut frame.context.region_equalities),
-                    outlives: Vec::new(),
-                    type_outlives: Vec::new(),
-                    sized: Vec::new(),
-                });
+                self.query
+                    .reserve(frame.scope, first..proof.regions.end)
+                    .map_err(|_| infer::Error::InvalidIdentity)?;
+                let index = self.query.push(
+                    Node {
+                        goal,
+                        source: Some(Source::assumed(&proof)?),
+                        children: Vec::new(),
+                        first: frame.first,
+                        end: proof.regions.end,
+                        equalities: std::mem::take(&mut frame.context.region_equalities),
+                        outlives: Vec::new(),
+                        type_outlives: Vec::new(),
+                        sized: Vec::new(),
+                    },
+                    frame.scope,
+                    first..proof.regions.end,
+                );
                 self.query.allocations.record(proof.regions.end);
                 return Ok(Some(Action::Complete(Decision::Proven(index))));
             }
@@ -306,7 +324,7 @@ impl Search<'_> {
         {
             Ok(goal) => {
                 frame.canonical = Some(goal);
-                if let Some(&decision) = self.query.completed.get(&goal) {
+                if let Some(decision) = self.query.completed(frame.scope, goal) {
                     self.query.reused |= matches!(decision, Decision::Proven(_));
                     return Ok(Some(decision));
                 }
@@ -336,6 +354,14 @@ impl Search<'_> {
             .trial
             .as_mut()
             .ok_or("missing parent trait candidate")?;
+        if trial
+            .instance
+            .quantified
+            .as_ref()
+            .is_some_and(|conditions| conditions.waiting())
+        {
+            return self.accept_condition(frame, decision);
+        }
         let index = *trial
             .pending
             .get(trial.cursor)
@@ -376,6 +402,7 @@ impl Search<'_> {
             proof: self.query.allocations.finish(self.query.nodes[root].end),
             sized: Vec::new(),
         };
+        let mut scopes = self.query.scopes.take();
         let mut work = vec![root];
         let mut visited = self
             .query
@@ -390,10 +417,17 @@ impl Search<'_> {
             }
             let node = &mut self.query.nodes[index];
             work.extend(std::mem::take(&mut node.children));
-            evidence.proof.equalities.append(&mut node.equalities);
-            evidence.proof.outlives.append(&mut node.outlives);
-            evidence.proof.types.append(&mut node.type_outlives);
-            evidence.sized.append(&mut node.sized);
+            if let Some(scopes) = &mut scopes {
+                scopes.collect(index, node, &mut evidence)?;
+            } else {
+                evidence.proof.equalities.append(&mut node.equalities);
+                evidence.proof.outlives.append(&mut node.outlives);
+                evidence.proof.types.append(&mut node.type_outlives);
+                evidence.sized.append(&mut node.sized);
+            }
+        }
+        if let Some(scopes) = scopes {
+            scopes.finish(&mut evidence.proof)?;
         }
         Ok(evidence)
     }

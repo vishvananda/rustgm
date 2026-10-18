@@ -6,6 +6,7 @@ pub(super) struct Allocations {
     floor: u32,
     end: u32,
     stream: Option<Box<Obligations>>,
+    monotonic: bool,
 }
 impl Allocations {
     pub fn new(first: u32) -> Self {
@@ -14,6 +15,7 @@ impl Allocations {
             floor: first,
             end: first,
             stream: None,
+            monotonic: false,
         }
     }
     pub fn floor(&self) -> u32 {
@@ -24,6 +26,15 @@ impl Allocations {
     }
     pub fn record(&mut self, end: u32) {
         self.end = self.end.max(end);
+        if self.monotonic {
+            self.floor = self.end;
+        }
+    }
+    /// Scoped siblings must never reuse a previously attempted universal alias.
+    pub fn reserve_scoped(&mut self) -> u32 {
+        self.monotonic = true;
+        self.floor = self.end;
+        self.end
     }
     /// The caller reserved every trial allocation before doing foreign work.
     /// Recording a gap touches only the last interval, independent of stack depth.
@@ -46,7 +57,11 @@ impl Allocations {
             *stream
         } else {
             let mut proof = Obligations::new(self.first);
-            proof.regions.end = selected_end;
+            proof.regions.end = if self.monotonic {
+                self.end
+            } else {
+                selected_end
+            };
             proof
         }
     }

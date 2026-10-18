@@ -481,3 +481,87 @@ earlier streamed-proof wall-time effect against `b1410a8`. These functional and
 regression results do not establish end-to-end RustGM HRTB source or native
 acceptance; scoped implementation conditions, formation and concrete body witness
 integration remain required before source activation.
+
+## Scoped implementation conditions
+
+Implementation selection now retains each quantified condition as a whole clause.
+Ordinary trait and equality conditions settle first; the parent application and
+all type/const arguments are then resolved once. Universal children have isolated
+inference contexts on the existing iterative search stack. Their local witnesses
+cannot refine a parent hole. Candidates whose parameters can be determined only
+through a quantified equality remain deferred; this is a remaining capability,
+not an independently established language rejection.
+
+A candidate shares immutable substitution and opening work across conjunctive
+conditions of the same arity and parent scope. Different candidates retain distinct
+universes. Scope-aware completed answers preserve their debts, while an empty
+quantifier still prevents a containing proof from entering the flat cache. Inductive
+cycle cutoffs remain stack-relative. Header waits preserve the exact child cursor,
+universe and allocation frontier, excluding allocations from other work.
+
+Sparse node ownership and an ordered allocation ledger retain only the selected
+graph's scoped witnesses and constraints. Universal allocation becomes monotonic
+so an alternative cannot reuse a discarded alias. The reserved envelope can include
+unreferenced identities from attempts; discarded equalities and permissions are
+never published. Proof assembly uses linear passes over scopes, nodes and recorded
+allocations, without sorting or repeatedly copying ancestor proofs. Reserved block
+placement checks ordering, overlap, scope identity and foreign gaps.
+
+Eighteen added library invariants cover universal/static-only implementations,
+independent slots and captures, nested conditions, ordinary equality inference,
+empty binders, pending headers, discarded alternatives, shared and separate
+universes, cycles, caller assumptions, associated results, outlives conditions,
+reserved ownership and structural growth. All **178 library invariants**, strict
+Clippy and the **828-file audit with zero findings** pass. Sixteen independently
+object-qualified rustc controls match their predeclared outcomes: **eight accepted
+and eight rejected**. The controls and diagnostics are retained in
+`obj/pa21-work/implementation-quantifiers-v1/{source-controls,clause-controls}/`.
+These typed solver invariants and rustc controls are not RustGM HRTB source or
+native execution coverage.
+
+| Family | Sizes | Charged selection work | Additional canonical storage |
+| --- | --- | --- | --- |
+| Distinct shared reference tails | 16–512 | `65n + 30` | `2n` types |
+| Wide parent argument lists and condition counts | 8–128 | `53n + 73` | Parent resolves once |
+| Nested universal implementation conditions | 8–128 | `61n + 44` | `n` scopes; region frontier `2n + 2` |
+
+These bounds describe internal work and storage, not a whole-frontend speedup.
+All 28 full functional gates pass: **1,353 regular tests**, **91 native groups**,
+and **6,218 PA1–PA20 text-oracle cases**, plus formatting, strict Clippy, the
+828-file audit, harness, backend qualification and upstream verification. All
+**831 source/configuration hashes** and **18,654 oracle sidecars** remain fixed;
+PA21–PA25 still fail explicitly as planned. The frozen candidate is
+`8bfcf38b30b22cc6f723896f64b87cd0f1f860ae265464096fb9b1036ef76618`.
+Its immutable comparison with published `39cad8c` /
+`af86f1d5dc81d8532cbae134ddadbcd94452e52badb661b955a6afa459098cc9`
+completes all 31 timing jobs and 27 instruction pairs. Instruction changes range
+from **−0.18% to +0.44%**, with no increase above the 1% investigation threshold.
+Main paired wall medians range from **−9.36% to +8.68%**, while same-binary medians
+range from **+0.10% to +6.06%**. The largest A/A spread is **72.77%**; this study
+does not establish a portable wall-time speedup. Median peak RSS deltas span
+**−14 to +420 KiB**. All output and source, binary and input hashes match.
+
+The predeclared follow-up selects `generic-reference-256` (+8.68%),
+`constant-chain-uses-256` (+4.26%) and `trait-view-32-count` (+3.07%) for one
+AB/AA/BB batch each. Follow-up AB changes are **−0.70%, −2.16% and −1.87%**.
+Corresponding AA/BB changes are +0.33%/+0.74%, +4.53%/−0.24% and +0.001%/+0.44%.
+None of the initial positive threshold crossings recurs in that fixed batch;
+no additional timing repetitions were selected.
+
+| Workload | Baseline heap bytes | Candidate heap bytes | Baseline combined heap/overhead/stack | Candidate combined |
+| --- | ---: | ---: | ---: | ---: |
+| ordinary-256 | 2,432,261 | 2,432,261 | 2,528,240 | 2,528,240 |
+| constant-chain-uses-256 | 5,381,873 | 5,381,873 | 5,540,072 | 5,539,976 |
+
+Both heap peaks are unchanged; combined peaks are unchanged or 96 bytes lower.
+The ELF text/data/BSS sum increases by **40,984 bytes**. These two fixed measurements
+do not establish the cause of the RSS range on the broader input set.
+
+All **1,040 study observations** and **160 qualification observations** are retained,
+comprising **6,968 timed** and **1,072 qualification compiler invocations**, plus
+**54 Callgrind** and **four Massif** executions. No observations were discarded or
+repeated until favorable. Receipts remain in
+`obj/pa21-work/implementation-quantifiers-final/`. Cleanup reclaimed **6.90 GiB** from 5,754 generated files. This comparison does not resolve the earlier streamed-proof
+wall-time effect against `b1410a8`. Source gates, scoped Sized retention,
+formation/conformance consumers and concrete-body witness integration remain
+explicit boundaries. PA21–PA25 remain planned.

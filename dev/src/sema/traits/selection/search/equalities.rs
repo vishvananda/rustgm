@@ -118,18 +118,21 @@ impl Search<'_> {
             Err(infer::Error::Unresolved) => return Ok(Decision::Deferred),
             Err(error) => return Err(inference(error)),
         };
-        let node = self.query.nodes.len();
-        self.query.nodes.push(Node {
-            goal,
-            source: Some(Source::Equality),
-            children: normalization.proof.into_iter().collect(),
-            first: frame.first,
-            end: normalization.end,
-            equalities: std::mem::take(&mut frame.context.region_equalities),
-            outlives: Vec::new(),
-            type_outlives: Vec::new(),
-            sized: Vec::new(),
-        });
+        let node = self.query.push(
+            Node {
+                goal,
+                source: Some(Source::Equality),
+                children: normalization.proof.into_iter().collect(),
+                first: frame.first,
+                end: normalization.end,
+                equalities: std::mem::take(&mut frame.context.region_equalities),
+                outlives: Vec::new(),
+                type_outlives: Vec::new(),
+                sized: Vec::new(),
+            },
+            frame.scope,
+            frame.first..frame.first,
+        );
         Ok(Decision::Proven(node))
     }
 }

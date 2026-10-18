@@ -1653,6 +1653,28 @@ callers, outer substitutions and binder arities cannot share this permission.
 Measure both structural work and canonical storage across distinct goals with
 growing shared tails; memoizing repeated identical goals alone is insufficient.
 
+Implementation conditions retain whole quantified clauses after capture mapping.
+First settle ordinary equations, then resolve the parent's complete type and const
+arguments once. Universal children use isolated inference on the existing iterative
+search stack; they cannot refine the parent with a local witness. A parameter that
+can be determined only through a quantified equality remains deferred until that
+inference mode is implemented. Share substitution and binder opening across one
+candidate's conjunctive conditions, keyed by arity and its actual parent scope.
+Different candidates do not share these universes or their completed answers.
+
+Retain scopes, candidate cursors and private allocation ownership through header
+waits. Once a universal scope has been introduced, reserve subsequent identities
+monotonically so discarded alternatives cannot reuse its aliases. Keep an ordered
+allocation ledger and sparse node ownership; collect only the selected graph's
+scoped witnesses and constraints. The allocation envelope may retain unreferenced
+reserved identities, but never a discarded candidate's equalities or permissions.
+Assemble the selected scope tree and allocation blocks in linear passes, without
+sorting intervals, recursively assembling proofs or copying ancestor prefixes.
+Foreign intervals remain excluded. An empty quantifier still introduces a scope:
+region-free evidence with quantified descendants cannot enter the flat answer cache.
+Scoped answer caches include the actual universe; inductive cycle cutoffs remain
+relative to the active search and cannot become completed negative facts.
+
 Separate generic parameter identity, alias expansion and default-template
 readiness. Explicit arguments demand no unrelated defaults. Omitted arguments
 demand each needed template through the bounded declaration worklist; a default

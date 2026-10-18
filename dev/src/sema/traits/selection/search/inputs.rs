@@ -160,18 +160,21 @@ impl Search<'_> {
         let source = self.query.nodes[selected].source;
         let end = normalization.end.max(self.query.nodes[selected].end);
         let children = normalization.proof.into_iter().chain([selected]).collect();
-        let index = self.query.nodes.len();
-        self.query.nodes.push(Node {
-            goal,
-            source,
-            children,
-            first: frame.first,
-            end,
-            equalities: std::mem::take(&mut frame.context.region_equalities),
-            outlives: Vec::new(),
-            type_outlives: Vec::new(),
-            sized: Vec::new(),
-        });
+        let index = self.query.push(
+            Node {
+                goal,
+                source,
+                children,
+                first: frame.first,
+                end,
+                equalities: std::mem::take(&mut frame.context.region_equalities),
+                outlives: Vec::new(),
+                type_outlives: Vec::new(),
+                sized: Vec::new(),
+            },
+            frame.scope,
+            frame.first..frame.first,
+        );
         self.charge(&mut frame.context)?;
         Ok(Decision::Proven(index))
     }
@@ -187,18 +190,22 @@ impl Search<'_> {
         let first = node.first.min(self.query.nodes[prefix].first);
         let end = node.end.max(self.query.nodes[prefix].end);
         let (goal, source) = (node.goal, node.source);
-        let index = self.query.nodes.len();
-        self.query.nodes.push(Node {
-            goal,
-            source,
-            children: vec![prefix, selected],
-            first,
-            end,
-            equalities: Vec::new(),
-            outlives: Vec::new(),
-            type_outlives: Vec::new(),
-            sized: Vec::new(),
-        });
+        let scope = self.query.node_scope(selected);
+        let index = self.query.push(
+            Node {
+                goal,
+                source,
+                children: vec![prefix, selected],
+                first,
+                end,
+                equalities: Vec::new(),
+                outlives: Vec::new(),
+                type_outlives: Vec::new(),
+                sized: Vec::new(),
+            },
+            scope,
+            first..first,
+        );
         self.query.reused = true;
         index
     }

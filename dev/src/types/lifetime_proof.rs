@@ -1,5 +1,6 @@
 //! Directed lifetime evidence retains private intervals and quantified binder ownership.
 mod graft;
+mod placement;
 mod quantified;
 mod scopes;
 mod stream;

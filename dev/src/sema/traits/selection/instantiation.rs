@@ -6,6 +6,7 @@ use crate::types::{
     outlives::Pair,
     parameters::{
         ParameterId, ParameterKind,
+        clauses::Clause,
         predicates::{Bound, Predicate},
     },
     substitute,
@@ -15,6 +16,7 @@ pub(super) struct Instance {
     pub owner: DefId,
     pub goal: Goal,
     pub goals: Vec<Goal>,
+    pub quantified: Option<Box<super::search::conditions::Conditions>>,
     pub bindings: Vec<(ParameterId, Argument)>,
     pub regions: Vec<RegionId>,
     pub outlives: Vec<Pair>,
@@ -80,8 +82,19 @@ pub(super) fn instantiate(
             });
         }
     }
+    let mut quantified = None;
     for predicate in facts.generics.declared_predicates_in_scope(owner) {
-        predicates.push(predicate.value.ordinary()?);
+        match predicate.value {
+            Clause::Predicate(predicate) => predicates.push(predicate),
+            clause @ Clause::ForAll(_) => {
+                let clause = fold.clause(&mut facts.types, clause)?;
+                quantified
+                    .get_or_insert_with(|| {
+                        Box::new(super::search::conditions::Conditions::default())
+                    })
+                    .push(clause);
+            }
+        }
     }
     let mut substitution =
         Instantiation::new(context, &facts.types, &bindings).map_err(inference)?;
@@ -103,6 +116,7 @@ pub(super) fn instantiate(
         owner,
         goal,
         goals,
+        quantified,
         bindings,
         regions,
         outlives,

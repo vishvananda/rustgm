@@ -62,6 +62,7 @@ impl Frame {
                     .ok_or("missing normalization trait premise")?,
                 normalization.end.max(floor),
             )?;
+            child.scope = self.scope;
             child.normalized_inputs = Some(super::frames::NormalizedInputs {
                 proof: normalization.proof,
             });
@@ -69,12 +70,14 @@ impl Frame {
         }
         let trial = self.trial.as_mut().ok_or("missing descending candidate")?;
         let index = trial.pending[trial.cursor];
-        Self::new(
+        let mut child = Self::new(
             facts,
             &mut trial.context,
             &trial.instance.goals[index],
             trial.end.max(floor),
-        )
+        )?;
+        child.scope = self.scope;
+        Ok(child)
     }
     pub(super) fn available_region(&self) -> u32 {
         self.normalization

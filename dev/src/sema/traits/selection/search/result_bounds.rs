@@ -39,18 +39,21 @@ impl Search<'_> {
             .context
             .resolved_predicate(&mut facts.types, &frame.goal)
             .map_err(inference)?;
-        let index = self.query.nodes.len();
-        self.query.nodes.push(Node {
-            goal,
-            source: Some(Source::ResultBound(selected)),
-            children: Vec::new(),
-            first: frame.first,
-            end: frame.available_region(),
-            equalities: std::mem::take(&mut frame.context.region_equalities),
-            outlives: Vec::new(),
-            type_outlives: Vec::new(),
-            sized: Vec::new(),
-        });
+        let index = self.query.push(
+            Node {
+                goal,
+                source: Some(Source::ResultBound(selected)),
+                children: Vec::new(),
+                first: frame.first,
+                end: frame.available_region(),
+                equalities: std::mem::take(&mut frame.context.region_equalities),
+                outlives: Vec::new(),
+                type_outlives: Vec::new(),
+                sized: Vec::new(),
+            },
+            frame.scope,
+            frame.first..frame.first,
+        );
         // input_evidence attaches every parent normalization child before this
         // result can escape the proof stack, including all existential scopes.
         Ok(Some(Action::Complete(Decision::Proven(index))))
