@@ -1869,6 +1869,17 @@ lowering queries within each immutable scope, with a shared work budget. Deferre
 predicates grant no body permissions. At a call, check the instantiated inputs
 and result even if an argument diverges or the result is discarded.
 
+Cache immediate nominal requirements as whole clauses. Substitute complete
+nominal arguments without opening a requirement's own quantifier, including an
+empty quantifier. When deciding callable deferral, start a quantified body's
+capture query inside that binder: its locals are not surrounding callable locals.
+Independent ancestor captures lower through the callable scopes while retaining
+the clause binder. Key capture application summaries by query depth, with a lazy
+scoped table so ordinary queries retain their compact cache. Quantified outlives
+clauses remain proof obligations; the separate ordinary lifetime-contract lane
+does not discharge them. Formation retains universal evidence until the caller's
+final lifetime gate and requires an explicit proof scope.
+
 Constructor and pattern inference retain unresolved mixed arguments. Reuse one
 substitution session across the selected receiver's field templates; do not
 resolve the receiver before its fields have constrained it. Substitution under

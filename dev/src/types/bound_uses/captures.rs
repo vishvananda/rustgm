@@ -8,6 +8,7 @@ use crate::types::{
 use std::collections::HashMap;
 
 type Key = (TypeId, u16);
+type ScopedApplications<V> = HashMap<(ApplicationId, u16), V>;
 
 pub(crate) struct Surrounding {
     count: u16,
@@ -58,10 +59,26 @@ pub(crate) struct Occurrences<Q: Query> {
     query: Q,
     completed: HashMap<Key, Q::Value>,
     applications: HashMap<ApplicationId, Q::Value>,
+    // Ordinary capture queries never allocate the scoped application table.
+    scoped_applications: Option<Box<ScopedApplications<Q::Value>>>,
     work: Vec<(Key, bool)>,
     pub(crate) steps: usize,
 }
 impl Captures {
+    pub(crate) fn clause(
+        &mut self,
+        store: &Store,
+        clause: crate::types::parameters::clauses::Clause,
+    ) -> Result<bool, &'static str> {
+        use crate::types::parameters::clauses::Clause;
+        match clause {
+            Clause::Predicate(predicate) => self.predicate_inside(store, predicate, 0),
+            Clause::ForAll(id) => {
+                let value = store.quantified(id).ok_or("invalid capture clause")?;
+                self.predicate_inside(store, value.predicate, 1)
+            }
+        }
+    }
     pub(crate) fn new(count: u16) -> Self {
         Self::query(Surrounding { count })
     }
@@ -83,6 +100,7 @@ impl<Q: Query> Occurrences<Q> {
             query,
             completed: HashMap::new(),
             applications: HashMap::new(),
+            scoped_applications: None,
             work: Vec::new(),
             steps: 0,
         }
@@ -92,15 +110,30 @@ impl<Q: Query> Occurrences<Q> {
         store: &Store,
         value: Predicate,
     ) -> Result<Q::Value, &'static str> {
-        let subject = self.collect(store, value.ty)?;
+        self.predicate_inside(store, value, 0)
+    }
+    fn predicate_inside(
+        &mut self,
+        store: &Store,
+        value: Predicate,
+        depth: u16,
+    ) -> Result<Q::Value, &'static str> {
+        let subject = self.collect_inside(store, value.ty, depth)?;
         if Q::decisive(subject) {
             return Ok(subject);
         }
         let bound = match value.bound {
-            Bound::ProjectionEqual(result) => self.collect(store, result),
-            Bound::Outlives(region) => Ok(self.region(region, 0)),
+            Bound::ProjectionEqual(result) => self.collect_inside(store, result, depth),
+            Bound::Outlives(region) => Ok(self.region(region, depth)),
             Bound::Trait(id) => {
-                if let Some(&found) = self.applications.get(&id) {
+                let cached = if depth == 0 {
+                    self.applications.get(&id)
+                } else {
+                    self.scoped_applications
+                        .as_ref()
+                        .and_then(|cache| cache.get(&(id, depth)))
+                };
+                if let Some(&found) = cached {
                     return Ok(Q::merge(subject, found));
                 }
                 let application = store
@@ -113,13 +146,19 @@ impl<Q: Query> Occurrences<Q> {
                 self.account(arguments.len())?;
                 for argument in arguments {
                     let value = match argument {
-                        Argument::Lifetime(region) => self.region(region, 0),
-                        Argument::Type(ty) => self.collect(store, ty)?,
+                        Argument::Lifetime(region) => self.region(region, depth),
+                        Argument::Type(ty) => self.collect_inside(store, ty, depth)?,
                         Argument::Const(_) => Q::Value::default(),
                     };
                     found = Q::merge(found, value);
                 }
-                self.applications.insert(id, found);
+                if depth == 0 {
+                    self.applications.insert(id, found);
+                } else {
+                    self.scoped_applications
+                        .get_or_insert_with(Default::default)
+                        .insert((id, depth), found);
+                }
                 Ok(found)
             }
             Bound::Copy | Bound::Clone | Bound::Sized => Ok(Q::Value::default()),
@@ -127,7 +166,15 @@ impl<Q: Query> Occurrences<Q> {
         Ok(Q::merge(subject, bound))
     }
     pub(crate) fn collect(&mut self, store: &Store, ty: TypeId) -> Result<Q::Value, &'static str> {
-        let root = (ty, 0);
+        self.collect_inside(store, ty, 0)
+    }
+    fn collect_inside(
+        &mut self,
+        store: &Store,
+        ty: TypeId,
+        depth: u16,
+    ) -> Result<Q::Value, &'static str> {
+        let root = (ty, depth);
         if let Some(found) = self.result(store, root)? {
             return Ok(found);
         }

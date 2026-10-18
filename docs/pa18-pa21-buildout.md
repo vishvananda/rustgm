@@ -10136,3 +10136,28 @@ and hashes. Candidate SHA-256:
 Cleanup reclaimed 6.90 GiB. See the PA21 validation record for boundaries: source
 activation and concrete-body integration remain required, and parent inference
 relying solely on a quantified equality remains deferred. PA21–PA25 are unfinished.
+
+
+## PA21 nominal clause formation
+
+Nominal requirements retain complete quantified clauses through owner substitution
+and callable lifting. The capture query distinguishes a clause's own locals from
+surrounding callable locals, including empty binders, and keeps ordinary and
+scoped application summaries separate. Quantified outlives obligations retain
+universal evidence until the final lifetime proof; they require an explicit scope.
+
+Seven added invariants pass within the 185-library-test suite. Eight independent
+rustc object controls qualify four accepted and four rejected sources. Shared-tail
+formation measures `17n+8` traversal/substitution steps and `2n` additional types
+through width 512, with no added work on repeated demands. All 28 full functional
+gates pass: 1,360 regular tests, 91 native groups, 6,218 earlier course cases,
+strict lint and the 829-file audit, with 832 fixed source/configuration hashes and
+18,654 unchanged sidecars. Instruction changes span −0.19%..+0.40%. No paired
+wall increase crosses the predeclared 3% investigation threshold, so no extra
+timing runs were selected. Same-binary variation and the largest A/A spread of
+66.63% prevent a portable speedup claim. Both fixed heap peaks are unchanged;
+combined peaks increase by 48 and 96 bytes. All 806 study and 124 qualification
+observations remain retained, with output equality and verified hashes. Candidate
+SHA-256: `1f9f6c170c6494d8cca516e6fa29e2837566ba7e02408a4c3be575b7ebd44229`.
+Cleanup reclaimed 6.90 GiB. Source declaration, conformance, outlives and
+concrete-body integration remain required; PA21–PA25 are unfinished.

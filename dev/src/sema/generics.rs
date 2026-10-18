@@ -138,7 +138,7 @@ pub struct Generics {
     pub storage: Option<crate::types::aggregate::finiteness::Storage>,
     pub(super) nominal_contracts: std::collections::HashSet<DefId>,
     pub(super) nominal_requirements:
-        HashMap<TypeId, Arc<[crate::types::parameters::predicates::Predicate]>>,
+        HashMap<TypeId, Arc<[crate::types::parameters::clauses::Clause]>>,
     pub(super) has_nominal_requirements: bool,
     pub predicates: HashMap<DefId, Vec<Predicate>>,
     /// Prefix before supertrait elaboration. Implied assumptions are not additional
@@ -164,6 +164,11 @@ pub struct ImplementationSelection {
     pub arguments: GenericArgs,
 }
 impl Generics {
+    #[cfg(test)]
+    pub(in crate::sema) fn substitution_steps(&self) -> usize {
+        self.substitutions.values().map(|fold| fold.steps).sum()
+    }
+
     /// Only completed conformance records may authorize trait selection or dispatch.
     pub fn implementations(
         &self,
@@ -389,6 +394,18 @@ impl Generics {
     ) -> Result<crate::types::parameters::predicates::Predicate, &'static str> {
         self.substitution(store, owner, args)?
             .predicate(store, predicate)
+    }
+    /// Preserve a requirement's own binder while substituting the nominal's arguments.
+    /// # Errors
+    /// Rejects malformed identities, mismatched arguments and exhausted work.
+    pub fn substitute_clause(
+        &mut self,
+        store: &mut Store,
+        owner: DefId,
+        args: GenericArgs,
+        clause: crate::types::parameters::clauses::Clause,
+    ) -> Result<crate::types::parameters::clauses::Clause, &'static str> {
+        self.substitution(store, owner, args)?.clause(store, clause)
     }
     /// Retain the completed append-only environment built from these exact
     /// arguments. Subsequent body expansion reuses it just like an explicit use.

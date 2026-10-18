@@ -8,6 +8,7 @@ use crate::{
         bound_uses::captures::Captures,
         parameters::{
             ParameterKind,
+            clauses::Clause,
             predicates::{Bound, Predicate},
         },
         substitute,
@@ -25,15 +26,20 @@ pub(in crate::sema) struct Requirements {
 struct Scope {
     captures: Captures,
     lower: substitute::Bound,
-    predicates: HashMap<Predicate, Option<Predicate>>,
+    predicates: HashMap<Clause, Option<Clause>>,
 }
 impl Requirements {
+    #[cfg(test)]
+    pub(in crate::sema) fn steps(&self) -> usize {
+        self.types.len().saturating_add(self.fold_work)
+    }
+
     fn lift(
         &mut self,
         store: &mut Store,
-        predicate: Predicate,
+        predicate: Clause,
         depth: u16,
-    ) -> Result<Option<Predicate>, &'static str> {
+    ) -> Result<Option<Clause>, &'static str> {
         if depth == 0 || predicate.escaping_binders(store)? == 0 {
             return Ok(Some(predicate));
         }
@@ -48,10 +54,10 @@ impl Requirements {
         let before = scope.captures.steps.saturating_add(scope.lower.steps);
         // RFC 1214 defers only predicates mentioning a surrounding callable local.
         // Independent predicates are lifted back into the caller's proof scope.
-        let result = if scope.captures.predicate(store, predicate)? {
+        let result = if scope.captures.clause(store, predicate)? {
             None
         } else {
-            Some(scope.lower.predicate(store, predicate)?)
+            Some(scope.lower.clause(store, predicate)?)
         };
         let after = scope.captures.steps.saturating_add(scope.lower.steps);
         self.fold_work = self.fold_work.saturating_add(after - before);
@@ -69,7 +75,7 @@ pub(in crate::sema) fn requirements(
     facts: &mut Declarations,
     root: TypeId,
     checked: &mut Requirements,
-) -> Result<Vec<Predicate>, &'static str> {
+) -> Result<Vec<Clause>, &'static str> {
     let mut work = vec![(root, 0_u16)];
     let mut predicates = Vec::new();
     let mut unique = HashSet::new();
@@ -177,7 +183,7 @@ fn instance(
     facts: &mut Declarations,
     item: ItemId,
     arguments: GenericArgs,
-    output: &mut Vec<Predicate>,
+    output: &mut Vec<Clause>,
 ) -> Result<(), &'static str> {
     let owner = DefId(item.0);
     if !facts.generics.nominal_contracts.contains(&owner) {
@@ -203,10 +209,13 @@ fn instance(
                     facts.types.parameter(id).map(|p| p.kind),
                     Some(ParameterKind::Type { sized: true })
                 ) {
-                    output.push(Predicate {
-                        ty,
-                        bound: Bound::Sized,
-                    });
+                    output.push(
+                        Predicate {
+                            ty,
+                            bound: Bound::Sized,
+                        }
+                        .into(),
+                    );
                 }
             }
         }
@@ -218,14 +227,20 @@ fn instance(
         .map_or(&[][..], Vec::as_slice);
     let count = predicates.len();
     for index in 0..count {
-        let predicate = facts.generics.predicates[&owner][index].value.ordinary()?;
-        if matches!(predicate.bound, Bound::Outlives(_)) {
+        let predicate = facts.generics.predicates[&owner][index].value;
+        if matches!(
+            predicate,
+            Clause::Predicate(Predicate {
+                bound: Bound::Outlives(_),
+                ..
+            })
+        ) {
             continue;
         }
         let predicate =
             facts
                 .generics
-                .substitute_predicate(&mut facts.types, owner, arguments, predicate)?;
+                .substitute_clause(&mut facts.types, owner, arguments, predicate)?;
         output.push(predicate);
     }
     Ok(())

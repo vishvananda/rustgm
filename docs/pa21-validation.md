@@ -565,3 +565,70 @@ repeated until favorable. Receipts remain in
 wall-time effect against `b1410a8`. Source gates, scoped Sized retention,
 formation/conformance consumers and concrete-body witness integration remain
 explicit boundaries. PA21–PA25 remain planned.
+
+
+## Quantified nominal formation requirements
+
+Immediate nominal requirements now retain whole clauses. Owner substitution maps
+complete lifetime/type/const arguments under the requirement's own binder; an
+empty quantifier still establishes a binder depth. Callable deferral inspects
+captures outside that binder. A local of the quantified requirement cannot hide
+an independent caller obligation, while an actual surrounding callable local
+retains the existing deferred-formation rule. Independent ancestor captures lower
+through callable scopes without capturing or discarding the quantifier.
+
+Occurrence queries retain compact ordinary application keys and allocate a
+separate depth-keyed table only for scoped clauses. The same DAG traversal visits
+subjects, associated equality results, type-outlives bounds and nested callable
+arguments. Nominal proof selection retains universal evidence for the final
+lifetime gate and rejects quantified obligations without an explicit caller scope.
+Quantified outlives clauses are not omitted by the separate ordinary lifetime
+contract path. Body consumers without scoped support still reject them explicitly.
+
+Seven added invariants cover universal versus static-only implementations,
+required explicit scopes, independent obligations under callables, local deferral,
+ancestor lifting through empty/nonempty binders, mixed-depth cache queries, all
+clause roots, quantified outlives and growing shared argument tails. Eight pinned
+rustc object controls match their predeclared outcomes: four accepted and four
+rejected. Sources and diagnostic receipts remain under
+`obj/pa21-work/nominal-clauses-v1/{source-controls,outlives-controls}/`.
+For widths 16–512, requirement traversal/lifting counts `12n+6` steps and
+parameter substitution counts `5n+2`, for combined measured work of `17n+8`.
+Additional canonical type storage is `2n`; a repeated demand adds no traversal
+or substitution work. These counters do not represent all frontend work or a
+whole-compile timing claim.
+
+These are typed formation tests and independent language controls, not RustGM
+HRTB source/native coverage. PA21 remains planned. All 28 full functional gates
+pass: **1,360 regular tests**, **91 native groups**, and **6,218 PA1–PA20 exact
+text-oracle cases**, plus formatting, strict Clippy, the 829-file audit, harness,
+backend and upstream checks. All **832 source/configuration hashes** and **18,654
+oracle sidecars** remain unchanged; PA21–PA25 discovery still fails as planned.
+The frozen candidate SHA-256 is
+`1f9f6c170c6494d8cca516e6fa29e2837566ba7e02408a4c3be575b7ebd44229`.
+Its immutable performance comparison with published `cd23188` /
+`8bfcf38b30b22cc6f723896f64b87cd0f1f860ae265464096fb9b1036ef76618`
+completes all 31 timing jobs and 27 instruction pairs. Instruction changes span
+**−0.19% to +0.40%**, with no increase above the 1% investigation threshold.
+Paired wall medians span **−5.87% to +2.90%**, while same-binary medians span
+**−0.17% to +0.47%**. No paired wall increase crosses the predeclared 3% threshold,
+so the fixed policy selects no follow-up timing runs. The largest A/A spread is
+**66.63%**; this does not establish a portable speedup. Median peak RSS deltas span
+**−116 to +136 KiB**. Output bytes and source, binary and input hashes all match.
+
+| Workload | Baseline heap bytes | Candidate heap bytes | Baseline combined heap/overhead/stack | Candidate combined |
+| --- | ---: | ---: | ---: | ---: |
+| ordinary-256 | 2,432,261 | 2,432,261 | 2,528,240 | 2,528,288 |
+| constant-chain-uses-256 | 5,381,873 | 5,381,873 | 5,540,104 | 5,540,200 |
+
+Both fixed heap peaks are unchanged. Combined peaks increase by 48 and 96 bytes;
+the ELF text/data/BSS sum increases by 4,076 bytes. These samples do not explain
+the broader RSS range. All **806 study observations** and **124 qualification
+observations** remain retained, comprising **3,224 timed** and **496 qualification
+compiler invocations**, plus **54 Callgrind** and **four Massif** runs. No
+observations were discarded or repeated until favorable. Receipts remain in
+`obj/pa21-work/nominal-clauses-final/`. Cleanup reclaimed **6.90 GiB** from 5,751
+generated files. This comparison does not resolve the earlier
+streamed-proof wall-time effect against `b1410a8`. Whole-clause declaration
+formation, ambiguity, nominal outlives propagation, conformance and concrete-body
+integration remain required before source activation. PA21–PA25 remain planned.

@@ -12,6 +12,9 @@ mod frames;
 #[path = "../../../../tests/invariants/selection_headers.rs"]
 mod header_tests;
 mod inputs;
+#[cfg(test)]
+#[path = "../../../../tests/invariants/formation_clauses.rs"]
+mod nominal_tests;
 mod normalization;
 mod result_bounds;
 mod scopes;

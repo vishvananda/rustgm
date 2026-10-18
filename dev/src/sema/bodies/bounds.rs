@@ -24,6 +24,9 @@ impl Checker<'_> {
         let requirements = crate::sema::nominals::requirements(self.facts, ty, checked)
             .map_err(|e| self.error(node, e))?;
         for requirement in requirements {
+            let requirement = requirement
+                .ordinary()
+                .map_err(|error| self.error(node, error))?;
             self.prove_bound(node, requirement.ty, requirement.bound)?;
         }
         Ok(())

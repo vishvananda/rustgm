@@ -4,7 +4,10 @@ pub(crate) mod traits;
 use super::model::Declarations;
 use crate::types::{
     TypeId,
-    parameters::predicates::{Bound, Predicate},
+    parameters::{
+        clauses::Clause,
+        predicates::{Bound, Predicate},
+    },
 };
 pub(super) use requirements::{Requirements, requirements};
 
@@ -157,8 +160,11 @@ impl Proof {
             .prepare(&mut facts.types, ty)?;
         if facts.generics.has_nominal_requirements {
             for requirement in requirements(facts, ty, &mut self.checked)? {
-                let valid = self.prove(facts, requirement)?;
+                let valid = self.prove_clause(facts, requirement)?;
                 if !valid {
+                    let Clause::Predicate(requirement) = requirement else {
+                        return Err("nominal type argument must satisfy its quantified bound");
+                    };
                     return Err(match requirement.bound {
                         Bound::Copy => "nominal type argument must implement Copy",
                         Bound::Clone => "nominal type argument must implement Clone",
@@ -175,6 +181,18 @@ impl Proof {
             }
         }
         self.shape(facts, ty)
+    }
+    pub fn prove_clause(
+        &mut self,
+        facts: &mut Declarations,
+        requirement: Clause,
+    ) -> Result<bool, &'static str> {
+        match requirement {
+            Clause::Predicate(predicate) => self.prove(facts, predicate),
+            Clause::ForAll(_) => self
+                .trait_state(facts)?
+                .prove_clause(facts, requirement, false),
+        }
     }
     pub fn prove(
         &mut self,
