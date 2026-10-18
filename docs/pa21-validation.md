@@ -997,3 +997,85 @@ Successful wrapper cleanup removed 5,751 generated files (6.90 GiB unshared),
 receipt `obj/cleanup/1792347678739943842.jsonl`. About 453 GiB remained free.
 Only the current baseline and candidate pins are retained; the superseded pin
 is retired after the replacement commit passes CI.
+
+
+### Whole-clause method conformance
+
+Method override checking now keeps complete clauses through owner/method
+substitution, environment construction and final lifetime validation. Trait
+requirements use scoped selection evidence; outlives requirements introduce
+their actual universal scopes in the directed lifetime graph. Implementation
+requirements never enter the caller assumptions. Captured owner lifetimes,
+independent quantified inputs and correlated inputs keep their distinct meanings.
+
+The type/trait environment checks type and const parameter membership in every
+quantified lifetime clause, then leaves its proof to the retained lifetime
+consumer. It does not create Copy, Sized or user-trait permissions from that
+clause. Quantified property and equality premises remain explicit unsupported
+boundaries. A small clause classifier routes obligations without exposing an
+unbound predicate to the caller.
+
+Twelve predeclared source controls all match pinned rustc: six accept and six
+reject. They cover equivalent and weaker method requirements, forbidden stronger
+requirements, captured owners, independent versus correlated lifetimes, parameter
+all-lifetimes versus static bounds, composite subjects and projected input/target
+correlations. Five typed conformance groups exercise those twelve rules through
+the production mapping and proof path while source HRTB remains gated. Negative
+typed controls require the intended conformance or final lifetime diagnostic;
+an unrelated unsupported-feature error cannot satisfy them.
+
+Universal projected caller assumptions also deduplicate complete predicate bodies
+whose top-level quantifiers differ only in unused slot count. This does not merge
+requirement scopes or change definition-time empty/nonempty binder treatment.
+At widths 16, 64, 256 and 1,024, N equivalent premises followed by N goals visit
+exactly N candidates, with less than 5N additional matcher steps. The invariant
+checks candidate scans, not merely cache hits or whole-frontend running time.
+
+Source qualification and focused results remain in
+`obj/pa21-work/conformance-clauses-v1/`. Focused checks pass 228 library tests,
+11 caller-outlives tests, strict Clippy, the 853-file audit with zero findings,
+harness checks and both affected course suites. The source producers, body
+consumers, associated families and opaque types still need implementation;
+PA21–PA25 remain planned.
+
+Full validation passes all 32 gates: **1,422 regular tests**, **91 native groups**,
+all **6,228 PA1–PA20 course cases**, formatting, strict all/pedantic Clippy,
+the 853-file audit, harness, upstream and backend checks. Fresh PA19 qualification
+covers 1,080 source / 641 LowIR / 254 native cases; PA20 covers
+1,345 / 799 / 484. The existing seven plus one documented acceptance differences
+remain. All **7,193 source/configuration hashes** and **18,684 oracle sidecars**
+are stable, and planned PA21–PA25 discovery still fails deliberately.
+
+Immutable candidate `28d7ec53f8bf8a8a8f66c60d0af71cfd02c7e114b21414b00bdbf57dcac694c7`
+was compared with public `56bcc41` / binary `8b840ce8a8eb`. Across 33 wall jobs
+and 29 instruction pairs, instructions change **−0.1360% to +0.2342%**; no
+instruction increase crosses 1%. Original paired wall medians range
+−4.3160% to +6.4168%, while same-binary medians range +0.4252% to +10.3808%.
+Maximum A/A spread is 45.8260%, so these timings do not establish a portable
+speedup or isolate the smaller effects of this change.
+
+The predeclared >3% policy selected all three positive outliers. Its single
+batch-16 AB/AA/BB follow-up measures pending-chain-8 at +1.0765%,
+inherent-nominals-256 at −0.3166%, and inherent-closed-256 at −1.2778%.
+Their same-binary medians range −0.9458% to +0.5872%; maximum follow-up A/A
+spread is 17.6515%. All original and follow-up observations are retained.
+The original >3% increases did not repeat in this scheduled comparison; no
+additional favorable-result reruns were made. The earlier streamed-proof effect
+against `b1410` remains a separate unresolved measurement.
+
+Observed RSS changes range −96 to +78 KiB. Fixed Massif ordinary/constant-chain
+heap peaks remain 2,432,261 / 5,381,881 bytes. Combined heap/overhead/stack peaks
+are unchanged at 2,528,320 bytes for the ordinary input and rise by 64 bytes to
+5,540,200 for the constant chain. Reported ELF text/data/BSS size increases by
+24 bytes. Evidence retains **1,092 study observations**, **168 qualification
+observations**, **7,176 timed** and **1,104 qualification invocations**,
+58 Callgrind profiles and four Massif profiles. Every compared output matches;
+all frozen input, binary and source hashes remain stable.
+
+Receipts remain in `obj/pa21-work/conformance-final/`. Final-summary SHA-256:
+`566dbf508523e7938124ef8926ecacf1b60bf21a4d6e24802a5457894c995ec3`.
+
+Successful guarded cleanup removed 5,751 generated files (6.90 GiB unshared),
+receipt `obj/cleanup/1792350213766578672.jsonl`; about 450 GiB remained free.
+Only the current comparison binaries stay pinned. The preceding pin was retired
+after exact public-baseline CI passed, with both binary hashes recorded.

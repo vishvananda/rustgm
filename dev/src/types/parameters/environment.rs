@@ -245,6 +245,8 @@ impl Environment {
     }
 
     /// Retain whole quantified trait assumptions beside ordinary predicates.
+    /// Lifetime clauses validate membership here; the caller retains their whole
+    /// scopes for its separate directed lifetime proof, as for ordinary outlives.
     /// # Errors
     /// Rejects unsupported quantified bounds, malformed or foreign identities,
     /// and exhausted storage or traversal limits before publishing an environment.
@@ -277,6 +279,9 @@ impl Environment {
                     // Quantification binds lifetimes only; type/const membership
                     // still uses the shared occurrence walk for the whole batch.
                     uses.predicate(types, value.predicate)?;
+                    if matches!(value.predicate.bound, Bound::Outlives(_)) {
+                        continue;
+                    }
                     self.region_mapping |= clause.has_free_regions(types)?;
                     self.traits
                         .get_or_insert_with(Default::default)

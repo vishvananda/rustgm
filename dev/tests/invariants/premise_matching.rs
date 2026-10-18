@@ -17,6 +17,35 @@ use crate::types::{
 };
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 
+#[test]
+fn unused_premise_slots_do_not_multiply_matching_candidates() -> Result {
+    for width in [16_u32, 64, 256, 1024] {
+        let mut types = Store::default();
+        let subject = reference(&mut types, RegionId::bound(0, 0)?, TypeId::UNIT)?;
+        let ty = output(&mut types, subject)?;
+        let mut state = State::default();
+        for count in 1..=width {
+            let id = types.intern_quantified(Quantified {
+                bound_regions: count,
+                predicate: Predicate {
+                    ty,
+                    bound: Bound::Outlives(RegionId::STATIC),
+                },
+            })?;
+            state.assume(&types, id)?;
+        }
+        let variances = Variances::default();
+        let mut proof = Constraints::new(&types, &variances, 1, 1_000_000)?;
+        for _ in 0..width {
+            verify(&mut state, &mut proof, ty)?;
+        }
+        assert_eq!(proof.steps, width as usize);
+        assert!(state.steps() < 5 * width as usize);
+        proof.solve()?;
+    }
+    Ok(())
+}
+
 fn reference(types: &mut Store, region: RegionId, referent: TypeId) -> Result<TypeId> {
     Ok(types.intern(Kind::Reference {
         region,

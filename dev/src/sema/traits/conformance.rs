@@ -2,6 +2,9 @@
 mod mapping;
 mod projections;
 mod regions;
+#[cfg(test)]
+#[path = "../../../tests/invariants/override_clauses.rs"]
+mod tests;
 use crate::{
     resolve::model::DefId,
     sema::{
@@ -11,9 +14,7 @@ use crate::{
     types::{
         RegionId, TypeId,
         parameters::{
-            ParameterId,
-            environment::Environment,
-            predicates::{Bound, Predicate},
+            ParameterId, clauses::Clause, environment::Environment, predicates::Predicate,
         },
     },
 };
@@ -25,8 +26,8 @@ struct Contract {
     actual: TypeId,
     environment: Arc<Environment>,
     parameters: Vec<ParameterId>,
-    assumptions: Vec<Predicate>,
-    obligations: Vec<Predicate>,
+    assumptions: Vec<Clause>,
+    obligations: Vec<Clause>,
     assumed_regions: Vec<crate::types::outlives::Pair>,
     required_regions: Vec<crate::types::outlives::Pair>,
     universals: u32,
@@ -71,7 +72,7 @@ pub(in crate::sema) fn check(
         evidence.regions.end,
     );
     for &obligation in &contract.obligations {
-        if !matches!(obligation.bound, Bound::Outlives(_)) && !proof.prove(facts, obligation)? {
+        if !obligation.is_outlives(&facts.types)? && !proof.prove_clause(facts, obligation)? {
             return Err("implementation method imposes a stronger generic requirement".into());
         }
     }

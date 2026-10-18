@@ -11,7 +11,10 @@ use super::{
 };
 use crate::types::{
     ItemId, Kind, Store,
-    parameters::{clauses::QuantifiedId, predicates::Bound},
+    parameters::{
+        clauses::QuantifiedId,
+        predicates::{Bound, Predicate},
+    },
     region_graph::VerificationId,
 };
 use std::collections::{HashMap, HashSet};
@@ -19,7 +22,7 @@ use std::collections::{HashMap, HashSet};
 #[derive(Default)]
 pub(super) struct State {
     candidates: HashMap<(ItemId, u64), Vec<QuantifiedId>>,
-    seen: HashSet<QuantifiedId>,
+    seen: HashSet<Predicate>,
     shapes: shapes::Shapes,
     recipes: recipes::Recipes,
     bindings: Map<Region>,
@@ -35,10 +38,13 @@ impl State {
             .saturating_add(self.guards.steps)
     }
     pub fn assume(&mut self, types: &Store, id: QuantifiedId) -> Result<(), Error> {
-        if self.seen.contains(&id) {
+        let value = types.quantified(id).ok_or(Error::Identity)?;
+        // An unused top-level slot does not change a caller premise. This
+        // deduplication neither merges requirement scopes nor changes the
+        // separate definition-time classification of empty/unused binders.
+        if self.seen.contains(&value.predicate) {
             return Ok(());
         }
-        let value = types.quantified(id).ok_or(Error::Identity)?;
         let Some(Kind::Projection(application)) = types.kind(value.predicate.ty) else {
             return Err(Error::Identity);
         };
@@ -50,7 +56,7 @@ impl State {
             .entry((application.item, shape))
             .or_default()
             .push(id);
-        self.seen.insert(id);
+        self.seen.insert(value.predicate);
         Ok(())
     }
     pub fn alternatives(

@@ -1,8 +1,6 @@
 //! Trait late lifetimes are universal; an impl may choose compatible call-time instantiations.
 use super::{Contract, Declarations};
-use crate::types::{
-    Kind, outlives::Queries, parameters::predicates::Bound, relations::Constraints,
-};
+use crate::types::{Kind, outlives::Queries, relations::Constraints};
 
 pub(super) fn prove(
     facts: &Declarations,
@@ -30,10 +28,8 @@ pub(super) fn prove(
     for &(a, b) in &contract.assumed_regions {
         constraints.assume(a, b).map_err(|e| e.to_string())?;
     }
-    for predicate in &contract.assumptions {
-        if let Bound::Outlives(shorter) = predicate.bound {
-            constraints.assume_type_outlives(&mut queries, predicate.ty, shorter)?;
-        }
+    for &clause in &contract.assumptions {
+        constraints.assume_outlives_clause(&mut queries, clause)?;
     }
     constraints.assume_signature(&mut queries, contract.expected)?;
     for &ty in &contract.inputs {
@@ -45,16 +41,8 @@ pub(super) fn prove(
     if let Some(evidence) = evidence {
         evidence.require(&mut constraints, &mut queries)?;
     }
-    for predicate in &contract.obligations {
-        if let Bound::Outlives(shorter) = predicate.bound {
-            constraints.require_type(
-                &mut queries,
-                predicate.ty,
-                shorter,
-                crate::types::relations::ProofScope::ROOT,
-                0,
-            )?;
-        }
+    for &clause in &contract.obligations {
+        constraints.require_outlives_clause(&mut queries, clause, 0)?;
     }
     let (
         Some(Kind::Function {

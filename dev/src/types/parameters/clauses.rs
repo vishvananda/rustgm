@@ -25,6 +25,24 @@ impl From<Predicate> for Clause {
 }
 
 impl Clause {
+    /// Classify a lifetime obligation without exposing an unbound predicate body.
+    /// The caller must still introduce or instantiate its complete binder.
+    /// # Errors
+    /// Rejects an unknown quantified identity.
+    pub fn is_outlives(self, store: &Store) -> Result<bool, &'static str> {
+        let bound = match self {
+            Self::Predicate(predicate) => predicate.bound,
+            Self::ForAll(id) => {
+                store
+                    .quantified(id)
+                    .ok_or("invalid lifetime clause")?
+                    .predicate
+                    .bound
+            }
+        };
+        Ok(matches!(bound, super::predicates::Bound::Outlives(_)))
+    }
+
     /// Nonempty quantifiers defer satisfaction until use even when their slots
     /// are unused. Empty quantifiers still retain their structural binder depth.
     /// # Errors

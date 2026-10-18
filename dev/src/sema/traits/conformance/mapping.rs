@@ -1,5 +1,5 @@
 //! Map both method contracts to trait-owned rigid parameters and one lifetime proof scope.
-use super::{Contract, Declarations, DefId, Function, Predicate, RegionId};
+use super::{Clause, Contract, Declarations, DefId, Function, Predicate, RegionId};
 use crate::{
     sema::{
         generics::{Parameter, parameter_id},
@@ -178,18 +178,14 @@ pub(super) fn contract(
     let mut assumptions: Vec<_> = facts
         .generics
         .predicates_in_scope(owner)
-        .map(|p| p.value.ordinary())
-        .collect::<Result<_, _>>()?;
+        .map(|p| p.value)
+        .collect();
     // The impl header already proves the trait's parent requirements. Retain
     // the method's own caller bounds here; synthetic inherited Self assumptions
     // would hide the impl's concrete associated definitions during normalization.
     let method_bounds = facts.generics.predicates.get(&expected.definition);
     for predicate in method_bounds.into_iter().flatten() {
-        assumptions.push(
-            folders
-                .expected
-                .predicate(&mut facts.types, predicate.value.ordinary()?)?,
-        );
+        assumptions.push(folders.expected.clause(&mut facts.types, predicate.value)?);
     }
     let obligations = method_requirements(
         facts,
@@ -263,10 +259,10 @@ fn method_requirements(
     method: DefId,
     folder: &mut substitute::Bound,
     method_parameters: &[(Parameter, Parameter)],
-) -> Result<Vec<Predicate>, &'static str> {
+) -> Result<Vec<Clause>, &'static str> {
     let mut obligations = Vec::new();
     for predicate in facts.generics.predicates.get(&method).into_iter().flatten() {
-        obligations.push(folder.predicate(&mut facts.types, predicate.value.ordinary()?)?);
+        obligations.push(folder.clause(&mut facts.types, predicate.value)?);
     }
     for (_, implementation) in method_parameters {
         if let Argument::Type(ty) = implementation.argument {
@@ -275,10 +271,10 @@ fn method_requirements(
                 facts.types.parameter(id).map(|p| p.kind),
                 Some(ParameterKind::Type { sized: true })
             ) {
-                obligations.push(Predicate {
+                obligations.push(Clause::Predicate(Predicate {
                     ty: folder.apply(&mut facts.types, ty)?,
                     bound: Bound::Sized,
-                });
+                }));
             }
         }
     }
@@ -288,7 +284,7 @@ fn method_requirements(
 fn environment(
     store: &Store,
     parameters: &[Parameter],
-    predicates: &[Predicate],
+    predicates: &[Clause],
 ) -> Result<(Environment, Vec<ParameterId>), &'static str> {
     let mut types = Vec::new();
     let mut constants = Vec::new();
@@ -303,7 +299,7 @@ fn environment(
     }
     let environment = Environment::new(store, &types)?
         .with_const_parameters(store, &constants)?
-        .with_predicates(store, predicates)?;
+        .with_clauses(store, predicates)?;
     Ok((environment, types.into_iter().map(|(id, _)| id).collect()))
 }
 fn pairs(

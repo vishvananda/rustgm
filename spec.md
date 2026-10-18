@@ -1917,6 +1917,19 @@ Occurrence queries for captures and local slot counts also share argument and
 callable-parameter list summaries by binder depth, across different owning types
 and traits. A shared list never collapses its different surrounding scopes.
 
+Method conformance substitutes whole clauses into the trait-owned parameter
+environment. Keep caller assumptions separate from the implementation's required
+conditions; prove non-lifetime clauses with scoped trait evidence and lifetime
+clauses through the final directed graph. Captured owner lifetimes never become
+universal permissions. The type/trait environment validates parameter membership
+in lifetime clauses but leaves their proof to the retained lifetime consumer.
+Unsupported quantified property and equality premises must still reject.
+
+Deduplicate universal projected caller premises by their complete predicate body
+when only unused top-level slot counts differ. This caller-only equivalence does
+not merge required proof scopes or change definition-time binder classification.
+Repeated equivalent premises must not multiply candidate scans for each goal.
+
 Declaration formation for a quantified trait bound is a separate structural
 query from using its logical implications. Under the pinned compiler's rules,
 defer formation of each entire subject or type argument that mentions the

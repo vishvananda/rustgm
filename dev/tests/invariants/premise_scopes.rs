@@ -232,11 +232,64 @@ fn quantified_inputs_still_require_type_and_const_membership() -> Result<(), &'s
         Bound::Sized,
         Bound::Copy,
         Bound::Clone,
-        Bound::Outlives(RegionId::STATIC),
         Bound::ProjectionEqual(BYTE),
     ] {
         let unsupported = quantify(&mut store, 0, Predicate { ty: BYTE, bound })?;
         assert!(base.clone().with_clauses(&store, &[unsupported]).is_err());
+    }
+    Ok(())
+}
+
+#[test]
+fn quantified_lifetime_membership_is_checked_before_the_separate_region_consumer()
+-> Result<(), &'static str> {
+    let mut store = Store::default();
+    let ty_id = store.intern_parameter(Parameter {
+        owner: ItemId(1),
+        index: 0,
+        kind: ParameterKind::Type { sized: true },
+    })?;
+    let const_id = store.intern_parameter(Parameter {
+        owner: ItemId(1),
+        index: 1,
+        kind: ParameterKind::Const { ty: BYTE },
+    })?;
+    let ty = store.intern(Kind::Parameter(ty_id))?;
+    let constant = store.intern_const(ConstKind::Parameter(const_id))?;
+    let arguments = store.intern_arguments(&[Argument::Type(ty), Argument::Const(constant)])?;
+    let subject = store.intern(Kind::Adt(ItemId(7), arguments))?;
+    let clause = quantify(
+        &mut store,
+        1,
+        Predicate {
+            ty: subject,
+            bound: Bound::Outlives(RegionId::bound(0, 0)?),
+        },
+    )?;
+    assert!(clause.is_outlives(&store)?);
+    assert!(
+        Clause::ForAll(QuantifiedId(u32::MAX))
+            .is_outlives(&store)
+            .is_err()
+    );
+    for mask in 0..4 {
+        let parameters = if mask & 1 == 0 {
+            Vec::new()
+        } else {
+            vec![(ty_id, Abilities::default())]
+        };
+        let mut environment = Environment::new(&store, &parameters)?;
+        if mask & 2 != 0 {
+            environment = environment.with_const_parameters(&store, &[const_id])?;
+        }
+        let result = environment.with_clauses(&store, &[clause]);
+        assert_eq!(result.is_ok(), mask == 3);
+        if let Ok(environment) = result {
+            assert_eq!(environment.trait_clauses().count(), 0);
+            assert!(!environment.assumes_sized(subject));
+            assert!(!environment.requires_region_mapping());
+            assert_eq!(environment.assumed(subject), Abilities::default());
+        }
     }
     Ok(())
 }
