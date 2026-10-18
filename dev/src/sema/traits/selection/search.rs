@@ -13,6 +13,9 @@ mod result_bounds;
 mod suspension;
 pub(in crate::sema) use suspension::{Pending, Progress, begin, begin_normalized};
 #[cfg(test)]
+#[path = "../../../../tests/invariants/universal_premises.rs"]
+mod assumption_tests;
+#[cfg(test)]
 #[path = "../../../../tests/invariants/quantified_obligations.rs"]
 mod quantified_tests;
 #[cfg(test)]
@@ -231,11 +234,13 @@ impl Search<'_> {
         frame: &mut Frame,
     ) -> Result<Option<Action>, infer::Error> {
         use super::Assumed;
-        match self
-            .caller
-            .assumptions
-            .select(&mut facts.types, &mut frame.context, &frame.goal)?
-        {
+        let first = frame.available_region().max(self.query.allocations.floor());
+        match self.caller.assumptions.select_scoped(
+            &mut facts.types,
+            &mut frame.context,
+            &frame.goal,
+            first,
+        )? {
             Assumed::Proven(proof) => {
                 let goal = frame
                     .context
@@ -243,15 +248,16 @@ impl Search<'_> {
                 let index = self.query.nodes.len();
                 self.query.nodes.push(Node {
                     goal,
-                    source: Some(Source::Assumption(proof.assumption())),
+                    source: Some(Source::assumed(&proof)?),
                     children: Vec::new(),
                     first: frame.first,
-                    end: frame.first,
+                    end: proof.regions.end,
                     equalities: std::mem::take(&mut frame.context.region_equalities),
                     outlives: Vec::new(),
                     type_outlives: Vec::new(),
                     sized: Vec::new(),
                 });
+                self.query.allocations.record(proof.regions.end);
                 return Ok(Some(Action::Complete(Decision::Proven(index))));
             }
             Assumed::Deferred => return Ok(Some(Action::Complete(Decision::Deferred))),

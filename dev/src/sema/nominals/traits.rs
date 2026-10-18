@@ -103,9 +103,9 @@ impl State {
         environment: Option<&Environment>,
     ) -> Result<Assumptions, &'static str> {
         let mut assumptions = Assumptions::default();
-        for predicate in environment.iter().flat_map(|env| env.trait_predicates()) {
+        for clause in environment.iter().flat_map(|env| env.trait_clauses()) {
             assumptions
-                .insert(&facts.types, *predicate)
+                .insert_clause(&facts.types, clause)
                 .map_err(|_| "invalid declaration trait assumption index")?;
         }
         Ok(assumptions)

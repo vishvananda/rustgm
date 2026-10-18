@@ -5,7 +5,7 @@ mod known_premises;
 mod readiness;
 mod result_templates;
 mod search;
-use super::assumptions::{Assumptions, Selection as Assumed};
+use super::assumptions::{Assumptions, ScopedEvidence, ScopedSelection as Assumed};
 use super::implementations::Availability;
 use super::obligations::Obligations;
 use crate::{
@@ -14,7 +14,11 @@ use crate::{
     types::{
         GenericArgs, RegionId, TypeId,
         infer::{self, Context, predicates::Predicate as Goal},
-        parameters::{environment::Environment, predicates::Predicate},
+        parameters::{
+            clauses::{Clause, QuantifiedId},
+            environment::Environment,
+            predicates::Predicate,
+        },
     },
 };
 pub(in crate::sema) use known_premises::opaque_normalized;
@@ -29,12 +33,37 @@ pub(in crate::sema) enum Source {
     /// A language-provided bound, never a trait method or implementation target.
     Builtin,
     Assumption(Predicate),
+    /// Original caller clause and this use's complete instantiated application.
+    QuantifiedAssumption {
+        clause: QuantifiedId,
+        subject: TypeId,
+        application: crate::types::traits::ApplicationId,
+    },
     /// A declared result bound, with its parent projection proof retained.
     ResultBound(Predicate),
     Implementation {
         owner: DefId,
         arguments: GenericArgs,
     },
+}
+impl Source {
+    fn assumed(evidence: &ScopedEvidence) -> Result<Self, infer::Error> {
+        Ok(match evidence.clause {
+            Clause::Predicate(predicate) => Self::Assumption(predicate),
+            Clause::ForAll(clause) => {
+                let crate::types::parameters::predicates::Bound::Trait(application) =
+                    evidence.predicate.bound
+                else {
+                    return Err(infer::Error::InvalidIdentity);
+                };
+                Self::QuantifiedAssumption {
+                    clause,
+                    subject: evidence.predicate.ty,
+                    application,
+                }
+            }
+        })
+    }
 }
 pub(in crate::sema) struct Evidence {
     pub source: Source,
@@ -190,12 +219,20 @@ pub(in crate::sema) fn select_assumption(
     goal: &Goal,
     caller: &Caller<'_>,
 ) -> Result<Selection, infer::Error> {
-    match caller.assumptions.select(store, context, goal)? {
-        Assumed::Proven(proof) => Ok(Selection::Proven(Evidence {
-            source: Source::Assumption(proof.assumption()),
-            proof: Obligations::new(caller.first_region),
-            sized: Vec::new(),
-        })),
+    match caller
+        .assumptions
+        .select_scoped(store, context, goal, caller.first_region)?
+    {
+        Assumed::Proven(proof) => {
+            let source = Source::assumed(&proof)?;
+            let mut obligations = Obligations::new(proof.regions.start);
+            obligations.regions.end = proof.regions.end;
+            Ok(Selection::Proven(Evidence {
+                source,
+                proof: obligations,
+                sized: Vec::new(),
+            }))
+        }
         Assumed::Deferred => Ok(Selection::Deferred),
         Assumed::Absent => Ok(Selection::Absent),
     }

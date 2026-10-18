@@ -10030,3 +10030,29 @@ the cause of the +36..234 KiB RSS change. The detailed review retains all 962
 study and 148 qualification observations, 27 instruction pairs and four Massif
 runs, with no repeated-until-favorable measurement. Cleanup reclaimed 6.90 GiB.
 See `docs/pa21-validation.md` for the complete results and limitations.
+
+## PA21 universal caller assumptions and environments
+
+Universal premises now instantiate fresh existential applications with retained
+caller provenance and private lifetime ownership. Ordinary and quantified
+alternatives share isolated matching; ambiguity cannot leak inference results.
+Immutable environments retain explicit whole clauses, preserve local binders
+while mapping captures, and carry quantified competitors through declaration,
+method, projection and dispatch selection. Shared opening and environment folds
+have bounded-work invariants on growing common type tails.
+
+Nineteen pinned rustc object controls qualify the intended assumption/inference
+rules (eleven accepted, eight rejected). Source producers, scoped continuations
+and instance witnesses still need integration. PA21 remains planned. All 28
+functional gates pass: 1,312 regular tests, 91 native groups, 6,218 earlier course
+cases, strict lint, the 810-file audit, harness/backend/upstream, 813 frozen
+source/config hashes and 18,654 unchanged sidecars. Candidate SHA-256:
+`0de3223807e3c80b281d84a6114dfc3aad9f1856087aa6bfed289416da2b3f94`.
+
+Frozen instruction changes span −0.22%..+0.38%. Main wall changes span
+−4.86%..+5.61%; the two positive outliers do not recur in their single fixed
+follow-ups (+0.004% recursive Copy, −0.73% inherent nominal types). All 962 study
+and 148 qualification observations remain retained, with equal outputs and no
+portable speedup claim. Essentially unchanged paired heap/stack peaks do not
+explain the +34..220 KiB RSS deltas. Cleanup reclaimed 6.90 GiB. See
+`docs/pa21-validation.md` for the complete evidence and remaining boundaries.

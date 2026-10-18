@@ -276,6 +276,25 @@ impl Checker<'_> {
             let predicate = match evidence.get(&index) {
                 Some(Source::Assumption(actual) | Source::ResultBound(actual)) => *actual,
                 Some(Source::Implementation { .. }) => continue,
+                Some(Source::QuantifiedAssumption {
+                    clause,
+                    subject,
+                    application,
+                }) => {
+                    if !self
+                        .trait_assumptions(node)?
+                        .is_some_and(|assumptions| assumptions.contains_quantified(*clause))
+                    {
+                        return Err(self.error(
+                            node,
+                            "quantified evidence is outside this caller environment",
+                        ));
+                    }
+                    crate::types::parameters::predicates::Predicate {
+                        ty: *subject,
+                        bound: crate::types::parameters::predicates::Bound::Trait(*application),
+                    }
+                }
                 Some(Source::Equality) => {
                     return Err(self.error(node, "equality evidence cannot replace a trait goal"));
                 }

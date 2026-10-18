@@ -28,7 +28,7 @@ fn clause(facts: &mut Declarations, count: u32, predicate: Predicate) -> TestRes
         },
     )?))
 }
-fn valid(facts: &Declarations, proof: &Obligations, outer: u32) -> TestResult<bool> {
+pub(super) fn valid(facts: &Declarations, proof: &Obligations, outer: u32) -> TestResult<bool> {
     let mut constraints =
         Constraints::new(&facts.types, &facts.lifetimes.variances, outer, 100_000)?;
     let mut queries = Queries::new(

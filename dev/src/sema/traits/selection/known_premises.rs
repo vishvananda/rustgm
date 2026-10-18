@@ -5,6 +5,7 @@ use crate::{
     types::{
         GenericArgs, Kind,
         parameters::{
+            clauses::Clause,
             environment::Environment,
             predicates::{Bound, Predicate},
         },
@@ -48,9 +49,11 @@ pub(in crate::sema) fn opaque_normalized(
     let mut candidates = environment
         .into_iter()
         .flat_map(|env| env.projected_trait_candidates(trait_item, parent.item));
-    if let Some(&candidate) = candidates.next() {
-        return Ok((candidate == goal && candidates.next().is_none())
-            .then_some(Source::Assumption(candidate)));
+    if let Some(candidate) = candidates.next() {
+        return Ok(
+            (candidate == Clause::Predicate(goal) && candidates.next().is_none())
+                .then_some(Source::Assumption(goal)),
+        );
     }
     let Some((rules, steps)) = results::traits(facts, application.subject, trait_item)? else {
         return Ok(None);

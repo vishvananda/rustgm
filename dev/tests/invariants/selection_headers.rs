@@ -112,7 +112,10 @@ fn trait_item(facts: &Declarations, header: &Implementation) -> Result<ItemId, &
         .item)
 }
 
-fn delay(facts: &mut Declarations, traits: &[DefId]) -> Result<Vec<Implementation>, &'static str> {
+pub(super) fn delay(
+    facts: &mut Declarations,
+    traits: &[DefId],
+) -> Result<Vec<Implementation>, &'static str> {
     let mut registry = Implementations::default();
     let headers: Vec<_> = facts
         .generics
@@ -154,7 +157,10 @@ fn delay(facts: &mut Declarations, traits: &[DefId]) -> Result<Vec<Implementatio
     Ok(delayed)
 }
 
-fn publish(facts: &mut Declarations, header: Implementation) -> Result<(), &'static str> {
+pub(super) fn publish(
+    facts: &mut Declarations,
+    header: Implementation,
+) -> Result<(), &'static str> {
     let item = trait_item(facts, &header)?;
     facts
         .generics
@@ -164,7 +170,7 @@ fn publish(facts: &mut Declarations, header: Implementation) -> Result<(), &'sta
         .prepare(&mut facts.types, item, header)
 }
 
-fn stable_poll(
+pub(super) fn stable_poll(
     search: &mut Search<'_>,
     facts: &mut Declarations,
     owner: DefId,

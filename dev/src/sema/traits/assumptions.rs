@@ -1,10 +1,13 @@
 //! Caller assumptions are indexed once; alternatives use isolated complete-goal equations.
+mod alternatives;
+mod universal;
 use super::heads::{Head, Subject};
 use crate::types::{
     ItemId, Store,
     infer::{self, Context, predicates::Predicate as Goal},
     parameters::{
         ParameterId,
+        clauses::Clause,
         predicates::{Bound, Predicate},
     },
 };
@@ -12,6 +15,7 @@ use std::{
     collections::{HashMap, HashSet},
     sync::OnceLock,
 };
+pub(in crate::sema) use universal::{ScopedEvidence, ScopedSelection};
 #[cfg(test)]
 mod tests;
 
@@ -20,16 +24,17 @@ pub(in crate::sema) struct Assumptions {
     candidates: HashMap<(ItemId, Head), Vec<Predicate>>,
     seen: HashSet<Predicate>,
     parameter_traits: OnceLock<HashMap<ParameterId, Vec<ItemId>>>,
+    quantified: Option<Box<universal::Index>>,
 }
 
 /// Equations against this actual caller assumption have been committed to inference.
 /// Their region equalities still require the ordinary body lifetime proof.
 pub(in crate::sema) struct Evidence(Predicate);
 /// Applicability may defer unresolved evidence; only Proven authorizes a body goal.
-pub(in crate::sema) enum Selection {
+pub(in crate::sema) enum Selection<T = Evidence> {
     Absent,
     Deferred,
-    Proven(Evidence),
+    Proven(T),
 }
 impl Evidence {
     pub fn assumption(&self) -> Predicate {
@@ -56,6 +61,13 @@ impl Assumptions {
                 .kind(predicate.ty)
                 .ok_or(infer::Error::InvalidIdentity)?,
         );
+        if self
+            .quantified
+            .as_ref()
+            .is_some_and(|index| index.candidates.contains_key(&(application.item, head)))
+        {
+            return Ok(None);
+        }
         Ok(self
             .candidates
             .get(&(application.item, head))
@@ -63,9 +75,13 @@ impl Assumptions {
             .map(|_| Evidence(predicate)))
     }
     pub(super) fn may_have_subject(&self, item: ItemId, subject: Subject) -> bool {
-        subject
-            .heads()
-            .any(|head| self.candidates.contains_key(&(item, head)))
+        subject.heads().any(|head| {
+            self.candidates.contains_key(&(item, head))
+                || self
+                    .quantified
+                    .as_ref()
+                    .is_some_and(|index| index.candidates.contains_key(&(item, head)))
+        })
     }
     pub fn parameter_traits(&self, parameter: ParameterId) -> &[ItemId] {
         self.parameter_traits
@@ -74,6 +90,15 @@ impl Assumptions {
                 for &(item, head) in self.candidates.keys() {
                     if let Head::Parameter(parameter) = head {
                         index.entry(parameter).or_default().push(item);
+                    }
+                }
+                if let Some(quantified) = &self.quantified {
+                    for &(item, head) in quantified.candidates.keys() {
+                        if let Head::Parameter(parameter) = head
+                            && !self.candidates.contains_key(&(item, head))
+                        {
+                            index.entry(parameter).or_default().push(item);
+                        }
                     }
                 }
                 index
@@ -95,14 +120,49 @@ impl Assumptions {
     }
 
     pub fn insert(&mut self, store: &Store, predicate: Predicate) -> Result<(), infer::Error> {
+        self.insert_clause(store, Clause::Predicate(predicate))
+    }
+
+    pub fn insert_clause(&mut self, store: &Store, clause: Clause) -> Result<(), infer::Error> {
+        let predicate = match clause {
+            Clause::Predicate(predicate) => predicate,
+            Clause::ForAll(id) => {
+                store
+                    .quantified(id)
+                    .ok_or(infer::Error::InvalidIdentity)?
+                    .predicate
+            }
+        };
         let Bound::Trait(id) = predicate.bound else {
             return Err(infer::Error::InvalidIdentity);
         };
         let application = store
             .trait_application(id)
             .ok_or(infer::Error::InvalidIdentity)?;
-        if self.seen.len() >= 1_000_000 {
+        if self
+            .seen
+            .len()
+            .saturating_add(self.quantified.as_ref().map_or(0, |index| index.seen.len()))
+            >= 1_000_000
+        {
             return Err(infer::Error::Budget);
+        }
+        if let Clause::ForAll(id) = clause {
+            let head = Head::canonical(
+                store
+                    .kind(predicate.ty)
+                    .ok_or(infer::Error::InvalidIdentity)?,
+            );
+            let index = self.quantified.get_or_insert_with(Default::default);
+            if index.seen.insert(id) {
+                self.parameter_traits.take();
+                index
+                    .candidates
+                    .entry((application.item, head))
+                    .or_default()
+                    .push(id);
+            }
+            return Ok(());
         }
         if self.seen.insert(predicate) {
             self.parameter_traits.take();
@@ -128,7 +188,7 @@ impl Assumptions {
         predicate: Predicate,
     ) -> Result<bool, infer::Error> {
         context.account_work(1)?;
-        if !self.seen.contains(&predicate) {
+        if self.quantified.is_some() || !self.seen.contains(&predicate) {
             return Err(infer::Error::InvalidIdentity);
         }
         let Bound::Trait(id) = predicate.bound else {
@@ -168,61 +228,33 @@ impl Assumptions {
         })
     }
 
+    /// Flat evidence has no region owner. Quantified environments must use
+    /// `select_scoped` with the requesting proof's actual free-region frontier.
     pub fn select(
         &self,
         store: &mut Store,
         context: &mut Context,
         goal: &Goal,
     ) -> Result<Selection, infer::Error> {
+        if self.quantified.is_some() {
+            return Err(infer::Error::InvalidIdentity);
+        }
         context.account_work(1)?;
         let Some((item, _)) = goal.trait_arguments() else {
             return Err(infer::Error::InvalidIdentity);
         };
-        let subject = match Subject::query(store, context, goal.subject()) {
-            Ok(subject) => subject,
-            Err(infer::Error::Normalization) => Some(Subject::Rigid(Head::Projection(
-                context
-                    .projection_item(store, goal.subject())?
-                    .ok_or(infer::Error::InvalidIdentity)?,
-            ))),
-            Err(error) => return Err(error),
-        };
-        let Some(subject) = subject else {
+        let Some(subject) = alternatives::subject(store, context, goal)? else {
             return Ok(Selection::Deferred);
         };
-        let mut selected = None;
-        let mut needs_normalization = false;
-        for &candidate in subject
-            .heads()
-            .flat_map(|head| self.candidates.get(&(item, head)).into_iter().flatten())
-        {
-            let mut probe = Context::default();
-            let imported = probe.import_predicate(store, context, goal)?;
-            let result = probe.equate_trait_predicate(store, &imported, candidate);
-            context.account_work(probe.steps)?;
-            match result {
-                Ok(()) => {
-                    if selected.replace(candidate).is_some() {
-                        return Ok(Selection::Deferred);
-                    }
-                }
-                Err(infer::Error::Mismatch | infer::Error::Occurs) => {}
-                // An opaque equation is not a second matching assumption. Keep
-                // looking, including for other fully equatable alternatives.
-                Err(infer::Error::Normalization) => needs_normalization = true,
-                // Applicability may wait for call arguments or a result type.
-                // Another alternative cannot choose this unresolved input.
-                Err(infer::Error::Unresolved) => return Ok(Selection::Deferred),
-                Err(error) => return Err(error),
-            }
-        }
-        if let Some(assumption) = selected {
-            context.equate_trait_predicate(store, goal, assumption)?;
-            Ok(Selection::Proven(Evidence(assumption)))
-        } else if needs_normalization {
-            Err(infer::Error::Normalization)
-        } else {
-            Ok(Selection::Absent)
-        }
+        alternatives::choose(
+            store,
+            context,
+            goal,
+            subject
+                .heads()
+                .flat_map(|head| self.candidates.get(&(item, head)).into_iter().flatten())
+                .copied(),
+            |_, _, predicate| Ok((predicate, Evidence(predicate))),
+        )
     }
 }

@@ -220,7 +220,7 @@ fn traits_do_not_invent_builtin_permissions_or_hide_foreign_parameters()
         .with_predicates(&store, &[predicate, predicate])?;
     assert!(complete.assumes_trait(ty, trait_));
     assert!(!base.assumes_trait(ty, trait_));
-    assert_eq!(complete.trait_predicates().count(), 1);
+    assert_eq!(complete.trait_clauses().count(), 1);
     assert_eq!(complete.assumed(ty), Abilities::default());
     assert!(!complete.assumes_sized(ty));
     assert!(!complete.has_shape_assumptions());

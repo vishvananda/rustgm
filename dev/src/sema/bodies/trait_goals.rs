@@ -105,29 +105,28 @@ impl Checker<'_> {
         if let Some(assumptions) = &self.state.trait_environment {
             return Ok(Some(Arc::clone(assumptions)));
         }
-        let predicates: Vec<_> = self
+        let clauses: Vec<_> = self
             .state
             .method_environment
             .iter()
-            .flat_map(|environment| environment.trait_predicates())
-            .copied()
+            .flat_map(|environment| environment.trait_clauses())
             .collect();
-        if predicates.is_empty() {
+        if clauses.is_empty() {
             return Ok(None);
         }
         let mut assumptions = Assumptions::default();
-        for predicate in predicates {
-            let predicate = if predicate
+        for clause in clauses {
+            let clause = if clause
                 .escaping_binders(&self.facts.types)
                 .map_err(|e| self.error(node, e))?
                 != 0
             {
-                self.alias_predicate(node, predicate)?
+                self.alias_clause(node, clause)?
             } else {
-                predicate
+                clause
             };
             assumptions
-                .insert(&self.facts.types, predicate)
+                .insert_clause(&self.facts.types, clause)
                 .map_err(|e| self.error(node, e))?;
         }
         let assumptions = Arc::new(assumptions);

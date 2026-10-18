@@ -323,7 +323,10 @@ impl Opened {
             return Ok(Attempt::Retry);
         };
         let source = evidence.source;
-        let assumed = if matches!(source, Source::Assumption(_) | Source::ResultBound(_)) {
+        let assumed = if matches!(
+            source,
+            Source::Assumption(_) | Source::ResultBound(_) | Source::QuantifiedAssumption { .. }
+        ) {
             use crate::sema::traits::equalities::{self, Selection};
             match equalities::for_projection(
                 facts,
@@ -400,12 +403,9 @@ fn caller_assumptions(
     environment: Option<&Arc<Environment>>,
 ) -> Result<Assumptions, String> {
     let mut assumptions = Assumptions::default();
-    for predicate in environment
-        .into_iter()
-        .flat_map(|env| env.trait_predicates())
-    {
+    for clause in environment.into_iter().flat_map(|env| env.trait_clauses()) {
         assumptions
-            .insert(&facts.types, *predicate)
+            .insert_clause(&facts.types, clause)
             .map_err(inference)?;
         context.account_work(1).map_err(inference)?;
     }

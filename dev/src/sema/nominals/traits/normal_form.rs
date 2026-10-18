@@ -144,7 +144,11 @@ impl Query {
             self.source = selected;
             if !matches!(
                 selected,
-                Some(selection::Source::Assumption(_) | selection::Source::ResultBound(_))
+                Some(
+                    selection::Source::Assumption(_)
+                        | selection::Source::ResultBound(_)
+                        | selection::Source::QuantifiedAssumption { .. }
+                )
             ) {
                 return self.finish(facts, None);
             }

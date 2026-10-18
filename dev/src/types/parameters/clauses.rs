@@ -16,6 +16,37 @@ pub enum Clause {
     ForAll(QuantifiedId),
 }
 
+impl Clause {
+    /// Local quantified slots do not require substitution of the caller's scope.
+    /// # Errors
+    /// Rejects unknown clause, type or application identities.
+    pub fn has_free_regions(self, store: &Store) -> Result<bool, &'static str> {
+        match self {
+            Self::Predicate(predicate) => predicate.has_free_regions(store),
+            Self::ForAll(id) => store
+                .quantified(id)
+                .ok_or("invalid quantified clause")?
+                .predicate
+                .has_regions_outside(store, 1),
+        }
+    }
+
+    /// Count captures outside this clause, excluding its local quantified binder.
+    /// # Errors
+    /// Rejects unknown clause, type or application identities.
+    pub fn escaping_binders(self, store: &Store) -> Result<u16, &'static str> {
+        match self {
+            Self::Predicate(predicate) => predicate.escaping_binders(store),
+            Self::ForAll(id) => Ok(store
+                .quantified(id)
+                .ok_or("invalid quantified clause")?
+                .predicate
+                .escaping_binders(store)?
+                .saturating_sub(1)),
+        }
+    }
+}
+
 /// The body is written inside one binder, including when no local slot occurs.
 /// Enclosing captures therefore retain their depth through an empty binder.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]

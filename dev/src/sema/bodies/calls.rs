@@ -178,12 +178,25 @@ impl Checker<'_> {
         node: NodeId,
         predicate: crate::types::parameters::predicates::Predicate,
     ) -> Result<crate::types::parameters::predicates::Predicate, Error> {
+        use crate::types::parameters::clauses::Clause;
+        let Clause::Predicate(predicate) = self.alias_clause(node, Clause::Predicate(predicate))?
+        else {
+            return Err(self.error(node, "ordinary predicate substitution introduced a binder"));
+        };
+        Ok(predicate)
+    }
+
+    pub(super) fn alias_clause(
+        &mut self,
+        node: NodeId,
+        clause: crate::types::parameters::clauses::Clause,
+    ) -> Result<crate::types::parameters::clauses::Clause, Error> {
         self.prepare_universals(node)?;
         let Some(substitution) = self.state.call_types.universals.as_mut() else {
             return Err(self.error(node, "missing universal predicate substitution"));
         };
         substitution
-            .predicate(&mut self.facts.types, predicate)
+            .clause(&mut self.facts.types, clause)
             .map_err(|e| self.error(node, e))
     }
 

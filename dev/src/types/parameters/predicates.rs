@@ -66,19 +66,30 @@ impl Predicate {
     /// # Errors
     /// Rejects unknown subject or application identities.
     pub fn has_free_regions(self, store: &crate::types::Store) -> Result<bool, &'static str> {
+        self.has_regions_outside(store, 0)
+    }
+
+    pub(super) fn has_regions_outside(
+        self,
+        store: &crate::types::Store,
+        depth: u16,
+    ) -> Result<bool, &'static str> {
         let subject = store
-            .has_free_regions(self.ty, 0)
+            .has_free_regions(self.ty, depth)
             .ok_or("invalid predicate subject")?;
         let arguments = match self.bound {
             Bound::Trait(id) => {
                 let properties = store
                     .trait_properties(id)
                     .ok_or("invalid predicate trait application")?;
-                properties.escaping != 0 || properties.has(crate::types::Property::FreeRegions)
+                properties.escaping > depth || properties.has(crate::types::Property::FreeRegions)
             }
-            Bound::Outlives(region) => region != crate::types::RegionId::STATIC,
+            Bound::Outlives(region) => {
+                region != crate::types::RegionId::STATIC
+                    && region.bound_parts().is_none_or(|(level, _)| level >= depth)
+            }
             Bound::ProjectionEqual(result) => store
-                .has_free_regions(result, 0)
+                .has_free_regions(result, depth)
                 .ok_or("invalid projection equality result")?,
             Bound::Copy | Bound::Clone | Bound::Sized => false,
         };

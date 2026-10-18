@@ -1,9 +1,17 @@
 //! Immutable assumptions for one symbolic body. Absence of a bound is not proof
 //! that a concrete instantiation lacks it; it only withholds that operation here.
-use super::predicates::{Bound, Predicate};
+mod premises;
+#[cfg(test)]
+#[path = "../../../tests/invariants/premise_scopes.rs"]
+mod scope_tests;
 use super::{ParameterId, ParameterKind};
+use super::{
+    clauses::Clause,
+    predicates::{Bound, Predicate},
+};
 use crate::types::Store;
 use crate::types::{Kind, TypeId};
+use premises::TraitAssumptions;
 use std::collections::{HashMap, hash_map::Entry};
 
 /// Language-provided abilities used by move checking. Copy entails Clone.
@@ -30,33 +38,6 @@ pub struct Environment {
 struct Assumptions {
     predicates: HashMap<TypeId, Abilities>,
     sized: std::collections::HashSet<TypeId>,
-}
-#[derive(Clone, Default)]
-struct TraitAssumptions {
-    predicates: Vec<Predicate>,
-    unique: std::collections::HashSet<Predicate>,
-    constants: std::collections::HashSet<ParameterId>,
-    projected: HashMap<(crate::types::ItemId, crate::types::ItemId), Vec<usize>>,
-}
-impl TraitAssumptions {
-    fn index_projection(&mut self, types: &Store, index: usize) -> Result<(), &'static str> {
-        let predicate = self.predicates[index];
-        let Some(Kind::Projection(subject)) = types.kind(predicate.ty) else {
-            return Ok(());
-        };
-        let Bound::Trait(id) = predicate.bound else {
-            return Err("invalid projected trait assumption");
-        };
-        let trait_item = types
-            .trait_application(id)
-            .ok_or("missing assumed trait")?
-            .item;
-        self.projected
-            .entry((trait_item, subject.item))
-            .or_default()
-            .push(index);
-        Ok(())
-    }
 }
 #[derive(Clone, Default)]
 struct ProjectionAssumptions {
@@ -96,10 +77,7 @@ impl Environment {
     pub(crate) fn has_only_parameters(&self) -> bool {
         self.assumptions.is_none()
             && self.equalities.is_none()
-            && self
-                .traits
-                .as_ref()
-                .is_none_or(|traits| traits.predicates.is_empty())
+            && self.traits.as_ref().is_none_or(|traits| traits.is_empty())
     }
 
     /// Preserve the same immutable permissions while replacing their captured
@@ -127,14 +105,7 @@ impl Environment {
                 .collect::<Result<_, _>>()?;
         }
         if let Some(traits) = &mut result.traits {
-            for predicate in &mut traits.predicates {
-                *predicate = fold.predicate(types, *predicate)?;
-            }
-            traits.unique = traits.predicates.iter().copied().collect();
-            traits.projected.clear();
-            for index in 0..traits.predicates.len() {
-                traits.index_projection(types, index)?;
-            }
+            traits.substitute(types, fold)?;
         }
         if let Some(equalities) = &mut result.equalities {
             for predicate in &mut equalities.predicates {
@@ -161,8 +132,11 @@ impl Environment {
     }
 
     fn mapped_regions(&self, types: &Store) -> Result<bool, &'static str> {
-        for predicate in self.trait_predicates().chain(self.projection_predicates()) {
-            if predicate.has_free_regions(types)? {
+        for clause in self
+            .trait_clauses()
+            .chain(self.projection_predicates().copied().map(Clause::Predicate))
+        {
+            if clause.has_free_regions(types)? {
                 return Ok(true);
             }
         }
@@ -263,70 +237,51 @@ impl Environment {
     /// # Errors
     /// Rejects malformed subjects, foreign type parameters and excessive work.
     pub fn with_predicates(
-        mut self,
+        self,
         types: &Store,
         predicates: &[Predicate],
     ) -> Result<Self, &'static str> {
-        if predicates.len() > 1_000_000 {
+        self.with_requirements(types, predicates.iter().copied().map(Clause::Predicate))
+    }
+
+    /// Retain whole quantified trait assumptions beside ordinary predicates.
+    /// # Errors
+    /// Rejects unsupported quantified bounds, malformed or foreign identities,
+    /// and exhausted storage or traversal limits before publishing an environment.
+    pub fn with_clauses(self, types: &Store, clauses: &[Clause]) -> Result<Self, &'static str> {
+        self.with_requirements(types, clauses.iter().copied())
+    }
+
+    fn with_requirements(
+        mut self,
+        types: &Store,
+        clauses: impl ExactSizeIterator<Item = Clause>,
+    ) -> Result<Self, &'static str> {
+        if clauses.len() > 1_000_000 {
             return Err("parameter predicate budget exceeded");
         }
         let mut uses = super::uses::Uses::default();
-        for predicate in predicates {
-            uses.predicate(types, *predicate)?;
-            if !matches!(predicate.bound, Bound::Outlives(_)) {
-                self.region_mapping |= predicate.has_free_regions(types)?;
-            }
-            if matches!(predicate.bound, Bound::ProjectionEqual(_)) {
-                let Some(Kind::Projection(application)) = types.kind(predicate.ty) else {
-                    return Err("projection equality requires a projected subject");
-                };
-                let equalities = self.equalities.get_or_insert_with(Default::default);
-                if equalities.unique.len() >= 1_000_000 && !equalities.unique.contains(predicate) {
-                    return Err("projection assumption storage budget exceeded");
+        for clause in clauses {
+            match clause {
+                Clause::Predicate(predicate) => {
+                    uses.predicate(types, predicate)?;
+                    if !matches!(predicate.bound, Bound::Outlives(_)) {
+                        self.region_mapping |= predicate.has_free_regions(types)?;
+                    }
+                    self.retain_predicate(types, predicate)?;
                 }
-                if equalities.unique.insert(*predicate) {
-                    equalities
-                        .items
-                        .entry(application.item)
-                        .or_default()
-                        .push(equalities.predicates.len());
-                    equalities.predicates.push(*predicate);
+                Clause::ForAll(id) => {
+                    let value = types
+                        .quantified(id)
+                        .ok_or("invalid quantified assumption")?;
+                    // Quantification binds lifetimes only; type/const membership
+                    // still uses the shared occurrence walk for the whole batch.
+                    uses.predicate(types, value.predicate)?;
+                    self.region_mapping |= clause.has_free_regions(types)?;
+                    self.traits
+                        .get_or_insert_with(Default::default)
+                        .insert(types, clause)?;
                 }
-                continue;
-            }
-            if matches!(predicate.bound, Bound::Trait(_)) {
-                let traits = self.traits.get_or_insert_with(Default::default);
-                if traits.unique.len() >= 1_000_000 && !traits.unique.contains(predicate) {
-                    return Err("trait assumption storage budget exceeded");
-                }
-                if traits.unique.insert(*predicate) {
-                    traits.predicates.push(*predicate);
-                    traits.index_projection(types, traits.predicates.len() - 1)?;
-                }
-                continue;
-            }
-            if matches!(predicate.bound, Bound::Outlives(_)) {
-                continue;
-            }
-            let assumptions = self.assumptions.get_or_insert_with(Default::default);
-            assumptions.sized.insert(predicate.ty);
-            let properties = assumptions.predicates.entry(predicate.ty).or_default();
-            match predicate.bound {
-                Bound::Copy => {
-                    properties.copy = true;
-                    properties.clone_ = true;
-                }
-                Bound::Clone => properties.clone_ = true,
-                Bound::Sized | Bound::Outlives(_) | Bound::Trait(_) | Bound::ProjectionEqual(_) => {
-                }
-            }
-            if let Some(Kind::Parameter(id)) = types.kind(predicate.ty) {
-                let parameter = self
-                    .parameters
-                    .get_mut(&id)
-                    .ok_or("bound parameter is outside its environment")?;
-                parameter.copy |= properties.copy;
-                parameter.clone_ |= properties.clone_;
             }
         }
         if uses
@@ -346,10 +301,64 @@ impl Environment {
         }
         Ok(self)
     }
-    /// Exact retained assumptions, in declaration order. Supertrait elaboration
-    /// adds its own proved predicates rather than granting arbitrary type abilities.
-    pub fn trait_predicates(&self) -> impl Iterator<Item = &Predicate> {
-        self.traits.iter().flat_map(|traits| &traits.predicates)
+    fn retain_predicate(
+        &mut self,
+        types: &Store,
+        predicate: Predicate,
+    ) -> Result<(), &'static str> {
+        if matches!(predicate.bound, Bound::ProjectionEqual(_)) {
+            let Some(Kind::Projection(application)) = types.kind(predicate.ty) else {
+                return Err("projection equality requires a projected subject");
+            };
+            let equalities = self.equalities.get_or_insert_with(Default::default);
+            if equalities.unique.len() >= 1_000_000 && !equalities.unique.contains(&predicate) {
+                return Err("projection assumption storage budget exceeded");
+            }
+            if equalities.unique.insert(predicate) {
+                equalities
+                    .items
+                    .entry(application.item)
+                    .or_default()
+                    .push(equalities.predicates.len());
+                equalities.predicates.push(predicate);
+            }
+            return Ok(());
+        }
+        if matches!(predicate.bound, Bound::Trait(_)) {
+            return self
+                .traits
+                .get_or_insert_with(Default::default)
+                .insert(types, Clause::Predicate(predicate));
+        }
+        if matches!(predicate.bound, Bound::Outlives(_)) {
+            return Ok(());
+        }
+        let assumptions = self.assumptions.get_or_insert_with(Default::default);
+        assumptions.sized.insert(predicate.ty);
+        let properties = assumptions.predicates.entry(predicate.ty).or_default();
+        match predicate.bound {
+            Bound::Copy => {
+                properties.copy = true;
+                properties.clone_ = true;
+            }
+            Bound::Clone => properties.clone_ = true,
+            Bound::Sized | Bound::Outlives(_) | Bound::Trait(_) | Bound::ProjectionEqual(_) => {}
+        }
+        if let Some(Kind::Parameter(id)) = types.kind(predicate.ty) {
+            let parameter = self
+                .parameters
+                .get_mut(&id)
+                .ok_or("bound parameter is outside its environment")?;
+            parameter.copy |= properties.copy;
+            parameter.clone_ |= properties.clone_;
+        }
+        Ok(())
+    }
+
+    /// Exact retained clauses, in declaration order. No implicit binder opening
+    /// or filtering can turn a quantified assumption into ordinary evidence.
+    pub fn trait_clauses(&self) -> impl Iterator<Item = Clause> {
+        self.traits.iter().flat_map(|traits| traits.clauses())
     }
     /// Coarse projected-subject buckets preserve every competing caller clause.
     /// Only complete canonical identity can establish a match without equations.
@@ -357,15 +366,10 @@ impl Environment {
         &self,
         trait_item: crate::types::ItemId,
         projection: crate::types::ItemId,
-    ) -> impl Iterator<Item = &Predicate> {
-        self.traits.iter().flat_map(move |traits| {
-            traits
-                .projected
-                .get(&(trait_item, projection))
-                .into_iter()
-                .flatten()
-                .map(|&index| &traits.predicates[index])
-        })
+    ) -> impl Iterator<Item = Clause> {
+        self.traits
+            .iter()
+            .flat_map(move |traits| traits.projected((trait_item, projection)))
     }
     /// Retain all written equalities, including competing results. An unused
     /// generic declaration need not establish a unique normal form for them.

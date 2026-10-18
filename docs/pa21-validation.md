@@ -217,3 +217,92 @@ executions. Full validation/performance cleanup reclaimed 6.90 GiB. These are
 ordinary-source regression measurements; quantified source integration remains
 incomplete. The repeated-clause invariant does not establish scaling for many
 distinct quantified goals with growing shared type graphs.
+
+## Universal assumptions and immutable environments
+
+The next checkpoint implements the other direction of higher-ranked reasoning:
+using a universal caller premise. Each use opens its whole predicate with fresh
+existential aliases at the caller's actual region frontier. Candidate inference
+is isolated until a unique complete application wins. The retained evidence
+contains the original quantified clause, instantiated subject and complete trait
+application, with the selected private interval and ordinary lifetime equations.
+It creates no new universal proof scope. Body validation verifies that the clause
+belongs to the same caller before using that evidence.
+
+Assumption indexes retain ordinary and quantified competitors. Flat entry points
+fail explicitly when they cannot handle the quantified environment; exact ordinary
+and projected-subject shortcuts cannot silently omit a quantified competitor.
+Unknown Self remains deferred. A unique premise may infer type/const arguments,
+while ambiguous probes leave those variables and lifetime equations untouched.
+Child conditions in implementation search use the current allocation frontier,
+including after header waits that interleave unrelated allocations.
+
+Immutable declaration environments now expose whole trait clauses. Quantified
+entries use lazy storage alongside the existing compact ordinary predicates;
+mixed declaration order survives substitution. Local slots, empty binders and
+nested callable binders remain intact while outer captures map to caller aliases.
+Type/const membership uses one shared occurrence walk across the batch. Constant
+time cached region summaries distinguish local slots from captures. Quantified
+builtin/equality assumptions remain explicitly unsupported at this boundary.
+
+Sixteen new invariants in `universal_premises.rs` and `premise_scopes.rs` check
+actual lifetime-proof discharge, repeated use, independent/correlated slots,
+captures, complete reference subjects, ambiguity, foreign callers, declaration
+order, projection competitors, type/const inference, suspended header ownership
+and malformed/unsupported inputs. Two growth families at widths 64, 128, 256 and
+512 bound shared-tail opening or environment-mapping work and canonical storage.
+These prove sharing within an assumption query or environment substitution;
+they do not resolve the separate distinct universal-goal growth question above.
+
+Nineteen full programs independently qualify the intended rules with pinned
+rustc object compilation: eleven accepted and eight rejected. The initial twelve
+controls and seven inference/implementation controls are retained under
+`obj/pa21-work/quantified-assumptions-v1/`. They are kernel controls, not RustGM
+higher-ranked source acceptance or native execution coverage.
+
+Source declaration producers, scoped normalization continuations, quantified
+implementation conditions and concrete instance witness import remain incomplete.
+PA21 stays planned, with no changed source gate, public CLI or earlier oracle.
+All 28 functional validation gates pass: **1,312 regular maintainer tests**,
+**91 native groups**, **6,218 exact PA1–PA20 cases**, formatting, strict Clippy,
+the **810-file audit with zero findings**, harness, backend and upstream checks.
+All **813 source/configuration hashes** and **18,654 earlier oracle sidecars**
+remain unchanged, and PA21–PA25 still fail as planned. The frozen candidate is
+`0de3223807e3c80b281d84a6114dfc3aad9f1856087aa6bfed289416da2b3f94`,
+compared with published `8664ca0` / `cc023bac2ba771e9050ffe5cb4a8b5d831177f839397590a0033d07f7fef83cf`.
+The immutable comparison completes all 31 timing jobs and 27 instruction pairs.
+Instruction changes range from **−0.22% to +0.38%**; no workload crosses the 1%
+instruction investigation threshold. Main wall medians range from **−4.86% to
++5.61%**, with same-binary medians from **−0.85% to +1.63%** and a largest A/A
+spread of **20.42%**. Median peak RSS deltas range from **+34 to +220 KiB**.
+All full/count outputs and binary/input/source hashes agree.
+
+Two wall increases trigger exactly one predeclared follow-up at batch sixteen:
+
+| Workload | Main paired wall change | Follow-up AB | Follow-up A/A | Follow-up B/B | Instruction change |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Recursive Copy proofs, 64 | +5.61% | +0.004% | +1.79% | +0.03% | +0.31% |
+| Inherent nominal types, 256 | +4.22% | −0.73% | +0.95% | −0.74% | −0.03% |
+
+Neither increase recurs. Every original observation remains in the study; there
+are no additional timing repeats or discarded samples. The same-binary controls
+do not support a portable speedup claim. Focused RSS deltas remain +84 KiB and
++90 KiB, respectively. This comparison does not resolve the preceding checkpoint's
+separate streamed-proof wall-time observation against its own baseline.
+
+The two predeclared Massif comparisons retain these measured storage peaks:
+
+| Workload | Baseline heap bytes | Candidate heap bytes | Baseline combined heap/overhead/stack | Candidate combined |
+| --- | ---: | ---: | ---: | ---: |
+| ordinary-256 | 2,432,253 | 2,432,261 | 2,524,224 | 2,524,192 |
+| constant-chain-uses-256 | 5,382,073 | 5,382,097 | 5,544,272 | 5,544,032 |
+
+Paired heap/stack peaks are essentially unchanged on these inputs. The ELF
+text/data/BSS total grows by 28,680 bytes. Neither measurement establishes the
+cause of the larger peak RSS observations; executable residency was not measured.
+The studies retain **962 timing observations and 148 qualification observations**,
+comprising **5,720 timed and 880 qualification compiler invocations**, plus 54
+Callgrind and four Massif executions. All 813 source/configuration hashes and
+compared outputs remain fixed. Full validation cleanup reclaimed 6.90 GiB.
+Receipts and raw observations are under
+`obj/pa21-work/universal-environments-final/`.

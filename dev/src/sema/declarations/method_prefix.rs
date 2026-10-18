@@ -40,7 +40,7 @@ impl Checker<'_> {
         let Some(environment) = environment else {
             return Ok(None);
         };
-        if environment.trait_predicates().next().is_none() {
+        if environment.trait_clauses().next().is_none() {
             return Ok(None);
         }
         let regions::Position::Local(body) = context.position else {
@@ -55,9 +55,9 @@ impl Checker<'_> {
             return Ok(Some(Arc::clone(assumptions)));
         }
         let mut assumptions = crate::sema::traits::assumptions::Assumptions::default();
-        for &predicate in environment.trait_predicates() {
+        for clause in environment.trait_clauses() {
             assumptions
-                .insert(&self.facts.types, predicate)
+                .insert_clause(&self.facts.types, clause)
                 .map_err(|e| self.error(key, e.to_string()))?;
         }
         let assumptions = Arc::new(assumptions);

@@ -1,0 +1,141 @@
+//! Universal premises supply fresh existential instances in the requesting proof.
+use super::{
+    Assumptions, Clause, Context, Goal, HashMap, HashSet, Head, ItemId, Selection, Store,
+    alternatives, infer,
+};
+use crate::types::{
+    RegionId,
+    parameters::{clauses::QuantifiedId, predicates::Predicate},
+    substitute::Bound,
+};
+use std::ops::Range;
+
+#[derive(Default)]
+pub(super) struct Index {
+    pub candidates: HashMap<(ItemId, Head), Vec<QuantifiedId>>,
+    pub seen: HashSet<QuantifiedId>,
+}
+pub(in crate::sema) struct ScopedEvidence {
+    pub clause: Clause,
+    pub predicate: Predicate,
+    pub regions: Range<u32>,
+}
+pub(in crate::sema) type ScopedSelection = Selection<ScopedEvidence>;
+
+/// Alternatives in one query can share opening work at the same arity/frontier.
+/// Only the unique winner publishes that interval; no opening supplies permission.
+#[derive(Default)]
+struct Openings {
+    binders: HashMap<u32, (Bound, u32)>,
+}
+impl Openings {
+    fn prepare(
+        &mut self,
+        store: &mut Store,
+        context: &mut Context,
+        clause: Clause,
+        first: u32,
+    ) -> Result<(Predicate, ScopedEvidence), infer::Error> {
+        let id = match clause {
+            Clause::Predicate(predicate) => {
+                return Ok((
+                    predicate,
+                    ScopedEvidence {
+                        clause,
+                        predicate,
+                        regions: first..first,
+                    },
+                ));
+            }
+            Clause::ForAll(id) => id,
+        };
+        let quantified = store.quantified(id).ok_or(infer::Error::InvalidIdentity)?;
+        let (fold, end) = match self.binders.entry(quantified.bound_regions) {
+            std::collections::hash_map::Entry::Occupied(entry) => entry.into_mut(),
+            std::collections::hash_map::Entry::Vacant(entry) => {
+                let end = first
+                    .checked_add(quantified.bound_regions)
+                    .filter(|end| *end < 0x8000_0000)
+                    .ok_or(infer::Error::Budget)?;
+                context.account_work(quantified.bound_regions as usize)?;
+                entry.insert((Bound::new((first..end).map(RegionId).collect()), end))
+            }
+        };
+        let before = fold.steps;
+        let predicate = fold
+            .predicate(store, quantified.predicate)
+            .map_err(|_| infer::Error::InvalidIdentity);
+        context.account_work(fold.steps.saturating_sub(before).saturating_add(1))?;
+        let predicate = predicate?;
+        Ok((
+            predicate,
+            ScopedEvidence {
+                clause,
+                predicate,
+                regions: first..*end,
+            },
+        ))
+    }
+}
+impl Assumptions {
+    pub fn contains_quantified(&self, clause: QuantifiedId) -> bool {
+        self.quantified
+            .as_ref()
+            .is_some_and(|index| index.seen.contains(&clause))
+    }
+
+    pub fn select_scoped(
+        &self,
+        store: &mut Store,
+        context: &mut Context,
+        goal: &Goal,
+        first: u32,
+    ) -> Result<ScopedSelection, infer::Error> {
+        let Some(index) = &self.quantified else {
+            return Ok(match self.select(store, context, goal)? {
+                Selection::Absent => Selection::Absent,
+                Selection::Deferred => Selection::Deferred,
+                Selection::Proven(evidence) => Selection::Proven(ScopedEvidence {
+                    clause: Clause::Predicate(evidence.assumption()),
+                    predicate: evidence.assumption(),
+                    regions: first..first,
+                }),
+            });
+        };
+        context.account_work(1)?;
+        if first == 0 || first >= 0x8000_0000 {
+            return Err(infer::Error::InvalidIdentity);
+        }
+        let Some((item, _)) = goal.trait_arguments() else {
+            return Err(infer::Error::InvalidIdentity);
+        };
+        let Some(subject) = alternatives::subject(store, context, goal)? else {
+            return Ok(Selection::Deferred);
+        };
+        let candidates = subject.heads().flat_map(|head| {
+            self.candidates
+                .get(&(item, head))
+                .into_iter()
+                .flatten()
+                .copied()
+                .map(Clause::Predicate)
+                .chain(
+                    index
+                        .candidates
+                        .get(&(item, head))
+                        .into_iter()
+                        .flatten()
+                        .copied()
+                        .map(Clause::ForAll),
+                )
+        });
+        let mut openings = Openings::default();
+        alternatives::choose(
+            store,
+            context,
+            goal,
+            candidates,
+            |store, context, clause| openings.prepare(store, context, clause, first),
+        )
+    }
+}

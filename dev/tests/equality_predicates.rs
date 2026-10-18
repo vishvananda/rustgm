@@ -255,7 +255,7 @@ fn assumptions_preserve_competing_results_without_granting_abilities() -> TestRe
             .collect::<Vec<_>>(),
         [a, b]
     );
-    assert_eq!(environment.trait_predicates().count(), 0);
+    assert_eq!(environment.trait_clauses().count(), 0);
     assert_eq!(original.projection_predicates().count(), 0);
     assert!(!environment.assumes_sized(ty));
     assert!(!environment.has_shape_assumptions());

@@ -112,16 +112,21 @@ impl Dispatcher {
             .account_work(result.normalize.steps)
             .map_err(|e| e.to_string())?;
         let mut assumptions = Assumptions::default();
-        for predicate in environment.iter().flat_map(|env| env.trait_predicates()) {
+        for clause in environment.iter().flat_map(|env| env.trait_clauses()) {
             result.context.account_work(1).map_err(|e| e.to_string())?;
             // Only a fully global bound can use its known implementation.
             // Free lifetimes include 'static; either that input or a parameter
             // keeps the caller assumption opaque to constant-value selection.
-            if predicate.contains_parameters(&facts.types)?
-                || predicate.has_free_regions(&facts.types)?
-            {
+            let opaque = match clause {
+                crate::types::parameters::clauses::Clause::Predicate(predicate) => {
+                    predicate.contains_parameters(&facts.types)?
+                        || predicate.has_free_regions(&facts.types)?
+                }
+                crate::types::parameters::clauses::Clause::ForAll(_) => true,
+            };
+            if opaque {
                 assumptions
-                    .insert(&facts.types, *predicate)
+                    .insert_clause(&facts.types, clause)
                     .map_err(|e| e.to_string())?;
             }
         }

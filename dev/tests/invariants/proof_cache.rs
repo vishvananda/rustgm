@@ -675,7 +675,7 @@ fn normalized_inputs_keep_fresh_impl_debts_out_of_the_reusable_cache()
     Ok(())
 }
 
-fn checked_outer_request(
+pub(super) fn checked_outer_request(
     facts: &mut Declarations,
     application: crate::types::projection::Application,
 ) -> Result<crate::types::substitute::Request, &'static str> {

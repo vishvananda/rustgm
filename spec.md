@@ -1582,6 +1582,32 @@ Separate root and scoped trait-application caches; a canonical application can
 have different results at different binder depths. Opening a universal obligation
 or instantiating a universal assumption requires a separate scoped proof operation.
 
+Immutable caller environments expose whole trait clauses. Keep ordinary predicates
+compact and allocate quantified storage lazily; retain mixed declaration order
+through capture substitution. Mapping an enclosing scope preserves every local
+binder, including empty binders. Use cached type/application summaries at the
+clause's actual depth to distinguish captures from local slots. Share parameter
+occurrence walks and substitution memoization across the entire environment.
+Quantification binds lifetimes, so it never exempts type or const inputs from
+caller-membership checks. Unsupported quantified assumption kinds must fail
+explicitly instead of becoming ordinary builtin or equality permissions.
+
+Using a universal caller premise creates fresh existential aliases at the actual
+requesting allocator frontier. Isolate candidate equations and inference until
+one complete application is selected, then retain its private interval, original
+clause and instantiated subject/trait arguments. No new universal proof scope is
+introduced by this use. Preserve the allocation frontier across header waits and
+exclude allocations belonging to other work. Unknown Self remains deferred; a
+unique compatible premise may constrain other inference inputs. Competing clauses
+must not leak equations or be omitted by an exact ordinary or projection shortcut.
+
+Alternative quantified premises within one selection may share binder-opening
+work at the same arity and trial frontier. Reusing canonical transformations does
+not share permission: only the selected application exports its evidence and
+owned aliases. Flat selection entry points reject environments they cannot consume
+without binder ownership. Projection and body consumers retain quantified origin
+explicitly; validation must confirm the original clause belongs to that caller.
+
 Separate generic parameter identity, alias expansion and default-template
 readiness. Explicit arguments demand no unrelated defaults. Omitted arguments
 demand each needed template through the bounded declaration worklist; a default
