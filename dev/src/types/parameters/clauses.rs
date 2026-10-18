@@ -25,6 +25,41 @@ impl From<Predicate> for Clause {
 }
 
 impl Clause {
+    /// Preserve the source-level consequences of an explicit lifetime premise.
+    /// Apply this before substituting a parameter with a concrete composite: an
+    /// all-regions parameter bound already grants its caller a static bound.
+    /// Projected subjects stay opaque until their own normalization is proved.
+    /// # Errors
+    /// Rejects unknown quantified clauses and invalid subjects.
+    pub fn caller_outlives(self, store: &Store) -> Result<Option<Self>, &'static str> {
+        use super::predicates::Bound;
+        use crate::types::{Kind, RegionId};
+        let value = match self {
+            Self::Predicate(predicate) => {
+                return Ok(matches!(predicate.bound, Bound::Outlives(_)).then_some(self));
+            }
+            Self::ForAll(id) => store
+                .quantified(id)
+                .ok_or("invalid outlives assumption clause")?,
+        };
+        let Bound::Outlives(shorter) = value.predicate.bound else {
+            return Ok(None);
+        };
+        let subject = store
+            .kind(value.predicate.ty)
+            .ok_or("invalid outlives assumption subject")?;
+        if !matches!(shorter.bound_parts(), Some((0, _))) || matches!(subject, Kind::Projection(_))
+        {
+            return Ok(Some(self));
+        }
+        Ok(
+            matches!(subject, Kind::Parameter(_)).then_some(Self::Predicate(Predicate {
+                ty: value.predicate.ty,
+                bound: Bound::Outlives(RegionId::STATIC),
+            })),
+        )
+    }
+
     /// Classify a lifetime obligation without exposing an unbound predicate body.
     /// The caller must still introduce or instantiate its complete binder.
     /// # Errors

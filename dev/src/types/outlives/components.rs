@@ -1,9 +1,11 @@
 //! Bounded component walks distinguish symbolic result bounds from runtime inputs.
+#[cfg(test)]
+#[path = "../../../tests/invariants/caller_component_work.rs"]
+mod tests;
 use super::{
-    Argument, BoundParts, Budget, HashMap, HashSet, Kind, ParameterId, Parts, Projection, RegionId,
-    Store, TypeId, children, free,
+    Argument, BoundParts, Budget, ComponentLists, HashMap, HashSet, Kind, ParameterId, Parts,
+    Projection, RegionId, Store, TypeId, children, free,
 };
-type Collected = (Vec<RegionId>, Vec<ParameterId>, Vec<Projection>);
 #[derive(Default)]
 pub(super) struct Components {
     cache: HashMap<(TypeId, u16, ComponentKind), Vec<RegionId>>,
@@ -32,6 +34,33 @@ pub(crate) struct TypeComponents {
     budget: Budget,
 }
 impl TypeComponents {
+    /// Collect independent parts of several already-normalized clause subjects.
+    /// Shared tails are visited once for this common target, without constructing
+    /// a synthetic type or caching a flattened component vector for every prefix.
+    pub(crate) fn clause_roots(
+        &mut self,
+        types: &Store,
+        roots: &[TypeId],
+    ) -> Result<(Vec<RegionId>, Vec<ParameterId>), &'static str> {
+        self.budget.work(roots.len())?;
+        for &root in roots {
+            if types.contains_projections(root) != Some(false) {
+                return Err("concrete caller premise retains an associated projection");
+            }
+        }
+        let (regions, parameters, projections) = self.components.collect_roots(
+            types,
+            roots,
+            1,
+            ComponentKind::TypeBound,
+            &mut self.budget,
+        )?;
+        if !projections.is_empty() {
+            return Err("concrete caller premise retains an associated projection");
+        }
+        Ok((regions, parameters))
+    }
+
     /// Every input remaining live is sufficient for an opaque result's cleanup.
     /// This gives no reverse bound on inputs from a bound on the result.
     pub(crate) fn live_value(
@@ -164,12 +193,31 @@ impl Components {
         depth: u16,
         kind: ComponentKind,
         budget: &mut Budget,
-    ) -> Result<Collected, &'static str> {
+    ) -> Result<ComponentLists, &'static str> {
+        self.collect_roots(types, &[root], depth, kind, budget)
+    }
+    pub(super) fn collect_roots(
+        &mut self,
+        types: &Store,
+        roots: &[TypeId],
+        depth: u16,
+        kind: ComponentKind,
+        budget: &mut Budget,
+    ) -> Result<ComponentLists, &'static str> {
+        budget.pending(roots.len())?;
+        let expanded = if kind == ComponentKind::ProjectionInputs {
+            let [root] = roots else {
+                return Err("projection input components require one root");
+            };
+            Some(*root)
+        } else {
+            None
+        };
         self.work.clear();
         self.seen.clear();
         self.regions.clear();
         self.parameter_seen.clear();
-        self.work.push((root, depth));
+        self.work.extend(roots.iter().map(|&root| (root, depth)));
         let mut values = Vec::new();
         let mut parameters = Vec::new();
         let mut projections = Vec::new();
@@ -208,9 +256,7 @@ impl Components {
                     )?;
                 }
                 Kind::Projection(application) => {
-                    if kind != ComponentKind::LiveValue
-                        && !(kind == ComponentKind::ProjectionInputs && ty == root)
-                    {
+                    if kind != ComponentKind::LiveValue && expanded != Some(ty) {
                         projections.push(Projection { ty, depth });
                         continue;
                     }

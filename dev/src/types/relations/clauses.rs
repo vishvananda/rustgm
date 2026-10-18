@@ -1,12 +1,14 @@
 //! Assumptions instantiate a caller premise; requirements introduce fresh universal scopes.
 use super::{Constraints, Error, Kind, ProofScope, RegionId};
 use crate::types::{
+    TypeId,
     outlives::Queries,
     parameters::{
         clauses::{Clause, QuantifiedId},
         predicates::Bound,
     },
 };
+use std::collections::HashMap;
 
 impl Constraints<'_> {
     /// Consume the outlives part of a complete caller clause. Other bound kinds
@@ -19,12 +21,61 @@ impl Constraints<'_> {
         queries: &mut Queries<'_>,
         clause: Clause,
     ) -> Result<(), String> {
+        self.assume_outlives_clauses(queries, [clause])
+    }
+    /// Elaborate caller premises together, walking shared composite subjects once
+    /// per independent target. No structural cache carries caller permissions.
+    /// # Errors
+    /// Rejects malformed clauses, escaping captures and exhausted proof work.
+    pub fn assume_outlives_clauses(
+        &mut self,
+        queries: &mut Queries<'_>,
+        clauses: impl IntoIterator<Item = Clause>,
+    ) -> Result<(), String> {
+        let mut targets = HashMap::new();
+        let mut groups: Vec<(RegionId, Vec<TypeId>)> = Vec::new();
+        for clause in clauses {
+            self.steps = self.steps.saturating_add(1);
+            if self.steps > self.limit {
+                return Err(Error::Budget.to_string());
+            }
+            if let Some((ty, shorter)) = self.caller_components(queries, clause)? {
+                let index = *targets.entry(shorter).or_insert_with(|| {
+                    groups.push((shorter, Vec::new()));
+                    groups.len() - 1
+                });
+                groups[index].1.push(ty);
+            }
+        }
+        for (shorter, roots) in groups {
+            let (regions, parameters, projections) = queries.clause_components(&roots)?;
+            for longer in regions {
+                self.assume(longer, shorter).map_err(|e| e.to_string())?;
+            }
+            for parameter in parameters {
+                self.assume_parameter(parameter, shorter)
+                    .map_err(|e| e.to_string())?;
+            }
+            for projection in projections {
+                self.assume_projection(projection, shorter)?;
+            }
+        }
+        Ok(())
+    }
+    fn caller_components(
+        &mut self,
+        queries: &mut Queries<'_>,
+        clause: Clause,
+    ) -> Result<Option<(TypeId, RegionId)>, String> {
+        let Some(clause) = clause.caller_outlives(self.types)? else {
+            return Ok(None);
+        };
         let id = match clause {
             Clause::Predicate(predicate) => {
                 if let Bound::Outlives(shorter) = predicate.bound {
                     self.assume_type_outlives(queries, predicate.ty, shorter)?;
                 }
-                return Ok(());
+                return Ok(None);
             }
             Clause::ForAll(id) => id,
         };
@@ -33,42 +84,23 @@ impl Constraints<'_> {
             .quantified(id)
             .ok_or("invalid outlives assumption clause")?;
         let Bound::Outlives(shorter) = value.predicate.bound else {
-            return Ok(());
+            return Ok(None);
         };
         let subject = self
             .types
             .kind(value.predicate.ty)
             .ok_or("invalid outlives assumption subject")?;
         if matches!(subject, Kind::Projection(_)) {
-            return self
-                .assume_quantified_projection(id)
-                .map_err(|e| e.to_string());
+            self.assume_quantified_projection(id)
+                .map_err(|e| e.to_string())?;
+            return Ok(None);
         }
         let shorter = match shorter.bound_parts() {
-            Some((0, _)) => {
-                // Only the original parameter subject establishes an all-regions
-                // bound. A composite with a local target contributes no components.
-                if let Kind::Parameter(id) = subject {
-                    self.assume_parameter(id, RegionId::STATIC)
-                        .map_err(|e| e.to_string())?;
-                }
-                return Ok(());
-            }
+            Some((0, _)) => return Err("unelaborated local outlives assumption target".into()),
             Some((depth, slot)) => RegionId::bound(depth - 1, slot)?,
             None => shorter,
         };
-        let parts = queries.clause_components(value.predicate.ty)?;
-        for &longer in parts.scalars.regions {
-            self.assume(longer, shorter).map_err(|e| e.to_string())?;
-        }
-        for &parameter in parts.scalars.parameters {
-            self.assume_parameter(parameter, shorter)
-                .map_err(|e| e.to_string())?;
-        }
-        for &projection in parts.projections {
-            self.assume_projection(projection, shorter)?;
-        }
-        Ok(())
+        Ok(Some((value.predicate.ty, shorter)))
     }
     fn assume_quantified_projection(&mut self, id: QuantifiedId) -> Result<(), Error> {
         self.steps = self.steps.saturating_add(1);

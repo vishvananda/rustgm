@@ -230,11 +230,9 @@ fn body(
             .assume_signature(queries, signature)
             .map_err(error)?;
     }
-    for &(ty, shorter) in &input.type_assumptions {
-        constraints
-            .assume_type_outlives(queries, ty, shorter)
-            .map_err(error)?;
-    }
+    constraints
+        .assume_outlives_clauses(queries, input.type_assumptions.iter().copied())
+        .map_err(error)?;
     let provenance = cfg
         .map(|cfg| super::places::bounds(types, cfg))
         .transpose()

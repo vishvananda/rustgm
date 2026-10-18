@@ -38,6 +38,7 @@ pub struct Projection {
     pub depth: u16,
 }
 pub type ProjectionPair = (Projection, RegionId);
+pub(crate) type ComponentLists = (Vec<RegionId>, Vec<ParameterId>, Vec<Projection>);
 /// Type bounds preserve opaque results separately from ordinary components.
 #[derive(Clone, Copy)]
 pub struct BoundParts<'a> {
@@ -389,10 +390,13 @@ impl<'a> Queries<'a> {
     }
     /// Caller-assumption elaboration omits local region components while retaining
     /// independent parameters. Opaque projections keep their original binder depth.
-    pub(crate) fn clause_components(&mut self, ty: TypeId) -> Result<BoundParts<'_>, &'static str> {
-        self.state.scan.components.get(
+    pub(crate) fn clause_components(
+        &mut self,
+        roots: &[TypeId],
+    ) -> Result<ComponentLists, &'static str> {
+        self.state.scan.components.collect_roots(
             self.types,
-            ty,
+            roots,
             1,
             ComponentKind::TypeBound,
             &mut self.state.scan.budget,

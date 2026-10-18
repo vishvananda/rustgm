@@ -150,8 +150,8 @@ fn rewrite(
     for (_, proof) in &mut contract.proofs {
         proof.substitute(&mut facts.types, fold)?;
     }
-    for (ty, _) in &mut contract.type_assumptions {
-        *ty = fold.apply(&mut facts.types, *ty)?;
+    for clause in &mut contract.type_assumptions {
+        *clause = fold.clause(&mut facts.types, *clause)?;
     }
     if let Some(signature) = &mut contract.signature {
         *signature = fold.apply(&mut facts.types, *signature)?;

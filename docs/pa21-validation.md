@@ -1167,3 +1167,106 @@ Successful guarded cleanup removed 5,753 generated files (6.91 GiB unshared),
 receipt `obj/cleanup/1792352484998281343.jsonl`. Only the current comparison
 baseline and candidate binaries remain pinned; superseded pins are retired after
 their replacement passes exact-commit CI, with hash and publication receipts.
+
+## Body caller clauses and shared component work
+
+Body lifetime contracts now carry whole outlives clauses through collection,
+dispatch, specialization and the final region check. An original parameter's
+all-lifetimes permission is elaborated before specializing that checked body,
+so replacing the parameter with a reference does not discard the permission.
+Ordinary callee witness facts use the same clause representation; quantified
+trait-witness import still has its explicit unsupported-scope guard.
+
+Concrete projected caller premises retain their original quantified clauses.
+Normalization shares a session for each binder-arity group and records new
+requirements as debts in that proof. Only the exact declared premise supplies
+independent normalized components; normalization requirements cannot become
+assumptions. Tests distinguish unrestricted and static-restricted implementations,
+empty and nonempty binders, captured inputs, unrelated targets and absent premises.
+
+The first growing-clause test exposed quadratic traversal in the final lifetime
+consumer: normalization shared its work, but checking each retained composite
+premise separately exhausted the one-million-step outlives budget. The batch
+consumer now groups quantified composite subjects by independent target and
+walks all roots in a group together. It retains opaque projected components and
+keeps top-level projected matching and ordinary assumptions on their own paths.
+It neither fabricates aggregate types nor caches flattened vectors for every
+prefix. Body, declaration, receiver, nominal and override lifetime gates use
+this consumer. Distinct targets and caller environments retain distinct
+permissions. Component traversal is bounded by the graph visited for each
+target, not by separately revisiting every growing prefix for that target.
+
+Independent qualification comprises **36 pinned rustc source controls: 23
+accept and 13 reject**. Four original hypotheses were contradicted and remain
+recorded with their diagnostics. Projected assumptions can remain opaque when a
+matching caller trait premise is present; the paired case without that premise
+can normalize through its implementation. A generic default body may use its
+original all-lifetimes Self permission, but an override on a reference cannot
+strengthen its mapped contract to static—or even repeat the identical quantified
+Self requirement in the qualified example. The speculative conformance
+pre-elaboration was therefore removed. Conformance continues to elaborate after
+mapping; a dedicated regression distinguishes that operation from specializing
+an already-checked body. These are rustc qualifications and typed-consumer
+regressions, not newly released RustGM source capabilities.
+
+Focused checks pass 239 library tests, 14 caller-outlives tests, instance-body
+tests, strict all/pedantic Clippy, the 858-file audit and harness checks. Earlier
+failed hypotheses and the initial budget-exhaustion regression remain in
+`obj/pa21-work/body-clauses-v1/`; focus4 and focus6 cleanup receipts are
+`1792354020924719329` and `1792354545103691468`.
+
+The prior compiler checkpoint's CI reached its final PA20 rustc comparison but
+hit the 20-minute job limit. Workflow-only commit
+[`9763d07`](https://github.com/vishvananda/rustgm/commit/9763d07715abde1ffe62ee6d2e48157705df3865)
+raises the limit to 30 minutes and puts release tests under the storage guard,
+preserving all gates. Its exact-commit
+[CI run](https://github.com/vishvananda/rustgm/actions/runs/39162122913) passes.
+The previous compiler pin was retired only afterward, recording both binary
+hashes and verifying that the successor changed only the workflow.
+
+PA21–PA25 remain planned. Own-clause body formation, canonical body requirements,
+quantified call inference and specialized trait-witness import still need their
+scoped consumers before source activation. PA21's associated type families and
+opaque types also remain release work. No public text oracle changed here.
+
+Full validation passes **34 gates**, **1,436 regular tests**, **91 native groups**
+and all **6,228 active course cases**. The isolated component-work observation
+records **82 / 642 / 5,122 / 20,482 steps** for **16 / 128 / 1,024 / 4,096 roots**.
+PA19 independently checks 1,080 source controls and 641 LowIR controls, with 254
+executable comparisons; PA20 checks 1,345 source controls and 799 LowIR controls,
+with 484 executable comparisons. Their existing seven and one documented
+acceptance differences remain. All 7,237 source/config hashes and 18,684 oracle
+sidecars are unchanged during validation and measurement; PA21–PA25 discovery
+continues to reject planned assignments.
+
+Against the published compiler at `8429732` (identical compiler source in the
+CI-only successor `9763d07`), 33 immutable timing jobs and 29 instruction pairs
+retain full/count output equality. Paired wall medians range from **−1.653% to
++2.089%**, same-binary medians from **−1.398% to +0.864%**, with maximum A/A spread
+**13.877%**. No wall result crosses the predeclared 3% follow-up threshold; no
+follow-up was run. Instruction changes range from **+0.071% to +0.383%**, below
+the 1% review threshold. This does not establish a portable source compile-time
+speedup; the new quantified consumer's improvement is demonstrated by its
+bounded structural work and the prior budget-exhaustion regression. This
+comparison does not settle the earlier `b1410` streamed-proof performance question.
+
+Two fixed Massif controls retain identical heap peaks of **2,432,261** and
+**5,381,881 bytes**. Simultaneous combined peaks change from **2,528,576 to
+2,528,304 bytes** and **5,540,488 to 5,540,152 bytes**; these small differences do
+not establish a general memory improvement. Median RSS changes range from
+−538 to −34 KiB. ELF totals grow from **6,346,753 to 6,359,037 bytes** (+12,284).
+The study retains **858 observations**, **132 qualification observations**,
+**3,432 timed invocations**, **528 qualification invocations**, **58 Callgrind
+invocations** and **four Massif invocations**.
+
+Receipts are in `obj/pa21-work/body-clauses-final/`. Final-summary SHA-256:
+`52db286b95096389a39741977fa50f4a5c585d08f75c5819d3880cbb9d9108d0`.
+The candidate SHA-256 is
+`1e4a4ee04b08b92344c36a0ccdcd8268e5427ead16be40f8e7d3b52148857d1d`;
+the retained comparison baseline is
+`44f2289ed952d0b9eb9cef0c62eb4d90f7f0333643976af3ba02d42f083f0d3f`.
+
+Successful cleanup removed **5,753 generated files (6.91 GiB)**; receipt
+`obj/cleanup/1792356093283230403.jsonl`. Only the current baseline and candidate
+remain pinned. Qualified probe objects and the preceding pin were retired with
+separate hash receipts under the storage guard.

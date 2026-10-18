@@ -1,4 +1,5 @@
 //! Concrete projection results retain their selection debts in the instance contract.
+mod assumptions;
 mod debts;
 use crate::{
     body::{
@@ -120,6 +121,7 @@ pub(super) fn normalize(
         }
     }
     rewrite_contract(facts, contract, &mut session)?;
+    assumptions::normalize(facts, contract, &mut proof)?;
     let next = proof.regions.end;
     if !proof.is_empty() {
         contract.proofs.push((body.source, proof));
@@ -204,8 +206,10 @@ fn rewrite_contract(
             unsafe_,
         })?;
     }
-    for (ty, _) in &mut contract.type_assumptions {
-        *ty = session.normalize(facts, *ty)?.0;
+    for clause in &mut contract.type_assumptions {
+        if let crate::types::parameters::clauses::Clause::Predicate(predicate) = clause {
+            predicate.ty = session.normalize(facts, predicate.ty)?.0;
+        }
     }
     for obligation in &mut contract.obligations {
         match &mut obligation.kind {

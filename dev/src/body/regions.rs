@@ -40,7 +40,7 @@ pub struct Contract {
     pub universals: u32,
     pub assumptions: Vec<Pair>,
     pub parameters: Vec<crate::types::parameters::ParameterId>,
-    pub type_assumptions: Vec<(TypeId, RegionId)>,
+    pub type_assumptions: Vec<crate::types::parameters::clauses::Clause>,
     pub obligations: Vec<Obligation>,
     pub proofs: Vec<(NodeKey, crate::types::lifetime_proof::Obligations)>,
 }
@@ -303,9 +303,8 @@ fn parameter_contract(
     }
     let mut type_assumptions = Vec::new();
     for predicate in facts.generics.predicates_in_scope(owner) {
-        let predicate = predicate.value.ordinary()?;
-        if let crate::types::parameters::predicates::Bound::Outlives(region) = predicate.bound {
-            type_assumptions.push((predicate.ty, region));
+        if let Some(clause) = predicate.value.caller_outlives(&facts.types)? {
+            type_assumptions.push(clause);
         }
     }
     Ok(Contract {

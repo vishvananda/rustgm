@@ -62,11 +62,15 @@ impl Checker<'_> {
         constraints
             .assume_signature(&mut queries, function.signature)
             .map_err(|e| self.error(key, e))?;
-        for predicate in self.facts.generics.predicates_in_scope(function.definition) {
-            constraints
-                .assume_outlives_clause(&mut queries, predicate.value)
-                .map_err(|e| self.error(key, e))?;
-        }
+        constraints
+            .assume_outlives_clauses(
+                &mut queries,
+                self.facts
+                    .generics
+                    .predicates_in_scope(function.definition)
+                    .map(|p| p.value),
+            )
+            .map_err(|e| self.error(key, e))?;
         constraints
             .coerce(receiver.base, schema.self_type, false, 0)
             .map_err(error)?;

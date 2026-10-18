@@ -33,8 +33,8 @@ pub(super) fn specialize(
         // Ordinary callable types visited below retain their nested binder.
         *signature = bound.signature(&mut facts.types, *signature, contract.universals)?;
     }
-    for (ty, _) in &mut contract.type_assumptions {
-        *ty = bound.apply(&mut facts.types, *ty)?;
+    for clause in &mut contract.type_assumptions {
+        *clause = bound.clause(&mut facts.types, *clause)?;
     }
     for obligation in &mut contract.obligations {
         match &mut obligation.kind {
@@ -92,7 +92,13 @@ pub(super) fn specialize(
                 .or_insert_with(|| Bound::lower(projection.depth))
                 .apply(&mut facts.types, projection.ty)?
         };
-        contract.type_assumptions.push((ty, shorter));
+        contract.type_assumptions.push(
+            crate::types::parameters::predicates::Predicate {
+                ty,
+                bound: crate::types::parameters::predicates::Bound::Outlives(shorter),
+            }
+            .into(),
+        );
     }
     Ok((bound, contract))
 }

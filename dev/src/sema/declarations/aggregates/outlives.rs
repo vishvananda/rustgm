@@ -177,9 +177,13 @@ impl Checker<'_> {
             proof.assume(longer, shorter).map_err(|e| e.to_string())?;
         }
         let mut queries = Queries::new(&self.facts.types, bounds, &self.facts.lifetimes.callables);
-        for predicate in self.facts.generics.predicates_in_scope(owner) {
-            proof.assume_outlives_clause(&mut queries, predicate.value)?;
-        }
+        proof.assume_outlives_clauses(
+            &mut queries,
+            self.facts
+                .generics
+                .predicates_in_scope(owner)
+                .map(|p| p.value),
+        )?;
         proof.solve().map_err(|e| e.to_string())?;
         Ok(())
     }

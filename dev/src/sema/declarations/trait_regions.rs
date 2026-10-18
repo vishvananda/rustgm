@@ -198,9 +198,13 @@ impl Checker<'_> {
                 constraints.assume_well_formed(queries, ty)?;
             }
         }
-        for predicate in self.facts.generics.predicates_in_scope(owner) {
-            constraints.assume_outlives_clause(queries, predicate.value)?;
-        }
+        constraints.assume_outlives_clauses(
+            queries,
+            self.facts
+                .generics
+                .predicates_in_scope(owner)
+                .map(|p| p.value),
+        )?;
         Ok(constraints)
     }
 

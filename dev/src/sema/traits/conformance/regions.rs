@@ -28,9 +28,7 @@ pub(super) fn prove(
     for &(a, b) in &contract.assumed_regions {
         constraints.assume(a, b).map_err(|e| e.to_string())?;
     }
-    for &clause in &contract.assumptions {
-        constraints.assume_outlives_clause(&mut queries, clause)?;
-    }
+    constraints.assume_outlives_clauses(&mut queries, contract.assumptions.iter().copied())?;
     constraints.assume_signature(&mut queries, contract.expected)?;
     for &ty in &contract.inputs {
         constraints.assume_well_formed(&mut queries, ty)?;

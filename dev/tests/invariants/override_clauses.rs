@@ -338,3 +338,49 @@ fn projected_results_preserve_the_quantified_input_target_correlation() -> Resul
     }
     Ok(())
 }
+
+#[test]
+fn conformance_elaborates_self_after_mapping_to_the_implementation_subject() -> Result {
+    for (tuple, quantified, valid) in [
+        (false, true, false),
+        (true, true, false),
+        (false, false, true),
+    ] {
+        let mut f = Fixture::new("trait Api{fn f();}impl<'x>Api for &'x u8{fn f(){}}")?;
+        let owner = f
+            .facts
+            .associated
+            .trait_owner(f.expected.definition)
+            .ok_or("missing method trait owner")?;
+        let mut ty = f
+            .facts
+            .associated
+            .schema(owner)
+            .ok_or("missing trait")?
+            .self_type;
+        if tuple {
+            let elements = f.facts.types.intern_list(&[ty])?;
+            ty = f.facts.types.intern(Kind::Tuple(elements))?;
+        }
+        let declared = f.clause(
+            Predicate {
+                ty,
+                bound: Bound::Outlives(if quantified {
+                    RegionId::bound(0, 0)?
+                } else {
+                    RegionId::STATIC
+                }),
+            },
+            quantified.then_some(1),
+        )?;
+        let required = Predicate {
+            ty: f.predicate.ty,
+            bound: Bound::Outlives(RegionId::STATIC),
+        }
+        .into();
+        f.install(f.expected, &[declared]);
+        f.install(f.actual, &[required]);
+        f.valid(valid)?;
+    }
+    Ok(())
+}

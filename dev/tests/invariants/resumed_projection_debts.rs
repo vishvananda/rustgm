@@ -316,3 +316,108 @@ fn outer_captures_keep_the_body_identity_through_empty_and_nonempty_scopes() -> 
     }
     Ok(())
 }
+
+fn caller_clause(
+    f: &mut Fixture,
+    count: u32,
+    ty: TypeId,
+    shorter: RegionId,
+) -> Result<crate::types::parameters::clauses::Clause> {
+    use crate::types::parameters::{
+        clauses::{Clause, Quantified},
+        predicates::Predicate,
+    };
+    Ok(Clause::ForAll(f.facts.types.intern_quantified(
+        Quantified {
+            bound_regions: count,
+            predicate: Predicate {
+                ty,
+                bound: Bound::Outlives(shorter),
+            },
+        },
+    )?))
+}
+
+#[test]
+fn caller_projection_premises_keep_normalization_requirements_as_debts() -> Result {
+    for restricted in [false, true] {
+        let mut f = Fixture::new(restricted)?;
+        let local = RegionId::bound(0, 0)?;
+        let ty = f.projected(local)?;
+        let clause = caller_clause(&mut f, 1, ty, local)?;
+        let mut c = contract(Obligations::new(1));
+        c.type_assumptions.push(clause);
+        let mut evidence = Obligations::new(1);
+        super::super::assumptions::normalize(&mut f.facts, &mut c, &mut evidence)?;
+        assert_eq!(c.type_assumptions, [clause]);
+        assert!(c.assumptions.is_empty());
+        assert_eq!(evidence.scope_count(), 1);
+        c.proofs.push((source(2), evidence));
+        f.check(&c, !restricted);
+    }
+    Ok(())
+}
+
+#[test]
+fn concrete_projection_premises_supply_only_their_own_independent_components() -> Result {
+    use crate::body::regions::{Kind as Debt, Obligation};
+    for count in [0, 1] {
+        for (given, goal) in [(false, 0), (true, 0), (true, 1)] {
+            let mut f = Fixture::new(false)?;
+            let projected = f.projected(RegionId::bound(1, 0)?)?;
+            let target = if count == 0 {
+                RegionId::STATIC
+            } else {
+                RegionId::bound(0, 0)?
+            };
+            let clause = caller_clause(&mut f, count, projected, target)?;
+            let mut c = contract(Obligations::new(1));
+            c.universals = 2;
+            if given {
+                c.type_assumptions.push(clause);
+            }
+            let ty = f.facts.types.intern(Kind::Reference {
+                mutable: false,
+                region: RegionId::bound(0, goal)?,
+                referent: TypeId::UNIT,
+            })?;
+            c.obligations.push(Obligation {
+                source: source(2),
+                kind: Debt::TypeOutlives {
+                    ty,
+                    shorter: RegionId::STATIC,
+                },
+            });
+            let mut evidence = Obligations::new(1);
+            super::super::assumptions::normalize(&mut f.facts, &mut c, &mut evidence)?;
+            c.proofs.push((source(2), evidence));
+            f.check(&c, given && goal == 0);
+        }
+    }
+    Ok(())
+}
+
+#[test]
+fn growing_caller_projection_premises_share_normalization_and_component_walks() -> Result {
+    for count in [16, 128, 1024] {
+        let mut f = Fixture::new(false)?;
+        let mut subject = f.subject;
+        let mut c = contract(Obligations::new(1));
+        c.universals = 1;
+        for _ in 0..count {
+            let ty = f.projected(RegionId::bound(1, 0)?)?;
+            let list = f.facts.types.intern_list(&[subject, ty])?;
+            subject = f.facts.types.intern(Kind::Tuple(list))?;
+            c.type_assumptions
+                .push(caller_clause(&mut f, 1, subject, RegionId::STATIC)?);
+        }
+        let mut evidence = Obligations::new(1);
+        let steps = super::super::assumptions::normalize(&mut f.facts, &mut c, &mut evidence)?;
+        assert!(steps < 64 * count, "{count}: {steps}");
+        assert_eq!(c.assumptions, [(RegionId::bound(0, 0)?, RegionId::STATIC)]);
+        assert_eq!(evidence.scope_count(), 1);
+        c.proofs.push((source(2), evidence));
+        f.check(&c, true);
+    }
+    Ok(())
+}

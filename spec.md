@@ -1897,6 +1897,21 @@ bounds. For an independent target, elaborate only independent scalar components
 and preserve opaque results without inferring permissions for their inputs.
 Empty and unused quantifiers still lift owner captures correctly.
 
+Body contracts retain whole outlives clauses. Elaborate an original parameter's
+all-lifetimes permission before specializing that already-checked body; replacing
+the parameter with a composite must not reclassify its established permission as
+new source syntax. Method conformance instead elaborates after mapping the trait's
+Self into the implementation subject, following the pinned compiler's override
+rules. These operations have different callers and must not be conflated.
+
+Batch quantified composite caller premises by their independent target lifetime.
+Walk all subjects for one target together, visiting shared graph nodes once and
+retaining opaque projected components at their original binder depth. Keep the
+ordinary assumption path and the top-level quantified projection index separate.
+Charge clause visits and traversal work; do not construct synthetic types or
+cache a flattened component vector for every growing prefix. Different target
+lifetimes and different caller environments retain distinct permissions.
+
 Match universal projected premises against complete typed inputs. Preserve
 repeated-slot identity, input/target correlations, fixed captures, member and
 family arguments, and nested callable binders. An outer premise slot cannot
@@ -2028,6 +2043,14 @@ charge both root visits and structural work. Snapshot stable type-debt positions
 before appending evidence and update only those positions afterward. Newly
 emitted formation and lifetime debts keep their own types, targets and scopes.
 Check shared graph width, independent scope width and binder depth separately.
+
+Concrete caller-premise normalization preserves the original quantified clauses.
+Share a normalization session within each actual binder-arity group, retaining
+every newly discovered formation and lifetime requirement as proof debt. Only the
+exact caller-proved premise supplies independent normalized components; a debt
+cannot become a given. Collect those components with one multi-root walk per
+target, preserving captured and nested binder coordinates. This instance-only
+elaboration grants no additional permission to the original generic body.
 
 Demand from a fully proved caller may retain the callee's exact declared trait
 premises during projected specialization. Select their validated implementations

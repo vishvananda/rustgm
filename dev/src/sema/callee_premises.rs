@@ -3,8 +3,12 @@ use super::{model::Declarations, nominals::traits::State};
 use crate::{
     resolve::model::DefId,
     types::{
-        RegionId, TypeId, arguments::Argument, lifetime_proof::Obligations, outlives::Pair,
-        parameters::predicates::Bound as PredicateBound, substitute::Bound,
+        RegionId,
+        arguments::Argument,
+        lifetime_proof::Obligations,
+        outlives::Pair,
+        parameters::{clauses::Clause, predicates::Bound as PredicateBound},
+        substitute::Bound,
     },
 };
 use std::collections::HashMap;
@@ -12,7 +16,7 @@ use std::collections::HashMap;
 pub(crate) struct Assumptions {
     pub universals: u32,
     pub regions: Vec<Pair>,
-    pub types: Vec<(TypeId, RegionId)>,
+    pub types: Vec<Clause>,
 }
 
 /// Call sites have proved these exact declared predicates. A unique validated
@@ -95,10 +99,13 @@ fn witnesses(
         ));
     }
     for (ty, shorter) in proof.types {
-        result.types.push((
-            fold.apply(&mut facts.types, ty)?,
-            region(facts, &mut fold, shorter)?,
-        ));
+        result.types.push(
+            crate::types::parameters::predicates::Predicate {
+                ty: fold.apply(&mut facts.types, ty)?,
+                bound: PredicateBound::Outlives(region(facts, &mut fold, shorter)?),
+            }
+            .into(),
+        );
     }
     Ok(result)
 }
