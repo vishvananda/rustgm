@@ -166,10 +166,26 @@ pub struct Outlives {
     pub longer: RegionId,
     pub shorter: RegionId,
 }
+/// Shared proof scopes keep diagnostic origins separate from lifetime authority.
+#[derive(Clone)]
+pub struct LifetimeProof {
+    pub source: NodeKey,
+    pub sources: Vec<NodeKey>,
+    pub proof: crate::types::lifetime_proof::Obligations,
+}
+impl LifetimeProof {
+    #[must_use]
+    pub fn new(source: NodeKey, proof: crate::types::lifetime_proof::Obligations) -> Self {
+        Self {
+            source,
+            sources: Vec::new(),
+            proof,
+        }
+    }
+}
 pub struct QuantifiedProof {
     pub body: NodeKey,
-    pub source: NodeKey,
-    pub proof: crate::types::lifetime_proof::Obligations,
+    pub evidence: LifetimeProof,
 }
 #[derive(Clone, Copy)]
 pub struct TypeOutlives {

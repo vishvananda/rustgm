@@ -13,6 +13,7 @@ enum Position {
 pub(crate) struct TypeRoot {
     pub scope: ScopeId,
     pub ty: TypeId,
+    pub source: u32,
     position: Position,
 }
 
@@ -26,10 +27,11 @@ impl Obligations {
             .map(|(index, &(ty, _))| TypeRoot {
                 scope: ScopeId::ROOT,
                 ty,
+                source: 0,
                 position: Position::Root(index),
             })
             .chain(self.quantified.iter().flat_map(|q| {
-                q.blocks.iter().enumerate().flat_map(|(block, value)| {
+                q.blocks.iter().enumerate().flat_map(move |(block, value)| {
                     value
                         .proof
                         .types
@@ -38,6 +40,7 @@ impl Obligations {
                         .map(move |(index, &(ty, _))| TypeRoot {
                             scope: value.scope,
                             ty,
+                            source: q.origin(block),
                             position: Position::Scoped { block, index },
                         })
                 })

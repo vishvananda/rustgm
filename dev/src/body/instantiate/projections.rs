@@ -148,12 +148,13 @@ pub(super) fn normalize(
     }
     let scoped_terms = rewrite_contract(facts, contract, &mut session)?;
     assumptions::normalize(facts, contract, &mut proof)?;
+    let mut evidence = crate::body::regions::Proof::new(body.source, proof);
     if scoped_terms {
-        term_debts::normalize(facts, contract, &mut proof)?;
+        term_debts::normalize(facts, contract, &mut evidence)?;
     }
-    let next = proof.regions.end;
-    if !proof.is_empty() {
-        contract.proofs.push((body.source, proof));
+    let next = evidence.proof.regions.end;
+    if !evidence.proof.is_empty() {
+        contract.proofs.push(evidence);
     }
     debts::normalize(facts, contract, next)?;
     Ok(())
@@ -174,7 +175,7 @@ fn first_region(contract: &Contract) -> Result<u32, &'static str> {
             contract
                 .proofs
                 .iter()
-                .map(|(_, proof)| proof.regions.end.saturating_sub(1)),
+                .map(|evidence| evidence.proof.regions.end.saturating_sub(1)),
         )
         .max()
         .unwrap_or(0)

@@ -1,6 +1,7 @@
 //! Group typed lifetime facts by body without repeating resolution or inference.
 mod clause_terms;
 use super::ir::NodeKey;
+pub use crate::sema::model::LifetimeProof as Proof;
 use crate::{
     sema::model::{AdjustmentKind, BodyRegionOrigin, Declarations},
     types::{RegionId, TypeId, outlives::Pair},
@@ -48,7 +49,7 @@ pub struct Contract {
     pub parameters: Vec<crate::types::parameters::ParameterId>,
     pub type_assumptions: Vec<crate::types::parameters::clauses::Clause>,
     pub obligations: Vec<Obligation>,
-    pub proofs: Vec<(NodeKey, crate::types::lifetime_proof::Obligations)>,
+    pub proofs: Vec<Proof>,
 }
 impl Contract {
     /// Materialize demanded nominal requirements before borrowing immutable proof facts.
@@ -191,9 +192,7 @@ fn collect_proofs(
             .get(&proof.body)
             .copied()
             .ok_or("quantified proof has no body owner")?;
-        bodies[index]
-            .proofs
-            .push((proof.source, proof.proof.clone()));
+        bodies[index].proofs.push(proof.evidence.clone());
     }
     Ok(())
 }

@@ -1,5 +1,8 @@
 //! Scope indexes are local to one evidence object; extension remaps them once.
-use super::{Obligations, Range};
+use super::{
+    Obligations, Range,
+    origins::{Origins, Sources},
+};
 use crate::types::{
     RegionId,
     outlives::Queries,
@@ -28,6 +31,7 @@ pub(super) struct Quantified {
     pub scopes: Arc<Vec<Binder>>,
     pub blocks: Vec<Block>,
     pub gaps: Vec<Range<u32>>,
+    pub origins: Option<Box<Origins>>,
 }
 impl Quantified {
     pub fn is_empty(&self) -> bool {
@@ -45,7 +49,14 @@ impl Quantified {
             }
         }
         for block in &mut other.blocks {
-            block.scope.0 += offset;
+            if block.scope != ScopeId::ROOT {
+                block.scope.0 += offset;
+            }
+        }
+        if let Some(origins) = other.origins.take() {
+            self.origins
+                .get_or_insert_with(Default::default)
+                .extend(self.blocks.len(), *origins)?;
         }
         Arc::make_mut(&mut self.scopes).extend(incoming);
         self.blocks.extend(other.blocks);
@@ -59,7 +70,7 @@ impl Quantified {
         proof: &Obligations,
         constraints: &mut Constraints<'_>,
         queries: &mut Queries<'_>,
-        source: u32,
+        sources: Sources,
     ) -> Result<(), String> {
         let mut scopes = Vec::with_capacity(self.scopes.len() + 1);
         scopes.push(ProofScope::ROOT);
@@ -122,10 +133,13 @@ impl Quantified {
                 .variable(RegionId(id))
                 .map_err(|e| e.to_string())?;
         }
-        for block in &self.blocks {
-            block
-                .proof
-                .require_at(constraints, queries, scopes[block.scope.0 as usize], source)?;
+        for (index, block) in self.blocks.iter().enumerate() {
+            block.proof.require_at(
+                constraints,
+                queries,
+                scopes[block.scope.0 as usize],
+                sources.resolve(self.origin(index))?,
+            )?;
         }
         Ok(())
     }
@@ -174,7 +188,15 @@ impl Obligations {
     /// # Errors
     /// Rejects foreign scopes, nested objects and noncontiguous intervals.
     pub fn append_at(&mut self, proof: Self, scope: ScopeId) -> Result<(), &'static str> {
-        if scope == ScopeId::ROOT {
+        self.append_at_origin(proof, scope, 0)
+    }
+    pub(super) fn append_at_origin(
+        &mut self,
+        proof: Self,
+        scope: ScopeId,
+        origin: u32,
+    ) -> Result<(), &'static str> {
+        if scope == ScopeId::ROOT && origin == 0 {
             return self.extend(proof);
         }
         if proof.has_quantified()
@@ -184,15 +206,11 @@ impl Obligations {
         {
             return Err("invalid scoped proof evidence");
         }
-        let q = self
-            .quantified
-            .as_mut()
-            .ok_or("missing quantified proof scope")?;
-        q.scopes
-            .get(scope.0 as usize - 1)
-            .ok_or("invalid quantified proof scope")?;
+        self.scope_depth(scope)?;
+        let q = self.quantified.get_or_insert_with(Default::default);
         self.regions.end = proof.regions.end;
+        let start = q.blocks.len();
         q.blocks.push(Block { scope, proof });
-        Ok(())
+        q.label(start, origin)
     }
 }

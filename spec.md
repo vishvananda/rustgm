@@ -590,6 +590,15 @@ the original proof cannot change their scope identities. Import each required
 scope prefix once per destination evidence object; never clone the full tree for
 every requirement or drop its evidence to produce an executable type.
 
+Shared body proofs retain an optional source-label table alongside their blocks.
+Label only newly appended evidence, preserving the first demanding root when
+normalization reuses an already-proved application. Move new root constraints
+into a labelled root block without changing allocation ownership or binder depth;
+never copy an earlier proof prefix merely to remember another source. Grafting,
+substitution and extension retain those labels. Labels address caller-owned
+diagnostic entries and grant no lifetime authority. Validate their source range
+before registering constraints; ordinary single-source proofs need no label table.
+
 Body projection queries also observe partial input changes. A unique validated
 implementation may determine type or const inputs from its header before numeric
 fallback; an associated result cannot choose between competing headers. Watch

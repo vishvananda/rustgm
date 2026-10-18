@@ -63,8 +63,7 @@ impl Reservation {
                 .quantified_proofs
                 .push(crate::sema::model::QuantifiedProof {
                     body,
-                    source,
-                    proof,
+                    evidence: crate::sema::model::LifetimeProof::new(source, proof),
                 });
         }
         Ok(())
@@ -109,8 +108,7 @@ impl Obligations {
                 .quantified_proofs
                 .push(crate::sema::model::QuantifiedProof {
                     body,
-                    source,
-                    proof: self,
+                    evidence: crate::sema::model::LifetimeProof::new(source, self),
                 });
             return Ok(());
         }

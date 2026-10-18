@@ -1458,3 +1458,77 @@ for its published replacement, with verified binary hashes and a retained receip
 
 The successful storage wrapper removed 5,753 generated files (6.91 GiB of
 unshared blocks); receipt: `obj/cleanup/1792361976441780011.jsonl`.
+
+
+## Diagnostic origins in shared body proofs
+
+Shared quantified proofs now retain per-obligation diagnostic origins without
+copying earlier proof or scope prefixes. The lifetime core owns an optional dense
+block-label table; the body owns the corresponding source locations. Source zero
+is the enclosing fallback. Single-source proofs allocate no label table, and the
+final checker resolves a failed source without flattening an index for successful
+proofs. Checked source ranges carry no lifetime or allocation authority.
+
+Append checkpoints label only newly produced evidence. New root constraints move
+into a constraint-only root block while their variables retain their original
+allocation scope. Extension, grafting, rebasing and substitution preserve root
+scope and labels. Projection normalization attributes new selection debts to the
+first demanding root, including when later roots reuse its normal form. Scoped
+formation normalization retains each original obligation's source.
+
+Six new core invariants and two final-body controls cover uniquely unpaid debts,
+source-range rejection before identity registration, grafted ambient scopes,
+caller substitution, foreign allocation gaps and first-demand provenance. The
+4,096-label control retains one scope and 4,097 source slots; ordinary evidence
+keeps no table. The existing growing-projection control now uses distinct labels
+while preserving its additive work bound. These are typed maintainer controls,
+not a release of higher-ranked source syntax.
+
+Thirteen predeclared source controls were independently qualified with pinned
+rustc: six accept and seven reject. They distinguish universal/static-only
+implementations and callers, captured-lifetime equality, independent/diagonal
+slots and required associated equalities. Both frozen RustGM applications still
+reject all thirteen at the intentional higher-ranked source gate with identical
+diagnostics. None count as semantic-negative coverage for RustGM. Canonical body
+quantifier consumption and refining call inference remain unfinished; PA21–PA25
+remain planned.
+
+`obj/pa21-work/proof-origins-final` records 34 successful gates: strict formatting
+and all/pedantic Clippy, the 870-file audit with zero findings, harness/backend/
+upstream checks, 1,462 maintainer tests (255 library invariants), 91 native groups
+and all 6,228 released course cases. PA19 checks 1,080 independent sources and
+641 LowIR cases, including 254 executable comparisons; PA20 checks 1,345 sources
+and 799 LowIR cases, including 484 executable comparisons. Existing acceptance
+exceptions remain unchanged. Planned-stage discovery still fails. The run verifies
+7,270 frozen source/configuration hashes and 18,684 unchanged oracle sidecars.
+The focused audit initially flagged a seventh generic `tests.rs` filename; the
+new module is named `source_tests.rs`, with no audit or lint exemption.
+
+The immutable compiler comparison has 33 timing jobs and 29 instruction pairs,
+with equal full/count outputs. Wall medians span −4.69% to +3.40%, same-binary
+medians −2.55% to +0.44%, and instructions −0.256% to +0.235%. The largest A/A
+spread is 71.36%, so these timings establish no portable speedup. The sole
+above-3% case, callers-48, receives the predeclared batch-16 AB/AA/BB follow-up:
+−1.98%, −3.89% and −1.34%, with at most 11.23% calibration spread. All observations
+remain; no instruction increase exceeds 1%.
+
+RSS median changes span −28 to +92 KiB. Massif peak heap is unchanged for both
+fixed inputs: ordinary-256 at 2,432,261 bytes and constant-chain-uses-256 at
+5,381,881 bytes. Combined peaks increase by 16 and 96 bytes respectively; these
+samples do not establish a general memory bound. ELF text/data/BSS totals grow
+from 6,391,801 to 6,424,613 bytes. The study and its fixed follow-up retain 936
+study observations, 144 qualification observations, 4,680 timed invocations,
+720 qualification invocations, 58 Callgrind runs and four Massif runs. This is
+an incremental compatibility comparison, not a rustc performance comparison or
+a resolution of the earlier b1410 streamed-proof baseline question.
+
+Baseline SHA-256:
+`01d66e6c9c87843b82754bb09d143299a4050fd34861e19d99d8e010edb97f1e`.
+Candidate SHA-256:
+`59a477f77ef506ff183cc510dc5b66157b7c957986e2f64ddee16e3db509d150`.
+Summary SHA-256:
+`eed4de734aaa598ac2ccac7de8be6cfffebd6a5bb0322a012ec4655e2e2bba73`.
+The superseded baseline was retired after exact-commit CI succeeded for its
+replacement; the retirement receipt is in `obj/pa21-work/body-quantifiers-v1`.
+Successful cleanup removed 5,753 generated files (6.91 GiB of unshared blocks),
+recorded in `obj/cleanup/1792365161789258313.jsonl`.

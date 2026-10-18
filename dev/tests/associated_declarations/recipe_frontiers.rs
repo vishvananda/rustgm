@@ -66,12 +66,13 @@ fn stored_field_waits_share_structure_and_retain_each_callers_proof()
             assert!(graph.retained_bytes <= 256 * count + 64 * callers + 1024);
             let mut foreign = 0;
             for entry in &facts.quantified_proofs {
-                for interval in entry.proof.owned_regions() {
+                for interval in entry.evidence.proof.owned_regions() {
                     for id in interval {
                         assert_eq!(facts.body_regions[id as usize - 1].body, entry.body);
                     }
                 }
                 foreign += entry
+                    .evidence
                     .proof
                     .regions
                     .clone()

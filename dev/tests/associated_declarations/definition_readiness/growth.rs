@@ -82,7 +82,7 @@ fn initializer_waits_share_work_across_repeated_callers() -> Result<(), Box<dyn 
                 .filter(|entry| entry.body == body)
             {
                 proofs += 1;
-                for owned in entry.proof.owned_regions() {
+                for owned in entry.evidence.proof.owned_regions() {
                     for id in owned {
                         let region = &facts.body_regions[id as usize - 1];
                         assert_eq!(region.body, body);
@@ -90,6 +90,7 @@ fn initializer_waits_share_work_across_repeated_callers() -> Result<(), Box<dyn 
                     }
                 }
                 foreign += entry
+                    .evidence
                     .proof
                     .regions
                     .clone()

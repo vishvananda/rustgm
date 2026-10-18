@@ -101,6 +101,23 @@ where
             }
         }
     }
+
+    /// Retain the first demanding root's origin for newly emitted selection debts.
+    /// Cached normal forms keep their original evidence and source; no prefix is copied.
+    pub(crate) fn normalize_source(
+        &mut self,
+        facts: &mut Declarations,
+        ty: TypeId,
+        source: u32,
+    ) -> Result<(TypeId, usize), &'static str> {
+        if source == 0 {
+            return self.normalize(facts, ty);
+        }
+        let checkpoint = self.proof.source_checkpoint();
+        let result = self.normalize(facts, ty)?;
+        self.proof.label_sources_since(checkpoint, source)?;
+        Ok(result)
+    }
 }
 
 /// Instantiated types have no symbolic caller trait permissions. Selection uses

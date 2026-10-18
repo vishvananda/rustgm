@@ -275,8 +275,7 @@ fn body(
                     .or_else(|| {
                         (source as usize)
                             .checked_sub(first_proof)
-                            .and_then(|i| input.proofs.get(i))
-                            .map(|(source, _)| *source)
+                            .and_then(|i| proof_source(input, i))
                     })
                     .unwrap_or(input.source)
             }
@@ -326,18 +325,37 @@ fn quantified(
     constraints: &mut Constraints<'_>,
     first: usize,
 ) -> Result<(), Error> {
-    for (index, (source, proof)) in input.proofs.iter().enumerate() {
+    let mut first = first;
+    for evidence in &input.proofs {
         let error = |message| Error {
-            source: Some(*source),
+            source: Some(evidence.source),
             message,
         };
-        let index = u32::try_from(first.saturating_add(index))
-            .map_err(|_| error("too many lifetime proof sources".into()))?;
-        proof
-            .require_source(constraints, queries, index)
+        let count = evidence.sources.len().saturating_add(1);
+        let index =
+            u32::try_from(first).map_err(|_| error("too many lifetime proof sources".into()))?;
+        let count =
+            u32::try_from(count).map_err(|_| error("too many lifetime proof sources".into()))?;
+        evidence
+            .proof
+            .require_sources(constraints, queries, index, count)
             .map_err(error)?;
+        first = first.saturating_add(count as usize);
     }
     Ok(())
+}
+// Resolve only a failed constraint; successful proofs allocate no source index.
+fn proof_source(input: &Contract, mut index: usize) -> Option<crate::body::ir::NodeKey> {
+    for evidence in &input.proofs {
+        if index == 0 {
+            return Some(evidence.source);
+        }
+        if let Some(source) = evidence.sources.get(index - 1) {
+            return Some(*source);
+        }
+        index = index.checked_sub(evidence.sources.len().checked_add(1)?)?;
+    }
+    None
 }
 fn apply<'a>(
     queries: &mut Queries<'a>,

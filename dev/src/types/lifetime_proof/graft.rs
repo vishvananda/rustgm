@@ -35,7 +35,7 @@ impl Obligations {
             |parent, count| self.scope(parent, count),
         )?;
         let mut next = proof.regions.start;
-        for block in quantified.blocks {
+        for (index, block) in quantified.blocks.into_iter().enumerate() {
             if block.proof.regions.start < next || block.proof.regions.end > proof.regions.end {
                 return Err("invalid grafted block interval");
             }
@@ -48,7 +48,11 @@ impl Obligations {
             let scope = *bindings
                 .get(block.scope.0 as usize)
                 .ok_or("invalid grafted scope")?;
-            self.append_at(block.proof, scope)?;
+            let origin = quantified
+                .origins
+                .as_ref()
+                .map_or(0, |origins| origins.get(index));
+            self.append_at_origin(block.proof, scope, origin)?;
         }
         // Root constraints retain their ambient universe; only the remaining gap
         // is allocated here. Child intervals were allocated in their own scopes.

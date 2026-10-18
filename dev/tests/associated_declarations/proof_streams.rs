@@ -59,8 +59,8 @@ fn interleaved_definitions_retain_linear_callable_scope_storage()
         let mut scopes = 0;
         let mut foreign = 0;
         for entry in &facts.quantified_proofs {
-            scopes += entry.proof.scope_count();
-            for id in entry.proof.regions.clone() {
+            scopes += entry.evidence.proof.scope_count();
+            for id in entry.evidence.proof.regions.clone() {
                 let region = facts
                     .body_regions
                     .get(id as usize - 1)

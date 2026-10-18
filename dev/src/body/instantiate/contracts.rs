@@ -53,8 +53,8 @@ pub(super) fn specialize(
             _ => {}
         }
     }
-    for (_, proof) in &mut contract.proofs {
-        proof.substitute(&mut facts.types, &mut bound)?;
+    for evidence in &mut contract.proofs {
+        evidence.proof.substitute(&mut facts.types, &mut bound)?;
     }
     // Instantiation sites have checked argument well-formedness. Retain those
     // structural relations as assumptions in this separate proof universe,

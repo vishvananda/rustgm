@@ -201,7 +201,10 @@ fn body_relations_can_use_retained_witnesses_without_granting_their_debts() -> T
             assumptions: Vec::new(),
             parameters: Vec::new(),
             type_assumptions: Vec::new(),
-            proofs: vec![(source, equal(10, RegionId::STATIC))],
+            proofs: vec![rustgm::body::regions::Proof::new(
+                source,
+                equal(10, RegionId::STATIC),
+            )],
             obligations: vec![
                 Obligation {
                     source,

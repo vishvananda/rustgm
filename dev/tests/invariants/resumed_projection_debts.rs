@@ -1,7 +1,7 @@
 //! Instance normalization extends the original lifetime proof and shares only its structural work.
 use super::normalize;
 use crate::{
-    body::regions::{Contract, Contracts},
+    body::regions::{Contract, Contracts, Proof},
     expand::config::Config,
     resolve::{
         self,
@@ -134,7 +134,7 @@ fn contract(proof: Obligations) -> Contract {
         parameters: Vec::new(),
         type_assumptions: Vec::new(),
         obligations: Vec::new(),
-        proofs: vec![(source(2), proof)],
+        proofs: vec![Proof::new(source(2), proof)],
     }
 }
 fn alias(first: u32, region: RegionId) -> Obligations {
@@ -171,13 +171,14 @@ fn original_local_witnesses_survive_empty_ancestors_and_foreign_intervals() -> R
                 proof.append_at(debt, scope)?;
                 let scopes = proof.scope_count();
                 let mut c = contract(proof);
-                c.proofs.push((source(3), alias(2, RegionId::STATIC)));
+                c.proofs
+                    .push(Proof::new(source(3), alias(2, RegionId::STATIC)));
                 normalize(&mut f.facts, &mut c, 3)?;
                 assert_eq!(c.proofs.len(), 2);
-                assert_eq!(c.proofs[0].1.scope_count(), scopes);
-                assert!(!c.proofs[0].1.owns_region(RegionId(2)));
-                assert!(c.proofs[1].1.owns_region(RegionId(2)));
-                assert!(c.proofs[0].1.type_roots().any(|(_, result)| {
+                assert_eq!(c.proofs[0].proof.scope_count(), scopes);
+                assert!(!c.proofs[0].proof.owns_region(RegionId(2)));
+                assert!(c.proofs[1].proof.owns_region(RegionId(2)));
+                assert!(c.proofs[0].proof.type_roots().any(|(_, result)| {
                     matches!(f.facts.types.kind(result), Some(Kind::Reference { .. }))
                 }));
                 f.check(&c, !static_target);
@@ -205,7 +206,7 @@ fn identical_type_ids_do_not_merge_sibling_proof_scopes() -> Result {
         proof.append_at(b, second)?;
         let mut c = contract(proof);
         normalize(&mut f.facts, &mut c, 3)?;
-        assert_eq!(c.proofs[0].1.scope_count(), 2);
+        assert_eq!(c.proofs[0].proof.scope_count(), 2);
         f.check(&c, !crossed);
     }
     Ok(())
@@ -235,7 +236,10 @@ fn normalization_retains_selected_impl_lifetime_debts_inside_nested_callables() 
             proof.append_at(debt, scope)?;
             let mut c = contract(proof);
             normalize(&mut f.facts, &mut c, 1)?;
-            assert_eq!(c.proofs[0].1.scope_count(), if callable { 2 } else { 1 });
+            assert_eq!(
+                c.proofs[0].proof.scope_count(),
+                if callable { 2 } else { 1 }
+            );
             f.check(&c, !restricted);
         }
     }
@@ -254,7 +258,8 @@ fn repeated_shared_roots_and_independent_scopes_have_additive_work() -> Result {
             let mut proof = Obligations::new(1);
             let shared = proof.scope(ScopeId::ROOT, 1)?;
             let mut previous = shared;
-            for _ in 0..count {
+            for index in 0..count {
+                let checkpoint = proof.source_checkpoint();
                 let scope = if independent {
                     let parent = if mode == 2 { previous } else { ScopeId::ROOT };
                     proof.scope(parent, 1)?
@@ -269,12 +274,14 @@ fn repeated_shared_roots_and_independent_scopes_have_additive_work() -> Result {
                 let mut debt = Obligations::new(1);
                 debt.types.extend([(ty, local), (ty, local)]);
                 proof.append_at(debt, scope)?;
+                proof.label_sources_since(checkpoint, u32::try_from(index + 1)?)?;
             }
             let scopes = proof.scope_count();
             let mut c = contract(proof);
+            c.proofs[0].sources = vec![source(2); count];
             let steps = normalize(&mut f.facts, &mut c, 1)?;
             assert!(steps < 128 * count, "{count}: {steps}");
-            assert_eq!(c.proofs[0].1.scope_count(), scopes);
+            assert_eq!(c.proofs[0].proof.scope_count(), scopes);
             f.check(&c, true);
         }
     }
@@ -307,8 +314,8 @@ fn outer_captures_keep_the_body_identity_through_empty_and_nonempty_scopes() -> 
                     .push((RegionId::bound(0, 0)?, RegionId::STATIC));
             }
             normalize(&mut f.facts, &mut c, 1)?;
-            assert_eq!(c.proofs[0].1.scope_count(), 1);
-            assert!(c.proofs[0].1.type_roots().any(|(_, result)| {
+            assert_eq!(c.proofs[0].proof.scope_count(), 1);
+            assert!(c.proofs[0].proof.type_roots().any(|(_, result)| {
                 matches!(f.facts.types.kind(result), Some(Kind::Reference { region, .. }) if region == captured)
             }));
             f.check(&c, !static_target || assumed);
@@ -352,7 +359,7 @@ fn caller_projection_premises_keep_normalization_requirements_as_debts() -> Resu
         assert_eq!(c.type_assumptions, [clause]);
         assert!(c.assumptions.is_empty());
         assert_eq!(evidence.scope_count(), 1);
-        c.proofs.push((source(2), evidence));
+        c.proofs.push(Proof::new(source(2), evidence));
         f.check(&c, !restricted);
     }
     Ok(())
@@ -390,7 +397,7 @@ fn concrete_projection_premises_supply_only_their_own_independent_components() -
             });
             let mut evidence = Obligations::new(1);
             super::super::assumptions::normalize(&mut f.facts, &mut c, &mut evidence)?;
-            c.proofs.push((source(2), evidence));
+            c.proofs.push(Proof::new(source(2), evidence));
             f.check(&c, given && goal == 0);
         }
     }
@@ -416,8 +423,92 @@ fn growing_caller_projection_premises_share_normalization_and_component_walks() 
         assert!(steps < 64 * count, "{count}: {steps}");
         assert_eq!(c.assumptions, [(RegionId::bound(0, 0)?, RegionId::STATIC)]);
         assert_eq!(evidence.scope_count(), 1);
-        c.proofs.push((source(2), evidence));
+        c.proofs.push(Proof::new(source(2), evidence));
         f.check(&c, true);
+    }
+    Ok(())
+}
+
+#[test]
+fn shared_normalization_attributes_new_debts_to_the_first_demanding_root() -> Result {
+    for restricted in [false, true] {
+        for ambient in [false, true] {
+            let mut f = Fixture::new(restricted)?;
+            let local = RegionId::bound(0, 0)?;
+            let safe = f.projected(RegionId::STATIC)?;
+            let demanding = f.projected(local)?;
+            let mut proof = Obligations::new(1);
+            let scope = if ambient {
+                proof.scope(ScopeId::ROOT, 1)?
+            } else {
+                ScopeId::ROOT
+            };
+            for (index, ty) in [safe, demanding, demanding].into_iter().enumerate() {
+                let checkpoint = proof.source_checkpoint();
+                let mut debt = Obligations::new(1);
+                debt.types.push((ty, local));
+                proof.append_at(debt, scope)?;
+                proof.label_sources_since(checkpoint, u32::try_from(index + 1)?)?;
+            }
+            let mut c = contract(proof);
+            c.universals = u32::from(!ambient);
+            c.proofs[0].sources = vec![source(11), source(12), source(13)];
+            normalize(&mut f.facts, &mut c, 1)?;
+            check_source(&f, c, restricted.then_some(source(12)))?;
+        }
+    }
+    Ok(())
+}
+
+fn check_source(f: &Fixture, contract: Contract, expected: Option<NodeKey>) -> Result {
+    let contracts = Contracts {
+        callables: &f.facts.lifetimes.callables,
+        nominal_requirements: &f.facts.lifetimes.nominal_requirements,
+        bodies: vec![contract],
+    };
+    let result =
+        crate::borrow::regions::check(&f.facts.types, &f.facts.lifetimes.variances, &contracts);
+    match (result, expected) {
+        (Ok(_), None) => Ok(()),
+        (Err(error), Some(source)) => {
+            assert_eq!(error.source, Some(source));
+            assert_eq!(
+                error.message,
+                "required lifetime does not outlive its target"
+            );
+            Ok(())
+        }
+        (result, expected) => Err(format!(
+            "unexpected proof outcome: {:?}; expected {expected:?}",
+            result.err()
+        )
+        .into()),
+    }
+}
+
+#[test]
+fn formation_normalization_keeps_each_obligation_source_in_one_shared_scope() -> Result {
+    use crate::body::regions::{Kind as Debt, Obligation};
+    for restricted in [false, true] {
+        let mut f = Fixture::new(restricted)?;
+        let mut c = contract(Obligations::new(1));
+        for (index, region) in [RegionId::STATIC, RegionId::bound(0, 0)?]
+            .into_iter()
+            .enumerate()
+        {
+            c.obligations.push(Obligation {
+                source: source(20 + u32::try_from(index)?),
+                kind: Debt::ScopedWellFormed {
+                    ty: f.projected(region)?,
+                    bound_regions: 1,
+                },
+            });
+        }
+        let mut evidence = Proof::new(source(2), Obligations::new(1));
+        super::super::term_debts::normalize(&mut f.facts, &mut c, &mut evidence)?;
+        assert_eq!(evidence.proof.scope_count(), 1);
+        c.proofs.push(evidence);
+        check_source(&f, c, restricted.then_some(source(21)))?;
     }
     Ok(())
 }

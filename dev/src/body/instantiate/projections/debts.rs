@@ -20,7 +20,8 @@ pub(super) fn normalize(
     mut next: u32,
 ) -> Result<usize, &'static str> {
     let mut work = 0_usize;
-    for (_, original) in &mut contract.proofs {
+    for evidence in &mut contract.proofs {
+        let original = &mut evidence.proof;
         let mut groups: Vec<Group> = Vec::new();
         let mut scopes = HashMap::new();
         for root in original.type_root_positions() {
@@ -48,7 +49,7 @@ pub(super) fn normalize(
                 let mut session = projections::concrete(original, group.scope)?;
                 let mut replacements = Vec::with_capacity(group.roots.len());
                 for root in group.roots {
-                    let (ty, steps) = session.normalize(facts, root.ty)?;
+                    let (ty, steps) = session.normalize_source(facts, root.ty, root.source)?;
                     charge(&mut work, steps)?;
                     replacements.push((root, ty));
                 }

@@ -44,8 +44,10 @@ impl Checker<'_> {
             let index = self.facts.quantified_proofs.len();
             self.facts.quantified_proofs.push(QuantifiedProof {
                 body,
-                source: key,
-                proof: Obligations::new(proof.regions.start),
+                evidence: crate::sema::model::LifetimeProof::new(
+                    key,
+                    Obligations::new(proof.regions.start),
+                ),
             });
             query.reserved_sink = Some(index);
             index
@@ -136,8 +138,7 @@ impl Checker<'_> {
             let index = self.facts.quantified_proofs.len();
             self.facts.quantified_proofs.push(QuantifiedProof {
                 body,
-                source: key,
-                proof: Obligations::new(first),
+                evidence: crate::sema::model::LifetimeProof::new(key, Obligations::new(first)),
             });
             self.projections.body_sinks.insert(body, index);
             return Ok(Sink::Body(index));
@@ -169,7 +170,7 @@ impl Checker<'_> {
             .ok_or("missing scoped projection query")?;
         let destination = match sink {
             Sink::Declaration(index) => &mut self.projections.proofs[index].2,
-            Sink::Body(index) => &mut self.facts.quantified_proofs[index].proof,
+            Sink::Body(index) => &mut self.facts.quantified_proofs[index].evidence.proof,
         };
         if let Sink::Body(_) = sink {
             destination.resume_at(proof.regions.start)?;

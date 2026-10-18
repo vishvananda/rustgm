@@ -36,11 +36,14 @@ impl Obligations {
         self.substitute_at(store, fold, ambient)?;
         if let Some(q) = &mut self.quantified {
             for block in &mut q.blocks {
-                let depth = q
-                    .scopes
-                    .get(block.scope.0 as usize - 1)
-                    .ok_or("invalid quantified proof scope")?
-                    .depth;
+                let depth = if block.scope == ScopeId::ROOT {
+                    0
+                } else {
+                    q.scopes
+                        .get(block.scope.0 as usize - 1)
+                        .ok_or("invalid quantified proof scope")?
+                        .depth
+                };
                 let depth = depth
                     .checked_add(ambient)
                     .ok_or("proof scope depth exhausted")?;

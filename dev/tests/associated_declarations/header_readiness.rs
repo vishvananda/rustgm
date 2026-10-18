@@ -193,7 +193,7 @@ fn header_preparation_can_allocate_foreign_lifetimes_during_a_parent_query()
     let mut gaps = 0;
     let mut owned = 0;
     for retained in &facts.quantified_proofs {
-        let proof = &retained.proof;
+        let proof = &retained.evidence.proof;
         let mut count = 0;
         for id in proof.owned_regions().flatten() {
             assert_eq!(facts.body_regions[id as usize - 1].body, retained.body);

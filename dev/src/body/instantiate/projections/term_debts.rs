@@ -1,15 +1,15 @@
 //! Normalize scoped formation terms without converting selection debts into permissions.
 use crate::{
-    body::regions::{Contract, Kind},
+    body::regions::{Contract, Kind, Proof},
     sema::{model::Declarations, projections},
-    types::lifetime_proof::{Obligations, ScopeId},
+    types::lifetime_proof::ScopeId,
 };
 use std::collections::HashMap;
 
 pub(super) fn normalize(
     facts: &mut Declarations,
     contract: &mut Contract,
-    proof: &mut Obligations,
+    evidence: &mut Proof,
 ) -> Result<(), &'static str> {
     let mut groups: Vec<(u32, Vec<usize>)> = Vec::new();
     let mut arities = HashMap::new();
@@ -27,13 +27,17 @@ pub(super) fn normalize(
         }
     }
     for (count, positions) in groups {
-        let scope = proof.scope(ScopeId::ROOT, count)?;
-        let mut session = projections::concrete(proof, scope)?;
+        let scope = evidence.proof.scope(ScopeId::ROOT, count)?;
+        let mut session = projections::concrete(&mut evidence.proof, scope)?;
         for position in positions {
-            let Kind::ScopedWellFormed { ty, .. } = &mut contract.obligations[position].kind else {
+            let obligation = &mut contract.obligations[position];
+            let Kind::ScopedWellFormed { ty, .. } = &mut obligation.kind else {
                 return Err("instance formation position changed kind");
             };
-            let (normalized, steps) = session.normalize(facts, *ty)?;
+            let source = u32::try_from(evidence.sources.len().saturating_add(1))
+                .map_err(|_| "too many instance formation proof sources")?;
+            evidence.sources.push(obligation.source);
+            let (normalized, steps) = session.normalize_source(facts, *ty, source)?;
             charge(&mut work, steps)?;
             if facts.types.contains_projections(normalized) != Some(false) {
                 return Err("concrete formation retains an associated projection");

@@ -1,5 +1,6 @@
 //! Directed lifetime evidence retains private intervals and quantified binder ownership.
 mod graft;
+mod origins;
 mod placement;
 mod quantified;
 mod roots;
@@ -11,6 +12,7 @@ use crate::types::{
     outlives::{Pair, Queries},
     relations::{Constraints, ProofScope},
 };
+pub use origins::SourceCheckpoint;
 pub use quantified::ScopeId;
 pub(crate) use roots::TypeRoot;
 pub(crate) use scopes::ScopePlan;
@@ -55,6 +57,7 @@ impl Obligations {
             && self.quantified.as_ref().is_none_or(|q| q.is_empty())
     }
     /// Combine independently allocated evidence in its original proof order.
+    /// Diagnostic labels must refer to the same caller-owned source table.
     /// # Errors
     /// Rejects noncontiguous intervals and exhausted quantified scope identities.
     pub fn extend(&mut self, mut proof: Self) -> Result<(), &'static str> {
@@ -92,8 +95,23 @@ impl Obligations {
         queries: &mut Queries<'_>,
         source: u32,
     ) -> Result<(), String> {
+        self.require_sources(constraints, queries, source, 1)
+    }
+    /// Require this proof using a contiguous range of diagnostic source IDs.
+    /// Slot zero is the fallback; labelled blocks use their caller-owned slot.
+    /// # Errors
+    /// Rejects invalid source ranges, scopes, intervals and lifetime relations.
+    pub fn require_sources(
+        &self,
+        constraints: &mut Constraints<'_>,
+        queries: &mut Queries<'_>,
+        first: u32,
+        count: u32,
+    ) -> Result<(), String> {
+        let sources = origins::Sources::new(first, count)?;
+        sources.validate(self)?;
         if let Some(quantified) = &self.quantified {
-            quantified.require(self, constraints, queries, source)?;
+            quantified.require(self, constraints, queries, sources)?;
         } else {
             for id in self.owned_regions().flatten() {
                 constraints
@@ -101,7 +119,7 @@ impl Obligations {
                     .map_err(|e| e.to_string())?;
             }
         }
-        self.require_at(constraints, queries, ProofScope::ROOT, source)
+        self.require_at(constraints, queries, ProofScope::ROOT, sources.first)
     }
     fn require_at(
         &self,
