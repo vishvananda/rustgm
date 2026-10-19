@@ -315,7 +315,7 @@ and retain selected lifetime obligations; structural caches grant no permissions
 Associated type names participate in qualified member lookup without shadowing
 enclosing lexical aliases, including hygienic lookup.
 
-Associated result bounds retain complete predicates, including the separate
+Associated result bounds retain complete clauses, including the separate
 subjects of nested result equalities. Elaborate their arguments through the
 ordinary bound worklist in the owning trait's lifetime scope. Validate the bound's
 own type and lifetime requirements even when no implementation or caller exists.
@@ -324,6 +324,13 @@ elaborated implementation result stays in its original scope. Share that mapping
 across the implementation's result contracts and retain every resulting proof
 obligation. A result contract never adds assumptions to the implementing owner.
 
+Quantified result declarations retain their local binder separately from the
+owning trait's captures. Substitute the declaration's inputs beneath that binder
+before inserting an already elaborated implementation result at the same depth.
+Unused implementations must establish the whole quantified contract, including
+its equality and lifetime requirements. Uniform builtin properties may inspect a
+clause's bound kind; this classification never provides unbound proof evidence.
+
 A user-trait bound on an opaque associated result is derived only after the
 original parent application has been proved. Retain that parent evidence with
 the result rule, including lifetime equalities and fresh region intervals.
@@ -331,7 +338,7 @@ A derived rule records its complete selected predicate separately from caller
 assumptions and implementation bodies. Recursive result bounds are queried on
 demand; they do not extend the eager ordinary-supertrait closure.
 
-Close ordinary supertraits of result clauses once in their declaration scope,
+Close finite supertrait consequences of result clauses once in their declaration scope,
 and index these templates by the requested trait identity. Substitute only those
 candidates into a query's projection; retain every same-trait alternative for
 inference and ambiguity checks. Mapped clauses may share a cache keyed by the
@@ -341,6 +348,14 @@ headers change. They store typed clauses, never permission for a caller. Every
 query still proves its own parent application and matches every type, const and
 lifetime argument. Wide result contracts must not be expanded afresh for each
 independent caller scope.
+
+Quantified result selection owns fresh witness intervals and records result
+provenance distinct from free caller assumptions. The selected graph retains its
+parent application proof, including when the mapped rule cache was already warm.
+Only ordinary result lifetime promises enter the scalar outlives index. In the
+pinned profile, a quantified result outlives requirement does not grant a generic
+caller an unconditional static result; an explicit ordinary static bound still
+does. Retain the complete quantified requirement for implementation validation.
 
 Symbolic value liveness may conservatively require every projection input to
 remain live. This sufficient route preserves Self, trait and family arguments,
@@ -1370,6 +1385,35 @@ A single unknown against an unexpanded canonical leaf may use ordinary scoped
 equality directly. A canonical root against a composite pattern still requires
 the joint path: cached descendants may have been expanded by earlier constraints,
 making separate occurs checks repeatedly traverse the same shared prefixes.
+If every pair instead has a fully determined, projection-free, non-callable
+anchor, successful shared matching establishes the other side's finite shape.
+That batch needs neither a separate callable scan nor a final cycle traversal.
+Any unanchored pair retains both checks; callable anchors retain scoped equality.
+
+Keep completed inference subtrees without projections as canonical identities
+within their owning context. Materializing a known input preserves that identity.
+Do not intern types ahead of ordinary demand: published semantic views retain their
+type allocation order.
+Repeated resolution, isolated imports and exact canonical input comparisons reuse
+these identities rather than traversing the same shared graph for every bound.
+Unresolved and projection-bearing parents remain uncached so later equations and
+projection publication stay visible. Preserve the original graph and lifetime
+equations; a structural identity carries no formation or caller permission.
+Retained entries are bounded by the context's terms, with scalar identities derived
+directly and composite cache storage allocated only when needed.
+Existing postorder instantiation/import walks may also retain immutable structural
+summaries before canonical resolution, without interning any type. Only graphs
+without type/const holes or projections qualify. Region-free graphs retain their
+roots across lifetime-only mapping; parameter/item substitution and shape erasure
+still run normally. Isolated queries may publish canonical identities actually
+demanded for imported region-free completed graphs. This publishes no lifetime or
+trait permission, leaves original inference graphs intact, and occurs only after
+successful input reconciliation. A failed query cannot publish those identities.
+Within one call substitution, equivalent complete quantified declaration clauses
+need one obligation. Deduplicate with hashed binder-comparison keys, including
+every captured input and associated result, before building the inferred goals.
+Retain the original declarations and the chosen clause's complete binder/proof;
+ordinary requirements and obligations from different calls remain separate.
 
 Canonical-input readiness uses dependency watches on unresolved type and const
 leaves. Unions, bindings and explicit fallback wake only affected watches; newly
@@ -1747,6 +1791,26 @@ owned aliases. Flat selection entry points reject environments they cannot consu
 without binder ownership. Projection and body consumers retain quantified origin
 explicitly; validation must confirm the original clause belongs to that caller.
 
+Associated equality environments likewise retain whole clauses, indexed by the
+projected member without dropping competing ordinary or quantified results. A use
+opens its complete projection inputs and result with one shared binder mapping.
+Match complete parent inputs in isolated inference before committing the unique
+candidate; equal results never imply equal projection inputs. Fresh equality
+witnesses begin after the selected parent proof at the actual allocator frontier.
+Canonical normalization, body inference and nested implementation search must all
+retain this interval and every input equation. Nested search places the interval
+in its requesting proof scope and excludes it when that alternative is discarded.
+Captured substitution preserves mixed declaration order, local binders and nested
+callable scopes. Ordinary equality environments keep compact entries and reuse
+their existing substitution storage.
+
+When otherwise matching quantified alternatives differ only in unused or reordered
+local slots, compare their complete clauses modulo local numbering. Preserve all
+outer captures, nested callable locals and result correlations. Lazily cache these
+structural keys by immutable clause identity; keys never replace a source clause
+or authorize a proof. Retain one actual premise and its complete witness interval.
+Ordinary and quantified alternatives keep their existing ambiguity rules.
+
 Independent conjunctive universal goals in one immutable canonical declaration
 state may share a universal scope and opening fold when their binder arity,
 closed/open mode and implementation availability agree. These scopes contain
@@ -2043,7 +2107,7 @@ conditions; prove non-lifetime clauses with scoped trait evidence and lifetime
 clauses through the final directed graph. Captured owner lifetimes never become
 universal permissions. The type/trait environment validates parameter membership
 in lifetime clauses but leaves their proof to the retained lifetime consumer.
-Unsupported quantified equality premises must still reject.
+Consumers without a scoped equality proof must still reject that premise.
 
 Deduplicate universal projected caller premises by their complete predicate body
 when only unused top-level slot counts differ. This caller-only equivalence does

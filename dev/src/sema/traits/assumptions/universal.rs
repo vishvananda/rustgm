@@ -20,16 +20,30 @@ pub(in crate::sema) struct ScopedEvidence {
     pub predicate: Predicate,
     pub regions: Range<u32>,
 }
+impl ScopedEvidence {
+    pub fn same_clause(
+        &self,
+        store: &mut Store,
+        context: &mut Context,
+        other: &Self,
+    ) -> Result<bool, infer::Error> {
+        let (same, work) = store
+            .same_clause(self.clause, other.clause)
+            .map_err(|_| infer::Error::InvalidIdentity)?;
+        context.account_work(work)?;
+        Ok(same)
+    }
+}
 pub(in crate::sema) type ScopedSelection = Selection<ScopedEvidence>;
 
 /// Alternatives in one query can share opening work at the same arity/frontier.
 /// Only the unique winner publishes that interval; no opening supplies permission.
 #[derive(Default)]
-struct Openings {
+pub(in crate::sema) struct Openings {
     binders: HashMap<u32, (Bound, u32)>,
 }
 impl Openings {
-    fn prepare(
+    pub fn prepare(
         &mut self,
         store: &mut Store,
         context: &mut Context,
@@ -49,6 +63,9 @@ impl Openings {
             }
             Clause::ForAll(id) => id,
         };
+        if first == 0 || first >= 0x8000_0000 {
+            return Err(infer::Error::InvalidIdentity);
+        }
         let quantified = store.quantified(id).ok_or(infer::Error::InvalidIdentity)?;
         let (fold, end) = match self.binders.entry(quantified.bound_regions) {
             std::collections::hash_map::Entry::Occupied(entry) => entry.into_mut(),
@@ -166,6 +183,7 @@ impl Assumptions {
             goal,
             candidates,
             |store, context, clause| openings.prepare(store, context, clause, first),
+            |store, context, left, right| left.same_clause(store, context, right),
         )
     }
 }

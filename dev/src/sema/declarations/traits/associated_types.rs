@@ -9,7 +9,11 @@ use crate::{
         ast::List,
         item::{ItemKind, Visibility},
     },
-    types::{GenericArgs, parameters::predicates::Bound, projection},
+    types::{
+        GenericArgs,
+        parameters::{clauses::Clause, predicates::Bound},
+        projection,
+    },
 };
 pub(super) use conformance::Members;
 
@@ -43,8 +47,12 @@ impl Checker<'_> {
             let ItemKind::TypeAlias { bounds, .. } = self.item(key)?.kind else {
                 return Err(self.error(key, "missing associated type syntax"));
             };
+            let context = super::super::regions::Context {
+                binder: Some(self.owner_binders[&owner.self_definition]),
+                position: super::super::regions::Position::Output,
+            };
             let (mut sized, bounds) =
-                self.associated_type_bounds(member.definition, key, bounds)?;
+                self.associated_type_bounds(member.definition, key, bounds, context)?;
             let mut copies = crate::types::copy::Properties {
                 copy: bounds.builtin.contains(&Bound::Copy),
                 clone_: bounds
@@ -172,12 +180,7 @@ impl Checker<'_> {
                 .get_mut(&id)
                 .ok_or_else(|| Error::at(key.file, 0, "missing associated type contract"))?;
             for predicate in predicates {
-                contract.bounds.push(
-                    predicate
-                        .value
-                        .ordinary()
-                        .map_err(|e| Error::at(key.file, 0, e))?,
-                );
+                contract.bounds.push(predicate.value);
             }
         }
         Ok(())
@@ -243,14 +246,16 @@ impl Checker<'_> {
         let mut predicates: Vec<_> = bounds
             .builtin
             .into_iter()
-            .map(|bound| crate::types::parameters::predicates::Predicate {
-                ty: projection,
-                bound,
+            .map(|bound| {
+                Clause::Predicate(crate::types::parameters::predicates::Predicate {
+                    ty: projection,
+                    bound,
+                })
             })
             .collect();
         if let Some(contracts) = &self.facts.generics.traits {
             for clause in contracts.associated_bounds(ItemId(id.0)) {
-                predicates.push(clause.ordinary().map_err(|e| self.error(key, e))?);
+                predicates.push(*clause);
             }
         }
         if !bounds.syntax.is_empty() {
@@ -269,48 +274,51 @@ impl Checker<'_> {
     }
 
     fn associated_type_bounds(
-        &self,
+        &mut self,
         id: DefId,
         key: NodeKey,
         bounds: List,
+        context: super::super::regions::Context,
     ) -> Result<(bool, Bounds), Error> {
         use super::super::generics::bounds::Written;
-        let ast = &self.report.package.unit(key.file).configured.ast;
+        let nodes = self
+            .report
+            .package
+            .unit(key.file)
+            .configured
+            .ast
+            .list(bounds)
+            .to_vec();
         let mut required = Vec::new();
         let mut syntax = Vec::new();
         let mut relaxed = false;
-        for &node in ast.list(bounds) {
+        for node in nodes {
             let key = NodeKey { node, ..key };
             if self.lifetime_argument(key) {
-                syntax.push(Syntax::associated(key, id, Written::Outlives(key)));
+                syntax.push(Syntax::associated(key, id, Written::Outlives(key), None));
                 continue;
             }
             let Kind::Bound {
                 optional,
                 quantified,
-                binders: _,
+                binders,
                 value,
             } = self.kind(key)
             else {
                 return Err(self.error(key, "invalid associated type bound"));
             };
-            if quantified {
-                return Err(self.error(
-                    key,
-                    "higher-ranked associated bounds require advanced generic relationships",
-                ));
-            }
+            let scope = self.bound_scope(key, quantified.then_some(binders), context, false)?;
             let value = NodeKey { node: value, ..key };
             if self.lifetime_argument(value) {
                 if optional {
                     return Err(self.error(key, "associated lifetime bounds cannot be relaxed"));
                 }
-                syntax.push(Syntax::associated(key, id, Written::Outlives(value)));
+                syntax.push(Syntax::associated(key, id, Written::Outlives(value), scope));
                 continue;
             }
             let written = self.trait_bound(value)?;
             if matches!(written, Written::User { .. }) && !optional {
-                syntax.push(Syntax::associated(key, id, written));
+                syntax.push(Syntax::associated(key, id, written, scope));
                 continue;
             }
             let Written::Trait(bound) = written else {
@@ -327,8 +335,13 @@ impl Checker<'_> {
                     ));
                 }
                 relaxed = true;
-            } else if !required.contains(&bound) {
-                required.push(bound);
+            } else {
+                if scope.is_some() {
+                    syntax.push(Syntax::associated(key, id, written, scope));
+                }
+                if !required.contains(&bound) {
+                    required.push(bound);
+                }
             }
         }
         if !relaxed && !required.contains(&Bound::Sized) {

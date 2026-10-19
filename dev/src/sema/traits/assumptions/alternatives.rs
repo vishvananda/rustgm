@@ -24,6 +24,7 @@ pub(super) fn choose<C, E>(
     goal: &Goal,
     candidates: impl Iterator<Item = C>,
     mut prepare: impl FnMut(&mut Store, &mut Context, C) -> Result<(Predicate, E), infer::Error>,
+    mut equivalent: impl FnMut(&mut Store, &mut Context, &E, &E) -> Result<bool, infer::Error>,
 ) -> Result<Selection<E>, infer::Error> {
     let mut selected = None;
     let mut needs_normalization = false;
@@ -36,7 +37,10 @@ pub(super) fn choose<C, E>(
         match result {
             Ok(()) => {
                 match &selected {
-                    Some((previous, _)) if *previous != predicate => {
+                    Some((previous, prior))
+                        if *previous != predicate
+                            && !equivalent(store, context, prior, &evidence)? =>
+                    {
                         return Ok(Selection::Deferred);
                     }
                     // Opening equivalent clauses may erase only unused local slots.

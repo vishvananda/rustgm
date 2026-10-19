@@ -41,12 +41,33 @@ pub(in crate::sema) enum Source {
     },
     /// A declared result bound, with its parent projection proof retained.
     ResultBound(Predicate),
+    /// A quantified declared result, authorized only by its retained parent proof.
+    QuantifiedResultBound {
+        clause: QuantifiedId,
+        subject: TypeId,
+        application: crate::types::traits::ApplicationId,
+    },
     Implementation {
         owner: DefId,
         arguments: GenericArgs,
     },
 }
 impl Source {
+    fn result(evidence: &ScopedEvidence) -> Result<Self, infer::Error> {
+        Ok(match Self::assumed(evidence)? {
+            Self::Assumption(value) => Self::ResultBound(value),
+            Self::QuantifiedAssumption {
+                clause,
+                subject,
+                application,
+            } => Self::QuantifiedResultBound {
+                clause,
+                subject,
+                application,
+            },
+            _ => return Err(infer::Error::InvalidIdentity),
+        })
+    }
     fn assumed(evidence: &ScopedEvidence) -> Result<Self, infer::Error> {
         Ok(match evidence.clause {
             Clause::Predicate(predicate) => Self::Assumption(predicate),

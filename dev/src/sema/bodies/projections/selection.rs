@@ -325,7 +325,10 @@ impl Opened {
         let source = evidence.source;
         let assumed = if matches!(
             source,
-            Source::Assumption(_) | Source::ResultBound(_) | Source::QuantifiedAssumption { .. }
+            Source::Assumption(_)
+                | Source::ResultBound(_)
+                | Source::QuantifiedAssumption { .. }
+                | Source::QuantifiedResultBound { .. }
         ) {
             use crate::sema::traits::equalities::{self, Selection};
             match equalities::for_projection(
@@ -333,8 +336,9 @@ impl Opened {
                 &mut self.context,
                 &self.application,
                 self.environment.as_deref(),
+                evidence.proof.regions.end,
             )? {
-                Selection::Proven(ty) => Some(ty),
+                Selection::Proven(equality) => Some(equality),
                 Selection::Absent | Selection::Ambiguous => return Ok(Attempt::Retry),
             }
         } else {
@@ -348,6 +352,9 @@ impl Opened {
             .context
             .resolved_predicate(&mut facts.types, &self.application.predicate)
             .map_err(inference)?;
+        let assumed = assumed
+            .map(|equality| equality.append_to(&mut self.proof))
+            .transpose()?;
         let mut restoration = self.proof.body_restoration()?;
         let predicate = restoration.predicate(&mut facts.types, predicate)?;
         let result = if let Some(ty) = assumed {

@@ -8,7 +8,10 @@ use crate::{
     types::{
         ItemId, Kind, TypeId,
         infer::{Context, TermId},
-        parameters::predicates::{Bound, Predicate},
+        parameters::{
+            clauses::Clause,
+            predicates::{Bound, Predicate},
+        },
     },
 };
 use std::{collections::HashMap, sync::Arc};
@@ -18,7 +21,7 @@ use std::{collections::HashMap, sync::Arc};
 pub(super) struct Cache {
     enabled: bool,
     entries: HashMap<(TypeId, ItemId), Arc<Assumptions>>,
-    equalities: HashMap<(TypeId, ItemId), Arc<[Predicate]>>,
+    equalities: HashMap<(TypeId, ItemId), Arc<[Clause]>>,
     templates: HashMap<DefId, Arc<templates::Index>>,
     steps: usize,
 }
@@ -63,7 +66,7 @@ impl Cache {
 
 /// Only a proved parent projection can authorize these templates. The selector
 /// retains that proof before using this query-local index; it is not an environment.
-pub(super) fn traits(
+pub(in crate::sema) fn traits(
     facts: &mut Declarations,
     ty: TypeId,
     item: ItemId,
@@ -89,9 +92,9 @@ pub(super) fn traits(
     if let Some(predicates) = templates.candidates(item) {
         let mut fold = substitution(facts, parent)?;
         for &predicate in predicates {
-            let mapped = fold.predicate(&mut facts.types, predicate)?;
+            let mapped = fold.clause(&mut facts.types, predicate)?;
             result
-                .insert(&facts.types, mapped)
+                .insert_clause(&facts.types, mapped)
                 .map_err(|e| e.to_string())?;
         }
         steps = steps
@@ -118,7 +121,7 @@ pub(super) fn traits(
 /// parent application. Callers must retain that proof before selecting a value.
 #[derive(Default)]
 pub(super) struct Equations {
-    pub clauses: Option<Arc<[Predicate]>>,
+    pub clauses: Option<Arc<[Clause]>>,
     pub steps: usize,
 }
 
@@ -179,12 +182,12 @@ pub(super) fn equalities(
         },
     )?;
     for &predicate in predicates {
-        result.push(fold.predicate(&mut facts.types, predicate)?);
+        result.push(fold.clause(&mut facts.types, predicate)?);
     }
     let steps = template_steps
         .saturating_add(fold.steps)
         .saturating_add(predicates.len());
-    let result: Arc<[Predicate]> = result.into();
+    let result: Arc<[Clause]> = result.into();
     let cache = &mut facts
         .generics
         .traits
@@ -258,19 +261,18 @@ pub(in crate::sema) fn prepare_outlives(facts: &mut Declarations) -> Result<(), 
     if facts.associated.types.is_empty() {
         return Ok(());
     }
-    let direct = facts.associated.types.values().any(|contract| {
-        contract
-            .bounds
-            .iter()
-            .any(|p| matches!(p.bound, Bound::Outlives(_)))
-    });
+    let mut direct = false;
+    for contract in facts.associated.types.values() {
+        for &clause in &contract.bounds {
+            direct |= clause.is_outlives(&facts.types)?;
+        }
+    }
     let mut inherited = false;
     if let Some(contracts) = &facts.generics.traits {
         for (_, header) in contracts.headers() {
             for predicate in &header.predicates {
                 if header.implies_self(&facts.types, predicate)? {
-                    let predicate = predicate.value.ordinary()?;
-                    inherited |= matches!(predicate.bound, Bound::Outlives(_));
+                    inherited |= predicate.value.is_outlives(&facts.types)?;
                 }
             }
         }

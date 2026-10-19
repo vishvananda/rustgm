@@ -168,7 +168,7 @@ impl Search<'_> {
             .normalization
             .as_mut()
             .ok_or("missing parent normalization")?;
-        let Decision::Proven(node) = decision else {
+        let Decision::Proven(mut node) = decision else {
             equality.stopped = Some(decision);
             return Ok(());
         };
@@ -195,7 +195,8 @@ impl Search<'_> {
             )?),
             Source::Assumption(_)
             | Source::ResultBound(_)
-            | Source::QuantifiedAssumption { .. } => {
+            | Source::QuantifiedAssumption { .. }
+            | Source::QuantifiedResultBound { .. } => {
                 let application = Application {
                     item: request.application.item,
                     predicate: goal,
@@ -206,8 +207,21 @@ impl Search<'_> {
                     &mut frame.inputs.context,
                     &application,
                     self.caller.environment.map(AsRef::as_ref),
+                    self.query.nodes[node]
+                        .end
+                        .max(equality.end)
+                        .max(self.query.allocations.floor()),
                 )? {
-                    equalities::Selection::Proven(ty) => Resolution::Type(ty),
+                    equalities::Selection::Proven(evidence) => {
+                        let ty = evidence.ty;
+                        node = self.query.equality_use(
+                            node,
+                            frame.scope,
+                            evidence,
+                            &mut frame.inputs.context.region_equalities,
+                        )?;
+                        Resolution::Type(ty)
+                    }
                     equalities::Selection::Absent => Resolution::Opaque,
                     equalities::Selection::Ambiguous => {
                         equality.stopped = Some(Decision::Deferred);
@@ -232,5 +246,39 @@ impl Search<'_> {
             .context
             .account_work(equality.fold.steps().saturating_sub(before))
             .map_err(inference)
+    }
+}
+
+impl super::Query {
+    /// Equality instantiation belongs to the requesting scope, after its parent
+    /// proof. Keep it in the selected graph so discarded alternatives grant no IDs.
+    fn equality_use(
+        &mut self,
+        parent: usize,
+        scope: crate::types::lifetime_proof::ScopeId,
+        evidence: equalities::Evidence,
+        equations: &mut Vec<crate::types::outlives::Pair>,
+    ) -> Result<usize, &'static str> {
+        let regions = evidence.premise.regions;
+        if regions.is_empty() {
+            return Ok(parent);
+        }
+        self.reserve(scope, regions.clone())?;
+        self.allocations.record(regions.end);
+        Ok(self.push(
+            super::Node {
+                goal: evidence.premise.predicate,
+                source: Some(Source::Equality),
+                children: vec![parent],
+                first: self.nodes[parent].first,
+                end: regions.end,
+                equalities: std::mem::take(equations),
+                outlives: Vec::new(),
+                type_outlives: Vec::new(),
+                sized: Vec::new(),
+            },
+            scope,
+            regions,
+        ))
     }
 }

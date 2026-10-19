@@ -14,7 +14,7 @@ use std::collections::HashMap;
 /// Requirements on a projected result, distinct from assumptions about its inputs.
 pub struct TypeContract {
     pub projection: TypeId,
-    pub bounds: Vec<crate::types::parameters::predicates::Predicate>,
+    pub bounds: Vec<crate::types::parameters::clauses::Clause>,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]

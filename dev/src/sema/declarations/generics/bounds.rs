@@ -503,12 +503,17 @@ impl Checker<'_> {
 }
 
 impl Syntax {
-    pub(in super::super) fn associated(source: NodeKey, owner: DefId, bound: Written) -> Self {
+    pub(in super::super) fn associated(
+        source: NodeKey,
+        owner: DefId,
+        bound: Written,
+        scope: Option<Scope>,
+    ) -> Self {
         Self {
             source,
             subject: Subject::Associated(owner),
             bound,
-            scope: None,
+            scope,
         }
     }
     pub(in super::super) fn context(self, parent: regions::Context) -> regions::Context {

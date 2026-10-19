@@ -148,3 +148,77 @@ fn empty_written_quantifiers_survive_parsing_and_canonicalization() -> TestResul
     assert!(matches!(clauses[2], Clause::Predicate(_)));
     Ok(())
 }
+
+#[test]
+fn associated_result_contract_distinguishes_its_local_from_the_owner_capture() -> TestResult {
+    let (_, source, _) = super::results::CASES
+        .iter()
+        .find(|case| case.0 == "result-captured-owner")
+        .ok_or("missing independently qualified result source")?;
+    let (report, facts) = semantic::analyze(source)?;
+    let index = report
+        .resolution
+        .definitions
+        .iter()
+        .position(|definition| report.package.names.get(definition.name) == "Item")
+        .ok_or("missing associated declaration")?;
+    let contract = facts
+        .associated
+        .type_contract(rustgm::resolve::model::DefId(u32::try_from(index)?))
+        .ok_or("missing result contract")?;
+    let mut traits = 0;
+    let mut equalities = 0;
+    for &clause in &contract.bounds {
+        if !matches!(clause, Clause::ForAll(_)) {
+            continue;
+        }
+        let value = quantified(&facts, clause)?;
+        assert_eq!(value.bound_regions, 1);
+        let parent = match value.predicate.bound {
+            Bound::Trait(_) => {
+                traits += 1;
+                assert_eq!(
+                    arguments(&facts, value)?,
+                    [Argument::Lifetime(RegionId::bound(0, 0)?)]
+                );
+                value.predicate.ty
+            }
+            Bound::ProjectionEqual(result) => {
+                equalities += 1;
+                let Some(Kind::Tuple(fields)) = facts.types.kind(result) else {
+                    return Err("missing quantified result tuple".into());
+                };
+                let mut regions = Vec::new();
+                for &field in facts.types.list(fields).ok_or("missing result fields")? {
+                    let Some(Kind::Reference { region, .. }) = facts.types.kind(field) else {
+                        return Err("missing result reference".into());
+                    };
+                    regions.push(region.bound_parts());
+                }
+                assert_eq!(regions, [Some((0, 0)), Some((1, 0))]);
+                let Some(Kind::Projection(equality)) = facts.types.kind(value.predicate.ty) else {
+                    return Err("missing result equality subject".into());
+                };
+                equality.subject
+            }
+            _ => return Err("unexpected quantified result requirement".into()),
+        };
+        let Some(Kind::Projection(parent)) = facts.types.kind(parent) else {
+            return Err("missing captured result parent".into());
+        };
+        let application = facts
+            .types
+            .trait_application(parent.trait_application)
+            .ok_or("missing captured parent application")?;
+        assert_eq!(
+            facts
+                .types
+                .arguments(application.arguments)
+                .ok_or("missing parent arguments")?
+                .collect::<Vec<_>>(),
+            [Argument::Lifetime(RegionId::bound(1, 0)?)]
+        );
+    }
+    assert_eq!((traits, equalities), (1, 1));
+    Ok(())
+}

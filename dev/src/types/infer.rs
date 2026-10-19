@@ -3,6 +3,7 @@
 pub mod arguments;
 mod batch;
 mod compare;
+mod completed;
 pub mod constants;
 pub mod deferred;
 pub mod dependencies;
@@ -102,6 +103,11 @@ pub struct Context {
     arguments: Option<Box<arguments::Storage>>,
     dependencies: Option<Box<dependencies::Storage>>,
     resolution: Option<Box<resolve::Resolution>>,
+    #[expect(
+        clippy::box_collection,
+        reason = "contexts without completed composite inputs keep only one pointer for this cache"
+    )]
+    settled: Option<Box<HashMap<TermId, completed::Completed>>>,
     generalization: freshen::Scratch,
     terms: Vec<Term>,
     edges: Vec<TermId>,
@@ -618,10 +624,9 @@ impl Context {
             Value::Known(ty) => ty,
             Value::Variable(_) => return Err(Error::InvalidIdentity),
         };
-        let kind = store.kind(ty).ok_or(Error::InvalidIdentity)?;
         let mut children = std::mem::take(&mut self.child_scratch);
         children.clear();
-        let constructor = match kind {
+        let constructor = match store.kind(ty).ok_or(Error::InvalidIdentity)? {
             Kind::Never => Constructor::Never,
             Kind::Primitive(p) => Constructor::Primitive(p),
             Kind::Parameter(id) => Constructor::Parameter(id),
@@ -712,6 +717,7 @@ impl Context {
         term.start = start;
         term.end = end;
         self.child_scratch = children;
+        self.remember_settled(store, id, ty)?;
         Ok(constructor)
     }
 }

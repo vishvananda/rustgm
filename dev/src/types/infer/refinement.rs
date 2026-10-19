@@ -20,6 +20,7 @@ pub struct Refinement {
 struct Roots {
     types: Vec<(TermId, TermId)>,
     constants: Vec<(ConstTermId, ConstTermId)>,
+    stable: Vec<(TermId, TermId)>,
 }
 impl Tracking for Roots {
     fn ty(&mut self, original: TermId, copied: TermId) {
@@ -27,6 +28,9 @@ impl Tracking for Roots {
     }
     fn constant(&mut self, original: ConstTermId, copied: ConstTermId) {
         self.constants.push((original, copied));
+    }
+    fn stable(&mut self, original: TermId, copied: TermId) {
+        self.stable.push((original, copied));
     }
 }
 
@@ -39,7 +43,7 @@ pub struct Committed {
 }
 
 impl Refinement {
-    /// Import mixed roots together, retaining only the reachable source holes.
+    /// Import mixed roots together, retaining source holes and immutable origins.
     /// Known types and unrelated source constraints require no snapshot copies.
     /// # Errors
     /// Rejects invalid identities and exhausted inference work.
@@ -58,7 +62,8 @@ impl Refinement {
     fn retain_inputs(&mut self, mappings: Mapping<Roots>) {
         let roots = mappings.tracker;
         self.inputs =
-            (!roots.types.is_empty() || !roots.constants.is_empty()).then(|| Box::new(roots));
+            (!roots.types.is_empty() || !roots.constants.is_empty() || !roots.stable.is_empty())
+                .then(|| Box::new(roots));
     }
 
     /// Isolated selection and its lifetime equations remain owned by the caller.
@@ -120,7 +125,11 @@ impl Refinement {
     /// # Errors
     /// Rejects contradictory inputs, invalid identities and exhausted work.
     pub fn refresh(&mut self, store: &Store, source: &mut Context) -> Result<(), Error> {
-        if self.inputs.is_none() {
+        if self
+            .inputs
+            .as_ref()
+            .is_none_or(|roots| roots.types.is_empty() && roots.constants.is_empty())
+        {
             return Ok(());
         }
         let roots = self.roots(false);
@@ -173,6 +182,12 @@ impl Refinement {
             self.context.steps = 0;
             return Ok(false);
         };
+        if selected_inputs.types.is_empty() && selected_inputs.constants.is_empty() {
+            source.account_work(self.context.steps)?;
+            self.context.steps = 0;
+            self.publish_stable(store, source)?;
+            return Ok(false);
+        }
         let roots = self.roots(false);
         let inputs = Inputs::discover(source, &roots)?;
         let exported = self.context.map_region_roots(
@@ -236,7 +251,30 @@ impl Refinement {
         source
             .region_equalities
             .append(&mut validation.region_equalities);
+        self.publish_stable(store, source)?;
         Ok(changed)
+    }
+
+    /// These source graphs had no holes, projections or lifetimes at import.
+    /// Reuse identities actually demanded by this query, without publishing
+    /// query constraints, private universes or speculative canonical allocations.
+    fn publish_stable(&mut self, store: &Store, source: &mut Context) -> Result<(), Error> {
+        let Some(inputs) = &self.inputs else {
+            return Ok(());
+        };
+        source.account_work(inputs.stable.len())?;
+        for &(original, copied) in &inputs.stable {
+            let copied = self.context.root(copied)?;
+            let ty = match self.context.terms[copied.0 as usize].value {
+                Value::Known(ty) => Some(ty),
+                _ => self.context.settled_type(copied),
+            };
+            if let Some(ty) = ty {
+                let original = source.root(original)?;
+                source.remember_settled(store, original, ty)?;
+            }
+        }
+        Ok(())
     }
 }
 

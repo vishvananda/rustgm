@@ -76,7 +76,11 @@ fn members(report: &Report, facts: &Declarations, out: &mut impl Write) -> io::R
                     "result-bound def={} index={index} ",
                     member.definition.0
                 )?;
-                super::requirement(&facts.types, bound, out)?;
+                super::requirement(
+                    &facts.types,
+                    bound.ordinary().map_err(io::Error::other)?,
+                    out,
+                )?;
                 writeln!(out)?;
             }
         }

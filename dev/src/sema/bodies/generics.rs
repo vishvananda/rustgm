@@ -305,6 +305,11 @@ impl Checker<'_> {
                         bound: crate::types::parameters::predicates::Bound::Trait(*application),
                     }
                 }
+                Some(Source::QuantifiedResultBound {
+                    clause,
+                    subject,
+                    application,
+                }) => self.quantified_result(node, *clause, *subject, *application)?,
                 Some(Source::Equality) => {
                     return Err(self.error(node, "equality evidence cannot replace a trait goal"));
                 }
@@ -316,5 +321,37 @@ impl Checker<'_> {
             self.prove_bound(node, predicate.ty, predicate.bound)?;
         }
         Ok(())
+    }
+}
+
+impl Checker<'_> {
+    /// Recheck provenance against mapped result rules, never the caller's free assumptions.
+    fn quantified_result(
+        &mut self,
+        node: NodeId,
+        clause: crate::types::parameters::clauses::QuantifiedId,
+        subject: TypeId,
+        application: crate::types::traits::ApplicationId,
+    ) -> Result<crate::types::parameters::predicates::Predicate, Error> {
+        let item = self
+            .facts
+            .types
+            .trait_application(application)
+            .ok_or_else(|| self.error(node, "invalid quantified result trait"))?
+            .item;
+        let (rules, steps) = crate::sema::traits::results::traits(self.facts, subject, item)
+            .map_err(|e| self.error(node, e))?
+            .ok_or_else(|| self.error(node, "quantified result has no parent contract"))?;
+        self.state
+            .infer
+            .account_work(steps)
+            .map_err(|e| self.error(node, e))?;
+        if !rules.contains_quantified(clause) {
+            return Err(self.error(node, "quantified evidence is outside this result contract"));
+        }
+        Ok(crate::types::parameters::predicates::Predicate {
+            ty: subject,
+            bound: crate::types::parameters::predicates::Bound::Trait(application),
+        })
     }
 }

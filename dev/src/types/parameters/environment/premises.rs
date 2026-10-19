@@ -85,16 +85,12 @@ impl TraitAssumptions {
     }
 
     pub fn clauses(&self) -> impl Iterator<Item = Clause> {
-        let mut ordinary = self.predicates.iter().enumerate().peekable();
-        let mut quantified = self.quantified.iter().flat_map(|q| &q.entries).peekable();
-        std::iter::from_fn(move || {
-            if quantified.peek().is_some_and(|(position, _)| {
-                ordinary.peek().is_none_or(|(index, _)| position <= index)
-            }) {
-                return quantified.next().map(|(_, id)| Clause::ForAll(*id));
-            }
-            ordinary.next().map(|(_, p)| Clause::Predicate(*p))
-        })
+        ordered(
+            &self.predicates,
+            self.quantified
+                .as_ref()
+                .map_or(&[], |q| q.entries.as_slice()),
+        )
     }
 
     pub fn projected(&self, key: ProjectionKey) -> impl Iterator<Item = Clause> {
@@ -164,4 +160,22 @@ impl TraitAssumptions {
         }
         Ok(())
     }
+}
+
+/// Merge compact ordinary storage and sparse quantified entries in source order.
+pub(super) fn ordered<'a>(
+    predicates: &'a [Predicate],
+    quantifiers: &'a [(usize, QuantifiedId)],
+) -> impl Iterator<Item = Clause> + 'a {
+    let mut ordinary = predicates.iter().enumerate().peekable();
+    let mut quantified = quantifiers.iter().peekable();
+    std::iter::from_fn(move || {
+        if quantified
+            .peek()
+            .is_some_and(|(position, _)| ordinary.peek().is_none_or(|(index, _)| position <= index))
+        {
+            return quantified.next().map(|(_, id)| Clause::ForAll(*id));
+        }
+        ordinary.next().map(|(_, p)| Clause::Predicate(*p))
+    })
 }

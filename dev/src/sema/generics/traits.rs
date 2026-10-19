@@ -108,7 +108,12 @@ impl Generics {
             // Preserve finite builtin/equality implications, without installing
             // those user-trait results as independent caller permissions.
             for (index, predicate) in work.into_iter().enumerate().skip(initial) {
-                if index < ordinary_end || trait_input(store, predicate.value)?.is_none() {
+                let quantified_result_lifetime = index >= ordinary_end
+                    && matches!(predicate.value, Clause::ForAll(_))
+                    && predicate.value.is_outlives(store)?;
+                if !quantified_result_lifetime
+                    && (index < ordinary_end || trait_input(store, predicate.value)?.is_none())
+                {
                     predicates.push(predicate);
                 }
             }

@@ -271,6 +271,11 @@ impl Context {
         canonical: super::TypeId,
         ambient: &[u32],
     ) -> Result<(), Error> {
+        self.step()?;
+        let term = self.root(term)?;
+        if self.settled_type(term) == Some(canonical) {
+            return Ok(());
+        }
         if store
             .contains_projections(canonical)
             .ok_or(Error::InvalidIdentity)?

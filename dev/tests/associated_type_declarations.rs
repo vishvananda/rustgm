@@ -233,10 +233,12 @@ fn declared_projection_keeps_trait_self_and_result_contract()
     assert!(
         contract
             .bounds
-            .contains(&rustgm::types::parameters::predicates::Predicate {
-                ty: contract.projection,
-                bound: Bound::Copy,
-            })
+            .contains(&rustgm::types::parameters::clauses::Clause::Predicate(
+                rustgm::types::parameters::predicates::Predicate {
+                    ty: contract.projection,
+                    bound: Bound::Copy,
+                }
+            ))
     );
     let Some(Kind::Projection(application)) = facts.types.kind(contract.projection) else {
         return Err("missing projection".into());

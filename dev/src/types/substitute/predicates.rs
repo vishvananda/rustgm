@@ -65,7 +65,8 @@ impl Bound {
     ) -> Result<Predicate, &'static str> {
         self.predicate_inside(store, predicate, 0)
     }
-    fn predicate_inside(
+    /// Map roots beneath retained surrounding binders; the caller preserves their identities.
+    pub(crate) fn predicate_inside(
         &mut self,
         store: &mut Store,
         predicate: Predicate,

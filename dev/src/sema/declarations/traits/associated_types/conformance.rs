@@ -5,7 +5,10 @@ use crate::{
     sema::{associated::OwnerId, model::Declarations},
     types::{
         outlives::Queries,
-        parameters::predicates::{Bound, Predicate},
+        parameters::{
+            clauses::{Clause, Quantified},
+            predicates::{Bound, Predicate},
+        },
     },
 };
 use std::collections::HashMap;
@@ -101,12 +104,15 @@ impl Checker<'_> {
             for requirement in
                 self.associated_result_bounds(key, predicate, expected, ty, &mut substitution)?
             {
-                if let Bound::Outlives(region) = requirement.bound {
-                    lifetimes.push((key, requirement.ty, region));
+                if requirement
+                    .is_outlives(&self.facts.types)
+                    .map_err(|e| self.error(key, e))?
+                {
+                    lifetimes.push((key, requirement));
                     continue;
                 }
                 if !proof
-                    .prove(&mut self.facts, requirement)
+                    .prove_clause(&mut self.facts, requirement)
                     .map_err(|e| self.error(key, e))?
                 {
                     return Err(self.error(
@@ -131,7 +137,7 @@ impl Checker<'_> {
         expected: DefId,
         ty: crate::types::TypeId,
         substitution: &mut Option<crate::types::substitute::Bound>,
-    ) -> Result<Vec<Predicate>, Error> {
+    ) -> Result<Vec<Clause>, Error> {
         let contract = self
             .facts
             .associated
@@ -140,32 +146,84 @@ impl Checker<'_> {
         let projection = contract.projection;
         let mut required = contract.bounds.clone();
         for requirement in &mut required {
-            let direct = requirement.ty == projection;
-            if !direct || !matches!(requirement.bound, Bound::Copy | Bound::Clone | Bound::Sized) {
-                if substitution.is_none() {
-                    *substitution = Some(
-                        crate::sema::traits::results::substitution(&self.facts, predicate)
-                            .map_err(|e| self.error(key, e))?,
-                    );
-                }
-                if direct {
-                    // The already elaborated result belongs to the impl's scope.
-                    // Map only the trait's template, never the actual type twice.
-                    requirement.ty = crate::types::TypeId::UNIT;
-                }
-                *requirement = substitution
-                    .as_mut()
-                    .ok_or_else(|| {
-                        Error::at(key.file, 0, "missing associated result substitution")
-                    })?
-                    .predicate(&mut self.facts.types, *requirement)
-                    .map_err(|e| self.error(key, e))?;
-            }
-            if direct {
-                requirement.ty = ty;
-            }
+            *requirement = self.map_result_bound(
+                key,
+                predicate,
+                (projection, ty),
+                *requirement,
+                substitution,
+            )?;
         }
         Ok(required)
+    }
+
+    /// The concrete result is already in impl scope. Insert it beneath a retained
+    /// clause binder after mapping the declaration's inputs, never before.
+    fn map_result_bound(
+        &mut self,
+        key: NodeKey,
+        parent: Predicate,
+        result_types: (crate::types::TypeId, crate::types::TypeId),
+        clause: Clause,
+        substitution: &mut Option<crate::types::substitute::Bound>,
+    ) -> Result<Clause, Error> {
+        let (projection, actual) = result_types;
+        let (mut requirement, count) = match clause {
+            Clause::Predicate(value) => (value, None),
+            Clause::ForAll(id) => {
+                let value = self
+                    .facts
+                    .types
+                    .quantified(id)
+                    .ok_or_else(|| self.error(key, "invalid associated result binder"))?;
+                (value.predicate, Some(value.bound_regions))
+            }
+        };
+        let depth = u16::from(count.is_some());
+        let formal = self
+            .facts
+            .types
+            .shift_type(projection, depth)
+            .map_err(|e| self.error(key, e))?
+            .0;
+        let direct = requirement.ty == formal;
+        if !direct || !matches!(requirement.bound, Bound::Copy | Bound::Clone | Bound::Sized) {
+            if substitution.is_none() {
+                *substitution = Some(
+                    crate::sema::traits::results::substitution(&self.facts, parent)
+                        .map_err(|e| self.error(key, e))?,
+                );
+            }
+            if direct {
+                requirement.ty = crate::types::TypeId::UNIT;
+            }
+            requirement = substitution
+                .as_mut()
+                .ok_or_else(|| self.error(key, "missing associated result substitution"))?
+                .predicate_inside(&mut self.facts.types, requirement, depth)
+                .map_err(|e| self.error(key, e))?;
+        }
+        if direct {
+            requirement.ty = self
+                .facts
+                .types
+                .shift_type(actual, depth)
+                .map_err(|e| self.error(key, e))?
+                .0;
+        }
+        Ok(if let Some(bound_regions) = count {
+            Clause::ForAll(
+                self.facts
+                    .types
+                    .intern_quantified(Quantified {
+                        bound_regions,
+                        predicate: requirement,
+                    })
+                    .map_err(|e| self.error(key, e))?,
+            )
+        } else {
+            Clause::Predicate(requirement)
+        })
     }
 
     fn associated_type_regions(
@@ -174,7 +232,7 @@ impl Checker<'_> {
         source: NodeKey,
         predicate: Predicate,
         definitions: &[(DefId, DefId)],
-        lifetimes: &[(NodeKey, crate::types::TypeId, crate::types::RegionId)],
+        lifetimes: &[(NodeKey, Clause)],
     ) -> Result<(), Error> {
         let mut inputs = crate::types::bound_uses::Uses::constraining();
         inputs
@@ -211,15 +269,9 @@ impl Checker<'_> {
                 .require_requirements(required, crate::types::relations::ProofScope::ROOT, 0)
                 .map_err(|e| self.error(key, e))?;
         }
-        for &(key, ty, region) in lifetimes {
+        for &(key, clause) in lifetimes {
             constraints
-                .require_type(
-                    &mut queries,
-                    ty,
-                    region,
-                    crate::types::relations::ProofScope::ROOT,
-                    0,
-                )
+                .require_outlives_clause(&mut queries, clause, 0)
                 .map_err(|e| self.error(key, e))?;
         }
         constraints.solve().map(|_| ()).map_err(|e| {

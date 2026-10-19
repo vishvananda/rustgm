@@ -1,10 +1,13 @@
 //! Close builtin Self promises before projection identities acquire cached properties.
 use super::super::generics::bounds::Written;
-use super::super::{Checker, DefId, Error};
+use super::super::{Checker, DefId, Error, NodeKey};
 pub(super) use crate::types::projection::Builtins;
 use crate::{
     sema::associated::OwnerKind,
-    types::{ItemId, parameters::predicates::Bound},
+    types::{
+        ItemId,
+        parameters::{clauses::Clause, predicates::Bound},
+    },
 };
 use std::collections::HashMap;
 
@@ -125,8 +128,8 @@ impl Checker<'_> {
                 .ok_or_else(|| self.error(key, "missing completed trait headers"))?
                 .associated_bounds(ItemId(member.0))
             {
-                let predicate = predicate.ordinary().map_err(|e| self.error(key, e))?;
-                let properties = if let Bound::Trait(id) = predicate.bound {
+                let bound = self.promise_bound(key, *predicate)?;
+                let properties = if let Bound::Trait(id) = bound {
                     let application = self
                         .facts
                         .types
@@ -137,7 +140,7 @@ impl Checker<'_> {
                         .copied()
                         .unwrap_or_default()
                 } else {
-                    Builtins::bound(predicate.bound)
+                    Builtins::bound(bound)
                 };
                 result.include(properties);
             }
@@ -182,8 +185,8 @@ impl Checker<'_> {
                 {
                     continue;
                 }
-                let predicate = predicate.value.ordinary().map_err(|e| self.error(key, e))?;
-                if let Bound::Trait(id) = predicate.bound {
+                let bound = self.promise_bound(key, predicate.value)?;
+                if let Bound::Trait(id) = bound {
                     let parent = self
                         .facts
                         .types
@@ -194,7 +197,7 @@ impl Checker<'_> {
                         .or_default()
                         .push(definition);
                 } else {
-                    result.include(Builtins::bound(predicate.bound));
+                    result.include(Builtins::bound(bound));
                 }
             }
             promises.insert(definition, result);
@@ -203,5 +206,19 @@ impl Checker<'_> {
             }
         }
         self.close_builtin_promises(promises, &dependents, work, steps)
+    }
+
+    /// Classify uniform builtin properties only. The complete clause remains
+    /// required for implementation validation and never becomes unbound evidence.
+    fn promise_bound(&self, key: NodeKey, clause: Clause) -> Result<Bound, Error> {
+        match clause {
+            Clause::Predicate(predicate) => Ok(predicate.bound),
+            Clause::ForAll(id) => self
+                .facts
+                .types
+                .quantified(id)
+                .map(|value| value.predicate.bound)
+                .ok_or_else(|| self.error(key, "invalid builtin promise clause")),
+        }
     }
 }

@@ -18,10 +18,12 @@ pub(super) type Import = Mapping<()>;
 pub(super) trait Tracking {
     fn ty(&mut self, original: TermId, copied: TermId);
     fn constant(&mut self, original: ConstTermId, copied: ConstTermId);
+    fn stable(&mut self, original: TermId, copied: TermId);
 }
 impl Tracking for () {
     fn ty(&mut self, _: TermId, _: TermId) {}
     fn constant(&mut self, _: ConstTermId, _: ConstTermId) {}
+    fn stable(&mut self, _: TermId, _: TermId) {}
 }
 
 impl Context {
@@ -55,6 +57,10 @@ impl Context {
             if mappings.types.contains_key(&id) {
                 continue;
             }
+            if let Some(ty) = source.settled_type(id) {
+                mappings.types.insert(id, self.known(store, ty)?);
+                continue;
+            }
             let term = source.terms[id.0 as usize];
             let kind = match term.value {
                 Value::Variable(domain) => {
@@ -86,6 +92,14 @@ impl Context {
                 children.push(*mappings.types.get(&id).ok_or(Error::InvalidIdentity)?);
             }
             let copied = mappings.construct(store, source, self, kind, &children)?;
+            if let Some(facts) = source.remember_structure(store, id)? {
+                self.settled
+                    .get_or_insert_with(Default::default)
+                    .insert(copied, facts);
+                if !facts.regions && facts.identity.is_none() {
+                    mappings.tracker.stable(id, copied);
+                }
+            }
             mappings.types.insert(id, copied);
         }
         mappings

@@ -4,6 +4,7 @@ use std::collections::HashMap;
 
 pub(super) struct Mapping {
     first: u32,
+    locals_only: bool,
     replacements: HashMap<RegionId, RegionId>,
 }
 impl Mapping {
@@ -13,6 +14,13 @@ impl Mapping {
         depth: u16,
     ) -> Result<RegionId, &'static str> {
         if original == RegionId::STATIC {
+            return Ok(original);
+        }
+        if self.locals_only
+            && original
+                .bound_parts()
+                .is_none_or(|(binder, _)| binder != depth)
+        {
             return Ok(original);
         }
         let free = match original.bound_parts() {
@@ -46,8 +54,19 @@ impl Bound {
         let mut bound = Self::new(Vec::new());
         bound.action = Action::Universals(Box::new(Mapping {
             first,
+            locals_only: false,
             replacements: HashMap::new(),
         }));
+        bound
+    }
+
+    /// Renumber only one binder's used slots for structural comparison. Captures
+    /// and nested locals stay rigid; the result is never a replacement proof clause.
+    pub(crate) fn canonical_locals() -> Self {
+        let mut bound = Self::universals(0);
+        if let Action::Universals(mapping) = &mut bound.action {
+            mapping.locals_only = true;
+        }
         bound
     }
     /// Inspect the universal already assigned to a free argument lifetime.

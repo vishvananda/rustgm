@@ -32,15 +32,22 @@ impl Search<'_> {
             .context
             .account_work(steps)
             .map_err(inference)?;
-        let selected = match rules.select(&mut facts.types, &mut frame.inputs.context, &frame.goal)
-        {
-            Ok(Selection::Proven(proof)) => proof.assumption(),
+        let first = frame.available_region().max(self.query.allocations.floor());
+        let selected = match rules.select_scoped(
+            &mut facts.types,
+            &mut frame.inputs.context,
+            &frame.goal,
+            first,
+        ) {
+            Ok(Selection::Proven(proof)) => proof,
             Ok(Selection::Absent) => return Ok(None),
             Ok(Selection::Deferred) | Err(infer::Error::Normalization) => {
                 return Ok(Some(Action::Complete(Decision::Deferred)));
             }
             Err(error) => return Err(inference(error)),
         };
+        self.query.reserve(frame.scope, selected.regions.clone())?;
+        self.query.allocations.record(selected.regions.end);
         let goal = frame
             .inputs
             .context
@@ -49,17 +56,17 @@ impl Search<'_> {
         let index = self.query.push(
             Node {
                 goal,
-                source: Some(Source::ResultBound(selected)),
+                source: Some(Source::result(&selected).map_err(inference)?),
                 children: Vec::new(),
                 first: frame.first,
-                end: frame.available_region(),
+                end: selected.regions.end,
                 equalities: std::mem::take(&mut frame.inputs.context.region_equalities),
                 outlives: Vec::new(),
                 type_outlives: Vec::new(),
                 sized: Vec::new(),
             },
             frame.scope,
-            frame.first..frame.first,
+            selected.regions,
         );
         // input_evidence attaches every parent normalization child before this
         // result can escape the proof stack, including all existential scopes.

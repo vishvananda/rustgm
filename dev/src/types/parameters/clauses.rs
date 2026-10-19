@@ -1,5 +1,6 @@
 //! Quantification binds a whole predicate, including its subject and result.
 mod composition;
+mod equivalence;
 use super::predicates::Predicate;
 use crate::types::{Store, bound_uses::captures::Slots};
 pub use composition::Quantifier;
@@ -196,6 +197,7 @@ pub(in crate::types) struct Storage {
     values: Vec<Quantified>,
     index: HashMap<Quantified, QuantifiedId>,
     slots: Slots,
+    comparisons: Option<Box<equivalence::Cache>>,
 }
 
 impl Store {

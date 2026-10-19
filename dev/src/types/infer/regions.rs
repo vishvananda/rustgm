@@ -136,6 +136,14 @@ impl Mapping {
             if self.results.contains_key(&(id, depth)) {
                 continue;
             }
+            if bound.regions_only()
+                && context
+                    .completed(store, id)?
+                    .is_some_and(|facts| !facts.regions)
+            {
+                self.results.insert((id, depth), id);
+                continue;
+            }
             let term = context.terms[id.0 as usize];
             let kind = match term.value {
                 Value::Variable(_) => {

@@ -151,12 +151,14 @@ impl Query {
                     selection::Source::Assumption(_)
                         | selection::Source::ResultBound(_)
                         | selection::Source::QuantifiedAssumption { .. }
+                        | selection::Source::QuantifiedResultBound { .. }
                 )
             ) {
                 return self.finish(facts, None);
             }
             match self.equality(facts)? {
-                equalities::Selection::Proven(ty) => {
+                equalities::Selection::Proven(evidence) => {
+                    let ty = evidence.append_to(&mut self.state.obligations)?;
                     return self.finish(facts, Some(Resolution::Type(ty)));
                 }
                 equalities::Selection::Ambiguous => {
@@ -262,6 +264,7 @@ impl Query {
             &mut self.state.context,
             &inferred,
             self.state.environment.as_deref(),
+            self.state.obligations.regions.end,
         )
         .map_err(|_| "invalid or exhausted associated equality selection")
     }

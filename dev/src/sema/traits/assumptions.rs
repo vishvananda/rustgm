@@ -15,7 +15,7 @@ use std::{
     collections::{HashMap, HashSet},
     sync::OnceLock,
 };
-pub(in crate::sema) use universal::{ScopedEvidence, ScopedSelection};
+pub(in crate::sema) use universal::{Openings, ScopedEvidence, ScopedSelection};
 #[cfg(test)]
 #[path = "../../../tests/invariants/declaration_assumptions.rs"]
 mod declaration_tests;
@@ -122,6 +122,7 @@ impl Assumptions {
         self.prove(store, context, &goal)
     }
 
+    #[cfg(test)]
     pub fn insert(&mut self, store: &Store, predicate: Predicate) -> Result<(), infer::Error> {
         self.insert_clause(store, Clause::Predicate(predicate))
     }
@@ -258,6 +259,7 @@ impl Assumptions {
                 .flat_map(|head| self.candidates.get(&(item, head)).into_iter().flatten())
                 .copied(),
             |_, _, predicate| Ok((predicate, Evidence(predicate))),
+            |_, _, _, _| Ok(false),
         )
     }
 }

@@ -1,6 +1,9 @@
 //! Demand a fully determined inference subtree without applying numeric fallback.
 use super::{Context, Domain, Error, Store, TermId, TypeId, Value};
 use std::collections::{HashMap, HashSet};
+#[cfg(test)]
+#[path = "../../../tests/invariants/settled_inputs.rs"]
+mod settled_tests;
 
 /// Scratch for one resolution pass with no intervening inference equations.
 #[derive(Default)]
@@ -78,8 +81,8 @@ impl Context {
     }
     /// Resolve only the requested reachable terms. A successful result cannot
     /// change under subsequent compatible type equations; regions remain facts.
-    /// Later projection publication can replace an associated application, so
-    /// results are not cached across separate requests.
+    /// Completed subtrees without projections are immutable under compatible
+    /// equations. Projection-bearing results remain local to one traversal.
     ///
     /// # Errors
     /// Rejects unresolved variables, cycles, invalid identities and work limits.
@@ -89,8 +92,8 @@ impl Context {
             self.step()?;
             return Ok(ty);
         }
-        // Reuse storage, never results: equations and projection publication can
-        // change the graph between requests. Failed traversals leave work too.
+        // Transient results can contain projections or unfinished paths. Keep
+        // those local; only the separately certified settled graph survives.
         let mut scratch = self.resolution.take().unwrap_or_default();
         let result = self.resolve_with(store, root, &mut scratch);
         scratch.clear();
@@ -122,6 +125,10 @@ impl Context {
             if results.contains_key(&id) {
                 continue;
             }
+            if let Some(ty) = self.settled_type(id) {
+                results.insert(id, ty);
+                continue;
+            }
             let term = self.terms[id.0 as usize];
             match term.value {
                 Value::Variable(_) => return Err(Error::Unresolved),
@@ -134,7 +141,9 @@ impl Context {
                         let child = self.root(self.edges[offset as usize])?;
                         children.push(*results.get(&child).ok_or(Error::InvalidIdentity)?);
                     }
-                    results.insert(id, self.canonical(store, kind, children)?);
+                    let ty = self.canonical(store, kind, children)?;
+                    self.remember_settled(store, id, ty)?;
+                    results.insert(id, ty);
                     active.remove(&id);
                 }
                 Value::Construct(_) => {
@@ -152,6 +161,36 @@ impl Context {
             }
         }
         results.get(&root).copied().ok_or(Error::InvalidIdentity)
+    }
+
+    pub(super) fn settled_type(&self, root: TermId) -> Option<TypeId> {
+        match self.terms[root.0 as usize].value {
+            Value::Construct(super::Constructor::Primitive(primitive)) => {
+                Some(TypeId::primitive(primitive))
+            }
+            Value::Construct(super::Constructor::Never) => Some(TypeId::NEVER),
+            _ => self.settled.as_ref()?.get(&root)?.identity,
+        }
+    }
+
+    pub(super) fn remember_settled(
+        &mut self,
+        store: &Store,
+        root: TermId,
+        ty: TypeId,
+    ) -> Result<(), Error> {
+        if matches!(
+            self.terms[root.0 as usize].value,
+            Value::Construct(super::Constructor::Primitive(_) | super::Constructor::Never)
+        ) {
+            return Ok(());
+        }
+        if let Some(completed) = super::completed::Completed::canonical(store, ty)? {
+            self.settled
+                .get_or_insert_with(Default::default)
+                .insert(root, completed);
+        }
+        Ok(())
     }
 }
 

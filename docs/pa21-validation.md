@@ -2288,3 +2288,89 @@ sweep served the implementation loop. PA21–PA25 remain incomplete and their
 planned-stage discovery checks still return the required status 2. Quantified
 associated equalities, result/conformance consumers, projected premise conditions,
 GATs, opaque types and PA21's public semantic view still require implementation.
+
+## Quantified associated equalities and result contracts
+
+The maintainer now supports associated equalities inside complete quantified
+clauses, including `for<'a> T: A<'a, Out = &'a u8>`, and quantified bounds on
+declared associated results. Each clause binds its subject, trait inputs and
+result together. Normalization retains the selected equality's private interval
+and parent proof; result-bound evidence is checked against the owning result
+contract. Impl conformance checks these clauses even in unused definitions.
+Quantified lifetime requirements do not become unconditional scalar outlives
+promises. The original declaration binders, captures and result correlations
+remain available to later consumers.
+
+Equivalent quantified alternatives compare through cached keys that ignore unused
+local slots and consistently rename used slots. These keys retain outer captures,
+nested locals and result correlations. Each call deduplicates equivalent quantified
+requirements before constructing its obligations, retaining the first declaration's
+original binder and proof. Ordinary clauses and different calls remain separate.
+The maintained source suite contains **75 independently checked outcomes**,
+including **43 executable positives**. Earlier inspection formats still reject
+higher-ranked records; PA21's new public inspection contract remains unreleased.
+
+Completed inference graphs now retain structural summaries without allocating
+canonical types early. Graphs with unresolved type/const holes or projections
+remain excluded. Lifetime-only mapping reuses region-free completed roots, and
+successful isolated queries can return identities they actually resolved for
+those immutable inputs. Failed reconciliation cannot publish them. Batch equations
+with a finite, non-callable, projection-free anchor for every pair establish
+finiteness during shared matching; other batches retain the joint cycle check and
+callables retain scoped equality. Six new invariants cover repeated-query work,
+unresolved inputs, lifetime isolation, failed publication, shape mapping, finite
+anchors and unanchored cycles.
+
+The frozen candidate is SHA256
+`e01b1e79eeb85a06b0dd7bd51fac113dc1edd3f34c6e7f80b6249a6a30e09b07`.
+Evidence is under `obj/pa21-work/quantified-equalities-v1/candidate-v4/`.
+All **1,589 regular release tests**, **92 native maintainer groups**, **6,268
+PA1–PA20 text cases**, strict Clippy, the 928-file audit, harness checks and audit
+self-tests pass. Independent PA18–PA20 checks cover 2,900 declared acceptance
+outcomes with their existing documented differences, 1,028 executable comparisons
+and three codegen-only comparisons. Fourteen regenerated builtin sources/LowIR
+outputs retain their previously executed hashes. All source, fixture and compiler
+identities match the frozen snapshot before and after qualification. No fixtures
+or text references changed.
+
+All 18 scaling programs at widths 16/64/256 now compile and execute through CPPGM.
+This includes the two quantified width-256 cases that previously exhausted the
+unchanged one-million-work budget. The 16 previously accepted LowIR outputs match
+their prior executed bytes. Pinned-rustc compilation/execution results are reused
+only for identical source hashes; all 18 CPPGM executions were freshly checked.
+
+The performance matrix compares immutable `fa762135…` and `e01b1e79…` binaries on
+eight supported controls and measures 13 newly accepted inputs separately. It
+retains full output equality, A/A calibration, five ABBA blocks, software
+instruction profiles and eight RSS samples per input. Supported instruction counts
+decrease by 0.036%–21.14%. The ordinary width-64 control improves by 15.62% in the
+paired wall samples, with a 0.38% A/A spread and 21.14% fewer instructions. Other
+wall samples are noisier, with A/A spreads up to 67.29%; they do not establish a
+portable speedup. Supported median peak-RSS changes range from −444 to +344 KiB.
+No predeclared wall, instruction or memory follow-up threshold is triggered.
+
+Instruction counts in millions for newly supported families are:
+
+| Family | 16 | 64 | 256 |
+| --- | ---: | ---: | ---: |
+| Quantified equalities | 17.38 | 91.10 | 753.25 |
+| Quantified wide subjects | 21.18 | 121.76 | 1,121.41 |
+| Quantified result contracts | 17.64 | 66.56 | 262.01 |
+| Equivalent wide requirements | 24.84 | 153.56 | 1,519.25 |
+
+Result-contract scaling is approximately linear over this range. Equality and
+wide-subject families still grow superlinearly. Retained profiles attribute 41.8%
+of quantified width-256 instructions to projection opening, including 32.4% in
+whole-environment substitution. The ordinary equality width-256 control spends
+79.0% in opening, including 61.8% in environment substitution. These inclusive
+figures overlap. Avoiding repeated environment copies and index reconstruction is
+the next algorithmic task; this checkpoint does not establish whole-compiler
+linear scaling.
+
+The complete checkpoint checks took 548.1 seconds, including 261.4 seconds for
+regular release tests and 159.8 seconds for native maintainer validation. The
+development text sweep took 14.6 seconds. Successful expensive checks were batched
+once for the final candidate. PA21–PA25 remain planned and return status 2.
+Remaining PA21 work includes environment sharing, projected premise conditions,
+GATs, opaque identities/capture, variance/drop integration, and the public semantic
+view with reviewed manifests and oracles. PA22–PA25 follow that release.

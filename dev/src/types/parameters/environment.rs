@@ -1,5 +1,6 @@
 //! Immutable assumptions for one symbolic body. Absence of a bound is not proof
 //! that a concrete instantiation lacks it; it only withholds that operation here.
+mod equalities;
 mod instantiation;
 mod permissions;
 mod premises;
@@ -37,7 +38,7 @@ pub struct Environment {
     builtins: Option<Arc<permissions::Index>>,
     regions: Option<Arc<crate::types::relations::RegionEqualities>>,
     traits: Option<Box<TraitAssumptions>>,
-    equalities: Option<Box<ProjectionAssumptions>>,
+    equalities: Option<Box<equalities::Equalities>>,
     projection_promises:
         Option<std::sync::Arc<HashMap<crate::types::ItemId, crate::types::projection::Builtins>>>,
     shape_assumptions: bool,
@@ -47,12 +48,6 @@ pub struct Environment {
 struct Assumptions {
     predicates: HashMap<TypeId, Abilities>,
     sized: std::collections::HashSet<TypeId>,
-}
-#[derive(Clone, Default)]
-struct ProjectionAssumptions {
-    predicates: Vec<Predicate>,
-    unique: std::collections::HashSet<Predicate>,
-    items: HashMap<crate::types::ItemId, Vec<usize>>,
 }
 impl Environment {
     pub(crate) fn with_projection_promises(
@@ -125,24 +120,7 @@ impl Environment {
             result.regions = Some(Arc::new(regions.substitute(fold)?));
         }
         if let Some(equalities) = &mut result.equalities {
-            for predicate in &mut equalities.predicates {
-                *predicate = fold.predicate(types, *predicate)?;
-            }
-            equalities.unique.clear();
-            equalities
-                .predicates
-                .retain(|predicate| equalities.unique.insert(*predicate));
-            equalities.items.clear();
-            for (index, predicate) in equalities.predicates.iter().enumerate() {
-                let Some(Kind::Projection(application)) = types.kind(predicate.ty) else {
-                    return Err("mapped equality assumption lost its projected subject");
-                };
-                equalities
-                    .items
-                    .entry(application.item)
-                    .or_default()
-                    .push(index);
-            }
+            equalities.substitute(types, fold)?;
         }
         result.region_mapping = result.mapped_regions(types)?;
         Ok(result)
@@ -155,7 +133,7 @@ impl Environment {
         for clause in self
             .trait_clauses()
             .chain(self.builtins.iter().flat_map(|builtins| builtins.clauses()))
-            .chain(self.projection_predicates().copied().map(Clause::Predicate))
+            .chain(self.projection_clauses())
         {
             if clause.has_free_regions(types)? {
                 return Ok(true);
@@ -314,9 +292,15 @@ impl Environment {
                             .insert(types, clause)?;
                         continue;
                     }
-                    self.traits
-                        .get_or_insert_with(Default::default)
-                        .insert(types, clause)?;
+                    if matches!(value.predicate.bound, Bound::ProjectionEqual(_)) {
+                        self.equalities
+                            .get_or_insert_with(Default::default)
+                            .insert(types, clause)?;
+                    } else {
+                        self.traits
+                            .get_or_insert_with(Default::default)
+                            .insert(types, clause)?;
+                    }
                 }
             }
         }
@@ -343,22 +327,10 @@ impl Environment {
         predicate: Predicate,
     ) -> Result<(), &'static str> {
         if matches!(predicate.bound, Bound::ProjectionEqual(_)) {
-            let Some(Kind::Projection(application)) = types.kind(predicate.ty) else {
-                return Err("projection equality requires a projected subject");
-            };
-            let equalities = self.equalities.get_or_insert_with(Default::default);
-            if equalities.unique.len() >= 1_000_000 && !equalities.unique.contains(&predicate) {
-                return Err("projection assumption storage budget exceeded");
-            }
-            if equalities.unique.insert(predicate) {
-                equalities
-                    .items
-                    .entry(application.item)
-                    .or_default()
-                    .push(equalities.predicates.len());
-                equalities.predicates.push(predicate);
-            }
-            return Ok(());
+            return self
+                .equalities
+                .get_or_insert_with(Default::default)
+                .insert(types, Clause::Predicate(predicate));
         }
         if matches!(predicate.bound, Bound::Trait(_)) {
             return self
@@ -416,24 +388,19 @@ impl Environment {
     }
     /// Retain all written equalities, including competing results. An unused
     /// generic declaration need not establish a unique normal form for them.
-    pub fn projection_predicates(&self) -> impl Iterator<Item = &Predicate> {
+    pub fn projection_clauses(&self) -> impl Iterator<Item = Clause> {
         self.equalities
             .iter()
-            .flat_map(|equalities| &equalities.predicates)
+            .flat_map(|equalities| equalities.clauses())
     }
     /// Complete input equations distinguish candidates within this member bucket.
     pub(crate) fn projection_candidates(
         &self,
         item: crate::types::ItemId,
-    ) -> impl Iterator<Item = &Predicate> {
-        self.equalities.iter().flat_map(move |equalities| {
-            equalities
-                .items
-                .get(&item)
-                .into_iter()
-                .flatten()
-                .map(|&index| &equalities.predicates[index])
-        })
+    ) -> impl Iterator<Item = Clause> {
+        self.equalities
+            .iter()
+            .flat_map(move |equalities| equalities.candidates(item))
     }
     #[must_use]
     pub fn assumes_trait(
@@ -526,7 +493,10 @@ mod equality_tests {
             referent: TypeId::UNIT,
         })?;
         assert_eq!(
-            opened.projection_predicates().copied().collect::<Vec<_>>(),
+            opened
+                .projection_clauses()
+                .map(Clause::ordinary)
+                .collect::<Result<Vec<_>, _>>()?,
             [Predicate {
                 ty,
                 bound: Bound::ProjectionEqual(expected)
@@ -534,9 +504,9 @@ mod equality_tests {
         );
         assert_eq!(
             environment
-                .projection_predicates()
-                .copied()
-                .collect::<Vec<_>>(),
+                .projection_clauses()
+                .map(Clause::ordinary)
+                .collect::<Result<Vec<_>, _>>()?,
             [predicate]
         );
         assert_eq!(
@@ -549,10 +519,11 @@ mod equality_tests {
             &mut store,
             &mut substitute::Bound::new(vec![RegionId::STATIC]),
         )?;
-        let static_predicate = *static_environment
-            .projection_predicates()
+        let static_predicate = static_environment
+            .projection_clauses()
             .next()
-            .ok_or("missing static equality assumption")?;
+            .ok_or("missing static equality assumption")?
+            .ordinary()?;
         let static_result = store.intern(Kind::Reference {
             mutable: false,
             region: RegionId::STATIC,
@@ -577,7 +548,7 @@ mod equality_tests {
         )?;
         assert_eq!(merged.projection_candidates(ItemId(2)).count(), 1);
         assert_eq!(merged.projection_candidates(ItemId(3)).count(), 0);
-        assert_eq!(merged.projection_predicates().count(), 1);
+        assert_eq!(merged.projection_clauses().count(), 1);
         Ok(())
     }
 }

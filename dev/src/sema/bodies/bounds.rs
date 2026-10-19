@@ -308,7 +308,24 @@ impl Checker<'_> {
             bindings,
         )
         .map_err(|e| self.error(node, e))?;
+        // Equivalent requirements under this one call substitution need one proof.
+        // Keep declaration clauses intact and retain the first clause's own binder.
+        let mut quantified = std::collections::HashSet::new();
         for predicate in predicates {
+            if let crate::types::parameters::clauses::Clause::ForAll(id) = predicate.value {
+                let (key, work) = self
+                    .facts
+                    .types
+                    .clause_comparison(id)
+                    .map_err(|e| self.error(node, e))?;
+                self.state
+                    .infer
+                    .account_work(work.saturating_add(1))
+                    .map_err(|e| self.error(node, e))?;
+                if !quantified.insert(key) {
+                    continue;
+                }
+            }
             self.instantiate_bound_obligation(
                 node,
                 predicate.value,

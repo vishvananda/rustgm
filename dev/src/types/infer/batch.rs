@@ -44,7 +44,8 @@ impl Context {
                 return self.equate_mixed_inputs(store, inputs, true);
             }
         }
-        if self.input_callables(store, &pairs)? {
+        let anchored = self.anchored_inputs(store, &pairs)?;
+        if !anchored && self.input_callables(store, &pairs)? {
             return self.equate_mixed_inputs(store, inputs, true);
         }
         self.pairs.clear();
@@ -54,7 +55,37 @@ impl Context {
         let result = self.equate_mixed_inputs(store, inputs, false);
         self.seen = ordinary;
         result?;
-        self.acyclic_inputs(&pairs)
+        if anchored {
+            Ok(())
+        } else {
+            self.acyclic_inputs(store, &pairs)
+        }
+    }
+
+    /// Matching every root against a fixed finite graph establishes its shape
+    /// and finiteness together. No unknown can make a cycle in these immutable
+    /// anchors; a callable or projection on the other side is a shape mismatch.
+    /// A single unanchored pair instead requires the complete joint cycle check.
+    fn anchored_inputs(
+        &mut self,
+        store: &Store,
+        pairs: &[(TermId, TermId)],
+    ) -> Result<bool, Error> {
+        for &(left, right) in pairs {
+            self.step()?;
+            let left = self.root(left)?;
+            let right = self.root(right)?;
+            if self
+                .completed(store, left)?
+                .is_none_or(|facts| facts.callables)
+                && self
+                    .completed(store, right)?
+                    .is_none_or(|facts| facts.callables)
+            {
+                return Ok(false);
+            }
+        }
+        Ok(true)
     }
 
     fn equate_mixed_inputs(
@@ -99,6 +130,12 @@ impl Context {
             if !seen.insert(id) {
                 continue;
             }
+            if let Some(facts) = self.completed(store, id)? {
+                if facts.callables {
+                    return Ok(true);
+                }
+                continue;
+            }
             let term = self.terms[id.0 as usize];
             match term.value {
                 Value::Known(ty) => {
@@ -117,7 +154,7 @@ impl Context {
         Ok(false)
     }
 
-    fn acyclic_inputs(&mut self, pairs: &[(TermId, TermId)]) -> Result<(), Error> {
+    fn acyclic_inputs(&mut self, store: &Store, pairs: &[(TermId, TermId)]) -> Result<(), Error> {
         // All edges are now stable. Share colors across roots, including aliases;
         // a gray revisit is a cycle and a black revisit is an already proved DAG.
         let mut active = HashMap::new();
@@ -128,6 +165,11 @@ impl Context {
         while let Some((id, finish)) = work.pop() {
             self.step()?;
             let id = self.root(id)?;
+            // Fully determined projection-free inputs cannot acquire a cycle
+            // through compatible equations. Unknown neighbors still need colors.
+            if self.completed(store, id)?.is_some() {
+                continue;
+            }
             if finish {
                 active.insert(id, false);
                 continue;
@@ -158,6 +200,40 @@ impl Context {
 mod tests {
     use super::*;
     use crate::types::{Primitive, TypeId};
+
+    #[test]
+    fn finite_anchors_bound_matching_work_and_leave_other_cycles_checked() -> Result<(), Error> {
+        let store = Store::default();
+        for width in [16, 64, 256, 1024] {
+            let mut context = Context::default();
+            let byte = context.known(&store, TypeId::primitive(Primitive::U8))?;
+            let known = context.construct(Constructor::Tuple, &vec![byte; width])?;
+            context.remember_structure(&store, known)?;
+            let hole = context.variable(super::super::Domain::Any)?;
+            let unknown = context.construct(Constructor::Tuple, &vec![hole; width])?;
+            let before = context.steps;
+            context
+                .equate_input_pairs(&store, &[(Argument::Type(known), Argument::Type(unknown))])?;
+            assert!(context.steps - before <= width + 8);
+            assert_eq!(context.root(hole)?, context.root(byte)?);
+        }
+        let mut context = Context::default();
+        let byte = context.known(&store, TypeId::primitive(Primitive::U8))?;
+        let x = context.variable(super::super::Domain::Any)?;
+        let y = context.variable(super::super::Domain::Any)?;
+        let cycle = context.construct(Constructor::Tuple, &[y])?;
+        assert_eq!(
+            context.equate_input_pairs(
+                &store,
+                &[
+                    (Argument::Type(x), Argument::Type(byte)),
+                    (Argument::Type(y), Argument::Type(cycle)),
+                ]
+            ),
+            Err(Error::Occurs)
+        );
+        Ok(())
+    }
 
     #[test]
     fn bulk_pair_memos_do_not_make_later_small_queries_clear_bulk_capacity() -> Result<(), Error> {

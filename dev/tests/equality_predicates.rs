@@ -252,13 +252,13 @@ fn assumptions_preserve_competing_results_without_granting_abilities() -> TestRe
     let environment = original.clone().with_predicates(&store, &[a, b, a])?;
     assert_eq!(
         environment
-            .projection_predicates()
-            .copied()
-            .collect::<Vec<_>>(),
+            .projection_clauses()
+            .map(rustgm::types::parameters::clauses::Clause::ordinary)
+            .collect::<Result<Vec<_>, _>>()?,
         [a, b]
     );
     assert_eq!(environment.trait_clauses().count(), 0);
-    assert_eq!(original.projection_predicates().count(), 0);
+    assert_eq!(original.projection_clauses().count(), 0);
     assert!(!environment.assumes_sized(ty));
     assert!(!environment.has_shape_assumptions());
     assert_eq!(environment.assumed(ty), Abilities::default());
@@ -397,7 +397,7 @@ fn result_only_parameters_and_constants_require_the_actual_environment() -> Test
         .with_predicates(&store, &[predicate])?;
     assert_eq!(environment.abilities(t), Some(Abilities::default()));
     assert!(!environment.assumes_sized(element));
-    assert_eq!(environment.projection_predicates().count(), 1);
+    assert_eq!(environment.projection_clauses().count(), 1);
     Ok(())
 }
 

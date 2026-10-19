@@ -182,6 +182,7 @@ impl Context {
             }
             let result =
                 self.replace_parameters(store, kind, &children, &substitution.parameters)?;
+            self.remember_structure(store, result)?;
             substitution.completed.insert((term, depth), result);
         }
         substitution

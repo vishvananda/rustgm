@@ -1,8 +1,12 @@
 //! Public quantified syntax reaches existing scoped proof and executable consumers.
 #[path = "higher_ranked_source/binder_identity.rs"]
 mod binder_identity;
+#[path = "higher_ranked_source/equalities.rs"]
+mod equalities;
 #[path = "harness/native_references.rs"]
 mod native;
+#[path = "higher_ranked_source/results.rs"]
+mod results;
 #[path = "helpers/qualify.rs"]
 mod rustc;
 use std::{
@@ -276,7 +280,7 @@ fn cli(mode: &str, source: &str) -> std::io::Result<Output> {
 }
 #[test]
 fn quantified_source_proves_lifetimes_and_ownership_before_lowir() -> TestResult {
-    for &(name, source, accepted) in CASES {
+    for &(name, source, accepted) in CASES.iter().chain(equalities::CASES).chain(results::CASES) {
         rustc::qualify(&format!("quantified-source-{name}"), source, accepted)?;
         let result = cli("--emit-lowir", source)?;
         assert_eq!(
@@ -331,6 +335,8 @@ fn older_inspection_contracts_still_reject_quantified_records() -> TestResult {
 fn accepted_quantified_sources_execute_independently() -> TestResult {
     let cases = CASES
         .iter()
+        .chain(equalities::CASES)
+        .chain(results::CASES)
         .filter(|case| case.2)
         .map(|&(name, source, _)| (name, source, false))
         .collect::<Vec<_>>();

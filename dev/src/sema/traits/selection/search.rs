@@ -7,6 +7,9 @@ mod condition_tests;
 pub(super) mod conditions;
 mod continuation;
 mod equalities;
+#[cfg(test)]
+#[path = "../../../../tests/invariants/equality_search.rs"]
+mod equality_tests;
 mod frames;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/selection_headers.rs"]
@@ -22,6 +25,9 @@ mod partial;
 #[path = "../../../../tests/invariants/retained_candidates.rs"]
 mod partial_tests;
 mod result_bounds;
+#[cfg(test)]
+#[path = "../../../../tests/invariants/contract_evidence.rs"]
+mod result_tests;
 mod scopes;
 mod suspension;
 #[cfg(test)]

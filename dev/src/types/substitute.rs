@@ -65,6 +65,19 @@ impl Bound {
         bound
     }
 
+    /// Region-free inference graphs are unchanged only by lifetime-only folds.
+    pub(crate) fn regions_only(&self) -> bool {
+        self.parameters.is_none()
+            && matches!(
+                self.action,
+                Action::Remove
+                    | Action::Shift(_)
+                    | Action::Lower(_)
+                    | Action::Universals(_)
+                    | Action::Regions(_)
+            )
+    }
+
     /// Remove surrounding scopes only after proving that none of their locals occur.
     pub(crate) fn lower(amount: u16) -> Self {
         let mut bound = Self::new(Vec::new());
