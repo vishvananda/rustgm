@@ -647,6 +647,33 @@ impl<'a> Constraints<'a> {
         self.verify_projections()?;
         self.graph.solve()
     }
+
+    /// Conditions implied by an independently justified declaration premise.
+    /// This does not prove the input graph and cannot authorize a new goal.
+    pub(crate) fn outer_conditions(self) -> Result<Vec<(RegionId, RegionId)>, Error> {
+        if self.projected.is_some() || !self.parameters.is_empty() {
+            return Err(Error::Identity);
+        }
+        let binder = self.binders.first().ok_or(Error::Identity)?;
+        let mut names = HashMap::from([(Region::STATIC, RegionId::STATIC)]);
+        for (slot, &region) in self.arguments[binder.start..binder.end].iter().enumerate() {
+            let slot = u16::try_from(slot).map_err(|_| Error::Budget)?;
+            names.insert(
+                region,
+                RegionId::bound(0, slot).map_err(|_| Error::Identity)?,
+            );
+        }
+        self.graph
+            .outer_conditions()?
+            .into_iter()
+            .map(|(longer, shorter)| {
+                Ok((
+                    *names.get(&longer).ok_or(Error::Identity)?,
+                    *names.get(&shorter).ok_or(Error::Identity)?,
+                ))
+            })
+            .collect()
+    }
     /// Preserve the proved relations and body identity map for CFG lifetime use.
     /// No semantic relationship is reconstructed from rendered inspection text.
     ///

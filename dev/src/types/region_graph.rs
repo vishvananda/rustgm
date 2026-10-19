@@ -1,5 +1,6 @@
 //! Bounded outlives propagation; universal assumptions never become obligations.
 mod components;
+mod quantifier_elimination;
 mod verify;
 use std::collections::{HashMap, HashSet};
 pub use verify::VerificationId;
@@ -255,50 +256,14 @@ impl Graph {
     /// # Errors
     /// Reports an unentailed universal relationship or bounded-resource failure.
     pub fn solve(mut self) -> Result<Solution, Error> {
-        let mut solver = Solver {
-            graph: &self,
-            steps: 0,
-            reached: HashSet::new(),
-            work: Vec::new(),
-            assumed: HashMap::new(),
-            marks: vec![0; self.kinds.len()],
-            epoch: 0,
-            search: Vec::new(),
-        };
-        for (index, kind) in self.kinds.iter().enumerate() {
-            if kind.rigid() {
-                let id = Region(u32::try_from(index).map_err(|_| Error::Budget)?);
-                solver.insert(id, id)?;
-            }
-        }
-        while let Some((shorter, bound)) = solver.work.pop() {
-            let mut edge = self.incoming[shorter.0 as usize];
-            while let Some(index) = edge {
-                solver.charge()?;
-                let relation = self.obligations[index];
-                edge = relation.next;
-                let longer = relation.target;
-                let kind = self.kind(longer)?;
-                let bound = if kind.universe() < self.kind(bound)?.universe() {
-                    Region::STATIC
-                } else {
-                    bound
-                };
-                if kind.rigid() {
-                    if !solver.entails(longer, bound)? {
-                        return Err(Error::Unsatisfied {
-                            source: relation.source,
-                            longer,
-                            shorter: bound,
-                        });
-                    }
-                    // This universal's own seed already reaches its ancestors.
-                    // Propagating entailed descendants again would duplicate work.
-                    continue;
-                }
-                solver.insert(longer, bound)?;
-            }
-        }
+        let mut solver = Solver::new(&self);
+        solver.propagate(|longer, shorter, source| {
+            Err(Error::Unsatisfied {
+                source,
+                longer,
+                shorter,
+            })
+        })?;
         let verified = solver.verify()?;
         let propagated = solver.reached.len();
         let steps = solver.steps;
@@ -380,5 +345,57 @@ impl Solver<'_> {
         }
         self.assumed.insert((longer, shorter), result);
         Ok(result)
+    }
+}
+
+impl<'a> Solver<'a> {
+    fn new(graph: &'a Graph) -> Self {
+        Self {
+            graph,
+            steps: 0,
+            reached: HashSet::new(),
+            work: Vec::new(),
+            assumed: HashMap::new(),
+            marks: vec![0; graph.kinds.len()],
+            epoch: 0,
+            search: Vec::new(),
+        }
+    }
+
+    /// Stop propagation at rigid frontiers. Their own seeds already reach every
+    /// predecessor; following their descendants too would duplicate that work.
+    fn propagate(
+        &mut self,
+        mut unmet: impl FnMut(Region, Region, u32) -> Result<(), Error>,
+    ) -> Result<(), Error> {
+        for (index, kind) in self.graph.kinds.iter().enumerate() {
+            if kind.rigid() {
+                let id = Region(u32::try_from(index).map_err(|_| Error::Budget)?);
+                self.insert(id, id)?;
+            }
+        }
+        while let Some((shorter, bound)) = self.work.pop() {
+            let mut edge = self.graph.incoming[shorter.0 as usize];
+            while let Some(index) = edge {
+                self.charge()?;
+                let relation = self.graph.obligations[index];
+                edge = relation.next;
+                let longer = relation.target;
+                let kind = self.graph.kind(longer)?;
+                let bound = if kind.universe() < self.graph.kind(bound)?.universe() {
+                    Region::STATIC
+                } else {
+                    bound
+                };
+                if kind.rigid() {
+                    if !self.entails(longer, bound)? {
+                        unmet(longer, bound, relation.source)?;
+                    }
+                } else {
+                    self.insert(longer, bound)?;
+                }
+            }
+        }
+        Ok(())
     }
 }

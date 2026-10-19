@@ -62,17 +62,13 @@ pub(crate) fn specialize(
         if predicate.contains_parameters(&facts.types)? {
             return Err("instance premise retains an unresolved parameter");
         }
-        // Closed premises need no imported caller lifetime witnesses. Concrete
-        // normalization still selects and proves its own validated implementation.
-        // Captured quantified witnesses require a use-specific scoped consumer.
-        let predicate = predicate.ordinary()?;
         if state.is_none() {
             state = Some(State::instance(facts, universals)?);
         }
         if !state
             .as_mut()
             .ok_or("missing instance premise selection")?
-            .prove(facts, predicate, true)?
+            .prove_clause(facts, predicate, true)?
         {
             return Err("instance premise has no validated implementation");
         }
@@ -88,7 +84,7 @@ fn witnesses(
     first: u32,
 ) -> Result<Assumptions, &'static str> {
     if proof.has_quantified() {
-        return Err("instance premise witnesses require their quantified scope");
+        return quantified_conditions(facts, &proof, first);
     }
     let mut result = Assumptions {
         universals: first,
@@ -128,6 +124,45 @@ fn witnesses(
         );
     }
     Ok(result)
+}
+
+/// A call has established the declared premise. Its selected implementation's
+/// necessary outer relations therefore hold, but its forall-local witnesses
+/// remain private. The directed solver eliminates them in their actual scopes.
+fn quantified_conditions(
+    facts: &mut Declarations,
+    proof: &Obligations,
+    universals: u32,
+) -> Result<Assumptions, &'static str> {
+    for (_, ty) in proof.type_roots() {
+        facts
+            .lifetimes
+            .nominal_requirements
+            .prepare(&mut facts.types, ty)?;
+    }
+    let mut queries = crate::types::outlives::Queries::new(
+        &facts.types,
+        &facts.lifetimes.nominal_requirements,
+        &facts.lifetimes.callables,
+    );
+    let mut constraints = crate::types::relations::Constraints::new(
+        &facts.types,
+        &facts.lifetimes.variances,
+        universals,
+        1_000_000,
+    )
+    .map_err(|_| "instance premise condition graph exhausted")?;
+    proof
+        .require(&mut constraints, &mut queries)
+        .map_err(|_| "invalid instance premise lifetime conditions")?;
+    let regions = constraints
+        .outer_conditions()
+        .map_err(|_| "instance premise cannot expose its quantified conditions")?;
+    Ok(Assumptions {
+        universals,
+        regions,
+        types: Vec::new(),
+    })
 }
 
 fn universal(index: u32) -> Result<RegionId, &'static str> {

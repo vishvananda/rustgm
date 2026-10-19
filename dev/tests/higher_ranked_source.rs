@@ -226,6 +226,39 @@ const CASES: &[(&str, &str, bool)] = &[
         "fn f<T:for<'a>?Sized>(){}fn main(){}",
         false,
     ),
+    (
+        "captured-static",
+        r"trait A<'a> { type Out; }
+struct S<'x>(&'x u8);
+impl<'a,'x:'a> A<'a> for S<'x>{type Out=&'x u8;}
+fn f<'b,T>(x:<T as A<'b>>::Out)-><T as A<'b>>::Out where for<'a>T:A<'a>{x}
+static V:u8=7;fn main(){if *f::<S<'static>>(&V)!=7{loop{}}}",
+        true,
+    ),
+    (
+        "private-witness-static",
+        r"trait A<'a> { type Out; }
+struct S<'x>(&'x u8);
+impl<'a,'w,'x:'w> A<'a> for S<'x> where 'w:'a {type Out=&'x u8;}
+fn f<'b,T>(x:<T as A<'b>>::Out)-><T as A<'b>>::Out where for<'a>T:A<'a>{x}
+static V:u8=7;fn main(){if *f::<S<'static>>(&V)!=7{loop{}}}",
+        true,
+    ),
+    (
+        "local-private-intersection",
+        r"trait A<'a>{type Out;}struct S<'x>(&'x u8);impl<'a,'w,'x>A<'a>for S<'x> where 'a:'w,'x:'w{type Out=&'x u8;}fn f<'b,T>(x:<T as A<'b>>::Out)-><T as A<'b>>::Out where for<'a>T:A<'a>{x}fn run<'x>(x:&'x u8)->&'x u8{f::<S<'x>>(x)}fn main(){let n=7;if *run(&n)!=7{loop{}}}",
+        true,
+    ),
+    (
+        "outer-directed",
+        r"trait A<'a>{type Out;}struct S<'x,'y>(&'x u8,&'y u8);impl<'a,'x:'y,'y>A<'a>for S<'x,'y>{type Out=&'x u8;}fn f<'b,T>(x:<T as A<'b>>::Out)-><T as A<'b>>::Out where for<'a>T:A<'a>{x}fn run<'x:'y,'y>(x:&'x u8,y:&'y u8)->&'x u8{f::<S<'x,'y>>(x)}fn main(){let n=7;if *run(&n,&n)!=7{loop{}}}",
+        true,
+    ),
+    (
+        "outer-directed-missing",
+        r"trait A<'a>{type Out;}struct S<'x,'y>(&'x u8,&'y u8);impl<'a,'x:'y,'y>A<'a>for S<'x,'y>{type Out=&'x u8;}fn f<'b,T>(x:<T as A<'b>>::Out)-><T as A<'b>>::Out where for<'a>T:A<'a>{x}fn run<'x,'y>(x:&'x u8,y:&'y u8)->&'x u8{f::<S<'x,'y>>(x)}fn main(){let n=7;if *run(&n,&n)!=7{loop{}}}",
+        false,
+    ),
 ];
 fn cli(mode: &str, source: &str) -> std::io::Result<Output> {
     let mut child = Command::new(env!("CARGO_BIN_EXE_rustgm"))
@@ -262,7 +295,9 @@ fn quantified_source_proves_lifetimes_and_ownership_before_lowir() -> TestResult
             let message = std::str::from_utf8(&result.stderr)?;
             assert!(
                 !message.contains("scoped consumer")
-                    && !message.contains("advanced generic relationships"),
+                    && !message.contains("advanced generic relationships")
+                    && !message.contains("instance premise cannot expose")
+                    && !message.contains("invalid instance premise lifetime"),
                 "{name}: {message}"
             );
         }

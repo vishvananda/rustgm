@@ -2279,6 +2279,17 @@ has no caller authority and must still discharge the selected implementation's
 lifetime debts. Ordinary bodies without projected specialization do not perform
 this selection, and lifetime-free predicates need no witness scope.
 
+Quantified declared premises preserve their actual proof scopes during selection.
+Eliminate private witnesses through the existing directed lifetime propagation
+before importing any outer condition. Crossing a younger universal frontier uses
+the solver's ordinary universe rule; an independent local universal cannot become
+an outer given. Keep only conditions between original body lifetimes and static,
+never arbitrary local witnesses. This conditional summary is not a successful
+proof: only a separately established callee declaration premise authorizes its
+use as an assumption. Normalization-discovered debts and manually constructed
+instances retain their ordinary proof requirements. Unresolved projected tests
+cannot be summarized as unconditional scalar relations.
+
 After a caller's complete ownership, lifetime and cleanup proof, retained proved
 outlives obligations may establish that an input lifetime equals static. Resolve
 selected callable identities through those equalities before discovering demanded

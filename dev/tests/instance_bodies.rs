@@ -241,6 +241,7 @@ mod projections {
     };
     type TestResult = Result<(), Box<dyn std::error::Error>>;
     const SOURCE: &str = "trait A{type Out;}impl<'a:'static>A for &'a u8{type Out=u16;}fn f<T:A>(p:fn(<T as A>::Out))->fn(<T as A>::Out){p}fn take(_:u16){}fn main(){let p=f::<&'static u8>(take);p(73);}";
+    const QUANTIFIED: &str = "trait A<'a>{type Out;}impl<'a,'x:'a>A<'a>for &'x u8{type Out=u16;}fn f<T:for<'a>A<'a>>(p:fn(<T as A<'static>>::Out))->fn(<T as A<'static>>::Out){p}fn take(_:u16){}fn main(){let p=f::<&'static u8>(take);p(73);}";
     struct Selected {
         facts: Declarations,
         template: Template,
@@ -250,7 +251,10 @@ mod projections {
         instance: Instance,
     }
     fn selected() -> Result<Selected, Box<dyn std::error::Error>> {
-        let (report, facts) = semantic::analyze(SOURCE)?;
+        selected_from(SOURCE)
+    }
+    fn selected_from(source: &str) -> Result<Selected, Box<dyn std::error::Error>> {
+        let (report, facts) = semantic::analyze(source)?;
         let mut templates = body::templates::build(&report, &facts)?;
         let template = templates.bodies.pop().ok_or("missing generic template")?;
         assert!(templates.bodies.is_empty());
@@ -356,39 +360,42 @@ mod projections {
 
     #[test]
     fn erased_projection_inputs_keep_the_selected_implementations_lifetime_debt() -> TestResult {
-        let mut selected = selected()?;
-        let argument = selected.facts.types.intern(Kind::Reference {
-            region: RegionId(700),
-            mutable: false,
-            referent: TypeId::primitive(Primitive::U8),
-        })?;
-        let arguments = selected
-            .facts
-            .types
-            .intern_arguments(&[Argument::Type(argument)])?;
-        let ty = selected.facts.types.intern(Kind::FunctionItem {
-            item: selected.item,
-            signature: selected.signature,
-            arguments,
-        })?;
-        let instance = Instance::new(&selected.facts.types, ty)?;
-        let materialized = body::instantiate::with_contract(
-            &mut selected.facts,
-            &selected.template,
-            instance,
-            &selected.contract,
-        )?;
-        assert_eq!(
-            materialized.contract.universals,
-            selected.contract.universals + 1
-        );
-        let result = check(&selected.facts, materialized.contract);
-        assert!(
-            result
-                .as_ref()
-                .is_err_and(|e| e.contains("does not outlive")),
-            "{result:?}"
-        );
+        super::rustc::qualify("manual-quantified-instance", QUANTIFIED, true)?;
+        for source in [SOURCE, QUANTIFIED] {
+            let mut selected = selected_from(source)?;
+            let argument = selected.facts.types.intern(Kind::Reference {
+                region: RegionId(700),
+                mutable: false,
+                referent: TypeId::primitive(Primitive::U8),
+            })?;
+            let arguments = selected
+                .facts
+                .types
+                .intern_arguments(&[Argument::Type(argument)])?;
+            let ty = selected.facts.types.intern(Kind::FunctionItem {
+                item: selected.item,
+                signature: selected.signature,
+                arguments,
+            })?;
+            let instance = Instance::new(&selected.facts.types, ty)?;
+            let materialized = body::instantiate::with_contract(
+                &mut selected.facts,
+                &selected.template,
+                instance,
+                &selected.contract,
+            )?;
+            assert_eq!(
+                materialized.contract.universals,
+                selected.contract.universals + 1
+            );
+            let result = check(&selected.facts, materialized.contract);
+            assert!(
+                result
+                    .as_ref()
+                    .is_err_and(|e| e.contains("does not outlive")),
+                "{result:?}"
+            );
+        }
         Ok(())
     }
 }

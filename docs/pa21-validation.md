@@ -2225,3 +2225,66 @@ Remaining source gaps include captured quantified instance witnesses,
 associated equality environments, quantified associated result bounds and
 remaining conformance consumers. PA21–PA25 remain incomplete, and all five
 planned-stage discovery checks still fail with the required status 2.
+
+## Outer conditions of quantified declaration premises
+
+Captured quantified user-trait premises now supply their necessary outer lifetime
+conditions to a specialized body. This uses the existing directed region solver
+to eliminate private existential witnesses in their original universes. The
+result contains only relations between the body's original lifetimes and static;
+local witnesses never become unrestricted body universals. A separately proved
+call must establish the exact declared premise before these conditions can be
+assumed. Manually constructed instances and normalization-discovered debts still
+require proof. Unresolved projected conditions remain unsupported by this summary.
+
+Four newly accepted controls cover a static capture, a private witness forcing a
+capture static, a private intersection permitting a local capture, and a directed
+outer relation. Three independent negative controls check missing required
+relations. All seven agree with pinned rustc object/native qualification, and all
+four positives execute through CPPGM. The higher-ranked source suite now contains
+48 outcomes, including 26 executable positives. A manual-instance regression
+checks that a quantified declaration cannot grant caller authority to a forged
+instance. Independent finite-set models compare eliminated conditions for 512
+directed graphs against exhaustive root assignments and universal/existential
+quantification.
+
+The frozen candidate is SHA256
+`fa7621350474e9ca213d030d52991c815b13087955ae4c69859a6f3b5016191e`.
+Evidence lives under `obj/pa21-work/quantified-consequences-v1/`. Qualification
+passes **1,570 regular release tests**, **92 native maintainer groups**, all
+**6,268 PA1–PA20 text cases**, strict all-target/all-feature Clippy, Rust audits,
+harness checks and audit self-tests. Independent PA18–PA20 suites pass 2,900
+declared acceptance checks with their documented stage differences, 1,028
+executable comparisons and three codegen-only comparisons. Fourteen regenerated
+builtin sources and LowIR outputs retain their previously executed hashes. Source,
+fixture and compiler identities match the frozen snapshot before and after the
+full validation. No fixture or reference changes are required for this checkpoint.
+
+Seven supported controls compare immutable `c3e10f67…` and `fa762135…` binaries,
+with frozen inputs, full output equality, A/A calibration, five paired ABBA blocks
+and Callgrind. Instruction changes range from −0.2013% to +0.1287%; no predeclared
+slowdown condition is triggered. Wall measurements remain noisy, with A/A spreads
+up to 16.27%, and do not establish a portable speedup. New witness chains at
+16/64/256 nodes use 3.53/5.76/14.62 million instructions; private intersections use
+4.03/6.94/18.66 million. Incremental work grows approximately fourfold for fourfold
+additional witnesses. All six scaling sources compile and execute through rustc
+and CPPGM. The baseline rejects them, so these are new-capability scaling results.
+
+Separate ABBA memory observations retain a median peak-RSS increase from 8,016 to
+8,672 KiB on the lifetime-depth control; the other supported controls increase by
+54–174 KiB. A predeclared DHAT follow-up profiles each immutable compiler once on
+that input and the ordinary control, checking exact output equality. Both pairs
+have identical allocation totals, block counts and peak live heap. Lifetime-depth
+allocates 2,656,772 bytes in 25,921 blocks with a 646,909-byte peak; the ordinary
+control allocates 7,763,281 bytes in 36,351 blocks with a 2,432,888-byte peak. This
+finds no heap-allocation growth on these controls; it does not establish the cause
+of the observed RSS difference. All original memory observations and raw profiles
+are retained in `candidate-v1/memory/` and `candidate-v1/heap/`.
+
+The full release suite took 303.5 seconds, native maintainer validation 157.2
+seconds and affected independent suites 136.4 seconds. These successful checks
+were run once for the completed checkpoint; focused checks and the cheap PA text
+sweep served the implementation loop. PA21–PA25 remain incomplete and their
+planned-stage discovery checks still return the required status 2. Quantified
+associated equalities, result/conformance consumers, projected premise conditions,
+GATs, opaque types and PA21's public semantic view still require implementation.
