@@ -1,6 +1,7 @@
 //! Per-body constraints over flat terms, with path-compressed variable identities.
 //! A failed constraint may retain prior progress; callers discard that body context.
 pub mod arguments;
+mod batch;
 mod compare;
 pub mod constants;
 pub mod deferred;
@@ -12,6 +13,7 @@ pub mod predicates;
 pub mod probe;
 pub mod projections;
 pub mod properties;
+pub mod refinement;
 mod regions;
 mod resolve;
 mod scoped;
@@ -292,6 +294,15 @@ impl Context {
         candidate: TermId,
         domain: Domain,
     ) -> Result<(), Error> {
+        self.bind_checked::<true>(store, variable, candidate, domain)
+    }
+    fn bind_checked<const CHECK_OCCURS: bool>(
+        &mut self,
+        store: &Store,
+        variable: TermId,
+        candidate: TermId,
+        domain: Domain,
+    ) -> Result<(), Error> {
         let primitive = match self.terms[candidate.0 as usize].value {
             Value::Known(id) => match store.kind(id) {
                 Some(Kind::Primitive(p)) => Some(p),
@@ -308,7 +319,8 @@ impl Context {
         if !accepts {
             return Err(Error::Mismatch);
         }
-        if matches!(self.terms[candidate.0 as usize].value, Value::Construct(_))
+        if CHECK_OCCURS
+            && matches!(self.terms[candidate.0 as usize].value, Value::Construct(_))
             && self.occurs(variable, candidate)?
         {
             return Err(Error::Occurs);
@@ -358,11 +370,19 @@ impl Context {
         left: TermId,
         right: TermId,
         record_regions: bool,
-        mut blocked: Option<&mut Vec<(TermId, TermId)>>,
+        blocked: Option<&mut Vec<(TermId, TermId)>>,
     ) -> Result<(), Error> {
         self.pairs.clear();
         self.seen.clear();
         self.pairs.push((left, right));
+        self.unify_pending::<true>(store, record_regions, blocked)
+    }
+    fn unify_pending<const CHECK_OCCURS: bool>(
+        &mut self,
+        store: &Store,
+        record_regions: bool,
+        mut blocked: Option<&mut Vec<(TermId, TermId)>>,
+    ) -> Result<(), Error> {
         while let Some((a, b)) = self.pairs.pop() {
             self.step()?;
             let a = self.root(a)?;
@@ -386,8 +406,12 @@ impl Context {
                 self.terms[b.0 as usize].value,
             ) {
                 (Value::Variable(x), Value::Variable(y)) => self.variable_pair(a, b, x, y)?,
-                (Value::Variable(domain), _) => self.bind(store, a, b, domain)?,
-                (_, Value::Variable(domain)) => self.bind(store, b, a, domain)?,
+                (Value::Variable(domain), _) => {
+                    self.bind_checked::<CHECK_OCCURS>(store, a, b, domain)?;
+                }
+                (_, Value::Variable(domain)) => {
+                    self.bind_checked::<CHECK_OCCURS>(store, b, a, domain)?;
+                }
                 (Value::Known(x), Value::Known(y)) if x == y => {}
                 _ => {
                     let pair = if a.0 < b.0 { (a, b) } else { (b, a) };

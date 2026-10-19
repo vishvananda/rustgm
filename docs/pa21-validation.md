@@ -1618,3 +1618,109 @@ source qualification and the prior baseline retirement receipt are in
 `obj/pa21-work/body-consumer-v1`. Successful cleanup removes 5,755 generated
 files (6.91 GiB of unshared blocks), recorded in
 `obj/cleanup/1792368503573429539.jsonl`. Current comparison binaries remain pinned.
+
+### Partial inference refinement transport
+
+A separate refining transport now reconciles selected type/const constraints
+against the caller's current inputs. It copies only reachable holes, retains
+partial structures and shared mixed arguments, and validates lifetime closure
+and joint constraints before caller allocation or binding. Fresh holes remain
+shared; unchanged holes retain their original identities. Query lifetime debts
+stay separate from new equations between already closed caller types. This does
+not weaken the existing non-refining probe or authorize selection evidence.
+
+The first prototype passed its eight transport controls but failed three added
+regressions: shared partial prefixes had quadratic charged work, callable locals
+could escape during ordinary equality, and alpha renaming created caller debts.
+These failures and their inputs remain recorded. Reconciliation now batches
+structural equations and checks the final graph for cycles once when it contains
+no callables. Callable graphs use the existing strict scoped comparison.
+Ordinary single-equation cycle checking is unchanged.
+
+At 16/64/256/512 roots, the initial prototype charged 840/7,968/105,600/407,808
+work units, including query setup. The new batch construction and transport use
+exactly `54n`, through 2,048 roots. With independently refined parent prefixes,
+commitment costs `49n + 8`, or `71n + 8` with an explicit refresh, through 2,048.
+These bounds cover the tested function-free graph families, not callable fallback
+or general trait search. They are work counts, not a wall-time or rustc speedup.
+
+Seventeen new regressions cover partial type/const sharing, numeric narrowing,
+resumption, conflict/cycle rejection before caller mutation, lifetime closure,
+callable capture and alpha equivalence, dependency wakes and growing graphs.
+The small-graph test compares all 2,592 two-equation systems across unrestricted
+and integer domains with ordinary unification; a three-equation cycle rejects
+in all six orders. The focused run passes 32 affected integration tests, strict
+all-target/all-feature Clippy, the 878-file audit with zero findings and 33
+harness checks.
+
+A subsequent review found that retaining the bulk pair memo could make later
+small equations repeatedly clear its large hash-table capacity. A new invariant
+first failed at 16 roots with capacity 28. The batch now owns a separate temporary
+memo and restores ordinary scratch on success and failure. Its growing regression
+checks both exits and repeated small comparisons. Retained ordinary capacity
+stays at 3 through 2,048 roots on both exits; the final full run includes this fix.
+
+Pinned rustc independently qualifies ten source hypotheses (six accepted, four
+rejected), including partial nominal/const inference and direct or indirect
+universal dependence. This slice does not integrate partial selection with source
+calls or open the HRTB source gate. Complete predicate transport, retained partial
+selection continuations and scoped witness export remain required. PA21–25 stay
+planned.
+
+The revised frozen run passes 39 gates, 1,491 regular tests (268 library tests),
+91 native groups and all 6,228 course cases. Strict all-target/all-feature Clippy,
+the 878-file audit and 33 harness checks pass. PA19 independently checks 1,080
+rustc sources and 641 LowIR cases, including 254 executable comparisons; PA20
+checks 1,345 sources and 799 LowIR cases, including 484 executable comparisons.
+The existing seven/one acceptance exceptions remain unchanged. All 7,306 frozen
+source/configuration hashes and 18,684 oracle sidecars match. Planned stages
+continue to fail discovery.
+
+The ten refinement controls preserve baseline behavior. Nine retain the explicit
+higher-ranked source gate; the ordinary partial-inference positive still rejects
+because selection discards unresolved input refinements. It is a known PA19 gap,
+not newly supported source behavior or a successful semantic negative control.
+Six further pinned-rustc lifetime-export hypotheses match (three accepted, three
+rejected), distinguishing independent private witnesses, directional outlives
+requirements and indirect universal dependence. Their actual call consumer is
+still to be implemented.
+
+The revised executable was measured independently: 33 calibrated timing jobs and
+29 instruction pairs preserve full/count output equality. Paired wall medians
+span −3.01% to +5.43%, same-binary medians −2.64% to +0.99%, and instructions
+−0.389% to +0.262%. Five wall cases cross 3%; the predeclared three-largest policy
+adds nine fixed follow-up jobs. Those paired medians are +0.68% (ordinary-256),
++0.86% (trait-view-32-full) and +2.29% (pending-chain-8). The two smaller outliers,
+lifetime-depth-64 (+3.16%) and trait-view-8-full (+4.25%), retain their original
+observations. Follow-up same-binary medians span −3.56% to +0.85%; largest A/A
+spread is 42.89% in the original study and 8.77% in the follow-up. There is no
+portable speedup, general wall-time regression bound or rustc comparison here.
+These compatibility inputs do not exercise the new source-gated transport;
+its algorithmic evidence is the typed growth and scratch invariants above.
+
+RSS medians change by −536 to −294 KiB. Ordinary-256 peak heap remains 2,432,261
+bytes; constant-chain-uses-256 changes from 5,381,881 to 5,381,701 bytes. Combined
+heap/stack peaks rise by 224 and 176 bytes, with separate stack peaks rising by
+2,728 and 24 bytes. These two profiles establish no general memory bound or RSS
+attribution. ELF text/data/BSS total changes from 6,424,581 to 6,412,277 bytes.
+The revised study retains 1,092 timing observations, 168 qualification observations,
+7,176 timed invocations, 1,104 qualification invocations, 58 Callgrind runs and
+four Massif runs. Earlier measurements remain separate historical evidence.
+
+Baseline SHA-256:
+`b4a665daccccfa231fb953062773db7dfd125928220c0190ac4c12c78ea61e26`.
+Candidate SHA-256:
+`e996fd161d2f6ad075fdc950ed2fd364dc009a471b10a37736d048e77666acf6`.
+Final summary SHA-256:
+`4f40647fa27ba7c68071f634fa974a9b8ac7b854462d2d351fd1a8c2a812f0c8`.
+Final evidence is in `obj/pa21-work/refining-call-scratch-final`; prototype
+failures and focused observations are in `refining-call-transport-v1`, and the
+superseded full measurement is in `refining-call-final`. The superseded draft
+executable was retired after replacement validation with a hash receipt; the
+published baseline and final candidate remain pinned for publication.
+
+The final cleanup receipt records 3,381 removed generated files before the
+interruption (`obj/cleanup/1792372449367052584.jsonl`). A subsequent protected
+qualification run completed cleanup, removing four newly generated files
+(`obj/cleanup/1792372683471361886.jsonl`). No extra historical executable pins
+were retained.

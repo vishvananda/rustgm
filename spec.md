@@ -1284,13 +1284,34 @@ identities. A projection remains a noninjective operation: its result cannot
 equate its inputs or inherit their layout, Copy or lifetime properties.
 Freshening its inputs is not a substitute for freshening a selected result.
 
-An isolated inference query may transport symbolic result structure back only
+A non-refining query may transport symbolic result structure back only
 while preserving every original type and const hole. Refuse input bindings,
 domain narrowing, merged distinct inputs and escaping fresh query holes before
 allocating destination terms. Reuse original variable identities through one
 shared reverse mapping, with bounded traversal of shared structure. Lifetime
 equations and semantic proofs stay with the caller; transporting a result does
 not authorize implementation selection or discharge a formation requirement.
+
+Selected input refinements use a separate transport; do not relax non-refining
+probes. Import only reachable input holes through one mixed-root mapping.
+Reconcile current caller constraints on resumption and before commitment, keeping
+partial structures, numeric domains and shared type/const equivalence classes.
+Close exported lifetime identities and validate the combined graph before
+allocating or binding caller terms. Reuse unchanged caller holes. Retain query
+lifetime equations in the selected proof's scope; new equations between closed
+caller types belong to the actual caller. This transport supplies no selection
+or lifetime proof authority.
+
+Reconcile shared input equations as one batch. For graphs without callables,
+share structural pair matching and check the final graph for cycles once across
+all roots. Temporary cycles stay within the equation operation, and a failed
+context must be discarded. Callable inputs use strict scoped equality so local
+slots cannot escape and alpha renaming adds no caller debt. Keep the ordinary
+single-equation occurs checks unchanged. Share binder folds across exported
+roots only while their input graph is stable; do not reuse results across later
+equations. Charge query, validation and export work to the caller's budget.
+Bulk pair memoization owns its temporary storage; do not leave later small
+equations repeatedly clearing a bulk query's retained hash-table capacity.
 
 Canonical-input readiness uses dependency watches on unresolved type and const
 leaves. Unions, bindings and explicit fallback wake only affected watches; newly
