@@ -4,6 +4,42 @@ This checkout owns the maintainer solution. `dev/rustgm-ref` invokes the built
 solution, just as reference wrappers do in cppgm-extended's solution checkout.
 Default tests compare candidates with **committed text**, not a live solution.
 
+## Development checkpoints
+
+Use focused checks while implementing a coherent feature, then qualify the
+complete checkpoint before pushing compiler changes. Several related consumer
+edits can share one checkpoint. A change to tests or documentation does not by
+itself invalidate every compiler measurement or require another full native run.
+
+- During implementation, declare positive/negative outcomes, run the affected
+  maintainer tests and independent pinned-rustc probes, and execute affected
+  native controls when lowering or runtime behavior is involved. Run formatting,
+  strict Clippy, file/layout audits and harness checks early, before investing in
+  a complete qualification run. Fix wiring failures before broadening tests.
+- Keep all active PA text suites as a cheap candidate regression check. These
+  protect the supported language; planned-stage rejection is not evidence for
+  the semantic rule a new negative test is intended to exercise.
+- Before pushing a compiler checkpoint, run the full release Cargo tests, native
+  maintainer tests, lint/audits/harness, all active PA text suites and independent
+  source/native suites for affected assignments. Verify upstream fixtures after
+  fixture changes and qualify the backend after contract/bridge changes. Preserve
+  the receipts for the exact candidate tested.
+- Before releasing an assignment or new grading contract, run all active earlier
+  independent source/native suites and the owning handout's release checks.
+  Independently qualify new outcomes before generating and reviewing oracles.
+- For hot-path development, measure changed-path scaling inputs and a common-case
+  control with immutable binaries, A/A calibration, paired ABBA blocks and output
+  equality. Include algorithmic work/storage invariants where relevant. Run the
+  broad performance matrix at assignment release, for a shared algorithm change
+  or to investigate a regression. Choose follow-ups in advance and retain all
+  observations; never rerun until the result looks favorable.
+
+After checks pass, repeat only what subsequent changes, failures or unresolved
+concerns invalidate. Documentation-only edits after a measured snapshot do not
+require rebuilding an unchanged compiler; retain the original snapshot and
+identify those later edits separately. Keep the existing CI checks. Use the
+storage guard throughout, with scoped cleanup when all output roots are known.
+
 ## Oracles
 
 Each manifest-listed `x.rs` has `x.rs.ref` (stdout), `x.rs.ref.stderr` and
@@ -184,8 +220,8 @@ is not counted as an unchanged-source native comparison. Course text oracles
 remain uninstrumented; 22 accepted counter programs check unchanged-source
 cleanup effects through both compilers. See `docs/pa17-validation.md`.
 
-PA18 has 438 generic LowIR cases: 273 accepted and 165 rejected. There are
-270 executable comparisons and three deliberately divergent codegen-only
+PA18 has 441 generic LowIR cases: 274 accepted and 167 rejected. There are
+271 executable comparisons and three deliberately divergent codegen-only
 controls. Their `native.kind: "codegen"` requires a nonempty reason and forbids
 runtime outcome fields; both compilers produce native code, but neither binary
 is executed. Counts report these separately. All other accepted LowIR cases
@@ -250,7 +286,7 @@ rejection and output failure propagation. It shares declaration/body inference w
 the type view and reports pending lifetime constraints explicitly; complete
 execution proof remains in `--emit-lowir`.
 
-PA19 has 1,080 cases: 439 semantic inspection and 641 LowIR cases, with 254
+PA19 has 1,095 cases: 439 semantic inspection and 656 LowIR cases, with 262
 accepted native programs and no skipped executions. Three later-stage boundaries,
 one inspection-only lifetime control and three redundant-binder compiler
 differences have explicit independent statuses and reasons. See
@@ -663,9 +699,24 @@ requires a restored binary whose hash matches. Old path references in historical
 validation notes do not imply that disposable executables still exist.
 
 PA20 introduces `--emit-trait-semantics` and `--count-trait-semantics`, preserving
-PA19's separate semantic text contract. Its 1,345 registered cases cover 546
-semantic inspections and 799 LowIR checks, with 484 independent native executions.
+PA19's separate semantic text contract. Its 1,355 registered cases cover 546
+semantic inspections and 809 LowIR checks, with 489 independent native executions.
 One explicitly classified semantic-positive case defers an escaping-reference
 error to the complete proof. See `docs/pa20-validation.md` for the seven families,
 source provenance, count/row checks and reference review. `make test-native` and
 `make test-rustc` include PA20; PA21–PA38 remain planned and fail explicitly.
+
+Parameter-default checks use their own lifetime eligibility rule, separate from
+closed definition-time bounds. The default-clause invariants retain unused
+quantifiers through substitution and final scoped proof. Their source hypotheses
+are independently qualified; they do not open PA21's higher-ranked source gate.
+The PA18/PA19 default-requirement fixtures cover written static lifetimes, nested
+callable lifetimes and actual use. PA20 additionally checks lifetimes erased or
+introduced by projection normalization, using the retained original bound for
+eligibility and the normalized clause for parameter indexing. Its positive and
+negative controls run through full lowering and independent native qualification.
+
+The shared parameter-occurrence invariants vary prefix depth and distinct bounds
+sharing a wide argument list. They count actual query work and retained summary
+entries, including constants, equality results and non-injective projection inputs.
+These are bounds on the index, not on whole-frontend work or total heap usage.

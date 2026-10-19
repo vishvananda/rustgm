@@ -302,3 +302,36 @@ fn function_items_keep_declared_obligations_after_signature_validation()
         ),
     ])
 }
+
+#[test]
+fn lifetime_occurrences_defer_default_bounds_until_actual_use()
+-> Result<(), Box<dyn std::error::Error>> {
+    for (name, declaration) in [
+        (
+            "static-argument",
+            "trait A<'a>{}struct S<T=u8>where T:A<'static>{v:T}",
+        ),
+        (
+            "callable-argument",
+            "trait A<F>{}struct S<T=u8>where T:A<for<'a>fn(&'a u8)>{v:T}",
+        ),
+        (
+            "reference-argument",
+            "trait A<F>{}struct S<T=u8>where T:A<&'static u8>{v:T}",
+        ),
+        (
+            "reference-subject",
+            "trait A{}struct S<T:'static=u8>where &'static T:A{v:T}",
+        ),
+    ] {
+        for used in [false, true] {
+            let source = format!(
+                "{declaration}{}fn main(){{}}",
+                if used { "fn force(_:S){}" } else { "" }
+            );
+            let name = format!("default-{name}-used-{used}");
+            cases(&[(&name, &source, !used)])?;
+        }
+    }
+    Ok(())
+}

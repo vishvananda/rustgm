@@ -15832,6 +15832,130 @@
       },
       "mode": "--emit-lowir",
       "maintainer_origin": "dev/tests/trait_bounds/retained.rs"
+    },
+    {
+      "path": "tests/spec/default-requirements/static-argument.rs",
+      "exit_status": 0,
+      "features": [
+        "pa19.default-requirements"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "mode": "--emit-lowir",
+      "maintainer_origin": "dev/tests/trait_bounds/declarations.rs",
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/default-requirements/static-argument-used.rs",
+      "exit_status": 1,
+      "features": [
+        "pa19.default-requirements"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "mode": "--emit-lowir",
+      "maintainer_origin": "dev/tests/trait_bounds/declarations.rs"
+    },
+    {
+      "path": "tests/spec/default-requirements/callable-argument.rs",
+      "exit_status": 0,
+      "features": [
+        "pa19.default-requirements"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "mode": "--emit-lowir",
+      "maintainer_origin": "dev/tests/trait_bounds/declarations.rs",
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/default-requirements/callable-argument-used.rs",
+      "exit_status": 1,
+      "features": [
+        "pa19.default-requirements"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "mode": "--emit-lowir",
+      "maintainer_origin": "dev/tests/trait_bounds/declarations.rs"
+    },
+    {
+      "path": "tests/spec/default-requirements/reference-argument.rs",
+      "exit_status": 0,
+      "features": [
+        "pa19.default-requirements"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "mode": "--emit-lowir",
+      "maintainer_origin": "dev/tests/trait_bounds/declarations.rs",
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/default-requirements/reference-argument-used.rs",
+      "exit_status": 1,
+      "features": [
+        "pa19.default-requirements"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "mode": "--emit-lowir",
+      "maintainer_origin": "dev/tests/trait_bounds/declarations.rs"
+    },
+    {
+      "path": "tests/spec/default-requirements/reference-subject.rs",
+      "exit_status": 0,
+      "features": [
+        "pa19.default-requirements"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "mode": "--emit-lowir",
+      "maintainer_origin": "dev/tests/trait_bounds/declarations.rs",
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/default-requirements/reference-subject-used.rs",
+      "exit_status": 1,
+      "features": [
+        "pa19.default-requirements"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "mode": "--emit-lowir",
+      "maintainer_origin": "dev/tests/trait_bounds/declarations.rs"
     }
   ]
 }

@@ -1922,3 +1922,118 @@ remain unfinished. PA22–PA25 remain planned as well.
 
 Successful guarded cleanup removes 5,759 generated files (6.90 GiB of unshared
 blocks), receipt `obj/cleanup/1792383374320749115.jsonl`.
+
+## Parameter defaults and shared occurrence summaries
+
+This checkpoint converts the parameter-default consumer to whole clauses and
+corrects its eligibility rule. That rule differs from ordinary closed-bound
+validation: any lifetime occurrence in the original bound defers the default
+check, including static lifetimes and nested callable locals. An unused clause
+quantifier alone does not defer it. A lifetime introduced only by substituting
+the default cannot change the original decision. Eligible quantified requirements
+retain their complete binder through substitution and final lifetime proof.
+
+Projection normalization requires two distinct inputs to this decision. Retained
+original bounds supply lifetime eligibility: erasing a lifetime does not permit
+an early check, and introducing one does not suppress that check. The normalized
+clause supplies type/const parameter occurrences. If normalization erases the
+parameter entirely, that parameter's default does not create a new obligation.
+Independent source probes exposed both directions before final qualification.
+Ordinary aliases retain their existing expansion behavior.
+
+The occurrence index now computes one compact summary per shared canonical type,
+list, argument group and trait application within an owner. Its values distinguish
+no parameter, exactly one identity, and multiple identities. Equality results,
+const parameters and non-injective projection inputs participate. This is an
+occurrence index, never proof or an inference of injectivity. Iterative traversal
+charges nodes and edges against the existing million-work budget; no growing
+prefix retains a flattened parameter set.
+
+The prefix invariant measures 115, 899, 7,171 and 28,675 work steps at widths
+16, 128, 1,024 and 4,096: `7n + 3` for this family. The former fresh traversal
+measures 152 and 8,384 steps at widths 16 and 128; the larger old cases were not
+run. Retained summary entries stay within `2n + 1`. A separate 4,096-wide argument
+list shared by 4,096 distinct traits requires 28,676 work steps. These are index
+work/storage checks, not bounds on whole-frontend work or heap allocation.
+
+Five internal invariants cover classification, whole-clause proof and shared
+occurrences. The unused-quantifier controls install canonical clauses at the
+consumer boundary and independently qualify their source hypotheses with pinned
+rustc; they do not claim higher-ranked source admission. PA18 adds three public
+controls, PA19 eight and PA20 ten, each in its earliest owning default-requirement
+cluster. Their 21 declared outcomes agree with rustc, and all ten accepted
+programs execute through rustc and CPPGM. Failed actual uses reach the intended
+bound diagnostic, rather than an unsupported-feature gate. No new acceptance
+exception is introduced.
+
+Final qualification passes **1,531 regular tests** (291 library tests), **91 native
+groups** and **6,256 course cases**, strict all-target/all-feature Clippy, the
+900-file audit with zero findings, 37 harness tests, layout and upstream/backend
+checks. PA18/PA19/PA20 independently qualify 441/1,095/1,355 source outcomes and
+441/656/809 LowIR cases, with 271/262/489 executable comparisons and three PA18
+codegen-only controls. Their existing one/seven/one acceptance exceptions remain
+explicit. The run records 30 cumulative gates plus seven qualification/reference
+gates. It verifies 7,446 frozen source/configuration hashes and 18,768 oracle
+sidecar hashes; all 18,705 sidecars predating this checkpoint retain their bytes.
+The 31 higher-ranked source-gate diagnostics are unchanged, and planned PA21–PA25
+discovery still fails explicitly.
+
+Evidence is in `obj/pa21-work/parameter-defaults-final-v2`, with exploratory and
+focused controls in `obj/pa21-work/parameter-defaults-v1`. Preliminary snapshot,
+fixture-loading and audit failures remain separately recorded; they are not
+included as successful gates. The final test reads public source fixtures through
+ordinary test I/O, respecting the include-macro vocabulary audit. Successful
+independent checks remove their generated object/metadata files; the guarded run
+cleans remaining disposable outputs and retains inputs, diagnostics and receipts.
+
+The immutable comparison with the published compiler covers 46 calibrated timing
+jobs and 40 instruction pairs. All measured full/count outputs match. The eight
+new source inputs vary the number of distinct bounds and shared type depth
+independently; each also passes pinned-rustc object generation. Instruction
+changes across the complete matrix range from **−6.563% to +0.082%**. Ordinary-256
+changes by −0.016%. Growing default-bound/depth pairs 8/8, 32/32, 64/64 and 96/96
+change by −0.173%, −3.098%, −5.679% and −6.563%; 256 bounds sharing depth 64 change
+by −6.489%. No increase reaches the 1% review threshold. These whole-frontend
+measurements complement the linear index invariants; they do not establish
+linear complexity for other phases.
+
+Paired wall medians range from −5.50% to +1.64%; same-binary medians range from
+−3.96% to +0.71%, with maximum A/A spread 71.50%. No increase crosses the
+predeclared +3% follow-up threshold, so no additional timing jobs are scheduled.
+Retain the original observations; this noisy shared-host study does not establish
+a portable speedup or compare RustGM with rustc. RSS median differences range
+from −886 to +612 KiB.
+
+The two predeclared Massif inputs have unchanged peak heaps: 2,432,261 bytes for
+ordinary-256 and 2,984,230 bytes for default-bounds-256-depth-64. Combined
+heap/stack peaks are unchanged for the first and increase by 384 bytes for the
+second. Separate stack peaks decrease by 3,128 and 32 bytes. These two inputs
+do not establish a general memory bound. ELF text/data/BSS grows from 6,518,785
+to 6,535,165 bytes.
+
+The final study retains 1,196 timing observations, 184 qualification observations,
+4,784 timed compiler invocations, 736 qualification invocations, 80 Callgrind runs
+and four Massif runs. Historical draft measurements are not pooled into it.
+Baseline SHA-256:
+`06fa33e119a665d8e7cd4ede9cfb970f40bd46dbbe693fd721c67cb0653ff1f0`.
+Candidate SHA-256:
+`81b0cd2e2d357f8dc32e03b1b74dbfa0be4686098551dae34a72ca4b3eb67643`.
+Final summary SHA-256:
+`a0e7222ae03b7f60a6708d95b8167bd25b84bd378771361276d2109d182dee05`.
+
+The cadence review in `cadence-review.json` records approximately 10 seconds for
+all PA1–PA20 text suites, 260 seconds for release Cargo tests (including the
+36-second build), 164 seconds for native maintainer tests and 111 seconds for
+the affected PA18–PA20 native/source checks. These are local elapsed times,
+excluding cleanup. The final receipts for this checkpoint, witness-export-final-v3
+and partial-selection-final contain no course failures; this is not an audit of
+every intermediate attempt. Focused independent source probes found the current
+compiler defects; preliminary broad-run failures were evidence preparation and
+fixture/audit wiring. Full text checks remain a cheap regression gate. Related
+implementation edits can share a comprehensive checkpoint, with focused checks
+and early audits between them, under the testing cadence documented at the root.
+
+PA21 remains planned: higher-ranked source production, remaining scoped consumers,
+associated type families, opaque identities/capture, variance/destruction
+integration and the public inspection/fixture contract are still unfinished.
+PA22–PA25 also remain planned.

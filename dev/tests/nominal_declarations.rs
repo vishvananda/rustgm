@@ -5,6 +5,21 @@ use std::fmt::Write as _;
 #[path = "support/semantic.rs"]
 mod semantic;
 const CASES: &[(&str, bool, &str)] = &[
+    (
+        "default-static-reference-bound",
+        true,
+        "struct S<T:'static=u8>where &'static mut T:Copy{v:T}fn main(){}",
+    ),
+    (
+        "default-static-reference-bound-used",
+        false,
+        "struct S<T:'static=u8>where &'static mut T:Copy{v:T}fn force(_:S){}fn main(){}",
+    ),
+    (
+        "default-static-reference-value",
+        false,
+        "struct S<T:Copy=&'static mut u8>{v:T}fn main(){}",
+    ),
     ("static-type-missing", false, "struct S<T>{v:&'static T}"),
     (
         "static-type-explicit",

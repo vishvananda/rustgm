@@ -6790,6 +6790,51 @@
         "default_lints": true
       },
       "maintainer_origin": "PA18 tuple coercions use context established by earlier fields"
+    },
+    {
+      "path": "tests/spec/default-requirements/static-mut-reference-bound.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.default-requirements"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "mode": "--emit-lowir",
+      "maintainer_origin": "dev/tests/nominal_declarations.rs",
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/default-requirements/static-mut-reference-bound-used.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.default-requirements"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "mode": "--emit-lowir",
+      "maintainer_origin": "dev/tests/nominal_declarations.rs"
+    },
+    {
+      "path": "tests/spec/default-requirements/static-mut-reference-default.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.default-requirements"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "mode": "--emit-lowir",
+      "maintainer_origin": "dev/tests/nominal_declarations.rs"
     }
   ]
 }

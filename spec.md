@@ -2117,6 +2117,19 @@ callable's local binders. Closed projections still require normalization before
 their independent definition proof. This classification is neither a formation
 proof nor permission to omit the obligation when the declaration is used.
 
+Parameter-default validation has a separate eligibility rule. Inspect the written
+bound before substituting the default: any lifetime occurrence defers this check,
+including static lifetimes and nested callable locals. Read retained original
+projection inputs for this decision: normalization may erase or introduce a
+lifetime. Index type/const occurrences in the normalized clause separately; an
+erased type parameter does not become a new default obligation. An unused clause quantifier
+does not defer it. Retain the whole eligible clause through substitution and proof;
+a lifetime introduced only by a closed default cannot change the original
+classification. Actual uses still establish all declared bounds. Index the sole
+type or const parameter with shared summaries of canonical types, lists and
+argument groups, including equality results and non-injective projection inputs.
+Do not rescan every growing type prefix or retain a parameter set per prefix.
+
 Constructor and pattern inference retain unresolved mixed arguments. Reuse one
 substitution session across the selected receiver's field templates; do not
 resolve the receiver before its fields have constrained it. Substitution under

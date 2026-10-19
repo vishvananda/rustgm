@@ -9,9 +9,20 @@ Subsequent PA20 normalization work removed the obsolete associated-type rejectio
 Its exact source is now an accepted control in `dev/tests/projection_paths.rs`,
 awaiting PA20's grading contract. Associated-constant value work similarly retains
 that former boundary verbatim in `dev/tests/associated_declarations.rs` with
-qualified native value controls. The active PA19 suite has 1,080 cases: 690
-accepted and 390 rejected, including 641 LowIR cases. Counts below describe the
+qualified native value controls. The active PA19 suite has 1,095 cases: 698
+accepted and 397 rejected, including 656 LowIR cases. Counts below describe the
 original release evidence; the current contract is in `pa19/README.md`.
+
+The parameter-default checkpoint adds eight controls under
+`default-requirements/`. Written static trait arguments, static reference subjects
+or arguments, and local lifetimes inside callable arguments defer a default bound
+until use. Each accepted unused declaration has a rejected use of its invalid
+default. All eight outcomes agree with pinned rustc; the four positives execute
+through both compilers. Full qualification covers 1,095 source checks and 656 LowIR
+checks, including 262 executions. The seven existing acceptance exceptions and
+every earlier sidecar remain unchanged. Evidence is in
+`obj/pa21-work/parameter-defaults-final-v2`; see the
+[PA21 validation review](pa21-validation.md) for the shared index and measurements.
 
 ## Source and expectation review
 

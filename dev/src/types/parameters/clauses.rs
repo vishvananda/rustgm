@@ -25,6 +25,41 @@ impl From<Predicate> for Clause {
 }
 
 impl Clause {
+    /// Identify a written bound eligible for checking a closed parameter default.
+    /// Any lifetime occurrence defers this check, including static lifetimes and
+    /// nested callable locals. An unused clause quantifier does not. Inspect the
+    /// original bound before substitution; lifetimes introduced by a default do
+    /// not change this classification. This is not proof of the requirement.
+    /// # Errors
+    /// Rejects unknown clauses, types and trait applications.
+    pub fn checks_parameter_default(self, store: &Store) -> Result<bool, &'static str> {
+        use super::predicates::Bound;
+        let predicate = match self {
+            Self::Predicate(predicate) => predicate,
+            Self::ForAll(id) => {
+                store
+                    .quantified(id)
+                    .ok_or("invalid default bound clause")?
+                    .predicate
+            }
+        };
+        let subject = store
+            .contains_regions(predicate.ty)
+            .ok_or("invalid default bound subject")?;
+        let bound = match predicate.bound {
+            Bound::Trait(id) => store
+                .trait_properties(id)
+                .ok_or("invalid default bound application")?
+                .has(crate::types::Property::Regions),
+            Bound::ProjectionEqual(result) => store
+                .contains_regions(result)
+                .ok_or("invalid default bound result")?,
+            Bound::Outlives(_) => true,
+            Bound::Copy | Bound::Clone | Bound::Sized => false,
+        };
+        Ok(!subject && !bound)
+    }
+
     /// Preserve the source-level consequences of an explicit lifetime premise.
     /// Apply this before substituting a parameter with a concrete composite: an
     /// all-regions parameter bound already grants its caller a static bound.

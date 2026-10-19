@@ -5,11 +5,14 @@ use crate::{
     types::{
         TypeId,
         arguments::Argument,
-        parameters::{ParameterId, ParameterKind, predicates::Bound, uses::Uses},
+        parameters::{ParameterId, ParameterKind, clauses::Clause, uses::Sole},
         substitute,
     },
 };
 use std::collections::HashMap;
+#[cfg(test)]
+#[path = "../../../../tests/invariants/default_clauses.rs"]
+mod tests;
 
 impl Checker<'_> {
     pub(in super::super) fn trait_defaults(&mut self) -> Result<(), Error> {
@@ -57,33 +60,16 @@ impl Checker<'_> {
                 .map_err(|e| self.error(source, e))?;
             for &index in subjects.get(&id).into_iter().flatten() {
                 let predicate = self.facts.generics.predicates[&owner][index];
-                let value = predicate
-                    .value
-                    .ordinary()
-                    .map_err(|e| self.error(source, e))?;
                 let bound = replace
-                    .predicate(&mut self.facts.types, value)
+                    .clause(&mut self.facts.types, predicate.value)
                     .map_err(|e| self.error(source, e))?;
-                if !bound
-                    .contains_parameters(&self.facts.types)
+                if !check_requirement(&mut self.facts, proof, bound)
                     .map_err(|e| self.error(source, e))?
-                    && bound
-                        .escaping_binders(&self.facts.types)
-                        .map_err(|e| self.error(source, e))?
-                        == 0
                 {
-                    proof
-                        .check(&mut self.facts, bound.ty)
-                        .map_err(|e| self.error(source, e))?;
-                    if !proof
-                        .prove(&mut self.facts, bound)
-                        .map_err(|e| self.error(source, e))?
-                    {
-                        return Err(self.error(
-                            source,
-                            "non-generic bound is not satisfied by a parameter default",
-                        ));
-                    }
+                    return Err(self.error(
+                        source,
+                        "non-generic bound is not satisfied by a parameter default",
+                    ));
                 }
             }
         }
@@ -141,7 +127,7 @@ impl Checker<'_> {
     ) -> Result<HashMap<ParameterId, Vec<usize>>, &'static str> {
         let mut result: HashMap<ParameterId, Vec<usize>> = HashMap::new();
         let mut subjects = HashMap::new();
-        let mut steps = 0_usize;
+        let mut uses = Sole::default();
         for (index, predicate) in self
             .facts
             .generics
@@ -151,30 +137,18 @@ impl Checker<'_> {
             .flatten()
             .enumerate()
         {
-            let value = predicate.value.ordinary()?;
-            if matches!(value.bound, Bound::Outlives(_))
-                || predicate.value.escaping_binders(&self.facts.types)? != 0
-            {
+            let original = self
+                .facts
+                .unreduced
+                .predicate(predicate.source)
+                .unwrap_or(predicate.value);
+            if !original.checks_parameter_default(&self.facts.types)? {
                 continue;
             }
             let id = if let Some(&id) = subjects.get(&predicate.value) {
                 id
             } else {
-                let mut uses = Uses::default();
-                uses.predicate(&self.facts.types, value)?;
-                steps = steps.saturating_add(uses.steps);
-                if steps > 1_000_000 {
-                    return Err("default bound subject work budget exceeded");
-                }
-                let id = if uses.parameters.len() + uses.constants.len() == 1 {
-                    uses.parameters
-                        .iter()
-                        .chain(&uses.constants)
-                        .next()
-                        .copied()
-                } else {
-                    None
-                };
+                let id = uses.clause(&self.facts.types, predicate.value)?;
                 subjects.insert(predicate.value, id);
                 id
             };
@@ -184,4 +158,29 @@ impl Checker<'_> {
         }
         Ok(result)
     }
+}
+
+fn check_requirement(
+    facts: &mut crate::sema::model::Declarations,
+    proof: &mut Proof,
+    bound: Clause,
+) -> Result<bool, &'static str> {
+    if bound.contains_parameters(&facts.types)? || bound.escaping_binders(&facts.types)? != 0 {
+        return Ok(true);
+    }
+    let subject = match bound {
+        Clause::Predicate(value) => value.ty,
+        Clause::ForAll(id) => {
+            facts
+                .types
+                .quantified(id)
+                .ok_or("invalid substituted default clause")?
+                .predicate
+                .ty
+        }
+    };
+    // The written candidate contains no lifetimes. Its closed default can add
+    // static lifetimes and nested callable binders, but no local clause slots.
+    proof.check(facts, subject)?;
+    proof.prove_clause(facts, bound)
 }

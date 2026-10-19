@@ -11,10 +11,24 @@ There are no compilation-only or skipped accepted LowIR cases.
 The later callable-definition correction adds two associated equality controls
 under `contracts/equations/lowir`: an unused declaration with a nested callable
 binder accepts, while demanding its incompatible equality rejects. The accepted
-control also executes through both compilers. The current suite has 1,345 cases
+control also executes through both compilers. That checkpoint has 1,345 cases
 from 799 sources, with 546 semantic inspections, 799 LowIR checks and 484 native
 executions. Every earlier sidecar remains unchanged. Counts below record the
 original release evidence; see [PA21 validation](pa21-validation.md) for this fix.
+
+The parameter-default checkpoint adds ten LowIR controls under
+`default-requirements/`, bringing the current suite to 1,355 cases from 809 sources:
+546 semantic inspections, 809 LowIR checks and 489 native executions. Eligibility
+uses the original bound: an erased projection lifetime still defers satisfaction,
+while a lifetime introduced only by normalization does not. Parameter indexing
+uses the normalized clause separately; an erased parameter creates no new default
+obligation. Positive and negative pairs cover both directions, use-site debts and
+satisfying implementations. All ten declared outcomes agree with pinned rustc
+object generation, and all five positives execute with rustc and CPPGM. Full
+independent qualification preserves the existing one semantic-phase exception.
+The previous 1,345 cases keep their exact sidecar bytes. Evidence is in
+`obj/pa21-work/parameter-defaults-final-v2`; see
+[PA21 validation](pa21-validation.md) for the implementation and performance review.
 
 ## Language and phase boundaries
 

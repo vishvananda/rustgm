@@ -21582,6 +21582,161 @@
         "emit": "obj"
       },
       "maintainer_origin": "dev/tests/associated_declarations/specialization.rs:105"
+    },
+    {
+      "path": "tests/spec/default-requirements/projection-static-argument.rs",
+      "exit_status": 0,
+      "features": [
+        "pa20.default-requirements"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "mode": "--emit-lowir",
+      "maintainer_origin": "dev/tests/associated_declarations/default_requirements.rs",
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/default-requirements/projection-static-argument-used.rs",
+      "exit_status": 1,
+      "features": [
+        "pa20.default-requirements"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "mode": "--emit-lowir",
+      "maintainer_origin": "dev/tests/associated_declarations/default_requirements.rs"
+    },
+    {
+      "path": "tests/spec/default-requirements/projection-static-subject.rs",
+      "exit_status": 0,
+      "features": [
+        "pa20.default-requirements"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "mode": "--emit-lowir",
+      "maintainer_origin": "dev/tests/associated_declarations/default_requirements.rs",
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/default-requirements/projection-static-subject-used.rs",
+      "exit_status": 1,
+      "features": [
+        "pa20.default-requirements"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "mode": "--emit-lowir",
+      "maintainer_origin": "dev/tests/associated_declarations/default_requirements.rs"
+    },
+    {
+      "path": "tests/spec/default-requirements/projection-erased-subject.rs",
+      "exit_status": 0,
+      "features": [
+        "pa20.default-requirements"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "mode": "--emit-lowir",
+      "maintainer_origin": "dev/tests/associated_declarations/default_requirements.rs",
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/default-requirements/projection-erased-subject-used.rs",
+      "exit_status": 1,
+      "features": [
+        "pa20.default-requirements"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "mode": "--emit-lowir",
+      "maintainer_origin": "dev/tests/associated_declarations/default_requirements.rs"
+    },
+    {
+      "path": "tests/spec/default-requirements/introduced-static-result.rs",
+      "exit_status": 1,
+      "features": [
+        "pa20.default-requirements"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "mode": "--emit-lowir",
+      "maintainer_origin": "dev/tests/associated_declarations/default_requirements.rs"
+    },
+    {
+      "path": "tests/spec/default-requirements/introduced-callable-result.rs",
+      "exit_status": 1,
+      "features": [
+        "pa20.default-requirements"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "mode": "--emit-lowir",
+      "maintainer_origin": "dev/tests/associated_declarations/default_requirements.rs"
+    },
+    {
+      "path": "tests/spec/default-requirements/introduced-static-result-satisfied.rs",
+      "exit_status": 0,
+      "features": [
+        "pa20.default-requirements"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "mode": "--emit-lowir",
+      "maintainer_origin": "dev/tests/associated_declarations/default_requirements.rs",
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/default-requirements/introduced-callable-result-satisfied.rs",
+      "exit_status": 0,
+      "features": [
+        "pa20.default-requirements"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "mode": "--emit-lowir",
+      "maintainer_origin": "dev/tests/associated_declarations/default_requirements.rs",
+      "native": {
+        "outcome": "pass"
+      }
     }
   ]
 }

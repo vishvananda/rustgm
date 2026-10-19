@@ -33,6 +33,13 @@ arbitrary permissions on other argument types. Detect supertrait cycles by trait
 identity and share diamond expansion. Defaults referring to parameters keep the
 same capture-safe substitution rules as PA18.
 
+For parameter defaults, any lifetime occurrence in the original requirement
+defers that bound to actual use. This includes explicit static trait arguments
+and lifetimes inside callable type arguments. Lifetimes introduced only by the
+default do not change the original classification. `tests/spec/default-requirements/`
+pairs accepted unused declarations with rejected uses of their invalid defaults.
+This is separate from the closed-bound definition check below.
+
 A closed bound requires satisfaction at its definition only when it contains no
 generic input or nonempty lifetime binder, including binders nested inside
 function-pointer subjects or trait arguments. A deferred bound is still required
@@ -215,9 +222,9 @@ later-stage boundary fixtures record rustc acceptance and this stage's rejection
 
 ## Validation
 
-The manifest contains 1,080 cases: 690 accepted and 390 rejected. There are 439
-semantic inspection cases and 641 LowIR cases. The LowIR lane has 254 accepted
-programs, all with declared clean execution through rustc and CPPGM, and 387
+The manifest contains 1,095 cases: 698 accepted and 397 rejected. There are 439
+semantic inspection cases and 656 LowIR cases. The LowIR lane has 262 accepted
+programs, all with declared clean execution through rustc and CPPGM, and 394
 rejections. No accepted native control is silently skipped.
 
 Seven acceptance differences are explicit: three later-stage boundaries, one

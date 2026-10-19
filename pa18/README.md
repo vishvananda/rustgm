@@ -38,6 +38,12 @@ actual default or alias-body cycles are errors. Ordinary function and impl
 parameters cannot introduce defaults. Alias bounds are checked as declarations,
 but do not grant proof assumptions to a caller using the alias.
 
+Classify parameter-default bounds from the original written requirement. A bound
+containing any lifetime, including an explicit static reference, is deferred to
+actual use. A lifetime introduced only by substituting the default does not defer
+an otherwise eligible check: a mutable reference default still fails `T: Copy`.
+Keep formation checks separate and enforce every bound when the default is used.
+
 Substitute arguments through signatures, aliases, aggregate fields, annotations,
 array lengths and selected body facts without reparsing source. Preserve binders
 inside function-pointer types: an inserted reference must not be captured by a
@@ -177,8 +183,8 @@ is an accepted maintainer control awaiting PA20's grading contract.
 
 ## Validation
 
-The suite declares 438 fixtures: 273 accepted and 165 rejected. Of the accepted
-programs, 270 execute through both pinned rustc and the qualified CPPGM backend;
+The suite declares 441 fixtures: 274 accepted and 167 rejected. Of the accepted
+programs, 271 execute through both pinned rustc and the qualified CPPGM backend;
 three intentionally diverge and must only undergo code generation. Growing-instance
 rejections use rustc object generation: metadata-only success cannot qualify them.
 No compilation-only result counts as a runtime comparison. Native panic cases

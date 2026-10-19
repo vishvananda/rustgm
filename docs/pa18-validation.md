@@ -1,11 +1,23 @@
 # PA18 release validation
 
 This document retains release and subsequent checkpoint evidence. Following PA20
-projection normalization, partial callable inference and tuple coercion ordering,
-the active suite has 438 cases: 273 accepted and 165 rejected.
+projection normalization, partial callable inference, tuple coercion ordering and
+parameter-default bound checks, the active suite has 441 cases: 274 accepted and
+167 rejected.
 Its former associated-type boundary is retained byte-for-byte as an
 accepted control in `dev/tests/projection_paths.rs`, awaiting PA20's grading contract.
 See `pa18/README.md` for the current suite counts.
+
+The parameter-default checkpoint adds three controls in `default-requirements/`.
+A written static mutable-reference bound defers satisfaction until actual use;
+using its invalid default rejects. A static mutable reference introduced only by
+the default does not defer the original `T: Copy` requirement. All three declared
+outcomes agree with pinned rustc, and the accepted declaration executes through
+both compilers. Full qualification covers 441 source outcomes, 271 executions and
+three codegen-only controls, retaining the existing one acceptance exception.
+The previous sidecars are unchanged. Evidence is in
+`obj/pa21-work/parameter-defaults-final-v2`; the implementation and performance
+review is in [PA21 validation](pa21-validation.md).
 
 The unused-const-placeholder checkpoint adds one ordinary-alias program covering
 both an erased placeholder and an explicitly supplied placeholder overriding a

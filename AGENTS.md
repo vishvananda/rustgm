@@ -21,13 +21,24 @@ RustGM owns both the full maintainer frontend and its assignments. Read
 - Read CPPGM's specification and implementation for performance guidance;
   `docs/cppgm-spec.md` and `shared/CPPGM-NOTICE` record the initial baseline.
   Do not modify the active C++ or v5rust checkouts while working here.
-- After changes run affected course tests, `make lint audit-rust test-harness`
-  and all active earlier stages. Run `make test-upstream` after fixture changes,
-  and `make test-backend` after changing the backend contract or bridge.
+- Follow the checkpoint cadence in `TESTING_AND_REFERENCES.md`. During related
+  implementation edits, run focused tests and independent rustc/native probes,
+  then lint/audits early enough to catch wiring errors before expensive suites.
+  Keep all active PA text suites as the cheap candidate regression check.
+- Batch related edits into coherent checkpoints. Before pushing compiler changes,
+  run the full release Cargo suite, native maintainer suite, lint/audits/harness,
+  all active PA text suites and affected independent source/native suites.
+  Run `make test-upstream` after fixture changes and `make test-backend` after
+  changing the backend contract or bridge. Assignment releases additionally run
+  all active independent suites and their owning handout's release checks.
 - Keep generated builds, logs and measurements in `obj/`, out of commits.
   Inspect Git state from the repository root. Commit only relevant work.
 - Measure hot-path changes using immutable binaries, frozen inputs, A/A
   calibration and paired ABBA runs; preserve observations and output equality.
+  During development, select changed-path scaling inputs and an ordinary control.
+  Run the broad matrix at assignment release, for shared algorithm changes or
+  when a regression needs investigation; do not repeat it for every related edit.
+  Once checks pass, rerun only those invalidated by further changes or failures.
 
 Clippy all/pedantic warnings are errors. Avoid unwrap, expect, panic, todo,
 unimplemented and process exit in production. Narrow lint expectations require
