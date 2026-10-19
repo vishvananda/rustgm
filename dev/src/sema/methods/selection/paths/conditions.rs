@@ -42,6 +42,9 @@ impl Pending {
         loop {
             while let Some(&index) = self.goals.get(self.cursor) {
                 match self.select(facts, context, &goals[index], caller)? {
+                    selection::Progress::Inferred { .. } => {
+                        return Err("non-refining applicability returned partial inputs");
+                    }
                     selection::Progress::Pending(owner, query) => {
                         self.first = self.first.max(query.allocation_end());
                         self.query = Some(query);

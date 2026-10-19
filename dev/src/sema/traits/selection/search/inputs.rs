@@ -28,6 +28,7 @@ impl Search<'_> {
         let mut roots = Vec::new();
         let mut scopes = Obligations::new(frame.first);
         for (scope, term) in frame
+            .inputs
             .context
             .predicate_normalization_roots(
                 &facts.types,
@@ -44,7 +45,7 @@ impl Search<'_> {
             if scope != ScopeId::ROOT {
                 return Err("quantified trait premises require scoped selection evidence".into());
             }
-            let ty = match frame.context.resolved(&mut facts.types, term) {
+            let ty = match frame.inputs.context.resolved(&mut facts.types, term) {
                 Ok(ty) => ty,
                 Err(infer::Error::Unresolved) => {
                     return Ok(Some(Action::Complete(Decision::Deferred)));
@@ -89,12 +90,14 @@ impl Search<'_> {
             let before = normalization.fold.steps();
             normalization.step = normalization.fold.start(&mut facts.types, ty)?;
             frame
+                .inputs
                 .context
                 .account_work(normalization.fold.steps().saturating_sub(before))
                 .map_err(inference)?;
             return Ok(Action::Continue);
         }
         frame.goal = frame
+            .inputs
             .context
             .rewritten_projection_inputs(&facts.types, &inputs.original, &inputs.replacements)
             .map_err(inference)?;
@@ -124,8 +127,8 @@ impl Search<'_> {
             return Ok(decision);
         };
         if let Some(inputs) = frame.normalized_inputs.take() {
-            frame.context.account_work(2).map_err(inference)?;
-            self.charge(&mut frame.context)?;
+            frame.inputs.context.account_work(2).map_err(inference)?;
+            self.charge(&mut frame.inputs.context)?;
             return Ok(Decision::Proven(
                 self.inherit_inputs(selected, inputs.proof),
             ));
@@ -145,6 +148,7 @@ impl Search<'_> {
             // Only ordinary shared holes can be refined by normal-form selection.
             // Projection inputs were already resolved before normalization began.
             frame
+                .inputs
                 .context
                 .equate_proved_predicate(
                     &mut facts.types,
@@ -153,6 +157,7 @@ impl Search<'_> {
                 )
                 .map_err(inference)?;
             frame
+                .inputs
                 .context
                 .resolved_predicate(&mut facts.types, &inputs.original)
                 .map_err(inference)?
@@ -167,7 +172,7 @@ impl Search<'_> {
                 children,
                 first: frame.first,
                 end,
-                equalities: std::mem::take(&mut frame.context.region_equalities),
+                equalities: std::mem::take(&mut frame.inputs.context.region_equalities),
                 outlives: Vec::new(),
                 type_outlives: Vec::new(),
                 sized: Vec::new(),
@@ -175,7 +180,7 @@ impl Search<'_> {
             frame.scope,
             frame.first..frame.first,
         );
-        self.charge(&mut frame.context)?;
+        self.charge(&mut frame.inputs.context)?;
         Ok(Decision::Proven(index))
     }
 

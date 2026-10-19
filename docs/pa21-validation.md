@@ -1724,3 +1724,108 @@ interruption (`obj/cleanup/1792372449367052584.jsonl`). A subsequent protected
 qualification run completed cleanup, removing four newly generated files
 (`obj/cleanup/1792372683471361886.jsonl`). No extra historical executable pins
 were retained.
+
+### Retained ordinary partial trait inference
+
+Ordinary calls can now infer a partial constructor or const argument from a
+unique compatible implementation while retaining its unfinished conditions.
+Selection tries every compatible header before exposing progress; pending or
+ambiguous alternatives prevent publication, and an unknown Self is not guessed.
+The candidate's lifetime debts remain mandatory through final proof. Seven new
+PA19 cases cover four independently executed positive programs and three
+independently rejected programs, including bound reordering, nested conditions,
+const results, failed conditions, ambiguity and unknown Self.
+
+Deferred conditions and body goals now use their own type/const dependency
+notifications instead of rescanning all siblings. Child continuations occupy a
+flat arena with stable slots, preserving iterative traversal and destruction.
+Body projection and trait notifications retain separate owners. Header waits
+keep the exact continuation and freeze local body inference until resumption;
+this is not a promise to reconcile arbitrary caller mutation during header work.
+Private lifetime allocations survive suspension and exclude foreign gaps.
+
+The initial condition retry prototype had quadratic work: recorded counts were
+7,254 at depth 8 and 89,538 at depth 32. Those two historical numbers are explicitly
+labelled transcribed tool output because the original log was overwritten.
+The final retained-chain regression measures initial work `166d + 170`, resumed
+work `82d + 62`, and exactly `d` flat slots through depth 2,048. Body notification
+registration costs `5n`, and registration plus delivery costs `12n`, through
+4,096 independent goals. Actual reverse-dependency source chains at 8/32/128/512
+use 15/63/255/1,023 selections (`2n - 1`); pinned rustc also accepts those programs.
+These are bounds for the tested graph families, not general trait-search bounds.
+
+Import records original holes during the existing traversal, maps complete
+predicates directly and initializes owned contexts in place. Empty queries avoid
+allocating retained mappings and wakeup tables. Mixed input reconciliation keeps
+the original lifetime-equation order. Three initial oracle-order changes were
+caught and corrected before this frozen run; no old sidecar was hand-edited.
+
+A proposed single-canonical-root shortcut failed a strengthened scaling test
+when earlier constraints had already expanded its shared descendants: matching
+cost 170 steps at width 16 and 8,514 at width 128. The shortcut is now restricted
+to a single variable against an unexpanded canonical leaf. Composite patterns
+retain joint cycle checking. Matching the expanded shared-prefix regression now
+costs exactly `10n + 8` at 16/128/1,024/4,096 inputs. Its result verification uses
+the existing shared finalizer; resolving every prefix separately had exhausted
+the test's work budget. No production resource limit was raised. Callable scoped
+comparison and ordinary single-equation occurs checks remain intact.
+
+The frozen run passes 41 gates, **1,507 regular tests** (276 library tests),
+**91 native groups**, and **6,235 course cases**. Strict all-target/all-feature
+Clippy, the 887-file audit with zero findings, 33 harness tests and upstream/backend
+checks pass. PA19 checks 1,087 rustc sources and 648 LowIR cases, including 258
+native executions; PA20 checks 1,345 sources and 799 LowIR cases, including 484
+native executions. The existing seven/one acceptance exceptions remain explicit.
+All 7,337 source/configuration hashes and 18,705 sidecar hashes remain unchanged
+during validation; a separate check preserves all 18,684 pre-existing sidecars.
+The additional 21 sidecars belong to the seven new PA19 fixtures.
+
+The ordinary partial-inference source control now accepts. Nine higher-ranked
+controls still hit the explicit source gate; their rejections are not semantic
+negative coverage. Quantified witness export, refining higher-ranked calls,
+associated type families and opaque types remain unfinished. PA21–25 stay planned
+and fail suite discovery; this checkpoint does not release PA21.
+
+Immutable comparison with the published compiler covers 36 calibrated timing
+jobs and 32 instruction pairs, including reverse-dependency source chains at
+8/32/128. Every measured full/count output matches. Instructions change by
++0.024% on ordinary-256 and +0.032% on callable-definition-256. Other increases
+above 1% span +1.101% to +2.524% on the existing trait-heavy inputs; reverse-body-8
+and reverse-body-32 cost +4.058% and +3.943%, while reverse-body-128 costs **6.114%
+fewer instructions**. All increases above 1% have saved exclusive annotations and
+function deltas. Matching/import, frame-copy, hashing and notification costs
+remain visible; inlining changes also move attribution between symbols. These
+costs are retained as measured overhead, not dismissed using favorable timing.
+The earlier prototype's pending-chain-32 overhead was +5.704%; removing duplicate
+walks and unused retained state reduced the final observation to +1.962%.
+
+Initial paired wall medians span −2.58% to +8.76%; same-binary medians span
+−0.16% to +0.46%, with a maximum A/A spread of 86.49%. Twelve comparisons exceed
++3%. The predeclared three-largest follow-up policy selects trait-view-8-full,
+reverse-body-32 and pending-chain-8; their follow-up medians are −0.82%, +0.30%
+and −4.06%. Follow-up same-binary medians span −3.52% to +3.85%, with maximum A/A
+spread 29.77%. All original outliers remain in the record. These shared-host
+measurements establish neither a portable speedup nor a general regression bound;
+they are not a comparison with rustc.
+
+RSS median differences span −254 to +696 KiB. The two predeclared Massif inputs
+show heap peaks changing from 2,432,261 to 2,432,704 bytes (ordinary-256), and from
+5,381,881 to 5,382,561 bytes (constant-chain-uses-256). Their combined heap/stack
+peaks fall by 232 and 536 bytes; separate stack peaks change by +1,512 and −2,008
+bytes. These two profiles do not establish a general memory bound. ELF text/data/
+BSS total grows from 6,412,277 to 6,498,305 bytes.
+
+Evidence is in `obj/pa21-work/partial-selection-final`, with prototype failures
+and independent controls in `partial-selection-v1` and three separate historical
+preflight studies. The final study retains 1,170 observations, 180 qualification
+observations, 7,488 timed invocations, 1,152 qualification invocations, 64 Callgrind
+runs and four Massif runs. Earlier draft observations are not pooled into the
+final result. Successful guarded cleanup removes 5,769 generated files (6.91 GiB
+of unshared blocks), receipt `obj/cleanup/1792377590592496587.jsonl`.
+
+Baseline SHA-256:
+`e996fd161d2f6ad075fdc950ed2fd364dc009a471b10a37736d048e77666acf6`.
+Candidate SHA-256:
+`0bd99225d8282e54cc4ed80d1557b2b40c5a1edf6238466608acb4287c574af1`.
+Final summary SHA-256:
+`02b406d7619c6e978d6cdd2619b443bb68c09277ba4cc230cc1cc2b13497208a`.

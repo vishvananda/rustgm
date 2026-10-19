@@ -1294,6 +1294,10 @@ not authorize implementation selection or discharge a formation requirement.
 
 Selected input refinements use a separate transport; do not relax non-refining
 probes. Import only reachable input holes through one mixed-root mapping.
+Record original holes during that same import traversal. Do not rediscover them
+with a second graph walk, or allocate retained mappings and wakeup tables for
+queries that have no holes or deferred conditions. Initialize owned query contexts
+in place instead of returning and copying large inference state between factories.
 Reconcile current caller constraints on resumption and before commitment, keeping
 partial structures, numeric domains and shared type/const equivalence classes.
 Close exported lifetime identities and validate the combined graph before
@@ -1301,6 +1305,23 @@ allocating or binding caller terms. Reuse unchanged caller holes. Retain query
 lifetime equations in the selected proof's scope; new equations between closed
 caller types belong to the actual caller. This transport supplies no selection
 or lifetime proof authority.
+
+Ordinary body selection may publish a unique partial candidate's input structure
+while retaining its complete candidate, unresolved conditions and lifetime debts.
+Try all compatible headers before publication, including pending alternatives;
+never guess an unknown Self from the registry. Keep retained children in a flat
+arena on the iterative search, with stable slots across resumption. Reserve private
+lifetime allocations before yielding to body or declaration work, and preserve
+foreign allocation gaps. This root-scope transport does not export a witness from
+a universal proof scope or authorize higher-ranked source syntax.
+
+Observe deferred conditions and body goals through their own type/const dependency
+leaves. A condition consumes its current inputs, including progress it just
+published; that publication must not immediately retry the same child at every
+ancestor. Route shared body notifications to their original projection or trait
+owner. Retry only affected goals, retain exact header continuations, and default
+numeric variables only when the ready queues are empty. Cancel completed watches.
+A readiness event remains separate from complete trait and lifetime proof.
 
 Reconcile shared input equations as one batch. For graphs without callables,
 share structural pair matching and check the final graph for cycles once across
@@ -1312,6 +1333,10 @@ roots only while their input graph is stable; do not reuse results across later
 equations. Charge query, validation and export work to the caller's budget.
 Bulk pair memoization owns its temporary storage; do not leave later small
 equations repeatedly clearing a bulk query's retained hash-table capacity.
+A single unknown against an unexpanded canonical leaf may use ordinary scoped
+equality directly. A canonical root against a composite pattern still requires
+the joint path: cached descendants may have been expanded by earlier constraints,
+making separate occurs checks repeatedly traverse the same shared prefixes.
 
 Canonical-input readiness uses dependency watches on unresolved type and const
 leaves. Unions, bindings and explicit fallback wake only affected watches; newly

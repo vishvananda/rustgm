@@ -12,6 +12,7 @@ impl Search<'_> {
         frame: &mut Frame,
     ) -> Result<Option<Action>, String> {
         let ty = match frame
+            .inputs
             .context
             .resolved(&mut facts.types, frame.goal.subject())
         {
@@ -26,8 +27,13 @@ impl Search<'_> {
         let Some((rules, steps)) = results::traits(facts, ty, item)? else {
             return Ok(None);
         };
-        frame.context.account_work(steps).map_err(inference)?;
-        let selected = match rules.select(&mut facts.types, &mut frame.context, &frame.goal) {
+        frame
+            .inputs
+            .context
+            .account_work(steps)
+            .map_err(inference)?;
+        let selected = match rules.select(&mut facts.types, &mut frame.inputs.context, &frame.goal)
+        {
             Ok(Selection::Proven(proof)) => proof.assumption(),
             Ok(Selection::Absent) => return Ok(None),
             Ok(Selection::Deferred) | Err(infer::Error::Normalization) => {
@@ -36,6 +42,7 @@ impl Search<'_> {
             Err(error) => return Err(inference(error)),
         };
         let goal = frame
+            .inputs
             .context
             .resolved_predicate(&mut facts.types, &frame.goal)
             .map_err(inference)?;
@@ -46,7 +53,7 @@ impl Search<'_> {
                 children: Vec::new(),
                 first: frame.first,
                 end: frame.available_region(),
-                equalities: std::mem::take(&mut frame.context.region_equalities),
+                equalities: std::mem::take(&mut frame.inputs.context.region_equalities),
                 outlives: Vec::new(),
                 type_outlives: Vec::new(),
                 sized: Vec::new(),

@@ -34,9 +34,10 @@ impl Trial {
             return Ok(resolved);
         }
         let goal = self
+            .inputs
             .context
             .resolved_predicate(&mut facts.types, &self.goal)?;
-        let arguments = self.instance.arguments(facts, &mut self.context)?;
+        let arguments = self.instance.arguments(facts, &mut self.inputs.context)?;
         if let Some(conditions) = &mut self.instance.quantified {
             conditions.resolved = Some((goal, arguments));
         }
@@ -72,7 +73,11 @@ impl Search<'_> {
                 .zip(arguments.skip(trial.instance.regions.len()))
                 .collect();
             let fold = Bound::parameters(&facts.types, &bindings)?;
-            trial.context.account_work(fold.steps).map_err(inference)?;
+            trial
+                .inputs
+                .context
+                .account_work(fold.steps)
+                .map_err(inference)?;
             conditions.fold = Some(fold);
         }
         conditions.waiting = true;
@@ -107,6 +112,7 @@ impl Search<'_> {
             return Err("quantified impl condition lost its binder".into());
         };
         trial
+            .inputs
             .context
             .account_work(fold.steps.saturating_sub(before))
             .map_err(inference)?;
@@ -120,6 +126,7 @@ impl Search<'_> {
             scope
         } else {
             trial
+                .inputs
                 .context
                 .account_work(value.bound_regions as usize)
                 .map_err(inference)?;
@@ -129,7 +136,11 @@ impl Search<'_> {
         };
         let (predicate, next, steps) = scopes.open(facts, scope, value.predicate, first)?;
         self.query.allocations.record(next);
-        trial.context.account_work(steps).map_err(inference)?;
+        trial
+            .inputs
+            .context
+            .account_work(steps)
+            .map_err(inference)?;
         let mut context = Context::default();
         let mut substitution =
             Instantiation::new(&mut context, &facts.types, &[]).map_err(inference)?;
@@ -138,6 +149,7 @@ impl Search<'_> {
             .map_err(inference)?;
         let mut child = Frame::new(facts, &mut context, &goal, next)?;
         trial
+            .inputs
             .context
             .account_work(context.steps)
             .map_err(inference)?;
@@ -171,7 +183,7 @@ impl Search<'_> {
             }
             Decision::Absent | Decision::Deferred => {
                 frame.deferred |= decision == Decision::Deferred;
-                self.charge(&mut trial.context)?;
+                self.charge(&mut trial.inputs.context)?;
                 frame.trial = None;
             }
         }

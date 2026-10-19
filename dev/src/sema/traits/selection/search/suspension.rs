@@ -8,6 +8,7 @@ use crate::{
 pub(in crate::sema) enum Progress {
     Ready(Selection),
     Pending(DefId, Box<Pending>),
+    Inferred { query: Box<Pending> },
 }
 pub(in crate::sema) struct Pending {
     caller: OwnedCaller,
@@ -30,7 +31,18 @@ pub(in crate::sema) fn begin(
     caller: OwnedCaller,
     availability: Availability,
 ) -> Result<Progress, String> {
-    begin_with_inputs(facts, context, goal, caller, availability, false)
+    begin_with_inputs(facts, context, goal, caller, availability, false, false)
+}
+
+/// Keep a unique partial implementation and all unfinished conditions for body inference.
+pub(in crate::sema) fn begin_refining(
+    facts: &mut Declarations,
+    context: &mut Context,
+    goal: &Goal,
+    caller: OwnedCaller,
+    availability: Availability,
+) -> Result<Progress, String> {
+    begin_with_inputs(facts, context, goal, caller, availability, false, true)
 }
 
 /// The enclosing normalizer retains the complete formation proof of these inputs.
@@ -41,7 +53,7 @@ pub(in crate::sema) fn begin_normalized(
     caller: OwnedCaller,
     availability: Availability,
 ) -> Result<Progress, String> {
-    begin_with_inputs(facts, context, goal, caller, availability, true)
+    begin_with_inputs(facts, context, goal, caller, availability, true, false)
 }
 
 fn begin_with_inputs(
@@ -51,6 +63,7 @@ fn begin_with_inputs(
     caller: OwnedCaller,
     availability: Availability,
     normalized_inputs: bool,
+    refining: bool,
 ) -> Result<Progress, String> {
     if goal.projection_result().is_none() {
         match crate::sema::traits::selection::select_assumption(
@@ -69,6 +82,12 @@ fn begin_with_inputs(
         first.normalized_inputs = Some(super::frames::NormalizedInputs { proof: None });
     }
     let mut search = Search::new(caller.borrowed(), availability);
+    search.query.refining = refining;
+    first.inference = if refining {
+        super::frames::Inference::Selecting
+    } else {
+        super::frames::Inference::Disabled
+    };
     let progress = search.begin(facts, first)?;
     match progress {
         continuation::Progress::Ready(decision) => search
@@ -80,6 +99,13 @@ fn begin_with_inputs(
                 owner,
                 Box::new(Pending { caller, query }),
             ))
+        }
+        continuation::Progress::Inferred => {
+            search.publish_inputs(facts, context)?;
+            let query = search.query;
+            Ok(Progress::Inferred {
+                query: Box::new(Pending { caller, query }),
+            })
         }
     }
 }
@@ -101,6 +127,7 @@ impl Pending {
             query,
         };
         search.resume_at(first)?;
+        search.refresh_inputs(facts, context)?;
         let progress = search.poll(facts)?;
         match progress {
             continuation::Progress::Ready(decision) => search
@@ -109,6 +136,13 @@ impl Pending {
             continuation::Progress::Pending(owner) => {
                 let query = search.query;
                 Ok(Progress::Pending(owner, Box::new(Self { caller, query })))
+            }
+            continuation::Progress::Inferred => {
+                search.publish_inputs(facts, context)?;
+                let query = search.query;
+                Ok(Progress::Inferred {
+                    query: Box::new(Self { caller, query }),
+                })
             }
         }
     }

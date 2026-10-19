@@ -120,6 +120,9 @@ impl Query {
     fn advance(mut self, facts: &mut Declarations) -> Result<Progress, &'static str> {
         loop {
             let selected = match self.select(facts)? {
+                selection::Progress::Inferred { .. } => {
+                    return Err("non-refining projection selection returned partial inputs");
+                }
                 selection::Progress::Pending(owner, pending) => {
                     self.pending = Some(pending);
                     return Ok(Progress::Pending(owner, Box::new(self)));

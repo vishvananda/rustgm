@@ -101,6 +101,13 @@ impl Context {
             return Err(Error::Mismatch);
         }
         self.account_work(1 + a.arguments.len())?;
+        if matches!(relation, Relation::Scoped) {
+            let inputs: Vec<_> =
+                std::iter::once((Argument::Type(left.subject), Argument::Type(right.subject)))
+                    .chain(a.arguments.iter().copied().zip(b.arguments.iter().copied()))
+                    .collect();
+            return self.equate_input_pairs(store, &inputs);
+        }
         // A successful root pair remains equal under compatible later equations.
         // Share evidence only within this relation and its enclosing binder scope.
         let mut proved = (a.arguments.len() > 1).then(HashSet::new);

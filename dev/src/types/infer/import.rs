@@ -7,10 +7,23 @@ use super::{
 use std::collections::HashMap;
 
 #[derive(Default)]
-pub(super) struct Import {
+pub(super) struct Mapping<T> {
+    pub(super) tracker: T,
     pub(super) types: HashMap<TermId, TermId>,
     pub(super) constants: HashMap<ConstTermId, ConstTermId>,
 }
+pub(super) type Import = Mapping<()>;
+
+/// Observe first imports without a second walk or another membership table.
+pub(super) trait Tracking {
+    fn ty(&mut self, original: TermId, copied: TermId);
+    fn constant(&mut self, original: ConstTermId, copied: ConstTermId);
+}
+impl Tracking for () {
+    fn ty(&mut self, _: TermId, _: TermId) {}
+    fn constant(&mut self, _: ConstTermId, _: ConstTermId) {}
+}
+
 impl Context {
     /// Import a reachable graph from another context sharing the canonical store.
     /// Preserves repeated variables and const equivalence classes, but deliberately
@@ -31,7 +44,7 @@ impl Context {
         store: &Store,
         source: &mut Self,
         root: TermId,
-        mappings: &mut Import,
+        mappings: &mut Mapping<impl Tracking>,
     ) -> Result<TermId, Error> {
         let root = source.root(root)?;
         let mut work = vec![(root, false)];
@@ -45,7 +58,9 @@ impl Context {
             let term = source.terms[id.0 as usize];
             let kind = match term.value {
                 Value::Variable(domain) => {
-                    mappings.types.insert(id, self.variable(domain)?);
+                    let copied = self.variable(domain)?;
+                    mappings.tracker.ty(id, copied);
+                    mappings.types.insert(id, copied);
                     continue;
                 }
                 Value::Known(ty) => {
@@ -81,7 +96,7 @@ impl Context {
     }
 }
 
-impl Import {
+impl<T: Tracking> Mapping<T> {
     pub(super) fn constant(
         &mut self,
         store: &Store,
@@ -98,7 +113,9 @@ impl Import {
         let copied = if let Some(value) = source.constants().value(id)? {
             destination.const_value(ty, value)?
         } else {
-            destination.const_variable(store, ty)?
+            let copied = destination.const_variable(store, ty)?;
+            self.tracker.constant(id, copied);
+            copied
         };
         self.constants.insert(id, copied);
         Ok(copied)

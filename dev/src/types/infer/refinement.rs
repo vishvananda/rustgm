@@ -3,7 +3,7 @@ use super::{
     Constructor, Context, Error, RegionId, Store, TermId, Value,
     arguments::{Argument, Slot},
     constants::ConstTermId,
-    import::Import,
+    import::{Import, Mapping, Tracking},
 };
 use crate::types::substitute::Bound;
 use std::collections::HashSet;
@@ -11,10 +11,23 @@ use std::collections::HashSet;
 /// An isolated query can refine its imported type/const holes. The source may
 /// acquire additional constraints while the query waits. This transport grants
 /// no trait or lifetime proof; the caller must retain the selected evidence.
+#[derive(Default)]
 pub struct Refinement {
-    context: Context,
+    pub context: Context,
+    inputs: Option<Box<Roots>>,
+}
+#[derive(Default)]
+struct Roots {
     types: Vec<(TermId, TermId)>,
     constants: Vec<(ConstTermId, ConstTermId)>,
+}
+impl Tracking for Roots {
+    fn ty(&mut self, original: TermId, copied: TermId) {
+        self.types.push((original, copied));
+    }
+    fn constant(&mut self, original: ConstTermId, copied: ConstTermId) {
+        self.constants.push((original, copied));
+    }
 }
 
 /// Type/const refinements do not discharge these query-scoped lifetime equations.
@@ -35,33 +48,17 @@ impl Refinement {
         source: &mut Context,
         roots: &[Argument],
     ) -> Result<(Self, Vec<Argument>), Error> {
-        let inputs = Inputs::discover(source, roots)?;
-        let mut context = Context::default();
-        let mut mappings = Import::default();
-        let roots = import(store, source, &mut context, roots, &mut mappings)?;
-        let types = inputs
-            .types
-            .into_iter()
-            .map(|id| Ok((id, *mappings.types.get(&id).ok_or(Error::InvalidIdentity)?)))
-            .collect::<Result<_, Error>>()?;
-        let constants = inputs
-            .constants
-            .into_iter()
-            .map(|id| {
-                Ok((
-                    id,
-                    *mappings.constants.get(&id).ok_or(Error::InvalidIdentity)?,
-                ))
-            })
-            .collect::<Result<_, Error>>()?;
-        Ok((
-            Self {
-                context,
-                types,
-                constants,
-            },
-            roots,
-        ))
+        let mut query = Self::default();
+        let mut mappings = Mapping::<Roots>::default();
+        let roots = import(store, source, &mut query.context, roots, &mut mappings)?;
+        query.retain_inputs(mappings);
+        Ok((query, roots))
+    }
+
+    fn retain_inputs(&mut self, mappings: Mapping<Roots>) {
+        let roots = mappings.tracker;
+        self.inputs =
+            (!roots.types.is_empty() || !roots.constants.is_empty()).then(|| Box::new(roots));
     }
 
     /// Isolated selection and its lifetime equations remain owned by the caller.
@@ -69,12 +66,49 @@ impl Refinement {
         &mut self.context
     }
 
+    /// Import a complete predicate, including mixed arguments and equality results.
+    /// # Errors
+    /// Rejects malformed input identities and exhausted inference work.
+    pub fn predicate(
+        store: &Store,
+        source: &mut Context,
+        predicate: &super::predicates::Predicate,
+    ) -> Result<(Self, super::predicates::Predicate), Error> {
+        let mut query = Self::default();
+        let predicate = query.initialize_predicate(store, source, predicate)?;
+        Ok((query, predicate))
+    }
+
+    /// Build directly in the owned query, avoiding an extra large-context return.
+    /// An existing query's terms and input mapping cannot be replaced.
+    pub(crate) fn initialize_predicate(
+        &mut self,
+        store: &Store,
+        source: &mut Context,
+        predicate: &super::predicates::Predicate,
+    ) -> Result<super::predicates::Predicate, Error> {
+        if self.inputs.is_some() || !self.context.terms.is_empty() {
+            return Err(Error::InvalidIdentity);
+        }
+        let mut mappings = Mapping::<Roots>::default();
+        let predicate = predicate.map_arguments(|argument| {
+            self.context.account_work(1)?;
+            import_argument(store, source, &mut self.context, argument, &mut mappings)
+        })?;
+        self.retain_inputs(mappings);
+        Ok(predicate)
+    }
+
     fn roots(&self, copied: bool) -> Vec<Argument> {
-        self.types
+        let Some(inputs) = &self.inputs else {
+            return Vec::new();
+        };
+        inputs
+            .types
             .iter()
             .map(|&(original, query)| Argument::Type(if copied { query } else { original }))
             .chain(
-                self.constants.iter().map(|&(original, query)| {
+                inputs.constants.iter().map(|&(original, query)| {
                     Argument::Const(if copied { query } else { original })
                 }),
             )
@@ -86,6 +120,9 @@ impl Refinement {
     /// # Errors
     /// Rejects contradictory inputs, invalid identities and exhausted work.
     pub fn refresh(&mut self, store: &Store, source: &mut Context) -> Result<(), Error> {
+        if self.inputs.is_none() {
+            return Ok(());
+        }
         let roots = self.roots(false);
         let incoming = import(
             store,
@@ -113,17 +150,49 @@ impl Refinement {
         source: &mut Context,
         closing: &mut Bound,
     ) -> Result<Committed, Error> {
+        let changed = self.publish(store, source, closing)?;
+        Ok(Committed {
+            changed,
+            equalities: self.context.region_equalities,
+        })
+    }
+
+    /// Publish input progress while retaining the query and its lifetime evidence.
+    /// Later resumption reconciles current source inputs through the same roots.
+    /// Charges only work since the last successful publication.
+    /// # Errors
+    /// Has the same prevalidation and failure contract as `Self::commit`.
+    pub fn publish(
+        &mut self,
+        store: &mut Store,
+        source: &mut Context,
+        closing: &mut Bound,
+    ) -> Result<bool, Error> {
+        let Some(selected_inputs) = &self.inputs else {
+            source.account_work(self.context.steps)?;
+            self.context.steps = 0;
+            return Ok(false);
+        };
         let roots = self.roots(false);
         let inputs = Inputs::discover(source, &roots)?;
         let exported = self.context.map_region_roots(
             store,
-            &self.types.iter().map(|&(_, id)| id).collect::<Vec<_>>(),
+            &selected_inputs
+                .types
+                .iter()
+                .map(|&(_, id)| id)
+                .collect::<Vec<_>>(),
             closing,
         )?;
         let exported: Vec<_> = exported
             .into_iter()
             .map(Argument::Type)
-            .chain(self.constants.iter().map(|&(_, id)| Argument::Const(id)))
+            .chain(
+                selected_inputs
+                    .constants
+                    .iter()
+                    .map(|&(_, id)| Argument::Const(id)),
+            )
             .collect();
         let mut validation = Context::default();
         let mut source_map = Import::default();
@@ -139,6 +208,7 @@ impl Refinement {
         validation.equate_input_pairs(store, &pairs)?;
         let mut reverse = inputs.preserved(source, &mut validation, &source_map)?;
         source.account_work(self.context.steps.saturating_add(validation.steps))?;
+        self.context.steps = 0;
         let mut bindings = Vec::with_capacity(inputs.types.len() + inputs.constants.len());
         for original in inputs.types {
             let id = *source_map
@@ -166,10 +236,7 @@ impl Refinement {
         source
             .region_equalities
             .append(&mut validation.region_equalities);
-        Ok(Committed {
-            changed,
-            equalities: self.context.region_equalities,
-        })
+        Ok(changed)
     }
 }
 
@@ -276,23 +343,27 @@ fn import(
     source: &mut Context,
     target: &mut Context,
     roots: &[Argument],
-    mappings: &mut Import,
+    mappings: &mut Mapping<impl Tracking>,
 ) -> Result<Vec<Argument>, Error> {
     target.account_work(roots.len())?;
     roots
         .iter()
-        .map(|&argument| {
-            Ok(match argument {
-                Argument::Lifetime(region) => Argument::Lifetime(region),
-                Argument::Type(id) => {
-                    Argument::Type(target.import_with(store, source, id, mappings)?)
-                }
-                Argument::Const(id) => {
-                    Argument::Const(mappings.constant(store, source, target, id)?)
-                }
-            })
-        })
+        .map(|&argument| import_argument(store, source, target, argument, mappings))
         .collect()
+}
+
+fn import_argument(
+    store: &Store,
+    source: &mut Context,
+    target: &mut Context,
+    argument: Argument,
+    mappings: &mut Mapping<impl Tracking>,
+) -> Result<Argument, Error> {
+    Ok(match argument {
+        Argument::Lifetime(region) => Argument::Lifetime(region),
+        Argument::Type(id) => Argument::Type(target.import_with(store, source, id, mappings)?),
+        Argument::Const(id) => Argument::Const(mappings.constant(store, source, target, id)?),
+    })
 }
 
 fn different(context: &mut Context, left: Argument, right: Argument) -> Result<bool, Error> {

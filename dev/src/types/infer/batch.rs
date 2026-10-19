@@ -18,10 +18,62 @@ impl Context {
         inputs: &[(Argument, Argument)],
     ) -> Result<(), Error> {
         self.account_work(inputs.len())?;
-        let mut pairs = Vec::new();
+        let pairs: Vec<_> = inputs
+            .iter()
+            .filter_map(|&(left, right)| {
+                if let (Argument::Type(a), Argument::Type(b)) = (left, right) {
+                    Some((a, b))
+                } else {
+                    None
+                }
+            })
+            .collect();
+        // A single variable binds to an unexpanded canonical leaf in constant
+        // work. Composite patterns still need the shared cycle check: canonical
+        // roots can contain cached children expanded by earlier constraints.
+        if let [(left, right)] = pairs.as_slice() {
+            let left = self.root(*left)?;
+            let right = self.root(*right)?;
+            if matches!(
+                (
+                    self.terms[left.0 as usize].value,
+                    self.terms[right.0 as usize].value,
+                ),
+                (Value::Known(_), Value::Variable(_)) | (Value::Variable(_), Value::Known(_))
+            ) {
+                return self.equate_mixed_inputs(store, inputs, true);
+            }
+        }
+        if self.input_callables(store, &pairs)? {
+            return self.equate_mixed_inputs(store, inputs, true);
+        }
+        self.pairs.clear();
+        // A bulk memo must not leave later tiny equations clearing its capacity.
+        // Keep ordinary scratch separate, including when this operation fails.
+        let ordinary = std::mem::take(&mut self.seen);
+        let result = self.equate_mixed_inputs(store, inputs, false);
+        self.seen = ordinary;
+        result?;
+        self.acyclic_inputs(&pairs)
+    }
+
+    fn equate_mixed_inputs(
+        &mut self,
+        store: &Store,
+        inputs: &[(Argument, Argument)],
+        scoped: bool,
+    ) -> Result<(), Error> {
+        // Preserve subject/argument order in the lifetime proof stream. The
+        // structural memo spans every root, even across non-type arguments.
         for &(left, right) in inputs {
             match (left, right) {
-                (Argument::Type(a), Argument::Type(b)) => pairs.push((a, b)),
+                (Argument::Type(a), Argument::Type(b)) if scoped => {
+                    self.equate_scoped_terms(store, a, b)?;
+                }
+                (Argument::Type(a), Argument::Type(b)) => {
+                    self.pairs.push((a, b));
+                    self.unify_pending::<false>(store, true, None)?;
+                }
                 (Argument::Const(a), Argument::Const(b)) => self.equate_consts(a, b)?,
                 (Argument::Lifetime(a), Argument::Lifetime(b)) => {
                     if a != b {
@@ -31,21 +83,7 @@ impl Context {
                 _ => return Err(Error::InvalidIdentity),
             }
         }
-        if self.input_callables(store, &pairs)? {
-            for (left, right) in pairs {
-                self.equate_scoped_terms(store, left, right)?;
-            }
-            return Ok(());
-        }
-        self.pairs.clear();
-        // A bulk memo must not leave later tiny equations clearing its capacity.
-        // Keep ordinary scratch separate, including when this operation fails.
-        let ordinary = std::mem::take(&mut self.seen);
-        self.pairs.extend(pairs.iter().rev().copied());
-        let result = self.unify_pending::<false>(store, true, None);
-        self.seen = ordinary;
-        result?;
-        self.acyclic_inputs(&pairs)
+        Ok(())
     }
 
     fn input_callables(

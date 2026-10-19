@@ -34,6 +34,7 @@ impl Normalization {
         let mut fold = Normalizer::default();
         let step = fold.start(&mut facts.types, root)?;
         frame
+            .inputs
             .context
             .account_work(fold.steps())
             .map_err(inference)?;
@@ -49,13 +50,18 @@ impl Normalization {
     }
 }
 impl Frame {
-    pub(super) fn child(&mut self, facts: &mut Declarations, floor: u32) -> Result<Self, String> {
+    pub(super) fn child(
+        &mut self,
+        facts: &mut Declarations,
+        floor: u32,
+        suspended: &mut [Option<Frame>],
+    ) -> Result<Self, String> {
         if let Some(normalization) = &self.normalization
             && normalization.pending()
         {
             let mut child = Self::new(
                 facts,
-                &mut self.context,
+                &mut self.inputs.context,
                 normalization
                     .goal
                     .as_ref()
@@ -70,13 +76,26 @@ impl Frame {
         }
         let trial = self.trial.as_mut().ok_or("missing descending candidate")?;
         let index = trial.pending[trial.cursor];
+        if let Some(slot) = trial.wakeups.take_child(index) {
+            let mut child = suspended
+                .get_mut(slot)
+                .and_then(Option::take)
+                .ok_or("missing retained partial child")?;
+            child.refresh(facts, &mut trial.inputs.context)?;
+            return Ok(child);
+        }
         let mut child = Self::new(
             facts,
-            &mut trial.context,
+            &mut trial.inputs.context,
             &trial.instance.goals[index],
             trial.end.max(floor),
         )?;
         child.scope = self.scope;
+        child.inference = if self.inference == super::frames::Inference::Disabled {
+            super::frames::Inference::Disabled
+        } else {
+            super::frames::Inference::Selecting
+        };
         Ok(child)
     }
     pub(super) fn available_region(&self) -> u32 {
@@ -115,9 +134,11 @@ impl Search<'_> {
                     return Err("associated families require advanced generic relationships".into());
                 }
                 let mut substitution =
-                    Instantiation::new(&mut frame.context, &facts.types, &[]).map_err(inference)?;
+                    Instantiation::new(&mut frame.inputs.context, &facts.types, &[])
+                        .map_err(inference)?;
                 normalization.goal = Some(
                     frame
+                        .inputs
                         .context
                         .instantiate_predicate(
                             &mut facts.types,
@@ -159,6 +180,7 @@ impl Search<'_> {
             .take()
             .ok_or("missing equality trait premise")?;
         frame
+            .inputs
             .context
             .equate_trait_predicate(&mut facts.types, &goal, self.query.nodes[node].goal)
             .map_err(inference)?;
@@ -181,7 +203,7 @@ impl Search<'_> {
                 };
                 match equalities::for_projection(
                     facts,
-                    &mut frame.context,
+                    &mut frame.inputs.context,
                     &application,
                     self.caller.environment.map(AsRef::as_ref),
                 )? {
@@ -200,12 +222,13 @@ impl Search<'_> {
             equality.end = self.query.nodes[node].end;
         }
         equality.proof = Some(self.inherit_inputs(node, equality.proof));
-        frame.context.account_work(2).map_err(inference)?;
+        frame.inputs.context.account_work(2).map_err(inference)?;
         let before = equality.fold.steps();
         equality.step = equality
             .fold
             .resume(&mut facts.types, request, resolution)?;
         frame
+            .inputs
             .context
             .account_work(equality.fold.steps().saturating_sub(before))
             .map_err(inference)

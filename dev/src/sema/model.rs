@@ -251,6 +251,8 @@ pub struct ReferenceAlignment {
 /// Work observations are not language facts and are never part of a text oracle.
 #[derive(Default)]
 pub struct BodyWork {
+    /// Actual ordinary trait goal attempts, including resumed retained candidates.
+    pub trait_selections: usize,
     /// Field storage preparation uses its own cursor after consuming inference.
     pub storage_waits: usize,
     pub storage_definition_waits: usize,

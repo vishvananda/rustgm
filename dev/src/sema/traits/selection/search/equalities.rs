@@ -17,6 +17,7 @@ impl Search<'_> {
             return Ok(Action::Complete(decision));
         }
         let left = match frame
+            .inputs
             .context
             .resolved(&mut facts.types, frame.goal.subject())
         {
@@ -28,7 +29,7 @@ impl Search<'_> {
             .goal
             .projection_result()
             .ok_or("missing equality result")?;
-        let right = match frame.context.resolved(&mut facts.types, result) {
+        let right = match frame.inputs.context.resolved(&mut facts.types, result) {
             Ok(ty) => Some(ty),
             Err(infer::Error::Unresolved) => None,
             Err(error) => return Err(inference(error)),
@@ -61,6 +62,7 @@ impl Search<'_> {
                 let before = normalization.fold.steps();
                 normalization.step = normalization.fold.start(&mut facts.types, right)?;
                 frame
+                    .inputs
                     .context
                     .account_work(normalization.fold.steps().saturating_sub(before))
                     .map_err(inference)?;
@@ -85,6 +87,7 @@ impl Search<'_> {
             return Err("invalid equality completion purpose".into());
         };
         let left = frame
+            .inputs
             .context
             .known(
                 &facts.types,
@@ -93,6 +96,7 @@ impl Search<'_> {
             .map_err(inference)?;
         let right = if equality.right.is_some() {
             frame
+                .inputs
                 .context
                 .known(&facts.types, value)
                 .map_err(inference)?
@@ -102,7 +106,11 @@ impl Search<'_> {
                 .projection_result()
                 .ok_or("missing equality result")?
         };
-        match frame.context.equate_scoped_terms(&facts.types, left, right) {
+        match frame
+            .inputs
+            .context
+            .equate_scoped_terms(&facts.types, left, right)
+        {
             Ok(()) => {}
             Err(infer::Error::Mismatch | infer::Error::Occurs) => return Ok(Decision::Absent),
             Err(infer::Error::Unresolved | infer::Error::Normalization) => {
@@ -111,6 +119,7 @@ impl Search<'_> {
             Err(error) => return Err(inference(error)),
         }
         let goal = match frame
+            .inputs
             .context
             .resolved_predicate(&mut facts.types, &frame.goal)
         {
@@ -125,7 +134,7 @@ impl Search<'_> {
                 children: normalization.proof.into_iter().collect(),
                 first: frame.first,
                 end: normalization.end,
-                equalities: std::mem::take(&mut frame.context.region_equalities),
+                equalities: std::mem::take(&mut frame.inputs.context.region_equalities),
                 outlives: Vec::new(),
                 type_outlives: Vec::new(),
                 sized: Vec::new(),

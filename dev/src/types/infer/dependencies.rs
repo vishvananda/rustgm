@@ -96,6 +96,26 @@ impl Context {
         self.watch_inputs(types, constants, true)
     }
 
+    /// Observe every type/const input of a complete predicate, including equality results.
+    /// Lifetime identities remain proof obligations, not inference dependencies.
+    /// # Errors
+    /// Rejects malformed inputs and exhausted work, as `Self::watch_changes` does.
+    pub fn watch_predicate(
+        &mut self,
+        predicate: &super::predicates::Predicate,
+    ) -> Result<WatchId, Error> {
+        let mut types = Vec::new();
+        let mut constants = Vec::new();
+        for argument in predicate.arguments() {
+            match argument {
+                super::arguments::Argument::Type(term) => types.push(term),
+                super::arguments::Argument::Const(term) => constants.push(term),
+                super::arguments::Argument::Lifetime(_) => {}
+            }
+        }
+        self.watch_changes(&types, &constants)
+    }
+
     fn watch_inputs(
         &mut self,
         types: &[TermId],

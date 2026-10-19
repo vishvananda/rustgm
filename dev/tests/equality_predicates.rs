@@ -1,4 +1,6 @@
 //! Equality obligations retain both graphs without equating their rigid inputs.
+#[path = "equality_predicates/transport.rs"]
+mod transport;
 use rustgm::types::{
     GenericArgs, ItemId, Kind, Primitive, RegionId, Store, TypeId,
     arguments::{Argument, ConstKind, Constant},

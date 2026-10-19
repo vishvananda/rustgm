@@ -125,3 +125,14 @@ nested and elided binders, closed/static negatives, trait arguments and actual
 use-site obligations. All earlier sidecars are unchanged. See the declaration
 formation review in [PA21 validation](pa21-validation.md) for the source bug,
 independent evidence and the distinction from source-level higher-ranked traits.
+
+## Retained partial implementation inference
+
+The later PA21 preparation work closes an ordinary PA19 inference gap. Seven
+fixtures in `tests/spec/partial-inference/` preserve a unique partial candidate
+until all of its conditions and lifetime debts finish; four execute independently
+through CPPGM and rustc, and three reject in both compilers. PA19 now has 1,087
+course/source checks, 648 LowIR checks and 258 native executions. Existing oracle
+bytes and the seven documented acceptance exceptions are unchanged. See the
+[retained inference validation](pa21-validation.md#retained-ordinary-partial-trait-inference)
+for full checks, scaling regressions, measured overhead and remaining PA21 gates.

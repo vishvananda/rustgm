@@ -316,7 +316,7 @@ impl Checker<'_> {
         }
     }
     pub(super) fn poll_projections(&mut self, body: NodeId) -> Result<Advance, Error> {
-        if !self.state.projections.active() {
+        if !self.state.projections.active() && !self.state.notifications.waiting() {
             return Ok(Advance::Ready(false));
         }
         let mut progress = false;
@@ -337,8 +337,8 @@ impl Checker<'_> {
         loop {
             while let Some(watch) = self
                 .state
-                .infer
-                .ready_resolution(&self.facts.types)
+                .notifications
+                .next_projection(&mut self.state.infer, &self.facts.types)
                 .map_err(|e| self.error(body, e))?
             {
                 let query = self

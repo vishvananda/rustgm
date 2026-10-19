@@ -9,9 +9,13 @@ use std::collections::{HashMap, HashSet};
 pub(super) enum Progress {
     Ready(Decision),
     Pending(DefId),
+    Inferred,
 }
 
 pub(super) struct Query {
+    pub refining: bool,
+    pub inferred: bool,
+    pub suspended: Vec<Option<Frame>>,
     pub scopes: Option<Box<super::scopes::Scopes>>,
     pub allocations: super::allocations::Allocations,
     pub availability: Availability,
@@ -44,6 +48,9 @@ impl<'a> Search<'a> {
         Self {
             caller,
             query: Query {
+                refining: false,
+                inferred: false,
+                suspended: Vec::new(),
                 scopes: None,
                 allocations: super::allocations::Allocations::new(first),
                 availability,
@@ -71,6 +78,7 @@ impl<'a> Search<'a> {
             Progress::Pending(_) => {
                 Err("trait selection requires pending implementation headers".into())
             }
+            Progress::Inferred => Err("non-refining selection returned partial inputs".into()),
         }
     }
 
@@ -104,9 +112,9 @@ impl<'a> Search<'a> {
         let mut stack = std::mem::take(&mut self.query.stack);
         while let Some(frame) = stack.last_mut() {
             let action = self.advance(facts, frame)?;
-            self.charge(&mut frame.context)?;
+            self.charge(&mut frame.inputs.context)?;
             if let Some(trial) = &mut frame.trial {
-                self.charge(&mut trial.context)?;
+                self.charge(&mut trial.inputs.context)?;
             }
             match action {
                 Action::Continue => {}
@@ -115,11 +123,29 @@ impl<'a> Search<'a> {
                     self.query.waiting = Some(owner);
                     return Ok(Progress::Pending(owner));
                 }
+                Action::Yield => {
+                    self.query.allocations.reserve_scoped();
+                    self.publish_trial(facts, frame)?;
+                    let mut child = stack.pop().ok_or("missing partial selection frame")?;
+                    if let Some(parent) = stack.last_mut() {
+                        self.accept_partial(facts, parent, child)?;
+                    } else {
+                        child.inference = super::frames::Inference::Committed;
+                        stack.push(child);
+                        self.query.stack = stack;
+                        self.query.inferred = true;
+                        return Ok(Progress::Inferred);
+                    }
+                }
                 Action::Descend => {
                     let child = if let Some(child) = self.condition_child(facts, frame)? {
                         child
                     } else {
-                        frame.child(facts, self.query.allocations.floor())?
+                        frame.child(
+                            facts,
+                            self.query.allocations.floor(),
+                            &mut self.query.suspended,
+                        )?
                     };
                     stack.push(child);
                 }
@@ -143,10 +169,36 @@ impl<'a> Search<'a> {
     }
 
     pub(super) fn resume_at(&mut self, first: u32) -> Result<(), String> {
-        if self.query.waiting.is_none() {
+        if self.query.waiting.is_none() && !self.query.inferred {
             return Err("trait selection is not waiting for a header".into());
         }
         self.query.allocations.resume_at(first).map_err(Into::into)
+    }
+
+    pub(super) fn publish_inputs(
+        &mut self,
+        facts: &mut Declarations,
+        caller: &mut super::Context,
+    ) -> Result<bool, String> {
+        let frame = self.query.stack.first_mut().ok_or("missing partial root")?;
+        let changed = frame.publish(facts, caller)?;
+        caller
+            .account_work(std::mem::take(&mut self.query.steps))
+            .map_err(super::inference)?;
+        Ok(changed)
+    }
+
+    pub(super) fn refresh_inputs(
+        &mut self,
+        facts: &mut Declarations,
+        caller: &mut super::Context,
+    ) -> Result<(), String> {
+        if self.query.inferred {
+            let frame = self.query.stack.first_mut().ok_or("missing partial root")?;
+            frame.refresh(facts, caller)?;
+            self.query.inferred = false;
+        }
+        Ok(())
     }
 
     pub(super) fn await_header(

@@ -47,6 +47,8 @@ mod receiver_contracts;
 mod receiver_lookup;
 #[path = "trait_bounds/receiver_native.rs"]
 mod receiver_native;
+#[path = "trait_bounds/retained.rs"]
+mod retained;
 #[path = "helpers/qualify.rs"]
 mod rustc;
 #[path = "trait_bounds/selection.rs"]

@@ -67,6 +67,14 @@ of impls. Type/const arguments may be inferred when complete goal equations sele
 an unambiguous candidate. Defer uncertain alternatives; numeric defaults apply
 only after ordinary inference and trait progress stop.
 
+A unique compatible impl may expose a partial type constructor or array length
+before every parameter is resolved. Retain that candidate and its unfinished
+conditions while other body goals determine the remaining inputs. Partial input
+progress is not evidence: all impl conditions and lifetime obligations must still
+succeed. A pending or ambiguous alternative prevents publication. Preserve this
+behavior under bound reordering, nested impl conditions and const arguments;
+`tests/spec/partial-inference/` includes executable results and rejection controls.
+
 Keep candidate equations isolated. Failed candidates cannot publish types,
 lifetimes or permissions into the caller. Successful evidence retains directed
 outlives and equality requirements for the normal lifetime proof. Assumptions

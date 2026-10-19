@@ -22,6 +22,68 @@ pub struct Predicate {
     requirement: Requirement,
 }
 impl Predicate {
+    /// Complete mixed inputs, including equality results and outlives lifetimes.
+    /// The order is shared with `Self::map_arguments`.
+    pub fn arguments(&self) -> impl Iterator<Item = Argument> + '_ {
+        std::iter::once(Argument::Type(self.subject))
+            .chain(
+                self.trait_arguments()
+                    .into_iter()
+                    .flat_map(|(_, args)| args.iter().copied()),
+            )
+            .chain(self.projection_result().map(Argument::Type))
+            .chain(match self.builtin_bound() {
+                Some(Bound::Outlives(region)) => Some(Argument::Lifetime(region)),
+                _ => None,
+            })
+    }
+
+    /// Map all inputs through one shared transport, retaining the requirement kind.
+    /// # Errors
+    /// Propagates mapping failures and rejects changed argument kinds.
+    pub fn map_arguments(
+        &self,
+        mut map: impl FnMut(Argument) -> Result<Argument, Error>,
+    ) -> Result<Self, Error> {
+        let mut map = |input| {
+            let output = map(input)?;
+            if std::mem::discriminant(&input) != std::mem::discriminant(&output) {
+                return Err(Error::InvalidIdentity);
+            }
+            Ok(output)
+        };
+        let Argument::Type(subject) = map(Argument::Type(self.subject))? else {
+            return Err(Error::InvalidIdentity);
+        };
+        let requirement = match &self.requirement {
+            Requirement::Trait(trait_) => Requirement::Trait(Box::new(Trait {
+                item: trait_.item,
+                arguments: trait_
+                    .arguments
+                    .iter()
+                    .copied()
+                    .map(&mut map)
+                    .collect::<Result<_, _>>()?,
+            })),
+            Requirement::ProjectionEqual(result) => {
+                let Argument::Type(result) = map(Argument::Type(*result))? else {
+                    return Err(Error::InvalidIdentity);
+                };
+                Requirement::ProjectionEqual(result)
+            }
+            Requirement::Builtin(Bound::Outlives(region)) => {
+                let Argument::Lifetime(region) = map(Argument::Lifetime(*region))? else {
+                    return Err(Error::InvalidIdentity);
+                };
+                Requirement::Builtin(Bound::Outlives(region))
+            }
+            Requirement::Builtin(bound) => Requirement::Builtin(*bound),
+        };
+        Ok(Self {
+            subject,
+            requirement,
+        })
+    }
     /// Each input root, preserving the trait's mixed argument ordering.
     pub fn input_roots(&self) -> impl Iterator<Item = TermId> + '_ {
         std::iter::once(self.subject).chain(

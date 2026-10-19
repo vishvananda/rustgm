@@ -16,6 +16,7 @@ impl Search<'_> {
         frame: &mut Frame,
     ) -> Result<Decision, String> {
         let goal = match frame
+            .inputs
             .context
             .resolved_predicate(&mut facts.types, &frame.goal)
         {
@@ -39,7 +40,7 @@ impl Search<'_> {
                 children: Vec::new(),
                 first: frame.first,
                 end: frame.available_region(),
-                equalities: std::mem::take(&mut frame.context.region_equalities),
+                equalities: std::mem::take(&mut frame.inputs.context.region_equalities),
                 outlives: Vec::new(),
                 type_outlives,
                 sized,

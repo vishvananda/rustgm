@@ -15722,6 +15722,116 @@
       },
       "maintainer_origin": "dev/tests/trait_bounds/implicit_scope.rs",
       "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/partial-inference/partial-method-result.rs",
+      "exit_status": 0,
+      "features": [
+        "pa19.partial-inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "mode": "--emit-lowir",
+      "maintainer_origin": "dev/tests/trait_bounds/retained.rs",
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/partial-inference/reversed-bound-order.rs",
+      "exit_status": 0,
+      "features": [
+        "pa19.partial-inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "mode": "--emit-lowir",
+      "maintainer_origin": "dev/tests/trait_bounds/retained.rs",
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/partial-inference/nested-partial-condition.rs",
+      "exit_status": 0,
+      "features": [
+        "pa19.partial-inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "mode": "--emit-lowir",
+      "maintainer_origin": "dev/tests/trait_bounds/retained.rs",
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/partial-inference/failed-selected-condition.rs",
+      "exit_status": 1,
+      "features": [
+        "pa19.partial-inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "mode": "--emit-lowir",
+      "maintainer_origin": "dev/tests/trait_bounds/retained.rs"
+    },
+    {
+      "path": "tests/spec/partial-inference/partial-const-method-result.rs",
+      "exit_status": 0,
+      "features": [
+        "pa19.partial-inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "mode": "--emit-lowir",
+      "maintainer_origin": "dev/tests/trait_bounds/retained.rs",
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/partial-inference/ambiguous-distinct-headers.rs",
+      "exit_status": 1,
+      "features": [
+        "pa19.partial-inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "mode": "--emit-lowir",
+      "maintainer_origin": "dev/tests/trait_bounds/retained.rs"
+    },
+    {
+      "path": "tests/spec/partial-inference/unknown-self-not-guessed.rs",
+      "exit_status": 1,
+      "features": [
+        "pa19.partial-inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "mode": "--emit-lowir",
+      "maintainer_origin": "dev/tests/trait_bounds/retained.rs"
     }
   ]
 }

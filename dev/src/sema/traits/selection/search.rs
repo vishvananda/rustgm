@@ -16,10 +16,15 @@ mod inputs;
 #[path = "../../../../tests/invariants/formation_clauses.rs"]
 mod nominal_tests;
 mod normalization;
+mod partial;
+#[cfg(test)]
+#[path = "../../../../tests/invariants/retained_candidates.rs"]
+mod partial_tests;
 mod result_bounds;
 mod scopes;
 mod suspension;
-pub(in crate::sema) use suspension::{Pending, Progress, begin, begin_normalized};
+mod wakeups;
+pub(in crate::sema) use suspension::{Pending, Progress, begin, begin_normalized, begin_refining};
 #[cfg(test)]
 #[path = "../../../../tests/invariants/universal_premises.rs"]
 mod assumption_tests;
@@ -50,6 +55,7 @@ enum Action {
     Descend,
     Complete(Decision),
     Wait(crate::resolve::model::DefId),
+    Yield,
 }
 struct Node {
     goal: Predicate,
@@ -152,27 +158,43 @@ impl Search<'_> {
             return self.advance_normalization(facts, frame);
         }
         if let Some(trial) = &mut frame.trial {
-            if trial.cursor < trial.pending.len() {
+            if trial.cursor == trial.pending.len() {
+                trial.pending.clear();
+                trial.cursor = 0;
+            }
+            trial.poll_condition_changes(facts, None)?;
+            if let Some(&index) = trial.pending.get(trial.cursor) {
+                trial.wakeups.start(index);
                 return Ok(Action::Descend);
             }
-            if !trial.next.is_empty() && trial.progress {
-                trial.pending = std::mem::take(&mut trial.next);
-                trial.cursor = 0;
-                trial.progress = false;
-                return Ok(Action::Continue);
-            }
-            let result = if trial.next.is_empty() {
+            let result = if trial.wakeups.waiting() {
+                Decision::Deferred
+            } else {
                 let Some(result) = self.finish(facts, trial)? else {
                     return Ok(Action::Descend);
                 };
                 result
-            } else {
-                Decision::Deferred
             };
-            self.charge(&mut trial.context)?;
-            frame.trial = None;
+            self.charge(&mut trial.inputs.context)?;
+            let retained = frame.trial.take();
             match result {
                 Decision::Absent => {}
+                Decision::Deferred
+                    if self.query.refining
+                        && frame.inference != frames::Inference::Disabled
+                        && frame.scope == ScopeId::ROOT
+                        && !frame.normalizing() =>
+                {
+                    if frame.inference == frames::Inference::Committed {
+                        frame.trial = retained;
+                        return Ok(Action::Yield);
+                    }
+                    if frame.partial.is_some() {
+                        frame.deferred = true;
+                    } else {
+                        frame.partial = retained.map(Box::new);
+                    }
+                }
                 Decision::Deferred => frame.deferred = true,
                 Decision::Proven(node) => {
                     if frame.selected.replace(node).is_some() {
@@ -187,11 +209,12 @@ impl Search<'_> {
             let mut trial = Trial::new(facts, frame, owner, self.query.allocations.floor())?;
             self.query.allocations.record(trial.end);
             self.query.reserve(trial.scope, trial.first..trial.end)?;
-            let result =
-                trial
-                    .context
-                    .equate_predicates(&facts.types, &trial.goal, &trial.instance.goal);
-            self.charge(&mut trial.context)?;
+            let result = trial.inputs.context.equate_predicates(
+                &facts.types,
+                &trial.goal,
+                &trial.instance.goal,
+            );
+            self.charge(&mut trial.inputs.context)?;
             match result {
                 Ok(()) => frame.trial = Some(trial),
                 Err(infer::Error::Mismatch | infer::Error::Occurs) => {}
@@ -200,11 +223,21 @@ impl Search<'_> {
             }
             return Ok(Action::Continue);
         }
-        Ok(Action::Complete(if frame.deferred {
-            Decision::Deferred
-        } else {
-            frame.selected.map_or(Decision::Absent, Decision::Proven)
-        }))
+        if !frame.deferred
+            && frame.selected.is_none()
+            && let Some(trial) = frame.partial.take()
+        {
+            frame.trial = Some(*trial);
+            frame.inference = frames::Inference::Committed;
+            return Ok(Action::Yield);
+        }
+        Ok(Action::Complete(
+            if frame.deferred || frame.partial.is_some() {
+                Decision::Deferred
+            } else {
+                frame.selected.map_or(Decision::Absent, Decision::Proven)
+            },
+        ))
     }
     fn start(&mut self, facts: &mut Declarations, frame: &mut Frame) -> Result<Action, String> {
         frame.started = true;
@@ -255,12 +288,13 @@ impl Search<'_> {
         let first = frame.available_region().max(self.query.allocations.floor());
         match self.caller.assumptions.select_scoped(
             &mut facts.types,
-            &mut frame.context,
+            &mut frame.inputs.context,
             &frame.goal,
             first,
         )? {
             Assumed::Proven(proof) => {
                 let goal = frame
+                    .inputs
                     .context
                     .resolved_predicate(&mut facts.types, &frame.goal)?;
                 self.query
@@ -273,7 +307,7 @@ impl Search<'_> {
                         children: Vec::new(),
                         first: frame.first,
                         end: proof.regions.end,
-                        equalities: std::mem::take(&mut frame.context.region_equalities),
+                        equalities: std::mem::take(&mut frame.inputs.context.region_equalities),
                         outlives: Vec::new(),
                         type_outlives: Vec::new(),
                         sized: Vec::new(),
@@ -300,7 +334,7 @@ impl Search<'_> {
         let candidates = registry
             .candidates(
                 &mut facts.types,
-                &mut frame.context,
+                &mut frame.inputs.context,
                 &frame.goal,
                 self.query.availability,
             )
@@ -322,6 +356,7 @@ impl Search<'_> {
         frame: &mut Frame,
     ) -> Result<Option<Decision>, String> {
         match frame
+            .inputs
             .context
             .resolved_predicate(&mut facts.types, &frame.goal)
         {
@@ -332,7 +367,7 @@ impl Search<'_> {
                     return Ok(Some(decision));
                 }
                 let (key, work) = facts.types.shape_key(goal)?;
-                frame.context.account_work(work).map_err(inference)?;
+                frame.inputs.context.account_work(work).map_err(inference)?;
                 if !self.query.active.insert(key) {
                     self.query.cycles += 1;
                     return Ok(Some(Decision::Absent));
@@ -372,12 +407,13 @@ impl Search<'_> {
         trial.cursor += 1;
         match decision {
             Decision::Absent => {
-                self.charge(&mut trial.context)?;
+                self.charge(&mut trial.inputs.context)?;
                 frame.trial = None;
             }
-            Decision::Deferred => trial.next.push(index),
+            Decision::Deferred => trial.defer_condition(facts, index)?,
             Decision::Proven(node) => {
                 trial
+                    .inputs
                     .context
                     .equate_proved_predicate(
                         &mut facts.types,
@@ -389,8 +425,8 @@ impl Search<'_> {
                     trial.end = self.query.nodes[node].end;
                 }
                 trial.children.push(node);
-                trial.progress = true;
-                self.charge(&mut trial.context)?;
+                trial.complete_condition(index)?;
+                self.charge(&mut trial.inputs.context)?;
             }
         }
         Ok(())

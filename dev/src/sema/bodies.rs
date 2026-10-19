@@ -15,6 +15,7 @@ mod lifetimes;
 mod matches;
 mod methods;
 mod nominals;
+mod notifications;
 mod owner_arguments;
 mod pattern_constants;
 mod patterns;
@@ -199,6 +200,7 @@ pub(super) struct State {
     canonical_trait_inference: Option<Box<Context>>,
     annotations: super::annotations::Scratch,
     projections: projections::Pending,
+    notifications: notifications::Notifications,
     storage: Option<Box<super::stored_fields::Preparation>>,
     finalization: Option<Box<finalization::Finalization>>,
     trait_goals: Option<Box<trait_goals::Pending>>,
@@ -287,6 +289,7 @@ impl<'a> Checker<'a> {
                 canonical_trait_inference: None,
                 annotations: super::annotations::Scratch::default(),
                 projections: projections::Pending::default(),
+                notifications: notifications::Notifications::default(),
                 storage: None,
                 finalization: None,
                 trait_goals: None,
@@ -334,6 +337,7 @@ impl<'a> Checker<'a> {
     fn begin_constant(&mut self, key: NodeKey, ty: TypeId, module: ModuleId) {
         self.state.call_types.clear();
         self.state.projections = projections::Pending::default();
+        self.state.notifications = notifications::Notifications::default();
         self.state.storage = None;
         self.state.finalization = None;
         self.state.trait_goals = None;
@@ -491,6 +495,7 @@ impl Checker<'_> {
     fn function(&mut self, function: Function) -> Result<(), Error> {
         self.state.call_types.clear();
         self.state.projections = projections::Pending::default();
+        self.state.notifications = notifications::Notifications::default();
         self.state.storage = None;
         self.state.finalization = None;
         self.state.trait_goals = None;

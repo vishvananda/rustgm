@@ -11,7 +11,7 @@ pub(super) struct Frame {
     /// A suspended normalizer has proved these inputs in this search's scope.
     /// Its evidence must accompany any result derived without repeating that work.
     pub normalized_inputs: Option<NormalizedInputs>,
-    pub context: Context,
+    pub inputs: infer::refinement::Refinement,
     pub goal: Goal,
     pub first: u32,
     pub scope: ScopeId,
@@ -25,12 +25,22 @@ pub(super) struct Frame {
     pub trial: Option<Trial>,
     pub selected: Option<usize>,
     pub deferred: bool,
+    pub partial: Option<Box<Trial>>,
+    pub inference: Inference,
+    pub suspended_slot: Option<usize>,
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub(super) enum Inference {
+    Disabled,
+    Selecting,
+    Committed,
 }
 pub(super) struct NormalizedInputs {
     pub proof: Option<usize>,
 }
 pub(super) struct Trial {
-    pub context: Context,
+    pub inputs: infer::refinement::Refinement,
     pub goal: Goal,
     pub instance: Instance,
     pub first: u32,
@@ -38,8 +48,7 @@ pub(super) struct Trial {
     pub end: u32,
     pub pending: Vec<usize>,
     pub cursor: usize,
-    pub next: Vec<usize>,
-    pub progress: bool,
+    pub wakeups: super::wakeups::Wakeups,
     pub children: Vec<usize>,
     pub requirements: Option<Box<super::builtins::Requirements>>,
 }
@@ -50,14 +59,14 @@ impl Frame {
         goal: &Goal,
         first: u32,
     ) -> Result<Self, String> {
-        let mut context = Context::default();
-        let goal = context
-            .import_predicate(&facts.types, source, goal)
+        let mut inputs = infer::refinement::Refinement::default();
+        let goal = inputs
+            .initialize_predicate(&facts.types, source, goal)
             .map_err(inference)?;
         Ok(Self {
             normalization: None,
             normalized_inputs: None,
-            context,
+            inputs,
             goal,
             first,
             scope: ScopeId::ROOT,
@@ -71,6 +80,9 @@ impl Frame {
             trial: None,
             selected: None,
             deferred: false,
+            partial: None,
+            inference: Inference::Disabled,
+            suspended_slot: None,
         })
     }
 }
@@ -81,12 +93,12 @@ impl Trial {
         owner: DefId,
         floor: u32,
     ) -> Result<Self, String> {
-        let mut context = Context::default();
-        let goal = context
-            .import_predicate(&facts.types, &mut frame.context, &frame.goal)
+        let mut inputs = infer::refinement::Refinement::default();
+        let goal = inputs
+            .initialize_predicate(&facts.types, &mut frame.inputs.context, &frame.goal)
             .map_err(inference)?;
         let first = frame.available_region().max(floor);
-        let instance = instantiation::instantiate(facts, &mut context, owner, first)?;
+        let instance = instantiation::instantiate(facts, &mut inputs.context, owner, first)?;
         let end = first
             + u32::try_from(instance.regions.len()).map_err(|_| "impl region count overflow")?;
         let pending = instance
@@ -99,7 +111,7 @@ impl Trial {
             })
             .collect();
         Ok(Self {
-            context,
+            inputs,
             goal,
             instance,
             first,
@@ -107,8 +119,7 @@ impl Trial {
             end,
             pending,
             cursor: 0,
-            next: Vec::new(),
-            progress: false,
+            wakeups: super::wakeups::Wakeups::default(),
             children: Vec::new(),
             requirements: None,
         })
@@ -127,9 +138,17 @@ impl Search<'_> {
             let Some(bound) = goal.builtin_bound() else {
                 continue;
             };
-            let ty = match trial.context.resolved(&mut facts.types, goal.subject()) {
+            let ty = match trial
+                .inputs
+                .context
+                .resolved(&mut facts.types, goal.subject())
+            {
                 Ok(ty) => ty,
-                Err(infer::Error::Unresolved) => return Ok(Some(Decision::Deferred)),
+                Err(infer::Error::Unresolved) => {
+                    requirements.cursor = index;
+                    trial.requirements = Some(Box::new(requirements));
+                    return Ok(Some(Decision::Deferred));
+                }
                 Err(error) => return Err(inference(error)),
             };
             if facts
@@ -151,7 +170,10 @@ impl Search<'_> {
         }
         let (goal, arguments) = match trial.resolved_parent(facts) {
             Ok(resolved) => resolved,
-            Err(infer::Error::Unresolved) => return Ok(Some(Decision::Deferred)),
+            Err(infer::Error::Unresolved) => {
+                trial.requirements = Some(Box::new(requirements));
+                return Ok(Some(Decision::Deferred));
+            }
             Err(error) => return Err(inference(error)),
         };
         if !self.conditions(facts, trial, arguments)? {
@@ -171,7 +193,7 @@ impl Search<'_> {
                 children: std::mem::take(&mut trial.children),
                 first: trial.first,
                 end: trial.end,
-                equalities: std::mem::take(&mut trial.context.region_equalities),
+                equalities: std::mem::take(&mut trial.inputs.context.region_equalities),
                 outlives: std::mem::take(&mut trial.instance.outlives),
                 type_outlives: requirements.type_outlives,
                 sized: requirements.sized,
