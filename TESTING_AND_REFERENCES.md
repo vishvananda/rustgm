@@ -628,6 +628,16 @@ successful test or measurement batches. The local reserve is 40 GiB; when
 `RUSTGM_MIN_FREE_GIB` explicitly overrides either default. Incremental
 Cargo caching is disabled in these commands.
 
+Scripts whose disposable outputs all live in known directories can pass
+`--prune-under obj/path` before `--`; repeat the option for multiple roots.
+The wrapper still checks space and holds the exclusive lock, then scans only
+those directories. Nested or repeated roots are scanned once. Pins in any
+ancestor remain protected, and explicit roots cannot select symlinks, Git
+metadata or managed caches. Missing directories may be created by the command;
+the wrapper validates their paths again before cleanup. Declare every output
+root and keep the default full scan for suites with scattered output. This
+avoids revisiting historical evidence after a small isolated qualification run.
+
 For direct optimized checks, use:
 
 ```sh

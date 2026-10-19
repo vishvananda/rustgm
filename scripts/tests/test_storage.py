@@ -70,6 +70,81 @@ class StorageTests(unittest.TestCase):
             self.assertTrue(recent.exists())
             self.assertFalse(cache.exists())
 
+    def test_scoped_cleanup_visits_only_selected_outputs_once(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for name in ("current/program", "current/nested/program", "other/program"):
+                self.binary(root / "obj" / name)
+            source = root / "obj/current/input.rs"
+            source.write_text("fn main() {}")
+            visited = []
+            walk = os.walk
+
+            def record(start, **kwargs):
+                visited.append(start)
+                return walk(start, **kwargs)
+
+            with patch("storage.os.walk", side_effect=record), redirect_stdout(io.StringIO()):
+                count = prune(root, apply=True, paths=["obj/current/nested", "obj/current",
+                                                      root / "obj/current"])
+            self.assertEqual(count, 2)
+            self.assertEqual(visited, [root / "obj/current"])
+            self.assertTrue((root / "obj/other/program").exists())
+            self.assertTrue(source.exists())
+
+    def test_scoped_cleanup_preserves_pinned_ancestors_and_rejects_escapes(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            pinned = root / "obj/pinned/nested/program"
+            external = root / "outside/program"
+            self.binary(pinned)
+            self.binary(external)
+            (root / "obj/pinned/.keep-artifacts").touch()
+            (root / "obj/link").symlink_to(external.parent, target_is_directory=True)
+            with redirect_stdout(io.StringIO()):
+                self.assertEqual(prune(root, apply=True, paths=["obj/pinned/nested"]), 0)
+            self.assertTrue(pinned.exists())
+            for path in ("outside", "obj/../outside", external.parent, "obj/link",
+                         "obj/link/nested", "obj/rust", "obj/cleanup", "obj/audit-venv",
+                         "obj/pinned/.git", pinned):
+                with self.subTest(path=path), self.assertRaises(ValueError):
+                    prune(root, apply=True, paths=[path])
+            with self.assertRaisesRegex(ValueError, "shared build cache"):
+                prune(root, apply=True, paths=["obj/pinned"], build_cache=True)
+            self.assertTrue(external.exists())
+
+    def test_scoped_run_validates_paths_before_work_and_cleans_new_directories(self):
+        script = ("from pathlib import Path; "
+                  "p=Path('obj/new/output.o'); p.parent.mkdir(parents=True,exist_ok=True); "
+                  "p.write_bytes(b'object'); Path('obj/new/result.json').write_text('{}')")
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            sibling = root / "obj/previous/program"
+            self.binary(sibling)
+            for path, code in (("../escape", 1), ("obj/new", 0)):
+                argv = ["storage.py", "run", "--minimum-gib", "0", "--prune-under", path,
+                        "--", sys.executable, "-c", script]
+                with patch("storage.ROOT", root), patch.object(sys, "argv", argv):
+                    with redirect_stdout(io.StringIO()), patch("sys.stderr", io.StringIO()):
+                        self.assertEqual(main(), code)
+                self.assertEqual((root / "obj/new/result.json").exists(), code == 0)
+                self.assertFalse((root / "obj/new/output.o").exists())
+                self.assertTrue(sibling.exists())
+
+    def test_scoped_cleanup_rechecks_roots_changed_by_the_command(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            external = root / "outside/program"
+            self.binary(external)
+            script = ("from pathlib import Path; "
+                      "Path('obj/new').symlink_to(Path('outside').resolve(), target_is_directory=True)")
+            argv = ["storage.py", "run", "--minimum-gib", "0", "--prune-under", "obj/new",
+                    "--", sys.executable, "-c", script]
+            with patch("storage.ROOT", root), patch.object(sys, "argv", argv):
+                with redirect_stdout(io.StringIO()), patch("sys.stderr", io.StringIO()):
+                    self.assertEqual(main(), 1)
+            self.assertTrue(external.exists())
+
     def test_active_runs_and_symlinked_obj_are_refused(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -103,11 +178,15 @@ class StorageTests(unittest.TestCase):
             previous = root / "obj/failed-earlier/program"
             self.binary(previous)
             os.utime(previous, (time.time() - 3600,) * 2)
-            for code, no_prune in ((7, False), (0, True), (0, False)):
+            for code, no_prune, scoped in ((7, False, False), (0, True, False),
+                                          (0, False, False), (7, False, True),
+                                          (0, False, True)):
                 argv = ["storage.py", "run", "--minimum-gib", "0", "--", sys.executable,
                         "-c", script + f"; raise SystemExit({code})"]
                 if no_prune:
                     argv.insert(2, "--no-prune")
+                if scoped:
+                    argv[2:2] = ["--prune-under", "obj/run"]
                 with patch("storage.ROOT", root), patch.object(sys, "argv", argv):
                     with redirect_stdout(io.StringIO()):
                         self.assertEqual(main(), code)

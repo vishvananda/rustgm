@@ -79,41 +79,85 @@ def disposable(path, info):
     return path.name in {"rendered-output.tmp", "full-sample.out"}
 
 
-def prune(root, *, apply=False, hours=0, build_cache=False, since=0):
+def cleanup_roots(root, paths):
+    """Explicit output roots avoid walking unrelated historical evidence."""
+    obj = root / "obj"
+    if not paths:
+        return [obj]
+    selected = []
+    for value in paths:
+        path = Path(value)
+        if not path.is_absolute():
+            path = root / path
+        try:
+            parts = path.relative_to(obj).parts
+        except ValueError as error:
+            raise ValueError("Cleanup paths must be directories inside obj") from error
+        if ".." in parts or ".git" in parts or (parts and parts[0] in CACHE_DIRS):
+            raise ValueError("Cleanup paths cannot escape obj or select managed caches")
+        current = obj
+        pinned = False
+        for name in (None, *parts):
+            if name is not None:
+                current /= name
+            if current.is_symlink():
+                raise ValueError("Refusing a symlinked cleanup path")
+            if current.exists() and not current.is_dir():
+                raise ValueError("Cleanup paths must be directories inside obj")
+            pinned |= (current / ".keep-artifacts").exists()
+        if not pinned:
+            selected.append(path)
+    # Parents cover their descendants. Each generated file gets one receipt row.
+    result = []
+    for path in sorted(set(selected), key=lambda path: (len(path.parts), str(path))):
+        if not any(path.is_relative_to(parent) for parent in result):
+            result.append(path)
+    return result
+
+
+def generated_files(obj, roots):
+    for start in roots:
+        for directory, dirs, files in os.walk(start, followlinks=False):
+            folder = Path(directory)
+            dirs[:] = [name for name in dirs if not (folder / name).is_symlink()
+                       and name != ".git" and not (folder / name / ".keep-artifacts").exists()
+                       and not (folder == obj and name in CACHE_DIRS)]
+            for name in files:
+                yield folder / name
+
+
+def prune(root, *, apply=False, hours=0, build_cache=False, since=0, paths=()):
     active = active_artifacts(root)
     if active:
         raise ValueError(f"RustGM build/test executables still running: {active}; cleanup refused")
     obj = root / "obj"
     if obj.is_symlink():
         raise ValueError("Refusing a symlinked obj directory")
+    if paths and build_cache:
+        raise ValueError("Scoped cleanup cannot remove the shared build cache")
+    roots = cleanup_roots(root, paths)
     cutoff = time.time() - hours * 3600
     records = obj / "cleanup"
     records.mkdir(parents=True, exist_ok=True)
     record = records / f"{time.time_ns()}.jsonl"
     count = freed = 0
     with record.open("w") as log:
-        for directory, dirs, files in os.walk(obj, followlinks=False):
-            folder = Path(directory)
-            dirs[:] = [name for name in dirs if not (folder / name).is_symlink()
-                       and name != ".git" and not (folder / name / ".keep-artifacts").exists()
-                       and not (folder == obj and name in CACHE_DIRS)]
-            for name in files:
-                path = folder / name
-                try:
-                    info = path.lstat()
-                    if not since <= info.st_mtime <= cutoff or not disposable(path, info):
-                        continue
-                    log.write(json.dumps({"path": str(path.relative_to(root)),
-                                          "bytes": info.st_size, "links": info.st_nlink,
-                                          "removed": apply}) + "\n")
-                    if apply:
-                        log.flush()
-                        path.unlink()
-                    count += 1
-                    if info.st_nlink == 1:
-                        freed += info.st_blocks * 512
-                except FileNotFoundError:
+        for path in generated_files(obj, roots):
+            try:
+                info = path.lstat()
+                if not since <= info.st_mtime <= cutoff or not disposable(path, info):
                     continue
+                log.write(json.dumps({"path": str(path.relative_to(root)),
+                                      "bytes": info.st_size, "links": info.st_nlink,
+                                      "removed": apply}) + "\n")
+                if apply:
+                    log.flush()
+                    path.unlink()
+                count += 1
+                if info.st_nlink == 1:
+                    freed += info.st_blocks * 512
+            except FileNotFoundError:
+                continue
         cache = obj / "rust"
         if build_cache and cache.exists():
             if cache.is_symlink():
@@ -132,6 +176,8 @@ def main():
     parser.add_argument("--apply", action="store_true")
     parser.add_argument("--build-cache", action="store_true")
     parser.add_argument("--no-prune", action="store_true", help="guard build/check commands without a post-run scan")
+    parser.add_argument("--prune-under", action="append", default=[], metavar="DIRECTORY",
+                        help="clean only declared output directories inside obj; repeat for multiple roots")
     parser.add_argument("--hours", type=float, default=0)
     parser.add_argument("--minimum-gib", type=float,
                         default=minimum_reserve())
@@ -140,13 +186,17 @@ def main():
         command = command[1:]
     if args.hours < 0 or args.minimum_gib < 0 or (command and args.action != "run"):
         parser.error("invalid arguments")
+    if args.prune_under and (args.action == "check" or args.no_prune or args.build_cache):
+        parser.error("--prune-under requires pruning without --no-prune or --build-cache")
     try:
         if args.action == "check":
             check_space(ROOT, args.minimum_gib)
             return 0
         with exclusive(ROOT):
+            cleanup_roots(ROOT, args.prune_under)
             if args.action == "prune":
-                prune(ROOT, apply=args.apply, hours=args.hours, build_cache=args.build_cache)
+                prune(ROOT, apply=args.apply, hours=args.hours, build_cache=args.build_cache,
+                      paths=args.prune_under)
                 return 0
             if not command:
                 parser.error("run requires a command after --")
@@ -158,7 +208,7 @@ def main():
             # Failed runs retain their executable artifacts for diagnosis. An explicit
             # prune can remove them once the failure has been investigated.
             if result.returncode == 0 and not args.no_prune:
-                prune(ROOT, apply=True, since=started)
+                prune(ROOT, apply=True, since=started, paths=args.prune_under)
             return result.returncode if result.returncode >= 0 else 128 - result.returncode
     except (OSError, ValueError) as error:
         print(f"storage: {error}", file=sys.stderr)

@@ -48,6 +48,11 @@ code, duplicated blocks, phase dependencies and misplaced environment access.
   raw timing observations remain. Failed runs retain artifacts for diagnosis;
   prune them after investigating. Never accumulate a fresh binary per historical
   test case or benchmark observation indefinitely.
+- When a script puts all disposable output in known directories, pass repeated
+  `--prune-under obj/path` options before `--` to clean those directories without
+  rescanning historical runs. Declare every output root; retain the default full
+  scan for commands with scattered outputs. Scoped cleanup preserves pins,
+  caches, symlink protections, the reserve and the exclusive lock.
 - Use `make tidy` between work batches; `make tidy-build` also removes the
   rebuildable Cargo cache. Cleanup refuses active compiler/test executables and
   shares an exclusive lock with wrapped commands. Do not run cleanup during
