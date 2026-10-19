@@ -8,8 +8,8 @@ impl Frame {
         facts: &mut Declarations,
         source: &mut Context,
     ) -> Result<bool, String> {
-        // This path is restricted to the caller's own proof scope. Universal
-        // witnesses need a separate, validated export into the older universe.
+        // Frames within the same proof scope share their lifetime identities.
+        // The root's universal boundary uses its separately retained export fold.
         let mut identity = Bound::parameters(&facts.types, &[])?;
         self.inputs
             .publish(&mut facts.types, source, &mut identity)

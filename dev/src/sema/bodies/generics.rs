@@ -273,6 +273,16 @@ impl Checker<'_> {
         }
         for (index, predicate) in predicates.iter().enumerate() {
             let node = self.state.call_types.obligations[index].0;
+            if self.state.call_types.bound_regions(index).is_some() {
+                // The retained query proved this whole binder in its own scope.
+                // Re-proving its unbound body here would change its quantification.
+                if !evidence.contains_key(&index) {
+                    return Err(
+                        self.error(node, "quantified call obligation has no scoped evidence")
+                    );
+                }
+                continue;
+            }
             let predicate = match evidence.get(&index) {
                 Some(Source::Assumption(actual) | Source::ResultBound(actual)) => *actual,
                 Some(Source::Implementation { .. }) => continue,

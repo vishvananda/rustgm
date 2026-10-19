@@ -37,7 +37,11 @@ impl Checker<'_> {
                 .obligations
                 .iter()
                 .enumerate()
-                .filter_map(|(index, (_, predicate))| predicate.trait_arguments().map(|_| index))
+                .filter_map(|(index, (_, predicate))| {
+                    (predicate.trait_arguments().is_some()
+                        || self.state.call_types.bound_regions(index).is_some())
+                    .then_some(index)
+                })
                 .collect();
             if pending.is_empty() && !self.state.projections.active() {
                 return Ok(Progress::Ready(HashMap::new()));
@@ -219,6 +223,7 @@ impl Checker<'_> {
                     retain_sized: false,
                 },
                 self.availability,
+                self.state.call_types.bound_regions(index),
             )
         }
         .map_err(|e| self.error(node, e))?;

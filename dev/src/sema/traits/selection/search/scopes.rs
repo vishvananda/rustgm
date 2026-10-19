@@ -41,7 +41,15 @@ impl Query {
         regions: Range<u32>,
     ) -> Result<(), &'static str> {
         if let Some(scopes) = &mut self.scopes {
-            scopes.reserve(scope, regions, false)?;
+            scopes.reserve(scope, regions.clone(), false)?;
+        }
+        if scope != ScopeId::ROOT
+            && !regions.is_empty()
+            && let Some(universal) = &mut self.universal
+        {
+            universal
+                .sources
+                .push(crate::types::substitute::ExportSource::Private(regions));
         }
         Ok(())
     }
@@ -96,6 +104,68 @@ impl Query {
     }
 }
 impl Scopes {
+    pub fn open_inferred(
+        &mut self,
+        facts: &mut Declarations,
+        frame: &mut super::Frame,
+        scope: ScopeId,
+    ) -> Result<u32, String> {
+        let universe = self
+            .universes
+            .get_mut(scope.0 as usize - 1)
+            .ok_or("missing inferred universal scope")?;
+        frame
+            .inputs
+            .context
+            .account_work(universe.count as usize + 1)
+            .map_err(super::inference)?;
+        frame.goal = frame
+            .inputs
+            .context
+            .map_predicate_regions(&mut facts.types, &frame.goal, &mut universe.opening)
+            .map_err(super::inference)?;
+        frame.scope = scope;
+        Ok(universe.aliases.end)
+    }
+
+    pub fn bridge(&mut self, private: RegionId, caller: RegionId) -> Result<usize, &'static str> {
+        let mut work = 1;
+        let index = self.reservations.partition_point(|reservation| {
+            work += 1;
+            reservation.regions.end <= private.0
+        });
+        let owner = self
+            .reservations
+            .get(index)
+            .filter(|reservation| !reservation.alias && reservation.regions.contains(&private.0))
+            .ok_or("exported witness has no private proof owner")?;
+        self.universes
+            .get_mut(owner.scope.0 as usize - 1)
+            .ok_or("missing private witness scope")?
+            .proof
+            .equalities
+            .push((private, caller));
+        Ok(work)
+    }
+
+    pub fn equalities(
+        &mut self,
+        scope: ScopeId,
+        mut equalities: Vec<crate::types::outlives::Pair>,
+    ) -> Result<(), &'static str> {
+        let index = scope
+            .0
+            .checked_sub(1)
+            .ok_or("universal evidence has no scope")?;
+        self.universes
+            .get_mut(index as usize)
+            .ok_or("missing universal evidence scope")?
+            .proof
+            .equalities
+            .append(&mut equalities);
+        Ok(())
+    }
+
     fn reserve(
         &mut self,
         scope: ScopeId,

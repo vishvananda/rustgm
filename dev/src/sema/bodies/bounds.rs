@@ -295,47 +295,79 @@ impl Checker<'_> {
         )
         .map_err(|e| self.error(node, e))?;
         for predicate in predicates {
-            let value = predicate
-                .value
-                .ordinary()
-                .map_err(|error| self.error(node, error))?;
-            if assumed == Some(value) {
-                self.state
-                    .call_types
-                    .assumed_obligations
-                    .insert(self.state.call_types.obligations.len());
+            self.instantiate_bound_obligation(
+                node,
+                predicate.value,
+                assumed,
+                &mut substitution,
+                &mut inference,
+            )?;
+        }
+        Ok(())
+    }
+
+    fn instantiate_bound_obligation(
+        &mut self,
+        node: NodeId,
+        clause: crate::types::parameters::clauses::Clause,
+        assumed: Option<crate::types::parameters::predicates::Predicate>,
+        substitution: &mut substitute::Bound,
+        inference: &mut crate::types::infer::Instantiation,
+    ) -> Result<(), Error> {
+        use crate::types::parameters::clauses::Clause;
+        let index = self.state.call_types.obligations.len();
+        if assumed.is_some_and(|value| clause == Clause::Predicate(value)) {
+            self.state.call_types.assumed_obligations.insert(index);
+        }
+        let clause = substitution
+            .clause(&mut self.facts.types, clause)
+            .map_err(|e| self.error(node, e))?;
+        let (value, bound_regions) = match clause {
+            Clause::Predicate(value) => (value, None),
+            Clause::ForAll(id) => {
+                let value = self
+                    .facts
+                    .types
+                    .quantified(id)
+                    .ok_or_else(|| self.error(node, "missing quantified call requirement"))?;
+                (value.predicate, Some(value.bound_regions))
             }
-            let predicate = substitution
-                .predicate(&mut self.facts.types, value)
-                .map_err(|e| self.error(node, e))?;
-            let predicate = self
-                .state
-                .infer
-                .instantiate_predicate(&mut self.facts.types, predicate, &mut inference)
-                .map_err(|e| self.error(node, e))?;
-            if let Some(result) = predicate.projection_result() {
-                let scope = crate::types::lifetime_proof::ScopeId::ROOT;
-                self.defer_normalization(node, scope, predicate.subject())?;
-                self.defer_normalization(node, scope, result)?;
-                self.deferred_equation(
-                    node,
-                    predicate.subject(),
-                    result,
-                    crate::types::infer::deferred::Relation::Equality,
-                )?;
-            } else if matches!(
-                predicate.builtin_bound(),
-                Some(Bound::Copy | Bound::Clone | Bound::Sized | Bound::Outlives(_))
-            ) {
-                // The property belongs to the selected result, while the retained
-                // application still owes its original formation and lifetime proof.
-                self.defer_normalization(
-                    node,
-                    crate::types::lifetime_proof::ScopeId::ROOT,
-                    predicate.subject(),
-                )?;
-            }
-            self.state.call_types.obligations.push((node, predicate));
+        };
+        let predicate = self
+            .state
+            .infer
+            .instantiate_predicate(&mut self.facts.types, value, inference)
+            .map_err(|e| self.error(node, e))?;
+        if let Some(count) = bound_regions {
+            self.state.call_types.quantify(index, count);
+        } else {
+            self.defer_bound_inputs(node, &predicate)?;
+        }
+        self.state.call_types.obligations.push((node, predicate));
+        Ok(())
+    }
+
+    fn defer_bound_inputs(
+        &mut self,
+        node: NodeId,
+        predicate: &crate::types::infer::predicates::Predicate,
+    ) -> Result<(), Error> {
+        let scope = crate::types::lifetime_proof::ScopeId::ROOT;
+        if let Some(result) = predicate.projection_result() {
+            self.defer_normalization(node, scope, predicate.subject())?;
+            self.defer_normalization(node, scope, result)?;
+            self.deferred_equation(
+                node,
+                predicate.subject(),
+                result,
+                crate::types::infer::deferred::Relation::Equality,
+            )?;
+        } else if matches!(
+            predicate.builtin_bound(),
+            Some(Bound::Copy | Bound::Clone | Bound::Sized | Bound::Outlives(_))
+        ) {
+            // The selected result's property does not erase input formation debts.
+            self.defer_normalization(node, scope, predicate.subject())?;
         }
         Ok(())
     }

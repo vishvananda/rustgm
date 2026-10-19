@@ -11,6 +11,7 @@ mod frames;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/selection_headers.rs"]
 mod header_tests;
+mod input_universe;
 mod inputs;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/formation_clauses.rs"]
@@ -23,6 +24,9 @@ mod partial_tests;
 mod result_bounds;
 mod scopes;
 mod suspension;
+#[cfg(test)]
+#[path = "../../../../tests/invariants/universal_inference.rs"]
+mod universal_inference_tests;
 mod wakeups;
 pub(in crate::sema) use suspension::{Pending, Progress, begin, begin_normalized, begin_refining};
 #[cfg(test)]
@@ -94,20 +98,31 @@ pub(super) fn prove(
 
 impl Search<'_> {
     fn result(
-        self,
+        mut self,
         facts: &mut Declarations,
         context: &mut Context,
         goal: &Goal,
         decision: Decision,
     ) -> Result<Selection, String> {
+        if let Decision::Proven(root) = decision
+            && self.query.universal.is_some()
+        {
+            self.complete_universal(facts, context, root)?;
+        }
         context.account_work(self.query.steps).map_err(inference)?;
         match decision {
             Decision::Absent => Ok(Selection::Absent),
             Decision::Deferred => Ok(Selection::Deferred),
             Decision::Proven(root) => {
-                context
-                    .equate_proved_predicate(&mut facts.types, goal, self.query.nodes[root].goal)
-                    .map_err(inference)?;
+                if self.query.universal.is_none() {
+                    context
+                        .equate_proved_predicate(
+                            &mut facts.types,
+                            goal,
+                            self.query.nodes[root].goal,
+                        )
+                        .map_err(inference)?;
+                }
                 self.evidence(root).map(Selection::Proven)
             }
         }
@@ -182,7 +197,7 @@ impl Search<'_> {
                 Decision::Deferred
                     if self.query.refining
                         && frame.inference != frames::Inference::Disabled
-                        && frame.scope == ScopeId::ROOT
+                        && frame.scope == self.query.input_scope()
                         && !frame.normalizing() =>
                 {
                     if frame.inference == frames::Inference::Committed {

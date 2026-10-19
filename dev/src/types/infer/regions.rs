@@ -182,11 +182,13 @@ impl Mapping {
                         .ok_or(Error::InvalidIdentity)?,
                 );
             }
+            let before = bound.steps;
             let value = context.map_constructor_regions(store, kind, &self.children, |region| {
                 bound
                     .region(region, depth)
                     .map_err(|_| Error::InvalidIdentity)
             })?;
+            context.account_work(bound.steps.saturating_sub(before))?;
             self.results.insert((id, depth), value);
         }
         let term = self

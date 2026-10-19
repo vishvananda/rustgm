@@ -17,6 +17,7 @@ pub(super) struct Query {
     pub inferred: bool,
     pub suspended: Vec<Option<Frame>>,
     pub scopes: Option<Box<super::scopes::Scopes>>,
+    pub universal: Option<Box<super::input_universe::InputUniverse>>,
     pub allocations: super::allocations::Allocations,
     pub availability: Availability,
     pub nodes: Vec<Node>,
@@ -27,7 +28,7 @@ pub(super) struct Query {
     pub reused: bool,
     pub steps: usize,
     pub builtins: crate::sema::nominals::Proof,
-    stack: Vec<Frame>,
+    pub stack: Vec<Frame>,
     waiting: Option<DefId>,
     decision: Option<Decision>,
 }
@@ -52,6 +53,7 @@ impl<'a> Search<'a> {
                 inferred: false,
                 suspended: Vec::new(),
                 scopes: None,
+                universal: None,
                 allocations: super::allocations::Allocations::new(first),
                 availability,
                 builtins,
@@ -155,8 +157,12 @@ impl<'a> Search<'a> {
                         self.query.active.remove(&key);
                     }
                     let (canonical, cycles, scope) = (frame.canonical, frame.cycles, frame.scope);
-                    stack.pop();
+                    let completed = stack.pop().ok_or("missing completed selection frame")?;
                     let Some(parent) = stack.last_mut() else {
+                        if self.query.universal.is_some() {
+                            stack.push(completed);
+                            self.query.stack = stack;
+                        }
                         self.query.decision = Some(decision);
                         return Ok(Progress::Ready(decision));
                     };
@@ -172,7 +178,18 @@ impl<'a> Search<'a> {
         if self.query.waiting.is_none() && !self.query.inferred {
             return Err("trait selection is not waiting for a header".into());
         }
-        self.query.allocations.resume_at(first).map_err(Into::into)
+        let previous = self.query.allocations.end();
+        self.query.allocations.resume_at(first)?;
+        if let Some(universal) = &mut self.query.universal
+            && first > previous
+        {
+            universal
+                .sources
+                .push(crate::types::substitute::ExportSource::Caller(
+                    previous..first,
+                ));
+        }
+        Ok(())
     }
 
     pub(super) fn publish_inputs(
@@ -181,7 +198,20 @@ impl<'a> Search<'a> {
         caller: &mut super::Context,
     ) -> Result<bool, String> {
         let frame = self.query.stack.first_mut().ok_or("missing partial root")?;
-        let changed = frame.publish(facts, caller)?;
+        let changed = if let Some(universal) = &mut self.query.universal {
+            universal.publish(
+                facts,
+                caller,
+                frame,
+                &mut self.query.allocations,
+                self.query
+                    .scopes
+                    .as_mut()
+                    .ok_or("missing universal input scopes")?,
+            )?
+        } else {
+            frame.publish(facts, caller)?
+        };
         caller
             .account_work(std::mem::take(&mut self.query.steps))
             .map_err(super::inference)?;

@@ -2,7 +2,8 @@
 use super::{Action, Bound, RegionId};
 use std::collections::HashMap;
 
-enum Mode {
+pub(super) enum Mode {
+    Export(Box<super::export::Export>),
     Open {
         first: u32,
         next: u32,
@@ -15,7 +16,7 @@ enum Mode {
         retained: Retained,
     },
 }
-enum Retained {
+pub(super) enum Retained {
     Interval(std::ops::Range<u32>),
     Stream(Vec<std::ops::Range<u32>>),
 }
@@ -33,14 +34,15 @@ impl Retained {
     }
 }
 pub(super) struct Mapping {
-    mode: Mode,
-    replacements: HashMap<RegionId, RegionId>,
+    pub(super) mode: Mode,
+    pub(super) replacements: HashMap<RegionId, RegionId>,
 }
 impl Mapping {
     pub(super) fn region(
         &mut self,
         original: RegionId,
         depth: u16,
+        steps: &mut usize,
     ) -> Result<RegionId, &'static str> {
         if original == RegionId::STATIC {
             return Ok(original);
@@ -71,6 +73,8 @@ impl Mapping {
         };
         let replacement = if let Some(&replacement) = self.replacements.get(&key) {
             replacement
+        } else if let Mode::Export(export) = &mut self.mode {
+            export.region(key, &mut self.replacements, steps)?
         } else if let Mode::Open { next, .. } = &mut self.mode {
             let replacement = RegionId(*next);
             *next = next
@@ -198,6 +202,7 @@ impl Bound {
         match &self.action {
             Action::Regions(mapping) => match mapping.mode {
                 Mode::Open { next, .. } => Some(next),
+                Mode::Export(ref export) => Some(export.next),
                 Mode::Restore { .. } | Mode::Rebase { .. } => None,
             },
             _ => None,

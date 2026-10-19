@@ -1315,6 +1315,29 @@ lifetime allocations before yielding to body or declaration work, and preserve
 foreign allocation gaps. This root-scope transport does not export a witness from
 a universal proof scope or authorize higher-ranked source syntax.
 
+Quantified call requirements retain the complete predicate and its binder arity,
+including an empty binder. Substitute owner captures before instantiating shared
+type/const inputs; open the requirement only inside its isolated selection query.
+Ordinary children in that same scope may refine its inputs. A nested quantified
+implementation condition still resolves its parent first and cannot publish a
+local witness into the parent. Keep the ordinary call metadata unallocated.
+
+Export only private lifetimes actually reached by a selected caller input. Give
+each one a stable fresh witness in the older caller scope and retain its equality
+to the private lifetime in that lifetime's original proof scope. Unused private
+witnesses remain free to depend on universal slots. Direct universal aliases and
+unowned identities cannot be exported. Numeric allocation order does not determine
+universe ownership; caller witnesses can be allocated after private query IDs.
+
+Retain the export fold across suspension. Append only newly allocated source
+intervals, preserving caller gaps and omitted universal aliases; never reclassify
+an earlier interval beneath cached canonical substitutions. Map shared inferred
+roots together anew after equations change. Index private proof ownership by
+ordered reservation intervals and append only newly created bridge equalities.
+The completed-root path matches the opened predicate inside its isolated scope
+before closing caller inputs, just as partial publication does. Register and prove
+the complete scoped evidence before execution; publishing a type is not proof.
+
 Observe deferred conditions and body goals through their own type/const dependency
 leaves. A condition consumes its current inputs, including progress it just
 published; that publication must not immediately retry the same child at every

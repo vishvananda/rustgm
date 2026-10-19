@@ -10,6 +10,11 @@ use std::collections::{HashMap, HashSet};
 pub(super) struct CallTypes {
     pub obligations: Vec<(NodeId, crate::types::infer::predicates::Predicate)>,
     pub assumed_obligations: HashSet<usize>,
+    #[expect(
+        clippy::box_collection,
+        reason = "ordinary call inference keeps quantified obligation metadata unallocated"
+    )]
+    bound_regions: Option<Box<HashMap<usize, u32>>>,
     pub generic: Vec<(NodeId, DefId, TermId)>,
     pub constants: Vec<super::item_values::Pending>,
     pub generic_constructors: bool,
@@ -25,6 +30,14 @@ pub(super) struct CallTypes {
     universals: Option<Bound>,
 }
 impl CallTypes {
+    pub fn bound_regions(&self, index: usize) -> Option<u32> {
+        self.bound_regions.as_ref()?.get(&index).copied()
+    }
+    pub fn quantify(&mut self, index: usize, count: u32) {
+        self.bound_regions
+            .get_or_insert_with(Default::default)
+            .insert(index, count);
+    }
     pub fn insert_nominal(&mut self, term: TermId, fields: super::nominals::Fields) {
         self.nominal_receivers.insert(term, fields);
     }
@@ -39,6 +52,7 @@ impl CallTypes {
     pub fn clear(&mut self) {
         self.obligations.clear();
         self.assumed_obligations.clear();
+        self.bound_regions = None;
         self.generic.clear();
         self.constants.clear();
         self.generic_constructors = false;

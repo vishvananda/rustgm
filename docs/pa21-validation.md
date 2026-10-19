@@ -1829,3 +1829,96 @@ Candidate SHA-256:
 `0bd99225d8282e54cc4ed80d1557b2b40c5a1edf6238466608acb4287c574af1`.
 Final summary SHA-256:
 `02b406d7619c6e978d6cdd2619b443bb68c09277ba4cc230cc1cc2b13497208a`.
+
+### Quantified call inference and private witness export
+
+Call inference now consumes a whole quantified clause and opens its universal
+lifetimes inside an isolated trait-search scope. A unique selected implementation
+can refine caller type and const holes while retaining unfinished conditions.
+Lifetime witnesses appearing in the inferred input receive stable identities in
+the older caller scope; an equality connects each exported witness to its private
+origin inside the original proof scope. Universal aliases cannot be exported.
+The final region proof remains mandatory. A structurally successful search is
+not evidence that its lifetime debts are satisfiable.
+
+The export fold allocates only encountered witnesses and survives suspension.
+It preserves previous substitutions, skips foreign allocation gaps, and adds
+bridges only for newly encountered witnesses. Later conditions may discover new
+private witnesses without replacing earlier caller identities. Nested callable
+binders remain local, unused private witnesses remain private, and an empty
+quantifier retains its scope. Root completion reconciles the selected predicate
+inside its opened scope rather than equating original bound slots with free
+aliases in the caller. Ordinary queries retain their existing path and leave the
+new scope/obligation metadata unallocated.
+
+Thirteen independent full-source controls are compiled to objects by pinned
+rustc 1.98.0 in the regular test suite. They cover independent/longer/shorter
+private lifetimes, older caller captures with and without a static permission,
+indirect equality, unused witnesses, nested callable inputs, partial inference
+and witnesses introduced by a later condition. The corresponding internal tests
+install exactly the canonical requirement at the declaration/body boundary,
+then run actual body inference and the final borrow-region proof. These are
+qualified typed-consumer checks, not end-to-end HRTB source or native coverage.
+Thirty-one public source-gate diagnostics remain byte-identical to the published
+compiler, and their rejection is not counted as semantic negative coverage.
+
+Retained universal dependency chains through depth 2,048 take initial work
+`198d + 224 + 2 log2(d)`, resumed work `144d + 189`, and own `d + 4` lifetime
+identities, including precisely one caller export. Waiting without changed
+inputs performs no search work. The complete scoped proof passes its unchanged
+100,000-step lifetime budget. Exporting shared canonical prefixes costs `3n + 5`
+through 4,096 roots and still allocates just one witness when the private source
+interval contains thousands of unused IDs. These bounds describe the tested
+families, not arbitrary trait search.
+
+The frozen validation passes 34 recorded gates, **1,524 regular tests** (286
+library tests), **91 native groups** and **6,235 PA1–PA20 course cases**. Strict
+all-target/all-feature Clippy, the 896-file audit with zero findings, 33 harness
+tests, stage layout and upstream/backend checks pass. PA19 independently checks
+1,087 rustc sources and 648 LowIR cases, including 258 executable comparisons;
+PA20 checks 1,345 sources and 799 LowIR cases, including 484 executions. The
+existing seven/one acceptance exceptions remain documented. All 7,318 frozen
+source/configuration hashes and 18,705 oracle sidecar hashes remain unchanged.
+PA21–PA25 discovery continues to fail explicitly as planned. No course fixture,
+manifest or oracle was changed in this checkpoint.
+
+The immutable comparison with the published compiler covers 36 calibrated timing
+jobs and 32 instruction pairs. All measured full/count outputs match. Instruction
+changes range from **−0.241% to +0.235%**; ordinary-256 changes by +0.021% and
+callable-definition-256 by −0.052%. No increase exceeds the 1% instruction-review threshold. The original profiles and all observations remain
+available.
+
+Paired wall medians range from −2.98% to +2.92%; same-binary medians range from
+−0.54% to +0.17%, with maximum A/A spread 46.71%. No comparison crosses the
+predeclared +3% follow-up threshold, so the fixed follow-up policy schedules no
+additional timing jobs. These shared-host results are not a portable speedup,
+a general regression bound, or a comparison with rustc. RSS median differences
+range from −262 to +182 KiB.
+
+The two predeclared Massif inputs change peak heap from 2,432,704 to 2,432,261
+bytes (ordinary-256) and from 5,382,561 to 5,381,881 bytes
+(constant-chain-uses-256). Their combined heap/stack peaks increase by 56 and
+232 bytes; separate stack peaks change by −1,704 and +3,816 bytes. These two
+profiles do not establish a general memory bound. ELF text/data/BSS grows from
+6,498,305 to 6,518,785 bytes.
+
+Final evidence is in `obj/pa21-work/witness-export-final-v3`; focused controls and
+failed preliminary validation runs remain separately recorded. The final study
+retains 936 observations, 144 qualification observations, 3,744 timed compiler
+invocations, 576 qualification invocations, 64 Callgrind runs and four Massif
+runs. No historical draft observations are pooled into this result.
+
+Baseline SHA-256:
+`0bd99225d8282e54cc4ed80d1557b2b40c5a1edf6238466608acb4287c574af1`.
+Candidate SHA-256:
+`06fa33e119a665d8e7cd4ede9cfb970f40bd46dbbe693fd721c67cb0653ff1f0`.
+Final summary SHA-256:
+`62a8b201f6b31829527d39d11fc74e764e971c819a1af8c9e32bf689a8127413`.
+
+PA21 remains planned. Source binder production, remaining scoped declaration and
+instance-witness consumers, associated type families, opaque types, their
+variance/destruction integration and the public inspection/fixture contract
+remain unfinished. PA22–PA25 remain planned as well.
+
+Successful guarded cleanup removes 5,759 generated files (6.90 GiB of unshared
+blocks), receipt `obj/cleanup/1792383374320749115.jsonl`.

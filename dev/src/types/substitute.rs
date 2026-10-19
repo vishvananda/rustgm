@@ -1,5 +1,7 @@
 //! Substitute a template binder and its parameters without capturing nested binders.
+mod export;
 mod items;
+pub use export::ExportSource;
 pub(crate) mod lookup;
 mod normalize;
 mod rewrite;
@@ -313,7 +315,7 @@ impl Bound {
             return mapping.region(region, depth);
         }
         if let Action::Regions(mapping) = &mut self.action {
-            return mapping.region(region, depth);
+            return mapping.region(region, depth, &mut self.steps);
         }
         let Some((binder, index)) = region.bound_parts() else {
             return Ok(region);

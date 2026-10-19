@@ -14,6 +14,12 @@ pub(in crate::sema) struct Pending {
     caller: OwnedCaller,
     query: Query,
 }
+#[derive(Clone, Copy)]
+enum Mode {
+    Plain,
+    Normalized,
+    Refining(Option<u32>),
+}
 impl OwnedCaller {
     fn borrowed(&self) -> Caller<'_> {
         Caller {
@@ -31,7 +37,7 @@ pub(in crate::sema) fn begin(
     caller: OwnedCaller,
     availability: Availability,
 ) -> Result<Progress, String> {
-    begin_with_inputs(facts, context, goal, caller, availability, false, false)
+    begin_with_inputs(facts, context, goal, caller, availability, Mode::Plain)
 }
 
 /// Keep a unique partial implementation and all unfinished conditions for body inference.
@@ -41,8 +47,16 @@ pub(in crate::sema) fn begin_refining(
     goal: &Goal,
     caller: OwnedCaller,
     availability: Availability,
+    bound_regions: Option<u32>,
 ) -> Result<Progress, String> {
-    begin_with_inputs(facts, context, goal, caller, availability, false, true)
+    begin_with_inputs(
+        facts,
+        context,
+        goal,
+        caller,
+        availability,
+        Mode::Refining(bound_regions),
+    )
 }
 
 /// The enclosing normalizer retains the complete formation proof of these inputs.
@@ -53,7 +67,7 @@ pub(in crate::sema) fn begin_normalized(
     caller: OwnedCaller,
     availability: Availability,
 ) -> Result<Progress, String> {
-    begin_with_inputs(facts, context, goal, caller, availability, true, false)
+    begin_with_inputs(facts, context, goal, caller, availability, Mode::Normalized)
 }
 
 fn begin_with_inputs(
@@ -62,10 +76,9 @@ fn begin_with_inputs(
     goal: &Goal,
     caller: OwnedCaller,
     availability: Availability,
-    normalized_inputs: bool,
-    refining: bool,
+    mode: Mode,
 ) -> Result<Progress, String> {
-    if goal.projection_result().is_none() {
+    if goal.projection_result().is_none() && !matches!(mode, Mode::Refining(Some(_))) {
         match crate::sema::traits::selection::select_assumption(
             &mut facts.types,
             context,
@@ -78,16 +91,19 @@ fn begin_with_inputs(
         }
     }
     let mut first = Frame::new(facts, context, goal, caller.first_region)?;
-    if normalized_inputs && goal.projection_result().is_none() {
+    if matches!(mode, Mode::Normalized) && goal.projection_result().is_none() {
         first.normalized_inputs = Some(super::frames::NormalizedInputs { proof: None });
     }
     let mut search = Search::new(caller.borrowed(), availability);
-    search.query.refining = refining;
-    first.inference = if refining {
+    search.query.refining = matches!(mode, Mode::Refining(_));
+    first.inference = if search.query.refining {
         super::frames::Inference::Selecting
     } else {
         super::frames::Inference::Disabled
     };
+    if let Mode::Refining(Some(count)) = mode {
+        search.open_universal(facts, &mut first, count)?;
+    }
     let progress = search.begin(facts, first)?;
     match progress {
         continuation::Progress::Ready(decision) => search

@@ -602,6 +602,22 @@ local-lifetime inference for mixed-variance owners and reject incompatible
 assignments when a projected field erases an invariant input. Full declaration
 variance validation and each caller's formation/lifetime proof remain required.
 
+The quantified input controls in
+[universal_inference.rs](dev/tests/invariants/universal_inference.rs) exercise
+actual selection, partial publication, header waits, foreign allocation gaps,
+later private witnesses and empty quantifiers. Its body tests install whole
+canonical call clauses at the declaration/body boundary and run ordinary body
+inference followed by region validation. The shared
+[source cases](dev/tests/harness/witness_cases.rs) are independently checked
+with pinned rustc object generation by
+[witness_sources.rs](dev/tests/witness_sources.rs).
+They distinguish older caller witnesses from implementation-local lifetimes,
+including unused witnesses and nested callable binders. These typed boundary
+tests do not claim public higher-ranked source admission; PA21 remains planned.
+Growing condition chains measure inference work and owned lifetimes separately,
+while [refinement_universes.rs](dev/tests/refinement_universes.rs) checks shared
+exported type graphs. Neither counter is a measurement of the entire compiler heap.
+
 ## Storage and cleanup
 
 Generated output is bounded separately from validation evidence. Builds and
