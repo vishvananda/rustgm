@@ -3059,3 +3059,94 @@ The full qualification cleanup removes **3,433 generated files (7.14 GiB)**;
 performance cleanup removes its three probe objects. Immutable comparison pins,
 source inputs, diagnostics, all observations and receipts remain. PA21 is still
 planned, and the goal through PA25 remains incomplete.
+
+
+## Exact projection facts and immutable caller partitions
+
+The next performance checkpoint removes repeated work in two places. A sole exact
+parent premise and complete associated equality now resolve directly in the
+caller's canonical namespace, after the normalizer has retained input formation.
+Member and trait indices bound the lookup. Competing ordinary/quantified clauses
+and declared result equations retain scoped selection; an equality alone cannot
+prove its parent, and families retain their whole input-contract proof.
+
+Lifetime-only substitution shares completed environment partitions with no
+escaping lifetimes. Parameter abilities, ordinary assumptions and projection
+clauses use immutable shared storage with mutation through copy-on-write.
+Per-partition lifetime summaries are maintained during construction/substitution;
+checking the mapped environment no longer scans all unchanged clauses again.
+Parameter replacement still visits closed partitions and updates those summaries.
+
+Five new invariant tests cover distinct captured lifetimes, exact complete
+application identity, absent parent evidence, competing clauses, independent
+caller extensions, constant lookup work after one index build, sharing unchanged
+partitions and parameter replacements that introduce captured lifetimes. All
+**415 unit tests**, strict Clippy and the **965-file audit** pass. The release pin
+is `e7dfd81904ea6f2e688ef6010d815e0cc8d6626291f748dd435d7eb1e8381b08`.
+Evidence is under `obj/pa21-work/canonical-equalities-v1/`.
+
+The first text sweep matched 6,293 of 6,294 cases. The remaining semantic oracle,
+PA20's `recursion/canonical-queries/semantics/caller-equality.rs`, no longer needs
+two unreferenced temporary projection types. An independent review removes exactly
+old type IDs 32 and 33 and verifies every other record after type-ID renumbering.
+Baseline/candidate full LowIR bytes match, and pinned rustc and CPPGM both execute
+the program successfully. Only after that review were references generated through
+the normal harness. Exactly **one of 4,143 sidecars** changes; all **6,294 PA text
+cases** now pass, with the original failed receipt retained. PA21–PA25 still report
+the expected planned-stage failure. The other passing stages were not repeated.
+
+Sixteen immutable A/B inputs cover thirteen existing controls plus three new
+sources with independent lifetime captures. The new sources independently compile
+with pinned rustc. Every full LowIR output matches. Each comparison retains A/A
+calibration, five ABBA blocks, Callgrind instructions and eight RSS observations.
+The ordinary equality matrix at 16/64/256 projections drops from **17.35/108.37/
+1,097.43 million instructions** to **13.68/51.53/203.18 million**. At width 256,
+paired wall time improves **78.25%**, instructions fall **81.49%**, and median
+RSS falls from **27,224 to 12,378 KiB**. The candidate wall median is **39.77 ms**
+on this machine/run. The new instruction growth is approximately linear across
+these widths; this does not establish a bound for arbitrary trait programs.
+
+With a distinct lifetime for every projection, width 256 improves **81.62%** in
+paired wall time and **79.68%** in instructions; median RSS falls from **72,022 to
+16,574 KiB**. This broader stress family still has superlinear total work:
+candidate instructions at 16/64/256 are **17.13/77.98/504.83 million**. The retained
+profile attributes about 53% of its total instructions to borrow/loan checking,
+including about 25% in region-point inference. This is a separate remaining cost
+from the eliminated projection caller copying.
+Non-exact controls show instruction changes from **−1.43% to +0.36%**. No wall or
+instruction regression threshold triggers. Callable-roots-256 triggers the
+predeclared memory review with a 538-KiB median RSS increase. One paired DHAT study
+finds 142,788 fewer total allocated bytes and 1,611 fewer allocations, with a
+36,504-byte (0.74%) higher peak. The ordinary control adds 36 total bytes, one
+allocation and 32 peak bytes. The original RSS observations remain part of the
+evidence. No timing follow-up is triggered.
+
+Publication qualification passes **1,668 regular release tests**, **93 native
+maintainer groups**, **2,926 independent PA18–PA20 source checks**, **1,047 native
+executions** and **three codegen-only comparisons**. The nine documented source
+acceptance differences remain unchanged. Fourteen builtin source/LowIR pairs
+match their previously executed identities. The eight expensive commands take
+**592.83 seconds**, with source, fixture and candidate hashes verified before and
+after. Passed formatting, Clippy, audits, harness and text checks from the same
+snapshot are reused. Evidence and scoped cleanup receipts remain under
+`publication/`. Cleanup removes 3,433 generated files occupying 7.14 GiB while
+preserving inputs, observations, receipts and current pins. No completed expensive
+check is repeated for documentation edits.
+
+A cadence review confirms that the preceding publication batch spent 10.32 of
+616.53 seconds on all active PA text comparisons. Recent development sweeps caught
+three PA20 diagnostic regressions; the current sweep caught the reviewed temporary
+type elimination. These inexpensive comparisons remain useful at coherent
+checkpoints. Related implementation edits continue to share one comprehensive
+publication batch under the root testing policy; focused checks run between them.
+
+Seven independent PA21 formation probes also correct three earlier acceptance
+hypotheses. A family or nominal requirement `for<'a> T: 'a` is not supplied as an
+implied permission merely by appearing in a signature: pinned rustc reports
+E0311/E0310 for the corresponding undeclared requirement and default-body use.
+Explicit static family requirements and binder-independent captures through an
+empty callable binder remain accepted controls; nested local conditions cannot
+authorize outer lifetimes. Original hypotheses, sources, diagnostics and reviewed
+outcomes remain in `formation-hypotheses/`. Shared family formation should reuse
+the existing whole-quantified-clause filter before decomposition. The public GAT
+source gate remains closed, and all remaining PA21–PA25 work is still required.

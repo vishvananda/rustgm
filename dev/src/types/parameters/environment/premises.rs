@@ -11,6 +11,7 @@ type ProjectionKey = (ItemId, ItemId);
 
 #[derive(Clone, Default)]
 pub(super) struct TraitAssumptions {
+    pub region_mapping: bool,
     index: OnceLock<Result<Arc<ClauseIndex>, &'static str>>,
     predicates: Vec<Predicate>,
     pub unique: HashSet<Predicate>,
@@ -69,6 +70,7 @@ impl TraitAssumptions {
     }
 
     pub fn insert(&mut self, types: &Store, clause: Clause) -> Result<(), &'static str> {
+        self.region_mapping |= clause.has_free_regions(types)?;
         let count = self.unique.len() + self.quantified.as_ref().map_or(0, |q| q.unique.len());
         match clause {
             Clause::Predicate(predicate) => {
@@ -142,6 +144,7 @@ impl TraitAssumptions {
         // Traverse mixed declaration order: fresh captured aliases must not depend
         // on storage kind, randomized hash order or duplicate canonical results.
         let mut position = 0;
+        let mut region_mapping = false;
         let mut quantified = self
             .quantified
             .iter_mut()
@@ -159,11 +162,14 @@ impl TraitAssumptions {
                     return Err("substitution flattened quantified environment clause");
                 };
                 *id = mapped;
+                region_mapping |= Clause::ForAll(mapped).has_free_regions(types)?;
             } else {
                 self.predicates[position] = fold.predicate(types, self.predicates[position])?;
+                region_mapping |= self.predicates[position].has_free_regions(types)?;
                 position += 1;
             }
         }
+        self.region_mapping = region_mapping;
         self.unique = self.predicates.iter().copied().collect();
         self.projected.clear();
         for (index, &predicate) in self.predicates.iter().enumerate() {

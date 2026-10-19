@@ -11,6 +11,9 @@ mod builtin_tests;
 #[cfg(test)]
 #[path = "../../../tests/invariants/premise_scopes.rs"]
 mod scope_tests;
+#[cfg(test)]
+#[path = "../../../tests/invariants/mapped_environment_sharing.rs"]
+mod sharing_tests;
 use super::{ParameterId, ParameterKind};
 use super::{
     clauses::Clause,
@@ -33,12 +36,12 @@ pub struct Abilities {
 /// same environment for their entire lifetime, including cached failures.
 #[derive(Clone)]
 pub struct Environment {
-    parameters: HashMap<ParameterId, Abilities>,
-    assumptions: Option<Box<Assumptions>>,
+    parameters: Arc<HashMap<ParameterId, Abilities>>,
+    assumptions: Option<Arc<Assumptions>>,
     builtins: Option<Arc<permissions::Index>>,
     regions: Option<Arc<crate::types::relations::RegionEqualities>>,
     traits: Option<Arc<TraitAssumptions>>,
-    equalities: Option<Box<equalities::Equalities>>,
+    equalities: Option<Arc<equalities::Equalities>>,
     projection_promises:
         Option<std::sync::Arc<HashMap<crate::types::ItemId, crate::types::projection::Builtins>>>,
     shape_assumptions: bool,
@@ -48,6 +51,7 @@ pub struct Environment {
 struct Assumptions {
     predicates: HashMap<TypeId, Abilities>,
     sized: std::collections::HashSet<TypeId>,
+    region_mapping: bool,
 }
 impl Environment {
     pub(crate) fn with_projection_promises(
@@ -94,7 +98,10 @@ impl Environment {
         fold: &mut crate::types::substitute::Bound,
     ) -> Result<Self, &'static str> {
         let mut result = self.clone();
-        if let Some(assumptions) = &mut result.assumptions {
+        if let Some(assumptions) = &mut result.assumptions
+            && (assumptions.region_mapping || !fold.regions_only())
+        {
+            let assumptions = Arc::make_mut(assumptions);
             // Substitution may allocate canonical types or open lifetimes. Its
             // encounter order cannot depend on a hash table's randomized seed.
             let mut predicates: Vec<_> = assumptions.predicates.drain().collect();
@@ -109,51 +116,54 @@ impl Environment {
                 .into_iter()
                 .map(|ty| fold.apply(types, ty))
                 .collect::<Result<_, _>>()?;
-        }
-        if let Some(traits) = &mut result.traits {
-            Arc::make_mut(traits).substitute(types, fold)?;
-        }
-        if let Some(builtins) = &result.builtins {
-            result.builtins = Some(Arc::new(builtins.substitute(types, fold)?));
-        }
-        if let Some(regions) = &result.regions {
-            result.regions = Some(Arc::new(regions.substitute(fold)?));
-        }
-        if let Some(equalities) = &mut result.equalities {
-            equalities.substitute(types, fold)?;
-        }
-        result.region_mapping = result.mapped_regions(types)?;
-        Ok(result)
-    }
-
-    fn mapped_regions(&self, types: &Store) -> Result<bool, &'static str> {
-        if self.regions.is_some() {
-            return Ok(true);
-        }
-        for clause in self
-            .trait_clauses()
-            .chain(self.builtins.iter().flat_map(|builtins| builtins.clauses()))
-            .chain(self.projection_clauses())
-        {
-            if clause.has_free_regions(types)? {
-                return Ok(true);
-            }
-        }
-        if let Some(assumptions) = &self.assumptions {
+            assumptions.region_mapping = false;
             for &ty in assumptions
                 .sized
                 .iter()
                 .chain(assumptions.predicates.keys())
             {
-                if types
+                assumptions.region_mapping |= types
                     .has_free_regions(ty, 0)
-                    .ok_or("invalid mapped bound subject")?
-                {
-                    return Ok(true);
-                }
+                    .ok_or("invalid mapped bound subject")?;
             }
         }
-        Ok(false)
+        if let Some(traits) = &mut result.traits
+            && (traits.region_mapping || !fold.regions_only())
+        {
+            Arc::make_mut(traits).substitute(types, fold)?;
+        }
+        if let Some(builtins) = &result.builtins
+            && (builtins.region_mapping || !fold.regions_only())
+        {
+            result.builtins = Some(Arc::new(builtins.substitute(types, fold)?));
+        }
+        if let Some(regions) = &result.regions {
+            result.regions = Some(Arc::new(regions.substitute(fold)?));
+        }
+        if let Some(equalities) = &mut result.equalities
+            && (equalities.region_mapping || !fold.regions_only())
+        {
+            Arc::make_mut(equalities).substitute(types, fold)?;
+        }
+        result.region_mapping = result.mapped_regions();
+        Ok(result)
+    }
+
+    fn mapped_regions(&self) -> bool {
+        self.regions.is_some()
+            || self.traits.as_ref().is_some_and(|part| part.region_mapping)
+            || self
+                .builtins
+                .as_ref()
+                .is_some_and(|part| part.region_mapping)
+            || self
+                .equalities
+                .as_ref()
+                .is_some_and(|part| part.region_mapping)
+            || self
+                .assumptions
+                .as_ref()
+                .is_some_and(|part| part.region_mapping)
     }
 
     /// Include every type parameter in scope, even when it has no bounds.
@@ -194,7 +204,7 @@ impl Environment {
             }
         }
         Ok(Self {
-            parameters,
+            parameters: Arc::new(parameters),
             assumptions: None,
             builtins: None,
             regions: None,
@@ -293,8 +303,7 @@ impl Environment {
                         continue;
                     }
                     if matches!(value.predicate.bound, Bound::ProjectionEqual(_)) {
-                        self.equalities
-                            .get_or_insert_with(Default::default)
+                        Arc::make_mut(self.equalities.get_or_insert_with(Default::default))
                             .insert(types, clause)?;
                     } else {
                         Arc::make_mut(self.traits.get_or_insert_with(Default::default))
@@ -326,9 +335,7 @@ impl Environment {
         predicate: Predicate,
     ) -> Result<(), &'static str> {
         if matches!(predicate.bound, Bound::ProjectionEqual(_)) {
-            return self
-                .equalities
-                .get_or_insert_with(Default::default)
+            return Arc::make_mut(self.equalities.get_or_insert_with(Default::default))
                 .insert(types, Clause::Predicate(predicate));
         }
         if matches!(predicate.bound, Bound::Trait(_)) {
@@ -345,7 +352,10 @@ impl Environment {
             Arc::make_mut(self.builtins.get_or_insert_with(Default::default))
                 .insert(types, predicate.into())?;
         }
-        let assumptions = self.assumptions.get_or_insert_with(Default::default);
+        let assumptions = Arc::make_mut(self.assumptions.get_or_insert_with(Default::default));
+        assumptions.region_mapping |= types
+            .has_free_regions(predicate.ty, 0)
+            .ok_or("invalid assumed bound subject")?;
         assumptions.sized.insert(predicate.ty);
         let properties = assumptions.predicates.entry(predicate.ty).or_default();
         match predicate.bound {
@@ -357,8 +367,7 @@ impl Environment {
             Bound::Sized | Bound::Outlives(_) | Bound::Trait(_) | Bound::ProjectionEqual(_) => {}
         }
         if let Some(Kind::Parameter(id)) = types.kind(predicate.ty) {
-            let parameter = self
-                .parameters
+            let parameter = Arc::make_mut(&mut self.parameters)
                 .get_mut(&id)
                 .ok_or("bound parameter is outside its environment")?;
             parameter.copy |= properties.copy;

@@ -46,12 +46,13 @@ pub(in crate::sema) fn begin(
         .associated
         .families
         .contains_key(&DefId(request.application.item.0))
-        && let Some(source) = selection::opaque_normalized(facts, environment.as_deref(), request)
-            .map_err(|_| "invalid or exhausted canonical projection premise")?
+        && let Some((source, resolution)) =
+            selection::known_normalized(facts, environment.as_deref(), request)
+                .map_err(|_| "invalid or exhausted canonical projection premise")?
     {
         return Ok(Progress::Ready(Projected {
             source: Some(source),
-            resolution: Some(Resolution::Opaque),
+            resolution: Some(resolution),
             proof: Obligations::new(first),
             sized: Vec::new(),
             family: request.application.arguments,

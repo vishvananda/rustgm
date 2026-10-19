@@ -17,6 +17,7 @@ use std::{
 
 #[derive(Clone, Default)]
 pub(super) struct Index {
+    pub region_mapping: bool,
     entries: Vec<Clause>,
     unique: HashSet<Clause>,
     subjects: HashSet<Subject>,
@@ -36,6 +37,7 @@ impl Index {
         if self.unique.contains(&clause) {
             return Ok(());
         }
+        self.region_mapping |= clause.has_free_regions(types)?;
         if self.entries.len() >= 1_000_000 {
             return Err("builtin assumption storage budget exceeded");
         }

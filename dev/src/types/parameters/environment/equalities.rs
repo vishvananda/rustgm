@@ -5,6 +5,7 @@ use std::collections::{HashMap, HashSet};
 
 #[derive(Clone, Default)]
 pub(super) struct Equalities {
+    pub region_mapping: bool,
     predicates: Vec<Predicate>,
     unique: HashSet<Predicate>,
     items: HashMap<ItemId, Vec<usize>>,
@@ -29,6 +30,7 @@ fn member(types: &Store, predicate: Predicate) -> Result<ItemId, &'static str> {
 
 impl Equalities {
     pub fn insert(&mut self, types: &Store, clause: Clause) -> Result<(), &'static str> {
+        self.region_mapping |= clause.has_free_regions(types)?;
         let count = self.unique.len() + self.quantified.as_ref().map_or(0, |q| q.unique.len());
         match clause {
             Clause::Predicate(predicate) => {
@@ -99,8 +101,10 @@ impl Equalities {
             return Ok(());
         }
         // Ordinary environments reuse their existing storage and compact entries.
+        self.region_mapping = false;
         for predicate in &mut self.predicates {
             *predicate = fold.predicate(types, *predicate)?;
+            self.region_mapping |= predicate.has_free_regions(types)?;
         }
         self.unique.clear();
         self.predicates

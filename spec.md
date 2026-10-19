@@ -93,6 +93,20 @@ can withhold permission without asserting that the type itself cannot exist.
 Cache such misses only for that fixed environment. Keep ordinary root caches
 separate from lazily allocated scoped caches and charge all lookup work.
 
+After retaining input formation, a unique exact parent premise and complete
+associated equality can resolve a projection in the caller's canonical namespace.
+Use the existing member and trait indices. Competing ordinary or quantified
+clauses and associated result rules retain scoped selection; an equality alone
+never proves its parent. Family input requirements still need their own proof.
+
+Lifetime-only substitution shares immutable environment partitions whose clauses
+have no escaping lifetimes. Maintain that summary when inserting or substituting
+clauses, including quantified result types, rather than scanning the entire caller
+again for each request. Share parameter abilities and unchanged builtin, trait
+and equality storage; clone a partition only when it changes. Parameter
+replacement must still visit closed partitions because it can introduce captured
+lifetimes. Shared lookup data never carries a query's inferred equations or proof.
+
 Builtin promises are conditional declaration facts, not parent formation
 or normalization authority. Register them before interning applications; never
 change them beneath cached queries. Copy entails Clone and both entail Sized.

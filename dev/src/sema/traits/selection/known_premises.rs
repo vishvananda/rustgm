@@ -1,17 +1,78 @@
 //! Exact checked premises need no new lifetime universe or erased input graph.
 use super::{Context, Declarations, Source, inference};
 use crate::{
-    sema::traits::results,
+    sema::traits::{assumptions::Assumptions, results},
     types::{
-        GenericArgs, Kind,
+        GenericArgs, Kind, Store, TypeId,
         parameters::{
             clauses::Clause,
             environment::Environment,
             predicates::{Bound, Predicate},
         },
-        substitute::Request,
+        projection::Application,
+        substitute::{Request, Resolution},
     },
 };
+
+#[cfg(test)]
+#[path = "../../../../tests/invariants/canonical_equalities.rs"]
+mod tests;
+
+/// The caller already retained formation of the complete request inputs. Exact
+/// facts need no fresh aliases; ambiguous buckets retain ordinary scoped proof.
+pub(in crate::sema) fn normalized(
+    facts: &mut Declarations,
+    environment: Option<&Environment>,
+    request: Request,
+) -> Result<Option<(Source, Resolution)>, String> {
+    if let Some(environment) = environment
+        && let Some((parent, result, steps)) =
+            exact_equality(&facts.types, environment, request.application)?
+    {
+        let mut context = Context::default();
+        context.account_work(steps).map_err(inference)?;
+        let competing =
+            if let Some(Kind::Projection(parent)) = facts.types.kind(request.application.subject) {
+                let (competing, steps) =
+                    results::has_equalities(facts, parent.item, request.application.item)?;
+                context.account_work(steps).map_err(inference)?;
+                competing
+            } else {
+                false
+            };
+        if !competing {
+            return Ok(Some((Source::Assumption(parent), Resolution::Type(result))));
+        }
+    }
+    Ok(opaque_normalized(facts, environment, request)?.map(|source| (source, Resolution::Opaque)))
+}
+
+fn exact_equality(
+    store: &Store,
+    environment: &Environment,
+    application: Application,
+) -> Result<Option<(Predicate, TypeId, usize)>, String> {
+    let mut candidates = environment.projection_candidates(application.item);
+    let Some(Clause::Predicate(equality)) = candidates.next() else {
+        return Ok(None);
+    };
+    if candidates.next().is_some() || store.kind(equality.ty) != Some(Kind::Projection(application))
+    {
+        return Ok(None);
+    }
+    let Bound::ProjectionEqual(result) = equality.bound else {
+        return Err("invalid exact projection equality".into());
+    };
+    let goal = Predicate {
+        ty: application.subject,
+        bound: Bound::Trait(application.trait_application),
+    };
+    let (assumptions, steps) = Assumptions::from_environment(store, Some(environment))?;
+    Ok(assumptions
+        .exact(store, goal)
+        .map_err(inference)?
+        .map(|proof| (proof.assumption(), result, steps)))
+}
 
 /// Only a normalizer retaining its inputs' formation proofs can use this fact.
 /// A sole exact clause contributes no equations. Competing clauses or possible

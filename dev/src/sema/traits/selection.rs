@@ -21,6 +21,8 @@ use crate::{
         },
     },
 };
+pub(in crate::sema) use known_premises::normalized as known_normalized;
+#[cfg(test)]
 pub(in crate::sema) use known_premises::opaque_normalized;
 pub(in crate::sema) use readiness::{has_known_subject, requires_resolved_inputs};
 pub(in crate::sema) use result_templates::symbolic_result;

@@ -42,6 +42,15 @@ suite. All 4,065 earlier PA20 sidecars retain their bytes. Evidence is under
 `obj/pa21-work/family-frontier-v1/parent-continuation-v1/`; see
 [PA21 validation](pa21-validation.md) for the shared inference implementation.
 
+The exact-projection performance checkpoint updates one semantic oracle:
+`recursion/canonical-queries/semantics/caller-equality.rs` no longer allocates two
+unused temporary projection types. Independent review verifies all remaining
+records after type-ID renumbering, unchanged full LowIR bytes, and successful
+pinned-rustc/CPPGM executions. The harness regenerates the reference after that
+review; the other 4,142 sidecars keep their exact bytes. Fixture identities,
+expected outcomes and suite counts are unchanged. See
+[PA21 validation](pa21-validation.md) and `obj/pa21-work/canonical-equalities-v1/`.
+
 ## Language and phase boundaries
 
 The seven families cover associated type formation and normalization, result
