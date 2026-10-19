@@ -14,6 +14,24 @@ pub(in crate::sema) struct Reservation {
     next: Option<u32>,
 }
 impl Reservation {
+    /// Publish already reserved shared evidence together with its diagnostic table.
+    pub fn publish_sourced(
+        mut self,
+        evidence: crate::sema::model::LifetimeProof,
+        facts: &mut Declarations,
+        body: NodeKey,
+    ) -> Result<(), &'static str> {
+        if self.next.is_none() {
+            return Err("shared body evidence was not reserved before publication");
+        }
+        self.reserve(facts, body, evidence.source, evidence.proof.regions.clone())?;
+        if !evidence.proof.is_empty() {
+            facts
+                .quantified_proofs
+                .push(crate::sema::model::QuantifiedProof { body, evidence });
+        }
+        Ok(())
+    }
     pub fn resume(&mut self, facts: &Declarations) -> Result<u32, &'static str> {
         if self.next.is_none() {
             return Err("body proof was not reserved before resumption");

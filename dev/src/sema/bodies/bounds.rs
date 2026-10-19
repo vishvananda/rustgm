@@ -1,4 +1,5 @@
 //! Body obligations share the same fixed assumptions as repeat and shape queries.
+mod universal;
 use super::{Checker, DefId, Error, NodeId, TypeId};
 use crate::types::{
     Kind,
@@ -6,12 +7,13 @@ use crate::types::{
     parameters::{ParameterId, predicates::Bound, shape::Properties},
     substitute,
 };
+pub(super) use universal::Requirements;
 impl Checker<'_> {
     pub(super) fn nominal_requirements(
         &mut self,
         node: NodeId,
         ty: TypeId,
-        checked: &mut crate::sema::nominals::Requirements,
+        checked: &mut Requirements,
     ) -> Result<(), Error> {
         self.facts
             .lifetimes
@@ -21,13 +23,18 @@ impl Checker<'_> {
         if !self.facts.generics.has_nominal_requirements {
             return Ok(());
         }
-        let requirements = crate::sema::nominals::requirements(self.facts, ty, checked)
-            .map_err(|e| self.error(node, e))?;
+        let requirements =
+            crate::sema::nominals::requirements(self.facts, ty, &mut checked.ordinary)
+                .map_err(|e| self.error(node, e))?;
         for requirement in requirements {
-            let requirement = requirement
-                .ordinary()
-                .map_err(|error| self.error(node, error))?;
-            self.prove_bound(node, requirement.ty, requirement.bound)?;
+            match requirement {
+                crate::types::parameters::clauses::Clause::Predicate(requirement) => {
+                    self.prove_bound(node, requirement.ty, requirement.bound)?;
+                }
+                crate::types::parameters::clauses::Clause::ForAll(_) => {
+                    self.prove_quantified_requirement(node, requirement, checked)?;
+                }
+            }
         }
         Ok(())
     }

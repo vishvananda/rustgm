@@ -36,7 +36,11 @@ impl Obligations {
         {
             return Err("reserved scoped evidence claims a foreign interval");
         }
-        q.blocks.push(Block { scope, proof });
+        q.blocks.push(Block {
+            scope,
+            proof,
+            universal_aliases: false,
+        });
         Ok(())
     }
 }

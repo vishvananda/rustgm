@@ -52,7 +52,7 @@ impl Obligations {
                 .origins
                 .as_ref()
                 .map_or(0, |origins| origins.get(index));
-            self.append_at_origin(block.proof, scope, origin)?;
+            self.append_block(block.proof, scope, origin, block.universal_aliases)?;
         }
         // Root constraints retain their ambient universe; only the remaining gap
         // is allocated here. Child intervals were allocated in their own scopes.

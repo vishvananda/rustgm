@@ -599,6 +599,23 @@ substitution and extension retain those labels. Labels address caller-owned
 diagnostic entries and grant no lifetime authority. Validate their source range
 before registering constraints; ordinary single-source proofs need no label table.
 
+Completed body nominal requirements consume canonical universal clauses in one
+body-local query cache. Reuse declaration selection with immutable caller
+assumptions, isolated inference per selection, shared conjunctive openings and
+source-labelled retained evidence. Reserve each emitted interval immediately;
+resumption and final publication must exclude intervening ordinary allocations.
+Publish once after all completed body roots, without copying prior proof prefixes.
+Ordinary requirements need no quantified state.
+
+An opening alias names its universal slot directly in the proof graph; it is not
+an existential justified by a conditional equality. Preserve that identity through
+grafting, rebasing and substitution without letting older variables capture a
+younger universal. Before publishing shared body evidence, restore the caller
+aliases from their declared identities in one charged fold beneath each block
+and nested callable binder. Leave private witnesses and foreign ownership gaps
+unchanged. Structural aliases must not transfer a later failure to an earlier
+demand or the body as a whole.
+
 Body projection queries also observe partial input changes. A unique validated
 implementation may determine type or const inputs from its header before numeric
 fallback; an associated result cannot choose between competing headers. Watch

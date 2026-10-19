@@ -64,7 +64,7 @@ impl Checker<'_> {
         Ok(())
     }
 
-    fn trait_region_start(&self, node: NodeId) -> Result<u32, Error> {
+    pub(super) fn trait_region_start(&self, node: NodeId) -> Result<u32, Error> {
         u32::try_from(self.facts.body_regions.len())
             .ok()
             .and_then(|n| n.checked_add(1))

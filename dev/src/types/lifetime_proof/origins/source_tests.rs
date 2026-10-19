@@ -170,3 +170,43 @@ fn invalid_source_ranges_are_rejected_before_registering_identities() -> ResultT
     assert_eq!(constraints.prove()?.identities.variables().len(), 0);
     Ok(())
 }
+
+#[test]
+fn opened_universals_preserve_the_failing_debt_source_through_composition() -> ResultTest {
+    let mut proof = Obligations::new(1);
+    let scope = proof.scope(ScopeId::ROOT, 1)?;
+    proof.append_universals(1..2, scope)?;
+    let first = proof.source_checkpoint();
+    proof.append_at(debt(2, RegionId::STATIC), scope)?;
+    proof.label_sources_since(first, 1)?;
+    let second = proof.source_checkpoint();
+    proof.append_at(debt(2, RegionId(1)), scope)?;
+    proof.label_sources_since(second, 2)?;
+    assert_eq!(failure(&proof, 0, 3)?, Some(102));
+    let mut store = Store::default();
+    proof.rebase(&mut store, 20)?;
+    let mut grafted = Obligations::new(20);
+    let ambient = grafted.scope(ScopeId::ROOT, 0)?;
+    grafted.graft(proof, ambient)?;
+    let mut combined = Obligations::new(20);
+    combined.scope(ScopeId::ROOT, 2)?;
+    combined.extend(grafted)?;
+    combined.substitute(&mut store, &mut Bound::new(vec![RegionId::STATIC]))?;
+    assert_eq!(failure(&combined, 0, 3)?, Some(102));
+    Ok(())
+}
+
+#[test]
+fn universal_aliases_require_exact_slots_and_cannot_escape_to_an_outer_variable() -> ResultTest {
+    let mut proof = Obligations::new(1);
+    proof.regions.end = 2;
+    let scope = proof.scope(ScopeId::ROOT, 1)?;
+    assert!(proof.append_universals(2..4, scope).is_err());
+    assert!(proof.append_universals(2..2, ScopeId::ROOT).is_err());
+    assert_eq!(proof.regions, 1..2);
+    proof.append_universals(2..3, scope)?;
+    assert_eq!(failure(&proof, 0, 1)?, None);
+    proof.equalities.push((RegionId(1), RegionId(2)));
+    assert_eq!(failure(&proof, 0, 1)?, Some(100));
+    Ok(())
+}

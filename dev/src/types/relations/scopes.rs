@@ -56,6 +56,28 @@ impl Constraints<'_> {
         Ok(())
     }
 
+    /// Give an inference-side opening alias the exact identity of its universal slot.
+    /// This is a binder declaration, not a conditional equality requirement.
+    pub(crate) fn scoped_alias(
+        &mut self,
+        id: RegionId,
+        scope: ProofScope,
+        index: u16,
+    ) -> Result<(), Error> {
+        if id == RegionId::STATIC || id.bound_parts().is_some() || self.variables.contains_key(&id)
+        {
+            return Err(Error::Identity);
+        }
+        self.steps = self.steps.saturating_add(1);
+        if self.steps >= self.limit {
+            return Err(Error::Budget);
+        }
+        let bound = RegionId::bound(0, index).map_err(|_| Error::Identity)?;
+        let universal = self.region(bound, scope.scope)?;
+        self.variables.insert(id, universal);
+        Ok(())
+    }
+
     /// Require a relation using bound lifetimes relative to this proof's scope.
     /// # Errors
     /// Rejects foreign lifetimes/scopes and exhausted graph resources.

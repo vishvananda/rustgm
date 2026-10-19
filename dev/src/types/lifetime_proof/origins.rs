@@ -123,6 +123,7 @@ impl Obligations {
             q.blocks.push(super::quantified::Block {
                 scope: super::ScopeId::ROOT,
                 proof,
+                universal_aliases: false,
             });
         }
         Ok(())

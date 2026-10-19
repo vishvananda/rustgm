@@ -18,8 +18,8 @@ use std::{
 };
 
 #[derive(Default)]
-pub(super) struct Queries {
-    /// Every entry's pending lifetime evidence is already retained by this State.
+pub(in crate::sema) struct Queries {
+    /// Every entry's pending lifetime evidence is retained by the caller's proof.
     /// Caller environment and outer substitution are immutable for its lifetime.
     completed: HashSet<(QuantifiedId, bool, bool)>,
     universes: HashMap<(u32, bool, bool), Universe>,
@@ -44,18 +44,63 @@ impl State {
             return Err("quantified substitution lost its binder");
         };
         self.context
-            .account_work(fold.steps.saturating_sub(before).saturating_add(1))
+            .account_work(fold.steps.saturating_sub(before))
             .map_err(|_| "quantified premise work exhausted")?;
-        let key = (
+        let empty = Assumptions::default();
+        let caller = selection::Caller {
+            assumptions: if closed { &empty } else { &self.assumptions },
+            environment: if closed {
+                None
+            } else {
+                self.environment.as_ref()
+            },
+            first_region: self.obligations.regions.end,
+            retain_sized: false,
+        };
+        self.quantified.get_or_insert_with(Default::default).prove(
+            facts,
+            &mut self.context,
+            &mut self.obligations,
+            Goal {
+                id,
+                closed,
+                availability: self.availability,
+                caller,
+            },
+        )
+    }
+}
+
+pub(in crate::sema) struct Goal<'a> {
+    pub id: QuantifiedId,
+    pub closed: bool,
+    pub availability: Availability,
+    pub caller: selection::Caller<'a>,
+}
+impl Queries {
+    /// One immutable caller environment owns these cached universal obligations.
+    /// Selection success retains debts; the enclosing body must still prove them.
+    pub(in crate::sema) fn prove(
+        &mut self,
+        facts: &mut Declarations,
+        total: &mut Context,
+        proof: &mut Obligations,
+        goal: Goal<'_>,
+    ) -> Result<bool, &'static str> {
+        let Goal {
             id,
             closed,
-            matches!(self.availability, Availability::Validated),
-        );
-        if self
-            .quantified
-            .as_ref()
-            .is_some_and(|queries| queries.completed.contains(&key))
-        {
+            availability,
+            caller,
+        } = goal;
+        if caller.retain_sized || caller.first_region != proof.regions.end {
+            return Err("quantified caller disagrees with its proof allocation");
+        }
+        total
+            .account_work(1)
+            .map_err(|_| "quantified premise work exhausted")?;
+        let key = (id, closed, matches!(availability, Availability::Validated));
+        if self.completed.contains(&key) {
             return Ok(true);
         }
         let value = facts
@@ -63,36 +108,20 @@ impl State {
             .quantified(id)
             .ok_or("missing quantified premise")?;
         let group = (value.bound_regions, key.1, key.2);
-        let prepared = self
-            .quantified
-            .get_or_insert_with(Default::default)
-            .prepare(
-                facts,
-                &mut self.context,
-                group,
-                value,
-                self.obligations.regions.end,
-            )?;
+        let prepared = self.prepare(facts, total, group, value, proof.regions.end)?;
         let mut context = Context::default();
-        let empty = Assumptions::default();
         let selected = select_requirement(
             facts,
             &mut context,
             prepared.requirement,
             selection::Caller {
-                assumptions: if closed { &empty } else { &self.assumptions },
-                environment: if closed {
-                    None
-                } else {
-                    self.environment.as_ref()
-                },
                 first_region: prepared.next,
-                retain_sized: false,
+                ..caller
             },
-            self.availability,
+            availability,
             false,
         );
-        self.context
+        total
             .account_work(context.steps)
             .map_err(|_| "quantified premise selection work exhausted")?;
         let selection::Selection::Proven(evidence) = selected? else {
@@ -101,19 +130,12 @@ impl State {
         if !evidence.sized.is_empty() {
             return Err("quantified selection retained unscoped sized requirements");
         }
-        let scope = self
-            .quantified
-            .as_mut()
-            .ok_or("missing quantified query group")?
-            .commit(&mut self.obligations, group, prepared.destination)?;
-        self.obligations.graft(evidence.proof, scope)?;
-        let mut equations = Obligations::new(self.obligations.regions.end);
+        let scope = self.commit(proof, group, prepared.destination)?;
+        proof.graft(evidence.proof, scope)?;
+        let mut equations = Obligations::new(proof.regions.end);
         equations.equalities = context.region_equalities;
-        self.obligations.append_at(equations, scope)?;
-        self.quantified
-            .get_or_insert_with(Default::default)
-            .completed
-            .insert(key);
+        proof.append_at(equations, scope)?;
+        self.completed.insert(key);
         Ok(true)
     }
 }
@@ -193,15 +215,7 @@ impl Queries {
             Destination::Fresh { regions, opening } => (regions, opening),
         };
         let scope = proof.scope(ScopeId::ROOT, key.0)?;
-        let mut aliases = Obligations::new(regions.start);
-        aliases.regions.end = regions.end;
-        for (slot, region) in regions.enumerate() {
-            let slot = u16::try_from(slot).map_err(|_| "too many quantified premise lifetimes")?;
-            aliases
-                .equalities
-                .push((RegionId(region), RegionId::bound(0, slot)?));
-        }
-        proof.append_at(aliases, scope)?;
+        proof.append_universals(regions, scope)?;
         if self
             .universes
             .insert(key, Universe { scope, opening })

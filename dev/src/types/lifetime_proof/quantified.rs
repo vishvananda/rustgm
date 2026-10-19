@@ -25,6 +25,7 @@ pub(super) struct Binder {
 pub(super) struct Block {
     pub scope: ScopeId,
     pub proof: Obligations,
+    pub universal_aliases: bool,
 }
 #[derive(Clone, Default)]
 pub(super) struct Quantified {
@@ -121,10 +122,14 @@ impl Quantified {
                     owned.next();
                 }
             }
-            for id in block.proof.regions.clone() {
-                constraints
-                    .scoped_variable(RegionId(id), scope)
-                    .map_err(|e| e.to_string())?;
+            for (index, id) in block.proof.regions.clone().enumerate() {
+                if block.universal_aliases {
+                    let index = u16::try_from(index).map_err(|_| "too many universal aliases")?;
+                    constraints.scoped_alias(RegionId(id), scope, index)
+                } else {
+                    constraints.scoped_variable(RegionId(id), scope)
+                }
+                .map_err(|e| e.to_string())?;
             }
             next = block.proof.regions.end;
         }
@@ -196,7 +201,27 @@ impl Obligations {
         scope: ScopeId,
         origin: u32,
     ) -> Result<(), &'static str> {
-        if scope == ScopeId::ROOT && origin == 0 {
+        self.append_block(proof, scope, origin, false)
+    }
+    /// The opening interval names this binder's universal slots in order.
+    /// It allocates no independent existential and introduces no equality debt.
+    pub(crate) fn append_universals(
+        &mut self,
+        regions: Range<u32>,
+        scope: ScopeId,
+    ) -> Result<(), &'static str> {
+        let mut proof = Self::new(regions.start);
+        proof.regions = regions;
+        self.append_block(proof, scope, 0, true)
+    }
+    pub(super) fn append_block(
+        &mut self,
+        proof: Self,
+        scope: ScopeId,
+        origin: u32,
+        universal_aliases: bool,
+    ) -> Result<(), &'static str> {
+        if scope == ScopeId::ROOT && origin == 0 && !universal_aliases {
             return self.extend(proof);
         }
         if proof.has_quantified()
@@ -208,9 +233,27 @@ impl Obligations {
         }
         self.scope_depth(scope)?;
         let q = self.quantified.get_or_insert_with(Default::default);
+        if universal_aliases {
+            let binder = scope
+                .0
+                .checked_sub(1)
+                .and_then(|id| q.scopes.get(id as usize))
+                .ok_or("universal aliases require their own binder")?;
+            if proof.regions.end - proof.regions.start != binder.count
+                || !proof.equalities.is_empty()
+                || !proof.outlives.is_empty()
+                || !proof.types.is_empty()
+            {
+                return Err("universal aliases disagree with their binder");
+            }
+        }
         self.regions.end = proof.regions.end;
         let start = q.blocks.len();
-        q.blocks.push(Block { scope, proof });
+        q.blocks.push(Block {
+            scope,
+            proof,
+            universal_aliases,
+        });
         q.label(start, origin)
     }
 }

@@ -1532,3 +1532,89 @@ The superseded baseline was retired after exact-commit CI succeeded for its
 replacement; the retirement receipt is in `obj/pa21-work/body-quantifiers-v1`.
 Successful cleanup removed 5,753 generated files (6.91 GiB of unshared blocks),
 recorded in `obj/cleanup/1792365161789258313.jsonl`.
+
+### Canonical body consumption of universal requirements
+
+Completed body nominal requirements now consume canonical quantified clauses
+through the declaration query engine. Quantified state is lazy and owned by one
+body with immutable caller assumptions. Queries retain isolated selection
+inference, share conjunctive universal openings, reserve their actual lifetime
+intervals and label only newly appended evidence. Intervening ordinary selections
+remain foreign allocations, including those after the last universal query. The
+body publishes its shared proof once.
+
+Opening aliases now name their universal slots directly rather than adding an
+existential equality debt. The old representation could attribute a later bad
+requirement to an earlier good binding. Caller lifetime aliases are restored at
+publication in one charged fold under the actual block and callable depths,
+preventing their structural equalities from stealing the diagnostic source.
+Private witnesses, binder identity and ownership intervals remain intact.
+
+Two core regressions cover source retention through graft/extension/rebase and
+substitution, malformed alias intervals and outer-variable escape. Ten body
+regressions exercise the actual completed-body consumer, collection and final
+lifetime gate: universal/static implementations and callers, independent slots,
+outer captures and mutual equality, associated results, failing-root attribution,
+interleaved allocation, independent functions and nested callable locals. Fixtures
+install canonical completed nominal contracts and matching declaration formation
+metadata at the production phase boundary; they do not bypass the final proof.
+
+At 16, 128 and 1,024 distinct growing captured-type roots, nominal work is exactly
+`2n + 1`, query work `74n + 1`, and retained type growth `2n`. Each run uses one
+shared universal scope. Repeated roots add no queries, sources or allocations.
+These invariants bound this graph family; they do not establish a bound for every
+trait search or a portable wall-time speedup.
+
+Eighteen independently qualified source controls cover the corresponding Rust
+requirements (eight accepted, ten rejected by pinned rustc). All still stop at
+RustGM's intentional higher-ranked source gate and count as no RustGM semantic
+negative coverage. Four separate investigative rustc controls also show that an
+extra static premise alongside the universal premise is ambiguous (E0283); the
+canonical caller fixtures therefore replace their ordinary seed with the single
+qualified universal premise. PA21–25 remain planned. Source call inference,
+associated families and opaque results are not delivered by this slice.
+
+The focused run passes strict all-target/all-feature Clippy, 267 library tests,
+37 affected integration tests, the 872-file audit with zero findings and all
+33 harness checks. The audit initially reported repeated `body` and `quantified`
+filename stems; the new module and tests now have specific names, with no lint
+or audit exemption.
+
+The frozen full run passes 36 gates, 1,474 regular tests, 91 native groups and
+all 6,228 course cases. PA19 independently checks 1,080 rustc sources and 641
+LowIR cases, including 254 executable comparisons; PA20 checks 1,345 sources
+and 799 LowIR cases, including 484 executable comparisons. Existing seven/one
+acceptance exceptions remain unchanged. Planned-stage discovery still fails.
+All 7,286 frozen source/configuration hashes and 18,684 oracle sidecars match.
+
+The immutable comparison has 33 timing jobs and 29 instruction pairs, with
+matching full/count outputs. Paired wall medians span −16.90% to +1.13%,
+same-binary medians −2.99% to −0.13%, and instructions −0.267% to +0.156%.
+No positive wall median reaches the predeclared 3% follow-up threshold, and no
+instruction increase reaches 1%. The largest A/A spread is 51.10%; the faster
+wall samples establish no portable speedup. These are compatibility measurements
+against the published proof-origin baseline, not a rustc comparison or a
+resolution of the earlier b1410 baseline question. The new source-gated consumer
+is covered separately by the typed work/storage invariants above.
+
+RSS medians increase by 208–404 KiB. Peak heap is unchanged on the two fixed
+Massif inputs: ordinary-256 at 2,432,261 bytes and constant-chain-uses-256 at
+5,381,881 bytes. Their combined heap/stack peaks change by −16 and +272 bytes;
+separate stack peaks rise by 1,088 and 664 bytes. These profiles do not explain
+the RSS increase or establish a general memory bound. ELF text/data/BSS totals
+change from 6,424,613 to 6,424,581 bytes. The study retains 858 observations,
+132 qualification observations, 3,432 timed invocations, 528 qualification
+invocations, 58 Callgrind runs and four Massif runs. No measurements were dropped
+or repeated until favorable.
+
+Baseline SHA-256:
+`59a477f77ef506ff183cc510dc5b66157b7c957986e2f64ddee16e3db509d150`.
+Candidate SHA-256:
+`b4a665daccccfa231fb953062773db7dfd125928220c0190ac4c12c78ea61e26`.
+Summary SHA-256:
+`0bb98f816cd48f9e1051b3f346c7717a816aafece6ed0c736045ea67ff008522`.
+Evidence is retained in `obj/pa21-work/body-consumer-final`; focused failures,
+source qualification and the prior baseline retirement receipt are in
+`obj/pa21-work/body-consumer-v1`. Successful cleanup removes 5,755 generated
+files (6.91 GiB of unshared blocks), recorded in
+`obj/cleanup/1792368503573429539.jsonl`. Current comparison binaries remain pinned.
