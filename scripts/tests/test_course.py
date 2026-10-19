@@ -11,6 +11,36 @@ from course import compare, execute, load_cases, run_stage, run_case
 
 
 class HarnessTests(unittest.TestCase):
+    def test_scoped_evidence_preserves_comparison_bytes_and_failure_receipts(self):
+        with tempfile.TemporaryDirectory() as name:
+            root, tests = self.fixture_root(name, [{"path": "tests/x.rs", "exit_status": 0}])
+            (tests / "x.rs").write_text("input")
+            app = [sys.executable, "-c", "print('gold')"]
+            evidence = Path("obj/current/course")
+            with contextlib.redirect_stdout(io.StringIO()):
+                self.assertTrue(run_stage(root, "pa1", app, bless=True))
+                self.assertTrue(run_stage(root, "pa1", app, evidence_root=evidence))
+                self.assertFalse(run_stage(root, "pa1", [sys.executable, "-c", "print('changed')"],
+                                           evidence_root=root / evidence))
+            runs = sorted((root / evidence / "pa1").iterdir())
+            self.assertEqual(len(runs), 2)
+            self.assertEqual((runs[0] / "tests/x.rs.stdout").read_bytes(), b"gold\n")
+            self.assertEqual((runs[1] / "tests/x.rs.stdout").read_bytes(), b"changed\n")
+            self.assertEqual((tests / "x.rs.ref").read_bytes(), b"gold\n")
+            self.assertFalse(json.loads((runs[1] / "results.json").read_text())["cases"][0]["passed"])
+            self.assertEqual(len(list((root / "obj/tests/pa1").iterdir())), 1)
+
+    def test_evidence_roots_reject_escapes_caches_and_symlinks(self):
+        with tempfile.TemporaryDirectory() as name:
+            root, tests = self.fixture_root(name, [{"path": "tests/x.rs", "exit_status": 0}])
+            (tests / "x.rs").write_text("input")
+            (root / "obj").mkdir()
+            (root / "obj/link").symlink_to(tests, target_is_directory=True)
+            for evidence in ["pa1/tests", "obj/../pa1/tests", "obj/rust", "obj/link/run"]:
+                with self.subTest(evidence=evidence), self.assertRaises(ValueError):
+                    run_stage(root, "pa1", [sys.executable, "-c", "print('gold')"], evidence_root=evidence)
+            self.assertFalse((tests / "x.rs.ref").exists())
+
     def test_supplemental_mode_must_be_declared_and_is_passed_exactly(self):
         with tempfile.TemporaryDirectory() as name:
             case = {"path": "tests/x.rs", "exit_status": 0, "mode": "--emit-layouts"}

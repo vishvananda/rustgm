@@ -11,6 +11,7 @@ from pathlib import Path
 import subprocess
 import sys
 import time
+from storage import cleanup_roots
 
 ROOT = Path(__file__).resolve().parents[1]
 SIDECARS = (".ref", ".ref.stderr", ".ref.exit_status")
@@ -131,8 +132,13 @@ def compare(fixture, actual):
     return errors
 
 
-def run_stage(root, stage, app, *, bless=False, jobs=4, timeout=10):
+def run_stage(root, stage, app, *, bless=False, jobs=4, timeout=10, evidence_root=None):
     manifest, cases = load_cases(root, stage)
+    artifact_root = Path(evidence_root) if evidence_root is not None else Path("obj/tests")
+    if not artifact_root.is_absolute():
+        artifact_root = root.resolve() / artifact_root
+    # Use the same containment, cache and symlink rules as scoped cleanup.
+    cleanup_roots(root.resolve(), [artifact_root])
     results = []
 
     def worker(case):
@@ -147,7 +153,7 @@ def run_stage(root, stage, app, *, bless=False, jobs=4, timeout=10):
 
     with ThreadPoolExecutor(max_workers=jobs) as pool:
         results = list(pool.map(worker, cases))
-    artifacts = root / "obj/tests" / stage / str(time.time_ns())
+    artifacts = artifact_root / stage / str(time.time_ns())
     artifacts.mkdir(parents=True)
     for case, _, actual, _ in results:
         if actual is not None:
@@ -182,7 +188,7 @@ def run_stage(root, stage, app, *, bless=False, jobs=4, timeout=10):
         for error in errors:
             print(error)
     print(f"{stage}: {passed}/{len(cases)}")
-    print(f"Evidence: {artifacts.relative_to(root)}")
+    print(f"Evidence: {artifacts.relative_to(root.resolve())}")
     return passed == len(cases)
 
 
@@ -193,12 +199,15 @@ def main():
     parser.add_argument("--bless", action="store_true")
     parser.add_argument("--jobs", type=int, default=4)
     parser.add_argument("--timeout", type=float, default=10)
+    parser.add_argument("--evidence-root", type=Path,
+                        help="store run evidence under this directory inside obj (default: obj/tests)")
     args = parser.parse_args()
     if args.jobs < 1 or args.timeout <= 0:
         parser.error("jobs and timeout must be positive")
     try:
         return 0 if run_stage(ROOT, args.stage, [str(Path(args.app).resolve())],
-                             bless=args.bless, jobs=args.jobs, timeout=args.timeout) else 1
+                             bless=args.bless, jobs=args.jobs, timeout=args.timeout,
+                             evidence_root=args.evidence_root) else 1
     except (ValueError, OSError, KeyError) as error:
         print(f"harness error: {error}", file=sys.stderr)
         return 2

@@ -40,6 +40,12 @@ require rebuilding an unchanged compiler; retain the original snapshot and
 identify those later edits separately. Keep the existing CI checks. Use the
 storage guard throughout, with scoped cleanup when all output roots are known.
 
+For a validation batch, pass `scripts/course.py --evidence-root obj/BATCH/course`
+and include that directory in the storage guard's `--prune-under` roots. This
+keeps the same fixture comparisons and complete receipts while avoiding a cleanup
+walk through historical course runs. The default remains `obj/tests`; custom
+evidence roots follow the storage guard's containment, cache and symlink rules.
+
 ## Oracles
 
 Each manifest-listed `x.rs` has `x.rs.ref` (stdout), `x.rs.ref.stderr` and
