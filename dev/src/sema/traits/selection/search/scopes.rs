@@ -104,6 +104,127 @@ impl Query {
     }
 }
 impl Scopes {
+    pub(super) fn open_normalization_predicate(
+        &mut self,
+        facts: &mut Declarations,
+        scope: ScopeId,
+        predicate: Predicate,
+    ) -> Result<(Predicate, usize, ScopeId), &'static str> {
+        let universe = scope
+            .0
+            .checked_sub(1)
+            .and_then(|id| self.universes.get_mut(id as usize))
+            .ok_or("missing normalization universe")?;
+        let before = universe.opening.steps;
+        let predicate = universe.opening.predicate(&mut facts.types, predicate)?;
+        Ok((
+            predicate,
+            universe.opening.steps.saturating_sub(before) + 1,
+            universe.parent,
+        ))
+    }
+    pub(super) fn open_type(
+        &mut self,
+        facts: &mut Declarations,
+        mut scope: ScopeId,
+        parent: ScopeId,
+        mut ty: crate::types::TypeId,
+    ) -> Result<(crate::types::TypeId, usize), &'static str> {
+        let mut steps = 0;
+        while scope != parent {
+            let universe = scope
+                .0
+                .checked_sub(1)
+                .and_then(|id| self.universes.get_mut(id as usize))
+                .ok_or("normalization scope is not a descendant of its caller")?;
+            let before = universe.opening.steps;
+            ty = universe.opening.apply(&mut facts.types, ty)?;
+            steps += universe.opening.steps.saturating_sub(before) + 1;
+            scope = universe.parent;
+        }
+        Ok((ty, steps))
+    }
+
+    pub(super) fn closing(
+        &self,
+        mut scope: ScopeId,
+        parent: ScopeId,
+        caller_end: u32,
+    ) -> Result<(Bound, usize), &'static str> {
+        let mut depth = 0_u16;
+        let mut anchors = HashMap::new();
+        let mut steps = 0;
+        while scope != parent {
+            let universe = scope
+                .0
+                .checked_sub(1)
+                .and_then(|id| self.universes.get(id as usize))
+                .ok_or("projection closure scope is not a descendant of its caller")?;
+            for (slot, region) in universe.aliases.clone().enumerate() {
+                anchors.insert(
+                    RegionId(region),
+                    RegionId::bound(
+                        depth,
+                        u16::try_from(slot).map_err(|_| "projection closure slot overflow")?,
+                    )?,
+                );
+                steps += 1;
+            }
+            depth = depth
+                .checked_add(1)
+                .ok_or("projection closure depth overflow")?;
+            steps += 1;
+            scope = universe.parent;
+        }
+        // Allocation order does not make an earlier sibling visible. Only
+        // actual ancestors supplement the frame's original caller frontier.
+        while scope != ScopeId::ROOT {
+            let universe = self
+                .universes
+                .get(scope.0 as usize - 1)
+                .ok_or("missing projection closure ancestor")?;
+            for region in universe.aliases.clone() {
+                anchors.insert(RegionId(region), RegionId(region));
+                steps += 1;
+            }
+            steps += 1;
+            scope = universe.parent;
+        }
+        Ok((
+            Bound::close_projection_regions(caller_end, depth, anchors)?,
+            steps,
+        ))
+    }
+
+    /// Give bound equations a query-wide identity before indexing proof nodes
+    /// from different scopes. Captures outside the query remain caller-bound.
+    pub(super) fn equation_region(
+        &self,
+        mut scope: ScopeId,
+        region: RegionId,
+    ) -> Result<(RegionId, usize), &'static str> {
+        let Some((mut depth, slot)) = region.bound_parts() else {
+            return Ok((region, 1));
+        };
+        let mut steps = 1;
+        while scope != ScopeId::ROOT {
+            let universe = self
+                .universes
+                .get(scope.0 as usize - 1)
+                .ok_or("missing selected equation scope")?;
+            steps += 1;
+            if depth == 0 {
+                if u32::from(slot) >= universe.count {
+                    return Err("selected equation binder slot overflow");
+                }
+                return Ok((RegionId(universe.aliases.start + u32::from(slot)), steps));
+            }
+            depth -= 1;
+            scope = universe.parent;
+        }
+        Ok((RegionId::bound(depth, slot)?, steps))
+    }
+
     pub fn open_inferred(
         &mut self,
         facts: &mut Declarations,

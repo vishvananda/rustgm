@@ -15,13 +15,25 @@ impl Context {
         ambient: ScopeId,
         mut scope: impl FnMut(ScopeId, u32) -> Result<ScopeId, Error>,
     ) -> Result<Vec<(ScopeId, TermId)>, Error> {
+        self.predicate_roots(store, predicate, ambient, |parent, _, count| {
+            scope(parent, count)
+        })
+    }
+
+    pub(super) fn predicate_roots(
+        &mut self,
+        store: &Store,
+        predicate: &super::super::predicates::Predicate,
+        ambient: ScopeId,
+        scope: impl FnMut(ScopeId, TermId, u32) -> Result<ScopeId, Error>,
+    ) -> Result<Vec<(ScopeId, TermId)>, Error> {
         let mut work = predicate
             .input_roots()
             .map(|root| (ambient, root))
             .collect::<Vec<_>>();
         self.account_work(work.len())?;
         work.reverse();
-        self.collect_normalization_roots(store, work, |parent, _, count| scope(parent, count))
+        self.collect_normalization_roots(store, work, scope)
     }
     /// Find the present projected roots and retain their enclosing callable scopes.
     /// Projection inputs are normalized by that root's semantic query. An input

@@ -364,9 +364,10 @@ impl Checker<'_> {
                 | crate::resolve::model::DefKind::Struct
                 | crate::resolve::model::DefKind::Enum
         );
-        let mut work = vec![key.node];
+        let mut work = vec![(key.node, true)];
+        let mut children = Vec::new();
         let mut seen = std::collections::HashSet::new();
-        while let Some(node) = work.pop() {
+        while let Some((node, mut explicit_lifetimes)) = work.pop() {
             if !seen.insert(node) {
                 continue;
             }
@@ -378,11 +379,18 @@ impl Checker<'_> {
                 self.defer_bound_type(source);
             }
             match ast.node(node).kind {
-                Kind::FunctionType(_) => continue,
+                Kind::FunctionType(_) => {
+                    if !raw {
+                        continue;
+                    }
+                    // Callable signatures own lifetime elision, but their
+                    // projections still wait for all written caller bounds.
+                    explicit_lifetimes = false;
+                }
                 Kind::Type {
                     flavor: TypeFlavor::Ref | TypeFlavor::RefMut,
                     elements,
-                } => {
+                } if explicit_lifetimes => {
                     let children = ast.list(elements);
                     let valid = children.len() == 2
                         && matches!(ast.node(children[0]).kind,Kind::Name(span) if self.report.package.unit(key.file).spelling(span).is_ok_and(|s|s!="'_"));
@@ -395,7 +403,8 @@ impl Checker<'_> {
                 }
                 _ => {}
             }
-            ast.push_children(node, &mut work);
+            ast.push_children(node, &mut children);
+            work.extend(children.drain(..).map(|child| (child, explicit_lifetimes)));
         }
         Ok(())
     }

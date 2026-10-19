@@ -1,8 +1,10 @@
 //! Suspended equations retain their roots and resume only changed associated-result leaves.
 mod normalization;
 mod occurrences;
+mod predicate_inputs;
 mod rewrite;
 use super::{Constructor, Context, Error, Kind, Store, TermId, Value};
+pub use predicate_inputs::ProjectionInputs;
 use std::collections::{HashMap, VecDeque};
 
 /// A body-local equation identity, retained until its normalization debt is discharged.

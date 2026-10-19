@@ -3,6 +3,7 @@ use super::{Action, Bound, RegionId};
 use std::collections::HashMap;
 
 pub(super) enum Mode {
+    Close(Box<super::equation_closure::Closing>),
     Export(Box<super::export::Export>),
     Open {
         first: u32,
@@ -88,6 +89,10 @@ impl Mapping {
             && retained.contains(key.0)
         {
             key
+        } else if let Mode::Close(closing) = &mut self.mode {
+            let replacement = closing.region(key, &self.replacements, steps)?;
+            self.replacements.insert(key, replacement);
+            replacement
         } else {
             return Err("selected type retains an unmapped lifetime");
         };
@@ -203,7 +208,7 @@ impl Bound {
             Action::Regions(mapping) => match mapping.mode {
                 Mode::Open { next, .. } => Some(next),
                 Mode::Export(ref export) => Some(export.next),
-                Mode::Restore { .. } | Mode::Rebase { .. } => None,
+                Mode::Restore { .. } | Mode::Rebase { .. } | Mode::Close(_) => None,
             },
             _ => None,
         }

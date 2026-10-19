@@ -2426,3 +2426,75 @@ regular release tests and 159.3 seconds for native maintainer validation.
 PA21 remains unreleased. Remaining work includes scoped projected conditions,
 GAT requirements and normalization, opaque identities/capture, variance/drop
 integration, and reviewed public semantic oracles. PA22–PA25 remain planned.
+
+## Projected trait inputs beneath callable binders
+
+Trait input normalization now preserves the original predicate and replaces
+projection occurrences in their actual callable scope. The same projection term
+under sibling binders has separate evidence. Empty binders, enclosing captures,
+nested returned function types and unrelated inference holes keep their identity.
+Callable bound syntax waits for the complete caller environment without taking
+lifetime-elision ownership away from the callable signature. Universal publication
+compares the retained original query, so normalization that erases a lifetime does
+not discard its formation or outlives requirement.
+
+Selection uses its existing stack and scope tree for the new requests. Each scope
+keeps its normalizer/restoration cache; a shared incremental equality index visits
+selected proof nodes once. The index only restores identities and retains every
+equation for the final lifetime proof. Closing admits original caller identities
+and actual ancestors, excluding earlier sibling allocations. Work invariants cover
+widths 16/64/256/1024. Header suspension tests retain these scopes across foreign
+allocation gaps and still reject static-only or restricted universal evidence.
+
+The release candidate is
+`0e2a2e0fc20619798a0d54990d14b141525eade68a1024a2891d3ac1979fe6a7`,
+with immutable sources, binaries and observations under
+`obj/pa21-work/family-frontier-v1/release-candidate-v1/`.
+The higher-ranked source suite independently checks 96 outcomes, including 60
+positive programs. Development validation freshly executes 12 new positive
+callable controls through rustc and CPPGM. The full checkpoint executes all 60
+accepted higher-ranked programs as part of the native maintainer suite.
+
+Thirteen frozen performance inputs include ten supported comparisons with
+published 0abe6ff6 (`b3f3cda9…`) and three newly accepted callable widths.
+Supported inputs retain byte-identical LowIR; instruction changes range −0.36%
+to +1.24%. Wall samples retain A/A calibration and five ABBA blocks, but several
+calibration spreads are large, so these do not establish wall-time improvements.
+The predeclared RSS threshold triggers a paired heap follow-up on quantified
+width 64 and the ordinary width-256 control. Both have identical peak heap bytes
+across versions: 2,145,380 and 2,432,888 respectively. Total allocation changes are
+−1,215 and +29 bytes. This does not explain the separate RSS variation.
+
+New callable-root widths 16/64/256 take medians 10.65/13.43/132.06 ms and
+13.65/63.85/461.54 million instructions. Their pinned-rustc acceptance is checked;
+old compiler rejection time is not a baseline. The width-256 profile attributes
+245.04 million inclusive instructions (53.09%) to rebuilding assumption indices,
+versus 15.44 million at width 64: approximately quadratic growth. The enclosing
+`State::new` count overlaps this cost. The selected-proof traversal invariant does
+not imply that complete projection compilation is linear. Sharing immutable
+caller indices is the next algorithmic target; captured-environment remapping
+remains a separate cost.
+
+
+The full checkpoint passes all 36 publication commands, plus preflight strict
+Clippy and the 936-file audit: 1,602 regular release tests, 92 native maintainer
+groups, all 6,268 active PA text cases, formatting, harness and audit self-tests.
+PA18–PA20 independent checks cover 2,900 source outcomes with their documented
+stage differences, 1,028 executable comparisons and three codegen-only cases.
+Fourteen builtin source/LowIR pairs retain their previously executed hashes.
+Exact compiler, source and affected fixture hashes match before and after the
+checks. Upstream verification covers 24 imported fixtures and 126 Reference files.
+The publication commands take 726.0 seconds, including 405.9 seconds for regular
+release tests and 177.6 seconds for native maintainer groups; the text sweep takes
+10.4 seconds. Cleanup removes 3,433 generated files occupying 7.14 GiB, preserving
+sources, diagnostics and receipts. These expensive checks ran once for this
+coherent compiler batch after focused development checks passed.
+
+Two source compatibility frontiers remain recorded with their independent results:
+rustc rejects one redundant alpha-equivalent callable-bound case that the frontend
+accepts, and accepts an unused static-only callable-projection declaration that
+the frontend rejects during formation. Neither is counted as a passing negative
+control. No public assignment fixture or oracle changes. PA21 remains planned,
+including GAT requirements/normalization, opaque identities/capture, variance/drop
+integration and the semantic view with reviewed public manifests. PA22–PA25 remain
+part of the active implementation goal.

@@ -61,14 +61,15 @@ impl Search<'_> {
             .stack
             .first_mut()
             .ok_or("missing universal root frame")?;
+        let goal = frame
+            .normalization
+            .as_ref()
+            .and_then(|normalization| normalization.original_inputs())
+            .unwrap_or(&frame.goal);
         frame
             .inputs
             .context
-            .equate_proved_predicate(
-                &mut facts.types,
-                &frame.goal,
-                self.query.nodes[selected].goal,
-            )
+            .equate_proved_predicate(&mut facts.types, goal, self.query.nodes[selected].goal)
             .map_err(inference)?;
         self.publish_inputs(facts, caller)?;
         let frame = self

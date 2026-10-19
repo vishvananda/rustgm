@@ -176,6 +176,21 @@ const CASES: &[(&str, &str, bool)] = &[
         "trait A{type Out;}impl<T:Copy>A for T{type Out=u8;}trait B<U>{}struct W<T>(T);fn f<T>()where W<<T as A>::Out>:Copy{}fn main(){}",
         false,
     ),
+    (
+        "callable-elided-copy",
+        "trait A{type Out;}impl<T:Copy>A for T{type Out=u8;}fn f<T>()where (fn(&u8)-><T as A>::Out):Copy,T:Copy{}fn main(){f::<u8>();}",
+        true,
+    ),
+    (
+        "callable-elided-missing",
+        "trait A{type Out;}impl<T:Copy>A for T{type Out=u8;}fn f<T>()where (fn(&u8)-><T as A>::Out):Copy{}fn main(){}",
+        false,
+    ),
+    (
+        "callable-elided-argument",
+        "trait A{type Out;}impl<T:Copy>A for T{type Out=u8;}trait B<U>{}fn f<T,U>()where U:B<fn(&u8)-><T as A>::Out>,T:Copy{}fn main(){}",
+        true,
+    ),
 ];
 #[test]
 fn trait_argument_projections_use_complete_bound_environments()

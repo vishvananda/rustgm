@@ -1,4 +1,6 @@
 //! Equality obligations retain both graphs without equating their rigid inputs.
+#[path = "equality_predicates/scoped_views.rs"]
+mod scoped_views;
 #[path = "equality_predicates/transport.rs"]
 mod transport;
 use rustgm::types::{

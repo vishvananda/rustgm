@@ -1,6 +1,10 @@
 //! Iterative candidate search; each child proof commits only its resolved goal.
 mod allocations;
 mod builtins;
+mod callable_queries;
+#[cfg(test)]
+#[path = "../../../../tests/invariants/erased_formation.rs"]
+mod callable_tests;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/implementation_conditions.rs"]
 mod condition_tests;
@@ -270,7 +274,7 @@ impl Search<'_> {
             if let Some(decision) = self.cached_query(facts, frame)? {
                 return Ok(Action::Complete(decision));
             }
-            return if let Some(action) = Self::start_inputs(facts, frame)? {
+            return if let Some(action) = self.start_inputs(facts, frame)? {
                 Ok(action)
             } else {
                 self.complete_builtin(facts, frame).map(Action::Complete)
@@ -286,7 +290,7 @@ impl Search<'_> {
             return Ok(Action::Complete(decision));
         }
         if frame.normalized_inputs.is_none()
-            && let Some(action) = Self::start_inputs(facts, frame)?
+            && let Some(action) = self.start_inputs(facts, frame)?
         {
             return Ok(action);
         }

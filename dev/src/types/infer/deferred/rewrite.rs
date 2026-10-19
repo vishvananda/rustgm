@@ -1,12 +1,50 @@
 //! Build normalized input views while keeping original formation roots and shared holes.
-use super::super::{Context, Error, Store, TermId, TypeId, Value};
-use std::collections::HashMap;
+use super::super::{Constructor, Context, Error, Store, TermId, TypeId, Value};
+use crate::types::lifetime_proof::ScopeId;
+use std::{collections::HashMap, hash::Hash};
 
-#[derive(Default)]
-struct Rewriting {
-    results: HashMap<TermId, TermId>,
-    work: Vec<(TermId, bool)>,
+struct Rewriting<K> {
+    results: HashMap<K, TermId>,
+    work: Vec<(K, bool)>,
     children: Vec<TermId>,
+}
+impl<K> Default for Rewriting<K> {
+    fn default() -> Self {
+        Self {
+            results: HashMap::new(),
+            work: Vec::new(),
+            children: Vec::new(),
+        }
+    }
+}
+
+pub(super) trait Scope {
+    const COMPLETE: bool = false;
+    type Key: Copy + Eq + Hash;
+    fn key(&self, scope: ScopeId, term: TermId) -> Self::Key;
+    fn parts(&self, key: Self::Key) -> (ScopeId, TermId);
+    fn children(&self, key: Self::Key, kind: Constructor) -> Result<ScopeId, Error>;
+    fn replacement(&self, key: Self::Key) -> Option<TypeId>;
+}
+
+impl Scope for HashMap<TermId, TypeId> {
+    type Key = TermId;
+
+    fn key(&self, _scope: ScopeId, term: TermId) -> Self::Key {
+        term
+    }
+
+    fn parts(&self, key: Self::Key) -> (ScopeId, TermId) {
+        (ScopeId::ROOT, key)
+    }
+
+    fn children(&self, _key: Self::Key, _kind: Constructor) -> Result<ScopeId, Error> {
+        Ok(ScopeId::ROOT)
+    }
+
+    fn replacement(&self, key: Self::Key) -> Option<TypeId> {
+        self.get(&key).copied()
+    }
 }
 
 impl Context {
@@ -19,6 +57,15 @@ impl Context {
         store: &Store,
         predicate: &super::super::predicates::Predicate,
         replacements: &HashMap<TermId, TypeId>,
+    ) -> Result<super::super::predicates::Predicate, Error> {
+        self.rewrite_inputs(store, predicate, replacements)
+    }
+
+    pub(super) fn rewrite_inputs<S: Scope>(
+        &mut self,
+        store: &Store,
+        predicate: &super::super::predicates::Predicate,
+        replacements: &S,
     ) -> Result<super::super::predicates::Predicate, Error> {
         let mut rewriting = Rewriting::default();
         predicate.map_inputs(|root| {
@@ -39,12 +86,12 @@ impl Context {
     ) -> Result<TermId, Error> {
         self.rewrite_projection_root(store, root, replacements, &mut Rewriting::default())
     }
-    fn rewrite_projection_root(
+    fn rewrite_projection_root<S: Scope>(
         &mut self,
         store: &Store,
         root: TermId,
-        replacements: &HashMap<TermId, TypeId>,
-        rewriting: &mut Rewriting,
+        replacements: &S,
+        rewriting: &mut Rewriting<S::Key>,
     ) -> Result<TermId, Error> {
         let root = self.root(root)?;
         let Rewriting {
@@ -52,41 +99,48 @@ impl Context {
             work,
             children,
         } = rewriting;
+        let root = replacements.key(ScopeId::ROOT, root);
         work.push((root, false));
-        while let Some((id, finish)) = work.pop() {
+        while let Some((key, finish)) = work.pop() {
             self.step()?;
+            let (scope, id) = replacements.parts(key);
             let id = self.root(id)?;
-            if results.contains_key(&id) {
+            let key = replacements.key(scope, id);
+            if results.contains_key(&key) {
                 continue;
             }
-            if let Some(&ty) = replacements.get(&id) {
+            if let Some(ty) = replacements.replacement(key) {
                 if !self.is_projection(store, id)? {
                     return Err(Error::InvalidIdentity);
                 }
-                results.insert(id, self.known(store, ty)?);
+                results.insert(key, self.known(store, ty)?);
                 continue;
             }
             match self.terms[id.0 as usize].value {
                 Value::Variable(_) => {
-                    results.insert(id, id);
+                    results.insert(key, id);
                     continue;
                 }
                 Value::Known(ty) if store.contains_projections(ty) == Some(false) => {
-                    results.insert(id, id);
+                    results.insert(key, id);
                     continue;
                 }
                 _ => {}
             }
             let kind = self.materialize(store, id)?;
+            if S::COMPLETE && matches!(kind, Constructor::Projection(_)) {
+                return Err(Error::Normalization);
+            }
+            let scope = replacements.children(key, kind)?;
             let entry = self.terms[id.0 as usize];
             self.account_work((entry.end - entry.start) as usize)?;
             if !finish {
-                work.push((id, true));
+                work.push((key, true));
                 work.extend(
                     self.edges[entry.start as usize..entry.end as usize]
                         .iter()
                         .rev()
-                        .map(|&child| (child, false)),
+                        .map(|&child| (replacements.key(scope, child), false)),
                 );
                 continue;
             }
@@ -94,7 +148,9 @@ impl Context {
             let mut changed = false;
             for offset in entry.start..entry.end {
                 let child = self.root(self.edges[offset as usize])?;
-                let rewritten = *results.get(&child).ok_or(Error::InvalidIdentity)?;
+                let rewritten = *results
+                    .get(&replacements.key(scope, child))
+                    .ok_or(Error::InvalidIdentity)?;
                 changed |= child != rewritten;
                 children.push(rewritten);
             }
@@ -103,7 +159,7 @@ impl Context {
             } else {
                 id
             };
-            results.insert(id, result);
+            results.insert(key, result);
         }
         results.get(&root).copied().ok_or(Error::InvalidIdentity)
     }

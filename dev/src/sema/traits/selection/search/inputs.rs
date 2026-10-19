@@ -3,20 +3,30 @@ use super::normalization::{Normalization, Purpose};
 use super::{Action, Decision, Declarations, Frame, Goal, Node, Search, inference};
 use crate::types::{
     TypeId,
-    infer::{self, TermId},
-    lifetime_proof::{Obligations, ScopeId},
+    infer::{self, TermId, deferred::ProjectionInputs},
+    lifetime_proof::ScopeId,
 };
-use std::collections::HashMap;
 
 pub(super) struct Inputs {
-    original: Goal,
-    roots: Vec<(TermId, TypeId)>,
-    replacements: HashMap<TermId, TypeId>,
+    plan: ProjectionInputs,
+    roots: Vec<(ScopeId, TermId, TypeId)>,
+    bindings: Vec<ScopeId>,
     cursor: usize,
     pub ready: bool,
 }
+impl Normalization {
+    /// Completed input normalization proves the original operation, with the
+    /// normalized result retained separately in its child evidence.
+    pub(super) fn original_inputs(&self) -> Option<&Goal> {
+        match &self.purpose {
+            Purpose::Inputs(inputs) if inputs.ready => Some(inputs.plan.original()),
+            _ => None,
+        }
+    }
+}
 impl Search<'_> {
     pub(super) fn start_inputs(
+        &mut self,
         facts: &mut Declarations,
         frame: &mut Frame,
     ) -> Result<Option<Action>, String> {
@@ -26,25 +36,12 @@ impl Search<'_> {
             return Ok(None);
         }
         let mut roots = Vec::new();
-        let mut scopes = Obligations::new(frame.first);
-        for (scope, term) in frame
+        let plan = frame
             .inputs
             .context
-            .predicate_normalization_roots(
-                &facts.types,
-                &frame.goal,
-                ScopeId::ROOT,
-                |parent, count| {
-                    scopes
-                        .scope(parent, count)
-                        .map_err(|_| infer::Error::Budget)
-                },
-            )
-            .map_err(inference)?
-        {
-            if scope != ScopeId::ROOT {
-                return Err("quantified trait premises require scoped selection evidence".into());
-            }
+            .projected_inputs(&facts.types, &frame.goal)
+            .map_err(inference)?;
+        for &(scope, term) in plan.roots() {
             let ty = match frame.inputs.context.resolved(&mut facts.types, term) {
                 Ok(ty) => ty,
                 Err(infer::Error::Unresolved) => {
@@ -52,20 +49,44 @@ impl Search<'_> {
                 }
                 Err(error) => return Err(inference(error)),
             };
-            roots.push((term, ty));
+            roots.push((scope, term, ty));
         }
-        let Some(&(_, first)) = roots.first() else {
+        let Some(&(source_scope, _, first)) = roots.first() else {
             return Ok(None);
         };
-        let original = frame.goal.map_inputs(Ok).map_err(inference)?;
-        let purpose = Purpose::Inputs(Inputs {
-            original,
+        let mut bindings = Vec::new();
+        let scope = self.query.map_normalization_scopes(
+            &mut bindings,
+            frame.scope,
+            source_scope,
+            |id| plan.binder(id).ok_or("missing projected input binder"),
+            &mut frame.inputs.context,
+        )?;
+        let first = self.query.open_normalization_type(
+            facts,
+            &mut frame.inputs.context,
+            scope,
+            frame.scope,
+            first,
+        )?;
+        let purpose = Purpose::Inputs(Box::new(Inputs {
+            plan,
             roots,
-            replacements: HashMap::new(),
+            bindings,
             cursor: 0,
             ready: false,
-        });
-        frame.normalization = Some(Box::new(Normalization::new(facts, frame, first, purpose)?));
+        }));
+        let mut normalization = Normalization::new(facts, frame, first, purpose)?;
+        if scope != frame.scope {
+            normalization.scoped = Some(Box::new(super::callable_queries::Scoped::at_root(
+                &self.query,
+                &mut frame.inputs.context,
+                scope,
+                frame.scope,
+                frame.first,
+            )?));
+        }
+        frame.normalization = Some(Box::new(normalization));
         Ok(Some(Action::Continue))
     }
 
@@ -79,14 +100,58 @@ impl Search<'_> {
             .normalization
             .as_mut()
             .ok_or("missing trait input query")?;
+        let value = if let Some(scoped) = &mut normalization.scoped {
+            scoped.complete(facts, &mut frame.inputs.context, value)?
+        } else {
+            value
+        };
         let Purpose::Inputs(inputs) = &mut normalization.purpose else {
             return Err("invalid trait input normalization purpose".into());
         };
         inputs
-            .replacements
-            .insert(inputs.roots[inputs.cursor].0, value);
+            .plan
+            .replace(
+                inputs.roots[inputs.cursor].0,
+                inputs.roots[inputs.cursor].1,
+                value,
+            )
+            .map_err(inference)?;
         inputs.cursor += 1;
-        if let Some(&(_, ty)) = inputs.roots.get(inputs.cursor) {
+        if let Some(&(source_scope, _, ty)) = inputs.roots.get(inputs.cursor) {
+            let scope = self.query.map_normalization_scopes(
+                &mut inputs.bindings,
+                frame.scope,
+                source_scope,
+                |id| {
+                    inputs
+                        .plan
+                        .binder(id)
+                        .ok_or("missing projected input binder")
+                },
+                &mut frame.inputs.context,
+            )?;
+            if scope != frame.scope || normalization.scoped.is_some() {
+                let scoped = normalization.scoped.get_or_insert_with(|| {
+                    Box::new(super::callable_queries::Scoped::new(
+                        frame.scope,
+                        frame.first,
+                    ))
+                });
+                scoped.enter(
+                    &self.query,
+                    &mut frame.inputs.context,
+                    &mut normalization.fold,
+                    scope,
+                    frame.scope,
+                )?;
+            }
+            let ty = self.query.open_normalization_type(
+                facts,
+                &mut frame.inputs.context,
+                scope,
+                frame.scope,
+                ty,
+            )?;
             let before = normalization.fold.steps();
             normalization.step = normalization.fold.start(&mut facts.types, ty)?;
             frame
@@ -96,10 +161,9 @@ impl Search<'_> {
                 .map_err(inference)?;
             return Ok(Action::Continue);
         }
-        frame.goal = frame
-            .inputs
-            .context
-            .rewritten_projection_inputs(&facts.types, &inputs.original, &inputs.replacements)
+        frame.goal = inputs
+            .plan
+            .rewrite(&mut frame.inputs.context, &facts.types)
             .map_err(inference)?;
         inputs.ready = true;
         if frame.goal.builtin_bound().is_some() {
@@ -159,7 +223,7 @@ impl Search<'_> {
             frame
                 .inputs
                 .context
-                .resolved_predicate(&mut facts.types, &inputs.original)
+                .resolved_predicate(&mut facts.types, inputs.plan.original())
                 .map_err(inference)?
         };
         let source = self.query.nodes[selected].source;

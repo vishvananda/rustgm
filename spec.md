@@ -1139,6 +1139,11 @@ where bound alone does not constrain it. Validate target and argument well-forme
 trait requirements and safety under the impl's own environment. Input types imply
 lifetime well-formedness facts, never new Copy or user-trait assumptions.
 
+Callable signatures inside bound subjects and arguments keep their own lifetime
+elision rules, while projection formation still waits for the complete written
+caller environment. Traverse those signatures when retaining raw bound roots;
+skipping lifetime-elision validation must not skip their deferred projections.
+
 Prepare raw typed impl bounds before normalizing their projected annotations, as
 for function bounds. An opaque projection can finish this declaration pass after
 its formation proof; retaining the projection must not reschedule the completed
@@ -1554,6 +1559,27 @@ proved projection roots; keep ordinary type/const holes shared, including holes
 beside a projection inside a tuple or nominal argument. A normalized result must
 never infer its projection's inputs. Exact canonical operation identity may prove
 congruence without exposing an opaque result's structure or properties.
+The input plan retains the original predicate and its callable binder tree.
+Identify each replacement by both its source scope and inference term: a shared
+term beneath sibling binders is not one proof occurrence. Rewriting preserves
+empty binders, captured lifetime depths and unrelated inference holes, and refuses
+incomplete or conflicting replacement sets. Share transformed DAG work within
+each scope across all predicate inputs; repeated roots must not cause quadratic
+rebuilding. This structural plan grants no normalization permission by itself.
+Open callable occurrences in the existing selection query's scope tree. Keep each
+occurrence's normalizer and result-restoration cache separate, including when a
+later root returns to a previously visited outer scope. A normalizer request may
+introduce further callable binders; attach its selected equations at that actual
+scope and close its result before resuming the enclosing fold.
+
+Restore private result lifetimes through one incremental index of the retained
+selected proof graph. Visit each selected node once across roots and scopes;
+canonicalize local bound equations to their query aliases before indexing them.
+Each closing context admits the original caller frontier and its actual ancestor
+aliases, never earlier siblings merely because their allocations have smaller
+numbers. Share the equation index by ownership transfer while preserving separate
+scope mappings and caches. Cached substitutions keep their supporting equations;
+the index neither discharges universal debts nor authorizes discarded alternatives.
 Preserve a typed normalization-needed result from the early assumption lookup,
 normalize the query and retry against the caller's concrete assumptions. A still
 incomparable opaque operation defers; it cannot establish cached absence.
@@ -1563,6 +1589,11 @@ selected implementation or assumption. Allocate implementation-private regions
 after normalization children, and preserve their complete interval through the
 parent proof. Cache the original canonical predicate, not merely the normalized
 result; partial queries become canonical only after independent holes settle.
+When publishing a universal query, compare its retained original input graph
+with that wrapper's original goal inside the opened scope. The rewritten result
+is justified by the attached normalization children, not by equating it directly
+with a projection operation. Export input refinements only after that scoped
+comparison, preserving the final lifetime proof for normalized outlives conditions.
 Builtin conditions with ordinary subjects keep their direct proof path. Suspend
 only projected ones on the shared stack, retaining pending Sized and outlives
 requirements for the caller's existing gates. General opaque outlives properties
