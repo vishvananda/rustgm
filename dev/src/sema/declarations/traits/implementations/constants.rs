@@ -166,8 +166,23 @@ impl Checker<'_> {
             .unwrap_or(source);
         let expected = self.facts.definitions[expected.0 as usize]
             .ok_or_else(|| self.error(key, "missing trait constant type"))?;
-        let actual = self.facts.definitions[definition.0 as usize]
+        let mut actual = self.facts.definitions[definition.0 as usize]
             .ok_or_else(|| self.error(key, "missing implementation constant type"))?;
+        if !self.facts.associated.families.is_empty() {
+            let ItemKind::Const { ty: annotation, .. } = self.item(key)?.kind else {
+                return Err(self.error(key, "missing implementation constant annotation"));
+            };
+            // Families require their complete written application here. Ordinary
+            // annotations retain their existing declaration proof and diagnostic.
+            actual = self
+                .facts
+                .unreduced
+                .node(NodeKey {
+                    node: annotation,
+                    ..key
+                })
+                .unwrap_or(actual);
+        }
         let expected = substitution
             .apply(&mut self.facts.types, expected)
             .map_err(|e| self.error(key, e))?;

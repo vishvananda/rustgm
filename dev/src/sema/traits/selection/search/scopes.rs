@@ -104,21 +104,39 @@ impl Query {
     }
 }
 impl Scopes {
-    pub(super) fn open_normalization_predicate(
+    pub(super) fn open_normalization_application(
         &mut self,
         facts: &mut Declarations,
         scope: ScopeId,
-        predicate: Predicate,
-    ) -> Result<(Predicate, usize, ScopeId), &'static str> {
+        application: crate::types::projection::Application,
+    ) -> Result<(crate::types::projection::Application, usize, ScopeId), &'static str> {
+        use crate::types::parameters::predicates::Bound as TraitBound;
         let universe = scope
             .0
             .checked_sub(1)
             .and_then(|id| self.universes.get_mut(id as usize))
             .ok_or("missing normalization universe")?;
         let before = universe.opening.steps;
-        let predicate = universe.opening.predicate(&mut facts.types, predicate)?;
+        let predicate = universe.opening.predicate(
+            &mut facts.types,
+            Predicate {
+                ty: application.subject,
+                bound: TraitBound::Trait(application.trait_application),
+            },
+        )?;
+        let TraitBound::Trait(trait_application) = predicate.bound else {
+            return Err("normalization application lost its parent trait");
+        };
+        let arguments = universe
+            .opening
+            .apply_arguments(&mut facts.types, application.arguments)?;
         Ok((
-            predicate,
+            crate::types::projection::Application {
+                subject: predicate.ty,
+                trait_application,
+                arguments,
+                ..application
+            },
             universe.opening.steps.saturating_sub(before) + 1,
             universe.parent,
         ))
@@ -230,23 +248,30 @@ impl Scopes {
         facts: &mut Declarations,
         frame: &mut super::Frame,
         scope: ScopeId,
-    ) -> Result<u32, String> {
-        let universe = self
-            .universes
-            .get_mut(scope.0 as usize - 1)
-            .ok_or("missing inferred universal scope")?;
+    ) -> Result<(), String> {
+        frame.scope = scope;
+        let mut next = scope;
+        let mut aliases = Vec::new();
+        while next != ScopeId::ROOT {
+            let universe = self
+                .universes
+                .get(next.0 as usize - 1)
+                .ok_or("missing inferred universal scope")?;
+            aliases.push(universe.aliases.clone());
+            next = universe.parent;
+        }
+        let mut opening = Bound::open_scopes(aliases)?;
         frame
             .inputs
             .context
-            .account_work(universe.count as usize + 1)
+            .account_work(opening.steps)
             .map_err(super::inference)?;
         frame.goal = frame
             .inputs
             .context
-            .map_predicate_regions(&mut facts.types, &frame.goal, &mut universe.opening)
+            .map_predicate_regions(&mut facts.types, &frame.goal, &mut opening)
             .map_err(super::inference)?;
-        frame.scope = scope;
-        Ok(universe.aliases.end)
+        Ok(())
     }
 
     pub fn bridge(&mut self, private: RegionId, caller: RegionId) -> Result<usize, &'static str> {

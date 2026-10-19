@@ -1,4 +1,5 @@
 //! Inferred projection inputs remain graph edges, never injective result constructors.
+mod inputs;
 use super::{
     Constructor, Context, Error, ItemId, Kind, Store, TermId, TypeId, Value,
     arguments::{Argument, ArgumentsId},

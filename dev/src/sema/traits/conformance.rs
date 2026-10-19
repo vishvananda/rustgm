@@ -1,4 +1,5 @@
 //! An override must implement the trait contract without strengthening its caller requirements.
+mod implied;
 mod mapping;
 mod projections;
 mod regions;
@@ -53,9 +54,17 @@ pub(in crate::sema) fn check(
         .checked_add(1)
         .ok_or("method conformance region identity space exhausted")?;
     let mut evidence = crate::types::lifetime_proof::Obligations::new(first);
-    contract.expected =
-        definitions.signature(facts, &contract, &mut evidence, contract.expected)?;
-    contract.actual = definitions.signature(facts, &contract, &mut evidence, contract.actual)?;
+    let mut implied = implied::Formation::default();
+    contract.expected = definitions.signature(
+        facts,
+        &contract,
+        &mut evidence,
+        contract.expected,
+        Some(&mut implied),
+    )?;
+    implied.extend(&mut contract);
+    contract.actual =
+        definitions.signature(facts, &contract, &mut evidence, contract.actual, None)?;
     let mut shape = crate::types::infer::Context::default();
     let actual = shape
         .known(&facts.types, contract.actual)

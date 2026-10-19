@@ -2,7 +2,7 @@
 use super::{Availability, Declarations, Environment, Predicate, prepare};
 use crate::sema::traits::assumptions::Selection;
 use crate::types::{
-    ItemId, RegionId, Store, TypeId,
+    GenericArgs, ItemId, RegionId, Store, TypeId,
     arguments::Argument,
     infer::{self, Instantiation},
     parameters::{
@@ -97,14 +97,15 @@ fn open_requests_share_closed_quantified_environments_and_keep_private_aliases()
         let surrounding = RegionId::bound(0, 0)?;
         let requested = predicate(&mut facts.types, width, surrounding)?;
         for (request, first) in [100, 200, 300].into_iter().enumerate() {
-            let (mut state, opened) = prepare(
+            let (mut state, opened, arguments) = prepare(
                 &mut facts,
                 Some(environment.clone()),
-                requested,
+                (requested, GenericArgs::EMPTY),
                 first,
                 false,
                 Availability::Declarations,
             )?;
+            assert_eq!(arguments, GenericArgs::EMPTY);
             assert!(Arc::ptr_eq(
                 state.environment.as_ref().ok_or("missing caller")?,
                 &environment
@@ -138,14 +139,15 @@ fn captured_environments_still_share_the_requests_mapping_without_mutating_the_c
     let environment =
         Arc::new(Environment::new(&facts.types, &[])?.with_predicates(&facts.types, &[original])?);
     assert!(environment.requires_region_mapping());
-    let (state, opened) = prepare(
+    let (state, opened, arguments) = prepare(
         &mut facts,
         Some(environment.clone()),
-        original,
+        (original, GenericArgs::EMPTY),
         100,
         false,
         Availability::Declarations,
     )?;
+    assert_eq!(arguments, GenericArgs::EMPTY);
     let mapped = state
         .environment
         .as_ref()
@@ -162,5 +164,98 @@ fn captured_environments_still_share_the_requests_mapping_without_mutating_the_c
     );
     assert_eq!(state.obligations.regions, 100..101);
     assert_eq!(state.obligations.equalities, [(RegionId(100), surrounding)]);
+    Ok(())
+}
+
+#[test]
+fn family_and_parent_aliases_share_one_mapping_without_opening_callable_locals()
+-> Result<(), &'static str> {
+    use crate::types::Kind;
+    for shared_parent in [false, true] {
+        let mut facts = empty_declarations()?;
+        let outer = RegionId::bound(0, 0)?;
+        let other = RegionId::bound(0, 1)?;
+        let parent = predicate(
+            &mut facts.types,
+            1,
+            if shared_parent {
+                outer
+            } else {
+                RegionId::STATIC
+            },
+        )?;
+        let local = facts.types.intern(Kind::Reference {
+            region: RegionId::bound(0, 0)?,
+            mutable: false,
+            referent: TypeId::UNIT,
+        })?;
+        let captured = facts.types.intern(Kind::Reference {
+            region: RegionId::bound(1, 0)?,
+            mutable: false,
+            referent: TypeId::UNIT,
+        })?;
+        let parameters = facts.types.intern_list(&[local, captured])?;
+        let function = facts.types.intern(Kind::Function {
+            parameters,
+            result: TypeId::UNIT,
+            bound_regions: 1,
+            unsafe_: false,
+        })?;
+        let own = facts.types.intern_arguments(&[
+            Argument::Lifetime(outer),
+            Argument::Lifetime(other),
+            Argument::Type(function),
+        ])?;
+        let environment = Arc::new(Environment::new(&facts.types, &[])?);
+        let (state, opened, arguments) = prepare(
+            &mut facts,
+            Some(Arc::clone(&environment)),
+            (parent, own),
+            100,
+            false,
+            Availability::Declarations,
+        )?;
+        assert_eq!(
+            opened,
+            predicate(
+                &mut facts.types,
+                1,
+                if shared_parent {
+                    RegionId(100)
+                } else {
+                    RegionId::STATIC
+                }
+            )?
+        );
+        assert!(Arc::ptr_eq(
+            state.environment.as_ref().ok_or("missing caller")?,
+            &environment
+        ));
+        assert_eq!(state.obligations.regions, 100..102);
+        assert_eq!(
+            state.obligations.equalities,
+            [(RegionId(100), outer), (RegionId(101), other)]
+        );
+        let captured = facts.types.intern(Kind::Reference {
+            region: RegionId(100),
+            mutable: false,
+            referent: TypeId::UNIT,
+        })?;
+        let parameters = facts.types.intern_list(&[local, captured])?;
+        let function = facts.types.intern(Kind::Function {
+            parameters,
+            result: TypeId::UNIT,
+            bound_regions: 1,
+            unsafe_: false,
+        })?;
+        let expected = facts.types.intern_arguments(&[
+            Argument::Lifetime(RegionId(100)),
+            Argument::Lifetime(RegionId(101)),
+            Argument::Type(function),
+        ])?;
+        assert_eq!(arguments, expected);
+        let mut restore = state.finish().restoration()?;
+        assert_eq!(restore.apply_arguments(&mut facts.types, arguments)?, own);
+    }
     Ok(())
 }

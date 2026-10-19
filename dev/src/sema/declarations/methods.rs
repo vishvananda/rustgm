@@ -110,7 +110,7 @@ impl Checker<'_> {
             let owner = self.facts.associated.owners()[member.owner.0 as usize];
             if matches!(
                 self.report.resolution.definitions[member.definition.0 as usize].kind,
-                DefKind::Function | DefKind::Const
+                DefKind::Function | DefKind::Const | DefKind::TypeAlias
             ) {
                 self.facts.generics.parents.insert(
                     member.definition,

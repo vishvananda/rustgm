@@ -187,6 +187,7 @@ impl Checker<'_> {
             owner,
             definition,
             arguments,
+            family: projected.family,
             restore,
         }))
     }

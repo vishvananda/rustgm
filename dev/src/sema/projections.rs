@@ -2,6 +2,7 @@
 #[cfg(test)]
 mod continuation_tests;
 mod cursor;
+pub(in crate::sema) mod families;
 mod selected;
 use super::{
     model::Declarations,
@@ -34,10 +35,10 @@ pub(super) fn definition(
 /// Keep private result lifetimes in the selected proof's allocation interval.
 pub(super) fn implementation_result(
     facts: &mut Declarations,
-    item: ItemId,
+    application: crate::types::projection::Application,
     source: Source,
 ) -> Result<TypeId, &'static str> {
-    Definition::select(facts, item, source)?
+    Definition::select(facts, application.item, application.arguments, source)?
         .result(facts)?
         .ok_or("missing completed associated type definition")
 }

@@ -6,7 +6,7 @@ use crate::{
         lifetimes::FunctionRegions,
     },
     types::{
-        Store,
+        Kind, Store,
         arguments::Argument,
         parameters::{
             ParameterId, ParameterKind,
@@ -54,6 +54,21 @@ fn universal(index: u32) -> Result<RegionId, &'static str> {
         0,
         u16::try_from(index).map_err(|_| "method conformance lifetime budget exceeded")?,
     )
+}
+
+fn rigid_unused(regions: &mut [RegionId], count: &mut u32) -> Result<(), &'static str> {
+    // Captures, early parameters and used late parameters already have nonstatic
+    // mappings. An unused executable slot can still occur in a written family
+    // input: its formation must hold for every lifetime, not just 'static.
+    for region in regions {
+        if *region == RegionId::STATIC {
+            *region = universal(*count)?;
+            *count = count
+                .checked_add(1)
+                .ok_or("too many method lifetime parameters")?;
+        }
+    }
+    Ok(())
 }
 
 fn folders(
@@ -133,6 +148,7 @@ fn folders(
         b[usize::from(slot)] = region;
         variables.push(region);
     }
+    rigid_unused(&mut b, &mut count)?;
     let expected = substitute::Bound::parameters_captured(&facts.types, &bindings, a)?;
     let replacements = method_parameters
         .iter()
@@ -145,6 +161,21 @@ fn folders(
         universals: count,
         variables,
     })
+}
+
+// Normalized shapes can erase inputs whose formation remains an obligation.
+fn written_signature(facts: &Declarations, function: Function) -> crate::types::TypeId {
+    if facts.associated.families.is_empty() {
+        return function.signature;
+    }
+    match facts
+        .unreduced
+        .node(function.node)
+        .and_then(|ty| facts.types.kind(ty))
+    {
+        Some(Kind::FunctionItem { signature, .. }) => signature,
+        _ => function.signature,
+    }
 }
 
 pub(super) fn contract(
@@ -172,9 +203,13 @@ pub(super) fn contract(
     let expected_signature = folders
         .expected
         .signature(&mut facts.types, expected.signature, 0)?;
+    // The written impl signature may already have normalized to a scalar.
+    // Its original applications still carry requirements; they cannot acquire
+    // the declared signature's implied lifetime permissions by disappearing.
+    let actual_template = written_signature(facts, actual);
     let actual_signature = folders
         .actual
-        .signature(&mut facts.types, actual.signature, 0)?;
+        .signature(&mut facts.types, actual_template, 0)?;
     let mut assumptions: Vec<_> = facts
         .generics
         .predicates_in_scope(owner)

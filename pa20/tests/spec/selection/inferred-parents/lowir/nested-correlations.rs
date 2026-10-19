@@ -1,0 +1,1 @@
+struct W<T>(T);trait Q<'a,'b,P>{type Out;}impl<'a,T:Copy>Q<'a,'a,u16>for W<T>{type Out=T;}type F<T,P>=for<'a>fn(for<'b>fn(&'a u8,&'b u8)-><W<T>as Q<'a,'b,P>>::Out);fn f<'a>(_:for<'b>fn(&'a u8,&'b u8)->u8){}fn main(){let _:F<_,_>=f;}

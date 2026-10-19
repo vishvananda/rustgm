@@ -89,13 +89,9 @@ impl Checker<'_> {
     ) -> Result<regions::Context, Error> {
         let item = self.item(key)?;
         if matches!(item.kind, crate::syntax::item::ItemKind::TypeAlias { .. })
-            && let Some(owner) = self.facts.associated.owner(id)
-            && let Some(owner) = self.facts.associated.get(owner)
+            && self.facts.associated.owner(id).is_some()
         {
-            return Ok(regions::Context {
-                binder: self.owner_binders.get(&owner.self_definition).copied(),
-                position: regions::Position::Output,
-            });
+            return self.associated_type_context(id, key);
         }
         if item.generics.start == item.generics.end
             && item.where_clause.start == item.where_clause.end

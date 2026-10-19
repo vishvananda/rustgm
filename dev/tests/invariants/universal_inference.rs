@@ -1,4 +1,6 @@
 //! Actual suspended selection exports older input witnesses without dropping universal debts.
+#[path = "universal_inference/binders.rs"]
+mod binders;
 #[path = "universal_inference/calls.rs"]
 mod calls;
 #[path = "universal_inference/scaling.rs"]

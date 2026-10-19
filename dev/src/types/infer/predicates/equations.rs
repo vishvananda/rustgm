@@ -1,6 +1,6 @@
 //! Probe a complete trait goal without separating roots that share inference variables.
 use super::{
-    Argument, Canonical, CanonicalArgument, Context, Error, Predicate, Requirement, Store, Trait,
+    Argument, Canonical, CanonicalArgument, Context, Error, Predicate, Requirement, Store,
 };
 use crate::types::parameters::predicates::Bound;
 use std::collections::HashSet;
@@ -40,20 +40,7 @@ impl Context {
             return Err(Error::InvalidIdentity);
         };
         let original = self.projection_application(store, goal.subject())?;
-        if original.item != application.item
-            || !original.arguments.is_empty()
-            || application.arguments != crate::types::GenericArgs::EMPTY
-        {
-            return Err(Error::InvalidIdentity);
-        }
-        self.equate_trait_predicate(
-            store,
-            &original.predicate,
-            Canonical {
-                ty: application.subject,
-                bound: Bound::Trait(application.trait_application),
-            },
-        )?;
+        self.equate_projection_inputs(store, &original, application)?;
         let expected = self.known(store, expected)?;
         self.equate_scoped_terms(store, result, expected)
     }
@@ -161,35 +148,9 @@ impl Context {
         predicate: &Predicate,
     ) -> Result<Predicate, Error> {
         let mut mappings = super::super::import::Import::default();
-        let subject = self.import_with(store, source, predicate.subject, &mut mappings)?;
-        let requirement = match &predicate.requirement {
-            Requirement::Builtin(bound) => Requirement::Builtin(*bound),
-            Requirement::ProjectionEqual(result) => Requirement::ProjectionEqual(
-                self.import_with(store, source, *result, &mut mappings)?,
-            ),
-            Requirement::Trait(trait_) => {
-                self.account_work(1 + trait_.arguments.len())?;
-                let mut arguments = Vec::with_capacity(trait_.arguments.len());
-                for &argument in &trait_.arguments {
-                    arguments.push(match argument {
-                        Argument::Lifetime(region) => Argument::Lifetime(region),
-                        Argument::Type(term) => {
-                            Argument::Type(self.import_with(store, source, term, &mut mappings)?)
-                        }
-                        Argument::Const(term) => {
-                            Argument::Const(mappings.constant(store, source, self, term)?)
-                        }
-                    });
-                }
-                Requirement::Trait(Box::new(Trait {
-                    item: trait_.item,
-                    arguments,
-                }))
-            }
-        };
-        Ok(Predicate {
-            subject,
-            requirement,
+        predicate.map_arguments(|arg| {
+            self.step()?;
+            mappings.argument(store, source, self, arg)
         })
     }
 
@@ -224,14 +185,35 @@ impl Context {
             return Err(Error::Mismatch);
         };
         let application = store.trait_application(id).ok_or(Error::InvalidIdentity)?;
-        let arguments = store
-            .arguments(application.arguments)
-            .ok_or(Error::InvalidIdentity)?;
-        if application.item != trait_.item || arguments.len() != trait_.arguments.len() {
+        if application.item != trait_.item {
             return Err(Error::Mismatch);
         }
-        self.account_work(1 + arguments.len())?;
-        let mut proved = (arguments.len() > 1).then(HashSet::new);
+        self.equate_canonical_inputs(
+            store,
+            Some((predicate.subject, assumption.ty)),
+            &trait_.arguments,
+            application.arguments,
+            ambient,
+        )
+    }
+
+    pub(in crate::types::infer) fn equate_canonical_inputs(
+        &mut self,
+        store: &mut Store,
+        subject: Option<(super::TermId, super::TypeId)>,
+        inferred: &[Argument],
+        arguments: crate::types::GenericArgs,
+        ambient: &[u32],
+    ) -> Result<(), Error> {
+        let count = store
+            .arguments(arguments)
+            .ok_or(Error::InvalidIdentity)?
+            .len();
+        if count != inferred.len() {
+            return Err(Error::Mismatch);
+        }
+        self.account_work(usize::from(subject.is_some()) + count)?;
+        let mut proved = (count > 1).then(HashSet::new);
         let mut equate = |context: &mut Self, store: &mut Store, term, ty| {
             if let Some(proved) = &mut proved
                 && !proved.insert((context.root(term)?, ty))
@@ -240,10 +222,12 @@ impl Context {
             }
             context.equate_canonical_input(store, term, ty, ambient)
         };
-        equate(self, store, predicate.subject, assumption.ty)?;
-        for (index, &inferred) in trait_.arguments.iter().enumerate() {
+        if let Some((term, ty)) = subject {
+            equate(self, store, term, ty)?;
+        }
+        for (index, &inferred) in inferred.iter().enumerate() {
             let canonical = store
-                .arguments(application.arguments)
+                .arguments(arguments)
                 .and_then(|mut arguments| arguments.nth(index))
                 .ok_or(Error::InvalidIdentity)?;
             match (inferred, canonical) {

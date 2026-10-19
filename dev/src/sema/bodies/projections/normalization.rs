@@ -171,7 +171,10 @@ impl Checker<'_> {
                 &continuation.cursor,
             )
             .map_err(|e| self.error(node, e))?;
-        Ok(Completion::Dependency(requirement, Box::new(continuation)))
+        Ok(Completion::Dependency(
+            requirement,
+            super::Continuation::Normalization(Box::new(continuation)),
+        ))
     }
 
     fn publish_projection_query(

@@ -117,6 +117,30 @@ selected definition with the validated implementation, and share lifetime querie
 across all associated definitions of that impl. An ordinary alias's deferred
 well-formedness policy must not weaken an associated type contract.
 
+Associated families compare their input domains before checking their results.
+Map the trait and impl parameters simultaneously into the impl's complete
+captured lifetime scope. To reject stronger impl requirements, use the declared
+type/const identities as rigid inputs; the impl's implicit Sized promises must
+not become assumptions. Then use the impl's own identities and requirements to
+prove formation of the declared application and the definition's result bounds.
+An omitted requirement is not inherited merely because the trait declared it,
+including when the result erases that input. Elaborate these explicit input
+assumptions through the shared trait machinery, excluding the family's result
+promises. Discharge each family's lifetime proof in its own scope, registering
+captured parent parameters once and distinguishing them from own lifetimes.
+An empty input contract is complete only after parameter/bound preparation;
+an unfinished contract cannot stand for an empty one.
+
+Method and constant conformance must normalize each family application through
+the ordinary selection proof, even when its definition was checked locally.
+Retain the implementation's written type: a normalized scalar does not erase
+the original application's formation requirements. Only the declared method
+signature grants implied lifetime conditions; constants grant none. Conditions
+captured by nested callables may escape to the enclosing method, while conditions
+on those callables' local lifetimes remain obligations in their own scopes.
+An impl lifetime erased from the executable signature still represents an
+independent universal when checking its written formation requirements.
+
 Shorthand associated type lookup keeps naming separate from projection proof.
 Index written parameter bounds by lexical owner and resolved subject; elaborate
 only a demanded bound's positional inputs, without publishing an unfinished
@@ -1482,6 +1506,16 @@ previous sibling scope. Scoped proof publication preserves gaps in private regio
 intervals and the ownership of nested witnesses. Synchronous body normalization
 reserves intervals in its exclusive local proof before publishing the contiguous
 result once; it uses validated implementations and the existing lifetime gate.
+
+Qualified local associated paths with inference holes retain resolved member
+identities and separate subject, trait and member arguments. Reuse annotation
+argument preparation and defaults; do not require a canonical subject before body
+inference. A unique parent header may refine inputs while its premises remain
+pending. Retain that exact search, its owned lifetime intervals and its enclosing
+callable scopes until all premises finish. Exposing a selected result shape never
+discharges the parent or the complete original application. Open a surrounding
+scope stack through one shared graph traversal, preserving each binder's slot
+identity and lowering older captures by the complete removed depth.
 
 Declaration normalization can publish selected evidence before waiting for an
 associated definition whose dependencies allocate regions in other bodies. Keep

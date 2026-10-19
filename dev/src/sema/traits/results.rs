@@ -90,7 +90,10 @@ pub(in crate::sema) fn traits(
     let mut result = Assumptions::default();
     let mut steps = template_steps;
     if let Some(predicates) = templates.candidates(item) {
-        let mut fold = substitution(facts, parent)?;
+        let mut fold = facts.trait_substitution(
+            parent,
+            Some((DefId(application.item.0), application.arguments)),
+        )?;
         for &predicate in predicates {
             let mapped = fold.clause(&mut facts.types, predicate)?;
             result
@@ -174,12 +177,12 @@ pub(super) fn equalities(
         });
     }
     let mut result = Vec::with_capacity(predicates.len());
-    let mut fold = substitution(
-        facts,
+    let mut fold = facts.trait_substitution(
         Predicate {
             ty: application.subject,
             bound: Bound::Trait(application.trait_application),
         },
+        Some((DefId(application.item.0), application.arguments)),
     )?;
     for &predicate in predicates {
         result.push(fold.clause(&mut facts.types, predicate)?);
@@ -208,50 +211,7 @@ pub(in crate::sema) fn substitution(
     facts: &Declarations,
     predicate: Predicate,
 ) -> Result<crate::types::substitute::Bound, &'static str> {
-    use crate::{sema::generics::parameter_id, types::arguments::Argument};
-    let Bound::Trait(id) = predicate.bound else {
-        return Err("missing associated result trait");
-    };
-    let application = facts
-        .types
-        .trait_application(id)
-        .ok_or("missing associated result application")?;
-    let owner = DefId(application.item.0);
-    let schema = facts
-        .associated
-        .schema(owner)
-        .ok_or("missing associated result schema")?;
-    let parameters = facts
-        .generics
-        .parameters
-        .get(&owner)
-        .map_or(&[][..], Vec::as_slice);
-    let arguments = facts
-        .types
-        .arguments(application.arguments)
-        .ok_or("missing associated result arguments")?;
-    if parameters.len() != arguments.len() {
-        return Err("associated result argument arity mismatch");
-    }
-    let mut mapping = vec![(
-        parameter_id(&facts.types, Argument::Type(schema.self_type))?,
-        Argument::Type(predicate.ty),
-    )];
-    let mut regions = Vec::new();
-    for (formal, actual) in parameters.iter().zip(arguments) {
-        if let Argument::Lifetime(_) = formal.argument {
-            let Argument::Lifetime(region) = actual else {
-                return Err("associated result lifetime argument kind mismatch");
-            };
-            regions.push(region);
-        } else {
-            mapping.push((parameter_id(&facts.types, formal.argument)?, actual));
-        }
-    }
-    if regions.len() != schema.captures as usize {
-        return Err("associated result lifetime arity mismatch");
-    }
-    crate::types::substitute::Bound::parameters_captured(&facts.types, &mapping, regions)
+    facts.trait_substitution(predicate, None)
 }
 
 /// Complete finite result lifetime templates before scoped lifetime validation.
@@ -286,9 +246,15 @@ pub(in crate::sema) fn prepare_outlives(facts: &mut Declarations) -> Result<(), 
             continue;
         }
         let (templates, _) = templates::for_result(facts, item)?;
+        let captures = facts
+            .associated
+            .trait_owner(item)
+            .and_then(|owner| facts.associated.schema(owner))
+            .ok_or("missing associated lifetime owner schema")?
+            .captures;
         facts
             .types
-            .declare_projection_outlives(ItemId(item.0), &templates.outlives)?;
+            .declare_projection_outlives(ItemId(item.0), captures, &templates.outlives)?;
     }
     Ok(())
 }

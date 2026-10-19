@@ -36,12 +36,28 @@ impl Generics {
         if !has_traits {
             return Ok(());
         }
+        let inputs = self.predicates_in_scope(owner).copied().collect();
+        let (work, initial) = self.expanded_trait_bounds(store, inputs)?;
+        if work.len() > initial {
+            let predicates = self.predicates.entry(owner).or_default();
+            self.declared_predicate_counts
+                .entry(owner)
+                .or_insert(predicates.len());
+            predicates.extend(work.into_iter().skip(initial));
+        }
+        Ok(())
+    }
+
+    /// Expand an explicit assumption set without publishing permissions on an
+    /// owner. Conformance must exclude a family's projected result promises.
+    pub(in crate::sema) fn expanded_trait_bounds(
+        &mut self,
+        store: &mut Store,
+        mut inputs: Vec<Predicate>,
+    ) -> Result<(Vec<Predicate>, usize), &'static str> {
         let mut seen = HashSet::new();
-        let mut work: Vec<_> = self
-            .predicates_in_scope(owner)
-            .filter(|p| seen.insert(p.value))
-            .copied()
-            .collect();
+        inputs.retain(|p| seen.insert(p.value));
+        let mut work = inputs;
         let initial = work.len();
         let mut next = 0;
         let mut steps = 0_usize;
@@ -99,26 +115,26 @@ impl Generics {
                 }
             }
         }
+        let mut retained = initial;
         if work.len() > initial {
-            let predicates = self.predicates.entry(owner).or_default();
-            self.declared_predicate_counts
-                .entry(owner)
-                .or_insert(predicates.len());
             // Opaque result trait promises require their own parent normalization.
             // Preserve finite builtin/equality implications, without installing
             // those user-trait results as independent caller permissions.
-            for (index, predicate) in work.into_iter().enumerate().skip(initial) {
+            for index in initial..work.len() {
+                let predicate = work[index];
                 let quantified_result_lifetime = index >= ordinary_end
                     && matches!(predicate.value, Clause::ForAll(_))
                     && predicate.value.is_outlives(store)?;
                 if !quantified_result_lifetime
                     && (index < ordinary_end || trait_input(store, predicate.value)?.is_none())
                 {
-                    predicates.push(predicate);
+                    work[retained] = predicate;
+                    retained += 1;
                 }
             }
         }
-        Ok(())
+        work.truncate(retained);
+        Ok((work, initial))
     }
 }
 

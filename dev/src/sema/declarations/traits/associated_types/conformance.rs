@@ -92,6 +92,13 @@ impl Checker<'_> {
             let key = self.report.resolution.definitions[actual.0 as usize]
                 .node
                 .ok_or_else(|| self.error(source, "missing associated type definition"))?;
+            if self.facts.associated.families.contains_key(&expected)
+                || self.facts.associated.families.contains_key(&actual)
+            {
+                self.check_associated_family(owner, key, predicate, expected, actual)?;
+                result.push((expected, actual));
+                continue;
+            }
             let ty = self.facts.definitions[actual.0 as usize]
                 .ok_or_else(|| self.error(key, "missing associated type definition type"))?;
             if !proof
@@ -130,7 +137,7 @@ impl Checker<'_> {
     }
 
     /// Instantiate result contracts with one shared mapping, leaving actual types in impl scope.
-    fn associated_result_bounds(
+    pub(super) fn associated_result_bounds(
         &mut self,
         key: NodeKey,
         predicate: Predicate,
@@ -247,7 +254,12 @@ impl Checker<'_> {
         let mut constraints = self
             .trait_region_environment(owner, &mut queries)
             .map_err(|e| self.error(source, e))?;
-        for &(_, definition) in definitions {
+        for &(expected, definition) in definitions {
+            if self.facts.associated.families.contains_key(&expected)
+                || self.facts.associated.families.contains_key(&definition)
+            {
+                continue;
+            }
             let key = self.report.resolution.definitions[definition.0 as usize]
                 .node
                 .ok_or_else(|| self.error(source, "missing associated type source"))?;

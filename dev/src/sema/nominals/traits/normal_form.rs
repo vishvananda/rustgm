@@ -8,7 +8,6 @@ use crate::{
     resolve::model::DefId,
     sema::traits::equalities,
     types::{
-        GenericArgs,
         infer::predicates::Predicate as Goal,
         parameters::predicates::Bound,
         projection::Application,
@@ -43,24 +42,29 @@ pub(in crate::sema) fn begin(
     retain_sized: bool,
     availability: Availability,
 ) -> Result<Progress, &'static str> {
-    if let Some(source) = selection::opaque_normalized(facts, environment.as_deref(), request)
-        .map_err(|_| "invalid or exhausted canonical projection premise")?
+    if !facts
+        .associated
+        .families
+        .contains_key(&DefId(request.application.item.0))
+        && let Some(source) = selection::opaque_normalized(facts, environment.as_deref(), request)
+            .map_err(|_| "invalid or exhausted canonical projection premise")?
     {
         return Ok(Progress::Ready(Projected {
             source: Some(source),
             resolution: Some(Resolution::Opaque),
             proof: Obligations::new(first),
             sized: Vec::new(),
+            family: request.application.arguments,
         }));
     }
     let requirement = Predicate {
         ty: request.application.subject,
         bound: Bound::Trait(request.application.trait_application),
     };
-    let (mut state, requirement) = opening::prepare(
+    let (mut state, requirement, arguments) = opening::prepare(
         facts,
         environment,
-        requirement,
+        (requirement, request.application.arguments),
         first,
         retain_sized,
         availability,
@@ -69,7 +73,10 @@ pub(in crate::sema) fn begin(
     let frontier = state.obligations.regions.end;
     Query {
         state,
-        application: request.application,
+        application: Application {
+            arguments,
+            ..request.application
+        },
         requirement,
         goal,
         assumptions: None,
@@ -180,6 +187,29 @@ impl Query {
         let selected = if let Some(pending) = self.pending.take() {
             pending.resume(facts, &mut state.context, &self.goal, self.frontier)
         } else if facts
+            .associated
+            .families
+            .contains_key(&DefId(self.application.item.0))
+        {
+            let crate::types::parameters::predicates::Bound::Trait(trait_application) =
+                self.requirement.bound
+            else {
+                return Err("missing family parent predicate");
+            };
+            let application = Application {
+                subject: self.requirement.ty,
+                trait_application,
+                ..self.application
+            };
+            let caller = state.owned_caller(&mut self.assumptions, self.closed);
+            selection::begin_projection(
+                facts,
+                &mut state.context,
+                (&self.goal, application),
+                caller,
+                state.availability,
+            )
+        } else if facts
             .generics
             .implementations
             .as_ref()
@@ -214,22 +244,7 @@ impl Query {
             )
             .map(selection::Progress::Ready)
         } else {
-            let caller = selection::OwnedCaller {
-                assumptions: if self.closed {
-                    Arc::default()
-                } else {
-                    self.assumptions
-                        .get_or_insert_with(|| Arc::new(std::mem::take(&mut state.assumptions)))
-                        .clone()
-                },
-                environment: if self.closed {
-                    None
-                } else {
-                    state.environment.clone()
-                },
-                first_region: state.obligations.regions.end,
-                retain_sized: state.retain_sized,
-            };
+            let caller = state.owned_caller(&mut self.assumptions, self.closed);
             let begin = if self.closed {
                 selection::begin
             } else {
@@ -250,14 +265,15 @@ impl Query {
         &mut self,
         facts: &mut Declarations,
     ) -> Result<equalities::Selection, &'static str> {
-        if self.application.arguments != GenericArgs::EMPTY {
-            return Err("associated families require advanced generic relationships");
-        }
         let predicate = self.state.projection_goal(facts, self.requirement)?;
         let inferred = crate::types::infer::projections::Application {
             item: self.application.item,
             predicate,
-            arguments: Vec::new(),
+            arguments: self
+                .state
+                .context
+                .known_arguments(&facts.types, self.application.arguments)
+                .map_err(|_| "invalid canonical family arguments")?,
         };
         equalities::for_projection(
             facts,
@@ -284,11 +300,35 @@ impl Query {
             resolution,
             proof,
             sized,
+            family: self.application.arguments,
         }))
     }
 }
 
 impl State {
+    fn owned_caller(
+        &mut self,
+        assumptions: &mut Option<Arc<Assumptions>>,
+        closed: bool,
+    ) -> selection::OwnedCaller {
+        selection::OwnedCaller {
+            assumptions: if closed {
+                Arc::default()
+            } else {
+                assumptions
+                    .get_or_insert_with(|| Arc::new(std::mem::take(&mut self.assumptions)))
+                    .clone()
+            },
+            environment: if closed {
+                None
+            } else {
+                self.environment.clone()
+            },
+            first_region: self.obligations.regions.end,
+            retain_sized: self.retain_sized,
+        }
+    }
+
     fn projection_goal(
         &mut self,
         facts: &mut Declarations,

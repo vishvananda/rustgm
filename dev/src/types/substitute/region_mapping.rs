@@ -3,6 +3,7 @@ use super::{Action, Bound, RegionId};
 use std::collections::HashMap;
 
 pub(super) enum Mode {
+    Scopes(Vec<std::ops::Range<u32>>),
     Close(Box<super::equation_closure::Closing>),
     Export(Box<super::export::Export>),
     Open {
@@ -47,6 +48,23 @@ impl Mapping {
     ) -> Result<RegionId, &'static str> {
         if original == RegionId::STATIC {
             return Ok(original);
+        }
+        if let Mode::Scopes(scopes) = &self.mode {
+            let Some((binder, slot)) = original.bound_parts() else {
+                return Ok(original);
+            };
+            let Some(index) = binder.checked_sub(depth) else {
+                return Ok(original);
+            };
+            return if let Some(aliases) = scopes.get(usize::from(index)) {
+                if u32::from(slot) >= aliases.end - aliases.start {
+                    return Err("missing lifetime slot in opened scope");
+                }
+                Ok(RegionId(aliases.start + u32::from(slot)))
+            } else {
+                let count = u16::try_from(scopes.len()).map_err(|_| "too many opened scopes")?;
+                RegionId::bound(binder - count, slot)
+            };
         }
         if let Mode::Rebase { source, first } = &self.mode {
             return if original.bound_parts().is_some() {
@@ -108,6 +126,29 @@ impl Mapping {
     }
 }
 impl Bound {
+    /// Open an innermost-first stack in one fold, retaining nested local binders
+    /// and lowering captures outside the removed stack by its complete depth.
+    /// Every alias interval belongs to the caller's existing proof scopes.
+    pub(crate) fn open_scopes(scopes: Vec<std::ops::Range<u32>>) -> Result<Self, &'static str> {
+        if scopes.len() > usize::from(u16::MAX)
+            || scopes.iter().any(|scope| {
+                scope.start == 0
+                    || scope.end < scope.start
+                    || scope.end >= 0x8000_0000
+                    || scope.end - scope.start > 65_536
+            })
+        {
+            return Err("invalid opened scope intervals");
+        }
+        let mut fold = Self::new(Vec::new());
+        fold.steps = scopes.len();
+        fold.action = Action::Regions(Box::new(Mapping {
+            mode: Mode::Scopes(scopes),
+            replacements: HashMap::new(),
+        }));
+        Ok(fold)
+    }
+
     /// Freshen an owned proof interval without changing any bound lifetime.
     /// Apply this before substituting arguments, whose free lifetimes belong to
     /// the caller and must not be mistaken for the template's private variables.
@@ -208,7 +249,9 @@ impl Bound {
             Action::Regions(mapping) => match mapping.mode {
                 Mode::Open { next, .. } => Some(next),
                 Mode::Export(ref export) => Some(export.next),
-                Mode::Restore { .. } | Mode::Rebase { .. } | Mode::Close(_) => None,
+                Mode::Restore { .. } | Mode::Rebase { .. } | Mode::Close(_) | Mode::Scopes(_) => {
+                    None
+                }
             },
             _ => None,
         }
@@ -231,6 +274,27 @@ impl Bound {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn scope_stack_opening_preserves_locals_free_regions_and_outer_captures()
+    -> Result<(), &'static str> {
+        let mut opening = Bound::open_scopes(vec![10..12, 20..20, 30..31])?;
+        for (source, depth, expected) in [
+            (RegionId::STATIC, 0, RegionId::STATIC),
+            (RegionId(5), 0, RegionId(5)),
+            (RegionId::bound(0, 1)?, 0, RegionId(11)),
+            (RegionId::bound(2, 0)?, 0, RegionId(30)),
+            (RegionId::bound(3, 2)?, 0, RegionId::bound(0, 2)?),
+            (RegionId::bound(1, 0)?, 2, RegionId::bound(1, 0)?),
+            (RegionId::bound(2, 0)?, 2, RegionId(10)),
+            (RegionId::bound(5, 2)?, 2, RegionId::bound(2, 2)?),
+        ] {
+            assert_eq!(opening.region(source, depth)?, expected);
+        }
+        assert!(opening.region(RegionId::bound(1, 0)?, 0).is_err());
+        assert!(opening.region(RegionId::bound(0, 2)?, 0).is_err());
+        Ok(())
+    }
 
     #[test]
     fn retained_intervals_reject_invalid_or_overlapping_free_identity_ranges() {

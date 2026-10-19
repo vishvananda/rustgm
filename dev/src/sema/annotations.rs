@@ -1,5 +1,6 @@
 //! Shared partial-type inference for bodies and isolated method-prefix queries.
 mod applications;
+mod qualified;
 mod requirements;
 use super::{declarations, model::Declarations};
 use crate::{
@@ -77,6 +78,19 @@ impl Scratch {
         key: NodeKey,
         scope: ScopeId,
     ) -> Result<(), Error> {
+        if let Some(path) = host.facts().generics.annotation_projections.get(&key) {
+            for input in [path.parent, path.member] {
+                if let Some(use_) = host.facts().generics.annotation_uses.get(&input) {
+                    for argument in use_.arguments.iter().rev() {
+                        if let super::generics::AnnotationArgument::Type(key) = argument {
+                            self.work.push((*key, false, scope));
+                        }
+                    }
+                }
+            }
+            self.work.push((path.subject, false, scope));
+            return Ok(());
+        }
         let unit = host.report().package.unit(key.file);
         let mut push = |node| self.work.push((NodeKey { node, ..key }, false, scope));
         match Declarations::kind(host.report(), key) {
@@ -134,6 +148,15 @@ impl Scratch {
         key: NodeKey,
         scope: ScopeId,
     ) -> Result<TermId, Error> {
+        if let Some(path) = host
+            .facts()
+            .generics
+            .annotation_projections
+            .get(&key)
+            .copied()
+        {
+            return qualified::infer(host, key, scope, path);
+        }
         let constructor = match Declarations::kind(host.report(), key) {
             Kind::InferType => {
                 return host

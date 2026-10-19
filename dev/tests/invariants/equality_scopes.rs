@@ -1,4 +1,6 @@
 //! Equality instantiation retains original clauses, input equations and private IDs.
+#[path = "family_equalities.rs"]
+mod families;
 use super::{Environment, Selection, select};
 use crate::types::{
     GenericArgs, ItemId, Kind, Primitive, RegionId, Store, TypeId,

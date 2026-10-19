@@ -1,0 +1,16 @@
+function @rg.22() -> void {
+  block ^b0:
+    %t0 = addr @rg.21
+    return void
+}
+function @rg.21(%p0 : ptr) -> void {
+  slot $s0 : ptr
+  block ^b0:
+    store ptr %p0, $s0
+    return void
+}
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.22()
+    return i64 0
+}

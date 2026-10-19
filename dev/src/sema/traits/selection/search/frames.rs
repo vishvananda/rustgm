@@ -7,6 +7,7 @@ use crate::{
 };
 
 pub(super) struct Frame {
+    pub formation: Option<Box<super::member_conditions::Formation>>,
     pub normalization: Option<Box<super::normalization::Normalization>>,
     /// A suspended normalizer has proved these inputs in this search's scope.
     /// Its evidence must accompany any result derived without repeating that work.
@@ -64,6 +65,7 @@ impl Frame {
             .initialize_predicate(&facts.types, source, goal)
             .map_err(inference)?;
         Ok(Self {
+            formation: None,
             normalization: None,
             normalized_inputs: None,
             inputs,

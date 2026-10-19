@@ -129,6 +129,25 @@ impl Bound {
     ) -> Result<Argument, &'static str> {
         self.apply_argument_inside(store, argument, 0)
     }
+
+    /// Map a complete argument list in this folder's shared lifetime environment.
+    /// # Errors
+    /// Rejects invalid arguments and exhausted substitution work.
+    pub fn apply_arguments(
+        &mut self,
+        store: &mut Store,
+        args: GenericArgs,
+    ) -> Result<GenericArgs, &'static str> {
+        let source = store
+            .arguments(args)
+            .ok_or("invalid substituted arguments")?;
+        self.account_arguments(source.len())?;
+        let mut arguments: Vec<_> = source.collect();
+        for argument in &mut arguments {
+            *argument = self.apply_argument(store, *argument)?;
+        }
+        store.intern_arguments(&arguments)
+    }
     pub(crate) fn apply_argument_inside(
         &mut self,
         store: &mut Store,

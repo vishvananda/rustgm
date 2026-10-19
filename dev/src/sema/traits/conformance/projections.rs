@@ -23,7 +23,14 @@ impl Definitions {
         for &(declaration, definition) in checked {
             let ty = facts.definitions[definition.0 as usize]
                 .ok_or("missing checked associated definition")?;
-            results.insert(ItemId(declaration.0), ty);
+            // A checked definition is not permission to form any application.
+            // Let the normalizer select families and retain their complete input
+            // proof, including zero-parameter families with where clauses.
+            if !facts.associated.families.contains_key(&declaration)
+                && !facts.associated.families.contains_key(&definition)
+            {
+                results.insert(ItemId(declaration.0), ty);
+            }
         }
         Ok(Self { parent, results })
     }
@@ -85,6 +92,7 @@ impl Definitions {
         contract: &Contract,
         proof: &mut Obligations,
         ty: TypeId,
+        mut implied: Option<&mut super::implied::Formation>,
     ) -> Result<TypeId, &'static str> {
         if facts.types.contains_projections(ty) == Some(false) {
             return Ok(ty);
@@ -110,7 +118,12 @@ impl Definitions {
             proof,
             ScopeId::ROOT,
             crate::sema::traits::implementations::Availability::Declarations,
-            |facts, request| self.resolve(facts, request),
+            |facts, request| {
+                if let Some(implied) = &mut implied {
+                    implied.record(facts, request)?;
+                }
+                self.resolve(facts, request)
+            },
         )?;
         for ty in &mut parameters {
             *ty = session.normalize(facts, *ty)?.0;

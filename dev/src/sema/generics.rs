@@ -1,6 +1,7 @@
 //! Completed declaration environments and substitutions keyed by owner and arguments.
 mod builtin_formation;
 pub(super) mod captures;
+mod families;
 mod traits;
 use crate::{
     resolve::model::DefId,
@@ -118,6 +119,14 @@ pub struct AnnotationUse {
     pub owner: DefId,
     pub arguments: Vec<AnnotationArgument>,
 }
+/// Resolved identities for a qualified local annotation whose inputs have holes.
+#[derive(Clone, Copy)]
+pub(super) struct AnnotationProjection {
+    pub subject: crate::resolve::unit::NodeKey,
+    pub parent: crate::resolve::unit::NodeKey,
+    pub member: crate::resolve::unit::NodeKey,
+    pub declaration: DefId,
+}
 #[derive(Clone, Copy)]
 pub struct Predicate {
     pub source: crate::resolve::unit::NodeKey,
@@ -161,7 +170,9 @@ pub struct Generics {
     /// declarations alone do not require synthetic field-transfer bodies.
     pub(crate) referenced_constructors: std::collections::HashSet<ItemId>,
     pub annotation_uses: HashMap<crate::resolve::unit::NodeKey, AnnotationUse>,
+    pub(super) annotation_projections: HashMap<crate::resolve::unit::NodeKey, AnnotationProjection>,
     substitutions: HashMap<(DefId, GenericArgs), Bound>,
+    family_substitutions: Option<Box<families::Substitutions>>,
 }
 pub struct ImplementationSelection {
     pub owner: DefId,
@@ -344,9 +355,17 @@ impl Generics {
         store: &Store,
         owner: DefId,
     ) -> Result<Environment, &'static str> {
+        self.declared_scope(store, self.parameters_in_scope(owner).copied())
+    }
+    /// Conformance chooses rigid identities independently of an owner's bounds.
+    pub(in crate::sema) fn declared_scope(
+        &self,
+        store: &Store,
+        parameters: impl Iterator<Item = Parameter>,
+    ) -> Result<Environment, &'static str> {
         let mut assumptions = Vec::new();
         let mut constants = Vec::new();
-        for parameter in self.parameters_in_scope(owner) {
+        for parameter in parameters {
             if let Argument::Type(ty) = parameter.argument {
                 let Some(Kind::Parameter(id)) = store.kind(ty) else {
                     return Err("generic declaration requires a rigid type parameter");

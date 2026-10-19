@@ -30,6 +30,18 @@ The previous 1,345 cases keep their exact sidecar bytes. Evidence is in
 `obj/pa21-work/parameter-defaults-final-v2`; see
 [PA21 validation](pa21-validation.md) for the implementation and performance review.
 
+The inferred-parent checkpoint adds 26 LowIR cases under
+`selection/inferred-parents/lowir`, bringing the suite to **1,381 cases from
+835 sources**: 546 semantic inspections, 835 LowIR checks and 508 native executions.
+The new controls cover partially inferred qualified paths, retained parent
+conditions, const arguments, dependent/Self defaults and nested callable scopes.
+All 26 outcomes match pinned rustc object/executable generation; all 19 positives
+execute through both compilers. Seven negative controls require the intended
+unsatisfied-parent, unresolved-input or lifetime diagnostic in the maintainer
+suite. All 4,065 earlier PA20 sidecars retain their bytes. Evidence is under
+`obj/pa21-work/family-frontier-v1/parent-continuation-v1/`; see
+[PA21 validation](pa21-validation.md) for the shared inference implementation.
+
 ## Language and phase boundaries
 
 The seven families cover associated type formation and normalization, result

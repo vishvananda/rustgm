@@ -3,6 +3,7 @@ mod contracts;
 pub(super) mod evidence;
 mod inputs;
 mod normalization;
+mod parents;
 mod selection;
 use super::{Checker, Error, NodeId, TermId};
 use crate::{
@@ -35,6 +36,7 @@ struct Query {
     scope: ScopeId,
     task: Task,
     input_normalizations: bool,
+    parent: Option<Box<parents::Parent>>,
 }
 pub(super) enum Advance {
     Ready(bool),
@@ -43,11 +45,29 @@ pub(super) enum Advance {
 enum Completion {
     Waiting(Query, bool),
     Complete,
-    Dependency(super::Requirement, Box<normalization::Continuation>),
+    Dependency(super::Requirement, Continuation),
+}
+enum Continuation {
+    Normalization(Box<normalization::Continuation>),
+    Parent { query: Box<Query>, watch: WatchId },
+}
+impl Continuation {
+    fn watch(&self) -> WatchId {
+        match self {
+            Self::Normalization(c) => c.watch,
+            Self::Parent { watch, .. } => *watch,
+        }
+    }
+    fn node(&self) -> NodeId {
+        match self {
+            Self::Normalization(c) => c.query.node,
+            Self::Parent { query, .. } => query.node,
+        }
+    }
 }
 struct Data {
     scopes: Obligations,
-    continuation: Option<Box<normalization::Continuation>>,
+    continuation: Option<Continuation>,
     environment: std::cell::OnceCell<
         Option<std::sync::Arc<crate::types::parameters::environment::Environment>>,
     >,
@@ -228,6 +248,7 @@ impl Checker<'_> {
                     regions,
                 }),
                 input_normalizations: false,
+                parent: None,
             },
         );
         Ok(())
@@ -279,6 +300,7 @@ impl Checker<'_> {
                         output: term,
                     },
                     input_normalizations: false,
+                    parent: None,
                 },
             );
         }
@@ -327,8 +349,20 @@ impl Checker<'_> {
             .as_mut()
             .and_then(|data| data.continuation.take())
         {
-            let watch = continuation.watch;
-            let completion = self.resume_projection(*continuation)?;
+            let watch = continuation.watch();
+            let completion = match continuation {
+                Continuation::Normalization(continuation) => {
+                    self.resume_projection(*continuation)?
+                }
+                Continuation::Parent { query, watch } => {
+                    let resolved = self
+                        .state
+                        .infer
+                        .watch_resolved(watch)
+                        .map_err(|e| self.error(query.node, e))?;
+                    self.complete_projection(*query, resolved, watch)?
+                }
+            };
             match self.accept_projection(body, watch, completion)? {
                 Advance::Ready(advanced) => progress |= advanced,
                 dependency @ Advance::Definition(_) => return Ok(dependency),
@@ -411,7 +445,7 @@ impl Checker<'_> {
                 Ok(Advance::Ready(true))
             }
             Completion::Dependency(requirement, continuation) => {
-                let source = self.key(continuation.query.node);
+                let source = self.key(continuation.node());
                 self.state
                     .projections
                     .data
@@ -445,6 +479,25 @@ impl Checker<'_> {
             inputs::Readiness::Resolved => true,
         };
         self.prepare_universals(node)?;
+        if query.parent.is_some()
+            && let Some(owner) = self.advance_projection_parent(&mut query, resolved)?
+        {
+            return Ok(Completion::Dependency(
+                super::Requirement::ImplHeader(owner),
+                Continuation::Parent {
+                    query: Box::new(query),
+                    watch,
+                },
+            ));
+        }
+        if resolved
+            && matches!(
+                query.parent.as_deref(),
+                Some(parents::Parent::Waiting { .. })
+            )
+        {
+            return Ok(Completion::Waiting(query, false));
+        }
         let first = u32::try_from(self.facts.body_regions.len())
             .ok()
             .and_then(|n| n.checked_add(1))
@@ -472,7 +525,18 @@ impl Checker<'_> {
                 if !resolved =>
             {
                 let expose = matches!(query.task, Task::Normalize { .. });
-                match self.select_projection(node, scope, term, &mut proof, expose)? {
+                let pending_parent = matches!(
+                    query.parent.as_deref(),
+                    Some(parents::Parent::Waiting { .. })
+                );
+                match self.select_projection(
+                    node,
+                    scope,
+                    term,
+                    &mut proof,
+                    expose,
+                    pending_parent,
+                )? {
                     selection::Progress::Normalize(result) => {
                         return self.start_projection_normalization(
                             query,
@@ -511,12 +575,22 @@ impl Checker<'_> {
                         self.published_normalization(node, output)?;
                         return Ok(Completion::Waiting(query, true));
                     }
+                    selection::Progress::InputsRefined => {
+                        proof
+                            .retain_body(self.facts, self.state.body, self.key(node))
+                            .map_err(|e| self.error(node, e))?;
+                        self.state
+                            .infer
+                            .retry_watch(watch)
+                            .map_err(|e| self.error(node, e))?;
+                        return Ok(Completion::Waiting(query, true));
+                    }
                     selection::Progress::AwaitInputs => {
                         self.defer_input_normalizations(&mut query, term, watch)?;
                         return Ok(Completion::Waiting(query, false));
                     }
                     selection::Progress::AwaitChange => {
-                        return Ok(Completion::Waiting(query, false));
+                        return self.refine_projection_parent(query, watch);
                     }
                     selection::Progress::AwaitResolution => {
                         self.state

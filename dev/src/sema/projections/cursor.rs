@@ -198,7 +198,8 @@ impl Cursor {
         if let Some(resolution) = projected.resolution {
             return Ok(Some(resolution));
         }
-        let definition = Definition::select(facts, request.application.item, source)?;
+        let definition =
+            Definition::select(facts, request.application.item, projected.family, source)?;
         let mut restore =
             if projected.proof.regions.is_empty() && projected.proof.equalities.is_empty() {
                 None

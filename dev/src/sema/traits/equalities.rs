@@ -1,12 +1,8 @@
 //! Associated equality assumptions match complete inputs without equating their results.
 use crate::types::{
-    GenericArgs, Kind, Store, TypeId,
+    Kind, Store, TypeId,
     infer::{self, Context, projections::Application},
-    parameters::{
-        clauses::Clause,
-        environment::Environment,
-        predicates::{Bound, Predicate},
-    },
+    parameters::{clauses::Clause, environment::Environment, predicates::Bound},
 };
 
 #[cfg(test)]
@@ -78,10 +74,11 @@ fn select(
     extra: &[Clause],
     first: u32,
 ) -> Result<Selection, infer::Error> {
-    if !application.arguments.is_empty() {
-        return Err(infer::Error::InvalidIdentity);
-    }
-    let mut selected: Option<(Predicate, TypeId, ScopedEvidence)> = None;
+    let mut selected: Option<(
+        crate::types::projection::Application,
+        TypeId,
+        ScopedEvidence,
+    )> = None;
     let mut openings = Openings::default();
     for clause in environment
         .into_iter()
@@ -95,20 +92,16 @@ fn select(
         else {
             return Err(infer::Error::InvalidIdentity);
         };
-        if candidate.item != application.item || candidate.arguments != GenericArgs::EMPTY {
+        if candidate.item != application.item {
             continue;
         }
-        let predicate = Predicate {
-            ty: candidate.subject,
-            bound: Bound::Trait(candidate.trait_application),
-        };
         let mut probe = Context::default();
-        let goal = probe.import_predicate(store, context, &application.predicate)?;
-        let compatible = probe.equate_trait_predicate(store, &goal, predicate);
+        let goal = probe.import_projection(store, context, application)?;
+        let compatible = probe.equate_projection_inputs(store, &goal, candidate);
         context.account_work(probe.steps)?;
         match compatible {
             Ok(()) => {
-                let candidate = (predicate, result);
+                let candidate = (candidate, result);
                 if let Some(previous) = &selected
                     && (previous.0, previous.1) != candidate
                     && !previous.2.same_clause(store, context, &evidence)?
@@ -116,7 +109,7 @@ fn select(
                     return Ok(Selection::Ambiguous);
                 }
                 if selected.is_none() {
-                    selected = Some((predicate, result, evidence));
+                    selected = Some((candidate.0, result, evidence));
                 }
             }
             // Equal outputs do not identify opaque inputs. This rule supplies
@@ -126,10 +119,10 @@ fn select(
             Err(error) => return Err(error),
         }
     }
-    let Some((predicate, result, premise)) = selected else {
+    let Some((candidate, result, premise)) = selected else {
         return Ok(Selection::Absent);
     };
-    context.equate_trait_predicate(store, &application.predicate, predicate)?;
+    context.equate_projection_inputs(store, application, candidate)?;
     Ok(Selection::Proven(Evidence {
         ty: result,
         premise,

@@ -20,6 +20,7 @@ mod frames;
 mod header_tests;
 mod input_universe;
 mod inputs;
+mod member_conditions;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/formation_clauses.rs"]
 mod nominal_tests;
@@ -38,7 +39,10 @@ mod suspension;
 #[path = "../../../../tests/invariants/universal_inference.rs"]
 mod universal_inference_tests;
 mod wakeups;
-pub(in crate::sema) use suspension::{Pending, Progress, begin, begin_normalized, begin_refining};
+pub(in crate::sema) use suspension::{
+    Pending, Progress, begin, begin_normalized, begin_projection, begin_refining,
+    begin_scoped_refining,
+};
 #[cfg(test)]
 #[path = "../../../../tests/invariants/universal_premises.rs"]
 mod assumption_tests;
@@ -173,6 +177,9 @@ impl Search<'_> {
         }
     }
     fn advance(&mut self, facts: &mut Declarations, frame: &mut Frame) -> Result<Action, String> {
+        if frame.forming() {
+            return self.advance_formation(frame);
+        }
         if frame.pending_headers.is_some() {
             return self.await_header(facts, frame);
         }
@@ -410,6 +417,9 @@ impl Search<'_> {
         frame: &mut Frame,
         decision: Decision,
     ) -> Result<(), String> {
+        if frame.forming() {
+            return Self::accept_formation(frame, decision);
+        }
         if frame.normalizing() {
             return self.accept_normalization(facts, frame, decision);
         }

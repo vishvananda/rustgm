@@ -10,7 +10,7 @@ use crate::{
         },
     },
     types::{
-        TypeId,
+        GenericArgs, TypeId,
         infer::{Constructor, Context, arguments::Argument, projections::Application},
         parameters::{environment::Environment, predicates::Predicate},
         substitute::Bound,
@@ -53,6 +53,7 @@ impl Pending {
 }
 pub(super) enum Progress {
     AwaitChange,
+    InputsRefined,
     AwaitInputs,
     AwaitResolution,
     Complete,
@@ -60,9 +61,83 @@ pub(super) enum Progress {
     Symbolic(TermId),
 }
 enum Attempt {
-    Retry,
+    Retry(Option<FamilyInputs>),
     NestedInputs,
     Selected(Selected),
+}
+
+// Parent selection can refine inputs before the member's own inputs are known.
+// Keep the original normalization query pending; only it proves family formation.
+struct FamilyInputs {
+    predicate: Predicate,
+    arguments: Option<GenericArgs>,
+}
+impl FamilyInputs {
+    fn new(
+        facts: &mut Declarations,
+        context: &mut Context,
+        predicate: Predicate,
+        own: &[Argument],
+        mut restoration: Bound,
+    ) -> Result<Self, String> {
+        let arguments = match context.resolved_arguments(&mut facts.types, own) {
+            Ok(arguments) => Some(restoration.apply_arguments(&mut facts.types, arguments)?),
+            Err(crate::types::infer::Error::Unresolved) => None,
+            Err(error) => return Err(inference(error)),
+        };
+        context.account_work(restoration.steps).map_err(inference)?;
+        Ok(Self {
+            predicate,
+            arguments,
+        })
+    }
+
+    fn commit(
+        self,
+        facts: &mut Declarations,
+        context: &mut Context,
+        root: TermId,
+        ambient: &[u32],
+    ) -> Result<bool, crate::types::infer::Error> {
+        use crate::types::{infer::Error, parameters::predicates::Bound, projection};
+        let original = context.projection_application(&facts.types, root)?;
+        let known = if self.arguments.is_some() {
+            context.resolved(&mut facts.types, root).map(|_| ())
+        } else {
+            context
+                .resolved_predicate(&mut facts.types, &original.predicate)
+                .map(|_| ())
+        };
+        match known {
+            Ok(()) => return Ok(false),
+            Err(Error::Unresolved) => {}
+            Err(error) => return Err(error),
+        }
+        if let Some(arguments) = self.arguments {
+            let Bound::Trait(trait_application) = self.predicate.bound else {
+                return Err(Error::InvalidIdentity);
+            };
+            context.equate_projection_inputs_inside(
+                &mut facts.types,
+                &original,
+                projection::Application {
+                    item: original.item,
+                    subject: self.predicate.ty,
+                    trait_application,
+                    arguments,
+                },
+                ambient,
+            )?;
+        } else {
+            context.equate_trait_predicate_inside(
+                &mut facts.types,
+                &original.predicate,
+                self.predicate,
+                ambient,
+            )?;
+        }
+        Ok(true)
+    }
 }
 
 impl Checker<'_> {
@@ -129,6 +204,7 @@ impl Checker<'_> {
         term: TermId,
         proof: &mut Obligations,
         expose: bool,
+        pending_parent: bool,
     ) -> Result<Progress, Error> {
         let environment = self.projection_environment(node)?;
         let assumptions =
@@ -140,15 +216,20 @@ impl Checker<'_> {
             first_region: proof.regions.end,
             retain_sized: false,
         };
-        if selection::requires_resolved_inputs(self.facts, &mut self.state.infer, term, &caller)
-            .map_err(|e| self.error(node, e))?
+        if pending_parent
+            || selection::requires_resolved_inputs(self.facts, &mut self.state.infer, term, &caller)
+                .map_err(|e| self.error(node, e))?
         {
             if expose
                 && let Some(result) = self.symbolic_projection(node, scope, term, proof, &caller)?
             {
                 return Ok(Progress::Symbolic(result));
             }
-            return Ok(Progress::AwaitResolution);
+            return Ok(if pending_parent {
+                Progress::AwaitChange
+            } else {
+                Progress::AwaitResolution
+            });
         }
         let counts = proof
             .scope_plan()
@@ -172,7 +253,17 @@ impl Checker<'_> {
         let selected = match selected.map_err(|e| self.error(node, e))? {
             Attempt::Selected(selected) => selected,
             Attempt::NestedInputs => return Ok(Progress::AwaitInputs),
-            Attempt::Retry => {
+            Attempt::Retry(inputs) => {
+                if let Some(inputs) = inputs
+                    && inputs
+                        .commit(self.facts, &mut self.state.infer, term, &counts)
+                        .map_err(|e| self.error(node, e))?
+                {
+                    proof
+                        .append_at(opened.proof, scope)
+                        .map_err(|e| self.error(node, e))?;
+                    return Ok(Progress::InputsRefined);
+                }
                 if expose
                     && let Some(result) =
                         self.symbolic_projection(node, scope, term, proof, &caller)?
@@ -298,9 +389,6 @@ impl Opened {
         facts: &mut Declarations,
         availability: crate::sema::traits::implementations::Availability,
     ) -> Result<Attempt, String> {
-        if !self.application.arguments.is_empty() {
-            return Ok(Attempt::Retry);
-        }
         if self.pending_inputs(facts).map_err(inference)? {
             return Ok(Attempt::NestedInputs);
         }
@@ -320,7 +408,7 @@ impl Opened {
             availability,
         )?;
         let Selection::Proven(evidence) = selected else {
-            return Ok(Attempt::Retry);
+            return Ok(Attempt::Retry(None));
         };
         let source = evidence.source;
         let assumed = if matches!(
@@ -339,7 +427,12 @@ impl Opened {
                 evidence.proof.regions.end,
             )? {
                 Selection::Proven(equality) => Some(equality),
-                Selection::Absent | Selection::Ambiguous => return Ok(Attempt::Retry),
+                Selection::Absent | Selection::Ambiguous
+                    if self.application.arguments.is_empty() =>
+                {
+                    return Ok(Attempt::Retry(None));
+                }
+                Selection::Absent | Selection::Ambiguous => None,
             }
         } else {
             None
@@ -357,10 +450,25 @@ impl Opened {
             .transpose()?;
         let mut restoration = self.proof.body_restoration()?;
         let predicate = restoration.predicate(&mut facts.types, predicate)?;
+        if !self.application.arguments.is_empty() {
+            return FamilyInputs::new(
+                facts,
+                &mut self.context,
+                predicate,
+                &self.application.arguments,
+                restoration,
+            )
+            .map(|inputs| Attempt::Retry(Some(inputs)));
+        }
         let result = if let Some(ty) = assumed {
             ResultType::Type(restoration.apply(&mut facts.types, ty)?)
         } else {
-            let definition = Definition::select(facts, self.application.item, source)?;
+            let definition = Definition::select(
+                facts,
+                self.application.item,
+                crate::types::GenericArgs::EMPTY,
+                source,
+            )?;
             if let Some(ty) = definition.result(facts)? {
                 ResultType::Type(restoration.apply(&mut facts.types, ty)?)
             } else {
@@ -391,11 +499,20 @@ impl Opened {
             .predicate
             .trait_arguments()
             .ok_or(crate::types::infer::Error::InvalidIdentity)?;
-        roots.extend(arguments.iter().filter_map(|arg| match arg {
-            Argument::Type(term) => Some(*term),
-            Argument::Const(_) | Argument::Lifetime(_) => None,
-        }));
-        self.context.account_work(arguments.len())?;
+        roots.extend(
+            arguments
+                .iter()
+                .chain(&self.application.arguments)
+                .filter_map(|arg| match arg {
+                    Argument::Type(term) => Some(*term),
+                    Argument::Const(_) | Argument::Lifetime(_) => None,
+                }),
+        );
+        self.context.account_work(
+            arguments
+                .len()
+                .saturating_add(self.application.arguments.len()),
+        )?;
         let inputs = self.context.construct(Constructor::Tuple, &roots)?;
         Ok(!self
             .context
@@ -418,3 +535,7 @@ fn caller_assumptions(
 fn inference(error: crate::types::infer::Error) -> String {
     error.to_string()
 }
+
+#[cfg(test)]
+#[path = "../../../../tests/invariants/inferred_members.rs"]
+mod tests;

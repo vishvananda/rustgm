@@ -17,6 +17,16 @@ pub struct TypeContract {
     pub bounds: Vec<crate::types::parameters::clauses::Clause>,
 }
 
+/// A member captures its parent slots and then declares its own early lifetimes.
+/// These input relations do not promise any property of the projected result.
+pub struct Family {
+    pub captures: u32,
+    pub total: u32,
+    pub regions: Vec<crate::types::outlives::Pair>,
+    /// None distinguishes an unfinished declaration from an empty input contract.
+    pub requirements: Option<Vec<crate::types::parameters::clauses::Clause>>,
+}
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct OwnerId(pub u32);
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -70,6 +80,7 @@ pub struct Inventory {
     declarations: HashMap<DefId, OwnerId>,
     schemas: HashMap<OwnerId, Schema>,
     pub(in crate::sema) types: HashMap<DefId, TypeContract>,
+    pub(in crate::sema) families: HashMap<DefId, Family>,
     type_names: HashMap<DefId, crate::resolve::names::NameId>,
     type_members: HashMap<(OwnerId, crate::resolve::names::NameId), DefId>,
 }

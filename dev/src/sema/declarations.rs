@@ -67,6 +67,11 @@ enum Work {
     MethodArguments(NodeKey, NodeKey),
     ProjectionPath(NodeKey, regions::Context),
     ImplicitProjection(NodeKey, regions::Context),
+    ProjectionArguments(
+        NodeKey,
+        regions::Context,
+        crate::types::projection::Application,
+    ),
     HeaderProjection(NodeKey, regions::Context),
     ProjectionBound(projections::lookup::Seed, bool),
     ProjectionSelection(NodeKey, crate::types::substitute::Request),
@@ -143,49 +148,54 @@ struct Checker<'a> {
 /// # Errors
 /// Rejects recursive aliases, invalid signatures and unsupported annotation semantics.
 pub fn analyze(report: &Report) -> Result<Declarations, Error> {
-    if !report.names_resolved {
-        return Err(Error::at(
-            FileId(0),
-            0,
-            "type checking requires completed name resolution",
-        ));
-    }
-    let mut checker = Checker {
-        method_queries: std::collections::HashMap::new(),
-        inherent_headers: inherent_headers::Pending::default(),
-        impl_headers: impl_headers::Pending::default(),
-        constant_members: traits::ConstantReadiness::default(),
-        associated_type_bounds: std::collections::HashMap::new(),
-        associated_bindings: generics::bindings::Pending::default(),
-        projections: projections::Pending::default(),
-        trait_proofs: trait_regions::Proofs::default(),
-        method_trait_environments: None,
-        nominals: aggregates::Pending::default(),
-        defaults: generics::Defaults::default(),
-        deferred_bounds: Vec::new(),
-        bound_syntax: std::collections::HashMap::new(),
-        bound_captures: None,
-        relaxed: std::collections::HashSet::new(),
-        constant_modules: None,
-        constant_scratch: super::constants::Scratch::default(),
-        constant_evaluations: evaluation::Pending::default(),
-        constant_dependencies: std::collections::HashSet::new(),
-        constant_captures: generics::Captures::default(),
-        parameter_uses: crate::types::parameters::uses::Uses::default(),
-        report,
-        facts: Declarations::new(report)?,
-        states: vec![State::Unseen; report.resolution.definitions.len()],
-        work: Vec::new(),
-        children: Vec::new(),
-        regions: Regions::default(),
-        discriminants: super::constants::Discriminants::default(),
-        nominal_regions: std::collections::HashMap::new(),
-        function_binders: std::collections::HashMap::new(),
-        constant_binders: std::collections::HashMap::new(),
-        owner_binders: std::collections::HashMap::new(),
-    };
+    let mut checker = Checker::new(report)?;
     checker.run().map_err(|error| report.diagnostic(error))?;
     Ok(checker.facts)
+}
+impl<'a> Checker<'a> {
+    fn new(report: &'a Report) -> Result<Self, Error> {
+        if !report.names_resolved {
+            return Err(Error::at(
+                FileId(0),
+                0,
+                "type checking requires completed name resolution",
+            ));
+        }
+        Ok(Self {
+            method_queries: std::collections::HashMap::new(),
+            inherent_headers: inherent_headers::Pending::default(),
+            impl_headers: impl_headers::Pending::default(),
+            constant_members: traits::ConstantReadiness::default(),
+            associated_type_bounds: std::collections::HashMap::new(),
+            associated_bindings: generics::bindings::Pending::default(),
+            projections: projections::Pending::default(),
+            trait_proofs: trait_regions::Proofs::default(),
+            method_trait_environments: None,
+            nominals: aggregates::Pending::default(),
+            defaults: generics::Defaults::default(),
+            deferred_bounds: Vec::new(),
+            bound_syntax: std::collections::HashMap::new(),
+            bound_captures: None,
+            relaxed: std::collections::HashSet::new(),
+            constant_modules: None,
+            constant_scratch: super::constants::Scratch::default(),
+            constant_evaluations: evaluation::Pending::default(),
+            constant_dependencies: std::collections::HashSet::new(),
+            constant_captures: generics::Captures::default(),
+            parameter_uses: crate::types::parameters::uses::Uses::default(),
+            report,
+            facts: Declarations::new(report)?,
+            states: vec![State::Unseen; report.resolution.definitions.len()],
+            work: Vec::new(),
+            children: Vec::new(),
+            regions: Regions::default(),
+            discriminants: super::constants::Discriminants::default(),
+            nominal_regions: std::collections::HashMap::new(),
+            function_binders: std::collections::HashMap::new(),
+            constant_binders: std::collections::HashMap::new(),
+            owner_binders: std::collections::HashMap::new(),
+        })
+    }
 }
 impl Checker<'_> {
     fn run(&mut self) -> Result<(), Error> {
@@ -267,6 +277,10 @@ impl Checker<'_> {
         }
         self.complete_layouts()
     }
+    #[expect(
+        clippy::too_many_lines,
+        reason = "the exhaustive worklist dispatch keeps every declaration continuation in one match"
+    )]
     fn drain(&mut self, steps: &mut usize, limit: usize) -> Result<(), Error> {
         let mut scan = Vec::new();
         while let Some(work) = self.work.pop() {
@@ -309,6 +323,9 @@ impl Checker<'_> {
                 }
                 Work::ImplicitProjection(key, context) => {
                     self.complete_implicit_projection(key, context)?;
+                }
+                Work::ProjectionArguments(key, context, application) => {
+                    self.complete_projection_arguments(key, context, application)?;
                 }
                 Work::HeaderProjection(key, context) => {
                     self.complete_header_projection(key, context)?;

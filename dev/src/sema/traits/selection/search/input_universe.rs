@@ -21,20 +21,31 @@ impl Query {
 }
 
 impl Search<'_> {
-    pub(super) fn open_universal(
+    pub(super) fn open_universals(
         &mut self,
         facts: &mut Declarations,
         frame: &mut Frame,
-        count: u32,
+        counts: &[u32],
     ) -> Result<(), String> {
         if self.query.universal.is_some() || self.caller.retain_sized {
             return Err("invalid universal input query mode".into());
         }
         let first = self.query.allocations.reserve_scoped();
         let scopes = self.query.scopes.get_or_insert_with(Default::default);
-        let scope = scopes.introduce(ScopeId::ROOT, count, first)?;
-        let end = scopes.open_inferred(facts, frame, scope)?;
-        self.query.allocations.record(end);
+        if counts.is_empty() {
+            return Err("universal input query has no binder".into());
+        }
+        let mut scope = ScopeId::ROOT;
+        for &count in counts {
+            let start = self.query.allocations.reserve_scoped();
+            scope = scopes.introduce(scope, count, start)?;
+            self.query.allocations.record(
+                start
+                    .checked_add(count)
+                    .ok_or("universal input scope overflow")?,
+            );
+        }
+        scopes.open_inferred(facts, frame, scope)?;
         self.query.universal = Some(Box::new(InputUniverse {
             scope,
             closing: None,

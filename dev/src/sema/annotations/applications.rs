@@ -18,6 +18,51 @@ pub(in crate::sema) struct Fields {
 }
 
 pub(super) fn infer(host: &mut impl Host, key: NodeKey, scope: ScopeId) -> Result<TermId, Error> {
+    let owner = host
+        .facts()
+        .generics
+        .annotation_uses
+        .get(&key)
+        .ok_or_else(|| error(host, key, "missing partial generic annotation"))?
+        .owner;
+    let (arguments, mut fields) = arguments(host, key, scope, Vec::new())?;
+    if host.report().resolution.definitions[owner.0 as usize].kind == DefKind::TypeAlias {
+        let template = host
+            .facts()
+            .unreduced
+            .definition(owner)
+            .or(host.facts().definitions[owner.0 as usize])
+            .ok_or_else(|| error(host, key, "missing alias template"))?;
+        let template = fields
+            .regions
+            .apply(&mut host.inference().0.types, template)
+            .map_err(|e| error(host, key, e))?;
+        let (facts, infer) = host.inference();
+        let projected = facts.types.contains_projections(template) == Some(true);
+        let term = infer
+            .instantiate_with(&mut facts.types, template, &mut fields.parameters)
+            .map_err(|e| error(host, key, e))?;
+        if projected || host.pending_normalization() {
+            host.normalization(key, scope, term)?;
+        }
+        Ok(term)
+    } else {
+        let term = host
+            .inference()
+            .1
+            .nominal(ItemId(owner.0), &arguments)
+            .map_err(|e| error(host, key, e))?;
+        host.nominal(term, fields);
+        Ok(term)
+    }
+}
+
+pub(super) fn arguments(
+    host: &mut impl Host,
+    key: NodeKey,
+    scope: ScopeId,
+    mut bindings: Vec<(crate::types::parameters::ParameterId, Argument)>,
+) -> Result<(Vec<Argument>, Fields), Error> {
     let use_ = host
         .facts()
         .generics
@@ -25,10 +70,22 @@ pub(super) fn infer(host: &mut impl Host, key: NodeKey, scope: ScopeId) -> Resul
         .get(&key)
         .ok_or_else(|| error(host, key, "missing partial generic annotation"))?;
     let (owner, supplied) = (use_.owner, use_.arguments.clone());
-    let parameters = host.facts().generics.parameters[&owner].clone();
+    let parameters = host
+        .facts()
+        .generics
+        .parameters
+        .get(&owner)
+        .cloned()
+        .unwrap_or_default();
+    if parameters.len() != supplied.len() {
+        return Err(error(
+            host,
+            key,
+            "partial annotation argument count mismatch",
+        ));
+    }
     let mut regions = Vec::new();
     let mut arguments = Vec::with_capacity(parameters.len());
-    let mut bindings = Vec::new();
     for (parameter, source) in parameters.iter().zip(&supplied) {
         if let Written::Lifetime(region) = *source {
             regions.push(region);
@@ -77,41 +134,15 @@ pub(super) fn infer(host: &mut impl Host, key: NodeKey, scope: ScopeId) -> Resul
         parameters: Instantiation::new(infer, &facts.types, &bindings)
             .map_err(|e| error(host, key, e))?,
     };
-    super::requirements::retain(host, key, scope, owner, &supplied, &mut fields)?;
+    if host.facts().generics.parameters.contains_key(&owner) {
+        super::requirements::retain(host, key, scope, owner, &supplied, &mut fields)?;
+    }
     for (index, source) in supplied.iter().enumerate() {
         if let Written::Default(default) = *source {
             fields.scoped_default(host, key, scope, default, arguments[index])?;
         }
     }
-    if host.report().resolution.definitions[owner.0 as usize].kind == DefKind::TypeAlias {
-        let template = host
-            .facts()
-            .unreduced
-            .definition(owner)
-            .or(host.facts().definitions[owner.0 as usize])
-            .ok_or_else(|| error(host, key, "missing alias template"))?;
-        let template = fields
-            .regions
-            .apply(&mut host.inference().0.types, template)
-            .map_err(|e| error(host, key, e))?;
-        let (facts, infer) = host.inference();
-        let projected = facts.types.contains_projections(template) == Some(true);
-        let term = infer
-            .instantiate_with(&mut facts.types, template, &mut fields.parameters)
-            .map_err(|e| error(host, key, e))?;
-        if projected || host.pending_normalization() {
-            host.normalization(key, scope, term)?;
-        }
-        Ok(term)
-    } else {
-        let term = host
-            .inference()
-            .1
-            .nominal(ItemId(owner.0), &arguments)
-            .map_err(|e| error(host, key, e))?;
-        host.nominal(term, fields);
-        Ok(term)
-    }
+    Ok((arguments, fields))
 }
 
 impl Fields {

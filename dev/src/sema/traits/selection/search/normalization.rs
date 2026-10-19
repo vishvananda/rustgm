@@ -2,11 +2,12 @@
 use super::{Action, Decision, Declarations, Frame, Goal, Search, Source, inference};
 use crate::sema::{projections::implementation_result, traits::equalities};
 use crate::types::{
-    GenericArgs, TypeId,
+    TypeId,
     infer::{Instantiation, projections::Application},
     lifetime_proof::ScopeId,
     parameters::predicates::{Bound, Predicate},
-    substitute::{Normalizer, Request, Resolution, Step},
+    projection,
+    substitute::{Normalizer, Resolution, Step},
 };
 
 pub(super) enum Purpose {
@@ -17,16 +18,19 @@ pub(super) struct Normalization {
     pub fold: Normalizer,
     pub step: Step,
     pub purpose: Purpose,
-    pub goal: Option<Goal>,
+    opened: Option<Opened>,
     pub end: u32,
     pub proof: Option<usize>,
     pub stopped: Option<Decision>,
     pub scope: ScopeId,
     pub scoped: Option<Box<super::callable_queries::Scoped>>,
 }
-struct Completion {
+struct Opened {
     goal: Goal,
-    request: Request,
+    application: projection::Application,
+}
+struct Completion {
+    opened: Opened,
     node: usize,
     equations_start: usize,
 }
@@ -51,7 +55,7 @@ impl Normalization {
             fold,
             step,
             purpose,
-            goal: None,
+            opened: None,
             end: frame.first,
             proof: None,
             stopped: None,
@@ -70,19 +74,21 @@ impl Frame {
         if let Some(normalization) = &self.normalization
             && normalization.pending()
         {
+            let opened = normalization
+                .opened
+                .as_ref()
+                .ok_or("missing normalization application")?;
             let mut child = Self::new(
                 facts,
                 &mut self.inputs.context,
-                normalization
-                    .goal
-                    .as_ref()
-                    .ok_or("missing normalization trait premise")?,
+                &opened.goal,
                 normalization.end.max(floor),
             )?;
             child.scope = normalization.scope;
             child.normalized_inputs = Some(super::frames::NormalizedInputs {
                 proof: normalization.proof,
             });
+            child.prepare_formation(facts, opened.application)?;
             return Ok(child);
         }
         let trial = self.trial.as_mut().ok_or("missing descending candidate")?;
@@ -133,64 +139,64 @@ impl Search<'_> {
         if let Some(decision) = normalization.stopped {
             return Ok(Action::Complete(decision));
         }
-        let value = match normalization.step {
-            Step::Complete(value) => value,
-            Step::Resolve(request) => {
-                if request.application.arguments != GenericArgs::EMPTY {
-                    return Err("associated families require advanced generic relationships".into());
-                }
-                let mut predicate = Predicate {
-                    ty: request.application.subject,
-                    bound: Bound::Trait(request.application.trait_application),
-                };
-                if request.depth != 0 || normalization.scoped.is_some() {
-                    let scoped = normalization.scoped.get_or_insert_with(|| {
-                        Box::new(super::callable_queries::Scoped::new(
-                            frame.scope,
-                            frame.first,
-                        ))
-                    });
-                    normalization.scope = scoped.request(
-                        &mut self.query,
-                        &mut frame.inputs.context,
-                        &normalization.fold,
-                        request.scope,
-                    )?;
-                    if normalization.scope != scoped.active.scope {
-                        let universes = self
-                            .query
-                            .scopes
-                            .as_mut()
-                            .ok_or("missing normalization universes")?;
-                        let mut current = normalization.scope;
-                        while current != scoped.active.scope {
-                            let (next, steps, parent) = universes
-                                .open_normalization_predicate(facts, current, predicate)?;
-                            frame
-                                .inputs
-                                .context
-                                .account_work(steps)
-                                .map_err(inference)?;
-                            predicate = next;
-                            current = parent;
+        let value =
+            match normalization.step {
+                Step::Complete(value) => value,
+                Step::Resolve(request) => {
+                    let mut application = request.application;
+                    if request.depth != 0 || normalization.scoped.is_some() {
+                        let scoped = normalization.scoped.get_or_insert_with(|| {
+                            Box::new(super::callable_queries::Scoped::new(
+                                frame.scope,
+                                frame.first,
+                            ))
+                        });
+                        normalization.scope = scoped.request(
+                            &mut self.query,
+                            &mut frame.inputs.context,
+                            &normalization.fold,
+                            request.scope,
+                        )?;
+                        if normalization.scope != scoped.active.scope {
+                            let universes = self
+                                .query
+                                .scopes
+                                .as_mut()
+                                .ok_or("missing normalization universes")?;
+                            let mut current = normalization.scope;
+                            while current != scoped.active.scope {
+                                let (next, steps, parent) = universes
+                                    .open_normalization_application(facts, current, application)?;
+                                frame
+                                    .inputs
+                                    .context
+                                    .account_work(steps)
+                                    .map_err(inference)?;
+                                application = next;
+                                current = parent;
+                            }
                         }
+                    } else {
+                        normalization.scope = frame.scope;
                     }
-                } else {
-                    normalization.scope = frame.scope;
+                    let mut substitution =
+                        Instantiation::new(&mut frame.inputs.context, &facts.types, &[])
+                            .map_err(inference)?;
+                    let predicate = Predicate {
+                        ty: application.subject,
+                        bound: Bound::Trait(application.trait_application),
+                    };
+                    normalization.opened = Some(Opened {
+                        application,
+                        goal: frame
+                            .inputs
+                            .context
+                            .instantiate_predicate(&mut facts.types, predicate, &mut substitution)
+                            .map_err(inference)?,
+                    });
+                    return Ok(Action::Descend);
                 }
-                let mut substitution =
-                    Instantiation::new(&mut frame.inputs.context, &facts.types, &[])
-                        .map_err(inference)?;
-                normalization.goal = Some(
-                    frame
-                        .inputs
-                        .context
-                        .instantiate_predicate(&mut facts.types, predicate, &mut substitution)
-                        .map_err(inference)?,
-                );
-                return Ok(Action::Descend);
-            }
-        };
+            };
         match normalization.purpose {
             Purpose::Equality(_) => self.advance_equality(facts, frame, value),
             Purpose::Inputs(_) => self.advance_inputs(facts, frame, value),
@@ -213,23 +219,22 @@ impl Search<'_> {
         let Step::Resolve(request) = equality.step else {
             return Err("missing pending equality normalization".into());
         };
-        let goal = equality
-            .goal
+        let opened = equality
+            .opened
             .take()
-            .ok_or("missing equality trait premise")?;
+            .ok_or("missing equality application")?;
         let equations_start = frame.inputs.context.region_equalities.len();
         frame
             .inputs
             .context
-            .equate_trait_predicate(&mut facts.types, &goal, self.query.nodes[node].goal)
+            .equate_trait_predicate(&mut facts.types, &opened.goal, self.query.nodes[node].goal)
             .map_err(inference)?;
         let (resolution, selected) = self.resolve_normalization(
             facts,
             &mut frame.inputs.context,
             equality,
             Completion {
-                goal,
-                request,
+                opened,
                 node,
                 equations_start,
             },
@@ -282,8 +287,7 @@ impl Search<'_> {
         completed: Completion,
     ) -> Result<(Option<Resolution>, usize), String> {
         let Completion {
-            goal,
-            request,
+            opened,
             mut node,
             equations_start,
         } = completed;
@@ -291,19 +295,19 @@ impl Search<'_> {
             .source
             .ok_or("missing equality premise evidence")?;
         let resolution = match source {
-            Source::Implementation { .. } => Resolution::Type(implementation_result(
-                facts,
-                request.application.item,
-                source,
-            )?),
+            Source::Implementation { .. } => {
+                Resolution::Type(implementation_result(facts, opened.application, source)?)
+            }
             Source::Assumption(_)
             | Source::ResultBound(_)
             | Source::QuantifiedAssumption { .. }
             | Source::QuantifiedResultBound { .. } => {
                 let application = Application {
-                    item: request.application.item,
-                    predicate: goal,
-                    arguments: Vec::new(),
+                    item: opened.application.item,
+                    predicate: opened.goal,
+                    arguments: context
+                        .known_arguments(&facts.types, opened.application.arguments)
+                        .map_err(inference)?,
                 };
                 match equalities::for_projection(
                     facts,

@@ -45,6 +45,11 @@ impl Checker<'_> {
         let item = self.item(key)?;
         let function = matches!(item.kind, crate::syntax::item::ItemKind::Function { .. });
         let implementation = matches!(item.kind, crate::syntax::item::ItemKind::Impl { .. });
+        let family = matches!(item.kind, crate::syntax::item::ItemKind::TypeAlias { .. })
+            && self.facts.associated.owner(owner).is_some();
+        if family && self.facts.generics.parameters.contains_key(&owner) {
+            return Ok(());
+        }
         let unit = self.report.package.unit(key.file);
         let nodes: Vec<_> = unit
             .configured
@@ -60,7 +65,7 @@ impl Checker<'_> {
             self.generic_syntax(*key)
                 .is_ok_and(|p| p.flavor != GenericFlavor::Lifetime)
         }) || (!nodes.is_empty()
-            && matches!(item.kind, crate::syntax::item::ItemKind::Trait { .. })))
+            && (family || matches!(item.kind, crate::syntax::item::ItemKind::Trait { .. }))))
         {
             if !function && self.bound_syntax.contains_key(&owner) {
                 self.deferred_bounds.push((owner, context));
@@ -96,6 +101,9 @@ impl Checker<'_> {
             }
             if implementation && parameter.default.is_some() {
                 return Err(self.error(*node, "impl generic parameters cannot have defaults"));
+            }
+            if family && parameter.default.is_some() {
+                return Err(self.error(*node, "associated type parameters cannot have defaults"));
             }
             if !lifetime && defaulted && parameter.default.is_none() {
                 return Err(self.error(*node, "generic parameters with defaults must be trailing"));
@@ -234,6 +242,9 @@ impl Checker<'_> {
         key: NodeKey,
         ty: TypeId,
     ) -> Result<(), Error> {
+        if self.facts.associated.owner(owner).is_some() {
+            return Ok(());
+        }
         let Some(parameters) = self.facts.generics.parameters.get(&owner) else {
             return Ok(());
         };

@@ -1,5 +1,7 @@
 //! Required type declarations and their implementation contracts share resolved identities.
 mod conformance;
+mod families;
+mod parameters;
 use super::super::generics::bounds::Syntax;
 use super::super::{Checker, DefId, Error, ItemId, Kind, NodeKey, Type};
 use crate::{
@@ -10,7 +12,6 @@ use crate::{
         item::{ItemKind, Visibility},
     },
     types::{
-        GenericArgs,
         parameters::{clauses::Clause, predicates::Bound},
         projection,
     },
@@ -47,10 +48,7 @@ impl Checker<'_> {
             let ItemKind::TypeAlias { bounds, .. } = self.item(key)?.kind else {
                 return Err(self.error(key, "missing associated type syntax"));
             };
-            let context = super::super::regions::Context {
-                binder: Some(self.owner_binders[&owner.self_definition]),
-                position: super::super::regions::Position::Output,
-            };
+            let context = self.associated_type_context(member.definition, key)?;
             let (mut sized, bounds) =
                 self.associated_type_bounds(member.definition, key, bounds, context)?;
             let mut copies = crate::types::copy::Properties {
@@ -95,6 +93,7 @@ impl Checker<'_> {
         steps: &mut usize,
         limit: usize,
     ) -> Result<(), Error> {
+        self.reserve_family_parameters(false, steps, limit)?;
         let mut pending = Vec::new();
         for index in 0..self.facts.associated.members().len() {
             let member = self.facts.associated.members()[index];
@@ -159,30 +158,48 @@ impl Checker<'_> {
                 .insert(member.definition, parent);
         }
         for (id, key) in pending {
-            let context = super::super::regions::Context {
-                binder: Some(self.owner_binders[&id]),
-                position: super::super::regions::Position::Output,
-            };
-            self.schedule_bounds(id, context)?;
-            self.drain(steps, limit)?;
-            self.retain_bound_projection_requirements(id, context)?;
-            let predicates = self
-                .facts
-                .generics
-                .predicates
-                .get(&id)
-                .cloned()
-                .unwrap_or_default();
-            let contract = self
-                .facts
-                .associated
-                .types
-                .get_mut(&id)
-                .ok_or_else(|| Error::at(key.file, 0, "missing associated type contract"))?;
-            for predicate in predicates {
-                contract.bounds.push(predicate.value);
-            }
+            self.complete_associated_result_bounds(id, key, steps, limit)?;
         }
+        Ok(())
+    }
+
+    fn complete_associated_result_bounds(
+        &mut self,
+        id: DefId,
+        key: NodeKey,
+        steps: &mut usize,
+        limit: usize,
+    ) -> Result<(), Error> {
+        let context = self.associated_type_context(id, key)?;
+        self.schedule_bounds(id, context)?;
+        self.drain(steps, limit)?;
+        self.retain_bound_projection_requirements(id, context)?;
+        if let Some(family) = self.facts.associated.families.get_mut(&id) {
+            family.requirements.get_or_insert_with(Vec::new);
+        }
+        let inputs = self
+            .facts
+            .associated
+            .families
+            .get(&id)
+            .and_then(|family| family.requirements.as_ref())
+            .map_or(0, Vec::len);
+        let predicates = self
+            .facts
+            .generics
+            .predicates
+            .get(&id)
+            .map_or(&[][..], Vec::as_slice);
+        let results = predicates
+            .get(inputs..)
+            .ok_or_else(|| self.error(key, "missing associated input predicates"))?;
+        let contract = self
+            .facts
+            .associated
+            .types
+            .get_mut(&id)
+            .ok_or_else(|| Error::at(key.file, 0, "missing associated type contract"))?;
+        contract.bounds.extend(results.iter().map(|p| p.value));
         Ok(())
     }
 
@@ -234,13 +251,14 @@ impl Checker<'_> {
         let Bound::Trait(trait_application) = predicate.bound else {
             return Err(self.error(key, "missing associated type trait application"));
         };
+        let arguments = self.template_arguments(id, key)?;
         let projection = self.intern(
             key,
             Type::Projection(projection::Application {
                 item: ItemId(id.0),
                 subject: predicate.ty,
                 trait_application,
-                arguments: GenericArgs::EMPTY,
+                arguments,
             }),
         )?;
         let mut predicates: Vec<_> = bounds
@@ -259,7 +277,11 @@ impl Checker<'_> {
             }
         }
         if !bounds.syntax.is_empty() {
-            self.bound_syntax.insert(id, bounds.syntax);
+            // Input clauses precede result clauses in the one bound worklist.
+            self.bound_syntax
+                .entry(id)
+                .or_default()
+                .extend(bounds.syntax);
         }
         self.facts.associated.types.insert(
             id,
@@ -268,8 +290,8 @@ impl Checker<'_> {
                 bounds: predicates,
             },
         );
-        self.owner_binders
-            .insert(id, self.owner_binders[&owner.self_definition]);
+        let parent = self.owner_binders[&owner.self_definition];
+        self.owner_binders.entry(id).or_insert(parent);
         self.complete(id, key, projection)
     }
 

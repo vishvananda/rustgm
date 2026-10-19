@@ -1,8 +1,8 @@
 # PA20 fixture ownership
 
-The manifest registers 1,343 exact text-oracle cases from 797 source programs.
+The manifest registers 1,381 exact text-oracle cases from 835 source programs.
 The semantic lane has 484 accepted and 62 rejected cases; the LowIR lane has
-483 accepted native executions and 314 rejected programs. One semantic-positive
+508 accepted native executions and 327 rejected programs. One semantic-positive
 fixture deliberately retains a lifetime error rejected by LowIR and rustc.
 
 Fixture families:
@@ -24,6 +24,9 @@ Fixture families:
   false cycles through overridden defaults, and invalid unused initializer bodies.
 - `selection`: caller assumptions, partial inference, result/argument context,
   unrelated opaque alternatives, ambiguous methods and distinct caller scopes.
+  `inferred-parents/lowir` includes 26 qualified-path controls for retained parent
+  premises, type/const holes, ordered and Self defaults, nested callable scopes,
+  ambiguity and erased unresolved inputs; all 19 accepted programs execute.
 - `coherence`: local/foreign identity within the supported profile, covered
   parameters, overlapping and disjoint headers, conditional impls and unused impls.
 - `recursion`: successful shared subgoals, inductive cycles, failure-cache isolation,
@@ -53,11 +56,12 @@ controls have distinct paths and preserve both source programs.
 | --- | ---: | ---: | ---: |
 | coherence | 14 | 14 | 5 |
 | constants | 168 | 261 | 156 |
-| contracts | 119 | 167 | 97 |
+| contracts | 119 | 169 | 98 |
+| default-requirements | 0 | 10 | 5 |
 | integration | 41 | 57 | 39 |
 | projections | 77 | 108 | 69 |
 | recursion | 27 | 44 | 25 |
-| selection | 100 | 146 | 92 |
+| selection | 100 | 172 | 111 |
 
 The maintainer invariants additionally exercise solver budgets, completed proof
 reuse, failure-cache isolation, suspended-query ownership and linear work/storage

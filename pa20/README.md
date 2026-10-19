@@ -2,9 +2,9 @@
 
 Status: **implemented-draft**. Prerequisite: PA19. The bounded source profile is
 Rust 1.98.0, edition 2024, Linux x86-64, panic abort, overflow checks enabled and
-debug assertions disabled. The public suite has 1,355 text-oracle cases across
-809 distinct source programs: 546 semantic inspections and 809 complete LowIR
-checks, including 489 independently executed positive programs.
+debug assertions disabled. The public suite has 1,381 text-oracle cases across
+835 distinct source programs: 546 semantic inspections and 835 complete LowIR
+checks, including 508 independently executed positive programs.
 
 ## Required implementation
 
@@ -87,6 +87,14 @@ inputs cannot be chosen by ignoring an alternative. Method-name ambiguity remain
 a lookup error: later call arguments or expected return types cannot choose between
 different applicable methods. Selected lifetime equations remain obligations of
 the caller's ordinary region proof.
+
+Qualified local projections may contain inference holes in Self and the trait's
+type or const arguments. A unique header can refine those inputs while its own
+premises remain pending, and its associated result shape can supply later type
+constraints. Keep the selected parent proof and original application alive until
+every condition completes. Defaults, including defaults involving Self, use those
+same inference variables. Nested callable scopes preserve independent lifetime
+slots through this process. See `tests/spec/selection/inferred-parents/lowir/`.
 
 Normalize complete subject and argument graphs with bounded worklists. Retain
 the selected impl, member, substitutions and proof obligations for later phases.

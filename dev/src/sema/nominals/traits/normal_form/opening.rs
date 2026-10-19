@@ -1,6 +1,6 @@
 //! Open a projection's caller aliases exactly once, retaining their restoration equations.
 use super::{Availability, Declarations, Environment, Obligations, Predicate, State};
-use crate::types::substitute::Bound;
+use crate::types::{GenericArgs, substitute::Bound};
 use std::sync::Arc;
 #[cfg(test)]
 #[path = "../../../../../tests/invariants/closed_callers.rs"]
@@ -9,24 +9,27 @@ mod tests;
 pub(super) fn prepare(
     facts: &mut Declarations,
     environment: Option<Arc<Environment>>,
-    requirement: Predicate,
+    inputs: (Predicate, GenericArgs),
     first: u32,
     retain_sized: bool,
     availability: Availability,
-) -> Result<(State, Predicate), &'static str> {
+) -> Result<(State, Predicate, GenericArgs), &'static str> {
+    let (requirement, arguments) = inputs;
     if environment
         .as_ref()
         .is_none_or(|env| !env.requires_region_mapping())
         && !requirement.has_free_regions(&facts.types)?
+        && !facts.types.arguments_have_free_regions(arguments)?
     {
         let mut state = State::new(facts, environment, None)?;
         state.obligations = Obligations::new(first);
         state.retain_sized = retain_sized;
         state.availability = availability;
-        return Ok((state, requirement));
+        return Ok((state, requirement, arguments));
     }
     let mut fold = Bound::open_regions(first)?;
     let requirement = fold.predicate(&mut facts.types, requirement)?;
+    let arguments = fold.apply_arguments(&mut facts.types, arguments)?;
     let environment = environment
         .map(|env| {
             if env.requires_region_mapping() {
@@ -52,5 +55,5 @@ pub(super) fn prepare(
     let mut opened: Vec<_> = fold.opened_regions().map(|(a, b)| (b, a)).collect();
     opened.sort_unstable_by_key(|(free, original)| (free.0, original.0));
     state.obligations.equalities.extend(opened);
-    Ok((state, requirement))
+    Ok((state, requirement, arguments))
 }

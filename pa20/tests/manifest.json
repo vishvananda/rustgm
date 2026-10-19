@@ -21737,6 +21737,472 @@
       "native": {
         "outcome": "pass"
       }
+    },
+    {
+      "path": "tests/spec/selection/inferred-parents/lowir/ambiguous-parent.rs",
+      "exit_status": 1,
+      "features": [
+        "pa20.selection"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "PA20 inferred parent proofs, independently declared in dev/tests/inferred_parent_proofs.rs",
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/selection/inferred-parents/lowir/callable-parent.rs",
+      "exit_status": 0,
+      "features": [
+        "pa20.selection"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "PA20 inferred parent proofs, independently declared in dev/tests/inferred_parent_proofs.rs",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/selection/inferred-parents/lowir/const-parent.rs",
+      "exit_status": 0,
+      "features": [
+        "pa20.selection"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "PA20 inferred parent proofs, independently declared in dev/tests/inferred_parent_proofs.rs",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/selection/inferred-parents/lowir/copy-parent.rs",
+      "exit_status": 0,
+      "features": [
+        "pa20.selection"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "PA20 inferred parent proofs, independently declared in dev/tests/inferred_parent_proofs.rs",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/selection/inferred-parents/lowir/dependent-default.rs",
+      "exit_status": 0,
+      "features": [
+        "pa20.selection"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "PA20 inferred parent proofs, independently declared in dev/tests/inferred_parent_proofs.rs",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/selection/inferred-parents/lowir/direct-nested-binders.rs",
+      "exit_status": 0,
+      "features": [
+        "pa20.selection"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "PA20 inferred parent proofs, independently declared in dev/tests/inferred_parent_proofs.rs",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/selection/inferred-parents/lowir/direct-static.rs",
+      "exit_status": 1,
+      "features": [
+        "pa20.selection"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "PA20 inferred parent proofs, independently declared in dev/tests/inferred_parent_proofs.rs",
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/selection/inferred-parents/lowir/direct-universal.rs",
+      "exit_status": 0,
+      "features": [
+        "pa20.selection"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "PA20 inferred parent proofs, independently declared in dev/tests/inferred_parent_proofs.rs",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/selection/inferred-parents/lowir/erased-unresolved.rs",
+      "exit_status": 1,
+      "features": [
+        "pa20.selection"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "PA20 inferred parent proofs, independently declared in dev/tests/inferred_parent_proofs.rs",
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/selection/inferred-parents/lowir/known-subject.rs",
+      "exit_status": 0,
+      "features": [
+        "pa20.selection"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "PA20 inferred parent proofs, independently declared in dev/tests/inferred_parent_proofs.rs",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/selection/inferred-parents/lowir/missing-trait-parent.rs",
+      "exit_status": 1,
+      "features": [
+        "pa20.selection"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "PA20 inferred parent proofs, independently declared in dev/tests/inferred_parent_proofs.rs",
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/selection/inferred-parents/lowir/nested-binders.rs",
+      "exit_status": 0,
+      "features": [
+        "pa20.selection"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "PA20 inferred parent proofs, independently declared in dev/tests/inferred_parent_proofs.rs",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/selection/inferred-parents/lowir/nested-correlations.rs",
+      "exit_status": 1,
+      "features": [
+        "pa20.selection"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "PA20 inferred parent proofs, independently declared in dev/tests/inferred_parent_proofs.rs",
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/selection/inferred-parents/lowir/noncopy-parent.rs",
+      "exit_status": 1,
+      "features": [
+        "pa20.selection"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "PA20 inferred parent proofs, independently declared in dev/tests/inferred_parent_proofs.rs",
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/selection/inferred-parents/lowir/parent-default.rs",
+      "exit_status": 0,
+      "features": [
+        "pa20.selection"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "PA20 inferred parent proofs, independently declared in dev/tests/inferred_parent_proofs.rs",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/selection/inferred-parents/lowir/run-const-array.rs",
+      "exit_status": 0,
+      "features": [
+        "pa20.selection"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "PA20 inferred parent proofs, independently declared in dev/tests/inferred_parent_proofs.rs",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/selection/inferred-parents/lowir/run-copy-sum.rs",
+      "exit_status": 0,
+      "features": [
+        "pa20.selection"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "PA20 inferred parent proofs, independently declared in dev/tests/inferred_parent_proofs.rs",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/selection/inferred-parents/lowir/run-nested-call.rs",
+      "exit_status": 0,
+      "features": [
+        "pa20.selection"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "PA20 inferred parent proofs, independently declared in dev/tests/inferred_parent_proofs.rs",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/selection/inferred-parents/lowir/run-self-default.rs",
+      "exit_status": 0,
+      "features": [
+        "pa20.selection"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "PA20 inferred parent proofs, independently declared in dev/tests/inferred_parent_proofs.rs",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/selection/inferred-parents/lowir/run-two-refinements.rs",
+      "exit_status": 0,
+      "features": [
+        "pa20.selection"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "PA20 inferred parent proofs, independently declared in dev/tests/inferred_parent_proofs.rs",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/selection/inferred-parents/lowir/run-universal-call.rs",
+      "exit_status": 0,
+      "features": [
+        "pa20.selection"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "PA20 inferred parent proofs, independently declared in dev/tests/inferred_parent_proofs.rs",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/selection/inferred-parents/lowir/self-default.rs",
+      "exit_status": 0,
+      "features": [
+        "pa20.selection"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "PA20 inferred parent proofs, independently declared in dev/tests/inferred_parent_proofs.rs",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/selection/inferred-parents/lowir/static-parent.rs",
+      "exit_status": 1,
+      "features": [
+        "pa20.selection"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "PA20 inferred parent proofs, independently declared in dev/tests/inferred_parent_proofs.rs",
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/selection/inferred-parents/lowir/trait-parent.rs",
+      "exit_status": 0,
+      "features": [
+        "pa20.selection"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "PA20 inferred parent proofs, independently declared in dev/tests/inferred_parent_proofs.rs",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/selection/inferred-parents/lowir/two-refinements.rs",
+      "exit_status": 0,
+      "features": [
+        "pa20.selection"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "PA20 inferred parent proofs, independently declared in dev/tests/inferred_parent_proofs.rs",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/selection/inferred-parents/lowir/universal-parent.rs",
+      "exit_status": 0,
+      "features": [
+        "pa20.selection"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "PA20 inferred parent proofs, independently declared in dev/tests/inferred_parent_proofs.rs",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
     }
   ]
 }

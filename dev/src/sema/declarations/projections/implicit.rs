@@ -93,12 +93,6 @@ impl Checker<'_> {
         {
             return Err(self.error(key, "generic defaults require explicit trait qualification"));
         }
-        if crate::sema::lifetimes::arguments(self.report, path.suffix, false)?.is_some() {
-            return Err(self.error(
-                path.suffix,
-                "associated type arguments require advanced generic relationships",
-            ));
-        }
         self.work.push(Work::ImplicitProjection(key, context));
         if self.report.resolution.associated_paths.contains_key(&key) {
             self.method_path_segments(key, path.prefix, path.suffix)?;
@@ -148,6 +142,45 @@ impl Checker<'_> {
         let application = self.lookup_projection_member(key, path.name, predicates)?;
         if application.subject != self.ty(path.prefix)? {
             return Err(self.error(key, "shorthand projection subject does not match its bound"));
+        }
+        if self
+            .facts
+            .generics
+            .parameters
+            .contains_key(&DefId(application.item.0))
+        {
+            self.work
+                .push(Work::ProjectionArguments(key, context, application));
+            self.work.push(Work::PathArguments(
+                path.suffix,
+                DefId(application.item.0),
+                context,
+            ));
+            return Ok(());
+        }
+        self.complete_projection_arguments(key, context, application)
+    }
+
+    pub(in super::super) fn complete_projection_arguments(
+        &mut self,
+        key: NodeKey,
+        context: regions::Context,
+        mut application: projection::Application,
+    ) -> Result<(), Error> {
+        let path = self
+            .implicit_projection_path(key)?
+            .ok_or_else(|| self.error(key, "missing completed shorthand path"))?;
+        application.arguments =
+            self.projection_arguments(path.suffix, DefId(application.item.0), context)?;
+        if let Some(arguments) = self.facts.unreduced.arguments(path.suffix) {
+            let original = self.intern(
+                key,
+                Type::Projection(projection::Application {
+                    arguments,
+                    ..application
+                }),
+            )?;
+            self.facts.unreduced.retain_node(key, original);
         }
         let ty = self.intern(key, Type::Projection(application))?;
         self.normalize_annotation(key, ty, context)

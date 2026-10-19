@@ -22,6 +22,7 @@ pub(super) struct Query {
     pub availability: Availability,
     pub nodes: Vec<Node>,
     pub active: HashSet<ShapeKey>,
+    pub families: HashSet<super::member_conditions::Key>,
     // Completed answers belong to one immutable caller, mode and region scope.
     pub completed: HashMap<Predicate, Decision>,
     pub cycles: usize,
@@ -59,6 +60,7 @@ impl<'a> Search<'a> {
                 builtins,
                 nodes: Vec::new(),
                 active: HashSet::new(),
+                families: HashSet::new(),
                 completed: HashMap::new(),
                 cycles: 0,
                 reused: false,
@@ -140,7 +142,9 @@ impl<'a> Search<'a> {
                     }
                 }
                 Action::Descend => {
-                    let child = if let Some(child) = self.condition_child(facts, frame)? {
+                    let child = if let Some(child) = self.formation_child(facts, frame)? {
+                        child
+                    } else if let Some(child) = self.condition_child(facts, frame)? {
                         child
                     } else {
                         frame.child(
@@ -152,7 +156,9 @@ impl<'a> Search<'a> {
                     stack.push(child);
                 }
                 Action::Complete(decision) => {
-                    let decision = self.input_evidence(facts, frame, decision)?;
+                    let Some(decision) = self.complete_formation(facts, frame, decision)? else {
+                        continue;
+                    };
                     if let Some(key) = frame.key {
                         self.query.active.remove(&key);
                     }
@@ -166,7 +172,9 @@ impl<'a> Search<'a> {
                         self.query.decision = Some(decision);
                         return Ok(Progress::Ready(decision));
                     };
-                    self.remember(canonical, cycles, decision, scope);
+                    if completed.formation.is_none() {
+                        self.remember(canonical, cycles, decision, scope);
+                    }
                     self.accept(facts, parent, decision)?;
                 }
             }

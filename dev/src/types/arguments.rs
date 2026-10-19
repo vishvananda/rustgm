@@ -233,6 +233,15 @@ impl Store {
         self.argument_properties(args, &mut properties)?;
         Ok(properties.is_concrete())
     }
+
+    pub(crate) fn arguments_have_free_regions(
+        &self,
+        args: GenericArgs,
+    ) -> Result<bool, &'static str> {
+        let mut properties = super::Properties::default();
+        self.argument_properties(args, &mut properties)?;
+        Ok(properties.escaping != 0 || properties.has(super::Property::FreeRegions))
+    }
     pub(super) fn argument_properties(
         &self,
         args: GenericArgs,

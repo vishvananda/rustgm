@@ -129,6 +129,10 @@ impl Checker<'_> {
                 }
             }
             self.bound_syntax.insert(owner, syntax);
+        } else if let Some(family) = self.facts.associated.families.get_mut(&owner) {
+            // Preparation has completed an empty input contract. An absent
+            // contract before this point still denotes unfinished work.
+            family.requirements = Some(Vec::new());
         }
         Ok(())
     }
@@ -417,6 +421,7 @@ impl Checker<'_> {
             Error::at(crate::resolve::unit::FileId(0), 0, "missing pending bounds")
         })?;
         let mut completed = Vec::with_capacity(bounds.len());
+        let mut input_count = 0;
         for &bound in &bounds {
             let ty = match bound.subject {
                 Subject::Parameter(id) | Subject::Associated(id) => self.facts.definitions
@@ -465,6 +470,14 @@ impl Checker<'_> {
                     &mut completed,
                 )?;
             }
+            if !matches!(bound.subject, Subject::Associated(_)) {
+                input_count = completed.len();
+            }
+        }
+        if let Some(family) = self.facts.associated.families.get_mut(&owner) {
+            // Associated result syntax is appended after the member's inputs.
+            // Keep complete clauses, including equalities emitted by one bound.
+            family.requirements = Some(completed[..input_count].iter().map(|p| p.value).collect());
         }
         self.facts.generics.predicates.insert(owner, completed);
         self.retain_raw_bounds(owner, bounds, context)?;

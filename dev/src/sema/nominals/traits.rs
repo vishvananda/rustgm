@@ -39,6 +39,8 @@ pub(crate) struct Projected {
     pub resolution: Option<substitute::Resolution>,
     pub proof: Obligations,
     pub sized: Vec<crate::types::TypeId>,
+    /// Member inputs in the retained selection proof's lifetime namespace.
+    pub family: crate::types::GenericArgs,
 }
 impl State {
     pub(super) const fn region_frontier(&self) -> u32 {

@@ -7,7 +7,7 @@ use crate::{
         traits::{heads::Subject, implementations::Availability},
     },
     types::{
-        infer::{Error, TermId, probe::Probe},
+        infer::{Error, TermId, arguments::Argument, probe::Probe},
         lifetime_proof::Obligations,
         substitute::Bound,
     },
@@ -16,6 +16,7 @@ use crate::{
 struct Candidate {
     probe: Probe,
     instance: instantiation::Instance,
+    arguments: Vec<Argument>,
     proof: Obligations,
 }
 
@@ -32,9 +33,6 @@ pub(in crate::sema) fn symbolic_result(
     let application = source
         .projection_application(&facts.types, root)
         .map_err(inference)?;
-    if !application.arguments.is_empty() {
-        return Ok(None);
-    }
     let goal = &application.predicate;
     let (item, _) = goal
         .trait_arguments()
@@ -60,21 +58,13 @@ pub(in crate::sema) fn symbolic_result(
             super::header_inputs::independent(facts, source, goal, *owner).map_err(inference)?
     {
         let definition = definition(facts, *owner, application.item)?;
-        let template = facts.definitions[definition.0 as usize]
-            .ok_or("missing associated result definition")?;
-        let mut fold = Bound::parameters_captured(&facts.types, &[], inputs.regions)?;
-        let template = fold.apply(&mut facts.types, template)?;
-        source.account_work(fold.steps).map_err(inference)?;
-        let result = source
-            .instantiate(
-                &mut facts.types,
-                template,
-                &[(
-                    inputs.parameter,
-                    crate::types::infer::arguments::Argument::Type(inputs.value),
-                )],
-            )
-            .map_err(inference)?;
+        let result = facts.infer_associated_definition(
+            source,
+            definition,
+            &application.arguments,
+            vec![(inputs.parameter, Argument::Type(inputs.value))],
+            inputs.regions,
+        )?;
         return Ok(Some((result, Obligations::new(caller.first_region))));
     }
     let mut selected = None;
@@ -141,6 +131,7 @@ impl Candidate {
             Ok(()) => Ok(Some(Self {
                 probe,
                 instance,
+                arguments: application.arguments,
                 proof,
             })),
             Err(Error::Mismatch | Error::Occurs) => Ok(None),
@@ -158,20 +149,13 @@ impl Candidate {
             return Ok(None);
         }
         let definition = definition(facts, self.instance.owner, item)?;
-        let template = facts.definitions[definition.0 as usize]
-            .ok_or("missing associated result definition")?;
-        let mut fold =
-            Bound::parameters_captured(&facts.types, &[], self.instance.regions.clone())?;
-        let template = fold.apply(&mut facts.types, template)?;
-        self.probe
-            .context()
-            .account_work(fold.steps)
-            .map_err(inference)?;
-        let result = self
-            .probe
-            .context()
-            .instantiate(&mut facts.types, template, &self.instance.bindings)
-            .map_err(inference)?;
+        let result = facts.infer_associated_definition(
+            self.probe.context(),
+            definition,
+            &self.arguments,
+            std::mem::take(&mut self.instance.bindings),
+            std::mem::take(&mut self.instance.regions),
+        )?;
         self.proof
             .equalities
             .append(&mut self.probe.context().region_equalities);

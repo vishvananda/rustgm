@@ -2569,3 +2569,493 @@ codegen-only checks. Fourteen builtin source/LowIR pairs match their retained
 executed identities. Candidate, source and fixture hashes are unchanged before
 and after validation. The 36 checkpoint commands take 947.34 seconds in this run;
 23.84 seconds cover the complete active PA text sweep.
+
+## Associated family argument and declaration groundwork
+
+Selected definitions retain separate parent and member argument groups through
+definition waits. Structural substitution maps both owners simultaneously and
+uses the complete captured lifetime prefix, including unnamed parent slots.
+Its cache key includes both owners and both argument groups. A shared substitution
+contains no selection proof or permission to form an application.
+
+Family parameter reservation now precedes trait result bounds and follows impl
+owner preparation. Member scopes preserve the parent's slots before assigning
+their own lifetime slots in declaration order; type and const parameters retain
+their member identity. Lifetime-only families have explicit parameter lists.
+Ordinary associated types retain their existing context. Type/const defaults are
+rejected, and unused family parameters do not inherit ordinary alias restrictions.
+
+Input and result clauses use one bound worklist. The typed family contract retains
+only its input requirements; the associated result contract retains result
+promises. Completing these in separate passes would replace the first set of
+predicates and discard its retained syntax. Clause classification includes any
+associated equalities emitted from a written bound.
+
+Eight internal invariants cover joint substitution, nested and captured lifetimes,
+argument kinds, retained selections, independent cache keys, member reservation,
+defaults and input/result separation. Ten existing continuation/header checks
+also pass. Five source expectations are independently checked with Rust 1.98.0:
+three valid declarations and two prohibited generic defaults. Evidence is under
+`obj/pa21-work/family-frontier-v1/family-parameters-v1/`.
+Strict Clippy and the 943-file audit pass. All 6,268 active PA text comparisons
+pass in 18.19 seconds against the current debug candidate, with compiler/source
+identities unchanged during validation. Scoped cleanup removes the three probe
+objects and preserves their source and diagnostic evidence.
+
+These are declaration and substitution boundary checks, not completed public GAT
+support. Application formation, required where-clause analysis, conformance and
+all normalization consumers still need integration before removing the source
+gate. PA21 and the later assignments remain planned. The full release/native
+checkpoint and changed-path measurements remain due before publication.
+
+## Family applications and shared lifetime opening
+
+Qualified and shorthand associated paths now prepare separate parent and member
+arguments through the existing declaration worklist. Original applications retain
+both argument groups. Trait result substitution maps `Self`, parent parameters
+and member parameters together, avoiding sequential replacement of actual arguments
+that themselves name parameters.
+
+Projection selection opens parent predicates, member arguments and caller clauses
+with one lifetime mapping. Retained selections carry the opened member arguments
+through definition waits while preserving the original normalization request.
+Nested callable-local lifetimes remain local. Immutable closed caller indices stay
+shared; selection permissions remain query-local.
+
+The focused checks pass 24 tests, including argument arity, qualified/shorthand
+identity, simultaneous substitution and shared parent/member lifetime opening.
+Strict Clippy and the 945-file audit pass. Six source expectations are independently
+qualified with Rust 1.98.0; those source/hash receipts are reused for the subsequent
+diagnostic-only correction. An ordinary nonparameterized `Out<>` application also
+passes the candidate's semantic view.
+
+The cheap text sweep caught two PA20 diagnostic regressions. Restoring the existing
+wording fixes both without changing references. The final debug candidate
+`399e251a09deb474370a8d0d142d377f30c349e6e5b0e752db1cd4ba9c84c032`
+passes all 6,268 PA1–PA20 cases in 14.53 seconds, excluding its 30.87-second build.
+Source and candidate identities remain unchanged throughout validation. Evidence
+and earlier failed runs remain under
+`obj/pa21-work/family-frontier-v1/family-applications-v1/`.
+
+The public GAT source gate remains. Family input obligations, equality consumers,
+conformance, body inference and required where-clause analysis still need work;
+internal application tests do not establish complete source support. These edits
+share a future full publication checkpoint rather than repeating release/native
+suites for each consumer change.
+
+## Complete family equality inputs and lifetime promises
+
+Equality selection now imports Self, trait arguments and member arguments through
+one shared inference mapping. Trials match every input before committing equations;
+failed or ambiguous alternatives leave the caller's variables unconstrained.
+Equal results from different family applications do not identify their inputs.
+The proved-equality transport and canonical normalizer consume the same complete
+application. A direct normalization invariant checks both a selected family result
+with restored caller lifetimes and a different argument that must remain opaque.
+
+Declared result outlives promises now retain whether a lifetime belongs to the
+parent or the member. Declaration preparation records that distinction once;
+queries index the corresponding argument group directly. Parent type/const
+arguments cannot displace family lifetime slots. Nested callable-local lifetimes
+do not escape as outer promises, and malformed templates or argument kinds fail.
+These promises still depend on a well-formed complete application.
+
+Validation passes 49 focused tests plus the added direct normalization invariant,
+31 affected integration tests, strict Clippy and the 948-file audit. Nine new
+source expectations match pinned rustc: four accepted and five rejected, with
+negative diagnostics checked for argument/type mismatch and missing outlives
+proof. The candidate's public GAT source gate remains; these independent outcomes
+and internal tests do not establish complete public source support.
+
+A shared-graph work invariant grows both argument count and graph depth through
+16, 64 and 256. Complete input import/matching charges 267, 1,035 and 4,107 work
+units respectively, retaining the original caller's unsolved variable. This
+checks linear growth in that family; it does not measure wall time or selection
+across growing numbers of distinct equality candidates.
+
+The debug candidate
+`f8a26116d7f5ef6afd4c06fa2371bcb61c2aaec78f0c03c148e0fbff25971d7f`
+passes all 6,268 active PA text cases in 15.89 seconds. Compiler/source identities
+remain unchanged during that sweep. Only the direct normalization test changes
+afterward; its focused run, formatting, Clippy and audit pass separately.
+Evidence is retained in
+`obj/pa21-work/family-frontier-v1/family-equalities-v1/` and
+`obj/pa21-work/family-frontier-v1/family-outlives-v1/`.
+Full publication validation and performance measurements remain due for the
+coherent GAT checkpoint. PA21–PA25 remain planned.
+
+## Retained family input requirements
+
+Canonical family normalization now proves member input requirements after its
+parent trait proof, including when that parent comes from a caller assumption.
+Joint substitution maps implicit Sized bounds, written predicates and lifetime
+relations. An unfinished input contract remains distinct from a completed empty
+contract. Result promises never substitute for input obligations.
+
+Member conditions use child frames on the existing iterative selection stack.
+Universal conditions retain private scopes and header continuations; completion
+preserves their lifetime debts. Family ancestry includes the complete application
+and scope. A family's failure or composite proof is not cached as an answer to
+the parent trait alone. Ordinary queries allocate no family ancestry entries.
+
+Validation passes 168 focused tests, 31 affected integration tests, strict Clippy
+and the 951-file audit. New invariants cover missing and caller-provided member
+bounds, implicit versus relaxed Sized, unpaid lifetime relations, universal versus
+static-only evidence, unfinished contracts and repeated header waits with foreign
+allocation gaps. Eight independently declared source outcomes match pinned rustc
+(four accepted and four rejected); these remain source expectations rather than
+claims that the candidate publicly supports GATs.
+
+The debug candidate
+`31f7415126d7d9df6874f049efbf1c9e7d7d0d474a6f00757cd0abfcf093a98d`
+passes all 6,268 active PA text cases in 14.65 seconds. Source and candidate hashes
+remain unchanged during validation. Receipts and earlier failed lint/audit/test
+compilation runs remain in
+`obj/pa21-work/family-frontier-v1/family-formation-v1/`.
+
+The public source gate remains. Internal selection normalization still needs
+complete family transport through callable scopes; body inference, conformance,
+required where-clause analysis and all input-formation consumers remain unfinished.
+Full publication checks and performance comparisons remain due for the combined
+implementation batch. The cheap compatibility sweep continues to run at useful
+checkpoints; release/native qualification is not repeated for each related edit.
+
+## Nested family normalization and shared parent proofs
+
+Trait selection now retains each opened family application alongside its inferred
+parent goal. Callable scopes open parent and member inputs with the same lifetime
+folder. Equality selection and selected implementation definitions consume those
+opened arguments, while the original request remains unchanged for normalizer
+resumption. Child frames prove member requirements on the existing iterative
+stack, including nested applications and repeated header waits.
+
+The scaling checks exposed repeated parent proof construction across distinct
+family applications. Growing both applications and parent conditions from eight
+to 32 increased charged work from 1,550 to 15,302 units. Selection now caches the
+completed parent answer before attaching prior input evidence or checking member
+conditions. Existing scope, cycle and allocation restrictions still govern reuse;
+member failures and composite proofs never enter the parent cache. The resulting
+work is 752, 2,840 and 11,192 units for widths eight, 32 and 128, respectively.
+Separately, increasing one family's argument count through 16, 64 and 256 costs
+746, 2,666 and 10,346 units. These are algorithmic work checks, not wall-time claims.
+
+Validation passes 177 focused tests, 31 affected integration tests, strict Clippy
+and the 952-file audit. Nine new nested-selection invariants cover distinct
+applications, nested requirements, callable lifetime correlations, selected
+definitions, erased-result debts, cycle termination, retained header waits and
+both scaling dimensions. Thirteen independent source controls match pinned rustc:
+eight accepted and five rejected. Function-pointer implementations explicitly use
+`for<'a>`; an implementation for a single outer lifetime is a different contract.
+A standalone signature mentioning a restricted family was accepted by rustc, so
+the negative control explicitly demands normalization under a universal trait
+bound. The earlier signature-only observation remains in the evidence and must
+not be treated as a demonstrated rejection rule.
+
+Debug candidate
+`9fc07c9d549a26fc01e6e7db1f73a84f188ca6baa43907ab674d46b53c40e148`
+passes all 6,268 active PA text cases in 14.66 seconds, with unchanged source and
+binary identities during validation. Receipts, source plans and failed development
+runs remain under `obj/pa21-work/family-frontier-v1/family-search-v1/`.
+
+The public GAT source gate remains. Body inference, complete original-input
+formation, associated-definition conformance and required where clauses remain
+unfinished, along with the other PA21 deliverables. Local conformance providers
+currently bypass ordinary selection and still reject family arguments; their
+future support must also prove member requirements. Full publication validation
+and immutable-binary performance comparisons remain due for the combined batch.
+
+## Inferred family result shapes and parent input progress
+
+A uniquely compatible implementation can now expose a family definition's shape
+using inferred parent and member arguments together. Canonical normalization and
+inferred templates share member arity, owner and lifetime-slot checks. One
+simultaneous type/const substitution preserves shared input variables; complete
+parent lifetime captures and member lifetimes remain distinct beneath nested
+callable binders. Ambiguous or input-refining header probes cannot export a
+speculative shape. Erased results leave unused inputs and their requirements
+attached to the original projection query.
+
+A completed parent proof can separately refine the body's inputs before member
+arguments are determined. Caller equalities can also determine complete member
+inputs. These changes retain their proof and wake the original query; they do not
+complete member formation or publish a normalized result. Unchanged inputs do not
+report progress. Scoped input matching keeps ambient lifetime slots rigid, and
+nested projections in member type arguments now wait for their own normalization.
+
+Twelve new internal tests cover mixed type/const inference, sharing across both
+argument groups, independent applications, erased requirements, ambiguous trials,
+independent headers, callable captures, parent-to-member progress, caller equality
+refinement, nested input waits and ambient lifetime matching. The complete focused
+selection passes 189 tests; 34 affected integration tests, strict Clippy and the
+954-file audit pass. At 16, 64 and 256 distinct inferred member arguments, shape
+exposure charges 512, 1,952 and 7,712 work units (`30n + 32`). This is an algorithmic
+work invariant, not a wall-time comparison.
+
+Ten source controls independently match Rust 1.98.0 (six accepted, four rejected).
+Two additional controls qualify the next inference case: a unique parent header
+can constrain an input while its own premise remains pending until the member
+result determines another input. Rustc accepts the satisfied Copy case and rejects
+the mutable-reference case. The completed-parent handoff above does not yet
+implement that retained partial-proof continuation; it must not be counted as
+complete inferred-family source support.
+
+Debug candidate
+`8a7ab990bde87940ee427cef1a0745b5171085fff27cd6c542a30e842be44d35`
+passes all 6,268 active PA text cases in 14.69 seconds. Eight existing symbolic
+projection programs execute successfully through rustc and CPPGM, with repeated
+LowIR equality. Source and candidate hashes remain unchanged through these
+checks. Evidence is in
+`obj/pa21-work/family-frontier-v1/member-inference-v1/`; scoped cleanup removes
+seven independent probe objects and sixteen native executables, retaining receipts.
+
+The public GAT source gate remains. Retained partial-parent inference, complete
+original-input formation, definition conformance and required where-clause rules
+still need completion, along with the other PA21 deliverables. Full publication
+validation and immutable-binary performance comparisons remain due for the combined
+GAT batch. PA21–PA25 still fail planned-stage discovery explicitly.
+
+
+## Retained partial parents and qualified annotation inference
+
+A body projection that stalls on a unique partial parent can now retain the
+solver's exact continuation. Header dependencies and later input changes resume
+that search with its lifetime reservation, excluding intervening foreign
+allocations. A pending parent may expose a uniquely determined result shape, but
+cannot complete normalization. Its proof must finish before the original whole
+application is accepted; a failed retained premise rejects the use.
+
+Direct qualified annotations such as `<W<_> as Q<_>>::Out` retain resolved
+subject, trait/member paths and member identity instead of demanding a canonical
+subject during declaration elaboration. Their arguments reuse the existing
+annotation worklist, shared type/const variables and ordered defaults, including
+trait Self defaults. The complete original operation remains a normalization
+root even when the associated result erases an input. Ordinary fully known paths
+retain the existing declaration path.
+
+Parent refinement preserves every surrounding callable scope, including empty
+binders. The initial implementation opened each scope separately and retraversed
+wide input graphs. A scaling invariant exposed quadratic charged work. The final
+implementation opens the entire stack through one shared type-graph traversal;
+slot identities, nested locals, existing free lifetimes and older captures remain
+distinct. At widths 16, 64 and 256, charged work changes as follows:
+
+| Binder depth and input width | Separate opening | Shared opening |
+| ---: | ---: | ---: |
+| 16 | 790 | 174 |
+| 64 | 9,142 | 510 |
+| 256 | 134,710 | 1,854 |
+
+These observations fit `2n² + 14n + 54` and `7n + 62`, respectively. They measure
+algorithmic work, not compile-time speed. Nested partial-parent tests also retain
+private witnesses, preserve correlated versus independent slots, and exclude a
+17-region foreign interval on resumption.
+
+Strict Clippy, the 958-file audit and 194 focused tests pass. Forty-four affected
+integration tests pass; two native groups are explicitly ignored in that run.
+Twenty new source controls independently match Rust 1.98.0, and their seven
+negative checks require the intended diagnostic class. Six maintainer programs
+execute with runtime assertions through rustc and CPPGM, with repeated LowIR
+byte equality.
+
+The same debug candidate
+`a0f740abb9c3afabf66976fb0a9b7117364473d0425e251eb08348b9063e6b74`
+passes the existing 6,268 PA text cases in 16.26 seconds. The owning PA20 suite
+then gains 26 LowIR fixtures: those 20 controls and six executable programs. All
+26 declared source outcomes are independently qualified again from their actual
+fixture files; all 19 positives execute with both compilers. PA20's 1,381 text
+cases compare exactly, and all 4,065 pre-existing PA20 sidecars remain unchanged.
+Together with the unchanged PA1–PA19 run, this validates 6,294 active text cases.
+Upstream provenance and harness/layout checks pass. Final reference provenance
+matches the manifest and compiler source snapshot; no compiler source or binary
+changes during qualification.
+
+Evidence, including failed development checks and the quadratic baseline, is in
+`obj/pa21-work/family-frontier-v1/parent-continuation-v1/`. Scoped cleanup removes
+50 native executables across the maintainer and fixture qualification batches,
+retaining source, diagnostics, hashes and receipts. No full release/native gate
+or broad performance study is repeated for these related edits.
+
+PA21's family source gate remains. Complete family-input formation, unused
+associated definition conformance and required where-clause analysis still need
+integration, followed by opaque/capture, variance/drop and public semantic-view
+work. Full publication validation and immutable-binary performance comparisons
+remain due for the combined GAT checkpoint. PA21–PA25 remain planned and fail
+suite discovery explicitly; the goal through PA25 remains incomplete.
+
+## Unused associated family definition contracts
+
+The declaration checker now validates each family before publishing the checked
+impl mapping. Trait and impl parameters share simultaneous substitutions into
+the impl's full lifetime scope. A first proof uses the declared rigid identities
+and input requirements to reject stronger impl bounds. A second proof uses the
+impl's own identities and requirements to establish the declared application's
+formation, result well-formedness and result bounds. This keeps implicit Sized
+permissions on the correct side and excludes result promises from assumptions.
+Captured parent parameters are registered once; own lifetimes remain distinct
+from unconstrained impl lifetime captures. Each family solves its local proof
+instead of retaining that proof under the smaller parent binder.
+
+The input-contract mapper is shared with projection selection. Explicit
+conformance environments reuse the existing trait-bound expansion and parameter
+scope construction. Expansion retains and filters its work vector in place;
+there is no second implication engine or extra copy of its completed work list.
+Parameter preparation now explicitly completes empty family input contracts,
+while an unprepared contract still fails.
+
+The original independent investigation had seven incorrect acceptance hypotheses:
+declared input bounds are not silently inherited by an impl definition, even when
+the result erases the input. The original hypotheses and rustc diagnostics remain
+in `obj/pa21-work/family-frontier-v1/family-conformance-v1/`. The revised source
+matrix has **42 independently qualified outcomes: 16 accepted, 26 rejected**.
+Accepted controls compile to objects with pinned Rust 1.98.0. Controls cover type,
+const and lifetime parameter matching; stronger and omitted bounds; implicit
+Sized; supertraits; higher-ranked input and result bounds; parent captures; and
+families with where clauses but no own parameters.
+
+`dev/tests/invariants/unused_families.rs` prepares typed declarations and invokes
+the production impl-type conformance entry point. All 42 outcomes agree, and
+rejected cases must reach their intended conformance or lifetime diagnostic
+class. This is internal declaration integration, not released GAT source support.
+Initial checks exposed a duplicate parent-parameter registration, which was fixed;
+fixture preparation was also corrected to complete deferred bounds and nominal
+field templates rather than treating missing facts as valid negative outcomes.
+
+Final validation passes **409 unit tests**, **56 affected integration tests**
+(six native groups remain explicitly ignored in this development run), strict
+Clippy, formatting, the **961-file audit**, layout checks and all **6,294 PA1–PA20
+text cases**. The text sweep takes **22.81 seconds**. All 32 checkpoint commands
+have their declared status, including planned-stage failures for PA21–PA25.
+Source and candidate hashes remain unchanged throughout validation. The debug
+candidate is `074c7a47b7b37fd58ac67b0630d7c634965100a34ad1ab0369cbfcb19a57d54a`;
+it is not an immutable performance pin. Qualification cleanup removes all 28
+objects produced by the two revised rustc batches, retaining source, diagnostics
+and receipts. No full release/native gate or broad performance study is repeated.
+
+The family source gate remains closed. Checked local definitions in method and
+constant conformance must still normalize family applications with their complete
+formation proof; required where-clause analysis and remaining formation integration
+also remain. The opaque/capture, variance/drop and public semantic-view work,
+PA21 release checks, and PA22–PA25 are still required. Publication validation and
+immutable performance comparisons remain due for the combined compiler checkpoint.
+
+
+## Local family method and constant conformance
+
+Checked local definitions now use the ordinary whole-application normalizer for
+families, including those with where clauses and no own parameters. The checked
+parent mapping alone never authorizes a member application. Distinct family
+arguments, parent captures and nested callable scopes retain their own proofs.
+Ordinary associated definitions retain their direct local substitution path.
+
+When families are present, conformance consumes the impl's written method or
+constant type as well as its normalized shape. A scalar result cannot erase the
+original application's requirements. The declared method signature supplies only
+its implied lifetime conditions; it supplies no Copy, Sized or user-trait evidence.
+Captured conditions may cross nested callable binders, while their local lifetime
+conditions cannot escape. Associated constants do not gain method-style implied
+permissions. Erased impl lifetime slots receive independent universal identities
+instead of defaulting to static during written-type conformance.
+
+The internal source matrix has **36 independently qualified cases: 22 accepted,
+14 rejected**. Rust 1.98.0 object generation agrees with the declared outcomes.
+The cases cover local identity and distinct applications, type/const/lifetime
+arguments, parent captures, nested callable correlations, omitted requirements,
+constant array shapes, declared versus actual-only lifetime conditions and erased
+late parameters. The production conformance entry point agrees on all 36 cases;
+negative controls require semantic conformance or lifetime diagnostics. This
+fixture prepares typed declarations internally, so it does not claim that the
+public GAT source gate or all declaration/body consumers are complete.
+
+Independent investigations also distinguish explicit family contracts from
+nested nominal conditions that normalization erases. Rustc accepts some unused
+signatures with erased nominal inputs, while rejecting corresponding local
+annotations. A demanded instantiation of one accepted unused signature causes a
+rustc ICE; its two observations remain infrastructure failures, not passing
+qualification. Constants do not inherit the signature lifetime permissions
+observed for trait methods. Original hypotheses, corrected outcomes, sources,
+diagnostics and object cleanup receipts remain under
+`obj/pa21-work/family-frontier-v1/local-family-contracts-v1/`.
+
+An initial full text sweep caught one PA20 diagnostic regression: an ordinary
+constant's retained projection debt was diagnosed prematurely during conformance.
+Programs without families retain their established conformance path and later
+annotation diagnostic; no reference output is changed to hide the failure.
+The corrected development candidate passes **410 unit tests**, strict Clippy,
+the **963-file audit**, layout checks and all **6,294 PA text cases** in
+**14.70 seconds**. All 31 development commands have their declared status,
+including planned-stage failures for PA21–PA25. Source and binary hashes are
+unchanged through validation. Combined publication evidence is being recorded
+under `obj/pa21-work/family-frontier-v1/conformance-checkpoint-v1/`.
+
+The source gate remains closed. Shared implied family lifetime formation across
+declaration, call and body consumers, required where-clause analysis, opaque
+identities/capture, variance/destruction integration and the public semantic view
+remain PA21 work. PA22–PA25 are still required by the active goal.
+
+
+## Combined inferred-parent and family-conformance checkpoint
+
+The pinned release candidate
+`b207b78dd676960aed8d522f2a3b4101f6c72de829557d20b1568ab8cfe44889`
+passes all **37 qualification commands**: **1,663 regular release tests**, **93
+native maintainer groups**, formatting, harness and audit self-tests, upstream
+provenance, all **6,294 PA1–PA20 text cases**, and expected planned-stage failures
+for PA21–PA25. Strict Clippy and the 963-file compiler audit passed the unchanged
+source snapshot during preflight. The checks take **616.53 seconds**, of which
+**10.32 seconds** cover the active PA text sweep.
+
+PA18–PA20 independently qualify **2,926 source outcomes**, retaining their nine
+existing documented acceptance differences. Native qualification covers **1,047
+executable comparisons** and **three codegen-only cases**. Fourteen builtin
+source/LowIR pairs match their previously executed identities. Source, candidate
+and fixture hashes are unchanged throughout validation. All **4,065 pre-existing
+PA20 sidecars** and 1,355 original fixture receipts remain unchanged; the 26 new
+inferred-parent fixtures were independently qualified before oracle generation.
+
+Evidence is in `obj/pa21-work/family-frontier-v1/conformance-checkpoint-v1/`.
+The immutable comparison uses the published baseline
+`53ed1d132ffe33866236c380143eacb3dcb7b7ec883ca1ea125f76118671997c` and
+thirteen frozen shared inputs. Every full LowIR output matches. Initial A/A
+calibration and five paired ABBA blocks retain every execution, followed by one
+Callgrind observation per compiler/input and eight RSS observations. Instruction
+changes range from **−0.04% to +1.07%**. No predeclared RSS or instruction-growth
+threshold triggers. The largest shared cases show paired median wall changes
+from **−0.26% to +2.10%**, without establishing a universal regression bound.
+
+Four short cases trigger the single predeclared longer timing follow-up. Its
+paired median changes are **+7.18%** for ordinary-equalities-16, **+3.86%** for
+quantified-wide-16, **+10.09%** for shared-inputs-16 and **+4.51%** for
+shared-inputs-64. Original observations remain alongside the follow-up. The first
+case exceeds both follow-up calibration spreads; the others have wider calibration
+noise. This checkpoint does not claim zero wall-time regression. One allocation
+investigation of ordinary-equalities-16 finds **+1,519 total bytes**, three fewer
+allocations and unchanged **432,495-byte peak**. The ordinary-256 control adds
+23 total bytes with unchanged allocation count and **2,432,928-byte peak**. These
+observations do not explain away the small-case wall slowdown.
+
+The first candidate-only scaling fixture incorrectly assumed the standalone
+profile supplied `assert!`. Rustc accepted it, but RustGM diagnosed the missing
+macro before any timing observation. That source, original plan and stderr remain
+recorded. Three corrected fixtures use an explicit conditional and independently
+compile with rustc; the thirteen shared measurements are not repeated. At 16,
+64 and 256 inferred-parent uses, candidate instruction counts are **17,114,659**,
+**64,225,373** and **253,137,276**, respectively. The measured instruction growth
+is nearly linear across these sizes. Candidate wall medians are 8.42, 18.96 and
+105.83 ms, but calibration spreads reach 33.65% and 52.88% on the outer sizes;
+those times support neither a clean scaling claim nor a comparison with rustc.
+
+The existing wide-equality controls expose a separate algorithmic cost in both
+binaries. On ordinary-equalities-256, opening and preparing the caller consumes
+about 76% of candidate instructions; environment region substitution alone takes
+about 62%, and building its premise index takes about 14%. The published baseline
+shows essentially the same substitution/index costs. Each lifetime-bearing
+projection currently copies and reindexes the complete caller environment. The
+linear-source-size matrix therefore still exhibits superlinear total instructions.
+Sharing this structural preparation while keeping each query's proof permissions
+separate is the next performance task; the earlier closed-caller improvement does
+not cover these open lifetime environments.
+
+The full qualification cleanup removes **3,433 generated files (7.14 GiB)**;
+performance cleanup removes its three probe objects. Immutable comparison pins,
+source inputs, diagnostics, all observations and receipts remain. PA21 is still
+planned, and the goal through PA25 remains incomplete.

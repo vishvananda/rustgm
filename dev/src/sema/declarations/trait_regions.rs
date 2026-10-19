@@ -182,7 +182,12 @@ impl Checker<'_> {
         let bounds = function
             .map(|f| f.bounds.as_slice())
             .or_else(|| schema.map(|s| s.bounds.as_slice()));
-        for &(longer, shorter) in bounds.into_iter().flatten() {
+        let family = self.facts.associated.families.get(&owner);
+        for &(longer, shorter) in bounds
+            .into_iter()
+            .flatten()
+            .chain(family.into_iter().flat_map(|f| &f.regions))
+        {
             constraints
                 .assume(longer, shorter)
                 .map_err(|e| e.to_string())?;
@@ -214,6 +219,7 @@ impl Checker<'_> {
             .functions
             .get(&owner)
             .map(|f| f.total)
+            .or_else(|| self.facts.associated.families.get(&owner).map(|f| f.total))
             .or_else(|| self.facts.associated.schema(owner).map(|s| s.captures))
             .unwrap_or_else(|| {
                 self.nominal_regions

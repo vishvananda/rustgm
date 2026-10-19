@@ -74,7 +74,7 @@ impl Checker<'_> {
         {
             return Ok(false);
         }
-        let (supplied, omitted) = self.supplied_arguments(key, owner)?;
+        let (supplied, _) = self.supplied_arguments(key, owner)?;
         let ast = &self.report.package.unit(key.file).configured.ast;
         let nodes = supplied.map_or(&[][..], |list| ast.list(list));
         if !nodes.iter().any(|node| {
@@ -84,6 +84,26 @@ impl Checker<'_> {
         }) {
             return Ok(false);
         }
+        self.retain_annotation_arguments(key, owner, context)?;
+        self.facts
+            .partial_annotations
+            .insert(key, PartialAnnotation::Shape);
+        Ok(true)
+    }
+
+    pub(in super::super) fn retain_annotation_arguments(
+        &mut self,
+        key: NodeKey,
+        owner: DefId,
+        context: regions::Context,
+    ) -> Result<(), Error> {
+        if self.facts.generics.annotation_uses.contains_key(&key) {
+            return Ok(());
+        }
+        let (supplied, omitted) = self.supplied_arguments(key, owner)?;
+        let nodes = supplied.map_or(&[][..], |list| {
+            self.report.package.unit(key.file).configured.ast.list(list)
+        });
         let parameters = self.facts.generics.parameters[&owner].clone();
         let mut arguments = Vec::with_capacity(parameters.len());
         for (index, parameter) in parameters.iter().enumerate() {
@@ -128,9 +148,6 @@ impl Checker<'_> {
             .generics
             .annotation_uses
             .insert(key, AnnotationUse { owner, arguments });
-        self.facts
-            .partial_annotations
-            .insert(key, PartialAnnotation::Shape);
-        Ok(true)
+        Ok(())
     }
 }

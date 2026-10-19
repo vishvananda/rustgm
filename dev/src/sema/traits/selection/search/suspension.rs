@@ -15,10 +15,11 @@ pub(in crate::sema) struct Pending {
     query: Query,
 }
 #[derive(Clone, Copy)]
-enum Mode {
+enum Mode<'a> {
     Plain,
     Normalized,
-    Refining(Option<u32>),
+    Projection(crate::types::projection::Application),
+    Refining(Option<&'a [u32]>),
 }
 impl OwnedCaller {
     fn borrowed(&self) -> Caller<'_> {
@@ -49,13 +50,34 @@ pub(in crate::sema) fn begin_refining(
     availability: Availability,
     bound_regions: Option<u32>,
 ) -> Result<Progress, String> {
+    let binders = bound_regions.map(|count| [count]);
     begin_with_inputs(
         facts,
         context,
         goal,
         caller,
         availability,
-        Mode::Refining(bound_regions),
+        Mode::Refining(binders.as_ref().map(<[u32; 1]>::as_slice)),
+    )
+}
+
+/// Preserve every enclosing callable binder while refining one projection parent.
+/// Exported input witnesses remain in the caller; universal aliases never escape.
+pub(in crate::sema) fn begin_scoped_refining(
+    facts: &mut Declarations,
+    context: &mut Context,
+    goal: &Goal,
+    caller: OwnedCaller,
+    availability: Availability,
+    ambient: &[u32],
+) -> Result<Progress, String> {
+    begin_with_inputs(
+        facts,
+        context,
+        goal,
+        caller,
+        availability,
+        Mode::Refining((!ambient.is_empty()).then_some(ambient)),
     )
 }
 
@@ -70,15 +92,35 @@ pub(in crate::sema) fn begin_normalized(
     begin_with_inputs(facts, context, goal, caller, availability, Mode::Normalized)
 }
 
+/// Parent trait selection and the member's input conditions share one retained proof stack.
+pub(in crate::sema) fn begin_projection(
+    facts: &mut Declarations,
+    context: &mut Context,
+    inputs: (&Goal, crate::types::projection::Application),
+    caller: OwnedCaller,
+    availability: Availability,
+) -> Result<Progress, String> {
+    begin_with_inputs(
+        facts,
+        context,
+        inputs.0,
+        caller,
+        availability,
+        Mode::Projection(inputs.1),
+    )
+}
+
 fn begin_with_inputs(
     facts: &mut Declarations,
     context: &mut Context,
     goal: &Goal,
     caller: OwnedCaller,
     availability: Availability,
-    mode: Mode,
+    mode: Mode<'_>,
 ) -> Result<Progress, String> {
-    if goal.projection_result().is_none() && !matches!(mode, Mode::Refining(Some(_))) {
+    if goal.projection_result().is_none()
+        && !matches!(mode, Mode::Refining(Some(_)) | Mode::Projection(_))
+    {
         match crate::sema::traits::selection::select_assumption(
             &mut facts.types,
             context,
@@ -91,8 +133,12 @@ fn begin_with_inputs(
         }
     }
     let mut first = Frame::new(facts, context, goal, caller.first_region)?;
-    if matches!(mode, Mode::Normalized) && goal.projection_result().is_none() {
+    if matches!(mode, Mode::Normalized | Mode::Projection(_)) && goal.projection_result().is_none()
+    {
         first.normalized_inputs = Some(super::frames::NormalizedInputs { proof: None });
+    }
+    if let Mode::Projection(application) = mode {
+        first.prepare_formation(facts, application)?;
     }
     let mut search = Search::new(caller.borrowed(), availability);
     search.query.refining = matches!(mode, Mode::Refining(_));
@@ -101,8 +147,8 @@ fn begin_with_inputs(
     } else {
         super::frames::Inference::Disabled
     };
-    if let Mode::Refining(Some(count)) = mode {
-        search.open_universal(facts, &mut first, count)?;
+    if let Mode::Refining(Some(counts)) = mode {
+        search.open_universals(facts, &mut first, counts)?;
     }
     let progress = search.begin(facts, first)?;
     match progress {

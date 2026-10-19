@@ -52,7 +52,7 @@ pub struct Application {
 #[derive(Default)]
 pub(super) struct Storage {
     schemas: HashMap<ItemId, Schema>,
-    outlives: Option<HashMap<ItemId, Box<[super::RegionId]>>>,
+    outlives: Option<HashMap<ItemId, Box<[outlives::Promise]>>>,
 }
 
 impl Store {

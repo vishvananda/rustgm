@@ -111,6 +111,22 @@ impl Context {
 }
 
 impl<T: Tracking> Mapping<T> {
+    pub(super) fn argument(
+        &mut self,
+        store: &Store,
+        source: &mut Context,
+        destination: &mut Context,
+        argument: Argument,
+    ) -> Result<Argument, Error> {
+        Ok(match argument {
+            Argument::Lifetime(region) => Argument::Lifetime(region),
+            Argument::Type(id) => Argument::Type(destination.import_with(store, source, id, self)?),
+            Argument::Const(id) => {
+                Argument::Const(self.constant(store, source, destination, id)?)
+            }
+        })
+    }
+
     pub(super) fn constant(
         &mut self,
         store: &Store,

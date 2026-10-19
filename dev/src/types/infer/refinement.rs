@@ -98,7 +98,7 @@ impl Refinement {
         let mut mappings = Mapping::<Roots>::default();
         let predicate = predicate.map_arguments(|argument| {
             self.context.account_work(1)?;
-            import_argument(store, source, &mut self.context, argument, &mut mappings)
+            mappings.argument(store, source, &mut self.context, argument)
         })?;
         self.retain_inputs(mappings);
         Ok(predicate)
@@ -386,22 +386,8 @@ fn import(
     target.account_work(roots.len())?;
     roots
         .iter()
-        .map(|&argument| import_argument(store, source, target, argument, mappings))
+        .map(|&argument| mappings.argument(store, source, target, argument))
         .collect()
-}
-
-fn import_argument(
-    store: &Store,
-    source: &mut Context,
-    target: &mut Context,
-    argument: Argument,
-    mappings: &mut Mapping<impl Tracking>,
-) -> Result<Argument, Error> {
-    Ok(match argument {
-        Argument::Lifetime(region) => Argument::Lifetime(region),
-        Argument::Type(id) => Argument::Type(target.import_with(store, source, id, mappings)?),
-        Argument::Const(id) => Argument::Const(mappings.constant(store, source, target, id)?),
-    })
 }
 
 fn different(context: &mut Context, left: Argument, right: Argument) -> Result<bool, Error> {

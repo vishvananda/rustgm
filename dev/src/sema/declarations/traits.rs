@@ -49,6 +49,7 @@ impl Checker<'_> {
                 .or_default();
             self.drain(steps, limit)?;
         }
+        self.reserve_family_parameters(true, steps, limit)?;
         self.reserve_associated_type_bounds()?;
         self.begin_header_names()?;
         if self.header_names_active() {

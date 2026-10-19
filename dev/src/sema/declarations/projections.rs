@@ -1,5 +1,6 @@
 //! Associated type paths suspend normalization while their selected definitions elaborate.
 mod aliases;
+mod applications;
 mod bound_environments;
 mod deferred;
 mod environments;
@@ -23,6 +24,7 @@ struct Selected {
     owner: DefId,
     definition: DefId,
     arguments: GenericArgs,
+    family: GenericArgs,
     restore: Option<Box<crate::types::substitute::Bound>>,
 }
 enum Selection {
@@ -100,17 +102,14 @@ impl Checker<'_> {
             node: path.suffix[0].0,
             ..key
         };
-        if crate::sema::lifetimes::arguments(self.report, suffix, false)?.is_some() {
-            return Err(self.error(
-                suffix,
-                "associated type arguments require advanced generic relationships",
-            ));
-        }
+        let name = path.suffix[0].1;
         let (prefix, owner) = self.resolved_trait_path(NodeKey {
             node: trait_path,
             ..key
         })?;
+        let member = self.qualified_projection_member(key, owner, name)?;
         self.work.push(Work::ProjectionPath(key, context));
+        self.work.push(Work::PathArguments(suffix, member, context));
         self.work.push(Work::PathArguments(prefix, owner, context));
         self.node_work(key.file, subject, context);
         Ok(())
@@ -131,7 +130,6 @@ impl Checker<'_> {
             node: path.ty,
             ..key
         };
-        let subject = self.ty(subject_key)?;
         let name = path.suffix[0].1;
         let (prefix, owner) = self.resolved_trait_path(NodeKey {
             node: path
@@ -139,19 +137,26 @@ impl Checker<'_> {
                 .ok_or_else(|| self.error(key, "missing projection trait"))?,
             ..key
         })?;
-        let scope = self.report.resolution.definitions[owner.0 as usize]
-            .members
-            .ok_or_else(|| self.error(key, "missing trait member scope"))?;
-        let declaration = self.report.resolution.scopes[scope.0 as usize]
-            .bindings
-            .get(&(name, Namespace::Type))
-            .map(|b| b.target)
-            .filter(|id| {
-                self.facts.associated.trait_owner(*id) == Some(owner)
-                    && self.facts.types.projection_schema(ItemId(id.0)).is_some()
-            })
-            .ok_or_else(|| self.error(key, "qualified trait has no prepared associated type"))?;
+        let suffix = NodeKey {
+            node: path.suffix[0].0,
+            ..key
+        };
+        let declaration = self.qualified_projection_member(key, owner, name)?;
+        if self.partial_projection_path(
+            key,
+            crate::sema::generics::AnnotationProjection {
+                subject: subject_key,
+                parent: prefix,
+                member: suffix,
+                declaration,
+            },
+            context,
+        )? {
+            return Ok(());
+        }
+        let subject = self.ty(subject_key)?;
         let arguments = self.application_arguments(prefix, owner, context)?;
+        let family = self.projection_arguments(suffix, declaration, context)?;
         let trait_application = self.applied_trait(prefix, owner, subject, arguments)?;
         let ty = self.intern(
             key,
@@ -159,12 +164,16 @@ impl Checker<'_> {
                 item: ItemId(declaration.0),
                 subject,
                 trait_application,
-                arguments: GenericArgs::EMPTY,
+                arguments: family,
             }),
         )?;
         let original_subject = self.facts.unreduced.node(subject_key).unwrap_or(subject);
         let original_arguments = self.facts.unreduced.arguments(prefix).unwrap_or(arguments);
-        if original_subject != subject || original_arguments != arguments {
+        let original_family = self.facts.unreduced.arguments(suffix).unwrap_or(family);
+        if original_subject != subject
+            || original_arguments != arguments
+            || original_family != family
+        {
             let trait_application =
                 self.applied_trait(prefix, owner, original_subject, original_arguments)?;
             let original = self.intern(
@@ -173,7 +182,7 @@ impl Checker<'_> {
                     item: ItemId(declaration.0),
                     subject: original_subject,
                     trait_application,
-                    arguments: GenericArgs::EMPTY,
+                    arguments: original_family,
                 }),
             )?;
             self.facts.unreduced.retain_node(key, original);
@@ -337,11 +346,11 @@ impl Checker<'_> {
             .ok_or_else(|| self.error(key, "missing selected associated type definition"))?;
         let ty = self
             .facts
-            .generics
-            .substitute(
-                &mut self.facts.types,
+            .instantiate_associated_definition(
                 selected.owner,
                 selected.arguments,
+                selected.definition,
+                selected.family,
                 template,
             )
             .map_err(|e| self.error(key, e))?;
