@@ -1,6 +1,5 @@
 //! Universal outlives premises use indexed complete inputs and conditional matching.
 mod recipes;
-mod shapes;
 #[cfg(test)]
 #[path = "../../../tests/invariants/premise_matching.rs"]
 mod tests;
@@ -16,6 +15,7 @@ use crate::types::{
         predicates::{Bound, Predicate},
     },
     region_graph::VerificationId,
+    structural::Shapes,
 };
 use std::collections::{HashMap, HashSet};
 
@@ -23,7 +23,7 @@ use std::collections::{HashMap, HashSet};
 pub(super) struct State {
     candidates: HashMap<(ItemId, u64), Vec<QuantifiedId>>,
     seen: HashSet<Predicate>,
-    shapes: shapes::Shapes,
+    shapes: Shapes,
     recipes: recipes::Recipes,
     bindings: Map<Region>,
     guards: Map<VerificationId>,

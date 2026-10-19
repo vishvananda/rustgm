@@ -155,6 +155,12 @@ fn rewrite(
     for evidence in &mut contract.proofs {
         evidence.proof.substitute(&mut facts.types, fold)?;
     }
+    if let Some(pending) = &mut contract.builtins {
+        for (_, predicate) in &mut std::sync::Arc::make_mut(pending).predicates {
+            *predicate = fold.predicate(&mut facts.types, *predicate)?;
+            facts.aggregates.prepare(&mut facts.types, predicate.ty)?;
+        }
+    }
     for clause in &mut contract.type_assumptions {
         *clause = fold.clause(&mut facts.types, *clause)?;
     }

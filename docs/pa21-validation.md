@@ -2037,3 +2037,107 @@ PA21 remains planned: higher-ranked source production, remaining scoped consumer
 associated type families, opaque identities/capture, variance/destruction
 integration and the public inspection/fixture contract are still unfinished.
 PA22–PA25 also remain planned.
+
+## Builtin clauses and proved lifetime identity
+
+The builtin consumer now retains complete quantified `Copy`, `Clone` and `Sized`
+clauses. Formation records the normalized declaration input once; body consumers
+read that record. Ordinary composite bounds containing lifetimes use the same
+structural matcher, with an explicit distinction between caller slots and locally
+quantified slots. Matching preserves repeated-slot correlations, enclosing
+captures and nested callable binders. It does not infer an element bound from a
+bound on a containing tuple.
+
+Declared and signature-implied lifetime equalities are computed by an iterative
+strongly connected component traversal. Inferred call arguments retain pending
+builtin requirements in their body contract. Only the completed body lifetime
+proof may supply additional equality evidence for those requirements. The abstract
+local-region sentinel never equates separate runtime borrow extents. Template
+ownership and cleanup use the resulting scoped environment; concrete instances
+substitute, normalize and independently validate their retained requirements.
+Ordinary environments without region-bearing builtin assumptions skip this path.
+
+The shared matcher memoizes type/list/argument pairs and persistent slot maps.
+Its growing-prefix invariant covers widths 16, 64, 256 and 1,024, with bounded
+linear charged work and one lookup per repeated query. SCC tests compare all 512
+small graphs against transitive closure and cover cycles through 16,384 nodes
+under a linear budget. Caller environments own their caches; substitution closes
+colliding lifetime equivalence classes without capturing new nested locals.
+
+Nine independently declared PA18 fixtures cover mutual, transitive, static and
+implied equality, direct and inferred calls, nested tuples, and rejection of
+unrelated/one-way lifetimes or a `Clone`-only premise. Rejected bodies are unused,
+so demanding a concrete instance cannot hide a template error. All nine agree
+with pinned rustc object generation. All six accepted sources execute with the
+qualified CPPGM backend and rustc, alongside fourteen typed-boundary builtin
+controls. The old 18,768 oracle sidecars retain their bytes; the new fixtures add
+27 sidecars. PA18 now has 450 cases: 280 accepted and 170 rejected, including
+277 executable cases and three deliberately divergent compilation-only cases.
+
+The frozen candidate is
+`38981d5c10c56aca1430841f244dfe75cdedc820c79488c634a447735945250b`.
+Evidence is retained in `obj/pa21-work/region-permissions-final-v1/`; earlier
+focused failures remain in `builtin-clauses-v1/`. Public PA21 syntax gates remain
+closed. User-trait quantified instance witnesses, lexical binder contexts,
+projection equalities, associated families, opaque types and the new semantic
+view still require implementation and release qualification.
+
+The complete functional checkpoint passes 1,560 release tests, 91 native
+maintainer groups, all 6,265 PA1–PA20 text cases, strict all-target/all-feature
+Clippy, the file/architecture audits and 39 harness tests. PA18–PA20 independent
+acceptance suites pass all 2,900 declared checks with their existing documented
+stage differences. Their native lanes pass 1,028 executable comparisons and
+three code-generation-only comparisons. Upstream verification passes. All 31
+retained higher-ranked source-gate diagnostics match the published compiler;
+PA21–PA25 suite discovery still reports planned stages instead of empty success.
+
+The initial 22-input performance study found a repeatable cost on existing
+lifetime-bearing composite bounds: 6.40–6.74% more instructions at 16/64/256
+functions, with the predeclared 64-function follow-up at +5.06% wall time
+(A/A +1.34%, B/B −0.06%). The profile identified redundant structural matching
+of exact assumptions and deep copies of immutable indexes. Exact Copy/Sized
+facts now bypass matcher allocation after checking caller identity; Clone alone
+still consults other evidence for Copy. Environment clones share immutable
+builtin indexes and lifetime classes, while extension uses copy-on-write and
+substitution constructs its replacement directly. A dedicated invariant checks
+1,024 exact queries without matcher allocation, extension isolation and rejection
+of a foreign caller's cache.
+
+The resulting compiler is
+`e2ffd24f2c885310bbe7cd279ba2ee15185433ff3913ae3f4ff6598c9870fa94`.
+The seven-input changed-path remeasurement is in
+`obj/pa21-work/region-permissions-fast-v1/`. Both studies retain frozen binaries,
+inputs, full-output equality, A/A calibration, five ABBA blocks of four executions
+per observation, and Callgrind counts. All observations from the earlier version
+remain available; this is an implementation change followed by a new measurement.
+
+Against the published compiler, exact-composite instruction differences are now
++3.69%, +3.69% and +3.89% at 16/64/256 functions. Their initial paired wall medians
+are −1.05%, +1.33% and +3.50%. The predeclared 256-function follow-up is +1.41%
+(A/A −1.08%, B/B −1.65%); it does not establish a portable throughput improvement
+or zero-regression bound. The ordinary control changes −0.52% in instructions;
+the lifetime-depth control still costs +4.20%. This remaining cost is reported,
+not treated as timing noise. Peak RSS medians for the largest composite control
+are 17,970 KiB before and 19,092 KiB after; all seven jobs retain individual
+memory observations separately from timing.
+
+The newly accepted inferred-equality inputs have no comparable successful old
+compiler run. Before the reuse optimization, their 16/64/256-function instruction
+counts are 40.4/159.5/641.2 million, approximately proportional to input width.
+The final 256-function input uses 640.7 million instructions, measures 122.9 ms
+median wall time and 21,182 KiB peak-RSS median. This is new-capability scaling
+evidence, not an A/B speedup claim. Every new scaling source passes rustc
+qualification; the largest direct and inferred-equality sources execute through
+both compilers, and all fourteen typed-boundary controls retain their previously
+executed source and LowIR bytes after the reuse change.
+
+Final publication qualification for `e2ffd24f` passes **1,561 regular release
+tests**, **91 native maintainer groups**, **6,265 course cases**, and the same
+2,900 independent acceptance checks and 1,028 executable comparisons described
+above. All 31 source gates retain their expected diagnostics. Exact final source,
+binary and fixture hashes are verified in `region-permissions-fast-v1/validation/`;
+`final-summary.json` records this final compiler separately from the preceding
+measurement candidate. PA18 provenance is regenerated for this compiler, while
+all existing and newly qualified oracle bytes remain unchanged. Strict Clippy,
+audits and the 39 harness checks passed for these exact compiler sources before
+the final release/native run. The PA21–PA25 goal remains incomplete.

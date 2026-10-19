@@ -30,7 +30,23 @@ pub(crate) fn specialize(
 ) -> Result<Option<Assumptions>, &'static str> {
     let mut predicates = Vec::new();
     for predicate in facts.generics.predicates_in_scope(owner) {
-        if predicate.value.is_outlives(&facts.types)? {
+        let body = match predicate.value {
+            Clause::Predicate(value) => value,
+            Clause::ForAll(id) => {
+                facts
+                    .types
+                    .quantified(id)
+                    .ok_or("invalid instance premise clause")?
+                    .predicate
+            }
+        };
+        if matches!(
+            body.bound,
+            PredicateBound::Copy
+                | PredicateBound::Clone
+                | PredicateBound::Sized
+                | PredicateBound::Outlives(_)
+        ) {
             continue;
         }
         // Importing an instance's quantified witnesses needs their use-specific

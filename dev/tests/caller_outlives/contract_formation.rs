@@ -14,6 +14,7 @@ fn source(index: u32) -> NodeKey {
 }
 fn contract(f: &Fixture, ty: TypeId) -> Contract {
     Contract {
+        builtins: None,
         source: source(1),
         signature: None,
         universals: 2,

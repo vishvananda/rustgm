@@ -1,4 +1,5 @@
 //! Body obligations share the same fixed assumptions as repeat and shape queries.
+mod permissions;
 mod universal;
 use super::{Checker, DefId, Error, NodeId, TypeId};
 use crate::types::{
@@ -42,6 +43,7 @@ impl Checker<'_> {
         &mut self,
         node: NodeId,
         owner: DefId,
+        signature: Option<TypeId>,
     ) -> Result<(), Error> {
         self.state.environment_owner = Some(owner);
         let mut environment = self.facts.generics.environments.get(&owner).cloned();
@@ -92,6 +94,18 @@ impl Checker<'_> {
                     .body_environments
                     .insert(owner, std::sync::Arc::clone(environment));
             }
+        }
+        if let Some(original) = &environment
+            && original.has_region_builtins()
+        {
+            let updated =
+                self.builtin_region_environment(node, owner, signature, original.as_ref().clone())?;
+            let updated = std::sync::Arc::new(updated);
+            self.facts
+                .generics
+                .body_environments
+                .insert(owner, std::sync::Arc::clone(&updated));
+            environment = Some(updated);
         }
         self.state.method_environment.clone_from(&environment);
         self.state.parameter_shapes = environment
@@ -204,7 +218,7 @@ impl Checker<'_> {
                 properties.clone_
             }
         };
-        if valid {
+        if valid || self.defer_builtin_identity(node, ty, bound)? {
             Ok(())
         } else {
             Err(self.error(

@@ -15,8 +15,8 @@ enum Key {
     Arguments(GenericArgs),
     Trait(ApplicationId),
 }
-#[derive(Default)]
-pub(super) struct Shapes {
+#[derive(Clone, Default)]
+pub(crate) struct Shapes {
     completed: HashMap<Key, u64>,
     work: Vec<(Key, bool)>,
     pub steps: usize,

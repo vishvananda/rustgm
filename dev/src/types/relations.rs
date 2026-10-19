@@ -1,10 +1,12 @@
 //! Directed type relations use actual region arguments and explicit binder scopes.
 mod ancestry;
+mod equivalence;
+pub(crate) use equivalence::RegionEqualities;
 mod clauses;
 mod identity_guard;
 mod projected_bounds;
 mod scopes;
-mod structural;
+use super::structural;
 mod type_bounds;
 mod universal_bounds;
 use super::region_graph::{Error, Graph, Kind as RegionKind, Region, Solution};

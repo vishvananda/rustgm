@@ -1,4 +1,5 @@
 //! Completed declaration environments and substitutions keyed by owner and arguments.
+mod builtin_formation;
 pub(super) mod captures;
 mod traits;
 use crate::{
@@ -124,6 +125,9 @@ pub struct Predicate {
 }
 #[derive(Default)]
 pub struct Generics {
+    pub(crate) builtin_requirements:
+        HashMap<crate::resolve::unit::NodeKey, super::model::BuiltinRequirements>,
+    builtin_formations: Option<Box<builtin_formation::Builtins>>,
     /// Concrete initializer callables consumed by the shared constant value reader.
     pub(crate) constant_callable_targets: HashMap<TypeId, TypeId>,
     pub(super) trait_uses: HashMap<crate::resolve::unit::NodeKey, TraitUse>,

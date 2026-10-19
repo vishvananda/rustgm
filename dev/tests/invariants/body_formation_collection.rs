@@ -99,13 +99,16 @@ fn predicate(
         let fields = facts.types.intern_list(&[a, t])?;
         let mixed = facts.types.intern(Kind::Tuple(fields))?;
         value.ty = reference(&mut facts.types, RegionId::bound(1, 0)?, mixed)?;
+    } else if mode >= 5 {
+        value.bound = Bound::Copy;
+        value.ty = if mode == 5 { local } else { captured };
     }
     Ok(value)
 }
 
 #[test]
 fn declaration_clauses_reach_body_formation_with_their_independent_debts() -> Result {
-    for mode in 0..5 {
+    for mode in 0..7 {
         for given in [false, true] {
             // Public HRTB source remains gated; replace a complete ordinary
             // declaration with the independently qualified canonical clause.
@@ -137,10 +140,11 @@ fn declaration_clauses_reach_body_formation_with_their_independent_debts() -> Re
                 .ok_or("missing trait premise")?;
             let t = trait_predicate.ty;
             let value = predicate(&mut facts, &report, trait_predicate, mode)?;
-            let clause = Clause::ForAll(facts.types.intern_quantified(Quantified {
+            let id = facts.types.intern_quantified(Quantified {
                 bound_regions: 1,
                 predicate: value,
-            })?);
+            })?;
+            let clause = Clause::ForAll(id);
             if matches!(value.bound, Bound::Trait(_)) {
                 facts
                     .generics
@@ -148,6 +152,20 @@ fn declaration_clauses_reach_body_formation_with_their_independent_debts() -> Re
                     .as_mut()
                     .ok_or("missing trait contracts")?
                     .formation(&mut facts.types, clause)?;
+            } else if mode >= 5 {
+                let mut proof = sema::nominals::Proof::for_declaration(None, 1, 9);
+                let formation = proof.validate_builtin_clause(&mut facts, clause, clause)?;
+                assert!(formation.satisfied);
+                assert!(facts.generics.builtin_formation_input(owner, id).is_err());
+                facts
+                    .generics
+                    .record_builtin_formation(owner, id, formation.subject)?;
+                assert!(
+                    facts
+                        .generics
+                        .builtin_formation_input(crate::resolve::model::DefId(owner.0 + 1), id)
+                        .is_err()
+                );
             }
             let mut predicates = vec![sema::generics::Predicate {
                 source,
@@ -167,7 +185,7 @@ fn declaration_clauses_reach_body_formation_with_their_independent_debts() -> Re
             let contracts = regions::collect(&facts)?;
             let result =
                 crate::borrow::regions::check(&facts.types, &facts.lifetimes.variances, &contracts);
-            let valid = given || matches!(mode, 1 | 4);
+            let valid = given || matches!(mode, 1 | 4 | 5);
             assert_eq!(
                 result.is_ok(),
                 valid,

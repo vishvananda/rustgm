@@ -21,6 +21,14 @@ pub(super) fn needs_clause_normalization(
     facts: &Declarations,
     contract: &Contract,
 ) -> Result<bool, &'static str> {
+    if contract.builtins.as_ref().is_some_and(|pending| {
+        pending
+            .predicates
+            .iter()
+            .any(|(_, p)| facts.types.contains_projections(p.ty) == Some(true))
+    }) {
+        return Ok(true);
+    }
     for obligation in &contract.obligations {
         if let Kind::ScopedWellFormed { ty, .. } = obligation.kind
             && facts.types.contains_projections(ty) == Some(true)
@@ -242,6 +250,12 @@ fn rewrite_contract(
         }
     }
     let mut scoped_terms = false;
+    if let Some(pending) = &mut contract.builtins {
+        for (_, predicate) in &mut std::sync::Arc::make_mut(pending).predicates {
+            predicate.ty = session.normalize(facts, predicate.ty)?.0;
+            facts.aggregates.prepare(&mut facts.types, predicate.ty)?;
+        }
+    }
     for obligation in &mut contract.obligations {
         match &mut obligation.kind {
             Kind::Coercion {

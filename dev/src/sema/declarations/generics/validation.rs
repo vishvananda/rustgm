@@ -54,41 +54,25 @@ impl Checker<'_> {
                 }
                 continue;
             }
-            let value = predicate
-                .value
-                .ordinary()
-                .map_err(|error| self.error(predicate.source, error))?;
-            let ty = proof
-                .normalize(&mut self.facts, value.ty)
-                .map_err(|e| self.error(predicate.source, e))?;
-            let well_formed = proof
-                .check(&mut self.facts, ty)
-                .map_err(|e| self.error(predicate.source, e))?
-                .well_formed;
-            if !well_formed {
-                return Err(self.error(predicate.source, "bound subject must be well-formed"));
-            }
             let original = self
                 .facts
                 .unreduced
                 .predicate(predicate.source)
-                .unwrap_or(predicate.value)
-                .ordinary()
-                .map_err(|error| self.error(predicate.source, error))?;
-            if !original
-                .requires_definition_proof(&self.facts.types)
-                .map_err(|e| self.error(predicate.source, e))?
-            {
-                continue;
-            }
-            let valid = self
-                .closed_builtin_bound(ty, value.bound)
+                .unwrap_or(predicate.value);
+            let formation = proof
+                .validate_builtin_clause(&mut self.facts, predicate.value, original)
                 .map_err(|e| self.error(predicate.source, e))?;
-            if !valid {
+            if !formation.satisfied {
                 return Err(self.error(
                     predicate.source,
                     "non-generic bound is not satisfied at declaration",
                 ));
+            }
+            if let Clause::ForAll(id) = predicate.value {
+                self.facts
+                    .generics
+                    .record_builtin_formation(owner, id, formation.subject)
+                    .map_err(|e| self.error(predicate.source, e))?;
             }
         }
         Ok(())
@@ -143,31 +127,6 @@ impl Checker<'_> {
             }
         }
         Ok(())
-    }
-
-    /// Closed builtin bounds have no caller assumptions to supply their abilities.
-    fn closed_builtin_bound(
-        &mut self,
-        ty: crate::types::TypeId,
-        bound: Bound,
-    ) -> Result<bool, &'static str> {
-        if bound == Bound::Sized {
-            return Ok(self.facts.types.is_sized(ty) == Some(true));
-        }
-        if self.facts.generics.has_nominal_requirements {
-            self.facts.aggregates.prepare(&mut self.facts.types, ty)?;
-        }
-        let properties = self.facts.copies.demand(
-            &self.facts.types,
-            &self.facts.aggregates,
-            &self.facts.derives,
-            ty,
-        )?;
-        Ok(if bound == Bound::Copy {
-            properties.copy
-        } else {
-            properties.clone_
-        })
     }
 
     fn validate_equality_bound(

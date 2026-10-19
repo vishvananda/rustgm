@@ -1,6 +1,6 @@
 //! Possible destruction requirements under immutable parameter assumptions.
 pub mod regions;
-use super::parameters::environment::Environment;
+use super::parameters::environment::{BuiltinQuery, Environment};
 use super::{ItemId, Kind, Store, TypeId, aggregate::Definitions};
 use std::{
     collections::{HashMap, HashSet},
@@ -17,6 +17,7 @@ enum State {
 }
 struct Scope {
     environment: Arc<Environment>,
+    builtins: Option<Box<BuiltinQuery>>,
     states: HashMap<TypeId, State>,
 }
 /// One canonical store, completed nominal definitions and immutable custom Drop set.
@@ -55,6 +56,7 @@ impl NeedsDrop {
         Self {
             scope: Some(Box::new(Scope {
                 environment,
+                builtins: None,
                 states: HashMap::new(),
             })),
             custom: Arc::clone(&self.custom),
@@ -139,8 +141,12 @@ impl NeedsDrop {
                 _ => {}
             }
             let kind = types.kind(ty).ok_or("invalid destruction type")?;
-            if let Some(scope) = &self.scope {
-                let needed = if scope.environment.assumed(ty).copy {
+            if let Some(scope) = &mut self.scope {
+                let needed = if scope
+                    .environment
+                    .assumed_with(types, ty, &mut scope.builtins)?
+                    .copy
+                {
                     Some(false)
                 } else if let Kind::Parameter(id) = kind {
                     Some(

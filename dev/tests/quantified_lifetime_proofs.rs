@@ -195,6 +195,7 @@ fn body_relations_can_use_retained_witnesses_without_granting_their_debts() -> T
         callables: &callables,
         nominal_requirements: &bounds,
         bodies: vec![Contract {
+            builtins: None,
             source,
             signature: None,
             universals: 1,

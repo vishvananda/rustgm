@@ -1,6 +1,7 @@
 //! Group typed lifetime facts by body without repeating resolution or inference.
 mod clause_terms;
 use super::ir::NodeKey;
+pub use crate::sema::model::BuiltinRequirements;
 pub use crate::sema::model::LifetimeProof as Proof;
 use crate::{
     sema::model::{AdjustmentKind, BodyRegionOrigin, Declarations},
@@ -50,6 +51,7 @@ pub struct Contract {
     pub type_assumptions: Vec<crate::types::parameters::clauses::Clause>,
     pub obligations: Vec<Obligation>,
     pub proofs: Vec<Proof>,
+    pub builtins: Option<std::sync::Arc<crate::sema::model::BuiltinRequirements>>,
 }
 impl Contract {
     /// Materialize demanded nominal requirements before borrowing immutable proof facts.
@@ -80,6 +82,7 @@ impl Contract {
             type_assumptions: Vec::new(),
             obligations: Vec::new(),
             proofs: Vec::new(),
+            builtins: None,
         }
     }
 }
@@ -176,6 +179,13 @@ pub fn collect(facts: &Declarations) -> Result<Contracts<'_>, &'static str> {
         }
     }
     collect_proofs(facts, &mut bodies, &index)?;
+    for (source, requirements) in &facts.generics.builtin_requirements {
+        let index = index
+            .get(source)
+            .copied()
+            .ok_or("builtin requirement has no body contract")?;
+        bodies[index].builtins = Some(std::sync::Arc::new(requirements.clone()));
+    }
     Ok(Contracts {
         bodies,
         callables: &facts.lifetimes.callables,
@@ -307,5 +317,6 @@ fn parameter_contract(
         type_assumptions,
         obligations: Vec::new(),
         proofs: Vec::new(),
+        builtins: None,
     })
 }

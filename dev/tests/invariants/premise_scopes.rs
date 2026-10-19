@@ -234,8 +234,13 @@ fn quantified_inputs_still_require_type_and_const_membership() -> Result<(), &'s
         Bound::Clone,
         Bound::ProjectionEqual(BYTE),
     ] {
-        let unsupported = quantify(&mut store, 0, Predicate { ty: BYTE, bound })?;
-        assert!(base.clone().with_clauses(&store, &[unsupported]).is_err());
+        let concrete = quantify(&mut store, 0, Predicate { ty: BYTE, bound })?;
+        assert_eq!(
+            base.clone().with_clauses(&store, &[concrete]).is_err(),
+            matches!(bound, Bound::ProjectionEqual(_))
+        );
+        let foreign = quantify(&mut store, 0, Predicate { ty, bound })?;
+        assert!(base.clone().with_clauses(&store, &[foreign]).is_err());
     }
     Ok(())
 }

@@ -266,6 +266,7 @@ fn prove_body<const RECORD: bool, S: BuildHasher>(
     body: &Body,
     contract: &regions::Body,
 ) -> Result<(ownership::BodyFacts, loans::Report), Error> {
+    let mut copies = super::permissions::check(environment, contract)?.map(Copies::in_environment);
     let storage = storage::check(body).map_err(|e| Error {
         node: Some(e.node),
         message: e.message.into(),
@@ -274,7 +275,7 @@ fn prove_body<const RECORD: bool, S: BuildHasher>(
         environment.types,
         environment.definitions,
         environment.derives,
-        environment.copies,
+        copies.as_mut().unwrap_or(environment.copies),
         body,
     )
     .map_err(|e| Error {
@@ -305,6 +306,11 @@ fn prove_cleanup<S: BuildHasher>(
     catalog: &mut super::destruction::glue::Catalog<'_>,
 ) -> Result<Option<super::destruction::Plan>, Error> {
     use super::{destruction, ownership::initialization};
+    let parameters = super::permissions::check(environment, contract)?;
+    let mut copies = parameters
+        .as_ref()
+        .map(|e| Copies::in_environment(std::sync::Arc::clone(e)));
+    let mut scoped_regions = parameters.map(|e| drop_regions.scoped(e));
     let error = |node, message: &str| Error {
         node,
         message: message.into(),
@@ -313,7 +319,7 @@ fn prove_cleanup<S: BuildHasher>(
         environment.types,
         environment.definitions,
         environment.derives,
-        environment.copies,
+        copies.as_mut().unwrap_or(environment.copies),
         body,
     )
     .map_err(|e| error(Some(e.node), e.message))?;
@@ -322,7 +328,7 @@ fn prove_cleanup<S: BuildHasher>(
         environment.types,
         environment.definitions,
         components,
-        drop_regions,
+        scoped_regions.as_mut().unwrap_or(drop_regions),
         &init,
         contract,
         &plan,

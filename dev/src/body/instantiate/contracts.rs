@@ -20,6 +20,14 @@ pub(super) fn specialize(
     }
     let mut bound = Bound::parameters(&facts.types, &inputs.bindings)?;
     let mut contract = original.clone();
+    if let Some(pending) = &mut contract.builtins {
+        let pending = std::sync::Arc::make_mut(pending);
+        pending.environment = None;
+        for (_, predicate) in &mut pending.predicates {
+            *predicate = bound.predicate(&mut facts.types, *predicate)?;
+            facts.aggregates.prepare(&mut facts.types, predicate.ty)?;
+        }
+    }
     early_identities(facts, inputs.instance, &regions, &mut contract)?;
     contract.universals = original
         .universals

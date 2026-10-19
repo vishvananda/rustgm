@@ -1,4 +1,8 @@
 //! Nominal clauses retain their own binder while lifting only independent callable captures.
+#[path = "formation_clauses/builtin_instances.rs"]
+mod builtin_instances;
+#[path = "formation_clauses/builtins.rs"]
+mod builtins;
 #[path = "formation_clauses/declarations.rs"]
 mod declarations;
 #[path = "formation_clauses/terms.rs"]

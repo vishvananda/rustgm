@@ -8,6 +8,9 @@ pub mod literal;
 pub mod lower;
 pub mod lowir;
 pub mod resolve;
+#[cfg(test)]
+#[path = "../tests/helpers/qualify.rs"]
+mod rustc;
 pub mod sema;
 pub mod support;
 pub mod syntax;

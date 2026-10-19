@@ -1,6 +1,12 @@
 //! Immutable assumptions for one symbolic body. Absence of a bound is not proof
 //! that a concrete instantiation lacks it; it only withholds that operation here.
+mod instantiation;
+mod permissions;
 mod premises;
+pub(crate) use permissions::Query as BuiltinQuery;
+#[cfg(test)]
+#[path = "../../../tests/invariants/builtin_permissions.rs"]
+mod builtin_tests;
 #[cfg(test)]
 #[path = "../../../tests/invariants/premise_scopes.rs"]
 mod scope_tests;
@@ -13,6 +19,7 @@ use crate::types::Store;
 use crate::types::{Kind, TypeId};
 use premises::TraitAssumptions;
 use std::collections::{HashMap, hash_map::Entry};
+use std::sync::Arc;
 
 /// Language-provided abilities used by move checking. Copy entails Clone.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
@@ -27,6 +34,8 @@ pub struct Abilities {
 pub struct Environment {
     parameters: HashMap<ParameterId, Abilities>,
     assumptions: Option<Box<Assumptions>>,
+    builtins: Option<Arc<permissions::Index>>,
+    regions: Option<Arc<crate::types::relations::RegionEqualities>>,
     traits: Option<Box<TraitAssumptions>>,
     equalities: Option<Box<ProjectionAssumptions>>,
     projection_promises:
@@ -76,6 +85,8 @@ impl Environment {
     /// Composite and trait predicates still need the ordinary binder mapping.
     pub(crate) fn has_only_parameters(&self) -> bool {
         self.assumptions.is_none()
+            && self.builtins.is_none()
+            && self.regions.is_none()
             && self.equalities.is_none()
             && self.traits.as_ref().is_none_or(|traits| traits.is_empty())
     }
@@ -107,6 +118,12 @@ impl Environment {
         if let Some(traits) = &mut result.traits {
             traits.substitute(types, fold)?;
         }
+        if let Some(builtins) = &result.builtins {
+            result.builtins = Some(Arc::new(builtins.substitute(types, fold)?));
+        }
+        if let Some(regions) = &result.regions {
+            result.regions = Some(Arc::new(regions.substitute(fold)?));
+        }
         if let Some(equalities) = &mut result.equalities {
             for predicate in &mut equalities.predicates {
                 *predicate = fold.predicate(types, *predicate)?;
@@ -132,8 +149,12 @@ impl Environment {
     }
 
     fn mapped_regions(&self, types: &Store) -> Result<bool, &'static str> {
+        if self.regions.is_some() {
+            return Ok(true);
+        }
         for clause in self
             .trait_clauses()
+            .chain(self.builtins.iter().flat_map(|builtins| builtins.clauses()))
             .chain(self.projection_predicates().copied().map(Clause::Predicate))
         {
             if clause.has_free_regions(types)? {
@@ -197,6 +218,8 @@ impl Environment {
         Ok(Self {
             parameters,
             assumptions: None,
+            builtins: None,
+            regions: None,
             traits: None,
             equalities: None,
             projection_promises: None,
@@ -244,7 +267,7 @@ impl Environment {
         self.with_requirements(types, predicates.iter().copied().map(Clause::Predicate))
     }
 
-    /// Retain whole quantified trait assumptions beside ordinary predicates.
+    /// Retain whole quantified trait and builtin assumptions beside ordinary predicates.
     /// Lifetime clauses validate membership here; the caller retains their whole
     /// scopes for its separate directed lifetime proof, as for ordinary outlives.
     /// # Errors
@@ -283,6 +306,14 @@ impl Environment {
                         continue;
                     }
                     self.region_mapping |= clause.has_free_regions(types)?;
+                    if matches!(
+                        value.predicate.bound,
+                        Bound::Copy | Bound::Clone | Bound::Sized
+                    ) {
+                        Arc::make_mut(self.builtins.get_or_insert_with(Default::default))
+                            .insert(types, clause)?;
+                        continue;
+                    }
                     self.traits
                         .get_or_insert_with(Default::default)
                         .insert(types, clause)?;
@@ -337,6 +368,13 @@ impl Environment {
         }
         if matches!(predicate.bound, Bound::Outlives(_)) {
             return Ok(());
+        }
+        if types
+            .has_free_regions(predicate.ty, 0)
+            .ok_or("invalid builtin bound subject")?
+        {
+            Arc::make_mut(self.builtins.get_or_insert_with(Default::default))
+                .insert(types, predicate.into())?;
         }
         let assumptions = self.assumptions.get_or_insert_with(Default::default);
         assumptions.sized.insert(predicate.ty);
@@ -426,7 +464,10 @@ impl Environment {
     }
     #[must_use]
     pub fn has_shape_assumptions(&self) -> bool {
-        self.shape_assumptions || self.assumptions.is_some() || self.projection_promises.is_some()
+        self.shape_assumptions
+            || self.assumptions.is_some()
+            || self.builtins.is_some()
+            || self.projection_promises.is_some()
     }
 
     /// `None` means the parameter is outside this scope, not an unbounded type.

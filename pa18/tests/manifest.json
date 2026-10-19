@@ -6835,6 +6835,156 @@
       },
       "mode": "--emit-lowir",
       "maintainer_origin": "dev/tests/nominal_declarations.rs"
+    },
+    {
+      "path": "tests/spec/bounds/equal-copy-captures.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.bounds"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "PA18 lifetime identity in composite builtin bounds",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/bounds/equal-call-captures.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.bounds"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "PA18 lifetime identity in composite builtin bounds",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/bounds/equal-call-implied.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.bounds"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "PA18 lifetime identity in composite builtin bounds",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/bounds/equal-call-cycle.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.bounds"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "PA18 lifetime identity in composite builtin bounds",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/bounds/equal-call-static.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.bounds"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "PA18 lifetime identity in composite builtin bounds",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/bounds/equal-call-nested.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.bounds"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "PA18 lifetime identity in composite builtin bounds",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/bounds/distinct-call-unused.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.bounds"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "PA18 lifetime identity in composite builtin bounds"
+    },
+    {
+      "path": "tests/spec/bounds/one-way-call-unused.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.bounds"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "PA18 lifetime identity in composite builtin bounds"
+    },
+    {
+      "path": "tests/spec/bounds/equal-call-clone-only.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.bounds"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "PA18 lifetime identity in composite builtin bounds"
     }
   ]
 }

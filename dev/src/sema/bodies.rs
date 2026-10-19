@@ -332,7 +332,7 @@ impl<'a> Checker<'a> {
             .associated
             .schema(owner)
             .map_or(0, |s| s.captures);
-        self.prepare_bound_environment(key.node, owner)
+        self.prepare_bound_environment(key.node, owner, None)
     }
     fn begin_constant(&mut self, key: NodeKey, ty: TypeId, module: ModuleId) {
         self.state.call_types.clear();
@@ -523,7 +523,7 @@ impl Checker<'_> {
         };
         self.prepare_file(body.file);
         self.state.body = body;
-        self.prepare_bound_environment(body.node, function.definition)?;
+        self.prepare_bound_environment(body.node, function.definition, Some(function.signature))?;
         let scope = self.report.resolution.definitions[function.definition.0 as usize].scope;
         self.state.module = self.report.resolution.scopes[scope.0 as usize].module;
         let Some(Type::Function { result, .. }) = self.facts.types.kind(function.signature) else {

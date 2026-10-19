@@ -1,5 +1,5 @@
 //! Copy/Clone obligations under fixed assumptions, independent of storage layout.
-use super::parameters::environment::Environment;
+use super::parameters::environment::{BuiltinQuery, Environment};
 use super::{ItemId, Kind, Primitive, Store, TypeId, aggregate::Definitions};
 use std::{collections::HashMap, hash::BuildHasher, sync::Arc};
 
@@ -30,6 +30,7 @@ enum State {
 }
 struct Scope {
     environment: Option<Arc<Environment>>,
+    builtins: Option<Box<BuiltinQuery>>,
     // A body typically touches only a few types in the whole crate's store.
     states: HashMap<TypeId, State>,
 }
@@ -52,6 +53,7 @@ impl Copies {
         Self {
             scope: Some(Box::new(Scope {
                 environment: Some(environment),
+                builtins: None,
                 states: HashMap::new(),
             })),
             ..Self::default()
@@ -65,6 +67,7 @@ impl Copies {
         Self {
             scope: Some(Box::new(Scope {
                 environment,
+                builtins: None,
                 states: HashMap::new(),
             })),
             declaration: true,
@@ -168,11 +171,15 @@ impl Copies {
                 self.record(ty, State::Ready(value));
                 continue;
             }
-            let assumed = self
-                .scope
-                .as_ref()
-                .and_then(|scope| scope.environment.as_ref())
-                .map(|environment| environment.assumed(ty));
+            let assumed =
+                self.scope
+                    .as_mut()
+                    .and_then(|scope| {
+                        scope.environment.as_ref().map(|environment| {
+                            environment.assumed_with(types, ty, &mut scope.builtins)
+                        })
+                    })
+                    .transpose()?;
             if assumed.is_some_and(|p| p.copy) {
                 self.record(ty, State::Ready(Properties::BOTH));
                 continue;

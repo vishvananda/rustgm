@@ -1,9 +1,11 @@
 //! Complete structural equality is shared by ordinary and quantified input checks.
+mod shapes;
 use crate::types::{
     GenericArgs, Kind, ListId, RegionId, Store, TypeId, arguments::Argument, region_graph::Error,
 };
+pub(crate) use shapes::Shapes;
 
-pub(super) trait Compare<'t> {
+pub(crate) trait Compare<'t> {
     fn types(&self) -> &'t Store;
     fn charge(&mut self, count: usize) -> Result<(), Error>;
     fn child(&mut self, a: TypeId, b: TypeId, depth: u16) -> Result<(), Error>;

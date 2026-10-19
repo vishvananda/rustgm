@@ -1,5 +1,6 @@
 //! Default validation classifies original clauses and proves eligible whole requirements.
 use super::{Clause, Proof, check_requirement};
+use crate::rustc;
 use crate::{
     expand::config::Config,
     resolve::{
@@ -23,8 +24,6 @@ use crate::{
     },
 };
 use std::path::Path;
-#[path = "../helpers/qualify.rs"]
-mod rustc;
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 struct NoFiles;
 impl Sources for NoFiles {

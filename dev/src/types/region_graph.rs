@@ -1,4 +1,5 @@
 //! Bounded outlives propagation; universal assumptions never become obligations.
+mod components;
 mod verify;
 use std::collections::{HashMap, HashSet};
 pub use verify::VerificationId;

@@ -241,6 +241,14 @@ pub struct BodyRegion {
     pub source: NodeKey,
     pub origin: BodyRegionOrigin,
 }
+/// Deferred builtin uses retain their source and exact caller environment until
+/// the body's lifetime graph can establish identity of inferred arguments.
+#[derive(Clone)]
+pub struct BuiltinRequirements {
+    pub(crate) environment:
+        Option<std::sync::Arc<crate::types::parameters::environment::Environment>>,
+    pub(crate) predicates: Vec<(NodeKey, crate::types::parameters::predicates::Predicate)>,
+}
 #[derive(Clone, Copy)]
 pub struct ReferenceAlignment {
     pub source: NodeKey,

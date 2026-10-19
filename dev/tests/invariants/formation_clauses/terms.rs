@@ -27,7 +27,11 @@ fn term(facts: &mut Declarations, ty: TypeId, equality: bool, count: u32) -> Tes
     };
     quantified(facts, count, value)
 }
-fn projected(facts: &mut Declarations, report: &Report, region: RegionId) -> TestResult<TypeId> {
+pub(super) fn projected(
+    facts: &mut Declarations,
+    report: &Report,
+    region: RegionId,
+) -> TestResult<TypeId> {
     let arguments = facts
         .types
         .intern_arguments(&[Argument::Lifetime(region)])?;

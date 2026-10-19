@@ -6,7 +6,7 @@ use crate::types::{
         Parts, TypeComponents,
         storage::{Lists, Values},
     },
-    parameters::environment::Environment,
+    parameters::environment::{BuiltinQuery, Environment},
 };
 use std::{
     collections::{HashMap, HashSet},
@@ -31,6 +31,7 @@ enum State {
 pub struct Regions {
     custom: Arc<HashSet<ItemId>>,
     environment: Option<Arc<Environment>>,
+    builtins: Option<Box<BuiltinQuery>>,
     states: HashMap<Key, State>,
     lists: Lists,
     work: Vec<(Key, bool)>,
@@ -45,6 +46,7 @@ impl Regions {
         let mut query = Self {
             custom: Arc::default(),
             environment: None,
+            builtins: None,
             states: HashMap::new(),
             lists: Lists::default(),
             work: Vec::new(),
@@ -65,6 +67,7 @@ impl Regions {
         Self {
             custom: Arc::clone(&self.custom),
             environment: Some(environment),
+            builtins: None,
             states: HashMap::new(),
             lists: Lists::default(),
             work: Vec::new(),
@@ -158,14 +161,15 @@ impl Regions {
             if let Key::Type(ty) = key {
                 let kind = types.kind(ty).ok_or("invalid drop region type")?;
                 if let Some(environment) = &self.environment {
+                    let assumed = environment.assumed_with(types, ty, &mut self.builtins)?;
                     let copy = if let Kind::Parameter(id) = kind {
                         environment
                             .abilities(id)
                             .ok_or("drop parameter is outside its environment")?
                             .copy
-                            || environment.assumed(ty).copy
+                            || assumed.copy
                     } else {
-                        environment.assumed(ty).copy
+                        assumed.copy
                     };
                     if copy || matches!(kind, Kind::Parameter(_)) {
                         let mut values = Values::default();

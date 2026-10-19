@@ -1,5 +1,5 @@
 //! Structural well-formedness and sizedness under one immutable bound environment.
-use super::environment::Environment;
+use super::environment::{BuiltinQuery, Environment};
 use crate::types::{
     Kind, Primitive, Store, TypeId, bound_uses::captures::Captures, substitute::lookup::Lookup,
 };
@@ -11,6 +11,7 @@ pub struct Properties {
 }
 pub struct Shapes {
     environment: Arc<Environment>,
+    builtins: Option<Box<BuiltinQuery>>,
     cache: HashMap<TypeId, Properties>,
     normalized_queries: Option<Box<Self>>,
     scoped: Option<Box<Scoped>>,
@@ -37,6 +38,7 @@ impl Shapes {
     pub fn new(environment: Arc<Environment>) -> Self {
         Self {
             environment,
+            builtins: None,
             cache: HashMap::new(),
             normalized_queries: None,
             scoped: None,
@@ -307,6 +309,12 @@ impl Shapes {
         ty: TypeId,
         depth: u16,
     ) -> Result<bool, &'static str> {
+        if self
+            .environment
+            .matching_sized(types, ty, depth, &mut self.builtins)?
+        {
+            return Ok(true);
+        }
         if depth == 0 {
             return Ok(self.environment.assumes_sized(ty));
         }

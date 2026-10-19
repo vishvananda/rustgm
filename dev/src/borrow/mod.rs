@@ -9,6 +9,7 @@ pub mod destruction;
 pub mod liveness;
 pub mod loans;
 pub mod ownership;
+mod permissions;
 mod places;
 pub mod regions;
 pub mod storage;

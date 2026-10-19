@@ -62,7 +62,9 @@ pub fn verify<S: std::hash::BuildHasher>(
         let contract = index
             .remove(&body.source)
             .ok_or_else(|| error("template cleanup contract is missing or repeated"))?;
-        let mut copies = Copies::in_environment(std::sync::Arc::clone(&template.environment));
+        let parameters = crate::borrow::permissions::check(environment, contract)?
+            .unwrap_or_else(|| std::sync::Arc::clone(&template.environment));
+        let mut copies = Copies::in_environment(std::sync::Arc::clone(&parameters));
         let facts = initialization::analyze(
             environment.types,
             environment.definitions,
@@ -92,8 +94,8 @@ pub fn verify<S: std::hash::BuildHasher>(
                 &facts.storage,
             )
         } else {
-            let mut needed = needed.scoped(std::sync::Arc::clone(&template.environment));
-            let mut drops = drops.scoped(std::sync::Arc::clone(&template.environment));
+            let mut needed = needed.scoped(std::sync::Arc::clone(&parameters));
+            let mut drops = drops.scoped(parameters);
             let plan = symbolic::select(
                 environment.types,
                 environment.definitions,

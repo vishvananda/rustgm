@@ -13,6 +13,7 @@ pub struct Body {
     pub instance: Option<crate::types::instance::Instance>,
     pub solution: graph::Solution,
     pub identities: super::constraints::Identities,
+    pub builtins: Option<std::sync::Arc<crate::body::regions::BuiltinRequirements>>,
 }
 pub struct Analysis {
     pub bodies: Vec<Body>,
@@ -291,6 +292,7 @@ fn body(
         instance: cfg.and_then(|body| body.instance),
         solution: proof.solution,
         identities: proof.identities,
+        builtins: input.builtins.clone(),
     })
 }
 fn require_obligations<'a>(

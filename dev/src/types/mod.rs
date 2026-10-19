@@ -19,6 +19,7 @@ pub mod region_graph;
 pub mod relations;
 pub(crate) mod shape_key;
 pub mod specialize;
+pub(crate) mod structural;
 pub mod substitute;
 pub mod traits;
 pub mod variance;

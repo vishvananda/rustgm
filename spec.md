@@ -2033,7 +2033,7 @@ conditions; prove non-lifetime clauses with scoped trait evidence and lifetime
 clauses through the final directed graph. Captured owner lifetimes never become
 universal permissions. The type/trait environment validates parameter membership
 in lifetime clauses but leaves their proof to the retained lifetime consumer.
-Unsupported quantified property and equality premises must still reject.
+Unsupported quantified equality premises must still reject.
 
 Deduplicate universal projected caller premises by their complete predicate body
 when only unused top-level slot counts differ. This caller-only equivalence does
@@ -2051,6 +2051,75 @@ subjects keep their recursive term-formation rules rather than this whole-input
 filter. Cache scoped formation by canonical clause within the trait-header epoch;
 reuse the ordinary requirements cache and allocate scoped state only on demand.
 Charge shared capture/lowering work and invalidate it when header bindings change.
+
+Quantified builtin bounds normalize their subject with scoped projection evidence,
+then defer formation of a whole subject mentioning a clause-local lifetime.
+Lift independent subjects into the declaration's surrounding scope before checking
+their nominal and shape requirements. Share capture and lowering summaries across
+the proof's canonical inputs, including growing prefixes; ordinary clauses do not
+allocate this scoped cache. Definition-time satisfaction uses the original whole
+clause's classification and an independent builtin proof, never the bound's own
+assumption. An empty quantifier preserves its structural coordinate shift; an
+unused nonempty quantifier defers satisfaction until use.
+
+Record each quantified builtin's completed independent formation input by both
+declaration owner and clause identity. Body lifetime collection consumes these
+typed facts and fails if they are missing. Normalization may depend on the owner,
+so another owner's record cannot substitute for this one. A deferred subject has
+an explicit empty record and grants no formation or outlives permission. Actual
+body uses still check their own types. Instance witness import selects user-trait
+premises separately from builtin requirements already proved at the call site.
+
+Retain quantified builtin assumptions in a separate immutable environment index.
+Whole-subject Copy, Clone and Sized permissions feed copy, shape, destruction and
+drop-lifetime queries; they never imply reverse element bounds. Use shared
+lifetime-erased structural fingerprints only to select candidates, then compare
+their complete inputs with explicit binder coordinates. Captures retain their
+enclosing identity, repeated local slots require one consistent substitution,
+and a premise slot cannot capture a lifetime introduced by a nested callable.
+Exact structural permission queries cannot assume an unproved lifetime equality.
+Conditional matches require separately retained proof before authorizing an
+operation or omitting cleanup.
+
+Environment clones share completed builtin indexes and lifetime classes through
+immutable ownership; extending a scope uses copy-on-write and never changes its
+parent's permissions. Substitution rebuilds the mapped index directly rather than
+cloning the original index before replacing it. Exact ordinary Copy and Sized
+facts answer queries before structural matching or matcher allocation. An exact
+Clone fact still needs further evidence for Copy, and cache scope checks apply
+even when an exact fact answers the query.
+
+For builtin permissions, derive named lifetime equivalence once from declared
+and implied caller assumptions using an iterative strongly connected component
+traversal. Include static's intrinsic outlives edges; exclude required body
+constraints and arbitrary inference-variable equalities. Retain the resulting
+classes with the immutable environment before copy, shape or drop query caches
+are created. The body's registered universal aliases share their named classes.
+Substitution transports the complete equivalence relation, closing classes when
+mapped identities coincide. Nested callable locals and enclosing foreign binders
+retain their independent identities. One-way outlives is not equality.
+
+Share structural comparison and fingerprinting with universal outlives queries.
+Memoize input-pair recipes and persistent slot maps across growing shared subjects;
+cache completed permissions only within the originating immutable environment.
+Keep original clauses for scoped substitution while deduplicating identical
+candidate bodies with unused binder slots. Allocate matching state lazily so
+ordinary region-free environments retain their direct lookup path. Lifetime-bearing
+ordinary predicates share the index, but their caller slots are rigid captures,
+not quantified substitution slots. Include that distinction in candidate and
+recipe identity and preserve it through substitution. Exhausted query budgets
+are errors, never failed-bound answers.
+
+A failed builtin query on an inferred lifetime-bearing argument may retain a
+typed pending requirement with its source and immutable caller environment. It
+does not establish Copy, Clone or Sized. Transfer those requirements with the
+body's lifetime contract, including unused generic bodies. Only after the actual
+region graph proves its constraints may mutual reachability extend the caller's
+identity classes. Exclude the abstract LOCAL sentinel from that equality graph;
+it does not identify distinct runtime borrow extents. Use the existing complete
+copy/shape queries to discharge every pending requirement before issuing an
+executable or template proof. Specialized contracts substitute and normalize the
+requirements and verify their concrete subjects again without template assumptions.
 
 Keep an independent own-trait formation requirement separate from the logical
 clause. A clause-local input defers that declaration ambiguity check; it does not

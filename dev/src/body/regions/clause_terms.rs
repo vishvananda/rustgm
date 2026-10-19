@@ -39,7 +39,10 @@ pub(super) fn collect(
                     Bound::ProjectionEqual(result) => result,
                     Bound::Outlives(_) => value.predicate.ty,
                     Bound::Copy | Bound::Clone | Bound::Sized => {
-                        return Err("quantified builtin formation requires a scoped consumer");
+                        if let Some(ty) = facts.generics.builtin_formation_input(owner, id)? {
+                            add(predicate.source, Kind::WellFormed(ty))?;
+                        }
+                        continue;
                     }
                 };
                 add(

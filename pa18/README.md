@@ -79,6 +79,14 @@ reference well-formedness. An assumption about a composite type is not a proof
 of an arbitrary stronger element bound. Imported or reexported built-ins keep
 their identity; a user trait with the same spelling does not acquire it.
 
+Composite builtin assumptions respect proved lifetime identity. For example,
+`(&'x u8, &'x u8, T): Copy` permits copying `(&'x u8, &'y u8, T)` when
+`'x: 'y` and `'y: 'x` establish equality. Transitive, static and implied
+relationships use the same proof. One-way bounds do not establish equality.
+Retain inferred call requirements until the body lifetime proof can validate
+them, including nested composite uses and unused generic bodies. Concrete
+specializations must still satisfy their substituted requirements.
+
 Perform initialization, move, promotion, region and loan checks on unused
 bodies too. Reject double moves, uninitialized reads, invalid field moves,
 escaping local references and overlapping live loans before specialization.
@@ -183,8 +191,8 @@ is an accepted maintainer control awaiting PA20's grading contract.
 
 ## Validation
 
-The suite declares 441 fixtures: 274 accepted and 167 rejected. Of the accepted
-programs, 271 execute through both pinned rustc and the qualified CPPGM backend;
+The suite declares 450 fixtures: 280 accepted and 170 rejected. Of the accepted
+programs, 277 execute through both pinned rustc and the qualified CPPGM backend;
 three intentionally diverge and must only undergo code generation. Growing-instance
 rejections use rustc object generation: metadata-only success cannot qualify them.
 No compilation-only result counts as a runtime comparison. Native panic cases
