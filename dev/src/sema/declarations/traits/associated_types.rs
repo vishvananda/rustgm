@@ -287,13 +287,14 @@ impl Checker<'_> {
             }
             let Kind::Bound {
                 optional,
-                binders,
+                quantified,
+                binders: _,
                 value,
             } = self.kind(key)
             else {
                 return Err(self.error(key, "invalid associated type bound"));
             };
-            if binders.start != binders.end {
+            if quantified {
                 return Err(self.error(
                     key,
                     "higher-ranked associated bounds require advanced generic relationships",

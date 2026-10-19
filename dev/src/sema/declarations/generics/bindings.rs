@@ -1,4 +1,5 @@
 //! Associated bindings keep their own syntax range and become separate typed predicates.
+use super::bounds::lexical::Scope;
 use super::{Checker, DefId, Error, Kind, NodeKey, Type, Work, regions};
 use crate::{
     resolve::model::Namespace,
@@ -26,6 +27,7 @@ struct HeaderBinding {
     path: NodeKey,
     predicate: Predicate,
     original: Predicate,
+    scope: Option<Scope>,
 }
 impl Pending {
     pub(in super::super) fn begin_trait_headers(&mut self) {
@@ -120,6 +122,7 @@ impl Checker<'_> {
         path: NodeKey,
         predicate: Predicate,
         original: Predicate,
+        scope: Option<Scope>,
         output: &mut Vec<crate::sema::generics::Predicate>,
     ) -> Result<(), Error> {
         let Some(list) = self.associated_bindings.bindings(path) else {
@@ -131,6 +134,7 @@ impl Checker<'_> {
                 path,
                 predicate,
                 original,
+                scope,
             });
             return Ok(());
         }
@@ -166,17 +170,18 @@ impl Checker<'_> {
                 ty,
                 bound: Bound::ProjectionEqual(result),
             };
-            self.facts.unreduced.retain_predicate(
+            let original = self.bound_clause(
                 source,
+                scope,
                 Predicate {
                     ty: original_ty,
                     bound: Bound::ProjectionEqual(original_result),
-                }
-                .into(),
-            );
+                },
+            )?;
+            self.facts.unreduced.retain_predicate(source, original);
             output.push(crate::sema::generics::Predicate {
                 source,
-                value: value.into(),
+                value: self.bound_clause(source, scope, value)?,
             });
         }
         Ok(())
@@ -198,6 +203,7 @@ impl Checker<'_> {
                 binding.path,
                 binding.predicate,
                 binding.original,
+                binding.scope,
                 &mut values,
             )?;
             additions.push((ItemId(binding.owner.0), values));

@@ -11,6 +11,38 @@ use crate::{
 };
 use std::io::{self, Write};
 
+/// PA19/PA20 retain their ordinary-predicate text contract. Quantified source
+/// clauses belong to the advanced generic view, even when executable lowering
+/// can already consume them.
+/// # Errors
+/// Rejects a quantified declaration at its retained source location.
+pub fn check_ordinary_profile(
+    report: &Report,
+    facts: &Declarations,
+) -> Result<(), crate::resolve::package::Error> {
+    let source = facts
+        .generics
+        .predicates
+        .values()
+        .flatten()
+        .filter(|predicate| {
+            matches!(
+                predicate.value,
+                crate::types::parameters::clauses::Clause::ForAll(_)
+            )
+        })
+        .map(|predicate| predicate.source)
+        .min_by_key(|key| (key.file.0, key.node.0));
+    if let Some(source) = source {
+        return Err(Declarations::error(
+            report,
+            source,
+            "higher-ranked trait bounds require advanced generic relationships",
+        ));
+    }
+    Ok(())
+}
+
 /// Inspect type and trait decisions without claiming completed region or loan proofs.
 /// # Errors
 /// Propagates output errors and inconsistent retained identities.

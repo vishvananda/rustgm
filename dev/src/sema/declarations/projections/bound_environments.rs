@@ -6,7 +6,7 @@ use std::{collections::HashSet, sync::Arc};
 
 pub(super) struct Bounds {
     syntax: Vec<Syntax>,
-    roots: Vec<NodeKey>,
+    roots: Vec<(NodeKey, regions::Context)>,
 }
 impl Checker<'_> {
     pub(super) fn header_projection_context(&self, context: regions::Context) -> bool {
@@ -49,10 +49,10 @@ impl Checker<'_> {
     pub(in crate::sema::declarations) fn retain_bound_projection_requirements(
         &mut self,
         owner: DefId,
-        context: regions::Context,
+        _context: regions::Context,
     ) -> Result<(), Error> {
         if let Some(bounds) = self.projections.raw_bounds.remove(&owner) {
-            for key in bounds.roots {
+            for (key, context) in bounds.roots {
                 let ty = self.ty(key)?;
                 self.projections
                     .deferred
@@ -92,12 +92,13 @@ impl Checker<'_> {
         &mut self,
         owner: DefId,
         syntax: Vec<Syntax>,
+        context: regions::Context,
     ) -> Result<(), Error> {
         let mut roots = Vec::new();
         let mut seen = HashSet::new();
         for bound in &syntax {
             if let Some(key) = bound.subject() {
-                self.retain_bound_root(key, &mut seen, &mut roots)?;
+                self.retain_bound_root(key, bound.subject_context(context), &mut seen, &mut roots)?;
             }
             if let Some((path, definition)) = bound.trait_path() {
                 if let Some(list) = self.associated_bindings.bindings(path) {
@@ -110,6 +111,7 @@ impl Checker<'_> {
                                 node: value,
                                 ..path
                             },
+                            bound.context(context),
                             &mut seen,
                             &mut roots,
                         )?;
@@ -126,6 +128,7 @@ impl Checker<'_> {
                         if matches!(parameter.argument, Argument::Type(_)) {
                             self.retain_bound_root(
                                 NodeKey { node, ..path },
+                                bound.context(context),
                                 &mut seen,
                                 &mut roots,
                             )?;
@@ -145,11 +148,12 @@ impl Checker<'_> {
     fn retain_bound_root(
         &self,
         key: NodeKey,
+        context: regions::Context,
         seen: &mut HashSet<NodeKey>,
-        roots: &mut Vec<NodeKey>,
+        roots: &mut Vec<(NodeKey, regions::Context)>,
     ) -> Result<(), Error> {
         if self.facts.types.contains_projections(self.ty(key)?) == Some(true) && seen.insert(key) {
-            roots.push(key);
+            roots.push((key, context));
         }
         Ok(())
     }
@@ -157,7 +161,7 @@ impl Checker<'_> {
     pub(in super::super) fn prepare_bound_environment(
         &mut self,
         owner: DefId,
-        context: regions::Context,
+        _context: regions::Context,
         continuation: Work,
     ) -> Result<bool, Error> {
         if self.projections.raw_environments.contains_key(&owner) {
@@ -167,7 +171,7 @@ impl Checker<'_> {
             return Ok(false);
         };
         let roots = bounds.roots.clone();
-        let key = roots[0];
+        let key = roots[0].0;
         let environment = self
             .facts
             .generics
@@ -177,7 +181,7 @@ impl Checker<'_> {
             .raw_environments
             .insert(owner, Arc::new(environment));
         self.work.push(continuation);
-        for key in roots.into_iter().rev() {
+        for (key, context) in roots.into_iter().rev() {
             self.work.push(Work::NormalizeBound(key, context));
         }
         Ok(true)

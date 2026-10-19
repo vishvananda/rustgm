@@ -49,22 +49,23 @@ pub(crate) fn specialize(
         ) {
             continue;
         }
-        // Importing an instance's quantified witnesses needs their use-specific
-        // scope. Do not turn a raw binder body into an ordinary body assumption.
-        let predicate = predicate.value.ordinary()?;
-        if matches!(predicate.bound, PredicateBound::Trait(_)) {
-            predicates.push(predicate);
+        if matches!(body.bound, PredicateBound::Trait(_)) {
+            predicates.push(predicate.value);
         }
     }
     let mut state = None;
     for predicate in predicates {
-        let predicate = substitution.predicate(&mut facts.types, predicate)?;
+        let predicate = substitution.clause(&mut facts.types, predicate)?;
         if !predicate.has_free_regions(&facts.types)? {
             continue;
         }
         if predicate.contains_parameters(&facts.types)? {
             return Err("instance premise retains an unresolved parameter");
         }
+        // Closed premises need no imported caller lifetime witnesses. Concrete
+        // normalization still selects and proves its own validated implementation.
+        // Captured quantified witnesses require a use-specific scoped consumer.
+        let predicate = predicate.ordinary()?;
         if state.is_none() {
             state = Some(State::instance(facts, universals)?);
         }

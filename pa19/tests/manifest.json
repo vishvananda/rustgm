@@ -145,10 +145,10 @@
         "kind": "program",
         "status": 0,
         "default_lints": true,
-        "reason": "This accepted Rust language feature belongs to PA21; PA19 deliberately diagnoses the unsupported later-stage operation."
+        "reason": "PA19 semantic-crate 1 cannot represent quantified clauses. This inspection profile deliberately rejects the accepted Rust feature; advanced source-to-LowIR controls validate execution separately."
       },
       "maintainer_origin": "PA19 public later-stage boundary",
-      "mode": "--emit-lowir"
+      "mode": "--emit-semantics"
     },
     {
       "path": "tests/spec/boundaries/trait-object.rs",

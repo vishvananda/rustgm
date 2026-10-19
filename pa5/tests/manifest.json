@@ -2413,6 +2413,39 @@
         "kind": "program",
         "status": 0
       }
+    },
+    {
+      "path": "tests/spec/reject/trait-position-lifetime.rs",
+      "exit_status": 1,
+      "features": [
+        "pa5.reject"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/reject/relaxed-binder.rs",
+      "exit_status": 1,
+      "features": [
+        "pa5.reject"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/reject/binder-before-relaxed.rs",
+      "exit_status": 1,
+      "features": [
+        "pa5.reject"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
     }
   ]
 }

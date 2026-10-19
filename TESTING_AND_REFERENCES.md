@@ -292,7 +292,7 @@ rejection and output failure propagation. It shares declaration/body inference w
 the type view and reports pending lifetime constraints explicitly; complete
 execution proof remains in `--emit-lowir`.
 
-PA19 has 1,095 cases: 439 semantic inspection and 656 LowIR cases, with 262
+PA19 has 1,095 cases: 440 semantic inspection and 655 LowIR cases, with 262
 accepted native programs and no skipped executions. Three later-stage boundaries,
 one inspection-only lifetime control and three redundant-binder compiler
 differences have explicit independent statuses and reasons. See

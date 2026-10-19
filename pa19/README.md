@@ -219,11 +219,14 @@ belong to PA20. Higher-ranked trait bounds, GATs, opaque captures and advanced
 generic relationships belong to PA21. General unsized types, trait objects and
 constant statements remain PA22, PA23 and PA25 respectively. The three explicit
 later-stage boundary fixtures record rustc acceptance and this stage's rejection.
+The higher-ranked bound boundary belongs to the semantic inspection lane: its
+ordinary-predicate vocabulary cannot encode quantified clauses, even when later
+source-to-LowIR functionality can compile the same program.
 
 ## Validation
 
-The manifest contains 1,095 cases: 698 accepted and 397 rejected. There are 439
-semantic inspection cases and 656 LowIR cases. The LowIR lane has 262 accepted
+The manifest contains 1,095 cases: 698 accepted and 397 rejected. There are 440
+semantic inspection cases and 655 LowIR cases. The LowIR lane has 262 accepted
 programs, all with declared clean execution through rustc and CPPGM, and 394
 rejections. No accepted native control is silently skipped.
 

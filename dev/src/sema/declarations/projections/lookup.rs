@@ -1,8 +1,12 @@
 //! Written parameter bounds name members before the caller's proof environment is complete.
 mod headers;
 use super::{Checker, DefId, Error, NodeKey, Work, regions};
+use crate::sema::declarations::generics::bounds::lexical::Scope;
 use crate::types::{
-    parameters::predicates::{Bound, Predicate},
+    parameters::{
+        clauses::Clause,
+        predicates::{Bound, Predicate},
+    },
     substitute,
 };
 use std::collections::{HashMap, HashSet};
@@ -14,6 +18,7 @@ pub(in super::super) struct Seed {
     path: NodeKey,
     definition: DefId,
     context: regions::Context,
+    scope: Option<Scope>,
 }
 
 #[derive(Default)]
@@ -24,7 +29,7 @@ pub(super) struct Pending {
         Option<crate::types::projection::Application>,
     >,
     bounds: HashMap<(DefId, DefId), Vec<Seed>>,
-    typed: HashMap<NodeKey, Predicate>,
+    typed: HashMap<NodeKey, Clause>,
     active: HashSet<NodeKey>,
     queries: HashMap<NodeKey, Vec<Seed>>,
 }
@@ -37,6 +42,7 @@ impl Checker<'_> {
         path: NodeKey,
         definition: DefId,
         context: regions::Context,
+        scope: Option<Scope>,
     ) {
         self.projections
             .lookup
@@ -49,6 +55,7 @@ impl Checker<'_> {
                 path,
                 definition,
                 context,
+                scope,
             });
     }
 
@@ -114,15 +121,22 @@ impl Checker<'_> {
         }
         let subject = self.facts.definitions[seed.subject.0 as usize]
             .ok_or_else(|| self.error(seed.path, "missing shorthand bound subject"))?;
+        let subject = if seed.scope.is_some() {
+            self.capture_bound_type(seed.path, subject)?
+        } else {
+            subject
+        };
         let arguments = self.application_arguments(seed.path, seed.definition, seed.context)?;
         let application = self.applied_trait(seed.path, seed.definition, subject, arguments)?;
-        self.projections.lookup.typed.insert(
+        let clause = self.bound_clause(
             seed.path,
+            seed.scope,
             Predicate {
                 ty: subject,
                 bound: Bound::Trait(application),
             },
-        );
+        )?;
+        self.projections.lookup.typed.insert(seed.path, clause);
         self.projections.lookup.active.remove(&seed.path);
         Ok(())
     }
@@ -139,6 +153,7 @@ impl Checker<'_> {
             .remove(&key)
             .ok_or_else(|| self.error(key, "missing shorthand bound query"))?;
         let mut result = Vec::with_capacity(seeds.len());
+        let mut opened = HashMap::new();
         for seed in seeds {
             let predicate = *self
                 .projections
@@ -146,14 +161,70 @@ impl Checker<'_> {
                 .typed
                 .get(&seed.path)
                 .ok_or_else(|| self.error(key, "unfinished shorthand bound inputs"))?;
-            result.push(self.capture_projection_predicate(
-                key,
-                predicate,
-                seed.context.binder,
-                context,
-            )?);
+            let source = if seed.scope.is_some() {
+                seed.context
+                    .binder
+                    .and_then(|binder| self.regions.parent(binder))
+            } else {
+                seed.context.binder
+            };
+            let predicate = if matches!(predicate, Clause::ForAll(_)) {
+                let identity = (predicate, source);
+                if let Some(&value) = opened.get(&identity) {
+                    value
+                } else {
+                    let value = self.projection_naming_predicate(key, predicate, Some(context))?;
+                    opened.insert(identity, value);
+                    value
+                }
+            } else {
+                predicate.ordinary().map_err(|e| self.error(key, e))?
+            };
+            result.push(self.capture_projection_predicate(key, predicate, source, context)?);
         }
         Ok(result)
+    }
+
+    /// Local annotations may infer an application of a quantified bound. Item
+    /// signatures need explicit trait arguments; unused locals can be removed.
+    fn projection_naming_predicate(
+        &mut self,
+        key: NodeKey,
+        clause: Clause,
+        context: Option<regions::Context>,
+    ) -> Result<Predicate, Error> {
+        match clause {
+            Clause::Predicate(predicate) => Ok(predicate),
+            Clause::ForAll(id) => {
+                let value = self
+                    .facts
+                    .types
+                    .quantified(id)
+                    .ok_or_else(|| self.error(key, "missing shorthand bound quantifier"))?;
+                if let Some(context) = context.filter(|context| {
+                    matches!(
+                        context.position,
+                        regions::Position::Local(_) | regions::Position::Constant(_)
+                    )
+                }) {
+                    let mut locals = Vec::with_capacity(value.bound_regions as usize);
+                    for _ in 0..value.bound_regions {
+                        locals.push(self.region(key, None, context)?);
+                    }
+                    return substitute::Bound::new(locals)
+                        .predicate(&mut self.facts.types, value.predicate)
+                        .map_err(|e| self.error(key, e));
+                }
+                substitute::Bound::lower(1)
+                    .predicate(&mut self.facts.types, value.predicate)
+                    .map_err(|_| {
+                        self.error(
+                            key,
+                            "associated type requires explicit higher-ranked trait qualification",
+                        )
+                    })
+            }
+        }
     }
 
     pub(super) fn capture_projection_predicate(

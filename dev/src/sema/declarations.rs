@@ -117,6 +117,7 @@ struct Checker<'a> {
     defaults: generics::Defaults,
     deferred_bounds: Vec<(DefId, regions::Context)>,
     bound_syntax: std::collections::HashMap<DefId, Vec<generics::bounds::Syntax>>,
+    bound_captures: Option<Box<crate::types::substitute::Bound>>,
     relaxed: std::collections::HashSet<DefId>,
     constant_modules:
         Option<std::collections::HashMap<NodeKey, Option<crate::resolve::package::ModuleId>>>,
@@ -163,6 +164,7 @@ pub fn analyze(report: &Report) -> Result<Declarations, Error> {
         defaults: generics::Defaults::default(),
         deferred_bounds: Vec::new(),
         bound_syntax: std::collections::HashMap::new(),
+        bound_captures: None,
         relaxed: std::collections::HashSet::new(),
         constant_modules: None,
         constant_scratch: super::constants::Scratch::default(),

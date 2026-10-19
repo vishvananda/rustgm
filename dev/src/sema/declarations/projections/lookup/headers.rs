@@ -244,12 +244,13 @@ impl Checker<'_> {
             }
         }
         if templates.is_empty() {
-            return Ok(templates);
+            return Ok(Vec::new());
         }
         let mut fold = crate::sema::traits::results::substitution(&self.facts, predicate)
             .map_err(|e| self.error(key, e))?;
         let mut result = Vec::with_capacity(templates.len());
         for template in templates {
+            let template = self.projection_naming_predicate(key, template, None)?;
             result.push(
                 fold.predicate(&mut self.facts.types, template)
                     .map_err(|e| self.error(key, e))?,

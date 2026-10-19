@@ -5,7 +5,10 @@ use crate::{
     sema::traits::implementations::overlap,
     types::{
         outlives::Queries,
-        parameters::predicates::{Bound, Predicate},
+        parameters::{
+            clauses::Clause,
+            predicates::{Bound, Predicate},
+        },
     },
 };
 
@@ -99,14 +102,21 @@ impl Checker<'_> {
             }
         }
         for &requirement in requirements.required.iter().chain(&requirements.implied) {
-            let requirement = requirement.ordinary().map_err(|e| self.error(source, e))?;
-            let requirement = proof
-                .normalize_builtin(&mut self.facts, requirement)
-                .map_err(|e| self.error(source, e))?;
-            if !matches!(requirement.bound, Bound::Outlives(_))
-                && !proof
-                    .prove(&mut self.facts, requirement)
-                    .map_err(|e| self.error(source, e))?
+            let requirement = match requirement {
+                Clause::Predicate(predicate) => {
+                    let predicate = proof
+                        .normalize_builtin(&mut self.facts, predicate)
+                        .map_err(|e| self.error(source, e))?;
+                    if matches!(predicate.bound, Bound::Outlives(_)) {
+                        continue;
+                    }
+                    Clause::Predicate(predicate)
+                }
+                Clause::ForAll(_) => requirement,
+            };
+            if !proof
+                .prove_clause(&mut self.facts, requirement)
+                .map_err(|e| self.error(source, e))?
             {
                 return Err(self.error(
                     source,
@@ -128,13 +138,16 @@ impl Checker<'_> {
                 .outlives(a, b, 0)
                 .map_err(|e| self.error(source, e.to_string()))?;
         }
-        for requirement in requirements.required.iter().chain(&requirements.implied) {
-            let requirement = requirement.ordinary().map_err(|e| self.error(source, e))?;
-            if let Bound::Outlives(shorter) = requirement.bound {
+        for &requirement in requirements.required.iter().chain(&requirements.implied) {
+            if let Clause::Predicate(Predicate {
+                ty,
+                bound: Bound::Outlives(shorter),
+            }) = requirement
+            {
                 constraints
                     .require_type(
                         &mut queries,
-                        requirement.ty,
+                        ty,
                         shorter,
                         crate::types::relations::ProofScope::ROOT,
                         0,

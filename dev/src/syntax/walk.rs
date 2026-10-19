@@ -209,6 +209,7 @@ impl<L> Syntax<L> {
                 binders,
                 ty,
                 bounds,
+                ..
             } => {
                 self.children(binders, output);
                 output.push(ty);

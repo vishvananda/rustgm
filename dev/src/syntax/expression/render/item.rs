@@ -85,6 +85,7 @@ pub(super) fn node<L>(
             optional,
             binders,
             value,
+            ..
         } => write!(
             output,
             "bound {optional} {} {}",
@@ -113,6 +114,7 @@ pub(super) fn node<L>(
             binders,
             ty,
             bounds,
+            ..
         } => write!(
             output,
             "where {} {} {}",

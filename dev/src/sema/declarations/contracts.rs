@@ -50,21 +50,21 @@ impl Checker<'_> {
         }
         for node in ast.list(item.where_clause) {
             let Kind::Where {
-                binders,
+                quantified,
                 ty,
                 bounds: list,
+                ..
             } = ast.node(*node).kind
             else {
                 return Err(self.error(key, "invalid lifetime where-clause"));
             };
-            if binders.start != binders.end {
-                return Err(self.error(
-                    key,
-                    "higher-ranked where-clauses require advanced generic relationships",
-                ));
-            }
             if !self.lifetime_argument(NodeKey { node: ty, ..key }) {
+                // Type clauses are decoded by the generic-bound worklist,
+                // which retains their complete lexical quantifiers.
                 continue;
+            }
+            if quantified {
+                return Err(self.error(key, "lifetime where-bounds cannot introduce lifetimes"));
             }
             let longer = self.bound_region(NodeKey { node: ty, ..key }, binder)?;
             self.lifetime_bounds(key, binder, longer, list, &mut bounds)?;
@@ -107,11 +107,12 @@ impl Checker<'_> {
         for mut node in ast.list(list).iter().copied() {
             if let Kind::Bound {
                 optional: false,
-                binders,
+                quantified,
+                binders: _,
                 value,
             } = ast.node(node).kind
             {
-                if binders.start != binders.end {
+                if quantified {
                     return Err(self.error(key, "outlives bounds cannot introduce lifetimes"));
                 }
                 node = value;

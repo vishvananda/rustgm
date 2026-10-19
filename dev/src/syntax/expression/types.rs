@@ -415,7 +415,18 @@ impl Parser<'_, '_> {
                 continue;
             }
             let optional = self.eat(P::Question)?;
+            let quantified = self.cursor.word("for")?;
             let binders = self.binders()?;
+            if quantified && (optional || self.cursor.at(P::Question)?) {
+                return Err(self.error("higher-ranked bounds cannot relax trait requirements")?);
+            }
+            if quantified
+                && self.cursor.peek(0)?.is_some_and(|token| {
+                    matches!(token.kind, TokenKind::Lifetime | TokenKind::RawLifetime)
+                })
+            {
+                return Err(self.error("higher-ranked bound requires a trait")?);
+            }
             let value = if self
                 .cursor
                 .peek(0)?
@@ -439,6 +450,7 @@ impl Parser<'_, '_> {
                 token.start,
                 Kind::Bound {
                     optional,
+                    quantified,
                     binders,
                     value,
                 },
@@ -490,6 +502,7 @@ impl Parser<'_, '_> {
             && !self.cursor.at(P::Semicolon)?
             && !self.cursor.at(P::Equal)?
         {
+            let quantified = self.cursor.word("for")?;
             let binders = self.binders()?;
             let token = self
                 .cursor
@@ -512,6 +525,7 @@ impl Parser<'_, '_> {
             let predicate = self.node(
                 token.start,
                 Kind::Where {
+                    quantified,
                     binders,
                     ty,
                     bounds,

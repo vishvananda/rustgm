@@ -49,7 +49,9 @@ bounds. Parse path/function generic argument forms and expression/method
 `turbofish` syntax. Angle delimiters split existing compound tokens such as
 `>>`, `>=`, `<<` and `<-` at grammar-owned boundaries without relexing source.
 An identifier in a generic argument is syntax until resolution determines
-whether it denotes a type or a constant.
+whether it denotes a type or a constant. Retain the presence of an empty `for<>`
+binder as a typed fact. Higher-ranked binders cannot modify lifetime bounds or
+relaxed `?` trait bounds; diagnose these combinations in either modifier order.
 
 Extend patterns with record/tuple-struct fields, shorthand bindings, rest
 fields, qualified paths, nested alternatives, modern ranges and macro

@@ -337,6 +337,7 @@ impl Bases {
                 binders,
                 ty,
                 bounds,
+                ..
             } => {
                 self.list(binders);
                 self.node(ty);

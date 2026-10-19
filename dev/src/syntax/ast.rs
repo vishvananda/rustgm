@@ -124,11 +124,13 @@ pub enum Kind {
     },
     Bound {
         optional: bool,
+        quantified: bool,
         binders: List,
         value: NodeId,
     },
     Generic(u32),
     Where {
+        quantified: bool,
         binders: List,
         ty: NodeId,
         bounds: List,

@@ -231,6 +231,10 @@ fn semantic(
     let mut facts = rustgm::sema::declarations::analyze(&report)
         .and_then(|facts| rustgm::sema::bodies::analyze(&report, facts))
         .map_err(|e| e.to_string())?;
+    if matches!(mode, Mode::Semantics | Mode::Relationships) {
+        rustgm::sema::semantic_view::check_ordinary_profile(&report, &facts)
+            .map_err(|e| e.to_string())?;
+    }
     if matches!(mode, Mode::Semantics) {
         return if count {
             rustgm::sema::semantic_view::count(&facts, out)

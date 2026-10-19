@@ -359,16 +359,10 @@ fn source_outlives_expectations_match_pinned_rustc() -> Result<(), Box<dyn std::
 }
 
 #[test]
-fn higher_ranked_where_predicates_keep_the_advanced_relationship_boundary()
+fn higher_ranked_where_predicates_supply_declared_outlives_assumptions()
 -> Result<(), Box<dyn std::error::Error>> {
     let source = "fn need<T:'static>(){}fn f<T>()where for<'a>fn(&'a T):'static{need::<T>();}";
-    rustc::qualify("outlives-higher-where-boundary", source, true)?;
-    let error = semantic::analyze(source)
-        .err()
-        .ok_or("unsupported higher-ranked predicate was accepted")?;
-    assert!(
-        error.contains("higher-ranked where-clauses require advanced generic relationships"),
-        "{error}"
-    );
+    rustc::qualify("outlives-higher-where-assumption", source, true)?;
+    semantic::analyze(source)?;
     Ok(())
 }

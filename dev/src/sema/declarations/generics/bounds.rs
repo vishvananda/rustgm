@@ -1,4 +1,5 @@
 //! Decode resolved bounds once; subjects and trait arguments share the declaration worklist.
+pub(in crate::sema::declarations) mod lexical;
 use super::{Checker, DefId, Error, Kind, NodeKey, Type, Work, regions};
 use crate::{
     resolve::model::{BuiltinTrait, Target},
@@ -8,6 +9,7 @@ use crate::{
     },
     types::parameters::predicates::{Bound, Predicate},
 };
+use lexical::Scope;
 #[derive(Clone, Copy)]
 pub(in super::super) enum Subject {
     Parameter(DefId),
@@ -19,6 +21,7 @@ pub(in super::super) struct Syntax {
     source: NodeKey,
     subject: Subject,
     bound: Written,
+    scope: Option<Scope>,
 }
 #[derive(Clone, Copy)]
 pub(in super::super) enum Written {
@@ -52,6 +55,7 @@ impl Checker<'_> {
                 Subject::Parameter(self.generic_binding(*key)?),
                 parameter.bounds,
                 &type_parameters,
+                (context, None),
                 &mut syntax,
             )?;
         }
@@ -68,6 +72,7 @@ impl Checker<'_> {
                 Subject::Parameter(self_definition),
                 bounds,
                 &type_parameters,
+                (context, None),
                 &mut syntax,
             )?;
         }
@@ -82,6 +87,7 @@ impl Checker<'_> {
         for node in clauses {
             let key = NodeKey { node, ..key };
             let Kind::Where {
+                quantified,
                 binders,
                 ty,
                 bounds,
@@ -93,17 +99,13 @@ impl Checker<'_> {
             if self.lifetime_argument(subject) {
                 continue;
             }
-            if binders.start != binders.end {
-                return Err(self.error(
-                    key,
-                    "higher-ranked where-clauses require advanced generic relationships",
-                ));
-            }
+            let scope = self.bound_scope(key, quantified.then_some(binders), context, true)?;
             self.bound_list(
                 key,
                 Subject::Type(subject),
                 bounds,
                 &type_parameters,
+                (context, scope),
                 &mut syntax,
             )?;
         }
@@ -116,7 +118,14 @@ impl Checker<'_> {
                 };
                 if let (Some(subject), Written::User { path, definition }) = (subject, bound.bound)
                 {
-                    self.retain_projection_bound(owner, subject, path, definition, context);
+                    self.retain_projection_bound(
+                        owner,
+                        subject,
+                        path,
+                        definition,
+                        bound.context(context),
+                        bound.scope,
+                    );
                 }
             }
             self.bound_syntax.insert(owner, syntax);
@@ -129,8 +138,10 @@ impl Checker<'_> {
         subject: Subject,
         list: List,
         parameters: &std::collections::HashSet<DefId>,
+        scope: (regions::Context, Option<Scope>),
         output: &mut Vec<Syntax>,
     ) -> Result<(), Error> {
+        let (context, enclosing) = scope;
         let nodes = self
             .report
             .package
@@ -146,11 +157,13 @@ impl Checker<'_> {
                     source: key,
                     subject,
                     bound: Written::Outlives(key),
+                    scope: enclosing,
                 });
                 continue;
             }
             let Kind::Bound {
                 optional,
+                quantified,
                 binders,
                 value,
             } = self.kind(key)
@@ -160,12 +173,15 @@ impl Checker<'_> {
                     "generic type-outlives bounds require symbolic region proofs",
                 ));
             };
-            if binders.start != binders.end {
-                return Err(self.error(
-                    key,
-                    "higher-ranked trait bounds require advanced generic relationships",
-                ));
+            if enclosing.is_some() && quantified {
+                return Err(self.error(key, "nested lifetime quantification is not allowed"));
             }
+            let scope = enclosing.or(self.bound_scope(
+                key,
+                quantified.then_some(binders),
+                context,
+                false,
+            )?);
             let value = NodeKey { node: value, ..key };
             if self.lifetime_argument(value) {
                 if optional {
@@ -175,6 +191,7 @@ impl Checker<'_> {
                     source: key,
                     subject,
                     bound: Written::Outlives(value),
+                    scope,
                 });
                 continue;
             }
@@ -204,6 +221,7 @@ impl Checker<'_> {
                     source: key,
                     subject,
                     bound,
+                    scope,
                 });
             }
         }
@@ -313,16 +331,21 @@ impl Checker<'_> {
             return Ok(());
         };
         self.work.push(Work::Bounds(owner, context));
+        let mut subjects = std::collections::HashSet::new();
         for bound in bounds.iter().rev() {
+            let bound_context = bound.context(context);
             if let Written::User { path, definition } = bound.bound {
                 self.bound_subject_lifetimes(path, owner)?;
-                self.schedule_associated_bindings(path, context)?;
+                self.schedule_associated_bindings(path, bound_context)?;
                 self.work
-                    .push(Work::PathArguments(path, definition, context));
+                    .push(Work::PathArguments(path, definition, bound_context));
             }
-            if let Subject::Type(key) = bound.subject {
+            if let Subject::Type(key) = bound.subject
+                && subjects.insert(key)
+            {
                 self.bound_subject_lifetimes(key, owner)?;
-                self.work.push(Work::Node(key, false, context));
+                self.work
+                    .push(Work::Node(key, false, bound.subject_context(context)));
             }
         }
         self.bound_syntax.insert(owner, bounds);
@@ -396,8 +419,10 @@ impl Checker<'_> {
                 Subject::Type(key) => self.facts.unreduced.node(key).unwrap_or(ty),
                 Subject::Parameter(_) | Subject::Associated(_) => ty,
             };
+            let ty = self.bound_subject(bound.source, bound.scope, ty)?;
+            let original_ty = self.bound_subject(bound.source, bound.scope, original_ty)?;
             let (value, original_bound) =
-                self.bound_values(bound.bound, ty, original_ty, context)?;
+                self.bound_values(bound.bound, ty, original_ty, bound.context(context))?;
             if matches!(bound.subject, Subject::Parameter(_))
                 && !matches!(self.facts.types.kind(ty), Some(Type::Parameter(_)))
             {
@@ -412,20 +437,28 @@ impl Checker<'_> {
                 .contains_projections(&self.facts.types)
                 .map_err(|e| self.error(bound.source, e))?
             {
+                let original = self.bound_clause(bound.source, bound.scope, original)?;
                 self.facts
                     .unreduced
-                    .retain_predicate(bound.source, original.into());
+                    .retain_predicate(bound.source, original);
             }
             completed.push(crate::sema::generics::Predicate {
                 source: bound.source,
-                value: value.into(),
+                value: self.bound_clause(bound.source, bound.scope, value)?,
             });
             if let Written::User { path, .. } = bound.bound {
-                self.complete_associated_bindings(owner, path, value, original, &mut completed)?;
+                self.complete_associated_bindings(
+                    owner,
+                    path,
+                    value,
+                    original,
+                    bound.scope,
+                    &mut completed,
+                )?;
             }
         }
         self.facts.generics.predicates.insert(owner, completed);
-        self.retain_raw_bounds(owner, bounds)?;
+        self.retain_raw_bounds(owner, bounds, context)?;
         Ok(())
     }
 
@@ -475,7 +508,15 @@ impl Syntax {
             source,
             subject: Subject::Associated(owner),
             bound,
+            scope: None,
         }
+    }
+    pub(in super::super) fn context(self, parent: regions::Context) -> regions::Context {
+        self.scope.map_or(parent, |scope| scope.context(parent))
+    }
+    pub(in super::super) fn subject_context(self, parent: regions::Context) -> regions::Context {
+        self.scope
+            .map_or(parent, |scope| scope.subject_context(parent))
     }
     pub(in super::super) fn trait_path(self) -> Option<(NodeKey, DefId)> {
         match self.bound {

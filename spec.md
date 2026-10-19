@@ -52,6 +52,16 @@ Macro expansion and resolution form a worklist with explicit unresolved,
 in-progress, complete and failed states. Do not repeatedly scan the whole crate
 after each new item. Spans carry compact source and expansion context IDs.
 
+Written lifetime quantifiers retain lexical identity, including an explicit empty
+`for<>`. A where-clause binder owns its subject and all its bounds; a trait-position
+binder owns only that bound's arguments and associated equalities. Decode each
+shared subject once in its source context and relocate captured subject types
+with one cached structural shift. Preserve unused slots, enclosing captures and
+nested callable binders through normalized and original predicates. Never flatten
+these clauses for a consumer that only handles ordinary predicates. Local
+shorthand projections may infer bound lifetime arguments in their own body;
+signatures need explicit arguments when those quantified locals occur.
+
 ## Semantic identity and demand
 
 Intern names, types, declarations, trait goals, instances and layouts with
