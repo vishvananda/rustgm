@@ -2498,3 +2498,74 @@ control. No public assignment fixture or oracle changes. PA21 remains planned,
 including GAT requirements/normalization, opaque identities/capture, variance/drop
 integration and the semantic view with reviewed public manifests. PA22–PA25 remain
 part of the active implementation goal.
+
+
+## Sharing immutable caller clause indices
+
+Projection queries now reuse the structural trait/subject index owned by their
+immutable caller clauses. The canonical subject key and index live in `types`;
+complete matching, inference, universal opening and proof selection remain in
+`sema`. Both declaration normalization and body projection queries consume the
+same shared representation. Each query retains its own lifetime equations and
+implementation availability. No selected result or permission is cached globally.
+
+Trait clause storage uses copy-on-write ownership. An actual clause insertion or
+substitution invalidates the derived index; repeated identical insertion preserves
+it. Parameter-trait lookup belongs to that same index and is invalidated on change.
+Substitution can change coarse subject keys and collapse duplicate clauses without
+turning them into ambiguous alternatives. Existing callers retain their original
+clauses and index. Builders that alias body lifetimes or filter their clauses
+continue to construct their distinct environments.
+
+Four caller-index invariants cover shared storage, caller extension, private
+mutation, mapped subject keys, local/captured lifetimes, duplicate collapse and
+fresh evidence intervals. The existing opening control now charges initial index
+construction at widths 16/64/256/1024, then requires constant additional lookup and
+opening work. This replaces its former accounting limitation: index construction
+is no longer omitted from the query's work. Existing ambiguity, header-wait,
+refinement and separate lifetime-proof controls remain required.
+
+The immutable release candidate is
+`53ed1d132ffe33866236c380143eacb3dcb7b7ec883ca1ea125f76118671997c`,
+compared against published
+`0e2a2e0fc20619798a0d54990d14b141525eade68a1024a2891d3ac1979fe6a7`.
+Evidence is retained under
+`obj/pa21-work/family-frontier-v1/index-sharing-v1/release-v1/`.
+All thirteen frozen inputs are accepted by both compilers and produce identical
+full LowIR bytes. The experiment retains four executions per observation, A/A
+calibration, five ABBA blocks, instruction profiles and eight RSS observations
+per input. No predeclared regression or RSS threshold triggered a repeat.
+
+| Callable roots | Previous instructions | Shared-index instructions | Previous median | Candidate median | Paired wall change |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| 16 | 13.646 million | 12.672 million | 5.618 ms | 5.288 ms | -7.39% |
+| 64 | 63.837 million | 46.777 million | 15.258 ms | 12.130 ms | -21.95% |
+| 256 | 461.471 million | 182.390 million | 74.255 ms | 36.225 ms | -51.80% |
+
+The corresponding A/A spreads are 3.77%, 19.23% and 0.71%. The other ten inputs
+also reduce instruction counts, by 0.095%–15.56%; noisy wall observations remain
+in the evidence and do not establish a universal wall-time improvement.
+The callable family now grows approximately linearly over the measured widths.
+Its width-256 clause insertion work falls from 245.035 million to 2.254 million
+inclusive instructions, and `State::new` falls from 255.829 million to 2.428 million.
+These counts overlap and must not be added. The result removes the identified
+index-rebuilding quadratic path; captured-environment remapping remains separate,
+and this does not establish whole-language linearity.
+
+A paired DHAT follow-up checks the largest changed case and an ordinary control.
+At 256 callable roots, total allocation falls from 43,139,941 to 16,847,445 bytes;
+peak live allocation changes from 4,895,267 to 4,905,435 bytes (+10,168).
+The ordinary control changes by +72 total bytes and +40 peak bytes.
+The development checkpoint passes all 6,268 PA1–PA20 text cases and twelve scoped
+callable executions compared independently with rustc. Planned PA21–PA25 stages
+continue to return failure. This optimization does not release PA21 or implement
+GAT arguments, opaque types or their remaining contracts.
+
+The publication checkpoint passes 1,606 release tests, 92 native maintainer groups,
+all 6,268 PA text cases, formatting, strict Clippy, the 939-file audit and harness
+checks. PA18–PA20 add 2,900 independent source outcomes with their existing nine
+documented acceptance differences, plus 1,028 executable comparisons and three
+codegen-only checks. Fourteen builtin source/LowIR pairs match their retained
+executed identities. Candidate, source and fixture hashes are unchanged before
+and after validation. The 36 checkpoint commands take 947.34 seconds in this run;
+23.84 seconds cover the complete active PA text sweep.

@@ -409,13 +409,9 @@ fn caller_assumptions(
     context: &mut Context,
     environment: Option<&Arc<Environment>>,
 ) -> Result<Assumptions, String> {
-    let mut assumptions = Assumptions::default();
-    for clause in environment.into_iter().flat_map(|env| env.trait_clauses()) {
-        assumptions
-            .insert_clause(&facts.types, clause)
-            .map_err(inference)?;
-        context.account_work(1).map_err(inference)?;
-    }
+    let (assumptions, work) =
+        Assumptions::from_environment(&facts.types, environment.map(Arc::as_ref))?;
+    context.account_work(work).map_err(inference)?;
     Ok(assumptions)
 }
 

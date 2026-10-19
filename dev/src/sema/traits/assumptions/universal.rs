@@ -1,20 +1,12 @@
 //! Universal premises supply fresh existential instances in the requesting proof.
-use super::{
-    Assumptions, Clause, Context, Goal, HashMap, HashSet, Head, ItemId, Selection, Store,
-    alternatives, infer,
-};
+use super::{Assumptions, Clause, Context, Goal, Selection, Store, alternatives, infer};
 use crate::types::{
     RegionId,
     parameters::{clauses::QuantifiedId, predicates::Predicate},
     substitute::Bound,
 };
-use std::ops::Range;
+use std::{collections::HashMap, ops::Range};
 
-#[derive(Default)]
-pub(super) struct Index {
-    pub candidates: HashMap<(ItemId, Head), Vec<QuantifiedId>>,
-    pub seen: HashSet<QuantifiedId>,
-}
 pub(in crate::sema) struct ScopedEvidence {
     pub clause: Clause,
     pub predicate: Predicate,
@@ -96,7 +88,7 @@ impl Openings {
 }
 impl Assumptions {
     pub fn has_quantified(&self) -> bool {
-        self.quantified.is_some()
+        self.quantified().is_some()
     }
 
     /// Check an independently formed declaration requirement against caller
@@ -111,7 +103,7 @@ impl Assumptions {
     ) -> Result<bool, infer::Error> {
         context.account_work(1)?;
         let present = match source {
-            Clause::Predicate(value) => value == predicate && self.seen.contains(&value),
+            Clause::Predicate(value) => value == predicate && self.contains(value),
             Clause::ForAll(id) => self.contains_quantified(id),
         };
         if !present || first == 0 || first >= 0x8000_0000 {
@@ -126,8 +118,7 @@ impl Assumptions {
     }
 
     pub fn contains_quantified(&self, clause: QuantifiedId) -> bool {
-        self.quantified
-            .as_ref()
+        self.quantified()
             .is_some_and(|index| index.seen.contains(&clause))
     }
 
@@ -138,7 +129,7 @@ impl Assumptions {
         goal: &Goal,
         first: u32,
     ) -> Result<ScopedSelection, infer::Error> {
-        let Some(index) = &self.quantified else {
+        let Some(index) = self.quantified() else {
             return Ok(match self.select(store, context, goal)? {
                 Selection::Absent => Selection::Absent,
                 Selection::Deferred => Selection::Deferred,
@@ -160,10 +151,8 @@ impl Assumptions {
             return Ok(Selection::Deferred);
         };
         let candidates = subject.heads().flat_map(|head| {
-            self.candidates
-                .get(&(item, head))
-                .into_iter()
-                .flatten()
+            self.candidates(item, head)
+                .iter()
                 .copied()
                 .map(Clause::Predicate)
                 .chain(

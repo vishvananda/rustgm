@@ -96,7 +96,7 @@ fn open_requests_share_closed_quantified_environments_and_keep_private_aliases()
         assert!(!environment.requires_region_mapping());
         let surrounding = RegionId::bound(0, 0)?;
         let requested = predicate(&mut facts.types, width, surrounding)?;
-        for first in [100, 200, 300] {
+        for (request, first) in [100, 200, 300].into_iter().enumerate() {
             let (mut state, opened) = prepare(
                 &mut facts,
                 Some(environment.clone()),
@@ -115,10 +115,11 @@ fn open_requests_share_closed_quantified_environments_and_keep_private_aliases()
                 state.obligations.equalities,
                 [(RegionId(first), surrounding)]
             );
-            assert_eq!(
-                *opening_work.get_or_insert(state.context.steps),
-                state.context.steps
-            );
+            // Index construction is charged once, including all caller clauses.
+            // Later queries only borrow that index and perform their own opening.
+            let construction = if request == 0 { width as usize } else { 0 };
+            let query_work = state.context.steps - construction;
+            assert_eq!(*opening_work.get_or_insert(query_work), query_work);
             // The request cannot become a caller assumption merely by opening it.
             assert_absent(&mut facts, &mut state, opened)
                 .map_err(|_| "invalid scoped assumption lookup")?;

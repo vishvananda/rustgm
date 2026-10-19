@@ -8,13 +8,12 @@ use crate::types::{
     parameters::{
         ParameterId,
         clauses::Clause,
+        environment::Environment,
         predicates::{Bound, Predicate},
+        premise_index::{ClauseIndex, QuantifiedIndex},
     },
 };
-use std::{
-    collections::{HashMap, HashSet},
-    sync::OnceLock,
-};
+use std::sync::Arc;
 pub(in crate::sema) use universal::{Openings, ScopedEvidence, ScopedSelection};
 #[cfg(test)]
 #[path = "../../../tests/invariants/declaration_assumptions.rs"]
@@ -24,10 +23,7 @@ mod tests;
 
 #[derive(Default)]
 pub(in crate::sema) struct Assumptions {
-    candidates: HashMap<(ItemId, Head), Vec<Predicate>>,
-    seen: HashSet<Predicate>,
-    parameter_traits: OnceLock<HashMap<ParameterId, Vec<ItemId>>>,
-    quantified: Option<Box<universal::Index>>,
+    index: Option<Arc<ClauseIndex>>,
 }
 
 /// Equations against this actual caller assumption have been committed to inference.
@@ -65,50 +61,55 @@ impl Assumptions {
                 .ok_or(infer::Error::InvalidIdentity)?,
         );
         if self
-            .quantified
-            .as_ref()
+            .quantified()
             .is_some_and(|index| index.candidates.contains_key(&(application.item, head)))
         {
             return Ok(None);
         }
-        Ok(self
-            .candidates
-            .get(&(application.item, head))
-            .filter(|candidates| candidates.as_slice() == [predicate])
-            .map(|_| Evidence(predicate)))
+        Ok((self.candidates(application.item, head) == [predicate]).then_some(Evidence(predicate)))
     }
     pub(super) fn may_have_subject(&self, item: ItemId, subject: Subject) -> bool {
         subject.heads().any(|head| {
-            self.candidates.contains_key(&(item, head))
+            !self.candidates(item, head).is_empty()
                 || self
-                    .quantified
-                    .as_ref()
+                    .quantified()
                     .is_some_and(|index| index.candidates.contains_key(&(item, head)))
         })
     }
     pub fn parameter_traits(&self, parameter: ParameterId) -> &[ItemId] {
-        self.parameter_traits
-            .get_or_init(|| {
-                let mut index: HashMap<ParameterId, Vec<ItemId>> = HashMap::new();
-                for &(item, head) in self.candidates.keys() {
-                    if let Head::Parameter(parameter) = head {
-                        index.entry(parameter).or_default().push(item);
-                    }
-                }
-                if let Some(quantified) = &self.quantified {
-                    for &(item, head) in quantified.candidates.keys() {
-                        if let Head::Parameter(parameter) = head
-                            && !self.candidates.contains_key(&(item, head))
-                        {
-                            index.entry(parameter).or_default().push(item);
-                        }
-                    }
-                }
-                index
-            })
-            .get(&parameter)
+        self.index
+            .as_ref()
+            .map_or(&[], |index| index.parameter_traits(parameter))
+    }
+
+    pub fn from_environment(
+        store: &Store,
+        environment: Option<&Environment>,
+    ) -> Result<(Self, usize), &'static str> {
+        let Some(environment) = environment else {
+            return Ok((Self::default(), 0));
+        };
+        let (index, work) = environment.trait_index(store)?;
+        Ok((Self { index }, work))
+    }
+
+    fn candidates(&self, item: ItemId, head: Head) -> &[Predicate] {
+        self.index
+            .as_ref()
+            .and_then(|index| index.candidates.get(&(item, head)))
             .map_or(&[], Vec::as_slice)
     }
+    fn quantified(&self) -> Option<&QuantifiedIndex> {
+        self.index
+            .as_ref()
+            .and_then(|index| index.quantified.as_deref())
+    }
+    fn contains(&self, predicate: Predicate) -> bool {
+        self.index
+            .as_ref()
+            .is_some_and(|index| index.seen.contains(&predicate))
+    }
+
     /// Canonical goals keep caller parameters rigid. Any resulting region equations
     /// remain obligations of the caller's declaration or body lifetime proof.
     pub fn prove_canonical(
@@ -128,59 +129,7 @@ impl Assumptions {
     }
 
     pub fn insert_clause(&mut self, store: &Store, clause: Clause) -> Result<(), infer::Error> {
-        let predicate = match clause {
-            Clause::Predicate(predicate) => predicate,
-            Clause::ForAll(id) => {
-                store
-                    .quantified(id)
-                    .ok_or(infer::Error::InvalidIdentity)?
-                    .predicate
-            }
-        };
-        let Bound::Trait(id) = predicate.bound else {
-            return Err(infer::Error::InvalidIdentity);
-        };
-        let application = store
-            .trait_application(id)
-            .ok_or(infer::Error::InvalidIdentity)?;
-        if self
-            .seen
-            .len()
-            .saturating_add(self.quantified.as_ref().map_or(0, |index| index.seen.len()))
-            >= 1_000_000
-        {
-            return Err(infer::Error::Budget);
-        }
-        if let Clause::ForAll(id) = clause {
-            let head = Head::canonical(
-                store
-                    .kind(predicate.ty)
-                    .ok_or(infer::Error::InvalidIdentity)?,
-            );
-            let index = self.quantified.get_or_insert_with(Default::default);
-            if index.seen.insert(id) {
-                self.parameter_traits.take();
-                index
-                    .candidates
-                    .entry((application.item, head))
-                    .or_default()
-                    .push(id);
-            }
-            return Ok(());
-        }
-        if self.seen.insert(predicate) {
-            self.parameter_traits.take();
-            let head = Head::canonical(
-                store
-                    .kind(predicate.ty)
-                    .ok_or(infer::Error::InvalidIdentity)?,
-            );
-            self.candidates
-                .entry((application.item, head))
-                .or_default()
-                .push(predicate);
-        }
-        Ok(())
+        Arc::make_mut(self.index.get_or_insert_with(Default::default)).insert_clause(store, clause)
     }
 
     /// A declaration's own exact bound needs equations only when alternatives exist.
@@ -192,7 +141,7 @@ impl Assumptions {
         predicate: Predicate,
     ) -> Result<bool, infer::Error> {
         context.account_work(1)?;
-        if self.quantified.is_some() || !self.seen.contains(&predicate) {
+        if self.quantified().is_some() || !self.contains(predicate) {
             return Err(infer::Error::InvalidIdentity);
         }
         let Bound::Trait(id) = predicate.bound else {
@@ -206,11 +155,7 @@ impl Assumptions {
                 .kind(predicate.ty)
                 .ok_or(infer::Error::InvalidIdentity)?,
         );
-        if self
-            .candidates
-            .get(&(application.item, head))
-            .is_some_and(|candidates| candidates.len() == 1)
-        {
+        if self.candidates(application.item, head).len() == 1 {
             return Ok(true);
         }
         let mut substitution = infer::Instantiation::new(context, store, &[])?;
@@ -240,7 +185,7 @@ impl Assumptions {
         context: &mut Context,
         goal: &Goal,
     ) -> Result<Selection, infer::Error> {
-        if self.quantified.is_some() {
+        if self.quantified().is_some() {
             return Err(infer::Error::InvalidIdentity);
         }
         context.account_work(1)?;
@@ -256,7 +201,7 @@ impl Assumptions {
             goal,
             subject
                 .heads()
-                .flat_map(|head| self.candidates.get(&(item, head)).into_iter().flatten())
+                .flat_map(|head| self.candidates(item, head).iter())
                 .copied(),
             |_, _, predicate| Ok((predicate, Evidence(predicate))),
             |_, _, _, _| Ok(false),

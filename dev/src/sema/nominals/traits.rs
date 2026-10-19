@@ -94,7 +94,11 @@ impl State {
                 .map_err(|_| "declaration proof work exhausted")?;
             fold = Some(substitution);
         }
-        let assumptions = Self::assumptions(facts, environment.as_deref())?;
+        let (assumptions, construction_work) =
+            Assumptions::from_environment(&facts.types, environment.as_deref())?;
+        context
+            .account_work(construction_work)
+            .map_err(|_| "declaration assumption work exhausted")?;
         Ok(Self {
             normalized: std::collections::HashMap::new(),
             assumptions,
@@ -108,19 +112,6 @@ impl State {
             quantified: None,
             terms: None,
         })
-    }
-
-    fn assumptions(
-        facts: &Declarations,
-        environment: Option<&Environment>,
-    ) -> Result<Assumptions, &'static str> {
-        let mut assumptions = Assumptions::default();
-        for clause in environment.iter().flat_map(|env| env.trait_clauses()) {
-            assumptions
-                .insert_clause(&facts.types, clause)
-                .map_err(|_| "invalid declaration trait assumption index")?;
-        }
-        Ok(assumptions)
     }
 
     pub fn prove(

@@ -1,5 +1,6 @@
 //! Shared rigid subject keys for caller assumptions and implementation headers.
-use crate::types::{ItemId, Kind, Primitive, infer::Constructor};
+pub(in crate::sema) use crate::types::subject_head::Head;
+use crate::types::{Primitive, infer::Constructor};
 
 #[derive(Clone, Copy)]
 pub(super) enum Subject {
@@ -39,39 +40,7 @@ impl Subject {
     }
 }
 
-/// Coarse candidate keys exclude lifetimes and children; complete equations still prove equality.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
-pub(in crate::sema) enum Head {
-    Primitive(Primitive),
-    Parameter(crate::types::parameters::ParameterId),
-    Projection(ItemId),
-    Nominal(ItemId),
-    FunctionItem(ItemId),
-    Reference(bool),
-    Pointer(bool),
-    Tuple,
-    Array,
-    Slice,
-    Function,
-    Never,
-}
 impl Head {
-    pub const fn canonical(kind: Kind) -> Self {
-        match kind {
-            Kind::Primitive(p) => Self::Primitive(p),
-            Kind::Parameter(id) => Self::Parameter(id),
-            Kind::Projection(application) => Self::Projection(application.item),
-            Kind::Adt(item, _) => Self::Nominal(item),
-            Kind::FunctionItem { item, .. } => Self::FunctionItem(item),
-            Kind::Reference { mutable, .. } => Self::Reference(mutable),
-            Kind::Pointer { mutable, .. } => Self::Pointer(mutable),
-            Kind::Tuple(_) => Self::Tuple,
-            Kind::Array { .. } | Kind::ArrayTerm { .. } => Self::Array,
-            Kind::Slice(_) => Self::Slice,
-            Kind::Function { .. } => Self::Function,
-            Kind::Never => Self::Never,
-        }
-    }
     pub const fn inferred(kind: Constructor) -> Self {
         match kind {
             Constructor::Primitive(p) => Self::Primitive(p),

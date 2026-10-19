@@ -37,7 +37,7 @@ pub struct Environment {
     assumptions: Option<Box<Assumptions>>,
     builtins: Option<Arc<permissions::Index>>,
     regions: Option<Arc<crate::types::relations::RegionEqualities>>,
-    traits: Option<Box<TraitAssumptions>>,
+    traits: Option<Arc<TraitAssumptions>>,
     equalities: Option<Box<equalities::Equalities>>,
     projection_promises:
         Option<std::sync::Arc<HashMap<crate::types::ItemId, crate::types::projection::Builtins>>>,
@@ -111,7 +111,7 @@ impl Environment {
                 .collect::<Result<_, _>>()?;
         }
         if let Some(traits) = &mut result.traits {
-            traits.substitute(types, fold)?;
+            Arc::make_mut(traits).substitute(types, fold)?;
         }
         if let Some(builtins) = &result.builtins {
             result.builtins = Some(Arc::new(builtins.substitute(types, fold)?));
@@ -224,7 +224,7 @@ impl Environment {
             ) {
                 return Err("const parameter environment requires declared const parameters");
             }
-            let traits = self.traits.get_or_insert_with(Default::default);
+            let traits = Arc::make_mut(self.traits.get_or_insert_with(Default::default));
             if traits.constants.len() >= 1_000_000 && !traits.constants.contains(&id) {
                 return Err("const parameter environment storage budget exceeded");
             }
@@ -297,8 +297,7 @@ impl Environment {
                             .get_or_insert_with(Default::default)
                             .insert(types, clause)?;
                     } else {
-                        self.traits
-                            .get_or_insert_with(Default::default)
+                        Arc::make_mut(self.traits.get_or_insert_with(Default::default))
                             .insert(types, clause)?;
                     }
                 }
@@ -333,9 +332,7 @@ impl Environment {
                 .insert(types, Clause::Predicate(predicate));
         }
         if matches!(predicate.bound, Bound::Trait(_)) {
-            return self
-                .traits
-                .get_or_insert_with(Default::default)
+            return Arc::make_mut(self.traits.get_or_insert_with(Default::default))
                 .insert(types, Clause::Predicate(predicate));
         }
         if matches!(predicate.bound, Bound::Outlives(_)) {
@@ -368,6 +365,19 @@ impl Environment {
             parameter.clone_ |= properties.clone_;
         }
         Ok(())
+    }
+
+    /// Share structural lookup data; inference and proof remain query-local.
+    pub(crate) fn trait_index(
+        &self,
+        types: &Store,
+    ) -> Result<(Option<Arc<super::premise_index::ClauseIndex>>, usize), &'static str> {
+        self.traits
+            .as_ref()
+            .filter(|traits| !traits.is_empty())
+            .map_or(Ok((None, 0)), |traits| {
+                traits.index(types).map(|(index, work)| (Some(index), work))
+            })
     }
 
     /// Exact retained clauses, in declaration order. No implicit binder opening

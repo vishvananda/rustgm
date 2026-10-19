@@ -20,6 +20,7 @@ pub mod relations;
 pub(crate) mod shape_key;
 pub mod specialize;
 pub(crate) mod structural;
+pub(crate) mod subject_head;
 pub mod substitute;
 pub mod traits;
 pub mod variance;

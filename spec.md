@@ -963,7 +963,13 @@ probe's equations are fixed and under its immutable environment.
 
 Impl applicability shares complete trait-goal equations with body checking. Cache
 caller assumption indexes once per scope, normalizing body lifetime aliases before
-indexing. A missing match for a rigid goal excludes a candidate; unresolved evidence
+indexing. Immutable caller clauses own their structural trait/subject index; repeated
+projection queries share it while retaining separate inference, lifetime openings
+and proofs. Charge construction once and each lookup separately. Extending or
+substituting clauses invalidates derived indices, including parameter-trait lookup;
+copy-on-write updates must preserve every existing caller's permissions. Coarse
+subject keys never substitute for complete-goal matching or selected evidence.
+A missing match for a rigid goal excludes a candidate; unresolved evidence
 may remain possible until the selected call has all argument/result constraints.
 Only proved evidence authorizes a body operation. Canonical nominal and trait
 argument requirements use the same complete-goal matcher under rigid caller

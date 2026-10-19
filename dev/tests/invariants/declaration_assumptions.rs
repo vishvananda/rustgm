@@ -8,6 +8,9 @@ use crate::types::{
     traits::Application,
 };
 
+#[path = "indexed_callers.rs"]
+mod indexed_callers;
+
 type TestResult = Result<(), Box<dyn std::error::Error>>;
 const BYTE: TypeId = TypeId::primitive(Primitive::U8);
 

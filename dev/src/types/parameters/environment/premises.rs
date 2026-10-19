@@ -1,12 +1,17 @@
 //! Ordered trait clauses retain binders without widening each ordinary predicate.
+use super::super::premise_index::ClauseIndex;
 use super::{Bound, Clause, ParameterId, Predicate};
 use crate::types::{ItemId, Kind, Store, parameters::clauses::QuantifiedId, substitute};
-use std::collections::{HashMap, HashSet};
+use std::{
+    collections::{HashMap, HashSet},
+    sync::{Arc, OnceLock},
+};
 
 type ProjectionKey = (ItemId, ItemId);
 
 #[derive(Clone, Default)]
 pub(super) struct TraitAssumptions {
+    index: OnceLock<Result<Arc<ClauseIndex>, &'static str>>,
     predicates: Vec<Predicate>,
     pub unique: HashSet<Predicate>,
     pub constants: HashSet<ParameterId>,
@@ -37,6 +42,24 @@ fn projection(types: &Store, predicate: Predicate) -> Result<Option<ProjectionKe
 }
 
 impl TraitAssumptions {
+    pub fn index(&self, types: &Store) -> Result<(Arc<ClauseIndex>, usize), &'static str> {
+        let mut work = 1;
+        let index = self
+            .index
+            .get_or_init(|| {
+                let mut index = ClauseIndex::default();
+                for clause in self.clauses() {
+                    work += 1;
+                    index
+                        .insert_clause(types, clause)
+                        .map_err(|_| "invalid caller trait assumption index")?;
+                }
+                Ok(Arc::new(index))
+            })
+            .clone()?;
+        Ok((index, work))
+    }
+
     pub fn is_empty(&self) -> bool {
         self.predicates.is_empty()
             && self
@@ -53,6 +76,7 @@ impl TraitAssumptions {
                     return Err("trait assumption storage budget exceeded");
                 }
                 if self.unique.insert(predicate) {
+                    self.index.take();
                     if let Some(key) = projection(types, predicate)? {
                         self.projected
                             .entry(key)
@@ -74,6 +98,7 @@ impl TraitAssumptions {
                     return Err("trait assumption storage budget exceeded");
                 }
                 if quantified.unique.insert(id) {
+                    self.index.take();
                     if let Some(key) = projection(types, value.predicate)? {
                         quantified.projected.entry(key).or_default().push(id);
                     }
@@ -113,6 +138,7 @@ impl TraitAssumptions {
         types: &mut Store,
         fold: &mut substitute::Bound,
     ) -> Result<(), &'static str> {
+        self.index.take();
         // Traverse mixed declaration order: fresh captured aliases must not depend
         // on storage kind, randomized hash order or duplicate canonical results.
         let mut position = 0;
