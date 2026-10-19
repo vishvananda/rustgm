@@ -510,9 +510,12 @@ same scope use disjoint fresh intervals and share the directed proof. Local
 annotations instead retain obligations in the body's allocator and ordinary
 lifetime gate; they must not append to a declaration gate that has already run.
 Keep plain, closed projection queries off the lifetime-fold allocation path.
-Parameter-only environments also need no binder mapping when the projection has
-no surrounding lifetime occurrences. Composite and trait predicates still pass
-through the shared checked substitution.
+Opening a request does not require copying an immutable caller environment whose
+retained region summary certifies that no surrounding lifetime can change. Share
+that environment even when the request needs private aliases; nested local binders
+keep their identities. Caller environments with captured lifetimes still use the
+same checked substitution as the request and retain its restoration equations.
+Sharing permissions never adds the requested goal to the caller's assumptions.
 
 Projection selection in a signature waits for its owner's immutable parameter
 environment, including requirements inherited by methods. Generic lifetime

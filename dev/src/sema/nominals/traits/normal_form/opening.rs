@@ -2,6 +2,9 @@
 use super::{Availability, Declarations, Environment, Obligations, Predicate, State};
 use crate::types::substitute::Bound;
 use std::sync::Arc;
+#[cfg(test)]
+#[path = "../../../../../tests/invariants/closed_callers.rs"]
+mod tests;
 
 pub(super) fn prepare(
     facts: &mut Declarations,
@@ -26,8 +29,13 @@ pub(super) fn prepare(
     let requirement = fold.predicate(&mut facts.types, requirement)?;
     let environment = environment
         .map(|env| {
-            env.substitute_regions(&mut facts.types, &mut fold)
-                .map(Arc::new)
+            if env.requires_region_mapping() {
+                env.substitute_regions(&mut facts.types, &mut fold)
+                    .map(Arc::new)
+            } else {
+                // Opening the request does not change a closed caller environment.
+                Ok(env)
+            }
         })
         .transpose()?;
     let mut state = State::new(facts, environment, None)?;

@@ -2374,3 +2374,55 @@ once for the final candidate. PA21–PA25 remain planned and return status 2.
 Remaining PA21 work includes environment sharing, projected premise conditions,
 GATs, opaque identities/capture, variance/drop integration, and the public semantic
 view with reviewed manifests and oracles. PA22–PA25 follow that release.
+
+## Sharing closed caller environments during projection opening
+
+Projection opening now treats the request and caller environment independently.
+A request that needs fresh lifetime aliases reuses the caller's original Arc when
+the retained environment summary proves that no outer lifetime can change.
+Quantified local binders remain intact, and request opening does not create a new
+caller assumption. Environments with captured lifetimes still use the same checked
+mapping as the request and retain its restoration equations.
+
+Two typed invariants cover shared environments at widths 16/64/256/1024, independent
+request intervals, preserved clauses, absent requested permissions, and captured
+environments requiring a distinct mapped value. Their constant-work assertion
+measures charged substitution work; it does not include rebuilding the semantic
+assumption index in `State::new`.
+
+The immutable candidate is
+`b3f3cda9eae009af3c19b69c66bf35982a1dfd268716e7e4f6c144885dd325f8`,
+with evidence in `obj/pa21-work/closed-environments-v1/candidate-v1/`.
+The development sweep passes all 6,268 PA1–PA20 text cases in 10.5 seconds.
+All 18 frozen scaling sources produce exactly the published LowIR bytes. Their
+prior CPPGM/rustc execution evidence is linked by exact source/output hashes;
+this development comparison does not claim 18 fresh native executions.
+
+Seven focused A/B measurements compare with published 3177cbae (`e01b1e79…`).
+They retain A/A calibration, five paired ABBA blocks, four executions per
+observation, Callgrind counts, eight RSS observations, and exact output equality.
+Quantified-wide widths 16/64/256 reduce instructions by 6.85%/19.38%/33.44%, and
+paired wall medians by 6.01%/16.05%/31.91%; their A/A spreads are 3.22%/2.87%/6.05%.
+The width-256 candidate median is 116.95 ms. Ordinary captured-lifetime equality
+controls and the ordinary width-256 control remain essentially unchanged. RSS median
+differences range −126 to +510 KiB; no predeclared follow-up threshold is triggered.
+
+The quantified width-256 profile reduces opening to 105.2 million instructions (14.14%
+of the total); `State::new` still accounts for 103.98 million (13.97%) while rebuilding
+the assumption index. These inclusive counts overlap. Ordinary captured caller
+environments still need repeated mapping. This establishes reduced work for
+closed environments, not linearity of the complete projection path.
+
+The complete checkpoint passes all 37 checks: 1,591 regular release tests,
+92 native maintainer groups, all 6,268 active text cases, strict Clippy,
+the 929-file audit, formatting, harness checks and audit self-tests. Independent
+PA18–PA20 checks cover 2,900 source outcomes with their documented stage
+differences, 1,028 executable comparisons and three codegen-only comparisons.
+Fourteen builtin source/LowIR outputs retain their previously executed hashes.
+The exact frozen source, fixture and CLI identities match before and after
+qualification. The checkpoint took 708.0 seconds, including 383.4 seconds for
+regular release tests and 159.3 seconds for native maintainer validation.
+
+PA21 remains unreleased. Remaining work includes scoped projected conditions,
+GAT requirements and normalization, opaque identities/capture, variance/drop
+integration, and reviewed public semantic oracles. PA22–PA25 remain planned.
