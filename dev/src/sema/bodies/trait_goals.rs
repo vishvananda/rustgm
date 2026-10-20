@@ -23,27 +23,58 @@ impl Checker<'_> {
             .state
             .canonical_trait_inference
             .get_or_insert_with(Default::default);
-        let mut substitution =
-            crate::types::infer::Instantiation::new(context, &self.facts.types, &[]).map_err(
-                |e| crate::sema::model::Declarations::error(self.report, key, e.to_string()),
-            )?;
-        let goal = context
-            .instantiate_predicate(&mut self.facts.types, predicate, &mut substitution)
-            .map_err(|e| {
+        let enabled = matches!(
+            self.availability,
+            crate::sema::traits::implementations::Availability::Validated
+        ) && self.facts.types.nominal_sizes_sealed();
+        if enabled
+            && self.state.canonical_trait_proofs.is_none()
+            && self.facts.types.contains_projected_sizes(predicate.ty) == Some(true)
+        {
+            self.state.canonical_trait_proofs = Some(Box::default());
+        }
+        let reuse = if enabled {
+            self.state.canonical_trait_proofs.as_deref_mut()
+        } else {
+            None
+        };
+        let cached = reuse
+            .as_ref()
+            .and_then(|reuse| reuse.selection(predicate, first_region));
+        let evidence = if let Some(cached) = cached {
+            context.account_work(1).map_err(|e| {
                 crate::sema::model::Declarations::error(self.report, key, e.to_string())
             })?;
-        let evidence = selection::select_available(
-            self.facts,
-            context,
-            &goal,
-            Caller {
+            Ok(cached)
+        } else {
+            let mut substitution =
+                crate::types::infer::Instantiation::new(context, &self.facts.types, &[]).map_err(
+                    |e| crate::sema::model::Declarations::error(self.report, key, e.to_string()),
+                )?;
+            let goal = context
+                .instantiate_predicate(&mut self.facts.types, predicate, &mut substitution)
+                .map_err(|e| {
+                    crate::sema::model::Declarations::error(self.report, key, e.to_string())
+                })?;
+            let caller = Caller {
                 assumptions: &assumptions,
                 environment: self.state.method_environment.as_ref(),
                 first_region,
                 retain_sized: false,
-            },
-            self.availability,
-        );
+            };
+            if let Some(reuse) = reuse {
+                selection::select_reusing(
+                    self.facts,
+                    context,
+                    &goal,
+                    caller,
+                    (self.availability, false),
+                    reuse,
+                )
+            } else {
+                selection::select_available(self.facts, context, &goal, caller, self.availability)
+            }
+        };
         let equalities = std::mem::take(&mut context.region_equalities);
         let Selection::Proven(evidence) = evidence.map_err(|e| self.error(node, e))? else {
             return Err(self.error(

@@ -2894,6 +2894,24 @@ Shape queries preserve one frontier across a size dependency. An internal
 failure releases that frontier while keeping completed independent results;
 an invalid resume request must not discard a legitimate pending query.
 
+Hidden projected `Sized` requirements descend on the requesting trait search's
+own work stack. Carry the child selection's scope, allocator frontier and complete
+evidence into the parent result. A separate synchronous sizedness query must not
+invent a new caller lifetime namespace or discard the projection's debts.
+
+Related canonical roots may share completed concrete trait proofs within one
+fixed environment, implementation availability and builtin-retention mode.
+Export a proof only when its entire selected graph is free of private witnesses,
+lifetime constraints, retained builtin requirements, provisional sizes and
+assumption-selected branches. Preserve the ordinary proof path otherwise.
+Cache completed child proofs as well as roots; caching only roots still repeats
+every suffix of a nested requirement chain. Check completion once when adding
+each proof node rather than rescanning descendant evidence for each export.
+The enclosing normalizer's delegated input authority is not a reusable root
+proof. Member-parent selections stay local until their formation evidence is
+attached. Body checking can retain eligible completed facts across normalization
+sessions while each session continues to own its distinct lifetime evidence.
+
 Built-in struct unsizing changes only parameters confined to its final field.
 Several type or const parameters may change. Normalize and prove the actual
 field conversion; associated-type marker arguments need not themselves unsize.

@@ -116,9 +116,13 @@ impl Frame {
         Ok(child)
     }
     pub(super) fn available_region(&self) -> u32 {
-        self.normalization
+        let first = self
+            .normalization
             .as_ref()
-            .map_or(self.first, |normalization| normalization.end)
+            .map_or(self.first, |normalization| normalization.end);
+        self.storage
+            .as_ref()
+            .map_or(first, |storage| first.max(storage.end))
     }
     pub(super) fn normalizing(&self) -> bool {
         self.normalization

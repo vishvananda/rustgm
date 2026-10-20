@@ -77,6 +77,9 @@ impl Query {
                 );
             }
         }
+        if let Some(active) = &mut self.reuse {
+            active.push(&node, scope);
+        }
         self.nodes.push(node);
         index
     }

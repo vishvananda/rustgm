@@ -149,7 +149,7 @@ impl State {
             sizes::Progress::Ready {
                 provisional: true, ..
             }
-            | sizes::Progress::Fields(_) => {
+            | sizes::Progress::Fields => {
                 Err("final nominal size proof cannot retain provisional fields")
             }
         }

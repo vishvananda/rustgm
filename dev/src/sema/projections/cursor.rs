@@ -13,6 +13,11 @@ use crate::{
 };
 use std::{collections::HashMap, sync::Arc};
 
+/// Concrete proofs without debts can outlive a single normalization's witnesses.
+/// The owner must retain the same environment and implementation availability.
+#[derive(Default)]
+pub(in crate::sema) struct Completed(HashMap<u16, crate::sema::traits::selection::Reuse>);
+
 #[derive(Debug, PartialEq, Eq)]
 pub(in crate::sema) enum Progress {
     Complete { ty: TypeId, steps: usize },
@@ -42,6 +47,7 @@ pub(in crate::sema) struct Cursor {
     fold: Normalizer,
     scopes: Vec<ScopeId>,
     environments: HashMap<u16, Option<Arc<Environment>>>,
+    reusable: Completed,
     step: Option<Step>,
     selected: Option<Box<Selected>>,
     header: Option<Header>,
@@ -62,6 +68,7 @@ impl Cursor {
             fold: Normalizer::default(),
             scopes: Vec::new(),
             environments: HashMap::new(),
+            reusable: Completed::default(),
             step: None,
             selected: None,
             header: None,
@@ -76,6 +83,10 @@ impl Cursor {
         self.before = self.fold.steps();
         self.step = Some(self.fold.start(&mut facts.types, ty)?);
         Ok(())
+    }
+
+    pub fn exchange_completed(&mut self, completed: &mut Completed) {
+        std::mem::swap(&mut self.reusable, completed);
     }
 
     pub fn allocation_end(&self, proof: &Obligations) -> u32 {
@@ -150,13 +161,22 @@ impl Cursor {
                     continue;
                 }
                 let environment = self.environment(facts, request.depth)?;
-                normal_form::begin(
+                let reuse = if facts.types.nominal_sizes_sealed()
+                    && request.alias.associated().is_some_and(|application| {
+                        facts.types.contains_projected_sizes(application.subject) == Some(true)
+                    }) {
+                    Some(self.reusable.0.entry(request.depth).or_default())
+                } else {
+                    None
+                };
+                normal_form::begin_reusing(
                     facts,
                     environment,
                     request,
                     proof.regions.end,
                     false,
                     self.availability,
+                    reuse,
                 )?
             };
             let projected = match progress {

@@ -7,6 +7,7 @@ use crate::{
 };
 
 pub(super) struct Frame {
+    pub storage: Option<Box<super::sized_obligations::Pending>>,
     pub formation: Option<Box<super::member_conditions::Formation>>,
     pub normalization: Option<Box<super::normalization::Normalization>>,
     /// A suspended normalizer has proved these inputs in this search's scope.
@@ -65,6 +66,7 @@ impl Frame {
             .initialize_predicate(&facts.types, source, goal)
             .map_err(inference)?;
         Ok(Self {
+            storage: None,
             formation: None,
             normalization: None,
             normalized_inputs: None,
@@ -158,8 +160,9 @@ impl Search<'_> {
                 .contains_projections(ty)
                 .ok_or("missing builtin subject")?
                 || bound == Bound::Sized
-                    && !facts.types.nominal_sizes_sealed()
-                    && facts.types.contains_nominals(ty) == Some(true)
+                    && (facts.types.contains_projected_sizes(ty) == Some(true)
+                        || !facts.types.nominal_sizes_sealed()
+                            && facts.types.contains_nominals(ty) == Some(true))
             {
                 trial.pending.push(index);
                 trial.requirements = Some(Box::new(requirements));

@@ -17,7 +17,7 @@ use crate::{
         substitute::Request,
     },
 };
-pub(super) use cursor::{Cursor, Progress};
+pub(super) use cursor::{Completed, Cursor, Progress};
 pub(super) use selected::Definition;
 use std::sync::Arc;
 
@@ -51,14 +51,33 @@ pub(super) fn normalize(
     ty: TypeId,
     availability: Availability,
 ) -> Result<(TypeId, usize), &'static str> {
-    Session::new(
+    normalize_reusing(facts, environment, proof, ambient, ty, availability, None)
+}
+
+pub(super) fn normalize_reusing(
+    facts: &mut Declarations,
+    environment: Option<&Arc<Environment>>,
+    proof: &mut Obligations,
+    ambient: ScopeId,
+    ty: TypeId,
+    availability: Availability,
+    mut completed: Option<&mut Completed>,
+) -> Result<(TypeId, usize), &'static str> {
+    let mut session = Session::new(
         environment.cloned(),
         proof,
         ambient,
         availability,
         |_, _| Ok(None),
-    )?
-    .normalize(facts, ty)
+    )?;
+    if let Some(completed) = completed.as_deref_mut() {
+        session.cursor.exchange_completed(completed);
+    }
+    let result = session.normalize(facts, ty);
+    if let Some(completed) = completed {
+        session.cursor.exchange_completed(completed);
+    }
+    result
 }
 
 /// Completed roots share work only within one fixed environment, proof scope,

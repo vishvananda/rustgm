@@ -12,7 +12,7 @@ type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 const BYTE: TypeId = TypeId::primitive(Primitive::U8);
 const STR: TypeId = TypeId::primitive(Primitive::Str);
 fn steps(search: &Search<'_>) -> usize {
-    search.query.sizes.as_ref().map_or(0, |query| query.steps)
+    search.query.storage_steps
 }
 
 fn define(facts: &mut Declarations, item: ItemId, tail: TypeId) -> Result {

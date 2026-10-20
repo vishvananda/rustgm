@@ -2,6 +2,8 @@
 mod allocations;
 mod builtins;
 mod callable_queries;
+mod completed_proofs;
+pub(in crate::sema) use completed_proofs::Reuse;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/erased_formation.rs"]
 mod callable_tests;
@@ -33,10 +35,17 @@ mod result_bounds;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/contract_evidence.rs"]
 mod result_tests;
+#[cfg(test)]
+#[path = "../../../../tests/invariants/reused_selections.rs"]
+mod reused_selection_tests;
 mod scopes;
+#[cfg(test)]
+#[path = "../../../../tests/invariants/size_evidence.rs"]
+mod size_evidence_tests;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/size_readiness.rs"]
 mod size_tests;
+mod sized_obligations;
 mod suspension;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/universal_inference.rs"]
@@ -103,6 +112,7 @@ pub(super) fn prove(
     caller: Caller<'_>,
     availability: super::Availability,
     normalized_inputs: bool,
+    reuse: Option<&mut Reuse>,
 ) -> Result<Selection, String> {
     let mut first = Frame::new(facts, context, goal, caller.first_region)?;
     if normalized_inputs {
@@ -111,7 +121,24 @@ pub(super) fn prove(
         first.normalized_inputs = Some(frames::NormalizedInputs { proof: None });
     }
     let mut search = Search::new(caller, availability);
-    let decision = search.run(facts, first)?;
+    // Only completed declaration schemas may support reusable physical conditions.
+    if reuse.is_some() && !facts.types.nominal_sizes_sealed() {
+        return Err("proof reuse requires sealed nominal sizes".into());
+    }
+    let mut reuse = reuse;
+    if let Some(reuse) = reuse.as_deref_mut() {
+        search.query.reuse = Some(completed_proofs::Active::new(std::mem::take(reuse)));
+    }
+    let decision = search.run(facts, first);
+    if !normalized_inputs && let Ok(decision) = &decision {
+        search.query.export_completed(facts, *decision)?;
+    }
+    if let Some(reuse) = reuse
+        && let Some(active) = search.query.reuse.take()
+    {
+        *reuse = active.reuse;
+    }
+    let decision = decision?;
     search.result(facts, context, goal, decision)
 }
 
@@ -416,6 +443,9 @@ impl Search<'_> {
                     self.query.reused |= matches!(decision, Decision::Proven(_));
                     return Ok(Some(decision));
                 }
+                if let Some(decision) = self.query.reuse_completed(frame, goal) {
+                    return Ok(Some(decision));
+                }
                 let (key, work) = facts.types.shape_key(goal)?;
                 frame.inputs.context.account_work(work).map_err(inference)?;
                 if !self.query.active.insert(key) {
@@ -440,6 +470,9 @@ impl Search<'_> {
         }
         if frame.normalizing() {
             return self.accept_normalization(facts, frame, decision);
+        }
+        if frame.storage.is_some() {
+            return self.accept_storage(frame, decision);
         }
         let trial = frame
             .trial

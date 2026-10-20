@@ -71,6 +71,7 @@ impl Checker<'_> {
         let mut environment = self.facts.generics.environments.get(&owner).cloned();
         self.state.trait_environment = None;
         self.state.canonical_trait_inference = None;
+        self.state.canonical_trait_proofs = None;
         // Body calls express caller universals as free aliases. Add the same
         // assumptions in that context before either query cache is constructed.
         // Original subjects remain available for declaration-context annotations.

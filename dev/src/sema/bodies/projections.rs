@@ -66,6 +66,7 @@ impl Continuation {
     }
 }
 struct Data {
+    completed: Option<Box<crate::sema::projections::Completed>>,
     scopes: Obligations,
     continuation: Option<Continuation>,
     environment: std::cell::OnceCell<
@@ -81,6 +82,7 @@ struct Data {
 impl Default for Data {
     fn default() -> Self {
         Self {
+            completed: None,
             scopes: Obligations::new(1),
             continuation: None,
             environment: std::cell::OnceCell::new(),
@@ -669,13 +671,30 @@ impl Checker<'_> {
             return Ok(result);
         }
         let environment = self.projection_environment(node)?;
-        let (result, steps) = crate::sema::projections::normalize(
+        let reusable = cacheable
+            && matches!(
+                self.availability,
+                crate::sema::traits::implementations::Availability::Validated
+            )
+            && self.facts.types.nominal_sizes_sealed()
+            && self.facts.types.contains_projected_sizes(ty) == Some(true);
+        let completed = reusable.then(|| {
+            self.state
+                .projections
+                .data
+                .get_or_insert_with(Default::default)
+                .completed
+                .get_or_insert_with(Default::default)
+                .as_mut()
+        });
+        let (result, steps) = crate::sema::projections::normalize_reusing(
             self.facts,
             environment.as_ref(),
             proof,
             scope,
             ty,
             self.availability,
+            completed,
         )
         .map_err(|e| self.error(node, e))?;
         self.state

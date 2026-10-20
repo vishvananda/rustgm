@@ -27,7 +27,7 @@ pub(in crate::sema) use known_premises::opaque_normalized;
 pub(in crate::sema) use readiness::{has_known_subject, requires_resolved_inputs};
 pub(in crate::sema) use result_templates::symbolic_result;
 pub(in crate::sema) use search::{
-    Pending, Progress, begin, begin_normalized, begin_projection, begin_refining,
+    Pending, Progress, Reuse, begin, begin_normalized, begin_projection, begin_refining,
     begin_scoped_refining,
 };
 use std::sync::Arc;
@@ -172,7 +172,15 @@ pub(in crate::sema) fn select(
     goal: &Goal,
     caller: Caller<'_>,
 ) -> Result<Selection, String> {
-    select_from(facts, context, goal, caller, Availability::Validated, false)
+    select_from(
+        facts,
+        context,
+        goal,
+        caller,
+        Availability::Validated,
+        false,
+        None,
+    )
 }
 
 /// Provisional declaration proofs cannot authorize executable operations. Every
@@ -190,6 +198,7 @@ pub(in crate::sema) fn select_declaration(
         caller,
         Availability::Declarations,
         false,
+        None,
     )
 }
 
@@ -200,7 +209,7 @@ pub(in crate::sema) fn select_available(
     caller: Caller<'_>,
     availability: Availability,
 ) -> Result<Selection, String> {
-    select_from(facts, context, goal, caller, availability, false)
+    select_from(facts, context, goal, caller, availability, false, None)
 }
 
 /// The requesting normalizer retains every input's formation and lifetime proof.
@@ -213,7 +222,20 @@ pub(in crate::sema) fn select_normalized(
     caller: Caller<'_>,
     availability: Availability,
 ) -> Result<Selection, String> {
-    select_from(facts, context, goal, caller, availability, true)
+    select_from(facts, context, goal, caller, availability, true, None)
+}
+
+/// Reuse belongs to this fixed caller and mode; only fully proved concrete
+/// children without lifetime or builtin debts may cross individual searches.
+pub(in crate::sema) fn select_reusing(
+    facts: &mut Declarations,
+    context: &mut Context,
+    goal: &Goal,
+    caller: Caller<'_>,
+    mode: (Availability, bool),
+    reuse: &mut Reuse,
+) -> Result<Selection, String> {
+    select_from(facts, context, goal, caller, mode.0, mode.1, Some(reuse))
 }
 
 fn select_from(
@@ -223,6 +245,7 @@ fn select_from(
     caller: Caller<'_>,
     availability: Availability,
     normalized_inputs: bool,
+    reuse: Option<&mut Reuse>,
 ) -> Result<Selection, String> {
     if goal.projection_result().is_some() || goal.builtin_bound().is_some() {
         // Builtin permissions use the caller's ordinary ability environment;
@@ -234,6 +257,7 @@ fn select_from(
             caller,
             availability,
             normalized_inputs && goal.projection_result().is_none(),
+            reuse,
         );
     }
     match select_assumption(&mut facts.types, context, goal, &caller) {
@@ -247,6 +271,7 @@ fn select_from(
                 caller,
                 availability,
                 normalized_inputs,
+                reuse,
             );
         }
         Err(error) => return Err(inference(error)),
@@ -258,6 +283,7 @@ fn select_from(
         caller,
         availability,
         normalized_inputs,
+        reuse,
     )
 }
 

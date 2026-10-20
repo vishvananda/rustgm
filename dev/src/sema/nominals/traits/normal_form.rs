@@ -41,6 +41,26 @@ pub(in crate::sema) fn begin(
     retain_sized: bool,
     availability: Availability,
 ) -> Result<Progress, &'static str> {
+    begin_reusing(
+        facts,
+        environment,
+        request,
+        first,
+        retain_sized,
+        availability,
+        None,
+    )
+}
+
+pub(in crate::sema) fn begin_reusing(
+    facts: &mut Declarations,
+    environment: Option<Arc<Environment>>,
+    request: Request,
+    first: u32,
+    retain_sized: bool,
+    availability: Availability,
+    reuse: Option<&mut selection::Reuse>,
+) -> Result<Progress, &'static str> {
     if request.alias.associated().is_some_and(|application| {
         !facts
             .associated
@@ -60,6 +80,18 @@ pub(in crate::sema) fn begin(
         }));
     }
     let requirement = crate::sema::opaque::overrides::requirement(facts, request.alias)?;
+    let reuse = if environment
+        .as_ref()
+        .is_none_or(|env| !env.requires_region_mapping())
+        && !requirement.has_free_regions(&facts.types)?
+        && !facts
+            .types
+            .arguments_have_free_regions(request.alias.arguments())?
+    {
+        reuse
+    } else {
+        None
+    };
     let (mut state, requirement, arguments) = opening::prepare(
         facts,
         environment,
@@ -82,7 +114,7 @@ pub(in crate::sema) fn begin(
         frontier,
         template: false,
     }
-    .advance(facts)
+    .advance(facts, reuse)
 }
 
 impl Query {
@@ -117,12 +149,16 @@ impl Query {
             return Err("projection selection allocation frontier moved backwards");
         }
         self.frontier = first;
-        self.advance(facts)
+        self.advance(facts, None)
     }
 
-    fn advance(mut self, facts: &mut Declarations) -> Result<Progress, &'static str> {
+    fn advance(
+        mut self,
+        facts: &mut Declarations,
+        mut reuse: Option<&mut selection::Reuse>,
+    ) -> Result<Progress, &'static str> {
         loop {
-            let selected = match self.select(facts)? {
+            let selected = match self.select(facts, reuse.as_deref_mut())? {
                 selection::Progress::Inferred { .. } => {
                     return Err("non-refining projection selection returned partial inputs");
                 }
@@ -186,7 +222,11 @@ impl Query {
         }
     }
 
-    fn select(&mut self, facts: &mut Declarations) -> Result<selection::Progress, &'static str> {
+    fn select(
+        &mut self,
+        facts: &mut Declarations,
+        reuse: Option<&mut selection::Reuse>,
+    ) -> Result<selection::Progress, &'static str> {
         let state = &mut self.state;
         let selected = if let Some(pending) = self.pending.take() {
             pending.resume(facts, &mut state.context, &self.goal, self.frontier)
@@ -236,18 +276,31 @@ impl Query {
                 first_region: state.obligations.regions.end,
                 retain_sized: state.retain_sized,
             };
-            let select = if self.closed {
-                selection::select_available
+            if !self.closed
+                && let Some(reuse) = reuse
+            {
+                selection::select_reusing(
+                    facts,
+                    &mut state.context,
+                    &self.goal,
+                    caller,
+                    (state.availability, true),
+                    reuse,
+                )
             } else {
-                selection::select_normalized
-            };
-            select(
-                facts,
-                &mut state.context,
-                &self.goal,
-                caller,
-                state.availability,
-            )
+                let select = if self.closed {
+                    selection::select_available
+                } else {
+                    selection::select_normalized
+                };
+                select(
+                    facts,
+                    &mut state.context,
+                    &self.goal,
+                    caller,
+                    state.availability,
+                )
+            }
             .map(selection::Progress::Ready)
         } else {
             let caller = state.owned_caller(&mut self.assumptions, self.closed);

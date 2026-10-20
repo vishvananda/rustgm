@@ -205,6 +205,7 @@ pub(super) struct State {
     method_environment: Option<std::sync::Arc<crate::types::parameters::environment::Environment>>,
     trait_environment: Option<std::sync::Arc<super::traits::assumptions::Assumptions>>,
     canonical_trait_inference: Option<Box<Context>>,
+    canonical_trait_proofs: Option<Box<super::traits::selection::Reuse>>,
     annotations: super::annotations::Scratch,
     projections: projections::Pending,
     notifications: notifications::Notifications,
@@ -299,6 +300,7 @@ impl<'a> Checker<'a> {
                 environment_owner: None,
                 trait_environment: None,
                 canonical_trait_inference: None,
+                canonical_trait_proofs: None,
                 annotations: super::annotations::Scratch::default(),
                 projections: projections::Pending::default(),
                 notifications: notifications::Notifications::default(),
@@ -355,6 +357,7 @@ impl<'a> Checker<'a> {
         self.state.trait_goals = None;
         self.state.body_binders = 0;
         self.state.method_environment = None;
+        self.state.canonical_trait_proofs = None;
         self.state.environment_owner = None;
         self.state.trait_environment = None;
         self.state.canonical_trait_inference = None;

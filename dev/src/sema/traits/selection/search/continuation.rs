@@ -11,6 +11,7 @@ pub(super) enum Progress {
 }
 
 pub(super) struct Query {
+    pub reuse: Option<super::completed_proofs::Active>,
     pub refining: bool,
     pub inferred: bool,
     pub suspended: Vec<Option<Frame>>,
@@ -26,8 +27,9 @@ pub(super) struct Query {
     pub cycles: usize,
     pub reused: bool,
     pub steps: usize,
+    #[cfg(test)]
+    pub storage_steps: usize,
     pub builtins: crate::sema::nominals::Proof,
-    pub sizes: Option<Box<crate::sema::nominals::sizes::Query>>,
     pub stack: Vec<Frame>,
     waiting: Option<Dependency>,
     decision: Option<Decision>,
@@ -49,6 +51,7 @@ impl<'a> Search<'a> {
         Self {
             caller,
             query: Query {
+                reuse: None,
                 refining: false,
                 inferred: false,
                 suspended: Vec::new(),
@@ -57,7 +60,6 @@ impl<'a> Search<'a> {
                 allocations: super::allocations::Allocations::new(first),
                 availability,
                 builtins,
-                sizes: None,
                 nodes: Vec::new(),
                 active: HashSet::new(),
                 families: HashSet::new(),
@@ -65,6 +67,8 @@ impl<'a> Search<'a> {
                 cycles: 0,
                 reused: false,
                 steps: 0,
+                #[cfg(test)]
+                storage_steps: 0,
                 stack: Vec::new(),
                 waiting: None,
                 decision: None,
@@ -139,6 +143,8 @@ impl<'a> Search<'a> {
                 Action::Descend => {
                     let child = if let Some(child) = self.formation_child(facts, frame)? {
                         child
+                    } else if let Some(child) = self.storage_child(facts, frame)? {
+                        child
                     } else if let Some(child) = self.condition_child(facts, frame)? {
                         child
                     } else {
@@ -169,6 +175,7 @@ impl<'a> Search<'a> {
                     };
                     if completed.formation.is_none() {
                         self.remember(canonical, cycles, decision, scope);
+                        self.query.export_completed(facts, decision)?;
                     }
                     self.accept(facts, parent, decision)?;
                 }

@@ -40,7 +40,7 @@ impl Checker<'_> {
                 })?
                 .source;
             let (possible, work) = overlap::possible(&mut self.facts, (a, owner_a), (b, owner_b))
-                .map_err(|e| self.error(key, e.to_string()))?;
+                .map_err(|e| self.error(key, e))?;
             steps = steps.saturating_add(work);
             if steps > 1_000_000 {
                 return Err(self.error(key, "trait implementation overlap work budget exceeded"));

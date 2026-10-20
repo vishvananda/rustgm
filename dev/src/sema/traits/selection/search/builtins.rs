@@ -1,5 +1,5 @@
 //! Projected builtin premises use the same normalization stack and lifetime evidence.
-use super::{Action, Decision, Declarations, Dependency, Frame, Node, Search, inference};
+use super::{Action, Decision, Declarations, Frame, Node, Search, inference};
 use crate::types::{RegionId, TypeId, parameters::predicates::Bound};
 
 #[derive(Default)]
@@ -33,20 +33,13 @@ impl Search<'_> {
             type_outlives.push((goal.ty, region));
         } else {
             let valid = if goal.bound == Bound::Sized
-                && !facts.types.nominal_sizes_sealed()
-                && facts.types.contains_nominals(goal.ty) == Some(true)
+                && (facts.types.contains_projected_sizes(goal.ty) == Some(true)
+                    || !facts.types.nominal_sizes_sealed()
+                        && facts.types.contains_nominals(goal.ty) == Some(true))
             {
-                use crate::sema::nominals::sizes::Progress;
-                let query = self.query.sizes.get_or_insert_with(|| {
-                    Box::new(crate::sema::nominals::sizes::Query::new(
-                        self.caller.environment.cloned(),
-                    ))
-                });
-                match query.demand(facts, goal.ty, |facts, ty| {
-                    self.query.builtins.normalize(facts, ty)
-                })? {
-                    Progress::Fields(item) => return Ok(Action::Wait(Dependency::Fields(item))),
-                    Progress::Ready { sized, provisional } => {
+                match self.storage_condition(facts, frame, goal.ty)? {
+                    std::ops::ControlFlow::Break(action) => return Ok(action),
+                    std::ops::ControlFlow::Continue((sized, provisional)) => {
                         provisional_size = provisional;
                         sized
                     }
@@ -61,12 +54,16 @@ impl Search<'_> {
                 sized.push(goal.ty);
             }
         }
+        let children = frame
+            .storage
+            .as_mut()
+            .map_or_else(Vec::new, |storage| std::mem::take(&mut storage.children));
         let node = self.query.push(
             Node {
                 provisional_size,
                 goal,
                 source: Some(super::Source::Builtin),
-                children: Vec::new(),
+                children,
                 first: frame.first,
                 end: frame.available_region(),
                 equalities: std::mem::take(&mut frame.inputs.context.region_equalities),

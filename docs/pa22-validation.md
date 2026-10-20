@@ -7,6 +7,8 @@ semantics or publication of a new grading suite.
 The subsequent [storage and reference-coercion checkpoint](pa22-storage-checkpoint.md)
 records nominal sizedness, tail addressing, structural/projected unsizing and
 constant metadata, together with its newer qualification and remaining work.
+The [projected-proof checkpoint](pa22-proof-checkpoint.md) adds coherence,
+hidden `Sized` lifetime evidence and shared completed proofs for nested tails.
 The measurements and implementation status below describe the first checkpoint.
 
 ## Storage-tail metadata

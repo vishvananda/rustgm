@@ -23,6 +23,7 @@ use crate::{
 use std::sync::Arc;
 
 pub(crate) struct State {
+    reusable: [Option<Box<selection::Reuse>>; 2],
     normalized: std::collections::HashMap<crate::types::TypeId, crate::types::TypeId>,
     assumptions: Assumptions,
     environment: Option<Arc<Environment>>,
@@ -109,6 +110,7 @@ impl State {
             .account_work(construction_work)
             .map_err(|_| "declaration assumption work exhausted")?;
         Ok(Self {
+            reusable: [None, None],
             normalized: std::collections::HashMap::new(),
             assumptions,
             environment,
@@ -230,6 +232,13 @@ impl State {
             first_region: self.obligations.regions.end,
             retain_sized: self.retain_sized,
         };
+        let reuse = &mut self.reusable[usize::from(closed)];
+        if reuse.is_none()
+            && facts.types.nominal_sizes_sealed()
+            && facts.types.contains_projected_sizes(requirement.ty) == Some(true)
+        {
+            *reuse = Some(Box::default());
+        }
         let selected = select_requirement(
             facts,
             &mut self.context,
@@ -237,6 +246,7 @@ impl State {
             caller,
             self.availability,
             normalized_inputs,
+            reuse.as_deref_mut(),
         )?;
         self.accept_selection(selected)
     }
@@ -272,20 +282,41 @@ fn select_requirement(
     caller: selection::Caller<'_>,
     availability: Availability,
     normalized_inputs: bool,
+    reuse: Option<&mut selection::Reuse>,
 ) -> Result<selection::Selection, &'static str> {
+    if let Some(selected) = reuse
+        .as_ref()
+        .and_then(|reuse| reuse.selection(requirement, caller.first_region))
+    {
+        context
+            .account_work(1)
+            .map_err(|_| "completed declaration proof work exhausted")?;
+        return Ok(selected);
+    }
     let mut substitution = Instantiation::new(context, &facts.types, &[])
         .map_err(|_| "invalid declaration trait instantiation")?;
     let goal = context
         .instantiate_predicate(&mut facts.types, requirement, &mut substitution)
         .map_err(|_| "invalid declaration trait goal")?;
-    let selected = match (normalized_inputs, availability) {
-        (true, availability) => {
-            selection::select_normalized(facts, context, &goal, caller, availability)
+    let selected = if let Some(reuse) = reuse {
+        selection::select_reusing(
+            facts,
+            context,
+            &goal,
+            caller,
+            (availability, normalized_inputs),
+            reuse,
+        )
+    } else {
+        match (normalized_inputs, availability) {
+            (true, availability) => {
+                selection::select_normalized(facts, context, &goal, caller, availability)
+            }
+            (false, Availability::Declarations) => {
+                selection::select_declaration(facts, context, &goal, caller)
+            }
+            (false, Availability::Validated) => selection::select(facts, context, &goal, caller),
         }
-        (false, Availability::Declarations) => {
-            selection::select_declaration(facts, context, &goal, caller)
-        }
-        (false, Availability::Validated) => selection::select(facts, context, &goal, caller),
     };
     selected.map_err(|_| "invalid or exhausted canonical trait selection")
 }

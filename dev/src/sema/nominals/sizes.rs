@@ -10,7 +10,7 @@ use crate::{
         sizedness::Rules,
     },
 };
-pub(in crate::sema) use query::{Progress, Query};
+pub(in crate::sema) use query::{Progress, Query, Step};
 use std::{
     collections::{HashMap, HashSet},
     sync::Arc,
@@ -121,12 +121,15 @@ fn assumed(
 /// Final rules are immutable. Each semantic query caches only their substitution,
 /// keeping caller normalization and its evidence in the query's own scope.
 #[derive(Default)]
-struct Conditions {
+pub(in crate::sema) struct Conditions {
     projections: HashMap<TypeId, TypeId>,
     steps: usize,
 }
 impl Conditions {
-    fn apply(
+    pub(in crate::sema) const fn steps(&self) -> usize {
+        self.steps
+    }
+    pub(in crate::sema) fn apply(
         &mut self,
         types: &mut Store,
         ty: TypeId,

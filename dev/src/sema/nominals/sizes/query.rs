@@ -8,7 +8,12 @@ use std::{
 
 pub(in crate::sema) enum Progress {
     Ready { sized: bool, provisional: bool },
+    Fields,
+}
+pub(in crate::sema) enum Step {
+    Ready { sized: bool, provisional: bool },
     Fields(ItemId),
+    Projection(TypeId),
 }
 #[derive(Clone, Copy)]
 struct Answer {
@@ -24,6 +29,7 @@ pub(in crate::sema) struct Query {
     conditions: super::Conditions,
     active: HashSet<TypeId>,
     root: Option<TypeId>,
+    projection: Option<TypeId>,
     work: Vec<(TypeId, bool)>,
     pub steps: usize,
 }
@@ -38,6 +44,7 @@ impl Query {
             conditions: super::Conditions::default(),
             active: HashSet::new(),
             root: None,
+            projection: None,
             work: Vec::new(),
             steps: 0,
         }
@@ -48,6 +55,31 @@ impl Query {
         root: TypeId,
         mut normalize: impl FnMut(&mut Declarations, TypeId) -> Result<TypeId, &'static str>,
     ) -> Result<Progress, &'static str> {
+        loop {
+            match self.advance(facts, root)? {
+                Step::Ready { sized, provisional } => {
+                    return Ok(Progress::Ready { sized, provisional });
+                }
+                Step::Fields(_) => return Ok(Progress::Fields),
+                Step::Projection(ty) => {
+                    let normalized = normalize(facts, ty)?;
+                    self.projection = None;
+                    if normalized == ty {
+                        self.known(ty, facts.types.is_sized(ty) == Some(true));
+                    } else {
+                        self.tail(ty, normalized)?;
+                    }
+                }
+            }
+        }
+    }
+    /// A trait selector can prove a hidden projection on its existing stack,
+    /// retaining that child's evidence instead of launching a separate proof.
+    pub fn advance(
+        &mut self,
+        facts: &mut Declarations,
+        root: TypeId,
+    ) -> Result<Step, &'static str> {
         if let Some(previous) = self.root {
             if previous != root {
                 return Err("unfinished nominal size query changed its subject");
@@ -55,6 +87,9 @@ impl Query {
         } else {
             self.root = Some(root);
             self.work.push((root, false));
+        }
+        if let Some(ty) = self.projection {
+            return Ok(Step::Projection(ty));
         }
         while let Some((ty, finish)) = self.work.pop() {
             self.steps += 1;
@@ -67,9 +102,12 @@ impl Query {
             if finish {
                 let answer = self.finish(facts, ty)?;
                 self.save(ty, answer);
-            } else if let Some(item) = self.begin(facts, ty, &mut normalize)? {
+            } else if let Some(item) = self.begin(facts, ty)? {
                 self.work.push((ty, false));
-                return Ok(Progress::Fields(item));
+                return Ok(Step::Fields(item));
+            }
+            if let Some(ty) = self.projection {
+                return Ok(Step::Projection(ty));
             }
         }
         let answer = *self
@@ -80,10 +118,23 @@ impl Query {
         for ty in self.temporary.drain(..) {
             self.answers.remove(&ty);
         }
-        Ok(Progress::Ready {
+        Ok(Step::Ready {
             sized: answer.sized,
             provisional: answer.provisional,
         })
+    }
+    pub fn answer_projection(
+        &mut self,
+        ty: TypeId,
+        sized: bool,
+        provisional: bool,
+    ) -> Result<(), &'static str> {
+        if self.projection != Some(ty) {
+            return Err("nominal size answer does not match its pending projection");
+        }
+        self.projection = None;
+        self.save(ty, Answer { sized, provisional });
+        Ok(())
     }
     fn save(&mut self, ty: TypeId, answer: Answer) {
         self.active.remove(&ty);
@@ -114,7 +165,6 @@ impl Query {
         &mut self,
         facts: &mut Declarations,
         ty: TypeId,
-        normalize: &mut impl FnMut(&mut Declarations, TypeId) -> Result<TypeId, &'static str>,
     ) -> Result<Option<ItemId>, &'static str> {
         if let Some(environment) = &self.environment
             && assumed(&facts.types, ty, environment, &mut self.permissions)?
@@ -125,7 +175,9 @@ impl Query {
         match facts.types.kind(ty).ok_or("invalid nominal size subject")? {
             Kind::Adt(item, arguments) => {
                 if facts.types.nominal_sizes_sealed() {
+                    let before = self.conditions.steps();
                     let condition = self.conditions.apply(&mut facts.types, ty)?;
+                    self.steps += self.conditions.steps() - before;
                     self.condition(ty, condition)?;
                     return Ok(None);
                 }
@@ -154,7 +206,9 @@ impl Query {
                     .size_rules
                     .as_mut()
                     .ok_or("missing size rules")?;
+                let before = pending.rules.steps;
                 let condition = pending.rules.apply(&mut facts.types, item, arguments)?;
+                self.steps += pending.rules.steps - before;
                 self.condition(ty, condition)?;
             }
             Kind::Tuple(list) => {
@@ -179,12 +233,7 @@ impl Query {
                 self.tail(ty, element)?;
             }
             Kind::Projection(_) | Kind::Opaque(..) => {
-                let normalized = normalize(facts, ty)?;
-                if normalized == ty {
-                    self.known(ty, facts.types.is_sized(ty) == Some(true));
-                } else {
-                    self.tail(ty, normalized)?;
-                }
+                self.projection = Some(ty);
             }
             Kind::Parameter(_) => self.known(ty, facts.types.is_sized(ty) == Some(true)),
             Kind::Slice(_) | Kind::Primitive(Primitive::Str) => self.known(ty, false),
