@@ -6,16 +6,21 @@ use crate::types::{
 };
 use std::collections::HashMap;
 
+mod alignment;
+pub use alignment::{Alignment, Offset};
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Id(pub u32);
 #[derive(Clone, Copy, Debug)]
 pub struct Fields {
     pub types: ListId,
     offsets: Range,
+    tail_alignment: Option<Alignment>,
 }
 #[derive(Clone, Copy, Debug)]
 pub struct Layout {
     pub align: u32,
+    pub dynamic_alignment: Option<Alignment>,
     pub contains_explicit_align: bool,
     pub fields: Option<Fields>,
 }
@@ -46,8 +51,22 @@ impl Queries {
         self.records.get(id.0 as usize)
     }
     #[must_use]
-    pub fn offsets(&self, fields: Fields) -> &[u64] {
-        &self.offsets[fields.offsets.start as usize..fields.offsets.end as usize]
+    pub fn offsets(&self, fields: Fields) -> impl ExactSizeIterator<Item = Offset> + '_ {
+        let count = fields.offsets.end - fields.offsets.start;
+        (0..count).map(move |index| self.offset(fields, index))
+    }
+    fn offset(&self, fields: Fields, index: u32) -> Offset {
+        let prefix = self.offsets[(fields.offsets.start + index) as usize];
+        match fields.tail_alignment {
+            Some(alignment) if index + 1 == fields.offsets.end - fields.offsets.start => {
+                Offset::Aligned { prefix, alignment }
+            }
+            _ => Offset::Fixed(prefix),
+        }
+    }
+    #[must_use]
+    pub fn field_offset(&self, fields: Fields, index: u32) -> Option<Offset> {
+        (index < fields.offsets.end - fields.offsets.start).then(|| self.offset(fields, index))
     }
     /// # Errors
     /// Rejects sized roots, unprepared fields, invalid representations, cycles,
@@ -155,18 +174,28 @@ impl Queries {
         if !definitions.packing_checked() && repr.packed.is_some() && explicit {
             return Err("packed aggregate transitively contains an explicitly aligned type");
         }
-        let tail_align = repr.packed.map_or(tail.align, |p| p.min(tail.align));
-        align = align.max(tail_align);
-        self.scratch.push(padded(size, tail_align)?);
+        let tail_alignment = tail
+            .dynamic_alignment
+            .unwrap_or_else(|| Alignment::fixed(tail.align))
+            .cap(repr.packed);
+        let alignment = tail_alignment.raise(align);
+        let dynamic_tail = (tail_alignment.is_dynamic() && size != 0).then_some(tail_alignment);
+        self.scratch.push(if dynamic_tail.is_some() {
+            size
+        } else {
+            padded(size, tail_alignment.minimum)?
+        });
         let start = u32::try_from(self.offsets.len()).map_err(|_| "too many tail field offsets")?;
         self.offsets.extend_from_slice(&self.scratch);
         let end = u32::try_from(self.offsets.len()).map_err(|_| "too many tail field offsets")?;
         self.save(Layout {
-            align,
+            align: alignment.minimum,
+            dynamic_alignment: alignment.is_dynamic().then_some(alignment),
             contains_explicit_align: explicit,
             fields: Some(Fields {
                 types: list,
                 offsets: Range { start, end },
+                tail_alignment: dynamic_tail,
             }),
         })
     }
@@ -181,6 +210,13 @@ fn inspect(
     match types.kind(ty).ok_or("invalid unsized layout type")? {
         Kind::Primitive(Primitive::Str) => Ok(Step::Leaf(Layout {
             align: 1,
+            dynamic_alignment: None,
+            contains_explicit_align: false,
+            fields: None,
+        })),
+        Kind::Dynamic { .. } => Ok(Step::Leaf(Layout {
+            align: 1,
+            dynamic_alignment: Some(Alignment::OBJECT),
             contains_explicit_align: false,
             fields: None,
         })),
@@ -191,6 +227,7 @@ fn inspect(
             let element = layouts.at(id).ok_or("missing slice element layout")?;
             Ok(Step::Leaf(Layout {
                 align: element.align,
+                dynamic_alignment: None,
                 contains_explicit_align: element.contains_explicit_align,
                 fields: None,
             }))

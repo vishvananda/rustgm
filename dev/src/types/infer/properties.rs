@@ -141,7 +141,9 @@ fn partial<S: BuildHasher>(
 ) -> Possible {
     let mut value = Possible::UNKNOWN;
     match kind {
-        Constructor::Primitive(Primitive::Str) | Constructor::Slice => {
+        Constructor::Primitive(Primitive::Str)
+        | Constructor::Slice
+        | Constructor::Dynamic { .. } => {
             value.sized = false;
             value.abilities = Properties::default();
         }

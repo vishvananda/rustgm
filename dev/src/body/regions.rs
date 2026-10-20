@@ -1,12 +1,14 @@
 //! Group typed lifetime facts by body without repeating resolution or inference.
 mod clause_terms;
+mod incremental;
 use super::ir::NodeKey;
 pub use crate::sema::model::BuiltinRequirements;
 pub use crate::sema::model::LifetimeProof as Proof;
 use crate::{
-    sema::model::{AdjustmentKind, BodyRegionOrigin, Declarations},
+    sema::model::Declarations,
     types::{RegionId, TypeId, outlives::Pair},
 };
+pub use incremental::Collector;
 use std::collections::HashMap;
 
 #[derive(Clone, Copy)]
@@ -120,61 +122,27 @@ pub fn collect(facts: &Declarations) -> Result<Contracts<'_>, &'static str> {
         bodies.push(Contract::constant(source));
     }
     constructors(facts, &mut bodies, &mut index)?;
-    let mut add = |body, source, kind| -> Result<(), &'static str> {
-        let index = index
+    incremental::Cursor::default().visit(facts, |body, source, fact| {
+        let target = index
             .get(&body)
             .copied()
             .ok_or("lifetime obligation has no body owner")?;
-        bodies[index].obligations.push(Obligation { source, kind });
+        match fact {
+            incremental::Fact::Obligation(_, kind) => {
+                bodies[target].obligations.push(Obligation { source, kind });
+            }
+            incremental::Fact::Proof(proof) => bodies[target].proofs.push(proof.clone()),
+        }
+        Ok(())
+    })?;
+    let mut add = |body, source, kind| -> Result<(), &'static str> {
+        let target = index
+            .get(&body)
+            .copied()
+            .ok_or("lifetime obligation has no body owner")?;
+        bodies[target].obligations.push(Obligation { source, kind });
         Ok(())
     };
-    for (i, v) in facts.body_regions.iter().enumerate() {
-        if matches!(v.origin, BodyRegionOrigin::QuantifiedProof) {
-            continue;
-        }
-        add(
-            v.body,
-            v.source,
-            Kind::Variable {
-                id: RegionId(u32::try_from(i + 1).map_err(|_| "too many lifetime variables")?),
-                needs_provenance: matches!(
-                    v.origin,
-                    BodyRegionOrigin::ExpressionBorrow | BodyRegionOrigin::PatternBorrow
-                ),
-            },
-        )?;
-    }
-    for e in &facts.region_equalities {
-        add(e.body, e.body, Kind::Equality((e.left, e.right)))?;
-    }
-    for b in &facts.outlives {
-        add(b.body, b.source, Kind::Outlives((b.longer, b.shorter)))?;
-    }
-    for c in &facts.coercions {
-        add(
-            c.body,
-            c.source,
-            Kind::Coercion {
-                actual: c.actual,
-                expected: c.expected,
-                unsize: c.kind == AdjustmentKind::ArrayToSlice,
-                reference: c.reference,
-            },
-        )?;
-    }
-    for w in &facts.well_formed {
-        add(w.body, w.source, Kind::WellFormed(w.ty))?;
-    }
-    for bound in &facts.type_outlives {
-        add(
-            bound.body,
-            bound.source,
-            Kind::TypeOutlives {
-                ty: bound.ty,
-                shorter: bound.shorter,
-            },
-        )?;
-    }
     for function in &facts.functions {
         if let Some(body) = function.body {
             clause_terms::collect(facts, function.definition, |source, kind| {
@@ -185,7 +153,6 @@ pub fn collect(facts: &Declarations) -> Result<Contracts<'_>, &'static str> {
             })?;
         }
     }
-    collect_proofs(facts, &mut bodies, &index)?;
     for (source, requirements) in &facts.generics.builtin_requirements {
         let index = index
             .get(source)
@@ -222,20 +189,6 @@ fn opaque_members(
     Ok(())
 }
 
-fn collect_proofs(
-    facts: &Declarations,
-    bodies: &mut [Contract],
-    index: &HashMap<NodeKey, usize>,
-) -> Result<(), &'static str> {
-    for proof in &facts.quantified_proofs {
-        let index = index
-            .get(&proof.body)
-            .copied()
-            .ok_or("quantified proof has no body owner")?;
-        bodies[index].proofs.push(proof.evidence.clone());
-    }
-    Ok(())
-}
 fn constructors(
     facts: &Declarations,
     bodies: &mut Vec<Contract>,

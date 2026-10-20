@@ -90,12 +90,12 @@ impl Builder<'_> {
             node,
             ..self.body.source
         };
-        let array = *self
+        let conversion = *self
             .facts
             .unsizing_adjustments
             .get(&key)
-            .ok_or_else(|| self.error(node, "missing selected unsizing array"))?;
-        self.evaluate(node, target, Rvalue::Unsize { value, array })
+            .ok_or_else(|| self.error(node, "missing selected unsizing conversion"))?;
+        self.evaluate(node, target, Rvalue::Unsize { value, conversion })
     }
     pub(super) fn place_type(&self, node: NodeId, place: Place) -> Result<TypeId, Error> {
         match place {

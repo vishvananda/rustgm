@@ -82,7 +82,15 @@ impl Resolver<'_> {
             && path.first().is_some_and(|name| {
                 matches!(
                     self.package.names.get(*name),
-                    "Drop" | "core" | "std" | "Copy" | "Clone" | "Sized"
+                    "Drop"
+                        | "core"
+                        | "std"
+                        | "Copy"
+                        | "Clone"
+                        | "Sized"
+                        | "Send"
+                        | "Sync"
+                        | "Unpin"
                 )
             })
         {

@@ -35,3 +35,23 @@ class AuditBoundaries(unittest.TestCase):
                 findings = self.inspect(f"dev/src/{owner}/example.rs",
                                         f"use crate::{dependency}::Example;")
                 self.assertTrue(any("forbidden phase dependency" in finding for finding in findings))
+
+    def test_defining_proof_pipeline_preserves_phase_direction(self):
+        for owner, dependencies in (("pipeline", ("sema", "body", "borrow")),
+                                    ("lower", ("pipeline",))):
+            for dependency in dependencies:
+                with self.subTest(owner=owner, dependency=dependency):
+                    self.assertEqual(self.inspect(f"dev/src/{owner}/example.rs",
+                                                  f"use crate::{dependency}::Example;"), [])
+        for owner, dependency in (("sema", "pipeline"), ("body", "pipeline"),
+                                  ("borrow", "pipeline"), ("pipeline", "lower"),
+                                  ("pipeline", "native")):
+            with self.subTest(owner=owner, dependency=dependency):
+                findings = self.inspect(f"dev/src/{owner}/example.rs",
+                                        f"use crate::{dependency}::Example;")
+                self.assertTrue(any("forbidden phase dependency" in finding for finding in findings))
+
+    def test_pipeline_cannot_read_process_environment(self):
+        findings = self.inspect("dev/src/pipeline/mod.rs",
+                                'fn read() { let _ = std::env::var("RUSTGM_MODE"); }')
+        self.assertTrue(any("environment" in finding for finding in findings))

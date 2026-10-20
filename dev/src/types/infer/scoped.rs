@@ -107,23 +107,45 @@ impl Context {
             let right = self.materialize(store, b)?;
             self.pairs.clear();
             self.structural(store, a, b, false)?;
+            let entered = self.scoped_binder(left, right, &mut binders)?;
             self.scoped_regions(store, left, right, &mut binders)?;
-            if let (
-                Constructor::Function {
-                    bound_regions: a, ..
-                },
-                Constructor::Function {
-                    bound_regions: b, ..
-                },
-            ) = (left, right)
-            {
-                binders.enter(a, b)?;
+            if entered {
                 work.push(Work::Exit);
             }
             self.account_work(self.pairs.len())?;
             work.extend(self.pairs.drain(..).rev().map(|(a, b)| Work::Pair(a, b)));
         }
         Ok(())
+    }
+
+    fn scoped_binder(
+        &mut self,
+        left: Constructor,
+        right: Constructor,
+        binders: &mut Binders,
+    ) -> Result<bool, Error> {
+        let (a, b) = match (left, right) {
+            (
+                Constructor::Function {
+                    bound_regions: a, ..
+                },
+                Constructor::Function {
+                    bound_regions: b, ..
+                },
+            ) => (a, b),
+            (
+                Constructor::Dynamic { lifetimes: a, .. },
+                Constructor::Dynamic { lifetimes: b, .. },
+            ) => {
+                let a = self.object_lifetimes(a)?;
+                let b = self.object_lifetimes(b)?;
+                binders.equate(a.region, b.region, &mut self.region_equalities)?;
+                (a.bound_regions, b.bound_regions)
+            }
+            _ => return Ok(false),
+        };
+        binders.enter(a, b)?;
+        Ok(true)
     }
 
     pub(super) fn equate_regions_inside(
@@ -219,6 +241,9 @@ impl Context {
             }
             Constructor::AdtArgs(_, args)
             | Constructor::Opaque(_, args)
+            | Constructor::Dynamic {
+                arguments: args, ..
+            }
             | Constructor::FunctionItemArgs(_, args) => Some(args),
             _ => None,
         })

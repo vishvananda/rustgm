@@ -5,6 +5,20 @@ use crate::types::{
     parameters::{clauses::Clause, predicates::Bound},
 };
 
+/// Inferred representations remain private until every defining-body requirement completes.
+#[derive(Default)]
+pub(super) struct HiddenResults {
+    values: Vec<Hidden>,
+    result: Option<(super::DefId, super::TypeId)>,
+}
+struct Hidden {
+    id: crate::types::opaque::OpaqueId,
+    source: super::NodeKey,
+    inferred: super::TypeId,
+    free_regions: Vec<crate::types::RegionId>,
+    closed: Option<super::TypeId>,
+}
+
 impl Checker<'_> {
     pub(super) fn prepare_opaque_results(&mut self, node: NodeId) -> Result<(), Error> {
         self.state.opaque_terms.clear();
@@ -53,9 +67,10 @@ impl Checker<'_> {
         }
     }
 
-    pub(super) fn complete_opaque_results(&mut self, solved: &Solved) -> Result<(), Error> {
+    pub(super) fn check_opaque_results(&mut self, solved: &Solved) -> Result<HiddenResults, Error> {
+        let mut results = HiddenResults::default();
         if self.state.opaque_terms.is_empty() {
-            return Ok(());
+            return Ok(results);
         }
         let mut closing = self.hidden_region_closure(solved)?;
         for index in 0..self.state.opaque_terms.len() {
@@ -102,31 +117,48 @@ impl Checker<'_> {
             } else {
                 None
             };
-            let declaration = self
-                .facts
-                .opaques
-                .declarations
-                .get_mut(&id)
-                .ok_or_else(|| {
-                    super::Declarations::error(self.report, source, "missing opaque declaration")
-                })?;
-            if let Some(hidden) = hidden {
-                declaration
-                    .check_hidden_captures(&self.facts.types, hidden)
-                    .map_err(|e| super::Declarations::error(self.report, source, e))?;
-            }
-            declaration.inferred = Some(inferred);
-            declaration.free_regions = free_regions;
-            declaration.hidden = hidden;
+            results.values.push(Hidden {
+                id,
+                source,
+                inferred,
+                free_regions,
+                closed: hidden,
+            });
         }
         if let Some(term) = self.state.result_term {
             let owner = self.state.environment_owner.ok_or_else(|| {
                 self.error(self.state.body.node, "opaque body has no defining owner")
             })?;
-            self.facts
+            results.result = Some((owner, solved.types[term.0 as usize]));
+        }
+        Ok(results)
+    }
+
+    pub(super) fn publish_hidden_results(&mut self, results: HiddenResults) -> Result<(), Error> {
+        for value in results.values {
+            let declaration = self
+                .facts
                 .opaques
-                .body_results
-                .insert(owner, solved.types[term.0 as usize]);
+                .declarations
+                .get_mut(&value.id)
+                .ok_or_else(|| {
+                    super::Declarations::error(
+                        self.report,
+                        value.source,
+                        "missing opaque declaration",
+                    )
+                })?;
+            if let Some(hidden) = value.closed {
+                declaration
+                    .check_hidden_captures(&self.facts.types, hidden)
+                    .map_err(|e| super::Declarations::error(self.report, value.source, e))?;
+            }
+            declaration.inferred = Some(value.inferred);
+            declaration.free_regions = value.free_regions;
+            declaration.hidden = value.closed;
+        }
+        if let Some((owner, result)) = results.result {
+            self.facts.opaques.body_results.insert(owner, result);
         }
         Ok(())
     }

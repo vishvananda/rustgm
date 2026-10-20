@@ -31,7 +31,11 @@ impl Projection {
 impl Constructor {
     pub(super) fn application(self) -> Option<(ArgumentsId, usize)> {
         match self {
-            Self::AdtArgs(_, args) | Self::Opaque(_, args) => Some((args, 0)),
+            Self::AdtArgs(_, args)
+            | Self::Opaque(_, args)
+            | Self::Dynamic {
+                arguments: args, ..
+            } => Some((args, 0)),
             Self::FunctionItemArgs(_, args) => Some((args, 1)),
             Self::Projection(value) => Some((value.arguments, 1)),
             _ => None,
@@ -41,6 +45,13 @@ impl Constructor {
         match self {
             Self::AdtArgs(item, _) => Ok(Self::AdtArgs(item, arguments)),
             Self::Opaque(id, _) => Ok(Self::Opaque(id, arguments)),
+            Self::Dynamic {
+                shape, lifetimes, ..
+            } => Ok(Self::Dynamic {
+                shape,
+                arguments,
+                lifetimes,
+            }),
             Self::FunctionItemArgs(item, _) => Ok(Self::FunctionItemArgs(item, arguments)),
             Self::Projection(value) => Ok(Self::Projection(Projection { arguments, ..value })),
             _ => Err(Error::InvalidIdentity),

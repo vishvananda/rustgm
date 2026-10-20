@@ -1,5 +1,5 @@
 //! Constant pointer casts preserve backing identity and explicit length metadata.
-use super::{Value, arithmetic, values::Failure};
+use super::{Value, arithmetic, references::Metadata, values::Failure};
 use crate::{
     sema::model::{Cast, Scalar},
     types::Primitive,
@@ -14,16 +14,16 @@ pub(super) fn cast(
         Cast::Pointer | Cast::PointerThin => match value {
             Value::Reference(mut pointer) => {
                 if kind == Cast::PointerThin {
-                    pointer.length = None;
+                    pointer.metadata = None;
                 }
                 Ok(Value::Reference(pointer))
             }
-            Value::Address { bits, length } => Ok(Value::Address {
+            Value::Address { bits, metadata } => Ok(Value::Address {
                 bits,
-                length: if kind == Cast::PointerThin {
+                metadata: if kind == Cast::PointerThin {
                     None
                 } else {
-                    length
+                    metadata
                 },
             }),
             Value::BytePointer { text, .. } if kind == Cast::PointerThin => Ok(Value::Bytes(text)),
@@ -53,7 +53,10 @@ pub(super) fn cast(
                     ));
                 };
                 u64::try_from(bits)
-                    .map(|bits| Value::Address { bits, length: None })
+                    .map(|bits| Value::Address {
+                        bits,
+                        metadata: None,
+                    })
                     .map_err(|_| {
                         Failure::Invalid("integer address exceeds the target pointer width")
                     })
@@ -65,18 +68,18 @@ pub(super) fn cast(
     })
 }
 
-pub(super) fn unsize(value: Value, length: u64) -> Result<Value, Failure> {
+pub(super) fn unsize(value: Value, metadata: Metadata) -> Result<Value, Failure> {
     Ok(match value {
         Value::Reference(mut pointer) => {
-            pointer.length = Some(length);
+            pointer.metadata = Some(metadata);
             Value::Reference(pointer)
         }
         Value::Address { bits, .. } => Value::Address {
             bits,
-            length: Some(length),
+            metadata: Some(metadata),
         },
         Value::Text(text) | Value::Bytes(text) | Value::BytePointer { text, .. } => {
-            Value::BytePointer { text, length }
+            Value::BytePointer { text, metadata }
         }
         _ => return Err(Failure::Invalid("unsizing constant lacks an address")),
     })

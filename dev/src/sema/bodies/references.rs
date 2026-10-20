@@ -260,7 +260,10 @@ impl Checker<'_> {
         let mut dereferences = 1;
         // An unknown expected referent is inferred from the first candidate.
         // Known nesting chooses built-in dereferences without trial unification.
-        if source != target && self.head(node, target)?.is_some() {
+        if source != target
+            && let Some(target_head) = self.head(node, target)?
+            && !matches!(target_head, Constructor::Dynamic { .. })
+        {
             let source_depth = self.reference_depth(node, source)?;
             let target_depth = self.reference_depth(node, target)?;
             for _ in target_depth..source_depth {
@@ -271,15 +274,16 @@ impl Checker<'_> {
         let unsize = matches!(self.head(node, source)?, Some(Constructor::Array(_)))
             && self.head(node, target)? == Some(Constructor::Slice);
         let pending = if !unsize
-            && matches!(
-                self.head(node, source)?,
-                Some(
-                    Constructor::Adt(..)
-                        | Constructor::AdtArgs(..)
-                        | Constructor::ArrayTerm(_)
-                        | Constructor::ArrayInfer(_)
-                )
-            ) {
+            && (matches!(self.head(node, target)?, Some(Constructor::Dynamic { .. }))
+                || matches!(
+                    self.head(node, source)?,
+                    Some(
+                        Constructor::Adt(..)
+                            | Constructor::AdtArgs(..)
+                            | Constructor::ArrayTerm(_)
+                            | Constructor::ArrayInfer(_)
+                    )
+                )) {
             self.unsizing_referent(node, source, target)?
         } else {
             None

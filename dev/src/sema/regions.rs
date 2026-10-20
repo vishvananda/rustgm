@@ -36,6 +36,11 @@ struct Binder {
     declared: Vec<DefId>,
     /// Membership is indexed before slot assignment; slots retain first-use order.
     named: HashMap<DefId, Option<u16>>,
+    #[expect(
+        clippy::box_collection,
+        reason = "reverse lifetime lookup is allocated only for object defaults"
+    )]
+    slot_names: Option<Box<HashMap<u16, DefId>>>,
     count: u32,
     output: Option<RegionId>,
     receiver: Option<RegionId>,
@@ -54,6 +59,7 @@ impl Regions {
             owner: None,
             captured: None,
             named: declared.iter().copied().map(|id| (id, None)).collect(),
+            slot_names: None,
             declared,
             count: 0,
             output: None,
@@ -124,6 +130,19 @@ impl Regions {
     pub fn count(&self, id: BinderId) -> u32 {
         self.binders[id.0].count
     }
+    pub fn definition_at(&mut self, id: BinderId, slot: u16) -> Option<DefId> {
+        let binder = &mut self.binders[id.0];
+        if binder.slot_names.is_none() {
+            binder.slot_names = Some(Box::new(
+                binder
+                    .named
+                    .iter()
+                    .filter_map(|(&name, &slot)| slot.map(|slot| (slot, name)))
+                    .collect(),
+            ));
+        }
+        binder.slot_names.as_ref()?.get(&slot).copied()
+    }
     pub fn bindings(&self, id: BinderId) -> Result<Vec<(DefId, RegionId)>, &'static str> {
         let binder = &self.binders[id.0];
         binder
@@ -176,6 +195,9 @@ impl Regions {
                 } else {
                     let index = self.fresh(id)?;
                     self.binders[id.0].named.insert(definition, Some(index));
+                    if let Some(names) = &mut self.binders[id.0].slot_names {
+                        names.insert(index, definition);
+                    }
                     index
                 };
                 return RegionId::bound(depth, index);

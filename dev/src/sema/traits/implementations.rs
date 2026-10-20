@@ -1,5 +1,7 @@
 //! Prepared headers may discharge declaration obligations; bodies require completed impls.
+mod identity;
 mod member_contracts;
+pub(in crate::sema) use identity::Identity;
 mod pending;
 pub(in crate::sema) use pending::{Candidates, Header as PendingHeader};
 pub(in crate::sema) mod overlap;
@@ -41,13 +43,32 @@ pub(in crate::sema) struct Implementations {
     pending: Option<Box<pending::Pending>>,
     entries: Vec<Entry>,
     owners: HashMap<DefId, usize>,
-    traits: HashMap<ItemId, Vec<usize>>,
-    heads: HashMap<(ItemId, Option<Head>), Vec<usize>>,
-    open: HashMap<(ItemId, Option<Head>), Vec<usize>>,
-    closed: HashMap<(ItemId, ShapeKey), Vec<usize>>,
+    traits: HashMap<Identity, Vec<usize>>,
+    heads: HashMap<(Identity, Option<Head>), Vec<usize>>,
+    open: HashMap<(Identity, Option<Head>), Vec<usize>>,
+    closed: HashMap<(Identity, ShapeKey), Vec<usize>>,
     pairs: Vec<(usize, usize)>,
 }
 impl Implementations {
+    /// Any explicit impl replaces the structural default for the entire nominal
+    /// family, even when the requested application does not match its bounds.
+    pub fn auto_override(
+        &self,
+        store: &Store,
+        obligation: crate::types::auto_traits::Obligation,
+    ) -> bool {
+        let Some(Kind::Adt(item, _)) = store.kind(obligation.ty) else {
+            return false;
+        };
+        let identity = Identity::Auto(obligation.marker);
+        let head = Head::Nominal(item);
+        self.heads.contains_key(&(identity, Some(head)))
+            || self
+                .pending
+                .as_ref()
+                .is_some_and(|pending| pending.may_have_subject(identity, Subject::Rigid(head)))
+    }
+
     /// Reserve the complete source inventory before any early candidate selection.
     pub fn reserve(&mut self, headers: Vec<PendingHeader>) -> Result<(), &'static str> {
         if self.pending.is_some() || !self.entries.is_empty() || self.constant_headers_ready {
@@ -57,6 +78,7 @@ impl Implementations {
         Ok(())
     }
     pub(super) fn may_have_subject(&self, item: ItemId, subject: Subject) -> bool {
+        let item = Identity::User(item);
         self.pending
             .as_ref()
             .is_some_and(|pending| pending.may_have_subject(item, subject))
@@ -73,7 +95,7 @@ impl Implementations {
         availability: Availability,
     ) -> Result<Candidates, crate::types::infer::Error> {
         use crate::types::infer::Error;
-        let (item, _) = goal.trait_arguments().ok_or(Error::InvalidIdentity)?;
+        let item = Identity::goal(goal)?;
         let subject = match Subject::query(store, context, goal.subject()) {
             Ok(subject) => subject,
             Err(Error::Normalization) => Some(Subject::Rigid(Head::Projection(
@@ -150,9 +172,10 @@ impl Implementations {
     pub fn prepare(
         &mut self,
         store: &mut Store,
-        item: ItemId,
+        item: impl Into<Identity>,
         value: Implementation,
     ) -> Result<(), &'static str> {
+        let item = item.into();
         if self.constant_headers_ready {
             return Err("implementation candidate headers are already frozen");
         }

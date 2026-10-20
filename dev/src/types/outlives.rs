@@ -188,6 +188,19 @@ fn children(
                 }
             }
         }
+        Kind::Dynamic { arguments, .. } => {
+            let depth = depth
+                .checked_add(1)
+                .ok_or("outlives binder depth overflow")?;
+            let arguments = types
+                .arguments(arguments)
+                .ok_or("invalid object outlives arguments")?;
+            budget.pending(work.len().saturating_add(arguments.len()))?;
+            work.extend(arguments.filter_map(|arg| match arg {
+                Argument::Type(ty) => Some((ty, depth)),
+                _ => None,
+            }));
+        }
         Kind::Never | Kind::Primitive(_) | Kind::Parameter(_) => {}
         Kind::Projection(_) => {
             return Err("associated type outlives checking requires normalization");
@@ -276,6 +289,14 @@ impl Scan {
                             depth,
                             ComponentKind::Outlives,
                         )?;
+                    }
+                }
+                Kind::Dynamic { .. } => {
+                    for requirement in types.dynamic_requirements(ty, depth)? {
+                        self.budget.charge()?;
+                        if let Some(pair) = requirement? {
+                            self.record(pair);
+                        }
                     }
                 }
                 Kind::Adt(item, arguments) if arguments != GenericArgs::EMPTY => {

@@ -292,7 +292,9 @@ impl Shapes {
                     .ok_or("shape parameter is outside its environment")?;
                 value.sized = types.is_sized(ty) == Some(true) || abilities.clone_;
             }
-            Kind::Slice(_) | Kind::Primitive(Primitive::Str) => value.sized = false,
+            Kind::Slice(_) | Kind::Primitive(Primitive::Str) | Kind::Dynamic { .. } => {
+                value.sized = false;
+            }
             Kind::Projection(application) => {
                 value.sized = types.is_sized(ty) == Some(true)
                     || self.environment.projection_promises(application.item).sized;
@@ -456,6 +458,12 @@ fn children(
             // separately prove its substituted bounds; structural WF includes
             // every written type argument even when it is stored indirectly.
             argument_types(types, args, depth, &mut visit)?;
+        }
+        Kind::Dynamic { arguments, .. } => {
+            let nested = depth
+                .checked_add(1)
+                .ok_or("generic shape binder depth overflow")?;
+            argument_types(types, arguments, nested, &mut visit)?;
         }
         Kind::Projection(application) => {
             // The environment supplies the exact trait premise. Every input must

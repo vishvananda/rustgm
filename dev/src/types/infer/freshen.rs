@@ -196,6 +196,23 @@ impl Context {
                             mutable,
                             region: fresh(region, depth, &mut next)?,
                         },
+                        Constructor::Dynamic {
+                            shape,
+                            arguments,
+                            lifetimes,
+                        } => {
+                            let lifetimes = self.object_lifetimes(lifetimes)?;
+                            let nested = depth.checked_add(1).ok_or(Error::Overflow)?;
+                            Constructor::Dynamic {
+                                shape,
+                                arguments: self
+                                    .argument_regions(arguments, |r| fresh(r, nested, &mut next))?,
+                                lifetimes: self.intern_object_lifetimes(
+                                    lifetimes.bound_regions,
+                                    fresh(lifetimes.region, depth, &mut next)?,
+                                )?,
+                            }
+                        }
                         Constructor::Adt(item, arguments) => {
                             scratch.arguments.clear();
                             for region in
@@ -215,7 +232,10 @@ impl Context {
                     };
                     let mark = scratch.values.len();
                     scratch.work.push(Work::Finish(id, kind, mark, depth));
-                    let depth = if matches!(kind, Constructor::Function { .. }) {
+                    let depth = if matches!(
+                        kind,
+                        Constructor::Function { .. } | Constructor::Dynamic { .. }
+                    ) {
                         depth.checked_add(1).ok_or(Error::Overflow)?
                     } else {
                         depth

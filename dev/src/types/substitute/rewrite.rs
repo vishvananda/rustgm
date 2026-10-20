@@ -18,6 +18,17 @@ pub(super) fn rebuild<F: Folder>(folder: &mut F, kind: Kind, depth: u16) -> Resu
         Kind::Never | Kind::Primitive(_) | Kind::Parameter(_) => kind,
         Kind::Adt(item, args) => Kind::Adt(item, folder.arguments(args, depth)?),
         Kind::Opaque(id, args) => Kind::Opaque(id, folder.arguments(args, depth)?),
+        Kind::Dynamic {
+            shape,
+            arguments,
+            bound_regions,
+            region,
+        } => Kind::Dynamic {
+            shape,
+            arguments: folder.arguments(arguments, nested(depth).map_err(F::Error::from)?)?,
+            bound_regions: folder.bound_regions(bound_regions),
+            region: folder.region(region, depth)?,
+        },
         Kind::Projection(application) => {
             let trait_application = folder.application(application.trait_application, depth)?;
             Kind::Projection(crate::types::projection::Application {
@@ -112,7 +123,7 @@ impl Folder for Mutable<'_> {
         self.bound.constant(self.store, id)
     }
     fn bound_regions(&self, count: u32) -> u32 {
-        if matches!(self.bound.action, Action::Shape) {
+        if matches!(self.bound.action, Action::Shape { .. }) {
             0
         } else {
             count

@@ -10,6 +10,38 @@ use crate::types::{
 };
 type TestResult<T = ()> = Result<T, Box<dyn std::error::Error>>;
 
+#[test]
+fn appended_binders_keep_the_principals_slots_fixed() -> TestResult {
+    let mut store = Store::default();
+    let mut make = |count, slots: [u16; 2]| -> TestResult<_> {
+        let regions = slots
+            .map(|slot| RegionId::bound(0, slot))
+            .into_iter()
+            .collect::<Result<Vec<_>, _>>()?;
+        let Clause::ForAll(id) = tuple(&mut store, count, &regions)? else {
+            return Err("missing quantified test input".into());
+        };
+        Ok(id)
+    };
+    let left = make(3, [0, 2])?;
+    let equivalent = make(5, [0, 4])?;
+    let different = make(5, [1, 4])?;
+    assert!(store.clause_comparison(left)?.0 == store.clause_comparison(different)?.0);
+    let key = store.clause_comparison_preserving(left, 2)?.0;
+    assert!(key == store.clause_comparison_preserving(equivalent, 2)?.0);
+    assert!(key != store.clause_comparison_preserving(different, 2)?.0);
+    assert_eq!(store.clause_comparison_preserving(left, 2)?.1, 1);
+    assert!(store.clause_comparison_preserving(left, 4).is_err());
+    assert_eq!(
+        store
+            .quantified(left)
+            .ok_or("missing original binder")?
+            .bound_regions,
+        3
+    );
+    Ok(())
+}
+
 fn reference(store: &mut Store, region: RegionId) -> Result<TypeId, &'static str> {
     store.intern(Kind::Reference {
         mutable: false,

@@ -322,7 +322,7 @@ fn nested_member_applications_survive_header_waits_without_reopening_callable_sc
             .ok_or("missing implementation type")?;
         seeds.push(PendingHeader {
             owner: header.owner,
-            item,
+            item: item.into(),
             head: Some(Head::canonical(kind)),
         });
     }

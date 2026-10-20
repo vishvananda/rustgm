@@ -296,7 +296,7 @@ impl Environment {
                     self.region_mapping |= clause.has_free_regions(types)?;
                     if matches!(
                         value.predicate.bound,
-                        Bound::Copy | Bound::Clone | Bound::Sized
+                        Bound::Copy | Bound::Clone | Bound::Sized | Bound::Auto(_)
                     ) {
                         Arc::make_mut(self.builtins.get_or_insert_with(Default::default))
                             .insert(types, clause)?;
@@ -345,6 +345,10 @@ impl Environment {
         if matches!(predicate.bound, Bound::Outlives(_)) {
             return Ok(());
         }
+        if matches!(predicate.bound, Bound::Auto(_)) {
+            return Arc::make_mut(self.builtins.get_or_insert_with(Default::default))
+                .insert(types, predicate.into());
+        }
         if types
             .has_free_regions(predicate.ty, 0)
             .ok_or("invalid builtin bound subject")?
@@ -364,7 +368,11 @@ impl Environment {
                 properties.clone_ = true;
             }
             Bound::Clone => properties.clone_ = true,
-            Bound::Sized | Bound::Outlives(_) | Bound::Trait(_) | Bound::ProjectionEqual(_) => {}
+            Bound::Sized
+            | Bound::Auto(_)
+            | Bound::Outlives(_)
+            | Bound::Trait(_)
+            | Bound::ProjectionEqual(_) => {}
         }
         if let Some(Kind::Parameter(id)) = types.kind(predicate.ty) {
             let parameter = Arc::make_mut(&mut self.parameters)

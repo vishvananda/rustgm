@@ -156,7 +156,7 @@ impl Normalizer {
         loop {
             self.check_work()?;
             let Some((key, finish)) = self.frame.fold.work.pop() else {
-                if self.finish_callable(store)? {
+                if self.finish_binder(store)? {
                     continue;
                 }
                 break;
@@ -201,8 +201,8 @@ impl Normalizer {
                 let kind = store
                     .kind(key.0)
                     .ok_or("invalid normalization dependency")?;
-                if matches!(kind, Kind::Function { .. }) {
-                    self.enter_callable(store, key, kind)?;
+                if matches!(kind, Kind::Function { .. } | Kind::Dynamic { .. }) {
+                    self.enter_binder(store, key, kind)?;
                 } else {
                     self.frame.fold.work.push((key, true));
                     self.frame.fold.dependencies(store, kind, key.1)?;

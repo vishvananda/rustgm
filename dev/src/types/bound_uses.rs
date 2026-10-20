@@ -161,7 +161,7 @@ impl Uses {
                     self.drain(store)?;
                 }
             }
-            Bound::Copy | Bound::Clone | Bound::Sized => {}
+            Bound::Copy | Bound::Clone | Bound::Sized | Bound::Auto(_) => {}
         }
         Ok(())
     }
@@ -180,6 +180,15 @@ impl Uses {
                 }
                 Kind::Adt(_, arguments) | Kind::Opaque(_, arguments) => {
                     self.arguments(store, arguments, depth)?;
+                }
+                Kind::Dynamic {
+                    arguments, region, ..
+                } => {
+                    self.region(region, depth);
+                    let nested = depth
+                        .checked_add(1)
+                        .ok_or("bound-use binder depth overflow")?;
+                    self.arguments(store, arguments, nested)?;
                 }
                 Kind::Projection(application) => {
                     if self.opaque_projections {

@@ -246,6 +246,7 @@ fn requirement(store: &Store, predicate: Predicate, out: &mut impl Write) -> io:
     match predicate.bound {
         Bound::ProjectionEqual(result) => write!(out, "projection-equal:{}", result.0),
         Bound::Sized => write!(out, "sized"),
+        Bound::Auto(marker) => write!(out, "auto:{}", marker.name()),
         Bound::Copy => write!(out, "copy"),
         Bound::Clone => write!(out, "clone"),
         Bound::Outlives(region) => {

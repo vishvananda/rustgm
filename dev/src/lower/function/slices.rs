@@ -1,4 +1,4 @@
-//! Wide pointer values use object storage; unsized places retain sparse length facts.
+//! Wide pointer values use object storage; slice projections consume length metadata.
 use super::{Address, Arithmetic, Lower, Projected, Selected};
 use crate::{
     body::ir::{Place, ProjectionId, ProjectionKind, ValueId},
@@ -14,25 +14,29 @@ impl Lower<'_, '_> {
         &mut self,
         id: ProjectionId,
         base: Address,
-        length: Option<Value>,
+        metadata: Option<Value>,
     ) -> Result<(Address, Option<Value>), &'static str> {
         let projection = &self.body.projections[id.0 as usize];
         if matches!(projection.kind, ProjectionKind::Dereference { .. }) {
             let address = self.dereference(base, projection.ty)?;
-            let length = if self.context.wide_referent(projection.ty)? {
-                let tail = self.offset(base, 8)?;
-                Some(self.builder.load(Type::I64, tail.operand)?)
-            } else {
-                None
-            };
-            return Ok((address, length));
+            return Ok((address, self.load_metadata(base, projection.ty)?));
+        }
+        if let ProjectionKind::Field(field) = projection.kind {
+            let (_, offset) = self
+                .context
+                .place_field(self.place_type(projection.base)?, field)?;
+            let address = self.field_address(base, offset, metadata)?;
+            return Ok((address, metadata));
         }
         let Some(Kind::Slice(element)) = self.context.types.kind(self.place_type(projection.base)?)
         else {
             return Err("dynamic pattern selection requires a slice");
         };
         let leaf = self.context.layout(element)?;
-        let length = length.ok_or("dynamic selection lacks slice length")?;
+        let length = metadata.ok_or("dynamic selection lacks slice length")?;
+        if length.ty != Type::I64 {
+            return Err("slice selection requires length metadata");
+        }
         match projection.kind {
             ProjectionKind::FromEnd { offset, minimum } if offset != 0 && offset <= minimum => {
                 let offset = self.builder.integer(Type::I64, u128::from(offset))?;
@@ -70,7 +74,7 @@ impl Lower<'_, '_> {
             self.dynamic_selection(id, base, Some(length))?
         };
         if let Some(length) = length {
-            self.slice_lengths.insert(id, length);
+            self.place_metadata.insert(id, length);
         }
         self.projections[id.0 as usize] = Projected::Ready(Some(address));
         Ok(())
@@ -95,9 +99,9 @@ impl Lower<'_, '_> {
     pub(super) fn wide_pointer(
         &mut self,
         pointer: Value,
-        length: Value,
+        metadata: Value,
     ) -> Result<Selected, &'static str> {
-        if pointer.ty != Type::Ptr || length.ty != Type::I64 {
+        if pointer.ty != Type::Ptr || !matches!(metadata.ty, Type::I64 | Type::Ptr) {
             return Err("wide pointer components have invalid types");
         }
         let slot = self.builder.object_slot(MemorySpan {
@@ -110,7 +114,7 @@ impl Lower<'_, '_> {
         };
         self.builder.store(pointer, address.operand)?;
         let tail = self.offset(address, 8)?;
-        self.builder.store(length, tail.operand)?;
+        self.builder.store(metadata, tail.operand)?;
         Ok(Selected::Object(address))
     }
     pub(super) fn unsize(
@@ -160,17 +164,68 @@ impl Lower<'_, '_> {
         let length = self.builder.integer(Type::I64, u128::from(length))?;
         self.wide_pointer(pointer, length)
     }
-    pub(super) fn slice_length(&mut self, place: Place) -> Result<Value, &'static str> {
-        if let Some(Kind::Array { length, .. }) = self.context.types.kind(self.place_type(place)?) {
-            return self.builder.integer(Type::I64, u128::from(length));
-        }
-        let Place::Projection(id) = place else {
-            return Err("unsized place lacks projection metadata");
+    pub(super) fn object_unsizing(
+        &mut self,
+        operand: ValueId,
+        concrete: TypeId,
+        object: TypeId,
+    ) -> Result<Selected, &'static str> {
+        let pointer = self.value(operand)?.runtime()?;
+        let table = self.context.object_table(concrete, object)?;
+        let metadata = self
+            .builder
+            .address(crate::lowir::program::Operand::Global(table))?;
+        self.wide_pointer(pointer, metadata)
+    }
+    pub(super) fn object_upcasting(
+        &mut self,
+        operand: ValueId,
+        source: TypeId,
+        target: TypeId,
+    ) -> Result<Selected, &'static str> {
+        use crate::sema::vtable_plans::Upcast;
+        let plan = self
+            .context
+            .objects
+            .upcast(source, target)
+            .ok_or("object upcast lacks a checked plan")?;
+        let value = self.value(operand)?;
+        let Upcast::Table { source, index } = plan else {
+            return Ok(value);
         };
-        self.slice_lengths
-            .get(&id)
-            .copied()
-            .ok_or("slice length does not dominate its use")
+        let Selected::Object(address) = value else {
+            return Err("upcast source lacks its wide pointer representation");
+        };
+        let shape = self
+            .context
+            .objects
+            .shape(source)
+            .ok_or("missing upcast source shape")?;
+        let slot = u64::try_from(shape.slots.len())
+            .map_err(|_| "virtual slot count exceeds target address space")?
+            .checked_add(u64::from(index))
+            .and_then(|n| n.checked_mul(8))
+            .and_then(|n| n.checked_add(super::super::virtual_dispatch::HEADER_BYTES))
+            .ok_or("upcast slot exceeds target address space")?;
+        let data = self.builder.load(Type::Ptr, address.operand)?;
+        let metadata = self.offset(address, 8)?;
+        let table = self.builder.load(Type::Ptr, metadata.operand)?;
+        let slot = self.offset(
+            Address {
+                operand: table.operand,
+                align: 8,
+            },
+            slot,
+        )?;
+        let metadata = self.builder.load(Type::Ptr, slot.operand)?;
+        self.wide_pointer(data, metadata)
+    }
+    pub(super) fn slice_length(&mut self, place: Place) -> Result<Value, &'static str> {
+        let value = self.metadata(place)?;
+        if value.ty != Type::I64 {
+            return Err("slice length requires length metadata");
+        }
+        Ok(value)
     }
     pub(super) fn project_reference(
         &mut self,
@@ -179,10 +234,8 @@ impl Lower<'_, '_> {
     ) -> Result<(), &'static str> {
         let ty = self.body.projections[id.0 as usize].ty;
         let address = self.dereference(base, ty)?;
-        if self.context.wide_referent(ty)? {
-            let tail = self.offset(base, 8)?;
-            let length = self.builder.load(Type::I64, tail.operand)?;
-            self.slice_lengths.insert(id, length);
+        if let Some(metadata) = self.load_metadata(base, ty)? {
+            self.place_metadata.insert(id, metadata);
         }
         self.projections[id.0 as usize] = Projected::Ready(Some(address));
         Ok(())

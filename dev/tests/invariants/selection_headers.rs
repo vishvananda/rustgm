@@ -140,7 +140,7 @@ pub(super) fn delay(
             .ok_or("missing header type")?;
         seeds.push(PendingHeader {
             owner: header.owner,
-            item,
+            item: item.into(),
             head: (!matches!(head, Kind::Parameter(_) | Kind::Projection(_)))
                 .then_some(Head::canonical(head)),
         });

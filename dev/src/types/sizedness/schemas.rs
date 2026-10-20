@@ -218,7 +218,9 @@ where
         }
         Ok(
             match types.kind(ty).ok_or("invalid sizedness template type")? {
-                Kind::Slice(_) | Kind::Primitive(Primitive::Str) => Step::Complete(Term::Unsized),
+                Kind::Slice(_) | Kind::Primitive(Primitive::Str) | Kind::Dynamic { .. } => {
+                    Step::Complete(Term::Unsized)
+                }
                 Kind::Parameter(_) | Kind::Projection(_) | Kind::Opaque(..) => {
                     Step::Complete(if types.is_sized(ty) == Some(true) {
                         Term::Sized

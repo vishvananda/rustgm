@@ -175,7 +175,9 @@
       "path": "pa12",
       "title": "Aggregates and layout",
       "mode": "--emit-lowir",
-      "additional_modes": ["--emit-layouts"],
+      "additional_modes": [
+        "--emit-layouts"
+      ],
       "status": "implemented-draft",
       "scope": "Concrete owned aggregates, typed scalar discriminants, cached layouts, checked indexing, by-value calls and zero-sized values",
       "test_families": [
@@ -192,7 +194,9 @@
       "path": "pa13",
       "title": "Pattern semantics",
       "mode": "--emit-lowir",
-      "additional_modes": ["--emit-patterns"],
+      "additional_modes": [
+        "--emit-patterns"
+      ],
       "status": "implemented-draft",
       "scope": "Owned pattern decisions, guards, conditional bindings and constant patterns; borrowed/text/slice inspection with explicit pending region/loan proofs",
       "test_families": [
@@ -208,7 +212,9 @@
       "path": "pa14",
       "title": "Moves and initialization",
       "mode": "--emit-ownership",
-      "additional_modes": ["--emit-lowir"],
+      "additional_modes": [
+        "--emit-lowir"
+      ],
       "status": "implemented-draft",
       "scope": "Owned move paths, Copy/Clone obligations, definite initialization and maybe-written joins; user-reference loans, outlives and destruction remain separate proofs",
       "test_families": [
@@ -245,7 +251,9 @@
         "field disjointness",
         "loop loans"
       ],
-      "additional_modes": ["--emit-lowir"]
+      "additional_modes": [
+        "--emit-lowir"
+      ]
     },
     {
       "number": 17,
@@ -289,7 +297,9 @@
         "bounds",
         "ambiguous methods"
       ],
-      "additional_modes": ["--emit-lowir"]
+      "additional_modes": [
+        "--emit-lowir"
+      ]
     },
     {
       "number": 20,
@@ -304,7 +314,9 @@
         "recursive goals",
         "solver caching"
       ],
-      "additional_modes": ["--emit-lowir"]
+      "additional_modes": [
+        "--emit-lowir"
+      ]
     },
     {
       "number": 21,
@@ -322,7 +334,9 @@
         "dropck",
         "integration"
       ],
-      "additional_modes": ["--emit-lowir"]
+      "additional_modes": [
+        "--emit-lowir"
+      ]
     },
     {
       "number": 22,
@@ -347,13 +361,18 @@
       "path": "pa23",
       "title": "Trait objects",
       "mode": "--emit-lowir",
-      "status": "planned",
-      "scope": "Dyn compatibility, vtable construction, dispatch and supported upcasting",
+      "status": "implemented-draft",
+      "scope": "Dyn compatibility, object lifetimes, marker obligations, vtables, dispatch, upcasting and dynamic storage tails",
       "test_families": [
-        "object lifetime",
+        "annotations",
+        "conversions",
+        "members",
+        "markers",
+        "hidden-results",
         "dispatch",
-        "drop shim",
-        "incompatible traits"
+        "lifetimes",
+        "upcasts",
+        "storage"
       ]
     },
     {

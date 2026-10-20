@@ -5,6 +5,7 @@ pub enum Bound {
     Copy,
     Clone,
     Sized,
+    Auto(crate::types::auto_traits::AutoTrait),
     Trait(crate::types::traits::ApplicationId),
     Outlives(crate::types::RegionId),
     /// The projected subject equals this result; its inputs are not injective.
@@ -52,7 +53,7 @@ impl Predicate {
             ),
             Bound::ProjectionEqual(result) => ty(result)?,
             Bound::Outlives(region) => region == crate::types::RegionId::STATIC,
-            Bound::Copy | Bound::Clone | Bound::Sized => true,
+            Bound::Copy | Bound::Clone | Bound::Sized | Bound::Auto(_) => true,
         })
     }
 
@@ -78,7 +79,7 @@ impl Predicate {
                 .is_concrete(),
             Bound::ProjectionEqual(result) => concrete(result)?,
             Bound::Outlives(region) => region == crate::types::RegionId::STATIC,
-            Bound::Copy | Bound::Clone | Bound::Sized => true,
+            Bound::Copy | Bound::Clone | Bound::Sized | Bound::Auto(_) => true,
         })
     }
 
@@ -97,7 +98,31 @@ impl Predicate {
             Bound::ProjectionEqual(result) => store
                 .contains_projections(result)
                 .ok_or("invalid projection equality result")?,
-            Bound::Copy | Bound::Clone | Bound::Sized | Bound::Outlives(_) => false,
+            Bound::Copy | Bound::Clone | Bound::Sized | Bound::Auto(_) | Bound::Outlives(_) => {
+                false
+            }
+        };
+        Ok(subject || arguments)
+    }
+    /// Opaque identities occur in Self, the complete trait inputs or the equality result.
+    /// This is an interned input property, not permission to reveal a hidden type.
+    /// # Errors
+    /// Rejects unknown predicate inputs.
+    pub fn contains_opaques(self, store: &crate::types::Store) -> Result<bool, &'static str> {
+        let subject = store
+            .contains_opaques(self.ty)
+            .ok_or("invalid predicate subject")?;
+        let arguments = match self.bound {
+            Bound::Trait(id) => store
+                .trait_properties(id)
+                .ok_or("invalid predicate trait application")?
+                .has(crate::types::Property::Opaques),
+            Bound::ProjectionEqual(result) => store
+                .contains_opaques(result)
+                .ok_or("invalid projection equality result")?,
+            Bound::Copy | Bound::Clone | Bound::Sized | Bound::Auto(_) | Bound::Outlives(_) => {
+                false
+            }
         };
         Ok(subject || arguments)
     }
@@ -130,7 +155,7 @@ impl Predicate {
             Bound::ProjectionEqual(result) => store
                 .has_free_regions(result, depth)
                 .ok_or("invalid projection equality result")?,
-            Bound::Copy | Bound::Clone | Bound::Sized => false,
+            Bound::Copy | Bound::Clone | Bound::Sized | Bound::Auto(_) => false,
         };
         Ok(subject || arguments)
     }
@@ -149,7 +174,9 @@ impl Predicate {
             Bound::ProjectionEqual(result) => store
                 .contains_parameters(result)
                 .ok_or("invalid projection equality result")?,
-            Bound::Copy | Bound::Clone | Bound::Sized | Bound::Outlives(_) => false,
+            Bound::Copy | Bound::Clone | Bound::Sized | Bound::Auto(_) | Bound::Outlives(_) => {
+                false
+            }
         };
         Ok(subject || arguments)
     }
@@ -171,7 +198,7 @@ impl Predicate {
             Bound::ProjectionEqual(result) => store
                 .escaping_binders(result)
                 .ok_or("invalid projection equality result")?,
-            Bound::Copy | Bound::Clone | Bound::Sized => 0,
+            Bound::Copy | Bound::Clone | Bound::Sized | Bound::Auto(_) => 0,
         };
         Ok(subject.max(arguments))
     }

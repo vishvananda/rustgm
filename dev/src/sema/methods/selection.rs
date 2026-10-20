@@ -58,15 +58,31 @@ pub(super) fn trait_groups(
     if facts.methods.visible.is_none() {
         facts.methods.visible = Some(Box::new(super::visible::Index::new(report, facts)?));
     }
-    let parameter = match source.head(&facts.types, prefix).map_err(inference)? {
+    let head = source.head(&facts.types, prefix).map_err(inference)?;
+    let object = if matches!(head, Some(infer::Constructor::Dynamic { .. })) {
+        let ty = source
+            .resolved(&mut facts.types, prefix)
+            .map_err(inference)?;
+        let (index, steps) = crate::sema::traits::object_bounds::get(facts, ty)?;
+        source.account_work(steps).map_err(inference)?;
+        Some(index)
+    } else {
+        None
+    };
+    let parameter = match head {
         Some(infer::Constructor::Parameter(parameter)) => Some(parameter),
         _ => None,
     };
-    let bound_traits = parameter
-        .zip(caller.traits)
-        .map_or(&[][..], |(parameter, traits)| {
-            traits.parameter_traits(parameter)
-        });
+    let bound_traits = object.as_ref().map_or_else(
+        || {
+            parameter
+                .zip(caller.traits)
+                .map_or(&[][..], |(parameter, traits)| {
+                    traits.parameter_traits(parameter)
+                })
+        },
+        |object| object.traits.as_slice(),
+    );
     facts
         .methods
         .visible

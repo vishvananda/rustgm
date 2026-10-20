@@ -21,6 +21,21 @@ pub(super) struct Pending {
     roots: Vec<(PatternId, bool)>,
     matches: Vec<u32>,
 }
+impl Pending {
+    /// Completed function batches are joined once in declaration order. Active
+    /// callers keep their unfinished request suffix inside their suspended state.
+    pub(super) fn append(&mut self, mut other: Self) {
+        let offset = self.requests.len();
+        for scope in &mut other.scopes {
+            scope.values.end += offset;
+        }
+        self.requests.append(&mut other.requests);
+        self.scopes.append(&mut other.scopes);
+        self.ranges.append(&mut other.ranges);
+        self.roots.append(&mut other.roots);
+        self.matches.append(&mut other.matches);
+    }
+}
 struct Scope {
     values: super::super::constants::PatternScope,
     module: ModuleId,
@@ -137,6 +152,18 @@ impl Checker<'_> {
         pending.matches.append(&mut self.state.matches);
         Ok(())
     }
+    /// Finish only this completed definition's patterns before its CFG is demanded.
+    /// The waiting caller keeps all inference and unfinished pattern state intact.
+    pub(super) fn prepare_defining_patterns(&mut self, pending: Box<Pending>) -> Result<(), Error> {
+        let mut scratch = super::Scratch::default();
+        scratch.resumable();
+        let fresh = Checker::with_scratch(self.report, self.facts, scratch).state;
+        let saved = std::mem::replace(&mut self.state, fresh);
+        self.state.pending_patterns = Some(pending);
+        let result = self.complete_constant_patterns();
+        self.state = saved;
+        result
+    }
     pub(super) fn complete_constant_patterns(&mut self) -> Result<(), Error> {
         let Some(pending) = self.state.pending_patterns.take() else {
             return Ok(());
@@ -146,6 +173,7 @@ impl Checker<'_> {
             self.facts,
             &pending.requests,
             pending.scopes.iter().map(|scope| scope.values),
+            &mut self.pattern_queries,
         )?;
         let mut ranges = pending.ranges.into_iter();
         let mut roots = pending.roots.into_iter();

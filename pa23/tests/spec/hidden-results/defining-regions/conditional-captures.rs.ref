@@ -1,0 +1,111 @@
+function @rg.24() -> void {
+  slot $s0 : u8
+  slot $s1 : obj<8x8>
+  slot $s2 : obj<8x8>
+  block ^b0:
+    store u8 17, $s0
+    %t0 = addr $s0
+    %t1 = addr $s0
+    %t2 = addr $s2
+    call void @rg.23.i5(%t2, %t0, %t1, 1)
+    %t3 = addr $s2
+    %t4 = addr $s1
+    copyobj 8x8 %t3, %t4
+    %t5 = addr $s1
+    call void @rg.22.i6(%t5)
+    %t6 = addr $s1
+    %t7 = call u8 @rg.21(%t6)
+    %t8 = cmp eq u8 %t7, 17
+    %t9 = convert trunc i1 i64 %t8
+    call void @rg.13(%t9)
+    return void
+}
+function @rg.23.i5(%p0 : ptr, %p1 : ptr, %p2 : ptr, %p3 : i1) -> void {
+  slot $s0 : ptr
+  slot $s1 : ptr
+  slot $s2 : i1
+  slot $s3 : ptr
+  slot $s4 : obj<8x8>
+  block ^b0:
+    store ptr %p1, $s0
+    store ptr %p2, $s1
+    store i1 %p3, $s2
+    %t0 = load i1 $s2
+    branch %t0, ^b1, ^b2
+  block ^b2:
+    %t1 = load ptr $s1
+    store ptr %t1, $s3
+    jump ^b3
+  block ^b1:
+    %t2 = load ptr $s0
+    store ptr %t2, $s3
+    jump ^b3
+  block ^b3:
+    %t3 = load ptr $s3
+    %t4 = addr $s4
+    call void @rg.19(%t4, %t3)
+    %t5 = addr $s4
+    copyobj 8x8 %t5, %p0
+    return void
+}
+function @rg.22.i6(%p0 : ptr) -> void {
+  slot $s0 : ptr
+  block ^b0:
+    store ptr %p0, $s0
+    return void
+}
+function @rg.21(%p0 : ptr) -> u8 {
+  slot $s0 : ptr
+  block ^b0:
+    store ptr %p0, $s0
+    %t0 = load ptr $s0
+    %t1 = load ptr %t0
+    %t2 = load u8 %t1
+    return u8 %t2
+}
+function @rg.13(%p0 : i1) -> void {
+  slot $s0 : i1
+  block ^b0:
+    store i1 %p0, $s0
+    %t0 = load i1 $s0
+    %t1 = unary not i1 %t0
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    jump ^b3
+  block ^b1:
+    %t2 = call u8 @rg.14(0)
+    jump ^b3
+  block ^b3:
+    return void
+}
+function @rg.19(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<8x8>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    store ptr %t0, $s1
+    %t1 = addr $s1
+    copyobj 8x8 %t1, %p0
+    return void
+}
+function @rg.14(%p0 : u8) -> u8 {
+  slot $s0 : u8
+  block ^b0:
+    store u8 %p0, $s0
+    %t0 = load u8 $s0
+    %t1 = cmp eq u8 %t0, 0
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    %t2 = binary udiv u8 1, %t0
+    return u8 %t2
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+declare function @abort() -> void [return=noreturn]
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.24()
+    return i64 0
+}

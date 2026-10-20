@@ -1,0 +1,1 @@
+ERROR: file 0: 28: trait is not dyn compatible: definition 13: requires Self: Sized

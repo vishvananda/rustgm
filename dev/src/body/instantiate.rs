@@ -349,9 +349,12 @@ fn substitute(
     }
     for value in &mut body.values {
         match &mut value.kind {
-            Rvalue::Unsize { array, .. } => {
-                *array = bound.apply(&mut facts.types, *array)?;
-                projected |= facts.types.contains_projections(*array) == Some(true);
+            Rvalue::Unsize { conversion, .. } => {
+                *conversion = conversion.try_map(|ty| {
+                    let ty = bound.apply(&mut facts.types, ty)?;
+                    projected |= facts.types.contains_projections(ty) == Some(true);
+                    Ok::<_, &'static str>(ty)
+                })?;
             }
             Rvalue::Call { signature, .. } => {
                 *signature = bound.apply(&mut facts.types, *signature)?;

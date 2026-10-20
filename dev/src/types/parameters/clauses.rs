@@ -4,6 +4,7 @@ mod equivalence;
 use super::predicates::Predicate;
 use crate::types::{Store, bound_uses::captures::Slots};
 pub use composition::Quantifier;
+pub(crate) use equivalence::Comparison;
 use std::collections::HashMap;
 #[cfg(test)]
 mod slot_validation;
@@ -56,7 +57,7 @@ impl Clause {
                 .contains_regions(result)
                 .ok_or("invalid default bound result")?,
             Bound::Outlives(_) => true,
-            Bound::Copy | Bound::Clone | Bound::Sized => false,
+            Bound::Copy | Bound::Clone | Bound::Sized | Bound::Auto(_) => false,
         };
         Ok(!subject && !bound)
     }
@@ -240,28 +241,43 @@ impl Store {
         if value.bound_regions > u32::from(u16::MAX) + 1 {
             return Err("too many quantified lifetime slots");
         }
-        // Reuse summaries across different predicates with shared type graphs.
-        // The required count belongs to the graph, not to this binder's arity.
-        let mut slots = self
+        let (required, _) = self.clause_local_slots(value.predicate)?;
+        if required > value.bound_regions {
+            return Err("quantified predicate references an unbound lifetime");
+        }
+        let storage = self
             .arguments
             .as_mut()
             .and_then(|storage| storage.clauses.as_mut())
-            .map_or_else(Slots::default, |storage| std::mem::take(&mut storage.slots));
-        let required = slots.predicate(self, value.predicate);
-        let storage = self
-            .arguments
-            .get_or_insert_with(Default::default)
-            .clauses
-            .get_or_insert_with(Default::default);
-        storage.slots = slots;
-        if required? > value.bound_regions {
-            return Err("quantified predicate references an unbound lifetime");
-        }
+            .ok_or("missing quantified predicate storage")?;
         let id = QuantifiedId(
             u32::try_from(storage.values.len()).map_err(|_| "too many quantified predicates")?,
         );
         storage.values.push(value);
         storage.index.insert(value, id);
         Ok(id)
+    }
+
+    /// Occurrence summaries belong to the immutable type graph, independently
+    /// of a clause's binder arity or its permitted fixed comparison prefix.
+    pub(crate) fn clause_local_slots(
+        &mut self,
+        predicate: Predicate,
+    ) -> Result<(u32, usize), &'static str> {
+        let mut slots = self
+            .arguments
+            .as_mut()
+            .and_then(|storage| storage.clauses.as_mut())
+            .map_or_else(Slots::default, |storage| std::mem::take(&mut storage.slots));
+        let before = slots.steps;
+        let required = slots.predicate(self, predicate);
+        let work = slots.steps.saturating_sub(before).saturating_add(1);
+        let storage = self
+            .arguments
+            .get_or_insert_with(Default::default)
+            .clauses
+            .get_or_insert_with(Default::default);
+        storage.slots = slots;
+        required.map(|required| (required, work))
     }
 }

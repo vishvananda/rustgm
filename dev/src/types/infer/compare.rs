@@ -10,6 +10,28 @@ impl Context {
     /// # Errors
     /// Rejects invalid identities and exhausted graph traversal resources.
     pub fn incompatible(&mut self, store: &Store, a: TermId, b: TermId) -> Result<bool, Error> {
+        self.incompatible_under(store, a, b, false)
+    }
+    /// Unsizing may specialize a quantified object's trait inputs even when
+    /// ordinary inference sees no type-constructor mismatch. Full conversion
+    /// obligations still decide whether that change is permitted.
+    /// # Errors
+    /// Reports invalid identities and exhausted graph traversal.
+    pub fn unsizing_mismatch(
+        &mut self,
+        store: &Store,
+        a: TermId,
+        b: TermId,
+    ) -> Result<bool, Error> {
+        self.incompatible_under(store, a, b, true)
+    }
+    fn incompatible_under(
+        &mut self,
+        store: &Store,
+        a: TermId,
+        b: TermId,
+        object_quantifiers: bool,
+    ) -> Result<bool, Error> {
         self.pairs.clear();
         self.seen.clear();
         self.pairs.push((a, b));
@@ -49,6 +71,24 @@ impl Context {
                 }
                 (Constructor::Opaque(x, a), Constructor::Opaque(y, b)) => {
                     x == y && !self.argument_mismatch(a, b)?
+                }
+                (
+                    Constructor::Dynamic {
+                        shape: a,
+                        arguments: aa,
+                        lifetimes: al,
+                    },
+                    Constructor::Dynamic {
+                        shape: b,
+                        arguments: ba,
+                        lifetimes: bl,
+                    },
+                ) => {
+                    a == b
+                        && !self.argument_mismatch(aa, ba)?
+                        && !(object_quantifiers
+                            && (self.object_lifetimes(al)?.bound_regions != 0
+                                || self.object_lifetimes(bl)?.bound_regions != 0))
                 }
                 (Constructor::AdtArgs(x, a), Constructor::AdtArgs(y, b))
                 | (Constructor::FunctionItemArgs(x, a), Constructor::FunctionItemArgs(y, b)) => {

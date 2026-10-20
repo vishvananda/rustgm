@@ -1,0 +1,1 @@
+ERROR: file 0: 37: object arguments cannot depend on an erased Self default

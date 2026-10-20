@@ -12,7 +12,10 @@ use crate::{
     },
 };
 
-fn valid(facts: &Declarations, proof: &Obligations) -> Result<bool, Box<dyn std::error::Error>> {
+pub(super) fn valid(
+    facts: &Declarations,
+    proof: &Obligations,
+) -> Result<bool, Box<dyn std::error::Error>> {
     let mut constraints = Constraints::new(&facts.types, &facts.lifetimes.variances, 1, 100_000)?;
     let input = RegionId(10);
     let universal = RegionId::bound(0, 0)?;

@@ -274,6 +274,7 @@ impl Query {
         let (first, end) = (selected.first, selected.end);
         self.push(
             super::Node {
+                cycle_dependent: false,
                 provisional_size: false,
                 goal: selected.goal,
                 source: selected.source,
@@ -328,6 +329,7 @@ mod tests {
                 let witness = RegionId(10 + offset);
                 let node = query.push(
                     super::super::Node {
+                        cycle_dependent: false,
                         provisional_size: false,
                         goal: predicates::Predicate {
                             ty: byte,

@@ -231,8 +231,11 @@ fn semantic(
     mode: Mode,
     out: &mut impl Write,
 ) -> Result<(), String> {
-    let mut facts = rustgm::sema::declarations::analyze(&report)
-        .and_then(|facts| rustgm::sema::bodies::analyze(&report, facts))
+    let rustgm::pipeline::Analysis {
+        mut facts,
+        prepared,
+    } = rustgm::sema::declarations::analyze(&report)
+        .and_then(|facts| rustgm::pipeline::analyze(&report, facts))
         .map_err(|e| e.to_string())?;
     if matches!(mode, Mode::Semantics | Mode::Relationships) {
         rustgm::sema::semantic_view::check_ordinary_profile(&report, &facts)
@@ -282,7 +285,7 @@ fn semantic(
     if matches!(mode, Mode::Lowir) {
         let entry = rustgm::sema::entry::select(&mut report, &facts)
             .map_err(|e| report.diagnostic(e).to_string())?;
-        let lowir = rustgm::lower::instances::build(&report, &mut facts, entry)
+        let lowir = rustgm::lower::instances::build_prepared(&report, &mut facts, entry, prepared)
             .map_err(|e| e.to_string())?;
         drop(facts);
         drop(report);

@@ -32,7 +32,19 @@ impl Search<'_> {
         if let Bound::Outlives(region) = goal.bound {
             type_outlives.push((goal.ty, region));
         } else {
-            let valid = if goal.bound == Bound::Sized
+            let valid = if let Bound::Auto(marker) = goal.bound {
+                match self.auto_condition(
+                    facts,
+                    frame,
+                    crate::types::auto_traits::Obligation {
+                        ty: goal.ty,
+                        marker,
+                    },
+                )? {
+                    std::ops::ControlFlow::Break(action) => return Ok(action),
+                    std::ops::ControlFlow::Continue(value) => value,
+                }
+            } else if goal.bound == Bound::Sized
                 && (facts.types.contains_projected_sizes(goal.ty) == Some(true)
                     || !facts.types.nominal_sizes_sealed()
                         && facts.types.contains_nominals(goal.ty) == Some(true))
@@ -54,12 +66,16 @@ impl Search<'_> {
                 sized.push(goal.ty);
             }
         }
-        let children = frame
+        let mut children = frame
             .storage
             .as_mut()
             .map_or_else(Vec::new, |storage| std::mem::take(&mut storage.children));
+        if let Some(autos) = &mut frame.autos {
+            children.append(&mut autos.children);
+        }
         let node = self.query.push(
             Node {
+                cycle_dependent: false,
                 provisional_size,
                 goal,
                 source: Some(super::Source::Builtin),

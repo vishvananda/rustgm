@@ -1,7 +1,7 @@
 //! Solved bodies retain their finalization frontier while field declarations complete.
 use super::{
     AdjustmentKind, Checker, Declarations, Dependency, Error, NodeId, NodeKey, Operation,
-    RegionEquality, field_storage::Batch,
+    RegionEquality, field_storage::Batch, hidden_results::HiddenResults,
 };
 use crate::{
     sema::traits::selection::Source,
@@ -9,7 +9,12 @@ use crate::{
 };
 use std::collections::HashMap;
 
-pub(super) struct Finalization {
+pub(super) enum Finalization {
+    Storage(Box<Publication>),
+    Requirements(HiddenResults),
+}
+pub(super) struct Publication {
+    hidden: HiddenResults,
     solved: Solved,
     predicates: Vec<Predicate>,
     arguments: Vec<GenericArgs>,
@@ -51,9 +56,10 @@ impl Checker<'_> {
                     .map(|pending| pending.arguments.as_slice()),
             )
             .map_err(|e| self.error(body, e))?;
-        self.complete_opaque_results(&solved)?;
+        let hidden = self.check_opaque_results(&solved)?;
         let storage = self.body_storage(&solved)?;
-        self.advance_finalization(Finalization {
+        self.advance_publication(Publication {
+            hidden,
             solved,
             predicates,
             arguments,
@@ -65,7 +71,9 @@ impl Checker<'_> {
         &mut self,
         mut finalization: Finalization,
     ) -> Result<Option<Dependency>, Error> {
-        if let Some(storage) = &mut finalization.storage {
+        if let Finalization::Storage(publication) = &mut finalization
+            && let Some(storage) = &mut publication.storage
+        {
             storage
                 .resume(self.facts)
                 .map_err(|e| self.error(self.state.body.node, e))?;
@@ -74,30 +82,61 @@ impl Checker<'_> {
     }
     fn advance_finalization(
         &mut self,
-        mut finalization: Finalization,
+        finalization: Finalization,
+    ) -> Result<Option<Dependency>, Error> {
+        match finalization {
+            Finalization::Storage(publication) => self.advance_publication(*publication),
+            Finalization::Requirements(hidden) => self.complete_requirements(hidden),
+        }
+    }
+    fn advance_publication(
+        &mut self,
+        mut publication: Publication,
     ) -> Result<Option<Dependency>, Error> {
         let body = self.state.body.node;
-        if let Some(storage) = &mut finalization.storage
+        if let Some(storage) = &mut publication.storage
             && let Some(requirement) = self.advance_body_storage(storage)?
         {
-            self.state.finalization = Some(Box::new(finalization));
+            self.state.finalization = Some(Box::new(Finalization::Storage(Box::new(publication))));
             return Ok(Some(Dependency {
                 requirement,
                 source: self.key(body),
             }));
         }
-        if let Some(storage) = finalization.storage.take() {
+        if let Some(storage) = publication.storage.take() {
             storage
                 .publish(self.facts, self.state.body)
                 .map_err(|e| self.error(body, e))?;
         }
-        let Finalization {
+        let hidden = self.publish_solved_body(publication)?;
+        self.complete_requirements(hidden)
+    }
+    fn complete_requirements(
+        &mut self,
+        hidden: HiddenResults,
+    ) -> Result<Option<Dependency>, Error> {
+        if let Some(dependency) = self.advance_canonical_requirements()? {
+            self.state.finalization = Some(Box::new(Finalization::Requirements(hidden)));
+            return Ok(Some(dependency));
+        }
+        self.publish_hidden_results(hidden)?;
+        if let Some(context) = self.state.canonical_trait_inference.take() {
+            self.facts.body_work.canonical_steps += context.steps;
+        }
+        self.clear_body_inference();
+        self.complete_body();
+        Ok(None)
+    }
+    fn publish_solved_body(&mut self, publication: Publication) -> Result<HiddenResults, Error> {
+        let body = self.state.body.node;
+        let Publication {
             solved,
             predicates,
             arguments,
             evidence,
+            hidden,
             ..
-        } = finalization;
+        } = publication;
         self.facts.body_work.inference_steps += solved.steps;
         self.validate_generic_uses(&solved, &predicates, &evidence)?;
         self.publish_constant_uses(arguments)?;
@@ -152,9 +191,7 @@ impl Checker<'_> {
                     right,
                 }),
         );
-        self.clear_body_inference();
-        self.complete_body();
-        Ok(None)
+        Ok(hidden)
     }
     fn clear_body_inference(&mut self) {
         for node in self.state.touched.drain(..) {

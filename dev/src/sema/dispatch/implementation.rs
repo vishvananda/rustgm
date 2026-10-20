@@ -25,6 +25,24 @@ pub(super) fn select(
     caller: selection::Caller<'_>,
     availability: Availability,
 ) -> Result<(Target, Obligations, bool), String> {
+    let evidence = select_source(facts, context, predicate, caller, availability)?;
+    let selection::Source::Implementation { owner, arguments } = evidence.source else {
+        return Err("concrete dispatch cannot use a symbolic assumption".into());
+    };
+    Ok((
+        Target { owner, arguments },
+        evidence.proof,
+        evidence.provisional_size,
+    ))
+}
+
+pub(super) fn select_source(
+    facts: &mut Declarations,
+    context: &mut Context,
+    predicate: Predicate,
+    caller: selection::Caller<'_>,
+    availability: Availability,
+) -> Result<selection::Evidence, String> {
     let before = context.region_equalities.len();
     let mut substitution =
         Instantiation::new(context, &facts.types, &[]).map_err(|e| e.to_string())?;
@@ -33,21 +51,14 @@ pub(super) fn select(
         .map_err(|e| e.to_string())?;
     facts.dispatch_dependencies.work.selections += 1;
     let selected = selection::select_available(facts, context, &goal, caller, availability)?;
-    let selection::Selection::Proven(evidence) = selected else {
+    let selection::Selection::Proven(mut evidence) = selected else {
         return Err("trait callable requires an unambiguous concrete implementation".into());
     };
-    let selection::Source::Implementation { owner, arguments } = evidence.source else {
-        return Err("concrete dispatch cannot use a symbolic assumption".into());
-    };
-    let mut proof = evidence.proof;
-    proof
+    evidence
+        .proof
         .equalities
         .extend(context.region_equalities.drain(before..));
-    Ok((
-        Target { owner, arguments },
-        proof,
-        evidence.provisional_size,
-    ))
+    Ok(evidence)
 }
 
 /// Return a reusable target only when its complete arguments can escape the

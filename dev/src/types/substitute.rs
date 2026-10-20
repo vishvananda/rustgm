@@ -26,7 +26,7 @@ enum Action {
     Items(Box<items::Replacements>),
     Universals(Box<universals::Mapping>),
     Regions(Box<region_mapping::Mapping>),
-    Shape,
+    Shape { preserve_static: bool },
     Normalize,
 }
 
@@ -91,14 +91,24 @@ impl Bound {
     /// An index key for lifetime-insensitive shape equality, never a usable type.
     pub(crate) fn shape() -> Self {
         let mut bound = Self::new(Vec::new());
-        bound.action = Action::Shape;
+        bound.action = Action::Shape {
+            preserve_static: false,
+        };
+        bound
+    }
+
+    pub(crate) fn auto_shape() -> Self {
+        let mut bound = Self::new(Vec::new());
+        bound.action = Action::Shape {
+            preserve_static: true,
+        };
         bound
     }
 
     // Erasure has no lexical context. Repeated callable tails must not acquire
     // a separate structural cache entry for every enclosing binder depth.
     fn cache_depth(&self, depth: u16) -> u16 {
-        if matches!(self.action, Action::Shape) {
+        if matches!(self.action, Action::Shape { .. }) {
             0
         } else {
             depth
@@ -189,7 +199,7 @@ impl Bound {
         let escaping = store
             .escaping_binders(key.0)
             .ok_or("invalid substitution type")?;
-        let closed = if matches!(self.action, Action::Shape) {
+        let closed = if matches!(self.action, Action::Shape { .. }) {
             store.has_free_regions(key.0, 0) == Some(false)
                 && store.contains_late_callables(key.0) == Some(false)
         } else if matches!(self.action, Action::Universals(_) | Action::Regions(_)) {
@@ -278,6 +288,10 @@ impl Bound {
                 self.argument_dependencies(store, arguments, depth)?;
                 None
             }
+            Kind::Dynamic { arguments, .. } => {
+                self.argument_dependencies(store, arguments, nested(depth)?)?;
+                None
+            }
             Kind::Projection(application) => {
                 self.queue(application.subject, depth)?;
                 let trait_ = store
@@ -324,8 +338,12 @@ impl Bound {
         if matches!(self.action, Action::Items(_) | Action::Normalize) {
             return Ok(region);
         }
-        if matches!(self.action, Action::Shape) {
-            return Ok(RegionId::STATIC);
+        if let Action::Shape { preserve_static } = self.action {
+            return Ok(if preserve_static && region != RegionId::STATIC {
+                RegionId(1)
+            } else {
+                RegionId::STATIC
+            });
         }
         if let Action::Universals(mapping) = &mut self.action {
             return mapping.region(region, depth);

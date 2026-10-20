@@ -1,0 +1,31 @@
+global @rg.data.0 : obj<16x8> [storage=readonly] = {
+  i64 7
+  ptr addr @rg.vtable.0
+}
+global @rg.vtable.0 : obj<32x8> [storage=readonly] = {
+  zero 8
+  i64 1
+  i64 1
+  ptr addr @rg.19
+}
+function @rg.21() -> void {
+  slot $s0 : obj<16x8>
+  block ^b0:
+    %t0 = addr @rg.data.0
+    %t1 = addr $s0
+    copyobj 16x8 %t0, %t1
+    return void
+}
+function @rg.19(%p0 : ptr) -> u8 {
+  slot $s0 : ptr
+  block ^b0:
+    store ptr %p0, $s0
+    %t0 = load ptr $s0
+    %t1 = load u8 %t0
+    return u8 %t1
+}
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.21()
+    return i64 0
+}

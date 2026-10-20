@@ -1,6 +1,11 @@
 //! Unsized prefixes share fixed child layouts without acquiring a whole-object size.
+#[path = "tail_layouts/vtables.rs"]
+mod vtables;
 use rustgm::{
-    abi::{layout::Layouts, tails::Queries},
+    abi::{
+        layout::Layouts,
+        tails::{Offset, Queries},
+    },
     types::{
         GenericArgs, ItemId, Kind, Primitive, Store, TypeId,
         aggregate::{self, Definitions, Repr, Representation, Variant},
@@ -40,9 +45,17 @@ impl Fixture {
             .tails
             .demand(&self.types, &self.definitions, &mut self.layouts, ty)?;
         let layout = self.tails.at(id).ok_or("missing tail layout")?;
-        let offsets = layout
-            .fields
-            .map_or_else(Vec::new, |fields| self.tails.offsets(fields).to_vec());
+        let offsets = match layout.fields {
+            Some(fields) => self
+                .tails
+                .offsets(fields)
+                .map(|offset| match offset {
+                    Offset::Fixed(value) => Ok(value),
+                    Offset::Aligned { .. } => Err("expected fixed tail alignment"),
+                })
+                .collect::<Result<Vec<_>, _>>()?,
+            None => Vec::new(),
+        };
         Ok((layout.align, offsets))
     }
 }
@@ -204,13 +217,13 @@ fn referent_alignment_uses_tails_without_following_recursive_pointer_storage()
         f.layouts
             .unsized_field(&f.types, &f.definitions, root, 0)
             .map_err(|e| e.message)?,
-        (pointer, 0)
+        (pointer, Offset::Fixed(0))
     );
     assert_eq!(
         f.layouts
             .unsized_field(&f.types, &f.definitions, root, 2)
             .map_err(|e| e.message)?,
-        (slice, 20)
+        (slice, Offset::Fixed(20))
     );
     assert!(
         f.layouts

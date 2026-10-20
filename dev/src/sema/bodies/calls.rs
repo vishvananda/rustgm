@@ -12,9 +12,9 @@ pub(super) struct CallTypes {
     pub assumed_obligations: HashSet<usize>,
     #[expect(
         clippy::box_collection,
-        reason = "ordinary call inference keeps quantified obligation metadata unallocated"
+        reason = "ordinary call inference keeps specialized obligation metadata unallocated"
     )]
-    bound_regions: Option<Box<HashMap<usize, u32>>>,
+    constraints: Option<Box<HashMap<usize, Constraint>>>,
     pub generic: Vec<(NodeId, DefId, TermId)>,
     pub constants: Vec<super::item_values::Pending>,
     pub generic_constructors: bool,
@@ -29,14 +29,34 @@ pub(super) struct CallTypes {
     universal_regions: Vec<RegionId>,
     universals: Option<Bound>,
 }
+#[derive(Default)]
+struct Constraint {
+    bound_regions: Option<u32>,
+    intrinsic: bool,
+}
 impl CallTypes {
     pub fn bound_regions(&self, index: usize) -> Option<u32> {
-        self.bound_regions.as_ref()?.get(&index).copied()
+        self.constraints.as_ref()?.get(&index)?.bound_regions
     }
     pub fn quantify(&mut self, index: usize, count: u32) {
-        self.bound_regions
+        self.constraints
             .get_or_insert_with(Default::default)
-            .insert(index, count);
+            .entry(index)
+            .or_default()
+            .bound_regions = Some(count);
+    }
+    pub fn require_intrinsic(&mut self, index: usize) {
+        self.constraints
+            .get_or_insert_with(Default::default)
+            .entry(index)
+            .or_default()
+            .intrinsic = true;
+    }
+    pub fn intrinsic(&self, index: usize) -> bool {
+        self.constraints
+            .as_ref()
+            .and_then(|c| c.get(&index))
+            .is_some_and(|c| c.intrinsic)
     }
     pub fn insert_nominal(&mut self, term: TermId, fields: super::nominals::Fields) {
         self.nominal_receivers.insert(term, fields);
@@ -52,7 +72,7 @@ impl CallTypes {
     pub fn clear(&mut self) {
         self.obligations.clear();
         self.assumed_obligations.clear();
-        self.bound_regions = None;
+        self.constraints = None;
         self.generic.clear();
         self.constants.clear();
         self.generic_constructors = false;

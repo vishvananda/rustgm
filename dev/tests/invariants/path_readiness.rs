@@ -78,7 +78,7 @@ fn delay(facts: &mut Declarations) -> TestResult<HashMap<DefId, (ItemId, Impleme
             .ok_or("missing header type")?;
         seeds.push(PendingHeader {
             owner: header.owner,
-            item,
+            item: item.into(),
             head: (!matches!(head, Kind::Parameter(_) | Kind::Projection(_)))
                 .then_some(Head::canonical(head)),
         });

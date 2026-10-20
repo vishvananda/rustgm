@@ -19,6 +19,7 @@ mod method_overlap;
 mod method_paths;
 mod method_prefix;
 mod methods;
+mod objects;
 mod projections;
 mod receivers;
 mod trait_paths;
@@ -82,6 +83,7 @@ enum Work {
     NormalizeBound(NodeKey, regions::Context),
     NominalContract(ItemId, bool),
     Fields(ItemId, bool),
+    OpaqueHidden(crate::types::opaque::OpaqueId),
     Constructor(DefId),
     ValueType(DefId),
     ValueContract(TypeId, bool),
@@ -109,6 +111,7 @@ impl Work {
                 Self::ImplHeader(owner, impl_headers::Phase::Begin)
             }
             super::traits::selection::Dependency::Fields(item) => Self::Fields(item, false),
+            super::traits::selection::Dependency::Opaque(id) => Self::OpaqueHidden(id),
         }
     }
 }
@@ -125,6 +128,7 @@ struct Checker<'a> {
     constant_members: traits::ConstantReadiness,
     associated_type_bounds: std::collections::HashMap<DefId, traits::AssociatedBounds>,
     opaque_syntax: std::collections::HashMap<NodeKey, abstract_types::Pending>,
+    object_syntax: objects::Syntax,
     associated_bindings: generics::bindings::Pending,
     projections: projections::Pending,
     trait_proofs: trait_regions::Proofs,
@@ -181,6 +185,7 @@ impl<'a> Checker<'a> {
             constant_members: traits::ConstantReadiness::default(),
             associated_type_bounds: std::collections::HashMap::new(),
             opaque_syntax: std::collections::HashMap::new(),
+            object_syntax: objects::Syntax::default(),
             associated_bindings: generics::bindings::Pending::default(),
             projections: projections::Pending::default(),
             trait_proofs: trait_regions::Proofs::default(),
@@ -279,6 +284,7 @@ impl Checker<'_> {
         self.local_annotations(&mut steps, work_limit)?;
         self.complete_alias_normalizations(&mut steps, work_limit)?;
         self.validate_projection_regions()?;
+        self.validate_objects()?;
         super::constants::finish_discriminants(
             self.report,
             &mut self.facts,
@@ -364,6 +370,18 @@ impl Checker<'_> {
                 }
                 Work::NominalContract(item, finish) => self.nominal_contract(item, finish)?,
                 Work::Fields(item, finish) => self.nominal_fields(item, finish)?,
+                Work::OpaqueHidden(id) => {
+                    let declaration = self
+                        .facts
+                        .opaques
+                        .declarations
+                        .get(&id)
+                        .ok_or_else(|| Error::at(FileId(0), 0, "missing opaque declaration"))?;
+                    return Err(self.error(
+                        declaration.source,
+                        "opaque hidden type requires its completed defining body",
+                    ));
+                }
                 Work::Constructor(id) => self.constructor(id)?,
                 Work::ValueType(id) => self.constant_value_type(id),
                 Work::ValueContract(ty, finish) => self.constant_type_contract(ty, finish)?,
@@ -680,12 +698,13 @@ impl Checker<'_> {
             return Ok(());
         }
         let kind = self.kind(key);
-        if let Kind::TraitType {
-            opaque: true,
-            bounds,
-        } = kind
-        {
-            if let Some(ty) = self.opaque_result(key, bounds, context, finish)? {
+        if let Kind::TraitType { opaque, bounds } = kind {
+            let ty = if opaque {
+                self.opaque_result(key, bounds, context, finish)?
+            } else {
+                self.object_type(key, bounds, context, finish)?
+            };
+            if let Some(ty) = ty {
                 self.store(key, ty)?;
             }
             return Ok(());
@@ -786,6 +805,14 @@ impl Checker<'_> {
         };
         let region = self.region(key, lifetime, context)?;
         self.regions.record(context, region);
+        self.object_reference_default(
+            NodeKey {
+                node: referent,
+                ..key
+            },
+            region,
+            context,
+        );
         self.work.push(Work::Reference(key, region));
         self.node_work(key.file, referent, context);
         Ok(())

@@ -55,10 +55,10 @@ impl Query {
     }
     pub(super) fn push(&mut self, mut node: Node, scope: ScopeId, regions: Range<u32>) -> usize {
         let index = self.nodes.len();
-        node.provisional_size |= node
-            .children
-            .iter()
-            .any(|&child| self.nodes[child].provisional_size);
+        for &child in &node.children {
+            node.provisional_size |= self.nodes[child].provisional_size;
+            node.cycle_dependent |= self.nodes[child].cycle_dependent;
+        }
         if let Some(scopes) = &mut self.scopes {
             let nested = node.children.iter().any(|child| {
                 scopes

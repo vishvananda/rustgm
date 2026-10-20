@@ -143,7 +143,9 @@ impl Context {
                         return Ok(true);
                     }
                 }
-                Value::Construct(Constructor::Function { .. }) => return Ok(true),
+                Value::Construct(Constructor::Function { .. } | Constructor::Dynamic { .. }) => {
+                    return Ok(true);
+                }
                 Value::Construct(_) => {
                     self.account_work((term.end - term.start) as usize)?;
                     work.extend_from_slice(&self.edges[term.start as usize..term.end as usize]);

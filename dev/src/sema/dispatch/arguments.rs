@@ -20,6 +20,12 @@ pub(super) struct Arguments {
     bindings: Vec<(ParameterId, Argument)>,
 }
 impl Arguments {
+    pub(super) fn substitution(
+        &self,
+        facts: &Declarations,
+    ) -> Result<substitute::Bound, &'static str> {
+        substitute::Bound::parameters_captured(&facts.types, &self.bindings, self.regions.clone())
+    }
     pub(super) fn new(facts: &Declarations, ty: TypeId) -> Result<Self, &'static str> {
         let Some(Kind::FunctionItem {
             item, arguments, ..
@@ -186,7 +192,7 @@ impl Arguments {
     }
 }
 
-fn instantiate(
+pub(super) fn instantiate(
     facts: &mut Declarations,
     method: DefId,
     arguments: &[Argument],

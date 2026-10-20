@@ -257,3 +257,30 @@ fn place_needs(
     };
     value.copied().ok_or("invalid destruction place")
 }
+
+pub(crate) fn nominal_position(
+    facts: &Declarations,
+    ty: TypeId,
+    field: super::ir::Selection,
+) -> Result<(u32, u32), &'static str> {
+    let (Some(Kind::Adt(item, _)), super::ir::Selection::Nominal(field)) =
+        (facts.types.kind(ty), field)
+    else {
+        return Err("invalid instance cleanup field selection");
+    };
+    let variant = facts
+        .members
+        .variant(field)
+        .and_then(|id| facts.members.variants.get(id.0 as usize))
+        .ok_or("missing instance cleanup variant")?;
+    if variant.owner != item {
+        return Err("instance cleanup field belongs to another type");
+    }
+    Ok((
+        variant.ordinal,
+        facts
+            .members
+            .ordinal(field)
+            .ok_or("missing instance cleanup field")?,
+    ))
+}

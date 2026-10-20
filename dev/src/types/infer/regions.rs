@@ -82,7 +82,8 @@ impl Context {
         store: &Store,
         kind: Constructor,
         children: &[TermId],
-        mut replace: impl FnMut(RegionId) -> Result<RegionId, Error>,
+        depth: u16,
+        mut replace: impl FnMut(RegionId, u16) -> Result<RegionId, Error>,
     ) -> Result<TermId, Error> {
         let kind = match kind {
             Constructor::Adt(item, args) => Constructor::AdtArgs(
@@ -99,13 +100,33 @@ impl Context {
             return self.construct(
                 Constructor::Reference {
                     mutable,
-                    region: replace(region)?,
+                    region: replace(region, depth)?,
+                },
+                children,
+            );
+        }
+        if let Constructor::Dynamic {
+            shape,
+            arguments,
+            lifetimes,
+        } = kind
+        {
+            let lifetimes = self.object_lifetimes(lifetimes)?;
+            let nested = depth.checked_add(1).ok_or(Error::Overflow)?;
+            let region = replace(lifetimes.region, depth)?;
+            let arguments = self.argument_regions(arguments, |r| replace(r, nested))?;
+            let lifetimes = self.intern_object_lifetimes(lifetimes.bound_regions, region)?;
+            return self.construct(
+                Constructor::Dynamic {
+                    shape,
+                    arguments,
+                    lifetimes,
                 },
                 children,
             );
         }
         let kind = if let Some((arguments, _)) = kind.application() {
-            kind.with_arguments(self.argument_regions(arguments, replace)?)?
+            kind.with_arguments(self.argument_regions(arguments, |r| replace(r, depth))?)?
         } else {
             kind
         };
@@ -164,7 +185,10 @@ impl Mapping {
                 Value::Construct(kind) => kind,
             };
             self.projections |= kind.normalizable(store);
-            let child_depth = if matches!(kind, Constructor::Function { .. }) {
+            let child_depth = if matches!(
+                kind,
+                Constructor::Function { .. } | Constructor::Dynamic { .. }
+            ) {
                 depth.checked_add(1).ok_or(Error::Overflow)?
             } else {
                 depth
@@ -191,11 +215,17 @@ impl Mapping {
                 );
             }
             let before = bound.steps;
-            let value = context.map_constructor_regions(store, kind, &self.children, |region| {
-                bound
-                    .region(region, depth)
-                    .map_err(|_| Error::InvalidIdentity)
-            })?;
+            let value = context.map_constructor_regions(
+                store,
+                kind,
+                &self.children,
+                depth,
+                |region, depth| {
+                    bound
+                        .region(region, depth)
+                        .map_err(|_| Error::InvalidIdentity)
+                },
+            )?;
             context.account_work(bound.steps.saturating_sub(before))?;
             self.results.insert((id, depth), value);
         }

@@ -215,6 +215,7 @@ impl Copies {
                 Kind::Adt(item, _) => selected.get(&item).copied().unwrap_or_default(),
                 Kind::Primitive(Primitive::Str)
                 | Kind::Slice(_)
+                | Kind::Dynamic { .. }
                 | Kind::Reference { mutable: true, .. } => Properties::default(),
                 _ => Properties::BOTH,
             };

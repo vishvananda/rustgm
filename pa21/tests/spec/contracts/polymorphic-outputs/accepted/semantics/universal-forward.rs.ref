@@ -142,15 +142,15 @@ proof-block proof=0 index=1 scope=1 aliases=true source=1 start=1 end=2
 proof-block proof=0 index=2 scope=1 aliases=false source=1 start=2 end=3
 proof-relation proof=0 block=2 kind=equal left=region:1 right=region:2
 proof-block proof=0 index=3 scope=1 aliases=false source=1 start=3 end=3
-proof 1 body=0:112 source=0:112 pending
-proof-source proof=1 index=0 source=0:108
+proof 1 body=0:112 source=0:108 pending
 proof-scope proof=1 scope=1 parent=0 regions=1 depth=1
 proof-owned proof=1 start=3 end=5
 proof-block proof=1 index=0 scope=0 aliases=false source=0 start=3 end=5
-proof-block proof=1 index=1 scope=1 aliases=true source=1 start=3 end=4
-proof-block proof=1 index=2 scope=1 aliases=false source=1 start=4 end=5
-proof-relation proof=1 block=2 kind=equal left=region:3 right=region:4
-proof-block proof=1 index=3 scope=1 aliases=false source=1 start=5 end=5
+proof-block proof=1 index=1 scope=1 aliases=false source=0 start=3 end=4
+proof-block proof=1 index=2 scope=1 aliases=false source=0 start=4 end=5
+proof-block proof=1 index=3 scope=1 aliases=false source=0 start=5 end=5
+proof-relation proof=1 block=3 kind=equal left=region:3 right=region:4
+proof-relation proof=1 block=3 kind=equal left=region:3 right=bound:0:0
 proof 2 body=0:156 source=0:147 pending
 proof-scope proof=2 scope=1 parent=0 regions=1 depth=1
 proof-owned proof=2 start=11 end=13
@@ -160,4 +160,4 @@ proof-block proof=2 index=2 scope=1 aliases=false source=0 start=12 end=13
 proof-block proof=2 index=3 scope=1 aliases=false source=0 start=13 end=13
 proof-relation proof=2 block=3 kind=equal left=region:11 right=region:12
 proof-relation proof=2 block=3 kind=equal left=region:11 right=bound:0:0
-eof owners=2 members=2 parameters=3 predicates=2 impls=1 calls=1 paths=0 impl-uses=0 type-members=0 constant-members=0 result-contracts=0 result-bounds=0 impl-constants=0 constant-uses=0 constant-dispatches=0 normalized-nodes=0 normalized-definitions=0 quantifiers=4 families=0 family-bounds=0 family-regions=0 opaques=2 opaque-bounds=2 hidden-types=2 opaque-body-results=2 opaque-implementations=0 proofs=3 proof-scopes=3 proof-blocks=12 proof-sources=2 proof-owned=3 proof-relations=4 proof-types=0
+eof owners=2 members=2 parameters=3 predicates=2 impls=1 calls=1 paths=0 impl-uses=0 type-members=0 constant-members=0 result-contracts=0 result-bounds=0 impl-constants=0 constant-uses=0 constant-dispatches=0 normalized-nodes=0 normalized-definitions=0 quantifiers=4 families=0 family-bounds=0 family-regions=0 opaques=2 opaque-bounds=2 hidden-types=2 opaque-body-results=2 opaque-implementations=0 proofs=3 proof-scopes=3 proof-blocks=12 proof-sources=1 proof-owned=3 proof-relations=5 proof-types=0

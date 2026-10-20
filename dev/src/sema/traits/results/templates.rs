@@ -21,6 +21,7 @@ pub(super) struct Index {
     candidates: HashMap<ItemId, Vec<Clause>>,
     equalities: HashMap<ItemId, Vec<Clause>>,
     pub(super) outlives: Vec<crate::types::RegionId>,
+    pub(super) autos: u8,
 }
 impl Index {
     pub(super) fn candidates(&self, item: ItemId) -> Option<&[Clause]> {
@@ -95,7 +96,10 @@ impl Closure {
             .filter(|clause| match clause {
                 Clause::Predicate(predicate) => {
                     (predicate.ty == template
-                        && matches!(predicate.bound, Bound::Trait(_) | Bound::Outlives(_)))
+                        && matches!(
+                            predicate.bound,
+                            Bound::Trait(_) | Bound::Outlives(_) | Bound::Auto(_)
+                        ))
                         || matches!(predicate.bound, Bound::ProjectionEqual(_))
                 }
                 Clause::ForAll(_) => true,
@@ -154,6 +158,10 @@ impl Closure {
             return Ok(());
         }
         if predicate.ty != subject {
+            return Ok(());
+        }
+        if let Bound::Auto(marker) = predicate.bound {
+            self.index.autos |= 1 << marker as u8;
             return Ok(());
         }
         if let Bound::Outlives(region) = predicate.bound {

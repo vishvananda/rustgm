@@ -79,6 +79,14 @@ impl Context {
         right: &Predicate,
         relation: Relation,
     ) -> Result<(), Error> {
+        if let (Requirement::Builtin(Bound::Auto(a)), Requirement::Builtin(Bound::Auto(b))) =
+            (&left.requirement, &right.requirement)
+        {
+            if a != b {
+                return Err(Error::Mismatch);
+            }
+            return self.relate_predicate_types(store, left.subject, right.subject, relation);
+        }
         let (Requirement::Trait(a), Requirement::Trait(b)) =
             (&left.requirement, &right.requirement)
         else {

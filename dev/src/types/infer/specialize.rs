@@ -32,9 +32,7 @@ impl Context {
                         return Ok(true);
                     }
                 }
-                Value::Construct(Constructor::Function { bound_regions, .. })
-                    if bound_regions != 0 =>
-                {
+                Value::Construct(kind) if self.binder_regions(kind)?.is_some_and(|n| n != 0) => {
                     return Ok(true);
                 }
                 Value::Construct(_) if term.start != term.end && seen.insert(id) => {
@@ -120,7 +118,7 @@ impl Context {
                 continue;
             }
             let start = next;
-            if let Constructor::Function { bound_regions, .. } = source
+            if let Some(bound_regions) = self.binder_regions(source)?
                 && bound_regions != 0
             {
                 ty = self.open_shape_binder(store, ty, bound_regions, &mut next)?;
@@ -169,9 +167,12 @@ impl Context {
             .ok_or(Error::Overflow)?;
         let mut bound = Bound::new((*next..end).map(RegionId).collect());
         *next = end;
-        let ty = bound
-            .signature(store, ty, 0)
-            .map_err(|_| Error::InvalidIdentity)?;
+        let ty = if matches!(store.kind(ty), Some(Kind::Dynamic { .. })) {
+            crate::types::dynamic::open(store, ty, &mut bound)
+        } else {
+            bound.signature(store, ty, 0)
+        }
+        .map_err(|_| Error::InvalidIdentity)?;
         self.account_work(bound.steps)?;
         Ok(ty)
     }
@@ -213,18 +214,20 @@ fn source_children(store: &Store, ty: TypeId, children: &mut Vec<TypeId>) -> Res
         | Kind::Pointer {
             pointee: element, ..
         } => children.push(element),
-        Kind::Adt(_, arguments) | Kind::Opaque(_, arguments) => children.extend(
-            store
-                .arguments(arguments)
-                .ok_or(Error::InvalidIdentity)?
-                .filter_map(|arg| {
-                    if let Argument::Type(ty) = arg {
-                        Some(ty)
-                    } else {
-                        None
-                    }
-                }),
-        ),
+        Kind::Adt(_, arguments) | Kind::Opaque(_, arguments) | Kind::Dynamic { arguments, .. } => {
+            children.extend(
+                store
+                    .arguments(arguments)
+                    .ok_or(Error::InvalidIdentity)?
+                    .filter_map(|arg| {
+                        if let Argument::Type(ty) = arg {
+                            Some(ty)
+                        } else {
+                            None
+                        }
+                    }),
+            );
+        }
         _ => return Err(Error::InvalidIdentity),
     }
     Ok(())

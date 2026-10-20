@@ -110,24 +110,7 @@ impl Checker<'_> {
             )?;
         }
         if !syntax.is_empty() {
-            for bound in &syntax {
-                let subject = match bound.subject {
-                    Subject::Parameter(id) => Some(id),
-                    Subject::Type(key) => self.bound_parameter(key, true),
-                    Subject::Associated(_) => None,
-                };
-                if let (Some(subject), Written::User { path, definition }) = (subject, bound.bound)
-                {
-                    self.retain_projection_bound(
-                        owner,
-                        subject,
-                        path,
-                        definition,
-                        bound.context(context),
-                        bound.scope,
-                    );
-                }
-            }
+            self.index_parameter_bounds(owner, &syntax, context);
             self.bound_syntax.insert(owner, syntax);
         } else if let Some(family) = self.facts.associated.families.get_mut(&owner) {
             // Preparation has completed an empty input contract. An absent
@@ -135,6 +118,37 @@ impl Checker<'_> {
             family.requirements = Some(Vec::new());
         }
         Ok(())
+    }
+    /// Derived lookup indices share the decoded written contract. Neither index
+    /// confers a caller permission or replaces the contract's ordinary proof.
+    fn index_parameter_bounds(
+        &mut self,
+        owner: DefId,
+        syntax: &[Syntax],
+        context: regions::Context,
+    ) {
+        for bound in syntax {
+            let subject = match bound.subject {
+                Subject::Parameter(id) => Some(id),
+                Subject::Type(key) => self.bound_parameter(key, true),
+                Subject::Associated(_) => None,
+            };
+            if bound.scope.is_none()
+                && let (Some(subject), Written::Outlives(key)) = (subject, bound.bound)
+            {
+                self.retain_object_container_bound(subject, key);
+            }
+            if let (Some(subject), Written::User { path, definition }) = (subject, bound.bound) {
+                self.retain_projection_bound(
+                    owner,
+                    subject,
+                    path,
+                    definition,
+                    bound.context(context),
+                    bound.scope,
+                );
+            }
+        }
     }
     fn bound_list(
         &mut self,
@@ -297,6 +311,7 @@ impl Checker<'_> {
                     Some(BuiltinTrait::Copy) => Ok(Written::Trait(Bound::Copy)),
                     Some(BuiltinTrait::Clone) => Ok(Written::Trait(Bound::Clone)),
                     Some(BuiltinTrait::Sized) => Ok(Written::Trait(Bound::Sized)),
+                    Some(BuiltinTrait::Auto(marker)) => Ok(Written::Trait(Bound::Auto(marker))),
                     None if self.report.resolution.definitions[id.0 as usize].kind
                         == crate::resolve::model::DefKind::Trait =>
                     {

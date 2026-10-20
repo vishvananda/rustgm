@@ -38,7 +38,7 @@ pub(super) fn collect(
                     }
                     Bound::ProjectionEqual(result) => result,
                     Bound::Outlives(_) => value.predicate.ty,
-                    Bound::Copy | Bound::Clone | Bound::Sized => {
+                    Bound::Copy | Bound::Clone | Bound::Sized | Bound::Auto(_) => {
                         if let Some(ty) = facts.generics.builtin_formation_input(owner, id)? {
                             add(predicate.source, Kind::WellFormed(ty))?;
                         }

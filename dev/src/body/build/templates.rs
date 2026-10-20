@@ -21,67 +21,139 @@ pub struct Templates {
 /// # Errors
 /// Reports missing typed facts, unsupported operations and exhausted work.
 pub fn build(report: &Report, facts: &Declarations) -> Result<Templates, Error> {
-    let mut scratch = Scratch::new(facts);
-    let query = NeedsDrop::new(facts.destructors.implementations().iter().map(|i| i.item));
-    let mut bodies = Vec::new();
-    for function in &facts.functions {
-        if function.body.is_none()
-            || (!facts.generics.has_parameters(function.definition)
-                && !facts.opaques.owners.contains_key(&function.definition))
-        {
-            continue;
+    Prepared::default().finish(report, facts)
+}
+
+/// One CFG scratch arena and owned defining bodies survive semantic dependency waits.
+#[derive(Default)]
+pub struct Prepared {
+    scratch: Option<Box<Scratch>>,
+    query: Option<NeedsDrop>,
+    bodies: std::collections::HashMap<crate::resolve::model::DefId, Template>,
+    built: usize,
+    reused: usize,
+}
+impl Prepared {
+    /// Actual CFG construction and subsequent reuse counts.
+    #[must_use]
+    pub const fn work(&self) -> (usize, usize) {
+        (self.built, self.reused)
+    }
+
+    /// Retrieve one retained body or build it from its completed semantic facts.
+    /// # Errors
+    /// Reports the same typed CFG, eligibility and destruction errors as `build`.
+    pub fn function(
+        &mut self,
+        report: &Report,
+        facts: &Declarations,
+        function: &crate::sema::model::Function,
+    ) -> Result<Template, Error> {
+        if let Some(template) = self.bodies.remove(&function.definition) {
+            self.reused += 1;
+            return Ok(template);
         }
-        let environment =
-            if let Some(environment) = facts.generics.body_environment(function.definition) {
-                Arc::clone(environment)
-            } else {
-                Arc::new(
-                    facts
-                        .generics
-                        .parameter_environment(&facts.types, function.definition)
-                        .map_err(|e| Declarations::error(report, function.node, e))?,
-                )
-            };
+        let environment = environment(report, facts, function.definition, function.node)?;
+        let query = self.query.get_or_insert_with(|| {
+            NeedsDrop::new(facts.destructors.implementations().iter().map(|i| i.item))
+        });
         let mut scoped = query.scoped(Arc::clone(&environment));
-        let body = function_body(report, facts, &mut scratch, function, Some(&mut scoped))?;
+        let scratch = self
+            .scratch
+            .get_or_insert_with(|| Box::new(Scratch::new(facts)));
+        let body = function_body(report, facts, scratch, function, Some(&mut scoped))?;
         crate::body::constants::eligibility(report, facts, &body)?;
         let destruction = crate::body::drops::requirements(facts, &body, &mut scoped)
             .map_err(|message| Declarations::error(report, body.source, message))?;
-        bodies.push(Template {
+        self.built += 1;
+        Ok(Template {
             body,
             destruction,
             environment,
-        });
+        })
     }
-    for initializer in &facts.initializers {
-        if facts.associated.owner(initializer.definition).is_none()
-            && !facts.generics.has_parameters(initializer.definition)
-        {
-            continue;
+
+    /// Retain a completed original function for later template qualification and lowering.
+    /// # Errors
+    /// Rejects duplicate retained owners and non-function bodies.
+    pub fn retain(&mut self, template: Template) -> Result<(), &'static str> {
+        let crate::body::ir::Owner::Function { definition, .. } = template.body.owner else {
+            return Err("retained defining template requires a function owner");
+        };
+        match self.bodies.entry(definition) {
+            std::collections::hash_map::Entry::Vacant(entry) => {
+                entry.insert(template);
+                Ok(())
+            }
+            std::collections::hash_map::Entry::Occupied(_) => {
+                Err("defining template was retained twice")
+            }
         }
-        let environment =
-            if let Some(environment) = facts.generics.body_environment(initializer.definition) {
-                Arc::clone(environment)
-            } else {
-                Arc::new(
-                    facts
-                        .generics
-                        .parameter_environment(&facts.types, initializer.definition)
-                        .map_err(|e| Declarations::error(report, initializer.value, e))?,
-                )
-            };
-        let mut scoped = query.scoped(Arc::clone(&environment));
-        let body =
-            super::initializer_body(report, facts, &mut scratch, initializer, Some(&mut scoped))?;
-        crate::body::constants::eligibility(report, facts, &body)?;
-        let destruction = crate::body::drops::requirements(facts, &body, &mut scoped)
-            .map_err(|message| Declarations::error(report, body.source, message))?;
-        bodies.push(Template {
-            body,
-            destruction,
-            environment,
-        });
     }
-    crate::body::constants::alias_cycles(report, facts, &bodies)?;
-    Ok(Templates { bodies })
+
+    /// Complete the template set in the same declaration order as the ordinary builder.
+    /// # Errors
+    /// Rejects invalid templates and retained owners outside the requested program.
+    pub fn finish(mut self, report: &Report, facts: &Declarations) -> Result<Templates, Error> {
+        let mut bodies = Vec::new();
+        for function in &facts.functions {
+            if function.body.is_some()
+                && (facts.generics.has_parameters(function.definition)
+                    || facts.opaques.owners.contains_key(&function.definition))
+            {
+                bodies.push(self.function(report, facts, function)?);
+            }
+        }
+        for initializer in &facts.initializers {
+            if facts.associated.owner(initializer.definition).is_none()
+                && !facts.generics.has_parameters(initializer.definition)
+            {
+                continue;
+            }
+            let environment =
+                environment(report, facts, initializer.definition, initializer.value)?;
+            let query = self.query.get_or_insert_with(|| {
+                NeedsDrop::new(facts.destructors.implementations().iter().map(|i| i.item))
+            });
+            let mut scoped = query.scoped(Arc::clone(&environment));
+            let scratch = self
+                .scratch
+                .get_or_insert_with(|| Box::new(Scratch::new(facts)));
+            let body =
+                super::initializer_body(report, facts, scratch, initializer, Some(&mut scoped))?;
+            crate::body::constants::eligibility(report, facts, &body)?;
+            let destruction = crate::body::drops::requirements(facts, &body, &mut scoped)
+                .map_err(|message| Declarations::error(report, body.source, message))?;
+            bodies.push(Template {
+                body,
+                destruction,
+                environment,
+            });
+        }
+        if let Some(template) = self.bodies.values().next() {
+            return Err(Declarations::error(
+                report,
+                template.body.source,
+                "retained template has no program owner",
+            ));
+        }
+        crate::body::constants::alias_cycles(report, facts, &bodies)?;
+        Ok(Templates { bodies })
+    }
+}
+fn environment(
+    report: &Report,
+    facts: &Declarations,
+    owner: crate::resolve::model::DefId,
+    source: crate::resolve::unit::NodeKey,
+) -> Result<Arc<Environment>, Error> {
+    if let Some(environment) = facts.generics.body_environment(owner) {
+        Ok(Arc::clone(environment))
+    } else {
+        facts
+            .generics
+            .parameter_environment(&facts.types, owner)
+            .map(Arc::new)
+            .map_err(|e| Declarations::error(report, source, e))
+    }
 }

@@ -163,7 +163,15 @@ impl Engine<'_, '_> {
             Rvalue::Read(place) => self.place_value(place)?.map(|v| v.value),
             Rvalue::Borrow { place, .. } => self.borrow_value(place, ty)?,
             Rvalue::Constrain(operand) => return self.ready(Key::Value(operand)),
-            Rvalue::Unsize { value, array } => self.unsize(value, array)?,
+            Rvalue::Unsize { value, conversion } => match conversion {
+                crate::types::unsizing::Conversion::Slice(array) => self.unsize(value, array)?,
+                crate::types::unsizing::Conversion::Object { concrete, target } => {
+                    self.object_unsizing(value, concrete, target)?
+                }
+                crate::types::unsizing::Conversion::Upcast { target, .. } => {
+                    self.object_upcasting(value, target)?
+                }
+            },
             Rvalue::Reify(operand) => self.ready(Key::Value(operand))?.map(|v| v.value),
             Rvalue::Unary {
                 operator,
@@ -260,6 +268,48 @@ impl Engine<'_, '_> {
                 _ => return Err("selected promotion unsizing lacks an array".into()),
             },
         ))
+    }
+    fn object_unsizing(
+        &self,
+        operand: ValueId,
+        concrete: crate::types::TypeId,
+        target: crate::types::TypeId,
+    ) -> Result<Option<Evaluated>, Error> {
+        let Some(value) = self.ready(Key::Value(operand))? else {
+            return Ok(None);
+        };
+        let types = &self.evaluator.facts().types;
+        Ok(Some(match value.value {
+            Evaluated::Constant(value)
+                if types.contains_parameters(concrete) == Some(false)
+                    && types.contains_parameters(target) == Some(false) =>
+            {
+                Evaluated::Constant(
+                    value.with_metadata(crate::sema::values::Metadata::Object {
+                        concrete,
+                        target,
+                    })?,
+                )
+            }
+            _ => Evaluated::Deferred,
+        }))
+    }
+    fn object_upcasting(
+        &self,
+        operand: ValueId,
+        target: crate::types::TypeId,
+    ) -> Result<Option<Evaluated>, Error> {
+        let Some(value) = self.ready(Key::Value(operand))? else {
+            return Ok(None);
+        };
+        Ok(Some(match value.value {
+            Evaluated::Constant(value)
+                if self.evaluator.facts().types.contains_parameters(target) == Some(false) =>
+            {
+                Evaluated::Constant(value.upcast(target)?)
+            }
+            _ => Evaluated::Deferred,
+        }))
     }
     fn call(&mut self, callee: ValueId, arguments: ValueList) -> Result<Option<Evaluated>, Error> {
         let Some((definition, variant)) = self.constructor(callee)? else {

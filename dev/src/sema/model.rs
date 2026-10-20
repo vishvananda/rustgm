@@ -275,6 +275,8 @@ pub struct BodyWork {
     pub unsizing_inputs: usize,
     pub unsizing_fields: usize,
     pub inference_steps: usize,
+    /// Completed canonical inference and selection work, including suspended searches.
+    pub canonical_steps: usize,
     /// Actual ordinary trait goal attempts, including resumed retained candidates.
     pub trait_selections: usize,
     /// Field storage preparation uses its own cursor after consuming inference.
@@ -327,6 +329,7 @@ pub struct Declarations {
     pub(crate) constant_targets:
         std::collections::HashMap<super::values::Instance, super::values::Instance>,
     pub(crate) dispatch_dependencies: super::dispatch::Dependencies,
+    pub(crate) objects: super::vtable_plans::Objects,
     pub(crate) constant_dependencies:
         std::collections::HashMap<DefId, Vec<super::values::Dependency>>,
     pub constant_uses: std::collections::HashMap<NodeKey, super::values::Instance>,
@@ -341,8 +344,9 @@ pub struct Declarations {
     pub reference_alignment: Vec<ReferenceAlignment>,
     pub reference_adjustments: std::collections::HashMap<NodeKey, ReferenceAdjustment>,
     pub(crate) unsizing_rules: Option<Box<crate::types::unsizing::Rules>>,
-    /// Selected terminal array; lowering must not rediscover structural eligibility.
-    pub unsizing_adjustments: std::collections::HashMap<NodeKey, TypeId>,
+    /// Selected terminal conversion; lowering consumes its retained proof inputs.
+    pub unsizing_adjustments:
+        std::collections::HashMap<NodeKey, crate::types::unsizing::Conversion<TypeId>>,
     /// Raw pointer type before a separately selected storage-tail unsizing.
     pub pointer_adjustments: std::collections::HashMap<NodeKey, TypeId>,
     pub partial_annotations: std::collections::HashMap<NodeKey, PartialAnnotation>,
@@ -439,6 +443,7 @@ impl Declarations {
             constant_repeats: std::collections::HashSet::new(),
             constant_targets: std::collections::HashMap::new(),
             dispatch_dependencies: super::dispatch::Dependencies::default(),
+            objects: super::vtable_plans::Objects::default(),
             constant_dependencies: std::collections::HashMap::new(),
             constant_uses: std::collections::HashMap::new(),
             constant_instances: std::collections::HashMap::new(),

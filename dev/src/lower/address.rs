@@ -57,7 +57,7 @@ impl super::context::Context<'_> {
         &mut self,
         ty: crate::types::TypeId,
         selection: crate::body::ir::Selection,
-    ) -> Result<(crate::types::TypeId, u64), &'static str> {
+    ) -> Result<(crate::types::TypeId, crate::abi::tails::Offset), &'static str> {
         if self.wide_referent(ty)? {
             let (variant, field) = self.field_indices(selection)?;
             if variant != 0 {
@@ -70,6 +70,7 @@ impl super::context::Context<'_> {
         }
         let layout = self.layout(ty)?;
         self.selected_field(&layout, selection)
+            .map(|(ty, offset)| (ty, crate::abi::tails::Offset::Fixed(offset)))
     }
 
     pub fn selected_field(

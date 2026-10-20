@@ -208,6 +208,7 @@ impl Sets {
                 finish,
                 budget,
             ),
+            kind @ Kind::Dynamic { .. } => self.object(kind, key, finish, budget),
             Kind::Opaque(..) | Kind::Projection(_) => self.atom(
                 Atom::Projection(Projection {
                     ty,
@@ -217,6 +218,36 @@ impl Sets {
             ),
             Kind::Never | Kind::Primitive(_) => Ok(Id::EMPTY),
         }
+    }
+
+    fn object(
+        &mut self,
+        kind: Kind,
+        key: Key,
+        finish: bool,
+        budget: &mut Budget,
+    ) -> Result<Id, &'static str> {
+        let Kind::Dynamic {
+            region, arguments, ..
+        } = kind
+        else {
+            return Err("object components require a dynamic type");
+        };
+        let set = self.region(region, key.depth, budget)?;
+        let depth = key
+            .depth
+            .checked_add(1)
+            .ok_or("component binder depth overflow")?;
+        let child = self.child(
+            Key {
+                input: Input::Arguments(arguments),
+                depth,
+                ..key
+            },
+            finish,
+            budget,
+        )?;
+        self.merge(set, child, budget)
     }
 
     fn list(

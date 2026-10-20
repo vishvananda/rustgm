@@ -131,8 +131,8 @@ fn rewrite(
             Rvalue::Call { signature, .. } => {
                 *signature = fold.apply(&mut facts.types, *signature)?;
             }
-            Rvalue::Unsize { array, .. } => {
-                *array = fold.apply(&mut facts.types, *array)?;
+            Rvalue::Unsize { conversion, .. } => {
+                *conversion = conversion.try_map(|ty| fold.apply(&mut facts.types, ty))?;
             }
             _ => {}
         }

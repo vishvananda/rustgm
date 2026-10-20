@@ -8,6 +8,33 @@ use super::{
 };
 use std::collections::{HashMap, HashSet};
 
+/// A selected terminal conversion survives structural wrappers and specialization.
+/// Its types are proof inputs; consumers must not rediscover eligibility.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Conversion<T> {
+    Slice(T),
+    Object { concrete: T, target: T },
+    Upcast { source: T, target: T },
+}
+impl<T> Conversion<T> {
+    /// Transport every retained type through the same specialization environment.
+    /// # Errors
+    /// Propagates the supplied type mapping's failure.
+    pub fn try_map<U, E>(self, mut map: impl FnMut(T) -> Result<U, E>) -> Result<Conversion<U>, E> {
+        Ok(match self {
+            Self::Slice(array) => Conversion::Slice(map(array)?),
+            Self::Object { concrete, target } => Conversion::Object {
+                concrete: map(concrete)?,
+                target: map(target)?,
+            },
+            Self::Upcast { source, target } => Conversion::Upcast {
+                source: map(source)?,
+                target: map(target)?,
+            },
+        })
+    }
+}
+
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 enum Key {
     Item(ItemId),

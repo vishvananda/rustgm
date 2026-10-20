@@ -76,7 +76,9 @@ impl Sole {
         let bound = match predicate.bound {
             Bound::Trait(id) => self.collect(store, Node::Trait(id))?,
             Bound::ProjectionEqual(result) => self.collect(store, Node::Type(result))?,
-            Bound::Copy | Bound::Clone | Bound::Sized | Bound::Outlives(_) => Value::Empty,
+            Bound::Copy | Bound::Clone | Bound::Sized | Bound::Auto(_) | Bound::Outlives(_) => {
+                Value::Empty
+            }
         };
         Ok(match subject.merge(bound) {
             Value::One(id) => Some(id),
@@ -209,9 +211,9 @@ fn parts(
                 Kind::Function {
                     parameters, result, ..
                 } => dependency(Node::Types(parameters))?.merge(dependency(Node::Type(result))?),
-                Kind::Adt(_, arguments) | Kind::Opaque(_, arguments) => {
-                    dependency(Node::Arguments(arguments))?
-                }
+                Kind::Adt(_, arguments)
+                | Kind::Opaque(_, arguments)
+                | Kind::Dynamic { arguments, .. } => dependency(Node::Arguments(arguments))?,
                 Kind::FunctionItem {
                     arguments,
                     signature,

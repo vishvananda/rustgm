@@ -91,8 +91,14 @@ impl Context {
         kind: Constructor,
     ) -> Result<Option<Completed>, Error> {
         let mut facts = Completed {
-            regions: matches!(kind, Constructor::Reference { .. }),
-            callables: matches!(kind, Constructor::Function { .. }),
+            regions: matches!(
+                kind,
+                Constructor::Reference { .. } | Constructor::Dynamic { .. }
+            ),
+            callables: matches!(
+                kind,
+                Constructor::Function { .. } | Constructor::Dynamic { .. }
+            ),
             ..Completed::default()
         };
         match kind {

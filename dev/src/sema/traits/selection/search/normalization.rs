@@ -120,9 +120,13 @@ impl Frame {
             .normalization
             .as_ref()
             .map_or(self.first, |normalization| normalization.end);
-        self.storage
+        let first = self
+            .storage
             .as_ref()
-            .map_or(first, |storage| first.max(storage.end))
+            .map_or(first, |storage| first.max(storage.end));
+        self.autos
+            .as_ref()
+            .map_or(first, |autos| first.max(autos.end))
     }
     pub(super) fn normalizing(&self) -> bool {
         self.normalization
@@ -386,6 +390,7 @@ impl super::Query {
         self.allocations.record(regions.end);
         Ok(self.push(
             super::Node {
+                cycle_dependent: false,
                 provisional_size: false,
                 goal: evidence.premise.predicate,
                 source: Some(Source::Equality),

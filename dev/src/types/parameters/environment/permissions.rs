@@ -23,6 +23,7 @@ pub(super) struct Index {
     subjects: HashSet<Subject>,
     candidates: HashMap<u64, Vec<Subject>>,
     shapes: Shapes,
+    autos: u8,
 }
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 struct Subject {
@@ -51,8 +52,14 @@ impl Index {
                 true,
             ),
         };
-        if !matches!(predicate.bound, Bound::Copy | Bound::Clone | Bound::Sized) {
-            return Err("builtin assumption requires Copy, Clone or Sized");
+        if !matches!(
+            predicate.bound,
+            Bound::Copy | Bound::Clone | Bound::Sized | Bound::Auto(_)
+        ) {
+            return Err("builtin assumption requires a builtin marker bound");
+        }
+        if let Bound::Auto(marker) = predicate.bound {
+            self.autos |= 1 << marker as u8;
         }
         let shape = self.shapes.get(types, predicate.ty).map_err(error)?;
         let subject = Subject {
@@ -86,6 +93,7 @@ impl Index {
 struct Permissions {
     abilities: Abilities,
     sized: bool,
+    autos: u8,
 }
 pub(crate) struct Query {
     environment: Arc<Environment>,
@@ -139,10 +147,15 @@ impl Query {
             {
                 continue;
             }
-            permissions.sized = true;
-            permissions.abilities.copy |= predicate.bound == Bound::Copy;
-            permissions.abilities.clone_ |= matches!(predicate.bound, Bound::Copy | Bound::Clone);
-            if permissions.abilities.copy {
+            if let Bound::Auto(marker) = predicate.bound {
+                permissions.autos |= 1 << marker as u8;
+            } else {
+                permissions.sized = true;
+                permissions.abilities.copy |= predicate.bound == Bound::Copy;
+                permissions.abilities.clone_ |=
+                    matches!(predicate.bound, Bound::Copy | Bound::Clone);
+            }
+            if permissions.abilities.copy && permissions.autos == index.autos {
                 break;
             }
         }
@@ -154,6 +167,18 @@ impl Query {
     }
 }
 impl Environment {
+    pub(crate) fn matching_auto(
+        self: &Arc<Self>,
+        types: &Store,
+        obligation: crate::types::auto_traits::Obligation,
+        query: &mut Option<Box<Query>>,
+    ) -> Result<bool, &'static str> {
+        Ok(self
+            .matching_permissions(types, obligation.ty, 0, query)?
+            .autos
+            & (1 << obligation.marker as u8)
+            != 0)
+    }
     pub(crate) fn has_region_builtins(&self) -> bool {
         self.builtins.is_some()
     }

@@ -20,7 +20,7 @@ pub struct Tag {
 #[derive(Clone, Copy, Debug)]
 pub enum Shape {
     Scalar,
-    /// Course x86-64 representation: data pointer at 0, element/byte length at 8.
+    /// Course x86-64 representation: data pointer at 0, selected metadata at 8.
     WidePointer,
     Array {
         element: TypeId,
@@ -107,7 +107,7 @@ impl Layouts {
             .demand(types, definitions, ty)
     }
 
-    /// Required reference alignment, including referents without a fixed size.
+    /// Statically guaranteed reference alignment, including unsized referents.
     /// Pointer storage alignment does not depend on its referent's metadata.
     /// # Errors
     /// Preserves layout errors for sized referents and slice elements.
@@ -118,14 +118,16 @@ impl Layouts {
         ty: TypeId,
     ) -> Result<u32, Error> {
         let ty = match types.kind(ty) {
-            Some(Kind::Primitive(Primitive::Str)) => return Ok(1),
+            // The concrete alignment of an object is in its vtable. Forwarding
+            // its data address cannot assume more than byte alignment.
+            Some(Kind::Primitive(Primitive::Str) | Kind::Dynamic { .. }) => return Ok(1),
             Some(Kind::Reference { .. } | Kind::Pointer { .. }) => return Ok(8),
             Some(Kind::Slice(element)) => element,
             _ => {
                 if self
                     .pointer_metadata(types, definitions, ty)
                     .map_err(|message| Error { ty, message })?
-                    == super::metadata::Metadata::Length
+                    != super::metadata::Metadata::Thin
                 {
                     let id = self.tail_layout(types, definitions, ty)?;
                     return self
@@ -165,7 +167,7 @@ impl Layouts {
         definitions: &Definitions,
         ty: TypeId,
         index: u32,
-    ) -> Result<(TypeId, u64), Error> {
+    ) -> Result<(TypeId, super::tails::Offset), Error> {
         let id = self.tail_layout(types, definitions, ty)?;
         let result = (|| {
             let tails = self.tails.as_ref().ok_or("missing unsized layout query")?;
@@ -179,9 +181,7 @@ impl Layouts {
                 .copied()
                 .ok_or("invalid unsized field index")?;
             let offset = tails
-                .offsets(fields)
-                .get(index as usize)
-                .copied()
+                .field_offset(fields, index)
                 .ok_or("missing unsized field offset")?;
             Ok((field, offset))
         })();
@@ -341,6 +341,7 @@ impl Layouts {
                 .copied()
                 .ok_or("missing opaque representation layout"),
             Kind::ArrayTerm { .. } => Err("generic array length has no concrete layout"),
+            Kind::Dynamic { .. } => Err("trait object has no fixed layout"),
             Kind::Never => Ok(Layout {
                 size: 0,
                 align: 1,
@@ -358,7 +359,9 @@ impl Layouts {
             } => {
                 let wide = match self.pointer_metadata(types, definitions, pointee)? {
                     super::metadata::Metadata::Thin => false,
-                    super::metadata::Metadata::Length => true,
+                    super::metadata::Metadata::Length | super::metadata::Metadata::VTable(_) => {
+                        true
+                    }
                     super::metadata::Metadata::Unknown(_) => {
                         return Err("unsized pointer metadata requires later layout support");
                     }

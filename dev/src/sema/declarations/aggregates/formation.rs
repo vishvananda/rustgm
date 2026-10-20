@@ -87,7 +87,9 @@ impl Checker<'_> {
                         .map(|&ty| Work::ValueContract(ty, false)),
                 );
             }
-            Type::FunctionItem { arguments, .. } | Type::Opaque(_, arguments) => {
+            Type::FunctionItem { arguments, .. }
+            | Type::Opaque(_, arguments)
+            | Type::Dynamic { arguments, .. } => {
                 self.constant_argument_contracts(arguments)?;
             }
             Type::Never | Type::Primitive(_) | Type::Parameter(_) => {}

@@ -23,6 +23,13 @@ impl Mapping {
         {
             return Ok(original);
         }
+        if self.locals_only
+            && original
+                .bound_parts()
+                .is_some_and(|(_, slot)| u32::from(slot) < self.first)
+        {
+            return Ok(original);
+        }
         let free = match original.bound_parts() {
             Some((binder, _)) if binder < depth => return Ok(original),
             Some((binder, index)) => RegionId::bound(binder - depth, index)?,
@@ -60,10 +67,10 @@ impl Bound {
         bound
     }
 
-    /// Renumber only one binder's used slots for structural comparison. Captures
-    /// and nested locals stay rigid; the result is never a replacement proof clause.
-    pub(crate) fn canonical_locals() -> Self {
-        let mut bound = Self::universals(0);
+    /// Renumber appended locals while preserving a parent binder's fixed prefix.
+    /// Captures and nested locals stay rigid; the result is not a proof clause.
+    pub(crate) fn canonical_locals_preserving(first: u32) -> Self {
+        let mut bound = Self::universals(first);
         if let Action::Universals(mapping) = &mut bound.action {
             mapping.locals_only = true;
         }

@@ -3,6 +3,7 @@ mod aggregate;
 mod cleanup;
 mod pointers;
 mod references;
+mod referents;
 mod selections;
 mod slices;
 mod text;
@@ -60,7 +61,7 @@ struct Lower<'a, 'b> {
     builder: Builder,
     locals: Vec<Option<Address>>,
     addresses: references::Storage,
-    slice_lengths: std::collections::HashMap<ir::ProjectionId, Value>,
+    place_metadata: std::collections::HashMap<ir::ProjectionId, Value>,
     projections: Vec<Projected>,
     selections: std::collections::HashMap<ir::ProjectionId, selections::Recipe>,
     selection_paths: std::collections::HashMap<ir::ProjectionId, std::num::NonZeroU32>,
@@ -94,7 +95,7 @@ pub(super) fn lower<'a>(
         builder: Builder::default(),
         locals: Vec::new(),
         addresses: references::Storage::default(),
-        slice_lengths: std::collections::HashMap::new(),
+        place_metadata: std::collections::HashMap::new(),
         projections: vec![Projected::Pending; body.projections.len()],
         selections: std::collections::HashMap::new(),
         selection_paths: std::collections::HashMap::new(),
@@ -413,7 +414,7 @@ impl Lower<'_, '_> {
         representation: Representation,
     ) -> Result<Selected, &'static str> {
         match self.context.constants.view(value)? {
-            View::Address { bits } if value.length().is_none() => self
+            View::Address { bits } if value.metadata().is_none() => self
                 .builder
                 .literal(Type::Ptr, Literal::Integer(u128::from(bits)))
                 .map(Selected::Runtime),
@@ -464,8 +465,8 @@ impl Lower<'_, '_> {
                     .ok_or("borrowed place lacks stable storage")?;
                 let pointer = self.pointer(address)?;
                 if matches!(representation, Representation::Object(_)) {
-                    let length = self.slice_length(place)?;
-                    return self.wide_pointer(pointer, length);
+                    let metadata = self.metadata(place)?;
+                    return self.wide_pointer(pointer, metadata);
                 }
                 pointer
             }
@@ -576,9 +577,19 @@ impl Lower<'_, '_> {
             } => self.pointer_cast(kind, operand, ty)?,
             Rvalue::Unsize {
                 value: operand,
-                array,
+                conversion,
             } => {
-                return self.selected_unsizing(operand, array);
+                return match conversion {
+                    crate::types::unsizing::Conversion::Slice(array) => {
+                        self.selected_unsizing(operand, array)
+                    }
+                    crate::types::unsizing::Conversion::Object { concrete, target } => {
+                        self.object_unsizing(operand, concrete, target)
+                    }
+                    crate::types::unsizing::Conversion::Upcast { source, target } => {
+                        self.object_upcasting(operand, source, target)
+                    }
+                };
             }
             Rvalue::Unary {
                 operator,

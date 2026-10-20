@@ -164,12 +164,24 @@ impl Checker<'_> {
             subject: None,
         }))
     }
-    pub(super) fn resolved_trait_path(&self, mut key: NodeKey) -> Result<(NodeKey, DefId), Error> {
+    pub(super) fn resolved_trait_path(&self, key: NodeKey) -> Result<(NodeKey, DefId), Error> {
+        self.resolve_trait_path(key, false)
+    }
+    pub(super) fn resolved_impl_trait_path(&self, key: NodeKey) -> Result<(NodeKey, DefId), Error> {
+        self.resolve_trait_path(key, true)
+    }
+    fn resolve_trait_path(&self, mut key: NodeKey, auto: bool) -> Result<(NodeKey, DefId), Error> {
         loop {
             if let Some(crate::resolve::model::Target::Definition(id)) =
                 self.facts.node(key).and_then(|facts| facts.reference)
             {
-                return if self.report.resolution.definitions[id.0 as usize].kind == DefKind::Trait {
+                return if self.report.resolution.definitions[id.0 as usize].kind == DefKind::Trait
+                    || auto
+                        && matches!(
+                            self.report.resolution.builtin_traits.identify(id),
+                            Some(crate::resolve::model::BuiltinTrait::Auto(_))
+                        )
+                {
                     Ok((key, id))
                 } else {
                     Err(self.error(key, "implementation requires a trait declaration"))

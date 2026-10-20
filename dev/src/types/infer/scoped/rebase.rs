@@ -67,7 +67,10 @@ impl Context {
             let kind = self.materialize(store, id)?;
             let term = self.terms[id.0 as usize];
             let nested = depth
-                .checked_add(u16::from(matches!(kind, Constructor::Function { .. })))
+                .checked_add(u16::from(matches!(
+                    kind,
+                    Constructor::Function { .. } | Constructor::Dynamic { .. }
+                )))
                 .ok_or(Error::Overflow)?;
             if !finish {
                 self.account_work((term.end - term.start) as usize)?;
@@ -89,9 +92,10 @@ impl Context {
                         .ok_or(Error::InvalidIdentity)?,
                 );
             }
-            let value = self.map_constructor_regions(store, kind, &children, |region| {
-                rebase(region, depth, amount, inward)
-            })?;
+            let value =
+                self.map_constructor_regions(store, kind, &children, depth, |region, depth| {
+                    rebase(region, depth, amount, inward)
+                })?;
             completed.insert((id, depth), value);
         }
         completed

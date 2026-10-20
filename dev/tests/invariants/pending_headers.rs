@@ -21,7 +21,7 @@ use crate::{
 fn header(owner: u32, item: u32, head: Option<Head>) -> Header {
     Header {
         owner: DefId(owner),
-        item: ItemId(item),
+        item: ItemId(item).into(),
         head,
     }
 }

@@ -61,7 +61,7 @@ impl Checker<'_> {
         mut work: Vec<DefId>,
         mut steps: usize,
     ) -> Result<HashMap<DefId, Builtins>, Error> {
-        // Each of three bits changes at most once per declaration. Cycles need
+        // Each builtin permission changes at most once per declaration. Cycles need
         // no special assumptions here; the ordinary trait gate still rejects them.
         while let Some(parent) = work.pop() {
             let inherited = promises[&parent];
@@ -111,6 +111,7 @@ impl Checker<'_> {
             let original = Builtins {
                 sized: schema.sized,
                 copies: schema.copies,
+                autos: 0,
             };
             let mut result = original;
             for syntax in &bounds.syntax {

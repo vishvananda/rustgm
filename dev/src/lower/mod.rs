@@ -9,6 +9,7 @@ mod data;
 mod function;
 pub mod instances;
 mod remainder;
+mod virtual_dispatch;
 
 use crate::{
     borrow::Checked,

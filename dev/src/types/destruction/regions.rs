@@ -244,6 +244,14 @@ impl Regions {
     ) -> Result<Values, &'static str> {
         let mut values = Values::default();
         if let Key::Type(ty) = key
+            && matches!(types.kind(ty), Some(Kind::Dynamic { .. }))
+        {
+            let components = self.components.get_or_insert_with(Default::default);
+            values.extend(components.drop_inputs(types, ty)?);
+            self.charge(values.parts().len())?;
+            return Ok(values);
+        }
+        if let Key::Type(ty) = key
             && let Some(Kind::Adt(item, args)) = types.kind(ty)
         {
             if types.region_args(args).is_none() {

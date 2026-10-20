@@ -162,7 +162,7 @@ impl<Q: Query> Occurrences<Q> {
                 }
                 Ok(found)
             }
-            Bound::Copy | Bound::Clone | Bound::Sized => Ok(Q::Value::default()),
+            Bound::Copy | Bound::Clone | Bound::Sized | Bound::Auto(_) => Ok(Q::Value::default()),
         }?;
         Ok(Q::merge(subject, bound))
     }
@@ -258,6 +258,18 @@ impl<Q: Query> Occurrences<Q> {
             }
             Kind::Adt(_, arguments) | Kind::Opaque(_, arguments) => {
                 found = self.arguments(store, arguments, depth, finish)?;
+                None
+            }
+            Kind::Dynamic {
+                arguments, region, ..
+            } => {
+                let nested = depth
+                    .checked_add(1)
+                    .ok_or("capture binder depth overflow")?;
+                found = Q::merge(
+                    self.region(region, depth),
+                    self.arguments(store, arguments, nested, finish)?,
+                );
                 None
             }
             Kind::Projection(application) => {

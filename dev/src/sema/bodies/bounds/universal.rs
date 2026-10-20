@@ -47,6 +47,18 @@ impl Checker<'_> {
         let Clause::ForAll(id) = self.alias_clause(node, clause)? else {
             return Err(self.error(node, "quantified body requirement lost its binder"));
         };
+        let predicate = self
+            .facts
+            .types
+            .quantified(id)
+            .ok_or_else(|| self.error(node, "missing quantified body requirement"))?
+            .predicate;
+        if predicate
+            .contains_opaques(&self.facts.types)
+            .map_err(|e| self.error(node, e))?
+        {
+            return self.defer_canonical_requirement(node, Clause::ForAll(id));
+        }
         if checked.quantified.is_none() {
             let assumptions = self.trait_assumptions(node)?.unwrap_or_default();
             let first = self.trait_region_start(node)?;

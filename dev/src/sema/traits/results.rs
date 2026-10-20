@@ -66,8 +66,9 @@ impl Cache {
     }
 }
 
-/// Only a proved parent projection can authorize these templates. The selector
-/// retains that proof before using this query-local index; it is not an environment.
+/// Declared projection, opaque and object promises share the scoped selector.
+/// Projected subjects require their retained parent proof; object membership is
+/// intrinsic to the complete object bounds. This index is not a caller environment.
 pub(in crate::sema) fn traits(
     facts: &mut Declarations,
     ty: TypeId,
@@ -83,6 +84,10 @@ pub(in crate::sema) fn traits(
     }
     if let Some(Kind::Opaque(id, arguments)) = facts.types.kind(ty) {
         return opaque_bounds::traits(facts, ty, id, arguments, item).map(Some);
+    }
+    if matches!(facts.types.kind(ty), Some(Kind::Dynamic { .. })) {
+        let (index, steps) = super::object_bounds::get(facts, ty)?;
+        return Ok(Some((Arc::clone(&index.rules), steps)));
     }
     let Some(Kind::Projection(application)) = facts.types.kind(ty) else {
         return Ok(None);
@@ -123,6 +128,26 @@ pub(in crate::sema) fn traits(
             steps.saturating_sub(template_steps),
         )?;
     Ok(Some((result, steps)))
+}
+
+/// Immutable result promises grant markers only to the declared result itself.
+/// The requesting selector separately retains the parent application proof.
+pub(in crate::sema) fn auto(
+    facts: &mut Declarations,
+    obligation: crate::types::auto_traits::Obligation,
+) -> Result<(bool, usize), String> {
+    let id = match facts.types.kind(obligation.ty) {
+        Some(Kind::Projection(application)) => {
+            crate::types::outlives::ResultId::Associated(application.item)
+        }
+        Some(Kind::Opaque(id, _)) => crate::types::outlives::ResultId::Opaque(id),
+        Some(Kind::Dynamic { shape, .. }) => {
+            return Ok((facts.types.dynamic_has_auto(shape, obligation.marker), 1));
+        }
+        _ => return Ok((false, 1)),
+    };
+    let (index, steps) = templates::for_declaration(facts, id)?;
+    Ok((index.autos & (1 << obligation.marker as u8) != 0, steps))
 }
 
 pub(super) fn may_have_opaque_trait(
@@ -167,6 +192,23 @@ pub(super) fn equalities(
     subject: TermId,
     item: ItemId,
 ) -> Result<Equations, String> {
+    if facts.types.has_dynamic_shapes()
+        && matches!(
+            context
+                .head(&facts.types, subject)
+                .map_err(|e| e.to_string())?,
+            Some(crate::types::infer::Constructor::Dynamic { .. })
+        )
+    {
+        let ty = context
+            .resolved(&mut facts.types, subject)
+            .map_err(|e| e.to_string())?;
+        let (index, steps) = super::object_bounds::get(facts, ty)?;
+        return Ok(Equations {
+            clauses: index.equalities.get(&item).cloned(),
+            steps,
+        });
+    }
     let Some(parent) = context
         .result_identity(&facts.types, subject)
         .map_err(|e| e.to_string())?

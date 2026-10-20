@@ -23,6 +23,7 @@ pub(super) enum Slot {
 #[derive(Default)]
 pub(super) struct Storage {
     pub(super) constants: Constants,
+    pub(super) objects: Option<Box<super::objects::Storage>>,
     slots: Slices<Slot>,
 }
 impl Context {
@@ -232,6 +233,19 @@ impl Context {
             },
             Constructor::Opaque(id, args) => {
                 Kind::Opaque(id, self.canonical_arguments(store, args, children)?)
+            }
+            Constructor::Dynamic {
+                shape,
+                arguments,
+                lifetimes,
+            } => {
+                let lifetimes = self.object_lifetimes(lifetimes)?;
+                Kind::Dynamic {
+                    shape,
+                    arguments: self.canonical_arguments(store, arguments, children)?,
+                    bound_regions: lifetimes.bound_regions,
+                    region: lifetimes.region,
+                }
             }
             Constructor::AdtArgs(item, args) => {
                 Kind::Adt(item, self.canonical_arguments(store, args, children)?)

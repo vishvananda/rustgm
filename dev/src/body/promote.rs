@@ -2,6 +2,8 @@
 mod operands;
 mod places;
 mod queries;
+mod session;
+pub(crate) use session::Scratch;
 mod values;
 use super::ir::{Body, Program, ProjectionId, Rvalue, ValueId};
 use crate::{
@@ -79,10 +81,18 @@ pub fn analyze_templates(
     facts: &mut Declarations,
     templates: &mut super::templates::Templates,
 ) -> Result<(), Diagnostic> {
+    analyze_templates_reusing(report, facts, templates, &mut Scratch::default())
+}
+pub(crate) fn analyze_templates_reusing(
+    report: &Report,
+    facts: &mut Declarations,
+    templates: &mut super::templates::Templates,
+    scratch: &mut Scratch,
+) -> Result<(), Diagnostic> {
     if !templates.bodies.iter().any(|t| needs_analysis(&t.body)) {
         return Ok(());
     }
-    let mut evaluator = Evaluator::new(report, facts);
+    let mut evaluator = scratch.evaluator(report, facts);
     for template in &mut templates.bodies {
         analyze_body(
             report,
@@ -91,6 +101,7 @@ pub fn analyze_templates(
             Some(&template.destruction.values),
         )?;
     }
+    scratch.retain(evaluator);
     Ok(())
 }
 fn needs_analysis(body: &Body) -> bool {
@@ -118,6 +129,21 @@ pub fn instance(
         body,
         Some(&destruction.values),
     )
+}
+pub(crate) fn instance_reusing(
+    report: &Report,
+    facts: &mut Declarations,
+    body: &mut Body,
+    destruction: &super::drops::Requirements,
+    scratch: &mut Scratch,
+) -> Result<(), Diagnostic> {
+    if !needs_analysis(body) {
+        return Ok(());
+    }
+    let mut evaluator = scratch.evaluator(report, facts);
+    analyze_body(report, &mut evaluator, body, Some(&destruction.values))?;
+    scratch.retain(evaluator);
+    Ok(())
 }
 fn analyze_body(
     report: &Report,

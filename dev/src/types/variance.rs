@@ -328,6 +328,20 @@ impl Graph {
                         .compose(position, Term::constant(Variance::Invariant))?;
                     self.invariant_arguments(types, owner, args, invariant, depth)?;
                 }
+                Kind::Dynamic {
+                    arguments, region, ..
+                } => {
+                    if let Some(target) = self.region(owner, region, depth)? {
+                        self.solver.constrain(target, position)?;
+                    }
+                    let nested = depth
+                        .checked_add(1)
+                        .ok_or("variance binder depth overflow")?;
+                    let invariant = self
+                        .solver
+                        .compose(position, Term::constant(Variance::Invariant))?;
+                    self.invariant_arguments(types, owner, arguments, invariant, nested)?;
+                }
                 Kind::Projection(application) => {
                     let invariant = self
                         .solver

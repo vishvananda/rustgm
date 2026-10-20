@@ -281,7 +281,7 @@ fn rvalue(body: &Body, value: Rvalue, out: &mut impl Write) -> io::Result<()> {
         Rvalue::ConstArgument(id) => write!(out, "const-argument const={}", id.0),
         Rvalue::Reify(value) => write!(out, "reify v{}", value.0),
         Rvalue::Constrain(value) => write!(out, "constrain v{}", value.0),
-        Rvalue::Unsize { value, array } => write!(out, "unsize v{} array={}", value.0, array.0),
+        Rvalue::Unsize { value, conversion } => unsizing(value, conversion, out),
         Rvalue::Unary {
             operator,
             operand,
@@ -311,6 +311,30 @@ fn rvalue(body: &Body, value: Rvalue, out: &mut impl Write) -> io::Result<()> {
                 write!(out, "v{}", value.0)?;
             }
             write!(out, "]")
+        }
+    }
+}
+
+fn unsizing(
+    value: super::ir::ValueId,
+    conversion: crate::types::unsizing::Conversion<crate::types::TypeId>,
+    out: &mut impl Write,
+) -> io::Result<()> {
+    match conversion {
+        crate::types::unsizing::Conversion::Slice(array) => {
+            write!(out, "unsize v{} array={}", value.0, array.0)
+        }
+        crate::types::unsizing::Conversion::Object { concrete, target } => write!(
+            out,
+            "object v{} concrete={} target={}",
+            value.0, concrete.0, target.0
+        ),
+        crate::types::unsizing::Conversion::Upcast { source, target } => {
+            write!(
+                out,
+                "upcast v{} source={} target={}",
+                value.0, source.0, target.0
+            )
         }
     }
 }

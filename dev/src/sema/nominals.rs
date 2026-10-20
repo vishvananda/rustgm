@@ -280,6 +280,7 @@ impl Proof {
                         Bound::Copy => "nominal type argument must implement Copy",
                         Bound::Clone => "nominal type argument must implement Clone",
                         Bound::Sized => "nominal type argument must be sized",
+                        Bound::Auto(_) => "nominal type argument must implement its auto trait",
                         Bound::Trait(_) => {
                             "nominal type argument must implement its declared trait"
                         }
@@ -317,6 +318,7 @@ impl Proof {
                     .prove_equality(facts, requirement, false)?
             }
             Bound::Trait(_) => self.prove_trait(facts, requirement)?,
+            Bound::Auto(_) => self.trait_state(facts)?.prove(facts, requirement, false)?,
             Bound::Sized => self.shape(facts, requirement.ty)?.sized,
             Bound::Copy | Bound::Clone => {
                 if !self.provisional {

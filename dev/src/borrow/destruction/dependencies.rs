@@ -16,8 +16,6 @@ impl Dependencies {
         recipes: &glue::Recipes,
         plan: &Plan,
     ) -> Result<Vec<glue::Id>, &'static str> {
-        self.recipes.resize(recipes.recipes().len(), false);
-        let mut seen = vec![false; plan.nodes.len()];
         let mut work = Vec::new();
         for cleanup in &plan.cleanups {
             self.charge(1)?;
@@ -25,11 +23,29 @@ impl Dependencies {
                 work.push(Work::Node(node));
             }
         }
+        self.run(recipes, Some(plan), work)
+    }
+    pub(crate) fn exposed(
+        &mut self,
+        recipes: &glue::Recipes,
+        roots: impl Iterator<Item = glue::Id>,
+    ) -> Result<Vec<glue::Id>, &'static str> {
+        self.run(recipes, None, roots.map(Work::Recipe).collect())
+    }
+    fn run(
+        &mut self,
+        recipes: &glue::Recipes,
+        plan: Option<&Plan>,
+        mut work: Vec<Work>,
+    ) -> Result<Vec<glue::Id>, &'static str> {
+        self.recipes.resize(recipes.recipes().len(), false);
+        let mut seen = vec![false; plan.map_or(0, |plan| plan.nodes.len())];
         let mut methods = Vec::new();
         while let Some(next) = work.pop() {
             self.charge(1)?;
             match next {
                 Work::Node(id) => {
+                    let plan = plan.ok_or("cleanup dependency lacks its selected plan")?;
                     let visited = seen
                         .get_mut(id.0 as usize)
                         .ok_or("invalid cleanup dependency node")?;

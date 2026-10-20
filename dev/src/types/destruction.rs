@@ -141,6 +141,10 @@ impl NeedsDrop {
                 _ => {}
             }
             let kind = types.kind(ty).ok_or("invalid destruction type")?;
+            if matches!(kind, Kind::Dynamic { .. }) {
+                self.record(ty, State::Ready(true));
+                continue;
+            }
             if let Some(scope) = &mut self.scope {
                 let needed = if scope
                     .environment

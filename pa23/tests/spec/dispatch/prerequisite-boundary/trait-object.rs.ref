@@ -1,0 +1,58 @@
+global @rg.data.0 : obj<1x1> [storage=readonly] = {
+  u8 7
+}
+global @rg.vtable.0 : obj<32x8> [storage=readonly] = {
+  zero 8
+  i64 1
+  i64 1
+  ptr addr @rg.17
+}
+function @rg.18() -> void {
+  slot $s0 : obj<16x8>
+  slot $s1 : obj<16x8>
+  slot $s2 : obj<16x8>
+  block ^b0:
+    %t0 = addr @rg.data.0
+    %t1 = addr @rg.vtable.0
+    store ptr %t0, $s1
+    %t2 = addr $s1
+    %t3 = index u8 %t2, 8
+    store ptr %t1, %t3
+    %t4 = addr $s1
+    %t5 = addr $s0
+    copyobj 16x8 %t4, %t5
+    %t6 = load ptr $s0
+    %t7 = addr $s0
+    %t8 = index u8 %t7, 8
+    %t9 = load ptr %t8
+    store ptr %t6, $s2
+    %t10 = addr $s2
+    %t11 = index u8 %t10, 8
+    store ptr %t9, %t11
+    %t12 = addr $s2
+    %t13 = call u8 @rg.virtual.0.0(%t12)
+    return void
+}
+function @rg.virtual.0.0(%p0 : ptr) -> u8 {
+  block ^b0:
+    %t0 = load ptr %p0
+    %t1 = index u8 %p0, 8
+    %t2 = load ptr %t1
+    %t3 = index u8 %t2, 24
+    %t4 = load ptr %t3
+    %t5 = call u8 %t4(%t0) as (%p0 : ptr) -> u8
+    return u8 %t5
+}
+function @rg.17(%p0 : ptr) -> u8 {
+  slot $s0 : ptr
+  block ^b0:
+    store ptr %p0, $s0
+    %t0 = load ptr $s0
+    %t1 = load u8 %t0
+    return u8 %t1
+}
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.18()
+    return i64 0
+}

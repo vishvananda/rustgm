@@ -5,6 +5,7 @@ pub(in crate::sema) mod equalities;
 pub(super) mod formation;
 pub(super) mod heads;
 pub(super) mod implementations;
+pub(super) mod object_bounds;
 pub(super) mod obligations;
 pub(super) mod results;
 pub(super) mod selection;
@@ -75,6 +76,7 @@ impl Header {
 }
 
 /// Self bounds and equalities on Self's associated types are implied by a trait bound.
+#[derive(Default)]
 pub(super) struct Requirements {
     pub implied: Vec<Clause>,
     pub results: Vec<Clause>,
@@ -90,17 +92,22 @@ pub(super) struct Contracts {
     applications: HashMap<Predicate, Arc<Requirements>>,
     formation: Option<Box<formation::Cache>>,
     result_rules: results::Cache,
+    object_bounds: object_bounds::Cache,
     result_bounds: HashMap<ItemId, Vec<Clause>>,
     steps: usize,
 }
 
 impl Contracts {
+    pub(super) fn header(&self, item: ItemId) -> Option<&Header> {
+        self.headers.get(&item)
+    }
     pub(super) fn headers(&self) -> impl Iterator<Item = (ItemId, &Header)> {
         self.order.iter().map(|&item| (item, &self.headers[&item]))
     }
     /// All result clauses and ordinary trait headers now belong to one immutable epoch.
     pub fn complete_results(&mut self) {
         self.result_rules.enable();
+        self.object_bounds.enable();
     }
 
     /// Associated member lookup uses only the complete ordinary supertrait graph.
@@ -131,6 +138,7 @@ impl Contracts {
         self.applications.clear();
         self.formation = None;
         self.result_rules.invalidate();
+        self.object_bounds.invalidate();
         Ok(())
     }
     pub fn declare(&mut self, item: ItemId, header: Header) -> Result<(), &'static str> {
@@ -144,6 +152,7 @@ impl Contracts {
                 .push(predicate.value);
         }
         self.result_rules.invalidate();
+        self.object_bounds.invalidate();
         self.order.push(item);
         self.headers.insert(item, header);
         Ok(())

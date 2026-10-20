@@ -1,9 +1,6 @@
 //! Pending headers are scheduling dependencies, never implementation evidence.
-use super::{DefId, Head, Subject};
-use crate::types::{
-    ItemId,
-    infer::{Context, Error},
-};
+use super::{DefId, Head, Identity, Subject};
+use crate::types::infer::{Context, Error};
 use std::collections::{HashMap, HashSet};
 #[cfg(test)]
 #[path = "../../../../tests/invariants/pending_headers.rs"]
@@ -12,7 +9,7 @@ mod tests;
 #[derive(Clone, Copy)]
 pub(in crate::sema) struct Header {
     pub owner: DefId,
-    pub item: ItemId,
+    pub item: Identity,
     /// Unknown aliases, projections and generic subjects must stay possible.
     pub head: Option<Head>,
 }
@@ -25,9 +22,9 @@ pub(in crate::sema) enum Candidates {
 
 #[derive(Default)]
 pub(super) struct Pending {
-    owners: HashMap<DefId, (ItemId, Option<Head>)>,
-    traits: HashMap<ItemId, HashSet<DefId>>,
-    heads: HashMap<(ItemId, Option<Head>), HashSet<DefId>>,
+    owners: HashMap<DefId, (Identity, Option<Head>)>,
+    traits: HashMap<Identity, HashSet<DefId>>,
+    heads: HashMap<(Identity, Option<Head>), HashSet<DefId>>,
 }
 impl Pending {
     pub(super) fn new(headers: Vec<Header>) -> Result<Self, &'static str> {
@@ -49,14 +46,16 @@ impl Pending {
     pub(super) fn validate(
         &self,
         owner: DefId,
-        item: ItemId,
+        item: impl Into<Identity>,
         head: Option<Head>,
     ) -> Result<(), &'static str> {
         let &(reserved_item, reserved_head) = self
             .owners
             .get(&owner)
             .ok_or("implementation header was not reserved")?;
-        if item != reserved_item || reserved_head.is_some_and(|reserved| Some(reserved) != head) {
+        if item.into() != reserved_item
+            || reserved_head.is_some_and(|reserved| Some(reserved) != head)
+        {
             return Err("implementation header disagrees with its reserved subject");
         }
         Ok(())
@@ -82,7 +81,8 @@ impl Pending {
         }
     }
 
-    pub(super) fn may_have_subject(&self, item: ItemId, subject: Subject) -> bool {
+    pub(super) fn may_have_subject(&self, item: impl Into<Identity>, subject: Subject) -> bool {
+        let item = item.into();
         self.heads.contains_key(&(item, None))
             || matches!(subject, Subject::Rigid(Head::Projection(_)))
                 && self.traits.contains_key(&item)
@@ -94,9 +94,10 @@ impl Pending {
     pub(super) fn candidates(
         &self,
         context: &mut Context,
-        item: ItemId,
+        item: impl Into<Identity>,
         subject: Option<Subject>,
     ) -> Result<Vec<DefId>, Error> {
+        let item = item.into();
         let mut result = Vec::new();
         match subject {
             None | Some(Subject::Rigid(Head::Projection(_))) => {

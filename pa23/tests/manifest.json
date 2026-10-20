@@ -1,0 +1,6247 @@
+{
+  "schema": 1,
+  "mode": "--emit-lowir",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "panic": "abort",
+  "overflow_checks": true,
+  "debug_assertions": false,
+  "cases": [
+    {
+      "path": "tests/spec/annotations/dynamic-source/alias.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.annotations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/dynamic_source.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/annotations/dynamic-source/associated-copy.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.annotations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/dynamic_source.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/annotations/dynamic-source/associated-inherited.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.annotations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/dynamic_source.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/annotations/dynamic-source/associated.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.annotations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/dynamic_source.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/annotations/dynamic-source/captured-binding.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.annotations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/dynamic_source.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/annotations/dynamic-source/copy.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.annotations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/dynamic_source.rs:CASES"
+    },
+    {
+      "path": "tests/spec/annotations/dynamic-source/duplicate-associated.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.annotations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/dynamic_source.rs:CASES"
+    },
+    {
+      "path": "tests/spec/annotations/dynamic-source/duplicate-principal.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.annotations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/dynamic_source.rs:CASES"
+    },
+    {
+      "path": "tests/spec/annotations/dynamic-source/early-erased-alias.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.annotations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/dynamic_source.rs:defaults_retain_the_binding_time_of_trait_lifetimes",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/annotations/dynamic-source/early-over-reference.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.annotations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/dynamic_source.rs:defaults_retain_the_binding_time_of_trait_lifetimes",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/annotations/dynamic-source/early.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.annotations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/dynamic_source.rs:defaults_retain_the_binding_time_of_trait_lifetimes",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/annotations/dynamic-source/explicit-self-default.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.annotations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/dynamic_source.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/annotations/dynamic-source/generic-argument.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.annotations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/dynamic_source.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/annotations/dynamic-source/generic-default.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.annotations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/dynamic_source.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/annotations/dynamic-source/generic-method.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.annotations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/dynamic_source.rs:CASES"
+    },
+    {
+      "path": "tests/spec/annotations/dynamic-source/higher-ranked.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.annotations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/dynamic_source.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/annotations/dynamic-source/inherited-conflict.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.annotations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/dynamic_source.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/annotations/dynamic-source/inherited-diamond.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.annotations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/dynamic_source.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/annotations/dynamic-source/inherited-equality.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.annotations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/dynamic_source.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/annotations/dynamic-source/inherited-explicit.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.annotations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/dynamic_source.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/annotations/dynamic-source/inherited-lifetime.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.annotations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/dynamic_source.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/annotations/dynamic-source/inherited-quantified.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.annotations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/dynamic_source.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/annotations/dynamic-source/late-alias-input.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.annotations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/dynamic_source.rs:defaults_retain_the_binding_time_of_trait_lifetimes",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/annotations/dynamic-source/late.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.annotations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/dynamic_source.rs:defaults_retain_the_binding_time_of_trait_lifetimes",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/annotations/dynamic-source/lifetime-argument.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.annotations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/dynamic_source.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/annotations/dynamic-source/missing-associated.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.annotations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/dynamic_source.rs:CASES"
+    },
+    {
+      "path": "tests/spec/annotations/dynamic-source/multiple-alias-lifetimes.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.annotations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/dynamic_source.rs:CASES"
+    },
+    {
+      "path": "tests/spec/annotations/dynamic-source/multiple-early-lifetimes.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.annotations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/dynamic_source.rs:CASES"
+    },
+    {
+      "path": "tests/spec/annotations/dynamic-source/multiple-trait-lifetimes.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.annotations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/dynamic_source.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/annotations/dynamic-source/mutable.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.annotations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/dynamic_source.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/annotations/dynamic-source/named-lifetime.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.annotations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/dynamic_source.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/annotations/dynamic-source/placeholder-lifetime.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.annotations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/dynamic_source.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/annotations/dynamic-source/quantified-alias-default.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.annotations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/dynamic_source.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/annotations/dynamic-source/quantified-ambiguous.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.annotations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/dynamic_source.rs:CASES"
+    },
+    {
+      "path": "tests/spec/annotations/dynamic-source/quantified-chain.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.annotations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/dynamic_source.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/annotations/dynamic-source/quantified-default.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.annotations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/dynamic_source.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/annotations/dynamic-source/quantified-diamond.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.annotations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/dynamic_source.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/annotations/dynamic-source/quantified-explicit-capture.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.annotations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/dynamic_source.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/annotations/dynamic-source/quantified-explicit.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.annotations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/dynamic_source.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/annotations/dynamic-source/quantified-missing.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.annotations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/dynamic_source.rs:CASES"
+    },
+    {
+      "path": "tests/spec/annotations/dynamic-source/quantified-name.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.annotations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/dynamic_source.rs:CASES"
+    },
+    {
+      "path": "tests/spec/annotations/dynamic-source/quantified-two-binders.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.annotations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/dynamic_source.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/annotations/dynamic-source/raw.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.annotations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/dynamic_source.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/annotations/dynamic-source/recursive-signature.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.annotations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/dynamic_source.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/annotations/dynamic-source/reference.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.annotations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/dynamic_source.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/annotations/dynamic-source/self-default.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.annotations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/dynamic_source.rs:CASES"
+    },
+    {
+      "path": "tests/spec/annotations/dynamic-source/single-alias-lifetime.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.annotations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/dynamic_source.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/annotations/dynamic-source/sized-associated.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.annotations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/dynamic_source.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/annotations/dynamic-source/sized-gat.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.annotations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/dynamic_source.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/annotations/dynamic-source/sized.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.annotations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/dynamic_source.rs:CASES"
+    },
+    {
+      "path": "tests/spec/annotations/dynamic-source/static-opt-out.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.annotations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/dynamic_source.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/annotations/dynamic-source/trait-copy-arg.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.annotations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/dynamic_source.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/annotations/dynamic-source/trait-lifetime.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.annotations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/dynamic_source.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/annotations/dynamic-source/trait-sized-arg.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.annotations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/dynamic_source.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/annotations/dynamic-source/two-principals.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.annotations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/dynamic_source.rs:CASES"
+    },
+    {
+      "path": "tests/spec/annotations/dynamic-source/unconstrained-inherited-binding.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.annotations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/dynamic_source.rs:CASES"
+    },
+    {
+      "path": "tests/spec/annotations/dynamic-source/unconstrained-object-binding.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.annotations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/dynamic_source.rs:CASES"
+    },
+    {
+      "path": "tests/spec/annotations/dynamic-source/unconstrained-parent-binding.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.annotations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/dynamic_source.rs:CASES"
+    },
+    {
+      "path": "tests/spec/annotations/dynamic-source/unknown-associated.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.annotations"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/dynamic_source.rs:CASES"
+    },
+    {
+      "path": "tests/spec/conversions/object-conversions/associated-generic-wrong.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.conversions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_conversions.rs:CASES"
+    },
+    {
+      "path": "tests/spec/conversions/object-conversions/associated-generic.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.conversions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_conversions.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/conversions/object-conversions/associated-wrong.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.conversions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_conversions.rs:CASES"
+    },
+    {
+      "path": "tests/spec/conversions/object-conversions/associated.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.conversions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_conversions.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/conversions/object-conversions/borrowed-value.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.conversions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_conversions.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/conversions/object-conversions/branch.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.conversions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_conversions.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/conversions/object-conversions/generic-result.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.conversions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_conversions.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/conversions/object-conversions/generic.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.conversions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_conversions.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/conversions/object-conversions/inherited-conflict.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.conversions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_conversions.rs:CASES"
+    },
+    {
+      "path": "tests/spec/conversions/object-conversions/inherited-quantified-wrong.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.conversions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_conversions.rs:CASES"
+    },
+    {
+      "path": "tests/spec/conversions/object-conversions/inherited-quantified.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.conversions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_conversions.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/conversions/object-conversions/inherited-root-capture.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.conversions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_conversions.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/conversions/object-conversions/inherited-root-wrong.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.conversions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_conversions.rs:CASES"
+    },
+    {
+      "path": "tests/spec/conversions/object-conversions/inherited.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.conversions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_conversions.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/conversions/object-conversions/literal.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.conversions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_conversions.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/conversions/object-conversions/missing.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.conversions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_conversions.rs:CASES"
+    },
+    {
+      "path": "tests/spec/conversions/object-conversions/mutable.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.conversions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_conversions.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/conversions/object-conversions/no-extra-dereference.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.conversions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_conversions.rs:CASES"
+    },
+    {
+      "path": "tests/spec/conversions/object-conversions/quantified-associated-wrong.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.conversions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_conversions.rs:CASES"
+    },
+    {
+      "path": "tests/spec/conversions/object-conversions/quantified-associated.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.conversions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_conversions.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/conversions/object-conversions/quantified-static-only.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.conversions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_conversions.rs:CASES"
+    },
+    {
+      "path": "tests/spec/conversions/object-conversions/quantified.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.conversions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_conversions.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/conversions/object-conversions/raw.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.conversions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_conversions.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/conversions/object-conversions/reference-raw.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.conversions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_conversions.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/conversions/object-conversions/share.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.conversions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_conversions.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/conversions/object-conversions/shared.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.conversions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_conversions.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/conversions/object-conversions/strengthen.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.conversions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_conversions.rs:CASES"
+    },
+    {
+      "path": "tests/spec/conversions/object-conversions/struct-tail.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.conversions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_conversions.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/conversions/object-conversions/trait-argument-wrong.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.conversions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_conversions.rs:CASES"
+    },
+    {
+      "path": "tests/spec/conversions/object-conversions/trait-argument.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.conversions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_conversions.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/conversions/object-conversions/unsized-generic.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.conversions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_conversions.rs:CASES"
+    },
+    {
+      "path": "tests/spec/conversions/object-conversions/unsized-slice.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.conversions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_conversions.rs:CASES"
+    },
+    {
+      "path": "tests/spec/conversions/object-conversions/wrong-impl.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.conversions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_conversions.rs:CASES"
+    },
+    {
+      "path": "tests/spec/dispatch/object-dispatch/object-aggregate-abi.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.dispatch"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/dispatch/object-dispatch/object-applicable-copy-method.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.dispatch"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/dispatch/object-dispatch/object-argument-promise-does-not-imply-static.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.dispatch"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch.rs:object_type_relations_match_rustc"
+    },
+    {
+      "path": "tests/spec/dispatch/object-dispatch/object-associated-abi.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.dispatch"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/dispatch/object-dispatch/object-captured-reference.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.dispatch"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/dispatch/object-dispatch/object-constant-bytes.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.dispatch"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/dispatch/object-dispatch/object-constant-raw-address.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.dispatch"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/dispatch/object-dispatch/object-constant.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.dispatch"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/dispatch/object-dispatch/object-default.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.dispatch"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/dispatch/object-dispatch/object-drop-table.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.dispatch"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/dispatch/object-dispatch/object-explicit-bound-constrains-input-lifetime.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.dispatch"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch.rs:object_type_relations_match_rustc",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/dispatch/object-dispatch/object-foreign-trait-impl.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.dispatch"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/dispatch/object-dispatch/object-generic-consumer.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.dispatch"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/dispatch/object-dispatch/object-generic-impl.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.dispatch"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/dispatch/object-dispatch/object-higher-ranked-owner.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.dispatch"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/dispatch/object-dispatch/object-intrinsic-outlives.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.dispatch"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch.rs:object_type_relations_match_rustc",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/dispatch/object-dispatch/object-intrinsic-static.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.dispatch"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch.rs:object_type_relations_match_rustc",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/dispatch/object-dispatch/object-late-method.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.dispatch"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/dispatch/object-dispatch/object-literal.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.dispatch"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/dispatch/object-dispatch/object-local-annotation-requires-principal-lifetime.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.dispatch"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch.rs:object_type_relations_match_rustc"
+    },
+    {
+      "path": "tests/spec/dispatch/object-dispatch/object-local-principal-lifetime-does-not-imply-static.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.dispatch"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch.rs:object_type_relations_match_rustc"
+    },
+    {
+      "path": "tests/spec/dispatch/object-dispatch/object-local-reference-elision.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.dispatch"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch.rs:object_type_relations_match_rustc",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/dispatch/object-dispatch/object-local-supertrait-lifetime-does-not-imply-static.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.dispatch"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch.rs:object_type_relations_match_rustc"
+    },
+    {
+      "path": "tests/spec/dispatch/object-dispatch/object-multiple-lifetime-promises.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.dispatch"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch.rs:object_type_relations_match_rustc",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/dispatch/object-dispatch/object-mutable.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.dispatch"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/dispatch/object-dispatch/object-no-intrinsic-static.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.dispatch"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch.rs:object_type_relations_match_rustc"
+    },
+    {
+      "path": "tests/spec/dispatch/object-dispatch/object-parent-const-argument.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.dispatch"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/dispatch/object-dispatch/object-parent-type-argument.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.dispatch"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/dispatch/object-dispatch/object-redundant-inherited-equality.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.dispatch"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch.rs:object_type_relations_match_rustc",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/dispatch/object-dispatch/object-reference-formation-implies-input-lifetimes.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.dispatch"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch.rs:object_type_relations_match_rustc",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/dispatch/object-dispatch/object-reified-method.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.dispatch"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/dispatch/object-dispatch/object-shared.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.dispatch"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/dispatch/object-dispatch/object-short-reference-does-not-imply-static-input.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.dispatch"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch.rs:object_type_relations_match_rustc"
+    },
+    {
+      "path": "tests/spec/dispatch/object-dispatch/object-static-trait-cannot-extend-local-borrow.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.dispatch"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch.rs:object_type_relations_match_rustc"
+    },
+    {
+      "path": "tests/spec/dispatch/object-dispatch/object-static-trait-local-value.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.dispatch"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/dispatch/object-dispatch/object-static-with-short-trait-input.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.dispatch"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch.rs:object_type_relations_match_rustc",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/dispatch/object-dispatch/object-supertrait.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.dispatch"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/dispatch/object-dispatch/object-two-implementations.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.dispatch"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/dispatch/object-dispatch/object-vacant-copy-call.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.dispatch"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch.rs:vacant_methods_require_their_declared_conditions"
+    },
+    {
+      "path": "tests/spec/dispatch/object-dispatch/object-vacant-copy-method.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.dispatch"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/dispatch/object-dispatch/object-vacant-copy-reification.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.dispatch"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch.rs:vacant_methods_require_their_declared_conditions"
+    },
+    {
+      "path": "tests/spec/dispatch/object-dispatch/object-vacant-trait-call.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.dispatch"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch.rs:vacant_methods_require_their_declared_conditions"
+    },
+    {
+      "path": "tests/spec/dispatch/object-dispatch/object-vacant-trait-method.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.dispatch"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/dispatch/prerequisite-boundary/trait-object.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.dispatch"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "PA19 future-object boundary, now owned by PA23"
+    },
+    {
+      "path": "tests/spec/hidden-results/defining-regions/conditional-captures.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.hidden-results"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/defining_regions.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/hidden-results/defining-regions/defining-bound-unpaid.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.hidden-results"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/defining_regions.rs:CASES"
+    },
+    {
+      "path": "tests/spec/hidden-results/defining-regions/disjoint-captures.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.hidden-results"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/defining_regions.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/hidden-results/defining-regions/disjoint-marker-unpaid-reversed.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.hidden-results"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/defining_regions.rs:CASES"
+    },
+    {
+      "path": "tests/spec/hidden-results/defining-regions/disjoint-marker-unpaid.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.hidden-results"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/defining_regions.rs:CASES"
+    },
+    {
+      "path": "tests/spec/hidden-results/defining-regions/disjoint-static-marker.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.hidden-results"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/defining_regions.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/hidden-results/defining-regions/generic-marker-unpaid.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.hidden-results"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/defining_regions.rs:CASES"
+    },
+    {
+      "path": "tests/spec/hidden-results/defining-regions/generic-structural.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.hidden-results"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/defining_regions.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/hidden-results/defining-regions/local-escape.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.hidden-results"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/defining_regions.rs:CASES"
+    },
+    {
+      "path": "tests/spec/hidden-results/defining-regions/local-marker-unpaid.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.hidden-results"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/defining_regions.rs:CASES"
+    },
+    {
+      "path": "tests/spec/hidden-results/defining-regions/local-structural.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.hidden-results"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/defining_regions.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/hidden-results/defining-regions/multiple-results.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.hidden-results"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/defining_regions.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/hidden-results/defining-regions/pattern-complete.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.hidden-results"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/defining_regions.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/hidden-results/defining-regions/pattern-incomplete.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.hidden-results"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/defining_regions.rs:CASES"
+    },
+    {
+      "path": "tests/spec/hidden-results/defining-regions/promoted-result.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.hidden-results"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/defining_regions.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/hidden-results/defining-regions/reborrow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.hidden-results"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/defining_regions.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/hidden-results/defining-regions/static-marker.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.hidden-results"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/defining_regions.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/hidden-results/hidden-dispatch/hidden-constant-pattern.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.hidden-results"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch/hidden_dispatch.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/hidden-results/hidden-dispatch/hidden-final-nominal.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.hidden-results"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch/hidden_dispatch.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/hidden-results/hidden-dispatch/hidden-final-quantified.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.hidden-results"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch/hidden_dispatch.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/hidden-results/hidden-dispatch/hidden-final-return-marker.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.hidden-results"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch/hidden_dispatch.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/hidden-results/hidden-dispatch/hidden-marker-generic.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.hidden-results"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch/hidden_dispatch.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/hidden-results/hidden-dispatch/hidden-marker-manual.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.hidden-results"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch/hidden_dispatch.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/hidden-results/hidden-dispatch/hidden-marker-object.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.hidden-results"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch/hidden_dispatch.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/hidden-results/hidden-dispatch/hidden-marker-suspended-borrow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.hidden-results"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch/hidden_dispatch.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/lifetimes/containers/container-alias.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.lifetimes"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch/containers.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/lifetimes/containers/container-ambiguous.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.lifetimes"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch/containers.rs:CASES"
+    },
+    {
+      "path": "tests/spec/lifetimes/containers/container-explicit-ambiguous.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.lifetimes"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch/containers.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/lifetimes/containers/container-implied-field-not-default.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.lifetimes"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch/containers.rs:CASES"
+    },
+    {
+      "path": "tests/spec/lifetimes/containers/container-inline.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.lifetimes"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch/containers.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/lifetimes/containers/container-local-elision.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.lifetimes"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch/containers.rs:RUNTIME",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/lifetimes/containers/container-output-elision.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.lifetimes"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch/containers.rs:RUNTIME",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/lifetimes/containers/container-partial-annotation.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.lifetimes"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch/containers.rs:RUNTIME",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/lifetimes/containers/container-placeholder-ambiguous.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.lifetimes"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch/containers.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/lifetimes/containers/container-placeholder-input.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.lifetimes"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch/containers.rs:RUNTIME",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/lifetimes/containers/container-redundant-bound.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.lifetimes"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch/containers.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/lifetimes/containers/container-runtime.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.lifetimes"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch/containers.rs:RUNTIME",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/lifetimes/containers/container-same-input-ambiguous.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.lifetimes"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch/containers.rs:CASES"
+    },
+    {
+      "path": "tests/spec/lifetimes/containers/container-static-still-ambiguous.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.lifetimes"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch/containers.rs:CASES"
+    },
+    {
+      "path": "tests/spec/lifetimes/containers/container-static.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.lifetimes"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch/containers.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/lifetimes/containers/container-trait-argument.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.lifetimes"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch/containers.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/lifetimes/containers/container-unbounded-alias.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.lifetimes"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch/containers.rs:CASES"
+    },
+    {
+      "path": "tests/spec/lifetimes/containers/container-where.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.lifetimes"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch/containers.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/lifetimes/erased-referent/borrowed.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.lifetimes"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_conversions.rs:erased_referent_must_outlive_the_object_bound",
+      "native": {
+        "kind": "codegen",
+        "reason": "Unused body proves the declared object lifetime; no runtime claim."
+      }
+    },
+    {
+      "path": "tests/spec/lifetimes/erased-referent/escape.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.lifetimes"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_conversions.rs:erased_referent_must_outlive_the_object_bound"
+    },
+    {
+      "path": "tests/spec/markers/auto-bounds/auto-conditional-slot.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch/auto_bounds.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/markers/auto-bounds/auto-dispatch.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch/auto_bounds.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/markers/auto-bounds/auto-drop.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch/auto_bounds.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/markers/auto-bounds/auto-explicit-dispatch.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch/auto_bounds.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/markers/auto-bounds/auto-inherited.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch/auto_bounds.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/markers/auto-bounds/auto-only-constant.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch/auto_bounds.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/markers/auto-bounds/auto-only-data.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch/auto_bounds.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/markers/auto-bounds/auto-only-drop-bound.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch/auto_bounds.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/markers/auto-bounds/auto-only-upcast.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch/auto_bounds.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/markers/auto-bounds/auto-vacant-slot.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch/auto_bounds.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/markers/auto-sources/auto-only-add.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/auto_sources.rs:CASES"
+    },
+    {
+      "path": "tests/spec/markers/auto-sources/auto-only-conversion.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/auto_sources.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/markers/auto-sources/auto-only-drop.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/auto_sources.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/markers/auto-sources/auto-only-reject.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/auto_sources.rs:CASES"
+    },
+    {
+      "path": "tests/spec/markers/auto-sources/auto-only-repeat.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/auto_sources.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/markers/auto-sources/auto-only-unpin.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/auto_sources.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/markers/auto-sources/auto-only.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/auto_sources.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/markers/auto-sources/bad-field.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/auto_sources.rs:CASES"
+    },
+    {
+      "path": "tests/spec/markers/auto-sources/empty-array.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/auto_sources.rs:CASES"
+    },
+    {
+      "path": "tests/spec/markers/auto-sources/fields.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/auto_sources.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/markers/auto-sources/function-input.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/auto_sources.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/markers/auto-sources/generic.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/auto_sources.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/markers/auto-sources/impl-contract.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/auto_sources.rs:CASES"
+    },
+    {
+      "path": "tests/spec/markers/auto-sources/inherited.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/auto_sources.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/markers/auto-sources/module-alias.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/auto_sources.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/markers/auto-sources/mutable-unwind.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/auto_sources.rs:CASES"
+    },
+    {
+      "path": "tests/spec/markers/auto-sources/mutable.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/auto_sources.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/markers/auto-sources/no-implied-copy.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/auto_sources.rs:CASES"
+    },
+    {
+      "path": "tests/spec/markers/auto-sources/no-implied-sized.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/auto_sources.rs:CASES"
+    },
+    {
+      "path": "tests/spec/markers/auto-sources/object-no-permission.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/auto_sources.rs:CASES"
+    },
+    {
+      "path": "tests/spec/markers/auto-sources/object-permission.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/auto_sources.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/markers/auto-sources/object-reject.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/auto_sources.rs:CASES"
+    },
+    {
+      "path": "tests/spec/markers/auto-sources/object.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/auto_sources.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/markers/auto-sources/opaque-bad.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/auto_sources.rs:CASES"
+    },
+    {
+      "path": "tests/spec/markers/auto-sources/opaque.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/auto_sources.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/markers/auto-sources/panic-alias.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/auto_sources.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/markers/auto-sources/panic-not-prelude.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/auto_sources.rs:CASES"
+    },
+    {
+      "path": "tests/spec/markers/auto-sources/projected-bad.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/auto_sources.rs:CASES"
+    },
+    {
+      "path": "tests/spec/markers/auto-sources/projected-fields.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/auto_sources.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/markers/auto-sources/projection.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/auto_sources.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/markers/auto-sources/raw-send.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/auto_sources.rs:CASES"
+    },
+    {
+      "path": "tests/spec/markers/auto-sources/raw-sync.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/auto_sources.rs:CASES"
+    },
+    {
+      "path": "tests/spec/markers/auto-sources/raw-unpin.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/auto_sources.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/markers/auto-sources/raw-unwind.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/auto_sources.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/markers/auto-sources/recursive-bad.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/auto_sources.rs:CASES"
+    },
+    {
+      "path": "tests/spec/markers/auto-sources/recursive.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/auto_sources.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/markers/auto-sources/reference-unpin.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/auto_sources.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/markers/auto-sources/scalar.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/auto_sources.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/markers/auto-sources/shadowed-impl.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/auto_sources.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/markers/auto-sources/shadowed.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/auto_sources.rs:CASES"
+    },
+    {
+      "path": "tests/spec/markers/auto-sources/shared-wrong.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/auto_sources.rs:CASES"
+    },
+    {
+      "path": "tests/spec/markers/auto-sources/shared.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/auto_sources.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/markers/auto-sources/str.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/auto_sources.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/markers/auto-sources/unconstrained.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/auto_sources.rs:CASES"
+    },
+    {
+      "path": "tests/spec/markers/auto-sources/unrelated.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/auto_sources.rs:CASES"
+    },
+    {
+      "path": "tests/spec/markers/auto-sources/unwind.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/auto_sources.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/alias.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/arguments.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES"
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/array.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES"
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/blanket.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES"
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/condition-fails.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES"
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/condition-param.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/condition.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/const-specialized-fails.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES"
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/const-specialized.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/cycle-conditional-bad.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES"
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/cycle-conditional.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/cycle-field.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/cycle-generic-binder.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/cycle-generic-reference.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/cycle-lifetime-self.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES"
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/cycle-lifetime-static.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/cycle-mixed.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES"
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/cycle-pair.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/cycle-private-witnesses.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/cycle-quantified-reference.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/cycle-self.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/cycle-swap-bad.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES"
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/cycle-swap-equal.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES"
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/cycle-swap.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES"
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/cycle-unused-binder.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/cyclic-cache-negative.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES"
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/cyclic-cache-positive.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/disjoint.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/dynamic.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES"
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/early-alias-header.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/generic.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/lifetime-fails.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES"
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/lifetime.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/marker-condition-fails.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES"
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/marker-condition.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/member.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES"
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/negative.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES"
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/nested-fails.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES"
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/nested.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/object-method-missing-marker.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES"
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/object.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/opaque-caller-negative.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES"
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/opaque-caller-positive.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/opaque-chain.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/opaque-declared-self.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/opaque-generic-negative.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES"
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/opaque-generic-positive.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/opaque-impl-condition.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/opaque-indirect-declaration.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/opaque-manual.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/opaque-mutual-auto.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES"
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/opaque-nested-definitions.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/opaque-nominal-constructor.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/opaque-nominal-fails.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES"
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/opaque-nominal-field.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/opaque-nominal-quantified-unpaid.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES"
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/opaque-nominal-quantified.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/opaque-ordinary-private.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES"
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/opaque-pattern-scalar-complete.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/opaque-pattern-scalar-missing.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES"
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/opaque-pattern-tuple-complete.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/opaque-pattern-tuple-missing.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES"
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/opaque-plain.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/opaque-return-marker-fails.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES"
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/opaque-return-marker-reversed.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/opaque-return-marker.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/opaque-return-quantified-unpaid.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES"
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/opaque-return-quantified.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/opaque-return-supertrait-fails.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES"
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/opaque-return-supertrait.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/opaque-reversed.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/opaque-self-auto.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES"
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/overlap.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES"
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/quantified-condition-fails.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES"
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/quantified-condition.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/quantified-local-context-fails.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES"
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/quantified-static-context.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/reference.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES"
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/safe-send.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES"
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/safe-sync.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES"
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/send.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/source-order.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/specialized-fails.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES"
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/specialized.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/sync.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/tuple.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES"
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/unconstrained.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES"
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/unrelated-alias.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/unsafe-unpin.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES"
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/unwind.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/markers/explicit-markers/whole-premise.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.markers"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/explicit_markers.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/members/object-members/argument.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.members"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_members.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/members/object-members/associated.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.members"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_members.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/members/object-members/borrowed-result-escape.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.members"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_members.rs:CASES"
+    },
+    {
+      "path": "tests/spec/members/object-members/borrowed-result.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.members"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_members.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/members/object-members/diamond-result.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.members"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_members.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/members/object-members/generic-optout.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.members"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_members.rs:CASES"
+    },
+    {
+      "path": "tests/spec/members/object-members/hidden-supertrait.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.members"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_members.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/members/object-members/hidden-trait.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.members"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_members.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/members/object-members/inherited-equality.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.members"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_members.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/members/object-members/inherited-input.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.members"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_members.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/members/object-members/inherited-quantified-equality.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.members"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_members.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/members/object-members/membership.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.members"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_members.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/members/object-members/mutable-call.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.members"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_members.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/members/object-members/qualified-type.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.members"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_members.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/members/object-members/qualified.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.members"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_members.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/members/object-members/quantified-equation.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.members"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_members.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/members/object-members/quantified-member.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.members"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_members.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/members/object-members/quantified-membership.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.members"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_members.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/members/object-members/quantified-result-escape.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.members"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_members.rs:CASES"
+    },
+    {
+      "path": "tests/spec/members/object-members/quantified-super.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.members"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_members.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/members/object-members/redundant-equality.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.members"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_members.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/members/object-members/result.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.members"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_members.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/members/object-members/shared-call.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.members"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_members.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/members/object-members/shared-mutation.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.members"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_members.rs:CASES"
+    },
+    {
+      "path": "tests/spec/members/object-members/sized-optout.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.members"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_members.rs:CASES"
+    },
+    {
+      "path": "tests/spec/members/object-members/static-membership.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.members"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_members.rs:CASES"
+    },
+    {
+      "path": "tests/spec/members/object-members/supertrait-result.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.members"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_members.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/members/object-members/supertrait.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.members"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_members.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/members/object-members/trait-input.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.members"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_members.rs:CASES",
+      "native": {
+        "kind": "codegen",
+        "reason": "Acceptance and unused-body control; no runtime claim is made for the empty or incidental entrypoint."
+      }
+    },
+    {
+      "path": "tests/spec/members/object-members/unrelated.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.members"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_members.rs:CASES"
+    },
+    {
+      "path": "tests/spec/members/object-members/wrong-argument.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.members"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_members.rs:CASES"
+    },
+    {
+      "path": "tests/spec/members/object-members/wrong-associated.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.members"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_members.rs:CASES"
+    },
+    {
+      "path": "tests/spec/members/object-members/wrong-input.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.members"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_members.rs:CASES"
+    },
+    {
+      "path": "tests/spec/members/object-members/wrong-result.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.members"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_members.rs:CASES"
+    },
+    {
+      "path": "tests/spec/storage/tails/tail-borrowed-object-static.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.storage"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch/tails.rs:invalid_object_tails_are_rejected"
+    },
+    {
+      "path": "tests/spec/storage/tails/tail-constant-missing-implementation.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.storage"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch/tails.rs:invalid_object_tails_are_rejected"
+    },
+    {
+      "path": "tests/spec/storage/tails/tail-constant.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.storage"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch/tails.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/storage/tails/tail-explicit-constructor-type.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.storage"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch/tails.rs:invalid_object_tails_are_rejected"
+    },
+    {
+      "path": "tests/spec/storage/tails/tail-explicit-inner-alignment.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.storage"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch/tails.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/storage/tails/tail-mutable.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.storage"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch/tails.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/storage/tails/tail-nested-constant-constructor.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.storage"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch/tails.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/storage/tails/tail-nested-pattern.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.storage"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch/tails.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/storage/tails/tail-nested-prefix-alignment.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.storage"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch/tails.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/storage/tails/tail-nested.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.storage"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch/tails.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/storage/tails/tail-packed-object.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.storage"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch/tails.rs:invalid_object_tails_are_rejected"
+    },
+    {
+      "path": "tests/spec/storage/tails/tail-pattern.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.storage"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch/tails.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/storage/tails/tail-promoted-constructor.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.storage"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch/tails.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/storage/tails/tail-reborrow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.storage"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch/tails.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/storage/tails/tail-shared.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.storage"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch/tails.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/storage/tails/tail-transparent.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.storage"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch/tails.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/storage/tails/tail-two-alignments.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.storage"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch/tails.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/storage/tails/tail-upcast.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.storage"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch/tails.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/upcasts/upcasts/upcast-associated.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.upcasts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch/upcasts.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/upcasts/upcasts/upcast-constant.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.upcasts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch/upcasts.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/upcasts/upcasts/upcast-diamond.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.upcasts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch/upcasts.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/upcasts/upcasts/upcast-discovered-before-table.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.upcasts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch/upcasts.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/upcasts/upcasts/upcast-downcast.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.upcasts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch/upcasts.rs:REJECTED"
+    },
+    {
+      "path": "tests/spec/upcasts/upcasts/upcast-generic-parent.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.upcasts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch/upcasts.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/upcasts/upcasts/upcast-higher-ranked.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.upcasts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch/upcasts.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/upcasts/upcasts/upcast-literal.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.upcasts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch/upcasts.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/upcasts/upcasts/upcast-mutable.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.upcasts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch/upcasts.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/upcasts/upcasts/upcast-quantifier-specialization.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.upcasts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch/upcasts.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/upcasts/upcasts/upcast-raw.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.upcasts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch/upcasts.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/upcasts/upcasts/upcast-shared-to-mutable.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.upcasts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch/upcasts.rs:REJECTED"
+    },
+    {
+      "path": "tests/spec/upcasts/upcasts/upcast-shared.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.upcasts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch/upcasts.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/upcasts/upcasts/upcast-strengthened-object-lifetime.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.upcasts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch/upcasts.rs:REJECTED"
+    },
+    {
+      "path": "tests/spec/upcasts/upcasts/upcast-two-concretes.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.upcasts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch/upcasts.rs:CASES",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/upcasts/upcasts/upcast-unrelated-impl.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.upcasts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch/upcasts.rs:REJECTED"
+    },
+    {
+      "path": "tests/spec/upcasts/upcasts/upcast-weakened-quantifier.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.upcasts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch/upcasts.rs:REJECTED"
+    },
+    {
+      "path": "tests/spec/upcasts/upcasts/upcast-wrong-argument.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.upcasts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch/upcasts.rs:REJECTED"
+    },
+    {
+      "path": "tests/spec/upcasts/upcasts/upcast-wrong-equality.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.upcasts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/object_dispatch/upcasts.rs:REJECTED"
+    }
+  ]
+}

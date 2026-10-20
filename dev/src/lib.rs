@@ -7,6 +7,7 @@ pub mod lex;
 pub mod literal;
 pub mod lower;
 pub mod lowir;
+pub mod pipeline;
 pub mod resolve;
 #[cfg(test)]
 #[path = "../tests/helpers/qualify.rs"]

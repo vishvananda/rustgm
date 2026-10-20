@@ -7,7 +7,7 @@ use crate::types::infer::arguments::Argument;
 
 pub(super) struct Pending {
     pub view: TermId,
-    pub array: TermId,
+    pub conversion: crate::types::unsizing::Conversion<TermId>,
     pub borrow_view: Option<TermId>,
     pub relations: Vec<(TermId, TermId)>,
 }
@@ -36,6 +36,7 @@ impl Checker<'_> {
                 return Err(self.error(node, "unsizing context work budget exceeded"));
             }
             match self.head(node, term)? {
+                Some(Constructor::Dynamic { .. }) => return Ok(Some(expected)),
                 Some(Constructor::Slice) => return Ok(nominal.then_some(expected)),
                 Some(Constructor::Adt(item, _) | Constructor::AdtArgs(item, _)) => {
                     nominal = true;

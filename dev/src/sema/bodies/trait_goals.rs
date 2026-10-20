@@ -1,4 +1,5 @@
 //! Resolve call goals before inference completion, retaining actual assumption evidence.
+mod canonical;
 mod inference;
 use super::{Checker, Error, NodeId};
 use crate::sema::traits::{
@@ -6,6 +7,7 @@ use crate::sema::traits::{
     obligations::Reservation,
     selection::{self, Caller, Evidence, Selection, Source},
 };
+pub(super) use canonical::CanonicalRequirements;
 pub(super) use inference::{Pending, Progress};
 use std::sync::Arc;
 
@@ -15,6 +17,20 @@ impl Checker<'_> {
         node: NodeId,
         predicate: crate::types::parameters::predicates::Predicate,
     ) -> Result<(), Error> {
+        if self
+            .state
+            .canonical_requirements
+            .as_ref()
+            .is_some_and(|pending| pending.waiting())
+            || predicate
+                .contains_opaques(&self.facts.types)
+                .map_err(|e| self.error(node, e))?
+        {
+            return self.defer_canonical_requirement(
+                node,
+                crate::types::parameters::clauses::Clause::Predicate(predicate),
+            );
+        }
         let predicate = self.alias_predicate(node, predicate)?;
         let assumptions = self.trait_assumptions(node)?.unwrap_or_default();
         let first_region = self.trait_region_start(node)?;

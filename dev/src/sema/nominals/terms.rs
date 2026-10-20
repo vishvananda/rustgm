@@ -47,7 +47,10 @@ impl Proof {
         original: Clause,
     ) -> Result<BuiltinFormation, &'static str> {
         let (value, count) = self.clause_context(facts, clause)?;
-        if !matches!(value.bound, Bound::Copy | Bound::Clone | Bound::Sized) {
+        if !matches!(
+            value.bound,
+            Bound::Copy | Bound::Clone | Bound::Sized | Bound::Auto(_)
+        ) {
             return Err("builtin declaration checking requires a builtin bound");
         }
         let mut ty = if let Some(count) = count {
@@ -90,6 +93,9 @@ impl Proof {
         value: Predicate,
     ) -> Result<bool, &'static str> {
         let ty = value.ty;
+        if matches!(value.bound, Bound::Auto(_)) {
+            return self.trait_state(facts)?.prove(facts, value, true);
+        }
         if value.bound == Bound::Sized {
             if facts.types.contains_projected_sizes(ty) == Some(true) {
                 let first = self.region_frontier(facts)?;

@@ -12,6 +12,7 @@ pub(in crate::sema) enum Requirement {
     Definition(DefId),
     ImplHeader(DefId),
     Fields(ItemId),
+    Opaque(crate::types::opaque::OpaqueId),
 }
 impl From<crate::sema::traits::selection::Dependency> for Requirement {
     fn from(dependency: crate::sema::traits::selection::Dependency) -> Self {
@@ -19,6 +20,7 @@ impl From<crate::sema::traits::selection::Dependency> for Requirement {
         match dependency {
             Dependency::Header(owner) => Self::ImplHeader(owner),
             Dependency::Fields(item) => Self::Fields(item),
+            Dependency::Opaque(id) => Self::Opaque(id),
         }
     }
 }
@@ -40,6 +42,17 @@ impl Checker<'_> {
     pub(in crate::sema) fn restore_body(&mut self, state: State) {
         self.facts.body_work.suspended_slots -= state.slot_capacity();
         self.state = state;
+    }
+    pub(super) fn suspend_body(&mut self) -> Box<State> {
+        self.state.retain_sparse();
+        let counts = &mut self.facts.body_work;
+        counts.suspensions += 1;
+        counts.suspended_slots += self.state.slot_capacity();
+        counts.peak_suspended_slots = counts.peak_suspended_slots.max(counts.suspended_slots);
+        let mut scratch = Scratch::default();
+        scratch.resumable();
+        let fresh = Checker::with_scratch(self.report, self.facts, scratch).state;
+        Box::new(std::mem::replace(&mut self.state, fresh))
     }
     pub(in crate::sema) fn into_storage(self) -> (Scratch, Option<Box<State>>) {
         if matches!(self.state.completion, Completion::Inactive) {
@@ -110,6 +123,7 @@ impl Checker<'_> {
                 Requirement::Definition(_) => "missing completed associated type definition",
                 Requirement::ImplHeader(_) => "missing prepared implementation header",
                 Requirement::Fields(_) => "missing nominal field declarations",
+                Requirement::Opaque(_) => "missing completed opaque hidden type",
             };
             return Err(self.error(dependency.source.node, message));
         }
@@ -142,6 +156,17 @@ impl Checker<'_> {
 }
 
 impl State {
+    fn retain_sparse(&mut self) {
+        self.terms
+            .retain_sparse(self.touched.iter().map(|&node| NodeKey {
+                file: self.file,
+                node,
+            }));
+        self.diverges
+            .retain_sparse(self.touched.iter().map(|node| node.0 as usize));
+        self.locals
+            .retain_sparse(self.bindings.iter().map(|binding| binding.0 as usize));
+    }
     fn slot_capacity(&self) -> usize {
         self.terms.capacity() + self.diverges.capacity() + self.locals.capacity()
     }

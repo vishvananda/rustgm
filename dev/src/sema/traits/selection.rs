@@ -27,8 +27,8 @@ pub(in crate::sema) use known_premises::opaque_normalized;
 pub(in crate::sema) use readiness::{has_known_subject, requires_resolved_inputs};
 pub(in crate::sema) use result_templates::symbolic_result;
 pub(in crate::sema) use search::{
-    Pending, Progress, Reuse, begin, begin_normalized, begin_projection, begin_refining,
-    begin_scoped_refining,
+    Pending, Progress, Reuse, begin, begin_canonical, begin_normalized, begin_projection,
+    begin_refining, begin_scoped_refining,
 };
 use std::sync::Arc;
 
@@ -36,6 +36,7 @@ use std::sync::Arc;
 pub(in crate::sema) enum Dependency {
     Header(DefId),
     Fields(crate::types::ItemId),
+    Opaque(crate::types::opaque::OpaqueId),
 }
 impl Dependency {
     fn ready(self, facts: &Declarations) -> bool {
@@ -46,6 +47,11 @@ impl Dependency {
                 .as_ref()
                 .is_some_and(|registry| registry.header(owner).is_some()),
             Self::Fields(item) => facts.aggregates.get(item).is_some(),
+            Self::Opaque(id) => facts
+                .opaques
+                .declarations
+                .get(&id)
+                .is_some_and(|declaration| declaration.hidden.is_some()),
         }
     }
 }
@@ -62,9 +68,10 @@ pub(in crate::sema) enum Source {
         subject: TypeId,
         application: crate::types::traits::ApplicationId,
     },
-    /// A declared result bound, with its parent projection proof retained.
+    /// A declared result or object bound; projections retain their parent proof.
     ResultBound(Predicate),
-    /// A quantified declared result, authorized only by its retained parent proof.
+    /// A quantified declared result or intrinsic object bound. Its complete
+    /// originating clause is retained for provenance revalidation.
     QuantifiedResultBound {
         clause: QuantifiedId,
         subject: TypeId,
@@ -155,6 +162,14 @@ pub(in crate::sema) fn may_have_subject(
     };
     if let super::heads::Subject::Rigid(super::heads::Head::Opaque(id)) = subject {
         return Ok(super::results::may_have_opaque_trait(facts, id, item));
+    }
+    if matches!(
+        subject,
+        super::heads::Subject::Rigid(super::heads::Head::Dynamic(_))
+    ) {
+        // This is only an exclusion filter; complete object evidence is selected
+        // against all trait inputs and retained lifetime obligations below.
+        return Ok(true);
     }
     Ok(
         assumptions.is_some_and(|a| a.may_have_subject(item, subject))

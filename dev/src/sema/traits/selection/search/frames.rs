@@ -8,6 +8,8 @@ use crate::{
 
 pub(super) struct Frame {
     pub storage: Option<Box<super::sized_obligations::Pending>>,
+    pub autos: Option<Box<super::auto_obligations::Pending>>,
+    pub explicit_auto: bool,
     pub formation: Option<Box<super::member_conditions::Formation>>,
     pub normalization: Option<Box<super::normalization::Normalization>>,
     /// A suspended normalizer has proved these inputs in this search's scope.
@@ -17,6 +19,7 @@ pub(super) struct Frame {
     pub goal: Goal,
     pub first: u32,
     pub scope: ScopeId,
+    pub auto_segment: usize,
     pub started: bool,
     pub key: Option<ShapeKey>,
     pub canonical: Option<Predicate>,
@@ -67,6 +70,8 @@ impl Frame {
             .map_err(inference)?;
         Ok(Self {
             storage: None,
+            autos: None,
+            explicit_auto: false,
             formation: None,
             normalization: None,
             normalized_inputs: None,
@@ -74,6 +79,7 @@ impl Frame {
             goal,
             first,
             scope: ScopeId::ROOT,
+            auto_segment: 0,
             started: false,
             key: None,
             canonical: None,
@@ -159,6 +165,7 @@ impl Search<'_> {
                 .types
                 .contains_projections(ty)
                 .ok_or("missing builtin subject")?
+                || matches!(bound, Bound::Auto(_))
                 || bound == Bound::Sized
                     && (facts.types.contains_projected_sizes(ty) == Some(true)
                         || !facts.types.nominal_sizes_sealed()
@@ -193,6 +200,7 @@ impl Search<'_> {
                 .map_err(|_| "impl region count overflow")?;
         let node = self.query.push(
             Node {
+                cycle_dependent: false,
                 provisional_size: false,
                 goal,
                 source: Some(Source::Implementation {

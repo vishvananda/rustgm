@@ -41,6 +41,10 @@ pub(super) struct Context<'a> {
     queue: Vec<usize>,
     pub drop_queue: Vec<crate::body::drops::glue::Id>,
     pub drop_symbols: Vec<Option<SymbolId>>,
+    pub objects: &'a crate::sema::vtable_plans::Objects,
+    pub virtual_symbols: HashMap<(crate::sema::vtable_plans::ShapeId, u32), SymbolId>,
+    pub table_symbols: HashMap<crate::sema::vtable_plans::TableId, crate::lowir::data::GlobalId>,
+    pub table_queue: Vec<crate::sema::vtable_plans::TableId>,
     abort: Option<SymbolId>,
     remainders: [Option<SymbolId>; 2],
 }
@@ -119,6 +123,10 @@ impl<'a> Context<'a> {
             queue: Vec::new(),
             drop_queue: Vec::new(),
             drop_symbols: vec![None; destruction.map_or(0, |d| d.recipes().recipes().len())],
+            objects: &facts.objects,
+            virtual_symbols: HashMap::new(),
+            table_symbols: HashMap::new(),
+            table_queue: Vec::new(),
             abort: None,
             remainders: [None; 2],
         };
@@ -130,52 +138,67 @@ impl<'a> Context<'a> {
             node: source,
             message,
         })?;
-        let (mut next, mut next_data, mut next_drop) = (0, 0, 0);
-        while next < context.queue.len()
-            || next_data < context.data.pending.len()
-            || next_drop < context.drop_queue.len()
-        {
-            if next == context.queue.len() {
-                if next_drop < context.drop_queue.len() {
-                    let id = context.drop_queue[next_drop];
-                    let lowered =
-                        super::cleanup::glue(&mut context, id).map_err(|message| Error {
-                            node: source,
-                            message,
-                        })?;
-                    let symbol = context.drop_symbols[id.0 as usize].ok_or(Error {
-                        node: source,
-                        message: "missing demanded cleanup symbol",
-                    })?;
-                    context.output.symbols[symbol.0 as usize].body = Some(lowered);
-                    next_drop += 1;
-                    continue;
-                }
-                context
-                    .initialize_data(next_data)
-                    .map_err(|message| Error {
-                        node: source,
-                        message,
-                    })?;
-                next_data += 1;
-                continue;
-            }
-            let index = context.queue[next];
-            let symbol = context.symbols[index].ok_or(Error {
-                node: source,
-                message: "missing demanded symbol",
-            })?;
-            let body = &bodies.bodies[index];
-            let plan = destruction.and_then(|proof| proof.plan(index));
-            let lowered = function::lower(&mut context, index, body, plan)?;
-            context.output.symbols[symbol.0 as usize].body = Some(lowered);
-            next += 1;
-        }
+        context.emit_pending(source)?;
         context.entry(root).map_err(|message| Error {
             node: source,
             message,
         })?;
         Ok(context.output)
+    }
+    /// Demand queues own their identities before any dependency is emitted.
+    /// Newly discovered functions, drop glue and data append without recursion.
+    fn emit_pending(&mut self, source: NodeKey) -> Result<(), Error> {
+        let bodies = self.bodies;
+        let destruction = self.destruction;
+        let (mut next, mut next_data, mut next_drop, mut next_table) = (0, 0, 0, 0);
+        while next < self.queue.len()
+            || next_data < self.data.pending.len()
+            || next_drop < self.drop_queue.len()
+            || next_table < self.table_queue.len()
+        {
+            if next == self.queue.len() {
+                if next_drop < self.drop_queue.len() {
+                    let id = self.drop_queue[next_drop];
+                    let lowered = super::cleanup::glue(self, id).map_err(|message| Error {
+                        node: source,
+                        message,
+                    })?;
+                    let symbol = self.drop_symbols[id.0 as usize].ok_or(Error {
+                        node: source,
+                        message: "missing demanded cleanup symbol",
+                    })?;
+                    self.output.symbols[symbol.0 as usize].body = Some(lowered);
+                    next_drop += 1;
+                    continue;
+                }
+                if next_table < self.table_queue.len() {
+                    self.initialize_table(self.table_queue[next_table])
+                        .map_err(|message| Error {
+                            node: source,
+                            message,
+                        })?;
+                    next_table += 1;
+                    continue;
+                }
+                self.initialize_data(next_data).map_err(|message| Error {
+                    node: source,
+                    message,
+                })?;
+                next_data += 1;
+                continue;
+            }
+            let index = self.queue[next];
+            let symbol = self.symbols[index].ok_or(Error {
+                node: source,
+                message: "missing demanded symbol",
+            })?;
+            let body = &bodies.bodies[index];
+            let plan = destruction.and_then(|proof| proof.plan(index));
+            let lowered = function::lower(self, index, body, plan)?;
+            self.output.symbols[symbol.0 as usize].body = Some(lowered);
+            next += 1;
+        }
+        Ok(())
     }
     fn index_bodies(&mut self) -> Result<(), &'static str> {
         for (index, body) in self.bodies.bodies.iter().enumerate() {
@@ -295,7 +318,7 @@ impl<'a> Context<'a> {
             .pointer_metadata(self.types, self.aggregates, ty)?
         {
             Metadata::Thin => Ok(false),
-            Metadata::Length => Ok(true),
+            Metadata::Length | Metadata::VTable(_) => Ok(true),
             Metadata::Unknown(_) => Err("lowering requires resolved pointer metadata"),
         }
     }
@@ -309,6 +332,9 @@ impl<'a> Context<'a> {
         self.demand(Instance::new(self.types, ty)?)
     }
     pub fn demand(&mut self, instance: Instance) -> Result<SymbolId, &'static str> {
+        if let Some(call) = self.objects.call(instance) {
+            return self.virtual_method(instance, call);
+        }
         let Some(Kind::FunctionItem { item, .. }) = self.types.kind(instance.ty()) else {
             return Err("invalid demanded callable instance");
         };

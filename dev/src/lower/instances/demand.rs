@@ -56,7 +56,7 @@ pub(super) fn prepare(
     // Discovery includes implicit constructor factories. With no templates,
     // ordinary lowering already follows calls and selected cleanup dependencies.
     // All source bodies have still been checked before taking this path.
-    if templates.is_empty() {
+    if templates.is_empty() && !facts.types.has_dynamic_shapes() {
         return Ok(program);
     }
     let source = ordinary
@@ -136,7 +136,15 @@ pub(super) fn prepare(
         };
         let body = program.body(index).map_err(error)?;
         let source = body.source;
-        let mut next = dependencies.collect(facts, body).map_err(error)?;
+        let demands = dependencies
+            .collect(report, facts, body)
+            .map_err(|e| error(&e))?;
+        let mut next = demands.calls;
+        next.extend(
+            program
+                .object_dependencies(facts, &demands.object_types)
+                .map_err(error)?,
+        );
         next.extend(program.cleanup_dependencies(facts, index).map_err(error)?);
         work.extend(next.into_iter().rev().map(|i| Work::Enter(i, source)));
     }

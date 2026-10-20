@@ -1,4 +1,5 @@
 //! Deterministic type facts are an output view; later phases consume the model.
+mod dynamic;
 use super::model::{
     AdjustmentKind, BodyRegion, BodyRegionOrigin, Declarations, InitializerKind, Operation,
     RegionEquality, Scalar,
@@ -358,6 +359,7 @@ fn ty(store: &Store, id: TypeId, out: &mut impl Write) -> io::Result<()> {
             write!(out, "opaque id={}", id.0)?;
             generic_arguments(store, arguments, out)
         }
+        kind @ Kind::Dynamic { .. } => dynamic::write(store, kind, out),
         Kind::Projection(application) => {
             let trait_ = store
                 .trait_application(application.trait_application)

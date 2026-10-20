@@ -96,7 +96,10 @@ pub(super) fn prepare(
     }
     for predicate in facts.generics.predicates_in_scope(owner) {
         let predicate = predicate.value.ordinary()?;
-        if matches!(predicate.bound, Bound::Trait(_) | Bound::ProjectionEqual(_)) {
+        if matches!(
+            predicate.bound,
+            Bound::Trait(_) | Bound::ProjectionEqual(_) | Bound::Auto(_)
+        ) {
             traits.push(
                 context
                     .instantiate_predicate(&mut facts.types, predicate, &mut substitution)
@@ -146,7 +149,7 @@ pub(super) fn builtin_requirements(
             Bound::Copy => value.abilities.copy,
             Bound::Clone => value.abilities.clone_,
             Bound::Outlives(_) => return Err("unexpected candidate region predicate"),
-            Bound::Trait(_) => {
+            Bound::Trait(_) | Bound::Auto(_) => {
                 return Err("user trait candidate obligations require trait selection");
             }
             Bound::ProjectionEqual(_) => {

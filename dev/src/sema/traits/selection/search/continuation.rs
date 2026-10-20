@@ -21,6 +21,10 @@ pub(super) struct Query {
     pub availability: Availability,
     pub nodes: Vec<Node>,
     pub active: HashSet<ShapeKey>,
+    pub auto_active: HashMap<Predicate, (crate::types::lifetime_proof::ScopeId, usize)>,
+    pub next_auto_segment: usize,
+    pub auto_provisional:
+        HashMap<usize, HashMap<(crate::types::lifetime_proof::ScopeId, Predicate), Decision>>,
     pub families: HashSet<super::member_conditions::Key>,
     // Completed answers belong to one immutable caller, mode and region scope.
     pub completed: HashMap<Predicate, Decision>,
@@ -62,6 +66,9 @@ impl<'a> Search<'a> {
                 builtins,
                 nodes: Vec::new(),
                 active: HashSet::new(),
+                auto_active: HashMap::new(),
+                next_auto_segment: 0,
+                auto_provisional: HashMap::new(),
                 families: HashSet::new(),
                 completed: HashMap::new(),
                 cycles: 0,
@@ -141,9 +148,11 @@ impl<'a> Search<'a> {
                     }
                 }
                 Action::Descend => {
-                    let child = if let Some(child) = self.formation_child(facts, frame)? {
+                    let mut child = if let Some(child) = self.formation_child(facts, frame)? {
                         child
                     } else if let Some(child) = self.storage_child(facts, frame)? {
+                        child
+                    } else if let Some(child) = self.auto_child(facts, frame)? {
                         child
                     } else if let Some(child) = self.condition_child(facts, frame)? {
                         child
@@ -154,6 +163,7 @@ impl<'a> Search<'a> {
                             &mut self.query.suspended,
                         )?
                     };
+                    self.query.prepare_auto_child(frame, &mut child);
                     stack.push(child);
                 }
                 Action::Complete(decision) => {
@@ -162,8 +172,13 @@ impl<'a> Search<'a> {
                     };
                     if let Some(key) = frame.key {
                         self.query.active.remove(&key);
+                        if let Some(goal) = frame.canonical {
+                            self.query.auto_active.remove(&goal);
+                        }
                     }
-                    let (canonical, cycles, scope) = (frame.canonical, frame.cycles, frame.scope);
+                    if !matches!(decision, Decision::Proven(_)) {
+                        self.query.invalidate_auto(frame);
+                    }
                     let completed = stack.pop().ok_or("missing completed selection frame")?;
                     let Some(parent) = stack.last_mut() else {
                         if self.query.universal.is_some() {
@@ -174,7 +189,7 @@ impl<'a> Search<'a> {
                         return Ok(Progress::Ready(decision));
                     };
                     if completed.formation.is_none() {
-                        self.remember(canonical, cycles, decision, scope);
+                        self.remember(&completed, decision);
                         self.query.export_completed(facts, decision)?;
                     }
                     self.accept(facts, parent, decision)?;
@@ -261,6 +276,14 @@ impl<'a> Search<'a> {
             }
         }
         frame.pending_headers = None;
-        self.candidates(facts, frame)
+        if matches!(
+            frame.goal.builtin_bound(),
+            Some(crate::types::parameters::predicates::Bound::Auto(_))
+        ) && !frame.explicit_auto
+        {
+            self.complete_builtin(facts, frame)
+        } else {
+            self.candidates(facts, frame)
+        }
     }
 }

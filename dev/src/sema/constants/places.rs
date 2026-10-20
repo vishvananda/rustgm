@@ -324,8 +324,8 @@ impl Queries<'_> {
         // Project physical backing, retaining the actual sized field type even
         // when the expression sees an unsized view of that field.
         let (ty, tail) = self.backing_field(key, place, index)?;
-        let length = if tail && let Value::Reference(pointer) = location {
-            pointer.length
+        let metadata = if tail && let Value::Reference(pointer) = location {
+            pointer.metadata
         } else {
             None
         };
@@ -338,7 +338,7 @@ impl Queries<'_> {
             .project(base, index, Place { value, ty, ..place })
             .map_err(|e| self.error(Query::Place(key), e))?;
         if let Value::Reference(pointer) = &mut value {
-            pointer.length = length;
+            pointer.metadata = metadata;
         }
         self.states
             .insert(self.state_key(Query::Place(key)), State::Ready(value));

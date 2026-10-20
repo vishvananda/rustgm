@@ -129,6 +129,7 @@ impl Search<'_> {
         };
         let node = self.query.push(
             Node {
+                cycle_dependent: false,
                 provisional_size: false,
                 goal,
                 source: Some(Source::Equality),

@@ -94,8 +94,16 @@ impl Checker<'_> {
             }
         }
         let Some(list) = list else { return Ok(()) };
-        let ast = &self.report.package.unit(key.file).configured.ast;
-        for (index, node) in ast.list(list).iter().copied().enumerate().rev() {
+        let count = self
+            .report
+            .package
+            .unit(key.file)
+            .configured
+            .ast
+            .list(list)
+            .len();
+        for index in (0..count).rev() {
+            let node = self.report.package.unit(key.file).configured.ast.list(list)[index];
             if self
                 .facts
                 .partial_annotations
@@ -103,8 +111,18 @@ impl Checker<'_> {
             {
                 continue;
             }
-            match self.facts.generics.parameters[&owner][index + omitted].argument {
-                Argument::Type(_) => self.node_work(key.file, node, context),
+            let parameter = self.facts.generics.parameters[&owner][index + omitted];
+            match parameter.argument {
+                Argument::Type(_) => {
+                    self.object_argument_default(
+                        key,
+                        owner,
+                        parameter.binding,
+                        NodeKey { node, ..key },
+                        context,
+                    )?;
+                    self.node_work(key.file, node, context);
+                }
                 Argument::Const(id) => {
                     self.schedule_constant_argument(NodeKey { node, ..key }, id, owner, context)?;
                 }
@@ -127,69 +145,64 @@ impl Checker<'_> {
         let mut required_defaults = Vec::new();
         for index in 0..count {
             let parameter = self.facts.generics.parameters[&owner][index];
-            let node = index.checked_sub(omitted).and_then(|i| {
-                supplied.and_then(|list| {
-                    self.report
-                        .package
-                        .unit(key.file)
-                        .configured
-                        .ast
-                        .list(list)
-                        .get(i)
-                        .copied()
-                })
-            });
-            let (argument, original) = if let Some(node) = node {
-                let node = NodeKey { node, ..key };
-                let argument = self.source_argument(node, parameter.argument, context)?;
-                let original = if matches!(argument, Argument::Type(_)) {
-                    self.facts
-                        .unreduced
-                        .node(node)
-                        .map_or(argument, Argument::Type)
+            let ast = &self.report.package.unit(key.file).configured.ast;
+            let node = index
+                .checked_sub(omitted)
+                .and_then(|i| supplied.and_then(|list| ast.list(list).get(i).copied()));
+            let (argument, original) =
+                if let Some(region) = self.object_application_lifetime(key, index) {
+                    (Argument::Lifetime(region), Argument::Lifetime(region))
+                } else if let Some(node) = node {
+                    let node = NodeKey { node, ..key };
+                    let argument = self.source_argument(node, parameter.argument, context)?;
+                    let original = if matches!(argument, Argument::Type(_)) {
+                        self.facts
+                            .unreduced
+                            .node(node)
+                            .map_or(argument, Argument::Type)
+                    } else {
+                        argument
+                    };
+                    (argument, original)
+                } else if index < omitted {
+                    let region = self.region(key, None, context)?;
+                    self.regions.record(context, region);
+                    (Argument::Lifetime(region), Argument::Lifetime(region))
                 } else {
-                    argument
-                };
-                (argument, original)
-            } else if index < omitted {
-                let region = self.region(key, None, context)?;
-                self.regions.record(context, region);
-                (Argument::Lifetime(region), Argument::Lifetime(region))
-            } else {
-                let default = parameter
-                    .default
-                    .ok_or_else(|| self.error(key, "missing generic default"))?;
-                required_defaults.push(parameter.binding);
-                if defaults.is_none() {
-                    let mut prefix = Bound::prefix(ItemId(owner.0));
-                    for &argument in &arguments {
-                        prefix
-                            .push_argument(&self.facts.types, argument)
-                            .map_err(|e| self.error(key, e))?;
+                    let default = parameter
+                        .default
+                        .ok_or_else(|| self.error(key, "missing generic default"))?;
+                    required_defaults.push(parameter.binding);
+                    if defaults.is_none() {
+                        let mut prefix = Bound::prefix(ItemId(owner.0));
+                        for &argument in &arguments {
+                            prefix
+                                .push_argument(&self.facts.types, argument)
+                                .map_err(|e| self.error(key, e))?;
+                        }
+                        defaults = Some(prefix);
                     }
-                    defaults = Some(prefix);
-                }
-                let argument = defaults
-                    .as_mut()
-                    .ok_or_else(|| self.error(key, "missing default substitution"))?
-                    .apply_argument(&mut self.facts.types, default)
-                    .map_err(|e| self.error(key, e))?;
-                let template = self
-                    .facts
-                    .unreduced
-                    .default_type(parameter.binding)
-                    .map_or(default, Argument::Type);
-                let original = originals
-                    .apply_default(
-                        &mut self.facts.types,
-                        ItemId(owner.0),
-                        &arguments,
-                        template,
-                        argument,
-                    )
-                    .map_err(|e| self.error(key, e))?;
-                (argument, original)
-            };
+                    let argument = defaults
+                        .as_mut()
+                        .ok_or_else(|| self.error(key, "missing default substitution"))?
+                        .apply_argument(&mut self.facts.types, default)
+                        .map_err(|e| self.error(key, e))?;
+                    let template = self
+                        .facts
+                        .unreduced
+                        .default_type(parameter.binding)
+                        .map_or(default, Argument::Type);
+                    let original = originals
+                        .apply_default(
+                            &mut self.facts.types,
+                            ItemId(owner.0),
+                            &arguments,
+                            template,
+                            argument,
+                        )
+                        .map_err(|e| self.error(key, e))?;
+                    (argument, original)
+                };
             originals
                 .push(&self.facts.types, &arguments, argument, original)
                 .map_err(|e| self.error(key, e))?;

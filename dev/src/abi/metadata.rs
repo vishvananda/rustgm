@@ -7,6 +7,8 @@ pub enum Metadata {
     Thin,
     /// Element count for slices, byte count for str; inherited unchanged by DST tails.
     Length,
+    /// A trait-object tail carries the vtable for its complete object bounds.
+    VTable(TypeId),
     /// A rigid or unnormalized tail needs a caller's proof or concrete substitution.
     Unknown(TypeId),
 }
@@ -85,6 +87,7 @@ fn inspect(
     Ok(
         match types.kind(ty).ok_or("invalid pointer metadata type")? {
             Kind::Slice(_) | Kind::Primitive(Primitive::Str) => Step::Complete(Metadata::Length),
+            Kind::Dynamic { .. } => Step::Complete(Metadata::VTable(ty)),
             Kind::Tuple(fields) => tail(types, fields)?,
             Kind::Adt(item, _) => {
                 let definition = definitions

@@ -125,6 +125,16 @@ impl Shapes {
                 id.hash(hash);
                 self.child(Key::Arguments(arguments), finish, hash)?;
             }
+            Kind::Dynamic {
+                shape,
+                arguments,
+                bound_regions,
+                ..
+            } => {
+                shape.hash(hash);
+                bound_regions.hash(hash);
+                self.child(Key::Arguments(arguments), finish, hash)?;
+            }
             Kind::Adt(item, arguments) => {
                 item.hash(hash);
                 self.child(Key::Arguments(arguments), finish, hash)?;

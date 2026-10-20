@@ -5,6 +5,9 @@ use super::{
     constants::ConstTermId,
 };
 use std::collections::HashMap;
+#[cfg(test)]
+#[path = "../../../tests/invariants/binder_import.rs"]
+mod object_tests;
 
 #[derive(Default)]
 pub(super) struct Mapping<T> {
@@ -178,6 +181,22 @@ impl<T: Tracking> Mapping<T> {
                 }
             });
         }
+        let kind = if let Constructor::Dynamic {
+            shape,
+            arguments,
+            lifetimes,
+        } = kind
+        {
+            let lifetimes = source.object_lifetimes(lifetimes)?;
+            Constructor::Dynamic {
+                shape,
+                arguments,
+                lifetimes: destination
+                    .intern_object_lifetimes(lifetimes.bound_regions, lifetimes.region)?,
+            }
+        } else {
+            kind
+        };
         destination.rebuild_application(kind, &children[..prefix], &arguments)
     }
 }

@@ -6,7 +6,7 @@ use crate::{
     lowir::data::Item,
     sema::{
         model::Scalar,
-        values::{Constant, View},
+        values::{Constant, Metadata, View},
     },
     types::{Kind, TypeId},
 };
@@ -78,24 +78,22 @@ impl Context<'_> {
             View::Address { bits } => {
                 init.bits(offset, 8, u128::from(bits))?;
                 if matches!(layout.shape, Shape::WidePointer) {
-                    init.bits(
+                    self.initialize_metadata(
+                        init,
                         offset + 8,
-                        8,
-                        u128::from(
-                            value
-                                .length()
-                                .ok_or("wide absolute pointer lacks metadata")?,
-                        ),
+                        value
+                            .metadata()
+                            .ok_or("wide absolute pointer lacks metadata")?,
                     )?;
                 }
                 Ok(())
             }
             View::BytePointer { text } => {
                 self.initialize_text(init, offset, text, false)?;
-                init.bits(
+                self.initialize_metadata(
+                    init,
                     offset + 8,
-                    8,
-                    u128::from(value.length().ok_or("wide byte pointer lacks metadata")?),
+                    value.metadata().ok_or("wide byte pointer lacks metadata")?,
                 )
             }
             View::Function(id) => {
@@ -107,7 +105,7 @@ impl Context<'_> {
                 offset,
                 id,
                 matches!(layout.shape, Shape::WidePointer),
-                value.length(),
+                value.metadata(),
             ),
             View::Bytes(id) => {
                 if let Some(Kind::Reference { .. } | Kind::Pointer { .. }) = self.types.kind(ty) {
@@ -207,17 +205,18 @@ impl Context<'_> {
         offset: u64,
         id: crate::sema::values::LocationId,
         wide: bool,
-        metadata: Option<u64>,
+        metadata: Option<Metadata>,
     ) -> Result<(), &'static str> {
         let pointer = self.constant_pointer(id)?;
         let addend =
             i64::try_from(pointer.offset).map_err(|_| "constant address offset overflow")?;
         self.initialize_pointer(init, offset, Target::Global(pointer.global), addend)?;
         if wide {
+            if let Some(metadata) = metadata {
+                return self.initialize_metadata(init, offset + 8, metadata);
+            }
             let location = self.constants.location(id)?;
-            let length = if let Some(length) = metadata {
-                length
-            } else if let Some(Kind::Array { length, .. }) = self.types.kind(location.ty) {
+            let length = if let Some(Kind::Array { length, .. }) = self.types.kind(location.ty) {
                 length
             } else {
                 let value = location
@@ -231,6 +230,20 @@ impl Context<'_> {
             init.bits(offset + 8, 8, u128::from(length))?;
         }
         Ok(())
+    }
+    fn initialize_metadata(
+        &mut self,
+        init: &mut Initializer,
+        offset: u64,
+        metadata: Metadata,
+    ) -> Result<(), &'static str> {
+        match metadata {
+            Metadata::Length(length) => init.bits(offset, 8, u128::from(length)),
+            Metadata::Object { concrete, target } => {
+                let table = self.object_table(concrete, target)?;
+                self.initialize_pointer(init, offset, Target::Global(table), 0)
+            }
+        }
     }
     pub fn bytes_data(
         &mut self,

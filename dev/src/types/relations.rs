@@ -558,6 +558,24 @@ impl<'a> Constraints<'a> {
             (Kind::Opaque(x, left), Kind::Opaque(y, right)) if x == y => {
                 self.relate_arguments(relation, left, right, None, source)?;
             }
+            (
+                Kind::Dynamic {
+                    shape: a,
+                    arguments: aa,
+                    bound_regions: ac,
+                    region: ar,
+                },
+                Kind::Dynamic {
+                    shape: b,
+                    arguments: ba,
+                    bound_regions: bc,
+                    region: br,
+                },
+            ) if a == b => {
+                self.regions(relation, ar, br, covariant, source)?;
+                let nested = self.nested_relation(relation, ac, bc)?;
+                self.relate_arguments(nested, aa, ba, None, source)?;
+            }
             (Kind::Function { .. }, Kind::Function { .. }) => self.function(relation, a, b)?,
             (Kind::FunctionItem { signature, .. }, Kind::Function { .. }) => {
                 self.child(relation, signature, relation.expected, covariant)?;
@@ -637,19 +655,27 @@ impl<'a> Constraints<'a> {
         if a.len() != b.len() {
             return Err(Error::Identity);
         }
-        self.universe = self.universe.checked_add(1).ok_or(Error::Budget)?;
-        let right = self.binder(Some(relation.right), bc, true, self.universe)?;
-        let left = self.binder(Some(relation.left), ac, false, self.universe)?;
-        let nested = Relation {
-            left,
-            right,
-            unsize: false,
-            ..relation
-        };
+        let nested = self.nested_relation(relation, ac, bc)?;
         for (&a, &b) in a.iter().zip(b) {
             self.child(nested, a, b, Variance::Contravariant)?;
         }
         self.child(nested, ar, br, Variance::Covariant)
+    }
+    fn nested_relation(
+        &mut self,
+        relation: Relation,
+        actual: u32,
+        expected: u32,
+    ) -> Result<Relation, Error> {
+        self.universe = self.universe.checked_add(1).ok_or(Error::Budget)?;
+        let right = self.binder(Some(relation.right), expected, true, self.universe)?;
+        let left = self.binder(Some(relation.left), actual, false, self.universe)?;
+        Ok(Relation {
+            left,
+            right,
+            unsize: false,
+            ..relation
+        })
     }
     /// # Errors
     /// Rejects unentailed region requirements and exhausted propagation work.

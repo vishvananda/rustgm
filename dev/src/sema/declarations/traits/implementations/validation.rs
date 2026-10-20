@@ -57,6 +57,16 @@ impl Checker<'_> {
         let constants = super::constants::Members::new(self.report, &self.facts);
         for (owner, source, predicate) in headers {
             self.validate_trait_impl_contract(owner, source, predicate)?;
+            if matches!(predicate.bound, Bound::Auto(_)) {
+                self.facts
+                    .generics
+                    .implementations
+                    .as_mut()
+                    .ok_or_else(|| Error::at(source.file, 0, "missing auto impl registry"))?
+                    .complete(owner, Vec::new(), Vec::new(), Vec::new())
+                    .map_err(|e| self.error(source, e))?;
+                continue;
+            }
             let types = self.trait_impl_types(owner, source, predicate, &types)?;
             let definitions =
                 crate::sema::traits::conformance::Definitions::new(&self.facts, predicate, &types)
@@ -82,14 +92,17 @@ impl Checker<'_> {
         source: NodeKey,
         predicate: Predicate,
     ) -> Result<(), Error> {
-        let requirements = self
-            .facts
-            .generics
-            .traits
-            .as_mut()
-            .ok_or_else(|| Error::at(source.file, 0, "missing trait contracts"))?
-            .requirements(&mut self.facts.types, predicate)
-            .map_err(|e| self.error(source, e))?;
+        let requirements = if matches!(predicate.bound, Bound::Auto(_)) {
+            std::sync::Arc::new(crate::sema::traits::Requirements::default())
+        } else {
+            self.facts
+                .generics
+                .traits
+                .as_mut()
+                .ok_or_else(|| Error::at(source.file, 0, "missing trait contracts"))?
+                .requirements(&mut self.facts.types, predicate)
+                .map_err(|e| self.error(source, e))?
+        };
         let environment = self.facts.generics.environments.get(&owner).cloned();
         let mut proof = self.declaration_proof(owner, environment);
         for ty in std::iter::once(predicate.ty).chain(requirements.types.iter().copied()) {

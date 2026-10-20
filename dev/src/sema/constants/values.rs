@@ -1,6 +1,8 @@
 //! Typed value operations shared by source constants and CFG promotion queries.
+mod session;
 pub(crate) use super::instances::Dependency;
 pub use super::instances::Instance;
+pub use super::references::Metadata;
 use super::{
     Declarations, DefId, Error, InitializerKind, Queries, Query, Report, Type, TypeId, Value,
     VariantId, Work, arithmetic, references,
@@ -11,6 +13,7 @@ use crate::{
     syntax::ast::Unary,
     types::Primitive,
 };
+pub(crate) use session::Scratch;
 
 /// A value in the declaration result's shared constant arenas.
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
@@ -164,11 +167,13 @@ impl<'a> Reader<'a> {
 impl Constant {
     /// Selected wide-pointer metadata does not alter the backing location.
     #[must_use]
+    pub const fn metadata(self) -> Option<Metadata> {
+        self.0.metadata()
+    }
+    #[must_use]
     pub const fn length(self) -> Option<u64> {
-        match self.0 {
-            Value::Reference(pointer) => pointer.length,
-            Value::Address { length, .. } => length,
-            Value::BytePointer { length, .. } => Some(length),
+        match self.metadata() {
+            Some(Metadata::Length(length)) => Some(length),
             _ => None,
         }
     }
@@ -176,7 +181,22 @@ impl Constant {
     /// # Errors
     /// Rejects values without an address representation.
     pub fn unsize(self, length: u64) -> Result<Self, Failure> {
-        super::address_values::unsize(self.0, length).map(Self)
+        self.with_metadata(Metadata::Length(length))
+    }
+    /// Attach the selected pointer metadata, retaining backing storage identity.
+    /// # Errors
+    /// Rejects values without an address representation.
+    pub fn with_metadata(self, metadata: Metadata) -> Result<Self, Failure> {
+        super::address_values::unsize(self.0, metadata).map(Self)
+    }
+    /// Change a proved object's view while keeping its concrete backing identity.
+    /// # Errors
+    /// Rejects a pointer without object metadata.
+    pub fn upcast(self, target: TypeId) -> Result<Self, Failure> {
+        let Some(Metadata::Object { concrete, .. }) = self.metadata() else {
+            return Err(Failure::Invalid("constant upcast requires object metadata"));
+        };
+        self.with_metadata(Metadata::Object { concrete, target })
     }
     /// Read an evaluated generic scalar without confusing a rigid parameter with a definition.
     /// # Errors

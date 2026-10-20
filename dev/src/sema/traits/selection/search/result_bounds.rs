@@ -1,4 +1,4 @@
-//! Demand result rules only after normalization proved the original parent application.
+//! Declared object promises and proved projection results share scoped selection.
 use super::{Action, Decision, Declarations, Frame, Node, Search, Source, inference};
 use crate::{
     sema::traits::{assumptions::Selection, results},
@@ -55,6 +55,7 @@ impl Search<'_> {
             .map_err(inference)?;
         let index = self.query.push(
             Node {
+                cycle_dependent: false,
                 provisional_size: false,
                 goal,
                 source: Some(Source::result(&selected).map_err(inference)?),

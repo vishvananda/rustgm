@@ -23,16 +23,52 @@ enum Work {
     Value(TypeId, Constant),
     Location(LocationId),
 }
+pub(super) struct Demands {
+    pub calls: Vec<Instance>,
+    pub object_types: Vec<TypeId>,
+}
+#[derive(Default)]
+struct Discovered {
+    calls: Vec<Instance>,
+    tables: Vec<(TypeId, TypeId)>,
+    upcasts: Vec<(TypeId, TypeId)>,
+}
 impl Dependencies {
     pub(super) fn collect(
         &mut self,
+        report: &crate::resolve::expansion::Report,
         facts: &mut Declarations,
         body: &Body,
-    ) -> Result<Vec<Instance>, &'static str> {
+    ) -> Result<Demands, String> {
         let mut layouts = std::mem::take(&mut facts.layouts);
         let result = self.run(facts, &mut layouts, body);
         facts.layouts = layouts;
-        result
+        let result = result?;
+        let mut concrete = Vec::new();
+        for instance in result.calls {
+            if !crate::sema::vtable_plans::prepare_call(report, facts, instance)? {
+                concrete.push(instance);
+            }
+        }
+        let mut object_types = Vec::new();
+        for (source, target) in result.tables {
+            crate::sema::vtable_plans::prepare_table(report, facts, source, target)?;
+        }
+        for (source, target) in result.upcasts {
+            crate::sema::vtable_plans::prepare_upcast(report, facts, source, target)?;
+        }
+        for id in crate::sema::vtable_plans::complete_tables(facts)? {
+            let table = facts
+                .objects
+                .table(id)
+                .ok_or("missing demanded object table")?;
+            concrete.extend(table.methods.iter().flatten().copied());
+            object_types.push(table.concrete);
+        }
+        Ok(Demands {
+            calls: concrete,
+            object_types,
+        })
     }
     fn charge(&mut self, count: usize) -> Result<(), &'static str> {
         self.steps = self.steps.saturating_add(count);
@@ -46,12 +82,26 @@ impl Dependencies {
         facts: &Declarations,
         layouts: &mut Layouts,
         body: &Body,
-    ) -> Result<Vec<Instance>, &'static str> {
+    ) -> Result<Discovered, &'static str> {
         let reader = Reader::new(facts);
-        let mut result = Vec::new();
+        let mut result = Discovered::default();
         let mut work = Vec::new();
         self.charge(body.values.len())?;
         for value in &body.values {
+            if let Rvalue::Unsize {
+                conversion: crate::types::unsizing::Conversion::Object { concrete, target },
+                ..
+            } = value.kind
+            {
+                result.tables.push((concrete, target));
+            }
+            if let Rvalue::Unsize {
+                conversion: crate::types::unsizing::Conversion::Upcast { source, target },
+                ..
+            } = value.kind
+            {
+                result.upcasts.push((source, target));
+            }
             let operand = match value.kind {
                 Rvalue::Reify(id)
                 | Rvalue::Cast {
@@ -68,7 +118,9 @@ impl Dependencies {
                     .ok_or("invalid callable operand")?
                     .ty;
                 if matches!(facts.types.kind(ty), Some(Kind::FunctionItem { .. })) {
-                    result.push(body.callable_target(Instance::new(&facts.types, ty)?));
+                    result
+                        .calls
+                        .push(body.callable_target(Instance::new(&facts.types, ty)?));
                 }
             }
         }
@@ -115,7 +167,7 @@ impl Dependencies {
         facts: &Declarations,
         layouts: &mut Layouts,
         mut work: Vec<Work>,
-        result: &mut Vec<Instance>,
+        result: &mut Discovered,
     ) -> Result<(), &'static str> {
         let reader = Reader::new(facts);
         while let Some(next) = work.pop() {
@@ -142,6 +194,11 @@ impl Dependencies {
                     if !self.values.insert((ty, value)) {
                         continue;
                     }
+                    if let Some(crate::sema::values::Metadata::Object { concrete, target }) =
+                        value.metadata()
+                    {
+                        result.tables.push((concrete, target));
+                    }
                     let layout = layouts
                         .demand(&facts.types, &facts.aggregates, ty)
                         .map_err(|e| e.message)?;
@@ -149,7 +206,7 @@ impl Dependencies {
                         continue;
                     }
                     match reader.view(value)? {
-                        View::Function(instance) => result.push(instance),
+                        View::Function(instance) => result.calls.push(instance),
                         View::Reference(id) => work.push(Work::Location(id)),
                         View::Repeat { value, length } if length != 0 => {
                             let Some(Kind::Array { element, .. }) = facts.types.kind(ty) else {

@@ -72,6 +72,7 @@ impl Checker<'_> {
         self.state.trait_environment = None;
         self.state.canonical_trait_inference = None;
         self.state.canonical_trait_proofs = None;
+        self.state.canonical_requirements = None;
         // Body calls express caller universals as free aliases. Add the same
         // assumptions in that context before either query cache is constructed.
         // Original subjects remain available for declaration-context annotations.
@@ -247,6 +248,12 @@ impl Checker<'_> {
                 crate::types::parameters::predicates::Predicate { ty, bound },
             );
         }
+        if matches!(bound, Bound::Auto(_)) {
+            return self.prove_canonical_trait(
+                node,
+                crate::types::parameters::predicates::Predicate { ty, bound },
+            );
+        }
         let valid = if bound == Bound::Sized {
             self.body_is_sized(node, ty)?
         } else {
@@ -280,6 +287,7 @@ impl Checker<'_> {
                     Bound::Copy => "generic argument must implement Copy",
                     Bound::Clone => "generic argument must implement Clone",
                     Bound::Sized => "generic argument must be sized",
+                    Bound::Auto(_) => "generic argument must implement its auto trait",
                     Bound::Trait(_) => "generic argument must implement its declared trait",
                     Bound::Outlives(_) => "generic argument must outlive its bound",
                     Bound::ProjectionEqual(_) => "associated type must equal its required result",
@@ -431,7 +439,7 @@ impl Checker<'_> {
         Ok(())
     }
 
-    fn defer_bound_inputs(
+    pub(super) fn defer_bound_inputs(
         &mut self,
         node: NodeId,
         predicate: &crate::types::infer::predicates::Predicate,
@@ -448,7 +456,7 @@ impl Checker<'_> {
             )?;
         } else if matches!(
             predicate.builtin_bound(),
-            Some(Bound::Copy | Bound::Clone | Bound::Sized | Bound::Outlives(_))
+            Some(Bound::Copy | Bound::Clone | Bound::Sized | Bound::Auto(_) | Bound::Outlives(_))
         ) {
             // The selected result's property does not erase input formation debts.
             self.defer_normalization(node, scope, predicate.subject())?;

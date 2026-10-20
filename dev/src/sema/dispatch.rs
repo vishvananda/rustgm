@@ -2,6 +2,8 @@
 mod arguments;
 mod dependencies;
 mod implementation;
+mod objects;
+mod tables;
 pub(crate) use super::traits::obligations::Obligations;
 use super::{
     model::Declarations,
@@ -15,8 +17,10 @@ use crate::{
     },
 };
 pub(crate) use dependencies::Dependencies;
+pub(crate) use objects::object_method;
 use std::collections::HashMap;
 use std::sync::Arc;
+pub(crate) use tables::table_method;
 
 struct Caller {
     environment: Option<Arc<Environment>>,
@@ -168,7 +172,12 @@ impl Dispatcher {
             facts.prepare_opaque_storage()?;
             predicate.ty = facts.types.storage_head(predicate.ty)?;
         }
-        let (owner, implementation, evidence) = self.implementation(facts, predicate)?;
+        let Some((owner, implementation, evidence)) =
+            self.method_implementation(facts, predicate)?
+        else {
+            self.selected.insert(ty, ty);
+            return Ok(ty);
+        };
         let target = facts
             .generics
             .implementations

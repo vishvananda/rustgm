@@ -136,6 +136,7 @@ impl Checker<'_> {
                             crate::sema::bodies::Requirement::Fields(item) => {
                                 Work::Fields(item, false)
                             }
+                            crate::sema::bodies::Requirement::Opaque(id) => Work::OpaqueHidden(id),
                         });
                     }
                     constants::ArgumentDependency::Initializer(definition) => {

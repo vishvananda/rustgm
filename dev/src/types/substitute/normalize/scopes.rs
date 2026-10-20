@@ -1,4 +1,4 @@
-//! Callable boundaries own independent fold caches and an explicit universal binder identity.
+//! Callable and object bounds own independent fold caches and universal binder identities.
 use super::{Action, Bound, HashMap, HashSet, Key, Kind, Normalizer, ScopeId, Store};
 
 pub(super) struct Frame {
@@ -57,30 +57,20 @@ impl Normalizer {
         Ok(())
     }
 
-    pub(super) fn enter_callable(
+    pub(super) fn enter_binder(
         &mut self,
         store: &Store,
         source: Key,
         signature: Kind,
     ) -> Result<(), &'static str> {
-        let Kind::Function {
-            bound_regions,
-            parameters,
-            result,
-            ..
-        } = signature
+        let (Kind::Function { bound_regions, .. } | Kind::Dynamic { bound_regions, .. }) =
+            signature
         else {
-            return Err("normalization scope requires a callable");
+            return Err("normalization scope requires a type binder");
         };
         if self.suspended.len() >= 0x7fff {
             return Err("normalization binder depth exhausted");
         }
-        let parameters = store
-            .list(parameters)
-            .ok_or("invalid callable parameter list")?;
-        self.frame
-            .fold
-            .account_arguments(parameters.len().saturating_add(1))?;
         self.binders.push((self.frame.scope, bound_regions));
         let scope = ScopeId(
             u32::try_from(self.binders.len()).map_err(|_| "too many normalization scopes")?,
@@ -93,34 +83,67 @@ impl Normalizer {
             source,
             signature,
         });
-        self.frame.fold.queue(result, 0)?;
-        for &ty in parameters {
-            self.frame.fold.queue(ty, 0)?;
+        match signature {
+            Kind::Function {
+                parameters, result, ..
+            } => {
+                let parameters = store
+                    .list(parameters)
+                    .ok_or("invalid callable parameter list")?;
+                self.frame
+                    .fold
+                    .account_arguments(parameters.len().saturating_add(1))?;
+                self.frame.fold.queue(result, 0)?;
+                for &ty in parameters {
+                    self.frame.fold.queue(ty, 0)?;
+                }
+            }
+            Kind::Dynamic { arguments, .. } => {
+                let arguments = store
+                    .arguments(arguments)
+                    .ok_or("invalid object normalization inputs")?;
+                self.frame.fold.account_arguments(arguments.len())?;
+                for argument in arguments {
+                    if let crate::types::arguments::Argument::Type(ty) = argument {
+                        self.frame.fold.queue(ty, 0)?;
+                    }
+                }
+            }
+            _ => return Err("invalid normalization binder"),
         }
         self.check_work()
     }
 
-    pub(super) fn finish_callable(&mut self, store: &mut Store) -> Result<bool, &'static str> {
+    pub(super) fn finish_binder(&mut self, store: &mut Store) -> Result<bool, &'static str> {
         let Some(mut parent) = self.suspended.pop() else {
             return Ok(false);
         };
-        let Kind::Function {
-            bound_regions,
-            parameters,
-            result,
-            unsafe_,
-        } = parent.signature
-        else {
-            return Err("invalid suspended normalization signature");
+        let kind = match parent.signature {
+            Kind::Function {
+                bound_regions,
+                parameters,
+                result,
+                unsafe_,
+            } => Kind::Function {
+                bound_regions,
+                parameters: self.frame.fold.list(store, parameters, 0)?,
+                result: self.frame.fold.child(store, result, 0)?,
+                unsafe_,
+            },
+            Kind::Dynamic {
+                shape,
+                arguments,
+                bound_regions,
+                region,
+            } => Kind::Dynamic {
+                shape,
+                arguments: self.frame.fold.arguments(store, arguments, 0)?,
+                bound_regions,
+                region,
+            },
+            _ => return Err("invalid suspended normalization binder"),
         };
-        let parameters = self.frame.fold.list(store, parameters, 0)?;
-        let result = self.frame.fold.child(store, result, 0)?;
-        let ty = store.intern(Kind::Function {
-            bound_regions,
-            parameters,
-            result,
-            unsafe_,
-        })?;
+        let ty = store.intern(kind)?;
         self.suspended_work = self
             .suspended_work
             .checked_sub(parent.frame.fold.work.len())

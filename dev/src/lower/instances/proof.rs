@@ -124,8 +124,43 @@ impl Builder {
             .as_mut()
             .ok_or("missing instance cleanup recipes")?;
         let requests = self.dependencies.collect(cache.recipes(), plan)?;
+        self.select_cleanup(facts, &requests)
+    }
+    pub(super) fn object_dependencies(
+        &mut self,
+        facts: &mut Declarations,
+        types: &[crate::types::TypeId],
+    ) -> Result<Vec<Instance>, &'static str> {
+        // No destructor declarations means every concrete sized type is dropless.
+        let Some(cache) = self.recipes.take() else {
+            return Ok(Vec::new());
+        };
+        let mut catalog = cache.attach(&facts.types, &facts.aggregates, &facts.members);
+        let roots = types
+            .iter()
+            .map(|&ty| catalog.expose(ty))
+            .collect::<Result<Vec<_>, _>>();
+        self.recipes = Some(catalog.into_cache());
+        let cache = self
+            .recipes
+            .as_ref()
+            .ok_or("missing object destruction recipes")?;
+        let requests = self
+            .dependencies
+            .exposed(cache.recipes(), roots?.into_iter().flatten())?;
+        self.select_cleanup(facts, &requests)
+    }
+    fn select_cleanup(
+        &mut self,
+        facts: &mut Declarations,
+        requests: &[glue::Id],
+    ) -> Result<Vec<Instance>, &'static str> {
+        let cache = self
+            .recipes
+            .as_mut()
+            .ok_or("missing selected destruction recipes")?;
         let mut methods = Vec::with_capacity(requests.len());
-        for id in requests {
+        for &id in requests {
             let recipe = *cache
                 .recipes()
                 .get(id)

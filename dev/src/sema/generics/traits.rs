@@ -3,7 +3,7 @@ use super::{DefId, Generics, Predicate};
 use crate::types::{
     Store,
     parameters::{
-        clauses::{Clause, Quantifier},
+        clauses::{Clause, Comparison, Quantifier},
         predicates::{Bound, Predicate as Input},
     },
 };
@@ -55,8 +55,9 @@ impl Generics {
         store: &mut Store,
         mut inputs: Vec<Predicate>,
     ) -> Result<(Vec<Predicate>, usize), &'static str> {
-        let mut seen = HashSet::new();
-        inputs.retain(|p| seen.insert(p.value));
+        let mut written = HashSet::new();
+        inputs.retain(|p| written.insert(p.value));
+        let mut seen = Consequences::new(store, &inputs)?;
         let mut work = inputs;
         let initial = work.len();
         let mut next = 0;
@@ -74,7 +75,7 @@ impl Generics {
                 ordinary = false;
                 ordinary_end = work.len();
                 for predicate in results.drain(..) {
-                    if seen.insert(predicate.value) {
+                    if seen.insert(store, predicate.value)? {
                         work.push(predicate);
                     }
                 }
@@ -99,7 +100,7 @@ impl Generics {
             }
             for &value in &requirements.implied {
                 let value = lift(store, &mut binders, count, value, &mut steps)?;
-                if seen.insert(value) {
+                if seen.insert(store, value)? {
                     work.push(Predicate {
                         source: predicate.source,
                         value,
@@ -135,6 +136,44 @@ impl Generics {
         }
         work.truncate(retained);
         Ok((work, initial))
+    }
+}
+
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+enum Identity {
+    Ordinary(Input),
+    Quantified(Comparison),
+}
+
+/// Written clauses retain their identities and declaration duties. Derived
+/// consequences may share logically equivalent binders, avoiding a separate
+/// inherited environment entry for every path length through a shared graph.
+#[derive(Default)]
+struct Consequences {
+    seen: HashSet<Identity>,
+    steps: usize,
+}
+impl Consequences {
+    fn new(store: &mut Store, inputs: &[Predicate]) -> Result<Self, &'static str> {
+        let mut result = Self::default();
+        for input in inputs {
+            result.insert(store, input.value)?;
+        }
+        Ok(result)
+    }
+    fn insert(&mut self, store: &mut Store, clause: Clause) -> Result<bool, &'static str> {
+        let (key, work) = match clause {
+            Clause::Predicate(value) => (Identity::Ordinary(value), 1),
+            Clause::ForAll(id) => {
+                let (key, work) = store.clause_comparison(id)?;
+                (Identity::Quantified(key), work)
+            }
+        };
+        self.steps = self.steps.saturating_add(work);
+        if self.steps.saturating_add(self.seen.len()) > 1_000_000 {
+            return Err("supertrait consequence comparison budget exceeded");
+        }
+        Ok(self.seen.insert(key))
     }
 }
 

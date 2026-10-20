@@ -6,7 +6,7 @@ use std::collections::HashSet;
 type Pair = (TermId, TermId);
 struct Selected {
     view: TermId,
-    array: TermId,
+    conversion: crate::types::unsizing::Conversion<TermId>,
 }
 enum Parent {
     Structural {
@@ -38,7 +38,7 @@ impl Checker<'_> {
         if !self
             .state
             .infer
-            .incompatible(&self.facts.types, source, target)
+            .unsizing_mismatch(&self.facts.types, source, target)
             .map_err(|e| self.error(node, e))?
         {
             return Ok(None);
@@ -101,13 +101,17 @@ impl Checker<'_> {
         }
         Ok(Some(Pending {
             view: result.view,
-            array: result.array,
+            conversion: result.conversion,
             borrow_view: None,
             relations,
         }))
     }
     fn unsizing_input(&mut self, node: NodeId, pair: Pair) -> Result<Input, Error> {
         let heads = (self.head(node, pair.0)?, self.head(node, pair.1)?);
+        if matches!(heads.1, Some(Constructor::Dynamic { .. })) {
+            let upcast = matches!(heads.0, Some(Constructor::Dynamic { .. }));
+            return self.object_input(node, pair, upcast);
+        }
         if matches!(
             heads,
             (
@@ -127,7 +131,7 @@ impl Checker<'_> {
                 .map_err(|e| self.error(node, e))?;
             return Ok(Input::Ready(Selected {
                 view,
-                array: pair.0,
+                conversion: crate::types::unsizing::Conversion::Slice(pair.0),
             }));
         }
         let (
@@ -191,6 +195,59 @@ impl Checker<'_> {
         }
         self.unchanged_unsizing_arguments(node, &candidates, &arguments, &targets)?;
         self.projected_unsizing_input(node, item, pair, arguments, &targets, &candidates)
+    }
+
+    fn object_input(&mut self, node: NodeId, pair: Pair, upcast: bool) -> Result<Input, Error> {
+        self.object_conversion_requirements(node, pair.0, pair.1, upcast)?;
+        let conversion = if upcast {
+            crate::types::unsizing::Conversion::Upcast {
+                source: pair.0,
+                target: pair.1,
+            }
+        } else {
+            crate::types::unsizing::Conversion::Object {
+                concrete: pair.0,
+                target: pair.1,
+            }
+        };
+        Ok(Input::Ready(Selected {
+            view: pair.1,
+            conversion,
+        }))
+    }
+    fn object_conversion_requirements(
+        &mut self,
+        node: NodeId,
+        concrete: TermId,
+        target: TermId,
+        upcast: bool,
+    ) -> Result<(), Error> {
+        let requirements = if upcast {
+            self.state
+                .infer
+                .upcast_requirements(&mut self.facts.types, concrete, target)
+        } else {
+            self.state
+                .infer
+                .object_requirements(&mut self.facts.types, concrete, target)
+        }
+        .map_err(|e| self.error(node, e))?;
+        for requirement in requirements {
+            let index = self.state.call_types.obligations.len();
+            if upcast && requirement.predicate.trait_arguments().is_some() {
+                self.state.call_types.require_intrinsic(index);
+            }
+            if let Some(count) = requirement.bound_regions {
+                self.state.call_types.quantify(index, count);
+            } else {
+                self.defer_bound_inputs(node, &requirement.predicate)?;
+            }
+            self.state
+                .call_types
+                .obligations
+                .push((node, requirement.predicate));
+        }
+        Ok(())
     }
     fn projected_unsizing_input(
         &mut self,

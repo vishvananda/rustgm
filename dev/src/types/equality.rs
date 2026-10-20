@@ -197,7 +197,9 @@ impl Query {
                     partial_eq: true,
                     eq: false,
                 },
-                Kind::FunctionItem { .. } | Kind::Opaque(..) => Properties::default(),
+                Kind::FunctionItem { .. } | Kind::Opaque(..) | Kind::Dynamic { .. } => {
+                    Properties::default()
+                }
                 _ => Properties::BOTH,
             };
             if packed

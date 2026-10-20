@@ -11,6 +11,7 @@ pub mod dependencies;
 mod freshen;
 pub use freshen::FreshRegions;
 mod import;
+pub mod objects;
 pub mod predicates;
 pub mod probe;
 pub mod projections;
@@ -45,6 +46,11 @@ pub enum Constructor {
     ArrayInfer(constants::ConstTermId),
     AdtArgs(ItemId, arguments::ArgumentsId),
     Opaque(super::opaque::OpaqueId, arguments::ArgumentsId),
+    Dynamic {
+        shape: super::dynamic::ShapeId,
+        arguments: arguments::ArgumentsId,
+        lifetimes: objects::LifetimesId,
+    },
     FunctionItemArgs(ItemId, arguments::ArgumentsId),
     Projection(projections::Projection),
     Slice,
@@ -177,6 +183,14 @@ impl Context {
         let valid = match kind {
             Constructor::AdtArgs(_, id) | Constructor::Opaque(_, id) => {
                 children.len() == self.argument_arity(id)?
+            }
+            Constructor::Dynamic {
+                arguments,
+                lifetimes,
+                ..
+            } => {
+                self.object_lifetimes(lifetimes)?;
+                children.len() == self.argument_arity(arguments)?
             }
             Constructor::Projection(value) => {
                 children.len().checked_sub(1) == Some(self.argument_arity(value.arguments)?)
@@ -527,6 +541,10 @@ impl Context {
         }
         Ok(())
     }
+    #[expect(
+        clippy::too_many_lines,
+        reason = "one structural inference dispatch keeps constructor identity and argument equations together"
+    )]
     fn structural(
         &mut self,
         store: &Store,
@@ -555,6 +573,9 @@ impl Context {
             }
             (Constructor::Opaque(x, a), Constructor::Opaque(y, b)) if x == y => {
                 self.equate_arguments(a, b, record_regions)?;
+            }
+            (Constructor::Dynamic { .. }, Constructor::Dynamic { .. }) => {
+                self.object_equation(left, right, record_regions)?;
             }
             (Constructor::AdtArgs(x, a), Constructor::AdtArgs(y, b))
             | (Constructor::FunctionItemArgs(x, a), Constructor::FunctionItemArgs(y, b))
@@ -649,6 +670,7 @@ impl Context {
             Kind::Opaque(id, args) => {
                 Constructor::Opaque(id, self.materialize_arguments(store, args, &mut children)?)
             }
+            kind @ Kind::Dynamic { .. } => self.object_constructor(store, kind, &mut children)?,
             Kind::Primitive(p) => Constructor::Primitive(p),
             Kind::Parameter(id) => Constructor::Parameter(id),
             Kind::Projection(value) => self.materialize_projection(store, value, &mut children)?,
@@ -834,6 +856,7 @@ fn canonical(
         Constructor::ArrayInfer(_)
         | Constructor::Projection(_)
         | Constructor::Opaque(..)
+        | Constructor::Dynamic { .. }
         | Constructor::AdtArgs(..)
         | Constructor::FunctionItemArgs(..) => return Err(Error::InvalidIdentity),
         Constructor::Primitive(p) => Kind::Primitive(p),

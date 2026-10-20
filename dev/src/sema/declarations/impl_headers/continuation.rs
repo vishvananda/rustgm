@@ -86,13 +86,18 @@ impl Checker<'_> {
             }
             Phase::Arguments => {
                 if let Some(path) = trait_type {
-                    let (path, definition) = self.resolved_trait_path(path)?;
+                    let (path, definition) = self.resolved_impl_trait_path(path)?;
                     self.work.push(Work::ImplHeader(id, Phase::Finish));
-                    self.work.push(Work::PathArguments(
-                        path,
-                        definition,
-                        self.impl_context(owner)?,
-                    ));
+                    if matches!(
+                        self.impl_trait_identity(definition),
+                        crate::sema::traits::implementations::Identity::User(_)
+                    ) {
+                        self.work.push(Work::PathArguments(
+                            path,
+                            definition,
+                            self.impl_context(owner)?,
+                        ));
+                    }
                 } else {
                     self.impl_parameters(
                         id,

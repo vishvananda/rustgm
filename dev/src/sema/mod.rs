@@ -10,6 +10,7 @@ pub(crate) mod callee_premises;
 pub mod declarations;
 pub mod destructors;
 pub(crate) mod dispatch;
+pub mod dyn_compat;
 pub mod entry;
 pub mod generics;
 pub mod layout_view;
@@ -31,5 +32,6 @@ pub(crate) mod stored_fields;
 mod traits;
 pub mod type_view;
 pub mod unreduced;
+pub(crate) mod vtable_plans;
 
 pub mod text;

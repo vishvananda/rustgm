@@ -23,6 +23,18 @@ pub struct Predicate {
     requirement: Requirement,
 }
 impl Predicate {
+    pub(super) const fn builtin(subject: TermId, bound: Bound) -> Self {
+        Self {
+            subject,
+            requirement: Requirement::Builtin(bound),
+        }
+    }
+    pub(super) const fn equality(subject: TermId, result: TermId) -> Self {
+        Self {
+            subject,
+            requirement: Requirement::ProjectionEqual(result),
+        }
+    }
     /// Complete mixed inputs, including equality results and outlives lifetimes.
     /// The order is shared with `Self::map_arguments`.
     pub fn arguments(&self) -> impl Iterator<Item = Argument> + '_ {

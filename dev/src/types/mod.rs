@@ -1,11 +1,13 @@
 //! Immutable canonical type shapes and interned child lists; no source/text keys.
 pub mod aggregate;
 pub mod arguments;
+pub mod auto_traits;
 mod binder_shift;
 pub mod bound_uses;
 pub mod callable;
 pub mod copy;
 pub mod destruction;
+pub mod dynamic;
 pub mod equality;
 pub mod infer;
 pub mod instance;
@@ -175,6 +177,13 @@ pub enum Kind {
     Projection(projection::Application),
     /// Declaration identity and captured inputs; representation is private to its body.
     Opaque(opaque::OpaqueId, GenericArgs),
+    /// Trait inputs are inside one binder; the object lifetime is outside it.
+    Dynamic {
+        shape: dynamic::ShapeId,
+        arguments: GenericArgs,
+        bound_regions: u32,
+        region: RegionId,
+    },
     Tuple(ListId),
     Array {
         element: TypeId,
@@ -216,10 +225,12 @@ pub struct Store {
     regions: Slices<RegionId>,
     arguments: Option<Box<arguments::Storage>>,
     shapes: Option<Box<substitute::Bound>>,
+    auto_shapes: Option<Box<substitute::Bound>>,
     opaques: Option<Vec<opaque::Declaration>>,
     opaque_outlives: Option<Box<opaque::bounds::Declarations>>,
     storage_heads: Option<HashMap<TypeId, TypeId>>,
     shifts: Option<Box<binder_shift::Shifts>>,
+    dynamics: Option<Box<dynamic::Storage>>,
     nominal_sizes: Option<std::sync::Arc<sizedness::Rules>>,
     has_nominals: bool,
 }
@@ -249,10 +260,12 @@ impl Default for Store {
             regions: Slices::default(),
             arguments: None,
             shapes: None,
+            auto_shapes: None,
             opaques: None,
             opaque_outlives: None,
             storage_heads: None,
             shifts: None,
+            dynamics: None,
             nominal_sizes: None,
             has_nominals: false,
         }
@@ -333,6 +346,13 @@ impl Store {
             .get(id.0 as usize)
             .map(|p| p.has(Property::FreeRegions) || p.escaping > depth)
     }
+    /// Static lifetimes and lifetimes bound inside the type need no outer scope.
+    #[must_use]
+    pub fn needs_region_context(&self, id: TypeId) -> Option<bool> {
+        self.properties
+            .get(id.0 as usize)
+            .map(|p| p.has(Property::NonStaticFreeRegions) || p.escaping != 0)
+    }
     #[must_use]
     pub fn list(&self, id: ListId) -> Option<&[TypeId]> {
         self.children.get(id.0)
@@ -387,6 +407,9 @@ impl Store {
             Kind::Opaque(id, args) => {
                 self.opaque_declaration(id).is_some() && self.arguments(args).is_some()
             }
+            Kind::Dynamic {
+                shape, arguments, ..
+            } => self.valid_dynamic_arguments(shape, arguments),
             Kind::Projection(application) => self.valid_projection(application),
             Kind::Tuple(list) => self.list(list).is_some(),
             Kind::Slice(element)
@@ -442,6 +465,7 @@ impl Store {
                 result = self.projection_properties(application)?;
             }
             Kind::Opaque(id, arguments) => result = self.opaque_properties(id, arguments)?,
+            Kind::Dynamic { .. } => result = self.dynamic_properties(kind)?,
             Kind::Primitive(p) => result.set(Property::Sized, p != Primitive::Str),
             Kind::Array { element, .. }
             | Kind::ArrayTerm { element, .. }

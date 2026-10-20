@@ -37,12 +37,12 @@ impl Checker<'_> {
             };
             // Builtin Drop has a separate registry. Invalid paths retain the
             // ordinary validation order and cannot supply trait candidates.
-            let Ok((_, definition)) = self.resolved_trait_path(path) else {
+            let Ok((_, definition)) = self.resolved_impl_trait_path(path) else {
                 continue;
             };
             headers.push(PendingHeader {
                 owner: owner.self_definition,
-                item: crate::types::ItemId(definition.0),
+                item: self.impl_trait_identity(definition),
                 // Head classification is only an exclusion hint. A malformed
                 // alias must retain its candidate and its later diagnostic.
                 head: heads.shape(target).unwrap_or_default(),

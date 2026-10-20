@@ -44,7 +44,7 @@ impl Checker<'_> {
     }
 
     pub(super) fn validate_trait_regions(&mut self) -> Result<(), Error> {
-        if self.facts.generics.traits.is_none() {
+        if self.facts.generics.traits.is_none() && self.trait_proofs.is_empty() {
             return Ok(());
         }
         let mut owners: Vec<_> = self.facts.generics.predicates.keys().copied().collect();
@@ -269,8 +269,11 @@ impl Checker<'_> {
         else {
             return Ok(());
         };
-        let Bound::Trait(id) = header.predicate.bound else {
-            return Err("invalid implementation trait predicate".into());
+        constraints.assume_well_formed(queries, header.predicate.ty)?;
+        let id = match header.predicate.bound {
+            Bound::Trait(id) => id,
+            Bound::Auto(_) => return Ok(()),
+            _ => return Err("invalid implementation trait predicate".into()),
         };
         let application = self
             .facts
@@ -282,13 +285,13 @@ impl Checker<'_> {
             .types
             .arguments(application.arguments)
             .ok_or("missing implementation trait arguments")?;
-        for ty in std::iter::once(header.predicate.ty).chain(arguments.filter_map(|argument| {
+        for ty in arguments.filter_map(|argument| {
             if let Argument::Type(ty) = argument {
                 Some(ty)
             } else {
                 None
             }
-        })) {
+        }) {
             constraints.assume_well_formed(queries, ty)?;
         }
         Ok(())

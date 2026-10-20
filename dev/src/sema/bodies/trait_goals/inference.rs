@@ -39,6 +39,10 @@ impl Checker<'_> {
                 .enumerate()
                 .filter_map(|(index, (_, predicate))| {
                     (predicate.trait_arguments().is_some()
+                        || matches!(
+                            predicate.builtin_bound(),
+                            Some(crate::types::parameters::predicates::Bound::Auto(_))
+                        )
                         || self.state.call_types.bound_regions(index).is_some())
                     .then_some(index)
                 })
@@ -136,6 +140,17 @@ impl Checker<'_> {
             selection::Progress::Ready(selected) => {
                 let reservation = std::mem::take(&mut pending.reservation);
                 if let Selection::Proven(proof) = selected {
+                    if self.state.call_types.intrinsic(index)
+                        && !matches!(
+                            proof.source,
+                            Source::ResultBound(_) | Source::QuantifiedResultBound { .. }
+                        )
+                    {
+                        return Err(self.error(
+                            node,
+                            "trait object upcast requires an intrinsic supertrait bound",
+                        ));
+                    }
                     pending.evidence.insert(
                         index,
                         self.retain_reserved_trait_evidence(node, proof, reservation)?,

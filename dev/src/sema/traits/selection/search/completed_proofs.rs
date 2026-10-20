@@ -41,6 +41,7 @@ impl Active {
             independent
                 && scope == ScopeId::ROOT
                 && !node.provisional_size
+                && !node.cycle_dependent
                 && node.first == node.end
                 && node.equalities.is_empty()
                 && node.outlives.is_empty()
@@ -79,6 +80,7 @@ impl Query {
         let first = frame.available_region().max(self.allocations.floor());
         Some(Decision::Proven(self.push(
             Node {
+                cycle_dependent: false,
                 provisional_size: false,
                 goal,
                 source: Some(source),

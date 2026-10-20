@@ -5,7 +5,7 @@ use crate::{
     types::{
         arguments::Argument as Canonical,
         infer::{self, arguments::Argument},
-        parameters::ParameterKind,
+        parameters::{ParameterKind, predicates::Bound},
     },
 };
 
@@ -302,7 +302,7 @@ impl Checker<'_> {
                     }
                     crate::types::parameters::predicates::Predicate {
                         ty: *subject,
-                        bound: crate::types::parameters::predicates::Bound::Trait(*application),
+                        bound: Bound::Trait(*application),
                     }
                 }
                 Some(Source::QuantifiedResultBound {
@@ -312,6 +312,9 @@ impl Checker<'_> {
                 }) => self.quantified_result(node, *clause, *subject, *application)?,
                 Some(Source::Equality) => {
                     return Err(self.error(node, "equality evidence cannot replace a trait goal"));
+                }
+                Some(Source::Builtin) if matches!(predicate.bound, Bound::Auto(_)) => {
+                    continue;
                 }
                 Some(Source::Builtin) => {
                     return Err(self.error(node, "builtin evidence cannot replace a trait goal"));
@@ -351,7 +354,7 @@ impl Checker<'_> {
         }
         Ok(crate::types::parameters::predicates::Predicate {
             ty: subject,
-            bound: crate::types::parameters::predicates::Bound::Trait(application),
+            bound: Bound::Trait(application),
         })
     }
 }

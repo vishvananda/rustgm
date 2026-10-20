@@ -47,14 +47,28 @@ pub(super) enum Value {
     Scalar(Scalar),
     Function(crate::types::instance::Instance),
     Reference(references::Pointer),
-    Address { bits: u64, length: Option<u64> },
-    BytePointer { text: super::text::Id, length: u64 },
+    Address {
+        bits: u64,
+        metadata: Option<references::Metadata>,
+    },
+    BytePointer {
+        text: super::text::Id,
+        metadata: references::Metadata,
+    },
     Text(super::text::Id),
     Bytes(super::text::Id),
     Variant(VariantId),
     Product(products::Id),
 }
 impl Value {
+    const fn metadata(self) -> Option<references::Metadata> {
+        match self {
+            Self::Reference(pointer) => pointer.metadata,
+            Self::Address { metadata, .. } => metadata,
+            Self::BytePointer { metadata, .. } => Some(metadata),
+            _ => None,
+        }
+    }
     fn scalar(self) -> Result<Scalar, &'static str> {
         match self {
             Self::Scalar(value) => Ok(value),
@@ -161,6 +175,7 @@ struct Queries<'a> {
     steps: usize,
     limit: usize,
     source_work: usize,
+    preparation_steps: usize,
     pattern_values: HashSet<Value>,
     drop_scratch: Option<Box<drops::Scratch>>,
     layout_scratch: layouts::Scratch,
@@ -169,13 +184,14 @@ struct Queries<'a> {
     value_scope: Option<(NodeKey, TypeId)>,
     checked_members: HashSet<Query>,
 }
-/// Declaration checking owns this cache; it never survives into lowering.
+/// Reusable storage belongs to one report and its append-only declaration facts.
 #[derive(Default)]
 pub(super) struct Scratch {
     typing: bodies::Scratch,
     constants: Vec<Option<usize>>,
     indexed: usize,
     source_work: Option<usize>,
+    preparation_steps: usize,
     scan: Vec<NodeKey>,
     drops: Option<Box<drops::Scratch>>,
     layouts: layouts::Scratch,
@@ -199,8 +215,10 @@ pub(super) fn pattern_values(
     facts: &mut Declarations,
     requests: &[(NodeKey, PatternValue, Option<super::patterns::PatternId>)],
     scopes: impl Iterator<Item = PatternScope>,
+    scratch: &mut Option<Box<Scratch>>,
 ) -> Result<(), Error> {
-    let mut queries = Queries::new(report, facts);
+    let mut queries =
+        Queries::with_scratch(report, facts, None, *scratch.take().unwrap_or_default());
     let mut start = 0;
     for scope in scopes {
         queries.pattern_scope = Some(scope);
@@ -215,6 +233,7 @@ pub(super) fn pattern_values(
         }
         start = scope.end;
     }
+    *scratch = Some(Box::new(queries.into_scratch()));
     Ok(())
 }
 impl Queries<'_> {
@@ -289,8 +308,10 @@ impl<'a> Queries<'a> {
         discriminants: Option<&'a mut Discriminants>,
         mut scratch: Scratch,
     ) -> Self {
+        scratch.preparation_steps += facts.definitions.len() - scratch.constants.len();
         scratch.constants.resize(facts.definitions.len(), None);
         for (index, initializer) in facts.initializers.iter().enumerate().skip(scratch.indexed) {
+            scratch.preparation_steps += 1;
             if matches!(
                 initializer.kind,
                 InitializerKind::Const | InitializerKind::Static { mutable: false }
@@ -301,6 +322,7 @@ impl<'a> Queries<'a> {
         // Scratch belongs to one immutable report. Resuming a body must not
         // rescan every source unit merely to reconstruct its work budget.
         let source_work = *scratch.source_work.get_or_insert_with(|| {
+            scratch.preparation_steps += report.package.units.len();
             report.package.units.iter().fold(0_usize, |n, unit| {
                 n.saturating_add(unit.configured.ast.nodes.len())
                     .saturating_add(unit.configured.ast.edges.len())
@@ -322,6 +344,7 @@ impl<'a> Queries<'a> {
             steps: 0,
             limit,
             source_work,
+            preparation_steps: scratch.preparation_steps,
             pattern_values: HashSet::new(),
             drop_scratch: scratch.drops,
             layout_scratch: scratch.layouts,
@@ -341,6 +364,7 @@ impl<'a> Queries<'a> {
             Scratch {
                 indexed,
                 source_work: Some(self.source_work),
+                preparation_steps: self.preparation_steps,
                 constants: self.constants,
                 scan: self.scan,
                 typing,

@@ -1,0 +1,138 @@
+global @rg.vtable.0 : obj<32x8> [storage=readonly] = {
+  zero 8
+  i64 8
+  i64 8
+  ptr addr @rg.19
+}
+function @rg.23() -> void {
+  slot $s0 : obj<16x8>
+  slot $s1 : obj<16x8>
+  slot $s2 : obj<16x8>
+  block ^b0:
+    %t0 = addr $s1
+    call void @rg.21.i5(%t0, 2, 1000)
+    %t1 = addr $s1
+    %t2 = addr $s0
+    copyobj 16x8 %t1, %t2
+    %t3 = addr $s0
+    %t4 = addr @rg.vtable.0
+    store ptr %t3, $s2
+    %t5 = addr $s2
+    %t6 = index u8 %t5, 8
+    store ptr %t4, %t6
+    %t7 = addr $s2
+    %t8 = call u16 @rg.22(%t7)
+    %t9 = cmp eq u16 %t8, 1000
+    %t10 = convert trunc i1 i64 %t9
+    call void @rg.13(%t10)
+    return void
+}
+function @rg.21.i5(%p0 : ptr, %p1 : u8, %p2 : i64) -> void {
+  slot $s0 : u8
+  slot $s1 : i64
+  slot $s2 : obj<16x8>
+  block ^b0:
+    store u8 %p1, $s0
+    store i64 %p2, $s1
+    %t0 = load u8 $s0
+    %t1 = load i64 $s1
+    store u8 %t0, $s2
+    %t2 = addr $s2
+    %t3 = index u8 %t2, 8
+    store i64 %t1, %t3
+    %t4 = addr $s2
+    copyobj 16x8 %t4, %p0
+    return void
+}
+function @rg.22(%p0 : ptr) -> u16 {
+  slot $s0 : obj<16x8>
+  slot $s1 : obj<16x8>
+  slot $s2 : obj<16x8>
+  slot $s3 : obj<16x8>
+  block ^b0:
+    %t0 = addr $s0
+    copyobj 16x8 %p0, %t0
+    %t1 = load ptr $s0
+    %t2 = addr $s0
+    %t3 = index u8 %t2, 8
+    %t4 = load ptr %t3
+    %t5 = index u8 %t4, 16
+    %t6 = load i64 %t5
+    %t7 = binary sub i64 %t6, 1
+    %t8 = binary add i64 1, %t7
+    %t9 = unary bitnot i64 %t7
+    %t10 = binary and i64 %t8, %t9
+    %t11 = index u8 %t1, %t10
+    store ptr %t11, $s2
+    %t12 = addr $s2
+    %t13 = index u8 %t12, 8
+    store ptr %t4, %t13
+    %t14 = addr $s2
+    %t15 = addr $s1
+    copyobj 16x8 %t14, %t15
+    %t16 = load ptr $s1
+    %t17 = addr $s1
+    %t18 = index u8 %t17, 8
+    %t19 = load ptr %t18
+    store ptr %t16, $s3
+    %t20 = addr $s3
+    %t21 = index u8 %t20, 8
+    store ptr %t19, %t21
+    %t22 = addr $s3
+    %t23 = call u16 @rg.virtual.0.0(%t22)
+    return u16 %t23
+}
+function @rg.13(%p0 : i1) -> void {
+  slot $s0 : i1
+  block ^b0:
+    store i1 %p0, $s0
+    %t0 = load i1 $s0
+    %t1 = unary not i1 %t0
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    jump ^b3
+  block ^b1:
+    %t2 = call u8 @rg.14(0)
+    jump ^b3
+  block ^b3:
+    return void
+}
+function @rg.virtual.0.0(%p0 : ptr) -> u16 {
+  block ^b0:
+    %t0 = load ptr %p0
+    %t1 = index u8 %p0, 8
+    %t2 = load ptr %t1
+    %t3 = index u8 %t2, 24
+    %t4 = load ptr %t3
+    %t5 = call u16 %t4(%t0) as (%p0 : ptr) -> u16
+    return u16 %t5
+}
+function @rg.14(%p0 : u8) -> u8 {
+  slot $s0 : u8
+  block ^b0:
+    store u8 %p0, $s0
+    %t0 = load u8 $s0
+    %t1 = cmp eq u8 %t0, 0
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    %t2 = binary udiv u8 1, %t0
+    return u8 %t2
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+declare function @abort() -> void [return=noreturn]
+function @rg.19(%p0 : ptr) -> u16 {
+  slot $s0 : ptr
+  block ^b0:
+    store ptr %p0, $s0
+    %t0 = load ptr $s0
+    %t1 = load i64 %t0
+    %t2 = convert trunc u16 i64 %t1
+    return u16 %t2
+}
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.23()
+    return i64 0
+}

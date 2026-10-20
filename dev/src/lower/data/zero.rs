@@ -27,7 +27,11 @@ impl Context<'_> {
                 | View::Bytes(_)
                 | View::BytePointer { .. } => false,
                 View::Address { bits } => {
-                    bits == 0 && value.length().is_none_or(|length| length == 0)
+                    bits == 0
+                        && matches!(
+                            value.metadata(),
+                            None | Some(crate::sema::values::Metadata::Length(0))
+                        )
                 }
                 View::Repeat {
                     value: repeated,

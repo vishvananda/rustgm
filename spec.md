@@ -123,6 +123,34 @@ preserve the resolved Self identity. Keep the original complete predicates for
 formation and implementation validation; these early bits are no substitute for
 those proofs and must never be patched beneath cached type properties.
 
+Auto-trait permissions are separate from Sized, Copy and Clone. Structural
+auto-trait queries use `(type, marker)` nodes: reference rules can change the
+required marker, and callable signatures are not stored values. Inspect actual
+substituted fields rather than all nominal type arguments. Traverse shared
+subgraphs once and propagate failing leaves over reverse dependencies before
+accepting recursive components. A provisional cycle cannot become a completed
+positive proof. Suspend at missing field declarations and projected obligations, retaining
+the latter's lifetime evidence on the requesting selector's existing stack.
+Immutable structural facts may be cached; caller permissions and witnesses must
+remain in their own proof scope. Object auto bounds add no vtable method slots.
+
+Explicit auto-trait impls use typed builtin identities in the ordinary header,
+overlap and candidate indexes. Any explicit impl replaces the structural default
+for its whole nominal family, including applications that fail its conditions.
+Reserve pending alias headers before selection; their absence is not evidence
+for automatic implementation. Retain ordinary type, const and lifetime evidence.
+Coinduction requires an identical complete predicate and proof scope along an
+uninterrupted auto-trait path. A shape-only repetition may terminate search but
+cannot grant permission. Preserve static lifetime positions in that cutoff.
+Shared cyclic subgoals may reuse completed provisional proofs only in their active
+auto segment; never cache a bare cycle assumption. An exact auto predicate exposes
+no associated outputs, so its full witness DAG can be shared in the same scope.
+A failed or deferred child invalidates the entire segment, across nested scopes,
+before another field or candidate proceeds. Goals without contextual lifetimes
+use the caller input scope; predicates mentioning local lifetimes retain their
+original universe. Mark dependent proof nodes transitively, and exclude them
+from completed and cross-query caches until their component is established.
+
 An associated type definition is checked under its impl's immutable environment,
 including when no caller uses it. Prove its well-formedness, declared result
 bounds and lifetime requirements; the definition itself cannot add assumptions.
@@ -1269,6 +1297,22 @@ Publish portable hidden types only after the defining region and loan checks.
 Restoration caches belong to one capture list: equivalent names in different
 precise lists do not grant permission to use each other's spelling.
 
+Coordinate an early defining proof above the semantic, CFG and borrow phases;
+none of those phases may depend on the coordinator or executable lowering.
+Retain the original defining CFG for the later template pipeline. Incremental
+lifetime collection consumes each appended semantic fact once, orders a body's
+variables before its obligations and seals completed contracts against late
+additions. Ordinary programs keep the direct collection path. The final template
+and instance gates still verify the complete program before execution.
+
+Promotion precedes an early defining proof, including promotion of returned
+references. Share its report-owned constant index and cleared evaluator storage
+across demanded bodies and the final template pass. Index only new declarations
+and initializers; a chain of defining dependencies must not rebuild an index of
+the whole crate for every function. Do not retain active queries or a previous
+body's permissions in that cache. Count actual preparation, consumed lifetime
+facts and CFG builds separately, including growth in unrelated declarations.
+
 Share captured lists, candidate sets and assumption reachability within each
 body. Required SCCs determine dependency order before making a conservative
 choice. Match the pinned compiler's least candidate comparable with all remaining
@@ -1278,6 +1322,22 @@ long assumption chain. Retain deterministic source identities, bounded work and
 the ordinary graph's allocation-free absence of member state. SCC ranks are
 requested only by member inference. No inference choice adds a universal
 assumption or replaces the later storage/loan checks.
+
+Auto-trait queries may demand a defining body through an opaque input. Retain
+that body's solved finalization frontier, canonical proof query, completed-proof
+cache and reserved private lifetime intervals across the dependency. Do not replay
+validators or publish the hidden representation while its canonical obligations
+remain pending. Quantified requirements preserve their scope during resumption;
+opaque reveal is a separate dependency edge, not structural coinduction. Keep
+ordinary dense body scratch until an actual suspension, then retain only that
+owner's touched nodes and bindings. Observe canonical proof work separately from
+ordinary inference and bound retained suspended storage on growing dependencies.
+
+Completed child bodies also own deferred constant-pattern work. Preserve those
+batches independently of the caller stack, then combine completed batches once
+in declaration order. An unfinished parent's request suffix is not a child scope.
+Restoring its state must neither discard child exhaustiveness checks nor repeatedly
+copy descendants' batches through every ancestor.
 
 Storage preparation visits appended canonical opaque applications once and
 substitutes their complete captures. Cache flattened storage heads independently

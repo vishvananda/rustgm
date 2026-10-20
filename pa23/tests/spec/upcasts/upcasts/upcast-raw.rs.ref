@@ -1,0 +1,70 @@
+global @rg.vtable.0 : obj<40x8> [storage=readonly] = {
+  zero 8
+  i64 1
+  i64 1
+  ptr addr @rg.21
+  ptr addr @rg.vtable.1
+}
+global @rg.vtable.1 : obj<32x8> [storage=readonly] = {
+  zero 8
+  i64 1
+  i64 1
+  ptr addr @rg.21
+}
+function @rg.23() -> void {
+  slot $s0 : u8
+  slot $s1 : obj<16x8>
+  slot $s2 : obj<16x8>
+  slot $s3 : obj<16x8>
+  slot $s4 : obj<16x8>
+  slot $s5 : obj<16x8>
+  slot $s6 : obj<16x8>
+  slot $s7 : obj<16x8>
+  block ^b0:
+    store u8 7, $s0
+    %t0 = addr $s0
+    %t1 = addr @rg.vtable.0
+    store ptr %t0, $s4
+    %t2 = addr $s4
+    %t3 = index u8 %t2, 8
+    store ptr %t1, %t3
+    %t4 = addr $s4
+    %t5 = addr $s1
+    copyobj 16x8 %t4, %t5
+    %t6 = addr $s1
+    %t7 = addr $s5
+    copyobj 16x8 %t6, %t7
+    %t8 = addr $s5
+    %t9 = addr $s2
+    copyobj 16x8 %t8, %t9
+    %t10 = addr $s2
+    %t11 = addr $s6
+    copyobj 16x8 %t10, %t11
+    %t12 = load ptr $s6
+    %t13 = addr $s6
+    %t14 = index u8 %t13, 8
+    %t15 = load ptr %t14
+    %t16 = index u8 %t15, 32
+    %t17 = load ptr %t16
+    store ptr %t12, $s7
+    %t18 = addr $s7
+    %t19 = index u8 %t18, 8
+    store ptr %t17, %t19
+    %t20 = addr $s7
+    %t21 = addr $s3
+    copyobj 16x8 %t20, %t21
+    return void
+}
+function @rg.21(%p0 : ptr) -> u8 {
+  slot $s0 : ptr
+  block ^b0:
+    store ptr %p0, $s0
+    %t0 = load ptr $s0
+    %t1 = load u8 %t0
+    return u8 %t1
+}
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.23()
+    return i64 0
+}

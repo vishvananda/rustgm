@@ -85,6 +85,13 @@ impl Collector {
                     self.arguments(types, arguments, depth)?;
                     None
                 }
+                Kind::Dynamic { arguments, .. } => {
+                    let nested = depth
+                        .checked_add(1)
+                        .ok_or("required-bound binder depth exceeded")?;
+                    self.arguments(types, arguments, nested)?;
+                    None
+                }
                 Kind::FunctionItem {
                     signature,
                     arguments,

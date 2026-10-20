@@ -96,6 +96,7 @@ impl Uses {
                 }
                 Kind::Adt(_, arguments)
                 | Kind::Opaque(_, arguments)
+                | Kind::Dynamic { arguments, .. }
                 | Kind::FunctionItem { arguments, .. } => {
                     if let Some(Kind::FunctionItem { signature, .. }) = store.kind(ty) {
                         self.work.push(signature);

@@ -5,6 +5,7 @@ mod annotations;
 mod bounds;
 mod calls;
 mod conditions;
+mod defining_bodies;
 mod divergence;
 mod dot_calls;
 mod field_storage;
@@ -58,14 +59,38 @@ use std::collections::HashSet;
 ///
 /// # Errors
 /// Reports type mismatches, unresolved variables and explicitly unsupported body semantics.
-pub fn analyze(report: &Report, mut facts: Declarations) -> Result<Declarations, Error> {
+pub fn analyze(report: &Report, facts: Declarations) -> Result<Declarations, Error> {
+    analyze_with_hidden(report, facts, |report, facts, id| {
+        let declaration = facts
+            .opaques
+            .declarations
+            .get(&id)
+            .ok_or_else(|| Error::at(FileId(0), 0, "missing opaque declaration"))?;
+        Err(Declarations::error(
+            report,
+            declaration.source,
+            "opaque hidden lifetimes require the defining body's region proof",
+        ))
+    })
+}
+
+/// Complete a demanded defining body before resuming its dependent auto proof.
+/// The callback closes hidden lifetimes from that body's verified typed CFG.
+/// # Errors
+/// Reports ordinary body errors, dependency cycles and failed hidden-type proofs.
+pub fn analyze_with_hidden(
+    report: &Report,
+    mut facts: Declarations,
+    mut close: impl FnMut(
+        &Report,
+        &mut Declarations,
+        crate::types::opaque::OpaqueId,
+    ) -> Result<(), Error>,
+) -> Result<Declarations, Error> {
     let mut checker = Checker::new(report, &mut facts);
-    for index in 0..checker.facts.functions.len() {
-        let function = checker.facts.functions[index];
-        checker
-            .function(function)
-            .map_err(|error| report.diagnostic(error))?;
-    }
+    checker
+        .functions(&mut close)
+        .map_err(|error| report.diagnostic(error))?;
     for index in 0..checker.facts.initializers.len() {
         if !checker.facts.initializers[index].type_checked() {
             checker
@@ -150,6 +175,7 @@ pub(super) struct Scratch {
     call_types: Option<Box<calls::CallTypes>>,
 }
 pub(super) struct Checker<'a> {
+    pattern_queries: Option<Box<super::constants::Scratch>>,
     pub(super) availability: super::traits::implementations::Availability,
     report: &'a Report,
     pub(super) facts: &'a mut Declarations,
@@ -212,6 +238,7 @@ pub(super) struct State {
     trait_environment: Option<std::sync::Arc<super::traits::assumptions::Assumptions>>,
     canonical_trait_inference: Option<Box<Context>>,
     canonical_trait_proofs: Option<Box<super::traits::selection::Reuse>>,
+    canonical_requirements: Option<Box<trait_goals::CanonicalRequirements>>,
     annotations: super::annotations::Scratch,
     projections: projections::Pending,
     notifications: notifications::Notifications,
@@ -251,6 +278,7 @@ impl<'a> Checker<'a> {
             availability: super::traits::implementations::Availability::Validated,
             report,
             facts,
+            pattern_queries: None,
             state: State {
                 steps: 0,
                 completion: readiness::Completion::Inactive,
@@ -310,6 +338,7 @@ impl<'a> Checker<'a> {
                 trait_environment: None,
                 canonical_trait_inference: None,
                 canonical_trait_proofs: None,
+                canonical_requirements: None,
                 annotations: super::annotations::Scratch::default(),
                 projections: projections::Pending::default(),
                 notifications: notifications::Notifications::default(),
@@ -367,6 +396,7 @@ impl<'a> Checker<'a> {
         self.state.body_binders = 0;
         self.state.method_environment = None;
         self.state.canonical_trait_proofs = None;
+        self.state.canonical_requirements = None;
         self.state.environment_owner = None;
         self.state.trait_environment = None;
         self.state.canonical_trait_inference = None;
@@ -519,6 +549,10 @@ impl Checker<'_> {
         self.report.package.unit(self.state.file).configured.active[node.0 as usize]
     }
     fn function(&mut self, function: Function) -> Result<(), Error> {
+        let progress = self.start_function(function)?;
+        self.require_complete_body(progress)
+    }
+    fn start_function(&mut self, function: Function) -> Result<Option<Dependency>, Error> {
         self.state.call_types.clear();
         self.state.projections = projections::Pending::default();
         self.state.notifications = notifications::Notifications::default();
@@ -539,7 +573,7 @@ impl Checker<'_> {
                 .trait_owner(function.definition)
                 .is_some()
             {
-                return Ok(());
+                return Ok(None);
             }
             return Err(Declarations::error(
                 self.report,
@@ -595,13 +629,9 @@ impl Checker<'_> {
             self.binding(pattern, term, None)?;
             self.save(node, term);
         }
-        self.body(body.node)
-    }
-    fn body(&mut self, body: NodeId) -> Result<(), Error> {
         self.state.completion = readiness::Completion::Ordinary;
-        self.start_body(body)?;
-        let progress = self.advance_body()?;
-        self.require_complete_body(progress)
+        self.start_body(body.node)?;
+        self.advance_body()
     }
     pub(super) fn advance_body(&mut self) -> Result<Option<Dependency>, Error> {
         let body = self.state.body.node;
@@ -769,9 +799,39 @@ impl Checker<'_> {
         }
         // Call inputs need their instantiated contracts even when an argument
         // diverges and therefore has no value node with the parameter's type.
+        // Results already occur in `touched`; share input lifetime formation
+        // with value types. Nominal proofs belong to the complete signature,
+        // and diverging arguments need no additional concrete storage preparation.
+        let mut call_inputs = crate::types::substitute::Bound::lower(1);
         for index in 0..self.state.calls.len() {
             let (node, term) = self.state.calls[index];
-            self.nominal_requirements(node, solved.types[term.0 as usize], &mut nominal_types)?;
+            let signature = solved.types[term.0 as usize];
+            self.nominal_requirements(node, signature, &mut nominal_types)?;
+            let Some(Type::Function {
+                parameters,
+                bound_regions: 0,
+                ..
+            }) = self.facts.types.kind(signature)
+            else {
+                return Err(self.error(node, "call requires an opened signature"));
+            };
+            let count = self
+                .facts
+                .types
+                .list(parameters)
+                .ok_or_else(|| self.error(node, "missing call inputs"))?
+                .len();
+            for parameter in 0..count {
+                let ty = self
+                    .facts
+                    .types
+                    .list(parameters)
+                    .ok_or_else(|| self.error(node, "missing call inputs"))?[parameter];
+                let ty = call_inputs
+                    .apply(&mut self.facts.types, ty)
+                    .map_err(|e| self.error(node, e))?;
+                self.require_value_formation(node, ty, &mut well_formed);
+            }
         }
         for index in 0..self.state.bindings.len() {
             let id = self.state.bindings[index];
@@ -801,6 +861,15 @@ impl Checker<'_> {
         if !self.body_shape(node, ty)?.well_formed {
             return Err(self.error(node, "body uses an ill-formed type"));
         }
+        self.require_value_formation(node, ty, well_formed);
+        Ok(())
+    }
+    fn require_value_formation(
+        &mut self,
+        node: NodeId,
+        ty: TypeId,
+        well_formed: &mut HashSet<TypeId>,
+    ) {
         if (self.facts.types.contains_regions(ty) == Some(true)
             || self.facts.types.contains_parameters(ty) == Some(true))
             && !self.state.annotation_children.contains(&node)
@@ -812,7 +881,6 @@ impl Checker<'_> {
                 ty,
             });
         }
-        Ok(())
     }
     fn binding(
         &mut self,

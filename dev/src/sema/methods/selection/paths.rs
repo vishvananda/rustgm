@@ -109,10 +109,14 @@ impl Query {
             caller.borrowed(),
         )
         .map_err(|message| Declarations::error(report, key, message))?;
+        let object = matches!(
+            source.infer.head(&source.facts.types, term),
+            Ok(Some(crate::types::infer::Constructor::Dynamic { .. }))
+        );
         Ok(Self {
             prefix: source.infer,
             term,
-            mode: Mode::Trait { bound: true },
+            mode: Mode::Trait { bound: !object },
             members: bound.into_iter(),
             lexical: Some(lexical),
             selected: None,

@@ -293,6 +293,22 @@ impl Walk {
                         self.work.push((referent, depth));
                     }
                 }
+                Kind::Dynamic {
+                    region, arguments, ..
+                } => {
+                    self.record_region(region, depth, &mut values)?;
+                    let nested = depth
+                        .checked_add(1)
+                        .ok_or("object component binder depth overflow")?;
+                    self.arguments(
+                        types
+                            .arguments(arguments)
+                            .ok_or("missing object lifetime inputs")?,
+                        nested,
+                        &mut values,
+                        budget,
+                    )?;
+                }
                 Kind::Array { length: 0, .. } if kind == ComponentKind::LiveValue => {}
                 Kind::Opaque(id, args) => {
                     if matches!(kind, ComponentKind::LiveValue | ComponentKind::DropInputs) {

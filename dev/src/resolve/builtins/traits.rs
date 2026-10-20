@@ -3,6 +3,7 @@ use super::{Context, DefId, DefKind, Error, NameId, Resolver, ScopeId};
 use crate::{
     resolve::lookup::{Lookup, LookupMode},
     resolve::model::Namespace,
+    support::marker_traits::AutoTrait,
     syntax::ast::NodeId,
 };
 
@@ -11,6 +12,7 @@ pub enum BuiltinTrait {
     Copy,
     Clone,
     Sized,
+    Auto(AutoTrait),
 }
 impl BuiltinTrait {
     fn index(self) -> usize {
@@ -18,6 +20,7 @@ impl BuiltinTrait {
             Self::Copy => 0,
             Self::Clone => 1,
             Self::Sized => 2,
+            Self::Auto(marker) => 3 + marker as usize,
         }
     }
     #[must_use]
@@ -26,6 +29,7 @@ impl BuiltinTrait {
             Self::Copy => "Copy",
             Self::Clone => "Clone",
             Self::Sized => "Sized",
+            Self::Auto(marker) => marker.name(),
         }
     }
 }
@@ -34,7 +38,8 @@ pub struct Traits {
     pub(super) library: Option<ScopeId>,
     marker: Option<ScopeId>,
     clone_: Option<ScopeId>,
-    entries: [Option<DefId>; 3],
+    panic: Option<ScopeId>,
+    entries: [Option<DefId>; 8],
 }
 impl Traits {
     #[must_use]
@@ -45,10 +50,11 @@ impl Traits {
     pub fn identify(&self, id: DefId) -> Option<BuiltinTrait> {
         [BuiltinTrait::Copy, BuiltinTrait::Clone, BuiltinTrait::Sized]
             .into_iter()
+            .chain(AutoTrait::ALL.into_iter().map(BuiltinTrait::Auto))
             .find(|t| self.get(*t) == Some(id))
     }
     pub(super) fn identities(&self) -> impl Iterator<Item = DefId> + '_ {
-        self.entries.iter().copied().flatten()
+        self.entries[..6].iter().copied().flatten()
     }
 }
 impl Resolver<'_> {
@@ -66,21 +72,44 @@ impl Resolver<'_> {
             return Ok(());
         };
         if path.len() == 1 {
+            if let Some(marker) = AutoTrait::ALL
+                .into_iter()
+                .take(3)
+                .find(|m| m.name() == last)
+            {
+                return self.auto_trait(c, node, library, marker);
+            }
             return match last {
                 "Copy" | "Sized" => self.trait_module(c, node, library, false),
                 "Clone" => self.trait_module(c, node, library, true),
                 _ => Ok(()),
             };
         }
+        if let Some(marker) = AutoTrait::ALL.into_iter().find(|m| m.name() == last)
+            && self.auto_module_alias(c, node, absolute, &path[..path.len() - 1], marker)
+        {
+            return self.auto_trait(c, node, library, marker);
+        }
         if !matches!(
             last,
-            "Copy" | "Sized" | "Clone" | "marker" | "clone" | "self"
+            "Copy"
+                | "Sized"
+                | "Clone"
+                | "Send"
+                | "Sync"
+                | "Unpin"
+                | "UnwindSafe"
+                | "RefUnwindSafe"
+                | "marker"
+                | "clone"
+                | "panic"
+                | "self"
         ) {
             return Ok(());
         }
         let Some(index) = path
             .iter()
-            .rposition(|n| matches!(self.package.names.get(*n), "marker" | "clone"))
+            .rposition(|n| matches!(self.package.names.get(*n), "marker" | "clone" | "panic"))
         else {
             return Ok(());
         };
@@ -88,15 +117,8 @@ impl Resolver<'_> {
             return Ok(());
         }
         let clone_ = self.package.names.get(path[index]) == "clone";
-        if (if clone_ {
-            self.facts.builtin_traits.clone_
-        } else {
-            self.facts.builtin_traits.marker
-        })
-        .is_some()
-        {
-            return Ok(());
-        }
+        let panic = self.package.names.get(path[index]) == "panic";
+        let marker = AutoTrait::ALL.into_iter().find(|m| m.name() == last);
         // Prefix lookup selects the actual library, including imports that only
         // became available during this worklist iteration. Spelling alone never
         // turns a user module into language metadata.
@@ -109,8 +131,84 @@ impl Resolver<'_> {
             None,
         ) && self.facts.definitions[binding.target.0 as usize].members == Some(library)
         {
-            self.trait_module(c, node, library, clone_)?;
+            if let Some(marker) = marker {
+                if !clone_
+                    && panic == matches!(marker, AutoTrait::UnwindSafe | AutoTrait::RefUnwindSafe)
+                {
+                    self.auto_trait(c, node, library, marker)?;
+                }
+            } else if panic {
+                self.auto_trait(c, node, library, AutoTrait::UnwindSafe)?;
+                self.auto_trait(c, node, library, AutoTrait::RefUnwindSafe)?;
+            } else {
+                self.trait_module(c, node, library, clone_)?;
+            }
         }
+        Ok(())
+    }
+    fn auto_module_alias(
+        &self,
+        c: Context,
+        node: NodeId,
+        absolute: bool,
+        prefix: &[NameId],
+        marker: AutoTrait,
+    ) -> bool {
+        let expected = if matches!(marker, AutoTrait::UnwindSafe | AutoTrait::RefUnwindSafe) {
+            self.facts.builtin_traits.panic
+        } else {
+            self.facts.builtin_traits.marker
+        };
+        expected.is_some()
+            && matches!(
+                self.lookup_path(c, node, absolute, prefix, LookupMode::Import(Namespace::Type), None),
+                Ok(Lookup::Found(binding)) if self.facts.definitions[binding.target.0 as usize].members == expected
+            )
+    }
+    fn auto_trait(
+        &mut self,
+        c: Context,
+        node: NodeId,
+        library: ScopeId,
+        marker: AutoTrait,
+    ) -> Result<(), Error> {
+        let trait_ = BuiltinTrait::Auto(marker);
+        if self.facts.builtin_traits.get(trait_).is_some() {
+            return Ok(());
+        }
+        let scope = if matches!(marker, AutoTrait::UnwindSafe | AutoTrait::RefUnwindSafe) {
+            if let Some(scope) = self.facts.builtin_traits.panic {
+                scope
+            } else {
+                let scope = self.new_scope(None, crate::resolve::package::ModuleId(0), true)?;
+                self.builtin_definition(
+                    Context {
+                        scope: library,
+                        ..c
+                    },
+                    node,
+                    "panic",
+                    DefKind::Module,
+                    Some(scope),
+                )?;
+                self.facts.builtin_traits.panic = Some(scope);
+                scope
+            }
+        } else {
+            self.trait_module(c, node, library, false)?;
+            self.facts
+                .builtin_traits
+                .marker
+                .ok_or_else(|| self.error(c, node, "missing marker module"))?
+        };
+        let id = self.builtin_definition(
+            Context { scope, ..c },
+            node,
+            marker.name(),
+            DefKind::BuiltinTrait,
+            None,
+        )?;
+        self.facts.builtin_traits.entries[trait_.index()] = Some(id);
         Ok(())
     }
     fn trait_module(

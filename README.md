@@ -51,14 +51,16 @@ repository with pinned reference tools. It has not been built yet.
   destructor instances, with 449 course cases, 277 native executions and three
   explicit code-generation-only controls.
 - PA19 provides trait/method semantic inspection and checked static dispatch, with
-  1,105 cases and 269 native execution controls.
+  1,104 cases and 269 native execution controls.
 - PA20 adds associated types/constants, normalized trait contracts and recursive
   selection, with 1,381 text-oracle cases and 508 native execution controls.
 - PA21 adds higher-ranked bounds, GATs, opaque results and precise captures,
   with 744 text-oracle cases and 260 native execution controls.
 - PA22 adds unsized storage tails, proved coercions and raw pointer metadata,
   with 328 text-oracle cases, 102 native executions and 134 compile-only controls.
-- PA23–PA38 have buildout briefs and Makefiles. Their suites and implementation
+- PA23 adds trait objects, vtables, upcasting and marker obligations, with
+  399 text-oracle cases, 85 native executions and 177 compile-only controls.
+- PA24–PA38 have buildout briefs and Makefiles. Their suites and implementation
   are not complete; invoking an unbuilt assignment fails explicitly.
 
 Read [ROADMAP.md](ROADMAP.md), [spec.md](spec.md),

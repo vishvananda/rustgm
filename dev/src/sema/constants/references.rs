@@ -5,18 +5,23 @@ use std::collections::HashMap;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub(in crate::sema) struct Id(u32);
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub enum Metadata {
+    Length(u64),
+    Object { concrete: TypeId, target: TypeId },
+}
 /// Metadata belongs to a pointer value, while its backing location keeps its
 /// original sized type and allocation identity.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub(in crate::sema) struct Pointer {
     pub place: Id,
-    pub length: Option<u64>,
+    pub metadata: Option<Metadata>,
 }
 impl Pointer {
     pub(super) const fn new(place: Id) -> Self {
         Self {
             place,
-            length: None,
+            metadata: None,
         }
     }
 }
@@ -161,15 +166,34 @@ impl Queries<'_> {
         let Query::Node(key) = query else {
             return Ok(value);
         };
-        let Some(&array) = self.typing.facts.unsizing_adjustments.get(&key) else {
+        let Some(&conversion) = self.typing.facts.unsizing_adjustments.get(&key) else {
             return Ok(value);
         };
-        let array = self.specialized_type(key, array)?;
-        let Some(crate::types::Kind::Array { length, .. }) = self.typing.facts.types.kind(array)
-        else {
-            return Err(self.error(query, "constant unsizing length is not concrete"));
+        let metadata = match conversion {
+            crate::types::unsizing::Conversion::Slice(array) => {
+                let array = self.specialized_type(key, array)?;
+                let Some(crate::types::Kind::Array { length, .. }) =
+                    self.typing.facts.types.kind(array)
+                else {
+                    return Err(self.error(query, "constant unsizing length is not concrete"));
+                };
+                Metadata::Length(length)
+            }
+            crate::types::unsizing::Conversion::Object { concrete, target } => Metadata::Object {
+                concrete: self.specialized_type(key, concrete)?,
+                target: self.specialized_type(key, target)?,
+            },
+            crate::types::unsizing::Conversion::Upcast { target, .. } => {
+                let Some(Metadata::Object { concrete, .. }) = value.metadata() else {
+                    return Err(self.error(query, "constant upcast requires object metadata"));
+                };
+                Metadata::Object {
+                    concrete,
+                    target: self.specialized_type(key, target)?,
+                }
+            }
         };
-        super::address_values::unsize(value, length).map_err(|e| self.error(query, e.message()))
+        super::address_values::unsize(value, metadata).map_err(|e| self.error(query, e.message()))
     }
     pub(super) fn reference_expression(&self, key: NodeKey) -> Result<Option<Expression>, Error> {
         let facts =

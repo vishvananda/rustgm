@@ -27,6 +27,15 @@ impl Terms {
     pub fn sparse() -> Self {
         Self::Sparse(HashMap::new())
     }
+    /// Keep the suspended owner's entries, without scanning unrelated file slots.
+    pub fn retain_sparse(&mut self, keys: impl Iterator<Item = NodeKey>) {
+        if matches!(self, Self::Dense(_)) {
+            let values = keys
+                .filter_map(|key| self.get(key).map(|value| (key, value)))
+                .collect();
+            *self = Self::Sparse(values);
+        }
+    }
     pub fn files(&mut self, count: usize) {
         if let Self::Dense(files) = self {
             files.resize_with(count, Vec::new);
@@ -86,6 +95,13 @@ impl<T: Default + Copy> Slots<T> {
         Self {
             storage: Storage::Sparse(HashMap::new()),
             empty: T::default(),
+        }
+    }
+    /// A continuation needs only its own touched bindings and expression states.
+    pub fn retain_sparse(&mut self, keys: impl Iterator<Item = usize>) {
+        if matches!(self.storage, Storage::Dense(_)) {
+            let values = keys.map(|key| (key, self[key])).collect();
+            self.storage = Storage::Sparse(values);
         }
     }
     pub fn resize(&mut self, count: usize, value: T) {

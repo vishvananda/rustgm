@@ -9,11 +9,17 @@ use std::collections::{HashMap, hash_map::Entry};
 pub(crate) struct Builtins {
     pub sized: bool,
     pub copies: super::copy::Properties,
+    pub autos: u8,
 }
 impl Builtins {
     pub(crate) fn bound(bound: super::parameters::predicates::Bound) -> Self {
         use super::parameters::predicates::Bound;
         Self {
+            autos: if let Bound::Auto(marker) = bound {
+                1 << marker as u8
+            } else {
+                0
+            },
             sized: matches!(bound, Bound::Sized | Bound::Copy | Bound::Clone),
             copies: super::copy::Properties {
                 copy: bound == Bound::Copy,
@@ -26,6 +32,7 @@ impl Builtins {
         self.sized |= other.sized;
         self.copies.copy |= other.copies.copy;
         self.copies.clone_ |= other.copies.clone_;
+        self.autos |= other.autos;
         *self != previous
     }
 }

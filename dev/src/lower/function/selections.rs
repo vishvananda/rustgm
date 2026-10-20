@@ -32,7 +32,10 @@ impl Lower<'_, '_> {
                 let (_, offset) = self
                     .context
                     .place_field(self.place_type(projection.base)?, field)?;
-                Ok(Step::Offset(offset))
+                Ok(match offset {
+                    crate::abi::tails::Offset::Fixed(offset) => Step::Offset(offset),
+                    crate::abi::tails::Offset::Aligned { .. } => Step::Dynamic(id),
+                })
             }
             ProjectionKind::ConstantIndex(index) => {
                 let ty = self.place_type(projection.base)?;
@@ -134,8 +137,8 @@ impl Lower<'_, '_> {
         let mut base = self
             .place(anchor)?
             .ok_or("pattern selection has no input storage")?;
-        let mut length = if self.context.wide_referent(self.place_type(anchor)?)? {
-            Some(self.slice_length(anchor)?)
+        let mut metadata = if self.context.wide_referent(self.place_type(anchor)?)? {
+            Some(self.metadata(anchor)?)
         } else {
             None
         };
@@ -152,12 +155,12 @@ impl Lower<'_, '_> {
         while let Some(index) = self.address_work.pop() {
             let step = self.selection_steps[index];
             base = self.offset(base, step.offset)?;
-            (base, length) = self.dynamic_selection(step.projection, base, length)?;
+            (base, metadata) = self.dynamic_selection(step.projection, base, metadata)?;
         }
         let address = self.offset(base, recipe.offset)?;
         if wide {
-            self.slice_lengths
-                .insert(id, length.ok_or("unsized selection lacks metadata")?);
+            self.place_metadata
+                .insert(id, metadata.ok_or("unsized selection lacks metadata")?);
         }
         self.projections[id.0 as usize] = Projected::Ready(Some(address));
         Ok(())

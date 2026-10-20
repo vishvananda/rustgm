@@ -748,5 +748,17 @@ storage guard removes them after successful runs.
 PA22 publishes 328 LowIR cases: 236 accept, 92 reject. Every source is independently
 object-qualified with pinned rustc. Its 102 runtime comparisons include five
 expected panics; 134 compile-only controls are reported separately. Root report,
-source and native targets include PA22. PA23–PA38 remain planned and fail explicitly.
+source and native targets include PA22. PA24–PA38 remain planned and fail explicitly.
 See [docs/pa22-release.md](docs/pa22-release.md) for qualification and performance.
+
+
+PA23 publishes 399 LowIR cases: 262 accept and 137 reject. Pinned rustc
+independently qualifies every declared source outcome. The native lane has
+85 execution comparisons and 177 explicit compile-only controls. Its matrix
+covers object annotations and lifetimes, dyn compatibility, quantified and
+associated contracts, dynamic dispatch, upcasts, tails, marker implementations
+and defining-body dependencies. The former PA19 future-object boundary moves
+here with unchanged source bytes. One PA21 quantified forwarding proof now
+uses the resumable canonical proof representation; its source, result and
+LowIR behavior remain unchanged. The release evidence documents both changes.
+Root source/native targets include PA23. See `docs/pa23-release.md`.

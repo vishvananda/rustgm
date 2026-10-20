@@ -58,23 +58,22 @@ impl Checker<'_> {
                     term = *child;
                     parents.push((item, arguments, slot as usize));
                 }
-                Some(Constructor::Slice) if !parents.is_empty() => break,
+                Some(Constructor::Slice | Constructor::Dynamic { .. }) if !parents.is_empty() => {
+                    break;
+                }
                 _ => return Ok(Some(expected)),
             }
         }
-        // Only the length is unknown. Retaining the element context is necessary
-        // for nested function-item coercions and empty array inference.
-        let element = self.child(node, term, 0)?;
-        let length = self
-            .state
-            .infer
-            .const_variable(&self.facts.types, TypeId::primitive(Primitive::Usize))
-            .map_err(|e| self.error(node, e))?;
-        term = self
-            .state
-            .infer
-            .construct(Constructor::ArrayInfer(length), &[element])
-            .map_err(|e| self.error(node, e))?;
+        term = if matches!(
+            self.contextual_head(node, term)?,
+            Some(Constructor::Dynamic { .. })
+        ) {
+            // An object target supplies obligations after the sized constructor's
+            // actual tail is inferred; it cannot become the stored field type.
+            self.variable(node, crate::types::infer::Domain::Any)?
+        } else {
+            self.array_tail_context(node, term)?
+        };
         for (item, mut arguments, slot) in parents.into_iter().rev() {
             arguments[slot] = Argument::Type(term);
             term = self
@@ -84,6 +83,20 @@ impl Checker<'_> {
                 .map_err(|e| self.error(node, e))?;
         }
         Ok(Some(term))
+    }
+    fn array_tail_context(&mut self, node: NodeId, slice: TermId) -> Result<TermId, Error> {
+        // Only the length is unknown. Retaining the element context is necessary
+        // for nested function-item coercions and empty array inference.
+        let element = self.child(node, slice, 0)?;
+        let length = self
+            .state
+            .infer
+            .const_variable(&self.facts.types, TypeId::primitive(Primitive::Usize))
+            .map_err(|e| self.error(node, e))?;
+        self.state
+            .infer
+            .construct(Constructor::ArrayInfer(length), &[element])
+            .map_err(|e| self.error(node, e))
     }
     fn projected_constructor_context(
         &mut self,

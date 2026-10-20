@@ -118,6 +118,25 @@ pub(crate) trait Compare<'t> {
                 return self.arguments(a, b, depth);
             }
             (
+                Kind::Dynamic {
+                    shape: a,
+                    arguments: aa,
+                    bound_regions: ab,
+                    region: ar,
+                },
+                Kind::Dynamic {
+                    shape: b,
+                    arguments: ba,
+                    bound_regions: bb,
+                    region: br,
+                },
+            ) if a == b && ab == bb => {
+                if !self.regions(ar, br, depth)? {
+                    return Ok(false);
+                }
+                return self.arguments(aa, ba, depth.checked_add(1).ok_or(Error::Budget)?);
+            }
+            (
                 Kind::Function {
                     bound_regions: x,
                     parameters: a,

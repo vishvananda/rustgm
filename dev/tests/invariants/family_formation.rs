@@ -276,7 +276,7 @@ fn family_conditions_retain_universal_proof_across_header_waits_and_foreign_allo
     let mut pending = Implementations::default();
     pending.reserve(vec![PendingHeader {
         owner,
-        item: ItemId(fixture.mark.ok_or("missing Mark")?.0),
+        item: ItemId(fixture.mark.ok_or("missing Mark")?.0).into(),
         head: Some(Head::canonical(Kind::Primitive(Primitive::U8))),
     }])?;
     fixture.facts.generics.implementations = Some(Box::new(pending));

@@ -113,8 +113,14 @@ impl Checker<'_> {
                 .copied();
             let argument = match (parameter.argument, node) {
                 (Argument::Lifetime(_), node) => {
-                    let region = self.region(key, node, context)?;
-                    self.regions.record(context, region);
+                    let region = if let Some(region) = self.object_application_lifetime(key, index)
+                    {
+                        region
+                    } else {
+                        let region = self.region(key, node, context)?;
+                        self.regions.record(context, region);
+                        region
+                    };
                     AnnotationArgument::Lifetime(region)
                 }
                 (_, Some(node))

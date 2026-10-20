@@ -77,6 +77,7 @@ pub struct Schema {
 pub struct Inventory {
     owners: Vec<Owner>,
     members: Vec<Member>,
+    owner_members: Vec<Vec<DefId>>,
     declarations: HashMap<DefId, OwnerId>,
     schemas: HashMap<OwnerId, Schema>,
     pub(in crate::sema) types: HashMap<DefId, TypeContract>,
@@ -109,6 +110,11 @@ impl Inventory {
     #[must_use]
     pub fn members(&self) -> &[Member] {
         &self.members
+    }
+    /// Direct members in resolver order, without scanning other trait or impl owners.
+    #[must_use]
+    pub fn owner_members(&self, owner: OwnerId) -> Option<&[DefId]> {
+        self.owner_members.get(owner.0 as usize).map(Vec::as_slice)
     }
     #[must_use]
     pub fn owner(&self, definition: DefId) -> Option<OwnerId> {
@@ -195,6 +201,7 @@ pub fn collect(report: &Report) -> Result<Inventory, Error> {
             self_definition,
             kind,
         });
+        result.owner_members.push(Vec::new());
     }
     if scopes.is_empty() {
         return Ok(result);
@@ -220,6 +227,7 @@ pub fn collect(report: &Report) -> Result<Inventory, Error> {
             definition: id,
             owner,
         });
+        result.owner_members[owner.0 as usize].push(id);
     }
     Ok(result)
 }

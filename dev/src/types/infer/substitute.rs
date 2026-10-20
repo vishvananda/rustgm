@@ -189,7 +189,10 @@ impl Context {
                 continue;
             }
             let entry = self.terms[term.0 as usize];
-            let child_depth = if matches!(kind, Constructor::Function { .. }) {
+            let child_depth = if matches!(
+                kind,
+                Constructor::Function { .. } | Constructor::Dynamic { .. }
+            ) {
                 depth.checked_add(1).ok_or(Error::Overflow)?
             } else {
                 depth

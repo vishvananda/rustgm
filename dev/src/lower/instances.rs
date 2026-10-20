@@ -3,15 +3,10 @@ mod demand;
 mod dependencies;
 mod proof;
 use crate::{
-    body::{
-        self,
-        ir::{NodeKey, Selection},
-        regions::Contracts,
-    },
+    body::{self, ir::NodeKey, regions::Contracts},
     borrow,
     resolve::{expansion::Report, model::DefId, package::Error},
     sema::model::Declarations,
-    types::{Kind, TypeId},
 };
 
 /// Compile selected instances using retained syntax/type facts and checked templates.
@@ -25,12 +20,33 @@ pub fn build(
     facts: &mut Declarations,
     entry: DefId,
 ) -> Result<crate::lowir::program::Program, Error> {
-    let mut templates = body::templates::build(report, facts)?;
-    let mut inputs = body::regions::collect(facts)
-        .map_err(|e| diagnostic(report, None, e.into()))?
-        .bodies;
+    build_prepared(report, facts, entry, crate::pipeline::Prepared::default())
+}
+
+/// Consume defining CFGs and contracts already built for semantic dependencies.
+/// # Errors
+/// Applies the same complete template and instance gates as `build`.
+pub fn build_prepared(
+    report: &Report,
+    facts: &mut Declarations,
+    entry: DefId,
+    mut prepared: crate::pipeline::Prepared,
+) -> Result<crate::lowir::program::Program, Error> {
+    let mut templates = prepared.templates.finish(report, facts)?;
+    let mut inputs = if let Some(collector) = prepared.contracts {
+        collector.finish(facts)
+    } else {
+        body::regions::collect(facts)
+    }
+    .map_err(|e| diagnostic(report, None, e.into()))?
+    .bodies;
     body::templates::constructors(report, facts, &mut templates, &mut inputs)?;
-    body::promote::analyze_templates(report, facts, &mut templates)?;
+    body::promote::analyze_templates_reusing(
+        report,
+        facts,
+        &mut templates,
+        &mut prepared.promotions,
+    )?;
     for input in &inputs {
         input
             .prepare_outlives(&mut facts.types, &mut facts.lifetimes.nominal_requirements)
@@ -60,7 +76,7 @@ pub fn build(
         &contracts,
         &templates,
         &custom,
-        |ty, field| position(facts, ty, field),
+        |ty, field| body::drops::nominal_position(facts, ty, field),
     )
     .map_err(|e| diagnostic(report, e.node, e.message))?;
     let inputs = contracts.bodies;
@@ -95,29 +111,4 @@ fn diagnostic(report: &Report, node: Option<NodeKey>, message: String) -> Error 
     } else {
         Error::at(crate::resolve::unit::FileId(0), 0, message)
     }
-}
-fn position(
-    facts: &Declarations,
-    ty: TypeId,
-    field: Selection,
-) -> Result<(u32, u32), &'static str> {
-    let (Some(Kind::Adt(item, _)), Selection::Nominal(field)) = (facts.types.kind(ty), field)
-    else {
-        return Err("invalid instance cleanup field selection");
-    };
-    let variant = facts
-        .members
-        .variant(field)
-        .and_then(|id| facts.members.variants.get(id.0 as usize))
-        .ok_or("missing instance cleanup variant")?;
-    if variant.owner != item {
-        return Err("instance cleanup field belongs to another type");
-    }
-    Ok((
-        variant.ordinal,
-        facts
-            .members
-            .ordinal(field)
-            .ok_or("missing instance cleanup field")?,
-    ))
 }

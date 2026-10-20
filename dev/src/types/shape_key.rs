@@ -16,14 +16,41 @@ impl Store {
         &mut self,
         predicate: Predicate,
     ) -> Result<(ShapeKey, usize), &'static str> {
-        let mut shapes = self
-            .shapes
-            .take()
-            .unwrap_or_else(|| Box::new(Bound::shape()));
+        self.predicate_shape(predicate, false)
+    }
+
+    /// Fresh lifetime expansion is an inductive cutoff, not positive evidence.
+    /// Preserve static slots so a constant-lifetime cycle can close independently
+    /// of the generic lifetime application that first requested it.
+    pub(crate) fn auto_shape_key(
+        &mut self,
+        predicate: Predicate,
+    ) -> Result<(ShapeKey, usize), &'static str> {
+        self.predicate_shape(predicate, true)
+    }
+
+    fn predicate_shape(
+        &mut self,
+        predicate: Predicate,
+        auto: bool,
+    ) -> Result<(ShapeKey, usize), &'static str> {
+        let mut shapes = if auto {
+            self.auto_shapes
+                .take()
+                .unwrap_or_else(|| Box::new(Bound::auto_shape()))
+        } else {
+            self.shapes
+                .take()
+                .unwrap_or_else(|| Box::new(Bound::shape()))
+        };
         let before = shapes.steps;
         let result = shapes.predicate(self, predicate).map(ShapeKey);
         let work = shapes.steps.saturating_sub(before);
-        self.shapes = Some(shapes);
+        if auto {
+            self.auto_shapes = Some(shapes);
+        } else {
+            self.shapes = Some(shapes);
+        }
         result.map(|key| (key, work))
     }
 

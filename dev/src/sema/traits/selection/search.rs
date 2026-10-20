@@ -1,8 +1,19 @@
 //! Iterative candidate search; each child proof commits only its resolved goal.
 mod allocations;
+#[cfg(test)]
+#[path = "../../../../tests/invariants/auto_cycle_work.rs"]
+mod auto_cycle_tests;
+mod auto_obligations;
 mod builtins;
 mod callable_queries;
+mod coinduction;
 mod completed_proofs;
+#[cfg(test)]
+#[path = "../../../../tests/invariants/marker_evidence.rs"]
+mod marker_evidence_tests;
+#[cfg(test)]
+#[path = "../../../../tests/invariants/marker_readiness.rs"]
+mod marker_readiness_tests;
 pub(in crate::sema) use completed_proofs::Reuse;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/erased_formation.rs"]
@@ -52,7 +63,7 @@ mod suspension;
 mod universal_inference_tests;
 mod wakeups;
 pub(in crate::sema) use suspension::{
-    Pending, Progress, begin, begin_normalized, begin_projection, begin_refining,
+    Pending, Progress, begin, begin_canonical, begin_normalized, begin_projection, begin_refining,
     begin_scoped_refining,
 };
 #[cfg(test)]
@@ -71,7 +82,7 @@ use super::{
     Caller, Context, Declarations, Dependency, Evidence, Goal, Predicate, Selection, Source,
     inference,
 };
-use crate::types::{infer, lifetime_proof::ScopeId, outlives::Pair};
+use crate::types::{infer, outlives::Pair};
 use continuation::Query;
 use frames::{Frame, Trial};
 
@@ -89,6 +100,7 @@ enum Action {
     Yield,
 }
 struct Node {
+    cycle_dependent: bool,
     provisional_size: bool,
     goal: Predicate,
     source: Option<Source>,
@@ -183,26 +195,25 @@ impl Search<'_> {
         }
         Ok(())
     }
-    fn remember(
-        &mut self,
-        canonical: Option<Predicate>,
-        cycles: usize,
-        decision: Decision,
-        scope: ScopeId,
-    ) {
+    fn remember(&mut self, frame: &Frame, decision: Decision) {
         match decision {
             Decision::Proven(index) => {
                 let node = &self.query.nodes[index];
-                // Reusing existential evidence requires fresh region rebasing.
-                if node.first == node.end && self.query.cacheable(index) {
-                    self.query.remember(scope, node.goal, decision);
+                let goal = node.goal;
+                // Ordinary cached answers cannot capture private witnesses or
+                // open cycles. Auto proofs can share witnesses in one segment.
+                if !node.cycle_dependent && node.first == node.end && self.query.cacheable(index) {
+                    self.query.remember(frame.scope, goal, decision);
+                }
+                if !self.query.nodes[index].provisional_size {
+                    self.query.remember_auto(frame, goal, decision);
                 }
             }
-            Decision::Absent if cycles == self.query.cycles => {
+            Decision::Absent if frame.cycles == self.query.cycles => {
                 // A cycle cutoff is relative to the active proof stack, not a
                 // negative fact. Neither it nor any ancestor may cache failure.
-                if let Some(goal) = canonical {
-                    self.query.remember(scope, goal, decision);
+                if let Some(goal) = frame.canonical {
+                    self.query.remember(frame.scope, goal, decision);
                 }
             }
             Decision::Absent | Decision::Deferred => {}
@@ -221,7 +232,7 @@ impl Search<'_> {
         if frame.normalizing() {
             return self.advance_normalization(facts, frame);
         }
-        if frame.goal.builtin_bound().is_some() {
+        if frame.goal.builtin_bound().is_some() && !frame.explicit_auto {
             return self.complete_builtin(facts, frame);
         }
         if let Some(trial) = &mut frame.trial {
@@ -244,6 +255,9 @@ impl Search<'_> {
             };
             self.charge(&mut trial.inputs.context)?;
             let retained = frame.trial.take();
+            if !matches!(result, Decision::Proven(_)) {
+                self.query.invalidate_auto(frame);
+            }
             match result {
                 Decision::Absent => {}
                 Decision::Deferred
@@ -339,16 +353,16 @@ impl Search<'_> {
         if needs_normalization {
             return Ok(Action::Complete(Decision::Deferred));
         }
-        let opaque = !facts.opaques.declarations.is_empty()
+        let declared = (!facts.opaques.declarations.is_empty() || facts.types.has_dynamic_shapes())
             && matches!(
                 frame
                     .inputs
                     .context
                     .head(&facts.types, frame.goal.subject())
                     .map_err(inference)?,
-                Some(infer::Constructor::Opaque(..))
+                Some(infer::Constructor::Opaque(..) | infer::Constructor::Dynamic { .. })
             );
-        if (frame.normalized_inputs.is_some() || opaque)
+        if (frame.normalized_inputs.is_some() || declared)
             && let Some(action) = self.derive_result(facts, frame)?
         {
             return Ok(action);
@@ -378,6 +392,7 @@ impl Search<'_> {
                     .map_err(|_| infer::Error::InvalidIdentity)?;
                 let index = self.query.push(
                     Node {
+                        cycle_dependent: false,
                         provisional_size: false,
                         goal,
                         source: Some(Source::assumed(&proof)?),
@@ -439,12 +454,27 @@ impl Search<'_> {
         {
             Ok(goal) => {
                 frame.canonical = Some(goal);
+                // A marker on a type with no contextual lifetimes has the same
+                // proof in every nested universe of this immutable caller.
+                if matches!(
+                    goal.bound,
+                    crate::types::parameters::predicates::Bound::Auto(_)
+                ) && facts.types.needs_region_context(goal.ty) == Some(false)
+                {
+                    frame.scope = self.query.input_scope();
+                }
                 if let Some(decision) = self.query.completed(frame.scope, goal) {
                     self.query.reused |= matches!(decision, Decision::Proven(_));
                     return Ok(Some(decision));
                 }
                 if let Some(decision) = self.query.reuse_completed(frame, goal) {
                     return Ok(Some(decision));
+                }
+                if matches!(
+                    goal.bound,
+                    crate::types::parameters::predicates::Bound::Auto(_)
+                ) {
+                    return self.auto_cycle(facts, frame, goal);
                 }
                 let (key, work) = facts.types.shape_key(goal)?;
                 frame.inputs.context.account_work(work).map_err(inference)?;
@@ -465,6 +495,9 @@ impl Search<'_> {
         frame: &mut Frame,
         decision: Decision,
     ) -> Result<(), String> {
+        if !matches!(decision, Decision::Proven(_)) {
+            self.query.invalidate_auto(frame);
+        }
         if frame.forming() {
             return Self::accept_formation(frame, decision);
         }
@@ -473,6 +506,9 @@ impl Search<'_> {
         }
         if frame.storage.is_some() {
             return self.accept_storage(frame, decision);
+        }
+        if frame.autos.is_some() {
+            return self.accept_auto(frame, decision);
         }
         let trial = frame
             .trial
@@ -508,7 +544,7 @@ impl Search<'_> {
                     )
                     .map_err(inference)?;
                 if self.query.nodes[node].first != self.query.nodes[node].end {
-                    trial.end = self.query.nodes[node].end;
+                    trial.end = trial.end.max(self.query.nodes[node].end);
                 }
                 trial.children.push(node);
                 trial.complete_condition(index)?;

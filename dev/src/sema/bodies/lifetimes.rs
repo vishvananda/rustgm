@@ -133,9 +133,18 @@ impl Checker<'_> {
                 self.facts.pointer_adjustments.remove(&key);
             }
             if let Some(pending) = self.state.unsizing_adjustments.get(&index) {
-                self.facts
-                    .unsizing_adjustments
-                    .insert(key, solved.types[pending.array.0 as usize]);
+                self.facts.unsizing_adjustments.insert(
+                    key,
+                    pending.conversion.try_map(|term| {
+                        solved.types.get(term.0 as usize).copied().ok_or_else(|| {
+                            crate::sema::model::Declarations::error(
+                                self.report,
+                                key,
+                                "missing unsizing proof type",
+                            )
+                        })
+                    })?,
+                );
             } else {
                 self.facts.unsizing_adjustments.remove(&key);
             }

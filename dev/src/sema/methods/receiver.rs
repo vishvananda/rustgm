@@ -39,6 +39,7 @@ struct Search<'a> {
     depth: u32,
     inherent: Vec<DefId>,
     traits: [Vec<DefId>; 2],
+    object: bool,
 }
 
 pub(in crate::sema) fn choose(
@@ -93,6 +94,7 @@ pub(in crate::sema) fn choose(
         depth,
         inherent,
         traits,
+        object: matches!(head, Some(Constructor::Dynamic { .. })),
     };
     for dereferences in 0..=depth {
         if let Some(selected) = search.at(term, dereferences, false).map_err(error)? {
@@ -155,7 +157,7 @@ impl Search<'_> {
                         dereferences,
                         borrow,
                         unsize,
-                        from_bound: matches!(lane, Lane::Bound),
+                        from_bound: matches!(lane, Lane::Bound) && !self.object,
                         self_term: matches!(lane, Lane::Inherent).then_some(self.base),
                     }));
                 }

@@ -13,7 +13,7 @@ import tree_sitter_rust
 PARSER = Parser(Language(tree_sitter_rust.language()))
 FUNCTIONS = {"function_item", "closure_expression", "macro_definition"}
 COMMENTS = {"line_comment", "block_comment"}
-PHASES = {"lex", "literal", "preprocess", "expand", "resolve", "syntax", "types", "sema", "body", "borrow", "const_eval", "abi", "lower", "lowir", "opt", "native", "support"}
+PHASES = {"lex", "literal", "preprocess", "expand", "resolve", "syntax", "types", "sema", "body", "borrow", "const_eval", "abi", "lower", "lowir", "opt", "native", "support", "pipeline"}
 ALLOWED_DEPENDENCIES = {
     "support": set(), "types": {"support", "lex"},
     "literal": {"support", "lex"},
@@ -26,7 +26,8 @@ ALLOWED_DEPENDENCIES = {
     "syntax": {"support", "lex", "literal", "types", "preprocess"},
     "sema": {"support", "lex", "literal", "types", "syntax", "resolve", "abi"},
     "abi": {"support", "lex", "types"}, "lowir": {"support", "types"},
-    "lower": {"support", "lex", "literal", "types", "syntax", "resolve", "sema", "body", "borrow", "const_eval", "abi", "lowir"},
+    "lower": {"support", "lex", "literal", "types", "syntax", "resolve", "sema", "body", "borrow", "const_eval", "abi", "lowir", "pipeline"},
+    "pipeline": {"support", "types", "resolve", "sema", "body", "borrow"},
     "opt": {"support", "types", "lowir"},
     "native": {"support", "types", "abi", "lowir"},
 }

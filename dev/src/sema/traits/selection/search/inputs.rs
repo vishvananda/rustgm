@@ -231,6 +231,7 @@ impl Search<'_> {
         let children = normalization.proof.into_iter().chain([selected]).collect();
         let index = self.query.push(
             Node {
+                cycle_dependent: false,
                 provisional_size: false,
                 goal,
                 source,
@@ -263,6 +264,7 @@ impl Search<'_> {
         let scope = self.query.node_scope(selected);
         let index = self.query.push(
             Node {
+                cycle_dependent: false,
                 provisional_size: false,
                 goal,
                 source,

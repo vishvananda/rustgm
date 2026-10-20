@@ -151,21 +151,6 @@
       "mode": "--emit-semantics"
     },
     {
-      "path": "tests/spec/boundaries/trait-object.rs",
-      "exit_status": 1,
-      "features": [
-        "pa19.boundaries"
-      ],
-      "rustc": {
-        "kind": "program",
-        "status": 0,
-        "default_lints": true,
-        "reason": "This accepted Rust language feature belongs to PA23; PA19 deliberately diagnoses the unsupported later-stage operation."
-      },
-      "maintainer_origin": "PA19 public later-stage boundary",
-      "mode": "--emit-lowir"
-    },
-    {
       "path": "tests/spec/callable-binders/trait-binder-call-correlation.rs",
       "exit_status": 1,
       "features": [

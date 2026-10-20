@@ -88,7 +88,7 @@ impl Search<'_> {
                 // The parent answer is independent of this member's requirements.
                 // Cache it before attaching the normalizer's prior input evidence;
                 // neither a later family failure nor a composite proof belongs here.
-                self.remember(frame.canonical, frame.cycles, decision, frame.scope);
+                self.remember(frame, decision);
             }
             let decision = self.input_evidence(facts, frame, decision)?;
             let (Some(formation), Decision::Proven(parent)) = (&mut frame.formation, decision)
@@ -135,6 +135,7 @@ impl Search<'_> {
             .ok_or("family formation has no parent proof")?;
         let proof = &self.query.nodes[parent];
         let node = Node {
+            cycle_dependent: false,
             provisional_size: false,
             goal: proof.goal,
             source: proof.source,

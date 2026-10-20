@@ -276,17 +276,26 @@ impl Lower<'_, '_> {
         let (_, offset) = self.context.place_field(base_type, field)?;
         let ty = projection.ty;
         let wide = self.context.wide_referent(ty)?;
+        let metadata = if self.context.wide_referent(base_type)? {
+            Some(self.metadata(projection.base)?)
+        } else {
+            None
+        };
         let retained = wide
             || self.context.layout(ty)?.size != 0
             || self.addresses.needs(Place::Projection(id));
         let address = if retained {
-            Some(self.offset(base.ok_or("retained field has no base storage")?, offset)?)
+            Some(self.field_address(
+                base.ok_or("retained field has no base storage")?,
+                offset,
+                metadata,
+            )?)
         } else {
             None
         };
         if wide {
-            let length = self.slice_length(projection.base)?;
-            self.slice_lengths.insert(id, length);
+            self.place_metadata
+                .insert(id, metadata.ok_or("unsized field lacks metadata")?);
         }
         self.projections[id.0 as usize] = Projected::Ready(address);
         Ok(())

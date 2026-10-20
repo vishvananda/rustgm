@@ -56,8 +56,15 @@ pub struct Recipes {
     entries: Vec<Recipe>,
     fields: Vec<Field>,
     variants: Vec<Variant>,
+    exposed: std::collections::HashMap<TypeId, Option<Id>>,
 }
 impl Recipes {
+    pub(crate) fn exposed(&self, ty: TypeId) -> Result<Option<Id>, &'static str> {
+        self.exposed
+            .get(&ty)
+            .copied()
+            .ok_or("object table lacks a proved destruction recipe")
+    }
     #[must_use]
     pub fn recipes(&self) -> &[Recipe] {
         &self.entries
@@ -84,6 +91,16 @@ pub struct Catalog<'a> {
     cache: Cache,
 }
 impl<'a> Catalog<'a> {
+    /// Retain a requested concrete type's recipe for indirect destruction.
+    pub(crate) fn expose(&mut self, ty: TypeId) -> Result<Option<Id>, &'static str> {
+        if let Some(&recipe) = self.cache.storage.exposed.get(&ty) {
+            return Ok(recipe);
+        }
+        let recipe = self.demand(ty)?;
+        self.cache.retain::<(TypeId, Option<Id>)>(2)?;
+        self.cache.storage.exposed.insert(ty, recipe);
+        Ok(recipe)
+    }
     /// # Errors
     /// Rejects duplicate selected destructors and oversized method tables.
     pub fn new(
