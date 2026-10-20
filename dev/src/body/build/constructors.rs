@@ -146,6 +146,7 @@ fn build(
         variant.node,
         result,
     );
+    body.const_context = true;
     body.storage = Some(crate::body::storage::Facts::new(
         crate::body::scopes::Facts::synthetic(variant.node.node),
     ));

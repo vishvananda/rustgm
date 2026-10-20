@@ -167,7 +167,7 @@ fn function_body(
         .get(&function.definition)
         .copied()
         .unwrap_or(result);
-    let body = Body::new(
+    let mut body = Body::new(
         Owner::Function {
             definition: function.definition,
             signature: function.signature,
@@ -175,6 +175,7 @@ fn function_body(
         source,
         result,
     );
+    body.const_context = facts.is_const_function(function.definition);
     let scope_plan = scopes::function_with_scratch(
         report,
         facts,
@@ -188,6 +189,7 @@ fn function_body(
 impl Body {
     fn new(owner: Owner, source: NodeKey, result: TypeId) -> Self {
         Self {
+            const_context: matches!(owner, Owner::Initializer { .. } | Owner::AnonymousConstant),
             instance: None,
             owned: None,
             storage: None,

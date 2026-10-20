@@ -64,7 +64,7 @@ and later semantic work.
 ### Attributes and configuration
 
 Each grammar owner attaches PA3 attribute/doc captures to its typed node.
-Support outer attributes on items, fields, variants, parameters, generic
+Support outer attributes on items, fields, variants, function and closure parameters, generic
 parameters, local declarations, match arms and the expression positions covered by the
 fixtures. Inner attributes attach to the crate, inline module, associated-item
 body or block that owns them. Attribute placement and builtin semantics beyond

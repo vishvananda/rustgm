@@ -2753,6 +2753,27 @@ lifetimes, initialization and abstract drop obligations. It is an executable
 body representation, not a second copy of the complete syntax tree. Do not call
 it MIR without qualification: CPPGM already uses MIR for machine IR.
 
+Retain const-function permission by resolved declaration identity and propagate
+the enclosing constant context into the typed body and its specializations.
+Function pointers carry no const-call permission, even when their original
+value was a const function or constructor. Eligibility checks consume selected
+CFG operations before demanded evaluation. Both conditional branches participate;
+source after an unconditional transfer does not. Keep the earlier initializer
+eligibility boundary separate from the still-developing general evaluator.
+
+Constant cleanup eligibility consumes the already selected destruction schedule.
+A possible destructor access is forbidden, including an abstract generic drop;
+transferring an owned result does not destroy it. Reuse the initialization and
+partial-move proof that selected that access, rather than rejecting every type
+that could need destruction. Preserve the distinction between cleanup access
+and the original type's separate drop-liveness requirements.
+
+An implicit receiver dereference can create a place with no source expression
+carrying its exact type. Retain its selected referent as a storage-preparation
+root before wrapping it in an automatic borrow. Share the existing field-root
+worklist and completed instantiation cache; repeated receivers must not repeat
+substitution of their whole field list.
+
 Share live storage tails persistently. An exit records the suffix it ends,
 without copying the surrounding live-local list or repeating every storage-end
 statement at every failure branch. Preserve reverse lifetime order and skip

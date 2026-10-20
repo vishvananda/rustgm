@@ -414,6 +414,11 @@ impl Parser<'_, '_> {
         if !self.eat(P::OrOr)? {
             self.expect(P::Or)?;
             while !self.eat(P::Or)? {
+                let attributes = if self.extended {
+                    self.attributes(false)?
+                } else {
+                    crate::syntax::item::AttributeRange::default()
+                };
                 let pattern = self.pattern(false)?;
                 let ty = if self.eat(P::Colon)? {
                     Some(self.ty()?)
@@ -424,6 +429,7 @@ impl Parser<'_, '_> {
                     self.ast.node(pattern).span.start,
                     Kind::Parameter { pattern, ty },
                 )?;
+                let parameter = self.attach(attributes, parameter)?;
                 self.scratch.push(parameter);
                 if self.eat(P::Or)? {
                     break;

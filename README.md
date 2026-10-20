@@ -51,7 +51,7 @@ repository with pinned reference tools. It has not been built yet.
   destructor instances, with 449 course cases, 277 native executions and three
   explicit code-generation-only controls.
 - PA19 provides trait/method semantic inspection and checked static dispatch, with
-  1,095 cases and 262 native execution controls.
+  1,105 cases and 269 native execution controls.
 - PA20 adds associated types/constants, normalized trait contracts and recursive
   selection, with 1,381 text-oracle cases and 508 native execution controls.
 - PA21 adds higher-ranked bounds, GATs, opaque results and precise captures,

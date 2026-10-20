@@ -176,6 +176,7 @@ fn materialize(
         return Err("executable instance has unresolved type or const parameters");
     }
     let mut body = Body {
+        const_context: source.const_context,
         instance: Some(instance),
         owner: Owner::Function {
             definition,

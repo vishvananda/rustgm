@@ -44,6 +44,7 @@ pub fn build(report: &Report, facts: &Declarations) -> Result<Templates, Error> 
             };
         let mut scoped = query.scoped(Arc::clone(&environment));
         let body = function_body(report, facts, &mut scratch, function, Some(&mut scoped))?;
+        crate::body::constants::eligibility(report, facts, &body)?;
         let destruction = crate::body::drops::requirements(facts, &body, &mut scoped)
             .map_err(|message| Declarations::error(report, body.source, message))?;
         bodies.push(Template {

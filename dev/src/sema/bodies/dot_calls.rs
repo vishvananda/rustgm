@@ -133,6 +133,12 @@ impl Checker<'_> {
             actual = self.child(node, actual, 0)?;
             borrow = Some(mutable);
         }
+        if dereferences != 0 {
+            // Reborrowing creates a storage place absent from source node facts.
+            // Prepare its fields before immutable ownership/loan queries consume
+            // that place, including plain generic fields with no projections.
+            self.state.call_types.field_receivers.push(actual);
+        }
         let borrow = if let Some(mutable) = borrow {
             let region = if self.state.in_function {
                 self.body_region(node, BodyRegionOrigin::ExpressionBorrow)?

@@ -8,6 +8,40 @@ use rustgm::{
 };
 
 #[test]
+fn closure_parameters_own_attributes_and_configuration() -> Result<(), String> {
+    let source =
+        "fn f(){let c=|#[cfg(false)] gone:Missing, #[allow(unused)] (x,y):(u8,u8)|x+y;c((1,2));}";
+    let report = crate_syntax::analyze(source, &Config::default()).map_err(|e| format!("{e:?}"))?;
+    let parameters = report
+        .ast
+        .nodes
+        .iter()
+        .find_map(|node| match node.kind {
+            Kind::Closure { parameters, .. } => Some(report.ast.list(parameters)),
+            _ => None,
+        })
+        .ok_or("missing closure")?;
+    assert_eq!(parameters.len(), 2);
+    for (index, &node) in parameters.iter().enumerate() {
+        let Kind::Attributed { value, attributes } = report.ast.node(node).kind else {
+            return Err("closure parameter lost its attribute owner".into());
+        };
+        assert_eq!(attributes.end - attributes.start, 1);
+        assert!(matches!(
+            report.ast.node(value).kind,
+            Kind::Parameter { .. }
+        ));
+        assert_eq!(report.active[node.0 as usize], index == 1);
+        assert_eq!(report.active[value.0 as usize], index == 1);
+    }
+    assert_eq!(report.owners.len(), 2);
+    assert_eq!(report.owners[0].node, parameters[0]);
+    assert_eq!(report.owners[1].node, parameters[1]);
+    assert!(report.ast.lookahead_high_water <= 3);
+    Ok(())
+}
+
+#[test]
 fn empty_crate_has_a_hand_checked_dump() -> Result<(), String> {
     let mut output = Vec::new();
     crate_syntax::render("", &Config::default(), &mut output).map_err(|e| format!("{e:?}"))?;

@@ -20,6 +20,7 @@ impl Fixture {
             types: Store::default(),
             definitions: aggregate::Definitions::default(),
             body: Body {
+                const_context: false,
                 instance: None,
                 owned: None,
                 storage: None,

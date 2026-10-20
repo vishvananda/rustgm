@@ -1106,9 +1106,12 @@ impl Checker<'_> {
                             .bindings(binder)
                             .map_err(|e| self.error(key, e))?,
                     );
-                    let ItemKind::Function { body, .. } = self.item(key)?.kind else {
+                    let ItemKind::Function { body, flags, .. } = self.item(key)?.kind else {
                         return Err(self.error(key, "invalid function owner"));
                     };
+                    if flags.constant {
+                        self.facts.constant_functions.insert(id);
+                    }
                     self.facts.functions.push(Function {
                         definition: id,
                         node: key,

@@ -288,6 +288,8 @@ pub enum Owner {
     },
 }
 pub struct Body {
+    /// Constant eligibility applies independently of whether execution is demanded.
+    pub const_context: bool,
     /// Concrete specialization identity; diagnostics keep the original source owner.
     pub instance: Option<crate::types::instance::Instance>,
     /// Destructible rvalues, including values never materialized as borrowed places.

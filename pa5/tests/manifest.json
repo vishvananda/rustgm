@@ -2446,6 +2446,94 @@
         "kind": "program",
         "status": 1
       }
+    },
+    {
+      "path": "tests/spec/attributes/closure-parameter-attribute.rs",
+      "exit_status": 0,
+      "features": [
+        "pa5.attributes"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/attributes/closure-parameter-cfg.rs",
+      "exit_status": 0,
+      "features": [
+        "pa5.attributes"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/attributes/closure-parameter-cfg-attr.rs",
+      "exit_status": 0,
+      "features": [
+        "pa5.attributes"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/attributes/closure-parameter-pattern.rs",
+      "exit_status": 0,
+      "features": [
+        "pa5.attributes"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/attributes/closure-parameter-nested.rs",
+      "exit_status": 0,
+      "features": [
+        "pa5.attributes"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/attributes/closure-parameter-all-disabled.rs",
+      "exit_status": 0,
+      "features": [
+        "pa5.attributes"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/attributes/closure-parameter-inner-attribute.rs",
+      "exit_status": 1,
+      "features": [
+        "pa5.attributes"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/attributes/closure-parameter-missing-type.rs",
+      "exit_status": 1,
+      "features": [
+        "pa5.attributes"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
     }
   ]
 }

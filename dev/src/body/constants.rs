@@ -71,21 +71,38 @@ pub(crate) fn eligibility(
     facts: &Declarations,
     body: &super::ir::Body,
 ) -> Result<(), Error> {
-    // Eligibility is checked even when no value is demanded. Constructor
-    // identities are eligible; other calls need the const-function assignment.
-    if matches!(
-        body.owner,
-        super::ir::Owner::Initializer { .. } | super::ir::Owner::AnonymousConstant
-    ) && body
-        .values
-        .iter()
-        .any(|value| function_call(facts, body, value.kind))
-    {
-        return Err(report.diagnostic(Declarations::error(
-            report,
-            body.source,
-            "non-const calls are not allowed in constant initializers",
-        )));
+    if !body.const_context {
+        return Ok(());
+    }
+    let function = matches!(body.owner, super::ir::Owner::Function { .. });
+    // The CFG retains both sides of a conditional, but not source after an
+    // unconditional transfer. Const permission is checked before value demand.
+    for value in &body.values {
+        let message = match value.kind {
+            Rvalue::Call { .. } if function_call(facts, body, value.kind) => {
+                if function {
+                    Some("non-const calls are not allowed in const functions")
+                } else {
+                    Some("non-const calls are not allowed in constant initializers")
+                }
+            }
+            Rvalue::Cast {
+                kind: crate::sema::model::Cast::PointerToInteger,
+                ..
+            } => Some("pointers cannot be cast to integers during const eval"),
+            Rvalue::Binary { left, .. }
+                if matches!(
+                    facts.types.kind(body.values[left.0 as usize].ty),
+                    Some(crate::types::Kind::Pointer { .. } | crate::types::Kind::Function { .. })
+                ) =>
+            {
+                Some("pointers cannot be compared during const eval")
+            }
+            _ => None,
+        };
+        if let Some(message) = message {
+            return Err(report.diagnostic(Declarations::error(report, body.source, message)));
+        }
     }
     Ok(())
 }
@@ -100,10 +117,8 @@ fn function_call(facts: &Declarations, body: &super::ir::Body, value: Rvalue) ->
     else {
         return true;
     };
-    !facts
-        .members
-        .constructors
-        .contains_key(&crate::resolve::model::DefId(item.0))
+    let definition = crate::resolve::model::DefId(item.0);
+    !facts.is_const_function(definition) && !facts.members.constructors.contains_key(&definition)
 }
 /// Named values used by this CFG, with static storage distinguished from constants.
 pub fn references(

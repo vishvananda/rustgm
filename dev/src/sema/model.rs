@@ -313,6 +313,8 @@ pub struct StoredFieldWork {
     pub retained_bytes: usize,
 }
 pub struct Declarations {
+    /// Const permission belongs to a selected declaration, not its callable type.
+    pub(crate) constant_functions: std::collections::HashSet<DefId>,
     pub opaques: super::opaque::Opaques,
     pub body_work: BodyWork,
     pub alias_requirements: super::alias_requirements::Requirements,
@@ -375,6 +377,10 @@ pub struct Declarations {
     pub functions: Vec<Function>,
 }
 impl Declarations {
+    #[must_use]
+    pub fn is_const_function(&self, definition: DefId) -> bool {
+        self.constant_functions.contains(&definition)
+    }
     /// Constant expressions with lifetime obligations retain their own proof body.
     /// Sorting is confined to consumers that publish a deterministic body order.
     #[must_use]
@@ -422,6 +428,7 @@ impl Declarations {
     }
     pub(super) fn new(report: &Report) -> Result<Self, Error> {
         let mut value = Self {
+            constant_functions: std::collections::HashSet::new(),
             opaques: super::opaque::Opaques::default(),
             body_work: BodyWork::default(),
             alias_requirements: super::alias_requirements::Requirements::default(),

@@ -590,6 +590,9 @@ pub(crate) fn check_schedule(
     if contract.source != body.source {
         return Err(error("drop loan contract belongs to another body"));
     }
+    if body.const_context && plan.cleanups().any(|cleanup| cleanup.access) {
+        return Err(error("constant evaluation cannot run destructors"));
+    }
     let uses =
         liveness::cleanup::analyze_schedule(types, definitions, components, drops, facts, plan)
             .map_err(error)?;

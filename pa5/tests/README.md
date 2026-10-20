@@ -15,3 +15,8 @@ Use `make test-pa5` for byte-exact sidecar comparison. `make ref-test-pa5` is th
 explicit reference-generation operation, subject to outcome checks and review.
 `dev/tests/crate_syntax.rs` supplies independent typed-structure and resource
 invariants. No PA5 fixture requires LowIR or the backend bridge.
+
+The closure-parameter controls cover attached lint attributes, cfg/cfg_attr,
+destructuring, nested closures, complete parameter elision and malformed
+attributes/types. These are syntax and configuration tests; they do not claim
+PA24 closure type checking or execution.

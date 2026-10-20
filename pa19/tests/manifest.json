@@ -15956,6 +15956,174 @@
       },
       "mode": "--emit-lowir",
       "maintainer_origin": "dev/tests/trait_bounds/declarations.rs"
+    },
+    {
+      "path": "tests/spec/receiver-adjustments/instantiated-storage-shared.rs",
+      "exit_status": 0,
+      "features": [
+        "pa19.receiver-adjustments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "mode": "--emit-lowir",
+      "maintainer_origin": "dev/tests/borrowed_receivers.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/receiver-adjustments/instantiated-storage-mutable.rs",
+      "exit_status": 0,
+      "features": [
+        "pa19.receiver-adjustments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "mode": "--emit-lowir",
+      "maintainer_origin": "dev/tests/borrowed_receivers.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/receiver-adjustments/instantiated-storage-nested-reference.rs",
+      "exit_status": 0,
+      "features": [
+        "pa19.receiver-adjustments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "mode": "--emit-lowir",
+      "maintainer_origin": "dev/tests/borrowed_receivers.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/receiver-adjustments/instantiated-storage-generic-caller.rs",
+      "exit_status": 0,
+      "features": [
+        "pa19.receiver-adjustments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "mode": "--emit-lowir",
+      "maintainer_origin": "dev/tests/borrowed_receivers.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/receiver-adjustments/instantiated-storage-reference-field.rs",
+      "exit_status": 0,
+      "features": [
+        "pa19.receiver-adjustments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "mode": "--emit-lowir",
+      "maintainer_origin": "dev/tests/borrowed_receivers.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/receiver-adjustments/instantiated-storage-enum.rs",
+      "exit_status": 0,
+      "features": [
+        "pa19.receiver-adjustments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "mode": "--emit-lowir",
+      "maintainer_origin": "dev/tests/borrowed_receivers.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/receiver-adjustments/instantiated-storage-const-owner.rs",
+      "exit_status": 0,
+      "features": [
+        "pa19.receiver-adjustments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "mode": "--emit-lowir",
+      "maintainer_origin": "dev/tests/borrowed_receivers.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/receiver-adjustments/instantiated-storage-shared-to-mutable.rs",
+      "exit_status": 1,
+      "features": [
+        "pa19.receiver-adjustments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "mode": "--emit-lowir",
+      "maintainer_origin": "dev/tests/borrowed_receivers.rs"
+    },
+    {
+      "path": "tests/spec/receiver-adjustments/instantiated-storage-conflicting-field-borrow.rs",
+      "exit_status": 1,
+      "features": [
+        "pa19.receiver-adjustments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "mode": "--emit-lowir",
+      "maintainer_origin": "dev/tests/borrowed_receivers.rs"
+    },
+    {
+      "path": "tests/spec/receiver-adjustments/instantiated-storage-mismatched-input.rs",
+      "exit_status": 1,
+      "features": [
+        "pa19.receiver-adjustments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "mode": "--emit-lowir",
+      "maintainer_origin": "dev/tests/borrowed_receivers.rs"
     }
   ]
 }
