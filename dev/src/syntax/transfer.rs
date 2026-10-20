@@ -306,6 +306,7 @@ impl Bases {
                 base,
                 arguments,
                 output,
+                ..
             } => {
                 self.node(base);
                 self.list(arguments);

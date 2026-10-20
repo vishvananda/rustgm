@@ -98,6 +98,17 @@ impl Shapes {
     fn ty(&mut self, kind: Kind, finish: bool, hash: &mut DefaultHasher) -> Result<(), Error> {
         std::mem::discriminant(&kind).hash(hash);
         match kind {
+            Kind::Closure {
+                identity,
+                arguments,
+                signature,
+                environment,
+            } => {
+                identity.hash(hash);
+                self.child(Key::Arguments(arguments), finish, hash)?;
+                self.child(Key::Type(signature), finish, hash)?;
+                self.child(Key::Type(environment), finish, hash)?;
+            }
             Kind::Never => {}
             Kind::Primitive(value) => value.hash(hash),
             Kind::Parameter(value) => value.hash(hash),

@@ -258,6 +258,10 @@ impl Graph {
             Ok(position)
         }
     }
+    #[expect(
+        clippy::too_many_lines,
+        reason = "one exhaustive variance traversal keeps binder depth and input positions together"
+    )]
     fn visit(&mut self, types: &Store, owner: ItemId, ty: TypeId) -> Result<(), &'static str> {
         self.queue_type(ty, Term::constant(Variance::Covariant), 0)?;
         while let Some((ty, position, depth)) = self.work.pop() {
@@ -315,6 +319,19 @@ impl Graph {
                         self.queue_type(*parameter, input, depth)?;
                     }
                     self.queue_type(result, position, depth)?;
+                }
+                Kind::Closure {
+                    arguments,
+                    signature,
+                    environment,
+                    ..
+                } => {
+                    let invariant = self
+                        .solver
+                        .compose(position, Term::constant(Variance::Invariant))?;
+                    self.invariant_arguments(types, owner, arguments, invariant, depth)?;
+                    self.queue_type(signature, invariant, depth)?;
+                    self.queue_type(environment, invariant, depth)?;
                 }
                 Kind::FunctionItem { signature, .. } => {
                     self.queue_type(signature, position, depth)?;

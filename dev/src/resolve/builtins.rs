@@ -10,7 +10,7 @@ use crate::syntax::{
     ast::NodeId,
     item::{Item, ItemKind},
 };
-pub use traits::{BuiltinTrait, Traits};
+pub use traits::{BuiltinTrait, Callable, Traits};
 
 impl Resolver<'_> {
     pub(super) fn builtin_crate(
@@ -91,6 +91,9 @@ impl Resolver<'_> {
                         | "Send"
                         | "Sync"
                         | "Unpin"
+                        | "Fn"
+                        | "FnMut"
+                        | "FnOnce"
                 )
             })
         {
@@ -137,6 +140,7 @@ impl Resolver<'_> {
         self.facts.drop_trait = Some(drop);
         self.facts.extern_scope = Some(external);
         self.facts.builtin_traits.library = Some(library);
+        self.facts.builtin_traits.ops = Some(ops);
         Ok(())
     }
 

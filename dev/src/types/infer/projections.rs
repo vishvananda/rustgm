@@ -36,6 +36,7 @@ impl Constructor {
             | Self::Dynamic {
                 arguments: args, ..
             } => Some((args, 0)),
+            Self::Closure(_, args) => Some((args, 2)),
             Self::FunctionItemArgs(_, args) => Some((args, 1)),
             Self::Projection(value) => Some((value.arguments, 1)),
             _ => None,
@@ -43,6 +44,7 @@ impl Constructor {
     }
     pub(super) fn with_arguments(self, arguments: ArgumentsId) -> Result<Self, Error> {
         match self {
+            Self::Closure(id, _) => Ok(Self::Closure(id, arguments)),
             Self::AdtArgs(item, _) => Ok(Self::AdtArgs(item, arguments)),
             Self::Opaque(id, _) => Ok(Self::Opaque(id, arguments)),
             Self::Dynamic {

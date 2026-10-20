@@ -282,6 +282,7 @@ fn children(
         .kind(ty)
         .ok_or("invalid template representation type")?
     {
+        Kind::Closure { environment, .. } => visit(environment)?,
         Kind::Opaque(..) => visit(types.storage_head(ty)?)?,
         Kind::Array { element, .. } | Kind::ArrayTerm { element, .. } | Kind::Slice(element) => {
             visit(element)?;

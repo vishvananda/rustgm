@@ -119,7 +119,8 @@ fn inspect(
             | Kind::Reference { .. }
             | Kind::Pointer { .. }
             | Kind::Function { .. }
-            | Kind::FunctionItem { .. } => Step::Complete(Metadata::Thin),
+            | Kind::FunctionItem { .. }
+            | Kind::Closure { .. } => Step::Complete(Metadata::Thin),
         },
     )
 }

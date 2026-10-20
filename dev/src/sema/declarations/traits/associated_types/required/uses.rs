@@ -71,6 +71,16 @@ impl Collector {
                     self.work.push((child, depth));
                     None
                 }
+                Kind::Closure {
+                    signature,
+                    environment,
+                    arguments,
+                    ..
+                } => {
+                    self.work.extend([(signature, depth), (environment, depth)]);
+                    self.arguments(types, arguments, depth)?;
+                    None
+                }
                 Kind::Tuple(list) => Some((list, depth)),
                 Kind::Function {
                     parameters, result, ..

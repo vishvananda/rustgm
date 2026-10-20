@@ -45,6 +45,7 @@ impl Head {
         match kind {
             Constructor::Primitive(p) => Self::Primitive(p),
             Constructor::Parameter(id) => Self::Parameter(id),
+            Constructor::Closure(id, _) => Self::Closure(id),
             Constructor::Opaque(id, _) => Self::Opaque(id),
             Constructor::Dynamic { shape, .. } => Self::Dynamic(shape),
             Constructor::Projection(value) => Self::Projection(value.item()),

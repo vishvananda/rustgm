@@ -1,11 +1,14 @@
 //! Small demand-loaded trait modules retain identity through aliases and globs.
+mod callables;
 use super::{Context, DefId, DefKind, Error, NameId, Resolver, ScopeId};
 use crate::{
     resolve::lookup::{Lookup, LookupMode},
     resolve::model::Namespace,
+    support::call_traits::CallTrait,
     support::marker_traits::AutoTrait,
     syntax::ast::NodeId,
 };
+pub use callables::Callable;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum BuiltinTrait {
@@ -13,6 +16,7 @@ pub enum BuiltinTrait {
     Clone,
     Sized,
     Auto(AutoTrait),
+    Callable(CallTrait),
 }
 impl BuiltinTrait {
     fn index(self) -> usize {
@@ -21,6 +25,7 @@ impl BuiltinTrait {
             Self::Clone => 1,
             Self::Sized => 2,
             Self::Auto(marker) => 3 + marker as usize,
+            Self::Callable(kind) => 8 + kind as usize,
         }
     }
     #[must_use]
@@ -30,6 +35,7 @@ impl BuiltinTrait {
             Self::Clone => "Clone",
             Self::Sized => "Sized",
             Self::Auto(marker) => marker.name(),
+            Self::Callable(kind) => kind.name(),
         }
     }
 }
@@ -39,7 +45,9 @@ pub struct Traits {
     marker: Option<ScopeId>,
     clone_: Option<ScopeId>,
     panic: Option<ScopeId>,
-    entries: [Option<DefId>; 8],
+    pub(super) ops: Option<ScopeId>,
+    entries: [Option<DefId>; 11],
+    callables: Option<Box<[Callable; 3]>>,
 }
 impl Traits {
     #[must_use]
@@ -51,10 +59,15 @@ impl Traits {
         [BuiltinTrait::Copy, BuiltinTrait::Clone, BuiltinTrait::Sized]
             .into_iter()
             .chain(AutoTrait::ALL.into_iter().map(BuiltinTrait::Auto))
+            .chain(CallTrait::ALL.into_iter().map(BuiltinTrait::Callable))
             .find(|t| self.get(*t) == Some(id))
     }
     pub(super) fn identities(&self) -> impl Iterator<Item = DefId> + '_ {
-        self.entries[..6].iter().copied().flatten()
+        self.entries[..6]
+            .iter()
+            .chain(&self.entries[8..])
+            .copied()
+            .flatten()
     }
 }
 impl Resolver<'_> {
@@ -71,6 +84,13 @@ impl Resolver<'_> {
         let Some(last) = path.last().map(|n| self.package.names.get(*n)) else {
             return Ok(());
         };
+        // Loading language metadata does not select it. Ordinary lookup still
+        // decides whether the written name denotes a user declaration or alias.
+        // Defer this family until a call-trait name is actually demanded so an
+        // existing ops glob does not eagerly create unrelated declarations.
+        if CallTrait::ALL.into_iter().any(|kind| kind.name() == last) {
+            return self.prepare_call_traits(c, node);
+        }
         if path.len() == 1 {
             if let Some(marker) = AutoTrait::ALL
                 .into_iter()

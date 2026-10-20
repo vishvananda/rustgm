@@ -118,6 +118,10 @@ impl Sets {
         Ok(Id::EMPTY)
     }
 
+    #[expect(
+        clippy::too_many_lines,
+        reason = "one exhaustive component dispatch distinguishes stored captures from callable signatures"
+    )]
     fn inspect(
         &mut self,
         types: &Store,
@@ -157,6 +161,14 @@ impl Sets {
             | Kind::ArrayTerm { element, .. } => self.child(
                 Key {
                     input: Input::Type(element),
+                    ..key
+                },
+                finish,
+                budget,
+            ),
+            Kind::Closure { environment, .. } => self.child(
+                Key {
+                    input: Input::Type(environment),
                     ..key
                 },
                 finish,

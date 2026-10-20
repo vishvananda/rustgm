@@ -212,6 +212,7 @@ impl Checker<'_> {
                 return Err(self.error(source, "object requires exactly one principal trait"));
             }
             let scope = self.bound_scope(source, quantified.then_some(binders), context, false)?;
+            let scope = self.call_bound_scope(source, written, scope, context)?;
             let inner = scope.map_or(context, |scope| scope.context(context));
             self.schedule_associated_bindings(path, inner)?;
             self.work.push(Work::PathArguments(path, definition, inner));

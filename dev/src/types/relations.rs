@@ -576,6 +576,24 @@ impl<'a> Constraints<'a> {
                 let nested = self.nested_relation(relation, ac, bc)?;
                 self.relate_arguments(nested, aa, ba, None, source)?;
             }
+            (
+                Kind::Closure {
+                    identity: x,
+                    arguments: aa,
+                    signature: sa,
+                    environment: ea,
+                },
+                Kind::Closure {
+                    identity: y,
+                    arguments: ba,
+                    signature: sb,
+                    environment: eb,
+                },
+            ) if x == y => {
+                self.relate_arguments(relation, aa, ba, None, source)?;
+                self.child(relation, sa, sb, Variance::Invariant)?;
+                self.child(relation, ea, eb, Variance::Invariant)?;
+            }
             (Kind::Function { .. }, Kind::Function { .. }) => self.function(relation, a, b)?,
             (Kind::FunctionItem { signature, .. }, Kind::Function { .. }) => {
                 self.child(relation, signature, relation.expected, covariant)?;

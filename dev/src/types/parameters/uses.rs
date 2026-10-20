@@ -87,6 +87,16 @@ impl Uses {
                     self.work.push(element);
                     None
                 }
+                Kind::Closure {
+                    arguments,
+                    signature,
+                    environment,
+                    ..
+                } => {
+                    self.work.extend([signature, environment]);
+                    self.arguments(store, arguments)?;
+                    None
+                }
                 Kind::Tuple(list) => Some(list),
                 Kind::Function {
                     parameters, result, ..

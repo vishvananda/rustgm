@@ -1,5 +1,5 @@
 //! Stable name-resolution facts; lexical bindings point directly at definitions.
-pub use super::builtins::{BuiltinTrait, Traits as BuiltinTraits};
+pub use super::builtins::{BuiltinTrait, Callable as BuiltinCallable, Traits as BuiltinTraits};
 use super::{names::NameId, package::ModuleId, unit::NodeKey};
 use crate::syntax::ast::NodeId;
 use std::collections::HashMap;

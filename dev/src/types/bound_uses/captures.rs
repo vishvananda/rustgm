@@ -256,6 +256,21 @@ impl<Q: Query> Occurrences<Q> {
                 found = self.child(store, (result, nested), finish)?;
                 Some((parameters, nested))
             }
+            Kind::Closure {
+                arguments,
+                signature,
+                environment,
+                ..
+            } => {
+                found = Q::merge(
+                    self.arguments(store, arguments, depth, finish)?,
+                    Q::merge(
+                        self.child(store, (signature, depth), finish)?,
+                        self.child(store, (environment, depth), finish)?,
+                    ),
+                );
+                None
+            }
             Kind::Adt(_, arguments) | Kind::Opaque(_, arguments) => {
                 found = self.arguments(store, arguments, depth, finish)?;
                 None

@@ -69,6 +69,9 @@ impl Context {
                         && store.region_args(a).ok_or(Error::InvalidIdentity)?.len()
                             == store.region_args(b).ok_or(Error::InvalidIdentity)?.len()
                 }
+                (Constructor::Closure(x, a), Constructor::Closure(y, b)) => {
+                    x == y && !self.argument_mismatch(a, b)?
+                }
                 (Constructor::Opaque(x, a), Constructor::Opaque(y, b)) => {
                     x == y && !self.argument_mismatch(a, b)?
                 }

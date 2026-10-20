@@ -334,11 +334,28 @@ pub(super) fn region(id: RegionId, out: &mut impl Write) -> io::Result<()> {
         write!(out, "region:{}", id.0)
     }
 }
+#[expect(
+    clippy::too_many_lines,
+    reason = "one exhaustive type rendering dispatch preserves the stable vocabulary"
+)]
 fn ty(store: &Store, id: TypeId, out: &mut impl Write) -> io::Result<()> {
     match store
         .kind(id)
         .ok_or_else(|| io::Error::other("invalid type identity"))?
     {
+        Kind::Closure {
+            identity,
+            arguments,
+            signature,
+            environment,
+        } => {
+            write!(
+                out,
+                "closure id={} signature={} environment={}",
+                identity.0, signature.0, environment.0
+            )?;
+            generic_arguments(store, arguments, out)
+        }
         Kind::Never => write!(out, "never"),
         Kind::Primitive(p) => write!(out, "primitive {}", p.name()),
         Kind::Parameter(id) => {

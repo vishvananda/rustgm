@@ -128,6 +128,20 @@ impl Checker<'_> {
                 self.retain_bound_root(key, bound.subject_context(context), &mut seen, &mut roots)?;
             }
             if let Some((path, definition)) = bound.trait_path() {
+                if let Some((inputs, output)) =
+                    crate::sema::lifetimes::call_arguments(self.report, path)?
+                {
+                    let ast = &self.report.package.unit(path.file).configured.ast;
+                    for node in ast.list(inputs).iter().copied().chain(output) {
+                        self.retain_bound_root(
+                            NodeKey { node, ..path },
+                            bound.context(context),
+                            &mut seen,
+                            &mut roots,
+                        )?;
+                    }
+                    continue;
+                }
                 if let Some(list) = self.associated_bindings.bindings(path) {
                     for offset in list.start..list.end {
                         let node = self.report.package.unit(path.file).configured.ast.edges

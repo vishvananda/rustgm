@@ -67,6 +67,12 @@ impl Checker<'_> {
         owner: DefId,
         context: regions::Context,
     ) -> Result<(), Error> {
+        if matches!(
+            self.report.resolution.builtin_traits.identify(owner),
+            Some(crate::resolve::model::BuiltinTrait::Callable(_))
+        ) {
+            return self.schedule_call_arguments(key, context);
+        }
         if !self.facts.generics.parameters.contains_key(&owner)
             || self.report.resolution.definitions[owner.0 as usize].kind
                 == crate::resolve::model::DefKind::SelfType
@@ -137,6 +143,12 @@ impl Checker<'_> {
         owner: DefId,
         context: regions::Context,
     ) -> Result<GenericArgs, Error> {
+        if matches!(
+            self.report.resolution.builtin_traits.identify(owner),
+            Some(crate::resolve::model::BuiltinTrait::Callable(_))
+        ) {
+            return self.call_application_arguments(key);
+        }
         let (supplied, omitted) = self.supplied_arguments(key, owner)?;
         let count = self.facts.generics.parameters[&owner].len();
         let mut arguments = Vec::with_capacity(count);

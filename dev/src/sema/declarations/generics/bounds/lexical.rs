@@ -33,6 +33,26 @@ impl Scope {
 }
 
 impl Checker<'_> {
+    pub(in crate::sema::declarations) fn call_bound_scope(
+        &mut self,
+        source: NodeKey,
+        written: super::Written,
+        scope: Option<Scope>,
+        parent: regions::Context,
+    ) -> Result<Option<Scope>, Error> {
+        if scope.is_some() {
+            return Ok(scope);
+        }
+        if let super::Written::User { definition, .. } = written
+            && matches!(
+                self.report.resolution.builtin_traits.identify(definition),
+                Some(crate::resolve::model::BuiltinTrait::Callable(_))
+            )
+        {
+            return self.bound_scope(source, Some(List { start: 0, end: 0 }), parent, false);
+        }
+        Ok(None)
+    }
     pub(in crate::sema::declarations) fn bound_scope(
         &mut self,
         source: NodeKey,

@@ -148,6 +148,11 @@ fn partial<S: BuildHasher>(
             value.abilities = Properties::default();
         }
         Constructor::Reference { mutable: true, .. } => value.abilities = Properties::default(),
+        Constructor::Closure(..) => {
+            if let Some(environment) = children.get(1) {
+                value.abilities = environment.abilities;
+            }
+        }
         Constructor::Tuple
         | Constructor::Array(_)
         | Constructor::ArrayTerm(_)

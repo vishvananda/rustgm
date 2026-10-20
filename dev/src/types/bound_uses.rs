@@ -178,6 +178,16 @@ impl Uses {
                     self.region(region, depth);
                     self.push(referent, depth)?;
                 }
+                Kind::Closure {
+                    arguments,
+                    signature,
+                    environment,
+                    ..
+                } => {
+                    self.arguments(store, arguments, depth)?;
+                    self.push(signature, depth)?;
+                    self.push(environment, depth)?;
+                }
                 Kind::Adt(_, arguments) | Kind::Opaque(_, arguments) => {
                     self.arguments(store, arguments, depth)?;
                 }

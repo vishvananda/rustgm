@@ -107,6 +107,20 @@ impl Context {
         let args = self.argument_layout(arguments, &mut children)?;
         self.construct(Constructor::FunctionItemArgs(item, args), &children)
     }
+    /// Keep inferred capture types in the same occurs-check graph as the signature.
+    /// # Errors
+    /// Rejects invalid arguments/terms and exhausted inference resources.
+    pub fn closure(
+        &mut self,
+        identity: crate::types::closure::ClosureId,
+        signature: TermId,
+        environment: TermId,
+        arguments: &[Argument],
+    ) -> Result<TermId, Error> {
+        let mut children = vec![signature, environment];
+        let args = self.argument_layout(arguments, &mut children)?;
+        self.construct(Constructor::Closure(identity, args), &children)
+    }
     /// # Errors
     /// Rejects invalid arguments/terms and exhausted inference resources.
     pub fn nominal(&mut self, item: ItemId, arguments: &[Argument]) -> Result<TermId, Error> {
@@ -122,6 +136,7 @@ impl Context {
         let (args, offset) = match self.materialize(store, term)? {
             Constructor::AdtArgs(_, args) | Constructor::Opaque(_, args) => (args, 0),
             Constructor::FunctionItemArgs(_, args) => (args, 1),
+            Constructor::Closure(_, args) => (args, 2),
             _ => return Err(Error::InvalidIdentity),
         };
         self.application_arguments(term, args, offset)
@@ -256,6 +271,17 @@ impl Context {
                 Kind::FunctionItem {
                     item,
                     signature: *signature,
+                    arguments: self.canonical_arguments(store, args, arguments)?,
+                }
+            }
+            Constructor::Closure(identity, args) => {
+                let [signature, environment, arguments @ ..] = children else {
+                    return Err(Error::InvalidIdentity);
+                };
+                Kind::Closure {
+                    identity,
+                    signature: *signature,
+                    environment: *environment,
                     arguments: self.canonical_arguments(store, args, arguments)?,
                 }
             }

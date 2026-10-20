@@ -15,6 +15,17 @@ pub(super) trait Folder {
 
 pub(super) fn rebuild<F: Folder>(folder: &mut F, kind: Kind, depth: u16) -> Result<Kind, F::Error> {
     Ok(match kind {
+        Kind::Closure {
+            identity,
+            arguments,
+            signature,
+            environment,
+        } => Kind::Closure {
+            identity,
+            arguments: folder.arguments(arguments, depth)?,
+            signature: folder.child(signature, depth)?,
+            environment: folder.child(environment, depth)?,
+        },
         Kind::Never | Kind::Primitive(_) | Kind::Parameter(_) => kind,
         Kind::Adt(item, args) => Kind::Adt(item, folder.arguments(args, depth)?),
         Kind::Opaque(id, args) => Kind::Opaque(id, folder.arguments(args, depth)?),

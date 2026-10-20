@@ -284,6 +284,17 @@ impl Bound {
                 self.argument_dependencies(store, arguments, depth)?;
                 None
             }
+            Kind::Closure {
+                signature,
+                environment,
+                arguments,
+                ..
+            } => {
+                self.queue(signature, depth)?;
+                self.queue(environment, depth)?;
+                self.argument_dependencies(store, arguments, depth)?;
+                None
+            }
             Kind::Adt(_, arguments) | Kind::Opaque(_, arguments) => {
                 self.argument_dependencies(store, arguments, depth)?;
                 None

@@ -184,6 +184,10 @@ impl Context {
                     }
                     let term = self.terms[id.0 as usize];
                     let kind = match original {
+                        Constructor::Closure(id, args) => Constructor::Closure(
+                            id,
+                            self.argument_regions(args, |r| fresh(r, depth, &mut next))?,
+                        ),
                         Constructor::Opaque(id, args) => Constructor::Opaque(
                             id,
                             self.argument_regions(args, |r| fresh(r, depth, &mut next))?,

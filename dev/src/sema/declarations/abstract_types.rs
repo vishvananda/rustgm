@@ -150,13 +150,14 @@ impl Checker<'_> {
                 return Err(self.error(source, "opaque result bounds cannot be relaxed"));
             }
             let scope = self.bound_scope(source, quantified.then_some(binders), context, false)?;
-            let context = scope.map_or(context, |scope| scope.context(context));
             let value = NodeKey { node: value, ..key };
             let written = if self.lifetime_argument(value) {
                 Written::Outlives(value)
             } else {
                 self.trait_bound(value)?
             };
+            let scope = self.call_bound_scope(source, written, scope, context)?;
+            let context = scope.map_or(context, |scope| scope.context(context));
             if let Written::Trait(bound) = written {
                 pending.promises.copy |= bound == Bound::Copy;
                 pending.promises.clone_ |= matches!(bound, Bound::Copy | Bound::Clone);

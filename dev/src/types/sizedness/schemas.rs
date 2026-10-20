@@ -239,7 +239,8 @@ where
                 | Kind::Reference { .. }
                 | Kind::Pointer { .. }
                 | Kind::Function { .. }
-                | Kind::FunctionItem { .. } => Step::Complete(Term::Sized),
+                | Kind::FunctionItem { .. }
+                | Kind::Closure { .. } => Step::Complete(Term::Sized),
             },
         )
     }

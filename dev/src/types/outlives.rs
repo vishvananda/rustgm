@@ -136,6 +136,22 @@ fn children(
     budget: &mut Budget,
 ) -> Result<(), &'static str> {
     match types.kind(ty).ok_or("invalid well-formed type identity")? {
+        Kind::Closure {
+            signature,
+            environment,
+            arguments,
+            ..
+        } => {
+            work.extend([(signature, depth), (environment, depth)]);
+            let arguments = types
+                .arguments(arguments)
+                .ok_or("invalid closure outlives arguments")?;
+            budget.pending(work.len().saturating_add(arguments.len()))?;
+            work.extend(arguments.filter_map(|arg| match arg {
+                Argument::Type(ty) => Some((ty, depth)),
+                _ => None,
+            }));
+        }
         Kind::Reference { referent, .. } => work.push((referent, depth)),
         Kind::Pointer { pointee, .. } => work.push((pointee, depth)),
         Kind::Slice(element) | Kind::Array { element, .. } | Kind::ArrayTerm { element, .. } => {

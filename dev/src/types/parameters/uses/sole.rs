@@ -207,6 +207,14 @@ fn parts(
                 | Kind::Pointer {
                     pointee: element, ..
                 } => dependency(Node::Type(element))?,
+                Kind::Closure {
+                    arguments,
+                    signature,
+                    environment,
+                    ..
+                } => dependency(Node::Arguments(arguments))?
+                    .merge(dependency(Node::Type(signature))?)
+                    .merge(dependency(Node::Type(environment))?),
                 Kind::Tuple(list) => dependency(Node::Types(list))?,
                 Kind::Function {
                     parameters, result, ..

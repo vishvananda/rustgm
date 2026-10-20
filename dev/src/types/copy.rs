@@ -277,7 +277,9 @@ impl Copies {
             return Ok(Some(Properties::default()));
         }
         match kind {
-            Kind::Adt(..) | Kind::Parameter(_) | Kind::Opaque(..) => Ok(None),
+            Kind::Adt(..) | Kind::Parameter(_) | Kind::Opaque(..) | Kind::Closure { .. } => {
+                Ok(None)
+            }
             Kind::Reference {
                 mutable: true,
                 mut referent,
@@ -309,6 +311,7 @@ fn children(
     mut visit: impl FnMut(TypeId) -> Result<(), &'static str>,
 ) -> Result<(), &'static str> {
     match types.kind(ty).ok_or("invalid Copy type")? {
+        Kind::Closure { environment, .. } => visit(environment)?,
         Kind::Array { element, .. } | Kind::ArrayTerm { element, .. } => visit(element)?,
         Kind::Tuple(list) => {
             for ty in types.list(list).ok_or("invalid Copy tuple")? {

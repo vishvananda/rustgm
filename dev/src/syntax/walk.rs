@@ -172,6 +172,7 @@ impl<L> Syntax<L> {
                 base,
                 arguments,
                 output: result,
+                ..
             } => {
                 output.push(base);
                 self.children(arguments, output);

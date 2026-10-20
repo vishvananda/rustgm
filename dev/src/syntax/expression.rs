@@ -588,13 +588,14 @@ impl<'source> Parser<'source, '_> {
                     end: name.end,
                 }),
             )?;
-            let (arguments, output) = self.generic_arguments()?;
+            let (arguments, output, parenthesized) = self.generic_arguments()?;
             let method = self.node(
                 name.start,
                 Kind::Applied {
                     base: method,
                     arguments,
                     output,
+                    parenthesized,
                 },
             )?;
             self.expect(P::OpenParen)?;

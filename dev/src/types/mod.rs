@@ -5,6 +5,7 @@ pub mod auto_traits;
 mod binder_shift;
 pub mod bound_uses;
 pub mod callable;
+pub mod closure;
 pub mod copy;
 pub mod destruction;
 pub mod dynamic;
@@ -214,6 +215,13 @@ pub enum Kind {
         arguments: GenericArgs,
         signature: TypeId,
     },
+    /// Distinct expression identity, complete enclosing inputs and actual stored captures.
+    Closure {
+        identity: closure::ClosureId,
+        arguments: GenericArgs,
+        signature: TypeId,
+        environment: TypeId,
+    },
 }
 /// Child lists occupy one shared arena. Hash collisions compare their typed slices.
 /// Type/list IDs are valid only in the store that produced them.
@@ -231,6 +239,7 @@ pub struct Store {
     storage_heads: Option<HashMap<TypeId, TypeId>>,
     shifts: Option<Box<binder_shift::Shifts>>,
     dynamics: Option<Box<dynamic::Storage>>,
+    closures: Option<Vec<closure::CallKind>>,
     nominal_sizes: Option<std::sync::Arc<sizedness::Rules>>,
     has_nominals: bool,
 }
@@ -266,6 +275,7 @@ impl Default for Store {
             storage_heads: None,
             shifts: None,
             dynamics: None,
+            closures: None,
             nominal_sizes: None,
             has_nominals: false,
         }
@@ -428,6 +438,20 @@ impl Store {
                 self.arguments(arguments).is_some()
                     && matches!(self.kind(signature), Some(Kind::Function { .. }))
             }
+            Kind::Closure {
+                identity,
+                arguments,
+                signature,
+                environment,
+            } => {
+                self.closure_kind(identity).is_some()
+                    && self.arguments(arguments).is_some()
+                    && matches!(
+                        self.kind(signature),
+                        Some(Kind::Function { unsafe_: false, .. })
+                    )
+                    && matches!(self.kind(environment), Some(Kind::Tuple(_)))
+            }
         };
         if !valid {
             return Err("invalid canonical type child or signature");
@@ -440,6 +464,10 @@ impl Store {
         self.index.insert(kind, id);
         Ok(id)
     }
+    #[expect(
+        clippy::too_many_lines,
+        reason = "one exhaustive constructor dispatch computes immutable structural summaries"
+    )]
     fn properties(&self, kind: Kind) -> Result<Properties, &'static str> {
         let child = |ty: TypeId| {
             self.properties
@@ -466,6 +494,14 @@ impl Store {
             }
             Kind::Opaque(id, arguments) => result = self.opaque_properties(id, arguments)?,
             Kind::Dynamic { .. } => result = self.dynamic_properties(kind)?,
+            Kind::Closure {
+                arguments,
+                signature,
+                environment,
+                ..
+            } => {
+                result = self.closure_properties(arguments, signature, environment)?;
+            }
             Kind::Primitive(p) => result.set(Property::Sized, p != Primitive::Str),
             Kind::Array { element, .. }
             | Kind::ArrayTerm { element, .. }

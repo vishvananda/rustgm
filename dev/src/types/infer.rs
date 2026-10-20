@@ -67,6 +67,8 @@ pub enum Constructor {
         unsafe_: bool,
     },
     FunctionItem(ItemId, GenericArgs),
+    /// Signature and environment tuple precede the enclosing type argument edges.
+    Closure(super::closure::ClosureId, arguments::ArgumentsId),
 }
 #[derive(Clone, Copy)]
 enum Value {
@@ -198,6 +200,9 @@ impl Context {
             }
             Constructor::FunctionItemArgs(_, id) => {
                 children.len().checked_sub(1) == Some(self.argument_arity(id)?)
+            }
+            Constructor::Closure(_, id) => {
+                children.len().checked_sub(2) == Some(self.argument_arity(id)?)
             }
             Constructor::ArrayInfer(id) => {
                 children.len() == 1
@@ -571,6 +576,9 @@ impl Context {
                 let known = self.materialize_arguments(store, known, &mut Vec::new())?;
                 self.equate_arguments(known, inferred, record_regions)?;
             }
+            (Constructor::Closure(x, a), Constructor::Closure(y, b)) if x == y => {
+                self.equate_arguments(a, b, record_regions)?;
+            }
             (Constructor::Opaque(x, a), Constructor::Opaque(y, b)) if x == y => {
                 self.equate_arguments(a, b, record_regions)?;
             }
@@ -657,6 +665,10 @@ impl Context {
         );
         Ok(())
     }
+    #[expect(
+        clippy::too_many_lines,
+        reason = "one exhaustive constructor dispatch keeps canonical children and inference arity together"
+    )]
     fn materialize(&mut self, store: &Store, id: TermId) -> Result<Constructor, Error> {
         let ty = match self.terms[id.0 as usize].value {
             Value::Construct(kind) => return Ok(kind),
@@ -666,6 +678,19 @@ impl Context {
         let mut children = std::mem::take(&mut self.child_scratch);
         children.clear();
         let constructor = match store.kind(ty).ok_or(Error::InvalidIdentity)? {
+            Kind::Closure {
+                identity,
+                signature,
+                environment,
+                arguments,
+            } => {
+                children.push(self.known(store, signature)?);
+                children.push(self.known(store, environment)?);
+                Constructor::Closure(
+                    identity,
+                    self.materialize_arguments(store, arguments, &mut children)?,
+                )
+            }
             Kind::Never => Constructor::Never,
             Kind::Opaque(id, args) => {
                 Constructor::Opaque(id, self.materialize_arguments(store, args, &mut children)?)
@@ -858,7 +883,8 @@ fn canonical(
         | Constructor::Opaque(..)
         | Constructor::Dynamic { .. }
         | Constructor::AdtArgs(..)
-        | Constructor::FunctionItemArgs(..) => return Err(Error::InvalidIdentity),
+        | Constructor::FunctionItemArgs(..)
+        | Constructor::Closure(..) => return Err(Error::InvalidIdentity),
         Constructor::Primitive(p) => Kind::Primitive(p),
         Constructor::Parameter(id) => Kind::Parameter(id),
         Constructor::Adt(item, args) => Kind::Adt(item, args),

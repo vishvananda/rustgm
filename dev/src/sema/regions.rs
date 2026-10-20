@@ -215,6 +215,15 @@ impl Regions {
     pub fn begin_parameter(&mut self, id: BinderId) {
         self.binders[id.0].candidates.clear();
     }
+    /// Several call bounds can share one quantifier, but each elides its own output.
+    /// Keep lifetime identities while resetting only callable-local elision state.
+    pub fn begin_callable(&mut self, id: BinderId) {
+        let binder = &mut self.binders[id.0];
+        binder.output = None;
+        binder.receiver = None;
+        binder.candidates.clear();
+        binder.candidate_count = 0;
+    }
     pub fn record(&mut self, context: Context, region: RegionId) {
         if matches!(context.position, Position::Input)
             && let Some(id) = context.binder

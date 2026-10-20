@@ -52,6 +52,7 @@ pub(super) fn node<L>(
             base,
             arguments,
             output: result,
+            ..
         } => write!(
             output,
             "applied {} {} {}",

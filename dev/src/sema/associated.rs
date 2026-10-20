@@ -1,4 +1,5 @@
 //! Namespace-resolved associated declarations; this inventory is not a type or impl proof.
+mod language;
 use crate::{
     resolve::{
         expansion::Report,
@@ -75,6 +76,7 @@ pub struct Schema {
 
 #[derive(Default)]
 pub struct Inventory {
+    language: Option<Box<language::Declarations>>,
     owners: Vec<Owner>,
     members: Vec<Member>,
     owner_members: Vec<Vec<DefId>>,
@@ -126,10 +128,20 @@ impl Inventory {
     }
     #[must_use]
     pub fn schema(&self, definition: DefId) -> Option<&Schema> {
+        if let Some(schema) = self
+            .language
+            .as_ref()
+            .and_then(|m| m.schemas.get(&definition))
+        {
+            return Some(schema);
+        }
         self.schemas.get(&self.owner(definition)?)
     }
     #[must_use]
     pub fn trait_owner(&self, member: DefId) -> Option<DefId> {
+        if let Some(owner) = self.language.as_ref().and_then(|m| m.members.get(&member)) {
+            return Some(*owner);
+        }
         match self.get(self.owner(member)?)?.kind {
             OwnerKind::Trait { definition, .. } => Some(definition),
             OwnerKind::Impl { .. } => None,

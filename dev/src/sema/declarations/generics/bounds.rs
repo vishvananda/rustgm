@@ -214,6 +214,7 @@ impl Checker<'_> {
                 continue;
             }
             let bound = self.trait_bound(value)?;
+            let scope = self.call_bound_scope(key, bound, scope, context)?;
             if optional {
                 if !matches!(bound, Written::Trait(Bound::Sized)) {
                     return Err(self.error(key, "only Sized bounds can be relaxed"));
@@ -301,6 +302,17 @@ impl Checker<'_> {
             }
             if let Some(Target::Definition(id)) = self.facts.node(key).and_then(|f| f.reference) {
                 let builtin = self.report.resolution.builtin_traits.identify(id);
+                if matches!(builtin, Some(BuiltinTrait::Callable(_))) {
+                    if crate::sema::lifetimes::call_arguments(self.report, key)?.is_none() {
+                        return Err(
+                            self.error(key, "call traits require stable parenthesized arguments")
+                        );
+                    }
+                    return Ok(Written::User {
+                        path: key,
+                        definition: id,
+                    });
+                }
                 if builtin.is_some()
                     && crate::sema::lifetimes::arguments(self.report, key, false)?
                         .is_some_and(|list| list.start != list.end)
@@ -312,9 +324,18 @@ impl Checker<'_> {
                     Some(BuiltinTrait::Clone) => Ok(Written::Trait(Bound::Clone)),
                     Some(BuiltinTrait::Sized) => Ok(Written::Trait(Bound::Sized)),
                     Some(BuiltinTrait::Auto(marker)) => Ok(Written::Trait(Bound::Auto(marker))),
+                    Some(BuiltinTrait::Callable(_)) => {
+                        Err(self.error(key, "missing call-trait syntax"))
+                    }
                     None if self.report.resolution.definitions[id.0 as usize].kind
                         == crate::resolve::model::DefKind::Trait =>
                     {
+                        if crate::sema::lifetimes::call_arguments(self.report, key)?.is_some() {
+                            return Err(self.error(
+                                key,
+                                "parenthesized arguments require a language call trait",
+                            ));
+                        }
                         Ok(Written::User {
                             path: key,
                             definition: id,
@@ -400,7 +421,11 @@ impl Checker<'_> {
                 self.defer_bound_type(source);
             }
             match ast.node(node).kind {
-                Kind::FunctionType(_) => {
+                Kind::FunctionType(_)
+                | Kind::Applied {
+                    parenthesized: true,
+                    ..
+                } => {
                     if !raw {
                         continue;
                     }

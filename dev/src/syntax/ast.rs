@@ -111,6 +111,7 @@ pub enum Kind {
         base: NodeId,
         arguments: List,
         output: Option<NodeId>,
+        parenthesized: bool,
     },
     Qualified {
         ty: NodeId,

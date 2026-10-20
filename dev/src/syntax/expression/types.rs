@@ -137,13 +137,14 @@ impl Parser<'_, '_> {
                     || self.cursor.at(P::ShiftLeft)?
                     || self.cursor.at(P::OpenParen)?)
             {
-                let (arguments, output) = self.generic_arguments()?;
+                let (arguments, output, parenthesized) = self.generic_arguments()?;
                 segment = self.node(
                     token.start,
                     Kind::Applied {
                         base: segment,
                         arguments,
                         output,
+                        parenthesized,
                     },
                 )?;
             }
@@ -156,7 +157,7 @@ impl Parser<'_, '_> {
         self.node(start, Kind::Path { absolute, segments })
     }
 
-    pub(super) fn generic_arguments(&mut self) -> Result<(List, Option<NodeId>), LexError> {
+    pub(super) fn generic_arguments(&mut self) -> Result<(List, Option<NodeId>, bool), LexError> {
         let mark = self.scratch.len();
         if self.eat(P::OpenParen)? {
             while !self.eat(P::CloseParen)? {
@@ -173,7 +174,7 @@ impl Parser<'_, '_> {
             } else {
                 None
             };
-            return Ok((arguments, output));
+            return Ok((arguments, output, true));
         }
         self.angle_start()?;
         while !self.at_angle_end()? {
@@ -228,7 +229,7 @@ impl Parser<'_, '_> {
             self.expect(P::Comma)?;
         }
         self.angle_end()?;
-        Ok((self.list(mark)?, None))
+        Ok((self.list(mark)?, None, false))
     }
 
     pub(super) fn rich_type(&mut self) -> Result<NodeId, LexError> {

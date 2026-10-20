@@ -61,6 +61,24 @@ pub(crate) trait Compare<'t> {
         let a = self.types().kind(a).ok_or(Error::Identity)?;
         let b = self.types().kind(b).ok_or(Error::Identity)?;
         match (a, b) {
+            (
+                Kind::Closure {
+                    identity: x,
+                    arguments: a,
+                    signature: sa,
+                    environment: ea,
+                },
+                Kind::Closure {
+                    identity: y,
+                    arguments: b,
+                    signature: sb,
+                    environment: eb,
+                },
+            ) if x == y => {
+                self.child(sa, sb, depth)?;
+                self.child(ea, eb, depth)?;
+                return self.arguments(a, b, depth);
+            }
             (Kind::Never, Kind::Never) => {}
             (Kind::Primitive(a), Kind::Primitive(b)) if a == b => {}
             (Kind::Parameter(a), Kind::Parameter(b)) if a == b => {}

@@ -182,6 +182,7 @@ impl Resolver<'_> {
                 base,
                 arguments,
                 output,
+                ..
             } => {
                 self.visit(c, base, ns)?;
                 self.generic_arguments(c, arguments)?;
@@ -539,6 +540,7 @@ impl Resolver<'_> {
                     base,
                     arguments: list,
                     output: None,
+                    parenthesized: false,
                 } if arguments.is_none() => {
                     arguments = Some(list);
                     target = base;

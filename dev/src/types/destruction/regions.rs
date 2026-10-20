@@ -367,6 +367,7 @@ fn dependencies(
             )?;
         }
         Key::Type(ty) => match types.kind(ty).ok_or("invalid drop region type")? {
+            Kind::Closure { environment, .. } => visit(Key::Type(environment))?,
             Kind::Opaque(id, _) => {
                 if !types
                     .opaque_declaration(id)

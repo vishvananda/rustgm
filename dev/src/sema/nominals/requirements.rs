@@ -158,6 +158,14 @@ pub(super) fn requirements_inside(
                         .map(|&ty| (ty, depth)),
                 );
             }
+            Kind::Closure {
+                environment,
+                arguments,
+                ..
+            } => {
+                work.push((environment, depth));
+                arguments_work(facts, arguments, depth, &mut work)?;
+            }
             Kind::FunctionItem { arguments, .. } => {
                 // The declaration already proved its signature, including local
                 // late binders. Item-use obligations validate its substitutions;

@@ -309,6 +309,7 @@ impl Walk {
                         budget,
                     )?;
                 }
+                Kind::Closure { environment, .. } => self.work.push((environment, depth)),
                 Kind::Array { length: 0, .. } if kind == ComponentKind::LiveValue => {}
                 Kind::Opaque(id, args) => {
                     if matches!(kind, ComponentKind::LiveValue | ComponentKind::DropInputs) {

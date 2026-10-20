@@ -238,6 +238,7 @@ fn children(
     mut visit: impl FnMut(TypeId) -> Result<(), &'static str>,
 ) -> Result<(), &'static str> {
     match types.kind(ty).ok_or("invalid destruction type")? {
+        Kind::Closure { environment, .. } => visit(environment)?,
         Kind::Opaque(..) => visit(types.storage_head(ty)?)?,
         Kind::Array { length: 0, .. } => {}
         Kind::Array { element, .. } | Kind::ArrayTerm { element, .. } | Kind::Slice(element) => {

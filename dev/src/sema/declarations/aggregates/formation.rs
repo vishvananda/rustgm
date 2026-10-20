@@ -49,6 +49,18 @@ impl Checker<'_> {
                     }
                 }
             }
+            Type::Closure {
+                arguments,
+                signature,
+                environment,
+                ..
+            } => {
+                self.work.extend([
+                    Work::ValueContract(signature, false),
+                    Work::ValueContract(environment, false),
+                ]);
+                self.constant_argument_contracts(arguments)?;
+            }
             Type::Tuple(list) => {
                 let fields = self
                     .facts

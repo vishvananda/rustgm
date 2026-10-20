@@ -51,6 +51,9 @@ impl Checker<'_> {
         path: NodeKey,
         context: regions::Context,
     ) -> Result<(), Error> {
+        if crate::sema::lifetimes::call_arguments(self.report, path)?.is_some() {
+            return Ok(());
+        }
         let Some(list) = self.prepare_associated_bindings(path)? else {
             return Ok(());
         };
@@ -74,6 +77,9 @@ impl Checker<'_> {
         &mut self,
         path: NodeKey,
     ) -> Result<Option<List>, Error> {
+        if crate::sema::lifetimes::call_arguments(self.report, path)?.is_some() {
+            return Ok(None);
+        }
         if !self.associated_bindings.paths.contains_key(&path) {
             let Some(list) = crate::sema::lifetimes::arguments(self.report, path, false)? else {
                 return Ok(None);
@@ -125,6 +131,10 @@ impl Checker<'_> {
         binding: Binding,
         output: &mut Vec<crate::sema::generics::Predicate>,
     ) -> Result<bool, Error> {
+        if crate::sema::lifetimes::call_arguments(self.report, binding.path)?.is_some() {
+            self.call_output_binding(binding, output)?;
+            return Ok(false);
+        }
         let Binding {
             path,
             predicate,

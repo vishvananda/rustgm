@@ -3,6 +3,7 @@ pub mod alias_requirements;
 mod annotations;
 pub mod associated;
 pub mod bodies;
+pub mod closures;
 mod constants;
 pub use constants::values;
 mod arguments;

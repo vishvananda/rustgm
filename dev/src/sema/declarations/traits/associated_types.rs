@@ -336,6 +336,7 @@ impl Checker<'_> {
                 continue;
             }
             let written = self.trait_bound(value)?;
+            let scope = self.call_bound_scope(key, written, scope, context)?;
             if matches!(written, Written::User { .. }) && !optional {
                 syntax.push(Syntax::associated(key, id, written, scope));
                 continue;

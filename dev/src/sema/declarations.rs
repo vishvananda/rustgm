@@ -3,6 +3,7 @@ mod abstract_types;
 mod aggregates;
 mod annotations;
 mod associated;
+mod call_traits;
 mod capture_bounds;
 mod constants;
 mod contracts;
@@ -59,6 +60,8 @@ enum SignaturePhase {
 }
 #[derive(Clone, Copy)]
 enum Work {
+    CallTraitInputs(BinderId),
+    CallTraitOutput(NodeKey, regions::Context),
     ImplHeader(DefId, impl_headers::Phase),
     ConstantMember(crate::sema::traits::implementations::ConstantRequest, bool),
     MethodPrefix(NodeKey, regions::Context),
@@ -122,6 +125,7 @@ struct Signature {
     unsafe_: bool,
 }
 struct Checker<'a> {
+    call_paths: std::collections::HashSet<NodeKey>,
     method_queries: std::collections::HashMap<NodeKey, Box<super::methods::selection::PathQuery>>,
     inherent_headers: inherent_headers::Pending,
     impl_headers: impl_headers::Pending,
@@ -179,6 +183,7 @@ impl<'a> Checker<'a> {
             ));
         }
         Ok(Self {
+            call_paths: std::collections::HashSet::new(),
             method_queries: std::collections::HashMap::new(),
             inherent_headers: inherent_headers::Pending::default(),
             impl_headers: impl_headers::Pending::default(),
@@ -236,6 +241,7 @@ impl Checker<'_> {
                     .saturating_add(unit.configured.ast.edges.len())
             })
             .saturating_mul(16);
+        self.prepare_call_contracts()?;
         let destructors = self.reserve_destructors()?;
         self.complete_nominal_headers(&mut steps, work_limit)?;
         self.prepare_trait_owners(&mut steps, work_limit)?;
@@ -316,6 +322,8 @@ impl Checker<'_> {
                 ));
             }
             match work {
+                Work::CallTraitInputs(binder) => self.regions.begin_callable(binder),
+                Work::CallTraitOutput(key, context) => self.call_trait_output(key, context)?,
                 Work::ImplHeader(owner, phase) => self.advance_impl_header(owner, phase)?,
                 Work::ConstantMember(request, finish) => {
                     self.constant_member(request, finish)?;

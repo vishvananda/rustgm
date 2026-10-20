@@ -84,6 +84,15 @@ impl Occurrences {
     }
     fn children(&self, types: &Store, ty: TypeId, children: &mut Vec<TypeId>) -> Result<(), Error> {
         match types.kind(ty).ok_or("invalid dyn signature type")? {
+            Kind::Closure {
+                arguments,
+                signature,
+                environment,
+                ..
+            } => {
+                children.extend([signature, environment]);
+                argument_types(types, arguments, children)?;
+            }
             Kind::Reference { referent, .. } => children.push(referent),
             Kind::Pointer { pointee, .. } => children.push(pointee),
             Kind::Array { element, .. }

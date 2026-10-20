@@ -245,6 +245,9 @@ impl Shapes {
                 .ok_or("missing child shape")?;
             value.well_formed &= properties.well_formed;
             match kind {
+                Kind::Closure { environment, .. } if child == environment => {
+                    value.well_formed &= properties.sized;
+                }
                 Kind::Tuple(_) => {
                     value.sized &= properties.sized;
                     value.well_formed &= properties.sized
@@ -429,6 +432,16 @@ fn children(
         | Kind::Pointer {
             pointee: element, ..
         } => visit(element, depth)?,
+        Kind::Closure {
+            signature,
+            environment,
+            arguments,
+            ..
+        } => {
+            visit(signature, depth)?;
+            visit(environment, depth)?;
+            argument_types(types, arguments, depth, &mut visit)?;
+        }
         Kind::Tuple(list) => {
             for ty in types.list(list).ok_or("invalid shape tuple")? {
                 visit(*ty, depth)?;

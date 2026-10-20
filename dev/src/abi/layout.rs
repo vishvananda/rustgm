@@ -304,6 +304,7 @@ impl Layouts {
         self.work.push((ty, true));
         match kind {
             Kind::Opaque(..) => self.work.push((types.storage_head(ty)?, false)),
+            Kind::Closure { environment, .. } => self.work.push((environment, false)),
             Kind::Tuple(fields) => self.dependencies(types, fields)?,
             Kind::Array { element, .. } => self.work.push((element, false)),
             Kind::Adt(_, _) => {
@@ -340,6 +341,10 @@ impl Layouts {
                 .get(types.storage_head(ty)?)
                 .copied()
                 .ok_or("missing opaque representation layout"),
+            Kind::Closure { environment, .. } => self
+                .get(environment)
+                .copied()
+                .ok_or("missing closure environment layout"),
             Kind::ArrayTerm { .. } => Err("generic array length has no concrete layout"),
             Kind::Dynamic { .. } => Err("trait object has no fixed layout"),
             Kind::Never => Ok(Layout {

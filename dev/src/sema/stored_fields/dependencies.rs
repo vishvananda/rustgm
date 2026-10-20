@@ -70,6 +70,7 @@ impl Reader {
                         _ => None,
                     }));
             }
+            Kind::Closure { environment, .. } => reader.edges.children.push(environment),
             Kind::Tuple(list) => {
                 let fields = facts.types.list(list).ok_or("invalid storage tuple")?;
                 registry.charge(fields.len())?;

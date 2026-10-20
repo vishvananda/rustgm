@@ -119,6 +119,7 @@ fn argument_list(report: &Report, key: NodeKey) -> Result<Option<List>, Error> {
         Kind::Applied {
             arguments,
             output: None,
+            parenthesized: false,
             ..
         } => Ok((arguments.start != arguments.end).then_some(arguments)),
         Kind::Applied { .. } => Err(Declarations::error(
@@ -128,4 +129,38 @@ fn argument_list(report: &Report, key: NodeKey) -> Result<Option<List>, Error> {
         )),
         _ => Ok(None),
     }
+}
+
+/// Parenthesized call-trait inputs are a retained syntax distinction, including `Fn()`.
+pub(super) fn call_arguments(
+    report: &Report,
+    key: NodeKey,
+) -> Result<Option<(List, Option<crate::syntax::ast::NodeId>)>, Error> {
+    let ast = &report.package.unit(key.file).configured.ast;
+    let mut node = key.node;
+    if let Kind::Path { segments, .. } = ast.node(node).kind {
+        let Some((last, prefix)) = ast.list(segments).split_last() else {
+            return Err(Declarations::error(report, key, "empty call-trait path"));
+        };
+        if prefix
+            .iter()
+            .any(|node| matches!(ast.node(*node).kind, Kind::Applied { .. }))
+        {
+            return Err(Declarations::error(
+                report,
+                key,
+                "call-trait arguments require the final path segment",
+            ));
+        }
+        node = *last;
+    }
+    Ok(match ast.node(node).kind {
+        Kind::Applied {
+            arguments,
+            output,
+            parenthesized: true,
+            ..
+        } => Some((arguments, output)),
+        _ => None,
+    })
 }

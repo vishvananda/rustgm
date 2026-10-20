@@ -19,6 +19,12 @@ impl Query {
                 self.waiting = Some(obligation);
                 return Ok(Some(Step::Proof(obligation)));
             }
+            Kind::Closure { environment, .. } => {
+                self.dependency(Obligation {
+                    ty: environment,
+                    marker,
+                })?;
+            }
             Kind::Tuple(fields) => self.fields(types, fields, marker)?,
             Kind::Array { element, .. }
             | Kind::ArrayTerm { element, .. }
